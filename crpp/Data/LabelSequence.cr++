@@ -45,7 +45,7 @@ public:
   }
   
   void set(size_t index, size_t label)
-    {jassert(index < v.size()); v[index] = label;}
+    {assert(index < v.size()); v[index] = label;}
     
   void append(size_t label)
     {v.push_back(label);}
@@ -54,10 +54,10 @@ public:
     {v.reserve(v.size() + numbersAdditional);}
   
   size_t& operator [](size_t index) 
-    {jassert(index < v.size()); return v[index];}
+    {assert(index < v.size()); return v[index];}
 
   size_t operator [](size_t index) const
-    {jassert(index < v.size()); return v[index];}
+    {assert(index < v.size()); return v[index];}
   
   size_t size() const
     {return v.size();}

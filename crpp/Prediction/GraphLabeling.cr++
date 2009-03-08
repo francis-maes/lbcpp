@@ -1,7 +1,6 @@
 /*
 ** Graph labeling CR-algorithms
 */
-#include "../Nieme.cr++"
 #include "../Data/LabeledContentGraph.cr++"
 
 namespace cralgo

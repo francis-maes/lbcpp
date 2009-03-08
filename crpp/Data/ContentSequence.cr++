@@ -14,7 +14,7 @@ class ContentSequence
 public:
   featureGenerator contentFeatures(size_t position) const
   {
-    jassert(position < v.size());
+    assert(position < v.size());
     featureCall("content") v[position];
   }
     

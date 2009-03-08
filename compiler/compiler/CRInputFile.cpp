@@ -48,6 +48,18 @@ bool CRInputFile::parse(bool verbose)
     return false;
   PreprocessorAndCommentsChunker chunker;
   chunker.chunk(*istr, chunks);
+  
+  // todo: ranger quelque part et clarifier
+  for (size_t i = 0; i < chunks.size(); ++i)
+  {
+    std::string& c = chunks[i].content;
+    if (c.find("#") != std::string::npos && c.find("include") != std::string::npos)
+    {
+      size_t n = c.find(".cr++\"");
+      if (n != std::string::npos)
+        c = c.substr(0, n) + ".h\"" + c.substr(n + strlen(".cr++\""));
+    }
+  }
   delete istr;
   
   /*

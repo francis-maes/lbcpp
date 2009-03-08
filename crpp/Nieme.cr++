@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-# include "../../../representation/vector/dynamic/DoubleVector.h"
-# include "../../../representation/vector/dynamic/FlatVectors.h"
-# include "../../../learning/instanceset/InstanceSet.h"
-# include "../../graphs/graph/GraphLabelingExample.h"
+# include "representation/vector/dynamic/DoubleVector.h"
+# include "representation/vector/dynamic/FlatVectors.h"
+# include "learning/instanceset/InstanceSet.h"
+# include "graphs/graph/GraphLabelingExample.h"
 
 namespace cralgo
 {
