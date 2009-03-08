@@ -16,11 +16,25 @@ namespace cralgo
 {
 
 class LazyVector;
-typedef boost::shared_ptr<LazyVector> LazyVectorPtr;
+typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
 
 class LazyVector : public FeatureGeneratorDefaultImplementations<LazyVector, DoubleVector>
 {
 public:
+  LazyVector()
+  {
+  }
+
+  ~LazyVector()
+  {
+  }
+  
+  void clear()
+  {
+    combination.clear();
+    value = DenseVectorPtr();
+  }
+
   /*
   ** Operations
   */

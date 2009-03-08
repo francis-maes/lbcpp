@@ -13,7 +13,6 @@
 # include "CRAlgorithmScope.hpp"
 # include "Choose.hpp"
 # include "Callback.hpp"
-# include <boost/enable_shared_from_this.hpp>
 
 namespace cralgo
 {
@@ -21,17 +20,12 @@ namespace cralgo
 
 template<class T_impl>
 class StaticToDynamicCRAlgorithm
-  : public StaticToDynamicCRAlgorithmScope_<T_impl, CRAlgorithm, StaticToDynamicCRAlgorithm<T_impl> >,
-    public boost::enable_shared_from_this< StaticToDynamicCRAlgorithm<T_impl> >
+  : public StaticToDynamicCRAlgorithmScope_<T_impl, CRAlgorithm, StaticToDynamicCRAlgorithm<T_impl> >
 {
 public:
   typedef StaticToDynamicCRAlgorithmScope_<T_impl, CRAlgorithm, StaticToDynamicCRAlgorithm<T_impl> > BaseClassType;
-  typedef boost::enable_shared_from_this< StaticToDynamicCRAlgorithm<T_impl> > BaseClass2Type;
-  
-  StaticToDynamicCRAlgorithm(T_impl* newImpl) : BaseClassType(newImpl) {}
 
-  CRAlgorithmPtr getSharedPointer()
-    {return BaseClass2Type::shared_from_this();}
+  StaticToDynamicCRAlgorithm(T_impl* newImpl) : BaseClassType(newImpl) {}
 
   virtual std::string getName() const
     {return BaseClassType::getImplementation().getName();}
@@ -46,7 +40,7 @@ public:
   {
     T_impl& impl = BaseClassType::getImplementation();
     assert(impl.__state__ >= 0); // in order to run a policy from the initial state, use run(policy)
-    PolicyToStaticCallback staticCallback(policy, getSharedPointer(), choice);
+    PolicyToStaticCallback staticCallback(policy, CRAlgorithmPtr(this), choice);
     while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
   }
     
@@ -54,13 +48,13 @@ public:
   {
     // todo: inlined version
     assert(BaseClassType::getImplementation().__state__ == -1); // in order to run a policy from a non-initial state, use run(policy, choice)
-    PolicyToStaticCallback staticCallback(policy, getSharedPointer());
+    PolicyToStaticCallback staticCallback(policy, CRAlgorithmPtr(this));
     while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
   }
 
   virtual bool step(Callback& callback, const void* choice)
   {
-    DynamicToStaticCallback<T_impl> staticCallback(callback, getSharedPointer());
+    DynamicToStaticCallback<T_impl> staticCallback(callback, CRAlgorithmPtr(this));
     return stepImpl(staticCallback, choice);
   }
 
@@ -73,7 +67,7 @@ public:
   
   virtual ChoosePtr runUntilNextChoose(const void* choice, double* reward = NULL)
   {
-    ConstructChooseStaticCallback<T_impl> callback(getSharedPointer());
+    ConstructChooseStaticCallback<T_impl> callback(CRAlgorithmPtr(this));
     stepImpl(callback, choice);
     if (reward)
       *reward = callback.getCurrentReward();

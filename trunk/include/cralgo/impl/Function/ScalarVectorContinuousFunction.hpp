@@ -32,7 +32,7 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
   
   void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
   {
-    DenseVectorPtr denseParameters = boost::dynamic_pointer_cast<DenseVector>(parameters);
+    DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
     assert(denseParameters);
     
     if (output)
@@ -41,6 +41,10 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
       return;
     double Z = 1.0 / examples.size();
     
+    LazyVectorPtr lossGradient;
+    if (gradient)
+      lossGradient = new LazyVector();
+
     typedef Traits<ContainerType> ContainerTraits;
     for (typename ContainerTraits::ConstIterator it = ContainerTraits::begin(examples); it != ContainerTraits::end(examples); ++it)
     {
@@ -50,10 +54,8 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
       const_cast<PenalizationType& >(penalization).right.setLearningExample(example);
 
       // FIXME : gradient direction
-      
-      LazyVectorPtr lossGradient;
-      if (gradient)
-        lossGradient = LazyVectorPtr(new LazyVector());
+      if (lossGradient)
+        lossGradient->clear();
       double lossOutput;
       penalization.compute(denseParameters, example.getInput(), output ? &lossOutput : NULL, lossGradient, LazyVectorPtr());
       if (output)

@@ -22,7 +22,7 @@ public:
   virtual void policyLeave() {}
 };
 
-typedef boost::shared_ptr<Policy> PolicyPtr;
+typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 
 template<>
 struct Traits<PolicyPtr> : public ObjectSharedPtrTraits<Policy> {};

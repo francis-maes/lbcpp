@@ -15,7 +15,7 @@
 namespace cralgo
 {
 
-class ActionIterator
+class ActionIterator : public ReferenceCountedObject
 {
 public:
   virtual ~ActionIterator() {}
@@ -25,7 +25,7 @@ public:
   virtual void next() = 0;
 };
 
-typedef boost::shared_ptr<ActionIterator> ActionIteratorPtr;
+typedef ReferenceCountedObjectPtr<ActionIterator> ActionIteratorPtr;
 
 class Choose : public Object
 {
@@ -109,7 +109,7 @@ private:
   CRAlgorithmPtr crAlgorithm;
 };
 
-typedef boost::shared_ptr<Choose> ChoosePtr;
+typedef ReferenceCountedObjectPtr<Choose> ChoosePtr;
 
 }; /* namespace cralgo */
 

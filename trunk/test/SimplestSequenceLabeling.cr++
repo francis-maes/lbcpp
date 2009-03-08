@@ -91,12 +91,6 @@ public:
     
   std::vector<SequenceExample>& target;
 
-  virtual void addLearningExample(LearningExample* example)
-  {
-    target.push_back(*(SequenceExample* )example);
-    delete example;
-  }
-
   virtual void parseBegin()
   {
     currentContent.clear();
@@ -124,7 +118,7 @@ public:
   {
     if (currentContent.size())
     {
-      addLearningExample(new SequenceExample(currentContent, currentLabels));
+      target.push_back(SequenceExample(currentContent, currentLabels));
       currentContent.clear();
       currentLabels.clear();
     }

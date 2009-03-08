@@ -15,7 +15,7 @@ namespace cralgo
 {
 
 class CRAlgorithmScope;
-typedef boost::shared_ptr<CRAlgorithmScope> CRAlgorithmScopePtr;
+typedef ReferenceCountedObjectPtr<CRAlgorithmScope> CRAlgorithmScopePtr;
 
 class CRAlgorithmScope : public Object
 {

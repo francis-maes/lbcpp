@@ -68,7 +68,7 @@ void SparseVector::set(const std::string& name, double value)
 void SparseVector::set(const std::vector<std::string>& path, double value)
 {
   assert(dictionary);
-  SparseVectorPtr ptr = getSharedPointer();
+  SparseVectorPtr ptr(this);
   FeatureDictionary* dictionary = this->dictionary;
   for (size_t i = 0; i < path.size() - 1; ++i)
   {
@@ -76,7 +76,7 @@ void SparseVector::set(const std::vector<std::string>& path, double value)
     dictionary = &dictionary->getSubDictionary(subVectorIndex);
     SparseVectorPtr subVector = ptr->getSubVector(subVectorIndex);
     if (!subVector)
-      subVector = SparseVectorPtr(new SparseVector());
+      subVector = new SparseVector();
     subVector->ensureDictionary(*dictionary);
     ptr = subVector;
   }

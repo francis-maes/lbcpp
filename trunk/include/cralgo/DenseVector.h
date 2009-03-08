@@ -15,9 +15,9 @@ namespace cralgo
 {
 
 class DenseVector;
-typedef boost::shared_ptr<DenseVector> DenseVectorPtr;
+typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
 class LazyVector;
-typedef boost::shared_ptr<LazyVector> LazyVectorPtr;
+typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
 
 class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, DoubleVector>
 {
@@ -76,7 +76,7 @@ public:
   void addWeighted(const LazyVectorPtr lazyVector, double weight);
     
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
-    {featureGenerator->addWeightedTo(DenseVectorPtr(this, null_deleter()), weight);}
+    {featureGenerator->addWeightedTo(DenseVectorPtr(this), weight);}
 
   /*
   ** Static FeatureGenerator

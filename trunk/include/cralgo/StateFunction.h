@@ -17,7 +17,7 @@ namespace cralgo
 {
 
 class CRAlgorithm;
-typedef boost::shared_ptr<CRAlgorithm> CRAlgorithmPtr;
+typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
 
 class StateFunction : public Object
 {
@@ -132,7 +132,7 @@ public:
   virtual double compute(CRAlgorithmPtr crAlgorithm, const void* choice) const = 0;
 };
 
-typedef boost::shared_ptr<ActionValueFunction> ActionValueFunctionPtr;
+typedef ReferenceCountedObjectPtr<ActionValueFunction> ActionValueFunctionPtr;
 
 class CompositeActionValueFunction : public ActionValueFunction
 {

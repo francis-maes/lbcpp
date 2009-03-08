@@ -1,7 +1,6 @@
 PROJECT(CRAlgo)
 cmake_minimum_required(VERSION 2.6)
 
-ADD_SUBDIRECTORY(synopsis)
 ADD_SUBDIRECTORY(compiler)
 ADD_SUBDIRECTORY(src)
 

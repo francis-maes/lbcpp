@@ -231,8 +231,8 @@ struct ScalarVectorFunctionPair : public ContinuousFunctionPair<Function1, Funct
       LazyVectorPtr leftGradient, rightGradient;
       if (gradient)
       {
-        leftGradient = LazyVectorPtr(new LazyVector());
-        rightGradient = LazyVectorPtr(new LazyVector());
+        leftGradient = new LazyVector();
+        rightGradient = new LazyVector();
       }
       left.compute(input, output ? &leftOutput : NULL, gradientDirection, leftGradient);
       right.compute(input, output ? &rightOutput : NULL, gradientDirection, rightGradient);      

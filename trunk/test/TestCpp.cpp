@@ -10,7 +10,7 @@ public:
   virtual void trainStochasticEnd() = 0;
 };
 
-typedef boost::shared_ptr<LearningMachine> LearningMachinePtr;
+typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 
 class Classifier : public LearningMachine
 {
@@ -32,7 +32,7 @@ public:
   virtual size_t sample(const FeatureGeneratorPtr input) const = 0;
 };
 
-typedef boost::shared_ptr<Classifier> ClassifierPtr;
+typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
 
 class GeneralizedClassifier : public LearningMachine
 {
@@ -55,7 +55,7 @@ public:
   virtual size_t sample(const std::vector<FeatureGeneratorPtr>& inputs) const = 0;
 };
 
-typedef boost::shared_ptr<GeneralizedClassifier> GeneralizedClassifierPtr;
+typedef ReferenceCountedObjectPtr<GeneralizedClassifier> GeneralizedClassifierPtr;
 
 class Regressor : public LearningMachine
 {
@@ -66,7 +66,7 @@ public:
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
 };
 
-typedef boost::shared_ptr<Regressor> RegressorPtr;
+typedef ReferenceCountedObjectPtr<Regressor> RegressorPtr;
 
 class Ranker : public LearningMachine
 {
@@ -77,7 +77,7 @@ public:
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
 };
 
-typedef boost::shared_ptr<Ranker> RankerPtr;
+typedef ReferenceCountedObjectPtr<Ranker> RankerPtr;
 
 class GradientBasedLearner : public Object
 {
@@ -90,7 +90,7 @@ public:
 protected:
   DenseVectorPtr parameters;
 };
-typedef boost::shared_ptr<GradientBasedLearner> GradientBasedLearnerPtr;
+typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;
 
 class StochasticDescentLearner : public GradientBasedLearner
 {

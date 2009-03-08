@@ -36,7 +36,7 @@ public:
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
 };
 
-typedef boost::shared_ptr<ScalarFunction> ScalarFunctionPtr;
+typedef ReferenceCountedObjectPtr<ScalarFunction> ScalarFunctionPtr;
 
 /*
 ** f : example x R -> R
@@ -47,7 +47,7 @@ public:
   virtual void setLearningExample(const LearningExample& learningExample) = 0;
 };
 
-typedef boost::shared_ptr<ScalarLossFunction> ScalarLossFunctionPtr;
+typedef ReferenceCountedObjectPtr<ScalarLossFunction> ScalarLossFunctionPtr;
 
 /*
 ** f : R^n -> R
@@ -62,7 +62,7 @@ public:
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const = 0;
   virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const = 0;
 };
-typedef boost::shared_ptr<ScalarVectorFunction> ScalarVectorFunctionPtr;
+typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
 
 /*
 ** f : example x R^n -> R
@@ -73,7 +73,7 @@ public:
   virtual void setLearningExample(const LearningExample& learningExample) = 0;
 };
 
-typedef boost::shared_ptr<VectorLossFunction> VectorLossFunctionPtr;
+typedef ReferenceCountedObjectPtr<VectorLossFunction> VectorLossFunctionPtr;
 
 /*
 ** f : params x features -> R
@@ -91,7 +91,7 @@ public:
       LazyVectorPtr gradientWrtInput) const = 0;
 };
 
-typedef boost::shared_ptr<ScalarArchitecture> ScalarArchitecturePtr;
+typedef ReferenceCountedObjectPtr<ScalarArchitecture> ScalarArchitecturePtr;
 
 
 /*
@@ -108,7 +108,7 @@ public:
   // todo: non-derivable vector architectures
 };
 
-typedef boost::shared_ptr<VectorArchitecture> VectorArchitecturePtr;
+typedef ReferenceCountedObjectPtr<VectorArchitecture> VectorArchitecturePtr;
 
 }; /* namespace cralgo */
 

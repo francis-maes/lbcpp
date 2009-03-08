@@ -10,23 +10,16 @@
 # define CRALGO_OBJECT_H_
 
 # include "ContainerTraits.h"
-# include <boost/shared_ptr.hpp>
+# include "ReferenceCountedObject.h"
 # include "ErrorHandler.h"
 
 namespace cralgo
 {
 
-// shared_ptr
-struct null_deleter
-{
-  void operator()(void const *) const {}
-};
-
-
 class Object;
-typedef boost::shared_ptr<Object> ObjectPtr;
+typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 
-class Object
+class Object : public ReferenceCountedObject
 {
 public:
   virtual ~Object() {}
@@ -40,11 +33,11 @@ public:
   static ObjectPtr loadFromFile(const std::string& fileName);
   
   template<class T>
-  static boost::shared_ptr<T> loadFromStreamCast(std::istream& istr)
+  static ReferenceCountedObjectPtr<T> loadFromStreamCast(std::istream& istr)
     {return checkCast<T>("Object::createFromStreamCast", loadFromStream(istr));}
 
   template<class T>
-  static boost::shared_ptr<T> loadFromFileCast(const std::string& fileName)
+  static ReferenceCountedObjectPtr<T> loadFromFileCast(const std::string& fileName)
     {return checkCast<T>("Object::createFromFileCast", loadFromFile(fileName));}
 
   std::string getClassName() const;
@@ -59,12 +52,13 @@ public:
   
 protected:
   template<class T>
-  static boost::shared_ptr<T> checkCast(const std::string& where, ObjectPtr object)
+  static ReferenceCountedObjectPtr<T> checkCast(const std::string& where, ObjectPtr object)
   {
-    boost::shared_ptr<T> res;
+    ReferenceCountedObjectPtr<T> res;
     if (object)
     {
-      res = boost::dynamic_pointer_cast<T>(object);
+      
+      res = object.dynamicCast<T>();
       if (!res)
         ErrorHandler::error(where, "Could not cast object into '" + cralgo::toString(typeid(*res)) + "'");
     }
@@ -97,11 +91,11 @@ template<class T>
 struct ObjectSharedPtrTraits
 {
 public:
-  static inline std::string toString(const boost::shared_ptr<T> value)
+  static inline std::string toString(const ReferenceCountedObjectPtr<T> value)
     {return value ? value->toString() : "null";}
-  static inline void write(std::ostream& ostr, const boost::shared_ptr<T> value)
+  static inline void write(std::ostream& ostr, const ReferenceCountedObjectPtr<T> value)
     {assert(value); value->saveToStream(ostr);}
-  static inline bool read(std::istream& istr, boost::shared_ptr<T>& result)
+  static inline bool read(std::istream& istr, ReferenceCountedObjectPtr<T>& result)
     {result = Object::loadFromStreamCast<T>(istr); return result;}
 };
 
