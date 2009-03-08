@@ -6,12 +6,12 @@
 // see the file COPYING for details.
 //
 
-#include <Synopsis/Trace.hh>
-#include <Synopsis/PTree/Node.hh>
-#include <Synopsis/PTree/Atoms.hh>
-#include <Synopsis/PTree/TypeVisitor.hh>
-#include <Synopsis/PTree/Encoding.hh>
-#include <Synopsis/Lexer.hh>
+#include <synopsis/Trace.hh>
+#include <synopsis/PTree/Node.hh>
+#include <synopsis/PTree/Atoms.hh>
+#include <synopsis/PTree/TypeVisitor.hh>
+#include <synopsis/PTree/Encoding.hh>
+#include <synopsis/Lexer.hh>
 #include <iostream>
 #include <sstream>
 

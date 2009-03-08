@@ -7,7 +7,7 @@
 #ifndef Synopsis_SymbolLookup_Scopes_hh_
 #define Synopsis_SymbolLookup_Scopes_hh_
 
-#include <Synopsis/SymbolLookup/Scope.hh>
+#include <synopsis/SymbolLookup/Scope.hh>
 #include <string>
 #include <vector>
 #include <list>

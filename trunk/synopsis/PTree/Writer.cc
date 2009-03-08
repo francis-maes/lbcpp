@@ -5,7 +5,7 @@
 // see the file COPYING for details.
 //
 
-#include <Synopsis/PTree/Writer.hh>
+#include <synopsis/PTree/Writer.hh>
 #include <stdexcept>
 
 using namespace Synopsis;

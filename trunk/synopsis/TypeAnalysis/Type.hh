@@ -7,7 +7,7 @@
 #ifndef Synopsis_TypeAnalysis_Type_hh_
 #define Synopsis_TypeAnalysis_Type_hh_
 
-#include <Synopsis/TypeAnalysis/Visitor.hh>
+#include <synopsis/TypeAnalysis/Visitor.hh>
 #include <string>
 #include <ostream>
 #include <iterator>

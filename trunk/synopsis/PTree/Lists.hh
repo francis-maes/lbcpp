@@ -8,8 +8,8 @@
 #ifndef Synopsis_PTree_Lists_hh_
 #define Synopsis_PTree_Lists_hh_
 
-#include <Synopsis/PTree/operations.hh>
-#include <Synopsis/PTree/Encoding.hh>
+#include <synopsis/PTree/operations.hh>
+#include <synopsis/PTree/Encoding.hh>
 
 namespace Synopsis
 {

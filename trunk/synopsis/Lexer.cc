@@ -5,8 +5,8 @@
 // see the file COPYING for details.
 //
 
-#include "Synopsis/Lexer.hh"
-#include "Synopsis/Buffer.hh"
+#include "synopsis/Lexer.hh"
+#include "synopsis/Buffer.hh"
 #include <iostream>
 #include <cassert>
 #include <string>

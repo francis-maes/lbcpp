@@ -8,16 +8,16 @@
 #ifndef Synopsis_Parser_hh_
 #define Synopsis_Parser_hh_
 
-#include <Synopsis/PTree.hh>
-#include <Synopsis/SymbolFactory.hh>
-#include <Synopsis/Lexer.hh>  // francis
-#include <Synopsis/SymbolLookup.hh> // francis
+#include <synopsis/PTree.hh>
+#include <synopsis/SymbolFactory.hh>
+#include <synopsis/Lexer.hh>  // francis
+#include <synopsis/SymbolLookup.hh> // francis
 #include <vector>
 
 namespace Synopsis
 {
 
-//class Lexer; // francis #include <Synopsis/Lexer.hh>, voir fin de fichier (ScopeGuard et declare<T>())
+//class Lexer; // francis #include <synopsis/Lexer.hh>, voir fin de fichier (ScopeGuard et declare<T>())
 struct Token;
 
 //. C++ Parser

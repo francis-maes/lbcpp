@@ -6,10 +6,10 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/PTree/Node.hh>
-#include <Synopsis/PTree/Encoding.hh>
-#include <Synopsis/PTree/operations.hh>
-#include <Synopsis/Buffer.hh>
+#include <synopsis/PTree/Node.hh>
+#include <synopsis/PTree/Encoding.hh>
+#include <synopsis/PTree/operations.hh>
+#include <synopsis/Buffer.hh>
 #include <iostream>
 #include <sstream>
 #include <cstring>

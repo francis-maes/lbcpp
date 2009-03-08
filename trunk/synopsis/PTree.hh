@@ -7,11 +7,11 @@
 #ifndef Synopsis_PTree_hh_
 #define Synopsis_PTree_hh_
 
-#include <Synopsis/PTree/Encoding.hh>
-#include <Synopsis/PTree/Node.hh>
-#include <Synopsis/PTree/operations.hh>
-#include <Synopsis/PTree/Atoms.hh>
-#include <Synopsis/PTree/Lists.hh>
-#include <Synopsis/PTree/TypeVisitor.hh>
+#include <synopsis/PTree/Encoding.hh>
+#include <synopsis/PTree/Node.hh>
+#include <synopsis/PTree/operations.hh>
+#include <synopsis/PTree/Atoms.hh>
+#include <synopsis/PTree/Lists.hh>
+#include <synopsis/PTree/TypeVisitor.hh>
 
 #endif

@@ -7,7 +7,7 @@
 // see the file COPYING for details.
 //
 
-#include "Synopsis/PTree/operations.hh"
+#include "synopsis/PTree/operations.hh"
 
 namespace Synopsis
 {

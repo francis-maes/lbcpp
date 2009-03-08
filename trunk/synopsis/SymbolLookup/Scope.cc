@@ -4,10 +4,10 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/PTree/Display.hh>
-#include <Synopsis/PTree/Writer.hh>
-#include <Synopsis/SymbolLookup/Scope.hh>
-#include <Synopsis/Trace.hh>
+#include <synopsis/PTree/Display.hh>
+#include <synopsis/PTree/Writer.hh>
+#include <synopsis/SymbolLookup/Scope.hh>
+#include <synopsis/Trace.hh>
 #include <functional>
 
 using namespace Synopsis;

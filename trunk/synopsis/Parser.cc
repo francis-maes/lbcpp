@@ -5,13 +5,13 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/PTree.hh>
-#include <Synopsis/PTree/Display.hh>
-#include <Synopsis/SymbolLookup.hh>
-#include <Synopsis/TypeAnalysis.hh>
-#include "Synopsis/Parser.hh"
-#include "Synopsis/Lexer.hh"
-#include <Synopsis/Trace.hh>
+#include <synopsis/PTree.hh>
+#include <synopsis/PTree/Display.hh>
+#include <synopsis/SymbolLookup.hh>
+#include <synopsis/TypeAnalysis.hh>
+#include "synopsis/Parser.hh"
+#include "synopsis/Lexer.hh"
+#include <synopsis/Trace.hh>
 #include <iostream>
 
 using namespace Synopsis;

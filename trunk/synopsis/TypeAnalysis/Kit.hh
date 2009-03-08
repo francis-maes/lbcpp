@@ -7,7 +7,7 @@
 #ifndef Synopsis_TypeAnalysis_Kit_hh_
 #define Synopsis_TypeAnalysis_Kit_hh_
 
-#include <Synopsis/TypeAnalysis/Type.hh>
+#include <synopsis/TypeAnalysis/Type.hh>
 
 namespace Synopsis
 {

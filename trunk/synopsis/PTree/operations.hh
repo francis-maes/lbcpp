@@ -7,7 +7,7 @@
 #ifndef Synopsis_PTree_operations_hh_
 #define Synopsis_PTree_operations_hh_
 
-#include <Synopsis/PTree/Node.hh>
+#include <synopsis/PTree/Node.hh>
 #include <cassert>
 
 namespace Synopsis

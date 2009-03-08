@@ -4,9 +4,9 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/PTree/Visitor.hh>
-#include <Synopsis/PTree/Atoms.hh>
-#include <Synopsis/PTree/Lists.hh>
+#include <synopsis/PTree/Visitor.hh>
+#include <synopsis/PTree/Atoms.hh>
+#include <synopsis/PTree/Lists.hh>
 
 using namespace Synopsis;
 using namespace PTree;

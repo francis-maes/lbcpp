@@ -7,7 +7,7 @@
 #ifndef Synopsis_SymbolFactory_hh_
 #define Synopsis_SymbolFactory_hh_
 
-#include <Synopsis/SymbolLookup/Scope.hh>
+#include <synopsis/SymbolLookup/Scope.hh>
 #include <stack>
 
 namespace Synopsis
