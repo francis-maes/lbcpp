@@ -1,0 +1,81 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Utilities.cr++                 | Utilities for CR-algorithms     |
+| Author  : Francis Maes                   |                                 |
+| Started : 10/02/2009 22:32               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace cralgo
+{
+  struct TrueOrFalse
+  {
+    struct const_iterator
+    {
+      const_iterator(char state) : state(state) {}
+      const_iterator() : state(2) {}
+      
+      char state;
+
+      bool operator == (const const_iterator& it) const
+        {return state == it.state;}
+      bool operator != (const const_iterator& it) const
+        {return state != it.state;}
+      
+      const_iterator& operator ++()
+        {++state; return *this;}
+      
+      const bool& operator *() const
+      {
+        static const bool bTrue = true;
+        static const bool bFalse = false;
+        return state == 0 ? bTrue : bFalse;
+      }
+    };
+    
+    const_iterator begin() const {return const_iterator(0);}
+    const_iterator end() const {return const_iterator(2);}
+
+    friend std::ostream& operator <<(std::ostream& ostr, const TrueOrFalse& trueOrFalse)
+      {return ostr << "{false, true}";}
+  };
+
+  template<class RangeType>
+  struct RangeContainer
+  {
+    RangeContainer(RangeType begin, RangeType end) : beginValue(begin), endValue(end) {}
+    
+    struct const_iterator
+    {
+      const_iterator(RangeType v) : value(v) {}
+      const_iterator() {}
+      
+      RangeType value;
+      
+      bool operator == (const const_iterator& it) const
+        {return value == it.value;}
+      bool operator != (const const_iterator& it) const
+        {return value != it.value;}
+      
+      const_iterator& operator ++()
+        {++value; return *this;}
+      
+      const RangeType& operator *() const
+        {return value;}
+    };
+    
+    const_iterator begin() const {return const_iterator(beginValue);}
+    const_iterator end() const {return const_iterator(endValue);}
+    
+    friend std::ostream& operator <<(std::ostream& ostr, const RangeContainer<RangeType>& range)
+      {return ostr << "[" + cralgo::toString(range.beginValue) + " - " + cralgo::toString(range.endValue) + "]";}
+    
+  private:
+    RangeType beginValue;
+    RangeType endValue;
+  };
+  
+  typedef RangeContainer<int> IntRange;
+  typedef RangeContainer<size_t> SizeRange;
+  
+}; /* namespace cralgo */

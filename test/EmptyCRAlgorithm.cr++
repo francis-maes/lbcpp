@@ -1,0 +1,13 @@
+
+crAlgorithm void emptyCRAlgorithm()
+{
+  int i1;
+  int& i2 = i1, &i3 = i2;
+  int& i4 = i3;
+}
+
+int main(int argc, char* argv[])
+{
+  cralgo::ChoosePtr choose = emptyCRAlgorithm()->runUntilFirstChoose();
+  return choose ? 1 : 0;
+}

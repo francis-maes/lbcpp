@@ -1,0 +1,174 @@
+#include <iostream>
+#include <fstream>
+
+namespace cralgo
+{
+
+struct SizeRange
+{
+  SizeRange(size_t begin, size_t end)
+    : begin(begin), end(end) {}
+  SizeRange(size_t end)
+    : begin(0), end(end) {}
+    
+  size_t begin, end;
+};
+
+template<>
+struct Traits< SizeRange > 
+  : public DefaultContainerTraits< Traits<SizeRange>, SizeRange, size_t, size_t >
+{
+  static size_t size(const SizeRange& range)
+    {return range.end - range.begin;}
+
+  static size_t begin(const SizeRange& range)
+    {return range.begin;}
+
+  static size_t end(const SizeRange& range)
+    {return range.end;}
+  
+  static const size_t& value(const size_t& iterator)
+    {return iterator;}
+
+  static std::string toString(const SizeRange& range)
+    {return "[" + cralgo::toString(range.begin) + ", " + cralgo::toString(range.end) + "[";}
+    
+  static void write(std::ostream& ostr, const SizeRange& range)
+    {cralgo::write(ostr, range.begin); cralgo::write(ostr, range.end);}
+    
+  static bool read(std::istream& istr, const SizeRange& range)
+    {return cralgo::read(istr, range.begin) && cralgo::read(istr, range.end);}
+};
+
+crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<FeatureGeneratorPtr>& x, size_t numLabels, const std::vector<size_t>* y = NULL)
+{
+  std::vector<size_t> res(x.size(), numLabels);
+  SizeRange range(numLabels);
+  
+  for (size_t i = 0; i < x.size(); ++i)
+  {
+    stateFunction featureGenerator actionFeatures(size_t label) {
+      featureScope(label) {
+        featureCall("content") x[i];
+        if (i > 0)
+          featureSense("previous", res[i - 1]);
+      }
+    }
+    
+    stateFunction double actionValues(size_t label) {
+      return y && (*y)[i] == label;
+    }
+
+    res[i] = choose<size_t>(range, actionFeatures, actionValues);
+    if (y && (*y)[i] == res[i])
+      reward(1.0);
+  }
+  return res;
+}
+
+class SequenceExample : public LearningExample
+{
+public:
+  SequenceExample(const std::vector<FeatureGeneratorPtr>& x, const std::vector<size_t>& y)
+    : x(x), y(y) {}
+    
+  const std::vector<FeatureGeneratorPtr>& getContent() const
+    {return x;}
+  
+  const std::vector<size_t>& getLabels() const
+    {return y;}
+    
+private:
+  std::vector<FeatureGeneratorPtr> x;
+  std::vector<size_t> y;
+};
+
+class SequenceExamplesParser : public LearningExamplesParser
+{
+public:
+  SequenceExamplesParser(std::vector<SequenceExample>& target)
+    : target(target) {}
+    
+  std::vector<SequenceExample>& target;
+
+  virtual void addLearningExample(LearningExample* example)
+  {
+    target.push_back(*(SequenceExample* )example);
+    delete example;
+  }
+
+  virtual void parseBegin()
+  {
+    currentContent.clear();
+    currentLabels.clear();
+    numLabels = 0;
+  }
+
+  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  {
+    assert(columns.size());
+    size_t label;
+    if (!parse(columns[0], label))
+      return false;
+    if (label >= numLabels)
+      numLabels = label + 1;
+    SparseVectorPtr features;
+    if (!parseFeatureList(columns, 1, features))
+      return false;
+    currentContent.push_back(features);
+    currentLabels.push_back(label);
+    return true;
+  }
+
+  virtual bool parseEmptyLine()
+  {
+    if (currentContent.size())
+    {
+      addLearningExample(new SequenceExample(currentContent, currentLabels));
+      currentContent.clear();
+      currentLabels.clear();
+    }
+    return true;
+  }
+  
+  size_t getNumLabels() const
+    {return numLabels;}
+  
+private:
+  std::vector<FeatureGeneratorPtr> currentContent;
+  std::vector<size_t> currentLabels;
+  size_t numLabels;
+};
+
+}; /* namespace cralgo */
+
+using namespace cralgo;
+
+int main(int argc, char* argv[])
+{
+  static const char* filename = "/Users/francis/Projets/Nieme/trunk/src/problems/sequences/experiments/test.smousse";
+
+  std::ifstream istr(filename);
+  if (!istr.is_open())
+  {
+    std::cerr << "Could not open file " << filename << std::endl;
+    return 1;
+  }
+  
+  FeatureDictionary dictionary("dictionary");
+  std::vector<SequenceExample> learningExamples;
+  SequenceExamplesParser parser(learningExamples);
+  parser.parse(istr, dictionary);
+  std::cout << learningExamples.size() << " sequences, " << parser.getNumLabels() << " labels" << std::endl;
+  PolicyPtr policy(new RandomPolicy());
+  policy = PolicyPtr(new ComputeStatisticsPolicy(policy));
+  
+  for (size_t i = 0; i < learningExamples.size(); ++i)
+  {
+    SequenceExample& sequence = learningExamples[i];
+    std::vector<size_t> prediction = simplestSequenceLabeling(policy, sequence.getContent(), parser.getNumLabels(), &sequence.getLabels());
+    std::cout << "Prediction " << i << " : " << toString(prediction) << std::endl;
+  }
+  std::cout << toString(policy) << std::endl;
+  return 0;
+}

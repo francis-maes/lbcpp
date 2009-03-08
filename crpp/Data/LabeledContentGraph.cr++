@@ -1,0 +1,120 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: LabeledContentGraph.cr++       | A labeled graph of content      |
+| Author  : Francis Maes                   |  elements                       |
+| Started : 18/02/2009 21:21               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "ContentGraph.cr++"
+#include "LabelSequence.cr++"
+
+namespace cralgo
+{
+
+class LabeledContentGraph
+{
+public:
+  LabeledContentGraph(const LabeledContentGraph& other)
+    : graph(other.graph), labels(other.labels) {}
+  
+  LabeledContentGraph(const ContentGraph& graph, const LabelSequence& labels)
+    : graph(graph), labels(labels) {}
+      
+  LabeledContentGraph(const LabelDictionary& dictionary)
+    : labels(dictionary) {}
+
+  /*
+  ** Accessors
+  */
+  size_t getNumNodes() const
+    {return graph.getNumNodes();}
+
+  size_t getNumLinks() const
+    {return graph.getNumLinks();}
+  
+  ContentGraph& getGraph()
+    {return graph;}
+
+  const ContentGraph& getGraph() const
+    {return graph;}
+
+  bool hasLabels() const
+    {return labels.size() > 0;}
+
+  LabelSequence& getLabels()
+    {return labels;}
+    
+  const LabelSequence& getLabels() const
+    {return labels;}
+    
+  const LabelDictionary& getDictionary() const
+    {return labels.getDictionary();}
+    
+  /*
+  ** Feature Generators
+  */
+  featureGenerator nodeFeatures(size_t nodeIndex, size_t numPredecessors, size_t numSuccessors, bool includeCurrentLabel)
+  {
+    // Content
+    featureCall graph.contentFeatures(nodeIndex);
+    
+    // Structural Features
+    if (numPredecessors)
+      featureCall("predecessors") structuralFeaturesRec(nodeIndex, nodeIndex, 0, numPredecessors, true);
+    if (numSuccessors)
+      featureCall("successors") structuralFeaturesRec(nodeIndex, nodeIndex, 0, numSuccessors, false);
+
+    // Current Label
+    if (includeCurrentLabel)
+      featureCall("currentLabel") labels.labelFeature((int)nodeIndex);
+  }
+  
+  featureGenerator structuralFeaturesRec(size_t initialNode, size_t node, size_t recursion, size_t count, bool isPredecessors)
+  {
+    if (initialNode == node && recursion > 0) return;
+    
+    if (recursion > 0)
+        featureCall(recursion) labels.labelFeature((int)node);
+        
+    if (recursion < count)
+    {
+      if (isPredecessors)
+      {
+        size_t n = graph.getNumPredecessors(node);
+        for (size_t i = 0; i < n; ++i)
+          featureCall structuralFeaturesRec(initialNode, graph.getPredecessor(node, i), recursion + 1, count, true);
+      }
+      else
+      {
+        size_t n = graph.getNumSuccessors(node);
+        for (size_t i = 0; i < n; ++i)
+          featureCall structuralFeaturesRec(initialNode, graph.getSuccessor(node, i), recursion + 1, count, false);
+      }
+    }
+  }
+  
+  /*
+  ** Modifiers
+  */
+  void addNode(FeatureGeneratorPtr content, size_t label)
+    {graph.addNode(content); labels.append(label);}
+  
+  void reserveNodes(size_t count)
+    {graph.reserveNodes(count); labels.reserve(count);}
+    
+  void setLabel(size_t index, size_t label)
+    {assert(index < labels.size()); labels[index] = label;}
+
+  /*
+  ** Streaming operator
+  */
+  friend std::ostream& operator <<(std::ostream& ostr, const LabeledContentGraph& graph)
+    {return ostr << "graph = " << cralgo::toString(graph.graph) << ", labels = " << cralgo::toString(graph.labels);}
+  
+private:
+  ContentGraph graph;
+  LabelSequence labels;
+};
+
+}; /* namespace cralgo */
