@@ -1,0 +1,130 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: TreeSearchNode.cr++            | A search node = a given state   |
+| Author  : Francis Maes                   |  of a CR-algorithm              |
+| Started : 15/02/2009 20:29               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace cralgo
+{
+
+class TreeSearchNode
+{
+public:
+  TreeSearchNode(CRAlgorithmPtr initialState) : reward(0.0), parent(NULL), choice(NULL)
+  {
+    state = initialState->clone();
+    choose = state->runUntilFirstChoose(&reward);
+    assert(choose); // the search space must have at least one node
+  }
+  
+  TreeSearchNode(TreeSearchNode* parent, const void* choice)
+    : reward(0.0), parent(parent), choice(parent->choose->cloneChoice(choice)) {}
+  
+  TreeSearchNode(const TreeSearchNode& other)
+    : state(other.state), choose(other.choose), reward(other.reward), parent(other.parent)
+  {
+    if (parent && other.choice)
+      choice = other.parent->choose->cloneChoice(choice);
+  }
+  
+  TreeSearchNode() : reward(0.0), parent(NULL), choice(NULL) {}
+  ~TreeSearchNode()
+  {
+    if (choice)
+    {
+      assert(parent);
+      parent->choose->deleteChoice(choice);
+    }
+  }
+  
+  
+  /*
+  ** Parent
+  */
+  bool hasParent() const
+    {return parent != NULL;}
+    
+  TreeSearchNode* getParent() const
+    {return parent;}
+    
+  ChoosePtr getParentChoose() const
+    {return parent ? parent->choose : ChoosePtr();}
+    
+  CRAlgorithmPtr getParentState() const
+    {return parent ? parent->state : CRAlgorithmPtr();}
+    
+  /*
+  ** Choice
+  */
+  const void* getChoice() const
+    {return choice;}
+  
+  /*
+  ** Search node opened state
+  */
+  bool opened() const
+    {return state != CRAlgorithmPtr();}
+    
+  bool closed() const
+    {return state == CRAlgorithmPtr();}
+
+  void open()
+  {
+    if (closed())
+    {
+      assert(parent && choice);
+      parent->open();
+      state = parent->state->clone();
+      choose = state->runUntilNextChoose(choice, &reward);
+    }
+  }
+  
+  void close()
+  {
+    if (opened())
+    {
+      state = CRAlgorithmPtr();
+      reward = 0.0;
+    }
+  }
+  
+  /*
+  ** Only available if opened
+  */
+  CRAlgorithmPtr getState() const
+    {assert(opened()); return state;}
+
+  ChoosePtr getChoose() const
+    {assert(opened()); return choose;}
+    
+  ActionIteratorPtr newIterator() const
+    {assert(opened()); return choose ? choose->newIterator() : ActionIteratorPtr();}
+
+  bool isSolution() const
+    {assert(opened()); return state->hasReturn() && *(bool* )state->getReturn();}
+  
+  double getReward() const
+    {return reward;}
+    
+  /*
+  ** Conversion to string
+  */
+  friend std::ostream& operator << (std::ostream& ostr, const TreeSearchNode& searchNode)
+  {
+    if (searchNode.opened())
+      return ostr << "opened(" << searchNode.state->toString() << ")";
+    else
+      return ostr << "closed";
+  }
+  
+private:  
+  CRAlgorithmPtr state;
+  ChoosePtr      choose;
+  double         reward;  // the reward corresponding to the transition from parent to this
+  TreeSearchNode*    parent;
+  const void*    choice;  // the choice performed to transform parent into this 
+};
+
+}; /* namespace cralgo */

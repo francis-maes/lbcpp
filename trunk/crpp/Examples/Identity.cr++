@@ -1,0 +1,53 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Identity.cr++                  | Identity CR-algorithm           |
+| Author  : Francis Maes                   |    can be used as a basis       |
+| Started : 19/02/2009 20:11               |    for decorator CR-algorithms  |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace cralgo
+{
+
+crAlgorithm void identity(CRAlgorithmPtr crAlgorithm)
+{
+  CRAlgorithmPtr currentState = crAlgorithm->clone();
+  const void* lastChoice = NULL;
+  while (true)
+  {
+    double r = 0;
+    ChoosePtr nextChoose = currentState->runUntilNextChoose(lastChoice, &r);
+    reward (r);
+    
+    if (!nextChoose)
+      return;
+      
+    stateFunction std::string stateDescription()
+      {return nextChoose->stateToString(currentState);}
+
+    stateFunction std::string actionDescription(const void* choice)
+      {return nextChoose->choiceToString(currentState, choice);}
+      
+    stateFunction featureGenerator stateFeatures()
+    {
+      FeatureGeneratorPtr c = nextChoose->getCompositeStateFeatures();
+      featureCall c;
+    }
+    
+    stateFunction featureGenerator actionFeatures(const void* choice)
+    {
+      FeatureGeneratorPtr c = nextChoose->getCompositeActionFeatures(choice);
+      featureCall c;
+    }
+    
+    stateFunction double stateValue()
+      {return nextChoose->stateValue(currentState);}
+
+    stateFunction double actionValue(const void* choice)
+      {return nextChoose->actionValue(currentState, choice);}
+    
+    lastChoice = choose<const void* >(ChooseChoices(nextChoose), stateDescription, actionDescription, stateFeatures, actionFeatures);
+  }
+}
+
+}; /* namespace cralgo */

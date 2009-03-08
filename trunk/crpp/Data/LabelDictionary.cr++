@@ -1,0 +1,62 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: LabelDictionary.cr++           | A set of indexed labels         |
+| Author  : Francis Maes                   |                                 |
+| Started : 10/02/2009 22:31               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace cralgo
+{
+
+class LabelDictionary
+{
+public:
+  std::string getLabel(size_t index) const
+    {jassert(index < labels.size()); return labels[index];}
+    
+  const std::vector< std::string >& getLabelsVector() const
+    {return labels;}
+
+  size_t getNumLabels() const
+    {return labels.size();}
+    
+  void add(const std::string& label)
+    {labels.push_back(label);}
+    
+  size_t size() const
+    {return labels.size();}
+
+private:
+  friend struct Traits<LabelDictionary>;
+  
+  std::vector<std::string> labels;
+};
+
+template<>
+struct Traits<LabelDictionary>
+  : public DefaultContainerTraits< Traits<LabelDictionary>, LabelDictionary, size_t, size_t >
+{    
+  static size_t size(const LabelDictionary& labels)
+    {return labels.getNumLabels();}
+
+  static size_t begin(const LabelDictionary& labels)
+    {return 0;}
+
+  static size_t end(const LabelDictionary& labels)
+    {return labels.getNumLabels();}
+  
+  static const ValueType& value(const ConstIterator& iterator)
+    {return iterator;}
+
+  static std::string toString(const LabelDictionary& labels)
+    {return cralgo::toString(labels.labels);}
+    
+  static void write(std::ostream& ostr, const LabelDictionary& labels)
+    {cralgo::write(ostr, labels.labels);}
+    
+  static bool read(std::istream& istr, const LabelDictionary& labels)
+    {return cralgo::read(istr, labels.labels);}
+};
+
+}; /* namespace cralgo */

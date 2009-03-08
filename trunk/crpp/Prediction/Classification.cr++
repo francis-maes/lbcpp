@@ -1,0 +1,86 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Classification.cr++            | Classification cr-algorithms    |
+| Author  : Francis Maes                   |                                 |
+| Started : 19/02/2009 19:46               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+# include "Utilities.h" // TrueOrFalse
+# include "../Data/LabelDictionary.h"
+
+crAlgorithm bool binaryClassification(FeatureGeneratorPtr x, const bool* ycorrect = NULL)
+{
+  stateFunction double zeroOneLoss(bool ypredicted)
+    {return ycorrect && ypredicted == *ycorrect ? 1.0 : 0.0;}
+    
+  stateFunction featureGenerator features(bool ypredicted)
+  {
+    if (ypredicted)
+      featureCall("true") x;
+    else
+      featureCall("false") x;
+  }
+
+  return choose<bool>(TrueOrFalse(), zeroOneLoss, features);
+}
+
+crAlgorithm size_t multiClassClassification(FeatureGeneratorPtr x, const LabelDictionary& dictionary, const size_t* ycorrect = NULL)
+{
+  stateFunction double zeroOneLoss(size_t ypredicted)
+    {return ycorrect && ypredicted == *ycorrect ? 1.0 : 0.0;}
+    
+  stateFunction featureGenerator features(size_t ypredicted)
+    {featureCall(ypredicted, dictionary.getLabel(ypredicted)) x;}
+
+  return choose<size_t>(dictionary, zeroOneLoss, features);
+}
+
+crAlgorithm size_t perClassCostMultiClassClassification(FeatureGeneratorPtr x, const LabelDictionary& dictionary, const size_t* ycorrect = NULL, const DenseMatrix* costMatrix = NULL)
+{
+  stateFunction double costMatrixLoss(size_t ypredicted)
+    {return costMatrix && ycorrect ? -costMatrix->get(ycorrect, ypredicted) : 0.0;}
+    
+  stateFunction featureGenerator features(size_t ypredicted)
+    {featureCall(ypredicted, dictionary.getLabel(ypredicted)) x;}
+
+  return choose<size_t>(dictionary, costMatrixLoss, features);
+}
+
+crAlgorithm size_t costSensitiveMultiClassClassification(FeatureGeneratorPtr x, const LabelDictionary& dictionary, const std::vector<double>* costs = NULL)
+{
+  stateFunction double costBasedLoss(size_t ypredicted)
+    {assert(!costs || ypredicted < costs->size()); return costs ? -(*costs)[ypredicted] : 0.0;}
+    
+  stateFunction featureGenerator features(size_t ypredicted)
+    {featureCall(ypredicted, dictionary.getLabel(ypredicted)) x;}
+
+  return choose<size_t>(dictionary, costBasedLoss, features);
+}
+
+crAlgorithm size_t bipartiteLabelRanking(const std::vector<FeatureGeneratorPtr>& alternatives, const std::vector<bool>* arePositiveFlags = NULL)
+{
+  stateFunction double bipartiteLoss(size_t alternative)
+    {return arePositiveFlags && *arePositiveFlags[alternative] ? 1.0 : 0.0;}
+
+  stateFunction featureGenerator features(size_t ypredicted)
+    {assert(ypredicted < alternatives.size()); featureCall alternatives[ypredicted];}
+
+  SizeRange indices(0, alternatives.size()); 
+  return choose<size_t>(indices, bipartiteLoss, features);
+}
+
+crAlgorithm size_t labelRanking(const std::vector<FeatureGeneratorPtr>& alternatives, const std::vector<double>* alternativeCosts = NULL)
+{
+  stateFunction double loss(size_t alternative)
+  {
+    assert(!alternativeCosts || alternative < alternativeCosts->size());
+    return alternativeCosts ? -(*alternativeCosts)[alternative] : 0.0;
+  }
+
+  stateFunction featureGenerator features(size_t ypredicted)
+    {assert(ypredicted < alternatives.size()); featureCall alternatives[ypredicted];}
+
+  SizeRange indices(0, alternatives.size()); 
+  return choose<size_t>(indices, loss, features);
+}
