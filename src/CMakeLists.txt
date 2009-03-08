@@ -1,11 +1,10 @@
-INCLUDE_DIRECTORIES(
-  ${Nieme_SOURCE_DIR}/src/cralgorithm/include
-)
+INCLUDE_DIRECTORIES(${CRAlgo_SOURCE_DIR}/include)
 
 SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/cralgo.h
   ../include/cralgo/Traits.h
   ../include/cralgo/ContainerTraits.h
+  ../include/cralgo/ReferenceCountedObject.h
   ../include/cralgo/Object.h
   ../include/cralgo/ErrorHandler.h
   ../include/cralgo/StringDictionary.h
