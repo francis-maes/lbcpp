@@ -9,7 +9,7 @@ inline bool isMultipleOf(size_t a, size_t b)
 
 featureGenerator numberLogFeaturesBase(const std::string& nameMin, const std::string& nameMax, double valMin, double valMax, double value)
 {
-  jassert(value >= valMin && value <= valMax);
+  assert(value >= valMin && value <= valMax);
   double delta = valMax - valMin;
   assert(delta > 0);
   featureSense (nameMin, 1 - ((value - valMin) / delta));
@@ -347,7 +347,7 @@ cralgo::CRAlgorithmPtr sampleInstance(size_t numNumbers,
 }
 
 }; /* namespace lceb */
-
+/*
 class LCeBGeneratedInstanceSet : public CRAlgorithmInstanceSet
 {
 public:
@@ -363,3 +363,4 @@ public:
   virtual cralgo::CRAlgorithmPtr createInstance(size_t i)
     {return lceb::sampleInstance(getNumInputs());}
 };
+*/

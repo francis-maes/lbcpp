@@ -109,7 +109,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
 
 
 }; /* namespace cralgo */
-
+/*
 class BestFirstSearchInstanceSet : public CRAlgorithmInstanceSet
 {
 public:
@@ -141,3 +141,4 @@ private:
   cralgo::TreeSearchSpace searchSpace;
 };
 
+*/

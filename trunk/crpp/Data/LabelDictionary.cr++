@@ -13,7 +13,7 @@ class LabelDictionary
 {
 public:
   std::string getLabel(size_t index) const
-    {jassert(index < labels.size()); return labels[index];}
+    {assert(index < labels.size()); return labels[index];}
     
   const std::vector< std::string >& getLabelsVector() const
     {return labels;}

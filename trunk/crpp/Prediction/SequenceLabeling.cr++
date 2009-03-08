@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-# include "../Nieme.cr++"
 # include "../Data/ContentSequence.cr++"
 # include "../Data/LabelSequence.cr++"
 
@@ -43,7 +42,7 @@ crAlgorithm LabelSequence leftRightLabeling(const ContentSequence& x, const Labe
 }
 
 }; /* namespace cralgo */
-
+/*
 class LeftRightLabelingTestInstanceSet : public CRAlgorithmInstanceSet
 {
 public:
@@ -82,3 +81,4 @@ public:
     return cralgo::leftRightLabeling(x, labels, &correct);
   }
 };
+*/
