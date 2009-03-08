@@ -19,6 +19,7 @@
 # include "DenseVector.h"
 # include "LearningExample.h"
 # include "ContinuousFunction.h"
+# include "LearningMachine.h"
 
 # include "CRAlgorithmScope.h"
 # include "Choose.h"

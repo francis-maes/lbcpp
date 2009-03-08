@@ -89,10 +89,11 @@ public:
     {return ImplementationType::isDerivable;}
 
   virtual double compute(const FeatureGeneratorPtr input) const
-    {double res; impl.compute(input, &res, FeatureGeneratorPtr(), LazyVectorPtr()); return res;}
+    {assert(input); double res; impl.compute(input, &res, FeatureGeneratorPtr(), LazyVectorPtr()); return res;}
     
   virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input) const
   {
+    assert(input);
     assert(ImplementationType::isDerivable); 
     LazyVectorPtr res(new LazyVector());
     impl.compute(input, NULL, FeatureGeneratorPtr(), res);
@@ -100,14 +101,15 @@ public:
   }
   
   virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const
-    {LazyVectorPtr res(new LazyVector()); impl.compute(input, NULL, gradientDirection, res); return res;}
+    {assert(input); LazyVectorPtr res(new LazyVector()); impl.compute(input, NULL, gradientDirection, res); return res;}
 
   virtual void compute(const FeatureGeneratorPtr input, double* output,
                        const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
-    {impl.compute(input, output, gradientDirection, gradient);}
+    {assert(input); impl.compute(input, output, gradientDirection, gradient);}
   
   virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const
   {
+    assert(input);
     assert(ImplementationType::isDerivable);
     impl.compute(input, output, FeatureGeneratorPtr(), gradient);
   }
@@ -153,11 +155,17 @@ public:
       LazyVectorPtr gradientWrtParameters,
       LazyVectorPtr gradientWrtInput) const
   {
+    assert(parameters && input);
     impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
   }
   
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const
-    {double res; impl.compute(parameters, input, &res, LazyVectorPtr(), LazyVectorPtr()); return res;}
+  {
+    assert(parameters && input);
+    double res;
+    impl.compute(parameters, input, &res, LazyVectorPtr(), LazyVectorPtr());
+    return res;
+  }
   
 protected:
   ImplementationType impl;
@@ -181,7 +189,10 @@ public:
                         LazyVectorPtr output,
                         LazyVectorPtr gradientWrtParameters,
                         LazyVectorPtr gradientWrtInput) const
-    {impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);}
+  {
+    assert(parameters && input);
+    impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
+  }
 
   // todo: non-derivable vector architectures
 

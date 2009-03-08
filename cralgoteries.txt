@@ -1,13 +1,9 @@
-* Integrer la libstd crpp dans le nouveau svn 
+
+* Mettre une classe utilitaire Random
 
 * LazyVector
-* LearningMachine.h et LearningMachine.cpp
-* GradientBasedLearner.h et GradientBasedLearner.cpp
-
 * EvolvingParameter => IterationFunction, EpochFunction ?
-
 * completer les FunctionPairTraits existants
-
 * LearningMachine/Function: Tester et Completer:
 
 ScalarValuedVectorContinuousFunction
