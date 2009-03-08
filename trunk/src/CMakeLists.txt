@@ -15,6 +15,8 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/DenseVector.h
   ../include/cralgo/LazyVector.h
   ../include/cralgo/LearningExample.h
+  ../include/cralgo/GradientBasedLearner.h
+  ../include/cralgo/LearningMachine.h
   ../include/cralgo/ContinuousFunction.h
   ../include/cralgo/StateFunction.h
   ../include/cralgo/Choose.h
@@ -69,6 +71,8 @@ SET(CRALGO_LIBRARY_SOURCES
   DenseVector.cpp
   DoubleVectorHelpers.hpp
   LearningExample.cpp
+  LearningMachine.cpp
+  GradientBasedLearner.cpp
 )
 
 SET(CRALGO_LIBRARY

@@ -144,7 +144,7 @@ protected:
   static bool parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path);
 };
 
-extern bool parseClassificationExamples(std::istream& istr, FeatureDictionary& dictionary, StringDictionary& labels, std::vector<ClassificationExample>& res);
+extern bool parseClassificationExamples(std::istream& istr, FeatureDictionary& dictionary, FeatureDictionary& labels, std::vector<ClassificationExample>& res);
 extern bool parseRegressionExamples(std::istream& istr, FeatureDictionary& dictionary, std::vector<RegressionExample>& res);
 
 

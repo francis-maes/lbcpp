@@ -10,6 +10,7 @@
 # define CRALGO_STATIC_CALLBACK_HPP_
 
 # include "../../Callback.h"
+# include "../../Policy.h"
 # include "Choose.hpp"
 # include "StaticInterface.hpp"
 
