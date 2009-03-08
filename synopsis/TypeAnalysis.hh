@@ -7,11 +7,11 @@
 #ifndef Synopsis_TypeAnalysis_hh_
 #define Synopsis_TypeAnalysis_hh_
 
-#include <Synopsis/TypeAnalysis/Type.hh>
-#include <Synopsis/TypeAnalysis/Visitor.hh>
-#include <Synopsis/TypeAnalysis/Kit.hh>
-#include <Synopsis/TypeAnalysis/TypeEvaluator.hh>
-#include <Synopsis/TypeAnalysis/ConstEvaluator.hh>
-#include <Synopsis/TypeAnalysis/OverloadResolver.hh>
+#include <synopsis/TypeAnalysis/Type.hh>
+#include <synopsis/TypeAnalysis/Visitor.hh>
+#include <synopsis/TypeAnalysis/Kit.hh>
+#include <synopsis/TypeAnalysis/TypeEvaluator.hh>
+#include <synopsis/TypeAnalysis/ConstEvaluator.hh>
+#include <synopsis/TypeAnalysis/OverloadResolver.hh>
 
 #endif

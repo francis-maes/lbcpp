@@ -5,9 +5,9 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/PTree/Lists.hh>
-#include <Synopsis/PTree/operations.hh>
-#include <Synopsis/PTree/Encoding.hh>
+#include <synopsis/PTree/Lists.hh>
+#include <synopsis/PTree/operations.hh>
+#include <synopsis/PTree/Encoding.hh>
 #include <iostream>
 
 using namespace Synopsis;

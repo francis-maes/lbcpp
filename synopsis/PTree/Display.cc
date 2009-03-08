@@ -5,7 +5,7 @@
 // see the file COPYING for details.
 //
 
-#include <Synopsis/PTree/Display.hh>
+#include <synopsis/PTree/Display.hh>
 #include <typeinfo>
 #include <memory>
 #include <cstdlib>

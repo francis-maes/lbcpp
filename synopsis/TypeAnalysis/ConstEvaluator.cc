@@ -5,9 +5,9 @@
 // see the file COPYING for details.
 //
 
-#include <Synopsis/PTree/Writer.hh>
-#include <Synopsis/PTree/Display.hh>
-#include <Synopsis/TypeAnalysis/ConstEvaluator.hh>
+#include <synopsis/PTree/Writer.hh>
+#include <synopsis/PTree/Display.hh>
+#include <synopsis/TypeAnalysis/ConstEvaluator.hh>
 #include <sstream>
 #include <iomanip>
 

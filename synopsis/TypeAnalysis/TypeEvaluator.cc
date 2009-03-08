@@ -6,7 +6,7 @@
 //
 
 #include "TypeEvaluator.hh"
-#include <Synopsis/PTree/Display.hh>
+#include <synopsis/PTree/Display.hh>
 #include <cassert>
 
 using namespace Synopsis;

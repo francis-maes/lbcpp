@@ -1,14 +1,13 @@
-PROJECT(Synopsis)
+PROJECT(CRAlgo)
 cmake_minimum_required(VERSION 2.6)
 
-ADD_SUBDIRECTORY(Synopsis)
-ADD_SUBDIRECTORY(Compiler)
+ADD_SUBDIRECTORY(synopsis)
+ADD_SUBDIRECTORY(compiler)
 ADD_SUBDIRECTORY(src)
 
 ###
 ### CR-compilator CMake support
 ###
-
 # Where is CR-algo compiler?
 GET_TARGET_PROPERTY(CRALGO_COMPILER_COMMAND CRAlgoCompiler LOCATION)
 
@@ -54,5 +53,5 @@ MACRO(ADD_CRTEST SOURCEFILE)
 ENDMACRO(ADD_CRTEST)
 
 ## Tests
-ADD_SUBDIRECTORY(Tests)
+ADD_SUBDIRECTORY(test)
 

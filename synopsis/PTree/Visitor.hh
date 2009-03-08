@@ -7,7 +7,7 @@
 #ifndef Synopsis_PTree_Visitor_hh_
 #define Synopsis_PTree_Visitor_hh_
 
-#include <Synopsis/PTree/NodesFwd.hh>
+#include <synopsis/PTree/NodesFwd.hh>
 
 namespace Synopsis
 {

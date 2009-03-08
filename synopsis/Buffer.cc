@@ -5,8 +5,8 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include "Synopsis/Buffer.hh"
-#include "Synopsis/Lexer.hh"
+#include "synopsis/Buffer.hh"
+#include "synopsis/Lexer.hh"
 #include <streambuf>
 #include <iterator>
 #include <string>

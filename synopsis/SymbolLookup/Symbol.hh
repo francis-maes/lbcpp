@@ -7,8 +7,8 @@
 #ifndef Synopsis_SymbolLookup_Symbol_hh_
 #define Synopsis_SymbolLookup_Symbol_hh_
 
-#include <Synopsis/PTree/Encoding.hh>
-#include <Synopsis/PTree/Lists.hh>
+#include <synopsis/PTree/Encoding.hh>
+#include <synopsis/PTree/Lists.hh>
 
 namespace Synopsis
 {

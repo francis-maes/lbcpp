@@ -7,8 +7,8 @@
 #ifndef Synopsis_PTree_Atoms_hh_
 #define Synopsis_PTree_Atoms_hh_
 
-#include <Synopsis/PTree/NodesFwd.hh>
-#include <Synopsis/PTree/Node.hh>
+#include <synopsis/PTree/NodesFwd.hh>
+#include <synopsis/PTree/Node.hh>
 
 namespace Synopsis
 {

@@ -4,8 +4,8 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/SymbolLookup/Symbol.hh>
-#include <Synopsis/SymbolLookup/Scopes.hh>
+#include <synopsis/SymbolLookup/Symbol.hh>
+#include <synopsis/SymbolLookup/Scopes.hh>
 
 using namespace Synopsis;
 using namespace PTree;

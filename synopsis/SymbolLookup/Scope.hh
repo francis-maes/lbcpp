@@ -7,7 +7,7 @@
 #ifndef Synopsis_SymbolLookup_Scope_hh_
 #define Synopsis_SymbolLookup_Scope_hh_
 
-#include <Synopsis/SymbolLookup/Symbol.hh>
+#include <synopsis/SymbolLookup/Symbol.hh>
 #include <map>
 #include <set>
 

@@ -9,10 +9,10 @@
 #ifndef Synopsis_PTree_Node_hh_
 #define Synopsis_PTree_Node_hh_
 
-#include <Synopsis/PTree/GC.hh>
-#include <Synopsis/PTree/Encoding.hh>
-#include <Synopsis/PTree/Visitor.hh>
-#include <Synopsis/Token.hh>
+#include <synopsis/PTree/GC.hh>
+#include <synopsis/PTree/Encoding.hh>
+#include <synopsis/PTree/Visitor.hh>
+#include <synopsis/Token.hh>
 #include <ostream>
 #include <iterator>
 

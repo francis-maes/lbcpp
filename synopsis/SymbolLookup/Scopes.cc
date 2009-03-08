@@ -4,10 +4,10 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/SymbolLookup/Scopes.hh>
-#include <Synopsis/PTree/Writer.hh>
-#include <Synopsis/PTree/Display.hh>
-#include <Synopsis/Trace.hh>
+#include <synopsis/SymbolLookup/Scopes.hh>
+#include <synopsis/PTree/Writer.hh>
+#include <synopsis/PTree/Display.hh>
+#include <synopsis/Trace.hh>
 #include <sstream>
 #include <cassert>
 

@@ -7,7 +7,7 @@
 #ifndef Synopsis_Lexer_hh_
 #define Synopsis_Lexer_hh_
 
-#include <Synopsis/Token.hh>
+#include <synopsis/Token.hh>
 #include <vector>
 #include <map>
 #include <deque>

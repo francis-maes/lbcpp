@@ -4,12 +4,12 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/SymbolLookup/Walker.hh>
-#include <Synopsis/PTree/Lists.hh>
-#include <Synopsis/PTree/TypeVisitor.hh>
-#include <Synopsis/Trace.hh>
-#include <Synopsis/PTree/Display.hh>
-#include <Synopsis/SymbolLookup/Scopes.hh>
+#include <synopsis/SymbolLookup/Walker.hh>
+#include <synopsis/PTree/Lists.hh>
+#include <synopsis/PTree/TypeVisitor.hh>
+#include <synopsis/Trace.hh>
+#include <synopsis/PTree/Display.hh>
+#include <synopsis/SymbolLookup/Scopes.hh>
 
 using namespace Synopsis;
 using namespace SymbolLookup;

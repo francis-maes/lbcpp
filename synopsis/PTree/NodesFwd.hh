@@ -7,7 +7,7 @@
 #ifndef Synopsis_PTree_NodesFwd_hh_
 #define Synopsis_PTree_NodesFwd_hh_
 
-#include <Synopsis/Token.hh>
+#include <synopsis/Token.hh>
 
 namespace Synopsis
 {

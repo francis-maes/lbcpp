@@ -7,7 +7,7 @@
 #ifndef Synopsis_PTree_Writer_hh_
 #define Synopsis_PTree_Writer_hh_
 
-#include <Synopsis/PTree.hh>
+#include <synopsis/PTree.hh>
 #include <sstream>
 
 namespace Synopsis

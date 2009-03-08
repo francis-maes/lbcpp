@@ -5,7 +5,7 @@
 // see the file COPYING for details.
 //
 
-#include <Synopsis/Trace.hh>
+#include <synopsis/Trace.hh>
 
 using namespace Synopsis;
 

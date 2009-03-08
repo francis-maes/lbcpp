@@ -4,12 +4,12 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include <Synopsis/SymbolFactory.hh>
-#include <Synopsis/PTree/Display.hh>
-#include <Synopsis/PTree/Writer.hh>
-#include <Synopsis/SymbolLookup/Scopes.hh>
-#include <Synopsis/TypeAnalysis/ConstEvaluator.hh>
-#include <Synopsis/Trace.hh>
+#include <synopsis/SymbolFactory.hh>
+#include <synopsis/PTree/Display.hh>
+#include <synopsis/PTree/Writer.hh>
+#include <synopsis/SymbolLookup/Scopes.hh>
+#include <synopsis/TypeAnalysis/ConstEvaluator.hh>
+#include <synopsis/Trace.hh>
 #include <cassert>
 #include <vector>
 

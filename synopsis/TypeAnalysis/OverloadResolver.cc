@@ -5,9 +5,9 @@
 // see the file COPYING for details.
 //
 
-#include <Synopsis/PTree/Visitor.hh>
-#include <Synopsis/TypeAnalysis/TypeEvaluator.hh>
-#include <Synopsis/Trace.hh>
+#include <synopsis/PTree/Visitor.hh>
+#include <synopsis/TypeAnalysis/TypeEvaluator.hh>
+#include <synopsis/Trace.hh>
 #include "OverloadResolver.hh"
 #include <vector>
 #include <typeinfo>

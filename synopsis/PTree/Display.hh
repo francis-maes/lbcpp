@@ -7,7 +7,7 @@
 #ifndef Synopsis_PTree_Display_hh_
 #define Synopsis_PTree_Display_hh_
 
-#include <Synopsis/PTree.hh>
+#include <synopsis/PTree.hh>
 
 namespace Synopsis
 {

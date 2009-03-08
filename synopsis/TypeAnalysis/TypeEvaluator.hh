@@ -7,11 +7,11 @@
 #ifndef Synopsis_TypeAnalysis_TypeEvaluator_hh_
 #define Synopsis_TypeAnalysis_TypeEvaluator_hh_
 
-#include <Synopsis/PTree/Visitor.hh>
-#include <Synopsis/PTree/Atoms.hh>
-#include <Synopsis/PTree/Lists.hh>
-#include <Synopsis/SymbolLookup/Scope.hh>
-#include <Synopsis/TypeAnalysis/Type.hh>
+#include <synopsis/PTree/Visitor.hh>
+#include <synopsis/PTree/Atoms.hh>
+#include <synopsis/PTree/Lists.hh>
+#include <synopsis/SymbolLookup/Scope.hh>
+#include <synopsis/TypeAnalysis/Type.hh>
 
 namespace Synopsis
 {

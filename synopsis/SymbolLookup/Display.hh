@@ -7,7 +7,7 @@
 #ifndef Synopsis_SymbolLookup_Display_hh_
 #define Synopsis_SymbolLookup_Display_hh_
 
-#include <Synopsis/SymbolLookup.hh>
+#include <synopsis/SymbolLookup.hh>
 
 namespace Synopsis
 {

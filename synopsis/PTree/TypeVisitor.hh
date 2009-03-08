@@ -7,8 +7,8 @@
 #ifndef Synopsis_PTree_TypeVisitor_hh_
 #define Synopsis_PTree_TypeVisitor_hh_
 
-#include <Synopsis/PTree.hh>
-#include <Synopsis/Token.hh>
+#include <synopsis/PTree.hh>
+#include <synopsis/Token.hh>
 #include <cassert>
 
 namespace Synopsis

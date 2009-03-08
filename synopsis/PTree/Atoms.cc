@@ -5,7 +5,7 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
-#include "Synopsis/PTree/Atoms.hh"
+#include "synopsis/PTree/Atoms.hh"
 
 using namespace Synopsis;
 using namespace PTree;

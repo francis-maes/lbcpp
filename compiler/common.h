@@ -13,16 +13,16 @@
 #  pragma warning(disable:4996)
 # endif // WIN32
 
-# include <Synopsis/Trace.hh>
-# include <Synopsis/Buffer.hh>
-# include <Synopsis/Lexer.hh>
-# include <Synopsis/SymbolFactory.hh>
-# include <Synopsis/Parser.hh>
-# include <Synopsis/PTree.hh>
-# include <Synopsis/PTree/Writer.hh>
-# include <Synopsis/PTree/Display.hh>
-# include <Synopsis/SymbolLookup/Display.hh>
-# include <Synopsis/TypeAnalysis/TypeEvaluator.hh>
+# include <synopsis/Trace.hh>
+# include <synopsis/Buffer.hh>
+# include <synopsis/Lexer.hh>
+# include <synopsis/SymbolFactory.hh>
+# include <synopsis/Parser.hh>
+# include <synopsis/PTree.hh>
+# include <synopsis/PTree/Writer.hh>
+# include <synopsis/PTree/Display.hh>
+# include <synopsis/SymbolLookup/Display.hh>
+# include <synopsis/TypeAnalysis/TypeEvaluator.hh>
 # include <iostream>
 # include <iomanip>
 # include <fstream>

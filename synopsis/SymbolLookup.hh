@@ -7,9 +7,9 @@
 #ifndef Synopsis_SymbolLookup_hh_
 #define Synopsis_SymbolLookup_hh_
 
-#include <Synopsis/SymbolLookup/Symbol.hh>
-#include <Synopsis/SymbolLookup/Scope.hh>
-#include <Synopsis/SymbolLookup/Scopes.hh>
-#include <Synopsis/SymbolLookup/Walker.hh>
+#include <synopsis/SymbolLookup/Symbol.hh>
+#include <synopsis/SymbolLookup/Scope.hh>
+#include <synopsis/SymbolLookup/Scopes.hh>
+#include <synopsis/SymbolLookup/Walker.hh>
 
 #endif

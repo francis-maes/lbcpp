@@ -7,8 +7,8 @@
 #ifndef Synopsis_TypeAnalysis_OverloadResolver_hh_
 #define Synopsis_TypeAnalysis_OverloadResolver_hh_
 
-#include <Synopsis/PTree.hh>
-#include <Synopsis/SymbolLookup.hh>
+#include <synopsis/PTree.hh>
+#include <synopsis/SymbolLookup.hh>
 
 namespace Synopsis
 {
