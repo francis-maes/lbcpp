@@ -18,11 +18,11 @@ namespace cralgo
 {
 
 class DoubleVector;
-typedef boost::shared_ptr<DoubleVector> DoubleVectorPtr;
+typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
 class SparseVector;
-typedef boost::shared_ptr<SparseVector> SparseVectorPtr;
+typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
 class DenseVector;
-typedef boost::shared_ptr<DenseVector> DenseVectorPtr;
+typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
 
 class FeatureVisitor;
 class FeatureGenerator : public Object
@@ -73,7 +73,7 @@ public:
   virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionary* dictionary = NULL) const = 0;
 };
 
-typedef boost::shared_ptr<FeatureGenerator> FeatureGeneratorPtr;
+typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
 class FeatureVisitor
 {
@@ -165,7 +165,7 @@ protected:
   std::vector<FeatureGeneratorPtr> featureGenerators;
 };
 
-typedef boost::shared_ptr<SumFeatureGenerator> SumFeatureGeneratorPtr;
+typedef ReferenceCountedObjectPtr<SumFeatureGenerator> SumFeatureGeneratorPtr;
 
 class CompositeFeatureGenerator : 
   public FeatureGeneratorDefaultImplementations<CompositeFeatureGenerator, FeatureGenerator>
@@ -198,7 +198,7 @@ protected:
   std::vector<FeatureGeneratorPtr> featureGenerators;
 };
 
-typedef boost::shared_ptr<CompositeFeatureGenerator> CompositeFeatureGeneratorPtr;
+typedef ReferenceCountedObjectPtr<CompositeFeatureGenerator> CompositeFeatureGeneratorPtr;
 
 }; /* namespace cralgo */
 

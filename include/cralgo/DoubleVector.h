@@ -16,7 +16,7 @@ namespace cralgo
 {
 
 class DoubleVector;
-typedef boost::shared_ptr<DoubleVector> DoubleVectorPtr;
+typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
 
 class DoubleVector : public FeatureGeneratorDefaultImplementations<DoubleVector, FeatureGenerator>
 {

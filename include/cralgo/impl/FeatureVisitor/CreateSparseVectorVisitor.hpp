@@ -25,7 +25,7 @@ struct CreateSparseVectorVisitor : public StaticFeatureVisitor<CreateSparseVecto
     currentVectorStack.push_back(currentVector);
     SparseVectorPtr& v = currentVector->getSubVector(number);
     if (!v)
-      v = SparseVectorPtr(new SparseVector(dictionary.getSubDictionary(number)));
+      v = new SparseVector(dictionary.getSubDictionary(number));
     currentVector = v;
     return true;
   }

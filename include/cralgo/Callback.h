@@ -15,7 +15,7 @@ namespace cralgo
 {
 
 class Choose;
-typedef boost::shared_ptr<Choose> ChoosePtr;
+typedef ReferenceCountedObjectPtr<Choose> ChoosePtr;
 
 class Callback
 {

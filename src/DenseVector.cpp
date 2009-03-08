@@ -33,7 +33,7 @@ size_t DenseVector::size() const
 void DenseVector::addWeighted(const LazyVectorPtr lazyVector, double weight)
 {
   assert(lazyVector);
-  lazyVector->addWeightedTo(DenseVectorPtr(this, null_deleter()), weight);
+  lazyVector->addWeightedTo(DenseVectorPtr(this), weight);
 }
 
 void DenseVector::multiplyByScalar(double scalar)
@@ -73,11 +73,11 @@ double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const
 
 double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 {
-  const DenseVectorPtr otherVector = boost::dynamic_pointer_cast<DenseVector>(featureGenerator);
+  const DenseVectorPtr otherVector = featureGenerator.dynamicCast<DenseVector>();
   if (otherVector)
     return denseDotProduct(otherVector);
   else
-    return featureGenerator->dotProduct(DenseVectorPtr(const_cast<DenseVector* >(this), null_deleter()));
+    return featureGenerator->dotProduct(DenseVectorPtr(const_cast<DenseVector* >(this)));
 }
 
 bool DenseVector::load(std::istream& istr)

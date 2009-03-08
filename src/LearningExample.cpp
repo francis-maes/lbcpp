@@ -65,7 +65,7 @@ void LearningExamplesParser::tokenize(const std::string& line, std::vector< std:
 bool LearningExamplesParser::parseFeatureList(const std::vector<std::string>& columns, size_t firstColumn, SparseVectorPtr& res)
 {
   assert(dictionary);
-  res = SparseVectorPtr(new SparseVector(*dictionary));
+  res = new SparseVector(*dictionary);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
     std::string identifier;
@@ -107,14 +107,7 @@ class ClassificationExamplesParser : public LearningExamplesParser
 {
 public:
   ClassificationExamplesParser(std::vector<ClassificationExample>& target, StringDictionary& labels)
-    : target(&target), labels(labels) {}
-
-  virtual void addLearningExample(LearningExample* example)
-  {
-    assert(target);
-    target->push_back(*(ClassificationExample* )example);
-    delete example;
-  }
+    : target(target), labels(labels) {}
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
@@ -124,12 +117,12 @@ public:
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;
-    addLearningExample(new ClassificationExample(x, labels.add(label)));
+    target.push_back(ClassificationExample(x, labels.add(label)));
     return true;
   }
   
 private:
-  std::vector<ClassificationExample>* target;
+  std::vector<ClassificationExample>& target;
   StringDictionary& labels;
 };
 
@@ -145,13 +138,6 @@ public:
   RegressionExamplesParser(std::vector<RegressionExample>& target)
     : target(&target) {}
 
-  virtual void addLearningExample(LearningExample* example)
-  {
-    assert(target);
-    target->push_back(*(RegressionExample* )example);
-    delete example;
-  }
-
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
     double y;
@@ -160,7 +146,7 @@ public:
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;
-    addLearningExample(new RegressionExample(x, y));
+    target->push_back(RegressionExample(x, y));
     return true;
   }
 

@@ -18,6 +18,7 @@ namespace cralgo
 class LearningExample : public Object
 {
 public:
+  LearningExample(const LearningExample& other) : weight(other.weight) {}
   LearningExample() : weight(1.0) {}
   
   double getWeight() const
@@ -30,6 +31,8 @@ private:
 class ClassificationExample : public LearningExample
 {
 public:
+  ClassificationExample(const ClassificationExample& other)
+    : LearningExample(other), x(other.x), y(other.y) {}
   ClassificationExample(FeatureGeneratorPtr x, size_t y)
     : x(x), y(y) {}
     
@@ -90,7 +93,7 @@ private:
 };
 
 class SparseVector;
-typedef boost::shared_ptr<SparseVector> SparseVectorPtr;
+typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
 
 class LearningExamplesParser
 {
@@ -98,8 +101,6 @@ public:
   LearningExamplesParser() : dictionary(NULL) {}
   virtual ~LearningExamplesParser() {}
 
-  virtual void addLearningExample(LearningExample* example) = 0;
-  
   /*
   ** Overridable
   */

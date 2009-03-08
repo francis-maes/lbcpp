@@ -10,16 +10,14 @@
 # define CRALGO_SPARSE_VECTOR_H_
 
 # include "DoubleVector.h"
-# include <boost/enable_shared_from_this.hpp>
 
 namespace cralgo
 {
 
 class SparseVector;
-typedef boost::shared_ptr<SparseVector> SparseVectorPtr;
+typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
 
-class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector>,
-    public boost::enable_shared_from_this<SparseVector>
+class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector>
 {
 public:
   SparseVector(const SparseVector& otherVector);
@@ -31,12 +29,6 @@ public:
   
   void clear();
   SparseVector& operator =(const SparseVector& otherVector);
-
-  /*
-  ** Shared Pointer to this
-  */
-  SparseVectorPtr getSharedPointer()
-    {return shared_from_this();}
   
   /*
   ** Features
@@ -83,7 +75,7 @@ public:
     {static FeatureDictionary defaultDictionary("SparseVector"); return dictionary ? *dictionary : defaultDictionary;}
 
   virtual SparseVectorPtr createSparseVector(FeatureDictionary* dictionary)
-    {/* todo: check dictionary */ return getSharedPointer();}
+    {/* todo: check dictionary */ return SparseVectorPtr(this);}
 
 protected:
   /*

@@ -18,7 +18,7 @@ namespace cralgo
 {
 
 class CRAlgorithm;
-typedef boost::shared_ptr<CRAlgorithm> CRAlgorithmPtr;
+typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
 
 class CRAlgorithm : public CRAlgorithmScope
 {
@@ -27,7 +27,7 @@ public:
   ** Clone/assignment
   */
   CRAlgorithmPtr clone() const
-    {return boost::dynamic_pointer_cast<CRAlgorithm>(cloneScope());}
+    {return cloneScope().dynamicCast<CRAlgorithm>();}
 
   CRAlgorithm& operator =(const CRAlgorithm& otherCRAlgorithm)
     {setScope(otherCRAlgorithm); return *this;}

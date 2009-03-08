@@ -1,7 +1,4 @@
-INCLUDE_DIRECTORIES(
-  ${Nieme_SOURCE_DIR}/src/cralgorithm/include
-)
-
+INCLUDE_DIRECTORIES(${CRAlgo_SOURCE_DIR}/include)
 
 ADD_CRTEST(EmptyCRAlgorithm.cr++)	
 ADD_CRTEST(SenseOneFeature.cr++)
