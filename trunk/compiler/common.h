@@ -26,6 +26,7 @@
 # include <iostream>
 # include <iomanip>
 # include <fstream>
+# include <assert.h>
 
 using namespace Synopsis;
 
