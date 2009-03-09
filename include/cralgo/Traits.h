@@ -15,6 +15,7 @@
 # include <vector>
 # include <set>
 # include <typeinfo>
+# include <assert.h>
 
 namespace cralgo
 {
