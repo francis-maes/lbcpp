@@ -156,7 +156,7 @@ struct LogBinomialLossFunction : public ScalarFunction<LogBinomialLossFunction>
     
     if (input == 0)
     {
-      static const double log2 = log(2);
+      static const double log2 = log(2.0);
       if (output)
         *output = log2;
       if (derivative)
