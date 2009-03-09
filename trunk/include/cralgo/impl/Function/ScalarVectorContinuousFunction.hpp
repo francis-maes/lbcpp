@@ -17,6 +17,9 @@ namespace cralgo
 namespace impl
 {
 
+/*
+** Scalar Architecture => Function of the parameters
+*/
 // f : params -> R
 template<class ArchitectureType>
 struct ScalarArchitectureToParametersFunction 
@@ -55,6 +58,20 @@ inline ScalarArchitectureToParametersFunction<
   return architectureToParametersFunction(arch, example.getInput());
 }
 
+template<class ArchitectureType, class LossType, class ExampleType>
+inline ScalarArchitectureToParametersFunction<
+    typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition >
+  exampleRisk(const VectorArchitecture<ArchitectureType>& architecture, const VectorLossFunction<LossType>& loss, const ExampleType& example)
+{
+  typedef typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition ComposedArchitecture;
+  ComposedArchitecture arch = compose(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss));
+  arch.right.setLearningExample(example);
+  return architectureToParametersFunction(arch, example.getInput());
+}
+
+/*
+** TODO: Vector Architecture => Function of the parameters
+*/
 
 // f : params -> R
 // f(theta) = 1/N sum_{i=1}^{N} (Architecture(theta) o Loss(y_i))(x_i)
@@ -105,6 +122,9 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
   }
 };
 
+/*
+** Empirical risk with scalar outputs
+*/
 template<class ArchitectureType, class LossType, class ContainerType>
 struct ScalarEmpiricalRisk : public EmpiricalRisk< 
       ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType> , 
@@ -120,15 +140,33 @@ struct ScalarEmpiricalRisk : public EmpiricalRisk<
     : BaseClassType(PenalizationType(architecture, loss), examples) {}
 };
 
-
-
 template<class ArchitectureType, class LossType, class ContainerType>
 inline ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType>
   empiricalRisk(const ScalarArchitecture<ArchitectureType>& architecture, const ScalarLossFunction<LossType>& loss, const ContainerType& examples)
   {return ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType >(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss), examples);}
 
-// todo: VectorEmpiricalRisk
+/*
+** Empirical risk with vector outputs
+*/
+template<class ArchitectureType, class LossType, class ContainerType>
+struct VectorEmpiricalRisk : public EmpiricalRisk< 
+      VectorEmpiricalRisk<ArchitectureType, LossType, ContainerType> , 
+      typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition,
+      ContainerType
+    >
+{
+  typedef VectorEmpiricalRisk<ArchitectureType, LossType, ContainerType> ExactType;
+  typedef typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition PenalizationType;
+  typedef EmpiricalRisk<ExactType, PenalizationType, ContainerType> BaseClassType;
+  
+  VectorEmpiricalRisk(const ArchitectureType& architecture, const LossType& loss, const ContainerType& examples) 
+    : BaseClassType(PenalizationType(architecture, loss), examples) {}
+};
 
+template<class ArchitectureType, class LossType, class ContainerType>
+inline VectorEmpiricalRisk<ArchitectureType, LossType, ContainerType>
+  empiricalRisk(const VectorArchitecture<ArchitectureType>& architecture, const VectorLossFunction<LossType>& loss, const ContainerType& examples)
+  {return VectorEmpiricalRisk<ArchitectureType, LossType, ContainerType >(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss), examples);}
 
 
 // f(x) = sum_i abs(x_i)

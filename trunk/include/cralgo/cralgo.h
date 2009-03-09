@@ -20,6 +20,7 @@
 # include "LearningExample.h"
 # include "ContinuousFunction.h"
 # include "LearningMachine.h"
+# include "GradientBasedLearningMachine.h"
 
 # include "CRAlgorithmScope.h"
 # include "Choose.h"

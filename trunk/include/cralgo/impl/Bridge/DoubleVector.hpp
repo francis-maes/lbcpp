@@ -23,9 +23,9 @@ namespace cralgo
 template<class FeatureVisitor>
 inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
 {
-  for (size_t i = 0; i < features.size(); ++i)
+  for (size_t i = 0; i < values.size(); ++i)
   {
-    const std::pair<size_t, double>& feature = features[i];
+    const std::pair<size_t, double>& feature = values[i];
     visitor.featureSense(featureDictionary, feature.first, feature.second);
   }
   
@@ -51,9 +51,9 @@ struct Traits<SparseVectorPtr> : public ObjectSharedPtrTraits<SparseVector> {};
 template<class FeatureVisitor>
 inline void DenseVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
 {
-  for (size_t i = 0; i < features.size(); ++i)
-    if (features[i])
-      visitor.featureSense(featureDictionary, i, features[i]);
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i])
+      visitor.featureSense(featureDictionary, i, values[i]);
   
   for (size_t i = 0; i < subVectors.size(); ++i)
     if (subVectors[i] && visitor.featureEnter(*dictionary, i))

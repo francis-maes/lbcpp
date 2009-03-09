@@ -40,7 +40,10 @@ public:
   virtual std::string toString(FeatureDictionary* dictionary = NULL) const = 0;
   
   // store in a sparse vector
-  virtual SparseVectorPtr createSparseVector(FeatureDictionary* dictionary = NULL) const = 0;
+  virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary = NULL) const = 0;
+  
+  // store in a dense vector
+  virtual DenseVectorPtr toDenseVector(FeatureDictionary* dictionary = NULL) const = 0;
   
   /*
   ** Const unary operations
@@ -112,7 +115,8 @@ public:
 
 public:
   virtual void accept(FeatureVisitor& visitor, FeatureDictionary* dictionary = NULL) const;
-  virtual SparseVectorPtr createSparseVector(FeatureDictionary* dictionary = NULL) const;
+  virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary = NULL) const;
+  virtual DenseVectorPtr toDenseVector(FeatureDictionary* dictionary = NULL) const;
   virtual std::string toString(FeatureDictionary* dictionary = NULL) const;
   virtual size_t l0norm() const;
   virtual double l1norm() const;

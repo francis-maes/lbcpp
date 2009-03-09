@@ -83,6 +83,8 @@ class ScalarArchitecture : public ContinuousFunction
 public:
   // todo: non-derivable scalar architectures
   
+  virtual DenseVectorPtr createInitialParameters() const = 0;
+
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
   
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
@@ -100,12 +102,23 @@ typedef ReferenceCountedObjectPtr<ScalarArchitecture> ScalarArchitecturePtr;
 class VectorArchitecture : public ContinuousFunction
 {
 public:
+  // todo: non-derivable vector architectures
+
+  virtual DenseVectorPtr createInitialParameters() const = 0;
+
+  virtual LazyVectorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
+
+  virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber) const = 0;
+
+  virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
+                size_t outputNumber, double* output, 
+                LazyVectorPtr gradientWrtParameters,
+                LazyVectorPtr gradientWrtInput) const = 0;
+
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       LazyVectorPtr output,
       LazyVectorPtr gradientWrtParameters,
       LazyVectorPtr gradientWrtInput) const = 0;
-
-  // todo: non-derivable vector architectures
 };
 
 typedef ReferenceCountedObjectPtr<VectorArchitecture> VectorArchitecturePtr;

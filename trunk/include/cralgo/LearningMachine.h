@@ -52,11 +52,12 @@ public:
   void setLabels(FeatureDictionary& labels)
     {this->labels = &labels;}
   
-  virtual size_t predict(const FeatureGeneratorPtr input) const = 0;
-  virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const = 0;
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const = 0;
-  virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const = 0;
-  virtual size_t sample(const FeatureGeneratorPtr input) const = 0;
+
+  virtual size_t predict(const FeatureGeneratorPtr input) const;
+  virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
+  virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
+  virtual size_t sample(const FeatureGeneratorPtr input) const;
   
 protected:
   FeatureDictionary* labels;
@@ -72,9 +73,6 @@ public:
   virtual double scoreToProbability(double score) const
     {return 1.0 / (1.0 + exp(-score));} // default: apply a sigmoid
 
-  /*
-  ** Classifier
-  */
   virtual size_t predict(const FeatureGeneratorPtr input) const;
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const;
@@ -110,57 +108,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<Ranker> RankerPtr;
-
-////////////
-
-template<class BaseClass, class ExampleType>
-class GradientBasedLearningMachine : public BaseClass
-{
-public:
-  GradientBasedLearningMachine()
-    : parameters(new DenseVector()) {}
-  
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
-  virtual ScalarVectorFunctionPtr getRegularizer() const = 0;
-  virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const = 0;
-  virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
-  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
-
-  virtual void trainStochasticBegin()
-    {assert(learner); learner->trainStochasticBegin(parameters, getRegularizer());}
-    
-  virtual void trainStochasticExample(const ExampleType& example)
-    {assert(learner); learner->trainStochasticExample(parameters, getLoss(example), getRegularizer());}
-
-  virtual void trainStochasticEnd()
-    {assert(learner); learner->trainStochasticBegin(parameters, getRegularizer());}
-  
-  virtual void trainBatch(const std::vector<ExampleType>& examples)
-    {assert(learner); learner->trainBatch(parameters, getRegularizedEmpiricalRisk(examples), examples.size());}
-  
-  void setLearner(GradientBasedLearnerPtr learner)
-    {this->learner = learner;}
-    
-protected:
-  DenseVectorPtr parameters;
-  GradientBasedLearnerPtr learner;
-};
-
-class GradientBasedRegressor : public GradientBasedLearningMachine<Regressor, RegressionExample>
-{
-public:
-  virtual double predict(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input);}
-};
-
-class GradientBasedBinaryClassifier : public GradientBasedLearningMachine<BinaryClassifier, ClassificationExample>
-{
-public:
-  virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input);}
-};
-
-extern BinaryClassifierPtr createLogisticRegressionClassifier(GradientBasedLearnerPtr learner, FeatureDictionary& labels);
 
 }; /* namespace cralgo */
 

@@ -277,6 +277,9 @@ struct ScalarArchitectureScalarConstantPair : public ContinuousFunctionPair<Func
     
     enum {isDerivable = Function1::isDerivable};
     
+    DenseVectorPtr createInitialParameters() const
+      {return left.createInitialParameters();}
+  
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
         LazyVectorPtr gradientWrtParameters,
@@ -315,6 +318,8 @@ template<class Function1, class Function2, class Parameter>
 struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Function1, Function2, Parameter>
 {
   struct LinearBinaryOperation {}; // undefined
+  
+  // todo: multiplication
 
   struct Composition : public ScalarArchitecture< Composition >
   {
@@ -325,6 +330,9 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
     Function2 right;
 
     enum {isDerivable = Function1::isDerivable && Function2::isDerivable};
+
+    DenseVectorPtr createInitialParameters() const
+      {return left.createInitialParameters();}
       
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
@@ -349,15 +357,76 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
 
 
 DECLARE_FUNCTION_COMPOSE(ScalarArchitectureScalarFunctionPair, ScalarArchitecture, ScalarFunction);
+
 /*
-template<class Function1, class Function2>
-inline typename ScalarArchitectureScalarFunctionPair<Function1, Function2, void>::Composition
-  compose(const ScalarArchitecture<Function1>& left, const ScalarFunction<Function2>& right)
+** Vector architecture vs Vector -> Scalar function
+*/
+template<class Function1, class Function2, class Parameter>
+struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPair<Function1, Function2, Parameter>
 {
-  typedef ScalarArchitectureScalarFunctionPair<Function1, Function2, void> Traits;
-  typedef typename Traits::Composition ReturnType;
-  return ReturnType(left, right);
-}*/
+  struct LinearBinaryOperation {}; // undefined
+  struct Multiplication {}; // undefined
+  
+  struct Composition : public ScalarArchitecture< Composition >
+  {
+    Composition(const Function1& left, const Function2& right)
+      : left(left), right(right) {}
+      
+    Function1 left;
+    Function2 right;
+
+    enum {isDerivable = Function1::isDerivable && Function2::isDerivable};
+
+    DenseVectorPtr createInitialParameters() const
+      {return left.createInitialParameters();}
+  
+    void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
+        double* output,
+        LazyVectorPtr gradientWrtParameters,
+        LazyVectorPtr gradientWrtInput) const
+    {
+      LazyVectorPtr leftOutput(new LazyVector());
+      LazyVectorPtr leftGradientWrtParameters, leftGradientWrtInput;
+      if (gradientWrtParameters)
+        leftGradientWrtParameters = new LazyVector();
+      if (gradientWrtInput)
+        leftGradientWrtInput = new LazyVector();
+      left.compute(parameters, input, leftOutput, leftGradientWrtParameters, leftGradientWrtInput);
+      
+      DenseVectorPtr leftOutputDense;
+      LazyVectorPtr rightGradient;
+      if (gradientWrtParameters || gradientWrtInput)
+      {
+        leftOutputDense = leftOutput->toDenseVector();
+        rightGradient = new LazyVector();
+      }
+      
+      const static FeatureGeneratorPtr zero = FeatureGeneratorPtr(); // FIXME : derivative direction
+      right.compute(leftOutput, output, zero, rightGradient);
+      
+      DenseVectorPtr rightGradientDense;
+      if (rightGradient)
+        rightGradientDense = rightGradient->toDenseVector();
+      
+      if (gradientWrtParameters)
+        for (size_t i = 0; i < leftOutputDense->getNumValues(); ++i)
+        {
+          LazyVectorPtr subVector = leftGradientWrtParameters->getSubVector(i);
+          gradientWrtParameters->addWeighted(subVector, rightGradientDense->get(i));
+        }
+
+      if (gradientWrtInput)
+        for (size_t i = 0; i < leftOutputDense->getNumValues(); ++i)
+        {
+          LazyVectorPtr subVector = leftGradientWrtInput->getSubVector(i);
+          gradientWrtInput->addWeighted(subVector, rightGradientDense->get(i));
+        }
+    }    
+  };
+};
+
+DECLARE_FUNCTION_COMPOSE(VectorArchitectureScalarVectorFunctionPair, VectorArchitecture, ScalarVectorFunction);
+
 
 
 }; /* namespace impl */

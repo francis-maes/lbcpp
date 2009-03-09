@@ -1,9 +1,6 @@
-
-* Mettre une classe utilitaire Random
-
 * LazyVector
-* EvolvingParameter => IterationFunction, EpochFunction ?
-* completer les FunctionPairTraits existants
+* Faire marcher le maxent
+* Mettre une classe utilitaire Random
 * LearningMachine/Function: Tester et Completer:
 
 ScalarValuedVectorContinuousFunction

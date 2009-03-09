@@ -33,6 +33,49 @@ struct SumOfSquaresScalarVectorFunction : public ScalarVectorFunction< SumOfSqua
 inline SumOfSquaresScalarVectorFunction sumOfSquares()
   {return SumOfSquaresScalarVectorFunction();}
 
+
+struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiClassLogBinomialLossFunction >
+{
+  MultiClassLogBinomialLossFunction() : correctClass(-1) {}
+  
+  enum {isDerivable = true};
+    
+  void setCorrectClass(size_t correctClass)
+    {this->correctClass = (int)correctClass;}
+    
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr, LazyVectorPtr gradient) const
+  {
+    assert(correctClass >= 0);
+    DenseVectorPtr scores = input->toDenseVector();
+    assert(scores);
+    
+    double logZ = scores->computeLogSumOfExponentials();
+    if (!isNumberValid(logZ))
+    {
+      std::cerr << "LogZ is not a valid number. Scores: " << toString(scores) << std::endl;
+      assert(false);
+    }
+    if (gradient)
+    {
+      DenseVectorPtr res = new DenseVector(scores->getDictionary(), scores->getNumValues());
+      for (size_t i = 0; i < scores->getNumValues(); ++i)
+      {
+        double derivative = exp(scores->get(i) - logZ);
+        assert(isNumberValid(derivative) && isNumberValid(derivative));
+        res->set(i, derivative);
+      }
+      res->get(correctClass) -= 1.0;
+      gradient->set(res);
+    }
+  }
+  
+private:
+  int correctClass;
+};
+
+inline MultiClassLogBinomialLossFunction multiClassLogBinomialLossFunction()
+  {return MultiClassLogBinomialLossFunction();}
+
 // todo: ranking losses
 
 }; /* namespace impl */

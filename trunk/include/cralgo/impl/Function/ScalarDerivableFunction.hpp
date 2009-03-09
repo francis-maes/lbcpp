@@ -117,7 +117,7 @@ struct ExponentialLossFunction : public ScalarFunction<ExponentialLossFunction>
   void compute(double input, double* output, const double* , double* derivative) const
   {
     double e = std::exp(-input);
-    if (isLossNearlyNull(e))
+    if (isNumberNearlyNull(e))
     {
       if (output)
         *output = 0;
@@ -166,7 +166,7 @@ struct LogBinomialLossFunction : public ScalarFunction<LogBinomialLossFunction>
     
     double res = log(1 + exp(-input));
     assert(isNumberValid(res));
-    if (isLossNearlyNull(res))
+    if (isNumberNearlyNull(res))
     {
       if (output)
         *output = 0.0;

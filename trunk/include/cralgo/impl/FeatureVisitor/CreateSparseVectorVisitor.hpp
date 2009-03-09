@@ -15,17 +15,20 @@
 namespace cralgo
 {
 
-struct CreateSparseVectorVisitor : public StaticFeatureVisitor<CreateSparseVectorVisitor>
+template<class ExactType, class VectorType>
+struct CreateVectorVisitor : public StaticFeatureVisitor< ExactType >
 {
-  CreateSparseVectorVisitor(FeatureDictionary& dictionary) 
-    : vector(new SparseVector(dictionary)) {currentVector = vector;}
+  typedef ReferenceCountedObjectPtr<VectorType> VectorTypePtr;
+  
+  CreateVectorVisitor(FeatureDictionary& dictionary) 
+    : vector(new VectorType(dictionary)) {currentVector = vector;}
   
   bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
   {
     currentVectorStack.push_back(currentVector);
-    SparseVectorPtr& v = currentVector->getSubVector(number);
+    VectorTypePtr& v = currentVector->getSubVector(number);
     if (!v)
-      v = new SparseVector(dictionary.getSubDictionary(number));
+      v = new VectorType(dictionary.getSubDictionary(number));
     currentVector = v;
     return true;
   }
@@ -40,13 +43,25 @@ struct CreateSparseVectorVisitor : public StaticFeatureVisitor<CreateSparseVecto
     currentVectorStack.pop_back();
   }
   
-  SparseVectorPtr getResult() const
+  VectorTypePtr getResult() const
     {return vector;}
   
 private:
-  SparseVectorPtr vector;
-  std::vector<SparseVectorPtr> currentVectorStack;
-  SparseVectorPtr currentVector;
+  VectorTypePtr vector;
+  std::vector<VectorTypePtr> currentVectorStack;
+  VectorTypePtr currentVector;
+};
+
+struct CreateSparseVectorVisitor : public CreateVectorVisitor<CreateSparseVectorVisitor, SparseVector>
+{
+  CreateSparseVectorVisitor(FeatureDictionary& dictionary) 
+    : CreateVectorVisitor<CreateSparseVectorVisitor, SparseVector>(dictionary) {}
+};
+
+struct CreateDenseVectorVisitor : public CreateVectorVisitor<CreateDenseVectorVisitor, DenseVector>
+{
+  CreateDenseVectorVisitor(FeatureDictionary& dictionary) 
+    : CreateVectorVisitor<CreateDenseVectorVisitor, DenseVector>(dictionary) {}
 };
 
 }; /* namespace cralgo */
