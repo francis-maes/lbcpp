@@ -5,7 +5,7 @@ using namespace cralgo;
 
 int main(int argc, char* argv[])
 {
-  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/binaryclassif/a1a.train";
+  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/binaryclassif/a1a.test";
 
   std::ifstream istr(filename);
   if (!istr.is_open())
@@ -23,18 +23,21 @@ int main(int argc, char* argv[])
   std::cout << examples.size() << " Examples." << std::endl << toString(features) << std::endl << "Labels: " << toString(labels) << std::endl;
 
   
-  BinaryClassifierPtr classifier = cralgo::createLogisticRegressionClassifier(createGradientDescentLearner(), labels);
+  BinaryClassifierPtr classifier = cralgo::createLogisticRegressionClassifier(GradientBasedLearner::createGradientDescent(), labels);
   
-  classifier->trainBatch(examples);
-  size_t numCorrect = 0;
-  for (size_t i = 0; i < examples.size(); ++i)
-    if (classifier->predict(examples[i].getInput()) == examples[i].getOutput())
-      ++numCorrect;
-  std::cout << "Accuracy: " << (100.0 * numCorrect / (double)examples.size()) << "%" << std::endl;
+  for (int i = 0; i < 10; ++i)
+  {
+    classifier->trainStochastic(examples);
+
+//  classifier->trainBatch(examples);
+
+    size_t numCorrect = 0;
+    for (size_t i = 0; i < examples.size(); ++i)
+      if (classifier->predict(examples[i].getInput()) == examples[i].getOutput())
+        ++numCorrect;
+    std::cout << "Accuracy: " << (100.0 * numCorrect / (double)examples.size()) << "%" << std::endl;
+  }
   
-/*  // ou
-  for (int i = 0; i < 100; ++i)
-    classifier->trainStochastic(examples);*/
   return 0;
   
   ScalarArchitecturePtr predictionArchitecture = impl::instantiate(impl::linearArchitecture());

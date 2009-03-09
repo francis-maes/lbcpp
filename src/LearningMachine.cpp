@@ -49,25 +49,43 @@ size_t BinaryClassifier::sample(const FeatureGeneratorPtr input) const
   return rand() / (double)RAND_MAX < prob1 ? 1 : 0;
 }
 
-class LogisticRegressionClassifier : public GradientBasedBinaryClassifier
+template<class ExactType, class BaseClass>
+class StaticToDynamicGradientBasedLearningMachine : public BaseClass
 {
 public:
+  // abstract: static functions for architecture(), loss() and regularizer()
+  
   virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::instantiate(impl::linearArchitecture());}
+    {return impl::instantiate(_this().architecture());}
 
   virtual ScalarVectorFunctionPtr getRegularizer() const
-    {return impl::instantiate(impl::multiply(impl::sumOfSquares(), impl::constant(0.1)));}
+    {return impl::instantiate(_this().regularizer());}
   
   virtual ScalarVectorFunctionPtr getLoss(const ClassificationExample& example) const
-    {return ScalarVectorFunctionPtr(); } // FIXME
+    {return impl::instantiate(impl::exampleRisk(_this().architecture(), _this().loss(), example));}
     
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ClassificationExample>& examples) const
-    {return impl::instantiate(impl::empiricalRisk(impl::linearArchitecture(), impl::logBinomialLoss<ClassificationExample>(), examples));}
+    {return impl::instantiate(impl::empiricalRisk(_this().architecture(), _this().loss(), examples));}
     
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ClassificationExample>& examples) const
-    {return impl::instantiate(impl::add(
-      impl::empiricalRisk(impl::linearArchitecture(), impl::logBinomialLoss<ClassificationExample>(), examples),
-      impl::multiply(impl::sumOfSquares(), impl::constant(0.1))));}
+    {return impl::instantiate(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples), _this().regularizer()));}
+
+protected:
+  const ExactType& _this() const  {return *(const ExactType* )this;}
+};
+
+class LogisticRegressionClassifier
+  : public StaticToDynamicGradientBasedLearningMachine<LogisticRegressionClassifier, GradientBasedBinaryClassifier>
+{
+public:
+  inline impl::LinearArchitecture architecture() const
+    {return impl::linearArchitecture();}
+
+  inline impl::LogBinomialLoss<ClassificationExample> loss() const
+    {return impl::logBinomialLoss<ClassificationExample>();}
+    
+  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
 };
 
 BinaryClassifierPtr cralgo::createLogisticRegressionClassifier(GradientBasedLearnerPtr learner, FeatureDictionary& labels)
