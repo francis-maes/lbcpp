@@ -12,7 +12,7 @@
 using namespace cralgo;
 
 SparseVector::SparseVector(const SparseVector& otherVector)
-  : features(otherVector.features), subVectors(subVectors)
+  : values(otherVector.values), subVectors(subVectors)
 {
   dictionary = otherVector.dictionary;
 }
@@ -29,7 +29,7 @@ SparseVector::SparseVector()
 
 void SparseVector::clear()
 {
-  features.clear();
+  values.clear();
   subVectors.clear();
   dictionary = NULL;
 }
@@ -37,7 +37,7 @@ void SparseVector::clear()
 SparseVector& SparseVector::operator =(const SparseVector& otherVector)
 {
   clear();
-  features = otherVector.features;
+  values = otherVector.values;
   subVectors = otherVector.subVectors;
   dictionary = otherVector.dictionary;
   return *this;
@@ -45,7 +45,7 @@ SparseVector& SparseVector::operator =(const SparseVector& otherVector)
 
 size_t SparseVector::size() const
 {
-  size_t res = features.size();
+  size_t res = values.size();
   for (size_t i = 0; i < subVectors.size(); ++i)
     res += subVectors[i].second->size();
   return res;
@@ -54,9 +54,9 @@ size_t SparseVector::size() const
 void SparseVector::set(size_t index, double value)
 {
   if (value)
-    SortedFeatureArrayHelper::set(features, index, value);
+    SortedFeatureArrayHelper::set(values, index, value);
   else
-    SortedFeatureArrayHelper::remove(features, index);
+    SortedFeatureArrayHelper::remove(values, index);
 }
 
 void SparseVector::set(const std::string& name, double value)
@@ -91,7 +91,7 @@ SparseVectorPtr& SparseVector::getSubVector(size_t index)
 bool SparseVector::load(std::istream& istr)
 {
   size_t numSubVectors;
-  if (!read(istr, features) || !read(istr, numSubVectors))
+  if (!read(istr, values) || !read(istr, numSubVectors))
     return false;
   subVectors.resize(numSubVectors);
   for (size_t i = 0; i < numSubVectors; ++i)
@@ -109,7 +109,7 @@ bool SparseVector::load(std::istream& istr)
 
 void SparseVector::save(std::ostream& ostr) const
 {
-  write(ostr, features);
+  write(ostr, values);
   write(ostr, subVectors.size());
   for (size_t i = 0; i < subVectors.size(); ++i)
   {

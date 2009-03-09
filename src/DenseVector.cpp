@@ -8,11 +8,24 @@
 #include <cralgo/DenseVector.h>
 #include <cralgo/LazyVector.h>
 #include <cralgo/impl/Bridge/DoubleVector.hpp>
+#include <cfloat>
 using namespace cralgo;
+
+void DenseVector::initialize(size_t initialNumValues, size_t initialNumSubVectors)
+{
+  if (initialNumValues > 0)
+    values.resize(initialNumValues, 0.0);
+  if (initialNumSubVectors > 0)
+  {
+    subVectors.resize(initialNumSubVectors, DenseVectorPtr());
+    for (size_t i = 0; i < subVectors.size(); ++i)
+      subVectors[i] = new DenseVector();
+  }
+}
 
 DenseVector& DenseVector::operator =(const DenseVector& otherVector)
 {
-  features = otherVector.features;
+  values = otherVector.values;
   subVectors = otherVector.subVectors;
   dictionary = otherVector.dictionary;
   return *this;
@@ -20,7 +33,7 @@ DenseVector& DenseVector::operator =(const DenseVector& otherVector)
 
 size_t DenseVector::size() const
 {
-  size_t res = features.size();
+  size_t res = values.size();
   for (size_t i = 0; i < subVectors.size(); ++i)
   {
     DenseVectorPtr subVector = subVectors[i];
@@ -36,11 +49,40 @@ void DenseVector::addWeighted(const LazyVectorPtr lazyVector, double weight)
   lazyVector->addWeightedTo(DenseVectorPtr(this), weight);
 }
 
+int DenseVector::findIndexOfMaximumValue() const
+{
+  int res = -1;
+  double max = -DBL_MAX;
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i] > max)
+      max = values[i], res = (int)i;
+  return res;
+}
+
+double DenseVector::findMaximumValue() const
+{
+  double res = -DBL_MAX;
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i] > res)
+      res = values[i];
+  return res;
+}
+
+// log(sum_i exp(x_i))
+double DenseVector::computeLogSumOfExponentials() const
+{
+  double highestValue = findMaximumValue();
+  double res = 0.0;
+  for (size_t i = 0; i < values.size(); ++i)
+    res += exp(values[i] - highestValue);
+  return log(res) + highestValue;
+}
+
 void DenseVector::multiplyByScalar(double scalar)
 {
   // todo: operation class
-  for (size_t i = 0; i < features.size(); ++i)
-    features[i] *= scalar;
+  for (size_t i = 0; i < values.size(); ++i)
+    values[i] *= scalar;
   for (size_t i = 0; i < subVectors.size(); ++i)
   {
     DenseVectorPtr subVector = subVectors[i];
@@ -53,11 +95,11 @@ double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const
 {
   assert(otherVector);
   
-  const std::vector<double>& otherFeatures = otherVector->features;
+  const std::vector<double>& otherFeatures = otherVector->values;
   double res = 0.0;
-  size_t numFeatures = std::min(features.size(), otherFeatures.size());
+  size_t numFeatures = std::min(values.size(), otherFeatures.size());
   for (size_t i = 0; i < numFeatures; ++i)
-    res += features[i] * otherFeatures[i];
+    res += values[i] * otherFeatures[i];
     
   const std::vector<DenseVectorPtr>& otherSubVectors = otherVector->subVectors;
   size_t numSubVectors = std::min(subVectors.size(), otherSubVectors.size());
@@ -83,7 +125,7 @@ double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 bool DenseVector::load(std::istream& istr)
 {
   size_t numSubVectors;
-  if (!read(istr, features) || !read(istr, numSubVectors))
+  if (!read(istr, values) || !read(istr, numSubVectors))
     return false;
   subVectors.resize(numSubVectors);
   for (size_t i = 0; i < numSubVectors; ++i)
@@ -106,7 +148,7 @@ bool DenseVector::load(std::istream& istr)
 
 void DenseVector::save(std::ostream& ostr) const
 {
-  write(ostr, features);
+  write(ostr, values);
   write(ostr, subVectors.size());
   for (size_t i = 0; i < subVectors.size(); ++i)
   {

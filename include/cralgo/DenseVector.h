@@ -23,36 +23,47 @@ class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, D
 {
 public:
   DenseVector(const DenseVector& otherVector)
-    : features(otherVector.features), subVectors(otherVector.subVectors) {dictionary = otherVector.dictionary;}
+    : values(otherVector.values), subVectors(otherVector.subVectors) {dictionary = otherVector.dictionary;}
 
-  DenseVector(FeatureDictionary& dictionary)
-    {this->dictionary = &dictionary;}
+  DenseVector(FeatureDictionary& dictionary, size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
+  {
+    this->dictionary = &dictionary;
+    initialize(initialNumValues, initialNumSubVectors);
+  }
     
-  DenseVector()
-    {dictionary = NULL;}
+  DenseVector(size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
+  {
+    dictionary = NULL;
+    initialize(initialNumValues, initialNumSubVectors);
+  }
   
   virtual ~DenseVector()
     {clear();}
   
   void clear()
-    {features.clear(); subVectors.clear(); dictionary = NULL;}
+    {values.clear(); subVectors.clear(); dictionary = NULL;}
     
   DenseVector& operator =(const DenseVector& otherVector);
 
   /*
   ** Features
   */
-  bool hasFeatures() const
-    {return features.size() > 0;}
+  bool hasValues() const
+    {return values.size() > 0;}
     
-  size_t getNumFeatures() const
-    {return features.size();}
+  size_t getNumValues() const
+    {return values.size();}
   
   void set(size_t index, double value)
-    {ensureSize(features, index + 1, 0.0); features[index] = value;}
+    {ensureSize(values, index + 1, 0.0); values[index] = value;}
     
   double& get(size_t index)
-    {ensureSize(features, index + 1, 0.0); return features[index];}
+    {ensureSize(values, index + 1, 0.0); return values[index];}
+    
+  int findIndexOfMaximumValue() const;
+  double findMaximumValue() const;
+  
+  double computeLogSumOfExponentials() const;   // return log(sum_i exp(x_i)), avoiding numerical errors with too big exponentials
 
   /*
   ** Sub Vectors
@@ -93,6 +104,9 @@ public:
   virtual FeatureDictionary& getDefaultDictionary() const
     {static FeatureDictionary defaultDictionary("DenseVector"); return dictionary ? *dictionary : defaultDictionary;}
   
+  virtual DenseVectorPtr toDenseVector(FeatureDictionary* dictionary)
+    {/* todo: check dictionary */ return DenseVectorPtr(this);}
+
 protected:
   /*
   ** Object
@@ -114,10 +128,11 @@ protected:
   }
     
 private:
-  std::vector<double> features;
+  std::vector<double> values;
   std::vector<DenseVectorPtr> subVectors;
 
   double denseDotProduct(const DenseVectorPtr otherVector) const;
+  void initialize(size_t initialNumValues, size_t initialNumSubVectors);
 };
 
 }; /* namespace cralgo */

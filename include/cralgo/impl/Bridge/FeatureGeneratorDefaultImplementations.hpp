@@ -30,9 +30,16 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) accept(FeatureVisitor& visitor, FeatureDict
   featureGenerator(staticVisitor, dictionary);  
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(SparseVectorPtr) createSparseVector(FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(SparseVectorPtr) toSparseVector(FeatureDictionary* dictionary) const
 {
   CreateSparseVectorVisitor staticVisitor(selectDictionary(dictionary));
+  featureGenerator(staticVisitor, dictionary);
+  return staticVisitor.getResult();
+}
+
+FEATURE_GENERATOR_DEFAULT_IMPL(DenseVectorPtr) toDenseVector(FeatureDictionary* dictionary) const
+{
+  CreateDenseVectorVisitor staticVisitor(selectDictionary(dictionary));
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
@@ -107,6 +114,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector, F
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
+
 
 # undef FEATURE_GENERATOR_DEFAULT_IMPL
 

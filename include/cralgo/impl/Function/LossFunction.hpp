@@ -12,12 +12,24 @@
 # include "ContinuousFunction.hpp"
 # include "ScalarContinuousFunction.hpp"
 # include "ScalarDerivableFunction.hpp"
+# include "ScalarVectorDerivableFunction.hpp"
 # include "FunctionPairTraits.hpp"
 
 namespace cralgo
 {
 namespace impl
 {
+
+#define STATIC_LOSS_FUNCTION(LossClass, FunctionName, LossName, LossFunctionName) \
+template<class LearningExampleType> \
+struct LossName : public LossClass< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> { \
+   typedef LossClass< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> BaseClassType; \
+   LossName(const LearningExampleType& learningExample) {BaseClassType::setLearningExample(learningExample);} \
+   LossName() {} }; \
+template<class LearningExampleType> \
+inline LossName <LearningExampleType> FunctionName () {return LossName <LearningExampleType>();} \
+template<class LearningExampleType> \
+inline LossName <LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <LearningExampleType>(example);}
 
 template<class ExactType, class ScalarFunctionType, class LearningExampleType>
 struct DiscriminantLossFunction : public ScalarLossFunction<ExactType>
@@ -26,10 +38,7 @@ struct DiscriminantLossFunction : public ScalarLossFunction<ExactType>
     : scalarFunction(scalarFunction), marginMultiplier(0.0) {}
   DiscriminantLossFunction() : marginMultiplier(0.0) {}
   
-  enum
-  {
-    isDerivable = ScalarFunctionType::isDerivable,
-  };
+  enum  {isDerivable = ScalarFunctionType::isDerivable};
   
   void setLearningExample(const LearningExampleType& learningExample)
     {marginMultiplier = learningExample.getMarginMultiplier() * learningExample.getWeight();}
@@ -47,20 +56,36 @@ private:
 };
 
 #define STATIC_DISCRIMINANT_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
-template<class LearningExampleType> \
-struct LossName : public DiscriminantLossFunction< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> { \
-   typedef DiscriminantLossFunction< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> BaseClassType; \
-   LossName(const LearningExampleType& learningExample) {BaseClassType::setLearningExample(learningExample);} \
-   LossName() {} }; \
-template<class LearningExampleType> \
-inline LossName <LearningExampleType> FunctionName () {return LossName <LearningExampleType>();} \
-template<class LearningExampleType> \
-inline LossName <LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <LearningExampleType>(example);}
+  STATIC_LOSS_FUNCTION(DiscriminantLossFunction, FunctionName, LossName, LossFunctionName)
 
 STATIC_DISCRIMINANT_LOSS_FUNCTION(perceptronLoss, PerceptronLoss, PerceptronLossFunction);
 STATIC_DISCRIMINANT_LOSS_FUNCTION(hingeLoss, HingeLoss, HingeLossFunction);
 STATIC_DISCRIMINANT_LOSS_FUNCTION(exponentialLoss, ExponentialLoss, ExponentialLossFunction);
 STATIC_DISCRIMINANT_LOSS_FUNCTION(logBinomialLoss, LogBinomialLoss, LogBinomialLossFunction);
+
+template<class ExactType, class VectorFunctionType, class LearningExampleType>
+struct MultiClassLossFunction : public VectorLossFunction<ExactType>
+{
+  MultiClassLossFunction(const VectorFunctionType& vectorToScalarFunction)
+    : vectorToScalarFunction(vectorToScalarFunction) {}
+  MultiClassLossFunction() {}
+    
+  enum  {isDerivable = VectorFunctionType::isDerivable};
+  
+  void setLearningExample(const LearningExampleType& learningExample)
+    {vectorToScalarFunction.setCorrectClass(learningExample.getOutput());}
+
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+    {vectorToScalarFunction.compute(input, output, gradientDirection, gradient);}
+
+private:
+  VectorFunctionType vectorToScalarFunction;
+};
+
+#define STATIC_MULTICLASS_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
+  STATIC_LOSS_FUNCTION(MultiClassLossFunction, FunctionName, LossName, LossFunctionName)
+
+STATIC_MULTICLASS_LOSS_FUNCTION(multiClassLogBinomialLoss, MultiClassLogBinomialLoss, MultiClassLogBinomialLossFunction);
 
 }; /* namespace impl */
 }; /* namespace cralgo */

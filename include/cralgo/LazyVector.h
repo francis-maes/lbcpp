@@ -21,18 +21,25 @@ typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
 class LazyVector : public FeatureGeneratorDefaultImplementations<LazyVector, DoubleVector>
 {
 public:
-  LazyVector()
-  {
-  }
-
-  ~LazyVector()
-  {
-  }
-  
   void clear()
   {
     combination.clear();
     value = DenseVectorPtr();
+  }
+  
+  virtual DenseVectorPtr toDenseVector()
+  {
+    // FIXME
+    return DenseVectorPtr();
+  }
+  
+  /*
+  ** Sub lazy-vectors
+  */
+  LazyVectorPtr& getSubVector(size_t i)
+  {
+    static LazyVectorPtr fixme;
+    return fixme;
   }
 
   /*
@@ -57,6 +64,12 @@ public:
       it->second *= scalar;
 //    if (value)
 //      value->multiplyByScalar(scalar);
+  }
+  
+  void set(DenseVectorPtr denseVector)
+  {
+    combination.clear();
+    combination[denseVector] = 1;
   }
   
   void set(size_t index, double value)
@@ -91,6 +104,8 @@ public:
   }
   
 private:
+  // sparseVector + denseVector + linear-combinaison-of-feature-generators + sub-lazy-vectors
+
   typedef std::map<const FeatureGeneratorPtr, double> LinearCombinationMap;
   LinearCombinationMap combination;
   DoubleVectorPtr value;

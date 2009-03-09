@@ -16,12 +16,6 @@ namespace cralgo
 namespace impl
 {
 
-inline bool isLossNearlyNull(double loss)
-{
-  static const double epsilon = 0.00001;
-  return loss < epsilon;
-}
-
 inline bool isNumberValid(double number)
 {
 #ifdef WIN32
@@ -30,6 +24,13 @@ inline bool isNumberValid(double number)
     return !std::isnan(number) && !std::isinf(number);
 #endif
 }
+
+inline bool isNumberNearlyNull(double value)
+{
+  static const double epsilon = 0.00001;
+  return fabs(value) < epsilon;
+}
+
 
 template<bool> struct StaticAssert;
 template<> struct StaticAssert<true> {};
@@ -139,6 +140,9 @@ struct VectorLossFunction : public ScalarVectorFunction<ExactType>
 template<class ExactType>
 struct ScalarArchitecture : public ContinuousFunction<ExactType>
 {
+  DenseVectorPtr createInitialParameters() const
+    {assert(false); return DenseVectorPtr();}
+
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
       LazyVectorPtr gradientWrtParameters,
@@ -152,6 +156,15 @@ struct ScalarArchitecture : public ContinuousFunction<ExactType>
 template<class ExactType>
 struct VectorArchitecture : public ContinuousFunction<ExactType>
 {
+  DenseVectorPtr createInitialParameters() const
+    {assert(false); return DenseVectorPtr();}
+
+  void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
+                size_t outputNumber, double* output, 
+                LazyVectorPtr gradientWrtParameters,
+                LazyVectorPtr gradientWrtInput) const
+    {assert(false);}
+
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       LazyVectorPtr output,
       LazyVectorPtr gradientWrtParameters,

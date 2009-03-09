@@ -33,11 +33,11 @@ public:
   /*
   ** Features
   */
-  bool hasFeatures() const
-    {return features.size() > 0;}
+  bool hasValues() const
+    {return values.size() > 0;}
     
-  size_t getNumFeatures() const
-    {return features.size();}
+  size_t getNumValues() const
+    {return values.size();}
   
   void set(size_t index, double value);
   void set(const std::string& name, double value);
@@ -74,7 +74,7 @@ public:
   virtual FeatureDictionary& getDefaultDictionary() const
     {static FeatureDictionary defaultDictionary("SparseVector"); return dictionary ? *dictionary : defaultDictionary;}
 
-  virtual SparseVectorPtr createSparseVector(FeatureDictionary* dictionary)
+  virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary)
     {/* todo: check dictionary */ return SparseVectorPtr(this);}
 
 protected:
@@ -88,7 +88,7 @@ private:
   typedef std::vector<std::pair<size_t, double> > FeatureVector;
   typedef std::vector<std::pair<size_t, SparseVectorPtr> > SubVectorVector;
   
-  FeatureVector   features;
+  FeatureVector   values;
   SubVectorVector subVectors;
 };
 

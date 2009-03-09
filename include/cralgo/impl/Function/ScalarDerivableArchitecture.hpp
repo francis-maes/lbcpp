@@ -21,6 +21,9 @@ struct LinearArchitecture : public ScalarArchitecture<LinearArchitecture>
 {
   enum {isDerivable = true};
   
+  DenseVectorPtr createInitialParameters() const
+    {return new DenseVector();}
+
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
       LazyVectorPtr gradientWrtParameters,
@@ -42,6 +45,9 @@ inline LinearArchitecture linearArchitecture()
 struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
 {
   enum {isDerivable = true};
+
+  DenseVectorPtr createInitialParameters() const
+    {return new DenseVector(1);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
