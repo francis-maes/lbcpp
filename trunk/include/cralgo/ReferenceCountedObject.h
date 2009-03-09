@@ -23,7 +23,7 @@ public:
 
 protected:
   template<class T>
-  friend class ReferenceCountedObjectPtr;
+  friend struct ReferenceCountedObjectPtr;
   
   size_t refCount;
 
