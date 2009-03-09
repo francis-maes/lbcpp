@@ -113,8 +113,6 @@ typedef ReferenceCountedObjectPtr<Ranker> RankerPtr;
 
 ////////////
 
-
-
 template<class BaseClass, class ExampleType>
 class GradientBasedLearningMachine : public BaseClass
 {
@@ -131,14 +129,14 @@ public:
   virtual void trainStochasticBegin()
     {assert(learner); learner->trainStochasticBegin(parameters, getRegularizer());}
     
-  void trainStochasticExample(const ExampleType& example)
-    {assert(learner); learner->trainStochasticExample(parameters, example.getInput(), getLoss(example), getRegularizer());}
+  virtual void trainStochasticExample(const ExampleType& example)
+    {assert(learner); learner->trainStochasticExample(parameters, getLoss(example), getRegularizer());}
 
   virtual void trainStochasticEnd()
     {assert(learner); learner->trainStochasticBegin(parameters, getRegularizer());}
   
   virtual void trainBatch(const std::vector<ExampleType>& examples)
-    {assert(learner); learner->trainBatch(parameters, getRegularizedEmpiricalRisk(examples));}
+    {assert(learner); learner->trainBatch(parameters, getRegularizedEmpiricalRisk(examples), examples.size());}
   
   void setLearner(GradientBasedLearnerPtr learner)
     {this->learner = learner;}

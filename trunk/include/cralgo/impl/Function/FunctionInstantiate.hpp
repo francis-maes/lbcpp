@@ -47,8 +47,7 @@ public:
 
   virtual void compute(double input, double* output, double* derivative) const
   {
-    assert(ImplementationType::isDerivable);
-    static const double zero = 0.0;    
+    static const double zero = 0.0;
     impl.compute(input, output, &zero, derivative);
   }
 
@@ -94,7 +93,6 @@ public:
   virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input) const
   {
     assert(input);
-    assert(ImplementationType::isDerivable); 
     LazyVectorPtr res(new LazyVector());
     impl.compute(input, NULL, FeatureGeneratorPtr(), res);
     return res;
@@ -110,7 +108,6 @@ public:
   virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const
   {
     assert(input);
-    assert(ImplementationType::isDerivable);
     impl.compute(input, output, FeatureGeneratorPtr(), gradient);
   }
   

@@ -10,35 +10,62 @@
 #include <cralgo/impl/impl.h>
 using namespace cralgo;
 
+class ConstantIterationFunction : public IterationFunction
+{
+public:
+  ConstantIterationFunction(double value) : value(value) {}
+  
+  virtual double compute(size_t iteration) const
+    {return value;}
+    
+private:
+  double value;
+};
+
+IterationFunctionPtr IterationFunction::createConstant(double value)
+  {return new ConstantIterationFunction(value);}
+
 class GradientDescentLearner : public GradientBasedLearner
 {
 public:
-  virtual void trainStochasticExample(DenseVectorPtr parameters, const FeatureGeneratorPtr input, ScalarVectorFunctionPtr loss, ScalarVectorFunctionPtr regularizer)
+  GradientDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
+    : learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
+    
+  virtual void trainStochasticExample(DenseVectorPtr parameters, ScalarVectorFunctionPtr exampleLoss, ScalarVectorFunctionPtr regularizer)
   {
-    double alpha = 1.0;
-    parameters->addWeighted(loss->computeGradient(input), -alpha);
+    parameters->addWeighted(exampleLoss->computeGradient(parameters), -computeAlpha());
+    ++epoch;
   }
   
   virtual void trainStochasticEnd(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer)
   {
+    // apply regularizer
     if (regularizer)
-    {
-      // apply regularizer
-      double alpha = 1.0;
-      parameters->addWeighted(regularizer->computeGradient(parameters), -alpha);
-    }
+      parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
   }
 
-  virtual void trainBatch(DenseVectorPtr parameters, ScalarVectorFunctionPtr objective)
+  virtual void trainBatch(DenseVectorPtr parameters, ScalarVectorFunctionPtr objective, size_t numExamples)
   {
-    double alpha = 1.0;
     for (int i = 0; i < 100; ++i)
     {
       std::cout << "Iteration " << i << " objective = " << objective->compute(parameters) << std::endl; 
-      parameters->addWeighted(objective->computeGradient(parameters), -alpha);
+      parameters->addWeighted(objective->computeGradient(parameters), -computeAlpha() * numExamples);
+      epoch += numExamples;
     }
+  }
+  
+protected:
+  IterationFunctionPtr learningRate;
+  bool normalizeLearningRate;
+  size_t epoch;
+  
+  double computeAlpha() const
+  {
+    double meanNumberOfFeatures = 0.0; // FIXME
+    return (learningRate ? learningRate->compute(epoch) : 1.0) * 
+        (normalizeLearningRate && meanNumberOfFeatures ? 1.0 / meanNumberOfFeatures : 1.0);
   }
 };
 
-GradientBasedLearnerPtr cralgo::createGradientDescentLearner()
-  {return GradientBasedLearnerPtr(new GradientDescentLearner());}
+GradientBasedLearnerPtr GradientBasedLearner::createGradientDescent(IterationFunctionPtr learningRate, bool normalizeLearningRate)
+  {return GradientBasedLearnerPtr(new GradientDescentLearner(learningRate, normalizeLearningRate));}
