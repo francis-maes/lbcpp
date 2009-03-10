@@ -82,10 +82,33 @@ void SparseVector::set(const std::vector<std::string>& path, double value)
   }
   ptr->set(dictionary->getFeatures().add(path.back()), value);
 }
-  
+
+double SparseVector::get(size_t index) const
+{
+  const double* res = SortedFeatureArrayHelper::get(values, index);
+  return res ? *res : 0.0;
+}
+
+double& SparseVector::get(size_t index)
+{
+  return SortedFeatureArrayHelper::get(values, index, 0.0);
+}
+
 SparseVectorPtr& SparseVector::getSubVector(size_t index)
 {
   return SortedSubVectorArrayHelper::get(subVectors, index);
+}
+
+void SparseVector::multiplyByScalar(double scalar)
+{
+  if (scalar == 0)
+    {clear(); return;}
+  else if (scalar == 1)
+    return;
+  for (size_t i = 0; i < values.size(); ++i)
+    values[i].second *= scalar;
+  for (size_t i = 0 ; i < subVectors.size(); ++i)
+    subVectors[i].second->multiplyByScalar(scalar);
 }
 
 bool SparseVector::load(std::istream& istr)

@@ -74,13 +74,13 @@ public:
     {return impl::instantiate(architecture());}
 
   inline impl::MultiLinearArchitecture architecture() const
-    {return impl::multiLinearArchitecture(getNumLabels());}
+    {return impl::multiLinearArchitecture(getLabels());}
 
   inline impl::MultiClassLogBinomialLoss<ClassificationExample> loss() const
     {return impl::multiClassLogBinomialLoss<ClassificationExample>();}
     
   inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0));}
 };
 
 GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(GradientBasedLearnerPtr learner, FeatureDictionary& labels)

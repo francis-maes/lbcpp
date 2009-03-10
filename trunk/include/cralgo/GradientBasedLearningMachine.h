@@ -25,6 +25,9 @@ public:
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
 
+  /*
+  ** LearningMachine
+  */
   virtual void trainStochasticBegin()
     {assert(learner); ensureParametersAreCreated(); learner->trainStochasticBegin(parameters, getRegularizer());}
     
@@ -37,18 +40,45 @@ public:
   virtual void trainBatch(const std::vector<ExampleType>& examples)
     {assert(learner); ensureParametersAreCreated(); learner->trainBatch(parameters, getRegularizedEmpiricalRisk(examples), examples.size());}
   
+  /*
+  ** Parameters
+  */
+  DenseVectorPtr getParameters() const
+    {return parameters;}
+    
+  void ensureParametersAreCreated()
+    {if (!parameters) createParameters();}
+
+  void createParameters()
+    {assert(!parameters); parameters = createInitialParameters();}
+    
+  void setParameters(DenseVectorPtr parameters)
+    {this->parameters = parameters;}
+
+  /*
+  ** Learner
+  */
+  GradientBasedLearnerPtr getLearner() const
+    {return learner;}
+    
   void setLearner(GradientBasedLearnerPtr learner)
     {this->learner = learner;}
-    
+
+  /*
+  ** Shortcuts for functions computation
+  */
+  double computeRegularizer() const
+    {return getRegularizer()->compute(parameters);}
+
+  double computeEmpiricalRisk(const std::vector<ExampleType>& examples) const
+    {return getEmpiricalRisk(examples)->compute(parameters);}
+  
+  double computeRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
+    {return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
+  
 protected:
   DenseVectorPtr parameters;
   GradientBasedLearnerPtr learner;
-  
-  void ensureParametersAreCreated()
-  {
-    if (!parameters)
-      parameters = createInitialParameters();
-  }
 };
 
 class GradientBasedBinaryClassifier;

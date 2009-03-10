@@ -21,6 +21,9 @@ VectorDerivableArchitecture
 
 
 ==
+* FeatureDictionary: les std::vector en dur, pas de pointeur
+* FeatureVisitor: appliquer un hierarchie similaire a ContinuousFunctions ?
+
 * shared_ptr ChoicePtr  ?
   . Leak dans PolicyToStaticCallback
   . voir aussi nieme::CRAlgorithmAction

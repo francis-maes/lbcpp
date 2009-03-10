@@ -68,6 +68,9 @@ struct ReferenceCountedObjectPtr
   ReferenceCountedObjectPtr<T>& operator= (T* newT)
     {changePtr(newT); return *this;}
   
+  void clear()
+    {changePtr(NULL);}
+  
   operator bool () const
     {return ptr != NULL;}
   
@@ -100,6 +103,10 @@ struct ReferenceCountedObjectPtr
     }
     return ReferenceCountedObjectPtr<O>();
   }
+  
+  template<class O>
+  inline bool isInstanceOf() const
+    {return dynamic_cast<O* >(ptr) != NULL;}
 
 private:
   T* ptr;

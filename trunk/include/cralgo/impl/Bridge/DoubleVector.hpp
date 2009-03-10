@@ -72,13 +72,22 @@ struct Traits<DenseVectorPtr> : public ObjectSharedPtrTraits<DenseVector> {};
 template<class FeatureVisitor>
 inline void LazyVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
 {
-  const_cast<LazyVector* >(this)->ensureComputed();
-  value->staticFeatureGenerator(visitor, featureDictionary);
+  if (isStoredWithFeatureGenerator())
+    visitor.featureCall(featureDictionary, featureGenerator);
+  else if (guessIfDense())
+  {
+    const_cast<LazyVector* >(this)->storeWithDenseVector();
+    visitor.featureCall(featureDictionary, denseVector);
+  }
+  else
+  {
+    const_cast<LazyVector* >(this)->storeWithSparseVector();
+    visitor.featureCall(featureDictionary, sparseVector);
+  }
 }
 
 template<>
 struct Traits<LazyVectorPtr> : public ObjectSharedPtrTraits<LazyVector> {};
-
 
 /*
 ** Double Vector

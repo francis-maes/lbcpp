@@ -393,11 +393,14 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
         leftGradientWrtInput = new LazyVector();
       left.compute(parameters, input, leftOutput, leftGradientWrtParameters, leftGradientWrtInput);
       
+//      std::cout << "Gradient of the multi-linear architecture: " << cralgo::toString(leftGradientWrtParameters) << std::endl;
+      
       DenseVectorPtr leftOutputDense;
       LazyVectorPtr rightGradient;
       if (gradientWrtParameters || gradientWrtInput)
       {
         leftOutputDense = leftOutput->toDenseVector();
+        assert(leftOutputDense && leftOutputDense->getNumValues()); // the left architecture must have at least one output
         rightGradient = new LazyVector();
       }
       
@@ -412,7 +415,8 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
         for (size_t i = 0; i < leftOutputDense->getNumValues(); ++i)
         {
           LazyVectorPtr subVector = leftGradientWrtParameters->getSubVector(i);
-          gradientWrtParameters->addWeighted(subVector, rightGradientDense->get(i));
+          if (subVector)
+            gradientWrtParameters->addWeighted(subVector, rightGradientDense->get(i));
         }
 
       if (gradientWrtInput)

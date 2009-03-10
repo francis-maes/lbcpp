@@ -55,6 +55,8 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
       std::cerr << "LogZ is not a valid number. Scores: " << toString(scores) << std::endl;
       assert(false);
     }
+    if (output)
+      *output = logZ - scores->get(correctClass);
     if (gradient)
     {
       DenseVectorPtr res = new DenseVector(scores->getDictionary(), scores->getNumValues());

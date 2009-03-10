@@ -80,6 +80,11 @@ double DenseVector::computeLogSumOfExponentials() const
 
 void DenseVector::multiplyByScalar(double scalar)
 {
+  if (scalar == 0)
+    {clear(); return;}
+  else if (scalar == 1)
+    return;
+
   // todo: operation class
   for (size_t i = 0; i < values.size(); ++i)
     values[i] *= scalar;

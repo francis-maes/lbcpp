@@ -25,6 +25,11 @@ public:
     : dictionary(dictionary) {}
 
   /*
+  ** DoubleVector
+  */
+  virtual void clear() = 0;
+  
+  /*
   ** Dictionary
   */
   bool hasDictionary() const
@@ -50,7 +55,7 @@ public:
     else
       this->dictionary = &dictionary;
   }
-
+  
   /*
   ** Static FeatureGenerator
   */

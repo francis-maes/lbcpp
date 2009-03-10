@@ -40,7 +40,7 @@ public:
   virtual ~DenseVector()
     {clear();}
   
-  void clear()
+  virtual void clear()
     {values.clear(); subVectors.clear(); dictionary = NULL;}
     
   DenseVector& operator =(const DenseVector& otherVector);
@@ -57,6 +57,9 @@ public:
   void set(size_t index, double value)
     {ensureSize(values, index + 1, 0.0); values[index] = value;}
     
+  const double& get(size_t index) const
+    {assert(index < values.size()); return values[index];}
+
   double& get(size_t index)
     {ensureSize(values, index + 1, 0.0); return values[index];}
     
@@ -76,6 +79,9 @@ public:
 
   DenseVectorPtr& getSubVector(size_t index)
     {ensureSize(subVectors, index + 1, DenseVectorPtr()); return subVectors[index];}
+    
+  void setSubVector(size_t index, DenseVectorPtr subVector)
+    {ensureSize(subVectors, index + 1, DenseVectorPtr()); subVectors[index] = subVector;}
   
   /*
   ** Operations

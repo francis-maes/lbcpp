@@ -52,6 +52,20 @@ struct SortedArrayHelper
     return insert(v, index, defaultValue);
   }
   
+  static const ElementType* get(const VectorType& v, size_t index)
+  {
+    int res = findIndex(v, index);
+    return res < 0 ? NULL : &v[res].second;
+  }
+  
+  static int findIndex(const VectorType& v, size_t index)
+  {
+    if (v.empty())
+      return -1;
+    size_t res = dichotomicSearch(v, index, 0, v.size());
+    return res < v.size() && v[res].first == index ? (int)res : -1;
+  }
+
 private:
   static int findFirstEntryGreaterOrEqual(const VectorType& v, size_t index, size_t startingPoint = 0)
   {
@@ -68,14 +82,6 @@ private:
     return res;
   }
   
-  static int findIndex(const VectorType& v, size_t index)
-  {
-    if (v.empty())
-      return -1;
-    size_t res = dichotomicSearch(v, index, 0, v.size());
-    return res < v.size() && v[res].first == index ? (int)res : -1;
-  }
-
   static size_t dichotomicSearch(const VectorType& v, size_t index, size_t begin, size_t end)
   {
     assert(begin >= 0 && begin <= v.size() && end >= 0 && end <= v.size());
