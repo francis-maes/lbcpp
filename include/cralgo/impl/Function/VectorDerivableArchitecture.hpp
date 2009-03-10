@@ -18,19 +18,22 @@ namespace impl
 
 struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitecture >
 {
-  MultiLinearArchitecture(size_t numOutputs)
-    : numOutputs(numOutputs) {}
+  MultiLinearArchitecture(FeatureDictionary& outputs)
+    : outputs(outputs) {}
     
-  size_t numOutputs;
+  FeatureDictionary& outputs;
+  
+  size_t getNumOutputs() const
+    {return outputs.getFeatures().count();}
   
   DenseVectorPtr createInitialParameters() const
-    {return new DenseVector(0, numOutputs);}
+    {return new DenseVector(outputs, 0, getNumOutputs());}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
                 LazyVectorPtr gradientWrtParameters,
                 LazyVectorPtr gradientWrtInput) const
   {
-    assert(outputNumber < numOutputs);
+    assert(outputNumber < getNumOutputs());
     DenseVectorPtr classParameters = parameters->getSubVector(outputNumber);
     if (output)
       *output = classParameters ? classParameters->dotProduct(input) : 0.0;
@@ -45,9 +48,10 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
                 LazyVectorPtr gradientWrtParameters,
                 LazyVectorPtr gradientWrtInput) const
   {
+    size_t numOutputs = getNumOutputs();
     if (output)
     {
-      DenseVectorPtr res = new DenseVector(numOutputs);
+      DenseVectorPtr res = new DenseVector(outputs, numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
       {
         DenseVectorPtr classParameters = parameters->getSubVector(i);
@@ -57,12 +61,18 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
     }
     if (gradientWrtParameters)
     {
+      // parameters gradient of output i depends linearly on class parameters i
+    
       for (size_t i = 0; i < numOutputs; ++i)
       {
-        LazyVectorPtr& subVector = gradientWrtParameters->getSubVector(i);
-        if (!subVector)
-          subVector = new LazyVector();
-        subVector->add(input);
+        LazyVectorPtr& gradientOfOutputWrtParameters = gradientWrtParameters->getSubVector(i);
+        if (!gradientOfOutputWrtParameters)
+          gradientOfOutputWrtParameters = new LazyVector(outputs);
+
+        LazyVectorPtr& gradientOfOutputWrtClassParameters = gradientOfOutputWrtParameters->getSubVector(i);
+        if (!gradientOfOutputWrtClassParameters)
+          gradientOfOutputWrtClassParameters = new LazyVector(input->getDefaultDictionary());
+        gradientOfOutputWrtClassParameters->set(input);
       }
     }
     if (gradientWrtInput)
@@ -70,8 +80,8 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   }
 };
 
-inline MultiLinearArchitecture multiLinearArchitecture(size_t numOutputs)
-  {return MultiLinearArchitecture(numOutputs);}
+inline MultiLinearArchitecture multiLinearArchitecture(FeatureDictionary& outputs)
+  {return MultiLinearArchitecture(outputs);}
 
 template<class DerivableFunction>
 struct TransferArchitecture : public VectorArchitecture< TransferArchitecture<DerivableFunction> >

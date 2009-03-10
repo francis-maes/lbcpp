@@ -70,6 +70,7 @@ SET(CRALGO_LIBRARY_SOURCES
   StringDictionary.cpp
   SparseVector.cpp
   DenseVector.cpp
+  LazyVector.cpp
   DoubleVectorHelpers.hpp
   LearningExample.cpp
   LearningMachine.cpp

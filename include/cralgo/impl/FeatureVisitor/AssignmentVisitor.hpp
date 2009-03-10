@@ -55,20 +55,22 @@ struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
     {lvalue += rvalue > 0 ? weight : (rvalue < 0 ? -weight : 0);}
 };
 
-template<class OperationType>
-class AssignmentToDenseVisitor
-  : public StaticFeatureVisitor< AssignmentToDenseVisitor<OperationType> >
+template<class ExactType, class VectorType, class OperationType>
+class AssignmentToVectorVisitor
+  : public StaticFeatureVisitor< ExactType >
 {
 public:
-  AssignmentToDenseVisitor(DenseVectorPtr target, OperationType& operation)
+  typedef ReferenceCountedObjectPtr<VectorType> VectorPtr;
+  
+  AssignmentToVectorVisitor(VectorPtr target, OperationType& operation)
     : operation(operation), currentVector(target) {}
   
   bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
   {
     currentVectorStack.push_back(currentVector);
-    DenseVectorPtr& subVector = currentVector->getSubVector(number);
+    VectorPtr& subVector = currentVector->getSubVector(number);
     if (!subVector)
-      subVector = DenseVectorPtr(new DenseVector(dictionary.getSubDictionary(number)));
+      subVector = VectorPtr(new VectorType(dictionary.getSubDictionary(number)));
     currentVector = subVector;
     return true;
   }
@@ -85,9 +87,26 @@ public:
   
 private:
   OperationType& operation;
-  std::vector<DenseVectorPtr> currentVectorStack;
-  DenseVectorPtr currentVector;
+  std::vector<VectorPtr> currentVectorStack;
+  VectorPtr currentVector;
 };
+
+template<class OperationType>
+class AssignmentToDenseVisitor : public AssignmentToVectorVisitor<AssignmentToDenseVisitor<OperationType>, DenseVector, OperationType>
+{
+public:
+  AssignmentToDenseVisitor(DenseVectorPtr target, OperationType& operation)
+    : AssignmentToVectorVisitor<AssignmentToDenseVisitor<OperationType>, DenseVector, OperationType>(target, operation) {}
+};
+
+template<class OperationType>
+class AssignmentToSparseVisitor : public AssignmentToVectorVisitor<AssignmentToSparseVisitor<OperationType>, SparseVector, OperationType>
+{
+public:
+  AssignmentToSparseVisitor(SparseVectorPtr target, OperationType& operation)
+    : AssignmentToVectorVisitor<AssignmentToSparseVisitor<OperationType>, SparseVector, OperationType>(target, operation) {}
+};
+
 
 }; /* namespace cralgo */
 

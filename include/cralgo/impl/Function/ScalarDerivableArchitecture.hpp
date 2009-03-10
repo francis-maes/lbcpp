@@ -47,7 +47,7 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
   enum {isDerivable = true};
 
   DenseVectorPtr createInitialParameters() const
-    {return new DenseVector(1);}
+    {return new DenseVector(getDictionary(), 1);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
@@ -57,8 +57,20 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
     if (output)
       *output = parameters->get(0);
     if (gradientWrtParameters)
-      gradientWrtParameters->set(0, 1.0);
+    {
+      DenseVectorPtr g = new DenseVector(getDictionary());
+      g->set(0, 1.0);
+      gradientWrtParameters->set(g);
+    }
     // gradientWrtInput : empty
+  }
+  
+  static FeatureDictionary& getDictionary()
+  {
+    static FeatureDictionary biasDictionary("bias");
+    if (biasDictionary.empty())
+      biasDictionary.getFeatures().add("bias");
+    return biasDictionary;
   }
 };
 

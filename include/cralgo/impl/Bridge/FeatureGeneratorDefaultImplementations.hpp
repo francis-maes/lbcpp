@@ -99,6 +99,14 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(DenseVectorPtr target, double
   featureGenerator(staticVisitor, dictionary);
 }
 
+FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionary* dictionary) const
+{
+  target->ensureDictionary(selectDictionary(dictionary));
+  AddWeightedVectorOperation op(weight);
+  AssignmentToSparseVisitor<AddWeightedVectorOperation> staticVisitor(target, op);
+  featureGenerator(staticVisitor, dictionary);
+}
+
 FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionary* dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));

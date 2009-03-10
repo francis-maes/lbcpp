@@ -24,6 +24,10 @@ public:
     
   void clear();
   
+  bool empty() const
+    {return (!featuresDictionary || featuresDictionary->count() == 0) && 
+          (!scopesDictionary || scopesDictionary->count() == 0);}
+  
   void ensureHasFeatures()
     {if (!featuresDictionary) featuresDictionary = new StringDictionary();}
   

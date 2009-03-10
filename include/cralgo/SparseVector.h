@@ -27,7 +27,7 @@ public:
   virtual ~SparseVector()
     {clear();}
   
-  void clear();
+  virtual void clear();
   SparseVector& operator =(const SparseVector& otherVector);
   
   /*
@@ -42,6 +42,9 @@ public:
   void set(size_t index, double value);
   void set(const std::string& name, double value);
   void set(const std::vector<std::string>& path, double value);
+
+  double get(size_t index) const;
+  double& get(size_t index);
   
   /*
   ** Sub Vectors
@@ -53,11 +56,18 @@ public:
     {return subVectors.size();}
 
   SparseVectorPtr& getSubVector(size_t index);
+
+  void setSubVector(size_t index, SparseVectorPtr subVector)
+    {getSubVector(index) = subVector;}
   
   /*
   ** Operations
   */
   size_t size() const;
+  void multiplyByScalar(double scalar);
+
+  void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
+    {featureGenerator->addWeightedTo(SparseVectorPtr(this), weight);}
 
   /*
   ** Static FeatureGenerator
