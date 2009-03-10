@@ -9,6 +9,8 @@
 #ifndef CRALGO_CRALGO_H_
 # define CRALGO_CRALGO_H_
 
+# include "Random.h"
+
 # include "Traits.h"
 # include "ContainerTraits.h"
 # include "Object.h"

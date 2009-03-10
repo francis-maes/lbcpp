@@ -1,6 +1,5 @@
-* LazyVector
-* Faire marcher le maxent
 * Mettre une classe utilitaire Random
+* Functions: splitter les fichiers
 * LearningMachine/Function: Tester et Completer:
 
 ScalarValuedVectorContinuousFunction

@@ -127,7 +127,7 @@ DenseVectorPtr BinaryClassifier::predictProbabilities(const FeatureGeneratorPtr 
 size_t BinaryClassifier::sample(const FeatureGeneratorPtr input) const
 {
   double prob1 = scoreToProbability(predictScoreOfPositiveClass(input));
-  return rand() / (double)RAND_MAX < prob1 ? 1 : 0;
+  return Random::getInstance().sampleBool(prob1) ? 1 : 0;
 }
 
 class LogisticRegressionClassifier

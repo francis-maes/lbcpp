@@ -23,7 +23,9 @@ int main(int argc, char* argv[])
 
   std::cout << examples.size() << " Examples, " << toString(features.getFeatures().count()) << "Featues, "<< toString(labels.getFeatures().count()) << " labels." << std::endl;
 
-  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(GradientBasedLearner::createGradientDescent(IterationFunction::createConstant(0.01)), labels);
+  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
+    GradientBasedLearner::createGradientDescent(
+      IterationFunction::createConstant(0.01)), labels);
 
 //  BinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLogisticRegression(GradientBasedLearner::createGradientDescent(), labels);
   
