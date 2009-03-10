@@ -6,6 +6,7 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/ContainerTraits.h
   ../include/cralgo/ReferenceCountedObject.h
   ../include/cralgo/Object.h
+  ../include/cralgo/Random.h
   ../include/cralgo/ErrorHandler.h
   ../include/cralgo/StringDictionary.h
   ../include/cralgo/FeatureDictionary.h

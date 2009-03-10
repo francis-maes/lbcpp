@@ -1,0 +1,83 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Random.h                       | Random generator                |
+| Author  : Francis Maes                   |                                 |
+| Started : 10/03/2009 20:45               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#ifndef CRALGO_RANDOM_H_
+# define CRALGO_RANDOM_H_
+
+# include <cmath>
+# include <vector>
+
+namespace cralgo
+{
+
+class Random
+{
+public:
+  static Random& getInstance()
+    {static Random instance; return instance;}
+
+  Random(long long seedValue = 0)
+    : seed(seedValue) {}
+  Random(int seedValue)
+    {setSeed(seedValue);}
+  
+  void setSeed(int seed)
+    {this->seed = (long long)seed; sampleInt();}
+    
+  void setSeed(int seed1, int seed2);
+    
+  void setSeed(long long seed)
+    {this->seed = seed;}
+
+  bool sampleBool()
+    {return (sampleInt() & 0x80000000) != 0;}
+
+  bool sampleBool(double probabilityOfTrue)
+    {return probabilityOfTrue && sampleDouble() <= probabilityOfTrue;}
+    
+  // returns a number in interval [0, probabilities.size()[ w.r.t. the probability distribution
+  size_t sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0.0);
+
+  int sampleInt(); // any integer value
+  
+  int sampleInt(int maxValue) // in range [0, maxValue[
+    {assert(maxValue > 0); return (sampleInt() & 0x7fffffff) % maxValue;}
+
+  int sampleInt(int minValue, int maxValue) // in range [minValue, maxValue[
+    {assert(maxValue > minValue); return (sampleInt() & 0x7fffffff) % (maxValue - minValue) + minValue;}
+
+  size_t sampleSize(size_t maxSize) // in range [0, maxSize[
+    {return (size_t)sampleInt((int)maxSize);}
+
+  size_t sampleSize(size_t minSize, size_t maxSize) // in range [minSize, maxSize[
+    {assert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
+    
+  float sampleFloat() // in range [0, 1[
+    {return ((unsigned int) sampleInt()) / (float) 0xffffffff;}
+
+  double sampleDouble() // in range [0, 1[
+    {return ((unsigned int) sampleInt()) / (double) 0xffffffff;}
+
+  double sampleDouble(double maxValue) // in range [0, maxValue]
+    {return sampleDouble() * maxValue;}
+    
+  double sampleDouble(double minValue, double maxValue)
+    {return minValue + sampleDouble() * (maxValue - minValue);}
+  
+  double sampleDoubleFromGaussian();
+  
+  double sampleDoubleFromGaussian(double mean, double standardDeviation)
+    {return sampleDoubleFromGaussian() * standardDeviation + mean;}
+  
+private:
+  long long seed;
+};
+
+}; /* namespace cralgo */
+
+#endif // !CRALGO_RANDOM_H_

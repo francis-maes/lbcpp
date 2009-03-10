@@ -131,7 +131,7 @@ public:
   virtual const void* policyChoose(ChoosePtr choose)
   {
     const void* choice = DecoratorPolicy::policyChoose(choose);
-    return rand() / (double)RAND_MAX < epsilon
+    return Random::getInstance().sampleBool(epsilon)
       ? choose->sampleRandomChoice()
       : choice;
   }

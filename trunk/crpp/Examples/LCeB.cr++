@@ -321,6 +321,7 @@ cralgo::CRAlgorithmPtr sampleInstance(size_t numNumbers,
                           size_t chanceInfTen = 2, size_t chanceSpecial = 1)
 {
   assert(maxTarget > minTarget);
+  cralgo::Random& random = cralgo::Random::getInstance();
   
   std::vector<int> remaining;
   remaining.reserve(10 * chanceInfTen + 4 * chanceSpecial);
@@ -338,11 +339,11 @@ cralgo::CRAlgorithmPtr sampleInstance(size_t numNumbers,
   std::vector<int> numbers(numNumbers);
   for (size_t i = 0; i < numNumbers; ++i)
   {
-    int r = rand() % remaining.size();
+    int r = random.sampleInt((int)remaining.size());
     numbers[i] = remaining[r];
     remaining.erase(remaining.begin() + r);
   }
-  int target = minTarget + rand() % (maxTarget - minTarget);
+  int target = random.sampleInt(minTarget, maxTarget);
   return searchSpace(numbers, target, 2);
 }
 

@@ -10,6 +10,7 @@
 # define CRALGO_CONTAINER_TRAITS_H_
 
 # include "Traits.h"
+# include "Random.h"
 # include <vector>
 # include <set>
 # include <map>
@@ -49,7 +50,7 @@ struct SampleRandomImplementation
     
     // not tested
     assert(ContainerTraits::size(container));
-    int r = rand() % ContainerTraits::size(container);
+    int r = Random::getInstance().sampleSize(ContainerTraits::size(container));
     int i = 0;
     typename ContainerTraits::ConstIterator it;
     for (it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it, ++i)
@@ -74,7 +75,7 @@ struct SampleRandomImplementation<size_t>
     size_t b = ContainerTraits::begin(container);
     size_t e = ContainerTraits::end(container);
     assert(e > b);
-    result = b + rand() % (e - b);
+    result = Random::getInstance().sampleSize(b, e);
     return result;
   }
 };
@@ -154,7 +155,7 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
   {
     // not tested
     assert(container.size());
-    int r = rand() % container.size();
+    int r = Random::getInstance().sampleSize(container.size());
     int i = 0;
     //if (r < (int)container.size() / 2)
     {
@@ -200,7 +201,7 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
   static const T& sampleRandom(const std::vector<T>& vector)
   {
     assert(vector.size());
-    return vector[rand() % vector.size()];
+    return vector[Random::getInstance().sampleSize(vector.size())];
   }
 };
 
