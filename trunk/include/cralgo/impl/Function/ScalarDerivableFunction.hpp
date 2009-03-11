@@ -49,6 +49,24 @@ struct MultiplyByConstantScalarFunction : public ScalarFunction<MultiplyByConsta
 inline MultiplyByConstantScalarFunction multiplyScalarByConstant(double constant)
   {return MultiplyByConstantScalarFunction(constant);}
 
+// f(x) = x + k, k in R
+struct AddConstantScalarFunction : public ScalarFunction<AddConstantScalarFunction>
+{
+  AddConstantScalarFunction(double constant)
+    : constant(constant) {}
+    
+  double constant;
+  
+  enum {isDerivable = true};
+
+  void compute(double input, double* output, const double* , double* derivative) const
+  {
+    if (output) *output = input + constant;
+    if (derivative) *derivative = 1.0;
+  }
+};
+inline AddConstantScalarFunction addConstant(double constant)
+  {return AddConstantScalarFunction(constant);}
 
 // f(x) = x^2
 struct SquareScalarFunction : public ScalarFunction<SquareScalarFunction>

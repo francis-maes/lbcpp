@@ -3,21 +3,11 @@
 #include <fstream>
 using namespace cralgo;
 
-int main(int argc, char* argv[])
+int testClassification(std::istream& istr)
 {
-  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/binaryclassif/a1a.train";
-//  static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.test";
- // static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.train";
-
-  std::ifstream istr(filename);
-  if (!istr.is_open())
-  {
-    std::cerr << "Could not open file " << filename << std::endl;
-    return 1;
-  }
-
   FeatureDictionary features("testcpp-features");
   FeatureDictionary labels("labels");
+
   std::vector<ClassificationExample> examples;
   if (!parseClassificationExamples(istr, features, labels, examples))
     return 1;
@@ -44,12 +34,53 @@ int main(int argc, char* argv[])
     
 //  classifier->trainBatch(examples);
     classifier->trainStochastic(examples);
+    double acc = classifier->evaluateAccuracy(examples);
+    std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;
+  }
+  return 0; 
+}
 
-    size_t numCorrect = 0;
-    for (size_t i = 0; i < examples.size(); ++i)
-      if (classifier->predict(examples[i].getInput()) == examples[i].getOutput())
-        ++numCorrect;
-    std::cout << "Accuracy: " << (100.0 * numCorrect / (double)examples.size()) << "%" << std::endl;
-  }  
+int testRegression(std::istream& istr)
+{
+  FeatureDictionary features("regression-features");
+  std::vector<RegressionExample> examples;
+  if (!parseRegressionExamples(istr, features, examples))
+    return 1;
+
+  std::cout << examples.size() << " Examples, " << toString(features.getFeatures().count()) << " features." << std::endl;
+
+  GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
+      GradientBasedLearner::createGradientDescent(
+      IterationFunction::createConstant(0.01)));
+  regressor->createParameters();
+  for (int i = 0; i < 100; ++i)
+  {
+   // LazyVectorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
+//    std::cout << "GRADIENT = " << cralgo::toString(gradient) << std::endl;
+    
+    std::cout << "EmpRisk: " << regressor->computeEmpiricalRisk(examples)
+              << " RegEmpRisk: " << regressor->computeRegularizedEmpiricalRisk(examples) << " ";
+    regressor->trainStochastic(examples);
+    
+    double err = regressor->evaluateMeanAbsoluteError(examples);
+    std::cout << "Mean Abs Error: " << err << std::endl;
+  }
   return 0;
+}
+
+int main(int argc, char* argv[])
+{
+//  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/binaryclassif/a1a.train";
+  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/regression/pyrim.data";
+//  static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.test";
+ // static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.train";
+
+  std::ifstream istr(filename);
+  if (!istr.is_open())
+  {
+    std::cerr << "Could not open file " << filename << std::endl;
+    return 1;
+  }
+
+  return testRegression(istr);
 }

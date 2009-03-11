@@ -20,16 +20,18 @@ namespace impl
 /*
 ** Scalar Architecture => Function of the parameters
 */
-// f : params -> R
+// transform "features x params => scalar" into "params => scalar" for a given feature set
+// f(x) = Architecture(input, x) * weight
 template<class ArchitectureType>
 struct ScalarArchitectureToParametersFunction 
   : public ScalarVectorFunction< ScalarArchitectureToParametersFunction<ArchitectureType> >
 {
-  ScalarArchitectureToParametersFunction(const ArchitectureType& architecture, const FeatureGeneratorPtr input)
-    : architecture(architecture), input(input) {}
+  ScalarArchitectureToParametersFunction(const ArchitectureType& architecture, const FeatureGeneratorPtr input, double weight = 1.0)
+    : architecture(architecture), input(input), weight(weight) {}
 
   ArchitectureType architecture;
   const FeatureGeneratorPtr input;
+  double weight;
   
   enum {isDerivable = ArchitectureType::isDerivable};
   
@@ -39,13 +41,17 @@ struct ScalarArchitectureToParametersFunction
     assert(denseParameters);
     // FIXME: use gradientDirection
     architecture.compute(denseParameters, input, output, gradient, LazyVectorPtr());
+    if (output)
+      *output *= weight;
+    if (gradient)
+      gradient->multiplyByScalar(weight);
   }
 };
 
 template<class ArchitectureType>
 inline ScalarArchitectureToParametersFunction<ArchitectureType>
-  architectureToParametersFunction(const ScalarArchitecture<ArchitectureType>& architecture, const FeatureGeneratorPtr input)
-  {return ScalarArchitectureToParametersFunction<ArchitectureType>(static_cast<const ArchitectureType& >(architecture), input);}
+  architectureToParametersFunction(const ScalarArchitecture<ArchitectureType>& architecture, const FeatureGeneratorPtr input, double weight)
+  {return ScalarArchitectureToParametersFunction<ArchitectureType>(static_cast<const ArchitectureType& >(architecture), input, weight);}
   
 template<class ArchitectureType, class LossType, class ExampleType>
 inline ScalarArchitectureToParametersFunction<
@@ -55,7 +61,7 @@ inline ScalarArchitectureToParametersFunction<
   typedef typename ScalarArchitectureScalarFunctionPair<ArchitectureType, LossType, void>::Composition ComposedArchitecture;
   ComposedArchitecture arch = compose(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss));
   arch.right.setLearningExample(example);
-  return architectureToParametersFunction(arch, example.getInput());
+  return architectureToParametersFunction(arch, example.getInput(), example.getWeight());
 }
 
 template<class ArchitectureType, class LossType, class ExampleType>
@@ -66,12 +72,8 @@ inline ScalarArchitectureToParametersFunction<
   typedef typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition ComposedArchitecture;
   ComposedArchitecture arch = compose(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss));
   arch.right.setLearningExample(example);
-  return architectureToParametersFunction(arch, example.getInput());
+  return architectureToParametersFunction(arch, example.getInput(), example.getWeight());
 }
-
-/*
-** TODO: Vector Architecture => Function of the parameters
-*/
 
 // f : params -> R
 // f(theta) = 1/N sum_{i=1}^{N} (Architecture(theta) o Loss(y_i))(x_i)
@@ -114,10 +116,11 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
         lossGradient->clear();
       double lossOutput;
       penalization.compute(denseParameters, example.getInput(), output ? &lossOutput : NULL, lossGradient, LazyVectorPtr());
+      double kZ = example.getWeight() * Z;
       if (output)
-        *output += lossOutput * Z;
+        *output += lossOutput * kZ;
       if (gradient)
-        gradient->addWeighted(lossGradient, Z);
+        gradient->addWeighted(lossGradient, kZ);
     }
   }
 };

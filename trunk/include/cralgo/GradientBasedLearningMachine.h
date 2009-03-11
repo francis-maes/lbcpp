@@ -15,10 +15,12 @@
 namespace cralgo
 {
 
-template<class BaseClass, class ExampleType>
+template<class BaseClass, class ExampleType_>
 class GradientBasedLearningMachine : public BaseClass
 {
 public:
+  typedef ExampleType_ ExampleType;
+
   virtual DenseVectorPtr createInitialParameters() const = 0;
   virtual ScalarVectorFunctionPtr getRegularizer() const = 0;
   virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const = 0;
@@ -81,6 +83,29 @@ protected:
   GradientBasedLearnerPtr learner;
 };
 
+/*
+** Regression
+*/
+class GradientBasedRegressor;
+typedef ReferenceCountedObjectPtr<GradientBasedRegressor> GradientBasedRegressorPtr;
+
+class GradientBasedRegressor : public GradientBasedLearningMachine<Regressor, RegressionExample>
+{
+public:
+  static GradientBasedRegressorPtr createLeastSquaresLinear(GradientBasedLearnerPtr learner);
+
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
+
+  virtual DenseVectorPtr createInitialParameters() const
+    {return getPredictionArchitecture()->createInitialParameters();}
+    
+  virtual double predict(const FeatureGeneratorPtr input) const
+    {return getPredictionArchitecture()->compute(parameters, input);}
+};
+
+/*
+** Binary Classification
+*/
 class GradientBasedBinaryClassifier;
 typedef ReferenceCountedObjectPtr<GradientBasedBinaryClassifier> GradientBasedBinaryClassifierPtr;
 
@@ -99,6 +124,9 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
+/*
+** Classification
+*/
 class GradientBasedClassifier;
 typedef ReferenceCountedObjectPtr<GradientBasedClassifier> GradientBasedClassifierPtr;
 
@@ -117,16 +145,6 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input, output);}
 };
 
-class GradientBasedRegressor : public GradientBasedLearningMachine<Regressor, RegressionExample>
-{
-public:
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
-
-  virtual DenseVectorPtr createInitialParameters() const
-    {return getPredictionArchitecture()->createInitialParameters();}
-  virtual double predict(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input);}
-};
 
 }; /* namespace cralgo */
 

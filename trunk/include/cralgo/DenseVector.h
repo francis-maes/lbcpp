@@ -51,6 +51,9 @@ public:
   bool hasValues() const
     {return values.size() > 0;}
     
+  const std::vector<double>& getValues() const
+    {return values;}
+    
   size_t getNumValues() const
     {return values.size();}
   

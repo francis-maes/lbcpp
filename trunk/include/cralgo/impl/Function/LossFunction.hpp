@@ -31,6 +31,43 @@ inline LossName <LearningExampleType> FunctionName () {return LossName <Learning
 template<class LearningExampleType> \
 inline LossName <LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <LearningExampleType>(example);}
 
+/*
+** Regression
+*/
+template<class ExactType, class ScalarFunctionType, class LearningExampleType>
+struct RegressionLossFunction : public ScalarLossFunction<ExactType>
+{
+  RegressionLossFunction(const ScalarFunctionType& scalarFunction) 
+    : scalarFunction(scalarFunction), correctValue(0.0) {}
+  RegressionLossFunction() : correctValue(0.0) {}
+  
+  enum  {isDerivable = ScalarFunctionType::isDerivable};
+  
+  void setLearningExample(const LearningExampleType& learningExample)
+    {correctValue = learningExample.getOutput();}
+
+  // f(x) = scalarFunction(x - correctValue)
+  void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  {
+    compose(addConstant(-correctValue), scalarFunction)
+      .compute(input, output, derivativeDirection, derivative);
+  }
+  
+private:
+  ScalarFunctionType scalarFunction;
+  double correctValue;
+};
+
+#define STATIC_REGRESSION_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
+  STATIC_LOSS_FUNCTION(RegressionLossFunction, FunctionName, LossName, LossFunctionName)
+
+STATIC_REGRESSION_LOSS_FUNCTION(squareLoss, SquareLoss, SquareScalarFunction);
+STATIC_REGRESSION_LOSS_FUNCTION(absoluteLoss, AbsoluteLoss, AbsoluteScalarFunction);
+
+
+/*
+** Discriminant: binary classification and base losses for ranking
+*/
 template<class ExactType, class ScalarFunctionType, class LearningExampleType>
 struct DiscriminantLossFunction : public ScalarLossFunction<ExactType>
 {
@@ -41,7 +78,7 @@ struct DiscriminantLossFunction : public ScalarLossFunction<ExactType>
   enum  {isDerivable = ScalarFunctionType::isDerivable};
   
   void setLearningExample(const LearningExampleType& learningExample)
-    {marginMultiplier = learningExample.getMarginMultiplier() * learningExample.getWeight();}
+    {marginMultiplier = learningExample.getMarginMultiplier();}
 
   // f(x) = scalarFunction(x * marginMultiplier)
   void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
@@ -63,6 +100,9 @@ STATIC_DISCRIMINANT_LOSS_FUNCTION(hingeLoss, HingeLoss, HingeLossFunction);
 STATIC_DISCRIMINANT_LOSS_FUNCTION(exponentialLoss, ExponentialLoss, ExponentialLossFunction);
 STATIC_DISCRIMINANT_LOSS_FUNCTION(logBinomialLoss, LogBinomialLoss, LogBinomialLossFunction);
 
+/*
+** Multi-class classification
+*/
 template<class ExactType, class VectorFunctionType, class LearningExampleType>
 struct MultiClassLossFunction : public VectorLossFunction<ExactType>
 {

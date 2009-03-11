@@ -72,6 +72,9 @@ public:
     
   FeatureGeneratorPtr getInput() const
     {return x;}
+    
+  double getOutput() const
+    {return y;}
 
 private:
   FeatureGeneratorPtr x;

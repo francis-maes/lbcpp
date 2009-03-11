@@ -41,7 +41,14 @@ public:
     {return probabilityOfTrue && sampleDouble() <= probabilityOfTrue;}
     
   // returns a number in interval [0, probabilities.size()[ w.r.t. the probability distribution
+  // by default, the probabilities are not normalized
+  // probabilitiesSum = 0 => the probabilities sum will be computed
+  // probabilitiesSum > 0 => the probabilities sum is known in advance
+  // probabilitiesSum = 1 : normalized probability distribution, you may also use sampleWithNormalizedProbabilities()
   size_t sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0.0);
+  
+  size_t sampleWithNormalizedProbabilities(const std::vector<double>& probabilities)
+    {return sampleWithProbabilities(probabilities, 1.0);}
 
   int sampleInt(); // any integer value
   

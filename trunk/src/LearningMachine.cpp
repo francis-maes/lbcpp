@@ -11,29 +11,69 @@
 #include <cralgo/impl/impl.h>
 using namespace cralgo;
 
-
 template<class ExactType, class BaseClass>
 class StaticToDynamicGradientBasedLearningMachine : public BaseClass
 {
 public:
+  typedef typename BaseClass::ExampleType ExampleType;
+  
   // abstract: static functions for architecture(), loss() and regularizer()
   
   virtual ScalarVectorFunctionPtr getRegularizer() const
     {return impl::instantiate(_this().regularizer());}
   
-  virtual ScalarVectorFunctionPtr getLoss(const ClassificationExample& example) const
+  virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const
     {return impl::instantiate(impl::exampleRisk(_this().architecture(), _this().loss(), example));}
     
-  virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ClassificationExample>& examples) const
+  virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const
     {return impl::instantiate(impl::empiricalRisk(_this().architecture(), _this().loss(), examples));}
     
-  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ClassificationExample>& examples) const
+  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
     {return impl::instantiate(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples), _this().regularizer()));}
 
 protected:
   const ExactType& _this() const  {return *(const ExactType* )this;}
 };
 
+
+/*
+** Regression
+*/
+double Regressor::evaluateMeanAbsoluteError(const std::vector<RegressionExample>& examples) const
+{
+  assert(examples.size());
+  double res = 0;
+  for (size_t i = 0; i < examples.size(); ++i)
+  {
+    const RegressionExample& example = examples[i];
+    res += fabs(example.getOutput() - predict(example.getInput()));
+  }
+  return res / examples.size();
+}
+
+class LeastSquaresLinearRegressor
+  : public StaticToDynamicGradientBasedLearningMachine<LeastSquaresLinearRegressor, GradientBasedRegressor>
+{
+public:
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const
+    {return impl::instantiate(architecture());}
+
+  inline impl::LinearArchitecture architecture() const
+    {return impl::linearArchitecture();}
+
+  inline impl::SquareLoss<RegressionExample> loss() const
+    {return impl::squareLoss<RegressionExample>();}
+    
+  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
+};
+
+GradientBasedRegressorPtr GradientBasedRegressor::createLeastSquaresLinear(GradientBasedLearnerPtr learner)
+{
+  GradientBasedRegressorPtr res = new LeastSquaresLinearRegressor();
+  res->setLearner(learner);
+  return res;
+}
 
 /*
 ** Classifier
@@ -61,10 +101,38 @@ DenseVectorPtr Classifier::predictProbabilities(const FeatureGeneratorPtr input)
 
 size_t Classifier::sample(const FeatureGeneratorPtr input) const
 {
-  assert(false);
-  // FIXME
-  return 0; 
+  DenseVectorPtr probs = predictProbabilities(input);
+  return Random::getInstance().sampleWithNormalizedProbabilities(probs->getValues());
 }
+
+double Classifier::evaluateAccuracy(const std::vector<ClassificationExample>& examples) const
+{
+  assert(examples.size());
+  size_t correct = 0;
+  for (size_t i = 0; i < examples.size(); ++i)
+  {
+    const ClassificationExample& example = examples[i];
+    if (predict(example.getInput()) == example.getOutput())
+      ++correct;
+  }
+  return correct / (double)examples.size();
+}
+
+double Classifier::evaluateWeightedAccuracy(const std::vector<ClassificationExample>& examples) const
+{
+  assert(examples.size());
+  double correctWeight = 0.0, totalWeight = 0.0;
+  for (size_t i = 0; i < examples.size(); ++i)
+  {
+    const ClassificationExample& example = examples[i];
+    if (predict(example.getInput()) == example.getOutput())
+      correctWeight += example.getWeight();
+    totalWeight += example.getWeight();
+  }
+  assert(totalWeight);
+  return correctWeight / totalWeight;
+}
+
 
 class MaximumEntropyClassifier
   : public StaticToDynamicGradientBasedLearningMachine<MaximumEntropyClassifier, GradientBasedClassifier>
