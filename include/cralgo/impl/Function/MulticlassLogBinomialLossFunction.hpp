@@ -1,38 +1,20 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ScalarVectorDerivableFunc...hpp| Derivable functions f: R^d -> R |
+| Filename: MulticlassLogBinomialLoss...hpp| Multi-class log-binomial loss   |
 | Author  : Francis Maes                   |                                 |
-| Started : 07/03/2009 15:41               |                                 |
+| Started : 11/03/2009 19:32               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_FUNCTION_SCALAR_VALUED_VECTOR_DERIVABLE_H_
-# define CRALGO_IMPL_FUNCTION_SCALAR_VALUED_VECTOR_DERIVABLE_H_
+#ifndef CRALGO_IMPL_FUNCTION_MULTICLASS_LOG_BINOMIAL_LOSS_FUNCTION_H_
+# define CRALGO_IMPL_FUNCTION_MULTICLASS_LOG_BINOMIAL_LOSS_FUNCTION_H_
 
-# include "ContinuousFunction.hpp"
+# include "LossFunctions.hpp"
 
 namespace cralgo
 {
 namespace impl
 {
-
-// f(x) = sum_i x_i^2
-struct SumOfSquaresScalarVectorFunction : public ScalarVectorFunction< SumOfSquaresScalarVectorFunction >
-{
-  enum {isDerivable = true};
-  
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr, LazyVectorPtr gradient) const
-  {
-    if (output)
-      *output = input->sumOfSquares();
-    if (gradient)
-      gradient->addWeighted(input, 2.0);
-  }
-};
-
-inline SumOfSquaresScalarVectorFunction sumOfSquares()
-  {return SumOfSquaresScalarVectorFunction();}
-
 
 struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiClassLogBinomialLossFunction >
 {
@@ -78,10 +60,10 @@ private:
 inline MultiClassLogBinomialLossFunction multiClassLogBinomialLossFunction()
   {return MultiClassLogBinomialLossFunction();}
 
-// todo: ranking losses
+STATIC_MULTICLASS_LOSS_FUNCTION(multiClassLogBinomialLoss, MultiClassLogBinomialLoss, MultiClassLogBinomialLossFunction);
 
 }; /* namespace impl */
 }; /* namespace cralgo */
 
 
-#endif // !CRALGO_IMPL_FUNCTION_SCALAR_VALUED_VECTOR_DERIVABLE_H_
+#endif // !CRALGO_IMPL_FUNCTION_MULTICLASS_LOG_BINOMIAL_LOSS_FUNCTION_H_

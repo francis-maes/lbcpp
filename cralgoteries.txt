@@ -1,6 +1,3 @@
-ok Test de Regression avec least-squares linear regression
-
-reorganisation des fichiers Function
 
 CRPP - Gros
 

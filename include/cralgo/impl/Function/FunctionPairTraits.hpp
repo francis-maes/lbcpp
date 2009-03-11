@@ -9,7 +9,7 @@
 #ifndef CRALGO_IMPL_FUNCTION_PAIR_TRAITS_H_
 # define CRALGO_IMPL_FUNCTION_PAIR_TRAITS_H_
 
-# include "ContinuousFunction.hpp"
+# include "FunctionStatic.hpp"
 
 namespace cralgo
 {

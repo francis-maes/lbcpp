@@ -20,6 +20,9 @@
 namespace cralgo
 {
 
+template<bool> struct StaticAssert;
+template<> struct StaticAssert<true> {};
+
 template<class T>
 struct Traits
 {
