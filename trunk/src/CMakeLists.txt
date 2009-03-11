@@ -40,16 +40,29 @@ SET(CRALGO_LIBRARY_IMPL_FEATURE_VISITOR
 )
 
 SET(CRALGO_LIBRARY_IMPL_FUNCTION
-  ../include/cralgo/impl/Function/ContinuousFunction.hpp
+  ../include/cralgo/impl/Function/BinaryScalarOperation.hpp
+  ../include/cralgo/impl/Function/FunctionStatic.hpp
   ../include/cralgo/impl/Function/FunctionPairTraits.hpp
-  ../include/cralgo/impl/Function/FunctionInstantiate.hpp
-  ../include/cralgo/impl/Function/ScalarContinuousFunction.hpp
-  ../include/cralgo/impl/Function/ScalarDerivableFunction.hpp
-  ../include/cralgo/impl/Function/ScalarVectorContinuousFunction.hpp
-  ../include/cralgo/impl/Function/ScalarVectorDerivableFunction.hpp
-  ../include/cralgo/impl/Function/LossFunction.hpp
-  ../include/cralgo/impl/Function/ScalarDerivableArchitecture.hpp
-  ../include/cralgo/impl/Function/VectorDerivableArchitecture.hpp
+  ../include/cralgo/impl/Function/FunctionStaticToDynamic.hpp
+
+  ../include/cralgo/impl/Function/ScalarFunctions.hpp
+  ../include/cralgo/impl/Function/ScalarVectorFunctions.hpp
+
+  ../include/cralgo/impl/Function/LossFunctions.hpp
+
+  ../include/cralgo/impl/Function/PerceptronLossFunction.hpp
+  ../include/cralgo/impl/Function/HingeLossFunction.hpp
+  ../include/cralgo/impl/Function/LogBinomialLossFunction.hpp
+  ../include/cralgo/impl/Function/ExponentialLossFunction.hpp
+  ../include/cralgo/impl/Function/MulticlassLogBinomialLossFunction.hpp
+
+  ../include/cralgo/impl/Function/ExampleRiskFunction.hpp
+  ../include/cralgo/impl/Function/EmpiricalRiskFunction.hpp
+
+  ../include/cralgo/impl/Function/BiasArchitecture.hpp
+  ../include/cralgo/impl/Function/LinearArchitecture.hpp
+  ../include/cralgo/impl/Function/MultiLinearArchitecture.hpp
+  ../include/cralgo/impl/Function/TransferArchitecture.hpp
 )
 
 SET(CRALGO_LIBRARY_IMPL_BRIDGE

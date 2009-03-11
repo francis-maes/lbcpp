@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ContinuousFunction.hpp         | Static Continuous Functions     |
-| Author  : Francis Maes                   |                                 |
+| Filename: FunctionStatic.hpp             | Continuous Functions            |
+| Author  : Francis Maes                   |    Static Interface             |
 | Started : 07/03/2009 14:58               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -9,61 +9,12 @@
 #ifndef CRALGO_IMPL_FUNCTION_STATIC_INTERFACE_H_
 # define CRALGO_IMPL_FUNCTION_STATIC_INTERFACE_H_
 
-# include <cmath>
+# include "BinaryScalarOperation.hpp"
 
 namespace cralgo
 {
 namespace impl
 {
-
-inline bool isNumberValid(double number)
-{
-#ifdef WIN32
-    return number == number;
-#else
-    return !std::isnan(number) && !std::isinf(number);
-#endif
-}
-
-inline bool isNumberNearlyNull(double value)
-{
-  static const double epsilon = 0.00001;
-  return fabs(value) < epsilon;
-}
-
-
-template<bool> struct StaticAssert;
-template<> struct StaticAssert<true> {};
-
-struct BinaryScalarOperation
-{
-  static double compute(double left, double right)
-    {assert(false); return 0.0;}
-  static double computeDerivativeWrtLeft(double left, double right)
-    {assert(false); return 0.0;}
-  static double computeDerivativeWrtRight(double left, double right)
-    {assert(false); return 0.0;}
-};
-
-struct AdditionBinaryScalarOperation : public BinaryScalarOperation
-{
-  static double compute(double left, double right)
-    {return left + right;}
-  static double computeDerivativeWrtLeft(double left, double right)
-    {return 1;}
-  static double computeDerivativeWrtRight(double left, double right)
-    {return 1;}
-};
-
-struct SubstractionBinaryScalarOperation : public BinaryScalarOperation
-{
-  static double compute(double left, double right)
-    {return left - right;}
-  static double computeDerivativeWrtLeft(double left, double right)
-    {return 1;}
-  static double computeDerivativeWrtRight(double left, double right)
-    {return -1;}
-};
 
 struct ScalarConstant
 {

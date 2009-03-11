@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ScalarDerivableFunction.hpp    | Derivable functions f: R -> R   |
+| Filename: ScalarFunctions.hpp            | Scalar functions f: R -> R      |
 | Author  : Francis Maes                   |                                 |
 | Started : 07/03/2009 15:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_FUNCTION_SCALAR_DERIVABLE_H_
-# define CRALGO_IMPL_FUNCTION_SCALAR_DERIVABLE_H_
+#ifndef CRALGO_IMPL_FUNCTION_SCALAR_FUNCTIONS_H_
+# define CRALGO_IMPL_FUNCTION_SCALAR_FUNCTIONS_H_
 
-# include "ScalarContinuousFunction.hpp"
+# include "FunctionStatic.hpp"
 
 namespace cralgo
 {
@@ -125,87 +125,7 @@ struct SigmoidScalarFunction : public ScalarFunction<SigmoidScalarFunction>
 inline SigmoidScalarFunction sigmoidFunction()
   {return SigmoidScalarFunction();}
 
-
-// f(x) = exp(-x)
-// f(x) > 0
-struct ExponentialLossFunction : public ScalarFunction<ExponentialLossFunction>
-{
-  enum {isDerivable = true};
-
-  void compute(double input, double* output, const double* , double* derivative) const
-  {
-    double e = std::exp(-input);
-    if (isNumberNearlyNull(e))
-    {
-      if (output)
-        *output = 0;
-      if (derivative)
-        *derivative = 0;
-    }
-    else
-    {
-      if (derivative)
-        *derivative = -e; 
-      if (output)
-        *output = e;
-    }
-  }
-};
-inline ExponentialLossFunction exponentialLossFunction()
-  {return ExponentialLossFunction();}
-
-
-// f(x) = log(1 + exp(-x))
-// f(x) > 0
-struct LogBinomialLossFunction : public ScalarFunction<LogBinomialLossFunction>
-{
-  enum {isDerivable = true};
-
-  void compute(double input, double* output, const double* , double* derivative) const
-  {
-    if (input < -10) // avoid approximation errors in the exp(-x) formula
-    {
-      if (derivative)
-        *derivative = -1;
-      if (output)
-        *output = -input;
-      return;
-    }
-    
-    if (input == 0)
-    {
-      static const double log2 = log(2.0);
-      if (output)
-        *output = log2;
-      if (derivative)
-        *derivative = -1.0 / 2.0;
-      return;
-    }
-    
-    double res = log(1 + exp(-input));
-    assert(isNumberValid(res));
-    if (isNumberNearlyNull(res))
-    {
-      if (output)
-        *output = 0.0;
-      if (derivative)
-        *derivative = 0.0;
-      return;
-    }
-
-    if (output)
-      *output = res;
-    if (derivative)
-    {
-      *derivative = -1 / (1 + exp(input));
-      assert(isNumberValid(*derivative));
-    }
-  }
-};
-inline LogBinomialLossFunction logBinomialLossFunction()
-  {return LogBinomialLossFunction();}
-
 }; /* namespace impl */
 }; /* namespace cralgo */
 
-#endif // !CRALGO_IMPL_FUNCTION_SCALAR_CONTINUOUS_H_
+#endif // !CRALGO_IMPL_FUNCTION_SCALAR_FUNCTIONS_H_

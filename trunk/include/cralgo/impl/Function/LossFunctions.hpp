@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LossFunction.hpp               |                                 |
+| Filename: LossFunctions.hpp              |                                 |
 | Author  : Francis Maes                   |                                 |
 | Started : 07/03/2009 20:09               |                                 |
 `------------------------------------------/                                 |
@@ -9,27 +9,13 @@
 #ifndef CRALGO_IMPL_FUNCTION_LOSS_H_
 # define CRALGO_IMPL_FUNCTION_LOSS_H_
 
-# include "ContinuousFunction.hpp"
-# include "ScalarContinuousFunction.hpp"
-# include "ScalarDerivableFunction.hpp"
-# include "ScalarVectorDerivableFunction.hpp"
+# include "FunctionStatic.hpp"
 # include "FunctionPairTraits.hpp"
 
 namespace cralgo
 {
 namespace impl
 {
-
-#define STATIC_LOSS_FUNCTION(LossClass, FunctionName, LossName, LossFunctionName) \
-template<class LearningExampleType> \
-struct LossName : public LossClass< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> { \
-   typedef LossClass< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> BaseClassType; \
-   LossName(const LearningExampleType& learningExample) {BaseClassType::setLearningExample(learningExample);} \
-   LossName() {} }; \
-template<class LearningExampleType> \
-inline LossName <LearningExampleType> FunctionName () {return LossName <LearningExampleType>();} \
-template<class LearningExampleType> \
-inline LossName <LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <LearningExampleType>(example);}
 
 /*
 ** Regression
@@ -58,13 +44,6 @@ private:
   double correctValue;
 };
 
-#define STATIC_REGRESSION_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
-  STATIC_LOSS_FUNCTION(RegressionLossFunction, FunctionName, LossName, LossFunctionName)
-
-STATIC_REGRESSION_LOSS_FUNCTION(squareLoss, SquareLoss, SquareScalarFunction);
-STATIC_REGRESSION_LOSS_FUNCTION(absoluteLoss, AbsoluteLoss, AbsoluteScalarFunction);
-
-
 /*
 ** Discriminant: binary classification and base losses for ranking
 */
@@ -92,14 +71,6 @@ private:
   double marginMultiplier;
 };
 
-#define STATIC_DISCRIMINANT_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
-  STATIC_LOSS_FUNCTION(DiscriminantLossFunction, FunctionName, LossName, LossFunctionName)
-
-STATIC_DISCRIMINANT_LOSS_FUNCTION(perceptronLoss, PerceptronLoss, PerceptronLossFunction);
-STATIC_DISCRIMINANT_LOSS_FUNCTION(hingeLoss, HingeLoss, HingeLossFunction);
-STATIC_DISCRIMINANT_LOSS_FUNCTION(exponentialLoss, ExponentialLoss, ExponentialLossFunction);
-STATIC_DISCRIMINANT_LOSS_FUNCTION(logBinomialLoss, LogBinomialLoss, LogBinomialLossFunction);
-
 /*
 ** Multi-class classification
 */
@@ -122,10 +93,28 @@ private:
   VectorFunctionType vectorToScalarFunction;
 };
 
+/*
+** Macros to declare loss adaptators
+*/
+#define STATIC_LOSS_FUNCTION(LossClass, FunctionName, LossName, LossFunctionName) \
+template<class LearningExampleType> \
+struct LossName : public LossClass< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> { \
+   typedef LossClass< LossName <LearningExampleType> , LossFunctionName, LearningExampleType> BaseClassType; \
+   LossName(const LearningExampleType& learningExample) {BaseClassType::setLearningExample(learningExample);} \
+   LossName() {} }; \
+template<class LearningExampleType> \
+inline LossName <LearningExampleType> FunctionName () {return LossName <LearningExampleType>();} \
+template<class LearningExampleType> \
+inline LossName <LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <LearningExampleType>(example);}
+
+#define STATIC_REGRESSION_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
+  STATIC_LOSS_FUNCTION(RegressionLossFunction, FunctionName, LossName, LossFunctionName)
+
+#define STATIC_DISCRIMINANT_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
+  STATIC_LOSS_FUNCTION(DiscriminantLossFunction, FunctionName, LossName, LossFunctionName)
+
 #define STATIC_MULTICLASS_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
   STATIC_LOSS_FUNCTION(MultiClassLossFunction, FunctionName, LossName, LossFunctionName)
-
-STATIC_MULTICLASS_LOSS_FUNCTION(multiClassLogBinomialLoss, MultiClassLogBinomialLoss, MultiClassLogBinomialLossFunction);
 
 }; /* namespace impl */
 }; /* namespace cralgo */

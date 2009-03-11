@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VectorDerivableArchitecture.hpp| Parameterized functions         |
-| Author  : Francis Maes                   |   f_theta : Phi -> R^o          |
-| Started : 07/03/2009 15:48               |      theta = DenseVector        |
+| Filename: MultiLinearArchitecture.hpp    | Multiclass Linear Architecture  |
+| Author  : Francis Maes                   |                                 |
+| Started : 11/03/2009 19:48               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_VECTOR_DERIVABLE_ARCHITECTURE_H_
-# define CRALGO_IMPL_VECTOR_DERIVABLE_ARCHITECTURE_H_
+#ifndef CRALGO_IMPL_FUNCTION_MULTI_LINEAR_ARCHITECTURE_H_
+# define CRALGO_IMPL_FUNCTION_MULTI_LINEAR_ARCHITECTURE_H_
 
-# include "ContinuousFunction.hpp"
+# include "FunctionStatic.hpp"
 
 namespace cralgo
 {
@@ -83,19 +83,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
 inline MultiLinearArchitecture multiLinearArchitecture(FeatureDictionary& outputs)
   {return MultiLinearArchitecture(outputs);}
 
-template<class DerivableFunction>
-struct TransferArchitecture : public VectorArchitecture< TransferArchitecture<DerivableFunction> >
-{
-  TransferArchitecture(const DerivableFunction& function)
-    : function(function) {}
-  
-  // todo: compute
-  
-  DerivableFunction function;
-};
-
 }; /* namespace impl */
 }; /* namespace cralgo */
 
-
-#endif // !CRALGO_IMPL_VECTOR_DERIVABLE_ARCHITECTURE_H_
+#endif // !CRALGO_IMPL_FUNCTION_MULTI_LINEAR_ARCHITECTURE_H_
