@@ -1,27 +1,32 @@
-* Functions: splitter les fichiers
-* LearningMachine/Function: Tester et Completer:
+ok Test de Regression avec least-squares linear regression
 
-ScalarValuedVectorContinuousFunction
+reorganisation des fichiers Function
+
+CRPP - Gros
+
+* Policies:
+  * SarsaZero, QLearning, MonteCarloControl, OlPomdp
+  * CRank, CRankPost
+  * ConsoleLogger, TableLogger
+  * Bridge static <-> dynamique
+  * policyRun inline
+
+* Task, Tables
+
+* Functions:
   - L1Regularizer
-  - Loss de rankings
-
-ScalarValuedVectorDerivableFunction
-  - L2Regularizer
-  - Loss de rankings
-
-ScalarDerivableArchitecture
   - BiasArchitecture
+  - Loss de rankings
   - ScalarDerivableArchitecturesDotProduct
-
-VectorDerivableArchitecture
-  - MultiLinearArchitecture
   - TransferArchitecture
 
+* SWIG
+* Doxygen
 
-==
+CRPP - Petit
+* Functions: splitter les fichiers
 * FeatureDictionary: les std::vector en dur, pas de pointeur
 * FeatureVisitor: appliquer un hierarchie similaire a ContinuousFunctions ?
-
 * shared_ptr ChoicePtr  ?
   . Leak dans PolicyToStaticCallback
   . voir aussi nieme::CRAlgorithmAction

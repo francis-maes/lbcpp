@@ -42,7 +42,20 @@ class Classifier : public LearningMachine_<ClassificationExample>
 {
 public:
   Classifier() : labels(NULL) {}
+    
+  /*
+  ** Abstract
+  */
+  virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const = 0;
+  virtual size_t predict(const FeatureGeneratorPtr input) const;
+  virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
+  virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
+  virtual size_t sample(const FeatureGeneratorPtr input) const;
+
   
+  /*
+  ** Labels
+  */
   size_t getNumLabels() const
     {assert(labels); return labels->getFeatures().count();}
   
@@ -51,13 +64,12 @@ public:
   
   void setLabels(FeatureDictionary& labels)
     {this->labels = &labels;}
-  
-  virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const = 0;
-
-  virtual size_t predict(const FeatureGeneratorPtr input) const;
-  virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
-  virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
-  virtual size_t sample(const FeatureGeneratorPtr input) const;
+    
+  /*
+  ** Evaluation
+  */
+  double evaluateAccuracy(const std::vector<ClassificationExample>& examples) const;
+  double evaluateWeightedAccuracy(const std::vector<ClassificationExample>& examples) const;
   
 protected:
   FeatureDictionary* labels;
@@ -97,6 +109,8 @@ class Regressor : public LearningMachine_<RegressionExample>
 {
 public:
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
+  
+  double evaluateMeanAbsoluteError(const std::vector<RegressionExample>& examples) const;
 };
 
 typedef ReferenceCountedObjectPtr<Regressor> RegressorPtr;
