@@ -12,10 +12,8 @@
 # include "FunctionStatic.hpp"
 # include "LossFunctions.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f(x) = abs(x)
 struct AbsoluteScalarFunction : public ScalarFunction<AbsoluteScalarFunction>

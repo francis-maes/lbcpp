@@ -11,10 +11,8 @@
 
 # include "FunctionStatic.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f(x) = x
 struct IdentityScalarFunction : public ScalarFunction<IdentityScalarFunction>

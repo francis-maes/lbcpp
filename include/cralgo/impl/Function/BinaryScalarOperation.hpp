@@ -11,10 +11,8 @@
 
 # include <cmath>
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 inline bool isNumberValid(double number)
 {

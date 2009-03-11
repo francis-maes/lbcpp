@@ -17,7 +17,6 @@
 namespace cralgo
 {
 
-
 template<class T_impl>
 class StaticToDynamicCRAlgorithm
   : public StaticToDynamicCRAlgorithmScope_<T_impl, CRAlgorithm, StaticToDynamicCRAlgorithm<T_impl> >
@@ -67,7 +66,7 @@ public:
   
   virtual ChoosePtr runUntilNextChoose(const void* choice, double* reward = NULL)
   {
-    ConstructChooseStaticCallback<T_impl> callback(CRAlgorithmPtr(this));
+    StoreChooseAndRewardStaticCallback<T_impl> callback(CRAlgorithmPtr(this));
     stepImpl(callback, choice);
     if (reward)
       *reward = callback.getCurrentReward();

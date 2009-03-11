@@ -35,11 +35,15 @@ public:
   }
 };
 
+typedef ReferenceCountedObjectPtr<StateFunction> StateFunctionPtr;
+
 class StateDescriptionFunction : public StateFunction
 {
 public:
   virtual std::string toString(CRAlgorithmPtr crAlgorithm) const = 0;
 };
+
+typedef ReferenceCountedObjectPtr<StateDescriptionFunction> StateDescriptionFunctionPtr;
 
 class CompositeStateDescriptionFunction : public StateDescriptionFunction
 {
@@ -72,6 +76,8 @@ public:
   virtual std::string toString(CRAlgorithmPtr crAlgorithm, const void* choice) const = 0;
 };
 
+typedef ReferenceCountedObjectPtr<ActionDescriptionFunction> ActionDescriptionFunctionPtr;
+
 class CompositeActionDescriptionFunction : public ActionDescriptionFunction
 {
 public:
@@ -102,6 +108,8 @@ class StateValueFunction : public StateFunction
 public:
   virtual double compute(CRAlgorithmPtr crAlgorithm) const = 0;
 };
+
+typedef ReferenceCountedObjectPtr<StateValueFunction> StateValueFunctionPtr;
 
 class CompositeStateValueFunction : public StateValueFunction
 {
@@ -162,6 +170,8 @@ class StateFeaturesFunction : public StateFunction
 public:
   virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm) const = 0;
 };
+typedef ReferenceCountedObjectPtr<StateFeaturesFunction> StateFeaturesFunctionPtr;
+
 
 class CompositeStateFeaturesFunction : public StateFeaturesFunction
 {
@@ -189,6 +199,7 @@ class ActionFeaturesFunction : public StateFunction
 public:
   virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, const void* choice) const = 0;
 };
+typedef ReferenceCountedObjectPtr<ActionFeaturesFunction> ActionFeaturesFunctionPtr;
 
 class CompositeActionFeaturesFunction : public ActionFeaturesFunction
 {

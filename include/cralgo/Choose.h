@@ -33,6 +33,7 @@ public:
   /*
   ** Choices
   */
+  virtual std::string getChoiceType() const = 0;
   virtual size_t getNumChoices() const = 0;
   virtual ActionIteratorPtr newIterator() const = 0;
   virtual void* cloneChoice(const void* choice) const = 0;
@@ -50,62 +51,61 @@ public:
     {this->crAlgorithm = crAlgorithm;}
   
   std::string stateDescription() const
-    {return getStateDescriptionFunction().toString(crAlgorithm);}
+    {return getStateDescriptionFunction()->toString(crAlgorithm);}
 
   std::string actionDescription(const void* choice) const
-    {return getActionDescriptionFunction().toString(crAlgorithm, choice);}
+    {return getActionDescriptionFunction()->toString(crAlgorithm, choice);}
 
   double stateValue() const
-    {return getStateValueFunction().compute(crAlgorithm);}
+    {return getStateValueFunction()->compute(crAlgorithm);}
 
   double actionValue(const void* choice) const
-    {return getActionValueFunction().compute(crAlgorithm, choice);}
+    {return getActionValueFunction()->compute(crAlgorithm, choice);}
     
   FeatureGeneratorPtr stateFeatures() const
-    {return getStateFeaturesFunction().featureGenerator(crAlgorithm);}
+    {return getStateFeaturesFunction()->featureGenerator(crAlgorithm);}
     
   FeatureGeneratorPtr actionFeatures(const void* choice) const
-    {return getActionFeaturesFunction().featureGenerator(crAlgorithm, choice);}
+    {return getActionFeaturesFunction()->featureGenerator(crAlgorithm, choice);}
 
   /*
   ** Composite functions
   */
-  virtual const StateDescriptionFunction& getStateDescriptionFunction() const = 0;
-  virtual const ActionDescriptionFunction& getActionDescriptionFunction() const = 0;
-  virtual const StateValueFunction& getStateValueFunction() const = 0;
-  virtual const ActionValueFunction& getActionValueFunction() const = 0;
-  virtual const StateFeaturesFunction& getStateFeaturesFunction() const = 0;
-  virtual const ActionFeaturesFunction& getActionFeaturesFunction() const = 0;
+  virtual StateDescriptionFunctionPtr   getStateDescriptionFunction() const = 0;
+  virtual ActionDescriptionFunctionPtr  getActionDescriptionFunction() const = 0;
+  virtual StateValueFunctionPtr         getStateValueFunction() const = 0;
+  virtual ActionValueFunctionPtr        getActionValueFunction() const = 0;
+  virtual StateFeaturesFunctionPtr      getStateFeaturesFunction() const = 0;
+  virtual ActionFeaturesFunctionPtr     getActionFeaturesFunction() const = 0;
 
   /*
   ** String descriptions
   */
   virtual size_t getNumStateDescriptions() const = 0;
-  virtual const StateDescriptionFunction& getStateDescription(size_t index) const = 0;
+  virtual StateDescriptionFunctionPtr getStateDescription(size_t index) const = 0;
   virtual size_t getNumActionDescriptions() const = 0;
-  virtual const ActionDescriptionFunction& getActionDescription(size_t index) const = 0;
+  virtual ActionDescriptionFunctionPtr getActionDescription(size_t index) const = 0;
 
   /*
   ** Value functions
   */
   virtual size_t getNumStateValues() const = 0;
-  virtual const StateValueFunction& getStateValue(size_t index) const = 0;
+  virtual StateValueFunctionPtr getStateValue(size_t index) const = 0;
   virtual size_t getNumActionValues() const = 0;
-  virtual const ActionValueFunction& getActionValue(size_t index) const = 0;
+  virtual ActionValueFunctionPtr getActionValue(size_t index) const = 0;
 
   /*
   ** Features
   */
   virtual size_t getNumStateFeatures() const = 0;
-  virtual const StateFeaturesFunction& getStateFeatures(size_t index) const = 0;
+  virtual StateFeaturesFunctionPtr getStateFeatures(size_t index) const = 0;
   virtual size_t getNumActionFeatures() const = 0;
-  virtual const ActionFeaturesFunction& getActionFeatures(size_t index) const = 0;
+  virtual ActionFeaturesFunctionPtr getActionFeatures(size_t index) const = 0;
   
 protected:
   Choose(CRAlgorithmPtr crAlgorithm = CRAlgorithmPtr())
     : crAlgorithm(crAlgorithm) {}
     
-private:
   CRAlgorithmPtr crAlgorithm;
 };
 

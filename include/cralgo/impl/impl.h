@@ -24,6 +24,15 @@
 # include "Function/ExampleRiskFunction.hpp"
 # include "Function/FunctionStaticToDynamic.hpp"
 
+# include "Policy/PolicyStaticToDynamic.hpp"
+# include "Policy/BasicPolicies.hpp"
+# include "Policy/ComputeStatisticsPolicy.hpp"
+# include "Policy/QLearningPolicy.hpp"
+# include "Policy/MonteCarloControlPolicy.hpp"
+# include "Policy/GPOMDPPolicy.hpp"
+# include "Policy/ClassificationExampleCreatorPolicy.hpp"
+# include "Policy/RankingExampleCreatorPolicy.hpp"
+  
 # include "Bridge/FeatureGenerator.hpp"
 # include "Bridge/DoubleVector.hpp"
 # include "Bridge/Choose.hpp"

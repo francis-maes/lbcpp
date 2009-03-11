@@ -18,9 +18,9 @@ namespace cralgo
 {
 
 template<class CRAlgorithmType>
-struct ConstructChooseStaticCallback : public StaticCallback
+struct StoreChooseAndRewardStaticCallback : public StaticCallback
 {
-  ConstructChooseStaticCallback(CRAlgorithmPtr crAlgorithm) 
+  StoreChooseAndRewardStaticCallback(CRAlgorithmPtr crAlgorithm) 
     : crAlgorithm(crAlgorithm), currentReward(0.0) {}
 
   void reset()

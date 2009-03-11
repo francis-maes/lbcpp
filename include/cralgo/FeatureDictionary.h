@@ -28,17 +28,29 @@ public:
     {return (!featuresDictionary || featuresDictionary->count() == 0) && 
           (!scopesDictionary || scopesDictionary->count() == 0);}
   
+  /*
+  ** Features
+  */
   void ensureHasFeatures()
     {if (!featuresDictionary) featuresDictionary = new StringDictionary();}
   
   StringDictionary& getFeatures()
     {ensureHasFeatures(); return *featuresDictionary;}
+  
+  size_t getNumFeatures() const
+    {return featuresDictionary ? featuresDictionary->count() : 0;}
     
+  /*
+  ** Scopes
+  */
   void ensureHasScopes()
     {if (!scopesDictionary) scopesDictionary = new StringDictionary();}
 
   StringDictionary& getScopes()
     {ensureHasScopes(); return *scopesDictionary;}
+
+  size_t getNumScopes() const
+    {return scopesDictionary ? scopesDictionary->count() : 0;}
     
   const FeatureDictionary& getSubDictionary(size_t index) const
   {
@@ -51,6 +63,9 @@ public:
   FeatureDictionary& getSubDictionary(const std::string& name)
     {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
   
+  /*
+  ** Misc
+  */
   std::string getName() const
     {return name;}
     

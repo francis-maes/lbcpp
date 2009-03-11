@@ -1,6 +1,8 @@
 
 CRPP - Gros
 
+* Hierarchies statique de State/Action ValueFunctions, sur le meme modele que les autres
+
 * Policies:
   * SarsaZero, QLearning, MonteCarloControl, OlPomdp
   * CRank, CRankPost
@@ -21,6 +23,7 @@ CRPP - Gros
 * Doxygen
 
 CRPP - Petit
+* ContainerTraits::sampleBests foireux
 * Functions: splitter les fichiers
 * FeatureDictionary: les std::vector en dur, pas de pointeur
 * FeatureVisitor: appliquer un hierarchie similaire a ContinuousFunctions ?

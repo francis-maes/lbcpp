@@ -11,10 +11,8 @@
 
 # include "LossFunctions.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f(x) = max(0, -x)
 struct PerceptronLossFunction : public ScalarFunction<PerceptronLossFunction>

@@ -11,10 +11,8 @@
 
 # include "FunctionStatic.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f_theta(x) = theta_1
 struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>

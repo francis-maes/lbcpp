@@ -12,10 +12,8 @@
 # include "FunctionStatic.hpp"
 # include "FunctionPairTraits.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f : params -> R
 // f(theta) = 1/N sum_{i=1}^{N} (Architecture(theta) o Loss(y_i))(x_i)

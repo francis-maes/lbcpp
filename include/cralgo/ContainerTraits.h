@@ -110,6 +110,7 @@ struct DefaultContainerTraits
   static inline const ValueType& sampleRandom(const ContainerType& container)
     {return SampleRandomImplementation<ConstIterator>::sampleRandom(container);}
   
+  // foireux
   template<class CRAlgorithmType, class ActionValueType>
   static inline const ValueType& sampleBests(const ContainerType& container, CRAlgorithmType& crAlgorithm, ActionValueType& actionValues)
   {
@@ -117,7 +118,7 @@ struct DefaultContainerTraits
     double bestsScore = -std::numeric_limits<double>::max();
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
     {
-      double score = actionValues.compute(crAlgorithm, ContainerTraits::value(it));
+      double score = actionValues->compute(crAlgorithm, &ContainerTraits::value(it));
       if (score > bestsScore)
       {
         bests.clear();
@@ -128,7 +129,8 @@ struct DefaultContainerTraits
         bests.push_back(it);
     }
     assert(bests.size() > 0);
-    return *(Traits< std::vector<ConstIterator> >::sampleRandom(bests));
+    ConstIterator it = Traits< std::vector<ConstIterator> >::sampleRandom(bests);
+    return ContainerTraits::value(it);
   }
 };
 
