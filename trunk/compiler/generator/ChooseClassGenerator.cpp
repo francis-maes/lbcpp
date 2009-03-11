@@ -115,9 +115,15 @@ ChooseClassGenerator::ChooseClassGenerator(CRAlgorithmChoose& choose, SymbolLook
   setKeyword(structKeyword());
   setName(className);
   body.add(createDestructor());
-  body.add(atom("typedef " + PTree::reify(choose.getChooseType()) + " ChoiceType;\n"));
+  std::string chooseType = PTree::reify(choose.getChooseType());
+  if (chooseType.size() && chooseType[chooseType.size() - 1] == ' ')
+    chooseType = chooseType.substr(0, chooseType.size() - 1);
+    
+  body.add(atom("typedef " + chooseType + " ChoiceType;\n"));
   body.add(atom("typedef " + choose.getContainerType() + " ContainerType;\n"));
-  body.add(atom("static " + className + "& getInstance() {static " + className + " instance; return instance;}\n"));
+  body.add(atom("static " + className + "& getInstance() {static " + 
+    className + " instance; return instance;}\n"));
+  body.add(atom("static std::string getChoiceType() {return " + quote(chooseType) + ";}\n"));
 
   body.addNewLine();  
   body.add(createNumStateValuesEnum());
@@ -143,7 +149,7 @@ void ChooseClassGenerator::addMemberVariables(BlockPTreeGenerator& classBody)
   }
   classBody.addNewLine();
   for (size_t i = 0; i < numCompositeStateFunctionKinds; ++i)
-    classBody.addVariableDeclaration(atom("const " + getDynamicClassName(stateFunctionKinds[i]) + "*"),
+    classBody.addVariableDeclaration(atom(getDynamicClassName(stateFunctionKinds[i]) + "Ptr"),
       identifier(std::string("__") + stateFunctionKinds[i] + "Function__"));
 }
 
@@ -180,8 +186,8 @@ PTree::Node* ChooseClassGenerator::createNumStateValuesEnum()
 PTree::Node* ChooseClassGenerator::createStateFunctionGetter(const std::string& stateFunctionKind)
 {
   FunctionPTreeGenerator output;
-  std::string returnType = "const " + getDynamicClassName(stateFunctionKind);
-  output.setReturnType(atom(returnType + "&"));
+  std::string returnType = getDynamicClassName(stateFunctionKind) + "Ptr";
+  output.setReturnType(atom(returnType));
   output.setName("get" + stateFunctionKind);
   output.addParameter(atom("size_t"), identifier("i"));
   output.setConst(true);
@@ -191,7 +197,7 @@ PTree::Node* ChooseClassGenerator::createStateFunctionGetter(const std::string& 
   size_t index = 0;
   for (size_t i = 0; i < stateFunctions.size(); ++i)
     if (stateFunctions[i].kind == stateFunctionKind)
-      switchOutput.addCase(literal(index++), returnStatement(atom("*" + stateFunctions[i].identifier)));
+      switchOutput.addCase(literal(index++), returnStatement(atom(stateFunctions[i].identifier)));
   switchOutput.setDefault(atom("assert(false); return *(" + returnType + "* )0;\n"));
   output.body.add(switchOutput.createStatement());
   
@@ -203,8 +209,8 @@ PTree::Node* ChooseClassGenerator::createCompositeStateFunctionGetter(const std:
   std::string id = std::string("__") + stateFunctionKind + "Function__";
 
   FunctionPTreeGenerator output;
-  std::string returnType = "const " + getDynamicClassName(stateFunctionKind);
-  output.setReturnType(atom(returnType + "&"));
+  std::string returnType = getDynamicClassName(stateFunctionKind) + "Ptr";
+  output.setReturnType(atom(returnType));
   output.setName("get" + stateFunctionKind + "Function");
   output.setConst(true);
   
@@ -232,7 +238,7 @@ PTree::Node* ChooseClassGenerator::createCompositeStateFunctionGetter(const std:
   }
     
   output.body.add(ifStatement(atom("!" + id), createCode));
-  output.body.add(returnStatement(atom("*" + id)));
+  output.body.add(returnStatement(atom(id)));
 
   return output.createDeclaration();
 }
@@ -260,7 +266,8 @@ PTree::Node* ChooseClassGenerator::createDestructor()
   FunctionPTreeGenerator output;
   output.setReturnType(atom("~"));
   output.setName(className);
-  for (size_t i = 0; i < stateFunctions.size(); ++i)
+  output.body.add(NULL);
+/*  for (size_t i = 0; i < stateFunctions.size(); ++i)
   {
     StateFunctionInfo& sf = stateFunctions[i];
     output.body.addExpressionStatement(atom("delete " + sf.identifier));
@@ -269,6 +276,6 @@ PTree::Node* ChooseClassGenerator::createDestructor()
   {
     std::string id = std::string("__") + stateFunctionKinds[i] + "Function__";
     output.body.add(atom("if (" + id + ") delete " + id + ";\n"));
-  }
+  }*/
   return output.createDeclaration();
 }

@@ -11,10 +11,8 @@
 
 # include "FunctionStatic.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitecture >
 {

@@ -61,6 +61,9 @@ public:
   /*
   ** Choices
   */
+  virtual std::string getChoiceType() const
+    {return ChooseType::getChoiceType();}
+
   virtual size_t getNumChoices() const
     {return ContainerTraits::size(container);}
 
@@ -76,7 +79,7 @@ public:
   virtual const void* sampleRandomChoice() const
   {
     return ContainerTraits::size(container)
-      ? &ContainerTraits::sampleRandom(container)
+      ? cloneChoice(&ContainerTraits::sampleRandom(container))
       : NULL;
   }
   
@@ -84,24 +87,23 @@ public:
   {
     if (!ContainerTraits::size(container))
       return NULL;
-    
-    return NULL; //&ContainerTraits::sampleBests(container, crAlgorithm, valueFunction);
+    return cloneChoice(&ContainerTraits::sampleBests(container, crAlgorithm, valueFunction));
   }
   
   /*
   ** Composites functions
   */
-  virtual const StateDescriptionFunction& getStateDescriptionFunction() const
+  virtual StateDescriptionFunctionPtr getStateDescriptionFunction() const
     {return choose.getStateDescriptionFunction();}
-  virtual const ActionDescriptionFunction& getActionDescriptionFunction() const
+  virtual ActionDescriptionFunctionPtr getActionDescriptionFunction() const
     {return choose.getActionDescriptionFunction();}  
-  virtual const StateValueFunction& getStateValueFunction() const
+  virtual StateValueFunctionPtr getStateValueFunction() const
     {return choose.getStateValueFunction();}  
-  virtual const ActionValueFunction& getActionValueFunction() const
+  virtual ActionValueFunctionPtr getActionValueFunction() const
     {return choose.getActionValueFunction();}  
-  virtual const StateFeaturesFunction& getStateFeaturesFunction() const
+  virtual StateFeaturesFunctionPtr getStateFeaturesFunction() const
     {return choose.getStateFeaturesFunction();}  
-  virtual const ActionFeaturesFunction& getActionFeaturesFunction() const
+  virtual ActionFeaturesFunctionPtr getActionFeaturesFunction() const
     {return choose.getActionFeaturesFunction();}  
   
   /*
@@ -110,37 +112,37 @@ public:
   virtual size_t getNumStateDescriptions() const
     {return ChooseType::numStateDescriptionFunctions;}
     
-  virtual const StateDescriptionFunction& getStateDescription(size_t index) const
+  virtual StateDescriptionFunctionPtr getStateDescription(size_t index) const
     {return choose.getStateDescription(index);}
     
   virtual size_t getNumActionDescriptions() const
     {return ChooseType::numActionDescriptionFunctions;}
     
-  virtual const ActionDescriptionFunction& getActionDescription(size_t index) const
+  virtual ActionDescriptionFunctionPtr getActionDescription(size_t index) const
     {return choose.getActionDescription(index);}
     
   virtual size_t getNumStateValues() const
     {return ChooseType::numStateValueFunctions;}
     
-  virtual const StateValueFunction& getStateValue(size_t index) const
+  virtual StateValueFunctionPtr getStateValue(size_t index) const
     {return choose.getStateValue(index);}
 
   virtual size_t getNumActionValues() const
     {return ChooseType::numActionValueFunctions;}
     
-  virtual const ActionValueFunction& getActionValue(size_t index) const
+  virtual ActionValueFunctionPtr getActionValue(size_t index) const
     {return choose.getActionValue(index);}
     
   virtual size_t getNumStateFeatures() const
     {return ChooseType::numStateFeaturesFunctions;}
     
-  virtual const StateFeaturesFunction& getStateFeatures(size_t index) const
+  virtual StateFeaturesFunctionPtr getStateFeatures(size_t index) const
     {return choose.getStateFeatures(index);}
     
   virtual size_t getNumActionFeatures() const
     {return ChooseType::numActionFeaturesFunctions;}
     
-  virtual const ActionFeaturesFunction& getActionFeatures(size_t index) const
+  virtual ActionFeaturesFunctionPtr getActionFeatures(size_t index) const
     {return choose.getActionFeatures(index);}
 };
 

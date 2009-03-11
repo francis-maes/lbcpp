@@ -11,10 +11,8 @@
 
 # include "FunctionStatic.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 template<class Function1, class Function2, class Parameter>
 struct ContinuousFunctionPair

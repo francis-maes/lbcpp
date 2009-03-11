@@ -12,10 +12,8 @@
 # include "FunctionStatic.hpp"
 # include "FunctionPairTraits.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 /*
 ** Regression

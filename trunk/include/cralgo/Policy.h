@@ -13,8 +13,24 @@
 namespace cralgo
 {
 
+class Policy;
+typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
+class Classifier;
+typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
+
 class Policy : public Object
 {
+public:
+  static PolicyPtr createRandom();
+  static PolicyPtr createGreedy(ActionValueFunctionPtr actionValues);
+
+  static PolicyPtr createClassificationExampleCreator(PolicyPtr explorationPolicy,
+                        ClassifierPtr classifier,
+                        ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
+
+  PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
+  PolicyPtr addComputeStatistics() const;
+
 public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}
   virtual const void* policyChoose(ChoosePtr choose) = 0;
@@ -22,11 +38,8 @@ public:
   virtual void policyLeave() {}
 };
 
-typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
-
 template<>
 struct Traits<PolicyPtr> : public ObjectSharedPtrTraits<Policy> {};
-
 
 class DecoratorPolicy : public Policy
 {
@@ -48,102 +61,6 @@ public:
     
 protected:
   PolicyPtr decorated;
-};
-
-class ComputeStatisticsPolicy : public DecoratorPolicy
-{
-public:
-  ComputeStatisticsPolicy(PolicyPtr decorated = PolicyPtr())
-    : DecoratorPolicy(decorated) {}
-    
-  virtual std::string toString() const
-  {
-    std::string res = cralgo::toString(numChooses) + " chooses, " +
-        cralgo::toString(numChoices) + " choices, " +
-        cralgo::toString(rewardSum) + " reward";
-    if (numChooses)
-    {
-      res += ", " + cralgo::toString(numChoices / (double)numChooses) + " choices/choose, "
-        + cralgo::toString(rewardSum / numChooses) + " reward/choose";
-    }
-    return res;
-  }
-    
-  virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
-  {
-    numChooses = numChoices = 0;
-    rewardSum = 0.0;
-    DecoratorPolicy::policyEnter(crAlgorithm);
-  }
-  
-  virtual const void* policyChoose(ChoosePtr choose)
-  {
-    ++numChooses;
-    numChoices += choose->getNumChoices();
-    return DecoratorPolicy::policyChoose(choose);
-  }
-
-  virtual void policyReward(double reward)
-  {
-    rewardSum += reward;
-    DecoratorPolicy::policyReward(reward);
-  }
-
-private:
-  size_t numChooses;
-  size_t numChoices; // todo: incremental statistics
-  double rewardSum;
-};
-
-class RandomPolicy : public Policy
-{
-public:
-  virtual const void* policyChoose(ChoosePtr choose)
-    {return choose->sampleRandomChoice();}
-};
-
-class GreedyPolicy : public Policy
-{
-public:
-  GreedyPolicy(ActionValueFunctionPtr actionValue)
-    : actionValue(actionValue) {}
-    
-  virtual const void* policyChoose(ChoosePtr choose)
-    {return choose->sampleBestChoice(actionValue);}
-  
-protected:
-  virtual void save(std::ostream& ostr) const
-    {write(ostr, actionValue);}
-
-  virtual bool load(std::istream& istr)
-    {return read(istr, actionValue);}
-  
-private:
-  ActionValueFunctionPtr actionValue;
-};
-
-class EpsilonGreedyPolicy : public DecoratorPolicy
-{
-public:
-  EpsilonGreedyPolicy(double epsilon)
-    : epsilon(epsilon) {}
-
-  virtual const void* policyChoose(ChoosePtr choose)
-  {
-    const void* choice = DecoratorPolicy::policyChoose(choose);
-    return Random::getInstance().sampleBool(epsilon)
-      ? choose->sampleRandomChoice()
-      : choice;
-  }
-  
-  double getEpsilon() const
-    {return epsilon;}
-    
-  double& getEpsilon()
-    {return epsilon;}
-  
-private:
-  double epsilon;
 };
 
 }; /* namespace cralgo */

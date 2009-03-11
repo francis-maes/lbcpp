@@ -11,10 +11,8 @@
 
 # include "BinaryScalarOperation.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 struct ScalarConstant
 {

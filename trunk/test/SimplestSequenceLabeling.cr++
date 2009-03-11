@@ -86,31 +86,29 @@ private:
 class SequenceExamplesParser : public LearningExamplesParser
 {
 public:
-  SequenceExamplesParser(std::vector<SequenceExample>& target)
-    : target(target) {}
+  SequenceExamplesParser(std::vector<SequenceExample>& target, FeatureDictionary& labels)
+    : target(target), labels(labels) {}
     
   std::vector<SequenceExample>& target;
+  FeatureDictionary& labels;
 
   virtual void parseBegin()
   {
     currentContent.clear();
     currentLabels.clear();
-    numLabels = 0;
   }
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
     assert(columns.size());
-    size_t label;
+    std::string label;
     if (!parse(columns[0], label))
       return false;
-    if (label >= numLabels)
-      numLabels = label + 1;
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))
       return false;
     currentContent.push_back(features);
-    currentLabels.push_back(label);
+    currentLabels.push_back(labels.getFeatures().add(label));
     return true;
   }
 
@@ -125,13 +123,9 @@ public:
     return true;
   }
   
-  size_t getNumLabels() const
-    {return numLabels;}
-  
 private:
   std::vector<FeatureGeneratorPtr> currentContent;
   std::vector<size_t> currentLabels;
-  size_t numLabels;
 };
 
 }; /* namespace cralgo */
@@ -140,7 +134,8 @@ using namespace cralgo;
 
 int main(int argc, char* argv[])
 {
-  static const char* filename = "/Users/francis/Projets/Nieme/trunk/src/problems/sequences/experiments/test.smousse";
+  static const char* filename = 
+    "/Users/francis/Projets/Francis/NiemeTrunk/src/problems/sequences/experiments/test.smousse";
 
   std::ifstream istr(filename);
   if (!istr.is_open())
@@ -148,21 +143,37 @@ int main(int argc, char* argv[])
     std::cerr << "Could not open file " << filename << std::endl;
     return 1;
   }
+
+  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   
-  FeatureDictionary dictionary("dictionary");
+  FeatureDictionary features("myFeatures");
+  FeatureDictionary labels("myLabels");
+
   std::vector<SequenceExample> learningExamples;
-  SequenceExamplesParser parser(learningExamples);
-  parser.parse(istr, dictionary);
-  std::cout << learningExamples.size() << " sequences, " << parser.getNumLabels() << " labels" << std::endl;
-  PolicyPtr policy(new RandomPolicy());
-  policy = PolicyPtr(new ComputeStatisticsPolicy(policy));
+  SequenceExamplesParser parser(learningExamples, labels);
+  parser.parse(istr, features);
+  std::cout << learningExamples.size() << " sequences, " << labels.getNumFeatures()
+    << " labels, " << features.getNumFeatures() << " features." << std::endl;
   
+  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
+    GradientBasedLearner::createGradientDescent(learningRate), labels);
+  
+  PolicyPtr policy = Policy::createClassificationExampleCreator(Policy::createRandom(), classifier);
+  policy = policy->addComputeStatistics();
+  
+//  PolicyPtr policy = Policy::createRandom()->addComputeStatistics();  
   for (size_t i = 0; i < learningExamples.size(); ++i)
   {
     SequenceExample& sequence = learningExamples[i];
-    std::vector<size_t> prediction = simplestSequenceLabeling(policy, sequence.getContent(), parser.getNumLabels(), &sequence.getLabels());
-    std::cout << "Prediction " << i << " : " << toString(prediction) << std::endl;
+    std::vector<size_t> prediction = simplestSequenceLabeling(policy, sequence.getContent(), labels.getNumFeatures(), &sequence.getLabels());
+//    std::cout << "Prediction " << i << " : " << toString(prediction) << std::endl;
   }
   std::cout << toString(policy) << std::endl;
+  
+/*  for (size_t i = 0; i < learningExamples.size(); ++i)
+  {
+    SequenceExample& sequence = learningExamples[i];
+    simplestSequenceLabeling(policy, sequence.getContent(), labels.getNumFeatures(), &sequence.getLabels());
+  */
   return 0;
 }

@@ -11,10 +11,8 @@
 
 # include "LossFunctions.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f(x) = max(0, 1 - input)
 struct HingeLossFunction : public ScalarFunction<HingeLossFunction>

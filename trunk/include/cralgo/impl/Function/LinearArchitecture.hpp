@@ -11,10 +11,8 @@
 
 # include "FunctionStatic.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 // f_theta(x) = dotProduct(x, theta)
 struct LinearArchitecture : public ScalarArchitecture<LinearArchitecture>

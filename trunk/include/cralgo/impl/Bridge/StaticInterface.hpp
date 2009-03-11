@@ -73,18 +73,6 @@ struct StaticCallback
   void reward(double r) {}
 };
 
-/* TODO
-
-struct StaticPolicy : public StaticCallback
-{
-  template<class CRAlgorithmType, class ContainerType, class ChooseType>
-  const void* choose(const CRAlgorithmType& crAlgorithm, const ContainerType& choices, const ChooseType& dummy)
-    {assert(false); return NULL;}
-
-  void reward(double r) {}
-};
-*/
-
 }; /* namespace cralgo */
 
 #endif // !CRALGO_BRIDGE_STATIC_INTERFACE_HPP_

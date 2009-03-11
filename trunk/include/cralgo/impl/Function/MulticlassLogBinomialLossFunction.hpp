@@ -11,10 +11,8 @@
 
 # include "LossFunctions.hpp"
 
-namespace cralgo
-{
-namespace impl
-{
+namespace cralgo {
+namespace impl {
 
 struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiClassLogBinomialLossFunction >
 {

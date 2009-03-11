@@ -65,6 +65,18 @@ SET(CRALGO_LIBRARY_IMPL_FUNCTION
   ../include/cralgo/impl/Function/TransferArchitecture.hpp
 )
 
+SET(CRALGO_LIBRARY_IMPL_POLICY
+  ../include/cralgo/impl/Policy/PolicyStatic.hpp
+  ../include/cralgo/impl/Policy/PolicyStaticToDynamic.hpp
+  ../include/cralgo/impl/Policy/BasicPolicies.hpp
+  ../include/cralgo/impl/Policy/ComputeStatisticsPolicy.hpp
+  ../include/cralgo/impl/Policy/QLearningPolicy.hpp
+  ../include/cralgo/impl/Policy/MonteCarloControlPolicy.hpp
+  ../include/cralgo/impl/Policy/GPOMDPPolicy.hpp
+  ../include/cralgo/impl/Policy/ClassificationExampleCreatorPolicy.hpp
+  ../include/cralgo/impl/Policy/RankingExampleCreatorPolicy.hpp
+)
+
 SET(CRALGO_LIBRARY_IMPL_BRIDGE
   ../include/cralgo/impl/Bridge/StaticInterface.hpp
   ../include/cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp
@@ -89,12 +101,14 @@ SET(CRALGO_LIBRARY_SOURCES
   LearningExample.cpp
   LearningMachine.cpp
   GradientBasedLearner.cpp
+  Policy.cpp
 )
 
 SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_HEADERS}
   ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR}
   ${CRALGO_LIBRARY_IMPL_FUNCTION}
+  ${CRALGO_LIBRARY_IMPL_POLICY}
   ${CRALGO_LIBRARY_IMPL_BRIDGE}
   ${CRALGO_LIBRARY_SOURCES}
 )
@@ -102,6 +116,7 @@ SET(CRALGO_LIBRARY
 SOURCE_GROUP(includes FILES ${CRALGO_LIBRARY_HEADERS})
 SOURCE_GROUP(impl/FeatureVisitor FILES ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR})
 SOURCE_GROUP(impl/Function FILES ${CRALGO_LIBRARY_IMPL_FUNCTION})
+SOURCE_GROUP(impl/Policy FILES ${CRALGO_LIBRARY_IMPL_POLICY})
 SOURCE_GROUP(impl/Bridge FILES ${CRALGO_LIBRARY_IMPL_BRIDGE})
 SOURCE_GROUP(sources FILES ${CRALGO_LIBRARY_SOURCES})
 
