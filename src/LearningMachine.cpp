@@ -154,3 +154,28 @@ GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRe
   res->setLabels(labels);
   return res;
 }
+
+class LinearSupportVectorMachine
+  : public StaticToDynamicGradientBasedLearningMachine<LinearSupportVectorMachine, GradientBasedBinaryClassifier>
+{
+public:
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const
+    {return impl::instantiate(architecture());}
+
+  inline impl::LinearArchitecture architecture() const
+    {return impl::linearArchitecture();}
+
+  inline impl::HingeLoss<ClassificationExample> loss() const
+    {return impl::hingeLoss<ClassificationExample>();}
+    
+  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
+};
+
+GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(GradientBasedLearnerPtr learner, FeatureDictionary& labels)
+{
+  GradientBasedBinaryClassifierPtr res = new LinearSupportVectorMachine();
+  res->setLearner(learner);
+  res->setLabels(labels);
+  return res;
+}

@@ -68,13 +68,13 @@ public:
   ** Shortcuts for functions computation
   */
   double computeRegularizer() const
-    {return getRegularizer()->compute(parameters);}
+    {assert(parameters); return getRegularizer()->compute(parameters);}
 
   double computeEmpiricalRisk(const std::vector<ExampleType>& examples) const
-    {return getEmpiricalRisk(examples)->compute(parameters);}
+    {assert(parameters); return getEmpiricalRisk(examples)->compute(parameters);}
   
   double computeRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
-    {return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
+    {assert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
   
 protected:
   DenseVectorPtr parameters;
@@ -87,6 +87,7 @@ typedef ReferenceCountedObjectPtr<GradientBasedBinaryClassifier> GradientBasedBi
 class GradientBasedBinaryClassifier : public GradientBasedLearningMachine<BinaryClassifier, ClassificationExample>
 {
 public:
+  static GradientBasedBinaryClassifierPtr createLinearSVM(GradientBasedLearnerPtr learner, FeatureDictionary& labels);
   static GradientBasedBinaryClassifierPtr createLogisticRegression(GradientBasedLearnerPtr learner, FeatureDictionary& labels);
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
