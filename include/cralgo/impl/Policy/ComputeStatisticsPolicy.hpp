@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_POLICY_COMPUTE_STATISTICS_H_
 
 # include "PolicyStatic.hpp"
+# include "../../RandomVariable.h"
 
 namespace cralgo {
 namespace impl {
@@ -21,38 +22,76 @@ struct ComputeStatisticsPolicy
   typedef DecoratorPolicy<ComputeStatisticsPolicy, DecoratedType> BaseClass;
   
   ComputeStatisticsPolicy(const DecoratedType& decorated)
-    : BaseClass(decorated), numChooses(0), numChoices(0), rewardSum(0.0) {}
-    
-  std::string toString() const
+    : BaseClass(decorated),
+      rewardPerChoose(new ScalarRandomVariableStatistics("rewardPerChoose")),
+      choicesPerChoose(new ScalarRandomVariableStatistics("choicesPerChoose")),
+      rewardPerEpisode(new ScalarRandomVariableStatistics("rewardPerEpisode")),
+      choosesPerEpisode(new ScalarRandomVariableStatistics("choosesPerEpisode")),
+      choicesPerEpisode(new ScalarRandomVariableStatistics("choicesPerEpisode"))
   {
-    std::string res = cralgo::toString(numChooses) + " chooses, " +
-        cralgo::toString(numChoices) + " choices, " +
-        cralgo::toString(rewardSum) + " reward";
-    if (numChooses)
-    {
-      res += ", " + cralgo::toString(numChoices / (double)numChooses) + " choices/choose, "
-        + cralgo::toString(rewardSum / numChooses) + " reward/choose";
-    }
-    return res;
   }
-      
+  
+  void policyEnter(CRAlgorithmPtr crAlgorithm)
+  {
+    // FIXME: check flat
+    episodeNumChooses = 0;
+    episodeNumChoices = 0;
+    episodeRewardSum = 0.0;
+    BaseClass::policyEnter(crAlgorithm);
+  }
+
   VariablePtr policyChoose(ChoosePtr choose)
   {
-    ++numChooses;
-    numChoices += choose->getNumChoices();
+    ++episodeNumChooses;
+    episodeNumChoices += choose->getNumChoices();
     return BaseClass::policyChoose(choose);
   }
 
   void policyReward(double reward)
   {
-    rewardSum += reward;
+    episodeRewardSum += reward;
     BaseClass::policyReward(reward);
+  }
+  
+  void policyLeave()
+  {
+    if (episodeNumChooses)
+    {
+      rewardPerChoose->push(episodeRewardSum / episodeNumChooses);
+      choicesPerChoose->push(episodeNumChoices / (double)episodeNumChooses);
+      rewardPerEpisode->push(episodeRewardSum);
+      choosesPerEpisode->push((double)episodeNumChooses);
+      choicesPerEpisode->push((double)episodeNumChoices);
+    }
+    BaseClass::policyLeave();    
+  }
+  
+  size_t getNumResults() const
+    {return 5 + BaseClass::getNumResults();}
+    
+  ObjectPtr getResult(size_t i) const
+  {
+    if (i >= 5)
+      return BaseClass::getResult(i - 5);
+    switch (i)
+    {
+    case 0: return rewardPerChoose;
+    case 1: return choicesPerChoose;
+    case 2: return rewardPerEpisode;
+    case 3: return choosesPerEpisode;
+    case 4: return choicesPerEpisode;
+    };
+    assert(false);
+    return ObjectPtr();
   }
 
 private:
-  size_t numChooses;
-  size_t numChoices; // todo: incremental statistics
-  double rewardSum;
+  ScalarRandomVariableStatisticsPtr rewardPerChoose, choicesPerChoose;
+  ScalarRandomVariableStatisticsPtr rewardPerEpisode, choosesPerEpisode, choicesPerEpisode;
+
+  size_t episodeNumChooses;
+  size_t episodeNumChoices;
+  double episodeRewardSum;
 };
 
 }; /* namespace impl */

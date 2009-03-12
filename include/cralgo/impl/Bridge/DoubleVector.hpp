@@ -44,7 +44,7 @@ inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
 }
 
 template<>
-struct Traits<SparseVectorPtr> : public ObjectSharedPtrTraits<SparseVector> {};
+struct Traits<SparseVectorPtr> : public ObjectPtrTraits<SparseVector> {};
 
 /*
 ** Dense Vector
@@ -65,7 +65,7 @@ inline void DenseVector::staticFeatureGenerator(FeatureVisitor& visitor, Feature
 }
 
 template<>
-struct Traits<DenseVectorPtr> : public ObjectSharedPtrTraits<DenseVector> {};
+struct Traits<DenseVectorPtr> : public ObjectPtrTraits<DenseVector> {};
 
 /*
 ** Lazy Vector
@@ -88,7 +88,7 @@ inline void LazyVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureD
 }
 
 template<>
-struct Traits<LazyVectorPtr> : public ObjectSharedPtrTraits<LazyVector> {};
+struct Traits<LazyVectorPtr> : public ObjectPtrTraits<LazyVector> {};
 
 /*
 ** Double Vector
@@ -119,7 +119,7 @@ inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
 }
 
 template<>
-struct Traits<DoubleVectorPtr> : public ObjectSharedPtrTraits<DoubleVector> {};
+struct Traits<DoubleVectorPtr> : public ObjectPtrTraits<DoubleVector> {};
 
 }; /* namespace cralgo */
 

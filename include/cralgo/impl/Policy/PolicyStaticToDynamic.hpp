@@ -14,27 +14,6 @@
 namespace cralgo {
 namespace impl {
 
-// todo: move
-template<class ImplementationType, class BaseClass>
-class StaticToDynamicObject : public BaseClass
-{
-public:
-  StaticToDynamicObject(const ImplementationType& impl)
-    : impl(impl) {}
-
-  virtual bool load(std::istream& istr)
-    {return impl.load(istr);}
-    
-  virtual void save(std::ostream& ostr) const
-    {impl.save(ostr);}
-
-  virtual std::string toString() const
-    {return impl.toString();}
-    
-protected:
-  ImplementationType impl;
-};
-
 template<class ImplementationType>
 class StaticToDynamicPolicy
   : public StaticToDynamicObject<ImplementationType, cralgo::Policy>
@@ -56,6 +35,12 @@ public:
     
   virtual void policyLeave()
     {BaseClass::impl.policyLeave();}
+
+  virtual size_t getNumResults() const
+    {return BaseClass::impl.getNumResults();}
+    
+  virtual ObjectPtr getResult(size_t i) const
+    {return BaseClass::impl.getResult(i);}
 };
 
 template<class ExactType>

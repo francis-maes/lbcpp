@@ -1,5 +1,10 @@
 
-* ContainerTraits::sampleBests foireux
+* 3- Tester l'apprentissage
+     ContainerTraits::sampleBests foireux
+
+* 4- Classe ClassifierScoresActionValue 
+
+* 5- Tester l'inférence
 
 
 LC++ library:
@@ -11,7 +16,6 @@ LC++ library:
   * SarsaZero, QLearning, MonteCarloControl, OlPomdp
   * CRank, CRankPost
   * ConsoleLogger, TableLogger
-  * Bridge static <-> dynamique
   * policyRun inline
 
 * Task, Tables

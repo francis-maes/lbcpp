@@ -31,6 +31,12 @@ struct DynamicToStaticPolicy : public Policy<DynamicToStaticPolicy>
     
   void policyLeave()
     {policy->policyLeave();}
+
+  size_t getNumResults() const
+    {return policy->getNumResults();}
+    
+  ObjectPtr getResult(size_t i) const
+    {return policy->getResult(i);}
 };
 
 inline DynamicToStaticPolicy dynamicToStatic(PolicyPtr policy)

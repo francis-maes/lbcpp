@@ -31,10 +31,14 @@ public:
   virtual VariablePtr policyChoose(ChoosePtr choose) = 0;
   virtual void policyReward(double reward) {}
   virtual void policyLeave() {}
+  
+  virtual size_t getNumResults() const {return 0;}
+  virtual ObjectPtr getResult(size_t i) const
+    {assert(false); return ObjectPtr();}
 };
 
 template<>
-struct Traits<PolicyPtr> : public ObjectSharedPtrTraits<Policy> {};
+struct Traits<PolicyPtr> : public ObjectPtrTraits<Policy> {};
 
 class DecoratorPolicy : public Policy
 {
