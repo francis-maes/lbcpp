@@ -20,16 +20,16 @@ public:
   // abstract: static functions for architecture(), loss() and regularizer()
   
   virtual ScalarVectorFunctionPtr getRegularizer() const
-    {return impl::instantiate(_this().regularizer());}
+    {return impl::staticToDynamic(_this().regularizer());}
   
   virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const
-    {return impl::instantiate(impl::exampleRisk(_this().architecture(), _this().loss(), example));}
+    {return impl::staticToDynamic(impl::exampleRisk(_this().architecture(), _this().loss(), example));}
     
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const
-    {return impl::instantiate(impl::empiricalRisk(_this().architecture(), _this().loss(), examples));}
+    {return impl::staticToDynamic(impl::empiricalRisk(_this().architecture(), _this().loss(), examples));}
     
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
-    {return impl::instantiate(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples), _this().regularizer()));}
+    {return impl::staticToDynamic(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples), _this().regularizer()));}
 
 protected:
   const ExactType& _this() const  {return *(const ExactType* )this;}
@@ -56,7 +56,7 @@ class LeastSquaresLinearRegressor
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::instantiate(architecture());}
+    {return impl::staticToDynamic(architecture());}
 
   inline impl::LinearArchitecture architecture() const
     {return impl::linearArchitecture();}
@@ -139,7 +139,7 @@ class MaximumEntropyClassifier
 {
 public:
   virtual VectorArchitecturePtr getPredictionArchitecture() const
-    {return impl::instantiate(architecture());}
+    {return impl::staticToDynamic(architecture());}
 
   inline impl::MultiLinearArchitecture architecture() const
     {return impl::multiLinearArchitecture(getLabels());}
@@ -203,7 +203,7 @@ class LogisticRegressionClassifier
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::instantiate(architecture());}
+    {return impl::staticToDynamic(architecture());}
 
   inline impl::LinearArchitecture architecture() const
     {return impl::linearArchitecture();}
@@ -228,7 +228,7 @@ class LinearSupportVectorMachine
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::instantiate(architecture());}
+    {return impl::staticToDynamic(architecture());}
 
   inline impl::LinearArchitecture architecture() const
     {return impl::linearArchitecture();}

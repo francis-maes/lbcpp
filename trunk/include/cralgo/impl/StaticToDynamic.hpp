@@ -32,17 +32,23 @@
 #define STATIC_TO_DYNAMIC_BEGIN_1_1(Class, ClassArg0, BaseClass, BaseClassArg0) \
   template<class ImplementationType, class ClassArg0> STATIC_TO_DYNAMIC_BEGIN_1(Class, BaseClass, BaseClassArg0) 
 
-#define STATIC_TO_DYNAMIC_END_0(Class) \
+#define STATIC_TO_DYNAMIC_ENDCLASS(Class) \
 }; \
 template<class ExactType> \
 inline Class##Ptr staticToDynamic(const Class<ExactType>& impl) \
   {return Class##Ptr(new StaticToDynamic##Class<ExactType>(static_cast<const ExactType& >(impl)));}
 
-#define STATIC_TO_DYNAMIC_END_1(Class) \
+#define STATIC_TO_DYNAMIC_ENDCLASS_1(Class) \
 }; \
 template<class ExactType, class ClassArg0> \
 inline Class##Ptr staticToDynamic(const Class<ExactType, ClassArg0>& impl) \
   {return Class##Ptr(new StaticToDynamic##Class<ExactType>(static_cast<const ExactType& >(impl)));}
+
+#define STATIC_TO_DYNAMIC_CLASS(Class, BaseClass) \
+  STATIC_TO_DYNAMIC_BEGIN_0_1(Class, BaseClass, cralgo::Class)
+  
+#define STATIC_TO_DYNAMIC_ABSTRACT_CLASS(Class, BaseClass) \
+  STATIC_TO_DYNAMIC_BEGIN_1_1(Class, DynamicType, BaseClass, DynamicType)
 
 namespace cralgo {
 namespace impl {

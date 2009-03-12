@@ -6,9 +6,6 @@
 
 * 5- Tester l'inférence
 
-* Utiliser la classe de base StaticToDynamicObject dans toutes les hierarchies statiques/dynamiques
-* Function: normaliser le "instantiate"
-
 LC++ library:
 =============
 
