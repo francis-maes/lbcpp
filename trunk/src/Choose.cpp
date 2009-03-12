@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <cralgo/CRAlgorithm.h>
+#include <cralgo/FeatureGenerator.h>
 using namespace cralgo;
   
 std::string Choose::stateDescription() const

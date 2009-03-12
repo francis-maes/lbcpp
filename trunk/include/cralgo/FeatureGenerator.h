@@ -69,7 +69,6 @@ public:
   virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionary* dictionary = NULL) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
 class FeatureVisitor : public Object
 {

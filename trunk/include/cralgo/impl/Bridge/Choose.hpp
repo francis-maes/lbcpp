@@ -12,7 +12,6 @@
 # include "../../Choose.h"
 # include "Variable.hpp"
 # include "FeatureGenerator.hpp"
-# include "StateFunction.hpp"
 
 namespace cralgo
 {

@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ValueFunctionStaticToDyn....hpp| Value Functions                 |
+| Filename: ChooseFunctionStaticToDy....hpp| Choose Functions                |
 | Author  : Francis Maes                   |     Static to Dynamic Bridge    |
 | Started : 12/03/2009 16:43               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_VALUE_FUNCTION_STATIC_TO_DYNAMIC_H_
-# define CRALGO_IMPL_VALUE_FUNCTION_STATIC_TO_DYNAMIC_H_
+#ifndef CRALGO_IMPL_CHOOSE_FUNCTION_STATIC_TO_DYNAMIC_H_
+# define CRALGO_IMPL_CHOOSE_FUNCTION_STATIC_TO_DYNAMIC_H_
 
-# include "ValueFunctionStatic.hpp"
+# include "ChooseFunctionStatic.hpp"
 # include "../StaticToDynamic.hpp"
 
 namespace cralgo {
@@ -71,4 +71,4 @@ STATIC_TO_DYNAMIC_END_1(ActionDescriptionFunction);
 }; /* namespace impl */
 }; /* namespace cralgo */
 
-#endif // !CRALGO_IMPL_VALUE_FUNCTION_STATIC_TO_DYNAMIC_H_
+#endif // !CRALGO_IMPL_CHOOSE_FUNCTION_STATIC_TO_DYNAMIC_H_

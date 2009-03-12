@@ -9,8 +9,8 @@
 #ifndef CRALGO_CHOOSE_H_
 # define CRALGO_CHOOSE_H_
 
-# include "StateFunction.h"
-# include "ValueFunction.h"
+# include "ChooseFunction.h"
+# include "ChooseFunction.h"
 # include "Variable.h"
 
 namespace cralgo
