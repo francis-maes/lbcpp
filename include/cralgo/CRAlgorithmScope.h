@@ -9,13 +9,10 @@
 #ifndef CRALGO_CRALGORITHM_SCOPE_H_
 # define CRALGO_CRALGORITHM_SCOPE_H_
 
-# include "Object.h"
+# include "Variable.h"
 
 namespace cralgo
 {
-
-class CRAlgorithmScope;
-typedef ReferenceCountedObjectPtr<CRAlgorithmScope> CRAlgorithmScopePtr;
 
 class CRAlgorithmScope : public Object
 {
@@ -24,10 +21,10 @@ public:
   ** Introspection
   */
   virtual size_t getNumVariables() const = 0;
+  virtual VariablePtr getVariable(size_t num) const = 0;
   virtual std::string getVariableType(size_t num) const = 0;
   virtual std::string getVariableName(size_t num) const = 0;
   virtual std::string getVariableValue(size_t num) const = 0;
-  virtual const void* getVariablePointer(size_t num) const = 0;
   
   /*
   ** Clone / assignment / swap

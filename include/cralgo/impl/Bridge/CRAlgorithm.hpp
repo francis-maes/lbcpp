@@ -32,10 +32,17 @@ public:
   virtual bool hasReturn() const
     {return BaseClassType::getImplementation().hasReturn();}
 
-  virtual const void* getReturn() const
-    {return BaseClassType::getImplementation().getReturn();}
+  virtual VariablePtr getReturn() const
+  {
+    const T_impl& impl = BaseClassType::getImplementation();
+    if (impl.hasReturn())
+      return Variable::createFromPointer(const_cast<typename T_impl::ReturnType* >(impl.getReturn()),
+                impl.getReturnType(), "'" + getName() + "' return value");
+    else
+      return VariablePtr();
+  }
 
-  virtual void run(PolicyPtr policy, const void* choice)
+  virtual void run(PolicyPtr policy, VariablePtr choice)
   {
     T_impl& impl = BaseClassType::getImplementation();
     assert(impl.__state__ >= 0); // in order to run a policy from the initial state, use run(policy)
@@ -51,7 +58,7 @@ public:
     while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
   }
 
-  virtual bool step(Callback& callback, const void* choice)
+  virtual bool step(Callback& callback, VariablePtr choice)
   {
     DynamicToStaticCallback<T_impl> staticCallback(callback, CRAlgorithmPtr(this));
     return stepImpl(staticCallback, choice);
@@ -64,7 +71,7 @@ public:
     return runUntilNextChoose(NULL, reward);
   }
   
-  virtual ChoosePtr runUntilNextChoose(const void* choice, double* reward = NULL)
+  virtual ChoosePtr runUntilNextChoose(VariablePtr choice, double* reward = NULL)
   {
     StoreChooseAndRewardStaticCallback<T_impl> callback(CRAlgorithmPtr(this));
     stepImpl(callback, choice);
@@ -75,10 +82,10 @@ public:
   
 private:
   template<class CallbackType>
-  bool stepImpl(CallbackType& callback, const void* choice) // returns true if the cr-algorithm is finished
+  bool stepImpl(CallbackType& callback, VariablePtr choice) // returns true if the cr-algorithm is finished
   {
     T_impl& impl = BaseClassType::getImplementation();
-    int res = T_impl::step(impl, impl, callback, choice);
+    int res = T_impl::step(impl, impl, callback, choice->getUntypedPointer());
     return res == stateFinish || res == stateReturn;
   }
 };

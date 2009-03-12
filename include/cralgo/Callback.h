@@ -14,9 +14,6 @@
 namespace cralgo
 {
 
-class Choose;
-typedef ReferenceCountedObjectPtr<Choose> ChoosePtr;
-
 class Callback
 {
 public:

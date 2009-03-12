@@ -16,7 +16,7 @@ namespace impl {
 
 struct RandomPolicy : public Policy<RandomPolicy>
 {
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
     {return choose->sampleRandomChoice();}
 };
 
@@ -27,7 +27,7 @@ struct GreedyPolicy : public Policy<GreedyPolicy>
     
   ActionValueFunctionPtr actionValue;
 
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
     {return choose->sampleBestChoice(actionValue);}
   
   void save(std::ostream& ostr) const
@@ -46,11 +46,11 @@ struct EpsilonGreedyPolicy
   EpsilonGreedyPolicy(const DecoratedType& decorated, IterationFunctionPtr epsilon)
     : BaseClass(decorated), numChooses(0), epsilon(epsilon) {}
 
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
   {
     double eps = epsilon->compute(numChooses);
     ++numChooses;
-    const void* choice = BaseClass::policyChoose(choose);
+    VariablePtr choice = BaseClass::policyChoose(choose);
     return Random::getInstance().sampleBool(eps)
       ? choose->sampleRandomChoice()
       : choice;

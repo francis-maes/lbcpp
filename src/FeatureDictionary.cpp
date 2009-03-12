@@ -1,12 +1,11 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: StringDictionary.cpp           | A dictionary of strings         |
+| Filename: FeatureDictionary.cpp          | Feature dictionary              |
 | Author  : Francis Maes                   |                                 |
 | Started : 27/02/2009 19:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/StringDictionary.h>
 #include <cralgo/FeatureDictionary.h>
 using namespace cralgo;
 
@@ -69,34 +68,23 @@ namespace cralgo
 /*
 ** FeatureDictionary
 */
-FeatureDictionary::FeatureDictionary(const std::string& name)
-  : name(name), featuresDictionary(NULL), scopesDictionary(NULL), subDictionaries(NULL)
+FeatureDictionary::FeatureDictionary(const std::string& name) : name(name)
 {
 }
 
 void FeatureDictionary::clear()
 {
-  if (featuresDictionary)
-    {delete featuresDictionary; featuresDictionary = NULL;}
-  if (scopesDictionary)
-    {delete scopesDictionary; scopesDictionary = NULL;}
-  if (subDictionaries)
-  {
-    for (size_t i = 0; i < subDictionaries->size(); ++i)
-      delete (*subDictionaries)[i];
-    delete subDictionaries;
-    subDictionaries = NULL;
-  }
+  featuresDictionary.clear();
+  scopesDictionary.clear();
+  subDictionaries.clear();
 }
   
 FeatureDictionary& FeatureDictionary::getSubDictionary(size_t index)
 {
-  if (!subDictionaries)
-    subDictionaries = new std::vector<FeatureDictionary* >(index + 1, NULL);
-  else if (subDictionaries->size() < index + 1)
-    subDictionaries->resize(index + 1, NULL);
-  FeatureDictionary*& res = (*subDictionaries)[index];
-  if (!res)
-    res = new FeatureDictionary(name + "." + cralgo::toString(index));
-  return *res;
+  if (subDictionaries.size() < index + 1)
+    subDictionaries.resize(index + 1);
+  FeatureDictionary& res = subDictionaries[index];
+  if (res.name.empty())
+    res.name = name + "." + cralgo::toString(index);
+  return res;
 }

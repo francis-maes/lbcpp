@@ -57,7 +57,6 @@ protected:
     ReferenceCountedObjectPtr<T> res;
     if (object)
     {
-      
       res = object.dynamicCast<T>();
       if (!res)
         ErrorHandler::error(where, "Could not cast object into '" + cralgo::toString(typeid(*res)) + "'");
@@ -116,6 +115,44 @@ namespace impl
     bool load(std::istream& istr) {return true;}
   };
 }; /* namespace impl */
+
+/*
+** Predeclarations
+*/
+// feature visitor
+class FeatureVisitor;
+typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
+
+// feature generators
+class DoubleVector;
+typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
+class SparseVector;
+typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
+class DenseVector;
+typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
+class LazyVector;
+typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
+
+// learning machines
+class Classifier;
+typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
+
+// cralgorithms
+class Variable;
+typedef ReferenceCountedObjectPtr<Variable> VariablePtr;
+class VariableIterator;
+typedef ReferenceCountedObjectPtr<VariableIterator> VariableIteratorPtr;
+class Choose;
+typedef ReferenceCountedObjectPtr<Choose> ChoosePtr;
+class CRAlgorithmScope;
+typedef ReferenceCountedObjectPtr<CRAlgorithmScope> CRAlgorithmScopePtr;
+class CRAlgorithm;
+typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
+
+
+// policies
+class Policy;
+typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 
 }; /* namespace cralgo */
 

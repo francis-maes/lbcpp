@@ -15,9 +15,6 @@
 namespace cralgo
 {
 
-class DoubleVector;
-typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
-
 class DoubleVector : public FeatureGeneratorDefaultImplementations<DoubleVector, FeatureGenerator>
 {
 public:

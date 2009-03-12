@@ -23,7 +23,7 @@ struct DynamicToStaticPolicy : public Policy<DynamicToStaticPolicy>
   void policyEnter(CRAlgorithmPtr crAlgorithm)
     {policy->policyEnter(crAlgorithm);}
     
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
     {return policy->policyChoose(choose);}
     
   void policyReward(double reward)

@@ -48,7 +48,7 @@ public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
     {BaseClass::impl.policyEnter(crAlgorithm);}
     
-  virtual const void* policyChoose(ChoosePtr choose)
+  virtual VariablePtr policyChoose(ChoosePtr choose)
     {return BaseClass::impl.policyChoose(choose);}
     
   virtual void policyReward(double reward)

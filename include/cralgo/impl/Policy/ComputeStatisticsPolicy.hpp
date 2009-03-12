@@ -36,7 +36,7 @@ struct ComputeStatisticsPolicy
     return res;
   }
       
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
   {
     ++numChooses;
     numChoices += choose->getNumChoices();

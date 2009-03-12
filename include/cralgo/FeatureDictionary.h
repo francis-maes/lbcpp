@@ -9,59 +9,79 @@
 #ifndef CRALGO_FEATURE_DICTIONARY_H_
 # define CRALGO_FEATURE_DICTIONARY_H_
 
-# include "StringDictionary.h"
 # include "Traits.h"
+# include <map>
 
 namespace cralgo
 {
 
+class StringDictionary
+{
+public:
+  void clear()
+    {stringToIndex.clear(); indexToString.clear();}
+
+  size_t count() const
+    {return (unsigned)indexToString.size();}
+
+  bool exists(size_t index) const;
+  std::string getString(size_t index) const;
+  
+  // returns -1 if not found
+  int getIndex(const std::string& str) const;
+  
+  size_t add(const std::string& str);
+
+  friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
+
+protected:
+  typedef std::map<std::string, size_t> StringToIndexMap;
+  typedef std::vector<std::string> StringVector;
+ 
+  StringToIndexMap stringToIndex;
+  StringVector indexToString;
+};
+
 class FeatureDictionary
 {
 public:
-  FeatureDictionary(const std::string& name);
+  FeatureDictionary(const std::string& name = "");
   ~FeatureDictionary()
     {clear();}
     
   void clear();
   
   bool empty() const
-    {return (!featuresDictionary || featuresDictionary->count() == 0) && 
-          (!scopesDictionary || scopesDictionary->count() == 0);}
+    {return featuresDictionary.count() == 0 && scopesDictionary.count() == 0;}
   
   /*
   ** Features
   */
-  void ensureHasFeatures()
-    {if (!featuresDictionary) featuresDictionary = new StringDictionary();}
-  
   StringDictionary& getFeatures()
-    {ensureHasFeatures(); return *featuresDictionary;}
+    {return featuresDictionary;}
   
   size_t getNumFeatures() const
-    {return featuresDictionary ? featuresDictionary->count() : 0;}
+    {return featuresDictionary.count();}
     
   /*
   ** Scopes
   */
-  void ensureHasScopes()
-    {if (!scopesDictionary) scopesDictionary = new StringDictionary();}
-
   StringDictionary& getScopes()
-    {ensureHasScopes(); return *scopesDictionary;}
+    {return scopesDictionary;}
 
   size_t getNumScopes() const
-    {return scopesDictionary ? scopesDictionary->count() : 0;}
+    {return scopesDictionary.count();}
     
   const FeatureDictionary& getSubDictionary(size_t index) const
   {
-    assert(subDictionaries && index < subDictionaries->size());
-    return *(*subDictionaries)[index];
+    assert(index < subDictionaries.size());
+    return subDictionaries[index];
   }
     
   FeatureDictionary& getSubDictionary(size_t index);
   
   FeatureDictionary& getSubDictionary(const std::string& name)
-    {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
+    {return getSubDictionary(scopesDictionary.getIndex(name));}
   
   /*
   ** Misc
@@ -71,18 +91,16 @@ public:
     
   friend std::ostream& operator <<(std::ostream& ostr, const FeatureDictionary& dictionary)
   {
-    if (dictionary.featuresDictionary)
-      ostr << "Features: " << cralgo::toString(*dictionary.featuresDictionary) << std::endl;
-    if (dictionary.scopesDictionary)
-      ostr << "Scopes: " << cralgo::toString(*dictionary.scopesDictionary) << std::endl;
+    ostr << "Features: " << cralgo::toString(dictionary.featuresDictionary) << std::endl;
+    ostr << "Scopes: " << cralgo::toString(dictionary.scopesDictionary) << std::endl;
     return ostr;
   }
   
 private:
   std::string name;
-  StringDictionary* featuresDictionary;
-  StringDictionary* scopesDictionary;
-  std::vector<FeatureDictionary* >* subDictionaries;
+  StringDictionary featuresDictionary;
+  StringDictionary scopesDictionary;
+  std::vector<FeatureDictionary> subDictionaries;
 };
 
 }; /* namespace cralgo */

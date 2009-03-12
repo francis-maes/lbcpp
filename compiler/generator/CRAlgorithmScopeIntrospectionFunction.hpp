@@ -22,7 +22,7 @@ public:
   void setDefault(PTree::Node* defaultImpl)
     {switchGenerator.setDefault(defaultImpl);}
   
-  void prepare(const std::string& returnType, const std::string& name)
+  void prepare(const std::string& returnType, const std::string& name, bool isConst = true)
   {
     setReturnType(identifier(returnType));
     setName(name);
@@ -31,7 +31,7 @@ public:
     switchGenerator.setCondition(id);
     body.add(atom("assert(num < " + size2str(switchGenerator.getNumCases()) + ");"));
     body.add(switchGenerator.createStatement());
-    setConst(true);
+    setConst(isConst);
   }
     
 private:

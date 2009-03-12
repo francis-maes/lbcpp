@@ -29,7 +29,7 @@ public:
     return res;
   }
   
-  size_t getChildrenNode(size_t nodeIndex, const void* choice)
+  size_t getChildrenNode(size_t nodeIndex, VariablePtr choice)
   {
     return insert(new TreeSearchNode(&getNode(nodeIndex), choice));
   }

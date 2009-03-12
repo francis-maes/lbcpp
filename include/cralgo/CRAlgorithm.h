@@ -17,9 +17,6 @@
 namespace cralgo
 {
 
-class CRAlgorithm;
-typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
-
 class CRAlgorithm : public CRAlgorithmScope
 {
 public:
@@ -36,20 +33,20 @@ public:
   ** Policy running
   */
   virtual void run(PolicyPtr policy) = 0; // run a policy from the initial state
-  virtual void run(PolicyPtr policy, const void* choice) = 0; // run a policy from the current state
+  virtual void run(PolicyPtr policy, VariablePtr choice) = 0; // run a policy from the current state
     
   /*
   ** Step by step
   */
-  virtual bool step(Callback& callback, const void* choice) = 0; // returns false if the new state is a final state
+  virtual bool step(Callback& callback, VariablePtr choice) = 0; // returns false if the new state is a final state
   virtual ChoosePtr runUntilFirstChoose(double* reward = NULL) = 0; // returns false if there was no choose
-  virtual ChoosePtr runUntilNextChoose(const void* choice, double* reward = NULL) = 0; // returns false if there was no remaining chooses
+  virtual ChoosePtr runUntilNextChoose(VariablePtr choice, double* reward = NULL) = 0; // returns false if there was no remaining chooses
   
   /*
   ** Result
   */
   virtual bool hasReturn() const = 0;
-  virtual const void* getReturn() const = 0;
+  virtual VariablePtr getReturn() const = 0;
 };
 
 }; /* namespace cralgo */

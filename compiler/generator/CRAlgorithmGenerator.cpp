@@ -45,6 +45,8 @@ CRAlgorithmGenerator::CRAlgorithmGenerator(const FunctionPTreeAnalyser& input, S
     body.add(atom("bool hasReturn() const {return false;}\n"));
     body.add(atom("const void* getReturn() const {return NULL;}\n"));
   }
+  body.add(atom("const char* getReturnType() const {return " + quote(input.getReturnTypeString()) + ";}\n"));
+  body.add(list(atom("typedef "), input.getReturnType(), atom(" ReturnType;\n")));
 }
 
 PTree::Node* CRAlgorithmGenerator::createCode()
@@ -103,7 +105,7 @@ std::vector<std::string> leftRightLabeling(cralgo::PolicyPtr policy, const std::
     dynCall.createExpression());
   runFunction.body.addExpressionStatement(funcallExpr(atom("__crAlgorithm__->run"), list(atom("__policy__"))));
   if (!input.getReturnType().isVoid())
-    runFunction.body.add(returnStatement(atom("*(const " + input.getReturnTypeString() + "* )__crAlgorithm__->getReturn()")));
+    runFunction.body.add(returnStatement(atom("__crAlgorithm__->getReturn()->getReference< " + input.getReturnTypeString() + " >()")));
 
   block.add(runFunction.createDeclaration());
 

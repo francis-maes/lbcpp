@@ -52,8 +52,8 @@ struct StateFunctionTraits<ActionDescriptionFunction>
   {
     typedef typename FunctionType::__Param1Type__ ChoiceType;
     
-    virtual std::string toString(CRAlgorithmPtr crAlgorithm, const void* choice) const
-      {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), *(const ChoiceType* )choice);}
+    virtual std::string toString(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
+      {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), choice->getReference<ChoiceType>());}
     virtual std::string getName() const
       {return FunctionType::getName();}
   };
@@ -99,8 +99,8 @@ struct StateFunctionTraits<ActionValueFunction>
   {
     typedef typename FunctionType::__Param1Type__ ChoiceType;
 
-    virtual double compute(CRAlgorithmPtr crAlgorithm, const void* choice) const
-      {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), *(const ChoiceType* )choice);}
+    virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
+      {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), choice->getReference<ChoiceType>());}
     virtual std::string getName() const
       {return FunctionType::getName();}
   };
@@ -147,8 +147,8 @@ struct StateFunctionTraits<ActionFeaturesFunction>
   {
     typedef typename FunctionType::__Param1Type__ ChoiceType;
 
-    virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, const void* choice) const
-      {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), *(const ChoiceType* )choice);}
+    virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
+      {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), choice->getReference<ChoiceType>());}
     virtual std::string getName() const
       {return FunctionType::getName();}
   };
@@ -210,9 +210,9 @@ class StaticToDynamicActionDescription
 public:
   typedef typename FunctionType::__Param1Type__ ChoiceType;
   
-  virtual std::string toString(CRAlgorithmPtr crAlgorithm, const void* choice) const
+  virtual std::string toString(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
     {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm),
-      *(const ChoiceType* )choice);}
+      choice->getReference<ChoiceType>());}
 };
 
 /*
@@ -239,9 +239,9 @@ class StaticToDynamicActionValue
 public:
   typedef typename FunctionType::__Param1Type__ ChoiceType;
   
-  virtual double compute(CRAlgorithmPtr crAlgorithm, const void* choice) const
+  virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
     {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm),
-      *(const ChoiceType* )choice);}
+      choice->getReference<ChoiceType>());}
 };
 
 /*
@@ -268,7 +268,7 @@ class StaticToDynamicActionFeatures
 public:
   typedef typename FunctionType::__Param1Type__ ChoiceType;
   
-  virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, const void* choice) const
+  virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
     {return FunctionType::function(dynamicToStaticCRAlgorithm<CRAlgorithmType>(crAlgorithm), *(ChoiceType* )choice);}
 };
 

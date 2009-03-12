@@ -39,13 +39,13 @@ struct ClassificationExampleCreatorPolicy
     BaseClass::policyEnter(crAlgo);
   }
   
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
   {
     // this policy can only be used with size_t choices
     if (choose->getChoiceType() == "size_t")
     {
-      size_t output = *(size_t* )choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
-      classifier->trainStochasticExample(ClassificationExample(choose->stateFeatures(), output));
+      VariablePtr bestChoice = choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
+      classifier->trainStochasticExample(ClassificationExample(choose->stateFeatures(), bestChoice->getReference<size_t>()));
     }
     else
       ErrorHandler::error("ClassificationExampleCreatorPolicy::policyChoose", 

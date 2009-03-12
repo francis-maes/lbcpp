@@ -18,7 +18,7 @@ template<class ExactType>
 struct Policy : public Object<ExactType>
 {
   void policyEnter(CRAlgorithmPtr crAlgorithm) {}
-  const void* policyChoose(ChoosePtr choose) {assert(false); return NULL;}
+  VariablePtr policyChoose(ChoosePtr choose) {assert(false); return VariablePtr();}
   void policyReward(double reward) {}
   void policyLeave() {}  
 };
@@ -34,7 +34,7 @@ struct DecoratorPolicy : public Policy<ExactType>
   void policyEnter(CRAlgorithmPtr crAlgorithm)
     {decorated.policyEnter(crAlgorithm);}
     
-  const void* policyChoose(ChoosePtr choose)
+  VariablePtr policyChoose(ChoosePtr choose)
     {return decorated.policyChoose(choose);}
     
   void policyReward(double reward)

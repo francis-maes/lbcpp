@@ -73,7 +73,7 @@ private:
 class ActionDescriptionFunction : public StateFunction
 {
 public:
-  virtual std::string toString(CRAlgorithmPtr crAlgorithm, const void* choice) const = 0;
+  virtual std::string toString(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ActionDescriptionFunction> ActionDescriptionFunctionPtr;
@@ -84,7 +84,7 @@ public:
   void add(ActionDescriptionFunction& description)
     {descriptions.push_back(&description);}
 
-  virtual std::string toString(CRAlgorithmPtr crAlgorithm, const void* choice) const
+  virtual std::string toString(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
   {
     std::string res;
     for (size_t i = 0; i < descriptions.size(); ++i)
@@ -137,7 +137,7 @@ private:
 class ActionValueFunction : public StateFunction
 {
 public:
-  virtual double compute(CRAlgorithmPtr crAlgorithm, const void* choice) const = 0;
+  virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ActionValueFunction> ActionValueFunctionPtr;
@@ -155,7 +155,7 @@ public:
       this->actionValue = &actionValue;
   }
 
-  virtual double compute(CRAlgorithmPtr crAlgorithm, const void* choice) const
+  virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
     {return actionValue ? actionValue->compute(crAlgorithm, choice) : 0.0;}
 
   virtual std::string getName() const
@@ -197,7 +197,7 @@ private:
 class ActionFeaturesFunction : public StateFunction
 {
 public:
-  virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, const void* choice) const = 0;
+  virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const = 0;
 };
 typedef ReferenceCountedObjectPtr<ActionFeaturesFunction> ActionFeaturesFunctionPtr;
 
@@ -207,7 +207,7 @@ public:
   void add(ActionFeaturesFunction& featureFunction)
     {featureFunctions.push_back(&featureFunction);}
     
-  virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, const void* choice) const
+  virtual FeatureGeneratorPtr featureGenerator(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
   {
     SumFeatureGeneratorPtr res(new SumFeatureGenerator());
     for (size_t i = 0; i < featureFunctions.size(); ++i)

@@ -8,7 +8,6 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/Object.h
   ../include/cralgo/Random.h
   ../include/cralgo/ErrorHandler.h
-  ../include/cralgo/StringDictionary.h
   ../include/cralgo/FeatureDictionary.h
   ../include/cralgo/FeatureGenerator.h
   ../include/cralgo/DoubleVector.h
@@ -21,6 +20,7 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/GradientBasedLearningMachine.h
   ../include/cralgo/ContinuousFunction.h
   ../include/cralgo/StateFunction.h
+  ../include/cralgo/Variable.h
   ../include/cralgo/Choose.h
   ../include/cralgo/Callback.h
   ../include/cralgo/Policy.h
@@ -85,6 +85,7 @@ SET(CRALGO_LIBRARY_IMPL_BRIDGE
   ../include/cralgo/impl/Bridge/FeatureGenerator.hpp
   ../include/cralgo/impl/Bridge/DoubleVector.hpp
   ../include/cralgo/impl/Bridge/StateFunction.hpp
+  ../include/cralgo/impl/Bridge/Variable.hpp
   ../include/cralgo/impl/Bridge/Choose.hpp
   ../include/cralgo/impl/Bridge/Callback.hpp
   ../include/cralgo/impl/Bridge/CRAlgorithmScope.hpp
@@ -95,7 +96,7 @@ SET(CRALGO_LIBRARY_SOURCES
   classes.cpp
   Object.cpp
   ErrorHandler.cpp
-  StringDictionary.cpp
+  FeatureDictionary.cpp
   SparseVector.cpp
   DenseVector.cpp
   LazyVector.cpp
