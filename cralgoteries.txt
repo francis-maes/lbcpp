@@ -24,7 +24,6 @@ CRPP - Gros
 
 CRPP - Petit
 * ContainerTraits::sampleBests foireux
-* Functions: splitter les fichiers
 * FeatureDictionary: les std::vector en dur, pas de pointeur
 * FeatureVisitor: appliquer un hierarchie similaire a ContinuousFunctions ?
 * shared_ptr ChoicePtr  ?

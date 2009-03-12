@@ -9,12 +9,12 @@
 #ifndef CRALGO_FEATURE_VISITOR_STRING_DESCRIPTION_HPP_
 # define CRALGO_FEATURE_VISITOR_STRING_DESCRIPTION_HPP_
 
-# include "StaticFeatureVisitor.hpp"
+# include "FeatureVisitorStatic.hpp"
 
-namespace cralgo
-{
+namespace cralgo {
+namespace impl {
 
-class StringDescriptionVisitor : public StaticFeatureVisitor<StringDescriptionVisitor>
+class StringDescriptionVisitor : public FeatureVisitor<StringDescriptionVisitor>
 {
 public: 
   StringDescriptionVisitor() : indent(0) {}
@@ -65,6 +65,7 @@ private:
     {for (int i = 0; i < indent; ++i) res += "  ";}
 };
 
+}; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_FEATURE_VISITOR_STRING_DESCRIPTION_HPP_

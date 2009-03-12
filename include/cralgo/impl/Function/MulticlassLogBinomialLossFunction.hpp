@@ -32,7 +32,7 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
     double logZ = scores->computeLogSumOfExponentials();
     if (!isNumberValid(logZ))
     {
-      std::cerr << "LogZ is not a valid number. Scores: " << toString(scores) << std::endl;
+      std::cerr << "LogZ is not a valid number. Scores: " << cralgo::toString(scores) << std::endl;
       assert(false);
     }
     if (output)

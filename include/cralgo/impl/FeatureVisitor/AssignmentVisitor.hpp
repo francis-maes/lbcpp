@@ -9,11 +9,11 @@
 #ifndef CRALGO_FEATURE_VISITOR_ASSIGNMENT_HPP_
 # define CRALGO_FEATURE_VISITOR_ASSIGNMENT_HPP_
 
-# include "StaticFeatureVisitor.hpp"
+# include "FeatureVisitorStatic.hpp"
 # include "../../DenseVector.h"
 
-namespace cralgo
-{
+namespace cralgo {
+namespace impl {
 
 struct AssignmentVectorOperation
 {
@@ -57,7 +57,7 @@ struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
 
 template<class ExactType, class VectorType, class OperationType>
 class AssignmentToVectorVisitor
-  : public StaticFeatureVisitor< ExactType >
+  : public FeatureVisitor< ExactType >
 {
 public:
   typedef ReferenceCountedObjectPtr<VectorType> VectorPtr;
@@ -107,7 +107,7 @@ public:
     : AssignmentToVectorVisitor<AssignmentToSparseVisitor<OperationType>, SparseVector, OperationType>(target, operation) {}
 };
 
-
+}; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_FEATURE_VISITOR_ASSIGNMENT_HPP_

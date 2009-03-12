@@ -30,12 +30,13 @@ SET(CRALGO_LIBRARY_HEADERS
 )
 
 SET(CRALGO_LIBRARY_IMPL_FEATURE_VISITOR
-  ../include/cralgo/impl/FeatureVisitor/StaticFeatureVisitor.hpp
+  ../include/cralgo/impl/FeatureVisitor/FeatureVisitorStatic.hpp
+  ../include/cralgo/impl/FeatureVisitor/FeatureVisitorStaticToDynamic.hpp
+  ../include/cralgo/impl/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
   ../include/cralgo/impl/FeatureVisitor/CreateSparseVectorVisitor.hpp
   ../include/cralgo/impl/FeatureVisitor/UnaryOperationVisitor.hpp
   ../include/cralgo/impl/FeatureVisitor/AssignmentVisitor.hpp
   ../include/cralgo/impl/FeatureVisitor/DotProductVisitor.hpp
-  ../include/cralgo/impl/FeatureVisitor/DynamicToStaticFeatureVisitor.hpp
   ../include/cralgo/impl/FeatureVisitor/StringDescriptionVisitor.hpp
 )
 
@@ -68,6 +69,7 @@ SET(CRALGO_LIBRARY_IMPL_FUNCTION
 SET(CRALGO_LIBRARY_IMPL_POLICY
   ../include/cralgo/impl/Policy/PolicyStatic.hpp
   ../include/cralgo/impl/Policy/PolicyStaticToDynamic.hpp
+  ../include/cralgo/impl/Policy/PolicyDynamicToStatic.hpp
   ../include/cralgo/impl/Policy/BasicPolicies.hpp
   ../include/cralgo/impl/Policy/ComputeStatisticsPolicy.hpp
   ../include/cralgo/impl/Policy/QLearningPolicy.hpp

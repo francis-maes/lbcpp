@@ -9,8 +9,8 @@
 #ifndef CRALGO_FEATURE_GENERATOR_DEFAULT_IMPLEMENTATIONS_HPP_
 # define CRALGO_FEATURE_GENERATOR_DEFAULT_IMPLEMENTATIONS_HPP_
 
-# include "../FeatureVisitor/StaticFeatureVisitor.hpp"
-# include "../FeatureVisitor/DynamicToStaticFeatureVisitor.hpp"
+# include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
+# include "../FeatureVisitor/FeatureVisitorDynamicToStatic.hpp"
 # include "../FeatureVisitor/CreateSparseVectorVisitor.hpp"
 # include "../FeatureVisitor/UnaryOperationVisitor.hpp"
 # include "../FeatureVisitor/AssignmentVisitor.hpp"
@@ -24,53 +24,53 @@ namespace cralgo
   template<class ExactType, class BaseType> \
   inline ReturnType FeatureGeneratorDefaultImplementations<ExactType, BaseType>::
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) accept(FeatureVisitor& visitor, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) accept(FeatureVisitorPtr visitor, FeatureDictionary* dictionary) const
 {
-  DynamicToStaticFeatureVisitor staticVisitor(visitor);
+  impl::DynamicToStaticFeatureVisitor staticVisitor(visitor);
   featureGenerator(staticVisitor, dictionary);  
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(SparseVectorPtr) toSparseVector(FeatureDictionary* dictionary) const
 {
-  CreateSparseVectorVisitor staticVisitor(selectDictionary(dictionary));
+  impl::CreateSparseVectorVisitor staticVisitor(selectDictionary(dictionary));
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(DenseVectorPtr) toDenseVector(FeatureDictionary* dictionary) const
 {
-  CreateDenseVectorVisitor staticVisitor(selectDictionary(dictionary));
+  impl::CreateDenseVectorVisitor staticVisitor(selectDictionary(dictionary));
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(std::string) toString(FeatureDictionary* dictionary) const
 {
-  StringDescriptionVisitor staticVisitor;
+  impl::StringDescriptionVisitor staticVisitor;
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(size_t) l0norm() const
 {
-  ComputeL0NormVectorOperation op;
-  UnaryOperationVisitor<ComputeL0NormVectorOperation> staticVisitor(op);
+  impl::ComputeL0NormVectorOperation op;
+  impl::UnaryOperationVisitor<impl::ComputeL0NormVectorOperation> staticVisitor(op);
   featureGenerator(staticVisitor, NULL);
   return op.res;
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(double) l1norm() const
 {
-  ComputeL1NormVectorOperation op;
-  UnaryOperationVisitor<ComputeL1NormVectorOperation> staticVisitor(op);
+  impl::ComputeL1NormVectorOperation op;
+  impl::UnaryOperationVisitor<impl::ComputeL1NormVectorOperation> staticVisitor(op);
   featureGenerator(staticVisitor, NULL);
   return op.res;
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(double) sumOfSquares() const
 {
-  ComputeSumOfSquaresVectorOperation op;
-  UnaryOperationVisitor<ComputeSumOfSquaresVectorOperation> staticVisitor(op);
+  impl::ComputeSumOfSquaresVectorOperation op;
+  impl::UnaryOperationVisitor<impl::ComputeSumOfSquaresVectorOperation> staticVisitor(op);
   featureGenerator(staticVisitor, NULL);
   return op.res;
 }
@@ -78,51 +78,50 @@ FEATURE_GENERATOR_DEFAULT_IMPL(double) sumOfSquares() const
 FEATURE_GENERATOR_DEFAULT_IMPL(void) addTo(DenseVectorPtr target, FeatureDictionary* dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
-  AddVectorOperation op;
-  AssignmentToDenseVisitor<AddVectorOperation> staticVisitor(target, op);
+  impl::AddVectorOperation op;
+  impl::AssignmentToDenseVisitor<impl::AddVectorOperation> staticVisitor(target, op);
   featureGenerator(staticVisitor, dictionary);
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(void) substractFrom(DenseVectorPtr target, FeatureDictionary* dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
-  SubstractVectorOperation op;
-  AssignmentToDenseVisitor<SubstractVectorOperation> staticVisitor(target, op);
+  impl::SubstractVectorOperation op;
+  impl::AssignmentToDenseVisitor<impl::SubstractVectorOperation> staticVisitor(target, op);
   featureGenerator(staticVisitor, dictionary);
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionary* dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
-  AddWeightedVectorOperation op(weight);
-  AssignmentToDenseVisitor<AddWeightedVectorOperation> staticVisitor(target, op);
+  impl::AddWeightedVectorOperation op(weight);
+  impl::AssignmentToDenseVisitor<impl::AddWeightedVectorOperation> staticVisitor(target, op);
   featureGenerator(staticVisitor, dictionary);
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionary* dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
-  AddWeightedVectorOperation op(weight);
-  AssignmentToSparseVisitor<AddWeightedVectorOperation> staticVisitor(target, op);
+  impl::AddWeightedVectorOperation op(weight);
+  impl::AssignmentToSparseVisitor<impl::AddWeightedVectorOperation> staticVisitor(target, op);
   featureGenerator(staticVisitor, dictionary);
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionary* dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
-  AddWeightedSignsVectorOperation op(weight);
-  AssignmentToDenseVisitor<AddWeightedSignsVectorOperation> staticVisitor(target, op);
+  impl::AddWeightedSignsVectorOperation op(weight);
+  impl::AssignmentToDenseVisitor<impl::AddWeightedSignsVectorOperation> staticVisitor(target, op);
   featureGenerator(staticVisitor, dictionary);
 }
 
 FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector, FeatureDictionary* dictionary) const
 {
   vector->ensureDictionary(selectDictionary(dictionary));
-  DotProductDenseVectorVisitor staticVisitor(vector);
+  impl::DotProductDenseVectorVisitor staticVisitor(vector);
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
-
 
 # undef FEATURE_GENERATOR_DEFAULT_IMPL
 

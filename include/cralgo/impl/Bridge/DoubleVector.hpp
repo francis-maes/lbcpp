@@ -10,6 +10,7 @@
 # define CRALGO_STATIC_DOUBLE_VECTOR_HPP_
 
 # include "FeatureGenerator.hpp"
+# include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
 # include "../../SparseVector.h"
 # include "../../DenseVector.h"
 # include "../../LazyVector.h"
@@ -114,8 +115,7 @@ inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
     return;
   }
   // dynamic version must be implemented
-  StaticToDynamicFeatureVisitor<FeatureVisitor> v(visitor);
-  accept(v, &featureDictionary);
+  accept(impl::staticToDynamic(visitor), &featureDictionary);
 }
 
 template<>
