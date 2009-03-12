@@ -24,11 +24,11 @@
 # include "ContinuousFunction/ExampleRiskFunction.hpp"
 # include "ContinuousFunction/FunctionStaticToDynamic.hpp"
 
-# include "ValueFunction/ValueFunctionStaticToDynamic.hpp"
-# include "ValueFunction/CompositeValueFunctions.hpp"
-# include "ValueFunction/ClassifierValueFunctions.hpp"
-# include "ValueFunction/RegressorValueFunctions.hpp"
-# include "ValueFunction/RankerValueFunctions.hpp"
+# include "ChooseFunction/ChooseFunctionStaticToDynamic.hpp"
+# include "ChooseFunction/CompositeValueFunctions.hpp"
+# include "ChooseFunction/ClassifierValueFunctions.hpp"
+# include "ChooseFunction/RegressorValueFunctions.hpp"
+# include "ChooseFunction/RankerValueFunctions.hpp"
 
 # include "Policy/PolicyStaticToDynamic.hpp"
 # include "Policy/PolicyDynamicToStatic.hpp"

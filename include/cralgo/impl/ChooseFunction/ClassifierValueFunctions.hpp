@@ -9,7 +9,7 @@
 #ifndef CRALGO_IMPL_VALUE_FUNCTION_CLASSIFIER_H_
 # define CRALGO_IMPL_VALUE_FUNCTION_CLASSIFIER_H_
 
-# include "ValueFunctionStatic.hpp"
+# include "ChooseFunctionStatic.hpp"
 # include "../../LearningMachine.h"
 
 namespace cralgo {

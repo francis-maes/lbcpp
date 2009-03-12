@@ -22,8 +22,7 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/GradientBasedLearner.h
   ../include/cralgo/GradientBasedLearningMachine.h
   ../include/cralgo/ContinuousFunction.h
-  ../include/cralgo/ValueFunction.h
-  ../include/cralgo/StateFunction.h
+  ../include/cralgo/ChooseFunction.h
   ../include/cralgo/Variable.h
   ../include/cralgo/Choose.h
   ../include/cralgo/Callback.h
@@ -77,13 +76,13 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
   ${CRALGO_IMPL}/ContinuousFunction/TransferArchitecture.hpp
 )
 
-SET(CRALGO_LIBRARY_IMPL_VALUE_FUNCTION
-  ${CRALGO_IMPL}/ValueFunction/ValueFunctionStatic.hpp
-  ${CRALGO_IMPL}/ValueFunction/ValueFunctionStaticToDynamic.hpp
-  ${CRALGO_IMPL}/ValueFunction/CompositeValueFunctions.hpp
-  ${CRALGO_IMPL}/ValueFunction/ClassifierValueFunctions.hpp
-  ${CRALGO_IMPL}/ValueFunction/RegressorValueFunctions.hpp
-  ${CRALGO_IMPL}/ValueFunction/RankerValueFunctions.hpp
+SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION
+  ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
+  ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
+  ${CRALGO_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
+  ${CRALGO_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
+  ${CRALGO_IMPL}/ChooseFunction/RegressorValueFunctions.hpp
+  ${CRALGO_IMPL}/ChooseFunction/RankerValueFunctions.hpp
 )
 
 SET(CRALGO_LIBRARY_IMPL_POLICY
@@ -104,7 +103,6 @@ SET(CRALGO_LIBRARY_IMPL_BRIDGE
   ${CRALGO_IMPL}/Bridge/FeatureGeneratorDefaultImplementations.hpp
   ${CRALGO_IMPL}/Bridge/FeatureGenerator.hpp
   ${CRALGO_IMPL}/Bridge/DoubleVector.hpp
-  ${CRALGO_IMPL}/Bridge/StateFunction.hpp
   ${CRALGO_IMPL}/Bridge/Variable.hpp
   ${CRALGO_IMPL}/Bridge/Choose.hpp
   ${CRALGO_IMPL}/Bridge/Callback.hpp
@@ -133,7 +131,7 @@ SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_IMPL_HEADERS}
   ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR}
   ${CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION}
-  ${CRALGO_LIBRARY_IMPL_VALUE_FUNCTION}
+  ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION}
   ${CRALGO_LIBRARY_IMPL_POLICY}
   ${CRALGO_LIBRARY_IMPL_BRIDGE}
   ${CRALGO_LIBRARY_SOURCES}
@@ -143,7 +141,7 @@ SOURCE_GROUP(includes FILES ${CRALGO_LIBRARY_HEADERS})
 SOURCE_GROUP(impl FILES ${CRALGO_LIBRARY_IMPL_HEADERS})
 SOURCE_GROUP(impl/FeatureVisitor FILES ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR})
 SOURCE_GROUP(impl/ContinuousFunction FILES ${CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION})
-SOURCE_GROUP(impl/ValueFunction FILES ${CRALGO_LIBRARY_IMPL_VALUE_FUNCTION})
+SOURCE_GROUP(impl/ChooseFunction FILES ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION})
 SOURCE_GROUP(impl/Policy FILES ${CRALGO_LIBRARY_IMPL_POLICY})
 SOURCE_GROUP(impl/Bridge FILES ${CRALGO_LIBRARY_IMPL_BRIDGE})
 SOURCE_GROUP(sources FILES ${CRALGO_LIBRARY_SOURCES})

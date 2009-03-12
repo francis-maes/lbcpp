@@ -101,8 +101,10 @@ typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 // feature visitor
 class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
+class FeatureGenerator;
+typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
-// feature generators
+// vectors
 class DoubleVector;
 typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
 class SparseVector;

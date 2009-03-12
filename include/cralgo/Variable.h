@@ -10,7 +10,7 @@
 # define CRALGO_VARIABLE_H_
 
 # include "Object.h"
-# include "StateFunction.h"
+# include "ChooseFunction.h"
 
 namespace cralgo
 {

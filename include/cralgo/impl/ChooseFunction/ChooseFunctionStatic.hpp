@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ValueFunctionStatic.hpp        | Static Value Functions Interface|
-| Author  : Francis Maes                   |                                 |
+| Filename: ChooseFunctionStatic.hpp       | Static Choose Functions         |
+| Author  : Francis Maes                   |            Interface            |
 | Started : 12/03/2009 16:39               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_VALUE_FUNCTION_STATIC_H_
-# define CRALGO_IMPL_VALUE_FUNCTION_STATIC_H_
+#ifndef CRALGO_IMPL_CHOOSE_FUNCTION_STATIC_H_
+# define CRALGO_IMPL_CHOOSE_FUNCTION_STATIC_H_
 
-# include "../../ValueFunction.h"
+# include "../../ChooseFunction.h"
 # include "../../Variable.h"
 # include "../../Choose.h"
 
@@ -83,4 +83,4 @@ struct ActionDescriptionFunction : public ChooseFunction<ExactType>
 }; /* namespace impl */
 }; /* namespace cralgo */
 
-#endif // !CRALGO_IMPL_VALUE_FUNCTION_STATIC_H_
+#endif // !CRALGO_IMPL_CHOOSE_FUNCTION_STATIC_H_
