@@ -15,30 +15,24 @@
 namespace cralgo {
 namespace impl {
 
-template<class ImplementationType>
-class StaticToDynamicFeatureVisitor : public cralgo::FeatureVisitor
-{
-public:
-  StaticToDynamicFeatureVisitor(const ImplementationType& impl)
-    : impl(impl) {}
-    
-  ImplementationType impl;
+STATIC_TO_DYNAMIC_CLASS(FeatureVisitor, Object)
   
   virtual bool featureEnter(FeatureDictionary& dictionary, size_t index)
-    {return impl.featureEnter(dictionary, index);}
+    {return BaseClass::impl.featureEnter(dictionary, index);}
     
   virtual void featureSense(FeatureDictionary& dictionary, size_t index, double value)
-    {impl.featureSense(dictionary, index, value);}
+    {BaseClass::impl.featureSense(dictionary, index, value);}
 
   virtual void featureCall(FeatureDictionary& dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
-    {impl.featureCall(dictionary, scopeIndex, featureGenerator);}
+    {BaseClass::impl.featureCall(dictionary, scopeIndex, featureGenerator);}
 
   virtual void featureCall(FeatureDictionary& dictionary, FeatureGeneratorPtr featureGenerator)
-    {impl.featureCall(dictionary, featureGenerator);}
+    {BaseClass::impl.featureCall(dictionary, featureGenerator);}
 
   virtual void featureLeave()
-    {impl.featureLeave();}
-};
+    {BaseClass::impl.featureLeave();}
+    
+STATIC_TO_DYNAMIC_ENDCLASS(FeatureVisitor);
 
 template<class ExactType>
 inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
@@ -46,10 +40,6 @@ inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionary& di
   FeatureVisitorPtr featureVisitor = staticToDynamic(_this());
   featureGenerator->accept(featureVisitor, &dictionary);
 }
-
-template<class ExactType>
-inline FeatureVisitorPtr staticToDynamic(const FeatureVisitor<ExactType>& staticVisitor)
-  {return FeatureVisitorPtr(new StaticToDynamicFeatureVisitor<ExactType>(static_cast<const ExactType& >(staticVisitor)));}
 
 }; /* namespace cralgo */
 }; /* namespace impl */

@@ -15,15 +15,7 @@
 namespace cralgo {
 namespace impl {
 
-template<class ImplementationType>
-class StaticToDynamicPolicy
-  : public StaticToDynamicObject<ImplementationType, cralgo::Policy>
-{
-public:
-  typedef StaticToDynamicObject<ImplementationType, cralgo::Policy> BaseClass;
-  
-  StaticToDynamicPolicy(const ImplementationType& impl)
-    : BaseClass(impl) {}
+STATIC_TO_DYNAMIC_CLASS(Policy, Object)
     
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
     {BaseClass::impl.policyEnter(crAlgorithm);}
@@ -42,11 +34,8 @@ public:
     
   virtual ObjectPtr getResult(size_t i) const
     {return BaseClass::impl.getResult(i);}
-};
-
-template<class ExactType>
-inline PolicyPtr staticToDynamic(const Policy<ExactType>& staticPolicy)
-  {return PolicyPtr(new StaticToDynamicPolicy<ExactType>(static_cast<const ExactType& >(staticPolicy)));}
+    
+STATIC_TO_DYNAMIC_ENDCLASS(Policy);
 
 }; /* namespace impl */
 }; /* namespace cralgo */
