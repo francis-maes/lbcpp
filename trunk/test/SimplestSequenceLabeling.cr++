@@ -132,6 +132,29 @@ private:
 
 using namespace cralgo;
 
+double evaluatePolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
+{
+  policy = policy->addComputeStatistics();  
+  for (size_t i = 0; i < examples.size(); ++i)
+  {
+    const SequenceExample& sequence = examples[i];
+    simplestSequenceLabeling(policy, sequence.getContent(), numLabels, &sequence.getLabels());
+  }
+  // todo: retrieve policies statistics
+  return 0.0;
+}
+
+/*class ClassifierScoresActionValueFunction : public ActionValueFunction
+{
+public:
+  ClassifierPtr classifier;
+  
+  virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
+  {
+    
+  }
+};*/
+
 int main(int argc, char* argv[])
 {
   static const char* filename = 
@@ -158,7 +181,8 @@ int main(int argc, char* argv[])
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
     GradientBasedLearner::createGradientDescent(learningRate), labels);
   
-  PolicyPtr policy = Policy::createClassificationExampleCreator(Policy::createRandom(), classifier);
+  PolicyPtr policy = //Policy::createRandom();
+    Policy::createClassificationExampleCreator(Policy::createRandom(), classifier);
   policy = policy->addComputeStatistics();
   
 //  PolicyPtr policy = Policy::createRandom()->addComputeStatistics();  

@@ -42,10 +42,10 @@ public:
 
   std::string getClassName() const;
   virtual std::string getName() const
-    {return "";}
+    {return getClassName() + "::getName() unimplemented";}
     
   virtual std::string toString() const
-    {return "";}
+    {return getClassName() + "::toString() unimplemented";}
     
   bool saveToFile(const std::string& fileName) const;
   void saveToStream(std::ostream& ostr) const;
@@ -78,18 +78,6 @@ template<class T>
 struct ObjectPtrTraits
 {
 public:
-  static inline std::string toString(const T* value)
-    {return value ? value->getClassName() : "null";}
-  static inline void write(std::ostream& ostr, const T* value)
-    {assert(value); value->saveToStream(ostr);}
-  static inline bool read(std::istream& istr, T* result)
-    {result = Object::loadFromStreamCast<T>(istr); return result != NULL;}
-};
-
-template<class T>
-struct ObjectSharedPtrTraits
-{
-public:
   static inline std::string toString(const ReferenceCountedObjectPtr<T> value)
     {return value ? value->toString() : "null";}
   static inline void write(std::ostream& ostr, const ReferenceCountedObjectPtr<T> value)
@@ -98,8 +86,6 @@ public:
     {result = Object::loadFromStreamCast<T>(istr); return result;}
 };
 
-template<>
-struct Traits<Object*> : public ObjectPtrTraits<Object> {};
 template<>
 struct Traits<ObjectPtr> : public ObjectPtrTraits<Object> {};
 
@@ -114,11 +100,38 @@ namespace impl
     void save(std::ostream& ostr) const {}
     bool load(std::istream& istr) {return true;}
   };
+  
+  // todo: move
+  template<class ImplementationType, class BaseClass>
+  class StaticToDynamicObject : public BaseClass
+  {
+  public:
+    StaticToDynamicObject(const ImplementationType& impl)
+      : impl(impl) {}
+
+    virtual bool load(std::istream& istr)
+      {return impl.load(istr);}
+      
+    virtual void save(std::ostream& ostr) const
+      {impl.save(ostr);}
+
+    virtual std::string toString() const
+      {return impl.toString();}
+      
+  protected:
+    ImplementationType impl;
+  };
+
+  
 }; /* namespace impl */
 
 /*
 ** Predeclarations
 */
+// tools
+class ScalarRandomVariableStatistics;
+typedef ReferenceCountedObjectPtr<ScalarRandomVariableStatistics> ScalarRandomVariableStatisticsPtr;
+
 // feature visitor
 class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;

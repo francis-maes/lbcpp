@@ -15,6 +15,7 @@
 # include "ContainerTraits.h"
 # include "Object.h"
 
+# include "RandomVariable.h"
 # include "FeatureGenerator.h"
 # include "DoubleVector.h"
 # include "SparseVector.h"

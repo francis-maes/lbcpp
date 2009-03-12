@@ -3,11 +3,12 @@ INCLUDE_DIRECTORIES(${CRAlgo_SOURCE_DIR}/include)
 SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/cralgo.h
   ../include/cralgo/Traits.h
+  ../include/cralgo/Random.h
   ../include/cralgo/ContainerTraits.h
   ../include/cralgo/ReferenceCountedObject.h
-  ../include/cralgo/Object.h
-  ../include/cralgo/Random.h
   ../include/cralgo/ErrorHandler.h
+  ../include/cralgo/Object.h
+  ../include/cralgo/RandomVariable.h
   ../include/cralgo/FeatureDictionary.h
   ../include/cralgo/FeatureGenerator.h
   ../include/cralgo/DoubleVector.h
