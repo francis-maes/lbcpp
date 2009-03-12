@@ -1,56 +1,50 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DynamicToStaticFeatureVis...hpp| Dynamic to Static wrapper       |
+| Filename: FeatureVisitorDynamicToSta..hpp| Dynamic to Static wrapper       |
 | Author  : Francis Maes                   |   for feature visitors          |
 | Started : 27/02/2009 18:10               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
                                
-#ifndef CRALGO_STATIC_FEATURE_VISITOR_DYNAMIC_TO_STATIC_HPP_
-# define CRALGO_STATIC_FEATURE_VISITOR_DYNAMIC_TO_STATIC_HPP_
+#ifndef CRALGO_FEATURE_VISITOR_DYNAMIC_TO_STATIC_H_
+# define CRALGO_FEATURE_VISITOR_DYNAMIC_TO_STATIC_H_
 
-# include "StaticFeatureVisitor.hpp"
+# include "FeatureVisitorStatic.hpp"
 
-namespace cralgo
+namespace cralgo {
+namespace impl {
+
+struct DynamicToStaticFeatureVisitor : public FeatureVisitor<DynamicToStaticFeatureVisitor>
 {
-
-struct DynamicToStaticFeatureVisitor : public StaticFeatureVisitor<DynamicToStaticFeatureVisitor>
-{
-  DynamicToStaticFeatureVisitor(FeatureVisitor& target)
+  DynamicToStaticFeatureVisitor(FeatureVisitorPtr target)
     : target(target) {}
   
   bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
-    {return target.featureEnter(dictionary, number);}
+    {return target->featureEnter(dictionary, number);}
 
   void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
-    {target.featureSense(dictionary, number, value);}
+    {target->featureSense(dictionary, number, value);}
   
   void featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
-    {target.featureCall(dictionary, featureGenerator);}
+    {target->featureCall(dictionary, featureGenerator);}
 
   void featureCall(cralgo::FeatureDictionary& dictionary, size_t number, cralgo::FeatureGeneratorPtr featureGenerator)
-    {StaticFeatureVisitor<DynamicToStaticFeatureVisitor>::featureCall(dictionary, number, featureGenerator);}
+    {FeatureVisitor<DynamicToStaticFeatureVisitor>::featureCall(dictionary, number, featureGenerator);}
   
   void featureLeave()
-    {target.featureLeave();}
+    {target->featureLeave();}
 
-  FeatureVisitor& getTarget()
+  FeatureVisitorPtr getTarget()
     {return target;}
 
 private:
-  FeatureVisitor& target;
+  FeatureVisitorPtr target;
 };
 
-/*
-** TODO: optimize ? 
-**   -> soit clone, soit bridge, soit shared_ptr
-namespace impl
-{
-  FeatureVisitor* staticToDynamic(DynamicToStaticFeatureVisitor& impl)
-    {return impl.getTarget();}
-};
-*/
+inline DynamicToStaticFeatureVisitor dynamicToStatic(FeatureVisitorPtr visitor)
+  {return DynamicToStaticFeatureVisitor(visitor);}
 
+}; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_STATIC_FEATURE_VISITOR_DYNAMIC_TO_STATIC_HPP_

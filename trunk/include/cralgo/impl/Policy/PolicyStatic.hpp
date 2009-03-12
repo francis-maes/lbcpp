@@ -15,15 +15,6 @@ namespace cralgo {
 namespace impl {
 
 template<class ExactType>
-struct Object
-{
-  std::string toString() const {return "";}
-  
-  void save(std::ostream& ostr) const {}
-  bool load(std::istream& istr) {return true;}
-};
-
-template<class ExactType>
 struct Policy : public Object<ExactType>
 {
   void policyEnter(CRAlgorithmPtr crAlgorithm) {}
@@ -52,28 +43,6 @@ struct DecoratorPolicy : public Policy<ExactType>
   void policyLeave()
     {decorated.policyLeave();}
 };
-
-struct DynamicToStaticPolicy : public Policy<DynamicToStaticPolicy>
-{
-  DynamicToStaticPolicy(PolicyPtr policy) : policy(policy) {}
-  
-  PolicyPtr policy;
-
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
-    {policy->policyEnter(crAlgorithm);}
-    
-  const void* policyChoose(ChoosePtr choose)
-    {return policy->policyChoose(choose);}
-    
-  void policyReward(double reward)
-    {policy->policyReward(reward);}
-    
-  void policyLeave()
-    {policy->policyLeave();}
-};
-
-inline DynamicToStaticPolicy dynamicToStatic(PolicyPtr policy)
-  {return DynamicToStaticPolicy(policy);}
 
 }; /* namespace impl */
 }; /* namespace cralgo */

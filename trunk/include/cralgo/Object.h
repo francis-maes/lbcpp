@@ -104,6 +104,19 @@ struct Traits<Object*> : public ObjectPtrTraits<Object> {};
 template<>
 struct Traits<ObjectPtr> : public ObjectPtrTraits<Object> {};
 
+// todo: move somewhere into implementation
+namespace impl
+{ 
+  template<class ExactType>
+  struct Object
+  {
+    std::string toString() const {return "";}
+    
+    void save(std::ostream& ostr) const {}
+    bool load(std::istream& istr) {return true;}
+  };
+}; /* namespace impl */
+
 }; /* namespace cralgo */
 
 #endif // !CRALGO_OBJECT_H_

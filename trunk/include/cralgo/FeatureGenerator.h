@@ -23,8 +23,9 @@ class SparseVector;
 typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
 class DenseVector;
 typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
-
 class FeatureVisitor;
+typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
+
 class FeatureGenerator : public Object
 {
 public:
@@ -34,7 +35,7 @@ public:
   ** General
   */
   // accept feature visitor
-  virtual void accept(FeatureVisitor& visitor, FeatureDictionary* dictionary = NULL) const = 0;
+  virtual void accept(FeatureVisitorPtr visitor, FeatureDictionary* dictionary = NULL) const = 0;
 
   // describe as string
   virtual std::string toString(FeatureDictionary* dictionary = NULL) const = 0;
@@ -79,11 +80,9 @@ public:
 
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
-class FeatureVisitor
+class FeatureVisitor : public Object
 {
 public:
-  virtual ~FeatureVisitor() {}
-  
   virtual bool featureEnter(FeatureDictionary& dictionary, size_t index) = 0;
   virtual void featureSense(FeatureDictionary& dictionary, size_t index, double value) = 0;
 
@@ -91,13 +90,13 @@ public:
   {
     if (featureEnter(dictionary, scopeIndex))
     {
-      featureGenerator->accept(*this, &dictionary.getSubDictionary(scopeIndex));
+      featureGenerator->accept(FeatureVisitorPtr(this), &dictionary.getSubDictionary(scopeIndex));
       featureLeave();
     }
   }
 
   virtual void featureCall(FeatureDictionary& dictionary, FeatureGeneratorPtr featureGenerator)
-    {featureGenerator->accept(*this, &dictionary);}
+    {featureGenerator->accept(FeatureVisitorPtr(this), &dictionary);}
 
   virtual void featureLeave() = 0;
 };
@@ -115,7 +114,7 @@ public:
     {assert(false); return *(FeatureDictionary* )NULL;}
 
 public:
-  virtual void accept(FeatureVisitor& visitor, FeatureDictionary* dictionary = NULL) const;
+  virtual void accept(FeatureVisitorPtr visitor, FeatureDictionary* dictionary = NULL) const;
   virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary = NULL) const;
   virtual DenseVectorPtr toDenseVector(FeatureDictionary* dictionary = NULL) const;
   virtual std::string toString(FeatureDictionary* dictionary = NULL) const;
@@ -135,8 +134,8 @@ protected:
   FeatureDictionary& selectDictionary(FeatureDictionary* dictionary = NULL) const
     {return dictionary ? *dictionary : _this().getDefaultDictionary();}
   
-  template<class VisitorType>
-  void featureGenerator(VisitorType& visitor, FeatureDictionary* dictionary = NULL) const
+  template<class StaticVisitorType>
+  void featureGenerator(StaticVisitorType& visitor, FeatureDictionary* dictionary = NULL) const
     {_this().staticFeatureGenerator(visitor, dictionary ? *dictionary : _this().getDefaultDictionary());}
 };
 

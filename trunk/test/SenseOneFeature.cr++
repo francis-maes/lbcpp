@@ -85,24 +85,24 @@ int main(int argc, char* argv[])
 {
   FeatureGeneratorPtr f1 = oneFeatureWithIndex();
   std::cout << f1->getName() << std::endl;
-  SparseVectorPtr v1 = f1->createSparseVector();
+  SparseVectorPtr v1 = f1->toSparseVector();
   std::cout << "F1: " << f1->toString() << std::endl;
   std::cout << "V1: " << v1->size() << " " << v1->toString() << std::endl;
   
   FeatureGeneratorPtr f2 = oneFeatureWithString();
   std::cout << f2->getName() << std::endl;
   std::cout << "F2: " << f2->toString() << std::endl;
-  std::cout << "V2: " << f2->createSparseVector()->size() << " " << f2->createSparseVector()->toString() << std::endl;
+  std::cout << "V2: " << f2->toSparseVector()->size() << " " << f2->toSparseVector()->toString() << std::endl;
   
   FeatureGeneratorPtr f3 = nestedScopes();
   std::cout << f3->getName() << std::endl;
   std::cout << "F3: " << std::endl << f3->toString() << std::endl;
-  SparseVectorPtr v3 = f3->createSparseVector();
+  SparseVectorPtr v3 = f3->toSparseVector();
   std::cout << "V3: " << v3->size() << std::endl << v3->toString() << std::endl;
   
   FeatureGeneratorPtr f4 = valueWRTSecondaryTargetsFeatures(100, 906, 6);
   std::cout << "V4: " << std::endl << f4->toString() << std::endl;
-  SparseVectorPtr v4 = f4->createSparseVector();
+  SparseVectorPtr v4 = f4->toSparseVector();
   v4->saveToFile("f4.vector");
   
   SparseVectorPtr f4loaded = Object::loadFromFileCast<SparseVector>("f4.vector");

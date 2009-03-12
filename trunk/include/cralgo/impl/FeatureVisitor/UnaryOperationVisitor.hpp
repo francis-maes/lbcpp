@@ -9,11 +9,11 @@
 #ifndef CRALGO_FEATURE_VISITOR_UNARY_OPERATION_HPP_
 # define CRALGO_FEATURE_VISITOR_UNARY_OPERATION_HPP_
 
-# include "StaticFeatureVisitor.hpp"
+# include "FeatureVisitorStatic.hpp"
 # include "../../DenseVector.h"
 
-namespace cralgo
-{
+namespace cralgo {
+namespace impl {
 
 struct ConstUnaryVectorOperation
 {
@@ -43,7 +43,7 @@ struct ComputeSumOfSquaresVectorOperation : public ConstUnaryVectorOperation
 
 template<class OperationType>
 class UnaryOperationVisitor
-  : public StaticFeatureVisitor< UnaryOperationVisitor<OperationType> >
+  : public FeatureVisitor< UnaryOperationVisitor<OperationType> >
 {
 public:
   UnaryOperationVisitor(OperationType& operation)
@@ -62,6 +62,7 @@ private:
   OperationType& operation;
 };
 
+}; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_FEATURE_VISITOR_UNARY_OPERATION_HPP_

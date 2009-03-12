@@ -9,14 +9,14 @@
 #ifndef CRALGO_STATIC_FEATURE_VISITOR_CREATE_SPARSE_VECTOR_HPP_
 # define CRALGO_STATIC_FEATURE_VISITOR_CREATE_SPARSE_VECTOR_HPP_
 
-# include "StaticFeatureVisitor.hpp"
+# include "FeatureVisitorStatic.hpp"
 # include "../../SparseVector.h"
 
-namespace cralgo
-{
+namespace cralgo {
+namespace impl {
 
 template<class ExactType, class VectorType>
-struct CreateVectorVisitor : public StaticFeatureVisitor< ExactType >
+struct CreateVectorVisitor : public FeatureVisitor< ExactType >
 {
   typedef ReferenceCountedObjectPtr<VectorType> VectorTypePtr;
   
@@ -64,6 +64,7 @@ struct CreateDenseVectorVisitor : public CreateVectorVisitor<CreateDenseVectorVi
     : CreateVectorVisitor<CreateDenseVectorVisitor, DenseVector>(dictionary) {}
 };
 
+}; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_STATIC_FEATURE_VISITOR_CREATE_SPARSE_VECTOR_HPP_

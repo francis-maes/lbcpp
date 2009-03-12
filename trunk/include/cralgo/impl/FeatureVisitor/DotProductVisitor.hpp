@@ -9,13 +9,13 @@
 #ifndef CRALGO_FEATURE_VISITOR_DOT_PRODUCT_HPP_
 # define CRALGO_FEATURE_VISITOR_DOT_PRODUCT_HPP_
 
-# include "StaticFeatureVisitor.hpp"
+# include "FeatureVisitorStatic.hpp"
 # include "../../DenseVector.h"
 
-namespace cralgo
-{
+namespace cralgo {
+namespace impl {
 
-class DotProductDenseVectorVisitor : public StaticFeatureVisitor<DotProductDenseVectorVisitor>
+class DotProductDenseVectorVisitor : public FeatureVisitor<DotProductDenseVectorVisitor>
 {
 public:
   DotProductDenseVectorVisitor(DenseVectorPtr vector)
@@ -50,6 +50,7 @@ private:
   double res;
 };
 
+}; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_FEATURE_VISITOR_DOT_PRODUCT_HPP_

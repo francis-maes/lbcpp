@@ -30,7 +30,7 @@ inline ScalarConstant constant(double value)
   {return ScalarConstant(value);}
 
 template<class ExactType>
-struct ContinuousFunction
+struct ContinuousFunction : public Object<ExactType>
 {
 public:
   enum {isDerivable = false};
