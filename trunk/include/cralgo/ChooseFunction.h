@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ValueFunction.h                | Value functions                 |
-| Author  : Francis Maes                   |                                 |
+| Filename: ChooseFunction.h               | Functions that depend on a      |
+| Author  : Francis Maes                   |   choose                        |
 | Started : 12/03/2009 17:25               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
                                
-#ifndef CRALGO_VALUE_FUNCTION_H_
-# define CRALGO_VALUE_FUNCTION_H_
+#ifndef CRALGO_CHOOSE_FUNCTION_H_
+# define CRALGO_CHOOSE_FUNCTION_H_
 
 # include "Object.h"
 
