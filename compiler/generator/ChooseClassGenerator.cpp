@@ -40,12 +40,12 @@
 
 
   private:
-    cralgo::ActionValueFunction* fun1;
-    cralgo::ActionValueFunction* fun2;
-    cralgo::StateFeaturesFunction* fun3;
+    cralgo::ActionValueFunctionPtr fun1;
+    cralgo::ActionValueFunctionPtr fun2;
+    cralgo::StateFeaturesFunctionPtr fun3;
 
-    cralgo::StateDescriptionFunction* __stateDescriptionFunction__;
-    cralgo::ActionDescriptionFunction* __actionDescriptionFunction__;
+    cralgo::StateDescriptionFunctionPtr __stateDescriptionFunction__;
+    cralgo::ActionDescriptionFunctionPtr __actionDescriptionFunction__;
     // ...    
     
     __Choose0__()
@@ -67,39 +67,6 @@ static const char* stateFunctionKinds[] = {
 static const size_t numStateFunctionKinds
   = sizeof (stateFunctionKinds) / sizeof (const char* );
 static const size_t numCompositeStateFunctionKinds = numStateFunctionKinds - 2;
-
-std::string ChooseClassGenerator::StateFunctionInfo::findKind(CRAlgo::StateFundefStatement* stateFunction)
-{
-  // todo: finish and make more tests
-  FunctionPTreeAnalyser input(stateFunction->getFunctionDefinition());
-  
-  std::string returnType = input.getReturnTypeString();
-  size_t numParams = input.getParameters().size();
-  if (returnType == "std :: string")
-  {
-    if (numParams == 0)
-      return "StateDescription";
-    else if (numParams == 1)
-      return "ActionDescription";
-  }
-  if (returnType == "featureGenerator")
-  {
-    if (numParams == 0)
-      return "StateFeatures";
-    else if (numParams == 1)
-      return "ActionFeatures";
-    //else
-    //  return "FeatureGenerator";
-  }
-  else if (returnType == "double")
-  {
-    if (numParams == 0)
-      return "StateValue";
-    else if (numParams == 1)
-      return "ActionValue";
-  }
-  return "";//Misc"; 
-}
 
 ChooseClassGenerator::ChooseClassGenerator(CRAlgorithmChoose& choose, SymbolLookup::Scope* scope, const std::string& crAlgorithmClassName)
   : className(choose.getParametersClassName()), crAlgorithmClassName(crAlgorithmClassName)
@@ -145,7 +112,7 @@ void ChooseClassGenerator::addMemberVariables(BlockPTreeGenerator& classBody)
   for (size_t i = 0; i < stateFunctions.size(); ++i)
   {
     StateFunctionInfo& sf = stateFunctions[i];
-    classBody.addVariableDeclaration(atom(sf.getDynamicClassName() + "*"), identifier(sf.identifier));
+    classBody.addVariableDeclaration(atom(sf.getDynamicClassName() + "Ptr"), identifier(sf.identifier));
   }
   classBody.addNewLine();
   for (size_t i = 0; i < numCompositeStateFunctionKinds; ++i)
@@ -198,7 +165,7 @@ PTree::Node* ChooseClassGenerator::createStateFunctionGetter(const std::string& 
   for (size_t i = 0; i < stateFunctions.size(); ++i)
     if (stateFunctions[i].kind == stateFunctionKind)
       switchOutput.addCase(literal(index++), returnStatement(atom(stateFunctions[i].identifier)));
-  switchOutput.setDefault(atom("assert(false); return *(" + returnType + "* )0;\n"));
+  switchOutput.setDefault(atom("assert(false); return " + returnType + "();\n"));
   output.body.add(switchOutput.createStatement());
   
   return output.createDeclaration();
@@ -213,33 +180,35 @@ PTree::Node* ChooseClassGenerator::createCompositeStateFunctionGetter(const std:
   output.setReturnType(atom(returnType));
   output.setName("get" + stateFunctionKind + "Function");
   output.setConst(true);
-  
-  
-  PTree::Node* createCode;
-  std::vector<StateFunctionInfo> stateFunctions = getStateFunctionsOfKind(stateFunctionKind);
 
+  std::vector<StateFunctionInfo> stateFunctions = getStateFunctionsOfKind(stateFunctionKind);
+  
   if (stateFunctions.size() == 0)
-    createCode = atom("const_cast<" + className + "* >(this)->" + id + " = cralgo::StateFunctionTraits<" + getDynamicClassName(stateFunctionKind) + ">::createComposite();");
-  else if (stateFunctions.size() == 1)
-  {
-    StateFunctionInfo& sf = stateFunctions[0];
-    createCode = 
-      atom("const_cast<" + className + "* >(this)->" + id + " = cralgo::StateFunctionTraits<" + sf.getDynamicClassName() + ">::create<" + sf.className + ", " + crAlgorithmClassName + ">();");
-  }
+    output.body.add(returnStatement(atom(returnType + "()")));
   else
   {
-    BlockPTreeGenerator block;
-    block.add(atom("typedef cralgo::StateFunctionTraits<" + getDynamicClassName(stateFunctionKind) + "> StateFunTraits;\n"));
-    block.add(atom("StateFunTraits::CompositeFunction* __tmp__ = StateFunTraits::createComposite();\n"));
-    for (size_t i = 0; i < stateFunctions.size(); ++i)
-      block.add(atom("__tmp__->add(*" + stateFunctions[i].identifier + ");\n"));
-    block.addExpressionStatement(assignExpr(atom("const_cast<" + className + "* >(this)->" + id), atom("__tmp__")));
-    createCode = block.createBlock();
+    PTree::Node* createCode;
+    if (stateFunctions.size() == 1)
+    {
+      StateFunctionInfo& sf = stateFunctions[0];
+      createCode = atom("const_cast<" + className + "* >(this)->" + id + " = " + sf.identifier + ";");
+      // cralgo::StateFunctionTraits<" + sf.getDynamicClassName() + ">::create<" + sf.className + ", " + crAlgorithmClassName + ">();");
+    }
+    else
+    {
+      BlockPTreeGenerator block;
+      block.add(atom("cralgo::impl::Composite" + stateFunctionKind + "Function<ChoiceType> __tmp__;\n"));
+//      block.add(atom("typedef cralgo::StateFunctionTraits<" + getDynamicClassName(stateFunctionKind) + "> StateFunTraits;\n"));
+//      block.add(atom("StateFunTraits::CompositeFunction* __tmp__ = StateFunTraits::createComposite();\n"));
+      for (size_t i = 0; i < stateFunctions.size(); ++i)
+        block.add(atom("__tmp__.add(" + stateFunctions[i].identifier + ");\n"));
+      block.addExpressionStatement(assignExpr(atom("const_cast<" + className + "* >(this)->" + id), atom("cralgo::impl::staticToDynamic(__tmp__)")));
+      createCode = block.createBlock();
+    }
+      
+    output.body.add(ifStatement(atom("!" + id), createCode));
+    output.body.add(returnStatement(atom(id)));
   }
-    
-  output.body.add(ifStatement(atom("!" + id), createCode));
-  output.body.add(returnStatement(atom(id)));
-
   return output.createDeclaration();
 }
 
@@ -251,11 +220,12 @@ PTree::Node* ChooseClassGenerator::createConstructor()
   {
     StateFunctionInfo& sf = stateFunctions[i];
     PTree::Node* expr = assignExpr(identifier(sf.identifier),
-      atom("cralgo::StateFunctionTraits<" + sf.getDynamicClassName() + ">::create<" + sf.className + ", " + crAlgorithmClassName + ">()"));
+//      atom("cralgo::StateFunctionTraits<" + sf.getDynamicClassName() + ">::create<" + sf.className + ", " + crAlgorithmClassName + ">()"));
+        atom("cralgo::impl::staticToDynamic(" + sf.className + "())"));
     output.body.addExpressionStatement(expr);
   }
-  for (size_t i = 0; i < numCompositeStateFunctionKinds; ++i)
-    output.addInitializer(identifier(std::string("__") + stateFunctionKinds[i] + "Function__"), atom("NULL"));
+//  for (size_t i = 0; i < numCompositeStateFunctionKinds; ++i)
+//    output.addInitializer(identifier(std::string("__") + stateFunctionKinds[i] + "Function__"), atom("NULL"));
   if (!output.body.size())
     output.body.add(NULL);
   return output.createDeclaration();

@@ -20,11 +20,8 @@ public:
   void setValueFunction(ActionValueFunctionPtr valueFunction)
     {this->valueFunction = valueFunction;}
   
-  void insert(size_t node, double score = DBL_MAX)
-    {m.insert(std::make_pair(-score, node));}
-    
-  void insert(size_t node, CRAlgorithmPtr crAlgorithm)
-    {insert(node, valueFunction->compute(crAlgorithm, Variable::create(node)));}
+  void insert(size_t node)
+    {m.insert(std::make_pair(-valueFunction->compute(Variable::create(node)), node));}
     
   bool remove(size_t node)
   {

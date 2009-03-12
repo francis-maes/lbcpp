@@ -9,16 +9,17 @@
 #ifndef CRALGO_STATIC_STATE_FUNCTION_HPP_
 # define CRALGO_STATIC_STATE_FUNCTION_HPP_
 
+# include "../../Variable.h"
 # include "../../StateFunction.h"
 # include "FeatureGenerator.hpp"
 
 namespace cralgo
 {
 
-
 template<class CRAlgorithmType>
 CRAlgorithmType& dynamicToStaticCRAlgorithm(CRAlgorithmPtr crAlgorithm);
 
+#if 0
 template<class DynamicType>
 struct StateFunctionTraits {};
 
@@ -161,7 +162,7 @@ struct StateFunctionTraits<ActionFeaturesFunction>
 
   static CompositeFunction* createComposite() {return new CompositeFunction();}
 };
-
+#endif // 0
 
 #if 0
 

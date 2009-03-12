@@ -11,6 +11,7 @@
 
 # include "../../FeatureGenerator.h"
 # include "../../DoubleVector.h"
+# include "../Object.hpp"
 
 namespace cralgo {
 namespace impl {

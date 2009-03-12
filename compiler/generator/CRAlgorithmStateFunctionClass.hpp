@@ -26,26 +26,38 @@ public:
     
     setKeyword(structKeyword());
     setName("__" + identifier + "Function__");
+    std::string kind = stateFundef->getKind();
+    std::string baseClass = "cralgo::impl::" + stateFundef->getKind() + "Function<__" + identifier + "Function__";
+    if (kind != "Choose")
+      for (size_t i = 0; i < parameters.size(); ++i)
+        baseClass += ", " + PTree::reify(parameters[i].getRecomposedType(false));
+    baseClass += ">";
+    addBaseClass(publicKeyword(), ClassPTreeGenerator::identifier(baseClass));
     
-    // name, returnType, parameters
-    body.add(atom("static const char* getName() {return " + quote(identifier) + ";}\n"));
-    body.add(list(typedefKeyword(), input.getReturnType(), atom("__ReturnType__;\n")));
+    // returnType, parameters
+    body.add(list(typedefKeyword(), getReturnType(input), atom("__ReturnType__;\n")));
     
-    for (size_t i = 0; i < parameters.size(); ++i)
-    {
-      ParameterPTreeAnalyser param = parameters[i];
-      body.add(list(typedefKeyword(), param.getRecomposedType(false), atom("__Param" + size2str(i) + "Type__;\n")));
-    }
-    body.add(atom("enum {numParameters = " + size2str(parameters.size()) + "};\n"));
+    if (kind != "Choose" && parameters.size() == 1)
+      body.add(list(typedefKeyword(), parameters[(size_t)0].getRecomposedType(false), atom("ChoiceType;\n")));      
+
+//            output.addParameter(atom(translator.getCRAlgorithmClassName()), list(atom("&"), identifier("__crAlgorithm__")));
+
+    // ctor, getName(), setChoose()
+    body.add(atom("__" + identifier + "Function__() : __crAlgorithm__(NULL) {}\n"));
+    body.add(atom("inline std::string getName() const {return " + quote(identifier) + ";}\n"));
+    body.add(atom("inline void setChoose(cralgo::ChoosePtr choose) {\n"
+        "__crAlgorithm__ = &cralgo::dynamicToStaticCRAlgorithm<" + translator.getCRAlgorithmClassName() + ">(choose->getCRAlgorithm()); }\n"));
+    body.add(atom(translator.getCRAlgorithmClassName() + "* __crAlgorithm__;\n"));
 
     // function body
     FunctionPTreeGenerator function;
     function.addModifiers(input.getModifiers());
-    function.addModifier(staticKeyword());
+//    function.addModifier(staticKeyword());
     function.setReturnType(input.getReturnType());
-    function.setName("function");
+    function.setName("compute");
     function.addParameters(parameters.getPTreeVector());
     function.body.add(input.getBody());
+    function.setConst(true);
     
     body.add(function.createDeclaration());
     
@@ -63,29 +75,56 @@ public:
 private:
   PTree::Node* additionalCode;
 
+  PTree::Node* getReturnType(FunctionPTreeAnalyser& input)
+    {return input.getReturnTypeString() == "featureGenerator" ? identifier("cralgo::FeatureGeneratorPtr") : input.getReturnType();}
+
   PTree::FunctionDefinition* translateFunctionDefinition(CRAlgorithmVariableTranslator& translator, CRAlgo::StateFundefStatement* stateFundef, SymbolLookup::UserScope* scope)
   {
     PTree::FunctionDefinition* fundef = stateFundef->getFunctionDefinition();
     FunctionPTreeAnalyser input(fundef);
     FunctionPTreeGenerator output;
     
+    bool isFeatureGenerator = CRAlgo::isFeatureGenerator(fundef);
+    
+    ParameterListPTreeAnalyser parameters = input.getParameters();
+    
     // add parameter __crAlgorithm__ and translate variables
     output.addModifiers(input.getModifiers());
     output.setReturnType(input.getReturnType());
     output.setIdentifier(input.getIdentifier());
-    output.addParameter(atom(translator.getCRAlgorithmClassName()), list(atom("&"), identifier("__crAlgorithm__")));
-    output.addParameters(input.getParameters());
+    if (isFeatureGenerator)
+    {
+      output.addModifier(staticKeyword());
+      output.addParameter(identifier(translator.getCRAlgorithmClassName()), list(atom("*"), identifier("__crAlgorithm__")));
+    }
+    output.addParameters(parameters);
+
     CRAlgorithmVariableTranslatorVisitor visitor(translator);
-    output.body.add(visitor.translateVariables(input.getBody(), scope, false));
+    output.body.add(visitor.translateVariables(input.getBody(), scope, false, "__crAlgorithm__->"));
     fundef = output.createDeclaration();
-    
-    // feature generators
-    if (CRAlgo::isFeatureGenerator(fundef))
+
+    if (isFeatureGenerator)
     {
       // replace fundef by the staticToDynamic feature generator function
       FeatureGeneratorClassGenerator featureGeneratorGenerator(fundef, scope, true);
-      additionalCode = featureGeneratorGenerator.createCode(&fundef);
+      additionalCode = featureGeneratorGenerator.createCode();
+      
+      FunctionPTreeGenerator output;
+      output.addModifiers(input.getModifiers());
+      output.setReturnType(identifier("cralgo::FeatureGeneratorPtr"));
+      output.setIdentifier(input.getIdentifier());
+      output.addParameters(parameters);
+      
+      FuncallPTreeGenerator call;
+      call.setIdentifier(input.getIdentifier());
+      call.addArgument(identifier("__crAlgorithm__"));
+      for (size_t i = 0; i < parameters.size(); ++i)
+        call.addArgument(parameters[i].getIdentifier());
+      output.body.add(returnStatement(call.createExpression()));
+      fundef = output.createDeclaration();
     }
+    
+    // feature generators
     return fundef;
   }
 };

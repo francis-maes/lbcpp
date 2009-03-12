@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_POLICY_STATIC_H_
 
 # include "../../CRAlgorithm.h"
+# include "../Object.hpp"
 
 namespace cralgo {
 namespace impl {
