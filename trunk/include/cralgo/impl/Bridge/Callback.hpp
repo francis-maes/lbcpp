@@ -71,7 +71,7 @@ private:
 
 struct PolicyToStaticCallback : public StaticCallback
 {
-  PolicyToStaticCallback(PolicyPtr policy, CRAlgorithmPtr crAlgorithm, const void* lastChoice = NULL)
+  PolicyToStaticCallback(PolicyPtr policy, CRAlgorithmPtr crAlgorithm, VariablePtr lastChoice = NULL)
     : policy(policy), crAlgorithm(crAlgorithm), choice(lastChoice)
     {policy->policyEnter(crAlgorithm); }
 
@@ -82,19 +82,19 @@ struct PolicyToStaticCallback : public StaticCallback
   void choose(const ContainerType& choices, const ChooseType& dummy)
   {
     ChoosePtr c(new StaticToDynamicChoose<ChooseType>(choices, crAlgorithm));
-    choice = c->cloneChoice(policy->policyChoose(c)); // FIXME: memory leak
+    choice = policy->policyChoose(c);
   }
   
   void reward(double r)
     {policy->policyReward(r);}
 
-  const void* getLastChoice() const
+  VariablePtr getLastChoice() const
     {return choice;}
 
 private:
   PolicyPtr policy;
   CRAlgorithmPtr crAlgorithm;
-  const void* choice;
+  VariablePtr choice;
 };
 
 

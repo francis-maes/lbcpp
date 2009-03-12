@@ -14,9 +14,6 @@
 namespace cralgo
 {
 
-class SparseVector;
-typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
-
 class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector>
 {
 public:

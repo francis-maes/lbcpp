@@ -37,7 +37,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
       {
         CRAlgorithmPtr state = searchNode.getParentState();
         ChoosePtr choose = searchNode.getParentChoose();
-        const void* choice = searchNode.getChoice();
+        VariablePtr choice = searchNode.getChoice();
         
         if (choose->getNumActionFeatures() > 0)
         {
@@ -95,7 +95,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
 
     // insert sucessors
     { // TODO: virer ce scope, des que la dependence entre initialiseurs est resolu
-      ActionIteratorPtr it = node->newIterator();
+      VariableIteratorPtr it = node->newIterator();
       if (it)
         for (; it->exists(); it->next())
           closedNodes.insert(searchSpace.getChildrenNode(nodeIndex, it->get()));

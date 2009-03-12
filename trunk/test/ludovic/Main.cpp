@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
   CRAlgorithmPtr cralgo = toto();
 
-  const void* choice = NULL;
+  VariablePtr choice;
   while (true)
   {
 	  static int one = 1;
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	  std::cout << "Step reward: " << reward << " first var value = " << cralgo->getVariableValue(0) << std::endl;
 	  if (!choose)
 		  break;
-	  choice = &one;
+	  choice = Variable::create(one);
   }
   return 0;
 }

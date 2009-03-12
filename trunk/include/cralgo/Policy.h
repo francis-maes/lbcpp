@@ -13,11 +13,6 @@
 namespace cralgo
 {
 
-class Policy;
-typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
-class Classifier;
-typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
-
 class Policy : public Object
 {
 public:
@@ -33,7 +28,7 @@ public:
 
 public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}
-  virtual const void* policyChoose(ChoosePtr choose) = 0;
+  virtual VariablePtr policyChoose(ChoosePtr choose) = 0;
   virtual void policyReward(double reward) {}
   virtual void policyLeave() {}
 };
@@ -50,7 +45,7 @@ public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
     {decorated->policyEnter(crAlgorithm);}
     
-  virtual const void* policyChoose(ChoosePtr choose)
+  virtual VariablePtr policyChoose(ChoosePtr choose)
     {return decorated->policyChoose(choose);}
     
   virtual void policyReward(double reward)

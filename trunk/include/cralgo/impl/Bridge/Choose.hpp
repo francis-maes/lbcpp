@@ -10,39 +10,12 @@
 # define CRALGO_STATIC_CHOOSE_HPP_
 
 # include "../../Choose.h"
-# include <sstream>
+# include "Variable.hpp"
 # include "FeatureGenerator.hpp"
 # include "StateFunction.hpp"
 
 namespace cralgo
 {
-
-template<class ContainerType>
-class WrapperActionIterator : public ActionIterator
-{
-public:
-  typedef Traits<ContainerType> ContainerTraits;
-  typedef typename ContainerTraits::ConstIterator iterator;
-    
-  WrapperActionIterator(const ContainerType& container)
-    : container(container), it(ContainerTraits::begin(container)) {}
-  
-  virtual void next()
-  {
-    if (it != ContainerTraits::end(container))
-      ++it;
-  }
-  
-  virtual bool exists() const
-    {return it != ContainerTraits::end(container);}
-  
-  virtual const void* get() const
-    {return it == ContainerTraits::end(container) ? NULL : &ContainerTraits::value(it);}
-
-private:
-  const ContainerType& container;
-  iterator it;
-};
 
 template<class ChooseType>
 class StaticToDynamicChoose : public Choose
@@ -67,27 +40,21 @@ public:
   virtual size_t getNumChoices() const
     {return ContainerTraits::size(container);}
 
-  virtual ActionIteratorPtr newIterator() const
-    {return ActionIteratorPtr(new WrapperActionIterator<ContainerType>(container));}
+  virtual VariableIteratorPtr newIterator() const
+    {return VariableIteratorPtr(new StaticToDynamicVariableIterator<ContainerType>(container));}
   
-  virtual void* cloneChoice(const void* choice) const
-    {return new ChoiceType(*(const ChoiceType* )choice);}
-  
-  virtual void deleteChoice(const void* choice) const
-    {delete (ChoiceType* )choice;}
-
-  virtual const void* sampleRandomChoice() const
+  virtual VariablePtr sampleRandomChoice() const
   {
     return ContainerTraits::size(container)
-      ? cloneChoice(&ContainerTraits::sampleRandom(container))
-      : NULL;
+      ? Variable::create(ContainerTraits::sampleRandom(container))
+      : VariablePtr();
   }
   
-  virtual const void* sampleBestChoice(ActionValueFunctionPtr valueFunction) const
+  virtual VariablePtr sampleBestChoice(ActionValueFunctionPtr valueFunction) const
   {
     if (!ContainerTraits::size(container))
-      return NULL;
-    return cloneChoice(&ContainerTraits::sampleBests(container, crAlgorithm, valueFunction));
+      return VariablePtr();
+    return Variable::create(ContainerTraits::sampleBests(container, crAlgorithm, valueFunction));
   }
   
   /*

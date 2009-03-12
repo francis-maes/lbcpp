@@ -9,23 +9,11 @@
 #ifndef CRALGO_CHOOSE_H_
 # define CRALGO_CHOOSE_H_
 
-# include "Object.h"
 # include "StateFunction.h"
+# include "Variable.h"
 
 namespace cralgo
 {
-
-class ActionIterator : public ReferenceCountedObject
-{
-public:
-  virtual ~ActionIterator() {}
-  
-  virtual bool exists() const = 0;
-  virtual const void* get() const = 0;
-  virtual void next() = 0;
-};
-
-typedef ReferenceCountedObjectPtr<ActionIterator> ActionIteratorPtr;
 
 class Choose : public Object
 {
@@ -35,11 +23,9 @@ public:
   */
   virtual std::string getChoiceType() const = 0;
   virtual size_t getNumChoices() const = 0;
-  virtual ActionIteratorPtr newIterator() const = 0;
-  virtual void* cloneChoice(const void* choice) const = 0;
-  virtual void deleteChoice(const void* choice) const = 0;
-  virtual const void* sampleRandomChoice() const = 0;
-  virtual const void* sampleBestChoice(ActionValueFunctionPtr valueFunction) const = 0;
+  virtual VariableIteratorPtr newIterator() const = 0;
+  virtual VariablePtr sampleRandomChoice() const = 0;
+  virtual VariablePtr sampleBestChoice(ActionValueFunctionPtr valueFunction) const = 0;
 
   /*
   ** CR-algorithm related
@@ -53,19 +39,19 @@ public:
   std::string stateDescription() const
     {return getStateDescriptionFunction()->toString(crAlgorithm);}
 
-  std::string actionDescription(const void* choice) const
+  std::string actionDescription(VariablePtr choice) const
     {return getActionDescriptionFunction()->toString(crAlgorithm, choice);}
 
   double stateValue() const
     {return getStateValueFunction()->compute(crAlgorithm);}
 
-  double actionValue(const void* choice) const
+  double actionValue(VariablePtr choice) const
     {return getActionValueFunction()->compute(crAlgorithm, choice);}
     
   FeatureGeneratorPtr stateFeatures() const
     {return getStateFeaturesFunction()->featureGenerator(crAlgorithm);}
     
-  FeatureGeneratorPtr actionFeatures(const void* choice) const
+  FeatureGeneratorPtr actionFeatures(VariablePtr choice) const
     {return getActionFeaturesFunction()->featureGenerator(crAlgorithm, choice);}
 
   /*

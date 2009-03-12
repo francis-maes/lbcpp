@@ -41,7 +41,11 @@ public:
   */
   virtual size_t getNumVariables() const
     {return impl->getNumVariables();}
-    
+  
+  virtual VariablePtr getVariable(size_t num) const
+    {return Variable::createFromPointer(const_cast<void* >(impl->getVariablePointer(num)),
+        impl->getVariableType(num), impl->getVariableName(num));}
+  
   virtual std::string getVariableType(size_t num) const
     {return impl->getVariableType(num);}
     
@@ -50,9 +54,6 @@ public:
 
   virtual std::string getVariableValue(size_t num) const
     {return impl->getVariableValue(num);}
-
-  virtual const void* getVariablePointer(size_t num) const
-    {return impl->getVariablePointer(num);}
 
   virtual int getState() const
     {return impl->__state__;}

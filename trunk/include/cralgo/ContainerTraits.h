@@ -110,7 +110,8 @@ struct DefaultContainerTraits
   static inline const ValueType& sampleRandom(const ContainerType& container)
     {return SampleRandomImplementation<ConstIterator>::sampleRandom(container);}
   
-  // foireux
+  // foireux: il faudrait une classe pour
+  //   VariableFunction: Variable -> Scalar
   template<class CRAlgorithmType, class ActionValueType>
   static inline const ValueType& sampleBests(const ContainerType& container, CRAlgorithmType& crAlgorithm, ActionValueType& actionValues)
   {
@@ -118,7 +119,8 @@ struct DefaultContainerTraits
     double bestsScore = -std::numeric_limits<double>::max();
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
     {
-      double score = actionValues->compute(crAlgorithm, &ContainerTraits::value(it));
+      // FIXME
+      double score = 0.0; // actionValues->compute(crAlgorithm, Variable::create(ContainerTraits::value(it)));
       if (score > bestsScore)
       {
         bests.clear();

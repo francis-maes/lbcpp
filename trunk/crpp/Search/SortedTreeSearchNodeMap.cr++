@@ -24,7 +24,7 @@ public:
     {m.insert(std::make_pair(-score, node));}
     
   void insert(size_t node, CRAlgorithmPtr crAlgorithm)
-    {insert(node, valueFunction->compute(crAlgorithm, &node));}
+    {insert(node, valueFunction->compute(crAlgorithm, Variable::create(node)));}
     
   bool remove(size_t node)
   {

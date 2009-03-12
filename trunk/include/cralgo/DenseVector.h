@@ -14,11 +14,6 @@
 namespace cralgo
 {
 
-class DenseVector;
-typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
-class LazyVector;
-typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
-
 class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, DoubleVector>
 {
 public:

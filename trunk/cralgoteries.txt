@@ -1,5 +1,9 @@
 
-CRPP - Gros
+* ContainerTraits::sampleBests foireux
+
+
+LC++ library:
+=============
 
 * Hierarchies statique de State/Action ValueFunctions, sur le meme modele que les autres
 
@@ -22,15 +26,9 @@ CRPP - Gros
 * SWIG
 * Doxygen
 
-CRPP - Petit
-* ContainerTraits::sampleBests foireux
-* FeatureDictionary: les std::vector en dur, pas de pointeur
-* FeatureVisitor: appliquer un hierarchie similaire a ContinuousFunctions ?
-* shared_ptr ChoicePtr  ?
-  . Leak dans PolicyToStaticCallback
-  . voir aussi nieme::CRAlgorithmAction
+LC++ translator:
+================
 
-GENERATION:
 * PrettyPrinter: if-else: sauter a la ligne pour les deux blocs
 * variable statique dans les cr-algos ?
 * reference en variable locale dans un CR-algo => transformer en pointeur
@@ -56,7 +54,8 @@ GROS:
  * crAlgorithmCall
  * gestion des options
 
-CRALGOS:
+LC++ applications:
+==================
  * semi-supervised classification
  * active learning
  * feature-group selection

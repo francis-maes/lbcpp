@@ -12,33 +12,21 @@ namespace cralgo
 class TreeSearchNode
 {
 public:
-  TreeSearchNode(CRAlgorithmPtr initialState) : reward(0.0), parent(NULL), choice(NULL)
+  TreeSearchNode(CRAlgorithmPtr initialState) : reward(0.0), parent(NULL)
   {
     state = initialState->clone();
     choose = state->runUntilFirstChoose(&reward);
     assert(choose); // the search space must have at least one node
   }
   
-  TreeSearchNode(TreeSearchNode* parent, const void* choice)
-    : reward(0.0), parent(parent), choice(parent->choose->cloneChoice(choice)) {}
+  TreeSearchNode(TreeSearchNode* parent, VariablePtr choice)
+    : reward(0.0), parent(parent), choice(choice) {}
   
   TreeSearchNode(const TreeSearchNode& other)
-    : state(other.state), choose(other.choose), reward(other.reward), parent(other.parent)
-  {
-    if (parent && other.choice)
-      choice = other.parent->choose->cloneChoice(choice);
-  }
+    : state(other.state), choose(other.choose), reward(other.reward), parent(other.parent), choice(other.choice)
+    {}
   
-  TreeSearchNode() : reward(0.0), parent(NULL), choice(NULL) {}
-  ~TreeSearchNode()
-  {
-    if (choice)
-    {
-      assert(parent);
-      parent->choose->deleteChoice(choice);
-    }
-  }
-  
+  TreeSearchNode() : reward(0.0), parent(NULL) {}
   
   /*
   ** Parent
@@ -56,9 +44,9 @@ public:
     {return parent ? parent->state : CRAlgorithmPtr();}
     
   /*
-  ** Choice
+  ** Variable
   */
-  const void* getChoice() const
+  VariablePtr getChoice() const
     {return choice;}
   
   /*
@@ -99,11 +87,11 @@ public:
   ChoosePtr getChoose() const
     {assert(opened()); return choose;}
     
-  ActionIteratorPtr newIterator() const
-    {assert(opened()); return choose ? choose->newIterator() : ActionIteratorPtr();}
+  VariableIteratorPtr newIterator() const
+    {assert(opened()); return choose ? choose->newIterator() : VariableIteratorPtr();}
 
   bool isSolution() const
-    {assert(opened()); return state->hasReturn() && *(bool* )state->getReturn();}
+    {assert(opened()); return state->hasReturn() && state->getReturn()->getCopy<bool>();}
   
   double getReward() const
     {return reward;}
@@ -124,7 +112,7 @@ private:
   ChoosePtr      choose;
   double         reward;  // the reward corresponding to the transition from parent to this
   TreeSearchNode*    parent;
-  const void*    choice;  // the choice performed to transform parent into this 
+  VariablePtr    choice;  // the choice performed to transform parent into this 
 };
 
 }; /* namespace cralgo */

@@ -15,9 +15,6 @@
 namespace cralgo
 {
 
-class LazyVector;
-typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
-
 class LazyVector : public FeatureGeneratorDefaultImplementations<LazyVector, DoubleVector>
 {
 public:

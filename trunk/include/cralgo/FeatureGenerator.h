@@ -17,15 +17,6 @@
 namespace cralgo
 {
 
-class DoubleVector;
-typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
-class SparseVector;
-typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
-class DenseVector;
-typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
-class FeatureVisitor;
-typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
-
 class FeatureGenerator : public Object
 {
 public:
