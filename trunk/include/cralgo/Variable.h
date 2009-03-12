@@ -26,6 +26,10 @@ public:
     {return *(T* )ptr;}
 
   template<class T>
+  inline const T& getConstReference() const
+    {return *(const T* )ptr;}
+
+  template<class T>
   inline T getCopy() const
     {return *(const T* )ptr;}
   

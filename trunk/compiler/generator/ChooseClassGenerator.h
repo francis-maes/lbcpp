@@ -20,7 +20,7 @@ public:
   struct StateFunctionInfo
   {
     StateFunctionInfo(const std::string& identifier, CRAlgo::StateFundefStatement* stateFunctionDefinition)
-      : identifier(identifier), className("__" + identifier + "Function__"), kind(findKind(stateFunctionDefinition)) {}
+      : identifier(identifier), className("__" + identifier + "Function__"), kind(stateFunctionDefinition->getKind()) {}
     
     std::string identifier;
     std::string className;
@@ -28,8 +28,6 @@ public:
     
     std::string getDynamicClassName() const
       {return ChooseClassGenerator::getDynamicClassName(kind);}
-      
-    static std::string findKind(CRAlgo::StateFundefStatement* stateFunctionDefinition);
   };
   
 private:

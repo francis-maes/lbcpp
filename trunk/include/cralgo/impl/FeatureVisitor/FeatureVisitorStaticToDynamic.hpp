@@ -10,6 +10,7 @@
 # define CRALGO_FEATURE_VISITOR_STATIC_TO_DYNAMIC_H_
 
 # include "FeatureVisitorStatic.hpp"
+# include "../StaticToDynamic.hpp"
 
 namespace cralgo {
 namespace impl {

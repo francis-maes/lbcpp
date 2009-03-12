@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_POLICY_STATIC_TO_DYNAMIC_H_
 
 # include "PolicyStatic.hpp"
+# include "../StaticToDynamic.hpp"
 
 namespace cralgo {
 namespace impl {

@@ -38,6 +38,8 @@ public:
   
   std::string getIdentifier() const
     {return PTree::reify(PTree::first(getDeclarator()));}
+    
+  std::string getKind() const;
 };
 
 class FeatureScopeStatement : public PTree::UserStatement

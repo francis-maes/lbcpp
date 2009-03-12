@@ -89,48 +89,14 @@ public:
 template<>
 struct Traits<ObjectPtr> : public ObjectPtrTraits<Object> {};
 
-// todo: move somewhere into implementation
-namespace impl
-{ 
-  template<class ExactType>
-  struct Object
-  {
-    std::string toString() const {return "";}
-    
-    void save(std::ostream& ostr) const {}
-    bool load(std::istream& istr) {return true;}
-  };
-  
-  // todo: move
-  template<class ImplementationType, class BaseClass>
-  class StaticToDynamicObject : public BaseClass
-  {
-  public:
-    StaticToDynamicObject(const ImplementationType& impl)
-      : impl(impl) {}
-
-    virtual bool load(std::istream& istr)
-      {return impl.load(istr);}
-      
-    virtual void save(std::ostream& ostr) const
-      {impl.save(ostr);}
-
-    virtual std::string toString() const
-      {return impl.toString();}
-      
-  protected:
-    ImplementationType impl;
-  };
-
-  
-}; /* namespace impl */
-
 /*
 ** Predeclarations
 */
 // tools
 class ScalarRandomVariableStatistics;
 typedef ReferenceCountedObjectPtr<ScalarRandomVariableStatistics> ScalarRandomVariableStatisticsPtr;
+class IterationFunction;
+typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 
 // feature visitor
 class FeatureVisitor;
@@ -147,8 +113,11 @@ class LazyVector;
 typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
 
 // learning machines
+class GradientBasedLearner;
+typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;
 class Classifier;
 typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
+
 
 // cralgorithms
 class Variable;
@@ -162,8 +131,13 @@ typedef ReferenceCountedObjectPtr<CRAlgorithmScope> CRAlgorithmScopePtr;
 class CRAlgorithm;
 typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
 
-
 // policies
+class StateValueFunction;
+typedef ReferenceCountedObjectPtr<StateValueFunction> StateValueFunctionPtr;
+class VariableValueFunction;
+typedef ReferenceCountedObjectPtr<VariableValueFunction> VariableValueFunctionPtr;
+class ActionValueFunction;
+typedef ReferenceCountedObjectPtr<ActionValueFunction> ActionValueFunctionPtr;
 class Policy;
 typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 

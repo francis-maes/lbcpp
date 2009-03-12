@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_FUNCTION_STATIC_INTERFACE_H_
 
 # include "BinaryScalarOperation.hpp"
+# include "../Object.hpp"
 
 namespace cralgo {
 namespace impl {

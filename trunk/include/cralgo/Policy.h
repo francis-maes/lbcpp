@@ -9,6 +9,7 @@
 # define CRALGO_POLICY_H_
 
 # include "Object.h"
+# include "RandomVariable.h" // only for IterationFuction
 
 namespace cralgo
 {

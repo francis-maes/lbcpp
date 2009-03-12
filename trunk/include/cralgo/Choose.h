@@ -10,6 +10,7 @@
 # define CRALGO_CHOOSE_H_
 
 # include "StateFunction.h"
+# include "ValueFunction.h"
 # include "Variable.h"
 
 namespace cralgo
@@ -18,6 +19,9 @@ namespace cralgo
 class Choose : public Object
 {
 public:  
+  ChoosePtr getReferenceCountedPointer() const
+    {return ChoosePtr(const_cast<Choose* >(this));}
+
   /*
   ** Choices
   */
@@ -36,24 +40,20 @@ public:
   void setCRAlgorithm(CRAlgorithmPtr crAlgorithm) 
     {this->crAlgorithm = crAlgorithm;}
   
-  std::string stateDescription() const
-    {return getStateDescriptionFunction()->toString(crAlgorithm);}
+  std::string stateDescription() const;
+  std::string actionDescription(VariablePtr choice) const;
+  
+  double stateValue() const;
+  double actionValue(VariablePtr choice) const;
 
-  std::string actionDescription(VariablePtr choice) const
-    {return getActionDescriptionFunction()->toString(crAlgorithm, choice);}
-
-  double stateValue() const
-    {return getStateValueFunction()->compute(crAlgorithm);}
-
-  double actionValue(VariablePtr choice) const
-    {return getActionValueFunction()->compute(crAlgorithm, choice);}
-    
-  FeatureGeneratorPtr stateFeatures() const
-    {return getStateFeaturesFunction()->featureGenerator(crAlgorithm);}
-    
-  FeatureGeneratorPtr actionFeatures(VariablePtr choice) const
-    {return getActionFeaturesFunction()->featureGenerator(crAlgorithm, choice);}
-
+  FeatureGeneratorPtr stateFeatures() const;
+  FeatureGeneratorPtr actionFeatures(VariablePtr choice) const;
+  
+  // todo:
+  //virtual void actionDescriptions(const std::vector<std::string>& res) const = 0;
+  // virtual void actionValues(const std::vector<std::string>& res) const = 0;
+  // virtual void actionFeatures(const std::vector<FeatureGeneratorPtr>& res) const = 0;
+  
   /*
   ** Composite functions
   */

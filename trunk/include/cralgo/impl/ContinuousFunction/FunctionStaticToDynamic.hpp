@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_FUNCTION_INSTANTIATE_H_
 
 # include "FunctionStatic.hpp"
+# include "../StaticToDynamic.hpp"
 
 namespace cralgo
 {

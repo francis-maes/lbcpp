@@ -274,6 +274,9 @@ public:
 
   BlockPTreeGenerator body;
 
+  NodeVector& getParameters()
+    {return parameters;}
+
 protected:
   bool isConst;
   PTree::Node* returnType;

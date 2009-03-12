@@ -40,6 +40,37 @@ static Token featureScopeToken(CRAlgoToken::featureScope, strlen(CRAlgoToken::fe
 /*
 ** CRAlgoPTree
 */
+std::string CRAlgo::StateFundefStatement::getKind() const
+{
+  // todo: finish and make more tests
+  FunctionPTreeAnalyser input(getFunctionDefinition());
+  
+  std::string returnType = input.getReturnTypeString();
+  size_t numParams = input.getParameters().size();
+  if (returnType == "std :: string")
+  {
+    if (numParams == 0)
+      return "StateDescription";
+    else if (numParams == 1)
+      return "ActionDescription";
+  }
+  if (returnType == "featureGenerator")
+  {
+    if (numParams == 0)
+      return "StateFeatures";
+    else if (numParams == 1)
+      return "ActionFeatures";
+  }
+  else if (returnType == "double")
+  {
+    if (numParams == 0)
+      return "StateValue";
+    else if (numParams == 1)
+      return "ActionValue";
+  }
+  return "Choose";
+}
+
 namespace CRAlgo
 {
 

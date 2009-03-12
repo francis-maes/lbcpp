@@ -18,7 +18,7 @@ namespace cralgo
 
 class CRAlgorithm;
 typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
-
+#if 0
 class StateFunction : public Object
 {
 public:
@@ -102,11 +102,11 @@ public:
 private:
   std::vector<ActionDescriptionFunction* > descriptions;
 };
-
-class StateValueFunction : public StateFunction
+/*
+class StateValueFunction : public Object
 {
 public:
-  virtual double compute(CRAlgorithmPtr crAlgorithm) const = 0;
+  virtual double compute(ChoosePtr choose) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<StateValueFunction> StateValueFunctionPtr;
@@ -114,30 +114,30 @@ typedef ReferenceCountedObjectPtr<StateValueFunction> StateValueFunctionPtr;
 class CompositeStateValueFunction : public StateValueFunction
 {
 public:
-  CompositeStateValueFunction() : stateValue(NULL) {}
-  
-  void add(StateValueFunction& stateValue)
+  void add(StateValueFunctionPtr stateValue)
   {
     if (this->stateValue)
       std::cerr << "Warning: only the first state value will be used in choose." << std::endl;
     else
-      this->stateValue = &stateValue;
+      this->stateValue = stateValue;
   }
 
-  virtual double compute(CRAlgorithmPtr crAlgorithm) const
-    {return stateValue ? stateValue->compute(crAlgorithm) : 0.0;}
+  virtual double compute(ChoosePtr choose)
+    {return stateValue ? stateValue->compute(choose) : 0.0;}
 
   virtual std::string getName() const
     {return stateValue ? stateValue->getName() : "emptyStateValue";}
-  
+      
 private:
-  StateValueFunction* stateValue;
+  StateValueFunctionPtr stateValue;
 };
 
-class ActionValueFunction : public StateFunction
+class ActionValueFunction : public Object
 {
 public:
-  virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const = 0;
+  virtual void computeBegin(ChoosePtr choose) = 0;
+  virtual double compute(VariablePtr choice) = 0;
+  virtual void computeEnd() = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ActionValueFunction> ActionValueFunctionPtr;
@@ -164,7 +164,7 @@ public:
 private:
   ActionValueFunction* actionValue;
 };
-
+*/
 class StateFeaturesFunction : public StateFunction
 {
 public:
@@ -221,6 +221,8 @@ public:
 private:
   std::vector<ActionFeaturesFunction* > featureFunctions;
 };
+
+#endif // 0
 
 }; /* namespace cralgo */
 

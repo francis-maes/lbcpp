@@ -119,6 +119,15 @@ private:
   double min, max;
 };
 
+// todo: move somewhere
+class IterationFunction : public Object
+{
+public:
+  static IterationFunctionPtr createConstant(double value);
+
+  virtual double compute(size_t iteration) const = 0;
+};
+
 }; /* namespace cralgo */
 
 #endif // !CRALGO_RANDOM_VARIABLE_H_

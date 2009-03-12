@@ -208,7 +208,7 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   : input(node), parameters(input.getParameters()), isInCRAlgorithm(isInCRAlgorithm), isStatic(false)
 {
   classScope = const_cast<SymbolLookup::Class* >(dynamic_cast<const SymbolLookup::Class* >(scope->outer_scope()));
-  isStatic = classScope && input.getModifiers().contains("static"); // just ignore the "static" keyword if we are not in a class
+  isStatic = /*classScope && */input.getModifiers().contains("static"); // just ignore the "static" keyword if we are not in a class
   bool addThisParameter = (classScope != NULL) && !isStatic;
   if (addThisParameter)
   {
