@@ -18,15 +18,15 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
       {
         ChoosePtr choose = searchNode.getParentChoose();
         if (choose->getNumActionValues() > 0)
-          return choose->actionValue(searchNode.getChoice());        
+          return choose->computeActionValue(searchNode.getChoice());        
         searchNode.open();
-        return choose->stateValue();
+        return choose->computeStateValue();
       }
       else
       {
         // initial node
         assert(searchNode.opened());
-        return searchNode.getChoose()->stateValue();
+        return searchNode.getChoose()->computeStateValue();
       }
     }
     
@@ -41,13 +41,13 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
         
         if (choose->getNumActionFeatures() > 0)
         {
-          FeatureGeneratorPtr actionFeatures = choose->actionFeatures(choice);
+          FeatureGeneratorPtr actionFeatures = choose->computeActionFeatures(choice);
           featureCall actionFeatures;
         }
         else if (choose->getNumStateFeatures() > 0)
         {
           searchNode.open();
-          FeatureGeneratorPtr stateFeatures = choose->stateFeatures();
+          FeatureGeneratorPtr stateFeatures = choose->computeStateFeatures();
           featureCall stateFeatures;
         }
       }
@@ -55,7 +55,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
       {
         // initial node
         assert(searchNode.opened());
-        FeatureGeneratorPtr stateFeatures = searchNode.getChoose()->stateFeatures();
+        FeatureGeneratorPtr stateFeatures = searchNode.getChoose()->computeStateFeatures();
         featureCall stateFeatures;
       }
     }
@@ -65,7 +65,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
       TreeSearchNode& searchNode = searchSpace.getNode(searchNodeIndex);
       TreeSearchNode* parent = searchNode.getParent();
       if (parent)
-        return searchNode.getParentChoose()->actionDescription(searchNode.getChoice());
+        return searchNode.getParentChoose()->computeActionDescription(searchNode.getChoice());
       else
         return "<initial>";
     }

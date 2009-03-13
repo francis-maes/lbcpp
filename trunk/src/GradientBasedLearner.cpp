@@ -33,7 +33,9 @@ public:
     
   virtual void trainStochasticExample(DenseVectorPtr parameters, ScalarVectorFunctionPtr exampleLoss, ScalarVectorFunctionPtr regularizer)
   {
-    parameters->addWeighted(exampleLoss->computeGradient(parameters), -computeAlpha());
+    LazyVectorPtr gradient = exampleLoss->computeGradient(parameters);
+//    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
+    parameters->addWeighted(gradient, -computeAlpha());
     ++epoch;
   }
   

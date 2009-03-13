@@ -39,7 +39,7 @@ struct QLearningPolicy
   {
     regressor->trainStochasticBegin();
     VariablePtr res = BaseClass::policyChoose(choose);
-    lastActionDescription = choose->actionFeatures(res)->toSparseVector();
+    lastActionDescription = choose->computeActionFeatures(res)->toSparseVector();
     return res;
   }
   
@@ -48,12 +48,20 @@ struct QLearningPolicy
     assert(lastActionDescription);
     VariablePtr res = BaseClass::policyChoose(choose);
     
+    VariablePtr nextAction;
+    if (useSarsaRule)
+      nextAction = res;
+    else
+    {
+      // todo...
+    }
+    
     // todo: selection of next action 
     //   qlearning: predicted, sampleBests(RegressorActionValue)
     //        -> optimize if we explore with the predicted strategy
     //   sarsa: explored, ok.
     
-    SparseVectorPtr nextActionDescription = choose->actionFeatures(res)->toSparseVector();
+    SparseVectorPtr nextActionDescription = choose->computeActionFeatures(res)->toSparseVector();
     regressor->trainStochasticExample(RegressionExample(lastActionDescription, 
         reward + discount * regressor->predict(nextActionDescription)));
     lastActionDescription = nextActionDescription;

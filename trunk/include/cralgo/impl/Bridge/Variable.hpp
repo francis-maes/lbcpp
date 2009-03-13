@@ -15,25 +15,27 @@ namespace cralgo
 {
 
 // todo: make a reference instead of a copy if possible
-template<class ChoiceType>
+template<class Type>
 class StaticToDynamicVariable : public Variable
 {
 public:
-  StaticToDynamicVariable(const ChoiceType& choice, const std::string& typeName = "", const std::string& name = "")
-    : Variable(new ChoiceType(choice), typeName, name) {}
+  StaticToDynamicVariable(const Type& value, const std::string& typeName = "", const std::string& name = "")
+    : Variable(new Type(value), typeName, name) {}
+  StaticToDynamicVariable()
+    : Variable(NULL) {}
     
   virtual ~StaticToDynamicVariable()
-    {delete &cast(ptr);}
+    {if (ptr) delete &cast(ptr);}
   
   virtual std::string toString() const
     {return cralgo::toString(cast(ptr));}
 
 private:
-  const ChoiceType& cast(void* ptr) const
-    {return *(const ChoiceType* )ptr;}
+  const Type& cast(void* ptr) const
+    {return *(const Type* )ptr;}
 
-  ChoiceType& cast(void* ptr)
-    {return *(ChoiceType* )ptr;}
+  Type& cast(void* ptr)
+    {return *(Type* )ptr;}
 };
 
 template<class T>

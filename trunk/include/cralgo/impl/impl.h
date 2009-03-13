@@ -34,7 +34,7 @@
 # include "Policy/PolicyStaticToDynamic.hpp"
 # include "Policy/PolicyDynamicToStatic.hpp"
 # include "Policy/BasicPolicies.hpp"
-# include "Policy/ConsoleLoggerPolicy.hpp"
+# include "Policy/VerbosePolicy.hpp"
 # include "Policy/ComputeStatisticsPolicy.hpp"
 # include "Policy/QLearningPolicy.hpp"
 # include "Policy/MonteCarloControlPolicy.hpp"

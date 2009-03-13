@@ -26,31 +26,31 @@ ActionValueFunctionPtr ActionValueFunction::createRegressorPredictions(Regressor
 /*
 ** Choose
 */
-std::string Choose::stateDescription() const
+std::string Choose::computeStateDescription() const
 {
   StateDescriptionFunctionPtr f = getStateDescriptionFunction();
   if (f)
     return f->compute();
   else
   {
-    warning("Choose::stateDescription", "Missing state description");
+    warning("Choose::computeStateDescription", "Missing state description");
     return "";
   }
 }
 
-std::string Choose::actionDescription(VariablePtr choice) const
+std::string Choose::computeActionDescription(VariablePtr choice) const
 {
   ActionDescriptionFunctionPtr f = getActionDescriptionFunction();
   if (f)
     return f->compute(choice);
   else
   {
-    warning("Choose::actionDescription", "Missing action description");
+    warning("Choose::computeActionDescription", "Missing action description");
     return "";
   }
 }
 
-double Choose::stateValue() const
+double Choose::computeStateValue() const
 {
   StateValueFunctionPtr f = getStateValueFunction();
   if (f)
@@ -62,7 +62,7 @@ double Choose::stateValue() const
   }
 }
 
-double Choose::actionValue(VariablePtr choice) const
+double Choose::computeActionValue(VariablePtr choice) const
 {
   ActionValueFunctionPtr f = getActionValueFunction();
   if (f)
@@ -74,19 +74,19 @@ double Choose::actionValue(VariablePtr choice) const
   }
 }
   
-FeatureGeneratorPtr Choose::stateFeatures() const
+FeatureGeneratorPtr Choose::computeStateFeatures() const
 {
   StateFeaturesFunctionPtr f = getStateFeaturesFunction();
   if (f)
     return f->compute();
   else
   {
-    warning("Choose::stateFeatures", "Missing state feature generator");
+    warning("Choose::computeStateFeatures", "Missing state feature generator");
     return FeatureGeneratorPtr();
   }
 }
   
-FeatureGeneratorPtr Choose::actionFeatures(VariablePtr choice) const
+FeatureGeneratorPtr Choose::computeActionFeatures(VariablePtr choice) const
 {
   ActionFeaturesFunctionPtr f = getActionFeaturesFunction();
   if (f)

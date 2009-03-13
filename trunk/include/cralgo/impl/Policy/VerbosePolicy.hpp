@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ConsoleLoggerPolicy.hpp        | A policy that displays          |
-| Author  : Francis Maes                   |   information on the console    |
+| Filename: VerbosePolicy.hpp              | A policy that displays          |
+| Author  : Francis Maes                   | information on an output stream |
 | Started : 13/03/2009 13:24               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_POLICY_CONSOLE_LOGGER_H_
-# define CRALGO_IMPL_POLICY_CONSOLE_LOGGER_H_
+#ifndef CRALGO_IMPL_POLICY_VERBOSE_H_
+# define CRALGO_IMPL_POLICY_VERBOSE_H_
 
 # include "PolicyStatic.hpp"
 
@@ -15,10 +15,10 @@ namespace cralgo {
 namespace impl {
 
 template<class DecoratedType>
-struct ConsoleLoggerPolicy
-  : public DecoratorPolicy<ConsoleLoggerPolicy<DecoratedType> , DecoratedType>
+struct VerbosePolicy
+  : public EpisodicDecoratorPolicy<VerbosePolicy<DecoratedType> , DecoratedType>
 {
-  typedef DecoratorPolicy<ConsoleLoggerPolicy, DecoratedType> BaseClass;
+  typedef EpisodicDecoratorPolicy<VerbosePolicy, DecoratedType> BaseClass;
   
   /*
   ** Verbosity
@@ -29,29 +29,18 @@ struct ConsoleLoggerPolicy
   // 3: state descriptions
   // 4: ActionSet descriptions
     
-  ConsoleLoggerPolicy(const DecoratedType& decorated, std::ostream& ostr, size_t verbosity)
-    : BaseClass(decorated), ostr(ostr), verbosity(verbosity), inclusionLevel(0)
+  VerbosePolicy(const DecoratedType& decorated, std::ostream& ostr, size_t verbosity)
+    : BaseClass(decorated), ostr(ostr), verbosity(verbosity)
   {
-  }
-
-  //////////
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
-  {
-    BaseClass::policyEnter(crAlgorithm);
-    if (inclusionLevel == 0)
-      beginEpisode(crAlgorithm);
-    ++inclusionLevel;
   }
   
-  void policyLeave()
+  void episodeEnter(CRAlgorithmPtr crAlgorithm)
   {
-    BaseClass::policyLeave();    
-    assert(inclusionLevel > 0);
-    --inclusionLevel;
-    if (inclusionLevel == 0)
-      finishEpisode();
+    stepNumber = 0;
+    episodeReward = 0.0;
+    if (verbosity >= 2)
+      ostr << "Episode begin: " << crAlgorithm->getName() << std::endl;
   }
-  /////////////
   
   VariablePtr policyChoose(ChoosePtr choose)
   {
@@ -78,17 +67,8 @@ struct ConsoleLoggerPolicy
     episodeReward += reward;
     BaseClass::policyReward(reward);
   }
-
   
-  void beginEpisode(CRAlgorithmPtr crAlgorithm)
-  {
-    stepNumber = 0;
-    episodeReward = 0.0;
-    if (verbosity >= 2)
-      ostr << "Episode begin: " << crAlgorithm->getName() << std::endl;
-  }
-  
-  void finishEpisode()
+  void episodeLeave()
   {
     if (verbosity == 0)
       ostr << "." << std::flush;
