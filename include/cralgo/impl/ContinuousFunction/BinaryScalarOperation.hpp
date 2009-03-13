@@ -9,25 +9,8 @@
 #ifndef CRALGO_IMPL_FUNCTION_BINARY_SCALAR_OPERATION_H_
 # define CRALGO_IMPL_FUNCTION_BINARY_SCALAR_OPERATION_H_
 
-# include <cmath>
-
 namespace cralgo {
 namespace impl {
-
-inline bool isNumberValid(double number)
-{
-#ifdef WIN32
-    return number == number;
-#else
-    return !std::isnan(number) && !std::isinf(number);
-#endif
-}
-
-inline bool isNumberNearlyNull(double value)
-{
-  static const double epsilon = 0.00001;
-  return fabs(value) < epsilon;
-}
 
 struct BinaryScalarOperation
 {

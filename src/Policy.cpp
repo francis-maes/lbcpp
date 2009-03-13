@@ -23,6 +23,18 @@ PolicyPtr Policy::createRandom()
 PolicyPtr Policy::createGreedy(ActionValueFunctionPtr actionValues)
   {return impl::staticToDynamic(impl::GreedyPolicy(actionValues));}
 
+PolicyPtr Policy::createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+{
+  return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(
+        dynamicToStatic(explorationPolicy), regressor, discount, false));
+}
+
+PolicyPtr Policy::createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+{
+  return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(
+        dynamicToStatic(explorationPolicy), regressor, discount, true));
+}
+
 PolicyPtr Policy::createClassificationExampleCreator(PolicyPtr explorationPolicy,
           ClassifierPtr classifier, ActionValueFunctionPtr supervisor)
 {

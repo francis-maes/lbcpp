@@ -15,6 +15,7 @@
 # include <vector>
 # include <set>
 # include <typeinfo>
+# include <cmath>
 # include <assert.h>
 
 namespace cralgo
@@ -76,6 +77,22 @@ template<>
 struct Traits<float> : public BuiltinTypeTraits<float> {};
 template<>
 struct Traits<double> : public BuiltinTypeTraits<double> {};
+
+inline bool isNumberValid(double number)
+{
+#ifdef WIN32
+    return number == number;
+#else
+    return !std::isnan(number) && !std::isinf(number);
+#endif
+}
+
+inline bool isNumberNearlyNull(double value)
+{
+  static const double epsilon = 0.00001;
+  return fabs(value) < epsilon;
+}
+
 
 /*
 ** Specialized builtin-type traits

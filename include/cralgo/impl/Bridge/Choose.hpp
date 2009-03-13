@@ -65,17 +65,46 @@ public:
   ** Composites functions
   */
   virtual StateDescriptionFunctionPtr getStateDescriptionFunction() const
-    {return choose.getStateDescriptionFunction();}
+  {
+    StateDescriptionFunctionPtr res = choose.getStateDescriptionFunction();
+    res->setChoose(getReferenceCountedPointer());
+    return res;
+  }
+  
   virtual ActionDescriptionFunctionPtr getActionDescriptionFunction() const
-    {return choose.getActionDescriptionFunction();}  
+  {
+    ActionDescriptionFunctionPtr res = choose.getActionDescriptionFunction();
+    res->setChoose(getReferenceCountedPointer());
+    return res;
+  }
+  
   virtual StateValueFunctionPtr getStateValueFunction() const
-    {return choose.getStateValueFunction();}  
+  {
+    StateValueFunctionPtr res = choose.getStateValueFunction();
+    res->setChoose(getReferenceCountedPointer());
+    return res;
+  }
+  
   virtual ActionValueFunctionPtr getActionValueFunction() const
-    {return choose.getActionValueFunction();}  
+  {
+    ActionValueFunctionPtr res = choose.getActionValueFunction();
+    res->setChoose(getReferenceCountedPointer());
+    return res;
+  }
+
   virtual StateFeaturesFunctionPtr getStateFeaturesFunction() const
-    {return choose.getStateFeaturesFunction();}  
+  {
+    StateFeaturesFunctionPtr res = choose.getStateFeaturesFunction();
+    res->setChoose(getReferenceCountedPointer());
+    return res;
+  }
+
   virtual ActionFeaturesFunctionPtr getActionFeaturesFunction() const
-    {return choose.getActionFeaturesFunction();}  
+  {
+    ActionFeaturesFunctionPtr res = choose.getActionFeaturesFunction();
+    res->setChoose(getReferenceCountedPointer());
+    return res;
+  }
   
   /*
   ** Functions

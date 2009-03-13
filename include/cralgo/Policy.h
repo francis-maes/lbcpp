@@ -20,6 +20,9 @@ public:
   static PolicyPtr createRandom();
   static PolicyPtr createGreedy(ActionValueFunctionPtr actionValues);
 
+  static PolicyPtr createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
+  static PolicyPtr createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
+
   static PolicyPtr createClassificationExampleCreator(PolicyPtr explorationPolicy,
                         ClassifierPtr classifier,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());

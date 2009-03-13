@@ -29,6 +29,8 @@ public:
 class StateValueFunction : public ChooseFunction
 {
 public:
+  static StateValueFunctionPtr createRegressorPredictions(RegressorPtr regressor);
+
   virtual double compute() const = 0;
 };
 
@@ -36,6 +38,8 @@ class ActionValueFunction : public ChooseFunction
 {
 public:
   static ActionValueFunctionPtr createClassifierScores(ClassifierPtr classifier);
+  static ActionValueFunctionPtr createClassifierProbabilities(ClassifierPtr classifier);
+  static ActionValueFunctionPtr createRegressorPredictions(RegressorPtr regressor);
 
   virtual double compute(VariablePtr choice) const = 0;
 };

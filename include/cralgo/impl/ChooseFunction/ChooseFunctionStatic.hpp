@@ -40,6 +40,17 @@ struct ActionValueFunction : public ChooseFunction<ExactType>
   
   double compute(const ChoiceType& choice) const
     {assert(false); return 0.0;}
+  double compute(cralgo::VariablePtr variable) const
+    {return ChooseFunction<ExactType>::_this().compute(variable->getConstReference<ChoiceType>(variable));}
+};
+
+template<class ExactType>
+struct ActionValueFunction<ExactType, cralgo::VariablePtr> : public ChooseFunction<ExactType>
+{
+  typedef cralgo::VariablePtr ChoiceType;
+  
+  double compute(cralgo::VariablePtr choice) const
+    {assert(false); return 0.0;}
 };
 
 /*
