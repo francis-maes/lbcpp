@@ -24,7 +24,8 @@ public:
 protected:
   template<class T>
   friend struct ReferenceCountedObjectPtr;
-  
+  friend struct ReferenceObjectScope;
+
   size_t refCount;
 
   inline void incrementReferenceCounter()
@@ -37,6 +38,19 @@ protected:
     if (refCount == 0)
       delete this;
   }
+};
+
+struct ReferenceObjectScope
+{
+  ReferenceObjectScope(ReferenceCountedObject& object)
+    : object(object)
+    {++object.refCount;}
+  
+  ~ReferenceObjectScope()
+    {--object.refCount;}
+    
+private:
+  ReferenceCountedObject& object;
 };
 
 template <class T>

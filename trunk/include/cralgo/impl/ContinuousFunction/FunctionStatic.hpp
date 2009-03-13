@@ -11,6 +11,7 @@
 
 # include "BinaryScalarOperation.hpp"
 # include "../Object.hpp"
+# include "../../ContinuousFunction.h"
 
 namespace cralgo {
 namespace impl {

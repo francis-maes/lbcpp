@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/ErrorHandler.h>
+#include <cralgo/Object.h>
 #include <cralgo/Random.h>
 #include <iostream>
 using namespace cralgo;
@@ -19,6 +19,8 @@ class DefaultErrorHandler : public ErrorHandler
 public:
   virtual void errorMessage(const std::string& where, const std::string& what)
     {std::cerr << "Error in '" << where << "': " << what << "." << std::endl;}  
+  virtual void warningMessage(const std::string& where, const std::string& what)
+    {std::cerr << "Warning in '" << where << "': " << what << "." << std::endl;}  
 };
 
 static DefaultErrorHandler defaultErrorHandler;

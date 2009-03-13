@@ -8,8 +8,8 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/Random.h
   ../include/cralgo/ContainerTraits.h
   ../include/cralgo/ReferenceCountedObject.h
-  ../include/cralgo/ErrorHandler.h
   ../include/cralgo/Object.h
+  ../include/cralgo/ObjectPredeclarations.h
   ../include/cralgo/RandomVariable.h
   ../include/cralgo/FeatureDictionary.h
   ../include/cralgo/FeatureGenerator.h
@@ -79,6 +79,7 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
 SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION
   ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
   ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
+  ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
   ${CRALGO_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
   ${CRALGO_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
   ${CRALGO_IMPL}/ChooseFunction/RegressorValueFunctions.hpp

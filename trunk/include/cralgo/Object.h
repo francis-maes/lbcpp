@@ -11,10 +11,29 @@
 
 # include "ContainerTraits.h"
 # include "ReferenceCountedObject.h"
-# include "ErrorHandler.h"
 
 namespace cralgo
 {
+
+class ErrorHandler
+{
+public:
+  virtual ~ErrorHandler() {}
+  virtual void errorMessage(const std::string& where, const std::string& what) = 0;
+  virtual void warningMessage(const std::string& where, const std::string& what) = 0;
+
+  static void setInstance(ErrorHandler& handler);
+  static ErrorHandler& getInstance() {assert(instance); return *instance;}
+  
+  static void error(const std::string& where, const std::string& what)
+    {getInstance().errorMessage(where, what);}
+
+  static void warning(const std::string& where, const std::string& what)
+    {getInstance().warningMessage(where, what);}
+  
+private:
+  static ErrorHandler* instance;
+};
 
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
@@ -49,6 +68,12 @@ public:
     
   bool saveToFile(const std::string& fileName) const;
   void saveToStream(std::ostream& ostr) const;
+
+  static void error(const std::string& where, const std::string& what)
+    {ErrorHandler::error(where, what);}
+    
+  static void warning(const std::string& where, const std::string& what)
+    {ErrorHandler::warning(where, what);}
   
 protected:
   template<class T>
@@ -59,7 +84,7 @@ protected:
     {
       res = object.dynamicCast<T>();
       if (!res)
-        ErrorHandler::error(where, "Could not cast object into '" + cralgo::toString(typeid(*res)) + "'");
+        error(where, "Could not cast object into '" + cralgo::toString(typeid(*res)) + "'");
     }
     return res;
   }
@@ -88,60 +113,6 @@ public:
 
 template<>
 struct Traits<ObjectPtr> : public ObjectPtrTraits<Object> {};
-
-/*
-** Predeclarations
-*/
-// tools
-class ScalarRandomVariableStatistics;
-typedef ReferenceCountedObjectPtr<ScalarRandomVariableStatistics> ScalarRandomVariableStatisticsPtr;
-class IterationFunction;
-typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
-
-// feature visitor
-class FeatureVisitor;
-typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
-class FeatureGenerator;
-typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
-
-// vectors
-class DoubleVector;
-typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
-class SparseVector;
-typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
-class DenseVector;
-typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
-class LazyVector;
-typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
-
-// learning machines
-class GradientBasedLearner;
-typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;
-class Classifier;
-typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
-
-
-// cralgorithms
-class Variable;
-typedef ReferenceCountedObjectPtr<Variable> VariablePtr;
-class VariableIterator;
-typedef ReferenceCountedObjectPtr<VariableIterator> VariableIteratorPtr;
-class Choose;
-typedef ReferenceCountedObjectPtr<Choose> ChoosePtr;
-class CRAlgorithmScope;
-typedef ReferenceCountedObjectPtr<CRAlgorithmScope> CRAlgorithmScopePtr;
-class CRAlgorithm;
-typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
-
-// policies
-class StateValueFunction;
-typedef ReferenceCountedObjectPtr<StateValueFunction> StateValueFunctionPtr;
-class VariableValueFunction;
-typedef ReferenceCountedObjectPtr<VariableValueFunction> VariableValueFunctionPtr;
-class ActionValueFunction;
-typedef ReferenceCountedObjectPtr<ActionValueFunction> ActionValueFunctionPtr;
-class Policy;
-typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
 
 }; /* namespace cralgo */
 

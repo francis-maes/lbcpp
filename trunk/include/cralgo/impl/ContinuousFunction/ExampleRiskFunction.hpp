@@ -25,7 +25,7 @@ struct ScalarArchitectureToParametersFunction
   : public ScalarVectorFunction< ScalarArchitectureToParametersFunction<ArchitectureType> >
 {
   ScalarArchitectureToParametersFunction(const ArchitectureType& architecture, const FeatureGeneratorPtr input, double weight = 1.0)
-    : architecture(architecture), input(input), weight(weight) {}
+    : architecture(architecture), input(input), weight(weight) {assert(input);}
 
   ArchitectureType architecture;
   const FeatureGeneratorPtr input;

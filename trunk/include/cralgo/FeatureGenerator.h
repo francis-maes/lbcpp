@@ -9,7 +9,7 @@
 #ifndef CRALGO_FEATURE_GENERATOR_H_
 # define CRALGO_FEATURE_GENERATOR_H_
 
-# include "Object.h"
+# include "ObjectPredeclarations.h"
 # include "FeatureDictionary.h"
 # include <vector>
 # include <cmath>

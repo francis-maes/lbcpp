@@ -42,7 +42,7 @@ class Classifier : public LearningMachine_<ClassificationExample>
 {
 public:
   Classifier() : labels(NULL) {}
-    
+  
   /*
   ** Abstract
   */

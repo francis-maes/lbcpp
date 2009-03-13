@@ -44,7 +44,7 @@ public:
     }
     --indent;
   }
-  
+
   std::string getResult() const
   {
     if (currentFeatures.size() && !res.size())
