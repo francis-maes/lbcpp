@@ -92,6 +92,7 @@ SET(CRALGO_LIBRARY_IMPL_POLICY
   ${CRALGO_IMPL}/Policy/PolicyDynamicToStatic.hpp
   ${CRALGO_IMPL}/Policy/BasicPolicies.hpp
   ${CRALGO_IMPL}/Policy/ComputeStatisticsPolicy.hpp
+  ${CRALGO_IMPL}/Policy/ConsoleLoggerPolicy.hpp
   ${CRALGO_IMPL}/Policy/QLearningPolicy.hpp
   ${CRALGO_IMPL}/Policy/MonteCarloControlPolicy.hpp
   ${CRALGO_IMPL}/Policy/GPOMDPPolicy.hpp

@@ -14,9 +14,7 @@
 namespace cralgo {
 namespace impl {
 
-template<class ChoiceType>
-struct DynamicToStaticActionValueFunction
-  : public ActionValueFunction<DynamicToStaticActionValueFunction<ChoiceType>, ChoiceType>
+struct DynamicToStaticActionValueFunction : public ActionValueFunction<DynamicToStaticActionValueFunction>
 {
   DynamicToStaticActionValueFunction(ActionValueFunctionPtr function) 
     : function(function) {}
@@ -26,13 +24,12 @@ struct DynamicToStaticActionValueFunction
   void setChoose(ChoosePtr choose)
     {return function->setChoose(choose);}
 
-  double compute(const ChoiceType& choice) const
-    {return function->compute(Variable::create(choice));}
+  double computeDynamicType(VariablePtr choice) const
+    {return function->compute(choice);}
 };
 
-template<class ChoiceType>
-inline DynamicToStaticActionValueFunction<ChoiceType> dynamicToStatic(ActionValueFunctionPtr function)
-  {return DynamicToStaticActionValueFunction<ChoiceType>(function);}
+inline DynamicToStaticActionValueFunction dynamicToStatic(ActionValueFunctionPtr function)
+  {return DynamicToStaticActionValueFunction(function);}
 
 }; /* namespace impl */
 }; /* namespace cralgo */

@@ -33,9 +33,9 @@ struct RegressorStateValueFunction : public StateValueFunction<RegressorStateVal
 };
 
 struct RegressorActionValueFunction 
-  : public ActionValueFunction<RegressorActionValueFunction, VariablePtr>
+  : public ActionValueFunction<RegressorActionValueFunction>
 {
-  typedef ActionValueFunction<RegressorActionValueFunction, VariablePtr> BaseClass;
+  typedef ActionValueFunction<RegressorActionValueFunction> BaseClass;
   
   RegressorActionValueFunction(RegressorPtr regressor)
     : regressor(regressor) {}
@@ -46,7 +46,7 @@ struct RegressorActionValueFunction
   void setChoose(ChoosePtr choose)
     {actionFeatures = choose->getActionFeaturesFunction();}
 
-  double compute(VariablePtr variable) const
+  double computeDynamicType(VariablePtr variable) const
     {return regressor->predict(actionFeatures->compute(variable));}
 };
 

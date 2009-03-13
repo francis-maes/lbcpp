@@ -48,7 +48,7 @@ public:
   std::string getResult() const
   {
     if (currentFeatures.size() && !res.size())
-      return currentFeatures;
+      return "{" + currentFeatures + "}";
     if (res.size() && !currentFeatures.size())
       return res;
     if (!res.size() && !currentFeatures.size())

@@ -33,24 +33,27 @@ struct StateValueFunction : public ChooseFunction<ExactType>
     {assert(false); return 0.0;}
 };
 
-template<class ExactType, class ChoiceType_>
+template<class ExactType>
 struct ActionValueFunction : public ChooseFunction<ExactType>
 {
-  typedef ChoiceType_ ChoiceType;
-  
-  double compute(const ChoiceType& choice) const
+  template<class T>
+  double compute(const T& choice) const
+    {return ((const ExactType* )this)->computeDynamicType(Variable::create(choice));}
+
+  double computeDynamicType(cralgo::VariablePtr variable) const
     {assert(false); return 0.0;}
-  double compute(cralgo::VariablePtr variable) const
-    {return ChooseFunction<ExactType>::_this().compute(variable->getConstReference<ChoiceType>(variable));}
 };
 
-template<class ExactType>
-struct ActionValueFunction<ExactType, cralgo::VariablePtr> : public ChooseFunction<ExactType>
+template<class ExactType, class ChoiceType_>
+struct TypedActionValueFunction : public ActionValueFunction<ExactType>
 {
-  typedef cralgo::VariablePtr ChoiceType;
-  
-  double compute(cralgo::VariablePtr choice) const
+  typedef ChoiceType_ ChoiceType;
+
+  double compute(const ChoiceType& choice) const
     {assert(false); return 0.0;}
+
+  double computeDynamicType(cralgo::VariablePtr variable) const
+    {return ((const ExactType* )this)->compute(variable->getConstReference<ChoiceType>());}
 };
 
 /*

@@ -16,7 +16,7 @@ namespace cralgo {
 namespace impl {
 
 template<class ExactType>
-struct ClassifierBasedActionValueFunction : public ActionValueFunction<ExactType, size_t>
+struct ClassifierBasedActionValueFunction : public TypedActionValueFunction<ExactType, size_t>
 {
   ClassifierBasedActionValueFunction(ClassifierPtr classifier)
     : classifier(classifier) {}

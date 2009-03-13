@@ -59,6 +59,9 @@ protected:
   std::string name;
 };
 
+template<>
+struct Traits<VariablePtr> : public ObjectPtrTraits<Variable> {};
+
 class VariableIterator : public ReferenceCountedObject
 {
 public:

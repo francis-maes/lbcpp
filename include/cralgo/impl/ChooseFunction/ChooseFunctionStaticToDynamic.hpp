@@ -39,8 +39,8 @@ STATIC_TO_DYNAMIC_ENDCLASS(StateValueFunction);
 
 STATIC_TO_DYNAMIC_CLASS(ActionValueFunction, ChooseFunction_)
   virtual double compute(VariablePtr choice) const
-    {return BaseClass::impl.compute(choice);} //choice->getConstReference<typename ImplementationType::ChoiceType>());}
-STATIC_TO_DYNAMIC_ENDCLASS_1(ActionValueFunction);
+    {return BaseClass::impl.computeDynamicType(choice);}
+STATIC_TO_DYNAMIC_ENDCLASS(ActionValueFunction);
 
 /*
 ** Features

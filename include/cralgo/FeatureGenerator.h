@@ -69,6 +69,8 @@ public:
   virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionary* dictionary = NULL) const = 0;
 };
 
+template<>
+struct Traits<FeatureGeneratorPtr> : public ObjectPtrTraits<FeatureGenerator> {};
 
 class FeatureVisitor : public Object
 {

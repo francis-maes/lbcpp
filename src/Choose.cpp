@@ -97,3 +97,31 @@ FeatureGeneratorPtr Choose::actionFeatures(VariablePtr choice) const
     return FeatureGeneratorPtr();
   }
 }
+
+/*
+** toString
+*/
+std::string Choose::toString() const
+{
+  std::string res = crAlgorithm->toString();
+  res += "\n";
+  std::vector<ActionValueFunctionPtr> actionValues(getNumActionValues());
+  for (size_t i = 0; i < actionValues.size(); ++i)
+  {
+    ActionValueFunctionPtr f = getActionValue(i);
+    f->setChoose(getReferenceCountedPointer());
+    actionValues[i] = f;
+  }
+  for (VariableIteratorPtr iterator = newIterator(); iterator->exists(); iterator->next())
+  {
+    VariablePtr choice = iterator->get();
+    res += "Choice " + choice->toString();
+    for (size_t i = 0; i < actionValues.size(); ++i)
+    {
+      ActionValueFunctionPtr f = actionValues[i];
+      res += " " + f->getName() + ": " + cralgo::toString(f->compute(choice));
+    }
+    res += "\n";
+  }
+  return res;
+}

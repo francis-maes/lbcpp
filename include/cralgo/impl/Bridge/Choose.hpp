@@ -57,7 +57,7 @@ public:
       return VariablePtr();
     valueFunction->setChoose(getReferenceCountedPointer());
     typename ContainerTraits::ConstIterator best = 
-      ContainerTraits::sampleBests(container, impl::dynamicToStatic<ChoiceType>(valueFunction)); 
+      ContainerTraits::sampleBests(container, impl::dynamicToStatic(valueFunction)); 
     return Variable::create(ContainerTraits::value(best));
   }
   
