@@ -39,7 +39,7 @@ STATIC_TO_DYNAMIC_ENDCLASS(StateValueFunction);
 
 STATIC_TO_DYNAMIC_CLASS(ActionValueFunction, ChooseFunction_)
   virtual double compute(VariablePtr choice) const
-    {return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
+    {return BaseClass::impl.compute(choice);} //choice->getConstReference<typename ImplementationType::ChoiceType>());}
 STATIC_TO_DYNAMIC_ENDCLASS_1(ActionValueFunction);
 
 /*
@@ -50,10 +50,20 @@ STATIC_TO_DYNAMIC_CLASS(StateFeaturesFunction, ChooseFunction_)
     {return BaseClass::impl.compute();}
 STATIC_TO_DYNAMIC_ENDCLASS(StateFeaturesFunction);
 
+/*STATIC_TO_DYNAMIC_BEGIN_0_1(ActionFeaturesFunctionDirect, ChooseFunction_, cralgo::ActionFeaturesFunction) 
+  virtual FeatureGeneratorPtr compute(VariablePtr choice) const
+    {return BaseClass::impl.compute(choice);}
+};
+template<class ExactType>
+inline ActionFeaturesFunctionPtr staticToDynamic(const ActionFeaturesFunction<ExactType, VariablePtr>& impl)
+  {return ActionFeaturesFunctionPtr(new StaticToDynamicActionFeaturesFunctionDirect<ExactType>(static_cast<const ExactType& >(impl)));}
+*/
+
 STATIC_TO_DYNAMIC_CLASS(ActionFeaturesFunction, ChooseFunction_)
   virtual FeatureGeneratorPtr compute(VariablePtr choice) const
     {return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
 STATIC_TO_DYNAMIC_ENDCLASS_1(ActionFeaturesFunction);
+
 
 /*
 ** String Descriptions

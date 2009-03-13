@@ -45,7 +45,11 @@ public:
   virtual void run(PolicyPtr policy, VariablePtr choice)
   {
     T_impl& impl = BaseClassType::getImplementation();
-    assert(impl.__state__ >= 0); // in order to run a policy from the initial state, use run(policy)
+    if (impl.__state__ < 0)
+    {
+      cralgo::Object::error("CRAlgorithm::run(policy, choice)", "This is not an initial state, in order to run a policy from the initial state, use run(policy).");
+      assert(false);
+    }
     PolicyToStaticCallback staticCallback(policy, CRAlgorithmPtr(this), choice);
     while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
   }
@@ -67,6 +71,12 @@ public:
   virtual ChoosePtr runUntilFirstChoose(double* reward = NULL)
   {
     T_impl& impl = BaseClassType::getImplementation();
+    if (impl.__state__ >= 0)
+    {
+      cralgo::Object::error("CRAlgorithm::runUntilFirstChoose", "This is not an initial state, use the runUntilNextChoose() function.");
+      assert(false);
+      return ChoosePtr();
+    }
     assert(impl.__state__ == -1);
     return runUntilNextChoose(NULL, reward);
   }

@@ -1,4 +1,4 @@
-* GPomDP
+* Sarsa - simplesequence => voir pourquoi ca plante
 
 LC++ library:
 =============

@@ -120,6 +120,7 @@ struct DefaultContainerTraits
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
     {
       double score = scoringFunction.compute(ContainerTraits::value(it));
+      assert(isNumberValid(score));
       if (score > bestsScore)
       {
         bests.clear();
@@ -129,7 +130,16 @@ struct DefaultContainerTraits
       else if (score == bestsScore)
         bests.push_back(it);
     }
-    assert(bests.size() > 0);
+    if (bests.size() == 0)
+    {
+      std::cerr << "Could not find a best choice." << std::endl;
+      std::cerr << "Scores: ";
+      for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
+        std::cerr << scoringFunction.compute(ContainerTraits::value(it)) << ", ";
+      std::cerr << std::endl;
+      assert(false);
+    }
+    
 //    std::cout << "Num bests: " << bests.size();
 //    ConstIterator it = Traits< std::vector<ConstIterator> >::sampleRandom(bests);
 //    std::cout << " =sample> " << cralgo::toString(ContainerTraits::value(it)) << std::endl;
