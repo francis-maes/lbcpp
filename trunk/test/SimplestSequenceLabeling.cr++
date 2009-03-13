@@ -140,7 +140,7 @@ using namespace cralgo;
 
 void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
 {
-  for (size_t i = 0; i < examples.size(); ++i)
+  for (size_t i = 0; i < 5; ++i) //examples.size(); ++i)
   {
     const SequenceExample& sequence = examples[i];
     simplestSequenceLabeling(policy, sequence.getContent(), numLabels, &sequence.getLabels());
@@ -172,7 +172,7 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
 
 void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDictionary& labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.001);
+  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   IterationFunctionPtr epsilon = IterationFunction::createConstant(0.1);
 
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
@@ -183,12 +183,12 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels.getNumFeatures());
+  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(std::cout, 1), learningExamples, labels.getNumFeatures());
   
-  for (size_t i = 0; i < 10; ++i)
+  for (size_t i = 0; i < 1; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy, learningExamples, labels.getNumFeatures());
+    runPolicy(learnerPolicy->verbose(std::cout, 1), learningExamples, labels.getNumFeatures());
     std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
   
@@ -216,7 +216,18 @@ int main(int argc, char* argv[])
   parser.parse(istr, features);
   std::cout << learningExamples.size() << " sequences, " << labels.getNumFeatures()
     << " labels, " << features.getNumFeatures() << " features." << std::endl;
+
+  
+/*  const SequenceExample& sequence = learningExamples[0];
+  CRAlgorithmPtr cralgo = simplestSequenceLabeling(sequence.getContent(), labels.getNumFeatures(), &sequence.getLabels());
+  ChoosePtr choose = cralgo->runUntilFirstChoose();
+  choose = cralgo->runUntilNextChoose(choose->sampleRandomChoice());
+  std::cout << "Choose: " << choose->toString() << std::endl;
+  std::cout << "State: " << cralgo->toString() << std::endl;
+  std::cout << "State description: " << choose->stateFeatures()->toString() << std::endl;
+  std::cout << "First action description: " << choose->actionFeatures(choose->newIterator()->get())->toString() << std::endl;*/
+  
   testSarsa(learningExamples, labels);
-  testClassifier(learningExamples, labels);
+  //testClassifier(learningExamples, labels);
   return 0;
 }

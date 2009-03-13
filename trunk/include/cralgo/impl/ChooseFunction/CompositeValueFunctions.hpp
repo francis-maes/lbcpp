@@ -18,7 +18,6 @@ namespace impl {
 /*
 ** Composite value functions
 */
-
 struct CompositeStateValueFunction : public StateValueFunction<CompositeStateValueFunction>
 {
   void add(StateValueFunctionPtr stateValue)
@@ -45,9 +44,7 @@ private:
   StateValueFunctionPtr stateValue;  
 };
 
-template<class ChoiceType>
-struct CompositeActionValueFunction 
-  : public ActionValueFunction<CompositeActionValueFunction<ChoiceType>, ChoiceType>
+struct CompositeActionValueFunction : public ActionValueFunction<CompositeActionValueFunction>
 {
   void add(ActionValueFunctionPtr actionValue)
   {
@@ -63,8 +60,8 @@ struct CompositeActionValueFunction
       actionValue->setChoose(choose);
   }
 
-  double compute(const ChoiceType& choice) const
-    {return actionValue ? actionValue->compute(Variable::create(choice)) : 0.0;}
+  double computeDynamicType(VariablePtr choice) const
+    {return actionValue ? actionValue->compute(choice) : 0.0;}
 
   std::string getName() const
     {return actionValue ? actionValue->getName() : "emptyActionValue";}

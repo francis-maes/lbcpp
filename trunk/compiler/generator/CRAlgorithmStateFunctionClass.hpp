@@ -27,11 +27,17 @@ public:
     setKeyword(structKeyword());
     setName("__" + identifier + "Function__");
     std::string kind = stateFundef->getKind();
-    std::string baseClass = "cralgo::impl::" + stateFundef->getKind() + "Function<__" + identifier + "Function__";
+    std::string baseClass = "cralgo::impl::";
+    if (kind == "ActionValue") // todo: ActionFeatures et ActionDescription
+      baseClass += "Typed";    
+    baseClass += stateFundef->getKind() + "Function<__" + identifier + "Function__";
+    
     if (kind != "Choose")
       for (size_t i = 0; i < parameters.size(); ++i)
         baseClass += ", " + PTree::reify(parameters[i].getRecomposedType(false));
     baseClass += ">";
+    
+    
     addBaseClass(publicKeyword(), ClassPTreeGenerator::identifier(baseClass));
     
     // returnType, parameters

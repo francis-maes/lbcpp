@@ -42,6 +42,12 @@ PolicyPtr Policy::createClassificationExampleCreator(PolicyPtr explorationPolicy
             dynamicToStatic(explorationPolicy), classifier, supervisor));
 }
 
+PolicyPtr Policy::verbose(std::ostream& ostr, size_t verbosity) const
+{
+  return impl::staticToDynamic(impl::ConsoleLoggerPolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(this), ostr, verbosity));
+}
+
 PolicyPtr Policy::epsilonGreedy(IterationFunctionPtr epsilon) const
   {return impl::staticToDynamic(impl::EpsilonGreedyPolicy<impl::DynamicToStaticPolicy>(
             dynamicToStatic(this), epsilon));}

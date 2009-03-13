@@ -197,7 +197,7 @@ PTree::Node* ChooseClassGenerator::createCompositeStateFunctionGetter(const std:
     else
     {
       BlockPTreeGenerator block;
-      block.add(atom("cralgo::impl::Composite" + stateFunctionKind + "Function<ChoiceType> __tmp__;\n"));
+      block.add(atom("cralgo::impl::Composite" + stateFunctionKind + "Function __tmp__;\n"));
 //      block.add(atom("typedef cralgo::StateFunctionTraits<" + getDynamicClassName(stateFunctionKind) + "> StateFunTraits;\n"));
 //      block.add(atom("StateFunTraits::CompositeFunction* __tmp__ = StateFunTraits::createComposite();\n"));
       for (size_t i = 0; i < stateFunctions.size(); ++i)

@@ -88,6 +88,11 @@ public:
   virtual size_t getNumActionFeatures() const = 0;
   virtual ActionFeaturesFunctionPtr getActionFeatures(size_t index) const = 0;
   
+  /*
+  ** Object
+  */
+  virtual std::string Choose::toString() const;
+
 protected:
   Choose(CRAlgorithmPtr crAlgorithm = CRAlgorithmPtr())
     : crAlgorithm(crAlgorithm) {}
