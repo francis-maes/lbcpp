@@ -9,7 +9,7 @@
 #ifndef CRALGO_IMPL_OBJECT_H_
 # define CRALGO_IMPL_OBJECT_H_
 
-# include "../Object.h"
+# include "../ObjectPredeclarations.h"
 # include "Macros.hpp"
 
 namespace cralgo {
@@ -23,6 +23,12 @@ struct Object
   
   void save(std::ostream& ostr) const {}
   bool load(std::istream& istr) {return true;}
+
+  static void error(const std::string& where, const std::string& what)
+    {ErrorHandler::error(where, what);}
+    
+  static void warning(const std::string& where, const std::string& what)
+    {ErrorHandler::warning(where, what);}
 };
   
 }; /* namespace impl */

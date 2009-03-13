@@ -9,7 +9,7 @@
 #ifndef CRALGO_RANDOM_VARIABLE_H_
 # define CRALGO_RANDOM_VARIABLE_H_
 
-# include "Object.h"
+# include "ObjectPredeclarations.h"
 # include <cfloat>
 
 namespace cralgo

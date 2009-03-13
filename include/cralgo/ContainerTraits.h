@@ -16,6 +16,8 @@
 # include <map>
 # include <limits>
 
+# include <iostream> //tmp
+
 namespace cralgo
 {
 /*
@@ -36,8 +38,8 @@ ContainerTraits:
   static const ValueType& value(const ConstIterator& iterator)
     
   static ValueType& sampleRandom(const T& s)  
-  template<class CRAlgorithmType, class ActionValueType>
-  static inline const ValueType& sampleBests(const T& container, CRAlgorithmType& crAlgorithm, ActionValueType& actionValues)
+  template<class CRAlgorithmType, class ScoringFunction>
+  static inline ConstIterator sampleBests(const T& container, const ScoringFunction& scoringFunction)
 */
 
 template<class IteratorType>
@@ -110,17 +112,14 @@ struct DefaultContainerTraits
   static inline const ValueType& sampleRandom(const ContainerType& container)
     {return SampleRandomImplementation<ConstIterator>::sampleRandom(container);}
   
-  // foireux: il faudrait une classe pour
-  //   VariableFunction: Variable -> Scalar
-  template<class CRAlgorithmType, class ActionValueType>
-  static inline const ValueType& sampleBests(const ContainerType& container, CRAlgorithmType& crAlgorithm, ActionValueType& actionValues)
+  template<class ScoringFunction>
+  static inline ConstIterator sampleBests(const ContainerType& container, const ScoringFunction& scoringFunction)
   {
     std::vector<ConstIterator> bests;
     double bestsScore = -std::numeric_limits<double>::max();
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
     {
-      // FIXME
-      double score = 0.0; // actionValues->compute(crAlgorithm, Variable::create(ContainerTraits::value(it)));
+      double score = scoringFunction.compute(ContainerTraits::value(it));
       if (score > bestsScore)
       {
         bests.clear();
@@ -131,8 +130,10 @@ struct DefaultContainerTraits
         bests.push_back(it);
     }
     assert(bests.size() > 0);
-    ConstIterator it = Traits< std::vector<ConstIterator> >::sampleRandom(bests);
-    return ContainerTraits::value(it);
+//    std::cout << "Num bests: " << bests.size();
+//    ConstIterator it = Traits< std::vector<ConstIterator> >::sampleRandom(bests);
+//    std::cout << " =sample> " << cralgo::toString(ContainerTraits::value(it)) << std::endl;
+    return Traits< std::vector<ConstIterator> >::sampleRandom(bests);
   }
 };
 

@@ -1,15 +1,7 @@
-
-* 3- Tester l'apprentissage
-     ContainerTraits::sampleBests foireux
-
-* 4- Classe ClassifierScoresActionValue 
-
-* 5- Tester l'inférence
+* GPomDP
 
 LC++ library:
 =============
-
-* Hierarchies statique de State/Action ValueFunctions, sur le meme modele que les autres
 
 * Policies:
   * SarsaZero, QLearning, MonteCarloControl, OlPomdp

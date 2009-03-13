@@ -25,6 +25,7 @@
 # include "ContinuousFunction/FunctionStaticToDynamic.hpp"
 
 # include "ChooseFunction/ChooseFunctionStaticToDynamic.hpp"
+# include "ChooseFunction/ChooseFunctionDynamicToStatic.hpp"
 # include "ChooseFunction/CompositeValueFunctions.hpp"
 # include "ChooseFunction/ClassifierValueFunctions.hpp"
 # include "ChooseFunction/RegressorValueFunctions.hpp"

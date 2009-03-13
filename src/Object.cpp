@@ -21,9 +21,9 @@ public:
   void declare(const std::string& className, Object::Constructor constructor)
   {
     if (className.empty())
-      ErrorHandler::error("Object::declare", "Empty class name");
+      Object::error("Object::declare", "Empty class name");
     else if (constructors.find(className) != constructors.end())
-      ErrorHandler::error("Object::declare", "Class '" + className + "' is already declared.");
+      Object::error("Object::declare", "Class '" + className + "' is already declared.");
     else
       constructors[className] = constructor;
   }
@@ -32,13 +32,13 @@ public:
   {
     if (className.empty())
     {
-      ErrorHandler::error("Object::create", "Empty class name");
+      Object::error("Object::create", "Empty class name");
       return NULL;
     }
     ObjectConstructorMap::const_iterator it = constructors.find(className);
     if (it == constructors.end())
     {
-      ErrorHandler::error("Object::create", "Could not find class '" + className + "'");
+      Object::error("Object::create", "Could not find class '" + className + "'");
       return NULL;
     }
     Object* res = it->second();
@@ -65,12 +65,12 @@ ObjectPtr Object::loadFromStream(std::istream& istr)
   std::string className;
   if (!read(istr, className))
   {
-    ErrorHandler::error("Object::create", "Could not read class name");
+    error("Object::create", "Could not read class name");
     return ObjectPtr();
   }
   ObjectPtr res(create(className));
   if (res && !res->load(istr))
-    ErrorHandler::error("Object::create", "Could not load object of class '" + className + "'");
+    error("Object::create", "Could not load object of class '" + className + "'");
   return res;
 }
 
@@ -79,7 +79,7 @@ ObjectPtr Object::loadFromFile(const std::string& fileName)
   std::ifstream istr(fileName.c_str(), std::ios::binary);
   if (!istr.is_open())
   {
-    ErrorHandler::error("Object::createFromFile", "Could not open file '" + fileName + "'");
+    error("Object::createFromFile", "Could not open file '" + fileName + "'");
     return ObjectPtr();
   }
   return loadFromStream(istr);
@@ -101,7 +101,7 @@ bool Object::saveToFile(const std::string& fileName) const
   std::ofstream ostr(fileName.c_str());
   if (!ostr.is_open())
   {
-    ErrorHandler::error("Object::saveToFile", "Could not open file '" + fileName + "'");
+    error("Object::saveToFile", "Could not open file '" + fileName + "'");
     return false;
   }
   saveToStream(ostr);

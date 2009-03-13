@@ -34,11 +34,39 @@ STATIC_TO_DYNAMIC_CLASS(FeatureVisitor, Object)
     
 STATIC_TO_DYNAMIC_ENDCLASS(FeatureVisitor);
 
+template<class ImplementationType>
+class StaticToDynamicFeatureVisitorRef : public cralgo::FeatureVisitor
+{
+public:
+  StaticToDynamicFeatureVisitorRef(ImplementationType& impl)
+    : impl(impl)  {}
+
+  virtual bool featureEnter(FeatureDictionary& dictionary, size_t index)
+    {return impl.featureEnter(dictionary, index);}
+    
+  virtual void featureSense(FeatureDictionary& dictionary, size_t index, double value)
+    {impl.featureSense(dictionary, index, value);}
+
+  virtual void featureCall(FeatureDictionary& dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
+    {impl.featureCall(dictionary, scopeIndex, featureGenerator);}
+
+  virtual void featureCall(FeatureDictionary& dictionary, FeatureGeneratorPtr featureGenerator)
+    {impl.featureCall(dictionary, featureGenerator);}
+
+  virtual void featureLeave()
+    {impl.featureLeave();}
+        
+  ImplementationType& impl;
+};
+
 template<class ExactType>
 inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
 {
-  FeatureVisitorPtr featureVisitor = staticToDynamic(_this());
-  featureGenerator->accept(featureVisitor, &dictionary);
+  StaticToDynamicFeatureVisitorRef<ExactType> ref(_this());
+  ReferenceObjectScope _(ref);
+  {
+    featureGenerator->accept(FeatureVisitorPtr(&ref), &dictionary);
+  }
 }
 
 }; /* namespace cralgo */

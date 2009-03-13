@@ -47,6 +47,12 @@ crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<Featu
   
   for (size_t i = 0; i < x.size(); ++i)
   {
+    stateFunction featureGenerator stateFeatures() {
+      featureCall("content") x[i];
+      if (i > 0)
+        featureSense("previous", res[i - 1]);
+    }
+    
     stateFunction featureGenerator actionFeatures(size_t label) {
       featureScope(label) {
         featureCall("content") x[i];
@@ -59,7 +65,7 @@ crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<Featu
       return y && (*y)[i] == label;
     }
 
-    res[i] = choose<size_t>(range, actionFeatures, actionValues);
+    res[i] = choose<size_t>(range, stateFeatures, actionFeatures, actionValues);
     if (y && (*y)[i] == res[i])
       reward(1.0);
   }
@@ -132,28 +138,15 @@ private:
 
 using namespace cralgo;
 
-double evaluatePolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
+void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
 {
-  policy = policy->addComputeStatistics();  
   for (size_t i = 0; i < examples.size(); ++i)
   {
     const SequenceExample& sequence = examples[i];
     simplestSequenceLabeling(policy, sequence.getContent(), numLabels, &sequence.getLabels());
   }
-  // todo: retrieve policies statistics
-  return 0.0;
+  std::cout << "==> " << policy->toString() << std::endl;
 }
-
-/*class ClassifierScoresActionValueFunction : public ActionValueFunction
-{
-public:
-  ClassifierPtr classifier;
-  
-  virtual double compute(CRAlgorithmPtr crAlgorithm, VariablePtr choice) const
-  {
-    
-  }
-};*/
 
 int main(int argc, char* argv[])
 {
@@ -181,23 +174,19 @@ int main(int argc, char* argv[])
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
     GradientBasedLearner::createGradientDescent(learningRate), labels);
   
-  PolicyPtr policy = //Policy::createRandom();
-    Policy::createClassificationExampleCreator(Policy::createRandom(), classifier);
-  policy = policy->addComputeStatistics();
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createClassifierScores(classifier));
   
-//  PolicyPtr policy = Policy::createRandom()->addComputeStatistics();  
-  for (size_t i = 0; i < learningExamples.size(); ++i)
+  PolicyPtr learnerPolicy = //Policy::createRandom();
+    Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
+  
+//  std::cout << "RANDOM: " << std::endl;
+//  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels.getNumFeatures());
+  
+  for (size_t i = 0; i < 10; ++i)
   {
-    SequenceExample& sequence = learningExamples[i];
-    std::vector<size_t> prediction = simplestSequenceLabeling(policy, sequence.getContent(), labels.getNumFeatures(), &sequence.getLabels());
-//    std::cout << "Prediction " << i << " : " << toString(prediction) << std::endl;
+    std::cout << "ITERATION: " << (i+1) << std::endl;
+    runPolicy(learnerPolicy, learningExamples, labels.getNumFeatures());
   }
-  std::cout << toString(policy) << std::endl;
-  
-/*  for (size_t i = 0; i < learningExamples.size(); ++i)
-  {
-    SequenceExample& sequence = learningExamples[i];
-    simplestSequenceLabeling(policy, sequence.getContent(), labels.getNumFeatures(), &sequence.getLabels());
-  */
+
   return 0;
 }

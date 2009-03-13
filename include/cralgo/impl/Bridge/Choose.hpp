@@ -10,6 +10,7 @@
 # define CRALGO_STATIC_CHOOSE_HPP_
 
 # include "../../Choose.h"
+# include "../ChooseFunction/ChooseFunctionDynamicToStatic.hpp"
 # include "Variable.hpp"
 # include "FeatureGenerator.hpp"
 
@@ -51,9 +52,13 @@ public:
   
   virtual VariablePtr sampleBestChoice(ActionValueFunctionPtr valueFunction) const
   {
+    assert(valueFunction);
     if (!ContainerTraits::size(container))
       return VariablePtr();
-    return Variable::create(ContainerTraits::sampleBests(container, crAlgorithm, valueFunction));
+    valueFunction->setChoose(getReferenceCountedPointer());
+    typename ContainerTraits::ConstIterator best = 
+      ContainerTraits::sampleBests(container, impl::dynamicToStatic<ChoiceType>(valueFunction)); 
+    return Variable::create(ContainerTraits::value(best));
   }
   
   /*

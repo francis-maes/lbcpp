@@ -33,13 +33,13 @@ bool LearningExamplesParser::parse(std::istream& istr, FeatureDictionary& dictio
     std::getline(istr, line);
     if (!parseLine(line))
     {
-      ErrorHandler::error("LearningExamplesParser::parse", "Could not parse line '" + line + "'");
+      Object::error("LearningExamplesParser::parse", "Could not parse line '" + line + "'");
       return false;
     }
   }
   if (!parseEnd())
   {
-    ErrorHandler::error("LearningExamplesParser::parse", "Error in parse end");
+    Object::error("LearningExamplesParser::parse", "Error in parse end");
       return false;
   }
   this->dictionary = NULL;

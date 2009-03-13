@@ -44,11 +44,16 @@ struct ClassificationExampleCreatorPolicy
     // this policy can only be used with size_t choices
     if (choose->getChoiceType() == "size_t")
     {
+      FeatureGeneratorPtr stateFeatures = choose->stateFeatures();
+      assert(stateFeatures);
+//      std::cout << "State Features: " << stateFeatures->toString() << std::endl;
       VariablePtr bestChoice = choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
-      classifier->trainStochasticExample(ClassificationExample(choose->stateFeatures(), bestChoice->getReference<size_t>()));
+//      std::cout << "Best Choice: " << bestChoice->getReference<size_t>() << std::endl;
+      assert(bestChoice);
+      classifier->trainStochasticExample(ClassificationExample(stateFeatures, bestChoice->getReference<size_t>()));
     }
     else
-      ErrorHandler::error("ClassificationExampleCreatorPolicy::policyChoose", 
+      BaseClass::error("ClassificationExampleCreatorPolicy::policyChoose", 
           "This policy can only be used choices of type 'size_t'");
     return BaseClass::policyChoose(choose);
   }

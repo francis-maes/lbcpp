@@ -9,7 +9,7 @@
 #ifndef CRALGO_VARIABLE_H_
 # define CRALGO_VARIABLE_H_
 
-# include "Object.h"
+# include "ObjectPredeclarations.h"
 # include "ChooseFunction.h"
 
 namespace cralgo
