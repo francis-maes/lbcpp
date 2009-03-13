@@ -17,10 +17,10 @@ namespace impl {
 
 template<class DecoratedType>
 struct ClassificationExampleCreatorPolicy
-  : public DecoratorPolicy<ClassificationExampleCreatorPolicy<DecoratedType> , DecoratedType>
+  : public EpisodicDecoratorPolicy<ClassificationExampleCreatorPolicy<DecoratedType> , DecoratedType>
 {
   typedef ClassificationExampleCreatorPolicy<DecoratedType> ExactType;
-  typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
+  typedef EpisodicDecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   ClassificationExampleCreatorPolicy(const DecoratedType& explorationPolicy, ClassifierPtr classifier, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
     : BaseClass(explorationPolicy), classifier(classifier), supervisor(supervisor) {}
@@ -28,23 +28,15 @@ struct ClassificationExampleCreatorPolicy
   ClassifierPtr classifier;
   ActionValueFunctionPtr supervisor;
 
-  CRAlgorithmPtr crAlgorithm;
-  
-  void policyEnter(CRAlgorithmPtr crAlgo)
-  {
-    // check flat
-    assert(!crAlgorithm); crAlgorithm = crAlgo;
-    
-    classifier->trainStochasticBegin();
-    BaseClass::policyEnter(crAlgo);
-  }
+  void episodeEnter(CRAlgorithmPtr crAlgo)
+    {classifier->trainStochasticBegin();}
   
   VariablePtr policyChoose(ChoosePtr choose)
   {
     // this policy can only be used with size_t choices
     if (choose->getChoiceType() == "size_t")
     {
-      FeatureGeneratorPtr stateFeatures = choose->stateFeatures();
+      FeatureGeneratorPtr stateFeatures = choose->computeStateFeatures();
       assert(stateFeatures);
 //      std::cout << "State Features: " << stateFeatures->toString() << std::endl;
       VariablePtr bestChoice = choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
@@ -58,12 +50,8 @@ struct ClassificationExampleCreatorPolicy
     return BaseClass::policyChoose(choose);
   }
   
-  void policyLeave()
-  {
-    crAlgorithm = CRAlgorithmPtr();
-    BaseClass::policyLeave();
-    classifier->trainStochasticEnd();
-  }
+  void episodeLeave()
+    {classifier->trainStochasticEnd();}
 };
 
 }; /* namespace impl */

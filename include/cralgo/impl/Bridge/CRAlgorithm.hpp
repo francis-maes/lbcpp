@@ -95,7 +95,7 @@ private:
   bool stepImpl(CallbackType& callback, VariablePtr choice) // returns true if the cr-algorithm is finished
   {
     T_impl& impl = BaseClassType::getImplementation();
-    int res = T_impl::step(impl, impl, callback, choice->getUntypedPointer());
+    int res = T_impl::step(impl, impl, callback, choice ? choice->getUntypedPointer() : NULL);
     return res == stateFinish || res == stateReturn;
   }
 };

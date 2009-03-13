@@ -35,6 +35,9 @@ public:
   
   inline const void* getUntypedPointer() const
     {return this ? ptr : NULL;}
+
+  inline void*& getUntypedPointer()
+    {return ptr;}
     
   template<class T>
   static VariablePtr create(const T& value, const std::string& typeName = "", const std::string& name = "");

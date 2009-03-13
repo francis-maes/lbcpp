@@ -40,7 +40,7 @@ struct ClassifierScoresActionValue : public ClassifierBasedActionValueFunction<C
     
   void setChoose(ChoosePtr choose)
   {
-    scores = classifier->predictScores(choose->stateFeatures());
+    scores = classifier->predictScores(choose->computeStateFeatures());
     //std::cout << "SCORES = " << cralgo::toString(scores) << std::endl;
     assert(scores);
   }
@@ -54,7 +54,7 @@ struct ClassifierProbabilitiesActionValue  : public ClassifierBasedActionValueFu
     : BaseClass(classifier) {}
     
   void setChoose(ChoosePtr choose)
-    {scores = classifier->predictProbabilities(choose->stateFeatures());}
+    {scores = classifier->predictProbabilities(choose->computeStateFeatures());}
 };
 
 }; /* namespace impl */

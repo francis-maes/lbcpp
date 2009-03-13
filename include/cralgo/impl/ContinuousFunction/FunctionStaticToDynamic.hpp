@@ -71,7 +71,7 @@ STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ScalarVectorFunction_, Object)
   virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input) const
   {
     assert(input);
-    LazyVectorPtr res(new LazyVector());
+    LazyVectorPtr res(new LazyVector(input->getDefaultDictionary()));
     BaseClass::impl.compute(input, NULL, FeatureGeneratorPtr(), res);
     return res;
   }

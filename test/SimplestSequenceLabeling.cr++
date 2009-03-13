@@ -48,16 +48,16 @@ crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<Featu
   for (size_t i = 0; i < x.size(); ++i)
   {
     stateFunction featureGenerator stateFeatures() {
-      featureCall("content") x[i];
+      featureCall(0) x[i];
       if (i > 0)
-        featureSense("previous", res[i - 1]);
+        featureScope(1) featureSense(res[i - 1]);
     }
     
     stateFunction featureGenerator actionFeatures(size_t label) {
       featureScope(label) {
-        featureCall("content") x[i];
+        featureCall(0) x[i];
         if (i > 0)
-          featureSense("previous", res[i - 1]);
+          featureScope(1) featureSense(res[i - 1]);
       }
     }
     
@@ -140,7 +140,7 @@ using namespace cralgo;
 
 void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
 {
-  for (size_t i = 0; i < 5; ++i) //examples.size(); ++i)
+  for (size_t i = 0; i < examples.size(); ++i)
   {
     const SequenceExample& sequence = examples[i];
     simplestSequenceLabeling(policy, sequence.getContent(), numLabels, &sequence.getLabels());
@@ -163,7 +163,7 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
   std::cout << "RANDOM: " << std::endl;
   runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels.getNumFeatures());
   
-  for (size_t i = 0; i < 10; ++i)
+  for (size_t i = 0; i < 100; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
     runPolicy(learnerPolicy, learningExamples, labels.getNumFeatures());
@@ -183,13 +183,13 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(std::cout, 1), learningExamples, labels.getNumFeatures());
+  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(std::cout, 0), learningExamples, labels.getNumFeatures());
   
-  for (size_t i = 0; i < 1; ++i)
+  for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(std::cout, 1), learningExamples, labels.getNumFeatures());
-    std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
+    runPolicy(learnerPolicy->verbose(std::cout, 0), learningExamples, labels.getNumFeatures());
+ //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
   
 

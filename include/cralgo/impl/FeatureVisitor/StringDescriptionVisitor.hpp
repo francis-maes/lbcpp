@@ -21,6 +21,7 @@ public:
 
   bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
   {
+    flushCurrentFeatures();
     addIndent(indent);
     res += dictionary.getScopes().getString(number) + "\n";
     ++indent;
@@ -33,8 +34,14 @@ public:
       currentFeatures += ", ";
     currentFeatures += dictionary.getFeatures().getString(number) + " = " + cralgo::toString(value);
   }
-
+  
   void featureLeave()
+  {
+    flushCurrentFeatures();
+    --indent;
+  }
+
+  void flushCurrentFeatures()
   {
     if (currentFeatures.size())
     {
@@ -42,7 +49,6 @@ public:
       res += currentFeatures + "\n";
       currentFeatures = "";
     }
-    --indent;
   }
 
   std::string getResult() const

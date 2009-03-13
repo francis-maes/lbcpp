@@ -44,7 +44,7 @@ crAlgorithm void identity(CRAlgorithmPtr crAlgorithm)
       {return nextChoose->stateValue(currentState);}
 
     stateFunction double actionValue(const void* choice)
-      {return nextChoose->actionValue(currentState, choice);}
+      {return nextChoose->computeActionValue(currentState, choice);}
     
     lastChoice = choose<const void* >(ChooseChoices(nextChoose), stateDescription, actionDescription, stateFeatures, actionFeatures);
   }

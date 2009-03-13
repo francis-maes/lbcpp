@@ -26,7 +26,7 @@ struct RegressorStateValueFunction : public StateValueFunction<RegressorStateVal
   FeatureGeneratorPtr stateFeatures;
   
   void setChoose(ChoosePtr choose)
-    {stateFeatures = choose->stateFeatures();}
+    {stateFeatures = choose->computeStateFeatures();}
 
   double compute() const
     {return regressor->predict(stateFeatures);}

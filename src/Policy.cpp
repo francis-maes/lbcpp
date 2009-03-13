@@ -42,9 +42,18 @@ PolicyPtr Policy::createClassificationExampleCreator(PolicyPtr explorationPolicy
             dynamicToStatic(explorationPolicy), classifier, supervisor));
 }
 
+
+PolicyPtr Policy::createRankingExampleCreator(PolicyPtr explorationPolicy,
+          RankerPtr ranker, ActionValueFunctionPtr supervisor)
+{
+  return impl::staticToDynamic(impl::RankingExampleCreatorPolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(explorationPolicy), ranker, supervisor));
+}
+
+
 PolicyPtr Policy::verbose(std::ostream& ostr, size_t verbosity) const
 {
-  return impl::staticToDynamic(impl::ConsoleLoggerPolicy<impl::DynamicToStaticPolicy>(
+  return impl::staticToDynamic(impl::VerbosePolicy<impl::DynamicToStaticPolicy>(
             dynamicToStatic(this), ostr, verbosity));
 }
 

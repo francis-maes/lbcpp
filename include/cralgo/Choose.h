@@ -40,20 +40,17 @@ public:
   void setCRAlgorithm(CRAlgorithmPtr crAlgorithm) 
     {this->crAlgorithm = crAlgorithm;}
   
-  std::string stateDescription() const;
-  std::string actionDescription(VariablePtr choice) const;
+  std::string computeStateDescription() const;
+  std::string computeActionDescription(VariablePtr choice) const;
   
-  double stateValue() const;
-  double actionValue(VariablePtr choice) const;
+  double computeStateValue() const;
+  double computeActionValue(VariablePtr choice) const;
+  virtual void computeActionValues(std::vector<double>& res) const = 0;
 
-  FeatureGeneratorPtr stateFeatures() const;
-  FeatureGeneratorPtr actionFeatures(VariablePtr choice) const;
-  
-  // todo:
-  //virtual void actionDescriptions(const std::vector<std::string>& res) const = 0;
-  // virtual void actionValues(const std::vector<std::string>& res) const = 0;
-  // virtual void actionFeatures(const std::vector<FeatureGeneratorPtr>& res) const = 0;
-  
+  FeatureGeneratorPtr computeStateFeatures() const;
+  FeatureGeneratorPtr computeActionFeatures(VariablePtr choice) const;
+  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res) const = 0;
+    
   /*
   ** Composite functions
   */
@@ -65,24 +62,18 @@ public:
   virtual ActionFeaturesFunctionPtr     getActionFeaturesFunction() const = 0;
 
   /*
-  ** String descriptions
+  ** Detailed functions
   */
   virtual size_t getNumStateDescriptions() const = 0;
   virtual StateDescriptionFunctionPtr getStateDescription(size_t index) const = 0;
   virtual size_t getNumActionDescriptions() const = 0;
   virtual ActionDescriptionFunctionPtr getActionDescription(size_t index) const = 0;
 
-  /*
-  ** Value functions
-  */
   virtual size_t getNumStateValues() const = 0;
   virtual StateValueFunctionPtr getStateValue(size_t index) const = 0;
   virtual size_t getNumActionValues() const = 0;
   virtual ActionValueFunctionPtr getActionValue(size_t index) const = 0;
 
-  /*
-  ** Features
-  */
   virtual size_t getNumStateFeatures() const = 0;
   virtual StateFeaturesFunctionPtr getStateFeatures(size_t index) const = 0;
   virtual size_t getNumActionFeatures() const = 0;

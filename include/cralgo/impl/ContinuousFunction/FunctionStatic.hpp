@@ -36,10 +36,6 @@ struct ContinuousFunction : public Object<ExactType>
 {
 public:
   enum {isDerivable = false};
-
-protected:
-  const ExactType& _this() const
-    {return *(const ExactType* )this;}
 };
 
 template<class ExactType>
@@ -47,10 +43,6 @@ struct ScalarFunction : public ContinuousFunction<ExactType>
 {
   void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
     {assert(false);}
-  
-protected:
-  const ExactType& _this() const
-    {return *(const ExactType* )this;}  
 };
 
 template<class ExactType>

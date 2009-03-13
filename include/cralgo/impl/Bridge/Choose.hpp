@@ -60,6 +60,44 @@ public:
       ContainerTraits::sampleBests(container, impl::dynamicToStatic(valueFunction)); 
     return Variable::create(ContainerTraits::value(best));
   }
+
+  virtual void computeActionValues(std::vector<double>& res) const
+  {
+    ActionValueFunctionPtr f = choose.getActionValueFunction();
+    assert(f); // todo: error message
+    f->setChoose(getReferenceCountedPointer());
+    StaticToDynamicVariable< ChoiceType > v;
+    ReferenceObjectScope _(v);
+    VariablePtr variable(&v);
+    
+    res.clear();
+    res.reserve(ContainerTraits::size(container));
+    typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
+    for (; it != ContainerTraits::end(container); ++it)
+    {
+      variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
+      res.push_back(f->compute(variable));
+    }
+  }
+  
+  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res) const
+  {
+    ActionFeaturesFunctionPtr f = choose.getActionFeaturesFunction();
+    assert(f); // todo: error message
+    f->setChoose(getReferenceCountedPointer());
+    StaticToDynamicVariable< ChoiceType > v;
+    ReferenceObjectScope _(v);
+    VariablePtr variable(&v);
+    
+    res.clear();
+    res.reserve(ContainerTraits::size(container));
+    typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
+    for (; it != ContainerTraits::end(container); ++it)
+    {
+      variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
+      res.push_back(f->compute(variable));
+    }
+  }
   
   /*
   ** Composites functions

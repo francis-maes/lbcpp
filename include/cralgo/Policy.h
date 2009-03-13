@@ -26,6 +26,10 @@ public:
   static PolicyPtr createClassificationExampleCreator(PolicyPtr explorationPolicy,
                         ClassifierPtr classifier,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
+                        
+  static PolicyPtr createRankingExampleCreator(PolicyPtr explorationPolicy,
+                        RankerPtr ranker,
+                        ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
 
   PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
   PolicyPtr addComputeStatistics() const;

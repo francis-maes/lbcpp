@@ -29,6 +29,13 @@ struct Object
     
   static void warning(const std::string& where, const std::string& what)
     {ErrorHandler::warning(where, what);}
+
+protected:
+  ExactType& _this()
+    {return *(ExactType* )this;}
+
+  const ExactType& _this() const
+    {return *(const ExactType* )this;}
 };
   
 }; /* namespace impl */
