@@ -17,36 +17,28 @@ namespace impl {
 
 template<class DecoratedType>
 struct QLearningPolicy
-  : public DecoratorPolicy<QLearningPolicy<DecoratedType> , DecoratedType>
+  : public EpisodicDecoratorPolicy<QLearningPolicy<DecoratedType> , DecoratedType>
 {
-  typedef DecoratorPolicy<QLearningPolicy<DecoratedType>, DecoratedType> BaseClass;
+  typedef EpisodicDecoratorPolicy<QLearningPolicy<DecoratedType>, DecoratedType> BaseClass;
   
   QLearningPolicy(const DecoratedType& decorated, RegressorPtr regressor, double discount, bool useSarsaRule = false)
     : BaseClass(decorated), regressor(regressor), discount(discount), useSarsaRule(useSarsaRule),
       predictionError(new ScalarRandomVariableStatistics("predictionError"))
     {}
   
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
-  {
-    // FIXME: check flat
-    BaseClass::policyEnter(crAlgorithm);
-    lastActionDescription = SparseVectorPtr();
-    currentReward = 0.0;
-  }
-  
-  ////////////////////
   VariablePtr policyStart(ChoosePtr choose)
   {
+    lastActionDescription = SparseVectorPtr();
     regressor->trainStochasticBegin();
-    VariablePtr res = BaseClass::policyChoose(choose);
+    VariablePtr res = BaseClass::policyStart(choose);
     lastActionDescription = choose->computeActionFeatures(res)->toSparseVector();
     return res;
   }
   
-  VariablePtr policyStep(ChoosePtr choose, double reward)
+  VariablePtr policyStep(double reward, ChoosePtr choose)
   {
     assert(lastActionDescription);
-    VariablePtr res = BaseClass::policyChoose(choose);
+    VariablePtr res = BaseClass::policyStep(reward, choose);
     
     VariablePtr nextAction;
     if (useSarsaRule)
@@ -62,46 +54,21 @@ struct QLearningPolicy
     //   sarsa: explored, ok.
     
     SparseVectorPtr nextActionDescription = choose->computeActionFeatures(res)->toSparseVector();
-    regressor->trainStochasticExample(RegressionExample(lastActionDescription, 
-        reward + discount * regressor->predict(nextActionDescription)));
+    double ycorrect = reward + discount * regressor->predict(nextActionDescription);
+    double ypredicted = regressor->predict(lastActionDescription);
+    predictionError->push(fabs(ycorrect - ypredicted));
+    regressor->trainStochasticExample(RegressionExample(lastActionDescription, ycorrect));
+    
     lastActionDescription = nextActionDescription;
     return res;
   }
   
   void policyEnd(double reward)
   {
+    BaseClass::policyEnd(reward);
     if (lastActionDescription)
       regressor->trainStochasticExample(RegressionExample(lastActionDescription, reward));
     regressor->trainStochasticEnd();
-  }
-  ////////////////////
-
-  VariablePtr policyChoose(ChoosePtr choose)
-  {
-    VariablePtr res;
-    if (lastActionDescription)
-      res = policyStep(choose, currentReward);
-    else
-      res = policyStart(choose);
-    currentReward = 0.0;
-    return res;
-  }
-
-  void policyReward(double reward)
-  {
-    currentReward += reward;
-    BaseClass::policyReward(reward);
-  }
-  
-  void policyLeave()
-  {
-    if (lastActionDescription)
-    {
-      policyEnd(currentReward);
-      currentReward = 0.0;
-      lastActionDescription = SparseVectorPtr();
-    }
-    BaseClass::policyLeave();    
   }
   
   size_t getNumResults() const
@@ -120,8 +87,6 @@ private:
   double discount;
   bool useSarsaRule;
   ScalarRandomVariableStatisticsPtr predictionError;
-
-  double currentReward;
   SparseVectorPtr lastActionDescription;
 };
 

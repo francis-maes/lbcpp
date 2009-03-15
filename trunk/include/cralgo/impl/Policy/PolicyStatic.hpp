@@ -83,32 +83,68 @@ struct EpisodicDecoratorPolicy : public DecoratorPolicy<ExactType, DecoratedType
   typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   EpisodicDecoratorPolicy(const DecoratedType& decorated)
-    : BaseClass(decorated), inclusionLevel(0) {}
+    : BaseClass(decorated), inclusionLevel(0), stepNumber(0) {}
   
+  // override these:
   void episodeEnter(CRAlgorithmPtr crAlgorithm)
-    {assert(false);}
+    {}
+  
+  VariablePtr policyStart(ChoosePtr choose)
+    {return BaseClass::policyChoose(choose);}
+  
+  VariablePtr policyStep(double reward, ChoosePtr choose)
+    {BaseClass::policyReward(reward); return BaseClass::policyChoose(choose);}
+    
+  void policyEnd(double reward)
+    {BaseClass::policyReward(reward);}
+  
   void episodeLeave()
-    {assert(false);}
+    {}
   
   void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
     BaseClass::policyEnter(crAlgorithm);
     if (inclusionLevel == 0)
+    {
+      currentReward = 0.0;
+      stepNumber = 0;
       BaseClass::_this().episodeEnter(crAlgorithm);
+    }
     ++inclusionLevel;
   }
   
+  VariablePtr policyChoose(ChoosePtr choose)
+  {
+    VariablePtr res;
+    if (stepNumber == 0)
+      res = BaseClass::_this().policyStart(choose);
+    else
+      res = BaseClass::_this().policyStep(currentReward, choose);
+    currentReward = 0.0;
+    ++stepNumber;
+    return res;
+  }
+    
+  void policyReward(double reward)
+    {currentReward += reward;}
+
   void policyLeave()
   {
     BaseClass::policyLeave();    
     assert(inclusionLevel > 0);
     --inclusionLevel;
     if (inclusionLevel == 0)
+    {
+      BaseClass::_this().policyEnd(currentReward);
+      currentReward = 0.0;
       BaseClass::_this().episodeLeave();
+    }
   }
   
 private:
   size_t inclusionLevel;
+  size_t stepNumber;
+  double currentReward;
 };
 
 }; /* namespace impl */

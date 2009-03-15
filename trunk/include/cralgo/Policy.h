@@ -22,6 +22,7 @@ public:
 
   static PolicyPtr createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
   static PolicyPtr createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
+  static PolicyPtr createMonteCarloControl(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
 
   static PolicyPtr createClassificationExampleCreator(PolicyPtr explorationPolicy,
                         ClassifierPtr classifier,

@@ -35,6 +35,8 @@ public:
     : LearningExample(other), x(other.x), y(other.y) {}
   ClassificationExample(FeatureGeneratorPtr x, size_t y)
     : x(x), y(y) {}
+  ClassificationExample()
+    : y(0) {}
     
   double getMarginMultiplier() const // binary classification
     {return y == 0 ? -1.0 : 1.0;}
@@ -44,6 +46,9 @@ public:
     
   size_t getOutput() const
     {return y;}
+  
+  friend std::ostream& operator << (std::ostream& ostr, const ClassificationExample& example)
+    {return ostr << "Y = " << example.y << " X = " << example.x->toString();}
   
 private:
   FeatureGeneratorPtr x;
@@ -75,6 +80,9 @@ public:
     
   double getOutput() const
     {return y;}
+
+  friend std::ostream& operator << (std::ostream& ostr, const RegressionExample& example)
+    {return ostr << "Y = " << example.y << " X = " << example.x->toString();}
 
 private:
   FeatureGeneratorPtr x;

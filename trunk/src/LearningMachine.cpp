@@ -35,6 +35,31 @@ protected:
   const ExactType& _this() const  {return *(const ExactType* )this;}
 };
 
+template<class BaseClass, class ExampleType>
+class VerboseLearningMachine : public BaseClass
+{
+public:
+  VerboseLearningMachine(std::ostream& ostr) : ostr(ostr) {}
+  
+  virtual void trainBatch(const std::vector<ExampleType>& examples)
+  {
+    ostr << "trainBatch() with " << examples.size() << " examples:" << std::endl;
+    for (size_t i = 0; i < examples.size(); ++i)
+      ostr << "  " << i << ": " << examples[i] << std::endl;
+  }
+
+  virtual void trainStochasticBegin()
+    {ostr << "trainStochasticBegin()" << std::endl;}
+    
+  virtual void trainStochasticExample(const ExampleType& example)
+    {ostr << "trainStochasticExample(" << example << ")" << std::endl;}
+    
+  virtual void trainStochasticEnd()
+    {ostr << "trainStochasticEnd()" << std::endl;}
+    
+protected:
+  std::ostream& ostr;
+};
 
 /*
 ** Regression
@@ -50,6 +75,22 @@ double Regressor::evaluateMeanAbsoluteError(const std::vector<RegressionExample>
   }
   return res / examples.size();
 }
+
+class VerboseRegressor : public VerboseLearningMachine<Regressor, RegressionExample>
+{
+public:
+  VerboseRegressor(std::ostream& ostr)
+    : VerboseLearningMachine<Regressor, RegressionExample>(ostr) {}
+    
+  virtual double predict(const FeatureGeneratorPtr input) const
+  { 
+    ostr << "predict(" << input->toString() << ")" << std::endl;
+    return 0.0;
+  }
+};
+
+RegressorPtr Regressor::createVerbose(std::ostream& ostr)
+  {return RegressorPtr(new VerboseRegressor(ostr));}
 
 class LeastSquaresLinearRegressor
   : public StaticToDynamicGradientBasedLearningMachine<LeastSquaresLinearRegressor, GradientBasedRegressor>
