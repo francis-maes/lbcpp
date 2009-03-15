@@ -75,8 +75,6 @@ protected:
   FeatureDictionary* labels;
 };
 
-typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
-
 class BinaryClassifier : public Classifier
 {
 public:
@@ -92,7 +90,6 @@ public:
   virtual size_t sample(const FeatureGeneratorPtr input) const;
 };
 
-typedef ReferenceCountedObjectPtr<BinaryClassifier> BinaryClassifierPtr;
 
 class GeneralizedClassifier : public LearningMachine_<GeneralizedClassificationExample>
 {
@@ -103,17 +100,15 @@ public:
   virtual size_t sample(const std::vector<FeatureGeneratorPtr>& inputs) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<GeneralizedClassifier> GeneralizedClassifierPtr;
-
 class Regressor : public LearningMachine_<RegressionExample>
 {
 public:
+  static RegressorPtr createVerbose(std::ostream& ostr);
+
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
   
   double evaluateMeanAbsoluteError(const std::vector<RegressionExample>& examples) const;
 };
-
-typedef ReferenceCountedObjectPtr<Regressor> RegressorPtr;
 
 class Ranker : public LearningMachine_<RankingExample>
 {
@@ -121,7 +116,6 @@ public:
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<Ranker> RankerPtr;
 
 }; /* namespace cralgo */
 

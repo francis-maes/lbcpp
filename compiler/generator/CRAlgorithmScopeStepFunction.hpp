@@ -41,7 +41,7 @@ public:
     addModifier(atom("template<class __Callback__>"));
     addModifier(staticKeyword());
     setReturnType(atom("int"));
-    setName("step");
+    setName("__step__");
     addParameter(atom(translator.getCRAlgorithmClassName()), atom("&__crAlgorithm__"));
     addParameter(atom(scopeClassName), atom("&__crAlgorithmScope__"));
     addParameter(atom("__Callback__"), atom("&__callback__"));
@@ -64,7 +64,8 @@ public:
   virtual void visit(PTree::FuncallExpr* node)
   {
     if (CRAlgo::isReward(PTree::first(node)))
-      setResult(list(identifier("__callback__.reward"), PTree::second(node), PTree::third(node), PTree::nth(node, 3)));
+      setResult(list(identifier("__callback__.reward"), PTree::second(node),
+        RewriteVisitor::rewrite(PTree::third(node)), PTree::nth(node, 3)));
     else
       RewriteVisitor::visit(node);
   }
@@ -283,8 +284,8 @@ protected:
     // label __localScope0_label__:
     block.add(labelStatement(atom(localScope.getLabelName())));
     
-    // int __stepState__ = LocalScope0::step(__crAlgorithm__, *__crAlgorithmScope__.__localScope1__, __callback__, __choice__)
-    PTree::Node* subStepFuncall = atom(localScope.getClassName() + "::step(__crAlgorithm__, *__crAlgorithmScope__." 
+    // int __stepState__ = LocalScope0::__step__(__crAlgorithm__, *__crAlgorithmScope__.__localScope1__, __callback__, __choice__)
+    PTree::Node* subStepFuncall = atom(localScope.getClassName() + "::__step__(__crAlgorithm__, *__crAlgorithmScope__." 
         + localScope.getVariableName() + ", __callback__, __choice__)");
     PTree::Node* subStepReturn = atom("__stepState__");
     block.addVariableDeclaration(intKeyword(), subStepReturn, subStepFuncall);
@@ -304,8 +305,8 @@ protected:
     //      __crAlgorithm__.__state__ = ENDSTATE;
     //      return cralgo::stateReturn; 
     // }
-    ifStatement(infixExpr(subStepReturn, equalAtom(), atom("cralgo::stateReturn")),
-      atom("{ __crAlgorithm__.__state__ = " + size2str(getFinalStateNumber()) + "; return cralgo::stateReturn;}"));
+    block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("cralgo::stateReturn")),
+      atom("{ __crAlgorithm__.__state__ = " + size2str(getFinalStateNumber()) + "; return cralgo::stateReturn;}")));
 
     if (isInsideBreakableStatement)
     {

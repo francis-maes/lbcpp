@@ -57,7 +57,7 @@ inline void DenseVector::staticFeatureGenerator(FeatureVisitor& visitor, Feature
       visitor.featureSense(featureDictionary, i, values[i]);
   
   for (size_t i = 0; i < subVectors.size(); ++i)
-    if (subVectors[i] && visitor.featureEnter(*dictionary, i))
+    if (subVectors[i] && visitor.featureEnter(featureDictionary, i))
     {
       subVectors[i]->staticFeatureGenerator(visitor, featureDictionary.getSubDictionary(i));
       visitor.featureLeave();

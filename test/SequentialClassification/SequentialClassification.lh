@@ -1,0 +1,74 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: SequentialClassification.lh    | Sequential Classification       |
+| Author  : Francis Maes                   |    CR-algorithm                 |
+| Started : 15/03/2009 20:11               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+                               
+using namespace cralgo;
+
+namespace cralgo
+{
+  std::string toString(std::set<size_t>::const_iterator it)
+    {return "iterator";}
+};
+
+featureGenerator unit() {featureScope("unit") featureSense(0);}
+
+crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPtr>& featureGenerators, double featureCosts, size_t numClasses, size_t* ycorrect = NULL)
+{
+  typedef std::pair<bool, size_t> Choice; // decision: (true, classNumber), feature-request: (false, featureScopeNumber)
+  
+  SparseVectorPtr currentRepresentation = new SparseVector();
+  
+  std::set<size_t> unusedFeatureGenerators;
+  for (size_t i = 0; i < featureGenerators.size(); ++i)
+  {
+    unusedFeatureGenerators.insert(i);
+    currentRepresentation->setSubVector(i, unit()->toSparseVector());
+  }
+  
+  for (size_t step = 0; true; ++step)
+  {
+    std::vector<Choice> choices;
+    {
+      choices.reserve(unusedFeatureGenerators.size() + numClasses);
+      for (std::set<size_t>::const_iterator it = unusedFeatureGenerators.begin(); it != unusedFeatureGenerators.end(); ++it)
+        choices.push_back(Choice(false, *it));
+      for (size_t i = 0; i < numClasses; ++i)
+        choices.push_back(Choice(true, i));
+    }
+      
+    stateFunction featureGenerator features(const Choice& choice)
+    {
+      if (choice.first)
+      {
+        featureScope("decision")
+          featureCall(choice.second) currentRepresentation;
+      }
+      else
+      {
+        featureScope("feature-request")
+          featureCall(choice.second) currentRepresentation;
+      }
+    }
+    
+    Choice c = choose<Choice>(choices, features);
+    
+    if (c.first)
+    {
+      if (ycorrect && c.second != *ycorrect) // reward -1 for a classification error
+        reward (-1.0);
+      return c.second;
+    }
+    else
+    {
+      unusedFeatureGenerators.erase(c.second);
+      currentRepresentation->setSubVector(c.second, featureGenerators[c.second]->toSparseVector());
+      if (step >= 2) // artifical data: the two first are not punished, so that optimal policies reaches 0 reward per episode
+        reward (-featureCosts);
+    }
+  }
+  return 0;
+}

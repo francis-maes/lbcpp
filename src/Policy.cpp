@@ -35,6 +35,12 @@ PolicyPtr Policy::createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regr
         dynamicToStatic(explorationPolicy), regressor, discount, true));
 }
 
+PolicyPtr Policy::createMonteCarloControl(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+{
+  return impl::staticToDynamic(impl::MonteCarloControlPolicy<impl::DynamicToStaticPolicy>(
+        dynamicToStatic(explorationPolicy), regressor, discount));
+}
+
 PolicyPtr Policy::createClassificationExampleCreator(PolicyPtr explorationPolicy,
           ClassifierPtr classifier, ActionValueFunctionPtr supervisor)
 {

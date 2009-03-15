@@ -75,7 +75,7 @@ public:
     std::string outputDirectory = PlatformUtilities::getParentDirectory(outputFile);
     PlatformUtilities::createMissingDirectories(outputDirectory);    
     CppOutputFile cppOutputFile(outputFile);
-    return cppOutputFile.write(node, crAlgoFile, true); // <--- the flag for #line creation //
+    return cppOutputFile.write(node, crAlgoFile, false); // <--- the flag for #line creation //
   }
 
   bool compileAndFlushErrors(const std::string& inputFile, const std::string& outputFile)

@@ -225,6 +225,42 @@ struct Traits<TargetType*>
 };
 
 /*
+** Iterator Traits
+*/
+template<class T>
+struct IteratorTraits
+{
+public:
+  typedef T Type;
+    
+  static inline std::string toString(const T& value)
+    {return "&" + cralgo::toString(*value);}
+
+  static inline void write(std::ostream& ostr, const T& value)
+    {assert(false);}
+
+  static inline bool read(std::istream& istr, T& result)
+    {assert(false); return false;}
+};
+
+template<class T>
+struct Traits< typename std::vector<T>::iterator >
+  : public IteratorTraits< typename std::vector<T>::iterator > {};
+
+template<class T>
+struct Traits< typename std::vector<T>::const_iterator >
+  : public IteratorTraits< typename std::vector<T>::const_iterator > {};
+
+template<class T>
+struct Traits< typename std::set<T>::iterator >
+  : public IteratorTraits< typename std::set<T>::iterator > {};
+
+template<class T>
+struct Traits< typename std::set<T>::const_iterator >
+  : public IteratorTraits< typename std::set<T>::const_iterator > {};
+
+
+/*
 ** Typeinfo Traits
 */
 template<>

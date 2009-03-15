@@ -41,10 +41,15 @@ class GradientBasedLearner;
 typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;
 class Classifier;
 typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
+class BinaryClassifier;
+typedef ReferenceCountedObjectPtr<BinaryClassifier> BinaryClassifierPtr;
+class GeneralizedClassifier;
+typedef ReferenceCountedObjectPtr<GeneralizedClassifier> GeneralizedClassifierPtr;
 class Regressor;
 typedef ReferenceCountedObjectPtr<Regressor> RegressorPtr;
 class Ranker;
 typedef ReferenceCountedObjectPtr<Ranker> RankerPtr;
+
 
 // choose functions
 class ChooseFunction;
