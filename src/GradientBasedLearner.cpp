@@ -10,6 +10,9 @@
 #include <cralgo/impl/impl.h>
 using namespace cralgo;
 
+/*
+** TODO: move somewhere
+*/
 class ConstantIterationFunction : public IterationFunction
 {
 public:
@@ -25,17 +28,33 @@ private:
 IterationFunctionPtr IterationFunction::createConstant(double value)
   {return new ConstantIterationFunction(value);}
 
+class InvLinearIterationFunction : public IterationFunction
+{
+public:
+  InvLinearIterationFunction(double initialValue, size_t numberIterationsToReachHalfInitialValue)
+    : initialValue(initialValue), numberIterationsToReachHalfInitialValue(numberIterationsToReachHalfInitialValue) {}
+    
+  virtual double compute(size_t iteration) const
+    {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
+
+private:
+  double initialValue;
+  size_t numberIterationsToReachHalfInitialValue;
+};
+
+IterationFunctionPtr IterationFunction::createInvLinear(double initialValue, size_t numberIterationsToReachHalfInitialValue)
+  {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
+
 class GradientDescentLearner : public GradientBasedLearner
 {
 public:
   GradientDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
     : learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
     
-  virtual void trainStochasticExample(DenseVectorPtr parameters, ScalarVectorFunctionPtr exampleLoss, ScalarVectorFunctionPtr regularizer)
+  virtual void trainStochasticExample(DenseVectorPtr parameters, FeatureGeneratorPtr gradient, double weight)
   {
-    LazyVectorPtr gradient = exampleLoss->computeGradient(parameters);
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
-    parameters->addWeighted(gradient, -computeAlpha());
+    parameters->addWeighted(gradient, -weight * computeAlpha());
     ++epoch;
   }
   

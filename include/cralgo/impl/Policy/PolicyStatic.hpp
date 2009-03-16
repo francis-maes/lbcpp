@@ -50,25 +50,74 @@ protected:
   CRAlgorithmPtr currentCRAlgorithm;
 };
 
-template<class ExactType, class DecoratedType>
-struct DecoratorPolicy : public Policy<ExactType>
+template<class ExactType>
+struct EpisodicPolicy : public Policy<ExactType>
 {
-  DecoratorPolicy(const DecoratedType& decorated)
+  typedef Policy<ExactType> BaseClass;
+  
+  // override these:
+  VariablePtr policyStart(ChoosePtr choose)
+    {assert(false); return VariablePtr();}
+  
+  VariablePtr policyStep(double reward, ChoosePtr choose)
+    {assert(false); return VariablePtr();}
+    
+  void policyEnd(double reward)
+    {}
+
+public:
+  EpisodicPolicy()
+    : inclusionLevel(0), stepNumber(0) {}
+
+  void policyEnter(CRAlgorithmPtr crAlgorithm)
+  {
+    if (inclusionLevel == 0)
+    {
+      currentReward = 0.0;
+      stepNumber = 0;
+    }
+    ++inclusionLevel;
+  }
+  
+  VariablePtr policyChoose(ChoosePtr choose)
+  {
+    VariablePtr res;
+    if (stepNumber == 0)
+      res = BaseClass::_this().policyStart(choose);
+    else
+      res = BaseClass::_this().policyStep(currentReward, choose);
+    currentReward = 0.0;
+    ++stepNumber;
+    return res;
+  }
+    
+  void policyReward(double reward)
+    {currentReward += reward;}
+
+  void policyLeave()
+  {
+    assert(inclusionLevel > 0);
+    --inclusionLevel;
+    if (inclusionLevel == 0)
+    {
+      BaseClass::_this().policyEnd(currentReward);
+      currentReward = 0.0;
+    }
+  }
+  
+protected:
+  size_t inclusionLevel;
+  size_t stepNumber;  
+  double currentReward;
+};
+
+template<class ExactType, class BaseClass, class DecoratedType>
+struct DecoratorPolicy_ : public BaseClass
+{
+  DecoratorPolicy_(const DecoratedType& decorated)
     : decorated(decorated) {}
   
   DecoratedType decorated;
-
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
-    {decorated.policyEnter(crAlgorithm);}
-    
-  VariablePtr policyChoose(ChoosePtr choose)
-    {return decorated.policyChoose(choose);}
-    
-  void policyReward(double reward)
-    {decorated.policyReward(reward);}
-    
-  void policyLeave()
-    {decorated.policyLeave();}
 
   size_t getNumResults() const
     {return decorated.getNumResults();}
@@ -77,6 +126,47 @@ struct DecoratorPolicy : public Policy<ExactType>
     {return decorated.getResult(i);}
 };
 
+
+template<class ExactType, class DecoratedType>
+struct DecoratorPolicy : public DecoratorPolicy_<ExactType, Policy<ExactType>, DecoratedType>
+{
+  typedef DecoratorPolicy_<ExactType, Policy<ExactType>, DecoratedType> BaseClass;
+  
+  DecoratorPolicy(const DecoratedType& decorated)
+    : BaseClass(decorated) {}
+
+  void policyEnter(CRAlgorithmPtr crAlgorithm)
+    {BaseClass::decorated.policyEnter(crAlgorithm);}
+    
+  VariablePtr policyChoose(ChoosePtr choose)
+    {return BaseClass::decorated.policyChoose(choose);}
+    
+  void policyReward(double reward)
+    {BaseClass::decorated.policyReward(reward);}
+    
+  void policyLeave()
+    {BaseClass::decorated.policyLeave();}
+};
+
+template<class ExactType, class DecoratedType>
+struct EpisodicDecoratorPolicy : public DecoratorPolicy_<ExactType, EpisodicPolicy<ExactType>, DecoratedType>
+{
+  typedef DecoratorPolicy_<ExactType, EpisodicPolicy<ExactType>, DecoratedType> BaseClass;
+  
+  EpisodicDecoratorPolicy(const DecoratedType& decorated)
+    : BaseClass(decorated) {}
+    
+  VariablePtr policyStart(ChoosePtr choose)
+    {return BaseClass::decorated.policyChoose(choose);}
+  
+  VariablePtr policyStep(double reward, ChoosePtr choose)
+    {BaseClass::decorated.policyReward(reward); return BaseClass::decorated.policyChoose(choose);}
+    
+  void policyEnd(double reward)
+    {BaseClass::decorated.policyReward(reward);}
+};
+
+/*
 template<class ExactType, class DecoratedType>
 struct EpisodicDecoratorPolicy : public DecoratorPolicy<ExactType, DecoratedType>
 {
@@ -145,7 +235,7 @@ private:
   size_t inclusionLevel;
   size_t stepNumber;
   double currentReward;
-};
+};*/
 
 }; /* namespace impl */
 }; /* namespace cralgo */

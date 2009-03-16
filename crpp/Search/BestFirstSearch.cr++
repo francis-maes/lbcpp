@@ -41,7 +41,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
         
         if (choose->getNumActionFeatures() > 0)
         {
-          FeatureGeneratorPtr actionFeatures = choose->computeActionFeatures(choice);
+          FeatureGeneratorPtr actionFeatures = choose->computeActionFeatures(choice, false);
           featureCall actionFeatures;
         }
         else if (choose->getNumStateFeatures() > 0)

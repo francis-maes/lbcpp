@@ -74,6 +74,7 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
   ${CRALGO_IMPL}/ContinuousFunction/LinearArchitecture.hpp
   ${CRALGO_IMPL}/ContinuousFunction/MultiLinearArchitecture.hpp
   ${CRALGO_IMPL}/ContinuousFunction/TransferArchitecture.hpp
+  ${CRALGO_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
 )
 
 SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION

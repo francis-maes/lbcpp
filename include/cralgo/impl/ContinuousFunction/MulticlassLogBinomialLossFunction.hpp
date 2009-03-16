@@ -39,7 +39,7 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
       *output = logZ - scores->get(correctClass);
     if (gradient)
     {
-      DenseVectorPtr res = new DenseVector(scores->getDictionary(), scores->getNumValues());
+      DenseVectorPtr res = scores->hasDictionary() ? new DenseVector(scores->getDictionary(), scores->getNumValues()) : new DenseVector(scores->getNumValues());
       for (size_t i = 0; i < scores->getNumValues(); ++i)
       {
         double derivative = exp(scores->get(i) - logZ);

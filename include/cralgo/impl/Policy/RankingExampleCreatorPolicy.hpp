@@ -23,18 +23,32 @@ struct RankingExampleCreatorPolicy
   typedef EpisodicDecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   RankingExampleCreatorPolicy(const DecoratedType& explorationPolicy, RankerPtr ranker, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
-    : BaseClass(explorationPolicy), ranker(ranker), supervisor(supervisor) {}
+    : BaseClass(explorationPolicy), ranker(ranker), supervisor(supervisor), inclusionLevel(0) {}
     
   RankerPtr ranker;
   ActionValueFunctionPtr supervisor;
+  size_t inclusionLevel;
 
-  void episodeEnter(CRAlgorithmPtr crAlgorithm)
-    {ranker->trainStochasticBegin();}
+  void policyEnter(CRAlgorithmPtr crAlgorithm)
+  {
+    if (inclusionLevel == 0)
+      ranker->trainStochasticBegin();
+    BaseClass::policyEnter(crAlgorithm);
+    ++inclusionLevel;
+  }
+    
+  void policyLeave()
+  {
+    BaseClass::policyLeave();
+    --inclusionLevel;
+    if (inclusionLevel == 0)
+      ranker->trainStochasticEnd();
+  }
 
   VariablePtr policyChoose(ChoosePtr choose)
   {
     std::vector<FeatureGeneratorPtr> alternatives;
-    choose->computeActionFeatures(alternatives);
+    choose->computeActionFeatures(alternatives, false);
 
     std::vector<double> costs;
     choose->computeActionValues(costs);
@@ -50,9 +64,6 @@ struct RankingExampleCreatorPolicy
     ranker->trainStochasticExample(RankingExample(alternatives, costs));
     return BaseClass::policyChoose(choose);
   }
-  
-  void episodeLeave()
-    {ranker->trainStochasticEnd();}
 };
 
 }; /* namespace impl */

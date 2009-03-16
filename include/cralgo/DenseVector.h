@@ -90,6 +90,10 @@ public:
   
   void addWeighted(const LazyVectorPtr lazyVector, double weight);
     
+  void add(const FeatureGeneratorPtr featureGenerator)
+    {featureGenerator->addTo(DenseVectorPtr(this));}
+  void substract(const FeatureGeneratorPtr featureGenerator)
+    {featureGenerator->substractFrom(DenseVectorPtr(this));}
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
     {featureGenerator->addWeightedTo(DenseVectorPtr(this), weight);}
 

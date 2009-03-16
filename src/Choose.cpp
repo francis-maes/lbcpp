@@ -11,16 +11,19 @@
 #include <cralgo/impl/impl.h>
 using namespace cralgo;
 
-StateValueFunctionPtr StateValueFunction::createRegressorPredictions(RegressorPtr regressor)
+StateValueFunctionPtr StateValueFunction::createPredictions(RegressorPtr regressor)
   {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
 
-ActionValueFunctionPtr ActionValueFunction::createClassifierScores(ClassifierPtr classifier)
+ActionValueFunctionPtr ActionValueFunction::createScores(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierScoresActionValue(classifier));}
 
-ActionValueFunctionPtr ActionValueFunction::createClassifierProbabilities(ClassifierPtr classifier)
+ActionValueFunctionPtr ActionValueFunction::createScores(GeneralizedClassifierPtr classifier)
+  {return impl::staticToDynamic(impl::GeneralizedClassifierScoresActionValue(classifier));}
+
+ActionValueFunctionPtr ActionValueFunction::createProbabilities(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierProbabilitiesActionValue(classifier));}
 
-ActionValueFunctionPtr ActionValueFunction::createRegressorPredictions(RegressorPtr regressor)
+ActionValueFunctionPtr ActionValueFunction::createPredictions(RegressorPtr regressor)
   {return impl::staticToDynamic(impl::RegressorActionValueFunction(regressor));}
 
 /*

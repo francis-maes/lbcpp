@@ -9,6 +9,7 @@
 #ifndef CRALGO_IMPL_H_
 # define CRALGO_IMPL_H_
 
+# include "ContinuousFunction/FunctionStaticToDynamic.hpp"
 # include "ContinuousFunction/ScalarFunctions.hpp"
 # include "ContinuousFunction/ScalarVectorFunctions.hpp"
 # include "ContinuousFunction/PerceptronLossFunction.hpp"
@@ -22,7 +23,7 @@
 # include "ContinuousFunction/TransferArchitecture.hpp"
 # include "ContinuousFunction/EmpiricalRiskFunction.hpp"
 # include "ContinuousFunction/ExampleRiskFunction.hpp"
-# include "ContinuousFunction/FunctionStaticToDynamic.hpp"
+# include "ContinuousFunction/ScalarToVectorArchitecture.hpp"
 
 # include "ChooseFunction/ChooseFunctionStaticToDynamic.hpp"
 # include "ChooseFunction/ChooseFunctionDynamicToStatic.hpp"

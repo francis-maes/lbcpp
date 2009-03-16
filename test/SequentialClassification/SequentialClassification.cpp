@@ -87,7 +87,7 @@ void testClassifier(const std::vector<ClassificationExample>& train, const std::
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
     GradientBasedLearner::createGradientDescent(learningRate), classes);
   
-  for (size_t i = 0; i < 5; ++i)
+  for (size_t i = 0; i < 15; ++i)
   {
     classifier->trainStochastic(train);
     double acc = classifier->evaluateAccuracy(test);
@@ -95,46 +95,21 @@ void testClassifier(const std::vector<ClassificationExample>& train, const std::
   }
 }
 
-int main(int argc, char* argv[])
+void trainAndTest(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses, PolicyPtr learnedPolicy, PolicyPtr learnerPolicy)
 {
-  static const size_t numClasses = 2;
-  static const size_t numFeatures = 20;
-  SyntheticDataGenerator generator(10, 4, numFeatures, numClasses);
- 
-  //SyntheticLinearMultiClassGenerator generator(numFeatures, numClasses);
-  
-  std::vector<ClassificationExample> train(1000), test(1000);
-  
-  for (size_t i = 0; i < train.size(); ++i)
-    train[i] = generator.sample();
-  for (size_t i = 0; i < test.size(); ++i)
-    test[i] = generator.sample();
-  testClassifier(train, test, 2);  
-  
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.0001);
-  IterationFunctionPtr epsilon = IterationFunction::createConstant(0.01);
-
-// Regressor::createVerbose(std::cout);
-  RegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
-  
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createRegressorPredictions(regressor));
-  
-  PolicyPtr learnerPolicy = Policy::createMonteCarloControl(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.99);
-  
-  for (size_t iteration = 0; iteration < 50; ++iteration)
+  for (size_t iteration = 0; iteration < 500; ++iteration)
   {
     PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(std::cout, 4);
     for (size_t i = 0; i < train.size(); ++i)
     {
-      ClassificationExample ex = train[i];
+      ClassificationExample ex = train[Random::getInstance().sampleSize(train.size())];
   //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
       std::vector<FeatureGeneratorPtr> x;
-      x.push_back(input);
-//      for (size_t i = 0; i < input->getNumSubVectors(); ++i)
-//        x.push_back(input->getSubVector(i));
+//      x.push_back(input);
+      for (size_t i = 0; i < input->getNumSubVectors(); ++i)
+        x.push_back(input->getSubVector(i));
       size_t y = ex.getOutput();
       sequentialClassification(policy, x, 0.1, numClasses, &y);
     }
@@ -147,9 +122,9 @@ int main(int argc, char* argv[])
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
       std::vector<FeatureGeneratorPtr> x;
-      x.push_back(input);
-//      for (size_t i = 0; i < input->getNumSubVectors(); ++i)
-//        x.push_back(input->getSubVector(i));
+//      x.push_back(input);
+      for (size_t i = 0; i < input->getNumSubVectors(); ++i)
+        x.push_back(input->getSubVector(i));
       size_t y = ex.getOutput();
       size_t ypredicted = sequentialClassification(learnedPolicy, x, 0.1, numClasses, &y);
       if (ypredicted == y)
@@ -158,7 +133,57 @@ int main(int argc, char* argv[])
     std::cout << "EVALUATION: " << correct << " / 1000" << std::endl << std::endl;
     std::cout << "END OF ITERATION " << iteration+1 << ": " << policy->toString() << std::endl;
   }
+}
+
+void testMonteCarloControl(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
+{
+  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.001);
+  IterationFunctionPtr epsilon = IterationFunction::createConstant(0.01);
   
+// Regressor::createVerbose(std::cout);
+  RegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
+    GradientBasedLearner::createGradientDescent(learningRate));
+  
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
+  
+  PolicyPtr learnerPolicy = Policy::createMonteCarloControl(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.8);
+  
+  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
+}
+
+
+void testOLPOMDP(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
+{
+  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.001, 10000);
+
+  GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
+    GradientBasedLearner::createGradientDescent(learningRate));
+  
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
+  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0.8, 1.1);
+
+  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
+}
+
+int main(int argc, char* argv[])
+{
+  static const size_t numFeaturesToDecideFold = 4;
+  static const size_t numFolds = 4;
+  static const size_t numClasses = 2;
+  static const size_t numFeatures = 2;
+  SyntheticDataGenerator generator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
+ 
+ // SyntheticLinearMultiClassGenerator generator(numFeatures, numClasses);
+  
+  std::vector<ClassificationExample> train(1000), test(1000);
+  
+  for (size_t i = 0; i < train.size(); ++i)
+    train[i] = generator.sample();
+  for (size_t i = 0; i < test.size(); ++i)
+    test[i] = generator.sample();
+  testClassifier(train, test, numClasses);  
+  
+  testOLPOMDP(train, test, numClasses);
   
   return 0;
 }

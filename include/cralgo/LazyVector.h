@@ -56,6 +56,9 @@ public:
   */
   LazyVectorPtr& getSubVector(size_t i, bool createIfMissing = false);
 
+  void setSubVector(size_t i, LazyVectorPtr vector)
+    {getSubVector(i) = vector;}
+
   /*
   ** Operations
   */

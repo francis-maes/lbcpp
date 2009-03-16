@@ -124,6 +124,7 @@ class IterationFunction : public Object
 {
 public:
   static IterationFunctionPtr createConstant(double value);
+  static IterationFunctionPtr createInvLinear(double initialValue = 1.0, size_t numberIterationsToReachHalfInitialValue = 1000);
 
   virtual double compute(size_t iteration) const = 0;
 };
