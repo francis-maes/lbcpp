@@ -1,6 +1,4 @@
-* ConsoleLoggerPolicy
-* Static ActionValue, ActionFeatures, ActionDescription Functions => computeUntyped() et computeTyped()
-* Sarsa - simplesequence => voir pourquoi ca plante
+* DoubleVector::createCompatibleVector
 
 LC++ library:
 =============

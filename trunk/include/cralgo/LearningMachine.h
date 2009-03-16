@@ -94,10 +94,12 @@ public:
 class GeneralizedClassifier : public LearningMachine_<GeneralizedClassificationExample>
 {
 public:
-  virtual size_t predict(const GeneralizedClassificationExample& example) = 0;
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
-  virtual DenseVectorPtr predictProbabilities(const std::vector<FeatureGeneratorPtr>& inputs) = 0;
-  virtual size_t sample(const std::vector<FeatureGeneratorPtr>& inputs) const = 0;
+
+  virtual size_t predict(const GeneralizedClassificationExample& example) const;
+  virtual DenseVectorPtr predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const;
+  virtual DenseVectorPtr predictProbabilities(const std::vector<FeatureGeneratorPtr>& inputs) const;
+  virtual size_t sample(const std::vector<FeatureGeneratorPtr>& inputs) const;
 };
 
 class Regressor : public LearningMachine_<RegressionExample>

@@ -17,20 +17,34 @@ namespace impl {
 
 template<class DecoratedType>
 struct ClassificationExampleCreatorPolicy
-  : public EpisodicDecoratorPolicy<ClassificationExampleCreatorPolicy<DecoratedType> , DecoratedType>
+  : public DecoratorPolicy<ClassificationExampleCreatorPolicy<DecoratedType> , DecoratedType>
 {
   typedef ClassificationExampleCreatorPolicy<DecoratedType> ExactType;
-  typedef EpisodicDecoratorPolicy<ExactType, DecoratedType> BaseClass;
+  typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   ClassificationExampleCreatorPolicy(const DecoratedType& explorationPolicy, ClassifierPtr classifier, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
-    : BaseClass(explorationPolicy), classifier(classifier), supervisor(supervisor) {}
+    : BaseClass(explorationPolicy), classifier(classifier), supervisor(supervisor), inclusionLevel(0) {}
     
   ClassifierPtr classifier;
   ActionValueFunctionPtr supervisor;
+  size_t inclusionLevel;
 
-  void episodeEnter(CRAlgorithmPtr crAlgo)
-    {classifier->trainStochasticBegin();}
-  
+  void policyEnter(CRAlgorithmPtr crAlgorithm)
+  {
+    if (inclusionLevel == 0)
+      classifier->trainStochasticBegin();
+    BaseClass::policyEnter(crAlgorithm);
+    ++inclusionLevel;
+  }
+    
+  void policyLeave()
+  {
+    BaseClass::policyLeave();
+    --inclusionLevel;
+    if (inclusionLevel == 0)
+      classifier->trainStochasticEnd();
+  }
+
   VariablePtr policyChoose(ChoosePtr choose)
   {
     // this policy can only be used with size_t choices
@@ -49,9 +63,6 @@ struct ClassificationExampleCreatorPolicy
           "This policy can only be used choices of type 'size_t'");
     return BaseClass::policyChoose(choose);
   }
-  
-  void episodeLeave()
-    {classifier->trainStochasticEnd();}
 };
 
 }; /* namespace impl */

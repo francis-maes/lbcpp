@@ -56,6 +56,8 @@ PolicyPtr Policy::createRankingExampleCreator(PolicyPtr explorationPolicy,
             dynamicToStatic(explorationPolicy), ranker, supervisor));
 }
 
+PolicyPtr Policy::createGPOMDP(GeneralizedClassifierPtr classifier, double beta, double exploration)
+  {return impl::staticToDynamic(impl::GPOMDPPolicy(classifier, beta, exploration));}
 
 PolicyPtr Policy::verbose(std::ostream& ostr, size_t verbosity) const
 {

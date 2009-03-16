@@ -31,6 +31,8 @@ public:
   static PolicyPtr createRankingExampleCreator(PolicyPtr explorationPolicy,
                         RankerPtr ranker,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
+                        
+  static PolicyPtr createGPOMDP(GeneralizedClassifierPtr classifier, double beta, double exploration = 1.0);
 
   PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
   PolicyPtr addComputeStatistics() const;

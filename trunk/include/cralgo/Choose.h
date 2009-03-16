@@ -49,7 +49,7 @@ public:
 
   FeatureGeneratorPtr computeStateFeatures() const;
   FeatureGeneratorPtr computeActionFeatures(VariablePtr choice) const;
-  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res) const = 0;
+  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res, bool transformIntoSparseVectors) const = 0;
     
   /*
   ** Composite functions

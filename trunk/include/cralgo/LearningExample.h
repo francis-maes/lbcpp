@@ -63,6 +63,15 @@ public:
 
   FeatureGeneratorPtr getInput() const
     {return alternatives;}
+    
+  size_t getOutput() const
+    {return output;}
+
+  size_t getNumAlternatives() const
+    {return alternatives->getNumFeatureGenerators();}
+    
+  FeatureGeneratorPtr getAlternative(size_t index) const
+    {return alternatives->getFeatureGenerator(index);}
   
 private:
   CompositeFeatureGeneratorPtr alternatives;

@@ -57,6 +57,22 @@ struct ClassifierProbabilitiesActionValue  : public ClassifierBasedActionValueFu
     {scores = classifier->predictProbabilities(choose->computeStateFeatures());}
 };
 
+struct GeneralizedClassifierScoresActionValue
+  : public ActionValueFunction<GeneralizedClassifierScoresActionValue>
+{
+  GeneralizedClassifierScoresActionValue(GeneralizedClassifierPtr classifier)
+    : classifier(classifier) {}
+    
+  GeneralizedClassifierPtr classifier;
+  ChoosePtr choose;
+    
+  void setChoose(ChoosePtr choose)
+    {this->choose = choose;}
+
+  double computeDynamicType(cralgo::VariablePtr variable) const
+    {return classifier->predictScore(choose->computeActionFeatures(variable));}
+};
+
 }; /* namespace impl */
 }; /* namespace cralgo */
 

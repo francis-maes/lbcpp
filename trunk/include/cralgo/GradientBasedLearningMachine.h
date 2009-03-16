@@ -86,9 +86,6 @@ protected:
 /*
 ** Regression
 */
-class GradientBasedRegressor;
-typedef ReferenceCountedObjectPtr<GradientBasedRegressor> GradientBasedRegressorPtr;
-
 class GradientBasedRegressor : public GradientBasedLearningMachine<Regressor, RegressionExample>
 {
 public:
@@ -106,9 +103,6 @@ public:
 /*
 ** Binary Classification
 */
-class GradientBasedBinaryClassifier;
-typedef ReferenceCountedObjectPtr<GradientBasedBinaryClassifier> GradientBasedBinaryClassifierPtr;
-
 class GradientBasedBinaryClassifier : public GradientBasedLearningMachine<BinaryClassifier, ClassificationExample>
 {
 public:
@@ -127,9 +121,6 @@ public:
 /*
 ** Classification
 */
-class GradientBasedClassifier;
-typedef ReferenceCountedObjectPtr<GradientBasedClassifier> GradientBasedClassifierPtr;
-
 class GradientBasedClassifier : public GradientBasedLearningMachine<Classifier, ClassificationExample>
 {
 public:
@@ -143,6 +134,24 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input)->toDenseVector();}
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const
     {return getPredictionArchitecture()->compute(parameters, input, output);}
+};
+
+/*
+** Generalized Classification
+*/
+class GradientBasedGeneralizedClassifier
+  : public GradientBasedLearningMachine<GeneralizedClassifier, GeneralizedClassificationExample>
+{
+public:
+  static GradientBasedGeneralizedClassifierPtr createLinear(GradientBasedLearnerPtr learner);
+
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
+  
+  virtual DenseVectorPtr createInitialParameters() const
+    {return getPredictionArchitecture()->createInitialParameters();}
+       
+  virtual double predictScore(const FeatureGeneratorPtr input) const
+    {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
 

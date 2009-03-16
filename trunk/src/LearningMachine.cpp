@@ -35,6 +35,32 @@ protected:
   const ExactType& _this() const  {return *(const ExactType* )this;}
 };
 
+
+template<class ExactType>
+class StaticToDynamicGradientBasedBinaryClassifier
+  : public StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedBinaryClassifier>
+{
+public:
+  typedef StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedBinaryClassifier> BaseClass;
+  
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const
+    {return impl::staticToDynamic(BaseClass::_this().architecture());}
+};
+
+
+template<class ExactType>
+class StaticToDynamicGradientBasedGeneralizedClassifier
+  : public StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedGeneralizedClassifier>
+{
+public:
+  typedef StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedGeneralizedClassifier> BaseClass;
+  
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const
+    {return impl::staticToDynamic(BaseClass::_this().baseArchitecture());}
+};
+
+
+
 template<class BaseClass, class ExampleType>
 class VerboseLearningMachine : public BaseClass
 {
@@ -241,13 +267,9 @@ size_t BinaryClassifier::sample(const FeatureGeneratorPtr input) const
   return Random::getInstance().sampleBool(prob1) ? 1 : 0;
 }
 
-class LogisticRegressionClassifier
-  : public StaticToDynamicGradientBasedLearningMachine<LogisticRegressionClassifier, GradientBasedBinaryClassifier>
+class LogisticRegressionClassifier : public StaticToDynamicGradientBasedBinaryClassifier<LogisticRegressionClassifier>
 {
 public:
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(architecture());}
-
   inline impl::LinearArchitecture architecture() const
     {return impl::linearArchitecture();}
 
@@ -267,8 +289,7 @@ GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRe
   return res;
 }
 
-class LinearSupportVectorMachine
-  : public StaticToDynamicGradientBasedLearningMachine<LinearSupportVectorMachine, GradientBasedBinaryClassifier>
+class LinearSupportVectorMachine : public StaticToDynamicGradientBasedBinaryClassifier<LinearSupportVectorMachine>
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const
@@ -289,6 +310,73 @@ GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(
   GradientBasedBinaryClassifierPtr res = new LinearSupportVectorMachine();
   res->setLearner(learner);
   res->setLabels(labels);
+  res->createParameters();
+  return res;
+}
+
+/*
+** Generalized classifier
+*/
+size_t GeneralizedClassifier::predict(const GeneralizedClassificationExample& example) const
+{
+  double bestScore = -DBL_MAX;
+  size_t res = (size_t)-1;
+  for (size_t i = 0; i < example.getNumAlternatives(); ++i)
+  {
+    double score = predictScore(example.getAlternative(i));
+    if (score > bestScore)
+      bestScore = score, res = i;
+  }
+  assert(res != (size_t)-1);
+  return res;
+}
+
+DenseVectorPtr GeneralizedClassifier::predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const
+{
+  DenseVectorPtr res = new DenseVector(inputs.size());
+  for (size_t i = 0; i < inputs.size(); ++i)
+    res->set(i, predictScore(inputs[i]));
+  return res;
+}
+
+DenseVectorPtr GeneralizedClassifier::predictProbabilities(const std::vector<FeatureGeneratorPtr>& inputs) const
+{
+  // default: Gibbs distribution, P[y|x] = exp(score(y)) / (sum_i exp(score(y_i)))
+  DenseVectorPtr scores = predictScores(inputs);
+  double logZ = scores->computeLogSumOfExponentials();
+  DenseVectorPtr res = scores->hasDictionary() ? new DenseVector(scores->getDictionary(), scores->getNumValues()) : new DenseVector(scores->getNumValues());
+  for (size_t i = 0; i < scores->getNumValues(); ++i)
+    res->set(i, exp(scores->get(i) - logZ));
+  return res;
+}
+
+size_t GeneralizedClassifier::sample(const std::vector<FeatureGeneratorPtr>& inputs) const
+{
+  DenseVectorPtr probs = predictProbabilities(inputs);
+  return Random::getInstance().sampleWithNormalizedProbabilities(probs->getValues());  
+}
+
+class LinearGeneralizedClassifier
+  : public StaticToDynamicGradientBasedGeneralizedClassifier<LinearGeneralizedClassifier>
+{
+public:
+  inline impl::LinearArchitecture baseArchitecture() const
+    {return impl::linearArchitecture();}
+  
+  inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
+    {return impl::parallelArchitecture(baseArchitecture());}
+
+  inline impl::MultiClassLogBinomialLoss<GeneralizedClassificationExample> loss() const
+    {return impl::multiClassLogBinomialLoss<GeneralizedClassificationExample>();}
+    
+  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
+};
+
+GradientBasedGeneralizedClassifierPtr GradientBasedGeneralizedClassifier::createLinear(GradientBasedLearnerPtr learner)
+{
+  GradientBasedGeneralizedClassifierPtr res = new LinearGeneralizedClassifier();
+  res->setLearner(learner);
   res->createParameters();
   return res;
 }

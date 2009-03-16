@@ -49,19 +49,16 @@ struct MonteCarloControlPolicy
     BaseClass::policyEnd(reward);
     assert(rewards.size() == actionFeatures.size());
     
-    //std::cout << "MC with " << rewards.size() << " steps." << std::endl;
     regressor->trainStochasticBegin();
     double R = 0.0;
     for (int i = rewards.size() - 1; i >= 0; --i)
     {
       R = R * discount + rewards[i];
-      //std::cout << R << " ";
-      DoubleVectorPtr features = actionFeatures[i];
+      SparseVectorPtr features = actionFeatures[i];
       double prediction = regressor->predict(features);
       predictionError->push(fabs(prediction - R));
       regressor->trainStochasticExample(RegressionExample(features, R));
     }
-    //std::cout << std::endl;
     regressor->trainStochasticEnd();
   }
   

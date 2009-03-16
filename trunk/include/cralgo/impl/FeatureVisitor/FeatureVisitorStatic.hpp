@@ -24,8 +24,10 @@ struct FeatureVisitor : public Object<ExactType>
     {return false;}
   void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
     {}
-  void featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator);
-  
+  void featureLeave()
+    {}
+    
+  void featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator);  
   void featureCall(cralgo::FeatureDictionary& dictionary, size_t number, cralgo::FeatureGeneratorPtr featureGenerator)
   {
     if (_this().featureEnter(dictionary, number))
@@ -34,9 +36,6 @@ struct FeatureVisitor : public Object<ExactType>
       _this().featureLeave();
     }
   }
-  
-  void featureLeave()
-    {}
 
   // conversion functions
   bool featureEnter_(cralgo::FeatureDictionary& dictionary, const std::string& scopeName)

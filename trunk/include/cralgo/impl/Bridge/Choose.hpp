@@ -78,9 +78,10 @@ public:
       variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
       res.push_back(f->compute(variable));
     }
+    variable->getUntypedPointer() = NULL;
   }
-  
-  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res) const
+
+  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res, bool transformIntoSparseVectors) const
   {
     ActionFeaturesFunctionPtr f = choose.getActionFeaturesFunction();
     assert(f); // todo: error message
@@ -95,10 +96,12 @@ public:
     for (; it != ContainerTraits::end(container); ++it)
     {
       variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
-      res.push_back(f->compute(variable));
+      FeatureGeneratorPtr fg = f->compute(variable);
+      res.push_back(transformIntoSparseVectors ? (FeatureGeneratorPtr)fg->toSparseVector() : fg);
     }
+    variable->getUntypedPointer() = NULL;
   }
-  
+
   /*
   ** Composites functions
   */

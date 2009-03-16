@@ -155,7 +155,7 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
     GradientBasedLearner::createGradientDescent(learningRate), labels);
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createClassifierScores(classifier));
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));
   
   PolicyPtr learnerPolicy =
     Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
@@ -178,7 +178,7 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
     GradientBasedLearner::createGradientDescent(learningRate));
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createRegressorPredictions(regressor));
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
   
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   

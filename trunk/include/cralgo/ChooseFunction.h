@@ -29,7 +29,7 @@ public:
 class StateValueFunction : public ChooseFunction
 {
 public:
-  static StateValueFunctionPtr createRegressorPredictions(RegressorPtr regressor);
+  static StateValueFunctionPtr createPredictions(RegressorPtr regressor);
 
   virtual double compute() const = 0;
 };
@@ -37,9 +37,10 @@ public:
 class ActionValueFunction : public ChooseFunction
 {
 public:
-  static ActionValueFunctionPtr createClassifierScores(ClassifierPtr classifier);
-  static ActionValueFunctionPtr createClassifierProbabilities(ClassifierPtr classifier);
-  static ActionValueFunctionPtr createRegressorPredictions(RegressorPtr regressor);
+  static ActionValueFunctionPtr createScores(ClassifierPtr classifier);
+  static ActionValueFunctionPtr createScores(GeneralizedClassifierPtr classifier);
+  static ActionValueFunctionPtr createProbabilities(ClassifierPtr classifier);
+  static ActionValueFunctionPtr createPredictions(RegressorPtr regressor);
 
   virtual double compute(VariablePtr choice) const = 0;
 };

@@ -16,9 +16,9 @@ namespace impl {
 
 template<class DecoratedType>
 struct VerbosePolicy
-  : public EpisodicDecoratorPolicy<VerbosePolicy<DecoratedType> , DecoratedType>
+  : public DecoratorPolicy<VerbosePolicy<DecoratedType> , DecoratedType>
 {
-  typedef EpisodicDecoratorPolicy<VerbosePolicy, DecoratedType> BaseClass;
+  typedef DecoratorPolicy<VerbosePolicy, DecoratedType> BaseClass;
   
   /*
   ** Verbosity
@@ -32,14 +32,6 @@ struct VerbosePolicy
   VerbosePolicy(const DecoratedType& decorated, std::ostream& ostr, size_t verbosity)
     : BaseClass(decorated), ostr(ostr), verbosity(verbosity)
   {
-  }
-  
-  void episodeEnter(CRAlgorithmPtr crAlgorithm)
-  {
-    stepNumber = 0;
-    episodeReward = 0.0;
-    if (verbosity >= 2)
-      ostr << "Episode begin: " << crAlgorithm->getName() << std::endl;
   }
   
   VariablePtr policyChoose(ChoosePtr choose)
@@ -68,17 +60,32 @@ struct VerbosePolicy
     BaseClass::policyReward(reward);
   }
   
-  void episodeLeave()
+  void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
-    if (verbosity == 0)
-      ostr << "." << std::flush;
-    else if (verbosity == 1)
-      ostr << " -> " << episodeReward << std::endl;
-    else if (verbosity >= 2)
+    if (verbosity >= 2)
+      ostr << "policyEnter(" << crAlgorithm->getName() << ")" << std::endl;
+    BaseClass::policyEnter(crAlgorithm);
+    ++inclusionLevel;
+  }
+    
+  void policyLeave()
+  {
+    if (verbosity >= 2)
+      ostr << "policyLeave()" << std::endl;
+    BaseClass::policyLeave();
+    --inclusionLevel;
+    if (inclusionLevel == 0)
     {
-      if (verbosity >= 3)
-        ostr << std::endl << "==================" << std::endl;
-      ostr << "Episode Reward: " << episodeReward << std::endl << std::endl;
+      if (verbosity == 0)
+        ostr << "." << std::flush;
+      else if (verbosity == 1)
+        ostr << " -> " << episodeReward << std::endl;
+      else if (verbosity >= 2)
+      {
+        if (verbosity >= 3)
+          ostr << std::endl << "==================" << std::endl;
+        ostr << "Episode Reward: " << episodeReward << std::endl << std::endl;
+      }
     }
   }
 

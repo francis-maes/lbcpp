@@ -190,6 +190,12 @@ public:
     static FeatureDictionary defaultCompositeDictionary("CompositeFeatureGenerator");
     return defaultCompositeDictionary;
   }
+  
+  size_t getNumFeatureGenerators() const
+    {return featureGenerators.size();}
+    
+  FeatureGeneratorPtr getFeatureGenerator(size_t index) const
+    {assert(index < featureGenerators.size()); return featureGenerators[index];}
 
 protected:
   std::vector<FeatureGeneratorPtr> featureGenerators;

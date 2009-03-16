@@ -65,12 +65,12 @@ inline ScalarArchitectureToParametersFunction<
 template<class ArchitectureType, class LossType, class ExampleType>
 inline ScalarArchitectureToParametersFunction<
     typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition >
-  exampleRisk(const VectorArchitecture<ArchitectureType>& architecture, const VectorLossFunction<LossType>& loss, const ExampleType& example)
+  exampleRisk(const VectorArchitecture<ArchitectureType>& architecture, const VectorLossFunction<LossType>& loss, const ExampleType& example, double weight = 0.0)
 {
   typedef typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition ComposedArchitecture;
   ComposedArchitecture arch = compose(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss));
   arch.right.setLearningExample(example);
-  return architectureToParametersFunction(arch, example.getInput(), example.getWeight());
+  return architectureToParametersFunction(arch, example.getInput(), weight ? weight : example.getWeight());
 }
 
 }; /* namespace impl */
