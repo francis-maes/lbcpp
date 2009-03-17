@@ -32,7 +32,7 @@ public:
   /*
   ** Policy running
   */
-  virtual void run(PolicyPtr policy) = 0; // run a policy from the initial state
+  virtual bool run(PolicyPtr policy) = 0; // run a policy from the initial state
   virtual void run(PolicyPtr policy, VariablePtr choice) = 0; // run a policy from the current state
     
   /*

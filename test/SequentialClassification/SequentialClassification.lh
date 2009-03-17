@@ -39,22 +39,38 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
       for (size_t i = 0; i < numClasses; ++i)
         choices.push_back(Choice(true, i));
     }
-      
-    stateFunction featureGenerator features(const Choice& choice)
+    
+    chooseFunction double actionValues(const Choice& choice)
     {
       if (choice.first)
       {
-        featureScope("decision")
-          featureCall(choice.second) currentRepresentation;
+        // decision: -1 for classification error
+        // 0 otherwise
+        return ycorrect && choice.second != *ycorrect ? -1 : 0;
       }
       else
       {
-        featureScope("feature-request")
-          featureCall(choice.second) currentRepresentation;
+        // feature-request: feature-cost
+          return -featureCosts;
       }
     }
     
-    Choice c = choose<Choice>(choices, features);
+    chooseFunction featureGenerator actionFeatures(const Choice& choice)
+    {
+      featureScope(step)
+        if (choice.first)
+        {
+          featureScope("decision")
+            featureCall(choice.second) currentRepresentation;
+        }
+        else
+        {
+          featureScope("feature-request")
+            featureCall(choice.second) currentRepresentation;
+        }
+    }
+    
+    Choice c = choose<Choice>(choices, actionValues, actionFeatures);
     
     if (c.first)
     {
@@ -66,8 +82,7 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
     {
       unusedFeatureGenerators.erase(c.second);
       currentRepresentation->setSubVector(c.second, featureGenerators[c.second]->toSparseVector());
-      if (step >= 2) // artifical data: the two first are not punished, so that optimal policies reaches 0 reward per episode
-        reward (-featureCosts);
+      reward (-featureCosts);
     }
   }
   return 0;

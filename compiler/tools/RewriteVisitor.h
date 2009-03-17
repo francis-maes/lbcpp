@@ -112,13 +112,13 @@ public:
   defaultListDefinition(ParenExpr);
   defaultListDefinition(FuncallExpr);
   
-    // stateFunction, featureScope, featureCall
+    // chooseFunction, featureScope, featureCall
   virtual void visit(PTree::UserStatement* node)
   {
-    CRAlgo::StateFundefStatement* stateFunction = dynamic_cast<CRAlgo::StateFundefStatement* >(node);
-    if (stateFunction)
+    CRAlgo::StateFundefStatement* chooseFunction = dynamic_cast<CRAlgo::StateFundefStatement* >(node);
+    if (chooseFunction)
     {
-      visitList(stateFunction);
+      visitList(chooseFunction);
       return;
     }
     CRAlgo::FeatureScopeStatement* featureScope = dynamic_cast<CRAlgo::FeatureScopeStatement* >(node);

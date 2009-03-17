@@ -19,11 +19,11 @@ namespace impl {
 ** Regression
 */
 template<class ExactType, class ScalarFunctionType, class LearningExampleType>
-struct RegressionLossFunction : public ScalarLossFunction<ExactType>
+struct RegressionLoss : public ScalarLossFunction<ExactType>
 {
-  RegressionLossFunction(const ScalarFunctionType& scalarFunction) 
+  RegressionLoss(const ScalarFunctionType& scalarFunction) 
     : scalarFunction(scalarFunction), correctValue(0.0) {}
-  RegressionLossFunction() : correctValue(0.0) {}
+  RegressionLoss() : correctValue(0.0) {}
   
   enum  {isDerivable = ScalarFunctionType::isDerivable};
   
@@ -46,11 +46,11 @@ private:
 ** Discriminant: binary classification and base losses for ranking
 */
 template<class ExactType, class ScalarFunctionType, class LearningExampleType>
-struct DiscriminantLossFunction : public ScalarLossFunction<ExactType>
+struct DiscriminantLoss : public ScalarLossFunction<ExactType>
 {
-  DiscriminantLossFunction(const ScalarFunctionType& scalarFunction) 
+  DiscriminantLoss(const ScalarFunctionType& scalarFunction) 
     : scalarFunction(scalarFunction), marginMultiplier(0.0) {}
-  DiscriminantLossFunction() : marginMultiplier(0.0) {}
+  DiscriminantLoss() : marginMultiplier(0.0) {}
   
   enum  {isDerivable = ScalarFunctionType::isDerivable};
   
@@ -73,11 +73,11 @@ private:
 ** Multi-class classification
 */
 template<class ExactType, class VectorFunctionType, class LearningExampleType>
-struct MultiClassLossFunction : public VectorLossFunction<ExactType>
+struct MulticlassLoss : public VectorLossFunction<ExactType>
 {
-  MultiClassLossFunction(const VectorFunctionType& vectorToScalarFunction)
+  MulticlassLoss(const VectorFunctionType& vectorToScalarFunction)
     : vectorToScalarFunction(vectorToScalarFunction) {}
-  MultiClassLossFunction() {}
+  MulticlassLoss() {}
     
   enum  {isDerivable = VectorFunctionType::isDerivable};
   
@@ -89,6 +89,43 @@ struct MultiClassLossFunction : public VectorLossFunction<ExactType>
 
 private:
   VectorFunctionType vectorToScalarFunction;
+};
+
+/*
+** Ranking
+*/
+template<class ExactType, class VectorFunctionType, class LearningExampleType>
+struct RankingLoss : public VectorLossFunction<ExactType>
+{
+  RankingLoss(const VectorFunctionType& vectorToScalarFunction)
+    : vectorToScalarFunction(vectorToScalarFunction) {}
+  RankingLoss() {}
+
+  enum  {isDerivable = VectorFunctionType::isDerivable};
+  
+  void setLearningExample(const LearningExampleType& example)
+    {vectorToScalarFunction.setCosts(example.getCosts());}
+
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+    {vectorToScalarFunction.compute(input, output, gradientDirection, gradient);}
+
+private:
+  VectorFunctionType vectorToScalarFunction;
+};
+
+template<class ExactType>
+struct RankingLossFunction : public ScalarVectorFunction<ExactType>
+{
+  RankingLossFunction() : costs(NULL) {}
+  
+  void setCosts(const std::vector<double>& costs)
+    {this->costs = &costs;}
+  
+  const std::vector<double>& getCosts() const
+    {assert(costs); return *costs;}
+  
+protected:
+  const std::vector<double>* costs;
 };
 
 /*
@@ -106,13 +143,24 @@ template<class LearningExampleType> \
 inline LossName <LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <LearningExampleType>(example);}
 
 #define STATIC_REGRESSION_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
-  STATIC_LOSS_FUNCTION(RegressionLossFunction, FunctionName, LossName, LossFunctionName)
+  STATIC_LOSS_FUNCTION(RegressionLoss, FunctionName, LossName, LossFunctionName)
 
 #define STATIC_DISCRIMINANT_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
-  STATIC_LOSS_FUNCTION(DiscriminantLossFunction, FunctionName, LossName, LossFunctionName)
+  STATIC_LOSS_FUNCTION(DiscriminantLoss, FunctionName, LossName, LossFunctionName)
 
 #define STATIC_MULTICLASS_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
-  STATIC_LOSS_FUNCTION(MultiClassLossFunction, FunctionName, LossName, LossFunctionName)
+  STATIC_LOSS_FUNCTION(MulticlassLoss, FunctionName, LossName, LossFunctionName)
+
+#define STATIC_RANKING_LOSS_FUNCTION(FunctionName, LossName, LossFunctionName) \
+template<class DiscriminantLoss, class LearningExampleType> \
+struct LossName : public RankingLoss< LossName <DiscriminantLoss, LearningExampleType> , LossFunctionName<DiscriminantLoss>, LearningExampleType> { \
+   typedef RankingLoss< LossName <DiscriminantLoss, LearningExampleType> , LossFunctionName<DiscriminantLoss>, LearningExampleType> BaseClassType; \
+   LossName(const LearningExampleType& learningExample) {BaseClassType::setLearningExample(learningExample);} \
+   LossName() {} }; \
+template<class DiscriminantLoss, class LearningExampleType> \
+inline LossName <DiscriminantLoss, LearningExampleType> FunctionName () {return LossName <DiscriminantLoss, LearningExampleType>();} \
+template<class DiscriminantLoss, class LearningExampleType> \
+inline LossName <DiscriminantLoss, LearningExampleType> FunctionName (const LearningExampleType& example) {return LossName <DiscriminantLoss, LearningExampleType>(example);}
 
 }; /* namespace impl */
 }; /* namespace cralgo */

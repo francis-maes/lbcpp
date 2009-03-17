@@ -106,6 +106,9 @@ public:
 
   FeatureGeneratorPtr getInput() const
     {return alternatives;}
+    
+  const std::vector<double>& getCosts() const
+    {return costs;}
   
 private:
   CompositeFeatureGeneratorPtr alternatives;

@@ -18,7 +18,7 @@ public:
   static const char* crAlgorithmCall;
   static const char* choose;
   static const char* reward;
-  static const char* stateFunction;
+  static const char* chooseFunction;
   static const char* featureGenerator;
   static const char* featureGeneratorCall;
   static const char* featureScope;

@@ -30,6 +30,12 @@ class StateValueFunction : public ChooseFunction
 {
 public:
   static StateValueFunctionPtr createPredictions(RegressorPtr regressor);
+  static StateValueFunctionPtr createPredictions(GradientBasedRegressorPtr regressor)
+    {return createPredictions(RegressorPtr(regressor));}
+    
+  static StateValueFunctionPtr createPredictions(RankerPtr ranker);
+  static StateValueFunctionPtr createPredictions(GradientBasedRankerPtr ranker)
+    {return createPredictions(RankerPtr(ranker));}
 
   virtual double compute() const = 0;
 };
@@ -37,10 +43,20 @@ public:
 class ActionValueFunction : public ChooseFunction
 {
 public:
+  static ActionValueFunctionPtr createProbabilities(ClassifierPtr classifier);
   static ActionValueFunctionPtr createScores(ClassifierPtr classifier);
   static ActionValueFunctionPtr createScores(GeneralizedClassifierPtr classifier);
-  static ActionValueFunctionPtr createProbabilities(ClassifierPtr classifier);
+  static ActionValueFunctionPtr createPredictions(RankerPtr ranker);    
   static ActionValueFunctionPtr createPredictions(RegressorPtr regressor);
+
+  static ActionValueFunctionPtr createScores(GradientBasedClassifierPtr classifier)
+    {return createScores(ClassifierPtr(classifier));}
+  static ActionValueFunctionPtr createScores(GradientBasedGeneralizedClassifierPtr classifier)
+    {return createScores(GeneralizedClassifierPtr(classifier));}
+  static ActionValueFunctionPtr createPredictions(GradientBasedRankerPtr ranker)
+    {return createPredictions(RankerPtr(ranker));}
+  static ActionValueFunctionPtr createPredictions(GradientBasedRegressorPtr regressor)
+    {return createPredictions(RegressorPtr(regressor));}
 
   virtual double compute(VariablePtr choice) const = 0;
 };

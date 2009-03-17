@@ -77,6 +77,9 @@ public:
   
 protected:
   template<class T>
+  friend struct ObjectTraits;
+
+  template<class T>
   static ReferenceCountedObjectPtr<T> checkCast(const std::string& where, ObjectPtr object)
   {
     ReferenceCountedObjectPtr<T> res;
@@ -109,6 +112,18 @@ public:
     {assert(value); value->saveToStream(ostr);}
   static inline bool read(std::istream& istr, ReferenceCountedObjectPtr<T>& result)
     {result = Object::loadFromStreamCast<T>(istr); return result;}
+};
+
+template<class T>
+struct ObjectTraits
+{
+public:
+  static inline std::string toString(const T& value)
+    {return value.toString();}
+  static inline void write(std::ostream& ostr, const T& value)
+    {value.save(ostr);}
+  static inline bool read(std::istream& istr, T& result)
+    {return result.load(istr);}
 };
 
 template<>

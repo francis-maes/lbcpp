@@ -28,13 +28,13 @@ public:
   virtual void visitFeatureGenerator(PTree::FunctionDefinition* node) {}
   virtual void visitCRAlgorithm(PTree::FunctionDefinition* node) {}
 
-  // stateFunction, featureScope, featureCall
+  // chooseFunction, featureScope, featureCall
   virtual void visit(PTree::UserStatement* node)
   {
-    CRAlgo::StateFundefStatement* stateFunction = dynamic_cast<CRAlgo::StateFundefStatement* >(node);
-    if (stateFunction)
+    CRAlgo::StateFundefStatement* chooseFunction = dynamic_cast<CRAlgo::StateFundefStatement* >(node);
+    if (chooseFunction)
     {
-      visitStateFunction(stateFunction);
+      visitStateFunction(chooseFunction);
       return;
     }
     CRAlgo::FeatureScopeStatement* featureScope = dynamic_cast<CRAlgo::FeatureScopeStatement* >(node);
@@ -250,13 +250,13 @@ protected:
   }
   
 protected:
-  // stateFunction, featureScope, featureCall
+  // chooseFunction, featureScope, featureCall
   virtual void visit(PTree::UserStatement* node)
   {
-    CRAlgo::StateFundefStatement* stateFunction = dynamic_cast<CRAlgo::StateFundefStatement* >(node);
-    if (stateFunction)
+    CRAlgo::StateFundefStatement* chooseFunction = dynamic_cast<CRAlgo::StateFundefStatement* >(node);
+    if (chooseFunction)
     {
-      visitStateFunction(stateFunction);
+      visitStateFunction(chooseFunction);
       return;
     }
     CRAlgo::FeatureScopeStatement* featureScope = dynamic_cast<CRAlgo::FeatureScopeStatement* >(node);

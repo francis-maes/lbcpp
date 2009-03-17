@@ -14,11 +14,17 @@ using namespace cralgo;
 StateValueFunctionPtr StateValueFunction::createPredictions(RegressorPtr regressor)
   {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
 
+StateValueFunctionPtr StateValueFunction::createPredictions(RankerPtr ranker)
+  {return impl::staticToDynamic(impl::RankerStateValueFunction(ranker));}
+
 ActionValueFunctionPtr ActionValueFunction::createScores(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierScoresActionValue(classifier));}
 
 ActionValueFunctionPtr ActionValueFunction::createScores(GeneralizedClassifierPtr classifier)
   {return impl::staticToDynamic(impl::GeneralizedClassifierScoresActionValue(classifier));}
+
+ActionValueFunctionPtr ActionValueFunction::createPredictions(RankerPtr ranker)
+  {return impl::staticToDynamic(impl::RankerActionValueFunction(ranker));}
 
 ActionValueFunctionPtr ActionValueFunction::createProbabilities(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierProbabilitiesActionValue(classifier));}

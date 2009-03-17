@@ -128,7 +128,7 @@ void CRAlgorithmScopeGenerator::prepare(CRAlgorithmVariableTranslator& translato
     SymbolLookup::UserScope* userScope = dynamic_cast<SymbolLookup::UserScope* >(it->second);
     if (userScope)
     {
-      if (*PTree::first(it->first) == CRAlgoToken::stateFunction)
+      if (*PTree::first(it->first) == CRAlgoToken::chooseFunction)
       {
         CRAlgo::StateFundefStatement* fundef = dynamic_cast<CRAlgo::StateFundefStatement* >(const_cast<PTree::Node* >(it->first));
         assert(fundef);

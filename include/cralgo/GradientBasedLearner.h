@@ -10,6 +10,7 @@
 # define CRALGO_GRADIENT_BASED_LEARNER_H_
 
 # include "ContinuousFunction.h"
+# include "IterationFunction.h"
 
 namespace cralgo
 {

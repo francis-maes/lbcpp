@@ -24,7 +24,6 @@ SparseVector::SparseVector(FeatureDictionary& dictionary)
 
 SparseVector::SparseVector()
 {
-  dictionary = NULL;
 }
 
 void SparseVector::clear()
@@ -32,6 +31,12 @@ void SparseVector::clear()
   values.clear();
   subVectors.clear();
   dictionary = NULL;
+}
+
+FeatureDictionary& SparseVector::getDefaultDictionary() const
+{
+  static FeatureDictionary defaultDictionary("SparseVector");
+  return dictionary ? *dictionary : defaultDictionary;
 }
 
 SparseVector& SparseVector::operator =(const SparseVector& otherVector)

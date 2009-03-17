@@ -54,12 +54,25 @@ public:
     while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
   }
     
-  virtual void run(PolicyPtr policy)
+  virtual bool run(PolicyPtr policy)
   {
     // todo: inlined version
     assert(BaseClassType::getImplementation().__state__ == -1); // in order to run a policy from a non-initial state, use run(policy, choice)
     PolicyToStaticCallback staticCallback(policy, CRAlgorithmPtr(this));
-    while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
+    if (stepImpl(staticCallback, VariablePtr()))
+      return true;
+    while (true)
+    {
+      VariablePtr choice = staticCallback.getLastChoice();
+      if (!choice)
+      {
+        Object::error("CRAlgorithm::run", "No choices made");
+        exit(1); // FIXME: gerer l'appel du run() dans la code genere 
+        return false;
+      }
+      if (stepImpl(staticCallback, choice))
+        return true;
+    }
   }
 
   virtual bool step(Callback& callback, VariablePtr choice)

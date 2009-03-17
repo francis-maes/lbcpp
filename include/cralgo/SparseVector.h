@@ -64,7 +64,7 @@ public:
   void multiplyByScalar(double scalar);
 
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
-    {featureGenerator->addWeightedTo(SparseVectorPtr(this), weight);}
+    {featureGenerator->addWeightedTo(SparseVectorPtr(this), weight, dictionary);}
 
   /*
   ** Static FeatureGenerator
@@ -78,8 +78,7 @@ public:
   virtual std::string getName() const
     {return "SparseVector";}
     
-  virtual FeatureDictionary& getDefaultDictionary() const
-    {static FeatureDictionary defaultDictionary("SparseVector"); return dictionary ? *dictionary : defaultDictionary;}
+  virtual FeatureDictionary& getDefaultDictionary() const;
 
   virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary)
     {/* todo: check dictionary */ return SparseVectorPtr(this);}

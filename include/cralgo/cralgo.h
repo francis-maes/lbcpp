@@ -22,6 +22,7 @@
 # include "DenseVector.h"
 # include "LearningExample.h"
 # include "ContinuousFunction.h"
+# include "IterationFunction.h"
 # include "LearningMachine.h"
 # include "GradientBasedLearningMachine.h"
 

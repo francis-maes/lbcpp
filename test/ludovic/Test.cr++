@@ -11,12 +11,12 @@ crAlgorithm int toto()
  
   int t2;
   
-	stateFunction featureGenerator stateFeatures()
+	chooseFunction featureGenerator stateFeatures()
 	{
 	  // ...
 	}
 
- 	stateFunction featureGenerator choiceFeatures(int choice)
+ 	chooseFunction featureGenerator choiceFeatures(int choice)
  	{
  		featureSense ((size_t)choice);
  	}
