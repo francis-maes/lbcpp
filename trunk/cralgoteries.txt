@@ -1,4 +1,5 @@
 * DoubleVector::createCompatibleVector
+* VerbosePolicy: 0 nothing, puis commencer a 1
 
 LC++ library:
 =============

@@ -64,7 +64,12 @@ public:
   virtual void computeActionValues(std::vector<double>& res) const
   {
     ActionValueFunctionPtr f = choose.getActionValueFunction();
-    assert(f); // todo: error message
+    if (!f)
+    {
+      res.clear();
+      Object::error("Choose::computeActionValues", "No action values in this choose");
+      return;
+    }
     f->setChoose(getReferenceCountedPointer());
     StaticToDynamicVariable< ChoiceType > v;
     ReferenceObjectScope _(v);

@@ -73,7 +73,7 @@ private:
   PTree::Node* parentStatementOrDeclaration;
   size_t number;
   
-  std::vector<std::pair<PTree::Node*, CRAlgo::StateFundefStatement* > > stateFunctions; // (argument, stateFunction definition) pairs
+  std::vector<std::pair<PTree::Node*, CRAlgo::StateFundefStatement* > > stateFunctions; // (argument, chooseFunction definition) pairs
   PTree::Node* choiceNode;
   
   static CRAlgo::StateFundefStatement*

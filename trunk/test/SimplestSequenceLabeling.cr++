@@ -47,13 +47,13 @@ crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<Featu
   
   for (size_t i = 0; i < x.size(); ++i)
   {
-    stateFunction featureGenerator stateFeatures() {
+    chooseFunction featureGenerator stateFeatures() {
       featureCall(0) x[i];
       if (i > 0)
         featureScope(1) featureSense(res[i - 1]);
     }
     
-    stateFunction featureGenerator actionFeatures(size_t label) {
+    chooseFunction featureGenerator actionFeatures(size_t label) {
       featureScope(label) {
         featureCall(0) x[i];
         if (i > 0)
@@ -61,7 +61,7 @@ crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<Featu
       }
     }
     
-    stateFunction double actionValues(size_t label) {
+    chooseFunction double actionValues(size_t label) {
       return y && (*y)[i] == label;
     }
 
@@ -163,10 +163,28 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
   std::cout << "RANDOM: " << std::endl;
   runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels.getNumFeatures());
   
-  for (size_t i = 0; i < 100; ++i)
+  for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
     runPolicy(learnerPolicy, learningExamples, labels.getNumFeatures());
+  }
+}
+
+void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDictionary& labels)
+{
+  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 1000);
+
+  RankerPtr ranker = GradientBasedRanker::createLargeMarginAllPairsLinear(
+    GradientBasedLearner::createGradientDescent(learningRate));
+  
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
+  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+
+  for (size_t i = 0; i < 15; ++i)
+  {
+    std::cout << "ITERATION: " << (i+1) << std::endl;
+    runPolicy(learnerPolicy->verbose(std::cout, 0)->addComputeStatistics(), learningExamples, labels.getNumFeatures());
+ //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
 
@@ -191,9 +209,8 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
     runPolicy(learnerPolicy->verbose(std::cout, 0), learningExamples, labels.getNumFeatures());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
-  
-
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -227,7 +244,11 @@ int main(int argc, char* argv[])
   std::cout << "State description: " << choose->stateFeatures()->toString() << std::endl;
   std::cout << "First action description: " << choose->actionFeatures(choose->newIterator()->get())->toString() << std::endl;*/
   
-  testSarsa(learningExamples, labels);
+  //std::cout << " === SARSA === " << std::endl;
+  //testSarsa(learningExamples, labels);
+  //std::cout << " === CLASSIFIER === " << std::endl;
   //testClassifier(learningExamples, labels);
+  std::cout << " === RANKING === " << std::endl;
+  testCRank(learningExamples, labels);
   return 0;
 }

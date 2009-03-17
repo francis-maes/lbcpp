@@ -30,7 +30,7 @@ struct VerbosePolicy
   // 4: ActionSet descriptions
     
   VerbosePolicy(const DecoratedType& decorated, std::ostream& ostr, size_t verbosity)
-    : BaseClass(decorated), ostr(ostr), verbosity(verbosity)
+    : BaseClass(decorated), ostr(ostr), verbosity(verbosity), inclusionLevel(0), stepNumber(0)
   {
   }
   
@@ -65,6 +65,7 @@ struct VerbosePolicy
     if (verbosity >= 2)
       ostr << "policyEnter(" << crAlgorithm->getName() << ")" << std::endl;
     BaseClass::policyEnter(crAlgorithm);
+    stepNumber = 0;
     ++inclusionLevel;
   }
     

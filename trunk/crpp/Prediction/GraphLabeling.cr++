@@ -11,16 +11,16 @@ crAlgorithm LabelSequence indexOrderedGraphLabeling(const ContentGraph& x, const
   LabeledContentGraph prediction(x, LabelSequence(labels, x.getNumNodes()));
   size_t currentNode;
   
-  stateFunction featureGenerator features(size_t choice)
+  chooseFunction featureGenerator features(size_t choice)
   {
     featureCall(labels.getLabel(choice))
       prediction.nodeFeatures(currentNode, contextSize, contextSize, false);
   }
   
-  stateFunction double optimal(size_t choice)
+  chooseFunction double optimal(size_t choice)
     {return (ycorrect && choice == (*ycorrect)[currentNode]) ? 1.0 : 0.0;}
 
-  stateFunction std::string choiceToString(size_t choice)
+  chooseFunction std::string choiceToString(size_t choice)
     {return labels.getLabel(choice);}
 
   for (currentNode = 0; currentNode < x.getNumNodes(); ++currentNode)

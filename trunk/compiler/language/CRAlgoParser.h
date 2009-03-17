@@ -26,7 +26,7 @@ protected:
   bool crAlgorithmCall(PTree::Node*& st);
   bool featureCall(PTree::Node*& st);
   bool choose(PTree::Node*& st);
-  bool stateFunction(PTree::Node*& st);
+  bool chooseFunction(PTree::Node*& st);
   bool featureScope(PTree::Node*& st);
 };
 

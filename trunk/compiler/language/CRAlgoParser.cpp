@@ -18,7 +18,7 @@ const char* CRAlgoToken::crAlgorithm = "crAlgorithm";
 const char* CRAlgoToken::crAlgorithmCall = "crAlgorithmCall";
 const char* CRAlgoToken::choose = "choose";
 const char* CRAlgoToken::reward = "reward";
-const char* CRAlgoToken::stateFunction = "stateFunction";
+const char* CRAlgoToken::chooseFunction = "chooseFunction";
 const char* CRAlgoToken::featureGenerator = "featureGenerator";
 const char* CRAlgoToken::featureGeneratorCall = "featureCall";
 const char* CRAlgoToken::featureScope = "featureScope";
@@ -30,7 +30,7 @@ CRAlgoLexer::CRAlgoLexer(Buffer* buffer, int tokenset)
   my_keywords[CRAlgoToken::crAlgorithmCall] = CRAlgoToken::CR_ALGORITHM_CALL;
 //  my_keywords[CRAlgoToken::choose] = CRAlgoToken::CHOOSE;
 //  my_keywords[CRAlgoToken::reward] = CRAlgoToken::REWARD;
-  my_keywords[CRAlgoToken::stateFunction] = CRAlgoToken::STATE_FUNCTION;
+  my_keywords[CRAlgoToken::chooseFunction] = CRAlgoToken::STATE_FUNCTION;
   my_keywords[CRAlgoToken::featureGeneratorCall] = CRAlgoToken::FEATURE_GENERATOR_CALL;
   my_keywords[CRAlgoToken::featureScope] = CRAlgoToken::FEATURE_SCOPE;
 }
@@ -135,7 +135,7 @@ bool CRAlgoParser::parse_user_statement(PTree::Node*& st)
   Token tk;
   int k = my_lexer.look_ahead(0, tk);
   if (k == CRAlgoToken::STATE_FUNCTION)
-    return stateFunction(st);
+    return chooseFunction(st);
   if (k == CRAlgoToken::FEATURE_SCOPE)
     return featureScope(st);
   if (k == CRAlgoToken::FEATURE_GENERATOR_CALL)
@@ -200,11 +200,11 @@ bool CRAlgoParser::choose(PTree::Node*& st)
   return true;
 }
 
-// stateFunction [returnType] [identifier] ( [arguments-list] ) 
+// chooseFunction [returnType] [identifier] ( [arguments-list] ) 
 //    [body]
-bool CRAlgoParser::stateFunction(PTree::Node*& st)
+bool CRAlgoParser::chooseFunction(PTree::Node*& st)
 {
-  Trace trace("CRAlgoParser::stateFunction", Trace::PARSING);
+  Trace trace("CRAlgoParser::chooseFunction", Trace::PARSING);
   Token tk1, tk2, tk3, tk4;
   PTree::Node* returnType;
   PTree::Node* arguments;

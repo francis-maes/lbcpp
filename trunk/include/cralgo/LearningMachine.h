@@ -115,7 +115,10 @@ public:
 class Ranker : public LearningMachine_<RankingExample>
 {
 public:
-  virtual double predict(const FeatureGeneratorPtr input) const = 0;
+  virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
+  
+  virtual size_t predict(const std::vector<FeatureGeneratorPtr>& inputs) const;
+  virtual DenseVectorPtr predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const;
 };
 
 

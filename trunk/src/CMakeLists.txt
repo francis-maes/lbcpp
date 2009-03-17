@@ -19,9 +19,10 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/LazyVector.h
   ../include/cralgo/LearningExample.h
   ../include/cralgo/LearningMachine.h
+  ../include/cralgo/ContinuousFunction.h
+  ../include/cralgo/IterationFunction.h
   ../include/cralgo/GradientBasedLearner.h
   ../include/cralgo/GradientBasedLearningMachine.h
-  ../include/cralgo/ContinuousFunction.h
   ../include/cralgo/ChooseFunction.h
   ../include/cralgo/Variable.h
   ../include/cralgo/Choose.h
@@ -66,6 +67,9 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
   ${CRALGO_IMPL}/ContinuousFunction/LogBinomialLossFunction.hpp
   ${CRALGO_IMPL}/ContinuousFunction/ExponentialLossFunction.hpp
   ${CRALGO_IMPL}/ContinuousFunction/MulticlassLogBinomialLossFunction.hpp
+  ${CRALGO_IMPL}/ContinuousFunction/AllPairsLossFunction.hpp
+  ${CRALGO_IMPL}/ContinuousFunction/MostViolatedPairLossFunction.hpp
+  ${CRALGO_IMPL}/ContinuousFunction/BestAgainstAllLossFunction.hpp
 
   ${CRALGO_IMPL}/ContinuousFunction/ExampleRiskFunction.hpp
   ${CRALGO_IMPL}/ContinuousFunction/EmpiricalRiskFunction.hpp
@@ -125,6 +129,7 @@ SET(CRALGO_LIBRARY_SOURCES
   LearningExample.cpp
   LearningMachine.cpp
   GradientBasedLearner.cpp
+  GradientBasedLearningMachine.cpp
   Choose.cpp
   Policy.cpp
 )

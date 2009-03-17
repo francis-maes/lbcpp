@@ -283,11 +283,11 @@ crAlgorithm bool searchSpace(std::vector<int> numbers, int target, int featureVe
     /*
     ** Choose and apply operation
     */
-    stateFunction double greedyHeuristic(const Operation& op) {
+    chooseFunction double greedyHeuristic(const Operation& op) {
       return -1.0 * abs(target - expressions.compute(op));
     }
     
-    stateFunction featureGenerator actionFeatures(const Operation& op) {
+    chooseFunction featureGenerator actionFeatures(const Operation& op) {
       int left = expressions.getValue(op.leftIndex);
       int right = expressions.getValue(op.rightIndex);
       int value = expressions.compute(op);
@@ -303,7 +303,7 @@ crAlgorithm bool searchSpace(std::vector<int> numbers, int target, int featureVe
       }
     }
     
-    stateFunction std::string operationToString(const Operation& op) {
+    chooseFunction std::string operationToString(const Operation& op) {
       return cralgo::toString(expressions.getExpression(op.leftIndex)) + " " + 
         Operation::getChar(op.operation) + " " + 
         cralgo::toString(expressions.getExpression(op.rightIndex));

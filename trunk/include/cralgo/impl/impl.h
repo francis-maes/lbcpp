@@ -12,17 +12,23 @@
 # include "ContinuousFunction/FunctionStaticToDynamic.hpp"
 # include "ContinuousFunction/ScalarFunctions.hpp"
 # include "ContinuousFunction/ScalarVectorFunctions.hpp"
+
 # include "ContinuousFunction/PerceptronLossFunction.hpp"
 # include "ContinuousFunction/HingeLossFunction.hpp"
 # include "ContinuousFunction/LogBinomialLossFunction.hpp"
 # include "ContinuousFunction/ExponentialLossFunction.hpp"
 # include "ContinuousFunction/MulticlassLogBinomialLossFunction.hpp"
+# include "ContinuousFunction/AllPairsLossFunction.hpp"
+# include "ContinuousFunction/MostViolatedPairLossFunction.hpp"
+# include "ContinuousFunction/BestAgainstAllLossFunction.hpp"
+
+# include "ContinuousFunction/EmpiricalRiskFunction.hpp"
+# include "ContinuousFunction/ExampleRiskFunction.hpp"
+
 # include "ContinuousFunction/LinearArchitecture.hpp"
 # include "ContinuousFunction/MultiLinearArchitecture.hpp"
 # include "ContinuousFunction/BiasArchitecture.hpp"
 # include "ContinuousFunction/TransferArchitecture.hpp"
-# include "ContinuousFunction/EmpiricalRiskFunction.hpp"
-# include "ContinuousFunction/ExampleRiskFunction.hpp"
 # include "ContinuousFunction/ScalarToVectorArchitecture.hpp"
 
 # include "ChooseFunction/ChooseFunctionStaticToDynamic.hpp"

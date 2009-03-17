@@ -155,6 +155,25 @@ public:
 };
 
 
+/*
+** Ranker
+*/
+class GradientBasedRanker
+  : public GradientBasedLearningMachine<Ranker, RankingExample>
+{
+public:
+  static GradientBasedRankerPtr createLargeMarginAllPairsLinear(GradientBasedLearnerPtr learner);
+  static GradientBasedRankerPtr createLargeMarginBestAgainstAllLinear(GradientBasedLearnerPtr learner);
+
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
+  
+  virtual DenseVectorPtr createInitialParameters() const
+    {return getPredictionArchitecture()->createInitialParameters();}
+       
+  virtual double predictScore(const FeatureGeneratorPtr input) const
+    {return getPredictionArchitecture()->compute(parameters, input);}
+};
+
 }; /* namespace cralgo */
 
 #endif // !CRALGO_GRADIENT_BASED_LEARNING_MACHINE_H_

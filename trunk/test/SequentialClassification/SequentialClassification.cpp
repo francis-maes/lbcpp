@@ -93,11 +93,16 @@ void testClassifier(const std::vector<ClassificationExample>& train, const std::
     double acc = classifier->evaluateAccuracy(test);
     std::cout << "ITERATION " << i+1 << " accuracy = " << acc << std::endl;
   }
+  DenseVectorPtr parameters = classifier->getParameters();
+  std::cout << "Params: size = " << parameters->size() << " l2norm = " << parameters->l2norm() << " l1norm = " << parameters->l1norm() << std::endl;
+  std::cout << "TRAIN SCORE = " << classifier->evaluateAccuracy(train) << std::endl;
+  std::cout << "TEST SCORE = " << classifier->evaluateAccuracy(test) << std::endl;
 }
 
-void trainAndTest(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses, PolicyPtr learnedPolicy, PolicyPtr learnerPolicy)
+void trainAndTest(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses,
+      PolicyPtr learnedPolicy, PolicyPtr learnerPolicy, DenseVectorPtr parameters = DenseVectorPtr(), PolicyPtr learnerPolicy2 = PolicyPtr())
 {
-  for (size_t iteration = 0; iteration < 500; ++iteration)
+  for (size_t iteration = 0; iteration < 100; ++iteration)
   {
     PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(std::cout, 4);
     for (size_t i = 0; i < train.size(); ++i)
@@ -108,10 +113,10 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
       
       std::vector<FeatureGeneratorPtr> x;
 //      x.push_back(input);
-      for (size_t i = 0; i < input->getNumSubVectors(); ++i)
-        x.push_back(input->getSubVector(i));
+      for (size_t j = 0; j < input->getNumSubVectors(); ++j)
+        x.push_back(input->getSubVector(j));
       size_t y = ex.getOutput();
-      sequentialClassification(policy, x, 0.1, numClasses, &y);
+      sequentialClassification(((i % 2) && learnerPolicy2) ? learnerPolicy2 : policy, x, 0.1, numClasses, &y);
     }
     
     size_t correct = 0;
@@ -132,6 +137,8 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
     }
     std::cout << "EVALUATION: " << correct << " / 1000" << std::endl << std::endl;
     std::cout << "END OF ITERATION " << iteration+1 << ": " << policy->toString() << std::endl;
+    if (parameters)
+      std::cout << "Params: size = " << parameters->size() << " l2norm = " << parameters->l2norm() << " l1norm = " << parameters->l1norm() << std::endl;
   }
 }
 
@@ -165,10 +172,29 @@ void testOLPOMDP(const std::vector<ClassificationExample>& train, const std::vec
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
 }
 
+void testCRank(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
+{
+  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 10000);
+  IterationFunctionPtr learningRate2 = IterationFunction::createInvLinear(0.01, 10000);
+
+  GradientBasedRankerPtr ranker = GradientBasedRanker::createLargeMarginBestAgainstAllLinear(
+    GradientBasedLearner::createGradientDescent(learningRate));
+  
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
+  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+
+  GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
+    GradientBasedLearner::createGradientDescent(learningRate2));  
+  classifier->setParameters(ranker->getParameters());
+  PolicyPtr learnerPolicy2 = Policy::createGPOMDP(classifier, 0.8, 1.1);
+
+  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(std::cout, 2)*/, ranker->getParameters(), learnerPolicy2);
+}
+
 int main(int argc, char* argv[])
 {
-  static const size_t numFeaturesToDecideFold = 4;
-  static const size_t numFolds = 4;
+  static const size_t numFeaturesToDecideFold = 2;
+  static const size_t numFolds = 2;
   static const size_t numClasses = 2;
   static const size_t numFeatures = 2;
   SyntheticDataGenerator generator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
@@ -183,7 +209,8 @@ int main(int argc, char* argv[])
     test[i] = generator.sample();
   testClassifier(train, test, numClasses);  
   
-  testOLPOMDP(train, test, numClasses);
-  
+  //testOLPOMDP(train, test, numClasses);
+  testCRank(train, test, numClasses);
+
   return 0;
 }

@@ -22,28 +22,28 @@ crAlgorithm void identity(CRAlgorithmPtr crAlgorithm)
     if (!nextChoose)
       return;
       
-    stateFunction std::string stateDescription()
+    chooseFunction std::string stateDescription()
       {return nextChoose->stateToString(currentState);}
 
-    stateFunction std::string actionDescription(const void* choice)
+    chooseFunction std::string actionDescription(const void* choice)
       {return nextChoose->choiceToString(currentState, choice);}
       
-    stateFunction featureGenerator stateFeatures()
+    chooseFunction featureGenerator stateFeatures()
     {
       FeatureGeneratorPtr c = nextChoose->getCompositeStateFeatures();
       featureCall c;
     }
     
-    stateFunction featureGenerator actionFeatures(const void* choice)
+    chooseFunction featureGenerator actionFeatures(const void* choice)
     {
       FeatureGeneratorPtr c = nextChoose->getCompositeActionFeatures(choice);
       featureCall c;
     }
     
-    stateFunction double stateValue()
+    chooseFunction double stateValue()
       {return nextChoose->stateValue(currentState);}
 
-    stateFunction double actionValue(const void* choice)
+    chooseFunction double actionValue(const void* choice)
       {return nextChoose->computeActionValue(currentState, choice);}
     
     lastChoice = choose<const void* >(ChooseChoices(nextChoose), stateDescription, actionDescription, stateFeatures, actionFeatures);

@@ -50,8 +50,11 @@ struct RankingExampleCreatorPolicy
     std::vector<FeatureGeneratorPtr> alternatives;
     choose->computeActionFeatures(alternatives, false);
 
+    // FIXME: se servir du supervisor, si il existe
     std::vector<double> costs;
     choose->computeActionValues(costs);
+    if (!costs.size())
+      return VariablePtr();
     
     // transform action values into (regret) costs
     double bestValue = -DBL_MAX;

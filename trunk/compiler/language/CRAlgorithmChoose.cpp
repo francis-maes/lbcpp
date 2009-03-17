@@ -20,9 +20,9 @@ CRAlgorithmChoose::CRAlgorithmChoose(CRAlgo::ChooseExpression* node, SymbolLooku
   {
     PTree::Node* argument = arguments[i];
     std::string id = PTree::reify(argument);
-    CRAlgo::StateFundefStatement* stateFunction = findStateFunctionRecursively(id, scope);
-    if (stateFunction)
-      stateFunctions.push_back(std::make_pair(argument, stateFunction));
+    CRAlgo::StateFundefStatement* chooseFunction = findStateFunctionRecursively(id, scope);
+    if (chooseFunction)
+      stateFunctions.push_back(std::make_pair(argument, chooseFunction));
     else
     {
       if (choicesAlreadyDeclared)

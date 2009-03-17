@@ -16,7 +16,7 @@ crAlgorithm LabelSequence leftRightLabeling(const ContentSequence& x, const Labe
 {
   LabelSequence res(labels, x.size());
 
-  stateFunction featureGenerator features(size_t choice)
+  chooseFunction featureGenerator features(size_t choice)
   {
     featureScope (labels.getLabel(choice)) {
       featureCall x.contentFeatures(i);
@@ -24,12 +24,12 @@ crAlgorithm LabelSequence leftRightLabeling(const ContentSequence& x, const Labe
     }
   }
   
-  stateFunction double optimal(size_t choice)
+  chooseFunction double optimal(size_t choice)
     {return (ycorrect && choice == (*ycorrect)[i]) ? 1.0 : 0.0;}
   
-  stateFunction double random(size_t choice) {return Random::getInstance().sampleDouble();}
+  chooseFunction double random(size_t choice) {return Random::getInstance().sampleDouble();}
 
-  stateFunction std::string choiceToString(size_t choice)
+  chooseFunction std::string choiceToString(size_t choice)
     {return labels.getLabel(choice);}
 
   for (size_t i = 0 ; i < x.size(); ++i)

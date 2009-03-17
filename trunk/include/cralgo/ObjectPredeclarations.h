@@ -59,6 +59,8 @@ class GradientBasedClassifier;
 typedef ReferenceCountedObjectPtr<GradientBasedClassifier> GradientBasedClassifierPtr;
 class GradientBasedGeneralizedClassifier;
 typedef ReferenceCountedObjectPtr<GradientBasedGeneralizedClassifier> GradientBasedGeneralizedClassifierPtr;
+class GradientBasedRanker;
+typedef ReferenceCountedObjectPtr<GradientBasedRanker> GradientBasedRankerPtr;
 
 
 // choose functions

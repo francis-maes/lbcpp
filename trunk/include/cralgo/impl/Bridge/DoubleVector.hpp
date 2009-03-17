@@ -45,6 +45,8 @@ inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
 
 template<>
 struct Traits<SparseVectorPtr> : public ObjectPtrTraits<SparseVector> {};
+template<>
+struct Traits<SparseVector> : public ObjectTraits<SparseVector> {};
 
 /*
 ** Dense Vector
@@ -66,6 +68,8 @@ inline void DenseVector::staticFeatureGenerator(FeatureVisitor& visitor, Feature
 
 template<>
 struct Traits<DenseVectorPtr> : public ObjectPtrTraits<DenseVector> {};
+template<>
+struct Traits<DenseVector> : public ObjectTraits<DenseVector> {};
 
 /*
 ** Lazy Vector
@@ -89,6 +93,8 @@ inline void LazyVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureD
 
 template<>
 struct Traits<LazyVectorPtr> : public ObjectPtrTraits<LazyVector> {};
+template<>
+struct Traits<LazyVector> : public ObjectTraits<LazyVector> {};
 
 /*
 ** Double Vector

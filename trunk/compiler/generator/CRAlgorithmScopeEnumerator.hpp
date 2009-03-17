@@ -79,7 +79,7 @@ public:
     RecursiveVisitor::visit(node);
   }
   
-  // stateFunction
+  // chooseFunction
   virtual void visit(PTree::UserStatement* node)
   {
     if (dynamic_cast<CRAlgo::StateFundefStatement* >(node)) 

@@ -28,9 +28,11 @@ public:
     
   DenseVector(size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
   {
-    dictionary = NULL;
     initialize(initialNumValues, initialNumSubVectors);
   }
+  
+  DenseVector(const std::vector<double>& values)
+    : values(values) {}
   
   virtual ~DenseVector()
     {clear();}
@@ -95,7 +97,7 @@ public:
   void substract(const FeatureGeneratorPtr featureGenerator)
     {featureGenerator->substractFrom(DenseVectorPtr(this));}
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
-    {featureGenerator->addWeightedTo(DenseVectorPtr(this), weight);}
+    {featureGenerator->addWeightedTo(DenseVectorPtr(this), weight, dictionary);}
 
   /*
   ** Static FeatureGenerator
