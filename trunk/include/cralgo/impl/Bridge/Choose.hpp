@@ -61,16 +61,19 @@ public:
     return Variable::create(ContainerTraits::value(best));
   }
 
-  virtual void computeActionValues(std::vector<double>& res) const
+  virtual void computeActionValues(std::vector<double>& res, ActionValueFunctionPtr valueFunction) const
   {
-    ActionValueFunctionPtr f = choose.getActionValueFunction();
-    if (!f)
+    if (!valueFunction)
     {
-      res.clear();
-      Object::error("Choose::computeActionValues", "No action values in this choose");
-      return;
+      valueFunction = choose.getActionValueFunction();
+      if (!valueFunction)
+      {
+        res.clear();
+        Object::error("Choose::computeActionValues", "No action values in this choose");
+        return;
+      }
     }
-    f->setChoose(getReferenceCountedPointer());
+    valueFunction->setChoose(getReferenceCountedPointer());
     StaticToDynamicVariable< ChoiceType > v;
     ReferenceObjectScope _(v);
     VariablePtr variable(&v);
@@ -81,7 +84,7 @@ public:
     for (; it != ContainerTraits::end(container); ++it)
     {
       variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
-      res.push_back(f->compute(variable));
+      res.push_back(valueFunction->compute(variable));
     }
     variable->getUntypedPointer() = NULL;
   }

@@ -185,12 +185,13 @@ void testOLPOMDP(const std::vector<ClassificationExample>& train, const std::vec
     GradientBasedLearner::createGradientDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
-  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0.8, 1.1);
+  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0.4, 1.3);
 
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
 }
 
-void testCRank(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
+void testCRank(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses,
+              PolicyPtr exploration = PolicyPtr(), ActionValueFunctionPtr supervision = ActionValueFunctionPtr())
 {
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 10000);
   IterationFunctionPtr learningRate2 = IterationFunction::createInvLinear(0.01, 10000);
@@ -199,44 +200,43 @@ void testCRank(const std::vector<ClassificationExample>& train, const std::vecto
     GradientBasedLearner::createGradientDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
-  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(exploration ? exploration : learnedPolicy, ranker, supervision);
 
-  GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
+/*  GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
     GradientBasedLearner::createGradientDescent(learningRate2));  
   classifier->setParameters(ranker->getParameters());
   PolicyPtr learnerPolicy2 = Policy::createGPOMDP(classifier, 0.8, 1.1);
-
-  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(std::cout, 2)*/, ranker->getParameters(), learnerPolicy2);
+*/
+  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(std::cout, 2)*/, ranker->getParameters()/*, learnerPolicy2*/);
 }
 
 class SequenceClassificationSyntheticOptimalPolicy : public Policy
 {
 public:
- SequenceClassificationSyntheticOptimalPolicy(SyntheticDataGenerator&
-generator)
+ SequenceClassificationSyntheticOptimalPolicy(SyntheticDataGenerator& generator)
    : generator(generator) {}
 
  virtual VariablePtr policyChoose(ChoosePtr choose)
  {
    CRAlgorithmPtr state = choose->getCRAlgorithm();
    size_t step = state->getVariableReference<size_t>("step");
-   SparseVectorPtr currentRepresentation = state->getVariableReference<SparseVectorPtr>("currentRepresentation");
-   assert(currentRepresentation);
-
+   std::vector<SparseVectorPtr> currentRepresentation = state->getVariableReference<std::vector<SparseVectorPtr> >("usedFeatureGenerators");
+   
    if (step == 0)
      return Variable::create(std::pair<bool, size_t>(false, 0)); // first step: request the first features
    else if (step == 1)
    {
-     size_t goodFeatures = generator.branchGenerator.getClass(currentRepresentation->getSubVector(0));
+     size_t goodFeatures = generator.branchGenerator.getClass(currentRepresentation[0]);
      return Variable::create(std::pair<bool, size_t>(false, goodFeatures + 1));
    }
    else
    {
      assert(step == 2);
-     size_t goodFeaturesIndex = generator.branchGenerator.getClass(currentRepresentation->getSubVector(0));
-     SparseVectorPtr goodFeatures = currentRepresentation->getSubVector(goodFeaturesIndex + 1);
-     assert(goodFeatures);
-     return Variable::create(std::pair<bool, size_t>(true, generator.foldGenerators[goodFeaturesIndex].getClass(goodFeatures)));
+     size_t goodFeatures = generator.branchGenerator.getClass(currentRepresentation[0]);
+//     size_t goodFeaturesIndex = generator.branchGenerator.getClass(currentRepresentation[0]);
+     SparseVectorPtr features = currentRepresentation[1];
+//     assert(goodFeatures);
+     return Variable::create(std::pair<bool, size_t>(true, generator.foldGenerators[goodFeatures].getClass(features)));
    }
  }
 
@@ -244,12 +244,29 @@ private:
  SyntheticDataGenerator& generator;
 };
 
+class ZeroOneActionValueFunction : public ActionValueFunction
+{
+public:
+  ZeroOneActionValueFunction(PolicyPtr policy) : policy(policy) {}
+
+  virtual void setChoose(ChoosePtr choose)
+    {policyChoice = policy->policyChoose(choose);}
+  
+  virtual double compute(VariablePtr choice) const
+    {return policyChoice->equals(choice) ? 1.0 : 0.0;}
+  
+private:
+  PolicyPtr policy;
+  VariablePtr policyChoice;
+};
+
+
 
 int main(int argc, char* argv[])
 {
   static const size_t numFeaturesToDecideFold = 2;
   static const size_t numFolds = 2;
-  static const size_t numClasses = 2;
+  static const size_t numClasses = 10;
   static const size_t numFeatures = 2;
   SyntheticDataGenerator generator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
  
@@ -261,13 +278,18 @@ int main(int argc, char* argv[])
     train[i] = generator.sample();
   for (size_t i = 0; i < test.size(); ++i)
     test[i] = generator.sample();
-  //testClassifier(train, test, numClasses);  
+  testClassifier(train, test, numClasses);  
   
-  //testOLPOMDP(train, test, numClasses);
-//  testCRank(train, test, numClasses);
+ // testOLPOMDP(train, test, numClasses);
 
-  PolicyPtr policy = new SequenceClassificationSyntheticOptimalPolicy(generator);
-  policy = policy->addComputeStatistics();
+//  testCRank(train, test, numClasses);
+  
+  PolicyPtr optimalPolicy = new SequenceClassificationSyntheticOptimalPolicy(generator);
+  ActionValueFunctionPtr optimalActionValues = new ZeroOneActionValueFunction(optimalPolicy);
+//  testCRank(train, test, numClasses, optimalPolicy, optimalActionValues);*/
+
+  
+  PolicyPtr policy = optimalPolicy->addComputeStatistics();
   size_t correct = 0;
   for (size_t i = 0; i < train.size(); ++i)
   {

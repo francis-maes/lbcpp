@@ -128,6 +128,7 @@ double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const
 
 double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 {
+  assert(featureGenerator);
   const DenseVectorPtr otherVector = featureGenerator.dynamicCast<DenseVector>();
   if (otherVector)
     return denseDotProduct(otherVector);

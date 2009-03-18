@@ -16,11 +16,16 @@ namespace cralgo
 
 featureGenerator unit() {featureScope("unit") featureSense(0);}
 
+featureGenerator describeUsedFeatureGenerators(const std::vector<SparseVectorPtr>& usedFeatureGenerators)
+{
+  featureSense("unit");
+  for (int i = 0; i < (int)usedFeatureGenerators.size(); ++i)
+    featureCall((size_t)(usedFeatureGenerators.size() - 1 - i)) usedFeatureGenerators[i];    
+}
+
 crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPtr>& featureGenerators, double featureCosts, size_t numClasses, size_t* ycorrect = NULL)
 {
   typedef std::pair<bool, size_t> Choice; // decision: (true, classNumber), feature-request: (false, featureScopeNumber)
-  
-  SparseVectorPtr currentRepresentation = new SparseVector();
   
   std::set<size_t> unusedFeatureGenerators;
   for (size_t i = 0; i < featureGenerators.size(); ++i)
@@ -28,6 +33,7 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
     unusedFeatureGenerators.insert(i);
     //currentRepresentation->setSubVector(i, unit()->toSparseVector());
   }
+  std::vector<SparseVectorPtr> usedFeatureGenerators;
   
   for (size_t step = 0; true; ++step)
   {
@@ -61,12 +67,14 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
         if (choice.first)
         {
           featureScope("decision")
-            featureCall(choice.second) currentRepresentation;
+            featureCall(choice.second)
+              inline describeUsedFeatureGenerators(usedFeatureGenerators);
         }
         else
         {
           featureScope("feature-request")
-            featureCall(choice.second) currentRepresentation;
+            featureCall(choice.second)
+              inline describeUsedFeatureGenerators(usedFeatureGenerators);
         }
     }
     
@@ -87,7 +95,7 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
       assert(featureGenerators[c.second]);
       newFeatures = featureGenerators[c.second]->toSparseVector();
       assert(newFeatures);
-      currentRepresentation->setSubVector(c.second, newFeatures);
+      usedFeatureGenerators.push_back(newFeatures);
       reward (-featureCosts);
     }
   }
