@@ -19,6 +19,8 @@ template<class Type>
 class StaticToDynamicVariable : public Variable
 {
 public:
+  typedef StaticToDynamicVariable<Type> ThisClass;
+  
   StaticToDynamicVariable(const Type& value, const std::string& typeName = "", const std::string& name = "")
     : Variable(new Type(value), typeName, name) {}
   StaticToDynamicVariable()
@@ -29,6 +31,12 @@ public:
   
   virtual std::string toString() const
     {return cralgo::toString(cast(ptr));}
+
+  virtual bool equals(const VariablePtr otherVariable) const
+  {
+    const ThisClass* other = dynamic_cast<const ThisClass* >(otherVariable.get());
+    return other && cast(ptr) == cast(other->ptr);
+  }
 
 private:
   const Type& cast(void* ptr) const

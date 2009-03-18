@@ -50,9 +50,8 @@ struct RankingExampleCreatorPolicy
     std::vector<FeatureGeneratorPtr> alternatives;
     choose->computeActionFeatures(alternatives, false);
 
-    // FIXME: se servir du supervisor, si il existe
     std::vector<double> costs;
-    choose->computeActionValues(costs);
+    choose->computeActionValues(costs, supervisor);
     if (!costs.size())
       return VariablePtr();
     

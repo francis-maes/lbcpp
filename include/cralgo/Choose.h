@@ -45,7 +45,7 @@ public:
   
   double computeStateValue() const;
   double computeActionValue(VariablePtr choice) const;
-  virtual void computeActionValues(std::vector<double>& res) const = 0;
+  virtual void computeActionValues(std::vector<double>& res, ActionValueFunctionPtr actionValues = ActionValueFunctionPtr()) const = 0;
 
   FeatureGeneratorPtr computeStateFeatures() const;
   FeatureGeneratorPtr computeActionFeatures(VariablePtr choice) const;

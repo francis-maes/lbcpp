@@ -53,6 +53,9 @@ public:
   virtual std::string getName() const
     {return name;}
     
+  virtual bool equals(const VariablePtr otherVariable) const
+    {assert(false); return false;}
+    
   std::string getTypeName() const
     {return typeName;}
     
