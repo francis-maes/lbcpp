@@ -5,6 +5,9 @@
 // Licensed to the public under the terms of the GNU LGPL (>= 2),
 // see the file COPYING for details.
 //
+#ifdef WIN32
+# pragma warning(disable:4996)
+#endif // WIN32
 
 #include <synopsis/Trace.hh>
 #include <synopsis/PTree/Node.hh>
@@ -446,7 +449,7 @@ Encoding::iterator Encoding::end_of_scope() const
   if (!is_qualified()) return end(); // no scope
   
   iterator i = begin() + 2;                 // skip 'Q' and <size>
-  if (*i >= 0x80) return i + *i - 0x80 + 1; // simple name
+  if (*i >= 0x80) return i + (*i - 0x80 + 1); // simple name
   if (*i == 'T')                            // template
   {
     i += *(i+1) - 0x80 + 2;                 // skip 'T' and simple name

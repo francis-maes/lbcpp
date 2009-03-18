@@ -243,7 +243,7 @@ public:
     {assert(false); return false;}
 };
 
-template<class T>
+/*template<class T>
 struct Traits< typename std::vector<T>::iterator >
   : public IteratorTraits< typename std::vector<T>::iterator > {};
 
@@ -258,7 +258,7 @@ struct Traits< typename std::set<T>::iterator >
 template<class T>
 struct Traits< typename std::set<T>::const_iterator >
   : public IteratorTraits< typename std::set<T>::const_iterator > {};
-
+*/
 
 /*
 ** Typeinfo Traits
