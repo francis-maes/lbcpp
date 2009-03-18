@@ -45,6 +45,15 @@ public:
   virtual VariablePtr getVariable(size_t num) const
     {return Variable::createFromPointer(const_cast<void* >(impl->getVariablePointer(num)),
         impl->getVariableType(num), impl->getVariableName(num));}
+
+  virtual VariablePtr getVariable(const std::string& name) const
+  {
+    size_t n = impl->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+      if (impl->getVariableName(i) == name)
+        return getVariable(i);
+    return VariablePtr();
+  }
   
   virtual std::string getVariableType(size_t num) const
     {return impl->getVariableType(num);}
