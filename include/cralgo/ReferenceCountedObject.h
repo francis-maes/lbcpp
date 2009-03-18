@@ -84,6 +84,9 @@ struct ReferenceCountedObjectPtr
   
   void clear()
     {changePtr(NULL);}
+    
+  bool exists() const
+    {return ptr != NULL;}
   
   operator bool () const
     {return ptr != NULL;}

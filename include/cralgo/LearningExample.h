@@ -143,10 +143,10 @@ public:
   /*
   ** Top-level function
   */
-  bool parse(std::istream& istr, FeatureDictionary& dictionary);
+  bool parse(std::istream& istr, FeatureDictionaryPtr dictionary);
   
 protected:
-  FeatureDictionary* dictionary;
+  FeatureDictionaryPtr dictionary;
 
 protected:
   static void tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators = " \t");
@@ -167,8 +167,8 @@ protected:
   static bool parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path);
 };
 
-extern bool parseClassificationExamples(std::istream& istr, FeatureDictionary& dictionary, FeatureDictionary& labels, std::vector<ClassificationExample>& res);
-extern bool parseRegressionExamples(std::istream& istr, FeatureDictionary& dictionary, std::vector<RegressionExample>& res);
+extern bool parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, FeatureDictionaryPtr labels, std::vector<ClassificationExample>& res);
+extern bool parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res);
 
 
 }; /* namespace cralgo */

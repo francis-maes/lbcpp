@@ -92,11 +92,11 @@ private:
 class SequenceExamplesParser : public LearningExamplesParser
 {
 public:
-  SequenceExamplesParser(std::vector<SequenceExample>& target, FeatureDictionary& labels)
+  SequenceExamplesParser(std::vector<SequenceExample>& target, FeatureDictionaryPtr labels)
     : target(target), labels(labels) {}
     
   std::vector<SequenceExample>& target;
-  FeatureDictionary& labels;
+  FeatureDictionaryPtr labels;
 
   virtual void parseBegin()
   {
@@ -114,7 +114,7 @@ public:
     if (!parseFeatureList(columns, 1, features))
       return false;
     currentContent.push_back(features);
-    currentLabels.push_back(labels.getFeatures().add(label));
+    currentLabels.push_back(labels->getFeatures().add(label));
     return true;
   }
 
@@ -148,7 +148,7 @@ void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, s
   std::cout << "==> " << policy->toString() << std::endl;
 }
 
-void testClassifier(const std::vector<SequenceExample>& learningExamples, FeatureDictionary& labels)
+void testClassifier(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
 
@@ -161,16 +161,16 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
     Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels.getNumFeatures());
+  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels->getNumFeatures());
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy, learningExamples, labels.getNumFeatures());
+    runPolicy(learnerPolicy, learningExamples, labels->getNumFeatures());
   }
 }
 
-void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDictionary& labels)
+void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 1000);
 
@@ -183,12 +183,12 @@ void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDict
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(std::cout, 0)->addComputeStatistics(), learningExamples, labels.getNumFeatures());
+    runPolicy(learnerPolicy->verbose(std::cout, 0)->addComputeStatistics(), learningExamples, labels->getNumFeatures());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
 
-void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDictionary& labels)
+void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   IterationFunctionPtr epsilon = IterationFunction::createConstant(0.1);
@@ -201,12 +201,12 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(std::cout, 0), learningExamples, labels.getNumFeatures());
+  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(std::cout, 0), learningExamples, labels->getNumFeatures());
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(std::cout, 0), learningExamples, labels.getNumFeatures());
+    runPolicy(learnerPolicy->verbose(std::cout, 0), learningExamples, labels->getNumFeatures());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -231,12 +231,12 @@ int main(int argc, char* argv[])
   std::vector<SequenceExample> learningExamples;
   SequenceExamplesParser parser(learningExamples, labels);
   parser.parse(istr, features);
-  std::cout << learningExamples.size() << " sequences, " << labels.getNumFeatures()
+  std::cout << learningExamples.size() << " sequences, " << labels->getNumFeatures()
     << " labels, " << features.getNumFeatures() << " features." << std::endl;
 
   
 /*  const SequenceExample& sequence = learningExamples[0];
-  CRAlgorithmPtr cralgo = simplestSequenceLabeling(sequence.getContent(), labels.getNumFeatures(), &sequence.getLabels());
+  CRAlgorithmPtr cralgo = simplestSequenceLabeling(sequence.getContent(), labels->getNumFeatures(), &sequence.getLabels());
   ChoosePtr choose = cralgo->runUntilFirstChoose();
   choose = cralgo->runUntilNextChoose(choose->sampleRandomChoice());
   std::cout << "Choose: " << choose->toString() << std::endl;

@@ -12,14 +12,13 @@
 using namespace cralgo;
 
 SparseVector::SparseVector(const SparseVector& otherVector)
-  : values(otherVector.values), subVectors(subVectors)
+  : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(subVectors)
 {
-  dictionary = otherVector.dictionary;
 }
 
-SparseVector::SparseVector(FeatureDictionary& dictionary)
+SparseVector::SparseVector(FeatureDictionaryPtr dictionary)
+  : BaseClass(dictionary)
 {
-  this->dictionary = &dictionary;
 }
 
 SparseVector::SparseVector()
@@ -30,13 +29,15 @@ void SparseVector::clear()
 {
   values.clear();
   subVectors.clear();
-  dictionary = NULL;
+  dictionary = FeatureDictionaryPtr();
 }
 
-FeatureDictionary& SparseVector::getDefaultDictionary() const
+FeatureDictionaryPtr SparseVector::getDictionary() const
 {
-  static FeatureDictionary defaultDictionary("SparseVector");
-  return dictionary ? *dictionary : defaultDictionary;
+  if (dictionary)
+    return dictionary;
+  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("SparseVector");
+  return defaultDictionary;
 }
 
 SparseVector& SparseVector::operator =(const SparseVector& otherVector)
@@ -74,15 +75,15 @@ void SparseVector::set(const std::vector<std::string>& path, double value)
 {
   assert(dictionary);
   SparseVectorPtr ptr(this);
-  FeatureDictionary* dictionary = this->dictionary;
+  FeatureDictionaryPtr dictionary = this->dictionary;
   for (size_t i = 0; i < path.size() - 1; ++i)
   {
     size_t subVectorIndex = dictionary->getScopes().add(path[i]);
-    dictionary = &dictionary->getSubDictionary(subVectorIndex);
+    dictionary = dictionary->getSubDictionary(subVectorIndex);
     SparseVectorPtr subVector = ptr->getSubVector(subVectorIndex);
     if (!subVector)
       subVector = new SparseVector();
-    subVector->ensureDictionary(*dictionary);
+    subVector->ensureDictionary(dictionary);
     ptr = subVector;
   }
   ptr->set(dictionary->getFeatures().add(path.back()), value);

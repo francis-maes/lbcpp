@@ -19,20 +19,20 @@ class StringDescriptionVisitor : public FeatureVisitor<StringDescriptionVisitor>
 public: 
   StringDescriptionVisitor() : indent(0) {}
 
-  bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
+  bool featureEnter(cralgo::FeatureDictionaryPtr dictionary, size_t number)
   {
     flushCurrentFeatures();
     addIndent(indent);
-    res += dictionary.getScopes().getString(number) + "\n";
+    res += dictionary->getScopes().getString(number) + "\n";
     ++indent;
     return true;
   }
 
-  void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
+  void featureSense(cralgo::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
   {
     if (currentFeatures.size())
       currentFeatures += ", ";
-    currentFeatures += dictionary.getFeatures().getString(number) + " = " + cralgo::toString(value);
+    currentFeatures += dictionary->getFeatures().getString(number) + " = " + cralgo::toString(value);
   }
   
   void featureLeave()

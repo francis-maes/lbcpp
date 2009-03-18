@@ -18,7 +18,9 @@ namespace cralgo
 class LazyVector : public FeatureGeneratorDefaultImplementations<LazyVector, DoubleVector>
 {
 public:
-  LazyVector(FeatureDictionary& dictionary);
+  typedef FeatureGeneratorDefaultImplementations<LazyVector, DoubleVector> BaseClass;
+
+  LazyVector(FeatureDictionaryPtr dictionary);
   LazyVector() {}
   virtual void clear();  
   
@@ -32,9 +34,9 @@ public:
   void storeWithDenseVector();  
   void storeWithSparseVector();
   
-  virtual DenseVectorPtr toDenseVector(FeatureDictionary* dictionary = NULL) const
+  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
     {const_cast<LazyVector* >(this)->storeWithDenseVector(); return denseVector;}
-  virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary = NULL) const
+  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
     {const_cast<LazyVector* >(this)->storeWithSparseVector(); return sparseVector;}
 
   bool guessIfDense() const;
@@ -75,7 +77,7 @@ public:
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
 
   /*
   ** FeatureGenerator
@@ -83,9 +85,8 @@ public:
   virtual std::string getName() const
     {return "LazyVector";}
     
-  virtual FeatureDictionary& getDefaultDictionary() const
-    {static FeatureDictionary defaultDictionary("LazyVector"); return dictionary ? *dictionary : defaultDictionary;}
-
+  virtual FeatureDictionaryPtr getDictionary() const;
+  
   virtual void addWeightedTo(DenseVectorPtr target, double weight) const;
   
 private:

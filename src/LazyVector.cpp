@@ -9,9 +9,9 @@
 #include <cralgo/LazyVector.h>
 using namespace cralgo;
 
-LazyVector::LazyVector(FeatureDictionary& dictionary)
+LazyVector::LazyVector(FeatureDictionaryPtr dictionary)
 {
-  this->dictionary = &dictionary;
+  this->dictionary = dictionary;
 }
 
 void LazyVector::clear()
@@ -21,6 +21,14 @@ void LazyVector::clear()
   denseVector = DenseVectorPtr();
   linearCombination.clear();
   subVectors.clear();
+}
+
+FeatureDictionaryPtr LazyVector::getDictionary() const
+{
+  if (dictionary)
+    return dictionary;
+  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("LazyVector");
+  return defaultDictionary;
 }
 
 LazyVectorPtr& LazyVector::getSubVector(size_t i, bool createIfMissing)
@@ -117,7 +125,7 @@ void LazyVector::storeWithDenseVector()
   // put the sub vectors into the combination
   if (subVectors.size())
   {
-    DenseVectorPtr sub = dictionary ? new DenseVector(*dictionary) : new DenseVector();
+    DenseVectorPtr sub = dictionary ? new DenseVector(dictionary) : new DenseVector();
     for (size_t i = 0; i < subVectors.size(); ++i)
     {
       LazyVectorPtr subLazy = subVectors[i];
@@ -130,7 +138,7 @@ void LazyVector::storeWithDenseVector()
   
   // eventually create the dense vector
   if (!denseVector)
-    denseVector = dictionary ? new DenseVector(*dictionary) : new DenseVector();
+    denseVector = dictionary ? new DenseVector(dictionary) : new DenseVector();
     
   // compute the linear combination
   for (LinearCombinationMap::const_iterator it = linearCombination.begin(); it != linearCombination.end(); ++it)
@@ -152,7 +160,7 @@ void LazyVector::storeWithSparseVector()
   // put the sub vectors into the combination
   if (subVectors.size())
   {
-    SparseVectorPtr sub = dictionary ? new SparseVector(*dictionary) : new SparseVector();
+    SparseVectorPtr sub = dictionary ? new SparseVector(dictionary) : new SparseVector();
     for (size_t i = 0; i < subVectors.size(); ++i)
     {
       LazyVectorPtr subLazy = subVectors[i];
@@ -168,7 +176,7 @@ void LazyVector::storeWithSparseVector()
   
   // eventually create the sparse vector
   if (!sparseVector)
-    sparseVector = dictionary ? new SparseVector(*dictionary) : new SparseVector();
+    sparseVector = dictionary ? new SparseVector(dictionary) : new SparseVector();
     
   // compute the linear combination
   for (LinearCombinationMap::const_iterator it = linearCombination.begin(); it != linearCombination.end(); ++it)

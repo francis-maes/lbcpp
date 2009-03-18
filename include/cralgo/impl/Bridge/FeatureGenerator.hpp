@@ -25,11 +25,11 @@ public:
   virtual std::string getName() const
     {return ImplementationType::getName();}
 
-  virtual FeatureDictionary& getDefaultDictionary() const
-    {return ImplementationType::getDefaultDictionary();}
+  virtual FeatureDictionaryPtr getDictionary() const
+    {return ImplementationType::getDictionary();}
 
   template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionary& dictionary) const
+  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
     {const_cast<ImplementationType& >(impl).featureGenerator(visitor, dictionary);}
 
 private:

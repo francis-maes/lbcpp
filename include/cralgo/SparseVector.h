@@ -17,8 +17,10 @@ namespace cralgo
 class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector>
 {
 public:
+  typedef FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector> BaseClass;
+  
   SparseVector(const SparseVector& otherVector);
-  SparseVector(FeatureDictionary& dictionary);
+  SparseVector(FeatureDictionaryPtr dictionary);
   SparseVector();
   
   virtual ~SparseVector()
@@ -70,7 +72,7 @@ public:
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
 
   /*
   ** FeatureGenerator
@@ -78,9 +80,9 @@ public:
   virtual std::string getName() const
     {return "SparseVector";}
     
-  virtual FeatureDictionary& getDefaultDictionary() const;
+  virtual FeatureDictionaryPtr getDictionary() const;
 
-  virtual SparseVectorPtr toSparseVector(FeatureDictionary* dictionary)
+  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary)
     {/* todo: check dictionary */ return SparseVectorPtr(this);}
 
 protected:

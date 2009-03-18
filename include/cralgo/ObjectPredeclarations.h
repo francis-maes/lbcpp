@@ -19,6 +19,8 @@ class ScalarRandomVariableStatistics;
 typedef ReferenceCountedObjectPtr<ScalarRandomVariableStatistics> ScalarRandomVariableStatisticsPtr;
 class IterationFunction;
 typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
+class FeatureDictionary;
+typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
 
 // feature visitor
 class FeatureVisitor;

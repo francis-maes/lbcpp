@@ -65,17 +65,17 @@ public:
   AssignmentToVectorVisitor(VectorPtr target, OperationType& operation)
     : operation(operation), currentVector(target) {}
   
-  bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
+  bool featureEnter(cralgo::FeatureDictionaryPtr dictionary, size_t number)
   {
     currentVectorStack.push_back(currentVector);
     VectorPtr& subVector = currentVector->getSubVector(number);
     if (!subVector)
-      subVector = VectorPtr(new VectorType(dictionary.getSubDictionary(number)));
+      subVector = VectorPtr(new VectorType(dictionary->getSubDictionary(number)));
     currentVector = subVector;
     return true;
   }
   
-  void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
+  void featureSense(cralgo::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
     {operation.process(currentVector->get(number), value);}
   
   void featureLeave()

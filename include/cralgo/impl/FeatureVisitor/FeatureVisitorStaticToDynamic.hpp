@@ -17,16 +17,16 @@ namespace impl {
 
 STATIC_TO_DYNAMIC_CLASS(FeatureVisitor, Object)
   
-  virtual bool featureEnter(FeatureDictionary& dictionary, size_t index)
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
     {return BaseClass::impl.featureEnter(dictionary, index);}
     
-  virtual void featureSense(FeatureDictionary& dictionary, size_t index, double value)
+  virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {BaseClass::impl.featureSense(dictionary, index, value);}
 
-  virtual void featureCall(FeatureDictionary& dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
     {BaseClass::impl.featureCall(dictionary, scopeIndex, featureGenerator);}
 
-  virtual void featureCall(FeatureDictionary& dictionary, FeatureGeneratorPtr featureGenerator)
+  virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
     {BaseClass::impl.featureCall(dictionary, featureGenerator);}
 
   virtual void featureLeave()
@@ -41,16 +41,16 @@ public:
   StaticToDynamicFeatureVisitorRef(ImplementationType& impl)
     : impl(impl)  {}
 
-  virtual bool featureEnter(FeatureDictionary& dictionary, size_t index)
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
     {return impl.featureEnter(dictionary, index);}
     
-  virtual void featureSense(FeatureDictionary& dictionary, size_t index, double value)
+  virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {impl.featureSense(dictionary, index, value);}
 
-  virtual void featureCall(FeatureDictionary& dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
     {impl.featureCall(dictionary, scopeIndex, featureGenerator);}
 
-  virtual void featureCall(FeatureDictionary& dictionary, FeatureGeneratorPtr featureGenerator)
+  virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
     {impl.featureCall(dictionary, featureGenerator);}
 
   virtual void featureLeave()
@@ -60,12 +60,12 @@ public:
 };
 
 template<class ExactType>
-inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
+inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionaryPtr dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
 {
   StaticToDynamicFeatureVisitorRef<ExactType> ref(_this());
   ReferenceObjectScope _(ref);
   {
-    featureGenerator->accept(FeatureVisitorPtr(&ref), &dictionary);
+    featureGenerator->accept(FeatureVisitorPtr(&ref), dictionary);
   }
 }
 

@@ -5,14 +5,14 @@ using namespace cralgo;
 
 int testClassification(std::istream& istr)
 {
-  FeatureDictionary features("testcpp-features");
-  FeatureDictionary labels("labels");
+  FeatureDictionaryPtr features = new FeatureDictionary("testcpp-features");
+  FeatureDictionaryPtr labels = new FeatureDictionary("labels");
 
   std::vector<ClassificationExample> examples;
   if (!parseClassificationExamples(istr, features, labels, examples))
     return 1;
 
-  std::cout << examples.size() << " Examples, " << toString(features.getFeatures().count()) << " features, "<< toString(labels.getFeatures().count()) << " labels." << std::endl;
+  std::cout << examples.size() << " Examples, " << toString(features->getFeatures().count()) << " features, "<< toString(labels->getFeatures().count()) << " labels." << std::endl;
 
 /*  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
     GradientBasedLearner::createGradientDescent(
@@ -42,12 +42,12 @@ int testClassification(std::istream& istr)
 
 int testRegression(std::istream& istr)
 {
-  FeatureDictionary features("regression-features");
+  FeatureDictionaryPtr features = new FeatureDictionary("regression-features");
   std::vector<RegressionExample> examples;
   if (!parseRegressionExamples(istr, features, examples))
     return 1;
 
-  std::cout << examples.size() << " Examples, " << toString(features.getFeatures().count()) << " features." << std::endl;
+  std::cout << examples.size() << " Examples, " << toString(features->getFeatures().count()) << " features." << std::endl;
 
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
       GradientBasedLearner::createGradientDescent(

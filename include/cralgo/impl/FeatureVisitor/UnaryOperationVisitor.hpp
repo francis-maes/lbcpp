@@ -49,10 +49,10 @@ public:
   UnaryOperationVisitor(OperationType& operation)
     : operation(operation) {}
   
-  bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
+  bool featureEnter(cralgo::FeatureDictionaryPtr dictionary, size_t number)
     {return true;}
 
-  void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
+  void featureSense(cralgo::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
     {operation.process(value);}
   
   void featureLeave()
