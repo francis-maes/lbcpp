@@ -45,7 +45,8 @@ protected:
 class FeatureDictionary
 {
 public:
-  FeatureDictionary(const std::string& name = "");
+  FeatureDictionary(const std::string& name);
+  FeatureDictionary() {}
   ~FeatureDictionary()
     {clear();}
     

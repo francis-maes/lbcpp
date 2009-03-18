@@ -23,16 +23,23 @@ public:
   ClassificationExample sample() const
   {
     DenseVectorPtr x = sampleVectorGaussian(numFeatures);
+ //   std::cout << "BestScore: " << bestScore << " y = " << y << std::endl;
+    return ClassificationExample(x, getClass(x));
+  }
+  
+  size_t getClass(FeatureGeneratorPtr x) const
+  {
     double bestScore = -DBL_MAX;
     size_t y = 0;
+    std::cout << "X dictionary: " << x->getDefaultDictionary().getName() << std::endl;
     for (size_t i = 0; i < parameters.size(); ++i)
     {
+    std::cout << "params i dictionary: " << parameters[i]->getDefaultDictionary().getName() << std::endl;
       double score = parameters[i]->dotProduct(x);
       if (score > bestScore)
         bestScore = score, y = i;
     }
- //   std::cout << "BestScore: " << bestScore << " y = " << y << std::endl;
-    return ClassificationExample(x, y);
+    return y;
   }
   
 private:
@@ -72,9 +79,42 @@ public:
     return ClassificationExample(x, y);
   }
 
-private:
   SyntheticLinearMultiClassGenerator branchGenerator;
   std::vector<SyntheticLinearMultiClassGenerator> foldGenerators;
+};
+
+class SequenceClassificationSyntheticOptimalPolicy : public Policy
+{
+public:
+  SequenceClassificationSyntheticOptimalPolicy(SyntheticDataGenerator& generator)
+    : generator(generator) {}
+  
+  virtual VariablePtr policyChoose(ChoosePtr choose)
+  {
+    CRAlgorithmPtr state = choose->getCRAlgorithm();
+    size_t step = state->getVariableReference<size_t>("step");
+    SparseVectorPtr currentRepresentation = state->getVariableReference<SparseVectorPtr>("currentRepresentation");
+    assert(currentRepresentation);
+
+    if (step == 0)
+      return Variable::create(std::pair<bool, size_t>(false, 0)); // first step: request the first features 
+    else if (step == 1)
+    {
+      size_t goodFeatures = generator.branchGenerator.getClass(currentRepresentation->getSubVector(0));
+      return Variable::create(std::pair<bool, size_t>(false, goodFeatures + 1));
+    }
+    else
+    {
+      assert(step == 2);
+      size_t goodFeaturesIndex = generator.branchGenerator.getClass(currentRepresentation->getSubVector(0));
+      SparseVectorPtr goodFeatures = currentRepresentation->getSubVector(goodFeaturesIndex + 1);
+      assert(goodFeatures);
+      return Variable::create(std::pair<bool, size_t>(true, generator.foldGenerators[goodFeaturesIndex].getClass(goodFeatures)));
+    }
+  }
+  
+private:
+  SyntheticDataGenerator& generator;
 };
 
 void testClassifier(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
@@ -207,10 +247,31 @@ int main(int argc, char* argv[])
     train[i] = generator.sample();
   for (size_t i = 0; i < test.size(); ++i)
     test[i] = generator.sample();
-  testClassifier(train, test, numClasses);  
+  //testClassifier(train, test, numClasses);  
   
   //testOLPOMDP(train, test, numClasses);
-  testCRank(train, test, numClasses);
+//  testCRank(train, test, numClasses);
+
+  PolicyPtr policy = new SequenceClassificationSyntheticOptimalPolicy(generator);
+  policy = policy->addComputeStatistics();
+  size_t correct = 0;
+  for (size_t i = 0; i < train.size(); ++i)
+  {
+      ClassificationExample ex = train[i];
+  //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
+      SparseVectorPtr input = ex.getInput()->toSparseVector();
+      
+      std::vector<FeatureGeneratorPtr> x;
+//      x.push_back(input);
+      for (size_t i = 0; i < input->getNumSubVectors(); ++i)
+        x.push_back(input->getSubVector(i));
+      size_t y = ex.getOutput();
+      size_t ypredicted = sequentialClassification(policy, x, 0.1, numClasses, &y);
+      if (ypredicted == y)
+        ++correct;
+  }
+  std::cout << "EVALUATION: " << correct << " / 1000" << std::endl << std::endl;
+  std::cout << "EVALUATION OF OPTIMAL POLICY: " << std::endl << policy->toString() << std::endl;
 
   return 0;
 }
