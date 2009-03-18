@@ -16,13 +16,13 @@ namespace impl {
 
 struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitecture >
 {
-  MultiLinearArchitecture(FeatureDictionary& outputs)
+  MultiLinearArchitecture(FeatureDictionaryPtr outputs)
     : outputs(outputs) {}
     
-  FeatureDictionary& outputs;
+  FeatureDictionaryPtr outputs;
   
   size_t getNumOutputs() const
-    {return outputs.getFeatures().count();}
+    {return outputs->getFeatures().count();}
   
   DenseVectorPtr createInitialParameters() const
     {return new DenseVector(outputs, 0, getNumOutputs());}
@@ -69,7 +69,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
 
         LazyVectorPtr& gradientOfOutputWrtClassParameters = gradientOfOutputWrtParameters->getSubVector(i);
         if (!gradientOfOutputWrtClassParameters)
-          gradientOfOutputWrtClassParameters = new LazyVector(input->getDefaultDictionary());
+          gradientOfOutputWrtClassParameters = new LazyVector(input->getDictionary());
         gradientOfOutputWrtClassParameters->set(input);
       }
     }
@@ -78,7 +78,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   }
 };
 
-inline MultiLinearArchitecture multiLinearArchitecture(FeatureDictionary& outputs)
+inline MultiLinearArchitecture multiLinearArchitecture(FeatureDictionaryPtr outputs)
   {return MultiLinearArchitecture(outputs);}
 
 }; /* namespace impl */

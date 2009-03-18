@@ -23,6 +23,14 @@ void DenseVector::initialize(size_t initialNumValues, size_t initialNumSubVector
   }
 }
 
+FeatureDictionaryPtr DenseVector::getDictionary() const
+{
+  if (dictionary)
+    return dictionary;
+  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("DenseVector");
+  return defaultDictionary;
+}
+
 DenseVector& DenseVector::operator =(const DenseVector& otherVector)
 {
   values = otherVector.values;

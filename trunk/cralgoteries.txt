@@ -1,20 +1,22 @@
+3- SeqClassif: Apprentissage par imitation de la politique optimale
+  => checker qu'on atteind bien 100%
+
 * DoubleVector::createCompatibleVector
 * VerbosePolicy: 0 nothing, puis commencer a 1
 
 LC++ library:
 =============
 
-* Policies:
-  * SarsaZero, QLearning, MonteCarloControl, OlPomdp
-  * CRank, CRankPost
-  * ConsoleLogger, TableLogger
-  * policyRun inline
+* Task, Tables, InstanceSet
 
-* Task, Tables
+* Policies:
+  * Finir QLearning, MonteCarloControl, OlPomdp
+  * CRankPost
+  * TableLogger
+  * policyRun inline
 
 * Functions:
   - L1Regularizer
-  - BiasArchitecture
   - Loss de rankings
   - ScalarDerivableArchitecturesDotProduct
   - TransferArchitecture

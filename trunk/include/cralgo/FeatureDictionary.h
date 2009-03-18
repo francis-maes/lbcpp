@@ -9,7 +9,7 @@
 #ifndef CRALGO_FEATURE_DICTIONARY_H_
 # define CRALGO_FEATURE_DICTIONARY_H_
 
-# include "Traits.h"
+# include "ObjectPredeclarations.h"
 # include <map>
 
 namespace cralgo
@@ -42,7 +42,7 @@ protected:
   StringVector indexToString;
 };
 
-class FeatureDictionary
+class FeatureDictionary : public Object
 {
 public:
   FeatureDictionary(const std::string& name);
@@ -73,36 +73,38 @@ public:
   size_t getNumScopes() const
     {return scopesDictionary.count();}
     
-  const FeatureDictionary& getSubDictionary(size_t index) const
+  const FeatureDictionaryPtr getSubDictionary(size_t index) const
   {
     assert(index < subDictionaries.size());
     return subDictionaries[index];
   }
     
-  FeatureDictionary& getSubDictionary(size_t index);
+  FeatureDictionaryPtr getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue = FeatureDictionaryPtr());
   
-  FeatureDictionary& getSubDictionary(const std::string& name)
-    {return getSubDictionary(scopesDictionary.getIndex(name));}
+  FeatureDictionaryPtr getSubDictionary(const std::string& name, FeatureDictionaryPtr defaultValue = FeatureDictionaryPtr())
+    {return getSubDictionary(scopesDictionary.getIndex(name), defaultValue);}
   
   /*
-  ** Misc
+  ** Object
   */
-  std::string getName() const
+  virtual std::string getName() const
     {return name;}
     
-  friend std::ostream& operator <<(std::ostream& ostr, const FeatureDictionary& dictionary)
+  virtual std::string toString() const
   {
-    ostr << "Features: " << cralgo::toString(dictionary.featuresDictionary) << std::endl;
-    ostr << "Scopes: " << cralgo::toString(dictionary.scopesDictionary) << std::endl;
-    return ostr;
+    return "Features: " + cralgo::toString(featuresDictionary) + "\n"
+           "Scopes: " + cralgo::toString(scopesDictionary) + "\n";
   }
   
 private:
   std::string name;
   StringDictionary featuresDictionary;
   StringDictionary scopesDictionary;
-  std::vector<FeatureDictionary> subDictionaries;
+  std::vector<FeatureDictionaryPtr> subDictionaries;
 };
+
+template<>
+struct Traits<FeatureDictionaryPtr> : public ObjectPtrTraits<FeatureDictionary> {};
 
 }; /* namespace cralgo */
 

@@ -79,12 +79,21 @@ void FeatureDictionary::clear()
   subDictionaries.clear();
 }
   
-FeatureDictionary& FeatureDictionary::getSubDictionary(size_t index)
+FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue)
 {
   if (subDictionaries.size() < index + 1)
     subDictionaries.resize(index + 1);
-  FeatureDictionary& res = subDictionaries[index];
-  if (res.name.empty())
-    res.name = name + "." + cralgo::toString(index);
+  FeatureDictionaryPtr& res = subDictionaries[index];
+  if (res)
+  {
+    if (defaultValue && res != defaultValue)
+    {
+      std::cerr << "Error: sub-dictionary mismatch. This dictionary = '" << res->name << "', required dictionary = '" << defaultValue << "'" << std::endl;
+      assert(false);
+    }
+  }
+  else
+    res = defaultValue ? defaultValue : new FeatureDictionary(name + "." + 
+      (scopesDictionary.exists(index) ? scopesDictionary.getString(index) : cralgo::toString(index)));
   return res;
 }

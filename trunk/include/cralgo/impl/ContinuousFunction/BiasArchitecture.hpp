@@ -38,11 +38,11 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
     // gradientWrtInput : empty
   }
   
-  static FeatureDictionary& getDictionary()
+  static FeatureDictionaryPtr getDictionary()
   {
-    static FeatureDictionary biasDictionary("bias");
-    if (biasDictionary.empty())
-      biasDictionary.getFeatures().add("bias");
+    static FeatureDictionaryPtr biasDictionary = new FeatureDictionary("bias");
+    if (biasDictionary->empty())
+      biasDictionary->getFeatures().add("bias");
     return biasDictionary;
   }
 };

@@ -23,9 +23,9 @@ bool LearningExamplesParser::parseLine(const std::string& line)
   return parseDataLine(columns);
 }
 
-bool LearningExamplesParser::parse(std::istream& istr, FeatureDictionary& dictionary)
+bool LearningExamplesParser::parse(std::istream& istr, FeatureDictionaryPtr dictionary)
 {
-  this->dictionary = &dictionary;
+  this->dictionary = dictionary;
   parseBegin();
   while (!istr.eof())
   {
@@ -42,7 +42,7 @@ bool LearningExamplesParser::parse(std::istream& istr, FeatureDictionary& dictio
     Object::error("LearningExamplesParser::parse", "Error in parse end");
       return false;
   }
-  this->dictionary = NULL;
+  this->dictionary = FeatureDictionaryPtr();
   return true;
 }
 
@@ -65,7 +65,7 @@ void LearningExamplesParser::tokenize(const std::string& line, std::vector< std:
 bool LearningExamplesParser::parseFeatureList(const std::vector<std::string>& columns, size_t firstColumn, SparseVectorPtr& res)
 {
   assert(dictionary);
-  res = new SparseVector(*dictionary);
+  res = new SparseVector(dictionary);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
     std::string identifier;
@@ -106,7 +106,7 @@ bool LearningExamplesParser::parseFeatureIdentifier(const std::string& identifie
 class ClassificationExamplesParser : public LearningExamplesParser
 {
 public:
-  ClassificationExamplesParser(std::vector<ClassificationExample>& target, FeatureDictionary& labels)
+  ClassificationExamplesParser(std::vector<ClassificationExample>& target, FeatureDictionaryPtr labels)
     : target(target), labels(labels) {}
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
@@ -117,16 +117,16 @@ public:
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;
-    target.push_back(ClassificationExample(x, labels.getFeatures().add(label)));
+    target.push_back(ClassificationExample(x, labels->getFeatures().add(label)));
     return true;
   }
   
 private:
   std::vector<ClassificationExample>& target;
-  FeatureDictionary& labels;
+  FeatureDictionaryPtr labels;
 };
 
-bool cralgo::parseClassificationExamples(std::istream& istr, FeatureDictionary& dictionary, FeatureDictionary& labels, std::vector<ClassificationExample>& res)
+bool cralgo::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, FeatureDictionaryPtr labels, std::vector<ClassificationExample>& res)
 {
   ClassificationExamplesParser parser(res, labels);
   return parser.parse(istr, dictionary);
@@ -154,7 +154,7 @@ private:
   std::vector<RegressionExample>& target;
 };
 
-bool cralgo::parseRegressionExamples(std::istream& istr, FeatureDictionary& dictionary, std::vector<RegressionExample>& res)
+bool cralgo::parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res)
 {
   RegressionExamplesParser parser(res);
   return parser.parse(istr, dictionary);

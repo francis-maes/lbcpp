@@ -19,16 +19,16 @@ struct DynamicToStaticFeatureVisitor : public FeatureVisitor<DynamicToStaticFeat
   DynamicToStaticFeatureVisitor(FeatureVisitorPtr target)
     : target(target) {}
   
-  bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
+  bool featureEnter(cralgo::FeatureDictionaryPtr dictionary, size_t number)
     {return target->featureEnter(dictionary, number);}
 
-  void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
+  void featureSense(cralgo::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
     {target->featureSense(dictionary, number, value);}
   
-  void featureCall(cralgo::FeatureDictionary& dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
+  void featureCall(cralgo::FeatureDictionaryPtr dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
     {target->featureCall(dictionary, featureGenerator);}
 
-  void featureCall(cralgo::FeatureDictionary& dictionary, size_t number, cralgo::FeatureGeneratorPtr featureGenerator)
+  void featureCall(cralgo::FeatureDictionaryPtr dictionary, size_t number, cralgo::FeatureGeneratorPtr featureGenerator)
     {FeatureVisitor<DynamicToStaticFeatureVisitor>::featureCall(dictionary, number, featureGenerator);}
   
   void featureLeave()

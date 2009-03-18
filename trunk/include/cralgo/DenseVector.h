@@ -17,19 +17,19 @@ namespace cralgo
 class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, DoubleVector>
 {
 public:
-  DenseVector(const DenseVector& otherVector)
-    : values(otherVector.values), subVectors(otherVector.subVectors) {dictionary = otherVector.dictionary;}
+  typedef FeatureGeneratorDefaultImplementations<DenseVector, DoubleVector> BaseClass;
 
-  DenseVector(FeatureDictionary& dictionary, size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
+  DenseVector(const DenseVector& otherVector)
+    : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(otherVector.subVectors) {}
+
+  DenseVector(FeatureDictionaryPtr dictionary, size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
+    : BaseClass(dictionary)
   {
-    this->dictionary = &dictionary;
     initialize(initialNumValues, initialNumSubVectors);
   }
     
   DenseVector(size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
-  {
-    initialize(initialNumValues, initialNumSubVectors);
-  }
+    {initialize(initialNumValues, initialNumSubVectors);}
   
   DenseVector(const std::vector<double>& values)
     : values(values) {}
@@ -38,7 +38,7 @@ public:
     {clear();}
   
   virtual void clear()
-    {values.clear(); subVectors.clear(); dictionary = NULL;}
+    {values.clear(); subVectors.clear(); dictionary = FeatureDictionaryPtr();}
     
   DenseVector& operator =(const DenseVector& otherVector);
 
@@ -81,7 +81,15 @@ public:
     {ensureSize(subVectors, index + 1, DenseVectorPtr()); return subVectors[index];}
     
   void setSubVector(size_t index, DenseVectorPtr subVector)
-    {ensureSize(subVectors, index + 1, DenseVectorPtr()); subVectors[index] = subVector;}
+  {
+    ensureSize(subVectors, index + 1, DenseVectorPtr());
+    subVectors[index] = subVector;
+    if (dictionary)
+    {
+      // ensure 
+      dictionary->getSubDictionary(index, subVector->dictionary);
+    }
+  }
   
   /*
   ** Operations
@@ -103,7 +111,7 @@ public:
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
 
   /*
   ** FeatureGenerator
@@ -111,10 +119,9 @@ public:
   virtual std::string getName() const
     {return "DenseVector";}
     
-  virtual FeatureDictionary& getDefaultDictionary() const
-    {static FeatureDictionary defaultDictionary("DenseVector"); return dictionary ? *dictionary : defaultDictionary;}
+  virtual FeatureDictionaryPtr getDictionary() const;
   
-  virtual DenseVectorPtr toDenseVector(FeatureDictionary* dictionary)
+  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary)
     {/* todo: check dictionary */ return DenseVectorPtr(this);}
 
 protected:

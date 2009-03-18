@@ -106,8 +106,8 @@ public:
 class GradientBasedBinaryClassifier : public GradientBasedLearningMachine<BinaryClassifier, ClassificationExample>
 {
 public:
-  static GradientBasedBinaryClassifierPtr createLinearSVM(GradientBasedLearnerPtr learner, FeatureDictionary& labels);
-  static GradientBasedBinaryClassifierPtr createLogisticRegression(GradientBasedLearnerPtr learner, FeatureDictionary& labels);
+  static GradientBasedBinaryClassifierPtr createLinearSVM(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels);
+  static GradientBasedBinaryClassifierPtr createLogisticRegression(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels);
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
@@ -124,7 +124,7 @@ public:
 class GradientBasedClassifier : public GradientBasedLearningMachine<Classifier, ClassificationExample>
 {
 public:
-  static GradientBasedClassifierPtr createMaximumEntropy(GradientBasedLearnerPtr learner, FeatureDictionary& labels);
+  static GradientBasedClassifierPtr createMaximumEntropy(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels);
 
   virtual VectorArchitecturePtr getPredictionArchitecture() const = 0;
 

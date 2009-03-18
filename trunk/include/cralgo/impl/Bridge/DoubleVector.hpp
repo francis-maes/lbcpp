@@ -22,7 +22,7 @@ namespace cralgo
 ** Sparse Vector
 */
 template<class FeatureVisitor>
-inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
+inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
 {
   for (size_t i = 0; i < values.size(); ++i)
   {
@@ -37,7 +37,7 @@ inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
     {
       //assert(subVector.second);
       if (subVector.second)
-        subVector.second->staticFeatureGenerator(visitor, featureDictionary.getSubDictionary(subVector.first));
+        subVector.second->staticFeatureGenerator(visitor, featureDictionary->getSubDictionary(subVector.first));
       visitor.featureLeave();
     }
   }
@@ -52,18 +52,21 @@ struct Traits<SparseVector> : public ObjectTraits<SparseVector> {};
 ** Dense Vector
 */
 template<class FeatureVisitor>
-inline void DenseVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
+inline void DenseVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
 {
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i])
       visitor.featureSense(featureDictionary, i, values[i]);
   
   for (size_t i = 0; i < subVectors.size(); ++i)
-    if (subVectors[i] && visitor.featureEnter(featureDictionary, i))
+  {
+    DenseVectorPtr subVector = subVectors[i];
+    if (subVector && visitor.featureEnter(featureDictionary, i))
     {
-      subVectors[i]->staticFeatureGenerator(visitor, featureDictionary.getSubDictionary(i));
+      subVector->staticFeatureGenerator(visitor, featureDictionary->getSubDictionary(i));
       visitor.featureLeave();
     }
+  }
 }
 
 template<>
@@ -75,19 +78,21 @@ struct Traits<DenseVector> : public ObjectTraits<DenseVector> {};
 ** Lazy Vector
 */
 template<class FeatureVisitor>
-inline void LazyVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
+inline void LazyVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
 {
   if (isStoredWithFeatureGenerator())
     visitor.featureCall(featureDictionary, featureGenerator);
   else if (guessIfDense())
   {
     const_cast<LazyVector* >(this)->storeWithDenseVector();
-    visitor.featureCall(featureDictionary, denseVector);
+    denseVector->staticFeatureGenerator(visitor, featureDictionary);
+//    visitor.featureCall(featureDictionary, denseVector);
   }
   else
   {
     const_cast<LazyVector* >(this)->storeWithSparseVector();
-    visitor.featureCall(featureDictionary, sparseVector);
+    sparseVector->staticFeatureGenerator(visitor, featureDictionary);
+//    visitor.featureCall(featureDictionary, sparseVector);
   }
 }
 
@@ -100,7 +105,7 @@ struct Traits<LazyVector> : public ObjectTraits<LazyVector> {};
 ** Double Vector
 */
 template<class FeatureVisitor>
-inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const
+inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
 {
   const SparseVector* sparseVector = dynamic_cast<const SparseVector* >(this);
   if (sparseVector)
@@ -121,7 +126,7 @@ inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
     return;
   }
   // dynamic version must be implemented
-  accept(impl::staticToDynamic(visitor), &featureDictionary);
+  accept(impl::staticToDynamic(visitor), featureDictionary);
 }
 
 template<>

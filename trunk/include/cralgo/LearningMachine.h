@@ -59,11 +59,11 @@ public:
   size_t getNumLabels() const
     {assert(labels); return labels->getFeatures().count();}
   
-  FeatureDictionary& getLabels() const
-    {assert(labels); return *labels;}
+  FeatureDictionaryPtr getLabels() const
+    {assert(labels); return labels;}
   
-  void setLabels(FeatureDictionary& labels)
-    {this->labels = &labels;}
+  void setLabels(FeatureDictionaryPtr labels)
+    {this->labels = labels;}
     
   /*
   ** Evaluation
@@ -72,7 +72,7 @@ public:
   double evaluateWeightedAccuracy(const std::vector<ClassificationExample>& examples) const;
   
 protected:
-  FeatureDictionary* labels;
+  FeatureDictionaryPtr labels;
 };
 
 class BinaryClassifier : public Classifier

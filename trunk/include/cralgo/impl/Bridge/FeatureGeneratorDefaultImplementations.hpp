@@ -24,27 +24,27 @@ namespace cralgo
   template<class ExactType, class BaseType> \
   inline ReturnType FeatureGeneratorDefaultImplementations<ExactType, BaseType>::
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) accept(FeatureVisitorPtr visitor, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) accept(FeatureVisitorPtr visitor, FeatureDictionaryPtr dictionary) const
 {
   impl::DynamicToStaticFeatureVisitor staticVisitor(visitor);
   featureGenerator(staticVisitor, dictionary);  
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(SparseVectorPtr) toSparseVector(FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(SparseVectorPtr) toSparseVector(FeatureDictionaryPtr dictionary) const
 {
   impl::CreateSparseVectorVisitor staticVisitor(selectDictionary(dictionary));
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(DenseVectorPtr) toDenseVector(FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(DenseVectorPtr) toDenseVector(FeatureDictionaryPtr dictionary) const
 {
   impl::CreateDenseVectorVisitor staticVisitor(selectDictionary(dictionary));
   featureGenerator(staticVisitor, dictionary);
   return staticVisitor.getResult();
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(std::string) toString(FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(std::string) toString(FeatureDictionaryPtr dictionary) const
 {
   impl::StringDescriptionVisitor staticVisitor;
   featureGenerator(staticVisitor, dictionary);
@@ -75,7 +75,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(double) sumOfSquares() const
   return op.res;
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) addTo(DenseVectorPtr target, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
   impl::AddVectorOperation op;
@@ -83,7 +83,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addTo(DenseVectorPtr target, FeatureDiction
   featureGenerator(staticVisitor, dictionary);
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) substractFrom(DenseVectorPtr target, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
   impl::SubstractVectorOperation op;
@@ -91,7 +91,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) substractFrom(DenseVectorPtr target, Featur
   featureGenerator(staticVisitor, dictionary);
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
   if (!weight)
@@ -101,7 +101,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(DenseVectorPtr target, double
   featureGenerator(staticVisitor, dictionary);
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
   if (!weight)
@@ -111,7 +111,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedTo(SparseVectorPtr target, doubl
   featureGenerator(staticVisitor, dictionary);
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
   if (!weight)
@@ -121,7 +121,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, d
   featureGenerator(staticVisitor, dictionary);
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector, FeatureDictionary* dictionary) const
+FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary) const
 {
   vector->ensureDictionary(selectDictionary(dictionary));
   impl::DotProductDenseVectorVisitor staticVisitor(vector);

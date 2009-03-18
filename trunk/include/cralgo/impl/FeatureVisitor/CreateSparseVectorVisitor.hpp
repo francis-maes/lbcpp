@@ -20,20 +20,20 @@ struct CreateVectorVisitor : public FeatureVisitor< ExactType >
 {
   typedef ReferenceCountedObjectPtr<VectorType> VectorTypePtr;
   
-  CreateVectorVisitor(FeatureDictionary& dictionary) 
+  CreateVectorVisitor(FeatureDictionaryPtr dictionary) 
     : vector(new VectorType(dictionary)) {currentVector = vector;}
   
-  bool featureEnter(cralgo::FeatureDictionary& dictionary, size_t number)
+  bool featureEnter(cralgo::FeatureDictionaryPtr dictionary, size_t number)
   {
     currentVectorStack.push_back(currentVector);
     VectorTypePtr& v = currentVector->getSubVector(number);
     if (!v)
-      v = new VectorType(dictionary.getSubDictionary(number));
+      v = new VectorType(dictionary->getSubDictionary(number));
     currentVector = v;
     return true;
   }
 
-  void featureSense(cralgo::FeatureDictionary& dictionary, size_t number, double value = 1.0)
+  void featureSense(cralgo::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
     {currentVector->set(number, value);}
 
   void featureLeave()
@@ -54,13 +54,13 @@ private:
 
 struct CreateSparseVectorVisitor : public CreateVectorVisitor<CreateSparseVectorVisitor, SparseVector>
 {
-  CreateSparseVectorVisitor(FeatureDictionary& dictionary) 
+  CreateSparseVectorVisitor(FeatureDictionaryPtr dictionary) 
     : CreateVectorVisitor<CreateSparseVectorVisitor, SparseVector>(dictionary) {}
 };
 
 struct CreateDenseVectorVisitor : public CreateVectorVisitor<CreateDenseVectorVisitor, DenseVector>
 {
-  CreateDenseVectorVisitor(FeatureDictionary& dictionary) 
+  CreateDenseVectorVisitor(FeatureDictionaryPtr dictionary) 
     : CreateVectorVisitor<CreateDenseVectorVisitor, DenseVector>(dictionary) {}
 };
 

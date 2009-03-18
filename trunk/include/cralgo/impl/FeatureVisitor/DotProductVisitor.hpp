@@ -21,7 +21,7 @@ public:
   DotProductDenseVectorVisitor(DenseVectorPtr vector)
     : currentVector(vector), res(0.0) {}
   
-  bool featureEnter(FeatureDictionary& dictionary, size_t index)
+  bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
   {
     DenseVectorPtr& subVector = currentVector->getSubVector(index);
     if (!subVector)
@@ -31,7 +31,7 @@ public:
     return true;
   }
   
-  void featureSense(FeatureDictionary& dictionary, size_t index, double value)
+  void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {res += currentVector->get(index) * value;}
   
   void featureLeave()

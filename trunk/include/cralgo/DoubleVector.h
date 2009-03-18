@@ -18,7 +18,7 @@ namespace cralgo
 class DoubleVector : public FeatureGeneratorDefaultImplementations<DoubleVector, FeatureGenerator>
 {
 public:
-  DoubleVector(FeatureDictionary* dictionary = NULL)
+  DoubleVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr())
     : dictionary(dictionary) {}
 
   /*
@@ -30,34 +30,31 @@ public:
   ** Dictionary
   */
   bool hasDictionary() const
-    {return dictionary != NULL;}
+    {return dictionary.exists();}
     
-  FeatureDictionary& getDictionary()
-    {assert(dictionary); return *dictionary;}
-
-  void setDictionary(FeatureDictionary& dictionary)
-    {this->dictionary = &dictionary;}
+  void setDictionary(FeatureDictionaryPtr dictionary)
+    {this->dictionary = dictionary;}
     
-  void ensureDictionary(FeatureDictionary& dictionary)
+  void ensureDictionary(FeatureDictionaryPtr dictionary)
   {
     if (this->dictionary)
     {
-      if (this->dictionary != &dictionary)
+      if (this->dictionary != dictionary)
       {
-        std::cerr << "Dictionary mismatch. This dictionary = " << this->dictionary->getName()
-          << ", required dictionary = " << dictionary.getName() << std::endl;
+        std::cerr << "Error: dictionary mismatch. This dictionary = '" << this->dictionary->getName() << "', "
+                     "required dictionary = '" << dictionary->getName() << "'" << std::endl;
         assert(false);
       }
     }
     else
-      this->dictionary = &dictionary;
+      this->dictionary = dictionary;
   }
   
   /*
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionary& featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
   
   /*
   ** FeatureGenerator
@@ -65,11 +62,16 @@ public:
   virtual std::string getName() const
     {return "DoubleVector";}
     
-  virtual FeatureDictionary& getDefaultDictionary() const
-    {static FeatureDictionary defaultDictionary("DoubleVector"); return dictionary ? *dictionary : defaultDictionary;}
+  virtual FeatureDictionaryPtr getDictionary() const
+  {
+    if (dictionary)
+      return dictionary;
+    static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("DoubleVector");
+    return defaultDictionary;
+  }
 
 protected:
-  FeatureDictionary* dictionary;
+  FeatureDictionaryPtr dictionary;
 };
 
 }; /* namespace cralgo */
