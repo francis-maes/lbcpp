@@ -82,7 +82,7 @@ public:
   /*
   ** Object
   */
-  virtual std::string Choose::toString() const;
+  virtual std::string toString() const;
 
 protected:
   Choose(CRAlgorithmPtr crAlgorithm = CRAlgorithmPtr())
