@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <cralgo/GradientBasedLearner.h>
+#include <cralgo/Optimizer.h>
 #include <cralgo/impl/impl.h>
 using namespace cralgo;
 
@@ -102,3 +103,35 @@ protected:
 
 GradientBasedLearnerPtr GradientBasedLearner::createGradientDescent(IterationFunctionPtr learningRate, bool normalizeLearningRate)
   {return GradientBasedLearnerPtr(new GradientDescentLearner(learningRate, normalizeLearningRate));}
+
+class BatchLearner : public GradientBasedLearner
+{
+public:
+  BatchLearner(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination)
+    : optimizer(optimizer), termination(termination) {}
+    
+  virtual void trainStochasticBegin()
+    {assert(false);}
+
+  virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
+    {assert(false);}
+  
+  virtual void trainStochasticEnd()
+    {assert(false);}
+
+  virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples)
+  {
+    //ProgressCallback silentCallback;
+    ConsoleProgressCallback callback;
+    callback.progressStart("BatchLearner::trainBatch");
+    optimizer->optimize(objective, parameters, termination, callback);
+    callback.progressEnd();
+  }
+  
+protected:
+  VectorOptimizerPtr optimizer;
+  OptimizerTerminationTestPtr termination;
+};
+
+GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination)
+  {return GradientBasedLearnerPtr(new BatchLearner(optimizer, termination));}

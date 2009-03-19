@@ -18,6 +18,10 @@ namespace cralgo
 class GradientBasedLearner : public Object
 {
 public:
+  static GradientBasedLearnerPtr createGradientDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
+  static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination);
+  
+public:
   GradientBasedLearner() : meanInputSize(0.0) {}
   
   void setParameters(DenseVectorPtr parameters)
@@ -37,8 +41,6 @@ public:
 
   virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples) = 0;
 
-  static GradientBasedLearnerPtr createGradientDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
-  
 protected:
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;

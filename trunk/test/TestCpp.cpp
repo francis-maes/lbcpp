@@ -18,12 +18,11 @@ int testClassification(std::istream& istr)
     GradientBasedLearner::createGradientDescent(
       IterationFunction::createConstant(0.01)), labels);
 */
-  GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(
-    GradientBasedLearner::createGradientDescent(
-      IterationFunction::createConstant(0.01)), labels);
+//  GradientBasedLearnerPtr learner = GradientBasedLearner::createGradientDescent(IterationFunction::createConstant(0.01));
+  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createRProp(), OptimizerTerminationTest::createMaxIterations(50));
+  GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
   
-  classifier->createParameters();
-  for (int i = 0; i < 100; ++i)
+  for (int i = 0; i < 1; ++i)
   {
    // LazyVectorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
 //    std::cout << "GRADIENT = " << cralgo::toString(gradient) << std::endl;
@@ -32,8 +31,8 @@ int testClassification(std::istream& istr)
     //          << " RegEmpRisk: " << classifier->computeRegularizedEmpiricalRisk(examples) << " ";
 
     
-//  classifier->trainBatch(examples);
-    classifier->trainStochastic(examples);
+    classifier->trainBatch(examples);
+  //  classifier->trainStochastic(examples);
     double acc = classifier->evaluateAccuracy(examples);
     std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;
   }
@@ -70,8 +69,8 @@ int testRegression(std::istream& istr)
 
 int main(int argc, char* argv[])
 {
-//  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/binaryclassif/a1a.train";
-  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/regression/pyrim.data";
+  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/binaryclassif/a1a.train";
+//  static const char* filename = "/Users/francis/Projets/Nieme/trunk/examples/data/regression/pyrim.data";
 //  static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.test";
  // static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.train";
 
@@ -82,5 +81,6 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  return testRegression(istr);
+//  return testRegression(istr);
+  return testClassification(istr);
 }

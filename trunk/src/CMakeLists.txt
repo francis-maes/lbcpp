@@ -21,6 +21,7 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/LearningMachine.h
   ../include/cralgo/ContinuousFunction.h
   ../include/cralgo/IterationFunction.h
+  ../include/cralgo/Optimizer.h
   ../include/cralgo/GradientBasedLearner.h
   ../include/cralgo/GradientBasedLearningMachine.h
   ../include/cralgo/ChooseFunction.h
@@ -80,6 +81,11 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
   ${CRALGO_IMPL}/ContinuousFunction/TransferArchitecture.hpp
   ${CRALGO_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
 )
+SET(CRALGO_LIBRARY_IMPL_OPTIMIZER
+  ${CRALGO_IMPL}/Optimizer/OptimizerStatic.hpp
+  ${CRALGO_IMPL}/Optimizer/OptimizerStaticToDynamic.hpp
+  ${CRALGO_IMPL}/Optimizer/RPropOptimizer.hpp
+)
 
 SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION
   ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
@@ -126,6 +132,7 @@ SET(CRALGO_LIBRARY_SOURCES
   DenseVector.cpp
   LazyVector.cpp
   DoubleVectorHelpers.hpp
+  Optimizer.cpp
   LearningExample.cpp
   LearningMachine.cpp
   GradientBasedLearner.cpp
@@ -139,6 +146,7 @@ SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_IMPL_HEADERS}
   ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR}
   ${CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION}
+  ${CRALGO_LIBRARY_IMPL_OPTIMIZER}
   ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION}
   ${CRALGO_LIBRARY_IMPL_POLICY}
   ${CRALGO_LIBRARY_IMPL_BRIDGE}
@@ -149,6 +157,7 @@ SOURCE_GROUP(includes FILES ${CRALGO_LIBRARY_HEADERS})
 SOURCE_GROUP(impl FILES ${CRALGO_LIBRARY_IMPL_HEADERS})
 SOURCE_GROUP(impl/FeatureVisitor FILES ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR})
 SOURCE_GROUP(impl/ContinuousFunction FILES ${CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION})
+SOURCE_GROUP(impl/Optimizer FILES ${CRALGO_LIBRARY_IMPL_OPTIMIZER})
 SOURCE_GROUP(impl/ChooseFunction FILES ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION})
 SOURCE_GROUP(impl/Policy FILES ${CRALGO_LIBRARY_IMPL_POLICY})
 SOURCE_GROUP(impl/Bridge FILES ${CRALGO_LIBRARY_IMPL_BRIDGE})
