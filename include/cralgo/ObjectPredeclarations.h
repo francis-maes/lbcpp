@@ -38,6 +38,28 @@ typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
 class LazyVector;
 typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
 
+// functions
+class ScalarFunction;
+typedef ReferenceCountedObjectPtr<ScalarFunction> ScalarFunctionPtr;
+class ScalarLossFunction;
+typedef ReferenceCountedObjectPtr<ScalarLossFunction> ScalarLossFunctionPtr;
+class ScalarVectorFunction;
+typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
+class VectorLossFunction;
+typedef ReferenceCountedObjectPtr<VectorLossFunction> VectorLossFunctionPtr;
+class ScalarArchitecture;
+typedef ReferenceCountedObjectPtr<ScalarArchitecture> ScalarArchitecturePtr;
+class VectorArchitecture;
+typedef ReferenceCountedObjectPtr<VectorArchitecture> VectorArchitecturePtr;
+
+// optimizer
+class OptimizerTerminationTest;
+typedef ReferenceCountedObjectPtr<OptimizerTerminationTest> OptimizerTerminationTestPtr;
+class ScalarOptimizer;
+typedef ReferenceCountedObjectPtr<ScalarOptimizer> ScalarOptimizerPtr;
+class VectorOptimizer;
+typedef ReferenceCountedObjectPtr<VectorOptimizer> VectorOptimizerPtr;
+
 // learning machines
 class GradientBasedLearner;
 typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;

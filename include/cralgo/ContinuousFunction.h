@@ -36,8 +36,6 @@ public:
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
 };
 
-typedef ReferenceCountedObjectPtr<ScalarFunction> ScalarFunctionPtr;
-
 /*
 ** f : example x R -> R
 */
@@ -46,8 +44,6 @@ class ScalarLossFunction : public ScalarFunction
 public:
   virtual void setLearningExample(const LearningExample& learningExample) = 0;
 };
-
-typedef ReferenceCountedObjectPtr<ScalarLossFunction> ScalarLossFunctionPtr;
 
 /*
 ** f : R^n -> R
@@ -62,7 +58,6 @@ public:
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const = 0;
   virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const = 0;
 };
-typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
 
 /*
 ** f : example x R^n -> R
@@ -72,8 +67,6 @@ class VectorLossFunction : public ScalarVectorFunction
 public:
   virtual void setLearningExample(const LearningExample& learningExample) = 0;
 };
-
-typedef ReferenceCountedObjectPtr<VectorLossFunction> VectorLossFunctionPtr;
 
 /*
 ** f : params x features -> R
@@ -92,9 +85,6 @@ public:
       LazyVectorPtr gradientWrtParameters,
       LazyVectorPtr gradientWrtInput) const = 0;
 };
-
-typedef ReferenceCountedObjectPtr<ScalarArchitecture> ScalarArchitecturePtr;
-
 
 /*
 ** f : params x features -> R^n
@@ -120,8 +110,6 @@ public:
       LazyVectorPtr gradientWrtParameters,
       LazyVectorPtr gradientWrtInput) const = 0;
 };
-
-typedef ReferenceCountedObjectPtr<VectorArchitecture> VectorArchitecturePtr;
 
 }; /* namespace cralgo */
 
