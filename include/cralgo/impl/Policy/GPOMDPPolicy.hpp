@@ -98,6 +98,9 @@ private:
   
   void processReward(double reward)
   {
+    if (!actionFeatures.size())
+      return;
+      
     // -(log p[y|x])
     ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionFeatures, selectedAction));
     
@@ -107,8 +110,9 @@ private:
     // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
     trace->multiplyByScalar(beta);
     trace->substract(gradient);
-    
-    classifier->getLearner()->trainStochasticExample(classifier->getParameters(), trace, reward);
+
+    classifier->pushInputSize((double)actionFeatures[Random::getInstance().sampleSize(actionFeatures.size())]->l0norm());
+    classifier->trainStochasticExample(trace, reward);
   }
 };
 

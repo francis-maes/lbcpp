@@ -36,7 +36,7 @@ public:
 
   PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
   PolicyPtr addComputeStatistics() const;
-  PolicyPtr verbose(std::ostream& ostr, size_t verbosity) const;
+  PolicyPtr verbose(size_t verbosity, std::ostream& ostr = std::cout) const;
 
 public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}

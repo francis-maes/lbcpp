@@ -194,7 +194,7 @@ DenseVectorPtr GeneralizedClassifier::predictProbabilities(const std::vector<Fea
   // default: Gibbs distribution, P[y|x] = exp(score(y)) / (sum_i exp(score(y_i)))
   DenseVectorPtr scores = predictScores(inputs);
   double logZ = scores->computeLogSumOfExponentials();
-  DenseVectorPtr res = scores->hasDictionary() ? new DenseVector(scores->getDictionary(), scores->getNumValues()) : new DenseVector(scores->getNumValues());
+  DenseVectorPtr res = new DenseVector(scores->getDictionary(), scores->getNumValues());
   for (size_t i = 0; i < scores->getNumValues(); ++i)
     res->set(i, exp(scores->get(i) - logZ));
   return res;

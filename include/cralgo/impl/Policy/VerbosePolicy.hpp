@@ -23,13 +23,14 @@ struct VerbosePolicy
   /*
   ** Verbosity
   */
-  // 0: one '.' per episode
-  // 1: one '.' per action
-  // 2: chosen action descriptions
-  // 3: state descriptions
-  // 4: ActionSet descriptions
+  // 0: nothing
+  // 1: one '.' per episode
+  // 2: one '.' per action
+  // 3: chosen action descriptions
+  // 4: state descriptions
+  // 5: ActionSet descriptions
     
-  VerbosePolicy(const DecoratedType& decorated, std::ostream& ostr, size_t verbosity)
+  VerbosePolicy(const DecoratedType& decorated, size_t verbosity, std::ostream& ostr)
     : BaseClass(decorated), ostr(ostr), verbosity(verbosity), inclusionLevel(0), stepNumber(0)
   {
   }
@@ -37,24 +38,24 @@ struct VerbosePolicy
   VariablePtr policyChoose(ChoosePtr choose)
   {
     VariablePtr res = BaseClass::policyChoose(choose);
-    if (verbosity == 1)
+    if (verbosity == 2)
       ostr << "." << std::flush;
-    else if (verbosity >= 3)
+    else if (verbosity >= 4)
     {
       ostr << std::endl << "==== Step " << ++stepNumber << " ====" << std::endl;
-      if (verbosity == 3)
+      if (verbosity == 4)
         ostr << choose->getCRAlgorithm()->toString();
-      else if (verbosity == 4)
+      else if (verbosity == 5)
         ostr << choose->toString() << std::endl;
     }
-    if (verbosity >= 2)
+    if (verbosity >= 3)
       ostr << "  => Choice: " << res->toString() << std::endl;
     return res;
   }
 
   void policyReward(double reward)
   {
-    if (verbosity >= 2)
+    if (verbosity >= 3)
       ostr << "  => Reward: " << reward << std::endl;
     episodeReward += reward;
     BaseClass::policyReward(reward);
@@ -62,7 +63,7 @@ struct VerbosePolicy
   
   void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
-    if (verbosity >= 2)
+    if (verbosity >= 3)
       ostr << "policyEnter(" << crAlgorithm->getName() << ")" << std::endl;
     BaseClass::policyEnter(crAlgorithm);
     stepNumber = 0;
@@ -71,17 +72,17 @@ struct VerbosePolicy
     
   void policyLeave()
   {
-    if (verbosity >= 2)
+    if (verbosity >= 3)
       ostr << "policyLeave()" << std::endl;
     BaseClass::policyLeave();
     --inclusionLevel;
     if (inclusionLevel == 0)
     {
-      if (verbosity == 0)
+      if (verbosity == 1)
         ostr << "." << std::flush;
-      else if (verbosity == 1)
+      else if (verbosity == 2)
         ostr << " -> " << episodeReward << std::endl;
-      else if (verbosity >= 2)
+      else if (verbosity >= 3)
       {
         if (verbosity >= 3)
           ostr << std::endl << "==================" << std::endl;

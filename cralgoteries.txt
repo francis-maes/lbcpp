@@ -1,8 +1,10 @@
-3- SeqClassif: Apprentissage par imitation de la politique optimale
-  => checker qu'on atteind bien 100%
 
-* DoubleVector::createCompatibleVector
-* VerbosePolicy: 0 nothing, puis commencer a 1
+* Loss de rankings
+* GPomdp -> ScalarVectorFunction
+ 
+* Optimizer
+* Gerer les regularizers
+* Faire sauter impl::constant et ScalarConstant
 
 LC++ library:
 =============
@@ -17,9 +19,10 @@ LC++ library:
 
 * Functions:
   - L1Regularizer
-  - Loss de rankings
   - ScalarDerivableArchitecturesDotProduct
   - TransferArchitecture
+
+* LBFGS / OLWQL
 
 * SWIG
 * Doxygen

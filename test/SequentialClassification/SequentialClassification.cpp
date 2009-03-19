@@ -122,7 +122,7 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
 {
   for (size_t iteration = 0; iteration < 100; ++iteration)
   {
-    PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(std::cout, 4);
+    PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(4);
     for (size_t i = 0; i < train.size(); ++i)
     {
       ClassificationExample ex = train[Random::getInstance().sampleSize(train.size())];
@@ -194,7 +194,7 @@ void testCRank(const std::vector<ClassificationExample>& train, const std::vecto
               PolicyPtr exploration = PolicyPtr(), ActionValueFunctionPtr supervision = ActionValueFunctionPtr())
 {
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 10000);
-  IterationFunctionPtr learningRate2 = IterationFunction::createInvLinear(0.01, 10000);
+//  IterationFunctionPtr learningRate2 = IterationFunction::createInvLinear(0.01, 10000);
 
   GradientBasedRankerPtr ranker = GradientBasedRanker::createLargeMarginBestAgainstAllLinear(
     GradientBasedLearner::createGradientDescent(learningRate));
@@ -207,7 +207,7 @@ void testCRank(const std::vector<ClassificationExample>& train, const std::vecto
   classifier->setParameters(ranker->getParameters());
   PolicyPtr learnerPolicy2 = Policy::createGPOMDP(classifier, 0.8, 1.1);
 */
-  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(std::cout, 2)*/, ranker->getParameters()/*, learnerPolicy2*/);
+  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(2)*/, ranker->getParameters()/*, learnerPolicy2*/);
 }
 
 class SequenceClassificationSyntheticOptimalPolicy : public Policy
@@ -286,7 +286,7 @@ int main(int argc, char* argv[])
   
   PolicyPtr optimalPolicy = new SequenceClassificationSyntheticOptimalPolicy(generator);
   ActionValueFunctionPtr optimalActionValues = new ZeroOneActionValueFunction(optimalPolicy);
-//  testCRank(train, test, numClasses, optimalPolicy, optimalActionValues);*/
+  testCRank(train, test, numClasses, optimalPolicy, optimalActionValues);
 
   
   PolicyPtr policy = optimalPolicy->addComputeStatistics();

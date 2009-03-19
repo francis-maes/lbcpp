@@ -128,6 +128,44 @@ protected:
   const std::vector<double>* costs;
 };
 
+template<class ExactType, class DiscriminantLoss>
+struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
+{
+  typedef RankingLossFunction<ExactType> BaseClass;
+
+  AdditiveRankingLossFunction(const DiscriminantLoss& discriminantLoss)
+    : discriminantLoss(discriminantLoss) {}
+  AdditiveRankingLossFunction() {}
+  
+  enum {isDerivable = DiscriminantLoss::isDerivable};
+  
+protected:
+  DiscriminantLoss discriminantLoss;
+  
+  void addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative,
+            double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
+  {
+    assert(deltaCost > 0);
+    // deltaScore = scores[positiveAlternative] - scores[negativeAlternative]
+    // deltaScore should be positive
+    
+    double discriminantValue, discriminantDerivative;
+    double discriminantDerivativeDirection;
+    if (gradientDirection)
+      discriminantDerivativeDirection = (*gradientDirection)[positiveAlternative] - (*gradientDirection)[negativeAlternative];
+    discriminantLoss.compute(deltaScore, output ? &discriminantValue : NULL,
+      gradientDirection ? &discriminantDerivativeDirection : NULL, gradient ? &discriminantDerivative : NULL);
+    if (gradient)
+    {
+      double delta = deltaCost * discriminantDerivative;
+      (*gradient)[positiveAlternative] += delta;
+      (*gradient)[negativeAlternative] -= delta;
+    }
+    if (output)
+      *output += deltaCost * discriminantValue;
+  }
+};
+
 /*
 ** Macros to declare loss adaptators
 */

@@ -16,16 +16,14 @@ namespace impl {
 
 template<class DiscriminantLoss>
 struct AllPairsLossFunction
-  : public RankingLossFunction< AllPairsLossFunction<DiscriminantLoss> >
+  : public AdditiveRankingLossFunction< AllPairsLossFunction<DiscriminantLoss>, DiscriminantLoss >
 {
-  typedef RankingLossFunction< AllPairsLossFunction<DiscriminantLoss> > BaseClass;
+  typedef AdditiveRankingLossFunction< AllPairsLossFunction<DiscriminantLoss>, DiscriminantLoss > BaseClass;
   
   AllPairsLossFunction(const DiscriminantLoss& discriminantLoss)
-    : discriminantLoss(discriminantLoss) {}
+    : BaseClass(discriminantLoss) {}
   AllPairsLossFunction() {}
   
-  enum {isDerivable = DiscriminantLoss::isDerivable};
-
   void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
   {
     const std::vector<double>& costs = BaseClass::getCosts();
@@ -36,10 +34,17 @@ struct AllPairsLossFunction
     assert(scores && scores->getNumValues() == costs.size());
     
     std::vector<double> g;
+    DenseVectorPtr gradientDirectionDense;
+    const std::vector<double>* gdir = NULL;
     if (gradient)
       g.resize(costs.size(), 0.0);
+    if (gradientDirection)
+    {
+      gradientDirectionDense = gradientDirection->toDenseVector();
+      gdir = &gradientDirectionDense->getValues();
+    }
     
-    computeAllPairsAnyLoss(scores->getValues(), costs, output, gradientDirection, gradient ? &g : NULL);
+    computeAllPairsAnyLoss(scores->getValues(), costs, output, gdir, gradient ? &g : NULL);
 
     if (gradient)
       gradient->set(DenseVectorPtr(new DenseVector(g)));
@@ -47,20 +52,8 @@ struct AllPairsLossFunction
   
 protected:
   void computeAllPairsAnyLoss(const std::vector<double>& scores, const std::vector<double>& costs,
-                              double* output, const FeatureGeneratorPtr gradientDirection, std::vector<double>* gradient) const
+                              double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
   {
-/*    {
-      static int pouet = 0;
-      if (++pouet >= 1000)
-      { 
-        for (size_t i = 0; i < scores.size(); ++i)
-          std::cout << "(score = " << scores[i] << ", cost = " << costs[i] << ")" << " ";
-        std::cout << std::endl;
-      }
-      if (pouet == 2000)
-        exit(1);
-    }*/
-  
     size_t n = scores.size();
     if (output)
       *output = 0.0;
@@ -75,17 +68,7 @@ protected:
           
           double deltaScore = scores[i] - scores[j]; // deltaScore should be positive
           //std::cout << "Pair (" << i << ", " << j << ") => " << deltaValue << std::endl;
-          double baseLossValue, baseLossDerivative;
-          // FIXME: baseLossDerivativeDirection ???
-          discriminantLoss.compute(deltaScore, output ? &baseLossValue : NULL, NULL, gradient ? &baseLossDerivative : NULL);
-          if (gradient)
-          {
-            double delta = deltaCost * baseLossDerivative;
-            (*gradient)[i] += delta;
-            (*gradient)[j] -= delta;
-          }
-          if (output)
-            *output += deltaCost * baseLossValue;
+          BaseClass::addRankingPair(deltaCost, deltaScore, i, j, output, gradientDirection, gradient);
         }
       }
     if (!numPairs)
@@ -96,9 +79,6 @@ protected:
       for (size_t i = 0; i < gradient->size(); ++i)
         (*gradient)[i] /= numPairs;
   }
-
-private:
-  DiscriminantLoss discriminantLoss;
 };
 
 template<class DiscriminantLoss>
