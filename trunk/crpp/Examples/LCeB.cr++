@@ -104,6 +104,9 @@ struct Operation
     }
   }
   
+  bool operator ==(const Operation& otherOperation) const
+    {return operation == otherOperation.operation && leftIndex == otherOperation.leftIndex && rightIndex == otherOperation.rightIndex;}
+
   friend inline std::ostream& operator <<(std::ostream& ostr, const Operation& op)
     {return ostr << "(" << getChar(op.operation) << " " << op.leftIndex << " " << op.rightIndex << ")";}
 };

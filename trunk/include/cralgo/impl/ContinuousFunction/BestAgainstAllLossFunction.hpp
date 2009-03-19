@@ -26,35 +26,8 @@ struct BestAgainstAllLossFunction
   
   enum {isDerivable = false};
 
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
-  {
-    const std::vector<double>& costs = BaseClass::getCosts();
-    if (!costs.size())
-      {if (output) *output = 0; return;}
-
-    DenseVectorPtr scores = input->toDenseVector();
-    assert(scores && scores->getNumValues() == costs.size());
-    
-    std::vector<double> g;
-    DenseVectorPtr gradientDirectionDense;
-    const std::vector<double>* gdir = NULL;
-    if (gradient)
-      g.resize(costs.size(), 0.0);
-    if (gradientDirection)
-    {
-      gradientDirectionDense = gradientDirection->toDenseVector();
-      gdir = &gradientDirectionDense->getValues();
-    }
-    
-    computeAnyLoss(scores->getValues(), costs, output, gdir, gradient ? &g : NULL);
-
-    if (gradient)
-      gradient->set(DenseVectorPtr(new DenseVector(g)));
-  }
-  
-protected:
-  void computeAnyLoss(const std::vector<double>& scores, const std::vector<double>& costs,
-                              double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
+  void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs,
+               double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
   {
     size_t n = scores.size();
     double topRankScore = -DBL_MAX;
@@ -68,8 +41,6 @@ protected:
     assert(topRankIndex != (size_t)-1);
     double topRankCost = costs[topRankIndex];
     
-    if (output)
-      *output = 0.0;
     size_t numPairs = 0;
     for (size_t i = 0; i < n; ++i)
     {
@@ -88,13 +59,8 @@ protected:
       }
     }
     
-    if (!numPairs)
-      return;
-    if (output)
-      *output /= numPairs;
-    if (gradient)
-      for (size_t i = 0; i < gradient->size(); ++i)
-        (*gradient)[i] /= numPairs;    
+    if (numPairs)
+      BaseClass::multiplyOutputAndGradient(output, gradient, 1.0 / numPairs);
   }
 };
 

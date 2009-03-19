@@ -124,8 +124,24 @@ struct RankingLossFunction : public ScalarVectorFunction<ExactType>
   const std::vector<double>& getCosts() const
     {assert(costs); return *costs;}
   
-protected:
+  static void sortScores(const std::vector<double>& scores, std::vector<size_t>& res)
+  {
+    res.resize(scores.size());
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = i;
+    std::sort(res.begin(), res.end(), CompareWRTScores(scores));
+  }  
+
+private:
   const std::vector<double>* costs;
+  
+  struct CompareWRTScores
+  {
+    CompareWRTScores(const std::vector<double>& scores) : scores(scores) {}
+    const std::vector<double>& scores;
+    bool operator()(size_t first, size_t second) const
+      {return scores[first] > scores[second];}
+  };
 };
 
 template<class ExactType, class DiscriminantLoss>
@@ -138,7 +154,38 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
   AdditiveRankingLossFunction() {}
   
   enum {isDerivable = DiscriminantLoss::isDerivable};
-  
+
+  // override this:
+  void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs,
+               double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
+    {assert(false);}
+                              
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  {
+    if (output)
+      *output = 0.0;
+
+    const std::vector<double>& costs = BaseClass::getCosts();
+    if (!costs.size())
+      return;
+
+    DenseVectorPtr scores = input->toDenseVector();
+    assert(scores && scores->getNumValues() == costs.size());
+    std::vector<double> g;
+    DenseVectorPtr gradientDirectionDense;
+    const std::vector<double>* gdir = NULL;
+    if (gradient)
+      g.resize(costs.size(), 0.0);
+    if (gradientDirection)
+    {
+      gradientDirectionDense = gradientDirection->toDenseVector();
+      gdir = &gradientDirectionDense->getValues();
+    }
+    BaseClass::_this().computeRankingLoss(scores->getValues(), costs, output, gdir, gradient ? &g : NULL);
+    if (gradient)
+      gradient->set(DenseVectorPtr(new DenseVector(g)));
+  }
+
 protected:
   DiscriminantLoss discriminantLoss;
   
@@ -164,6 +211,57 @@ protected:
     if (output)
       *output += deltaCost * discriminantValue;
   }
+
+  static void multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k)
+  {
+    if (output)
+      *output *= k;
+    if (gradient)
+      for (size_t i = 0; i < gradient->size(); ++i)
+        (*gradient)[i] *= k;
+  }
+  
+
+  static bool areCostsBipartite(const std::vector<double>& costs)
+  {
+    double positiveCost = 0.0;
+    bool positiveCostDefined = false;
+    for (size_t i = 0; i < costs.size(); ++i)
+      if (costs[i])
+      {
+        if (positiveCostDefined)
+        {
+          if (costs[i] != positiveCost)
+            return false;
+        }
+        else
+          positiveCost = costs[i], positiveCostDefined = true;
+      }
+      
+    return positiveCostDefined;
+  }
+  
+  // returns a map from costs to (argmin scores, argmax scores) pairs
+  static void getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res)
+  {
+    res.clear();
+    for (size_t i = 0; i < costs.size(); ++i)
+    {
+      double cost = costs[i];
+      double score = scores[i];
+      std::map<double, std::pair<size_t, size_t> >::iterator it = res.find(cost);
+      if (it == res.end())
+        res[cost] = std::make_pair(i, i);
+      else
+      {
+        if (score < scores[it->second.first]) it->second.first = i;
+        if (score > scores[it->second.second]) it->second.second = i;
+      }
+    }
+  }
+  
+  static bool hasFewDifferentCosts(size_t numAlternatives, size_t numDifferentCosts)
+    {return numAlternatives > 3 && (double)numAlternatives < 2.5 * numDifferentCosts;}  
 };
 
 /*

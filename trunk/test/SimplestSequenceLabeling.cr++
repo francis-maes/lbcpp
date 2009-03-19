@@ -172,15 +172,18 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
 
 void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(2, 10000);
+  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(10, 10000);
 
-  RankerPtr ranker = GradientBasedRanker::createLargeMarginAllPairsLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
+  RankerPtr ranker = GradientBasedRanker::
+    //createLargeMarginBestAgainstAllLinear
+    //createLargeMarginMostViolatedPairLinear
+    createLargeMarginAllPairsLinear
+    (GradientBasedLearner::createGradientDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
   PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
 
-  for (size_t i = 0; i < 15; ++i)
+  for (size_t i = 0; i < 5; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
     runPolicy(learnerPolicy->verbose(0)->addComputeStatistics(), learningExamples, labels->getNumFeatures());
@@ -246,8 +249,8 @@ int main(int argc, char* argv[])
   
   //std::cout << " === SARSA === " << std::endl;
   //testSarsa(learningExamples, labels);
-  std::cout << " === CLASSIFIER === " << std::endl;
-  testClassifier(learningExamples, labels);
+//  std::cout << " === CLASSIFIER === " << std::endl;
+//  testClassifier(learningExamples, labels);
   std::cout << " === RANKING === " << std::endl;
   testCRank(learningExamples, labels);
   return 0;

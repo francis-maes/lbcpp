@@ -67,6 +67,20 @@ public:
     {return impl::staticToDynamic(BaseClass::_this().baseArchitecture());}
 };
 
+template<class ExactType>
+class StaticToDynamicGradientBasedLinearRanker : public StaticToDynamicGradientBasedRanker<ExactType>
+{
+public:
+  inline impl::LinearArchitecture baseArchitecture() const
+    {return impl::linearArchitecture();}
+  
+  inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
+    {return impl::parallelArchitecture(baseArchitecture());}
+    
+  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
+};
+
 
 /*
 ** Regression
@@ -207,20 +221,11 @@ GradientBasedGeneralizedClassifierPtr GradientBasedGeneralizedClassifier::create
 ** Ranker
 */
 class LargeMarginAllPairsLinearRanker
-  : public StaticToDynamicGradientBasedRanker<LargeMarginAllPairsLinearRanker>
+  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginAllPairsLinearRanker>
 {
 public:
-  inline impl::LinearArchitecture baseArchitecture() const
-    {return impl::linearArchitecture();}
-  
-  inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
-    {return impl::parallelArchitecture(baseArchitecture());}
-
   inline impl::AllPairsLoss<impl::HingeLossFunction, RankingExample> loss() const
     {return impl::allPairsLoss<impl::HingeLossFunction, RankingExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedRankerPtr GradientBasedRanker::createLargeMarginAllPairsLinear(GradientBasedLearnerPtr learner)
@@ -232,25 +237,32 @@ GradientBasedRankerPtr GradientBasedRanker::createLargeMarginAllPairsLinear(Grad
 }
 
 class LargeMarginBestAgainstAllLinearRanker
-  : public StaticToDynamicGradientBasedRanker<LargeMarginBestAgainstAllLinearRanker>
+  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginBestAgainstAllLinearRanker>
 {
 public:
-  inline impl::LinearArchitecture baseArchitecture() const
-    {return impl::linearArchitecture();}
-  
-  inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
-    {return impl::parallelArchitecture(baseArchitecture());}
-
   inline impl::BestAgainstAllLoss<impl::HingeLossFunction, RankingExample> loss() const
     {return impl::bestAgainstAllLoss<impl::HingeLossFunction, RankingExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedRankerPtr GradientBasedRanker::createLargeMarginBestAgainstAllLinear(GradientBasedLearnerPtr learner)
 {
   GradientBasedRankerPtr res = new LargeMarginBestAgainstAllLinearRanker();
+  res->setLearner(learner);
+  res->createParameters();
+  return res;
+}
+
+class LargeMarginMostViolatedPairLinearRanker
+  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginMostViolatedPairLinearRanker>
+{
+public:
+  inline impl::MostViolatedPairLoss<impl::HingeLossFunction, RankingExample> loss() const
+    {return impl::mostViolatedPairLoss<impl::HingeLossFunction, RankingExample>();}
+};
+
+GradientBasedRankerPtr GradientBasedRanker::createLargeMarginMostViolatedPairLinear(GradientBasedLearnerPtr learner)
+{
+  GradientBasedRankerPtr res = new LargeMarginMostViolatedPairLinearRanker();
   res->setLearner(learner);
   res->createParameters();
   return res;
