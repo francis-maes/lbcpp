@@ -17,9 +17,9 @@ namespace impl {
 
 template<class DecoratedType>
 struct ComputeStatisticsPolicy
-  : public DecoratorPolicy<ComputeStatisticsPolicy<DecoratedType> , DecoratedType>
+  : public EpisodicDecoratorPolicy<ComputeStatisticsPolicy<DecoratedType> , DecoratedType>
 {
-  typedef DecoratorPolicy<ComputeStatisticsPolicy, DecoratedType> BaseClass;
+  typedef EpisodicDecoratorPolicy<ComputeStatisticsPolicy, DecoratedType> BaseClass;
   
   ComputeStatisticsPolicy(const DecoratedType& decorated)
     : BaseClass(decorated),
@@ -30,40 +30,33 @@ struct ComputeStatisticsPolicy
       choicesPerEpisode(new ScalarRandomVariableStatistics("choicesPerEpisode"))
   {
   }
-  
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
+
+  VariablePtr policyStart(ChoosePtr choose)
   {
-    // FIXME: check flat
     episodeNumChooses = 0;
     episodeNumChoices = 0;
     episodeRewardSum = 0.0;
-    BaseClass::policyEnter(crAlgorithm);
-  }
-
-  VariablePtr policyChoose(ChoosePtr choose)
-  {
-    ++episodeNumChooses;
-    episodeNumChoices += choose->getNumChoices();
-    return BaseClass::policyChoose(choose);
-  }
-
-  void policyReward(double reward)
-  {
-    episodeRewardSum += reward;
-    BaseClass::policyReward(reward);
+    processChoose(choose);
+    return BaseClass::policyStart(choose);
   }
   
-  void policyLeave()
+  VariablePtr policyStep(double reward, ChoosePtr choose)
   {
+    processReward(reward);
+    processChoose(choose);
+    return BaseClass::policyStep(reward, choose);
+  }
+    
+  void policyEnd(double reward)
+  {
+    processReward(reward);
     if (episodeNumChooses)
     {
-      rewardPerChoose->push(episodeRewardSum / episodeNumChooses);
-      choicesPerChoose->push(episodeNumChoices / (double)episodeNumChooses);
       rewardPerEpisode->push(episodeRewardSum);
       choosesPerEpisode->push((double)episodeNumChooses);
       choicesPerEpisode->push((double)episodeNumChoices);
     }
-    BaseClass::policyLeave();    
+    BaseClass::policyEnd(reward);
   }
   
   size_t getNumResults() const
@@ -71,8 +64,6 @@ struct ComputeStatisticsPolicy
     
   ObjectPtr getResult(size_t i) const
   {
-    if (i >= 5)
-      return BaseClass::getResult(i - 5);
     switch (i)
     {
     case 0: return rewardPerChoose;
@@ -80,12 +71,25 @@ struct ComputeStatisticsPolicy
     case 2: return rewardPerEpisode;
     case 3: return choosesPerEpisode;
     case 4: return choicesPerEpisode;
+    default: return BaseClass::getResult(i - 5);
     };
-    assert(false);
-    return ObjectPtr();
   }
 
 private:
+  void processChoose(ChoosePtr choose)
+  {
+    size_t numChoices = choose->getNumChoices();
+    ++episodeNumChooses;
+    episodeNumChoices += numChoices;
+    choicesPerChoose->push((double)numChoices);
+  }
+  
+  void processReward(double reward)
+  {
+    episodeRewardSum += reward;
+    rewardPerChoose->push(reward);
+  }
+
   ScalarRandomVariableStatisticsPtr rewardPerChoose, choicesPerChoose;
   ScalarRandomVariableStatisticsPtr rewardPerEpisode, choosesPerEpisode, choicesPerEpisode;
 

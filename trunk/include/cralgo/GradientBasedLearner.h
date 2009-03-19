@@ -18,15 +18,31 @@ namespace cralgo
 class GradientBasedLearner : public Object
 {
 public:
-  virtual void trainStochasticBegin(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer) {}
-  virtual void trainStochasticExample(DenseVectorPtr parameters, FeatureGeneratorPtr gradient, double weight) = 0;
-  virtual void trainStochasticExample(DenseVectorPtr parameters, ScalarVectorFunctionPtr exampleLoss, ScalarVectorFunctionPtr regularizer)
-    {trainStochasticExample(parameters, exampleLoss->computeGradient(parameters), 1.0);}
+  GradientBasedLearner() : meanInputSize(0.0) {}
+  
+  void setParameters(DenseVectorPtr parameters)
+    {this->parameters = parameters;}
     
-  virtual void trainStochasticEnd(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer) {}
-  virtual void trainBatch(DenseVectorPtr parameters, ScalarVectorFunctionPtr objective, size_t numExamples) = 0;
+  void setRegularizer(ScalarVectorFunctionPtr regularizer)
+    {this->regularizer = regularizer;}
+    
+  void setMeanInputSize(double meanInputSize)
+    {this->meanInputSize = meanInputSize;}
+
+  virtual void trainStochasticBegin() {}
+  virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight) = 0;
+  virtual void trainStochasticExample(ScalarVectorFunctionPtr exampleLoss)
+    {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}    
+  virtual void trainStochasticEnd() {}
+
+  virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples) = 0;
 
   static GradientBasedLearnerPtr createGradientDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
+  
+protected:
+  DenseVectorPtr parameters;
+  ScalarVectorFunctionPtr regularizer;
+  double meanInputSize;
 };
 
 }; /* namespace cralgo */

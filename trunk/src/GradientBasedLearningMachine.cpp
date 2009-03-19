@@ -85,7 +85,7 @@ public:
     {return impl::squareLoss<RegressionExample>();}
     
   inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedRegressorPtr GradientBasedRegressor::createLeastSquaresLinear(GradientBasedLearnerPtr learner)
@@ -138,7 +138,7 @@ public:
     {return impl::logBinomialLoss<ClassificationExample>();}
     
   inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRegression(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels)
@@ -163,7 +163,7 @@ public:
     {return impl::hingeLoss<ClassificationExample>();}
     
   inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.001));}
+    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels)

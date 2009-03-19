@@ -88,6 +88,9 @@ public:
   virtual FeatureDictionaryPtr getDictionary() const;
   
   virtual void addWeightedTo(DenseVectorPtr target, double weight) const;
+  virtual size_t l0norm() const;
+  virtual double l1norm() const;
+  virtual double sumOfSquares() const;
   
 private:
   typedef std::map<const FeatureGeneratorPtr, double> LinearCombinationMap;

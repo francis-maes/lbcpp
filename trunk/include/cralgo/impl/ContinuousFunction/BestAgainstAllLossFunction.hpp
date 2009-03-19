@@ -16,12 +16,12 @@ namespace impl {
 
 template<class DiscriminantLoss>
 struct BestAgainstAllLossFunction
-  : public RankingLossFunction< BestAgainstAllLossFunction<DiscriminantLoss> >
+  : public AdditiveRankingLossFunction< BestAgainstAllLossFunction<DiscriminantLoss>, DiscriminantLoss >
 {
-  typedef RankingLossFunction< BestAgainstAllLossFunction<DiscriminantLoss> > BaseClass;
+  typedef AdditiveRankingLossFunction< BestAgainstAllLossFunction<DiscriminantLoss>, DiscriminantLoss > BaseClass;
   
   BestAgainstAllLossFunction(const DiscriminantLoss& discriminantLoss)
-    : discriminantLoss(discriminantLoss) {}
+    : BaseClass(discriminantLoss) {}
   BestAgainstAllLossFunction() {}
   
   enum {isDerivable = false};
@@ -36,10 +36,17 @@ struct BestAgainstAllLossFunction
     assert(scores && scores->getNumValues() == costs.size());
     
     std::vector<double> g;
+    DenseVectorPtr gradientDirectionDense;
+    const std::vector<double>* gdir = NULL;
     if (gradient)
       g.resize(costs.size(), 0.0);
+    if (gradientDirection)
+    {
+      gradientDirectionDense = gradientDirection->toDenseVector();
+      gdir = &gradientDirectionDense->getValues();
+    }
     
-    computeAnyLoss(scores->getValues(), costs, output, gradientDirection, gradient ? &g : NULL);
+    computeAnyLoss(scores->getValues(), costs, output, gdir, gradient ? &g : NULL);
 
     if (gradient)
       gradient->set(DenseVectorPtr(new DenseVector(g)));
@@ -47,43 +54,38 @@ struct BestAgainstAllLossFunction
   
 protected:
   void computeAnyLoss(const std::vector<double>& scores, const std::vector<double>& costs,
-                              double* output, const FeatureGeneratorPtr gradientDirection, std::vector<double>* gradient) const
+                              double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
   {
     size_t n = scores.size();
     double topRankScore = -DBL_MAX;
-    double topRankCost = 0;
+    size_t topRankIndex = (size_t)-1;
     for (size_t i = 0; i < scores.size(); ++i)
     {
       double score = scores[i];
       if (score > topRankScore)
-        topRankScore = score, topRankCost = costs[i];
+        topRankScore = score, topRankIndex = i;
     }
-    assert(topRankScore > -DBL_MAX);
+    assert(topRankIndex != (size_t)-1);
+    double topRankCost = costs[topRankIndex];
     
     if (output)
       *output = 0.0;
     size_t numPairs = 0;
-    for (size_t i = 1; i < n; ++i)
+    for (size_t i = 0; i < n; ++i)
     {
       double deltaCost = costs[i] - topRankCost;
-      if (deltaCost == 0)
-        continue;
-      ++numPairs;
-      
-      double deltaScore = scores[i] - topRankScore;
-      if (deltaCost > 0)
-        deltaScore = -deltaScore;
-
-      double baseLossValue, baseLossDerivative;
-      // FIXME: baseLossDerivativeDirection
-      discriminantLoss.compute(deltaScore, output ? &baseLossValue : NULL, NULL, gradient ? &baseLossDerivative : NULL);
-      if (gradient)
+      if (deltaCost > 0) // topRank is better than i
       {
-        (*gradient)[i] -= baseLossDerivative * deltaCost;
-        (*gradient)[0] += baseLossDerivative * deltaCost;
+        BaseClass::addRankingPair(deltaCost, topRankScore - scores[i], topRankIndex, i,
+          output, gradientDirection, gradient);
+        ++numPairs;
       }
-      if (output)
-        *output += baseLossValue * fabs(deltaCost);
+      else if (deltaCost < 0) // i is better than topRank
+      {
+        BaseClass::addRankingPair(-deltaCost, scores[i] - topRankScore, i, topRankIndex,
+          output, gradientDirection, gradient);
+        ++numPairs;
+      }
     }
     
     if (!numPairs)
@@ -94,9 +96,6 @@ protected:
       for (size_t i = 0; i < gradient->size(); ++i)
         (*gradient)[i] /= numPairs;    
   }
-
-private:
-  DiscriminantLoss discriminantLoss;
 };
 
 template<class DiscriminantLoss>

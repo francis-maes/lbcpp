@@ -11,6 +11,7 @@
 
 # include "LearningMachine.h"
 # include "GradientBasedLearner.h"
+# include "RandomVariable.h"
 
 namespace cralgo
 {
@@ -31,16 +32,43 @@ public:
   ** LearningMachine
   */
   virtual void trainStochasticBegin()
-    {assert(learner); ensureParametersAreCreated(); learner->trainStochasticBegin(parameters, getRegularizer());}
+  {
+    assert(learner);
+    learner->setParameters(parameters);
+    learner->setRegularizer(getRegularizer());
+    learner->trainStochasticBegin();
+  }
     
-  virtual void trainStochasticExample(const ExampleType& example)
-    {assert(learner); learner->trainStochasticExample(parameters, getLoss(example), getRegularizer());}
+  void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
+  {
+    assert(learner);
+    learner->trainStochasticExample(gradient, weight);
+  }
 
+  virtual void trainStochasticExample(const ExampleType& example)
+  {
+    assert(learner);
+    inputSize.push((double)(example.getInput()->l0norm()));
+    learner->setMeanInputSize(inputSize.getMean());
+    learner->trainStochasticExample(getLoss(example));
+  }
+  
   virtual void trainStochasticEnd()
-    {assert(learner); learner->trainStochasticBegin(parameters, getRegularizer());}
+    {assert(learner); learner->trainStochasticEnd();}
   
   virtual void trainBatch(const std::vector<ExampleType>& examples)
-    {assert(learner); ensureParametersAreCreated(); learner->trainBatch(parameters, getRegularizedEmpiricalRisk(examples), examples.size());}
+  {
+    assert(learner && examples.size());
+    // sample mean input size
+    for (size_t i = 0; i < 20; ++i)
+      inputSize.push((double)(examples[Random::getInstance().sampleSize(examples.size())].getInput()->l0norm()));
+
+    // delegate to learner
+    learner->setMeanInputSize(inputSize.getMean());
+    learner->setParameters(parameters);
+    learner->setRegularizer(getRegularizer());
+    learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples.size());
+  }
   
   /*
   ** Parameters
@@ -48,9 +76,6 @@ public:
   DenseVectorPtr getParameters() const
     {return parameters;}
     
-  void ensureParametersAreCreated()
-    {if (!parameters) createParameters();}
-
   void createParameters()
     {assert(!parameters); parameters = createInitialParameters();}
     
@@ -65,6 +90,10 @@ public:
     
   void setLearner(GradientBasedLearnerPtr learner)
     {this->learner = learner;}
+
+  void pushInputSize(double inputSize)
+    {this->inputSize.push(inputSize);}
+
 
   /*
   ** Shortcuts for functions computation
@@ -81,6 +110,7 @@ public:
 protected:
   DenseVectorPtr parameters;
   GradientBasedLearnerPtr learner;
+  ScalarRandomVariableMean inputSize;
 };
 
 /*

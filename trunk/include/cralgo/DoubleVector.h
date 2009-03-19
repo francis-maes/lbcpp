@@ -29,9 +29,6 @@ public:
   /*
   ** Dictionary
   */
-  bool hasDictionary() const
-    {return dictionary.exists();}
-    
   void setDictionary(FeatureDictionaryPtr dictionary)
     {this->dictionary = dictionary;}
     

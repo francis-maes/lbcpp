@@ -17,10 +17,10 @@ namespace impl {
 
 template<class DecoratedType>
 struct RankingExampleCreatorPolicy
-  : public EpisodicDecoratorPolicy<RankingExampleCreatorPolicy<DecoratedType> , DecoratedType>
+  : public DecoratorPolicy<RankingExampleCreatorPolicy<DecoratedType> , DecoratedType>
 {
   typedef RankingExampleCreatorPolicy<DecoratedType> ExactType;
-  typedef EpisodicDecoratorPolicy<ExactType, DecoratedType> BaseClass;
+  typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   RankingExampleCreatorPolicy(const DecoratedType& explorationPolicy, RankerPtr ranker, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
     : BaseClass(explorationPolicy), ranker(ranker), supervisor(supervisor), inclusionLevel(0) {}

@@ -61,11 +61,7 @@ void LazyVector::addWeighted(const LazyVectorPtr vector, double weight)
     {
       LazyVectorPtr& thisSubVector = getSubVector(i);
       if (!thisSubVector)
-      {
-        thisSubVector = new LazyVector();
-        if (otherSubVector->hasDictionary())
-          thisSubVector->setDictionary(otherSubVector->getDictionary());
-      }
+        thisSubVector = new LazyVector(otherSubVector->getDictionary());
       thisSubVector->addWeighted(otherSubVector, weight);
     }
   }
@@ -106,13 +102,57 @@ void LazyVector::addWeightedTo(DenseVectorPtr target, double weight) const
     {
       DenseVectorPtr& subTarget = target->getSubVector(i);
       if (!subTarget)
-      {
-        subTarget = new DenseVector();
-        if (subVector->hasDictionary())
-          subTarget->setDictionary(subVector->getDictionary());
-      }
+        subTarget = new DenseVector(subVector->getDictionary());
       subVector->addWeightedTo(subTarget, weight);
     }
+  }
+}
+
+size_t LazyVector::l0norm() const
+{
+  if (isStoredWithFeatureGenerator())
+    return featureGenerator->l0norm();
+  else if (guessIfDense())
+  {
+    const_cast<LazyVector* >(this)->storeWithDenseVector();
+    return denseVector->l0norm();
+  }
+  else
+  {
+    const_cast<LazyVector* >(this)->storeWithSparseVector();
+    return sparseVector->l0norm();
+  }
+}
+
+double LazyVector::l1norm() const
+{
+  if (isStoredWithFeatureGenerator())
+    return featureGenerator->l1norm();
+  else if (guessIfDense())
+  {
+    const_cast<LazyVector* >(this)->storeWithDenseVector();
+    return denseVector->l1norm();
+  }
+  else
+  {
+    const_cast<LazyVector* >(this)->storeWithSparseVector();
+    return sparseVector->l1norm();
+  }
+}
+
+double LazyVector::sumOfSquares() const
+{
+  if (isStoredWithFeatureGenerator())
+    return featureGenerator->sumOfSquares();
+  else if (guessIfDense())
+  {
+    const_cast<LazyVector* >(this)->storeWithDenseVector();
+    return denseVector->sumOfSquares();
+  }
+  else
+  {
+    const_cast<LazyVector* >(this)->storeWithSparseVector();
+    return sparseVector->sumOfSquares();
   }
 }
 
@@ -160,7 +200,7 @@ void LazyVector::storeWithSparseVector()
   // put the sub vectors into the combination
   if (subVectors.size())
   {
-    SparseVectorPtr sub = dictionary ? new SparseVector(dictionary) : new SparseVector();
+    SparseVectorPtr sub = new SparseVector(getDictionary());
     for (size_t i = 0; i < subVectors.size(); ++i)
     {
       LazyVectorPtr subLazy = subVectors[i];
@@ -176,7 +216,7 @@ void LazyVector::storeWithSparseVector()
   
   // eventually create the sparse vector
   if (!sparseVector)
-    sparseVector = dictionary ? new SparseVector(dictionary) : new SparseVector();
+    sparseVector = new SparseVector(getDictionary());
     
   // compute the linear combination
   for (LinearCombinationMap::const_iterator it = linearCombination.begin(); it != linearCombination.end(); ++it)

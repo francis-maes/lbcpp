@@ -51,26 +51,27 @@ public:
   GradientDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
     : learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
     
-  virtual void trainStochasticExample(DenseVectorPtr parameters, FeatureGeneratorPtr gradient, double weight)
+  virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
-    parameters->addWeighted(gradient, -weight * computeAlpha());
+    parameters->addWeighted(gradient, -weight * computeAlpha(gradient));
     ++epoch;
   }
   
-  virtual void trainStochasticEnd(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer)
+  virtual void trainStochasticEnd()
   {
     // apply regularizer
     if (regularizer)
       parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
   }
 
-  virtual void trainBatch(DenseVectorPtr parameters, ScalarVectorFunctionPtr objective, size_t numExamples)
+  virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples)
   {
     for (int i = 0; i < 100; ++i)
     {
       std::cout << "Iteration " << i << " objective = " << objective->compute(parameters) << std::endl; 
-      parameters->addWeighted(objective->computeGradient(parameters), -computeAlpha() * numExamples);
+      LazyVectorPtr gradient = objective->computeGradient(parameters);
+      parameters->addWeighted(gradient, -computeAlpha(gradient) * numExamples);
       epoch += numExamples;
     }
   }
@@ -80,11 +81,22 @@ protected:
   bool normalizeLearningRate;
   size_t epoch;
   
-  double computeAlpha() const
+  double computeAlpha(LazyVectorPtr gradient = LazyVectorPtr())
   {
-    double meanNumberOfFeatures = 0.0; // FIXME
-    return (learningRate ? learningRate->compute(epoch) : 1.0) * 
-        (normalizeLearningRate && meanNumberOfFeatures ? 1.0 / meanNumberOfFeatures : 1.0);
+    //std::cout << "Alpha = 1.0";
+    double res = 1.0;
+    if (learningRate)
+    {
+      //std::cout << " x " << learningRate->compute(epoch);
+      res *= learningRate->compute(epoch);
+    }
+    if (normalizeLearningRate && meanInputSize)
+    {
+      //std::cout << " / " << meanInputSize;
+      res /= meanInputSize;
+    }
+    //std::cout << " = " << res << std::endl;
+    return res;
   }
 };
 

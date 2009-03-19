@@ -59,10 +59,10 @@ PolicyPtr Policy::createRankingExampleCreator(PolicyPtr explorationPolicy,
 PolicyPtr Policy::createGPOMDP(GeneralizedClassifierPtr classifier, double beta, double exploration)
   {return impl::staticToDynamic(impl::GPOMDPPolicy(classifier, beta, exploration));}
 
-PolicyPtr Policy::verbose(std::ostream& ostr, size_t verbosity) const
+PolicyPtr Policy::verbose(size_t verbosity, std::ostream& ostr) const
 {
   return impl::staticToDynamic(impl::VerbosePolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(this), ostr, verbosity));
+            dynamicToStatic(this), verbosity, ostr));
 }
 
 PolicyPtr Policy::epsilonGreedy(IterationFunctionPtr epsilon) const
