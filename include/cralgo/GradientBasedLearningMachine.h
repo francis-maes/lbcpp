@@ -193,6 +193,7 @@ class GradientBasedRanker
 {
 public:
   static GradientBasedRankerPtr createLargeMarginAllPairsLinear(GradientBasedLearnerPtr learner);
+  static GradientBasedRankerPtr createLargeMarginMostViolatedPairLinear(GradientBasedLearnerPtr learner);
   static GradientBasedRankerPtr createLargeMarginBestAgainstAllLinear(GradientBasedLearnerPtr learner);
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;

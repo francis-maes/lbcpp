@@ -64,6 +64,9 @@ public:
   
   const LabelDictionary& getDictionary() const
     {return *labels;}
+    
+  bool operator ==(const LabelSequence& otherSequence) const
+    {return labels == otherSequence.labels && v == otherSequence.v;}
 
   friend std::ostream& operator <<(std::ostream& ostr, const LabelSequence& labelVector)
   {
