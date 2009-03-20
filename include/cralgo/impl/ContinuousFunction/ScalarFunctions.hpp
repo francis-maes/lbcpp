@@ -123,6 +123,48 @@ struct SigmoidScalarFunction : public ScalarFunction<SigmoidScalarFunction>
 inline SigmoidScalarFunction sigmoidFunction()
   {return SigmoidScalarFunction();}
 
+template<class VectorScalarFunctionType>
+struct VectorLineScalarFunction
+  : public ScalarFunction<VectorLineScalarFunction< VectorScalarFunctionType > >
+{
+  VectorLineScalarFunction(const VectorScalarFunctionType& function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
+    : function(function), parameters(parameters), direction(direction) {}
+    
+  enum {isDerivable = VectorScalarFunctionType::isDerivable};
+  
+  void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  {
+    DenseVectorPtr vectorInput = new DenseVector(parameters->getDictionary());
+    vectorInput->add(parameters);
+    vectorInput->addWeighted(direction, input);
+    FeatureGeneratorPtr gradientDirection;
+    if (derivativeDirection)
+    {
+      LazyVectorPtr v = new LazyVector(parameters->getDictionary());
+      v->addWeighted(direction, *derivativeDirection);
+      gradientDirection = v;
+    }
+    LazyVectorPtr gradient;
+    if (derivative)
+      gradient = new LazyVector(parameters->getDictionary());
+    function.compute(vectorInput, output, gradientDirection, gradient);
+    if (derivative)
+      *derivative = direction->dotProduct(gradient->toDenseVector());
+  }
+  
+private:
+  VectorScalarFunctionType function;
+  const FeatureGeneratorPtr parameters;
+  const FeatureGeneratorPtr direction;
+  
+  DenseVectorPtr input;
+};
+
+template<class ExactType>
+inline VectorLineScalarFunction<ExactType> vectorLineScalarFunction(const ScalarVectorFunction<ExactType>& function,
+          const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
+  {return VectorLineScalarFunction<ExactType>(static_cast<const ExactType& >(function), parameters, direction);}
+
 }; /* namespace impl */
 }; /* namespace cralgo */
 

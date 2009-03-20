@@ -66,6 +66,7 @@ public:
 class VectorOptimizer : public Object
 {
 public:
+  static VectorOptimizerPtr createGradientDescent(IterationFunctionPtr stepSize);
   static VectorOptimizerPtr createRProp();
 
 public:

@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_H_
 
 # include "ContinuousFunction/FunctionStaticToDynamic.hpp"
+# include "ContinuousFunction/FunctionDynamicToStatic.hpp"
 # include "ContinuousFunction/ScalarFunctions.hpp"
 # include "ContinuousFunction/ScalarVectorFunctions.hpp"
 

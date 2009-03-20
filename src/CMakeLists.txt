@@ -57,6 +57,7 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
   ${CRALGO_IMPL}/ContinuousFunction/FunctionStatic.hpp
   ${CRALGO_IMPL}/ContinuousFunction/FunctionPairTraits.hpp
   ${CRALGO_IMPL}/ContinuousFunction/FunctionStaticToDynamic.hpp
+  ${CRALGO_IMPL}/ContinuousFunction/FunctionDynamicToStatic.hpp
 
   ${CRALGO_IMPL}/ContinuousFunction/ScalarFunctions.hpp
   ${CRALGO_IMPL}/ContinuousFunction/ScalarVectorFunctions.hpp
@@ -85,6 +86,8 @@ SET(CRALGO_LIBRARY_IMPL_OPTIMIZER
   ${CRALGO_IMPL}/Optimizer/OptimizerStatic.hpp
   ${CRALGO_IMPL}/Optimizer/OptimizerStaticToDynamic.hpp
   ${CRALGO_IMPL}/Optimizer/RPropOptimizer.hpp
+  ${CRALGO_IMPL}/Optimizer/GradientDescentOptimizer.hpp
+  ${CRALGO_IMPL}/Optimizer/BacktrackingLineSearchOptimizer.hpp
 )
 
 SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION
@@ -132,6 +135,7 @@ SET(CRALGO_LIBRARY_SOURCES
   DenseVector.cpp
   LazyVector.cpp
   DoubleVectorHelpers.hpp
+  ContinuousFunction.cpp
   Optimizer.cpp
   LearningExample.cpp
   LearningMachine.cpp

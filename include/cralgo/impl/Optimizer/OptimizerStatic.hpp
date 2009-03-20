@@ -19,6 +19,12 @@ template<class ExactType>
 struct ScalarOptimizer : public Object<ExactType>
 {
   typedef Object<ExactType> BaseClass;
+
+  double optimizerStart(ScalarFunctionPtr function, double parameter)
+    {return parameter;}
+
+  double optimizerStep(ScalarFunctionPtr function, double parameter, double derivative, double value)
+    {assert(false); return parameter;}
 };
 
 template<class ExactType>
@@ -27,10 +33,10 @@ struct VectorOptimizer : public Object<ExactType>
   typedef Object<ExactType> BaseClass;
 
   DenseVectorPtr optimizerStart(ScalarVectorFunctionPtr function, DenseVectorPtr parameters)
-    {assert(false); return DenseVectorPtr();}
+    {return parameters;}
     
   DenseVectorPtr optimizerStep(ScalarVectorFunctionPtr function, DenseVectorPtr parameters, const DenseVectorPtr gradient, double value)
-    {assert(false); return DenseVectorPtr();}
+    {assert(false); return parameters;}
 };
 
 }; /* namespace impl */
