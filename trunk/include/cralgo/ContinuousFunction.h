@@ -29,6 +29,8 @@ public:
 class ScalarFunction : public ContinuousFunction
 {
 public:
+  static ScalarFunctionPtr createVectorFunctionLine(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
+
   virtual double compute(double input) const = 0;
   virtual double computeDerivative(double input) const = 0;
   virtual double computeDerivative(double input, double direction) const = 0;
@@ -54,7 +56,6 @@ public:
   virtual double compute(const FeatureGeneratorPtr input) const = 0;
   virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input) const = 0;
   virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const = 0;
-
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const = 0;
   virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const = 0;
 };

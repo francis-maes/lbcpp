@@ -9,6 +9,7 @@
 #include <cralgo/Optimizer.h>
 #include <cralgo/impl/Optimizer/OptimizerStaticToDynamic.hpp>
 #include <cralgo/impl/Optimizer/RPropOptimizer.hpp>
+#include <cralgo/impl/Optimizer/GradientDescentOptimizer.hpp>
 #include <deque>
 using namespace cralgo;
 
@@ -80,3 +81,6 @@ OptimizerTerminationTestPtr OptimizerTerminationTest::createAverageImprovementTh
 
 VectorOptimizerPtr VectorOptimizer::createRProp()
   {return impl::staticToDynamic(impl::RPropOptimizer());}
+
+VectorOptimizerPtr VectorOptimizer::createGradientDescent(IterationFunctionPtr stepSize)
+  {return impl::staticToDynamic(impl::GradientDescentOptimizer(stepSize));}

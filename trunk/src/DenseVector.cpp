@@ -57,6 +57,52 @@ void DenseVector::addWeighted(const LazyVectorPtr lazyVector, double weight)
   lazyVector->addWeightedTo(DenseVectorPtr(this), weight);
 }
 
+// todo: factorize binary operations between dense vectors
+
+void DenseVector::addWeighted(const DenseVectorPtr otherVector, double weight)
+{
+  if (!weight)
+    return;
+  const std::vector<double>& otherVectorValues = otherVector->getValues();
+  size_t n = otherVectorValues.size();
+  if (values.size() < n)
+    values.resize(n, 0.0);
+  for (size_t i = 0; i < n; ++i)
+    values[i] += weight * otherVectorValues[i];
+  for (size_t i = 0; i < otherVector->getNumSubVectors(); ++i)
+  {
+    DenseVectorPtr otherSubVector = otherVector->getSubVector(i);
+    if (otherSubVector)
+    {
+      DenseVectorPtr& subVector = getSubVector(i);
+      if (!subVector)
+        subVector = new DenseVector(otherSubVector->getDictionary());
+      subVector->addWeighted(otherSubVector, weight);
+    }
+  }
+}
+
+void DenseVector::add(const DenseVectorPtr otherVector)
+{
+  const std::vector<double>& otherVectorValues = otherVector->getValues();
+  size_t n = otherVectorValues.size();
+  if (values.size() < n)
+    values.resize(n, 0.0);
+  for (size_t i = 0; i < n; ++i)
+    values[i] += otherVectorValues[i];
+  for (size_t i = 0; i < otherVector->getNumSubVectors(); ++i)
+  {
+    DenseVectorPtr otherSubVector = otherVector->getSubVector(i);
+    if (otherSubVector)
+    {
+      DenseVectorPtr& subVector = getSubVector(i);
+      if (!subVector)
+        subVector = new DenseVector(otherSubVector->getDictionary());
+      subVector->add(otherSubVector);
+    }
+  }
+}
+
 int DenseVector::findIndexOfMaximumValue() const
 {
   int res = -1;
