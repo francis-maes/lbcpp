@@ -56,6 +56,8 @@ private:
   VariablePtr sampleChoice(ChoosePtr choose, DenseVectorPtr probabilities, double probabilitiesSum = 1.0)
   {
     double r = Random::getInstance().sampleDouble(probabilitiesSum);
+   //std::cout << "Probabilities: " << probabilities->toString() << " r = " << r << std::endl;
+  
     VariableIteratorPtr iterator = choose->newIterator();
     for (size_t i = 0; i < probabilities->getNumValues(); ++i, iterator->next())
     {
@@ -64,6 +66,7 @@ private:
       if (r < p)
       {
         selectedAction = i;
+       // std::cout << " => action " << i << std::endl;
         return iterator->get();
       }
       r -= p;
@@ -100,19 +103,32 @@ private:
   {
     if (!actionFeatures.size())
       return;
-      
+    
     // -(log p[y|x])
     ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionFeatures, selectedAction));
     
     // -gradient(p[y|x], parameters) / p[y|x]
     FeatureGeneratorPtr gradient = loss->computeGradient(classifier->getParameters());
 
-    // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
-    trace->multiplyByScalar(beta);
-    trace->substract(gradient);
+/*    std::cout << "GRADIENT norm: " << std::endl << gradient->l2norm() << std::endl;
+    std::cout << "TRACE norm: " << std::endl << trace->l2norm() << std::endl;
+    std::cout << "PARAMS norm: " << std::endl << classifier->getParameters()->l2norm() << std::endl;*/
 
     classifier->pushInputSize((double)actionFeatures[Random::getInstance().sampleSize(actionFeatures.size())]->l0norm());
-    classifier->trainStochasticExample(trace, reward);
+
+    // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
+    if (beta)
+    {
+      trace->multiplyByScalar(beta);
+      trace->substract(gradient);
+      if (reward)
+        classifier->trainStochasticExample(trace, -reward);
+    }
+    else if (reward)
+    {
+      // trace = -gradient
+      classifier->trainStochasticExample(gradient, reward);
+    }
   }
 };
 

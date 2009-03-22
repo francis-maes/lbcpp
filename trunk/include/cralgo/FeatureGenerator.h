@@ -26,7 +26,7 @@ public:
   static FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight);
   static FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights);
   static FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
-  static FeatureGeneratorPtr subFeatureGenerator(size_t index, FeatureGeneratorPtr featureGenerator);
+  static FeatureGeneratorPtr subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);
 
 public:
   virtual FeatureDictionaryPtr getDictionary() const = 0;
@@ -62,10 +62,16 @@ public:
   ** Assignment operations
   */
   // target <- target + featureGenerator
-  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
-  
+  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {addWeightedTo(target, 1.0, dictionary);}
+  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {addWeightedTo(target, 1.0, dictionary);}
+
   // target <- target - featureGenerator
-  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {addWeightedTo(target, -1.0, dictionary);}
+  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {addWeightedTo(target, -1.0, dictionary);}
 
   // target <- target + weight * featureGenerator
   virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
@@ -135,7 +141,9 @@ public:
   virtual double l1norm() const;
   virtual double sumOfSquares() const;
   virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
+  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
   virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
+  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
   virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
   virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
   virtual void addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;

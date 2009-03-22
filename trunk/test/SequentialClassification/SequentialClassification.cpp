@@ -179,7 +179,7 @@ void testMonteCarloControl(const std::vector<ClassificationExample>& train, cons
 
 void testOLPOMDP(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.001, 10000);
+  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.01, 10000);
 
   GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
     GradientBasedLearner::createGradientDescent(learningRate));
@@ -280,10 +280,10 @@ int main(int argc, char* argv[])
     test[i] = generator.sample();
   testClassifier(train, test, numClasses);  
   
- // testOLPOMDP(train, test, numClasses);
+  testOLPOMDP(train, test, numClasses);
 
 //  testCRank(train, test, numClasses);
-  
+ return 0; 
   PolicyPtr optimalPolicy = new SequenceClassificationSyntheticOptimalPolicy(generator);
   ActionValueFunctionPtr optimalActionValues = new ZeroOneActionValueFunction(optimalPolicy);
   testCRank(train, test, numClasses, optimalPolicy, optimalActionValues);

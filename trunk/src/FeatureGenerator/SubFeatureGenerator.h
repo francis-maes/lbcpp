@@ -21,9 +21,8 @@ class SubFeatureGenerator :
 public:
   typedef FeatureGeneratorDefaultImplementations<SubFeatureGenerator, EditableFeatureGenerator> BaseClass;
   
-  // fixme: dictionary
-  SubFeatureGenerator(size_t index, FeatureGeneratorPtr featureGenerator)
-    : index(index), featureGenerator(featureGenerator) {}
+  SubFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
+    : BaseClass(dictionary), index(index), featureGenerator(featureGenerator) {}
   
   /*
   ** Accessors
@@ -63,11 +62,86 @@ public:
 
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
-    {assert(false);}
+    {if (exists()) visitor.featureCall(dictionary, index, featureGenerator);}
 
+  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  {
+    SparseVectorPtr res = new SparseVector(getDictionary());
+    if (exists())
+      res->setSubVector(index, featureGenerator->toSparseVector());
+    return res;
+  }
+  
+  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  {
+    DenseVectorPtr res = new DenseVector(getDictionary());
+    if (exists())
+      res->setSubVector(index, featureGenerator->toDenseVector());
+    return res;
+  }
+  
+  virtual std::string toString(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  {
+    std::string res = "subFeatureGenerator";
+    if (exists())
+      res += "(" + getDictionary()->getFeatures().getString(0) + ", " + featureGenerator->toString() + ")";
+    return res;
+  }
+  
+  virtual size_t l0norm() const
+    {return exists() ? featureGenerator->l0norm() : 0;}
+    
+  virtual double l1norm() const
+    {return exists() ? featureGenerator->l1norm() : 0;}
+    
+  virtual double sumOfSquares() const
+    {return exists() ? featureGenerator->sumOfSquares() : 0;}
+    
+  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->addTo(getSubVector(target));}
+  
+  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->addTo(getSubVector(target));}
+
+  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->substractFrom(getSubVector(target));}
+
+  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->substractFrom(getSubVector(target));}
+
+  virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->addWeightedTo(getSubVector(target), weight);}
+
+  virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->addWeightedTo(getSubVector(target), weight);}
+
+  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {if (exists()) featureGenerator->addWeightedSignsTo(getSubVector(target), weight);}
+
+  virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {return exists() ? featureGenerator->dotProduct(getSubVector(vector)) : 0.0;}
+  
 private:
   size_t index;
   FeatureGeneratorPtr featureGenerator;
+
+  DenseVectorPtr getSubVector(DenseVectorPtr vector) const
+  {
+    assert(exists());
+    DenseVectorPtr& res = vector->getSubVector(index);
+    if (!res)
+      res = new DenseVector(featureGenerator->getDictionary());
+    return res;
+  }
+  
+  SparseVectorPtr getSubVector(SparseVectorPtr vector) const
+  {
+    assert(exists());
+    SparseVectorPtr& res = vector->getSubVector(index);
+    if (!res)
+      res = new SparseVector(featureGenerator->getDictionary());
+    return res;
+  }
 };
 
 }; /* namespace cralgo */

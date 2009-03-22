@@ -80,8 +80,8 @@ public:
   */
   virtual FeatureDictionaryPtr getDictionary() const;
 
-  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary)
-    {/* todo: check dictionary */ return SparseVectorPtr(this);}
+  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {/* todo: check dictionary */ return SparseVectorPtr(const_cast<SparseVector* >(this));}
 
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}

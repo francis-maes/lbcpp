@@ -171,6 +171,11 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
       return;
 
     DenseVectorPtr scores = input->toDenseVector();
+    if (!scores || !scores->getNumValues())
+    {
+      std::cerr << "Error: no scores, input class = " << input->getClassName() << ", input = " << std::endl << input->toString() << std::endl;
+      assert(false);
+    }
     assert(scores && scores->getNumValues() == costs.size());
     std::vector<double> g;
     DenseVectorPtr gradientDirectionDense;

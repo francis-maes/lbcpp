@@ -8,6 +8,7 @@
 
 #include <cralgo/EditableFeatureGenerator.h>
 #include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+#include <cralgo/impl/Bridge/DoubleVector.hpp>
 
 #include "FeatureGenerator/EmptyFeatureGenerator.h"
 #include "FeatureGenerator/UnitFeatureGenerator.h"
@@ -111,9 +112,9 @@ FeatureGeneratorPtr FeatureGenerator::unitGenerator()
   static FeatureGeneratorPtr instance = new UnitFeatureGenerator();
   return instance;
 }
-FeatureGeneratorPtr FeatureGenerator::subFeatureGenerator(size_t index, FeatureGeneratorPtr featureGenerator)
+FeatureGeneratorPtr FeatureGenerator::subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
 {
-  return new SubFeatureGenerator(index, featureGenerator);
+  return new SubFeatureGenerator(dictionary, index, featureGenerator);
 }
 
 FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight)
@@ -138,20 +139,15 @@ FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featu
         : FeatureGenerator::emptyGenerator();
       
     // k * (sum_i w_i * x_i) = sum_i (w_i * k) * x_i
-    // FIXME
-  /*  LinearCombinationFeatureGeneratorPtr linearCombination = featureGenerator.dynamicCast<LinearCombinationFeatureGenerator>();
+    LinearCombinationFeatureGeneratorPtr linearCombination = featureGenerator.dynamicCast<LinearCombinationFeatureGenerator>();
     if (linearCombination)
     {
-      if (linearCombination->getNumElements())
-      {
-        LinearCombinationFeatureGeneratorPtr res = new LinearCombinationFeatureGenerator(featureGenerator->getDictionary());
-        for (LinearCombinationFeatureGenerator::const_iterator it = linearCombination->begin(); it != linearCombination->end(); ++it)
-          res->addWeighted(it->first, it->second * weight);
-        return res;
-      }
+      if (linearCombination->exists())
+        return FeatureGenerator::linearCombination(linearCombination->getCompositeFeatureGenerator(),
+          multiplyByScalar(linearCombination->getWeights(), weight)->toDenseVector());
       else
         return FeatureGenerator::emptyGenerator();
-    }*/
+    }
     
     // k * (composite(x_1, ..., x_n)) = composite(k * x_1, ... k * x_n)
     CompositeFeatureGeneratorPtr composite = featureGenerator.dynamicCast<CompositeFeatureGenerator>();
@@ -173,7 +169,7 @@ FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featu
     SubFeatureGeneratorPtr sub = featureGenerator.dynamicCast<SubFeatureGenerator>();
     if (sub)
       return sub->exists()
-        ? FeatureGenerator::subFeatureGenerator(sub->getIndex(), multiplyByScalar(sub->getFeatureGenerator(), weight))
+        ? FeatureGenerator::subFeatureGenerator(sub->getDictionary(), sub->getIndex(), multiplyByScalar(sub->getFeatureGenerator(), weight))
         : FeatureGenerator::emptyGenerator();
   }
 

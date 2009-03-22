@@ -55,7 +55,9 @@ public:
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
+    //std::cout << "Params.addWeighted(" << gradient->toString() << " , " << (-weight * computeAlpha()) << ")" << std::endl;
     parameters->addWeighted(gradient, -weight * computeAlpha());
+    //std::cout << " => " << parameters->toString() << std::endl;
     ++epoch;
   }
   

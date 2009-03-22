@@ -1,3 +1,5 @@
+* s'assurer que tous les vecteurs crées ont un dictionaire
+* Essayer d'enlever le dictionaire par default dans les fonctions de FeatureGenerator
 
 * FeatureDictionary: utiliser des StringDictionaryPtr 
 * FeatureDictionary: getDictionaryWithSubScopesAsFeatures()
@@ -6,8 +8,6 @@
 
 * Optimizer: passer les DenseVector en FeatureGenerator => repousser au maximum le toDenseVector()
 * Implementation optimisées pour Sparse vs Sparse et Dense vs Dense
-* s'assurer que tous les vecteurs crées ont un dictionaire
-* Essayer d'enlever le dictionaire par default dans les fonctions de FeatureGenerator
 
 LC++ library:
 =============
@@ -40,6 +40,8 @@ Policy:
 
 LC++ translator:
 ================
+
+* ChooseArgumentsClass: generer des StateDescriptionFUnction et ActionDescriptionFunction si il n'existent pas
 
 * PrettyPrinter: if-else: sauter a la ligne pour les deux blocs
 * variable statique dans les cr-algos ?
