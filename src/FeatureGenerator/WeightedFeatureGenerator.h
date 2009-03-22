@@ -55,7 +55,7 @@ public:
   ** FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
+  void staticFeatureGenerator(FeatureVisitor& visitor) const
     {assert(false);}
 
   virtual bool isDense() const
@@ -73,8 +73,8 @@ public:
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return exists() ? FeatureGenerator::multiplyByScalar(featureGenerator->getSubGeneratorWithIndex(index), weight) : FeatureGenerator::emptyGenerator();}
 
-  virtual std::string toString(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {return cralgo::toString(weight) + " * " + featureGenerator->toString(dictionary);}
+  virtual std::string toString() const
+    {return cralgo::toString(weight) + " * " + featureGenerator->toString();}
     
   virtual size_t l0norm() const
     {return exists() ? featureGenerator->l0norm() : 0;}
@@ -85,23 +85,23 @@ public:
   virtual double sumOfSquares() const
     {return exists() ? featureGenerator->l1norm() * weight * weight : 0.0;}
   
-  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {if (exists()) featureGenerator->addWeightedTo(target, weight, dictionary);}
+  virtual void addTo(DenseVectorPtr target) const
+    {if (exists()) featureGenerator->addWeightedTo(target, weight);}
   
-  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {if (exists()) featureGenerator->addWeightedTo(target, -weight, dictionary);}
+  virtual void substractFrom(DenseVectorPtr target) const
+    {if (exists()) featureGenerator->addWeightedTo(target, -weight);}
     
-  virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {if (exists()) featureGenerator->addWeightedTo(target, weight * this->weight, dictionary);}
+  virtual void addWeightedTo(DenseVectorPtr target, double weight) const
+    {if (exists()) featureGenerator->addWeightedTo(target, weight * this->weight);}
     
-  virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {if (exists()) featureGenerator->addWeightedTo(target, weight * this->weight, dictionary);}
+  virtual void addWeightedTo(SparseVectorPtr target, double weight) const
+    {if (exists()) featureGenerator->addWeightedTo(target, weight * this->weight);}
 
-  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {if (exists()) featureGenerator->addWeightedSignsTo(target, weight * (this->weight > 0 ? 1.0 : -1.0), dictionary);}
+  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight) const
+    {if (exists()) featureGenerator->addWeightedSignsTo(target, weight * (this->weight > 0 ? 1.0 : -1.0));}
   
-  virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {return exists() ? featureGenerator->dotProduct(vector, dictionary) * weight : 0.0;}
+  virtual double dotProduct(const DenseVectorPtr vector) const
+    {return exists() ? featureGenerator->dotProduct(vector) * weight : 0.0;}
 
 private:
   FeatureGeneratorPtr featureGenerator;

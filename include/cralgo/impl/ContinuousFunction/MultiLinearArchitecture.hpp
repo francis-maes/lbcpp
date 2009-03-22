@@ -28,7 +28,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   }
     
   size_t getNumOutputs() const
-    {return outputs->count();}
+    {assert(outputs->count()); return outputs->count();}
   
   DenseVectorPtr createInitialParameters() const
     {return new DenseVector(paramsDictionary, 0, getNumOutputs());}
@@ -38,9 +38,11 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
                 FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(outputNumber < getNumOutputs());
-    DenseVectorPtr classParameters = parameters->getSubVector(outputNumber);
+    DenseVectorPtr& classParameters = parameters->getSubVector(outputNumber);
+    if (!classParameters)
+      classParameters = new DenseVector(input->getDictionary());
     if (output)
-      *output = classParameters ? classParameters->dotProduct(input) : 0.0;
+      *output = classParameters->dotProduct(input);
     if (gradientWrtParameters)
       *gradientWrtParameters = input;
     if (gradientWrtInput)
@@ -58,9 +60,12 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       DenseVectorPtr res = new DenseVector(outputsDictionary, numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
       {
-        DenseVectorPtr classParameters = parameters->getSubVector(i);
-        res->set(i, classParameters ? classParameters->dotProduct(input) : 0.0);
+        DenseVectorPtr& classParameters = parameters->getSubVector(i);
+        if (!classParameters)
+          classParameters = new DenseVector(input->getDictionary());
+        res->set(i, classParameters->dotProduct(input));
       }
+      assert(res->getNumValues() == numOutputs);
       *output = res;
     }
     if (gradientWrtParameters)

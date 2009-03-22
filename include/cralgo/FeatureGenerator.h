@@ -37,16 +37,13 @@ public:
   ** General
   */
   // accept feature visitor
-  virtual void accept(FeatureVisitorPtr visitor, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual void accept(FeatureVisitorPtr visitor) const = 0;
 
-  // describe as string
-  virtual std::string toString(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
-  
   // store in a sparse vector
-  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual SparseVectorPtr toSparseVector() const = 0;
   
   // store in a dense vector
-  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual DenseVectorPtr toDenseVector() const = 0;
   
   /*
   ** Const unary operations
@@ -62,35 +59,35 @@ public:
   ** Assignment operations
   */
   // target <- target + featureGenerator
-  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, 1.0, dictionary);}
-  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, 1.0, dictionary);}
+  virtual void addTo(DenseVectorPtr target) const
+    {addWeightedTo(target, 1.0);}
+  virtual void addTo(SparseVectorPtr target) const
+    {addWeightedTo(target, 1.0);}
 
   // target <- target - featureGenerator
-  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, -1.0, dictionary);}
-  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, -1.0, dictionary);}
+  virtual void substractFrom(DenseVectorPtr target) const
+    {addWeightedTo(target, -1.0);}
+  virtual void substractFrom(SparseVectorPtr target) const
+    {addWeightedTo(target, -1.0);}
 
   // target <- target + weight * featureGenerator
-  virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
-  virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual void addWeightedTo(DenseVectorPtr target, double weight) const = 0;
+  virtual void addWeightedTo(SparseVectorPtr target, double weight) const = 0;
 
   // target <- target + weight * sign(featureGenerator), if x < 0, sign(x) = -1, else if (x > 0) sign(x) = 1 else sign(x) = 0
-  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight) const = 0;
   
   /*
   ** Dot-product operation
   */
-  virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  virtual double dotProduct(const DenseVectorPtr vector) const = 0;
   
   /*
   ** Sub-generators
   */
   virtual size_t getNumSubGenerators() const = 0;
-  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const = 0;
   virtual size_t getSubGeneratorIndex(size_t num) const = 0;
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const = 0;
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const = 0;
 };
 
@@ -107,13 +104,13 @@ public:
   {
     if (featureEnter(dictionary, scopeIndex))
     {
-      featureGenerator->accept(FeatureVisitorPtr(this), dictionary->getSubDictionary(scopeIndex));
+      featureGenerator->accept(FeatureVisitorPtr(this));
       featureLeave();
     }
   }
 
   virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
-    {featureGenerator->accept(FeatureVisitorPtr(this), dictionary);}
+    {featureGenerator->accept(FeatureVisitorPtr(this));}
 
   virtual void featureLeave() = 0;
 };
@@ -128,36 +125,29 @@ public:
   // override this:
   //
   // template<class VisitorType>
-  // void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const;
+  // void staticFeatureGenerator(VisitorType& visitor) const;
     
   // and also virtual FeatureGeneratorPtr getDictionary();
     
 public:
-  virtual void accept(FeatureVisitorPtr visitor, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual std::string toString(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
+  virtual void accept(FeatureVisitorPtr visitor) const;
+  virtual SparseVectorPtr toSparseVector() const;
+  virtual DenseVectorPtr toDenseVector() const;
+  virtual std::string toString() const;
   virtual size_t l0norm() const;
   virtual double l1norm() const;
   virtual double sumOfSquares() const;
-  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
-  virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
+  virtual void addTo(DenseVectorPtr target) const;
+  virtual void addTo(SparseVectorPtr target) const;
+  virtual void substractFrom(DenseVectorPtr target) const;
+  virtual void substractFrom(SparseVectorPtr target) const;
+  virtual void addWeightedTo(DenseVectorPtr target, double weight) const;
+  virtual void addWeightedTo(SparseVectorPtr target, double weight) const;
+  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight) const;
+  virtual double dotProduct(const DenseVectorPtr vector) const;
 
 protected:
   const ExactType& _this() const {return *static_cast<const ExactType* >(this);}
-  
-  FeatureDictionaryPtr selectDictionary(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {return dictionary ? dictionary : _this().getDictionary();}
-  
-  template<class StaticVisitorType>
-  void featureGenerator(StaticVisitorType& visitor, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {_this().staticFeatureGenerator(visitor, dictionary ? dictionary : _this().getDictionary());}
 };
 
 class FlatFeatureGenerator : public FeatureGenerator

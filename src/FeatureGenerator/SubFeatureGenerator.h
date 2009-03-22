@@ -61,10 +61,10 @@ public:
     {return index == this->index ? featureGenerator : FeatureGeneratorPtr();}
 
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
+  void staticFeatureGenerator(FeatureVisitor& visitor) const
     {if (exists()) visitor.featureCall(dictionary, index, featureGenerator);}
 
-  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual SparseVectorPtr toSparseVector() const
   {
     SparseVectorPtr res = new SparseVector(getDictionary());
     if (exists())
@@ -72,7 +72,7 @@ public:
     return res;
   }
   
-  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual DenseVectorPtr toDenseVector() const
   {
     DenseVectorPtr res = new DenseVector(getDictionary());
     if (exists())
@@ -80,7 +80,7 @@ public:
     return res;
   }
   
-  virtual std::string toString(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual std::string toString() const
   {
     std::string res = "subFeatureGenerator";
     if (exists())
@@ -97,28 +97,28 @@ public:
   virtual double sumOfSquares() const
     {return exists() ? featureGenerator->sumOfSquares() : 0;}
     
-  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addTo(DenseVectorPtr target) const
     {if (exists()) featureGenerator->addTo(getSubVector(target));}
   
-  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addTo(SparseVectorPtr target) const
     {if (exists()) featureGenerator->addTo(getSubVector(target));}
 
-  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void substractFrom(DenseVectorPtr target) const
     {if (exists()) featureGenerator->substractFrom(getSubVector(target));}
 
-  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void substractFrom(SparseVectorPtr target) const
     {if (exists()) featureGenerator->substractFrom(getSubVector(target));}
 
-  virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addWeightedTo(DenseVectorPtr target, double weight) const
     {if (exists()) featureGenerator->addWeightedTo(getSubVector(target), weight);}
 
-  virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addWeightedTo(SparseVectorPtr target, double weight) const
     {if (exists()) featureGenerator->addWeightedTo(getSubVector(target), weight);}
 
-  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addWeightedSignsTo(DenseVectorPtr target, double weight) const
     {if (exists()) featureGenerator->addWeightedSignsTo(getSubVector(target), weight);}
 
-  virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual double dotProduct(const DenseVectorPtr vector) const
     {return exists() ? featureGenerator->dotProduct(getSubVector(vector)) : 0.0;}
   
 private:

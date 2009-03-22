@@ -66,21 +66,21 @@ public:
   void multiplyByScalar(double scalar);
 
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
-    {featureGenerator->addWeightedTo(SparseVectorPtr(this), weight, dictionary);}
+    {featureGenerator->addWeightedTo(SparseVectorPtr(this), weight);}
 
   /*
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor) const;
 
   /*
   ** FeatureGenerator
   */
   virtual FeatureDictionaryPtr getDictionary() const;
 
-  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {/* todo: check dictionary */ return SparseVectorPtr(const_cast<SparseVector* >(this));}
+  virtual SparseVectorPtr toSparseVector() const
+    {return SparseVectorPtr(const_cast<SparseVector* >(this));}
 
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}

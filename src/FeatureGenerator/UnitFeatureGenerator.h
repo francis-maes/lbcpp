@@ -19,8 +19,8 @@ class UnitFeatureGenerator : public FeatureGeneratorDefaultImplementations<UnitF
 {
 public:
   template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
-    {visitor.featureSense_(dictionary, (size_t)0);}
+  void staticFeatureGenerator(VisitorType& visitor) const
+    {visitor.featureSense_(getDictionary(), (size_t)0);}
     
   FeatureDictionaryPtr getDictionary() const
   {

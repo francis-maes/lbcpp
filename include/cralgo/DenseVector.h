@@ -92,7 +92,7 @@ public:
     if (dense)
       addWeighted(dense, weight);
     else
-      featureGenerator->addWeightedTo(DenseVectorPtr(this), weight, dictionary);
+      featureGenerator->addWeightedTo(DenseVectorPtr(this), weight);
   }
 
   void add(const DenseVectorPtr otherVector);      
@@ -111,7 +111,7 @@ public:
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor) const;
 
   /*
   ** FeatureGenerator
@@ -121,8 +121,8 @@ public:
   virtual bool isDense() const
     {return true;}
   
-  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {/* todo: check dictionary */ return DenseVectorPtr(const_cast<DenseVector* >(this));}
+  virtual DenseVectorPtr toDenseVector() const
+    {return DenseVectorPtr(const_cast<DenseVector* >(this));}
 
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}

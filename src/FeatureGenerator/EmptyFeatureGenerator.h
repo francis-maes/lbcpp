@@ -20,7 +20,7 @@ class EmptyFeatureGenerator
 {
 public:
   template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
+  void staticFeatureGenerator(VisitorType& visitor) const
     {}
     
   FeatureDictionaryPtr getDictionary() const

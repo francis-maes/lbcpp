@@ -27,7 +27,12 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
   {
     assert(correctClass >= 0);
     DenseVectorPtr scores = input->toDenseVector();
-    assert(scores);
+    if (!scores || !scores->getNumValues())
+    {
+      std::cerr << "No Scores, input = " << input->getClassName() << " inputDictionary = " << input->getDictionary()->getName() << "inputToString = " << input->toString() << std::endl;
+      assert(false);
+    }
+    assert(scores && scores->getNumValues());
     
     double logZ = scores->computeLogSumOfExponentials();
     if (!isNumberValid(logZ))

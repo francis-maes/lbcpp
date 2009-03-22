@@ -67,9 +67,9 @@ inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionaryPtr 
   {
     EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
     if (editable)
-      editable->staticFeatureGenerator(_this(), dictionary);
+      editable->staticFeatureGenerator(_this());
     else
-      featureGenerator->accept(FeatureVisitorPtr(&ref), dictionary);
+      featureGenerator->accept(FeatureVisitorPtr(&ref));
   }
 }
 

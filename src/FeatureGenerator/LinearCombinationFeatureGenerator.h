@@ -80,7 +80,7 @@ public:
   virtual bool isDense() const
     {return compositeFeatureGenerator->isDense() || weights->size() > 20;}
 
-  virtual std::string toString(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual std::string toString() const
   {
     std::string res = "LinearCombination:\n";
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
@@ -90,44 +90,44 @@ public:
     return res;
   }
 
-  virtual void addTo(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, 1.0, dictionary);}
+  virtual void addTo(DenseVectorPtr target) const
+    {addWeightedTo(target, 1.0);}
     
-  virtual void addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, 1.0, dictionary);}
+  virtual void addTo(SparseVectorPtr target) const
+    {addWeightedTo(target, 1.0);}
     
-  virtual void substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, -1.0, dictionary);}
+  virtual void substractFrom(DenseVectorPtr target) const
+    {addWeightedTo(target, -1.0);}
 
-  virtual void substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
-    {addWeightedTo(target, -1.0, dictionary);}
+  virtual void substractFrom(SparseVectorPtr target) const
+    {addWeightedTo(target, -1.0);}
 
-  virtual void addWeightedTo(DenseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addWeightedTo(DenseVectorPtr target, double weight) const
   {
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
     {
       double w = weight * (weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)));
-      compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w, dictionary);
+      compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
     }
   }
   
-  virtual void addWeightedTo(SparseVectorPtr target, double weight, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual void addWeightedTo(SparseVectorPtr target, double weight) const
   {
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
     {
       double w = weight * weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
-      compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w, dictionary);
+      compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
     }
   }
   
-  virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual double dotProduct(const DenseVectorPtr vector) const
   {
     double res = 0.0;
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
-      res += compositeFeatureGenerator->getSubGenerator(i)->dotProduct(vector, dictionary) *
+      res += compositeFeatureGenerator->getSubGenerator(i)->dotProduct(vector) *
         weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
     return res;
   }  
