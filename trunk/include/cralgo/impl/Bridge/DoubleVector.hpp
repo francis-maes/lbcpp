@@ -106,7 +106,30 @@ struct Traits<LazyVector> : public ObjectTraits<LazyVector> {};
 ** Double Vector
 */
 template<class FeatureVisitor>
-inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
+inline void EditableFeatureGenerator::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
+{
+  const FeatureVector* vector = dynamic_cast<const FeatureVector* >(this);
+  if (vector)
+  {
+    vector->staticFeatureGenerator(visitor, featureDictionary);
+    return;
+  }
+  const LazyFeatureVector* lazyVector = dynamic_cast<const LazyFeatureVector* >(this);
+  if (lazyVector)
+  {
+    lazyVector->staticFeatureGenerator(visitor, featureDictionary);
+    return;
+  }
+  
+  // dynamic version must be implemented
+  accept(impl::staticToDynamic(visitor), featureDictionary);
+}
+
+template<>
+struct Traits<EditableFeatureGeneratorPtr> : public ObjectPtrTraits<EditableFeatureGenerator> {};
+
+template<class FeatureVisitor>
+inline void FeatureVector::staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
 {
   const SparseVector* sparseVector = dynamic_cast<const SparseVector* >(this);
   if (sparseVector)
@@ -120,18 +143,13 @@ inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
     denseVector->staticFeatureGenerator(visitor, featureDictionary);
     return;
   }
-/*  const LazyVector* lazyVector = dynamic_cast<const LazyVector* >(this);
-  if (lazyVector)
-  {
-    lazyVector->staticFeatureGenerator(visitor, featureDictionary);
-    return;
-  }*/
+  
   // dynamic version must be implemented
   accept(impl::staticToDynamic(visitor), featureDictionary);
 }
 
 template<>
-struct Traits<DoubleVectorPtr> : public ObjectPtrTraits<DoubleVector> {};
+struct Traits<FeatureVectorPtr> : public ObjectPtrTraits<FeatureVector> {};
 
 }; /* namespace cralgo */
 

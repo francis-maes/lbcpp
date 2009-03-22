@@ -25,7 +25,7 @@ struct SumOfSquaresScalarVectorFunction : public ScalarVectorFunction< SumOfSqua
     if (output)
       *output = input->sumOfSquares();
     if (gradient)
-      *gradient = multiplyByScalar(input, 2.0);
+      *gradient = FeatureGenerator::multiplyByScalar(input, 2.0);
   }
 };
 

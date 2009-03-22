@@ -66,7 +66,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
       CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
-        g->setSubGenerator(i, new SubFeatureGenerator(i, input));
+        g->setSubGenerator(i, FeatureGenerator::subFeatureGenerator(i, input));
       *gradientWrtParameters = g;
       }
     if (gradientWrtInput)

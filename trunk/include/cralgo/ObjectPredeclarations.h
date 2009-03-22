@@ -27,6 +27,9 @@ class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
 class FeatureGenerator;
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
+
+class EditableFeatureGenerator;
+typedef ReferenceCountedObjectPtr<EditableFeatureGenerator> EditableFeatureGeneratorPtr;
 class WeightedFeatureGenerator;
 typedef ReferenceCountedObjectPtr<WeightedFeatureGenerator> WeightedFeatureGeneratorPtr;
 class LinearCombinationFeatureGenerator;
@@ -35,10 +38,8 @@ class SubFeatureGenerator;
 typedef ReferenceCountedObjectPtr<SubFeatureGenerator> SubFeatureGeneratorPtr;
 class CompositeFeatureGenerator;
 typedef ReferenceCountedObjectPtr<CompositeFeatureGenerator> CompositeFeatureGeneratorPtr;
-
-// vectors
-class DoubleVector;
-typedef ReferenceCountedObjectPtr<DoubleVector> DoubleVectorPtr;
+class FeatureVector;
+typedef ReferenceCountedObjectPtr<FeatureVector> FeatureVectorPtr;
 class SparseVector;
 typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
 class DenseVector;

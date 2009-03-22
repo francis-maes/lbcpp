@@ -30,23 +30,28 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
   
   void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
+    typedef Traits<ContainerType> ContainerTraits;
+
     DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
     assert(denseParameters);
     
     if (output)
       *output = 0;
     if (!examples.size())
+    {
+      if (gradient)
+        *gradient = FeatureGenerator::emptyGenerator();
       return;
+    }
     double Z = 1.0 / examples.size();
     
-    LinearCombinationFeatureGeneratorPtr gradientLinearCombination;
+    std::vector<std::pair<FeatureGeneratorPtr, double> >* gradientLinearCombination = NULL;
     if (gradient)
     {
-      gradientLinearCombination = new LinearCombinationFeatureGenerator();
-      *gradient = gradientLinearCombination;
+      gradientLinearCombination = new std::vector<std::pair<FeatureGeneratorPtr, double> >();
+      gradientLinearCombination->reserve(ContainerTraits::size(examples));
     }
-      
-    typedef Traits<ContainerType> ContainerTraits;
+
     for (typename ContainerTraits::ConstIterator it = ContainerTraits::begin(examples); it != ContainerTraits::end(examples); ++it)
     {
       typedef typename ContainerTraits::ValueType ValueType;
@@ -61,9 +66,12 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
       double kZ = example.getWeight() * Z;
       if (output)
         *output += lossOutput * kZ;
-      if (gradientLinearCombination)
-        gradientLinearCombination->addWeighted(lossGradient, kZ);
+      if (gradient)
+        gradientLinearCombination->push_back(std::make_pair(lossGradient, kZ));
     }
+    
+    if (gradient)
+      *gradient = FeatureGenerator::linearCombination(gradientLinearCombination);
   }
 };
 

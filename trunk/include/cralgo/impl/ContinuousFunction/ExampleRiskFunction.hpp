@@ -42,7 +42,7 @@ struct ScalarArchitectureToParametersFunction
     if (output)
       *output *= weight;
     if (gradient)
-      *gradient = multiplyByScalar(*gradient, weight);
+      *gradient = FeatureGenerator::multiplyByScalar(*gradient, weight);
   }
 };
 

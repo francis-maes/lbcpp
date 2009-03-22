@@ -10,7 +10,7 @@
 # define CRALGO_LEARNING_EXAMPLE_H_
 
 # include "FeatureGenerator.h"
-# include "LazyFeatureGenerators.h"
+# include "EditableFeatureGenerator.h"
 # include <sstream>
 
 namespace cralgo
@@ -72,7 +72,7 @@ public:
     {return alternatives->getNumSubGenerators();}
     
   FeatureGeneratorPtr getAlternative(size_t index) const
-    {return alternatives->getSubGenerator(index);}
+    {return alternatives->getSubGeneratorWithIndex(index);}
   
 private:
   FeatureGeneratorPtr alternatives;

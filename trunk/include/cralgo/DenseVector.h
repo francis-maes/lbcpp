@@ -9,18 +9,18 @@
 #ifndef CRALGO_DENSE_VECTOR_H_
 # define CRALGO_DENSE_VECTOR_H_
 
-# include "DoubleVector.h"
+# include "EditableFeatureGenerator.h"
 
 namespace cralgo
 {
 
-class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, DoubleVector>
+class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, FeatureVector>
 {
 public:
-  typedef FeatureGeneratorDefaultImplementations<DenseVector, DoubleVector> BaseClass;
+  typedef FeatureGeneratorDefaultImplementations<DenseVector, FeatureVector> BaseClass;
 
   DenseVector(const DenseVector& otherVector)
-    : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(otherVector.subVectors) {}
+    : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors) {}
 
   DenseVector(FeatureDictionaryPtr dictionary, size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
     : BaseClass(dictionary)
@@ -37,9 +37,6 @@ public:
   virtual ~DenseVector()
     {clear();}
   
-  virtual void clear()
-    {values.clear(); subVectors.clear(); dictionary = FeatureDictionaryPtr();}
-    
   DenseVector& operator =(const DenseVector& otherVector);
 
   /*
@@ -109,6 +106,12 @@ public:
     {featureGenerator->substractFrom(DenseVectorPtr(this));}
 
   /*
+  ** EditableFeatureGenerator
+  */
+  virtual void clear()
+    {values.clear(); subVectors.clear(); dictionary = FeatureDictionaryPtr();}
+
+  /*
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
@@ -117,10 +120,10 @@ public:
   /*
   ** FeatureGenerator
   */
-  virtual std::string getName() const
-    {return "DenseVector";}
-    
   virtual FeatureDictionaryPtr getDictionary() const;
+
+  virtual bool isDense() const
+    {return true;}
   
   virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary)
     {/* todo: check dictionary */ return DenseVectorPtr(this);}
@@ -128,7 +131,13 @@ public:
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}
 
-  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
+    {assert(num < subVectors.size()); return subVectors[num];}
+
+  virtual size_t getSubGeneratorIndex(size_t num) const
+    {assert(num < subVectors.size()); return num;}
+
+  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return index < subVectors.size() ? (FeatureGeneratorPtr)subVectors[index] : FeatureGeneratorPtr();}
 
 protected:

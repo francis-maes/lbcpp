@@ -9,15 +9,15 @@
 #ifndef CRALGO_SPARSE_VECTOR_H_
 # define CRALGO_SPARSE_VECTOR_H_
 
-# include "DoubleVector.h"
+# include "EditableFeatureGenerator.h"
 
 namespace cralgo
 {
 
-class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector>
+class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, FeatureVector>
 {
 public:
-  typedef FeatureGeneratorDefaultImplementations<SparseVector, DoubleVector> BaseClass;
+  typedef FeatureGeneratorDefaultImplementations<SparseVector, FeatureVector> BaseClass;
   
   SparseVector(const SparseVector& otherVector);
   SparseVector(FeatureDictionaryPtr dictionary);
@@ -78,18 +78,21 @@ public:
   /*
   ** FeatureGenerator
   */
-  virtual std::string getName() const
-    {return "SparseVector";}
-    
   virtual FeatureDictionaryPtr getDictionary() const;
 
   virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary)
     {/* todo: check dictionary */ return SparseVectorPtr(this);}
 
   virtual size_t getNumSubGenerators() const
-    {return subVectors.size() ? subVectors.back().first + 1 : 0;}
+    {return subVectors.size();}
 
-  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
+    {assert(num < subVectors.size()); return subVectors[num].second;}
+
+  virtual size_t getSubGeneratorIndex(size_t num) const
+    {assert(num < subVectors.size()); return subVectors[num].first;}
+
+  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return getSubVector(index);}
 
 protected:

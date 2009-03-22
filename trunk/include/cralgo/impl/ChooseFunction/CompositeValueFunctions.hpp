@@ -10,7 +10,7 @@
 # define CRALGO_IMPL_VALUE_FUNCTION_COMPOSITE_H_
 
 # include "ChooseFunctionStatic.hpp"
-# include "../../LazyFeatureGenerators.h"
+# include "../../EditableFeatureGenerator.h"
 # include "../../LearningMachine.h"
 
 namespace cralgo {
@@ -107,10 +107,11 @@ TEMPLATE_INHERIT_BEGIN_3(CompositeStateFeaturesFunction, CompositeChooseFunction
 
   FeatureGeneratorPtr compute() const
   {
-    LinearCombinationFeatureGeneratorPtr res(new LinearCombinationFeatureGenerator());
-    for (size_t i = 0; i < BaseClass::functions.size(); ++i)
-      res->add(BaseClass::functions[i]->compute());
-    return res;
+    size_t n = BaseClass::functions.size();
+    std::vector<std::pair<FeatureGeneratorPtr, double> >* res = new std::vector<std::pair<FeatureGeneratorPtr, double> >(n);
+    for (size_t i = 0; i < n; ++i)
+      (*res)[i] = std::make_pair(BaseClass::functions[i]->compute(), 1.0);
+    return FeatureGenerator::linearCombination(res);
   }
 };
 
@@ -127,10 +128,11 @@ struct CompositeActionFeaturesFunction : public CompositeChooseFunction<
 
   FeatureGeneratorPtr compute(const ChoiceType& choice) const
   {
-    LinearCombinationFeatureGeneratorPtr res(new LinearCombinationFeatureGenerator());
-    for (size_t i = 0; i < BaseClass::functions.size(); ++i)
-      res->add(BaseClass::functions[i]->compute(choice));
-    return res;
+    size_t n = BaseClass::functions.size();
+    std::vector<std::pair<FeatureGeneratorPtr, double> >* res = new std::vector<std::pair<FeatureGeneratorPtr, double> >(n);
+    for (size_t i = 0; i < n; ++i)
+      (*res)[i] = std::make_pair(BaseClass::functions[i]->compute(choice), 1.0);
+    return FeatureGenerator::linearCombination(res);
   }
 };
 
