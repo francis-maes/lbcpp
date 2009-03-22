@@ -24,15 +24,15 @@ struct LinearArchitecture : public ScalarArchitecture<LinearArchitecture>
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const
   {
     if (output)
       *output = parameters->dotProduct(input);
     if (gradientWrtParameters)
-      gradientWrtParameters->add(input);
+      *gradientWrtParameters = input;
     if (gradientWrtInput)
-      gradientWrtInput->add(parameters);
+      *gradientWrtInput = parameters;
   }
 };
 

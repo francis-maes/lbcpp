@@ -28,7 +28,7 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
   
   enum {isDerivable = PenalizationType::isDerivable};
   
-  void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
     DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
     assert(denseParameters);
@@ -39,10 +39,13 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
       return;
     double Z = 1.0 / examples.size();
     
-    LazyVectorPtr lossGradient;
+    LinearCombinationFeatureGeneratorPtr gradientLinearCombination;
     if (gradient)
-      lossGradient = new LazyVector();
-
+    {
+      gradientLinearCombination = new LinearCombinationFeatureGenerator();
+      *gradient = gradientLinearCombination;
+    }
+      
     typedef Traits<ContainerType> ContainerTraits;
     for (typename ContainerTraits::ConstIterator it = ContainerTraits::begin(examples); it != ContainerTraits::end(examples); ++it)
     {
@@ -52,15 +55,14 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
       const_cast<PenalizationType& >(penalization).right.setLearningExample(example);
 
       // FIXME : gradient direction
-      if (lossGradient)
-        lossGradient->clear();
       double lossOutput;
-      penalization.compute(denseParameters, example.getInput(), output ? &lossOutput : NULL, lossGradient, LazyVectorPtr());
+      FeatureGeneratorPtr lossGradient;
+      penalization.compute(denseParameters, example.getInput(), output ? &lossOutput : NULL, gradient ? &lossGradient : NULL, NULL);
       double kZ = example.getWeight() * Z;
       if (output)
         *output += lossOutput * kZ;
-      if (gradient)
-        gradient->addWeighted(lossGradient, kZ);
+      if (gradientLinearCombination)
+        gradientLinearCombination->addWeighted(lossGradient, kZ);
     }
   }
 };

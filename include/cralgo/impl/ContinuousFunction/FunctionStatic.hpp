@@ -63,7 +63,7 @@ struct ScalarLossFunction : public ScalarFunction<ExactType>
 template<class ExactType>
 struct ScalarVectorFunction : public ContinuousFunction<ExactType>
 {
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
     {assert(false);}
 };
 
@@ -89,8 +89,8 @@ struct ScalarArchitecture : public ContinuousFunction<ExactType>
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const
     {assert(false);}
   
   
@@ -105,14 +105,14 @@ struct VectorArchitecture : public ContinuousFunction<ExactType>
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 size_t outputNumber, double* output, 
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const
     {assert(false);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-      LazyVectorPtr output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const
+      FeatureGeneratorPtr* output,
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const
     {assert(false);}
 
   // todo: non-derivable vector architectures

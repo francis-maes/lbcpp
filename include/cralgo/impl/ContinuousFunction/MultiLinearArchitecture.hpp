@@ -28,23 +28,23 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
     {return new DenseVector(outputs, 0, getNumOutputs());}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(outputNumber < getNumOutputs());
     DenseVectorPtr classParameters = parameters->getSubVector(outputNumber);
     if (output)
       *output = classParameters ? classParameters->dotProduct(input) : 0.0;
     if (gradientWrtParameters)
-      gradientWrtParameters->set(input);
+      *gradientWrtParameters = input;
     if (gradientWrtInput)
-      gradientWrtInput->set(classParameters);
+      *gradientWrtInput = classParameters;
   }
   
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-                LazyVectorPtr output,
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const
+                FeatureGeneratorPtr* output,
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const
   {
     size_t numOutputs = getNumOutputs();
     if (output)
@@ -55,26 +55,22 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
         DenseVectorPtr classParameters = parameters->getSubVector(i);
         res->set(i, classParameters ? classParameters->dotProduct(input) : 0.0);
       }
-      output->set(res);
+      *output = res;
     }
     if (gradientWrtParameters)
     {
       // parameters gradient of output i depends linearly on class parameters i
-    
+      // e.g.
+      // 0.0.input
+      // 1.1.input
+      // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
+      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
-      {
-        LazyVectorPtr& gradientOfOutputWrtParameters = gradientWrtParameters->getSubVector(i);
-        if (!gradientOfOutputWrtParameters)
-          gradientOfOutputWrtParameters = new LazyVector(outputs);
-
-        LazyVectorPtr& gradientOfOutputWrtClassParameters = gradientOfOutputWrtParameters->getSubVector(i);
-        if (!gradientOfOutputWrtClassParameters)
-          gradientOfOutputWrtClassParameters = new LazyVector(input->getDictionary());
-        gradientOfOutputWrtClassParameters->set(input);
+        g->setSubGenerator(i, new SubFeatureGenerator(i, input));
+      *gradientWrtParameters = g;
       }
-    }
     if (gradientWrtInput)
-      gradientWrtInput->set(parameters);
+      *gradientWrtInput = parameters;
   }
 };
 

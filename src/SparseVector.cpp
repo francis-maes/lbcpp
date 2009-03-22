@@ -105,6 +105,12 @@ SparseVectorPtr& SparseVector::getSubVector(size_t index)
   return SortedSubVectorArrayHelper::get(subVectors, index);
 }
 
+SparseVectorPtr SparseVector::getSubVector(size_t index) const
+{
+  const SparseVectorPtr* res = SortedSubVectorArrayHelper::get(subVectors, index);
+  return res ? *res : SparseVectorPtr();
+}
+
 void SparseVector::multiplyByScalar(double scalar)
 {
   if (scalar == 0)

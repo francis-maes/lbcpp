@@ -6,9 +6,142 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/LazyVector.h>
+#include <cralgo/LazyFeatureGenerators.h>
+#include <cralgo/impl/impl.h> // FeatureGeneratorDefaultImplementations
 using namespace cralgo;
 
+/*
+** EmptyFeatureGenerator
+*/
+class EmptyFeatureGenerator
+  : public FeatureGeneratorDefaultImplementations<EmptyFeatureGenerator, FeatureGenerator>
+{
+public:
+  template<class VisitorType>
+  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
+    {}
+    
+  FeatureDictionaryPtr getDictionary() const
+  {
+    static FeatureDictionaryPtr dictionary = new FeatureDictionary("empty");
+    return dictionary;
+  }
+
+  virtual size_t getNumSubGenerators() const
+    {return 0;}
+    
+  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+    {return FeatureGeneratorPtr();}
+};
+
+FeatureGeneratorPtr FeatureGenerator::getEmptyGenerator()
+{
+  static FeatureGeneratorPtr instance = new EmptyFeatureGenerator();
+  return instance;
+}
+
+/*
+** UnitFeatureGenerator
+*/
+class UnitFeatureGenerator : public FeatureGeneratorDefaultImplementations<UnitFeatureGenerator, FeatureGenerator>
+{
+public:
+  template<class VisitorType>
+  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
+    {visitor.featureSense_(dictionary, (size_t)0);}
+    
+  FeatureDictionaryPtr getDictionary() const
+  {
+    static FeatureDictionaryPtr dictionary = createDictionary();
+    return dictionary;
+  }
+  
+  virtual size_t getNumSubGenerators() const
+    {return 0;}
+    
+  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+    {return FeatureGeneratorPtr();}
+
+private:
+  static FeatureDictionaryPtr createDictionary()
+  {
+    FeatureDictionaryPtr res = new FeatureDictionary("unit");
+    res->getFeatures().add("unit");
+    return res;
+  }
+};
+
+FeatureGeneratorPtr FeatureGenerator::getUnitGenerator()
+{
+  static FeatureGeneratorPtr instance = new UnitFeatureGenerator();
+  return instance;
+}
+
+/*
+** WeightedFeatureGenerator
+*/
+FeatureGeneratorPtr cralgo::multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight)
+{
+  assert(featureGenerator);
+  
+  // x * 1 = x
+  if (weight == 1)
+    return featureGenerator;
+
+  // (k1 * x) * k2 = ((k1 * k2) * x)
+  WeightedFeatureGeneratorPtr weighted = featureGenerator.dynamicCast<WeightedFeatureGenerator>();
+  if (weighted)
+    return weighted->exists()
+      ? multiplyByScalar(weighted->getFeatureGenerator(), weight * weighted->getWeight())
+      : FeatureGenerator::getEmptyGenerator();
+    
+  // k * (sum_i w_i * x_i) = sum_i (w_i * k) * x_i
+  LinearCombinationFeatureGeneratorPtr linearCombination = featureGenerator.dynamicCast<LinearCombinationFeatureGenerator>();
+  if (linearCombination)
+  {
+    if (linearCombination->getNumElements())
+    {
+      LinearCombinationFeatureGeneratorPtr res = new LinearCombinationFeatureGenerator(featureGenerator->getDictionary());
+      for (LinearCombinationFeatureGenerator::const_iterator it = linearCombination->begin(); it != linearCombination->end(); ++it)
+        res->addWeighted(it->first, it->second * weight);
+      return res;
+    }
+    else
+      return FeatureGenerator::getEmptyGenerator();
+  }
+  
+  // k * (composite(x_1, ..., x_n)) = composite(k * x_1, ... k * x_n)
+  CompositeFeatureGeneratorPtr composite = featureGenerator.dynamicCast<CompositeFeatureGenerator>();
+  if (composite)
+  {
+    size_t n = composite->getNumSubGenerators();
+    if (n)
+    {
+      CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator(n, featureGenerator->getDictionary());
+      for (size_t i = 0; i < n; ++i)
+        res->setSubGenerator(i, multiplyByScalar(composite->getSubGenerator(i), weight));
+      return res;
+    }
+    else
+      return FeatureGenerator::getEmptyGenerator();
+  }
+  
+  // k * sub(index, x) = sub(index, k * x)
+  SubFeatureGeneratorPtr sub = featureGenerator.dynamicCast<SubFeatureGenerator>();
+  if (sub)
+    return sub->exists()
+      ? FeatureGeneratorPtr(new SubFeatureGenerator(sub->getIndex(), multiplyByScalar(sub->getFeatureGenerator(), weight)))
+      : FeatureGenerator::getEmptyGenerator();
+
+  // k * <empty> = <empty>
+  if (featureGenerator.dynamicCast<EmptyFeatureGenerator>())
+    return FeatureGenerator::getEmptyGenerator();
+
+  // default: k * x 
+  return new WeightedFeatureGenerator(featureGenerator, weight);
+}
+
+#if 0
 LazyVector::LazyVector(FeatureDictionaryPtr dictionary)
 {
   this->dictionary = dictionary;
@@ -259,3 +392,4 @@ bool LazyVector::guessIfDense() const
   }
   return false;
 }
+#endif // 0

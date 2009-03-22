@@ -14,6 +14,8 @@
 # include "ContinuousFunction/ScalarFunctions.hpp"
 # include "ContinuousFunction/ScalarVectorFunctions.hpp"
 
+# include "ContinuousFunction/AbsoluteLossFunction.hpp"
+# include "ContinuousFunction/SquareLossFunction.hpp"
 # include "ContinuousFunction/PerceptronLossFunction.hpp"
 # include "ContinuousFunction/HingeLossFunction.hpp"
 # include "ContinuousFunction/LogBinomialLossFunction.hpp"

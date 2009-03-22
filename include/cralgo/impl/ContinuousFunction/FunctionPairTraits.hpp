@@ -174,7 +174,7 @@ struct ScalarVectorFunctionScalarConstantPair
     
     enum {isDerivable = Function1::isDerivable};
     
-    void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+    void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
     {
       if (right)
       {
@@ -182,7 +182,7 @@ struct ScalarVectorFunctionScalarConstantPair
         if (output)
           *output *= right;
         if (gradient)
-          gradient->multiplyByScalar(right);
+          *gradient = multiplyByScalar(*gradient, right);
       }
       else
       {
@@ -223,23 +223,20 @@ struct ScalarVectorFunctionPair : public ContinuousFunctionPair<Function1, Funct
 
     enum {isDerivable = Function1::isDerivable && Function2::isDerivable};
     
-    void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+    void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
     {
       double leftOutput, rightOutput;
-      LazyVectorPtr leftGradient, rightGradient;
-      if (gradient)
-      {
-        leftGradient = new LazyVector();
-        rightGradient = new LazyVector();
-      }
-      left.compute(input, output ? &leftOutput : NULL, gradientDirection, leftGradient);
-      right.compute(input, output ? &rightOutput : NULL, gradientDirection, rightGradient);      
+      FeatureGeneratorPtr leftGradient, rightGradient;
+      left.compute(input, output ? &leftOutput : NULL, gradientDirection, gradient ? &leftGradient : NULL);
+      right.compute(input, output ? &rightOutput : NULL, gradientDirection, gradient ? &rightGradient : NULL);
       if (output)
         *output = operation.compute(leftOutput, rightOutput);
       if (gradient)
       {
-        gradient->addWeighted(leftGradient, operation.computeDerivativeWrtLeft(leftOutput, rightOutput));
-        gradient->addWeighted(rightGradient, operation.computeDerivativeWrtRight(leftOutput, rightOutput));
+        LinearCombinationFeatureGeneratorPtr g = new LinearCombinationFeatureGenerator();
+        g->addWeighted(leftGradient, operation.computeDerivativeWrtLeft(leftOutput, rightOutput));
+        g->addWeighted(rightGradient, operation.computeDerivativeWrtRight(leftOutput, rightOutput));
+        *gradient = g;
       }
     }
   };
@@ -280,8 +277,8 @@ struct ScalarArchitectureScalarConstantPair : public ContinuousFunctionPair<Func
   
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
-        LazyVectorPtr gradientWrtParameters,
-        LazyVectorPtr gradientWrtInput) const
+        FeatureGeneratorPtr* gradientWrtParameters,
+        FeatureGeneratorPtr* gradientWrtInput) const
     {
       double leftOutput;
       left.compute(parameters, input, leftOutput, gradientWrtParameters, gradientWrtInput);
@@ -289,9 +286,9 @@ struct ScalarArchitectureScalarConstantPair : public ContinuousFunctionPair<Func
         *output = operation.compute(leftOutput, right);
       double k = left.computeDerivativeWrtLeft(leftOutput, right);
       if (gradientWrtParameters)
-        gradientWrtParameters->multiplyByScalar(k);
+        *gradientWrtParameters = multiplyByScalar(*gradientWrtParameters, k);
       if (gradientWrtInput)
-        gradientWrtInput->multiplyByScalar(k);
+        *gradientWrtInput = multiplyByScalar(*gradientWrtInput, k);
     }
   };
 
@@ -334,8 +331,8 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
       
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
-        LazyVectorPtr gradientWrtParameters,
-        LazyVectorPtr gradientWrtInput) const
+        FeatureGeneratorPtr* gradientWrtParameters,
+        FeatureGeneratorPtr* gradientWrtInput) const
     {
       double leftOutput;
       left.compute(parameters, input, &leftOutput, gradientWrtParameters, gradientWrtInput);
@@ -345,10 +342,10 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
       right.compute(leftOutput, output, &zero, gradientWrtParameters || gradientWrtInput ? &rightDerivative : NULL);
       
       if (gradientWrtParameters)
-        gradientWrtParameters->multiplyByScalar(rightDerivative);
+        *gradientWrtParameters = multiplyByScalar(*gradientWrtParameters, rightDerivative);
       
       if (gradientWrtInput)
-        gradientWrtInput->multiplyByScalar(rightDerivative);
+        *gradientWrtInput = multiplyByScalar(*gradientWrtInput, rightDerivative);
     }
   };
 };
@@ -357,7 +354,7 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
 DECLARE_FUNCTION_COMPOSE(ScalarArchitectureScalarFunctionPair, ScalarArchitecture, ScalarFunction);
 
 /*
-** Vector architecture vs Vector -> Scalar function
+** (Vector architecture) vs (Vector -> Scalar function)
 */
 template<class Function1, class Function2, class Parameter>
 struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPair<Function1, Function2, Parameter>
@@ -380,56 +377,42 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
   
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
-        LazyVectorPtr gradientWrtParameters,
-        LazyVectorPtr gradientWrtInput) const
+        FeatureGeneratorPtr* gradientWrtParameters,
+        FeatureGeneratorPtr* gradientWrtInput) const
     {
-      LazyVectorPtr leftOutput(new LazyVector());
-      LazyVectorPtr leftGradientWrtParameters, leftGradientWrtInput;
-      if (gradientWrtParameters)
-        leftGradientWrtParameters = new LazyVector();
-      if (gradientWrtInput)
-        leftGradientWrtInput = new LazyVector();
-      left.compute(parameters, input, leftOutput, leftGradientWrtParameters, leftGradientWrtInput);
+      FeatureGeneratorPtr leftOutput, leftGradientWrtParameters, leftGradientWrtInput;
+      left.compute(parameters, input, &leftOutput, gradientWrtParameters ? &leftGradientWrtParameters : NULL, gradientWrtInput ? &leftGradientWrtInput : NULL);
       
 //      std::cout << "Gradient of the multi-linear architecture: " << cralgo::toString(leftGradientWrtParameters) << std::endl;
       
-      DenseVectorPtr leftOutputDense;
-      LazyVectorPtr rightGradient;
-      if (gradientWrtParameters || gradientWrtInput)
-      {
-        leftOutputDense = leftOutput->toDenseVector();
-        assert(leftOutputDense && leftOutputDense->getNumValues()); // the left architecture must have at least one output
-        rightGradient = new LazyVector();
-      }
-      
+      FeatureGeneratorPtr rightGradient;
       const static FeatureGeneratorPtr zero = FeatureGeneratorPtr(); // FIXME : derivative direction
-      right.compute(leftOutput, output, zero, rightGradient);
+      right.compute(leftOutput, output, zero, gradientWrtParameters || gradientWrtInput ? &rightGradient : NULL);
       
       DenseVectorPtr rightGradientDense;
       if (rightGradient)
         rightGradientDense = rightGradient->toDenseVector();
       
       if (gradientWrtParameters)
-        for (size_t i = 0; i < leftOutputDense->getNumValues(); ++i)
-        {
-          LazyVectorPtr subVector = leftGradientWrtParameters->getSubVector(i);
-          if (subVector)
-            gradientWrtParameters->addWeighted(subVector, rightGradientDense->get(i));
-        }
+      {
+        LinearCombinationFeatureGeneratorPtr linearCombination = new LinearCombinationFeatureGenerator();
+        for (size_t i = 0; i < rightGradientDense->getNumValues(); ++i)
+          linearCombination->addWeighted(leftGradientWrtParameters->getSubGenerator(i), rightGradientDense->get(i));
+        *gradientWrtParameters = linearCombination;
+      }
 
       if (gradientWrtInput)
-        for (size_t i = 0; i < leftOutputDense->getNumValues(); ++i)
-        {
-          LazyVectorPtr subVector = leftGradientWrtInput->getSubVector(i);
-          gradientWrtInput->addWeighted(subVector, rightGradientDense->get(i));
-        }
+      {
+        LinearCombinationFeatureGeneratorPtr linearCombination = new LinearCombinationFeatureGenerator();
+        for (size_t i = 0; i < rightGradientDense->getNumValues(); ++i)
+          linearCombination->addWeighted(leftGradientWrtInput->getSubGenerator(i), rightGradientDense->get(i));
+        *gradientWrtInput = linearCombination;
+      }
     }    
   };
 };
 
 DECLARE_FUNCTION_COMPOSE(VectorArchitectureScalarVectorFunctionPair, VectorArchitecture, ScalarVectorFunction);
-
-
 
 }; /* namespace impl */
 }; /* namespace cralgo */

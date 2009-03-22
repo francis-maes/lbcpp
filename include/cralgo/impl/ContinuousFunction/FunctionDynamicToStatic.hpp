@@ -55,7 +55,7 @@ struct DynamicToStaticScalarVectorFunction : public ScalarVectorFunction<Dynamic
   
   ScalarVectorFunctionPtr function;
 
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
     if (output)
     {
@@ -72,9 +72,9 @@ struct DynamicToStaticScalarVectorFunction : public ScalarVectorFunction<Dynamic
     else if (gradient)
     {
       if (gradientDirection)
-        gradient = function->computeGradient(input, gradientDirection);
+        *gradient = function->computeGradient(input, gradientDirection);
       else
-        gradient = function->computeGradient(input);
+        *gradient = function->computeGradient(input);
     }
   }
 };

@@ -10,6 +10,7 @@
 # define CRALGO_IMPL_VALUE_FUNCTION_COMPOSITE_H_
 
 # include "ChooseFunctionStatic.hpp"
+# include "../../LazyFeatureGenerators.h"
 # include "../../LearningMachine.h"
 
 namespace cralgo {
@@ -106,7 +107,7 @@ TEMPLATE_INHERIT_BEGIN_3(CompositeStateFeaturesFunction, CompositeChooseFunction
 
   FeatureGeneratorPtr compute() const
   {
-    SumFeatureGeneratorPtr res(new SumFeatureGenerator());
+    LinearCombinationFeatureGeneratorPtr res(new LinearCombinationFeatureGenerator());
     for (size_t i = 0; i < BaseClass::functions.size(); ++i)
       res->add(BaseClass::functions[i]->compute());
     return res;
@@ -126,7 +127,7 @@ struct CompositeActionFeaturesFunction : public CompositeChooseFunction<
 
   FeatureGeneratorPtr compute(const ChoiceType& choice) const
   {
-    SumFeatureGeneratorPtr res(new SumFeatureGenerator());
+    LinearCombinationFeatureGeneratorPtr res(new LinearCombinationFeatureGenerator());
     for (size_t i = 0; i < BaseClass::functions.size(); ++i)
       res->add(BaseClass::functions[i]->compute(choice));
     return res;

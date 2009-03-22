@@ -22,11 +22,19 @@ typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 class FeatureDictionary;
 typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
 
-// feature visitor
+// feature generators
 class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;
 class FeatureGenerator;
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
+class WeightedFeatureGenerator;
+typedef ReferenceCountedObjectPtr<WeightedFeatureGenerator> WeightedFeatureGeneratorPtr;
+class LinearCombinationFeatureGenerator;
+typedef ReferenceCountedObjectPtr<LinearCombinationFeatureGenerator> LinearCombinationFeatureGeneratorPtr;
+class SubFeatureGenerator;
+typedef ReferenceCountedObjectPtr<SubFeatureGenerator> SubFeatureGeneratorPtr;
+class CompositeFeatureGenerator;
+typedef ReferenceCountedObjectPtr<CompositeFeatureGenerator> CompositeFeatureGeneratorPtr;
 
 // vectors
 class DoubleVector;
@@ -35,8 +43,6 @@ class SparseVector;
 typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
 class DenseVector;
 typedef ReferenceCountedObjectPtr<DenseVector> DenseVectorPtr;
-class LazyVector;
-typedef ReferenceCountedObjectPtr<LazyVector> LazyVectorPtr;
 
 // functions
 class ScalarFunction;

@@ -10,6 +10,7 @@
 # define CRALGO_LEARNING_EXAMPLE_H_
 
 # include "FeatureGenerator.h"
+# include "LazyFeatureGenerators.h"
 # include <sstream>
 
 namespace cralgo
@@ -68,13 +69,13 @@ public:
     {return output;}
 
   size_t getNumAlternatives() const
-    {return alternatives->getNumFeatureGenerators();}
+    {return alternatives->getNumSubGenerators();}
     
   FeatureGeneratorPtr getAlternative(size_t index) const
-    {return alternatives->getFeatureGenerator(index);}
+    {return alternatives->getSubGenerator(index);}
   
 private:
-  CompositeFeatureGeneratorPtr alternatives;
+  FeatureGeneratorPtr alternatives;
   size_t output;
 };
 
@@ -111,7 +112,7 @@ public:
     {return costs;}
   
 private:
-  CompositeFeatureGeneratorPtr alternatives;
+  FeatureGeneratorPtr alternatives;
   std::vector<double> costs;
 };
 

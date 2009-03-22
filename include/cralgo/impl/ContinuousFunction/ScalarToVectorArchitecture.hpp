@@ -30,47 +30,46 @@ struct ScalarToVectorArchitecture
     {return scalarArchitecture.createInitialParameters();}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const
   {
-    CompositeFeatureGeneratorPtr inputs = input.dynamicCast<CompositeFeatureGenerator>();
-    assert(inputs); // for the moment, ScalarToVectorArchitecture only works with composite feature generators
-    assert(outputNumber < inputs->getNumFeatureGenerators());
-    scalarArchitecture.compute(parameters, inputs->getFeatureGenerator(outputNumber),
+    assert(outputNumber < input->getNumSubGenerators());
+    scalarArchitecture.compute(parameters, input->getSubGenerator(outputNumber),
       output, gradientWrtParameters, gradientWrtInput);
   }
     
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-                LazyVectorPtr output,
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const
+                FeatureGeneratorPtr* output,
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const
   {
-    CompositeFeatureGeneratorPtr inputs = input.dynamicCast<CompositeFeatureGenerator>();
-    assert(inputs); // for the moment, ScalarToVectorArchitecture only works with composite feature generators
+    size_t n = input->getNumSubGenerators();
     
     DenseVectorPtr res;
     if (output)
-      res = new DenseVector(inputs->getNumFeatureGenerators());
+      res = new DenseVector(n);
     
-    for (size_t i = 0; i < inputs->getNumFeatureGenerators(); ++i)
+    CompositeFeatureGeneratorPtr gParam, gInput;
+    if (gradientWrtParameters)
+      gParam = new CompositeFeatureGenerator(n), *gradientWrtParameters = gParam;
+    if (gradientWrtInput)
+      gInput = new CompositeFeatureGenerator(n), *gradientWrtInput = gInput;
+    
+    for (size_t i = 0; i < n; ++i)
     {
       double scalarOutput;
-      LazyVectorPtr gParam, gInput;
-      if (gradientWrtParameters)
-        gParam = new LazyVector();
-      if (gradientWrtInput)
-        gInput = new LazyVector();
-      scalarArchitecture.compute(parameters, inputs->getFeatureGenerator(i),
-          output ? &scalarOutput : NULL, gParam, gInput);
+      FeatureGeneratorPtr gParamI, gInputI;
+      scalarArchitecture.compute(parameters, input->getSubGenerator(i),
+          output ? &scalarOutput : NULL, gParam ? &gParamI : NULL, gInput ? &gInputI : NULL);
       if (output)
         res->set(i, scalarOutput);
       if (gParam)
-        gradientWrtParameters->setSubVector(i, gParam);
+        gParam->setSubGenerator(i, gParamI);
       if (gInput)
-        gradientWrtInput->setSubVector(i, gInput);
+        gInput->setSubGenerator(i, gInputI);
     }
     if (output)
-      output->set(res);
+      *output = res;
   }  
 };
 

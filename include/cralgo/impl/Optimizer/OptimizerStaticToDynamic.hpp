@@ -35,8 +35,8 @@ STATIC_TO_DYNAMIC_CLASS(VectorOptimizer, Object)
     for (size_t i = 0; true; ++i)
     {
       double value;
-      LazyVectorPtr gradient = new LazyVector(parameters->getDictionary());
-      function->compute(parameters, &value, FeatureGeneratorPtr(), gradient);
+      FeatureGeneratorPtr gradient;
+      function->compute(parameters, &value, FeatureGeneratorPtr(), &gradient);
       if (!callback.progressStep("Optimizing, f = " + cralgo::toString(value) + " norm = " + cralgo::toString(parameters->l2norm()), (double)i))
         return false;
       DenseVectorPtr denseGradient = gradient->toDenseVector();
