@@ -34,7 +34,7 @@ struct ScalarToVectorArchitecture
                 FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(outputNumber < input->getNumSubGenerators());
-    scalarArchitecture.compute(parameters, input->getSubGenerator(outputNumber),
+    scalarArchitecture.compute(parameters, input->getSubGeneratorWithIndex(outputNumber),
       output, gradientWrtParameters, gradientWrtInput);
   }
     
@@ -47,26 +47,27 @@ struct ScalarToVectorArchitecture
     
     DenseVectorPtr res;
     if (output)
-      res = new DenseVector(n);
+      res = new DenseVector(n); // FIXME: dictionary
     
     CompositeFeatureGeneratorPtr gParam, gInput;
     if (gradientWrtParameters)
-      gParam = new CompositeFeatureGenerator(n), *gradientWrtParameters = gParam;
+      gParam = new CompositeFeatureGenerator(n), *gradientWrtParameters = gParam; // FIXME: dictionary
     if (gradientWrtInput)
-      gInput = new CompositeFeatureGenerator(n), *gradientWrtInput = gInput;
+      gInput = new CompositeFeatureGenerator(n), *gradientWrtInput = gInput; // FIXME: dictionary
     
     for (size_t i = 0; i < n; ++i)
     {
+      size_t index = input->getSubGeneratorIndex(i);
       double scalarOutput;
       FeatureGeneratorPtr gParamI, gInputI;
       scalarArchitecture.compute(parameters, input->getSubGenerator(i),
           output ? &scalarOutput : NULL, gParam ? &gParamI : NULL, gInput ? &gInputI : NULL);
       if (output)
-        res->set(i, scalarOutput);
+        res->set(index, scalarOutput);
       if (gParam)
-        gParam->setSubGenerator(i, gParamI);
+        gParam->setSubGenerator(index, gParamI);
       if (gInput)
-        gInput->setSubGenerator(i, gInputI);
+        gInput->setSubGenerator(index, gInputI);
     }
     if (output)
       *output = res;

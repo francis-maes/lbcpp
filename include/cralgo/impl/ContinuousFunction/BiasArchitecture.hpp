@@ -35,15 +35,22 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
       g->set(0, 1.0);
       *gradientWrtParameters = g;
     }
-    // gradientWrtInput : empty
+    if (gradientWrtInput)
+      *gradientWrtInput = FeatureGenerator::emptyGenerator();
   }
   
   static FeatureDictionaryPtr getDictionary()
   {
-    static FeatureDictionaryPtr biasDictionary = new FeatureDictionary("bias");
-    if (biasDictionary->empty())
-      biasDictionary->getFeatures().add("bias");
-    return biasDictionary;
+    static FeatureDictionaryPtr dictionary = createDictionary();
+    return dictionary;
+  }
+  
+private:
+  static FeatureDictionaryPtr createDictionary()
+  {
+    FeatureDictionaryPtr res = new FeatureDictionary("bias");
+    res->getFeatures().add("bias");
+    return res;
   }
 };
 

@@ -32,7 +32,7 @@ int testClassification(std::istream& istr)
 
     
     classifier->trainBatch(examples);
-  //  classifier->trainStochastic(examples);
+    //classifier->trainStochastic(examples);
     double acc = classifier->evaluateAccuracy(examples);
     std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;
   }

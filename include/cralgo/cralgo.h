@@ -17,7 +17,7 @@
 
 # include "RandomVariable.h"
 # include "FeatureGenerator.h"
-# include "DoubleVector.h"
+# include "EditableFeatureGenerator.h"
 # include "SparseVector.h"
 # include "DenseVector.h"
 # include "LearningExample.h"

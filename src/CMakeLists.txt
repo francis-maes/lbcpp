@@ -13,8 +13,7 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/RandomVariable.h
   ../include/cralgo/FeatureDictionary.h
   ../include/cralgo/FeatureGenerator.h
-  ../include/cralgo/LazyFeatureGenerators.h
-  ../include/cralgo/DoubleVector.h
+  ../include/cralgo/EditableFeatureGenerator.h
   ../include/cralgo/SparseVector.h
   ../include/cralgo/DenseVector.h
   ../include/cralgo/LearningExample.h
@@ -133,7 +132,7 @@ SET(CRALGO_LIBRARY_SOURCES
   Object.cpp
   ErrorHandler.cpp
   FeatureDictionary.cpp
-  LazyFeatureGenerators.cpp
+  FeatureGenerator.cpp
   SparseVector.cpp
   DenseVector.cpp
   DoubleVectorHelpers.hpp
@@ -147,6 +146,15 @@ SET(CRALGO_LIBRARY_SOURCES
   Policy.cpp
 )
 
+SET(CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES
+  FeatureGenerator/EmptyFeatureGenerator.h
+  FeatureGenerator/UnitFeatureGenerator.h
+  FeatureGenerator/SubFeatureGenerator.h
+  FeatureGenerator/WeightedFeatureGenerator.h
+  FeatureGenerator/LinearCombinationFeatureGenerator.h
+  FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
+)
+
 SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_HEADERS}
   ${CRALGO_LIBRARY_IMPL_HEADERS}
@@ -157,6 +165,7 @@ SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_IMPL_POLICY}
   ${CRALGO_LIBRARY_IMPL_BRIDGE}
   ${CRALGO_LIBRARY_SOURCES}
+  ${CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES}
 )
 
 SOURCE_GROUP(includes FILES ${CRALGO_LIBRARY_HEADERS})
@@ -168,5 +177,6 @@ SOURCE_GROUP(impl/ChooseFunction FILES ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION})
 SOURCE_GROUP(impl/Policy FILES ${CRALGO_LIBRARY_IMPL_POLICY})
 SOURCE_GROUP(impl/Bridge FILES ${CRALGO_LIBRARY_IMPL_BRIDGE})
 SOURCE_GROUP(sources FILES ${CRALGO_LIBRARY_SOURCES})
+SOURCE_GROUP(FeatureGenerator FILES ${CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES})
 
 ADD_LIBRARY(cralgo ${CRALGO_LIBRARY})

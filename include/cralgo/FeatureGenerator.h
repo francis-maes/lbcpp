@@ -20,10 +20,18 @@ namespace cralgo
 class FeatureGenerator : public Object
 {
 public:
-  static FeatureGeneratorPtr getEmptyGenerator();
-  static FeatureGeneratorPtr getUnitGenerator();
+  static FeatureGeneratorPtr emptyGenerator();
+  static FeatureGeneratorPtr unitGenerator();
+  
+  static FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight);
+  static FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights);
+  static FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
+  static FeatureGeneratorPtr subFeatureGenerator(size_t index, FeatureGeneratorPtr featureGenerator);
 
+public:
   virtual FeatureDictionaryPtr getDictionary() const = 0;
+  virtual bool isDense() const
+    {return false;}
   
   /*
   ** General
@@ -75,7 +83,9 @@ public:
   ** Sub-generators
   */
   virtual size_t getNumSubGenerators() const = 0;
-  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const = 0;
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const = 0;
+  virtual size_t getSubGeneratorIndex(size_t num) const = 0;
+  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const = 0;
 };
 
 template<>
@@ -109,14 +119,13 @@ public:
   FeatureGeneratorDefaultImplementations(FeatureDictionaryPtr dictionary) : BaseType(dictionary) {}
   FeatureGeneratorDefaultImplementations() {}
   
-  // override this
-  template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
-    {assert(false);}
+  // override this:
+  //
+  // template<class VisitorType>
+  // void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const;
     
-  FeatureDictionaryPtr getDictionary() const
-    {assert(false); return FeatureDictionaryPtr();}
-
+  // and also virtual FeatureGeneratorPtr getDictionary();
+    
 public:
   virtual void accept(FeatureVisitorPtr visitor, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
   virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const;
@@ -141,6 +150,22 @@ protected:
   template<class StaticVisitorType>
   void featureGenerator(StaticVisitorType& visitor, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
     {_this().staticFeatureGenerator(visitor, dictionary ? dictionary : _this().getDictionary());}
+};
+
+class FlatFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumSubGenerators() const
+    {return 0;}
+    
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
+    {assert(false); return FeatureGeneratorPtr();}
+    
+  virtual size_t getSubGeneratorIndex(size_t num) const
+    {assert(false); return (size_t)-1;}
+    
+  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
+    {assert(false); return FeatureGeneratorPtr();}
 };
 
 }; /* namespace cralgo */

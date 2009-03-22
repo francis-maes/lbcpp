@@ -39,34 +39,48 @@ public:
 
   virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
   {
-    if (sparseVector)
-      return sparseVector;
-    const_cast<ThisClass* >(this)->sparseVector = BaseClass::toSparseVector(dictionary);
+    if (!sparseVector)
+      const_cast<ThisClass* >(this)->sparseVector = BaseClass::toSparseVector(dictionary);
     return sparseVector;
   }
 
   virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
   {
-    if (denseVector)
-      return denseVector;
-    const_cast<ThisClass* >(this)->denseVector = BaseClass::toDenseVector(dictionary);
+    if (!denseVector)
+      const_cast<ThisClass* >(this)->denseVector = BaseClass::toDenseVector(dictionary);
     return denseVector;
   }
 
   virtual size_t getNumSubGenerators() const
   {
     if (denseVector)
-      return denseVector->getNumSubVectors();
+      return denseVector->getNumSubGenerators();
     else
-      return toSparseVector()->getNumSubVectors();
+      return toSparseVector()->getNumSubGenerators();
   }
   
-  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
   {
     if (denseVector)
-      return denseVector->getSubVector(index);
+      return denseVector->getSubGenerator(num);
     else
-      return toSparseVector()->getSubVector(index);
+      return toSparseVector()->getSubGenerator(num);
+  }
+
+  virtual size_t getSubGeneratorIndex(size_t num) const
+  {
+    if (denseVector)
+      return denseVector->getSubGeneratorIndex(num);
+    else
+      return toSparseVector()->getSubGeneratorIndex(num);
+  }
+  
+  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
+  {
+    if (denseVector)
+      return denseVector->getSubGeneratorWithIndex(index);
+    else
+      return toSparseVector()->getSubGeneratorWithIndex(index);
   }
 
 private:

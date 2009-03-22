@@ -9,7 +9,6 @@
 #ifndef CRALGO_CONTINUOUS_FUNCTION_H_
 # define CRALGO_CONTINUOUS_FUNCTION_H_
 
-# include "LazyFeatureGenerators.h"
 # include "SparseVector.h"
 # include "DenseVector.h"
 # include "LearningExample.h"

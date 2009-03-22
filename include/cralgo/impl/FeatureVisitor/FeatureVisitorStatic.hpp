@@ -10,7 +10,7 @@
 # define CRALGO_FEATURE_VISITOR_STATIC_H_
 
 # include "../../FeatureGenerator.h"
-# include "../../DoubleVector.h"
+# include "../../EditableFeatureGenerator.h"
 # include "../Object.hpp"
 
 namespace cralgo {

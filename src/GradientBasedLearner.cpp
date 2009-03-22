@@ -111,13 +111,22 @@ public:
     : optimizer(optimizer), termination(termination) {}
     
   virtual void trainStochasticBegin()
-    {assert(false);}
+  {
+    Object::error("Batch::trainStochasticBegin", "This is not a stochastic learner");
+    assert(false);
+  }
 
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
-    {assert(false);}
+  {
+    Object::error("Batch::trainStochasticExample", "This is not a stochastic learner");
+    assert(false);
+  }
   
   virtual void trainStochasticEnd()
-    {assert(false);}
+  {
+    Object::error("Batch::trainStochasticEnd", "This is not a stochastic learner");
+    assert(false);
+  }
 
   virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples)
   {

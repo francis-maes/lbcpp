@@ -63,7 +63,7 @@ PTree::Node* CRAlgorithmGenerator::createCode()
   /*
   ** Contruction function
   e.g.: 
-CRAlgorithm* leftRightLabeling(const std::vector<DoubleVectorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
+CRAlgorithm* leftRightLabeling(const std::vector<FeatureGeneratorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
   {return cralgo::staticToDynamicCRAlgorithm(new leftRightLabelingCRAlgorithm(x, classes, &correct));}
   */  
   FunctionPTreeGenerator createFunction;
@@ -82,7 +82,7 @@ CRAlgorithm* leftRightLabeling(const std::vector<DoubleVectorPtr>& x, const std:
   /*
   ** Policy run function
   e.g.:
-std::vector<std::string> leftRightLabeling(cralgo::PolicyPtr policy, const std::vector<DoubleVectorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
+std::vector<std::string> leftRightLabeling(cralgo::PolicyPtr policy, const std::vector<FeatureGeneratorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
 {
   cralgo::CRAlgorithmPtr __crAlgorithm__ = leftRightLabeling(x, labels, ycorrect, contextSize);
   __crAlgorithm__->run(policy);

@@ -1,11 +1,13 @@
-Remplacement du LazyVector
 
+* FeatureDictionary: utiliser des StringDictionaryPtr 
+* FeatureDictionary: getDictionaryWithSubScopesAsFeatures()
 * MultiLinearArchitecture et ScalarToVectorArchitecture
    - Dictionary en sortie
 
-* getNumSubGenerators / getSubGenerator => partout
-
-* Renomage DoubleVector => EditableFeatureGenerator
+* Optimizer: passer les DenseVector en FeatureGenerator => repousser au maximum le toDenseVector()
+* Implementation optimisées pour Sparse vs Sparse et Dense vs Dense
+* s'assurer que tous les vecteurs crées ont un dictionaire
+* Essayer d'enlever le dictionaire par default dans les fonctions de FeatureGenerator
 
 LC++ library:
 =============
@@ -14,12 +16,12 @@ Gros:
   * Task, Tables, InstanceSet, SWIG, Doxygen, Tests
 
 ContinuousFunctions:
-  * Valeurs de retour LazyVectorPtr => FeatureGeneratorPtr*
   * Faire sauter impl::constant et ScalarConstant
   * ScalarDerivableArchitecturesDotProduct
   * TransferArchitecture
   * Gerer le gradientDirection/derivativeDirection partout
   * Sérialisation et fonctions de création pour les dynamiques
+  * L1-norm
 
 Optimizers:
   * Permettre à l'optimiser d'arrêter l'optimisation lui-meme avec un etat OK ou ERROR
