@@ -59,8 +59,8 @@ private:
 class GeneralizedClassificationExample : public LearningExample
 {
 public:
-  GeneralizedClassificationExample(const std::vector<FeatureGeneratorPtr>& alternatives, size_t output)
-    : alternatives(new CompositeFeatureGenerator(alternatives, new FeatureDictionary("alternatives"))), output(output) {}
+  GeneralizedClassificationExample(const FeatureGeneratorPtr alternatives, size_t output)
+    : alternatives(alternatives), output(output) {}
 
   FeatureGeneratorPtr getInput() const
     {return alternatives;}
@@ -102,8 +102,8 @@ private:
 class RankingExample : public LearningExample
 {
 public:
-  RankingExample(const std::vector<FeatureGeneratorPtr>& alternatives, const std::vector<double>& costs)
-    : alternatives(new CompositeFeatureGenerator(alternatives, new FeatureDictionary("alternatives"))), costs(costs) {}
+  RankingExample(const FeatureGeneratorPtr alternatives, const std::vector<double>& costs)
+    : alternatives(alternatives), costs(costs) {}
 
   FeatureGeneratorPtr getInput() const
     {return alternatives;}
@@ -168,7 +168,7 @@ protected:
   static bool parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path);
 };
 
-extern bool parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, FeatureDictionaryPtr labels, std::vector<ClassificationExample>& res);
+extern bool parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res);
 extern bool parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res);
 
 

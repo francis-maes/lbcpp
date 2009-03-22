@@ -15,7 +15,7 @@
 namespace cralgo
 {
 
-class StringDictionary
+class StringDictionary : public ReferenceCountedObject
 {
 public:
   void clear()
@@ -42,47 +42,50 @@ protected:
   StringVector indexToString;
 };
 
+typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
+
 class FeatureDictionary : public Object
 {
 public:
-  FeatureDictionary(const std::string& name);
-  FeatureDictionary() {}
-  ~FeatureDictionary()
-    {clear();}
+  FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes);
+  FeatureDictionary(const std::string& name = "unnamed");
     
-  void clear();
-  
   bool empty() const
-    {return featuresDictionary.count() == 0 && scopesDictionary.count() == 0;}
+    {return getNumFeatures() == 0 && getNumScopes() == 0;}
   
   /*
   ** Features
   */
-  StringDictionary& getFeatures()
+  StringDictionaryPtr getFeatures()
     {return featuresDictionary;}
   
   size_t getNumFeatures() const
-    {return featuresDictionary.count();}
+    {return featuresDictionary ? featuresDictionary->count() : 0.0;}
     
   /*
   ** Scopes
   */
-  StringDictionary& getScopes()
+  StringDictionaryPtr getScopes()
     {return scopesDictionary;}
 
   size_t getNumScopes() const
-    {return scopesDictionary.count();}
+    {return scopesDictionary ? scopesDictionary->count() : 0.0;}
+  
+  /*
+  ** Related dictionaries
+  */
+  void setSubDictionary(size_t index, FeatureDictionaryPtr dictionary)
+    {if (subDictionaries.size() < index + 1) subDictionaries.resize(index + 1); subDictionaries[index] = dictionary;}
     
   const FeatureDictionaryPtr getSubDictionary(size_t index) const
-  {
-    assert(index < subDictionaries.size());
-    return subDictionaries[index];
-  }
+    {assert(index < subDictionaries.size()); return subDictionaries[index];}
     
   FeatureDictionaryPtr getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue = FeatureDictionaryPtr());
   
   FeatureDictionaryPtr getSubDictionary(const std::string& name, FeatureDictionaryPtr defaultValue = FeatureDictionaryPtr())
-    {return getSubDictionary(scopesDictionary.getIndex(name), defaultValue);}
+    {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name), defaultValue);}
+
+  FeatureDictionaryPtr getDictionaryWithSubScopesAsFeatures();
   
   /*
   ** Object
@@ -92,15 +95,16 @@ public:
     
   virtual std::string toString() const
   {
-    return "Features: " + cralgo::toString(featuresDictionary) + "\n"
-           "Scopes: " + cralgo::toString(scopesDictionary) + "\n";
+    return "Features: " + cralgo::toString(*featuresDictionary) + "\n"
+           "Scopes: " + cralgo::toString(*scopesDictionary) + "\n";
   }
   
 private:
   std::string name;
-  StringDictionary featuresDictionary;
-  StringDictionary scopesDictionary;
+  StringDictionaryPtr featuresDictionary;
+  StringDictionaryPtr scopesDictionary;
   std::vector<FeatureDictionaryPtr> subDictionaries;
+  FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
 };
 
 template<>

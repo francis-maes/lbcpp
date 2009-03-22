@@ -32,7 +32,7 @@ private:
   static FeatureDictionaryPtr createDictionary()
   {
     FeatureDictionaryPtr res = new FeatureDictionary("unit");
-    res->getFeatures().add("unit");
+    res->getFeatures()->add("unit");
     return res;
   }
 };

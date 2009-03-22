@@ -92,11 +92,11 @@ private:
 class SequenceExamplesParser : public LearningExamplesParser
 {
 public:
-  SequenceExamplesParser(std::vector<SequenceExample>& target, FeatureDictionaryPtr labels)
+  SequenceExamplesParser(std::vector<SequenceExample>& target, StringDictionaryPtr labels)
     : target(target), labels(labels) {}
     
   std::vector<SequenceExample>& target;
-  FeatureDictionaryPtr labels;
+  StringDictionaryPtr labels;
 
   virtual void parseBegin()
   {
@@ -114,7 +114,7 @@ public:
     if (!parseFeatureList(columns, 1, features))
       return false;
     currentContent.push_back(features);
-    currentLabels.push_back(labels->getFeatures().add(label));
+    currentLabels.push_back(labels->add(label));
     return true;
   }
 
@@ -148,7 +148,7 @@ void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, s
   std::cout << "==> " << policy->toString() << std::endl;
 }
 
-void testClassifier(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
+void testClassifier(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);
 
@@ -161,16 +161,16 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, Featur
     Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels->getNumFeatures());
+  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels->count());
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy, learningExamples, labels->getNumFeatures());
+    runPolicy(learnerPolicy, learningExamples, labels->count());
   }
 }
 
-void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
+void testCRank(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(10, 10000);
 
@@ -186,12 +186,12 @@ void testCRank(const std::vector<SequenceExample>& learningExamples, FeatureDict
   for (size_t i = 0; i < 5; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(0)->addComputeStatistics(), learningExamples, labels->getNumFeatures());
+    runPolicy(learnerPolicy->verbose(0)->addComputeStatistics(), learningExamples, labels->count());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
 
-void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
+void testSarsa(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   IterationFunctionPtr epsilon = IterationFunction::createConstant(0.1);
@@ -204,12 +204,12 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(0), learningExamples, labels->getNumFeatures());
+  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(0), learningExamples, labels->count());
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(0), learningExamples, labels->getNumFeatures());
+    runPolicy(learnerPolicy->verbose(0), learningExamples, labels->count());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -231,7 +231,7 @@ crAlgorithm void testTrivial()
     reward (1.0);
 }*/
 
-void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
+void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
 
@@ -247,7 +247,7 @@ void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, FeatureDi
     PolicyPtr p = learnerPolicy->addComputeStatistics()->verbose(0);
   //  testTrivial(p);
 //    std::cout << p->toString() << std::endl;
-    runPolicy(p, learningExamples, labels->getNumFeatures());
+    runPolicy(p, learningExamples, labels->count());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -267,12 +267,12 @@ int main(int argc, char* argv[])
 
   
   FeatureDictionaryPtr features = new FeatureDictionary("myFeatures");
-  FeatureDictionaryPtr labels = new FeatureDictionary("myLabels");
+  StringDictionaryPtr labels = new StringDictionary();
 
   std::vector<SequenceExample> learningExamples;
   SequenceExamplesParser parser(learningExamples, labels);
   parser.parse(istr, features);
-  std::cout << learningExamples.size() << " sequences, " << labels->getNumFeatures()
+  std::cout << learningExamples.size() << " sequences, " << labels->count()
     << " labels, " << features->getNumFeatures() << " features." << std::endl;
 
   

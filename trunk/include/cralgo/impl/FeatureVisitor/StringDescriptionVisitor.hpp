@@ -23,7 +23,7 @@ public:
   {
     flushCurrentFeatures();
     addIndent(indent);
-    res += dictionary->getScopes().getString(number) + "\n";
+    res += dictionary->getScopes()->getString(number) + "\n";
     ++indent;
     return true;
   }
@@ -32,7 +32,7 @@ public:
   {
     if (currentFeatures.size())
       currentFeatures += ", ";
-    currentFeatures += dictionary->getFeatures().getString(number) + " = " + cralgo::toString(value);
+    currentFeatures += dictionary->getFeatures()->getString(number) + " = " + cralgo::toString(value);
   }
   
   void featureLeave()

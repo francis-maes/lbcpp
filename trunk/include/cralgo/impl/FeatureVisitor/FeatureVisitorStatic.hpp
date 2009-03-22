@@ -39,19 +39,19 @@ struct FeatureVisitor : public Object<ExactType>
 
   // conversion functions
   bool featureEnter_(cralgo::FeatureDictionaryPtr dictionary, const std::string& scopeName)
-    {return _this().featureEnter(dictionary, dictionary->getScopes().add(scopeName));}
+    {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName));}
     
   bool featureEnter_(cralgo::FeatureDictionaryPtr dictionary, const char* scopeName)
-    {return _this().featureEnter(dictionary, dictionary->getScopes().add(scopeName));}
+    {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName));}
     
   bool featureEnter_(cralgo::FeatureDictionaryPtr dictionary, size_t number)
     {return _this().featureEnter(dictionary, number);}
   
   void featureSense_(cralgo::FeatureDictionaryPtr dictionary, const std::string& featureName, double value = 1.0)
-    {_this().featureSense(dictionary, dictionary->getFeatures().add(featureName), value);}
+    {_this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
     
   void featureSense_(cralgo::FeatureDictionaryPtr dictionary, const char* featureName, double value = 1.0)
-    {_this().featureSense(dictionary, dictionary->getFeatures().add(featureName), value);}
+    {_this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
     
   void featureSense_(cralgo::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
     {_this().featureSense(dictionary, number, value);}

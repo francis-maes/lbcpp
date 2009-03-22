@@ -20,8 +20,7 @@ public:
   typedef FeatureGeneratorDefaultImplementations<SparseVector, FeatureVector> BaseClass;
   
   SparseVector(const SparseVector& otherVector);
-  SparseVector(FeatureDictionaryPtr dictionary);
-  SparseVector();
+  SparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr(), size_t reserveNumValues = 0, size_t reserveNumSubVectors = 0);
   
   virtual ~SparseVector()
     {clear();}

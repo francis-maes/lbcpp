@@ -68,17 +68,16 @@ namespace cralgo
 /*
 ** FeatureDictionary
 */
-FeatureDictionary::FeatureDictionary(const std::string& name) : name(name)
+FeatureDictionary::FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes)
+  : name(name), featuresDictionary(features), scopesDictionary(scopes)
 {
 }
 
-void FeatureDictionary::clear()
+FeatureDictionary::FeatureDictionary(const std::string& name)
+  : name(name), featuresDictionary(new StringDictionary()), scopesDictionary(new StringDictionary())
 {
-  featuresDictionary.clear();
-  scopesDictionary.clear();
-  subDictionaries.clear();
 }
-  
+
 FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue)
 {
   if (subDictionaries.size() < index + 1)
@@ -94,6 +93,13 @@ FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDi
   }
   else
     res = defaultValue ? defaultValue : new FeatureDictionary(name + "." + 
-      (scopesDictionary.exists(index) ? scopesDictionary.getString(index) : cralgo::toString(index)));
+      (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : cralgo::toString(index)));
   return res;
+}
+
+FeatureDictionaryPtr FeatureDictionary::getDictionaryWithSubScopesAsFeatures()
+{
+  if (!dictionaryWithSubScopesAsFeatures)
+    dictionaryWithSubScopesAsFeatures = new FeatureDictionary(name, scopesDictionary, StringDictionaryPtr());
+  return dictionaryWithSubScopesAsFeatures;
 }

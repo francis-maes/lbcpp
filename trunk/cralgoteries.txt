@@ -1,13 +1,13 @@
-* s'assurer que tous les vecteurs crŽes ont un dictionaire
+
 * Essayer d'enlever le dictionaire par default dans les fonctions de FeatureGenerator
 
-* FeatureDictionary: utiliser des StringDictionaryPtr 
-* FeatureDictionary: getDictionaryWithSubScopesAsFeatures()
-* MultiLinearArchitecture et ScalarToVectorArchitecture
-   - Dictionary en sortie
 
-* Optimizer: passer les DenseVector en FeatureGenerator => repousser au maximum le toDenseVector()
-* Implementation optimisŽes pour Sparse vs Sparse et Dense vs Dense
+* Dictionary: peut mieux faire
+  - StaticToDynamicChoose::computeActionFeatures
+  - ScalarToVectorArchitecture::compute
+
+
+* Clarifier ReferenceObjectScope
 
 LC++ library:
 =============
@@ -16,6 +16,7 @@ Gros:
   * Task, Tables, InstanceSet, SWIG, Doxygen, Tests
 
 ContinuousFunctions:
+  * Implementation optimisŽes pour Sparse vs Sparse et Dense vs Dense
   * Faire sauter impl::constant et ScalarConstant
   * ScalarDerivableArchitecturesDotProduct
   * TransferArchitecture
@@ -24,6 +25,7 @@ ContinuousFunctions:
   * L1-norm
 
 Optimizers:
+  * Optimizer: passer les DenseVector en FeatureGenerator => repousser au maximum le toDenseVector()
   * Permettre ˆ l'optimiser d'arrter l'optimisation lui-meme avec un etat OK ou ERROR
   * renomage OptimizerTerminationTest => OptimizerStopingCriterion
   * LBFGS / OWLQN

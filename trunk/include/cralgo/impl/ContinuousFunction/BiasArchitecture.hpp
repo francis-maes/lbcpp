@@ -49,7 +49,7 @@ private:
   static FeatureDictionaryPtr createDictionary()
   {
     FeatureDictionaryPtr res = new FeatureDictionary("bias");
-    res->getFeatures().add("bias");
+    res->getFeatures()->add("bias");
     return res;
   }
 };

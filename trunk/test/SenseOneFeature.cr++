@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
   f4->addWeightedTo(dense, 5.0);
   std::cout << "Dense: " << dense->toString() << std::endl;
   
-  DenseVectorPtr dense2(new DenseVector());
+  DenseVectorPtr dense2(new DenseVector(f4->getDictionary()));
   f4->addWeightedSignsTo(dense2, 2.0);
   std::cout << "Dense2: " << dense2->toString() << std::endl;
   

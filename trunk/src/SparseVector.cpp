@@ -16,13 +16,13 @@ SparseVector::SparseVector(const SparseVector& otherVector)
 {
 }
 
-SparseVector::SparseVector(FeatureDictionaryPtr dictionary)
+SparseVector::SparseVector(FeatureDictionaryPtr dictionary, size_t reserveNumValues, size_t reserveNumSubVectors)
   : BaseClass(dictionary)
 {
-}
-
-SparseVector::SparseVector()
-{
+  if (reserveNumValues)
+    values.reserve(reserveNumValues);
+  if (reserveNumSubVectors)
+    subVectors.reserve(reserveNumSubVectors);
 }
 
 void SparseVector::clear()
@@ -68,7 +68,7 @@ void SparseVector::set(size_t index, double value)
 void SparseVector::set(const std::string& name, double value)
 {
   assert(dictionary);
-  set(dictionary->getFeatures().add(name), value);
+  set(dictionary->getFeatures()->add(name), value);
 }
 
 void SparseVector::set(const std::vector<std::string>& path, double value)
@@ -78,7 +78,7 @@ void SparseVector::set(const std::vector<std::string>& path, double value)
   FeatureDictionaryPtr dictionary = this->dictionary;
   for (size_t i = 0; i < path.size() - 1; ++i)
   {
-    size_t subVectorIndex = dictionary->getScopes().add(path[i]);
+    size_t subVectorIndex = dictionary->getScopes()->add(path[i]);
     dictionary = dictionary->getSubDictionary(subVectorIndex);
     SparseVectorPtr subVector = ptr->getSubVector(subVectorIndex);
     if (!subVector)
@@ -87,7 +87,7 @@ void SparseVector::set(const std::vector<std::string>& path, double value)
       subVector->ensureDictionary(dictionary);
     ptr = subVector;
   }
-  ptr->set(dictionary->getFeatures().add(path.back()), value);
+  ptr->set(dictionary->getFeatures()->add(path.back()), value);
 }
 
 double SparseVector::get(size_t index) const
@@ -135,7 +135,7 @@ bool SparseVector::load(std::istream& istr)
     size_t index;
     if (!read(istr, index))
       return false;
-    SparseVectorPtr subVector(new SparseVector());
+    SparseVectorPtr subVector(new SparseVector(getDictionary()->getSubDictionary(index)));
     if (!subVector->load(istr))
       return false;
     subVectors[i] = std::make_pair(index, subVector);
