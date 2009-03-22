@@ -58,19 +58,19 @@ struct ReferenceCountedObjectPtr
 {
   template<class O>
   ReferenceCountedObjectPtr(const ReferenceCountedObjectPtr<O>& other) : ptr(static_cast<T* >(other.get()))
-    {if (ptr != 0) ptr->incrementReferenceCounter();}
+    {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
 
   ReferenceCountedObjectPtr(const ReferenceCountedObjectPtr<T>& other) : ptr(other.get())
-    {if (ptr != 0) ptr->incrementReferenceCounter();}
+    {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
 
   ReferenceCountedObjectPtr(T* ptr) : ptr(ptr)
-    {if (ptr != 0) ptr->incrementReferenceCounter();}
+    {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
 
   ReferenceCountedObjectPtr() : ptr(NULL)
     {}
     
   ~ReferenceCountedObjectPtr()
-    {if (ptr) ptr->decrementReferenceCounter();}
+    {if (ptr) cast(ptr).decrementReferenceCounter();}
   
   ReferenceCountedObjectPtr<T>& operator =(const ReferenceCountedObjectPtr<T>& other)
     {changePtr(other.get()); return *this;}
@@ -128,16 +128,20 @@ struct ReferenceCountedObjectPtr
 private:
   T* ptr;
   
-  void changePtr(T* newPtr)
+  // enables the use of ReferenceCountedObjectPtrs on predeclared objects
+  static inline ReferenceCountedObject& cast(T* ptr)
+    {return **(ReferenceCountedObject** )(&ptr);}
+  
+  inline void changePtr(T* newPtr)
   {
     if (ptr != newPtr)
     {
-      if (newPtr) newPtr->incrementReferenceCounter();
+      if (newPtr) cast(newPtr).incrementReferenceCounter();
       T* oldPtr = ptr;
       ptr = newPtr;
-      if (oldPtr) oldPtr->decrementReferenceCounter();
+      if (oldPtr) cast(oldPtr).decrementReferenceCounter();
     }
-  }  
+  }
 };
 
 }; /* namespace cralgo */

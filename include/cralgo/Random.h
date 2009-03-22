@@ -20,7 +20,7 @@ class Random
 {
 public:
   static Random& getInstance()
-    {static Random instance; return instance;}
+    {static Random instance(1664518616645186LL); return instance;}
 
   Random(long long seedValue = 0)
     : seed(seedValue) {}

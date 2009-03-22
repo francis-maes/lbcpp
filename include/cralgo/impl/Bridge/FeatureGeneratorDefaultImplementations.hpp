@@ -83,11 +83,27 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addTo(DenseVectorPtr target, FeatureDiction
   featureGenerator(staticVisitor, dictionary);
 }
 
+FEATURE_GENERATOR_DEFAULT_IMPL(void) addTo(SparseVectorPtr target, FeatureDictionaryPtr dictionary) const
+{
+  target->ensureDictionary(selectDictionary(dictionary));
+  impl::AddVectorOperation op;
+  impl::AssignmentToSparseVisitor<impl::AddVectorOperation> staticVisitor(target, op);
+  featureGenerator(staticVisitor, dictionary);
+}
+
 FEATURE_GENERATOR_DEFAULT_IMPL(void) substractFrom(DenseVectorPtr target, FeatureDictionaryPtr dictionary) const
 {
   target->ensureDictionary(selectDictionary(dictionary));
   impl::SubstractVectorOperation op;
   impl::AssignmentToDenseVisitor<impl::SubstractVectorOperation> staticVisitor(target, op);
+  featureGenerator(staticVisitor, dictionary);
+}
+
+FEATURE_GENERATOR_DEFAULT_IMPL(void) substractFrom(SparseVectorPtr target, FeatureDictionaryPtr dictionary) const
+{
+  target->ensureDictionary(selectDictionary(dictionary));
+  impl::SubstractVectorOperation op;
+  impl::AssignmentToSparseVisitor<impl::SubstractVectorOperation> staticVisitor(target, op);
   featureGenerator(staticVisitor, dictionary);
 }
 

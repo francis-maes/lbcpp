@@ -213,6 +213,44 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, FeatureDict
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
+/*
+crAlgorithm void testTrivial()
+{
+  size_t c;
+  std::vector<size_t> choices;
+  choices.push_back(0);
+  choices.push_back(1);
+  
+  chooseFunction featureGenerator features(size_t b) {
+    featureSense(b);
+  }
+  
+  c = choose<size_t>(choices, features);
+  std::cout << "CHOICE = " << cralgo::toString(c) << std::endl;
+  if (c)
+    reward (1.0);
+}*/
+
+void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, FeatureDictionaryPtr labels)
+{
+  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
+
+  GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
+    GradientBasedLearner::createGradientDescent(learningRate));
+  
+  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
+  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0, 2.0);
+
+  for (size_t i = 0; i < 10; ++i)
+  {
+    std::cout << "ITERATION: " << (i+1) << std::endl;
+    PolicyPtr p = learnerPolicy->addComputeStatistics()->verbose(0);
+  //  testTrivial(p);
+//    std::cout << p->toString() << std::endl;
+    runPolicy(p, learningExamples, labels->getNumFeatures());
+ //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
+  }
+}
 
 
 int main(int argc, char* argv[])
@@ -247,11 +285,14 @@ int main(int argc, char* argv[])
   std::cout << "State description: " << choose->stateFeatures()->toString() << std::endl;
   std::cout << "First action description: " << choose->actionFeatures(choose->newIterator()->get())->toString() << std::endl;*/
   
-  //std::cout << " === SARSA === " << std::endl;
-  //testSarsa(learningExamples, labels);
+//  std::cout << " === SARSA === " << std::endl;
+//  testSarsa(learningExamples, labels);
 //  std::cout << " === CLASSIFIER === " << std::endl;
 //  testClassifier(learningExamples, labels);
-  std::cout << " === RANKING === " << std::endl;
-  testCRank(learningExamples, labels);
+//  std::cout << " === RANKING === " << std::endl;
+ // testCRank(learningExamples, labels);
+  
+  std::cout << " === OLPOMDP === " << std::endl;
+  testOLPOMDP(learningExamples, labels);
   return 0;
 }

@@ -64,11 +64,12 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       // 0.0.input
       // 1.1.input
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
-      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(numOutputs);
+      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(numOutputs, new FeatureDictionary("pouet")); // FIXME: dictionary
+      FeatureDictionaryPtr pouet = new FeatureDictionary("pouet2");
       for (size_t i = 0; i < numOutputs; ++i)
-        g->setSubGenerator(i, FeatureGenerator::subFeatureGenerator(i, input));
+        g->setSubGenerator(i, FeatureGenerator::subFeatureGenerator(pouet, i, input)); // FIXME: dictionary
       *gradientWrtParameters = g;
-      }
+    }
     if (gradientWrtInput)
       *gradientWrtInput = parameters;
   }

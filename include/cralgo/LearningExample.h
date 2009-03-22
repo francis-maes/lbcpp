@@ -60,7 +60,7 @@ class GeneralizedClassificationExample : public LearningExample
 {
 public:
   GeneralizedClassificationExample(const std::vector<FeatureGeneratorPtr>& alternatives, size_t output)
-    : alternatives(new CompositeFeatureGenerator(alternatives)), output(output) {}
+    : alternatives(new CompositeFeatureGenerator(alternatives, new FeatureDictionary("alternatives"))), output(output) {}
 
   FeatureGeneratorPtr getInput() const
     {return alternatives;}
@@ -103,14 +103,14 @@ class RankingExample : public LearningExample
 {
 public:
   RankingExample(const std::vector<FeatureGeneratorPtr>& alternatives, const std::vector<double>& costs)
-    : alternatives(new CompositeFeatureGenerator(alternatives)), costs(costs) {}
+    : alternatives(new CompositeFeatureGenerator(alternatives, new FeatureDictionary("alternatives"))), costs(costs) {}
 
   FeatureGeneratorPtr getInput() const
     {return alternatives;}
     
   const std::vector<double>& getCosts() const
     {return costs;}
-  
+    
 private:
   FeatureGeneratorPtr alternatives;
   std::vector<double> costs;

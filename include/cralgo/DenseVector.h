@@ -96,8 +96,15 @@ public:
   void multiplyByScalar(double scalar);
   
   void addWeighted(const DenseVectorPtr otherVector, double weight);
+  
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
-    {featureGenerator->addWeightedTo(DenseVectorPtr(this), weight, dictionary);}
+  {
+    const DenseVectorPtr dense = featureGenerator.dynamicCast<DenseVector>();
+    if (dense)
+      addWeighted(dense, weight);
+    else
+      featureGenerator->addWeightedTo(DenseVectorPtr(this), weight, dictionary);
+  }
 
   void add(const DenseVectorPtr otherVector);      
   void add(const FeatureGeneratorPtr featureGenerator)
@@ -125,8 +132,8 @@ public:
   virtual bool isDense() const
     {return true;}
   
-  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary)
-    {/* todo: check dictionary */ return DenseVectorPtr(this);}
+  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+    {/* todo: check dictionary */ return DenseVectorPtr(const_cast<DenseVector* >(this));}
 
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}

@@ -51,9 +51,9 @@ struct ScalarToVectorArchitecture
     
     CompositeFeatureGeneratorPtr gParam, gInput;
     if (gradientWrtParameters)
-      gParam = new CompositeFeatureGenerator(n), *gradientWrtParameters = gParam; // FIXME: dictionary
+      gParam = new CompositeFeatureGenerator(n); // FIXME: dictionary
     if (gradientWrtInput)
-      gInput = new CompositeFeatureGenerator(n), *gradientWrtInput = gInput; // FIXME: dictionary
+      gInput = new CompositeFeatureGenerator(n); // FIXME: dictionary
     
     for (size_t i = 0; i < n; ++i)
     {
@@ -71,6 +71,10 @@ struct ScalarToVectorArchitecture
     }
     if (output)
       *output = res;
+    if (gradientWrtParameters)
+      *gradientWrtParameters = gParam;
+    if (gradientWrtInput)
+      *gradientWrtInput = gInput;
   }  
 };
 
