@@ -285,14 +285,14 @@ int main(int argc, char* argv[])
   std::cout << "State description: " << choose->stateFeatures()->toString() << std::endl;
   std::cout << "First action description: " << choose->actionFeatures(choose->newIterator()->get())->toString() << std::endl;*/
   
-//  std::cout << " === SARSA === " << std::endl;
-//  testSarsa(learningExamples, labels);
+  std::cout << " === SARSA === " << std::endl;
+  testSarsa(learningExamples, labels);
 //  std::cout << " === CLASSIFIER === " << std::endl;
 //  testClassifier(learningExamples, labels);
 //  std::cout << " === RANKING === " << std::endl;
- // testCRank(learningExamples, labels);
+//  testCRank(learningExamples, labels);
   
-  std::cout << " === OLPOMDP === " << std::endl;
-  testOLPOMDP(learningExamples, labels);
+ // std::cout << " === OLPOMDP === " << std::endl;
+ // testOLPOMDP(learningExamples, labels);
   return 0;
 }

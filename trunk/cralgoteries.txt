@@ -1,11 +1,6 @@
-
-* Essayer d'enlever le dictionaire par default dans les fonctions de FeatureGenerator
-
-
-* Dictionary: peut mieux faire
+* Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe)
   - StaticToDynamicChoose::computeActionFeatures
   - ScalarToVectorArchitecture::compute
-
 
 * Clarifier ReferenceObjectScope
 

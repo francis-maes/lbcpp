@@ -34,20 +34,20 @@ public:
     {return ImplementationType::getDictionary();}
 
   template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
-    {const_cast<ImplementationType& >(impl).featureGenerator(visitor, dictionary);}
+  void staticFeatureGenerator(VisitorType& visitor) const
+    {const_cast<ImplementationType& >(impl).featureGenerator(visitor, getDictionary());}
 
-  virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual SparseVectorPtr toSparseVector() const
   {
     if (!sparseVector)
-      const_cast<ThisClass* >(this)->sparseVector = BaseClass::toSparseVector(dictionary);
+      const_cast<ThisClass* >(this)->sparseVector = BaseClass::toSparseVector();
     return sparseVector;
   }
 
-  virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
+  virtual DenseVectorPtr toDenseVector() const
   {
     if (!denseVector)
-      const_cast<ThisClass* >(this)->denseVector = BaseClass::toDenseVector(dictionary);
+      const_cast<ThisClass* >(this)->denseVector = BaseClass::toDenseVector();
     return denseVector;
   }
 

@@ -61,7 +61,7 @@ inline ActionFeaturesFunctionPtr staticToDynamic(const ActionFeaturesFunction<Ex
 
 STATIC_TO_DYNAMIC_CLASS(ActionFeaturesFunction, ChooseFunction_)
   virtual FeatureGeneratorPtr compute(VariablePtr choice) const
-    {return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
+    {assert(choice); return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
 STATIC_TO_DYNAMIC_ENDCLASS_1(ActionFeaturesFunction);
 
 

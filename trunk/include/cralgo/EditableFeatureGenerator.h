@@ -36,7 +36,7 @@ public:
   ** Static FeatureGenerator
   */
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;
+  void staticFeatureGenerator(FeatureVisitor& visitor) const;
   
   /*
   ** FeatureGenerator
@@ -54,7 +54,7 @@ public:
     : EditableFeatureGenerator(dictionary) {}
     
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const;  
+  void staticFeatureGenerator(FeatureVisitor& visitor) const;  
 };
 
 class LazyFeatureVector : public EditableFeatureGenerator
@@ -64,8 +64,8 @@ public:
     : EditableFeatureGenerator(dictionary) {}
   
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor, FeatureDictionaryPtr featureDictionary) const
-    {getResult()->staticFeatureGenerator(visitor, featureDictionary);}
+  void staticFeatureGenerator(FeatureVisitor& visitor) const
+    {getResult()->staticFeatureGenerator(visitor);}
   
   virtual size_t getNumSubGenerators() const;
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const;
@@ -111,10 +111,10 @@ public:
   ** FeatureGenerator
   */
   template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
+  void staticFeatureGenerator(VisitorType& visitor) const
   {
     for (size_t i = 0; i < featureGenerators.size(); ++i)
-      visitor.featureCall(dictionary, i, featureGenerators[i]);
+      visitor.featureCall(getDictionary(), i, featureGenerators[i]);
   }
   
   virtual size_t getNumSubGenerators() const;
