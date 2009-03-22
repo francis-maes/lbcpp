@@ -89,25 +89,42 @@ public:
     variable->getUntypedPointer() = NULL;
   }
 
-  virtual void computeActionFeatures(std::vector<FeatureGeneratorPtr>& res, bool transformIntoSparseVectors) const
+  virtual FeatureGeneratorPtr computeActionsFeatures(bool transformIntoSparseVectors) const
   {
     ActionFeaturesFunctionPtr f = choose.getActionFeaturesFunction();
     assert(f); // todo: error message
     f->setChoose(getReferenceCountedPointer());
+    
     StaticToDynamicVariable< ChoiceType > v;
     ReferenceObjectScope _(v);
     VariablePtr variable(&v);
     
-    res.clear();
-    res.reserve(ContainerTraits::size(container));
-    typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
-    for (; it != ContainerTraits::end(container); ++it)
+    if (transformIntoSparseVectors)
     {
-      variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
-      FeatureGeneratorPtr fg = f->compute(variable);
-      res.push_back(transformIntoSparseVectors ? (FeatureGeneratorPtr)fg->toSparseVector() : fg);
+      SparseVectorPtr res = new SparseVector(new FeatureDictionary("choices"), 0, ContainerTraits::size(container));
+      size_t i = 0;
+      typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
+      for (; it != ContainerTraits::end(container); ++it, ++i)
+      {
+        variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
+        res->setSubVector(i, f->compute(variable)->toSparseVector());
+      }
+      variable->getUntypedPointer() = NULL;
+      return res;
     }
-    variable->getUntypedPointer() = NULL;
+    else
+    {
+      CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator(new FeatureDictionary("choices"), ContainerTraits::size(container));
+      size_t i = 0;
+      typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
+      for (; it != ContainerTraits::end(container); ++it, ++i)
+      {
+        variable->getUntypedPointer() = const_cast<void* >((const void* )&ContainerTraits::value(it));
+        res->setSubGenerator(i, f->compute(variable));
+      }
+      variable->getUntypedPointer() = NULL;
+      return res;
+    }
   }
 
   /*

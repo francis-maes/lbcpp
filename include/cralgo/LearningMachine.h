@@ -57,13 +57,13 @@ public:
   ** Labels
   */
   size_t getNumLabels() const
-    {assert(labels); return labels->getFeatures().count();}
+    {assert(labels); return labels->count();}
   
-  FeatureDictionaryPtr getLabels() const
+  StringDictionaryPtr getLabels() const
     {assert(labels); return labels;}
   
-  void setLabels(FeatureDictionaryPtr labels)
-    {this->labels = labels;}
+  void setLabels(StringDictionaryPtr labels)
+    {this->labels = labels; outputsDictionary = new FeatureDictionary("Classifier output", labels, StringDictionaryPtr());}
     
   /*
   ** Evaluation
@@ -72,7 +72,8 @@ public:
   double evaluateWeightedAccuracy(const std::vector<ClassificationExample>& examples) const;
   
 protected:
-  FeatureDictionaryPtr labels;
+  StringDictionaryPtr labels;
+  FeatureDictionaryPtr outputsDictionary;
 };
 
 class BinaryClassifier : public Classifier
@@ -97,9 +98,9 @@ public:
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
 
   virtual size_t predict(const GeneralizedClassificationExample& example) const;
-  virtual DenseVectorPtr predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const;
-  virtual DenseVectorPtr predictProbabilities(const std::vector<FeatureGeneratorPtr>& inputs) const;
-  virtual size_t sample(const std::vector<FeatureGeneratorPtr>& inputs) const;
+  virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr compositeInput) const;
+  virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr compositeInput) const;
+  virtual size_t sample(const FeatureGeneratorPtr compositeInput) const;
 };
 
 class Regressor : public LearningMachine_<RegressionExample>
@@ -117,8 +118,8 @@ class Ranker : public LearningMachine_<RankingExample>
 public:
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
   
-  virtual size_t predict(const std::vector<FeatureGeneratorPtr>& inputs) const;
-  virtual DenseVectorPtr predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const;
+  virtual size_t predict(const FeatureGeneratorPtr compositeInput) const;
+  virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr compositeInput) const;
 };
 
 

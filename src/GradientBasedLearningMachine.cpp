@@ -130,7 +130,7 @@ public:
     {return impl::multiply(impl::sumOfSquares(), impl::constant(0));}
 };
 
-GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels)
+GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
   GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
   res->setLearner(learner);
@@ -155,7 +155,7 @@ public:
     {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
-GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRegression(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels)
+GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRegression(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
   GradientBasedBinaryClassifierPtr res = new LogisticRegressionClassifier();
   res->setLearner(learner);
@@ -180,7 +180,7 @@ public:
     {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
-GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels)
+GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
   GradientBasedBinaryClassifierPtr res = new LinearSupportVectorMachine();
   res->setLearner(learner);

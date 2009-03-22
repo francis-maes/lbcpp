@@ -20,7 +20,7 @@ struct LinearArchitecture : public ScalarArchitecture<LinearArchitecture>
   enum {isDerivable = true};
   
   DenseVectorPtr createInitialParameters() const
-    {return new DenseVector();}
+    {return new DenseVector();} // FIXME: architecture
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,

@@ -49,7 +49,7 @@ private:
   double exploration;
   DenseVectorPtr trace;
   
-  std::vector<FeatureGeneratorPtr> actionFeatures;
+  FeatureGeneratorPtr actionsFeatures;
   size_t selectedAction;
   DenseVectorPtr actionProbabilities;
 
@@ -77,15 +77,15 @@ private:
 
   VariablePtr processChoose(ChoosePtr choose)
   {
-    choose->computeActionFeatures(actionFeatures, true);
-    actionProbabilities = classifier->predictProbabilities(actionFeatures);
+    actionsFeatures = choose->computeActionsFeatures(true);
+    actionProbabilities = classifier->predictProbabilities(actionsFeatures);
     assert(actionProbabilities->getNumValues());
     if (exploration == 1.0)
       return sampleChoice(choose, actionProbabilities);
     else
     {
       double sum = 0.0;
-      DenseVectorPtr probs = new DenseVector(actionProbabilities->getNumValues());
+      DenseVectorPtr probs = new DenseVector(actionProbabilities->getDictionary(), actionProbabilities->getNumValues());
       for (size_t i = 0; i < actionProbabilities->getNumValues(); ++i)
       {
         double p = pow(actionProbabilities->get(i), exploration);
@@ -101,11 +101,11 @@ private:
   
   void processReward(double reward)
   {
-    if (!actionFeatures.size())
+    if (!actionsFeatures->getNumSubGenerators())
       return;
     
     // -(log p[y|x])
-    ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionFeatures, selectedAction));
+    ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionsFeatures, selectedAction));
     
     // -gradient(p[y|x], parameters) / p[y|x]
     FeatureGeneratorPtr gradient = loss->computeGradient(classifier->getParameters());
@@ -113,8 +113,8 @@ private:
 /*    std::cout << "GRADIENT norm: " << std::endl << gradient->l2norm() << std::endl;
     std::cout << "TRACE norm: " << std::endl << trace->l2norm() << std::endl;
     std::cout << "PARAMS norm: " << std::endl << classifier->getParameters()->l2norm() << std::endl;*/
-
-    classifier->pushInputSize((double)actionFeatures[Random::getInstance().sampleSize(actionFeatures.size())]->l0norm());
+    FeatureGeneratorPtr anInput = actionsFeatures->getSubGenerator(Random::getInstance().sampleSize(actionsFeatures->getNumSubGenerators()));
+    classifier->pushInputSize((double)anInput->l0norm());
 
     // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
     if (beta)

@@ -142,7 +142,7 @@ double BinaryClassifier::predictScore(const FeatureGeneratorPtr input, size_t ou
 DenseVectorPtr BinaryClassifier::predictScores(const FeatureGeneratorPtr input) const
 {
   double score = predictScoreOfPositiveClass(input);
-  DenseVectorPtr res = new DenseVector(getLabels());
+  DenseVectorPtr res = new DenseVector(outputsDictionary);
   res->set(0, -score);
   res->set(1, score);
   return res;
@@ -152,7 +152,7 @@ DenseVectorPtr BinaryClassifier::predictProbabilities(const FeatureGeneratorPtr 
 {
   double prob1 = scoreToProbability(predictScoreOfPositiveClass(input));
   double prob0 = 1 - prob1;
-  DenseVectorPtr res = new DenseVector(getLabels());
+  DenseVectorPtr res = new DenseVector(outputsDictionary);
   res->set(0, prob0);
   res->set(1, prob1);
   return res;    
@@ -181,18 +181,19 @@ size_t GeneralizedClassifier::predict(const GeneralizedClassificationExample& ex
   return res;
 }
 
-DenseVectorPtr GeneralizedClassifier::predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const
+DenseVectorPtr GeneralizedClassifier::predictScores(const FeatureGeneratorPtr compositeInput) const
 {
-  DenseVectorPtr res = new DenseVector(inputs.size());
-  for (size_t i = 0; i < inputs.size(); ++i)
-    res->set(i, predictScore(inputs[i]));
+  size_t n = compositeInput->getNumSubGenerators();
+  DenseVectorPtr res = new DenseVector(compositeInput->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
+  for (size_t i = 0; i < n; ++i)
+    res->set(compositeInput->getSubGeneratorIndex(i), predictScore(compositeInput->getSubGenerator(i)));
   return res;
 }
 
-DenseVectorPtr GeneralizedClassifier::predictProbabilities(const std::vector<FeatureGeneratorPtr>& inputs) const
+DenseVectorPtr GeneralizedClassifier::predictProbabilities(const FeatureGeneratorPtr compositeInput) const
 {
   // default: Gibbs distribution, P[y|x] = exp(score(y)) / (sum_i exp(score(y_i)))
-  DenseVectorPtr scores = predictScores(inputs);
+  DenseVectorPtr scores = predictScores(compositeInput);
   double logZ = scores->computeLogSumOfExponentials();
   DenseVectorPtr res = new DenseVector(scores->getDictionary(), scores->getNumValues());
   for (size_t i = 0; i < scores->getNumValues(); ++i)
@@ -200,34 +201,35 @@ DenseVectorPtr GeneralizedClassifier::predictProbabilities(const std::vector<Fea
   return res;
 }
 
-size_t GeneralizedClassifier::sample(const std::vector<FeatureGeneratorPtr>& inputs) const
+size_t GeneralizedClassifier::sample(const FeatureGeneratorPtr compositeInput) const
 {
-  DenseVectorPtr probs = predictProbabilities(inputs);
+  DenseVectorPtr probs = predictProbabilities(compositeInput);
   return Random::getInstance().sampleWithNormalizedProbabilities(probs->getValues());  
 }
 
 /*
 ** Ranker
 */
-size_t Ranker::predict(const std::vector<FeatureGeneratorPtr>& inputs) const
+size_t Ranker::predict(const FeatureGeneratorPtr compositeInput) const
 {
-  assert(inputs.size());
+  assert(compositeInput && compositeInput->getNumSubGenerators());
   double bestScore = -DBL_MAX;
   size_t res = (size_t)-1;
-  for (size_t i = 0; i < inputs.size(); ++i)
+  for (size_t i = 0; i < compositeInput->getNumSubGenerators(); ++i)
   {
-    double score = predictScore(inputs[i]);
+    double score = predictScore(compositeInput->getSubGenerator(i));
     if (score > bestScore)
-      bestScore = score, res = i;
+      bestScore = score, res = compositeInput->getSubGeneratorIndex(i);
   }
   assert(res != (size_t)-1);
   return res;
 }
 
-DenseVectorPtr Ranker::predictScores(const std::vector<FeatureGeneratorPtr>& inputs) const
+DenseVectorPtr Ranker::predictScores(const FeatureGeneratorPtr compositeInput) const
 {
-  DenseVectorPtr res = new DenseVector(inputs.size());
-  for (size_t i = 0; i < inputs.size(); ++i)
-    res->set(i, predictScore(inputs[i]));
+  size_t n = compositeInput->getNumSubGenerators();
+  DenseVectorPtr res = new DenseVector(compositeInput->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
+  for (size_t i = 0; i < n; ++i)
+    res->set(compositeInput->getSubGeneratorIndex(i), predictScore(compositeInput->getSubGenerator(i)));
   return res;  
 }

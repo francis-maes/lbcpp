@@ -10,16 +10,19 @@
 #include <cfloat>
 using namespace cralgo;
 
-void DenseVector::initialize(size_t initialNumValues, size_t initialNumSubVectors)
+DenseVector::DenseVector(const DenseVector& otherVector)
+  : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors) {}
+
+DenseVector::DenseVector(FeatureDictionaryPtr dictionary, const std::vector<double>& values)
+  : BaseClass(dictionary), values(values) {}
+
+DenseVector::DenseVector(FeatureDictionaryPtr dictionary, size_t initialNumValues, size_t initialNumSubVectors)
+  : BaseClass(dictionary)
 {
   if (initialNumValues > 0)
     values.resize(initialNumValues, 0.0);
   if (initialNumSubVectors > 0)
-  {
     subVectors.resize(initialNumSubVectors, DenseVectorPtr());
-    for (size_t i = 0; i < subVectors.size(); ++i)
-      subVectors[i] = new DenseVector();
-  }
 }
 
 FeatureDictionaryPtr DenseVector::getDictionary() const
@@ -188,7 +191,7 @@ bool DenseVector::load(std::istream& istr)
       return false;
     if (exists)
     {
-      DenseVectorPtr subVector(new DenseVector());
+      DenseVectorPtr subVector(new DenseVector(dictionary->getSubDictionary(i)));
       if (!subVector->load(istr))
         return false;
       subVectors[i] = subVector;

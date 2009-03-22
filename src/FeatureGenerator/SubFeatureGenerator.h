@@ -84,7 +84,7 @@ public:
   {
     std::string res = "subFeatureGenerator";
     if (exists())
-      res += "(" + getDictionary()->getFeatures().getString(0) + ", " + featureGenerator->toString() + ")";
+      res += "(" + getDictionary()->getFeatures()->getString(0) + ", " + featureGenerator->toString() + ")";
     return res;
   }
   

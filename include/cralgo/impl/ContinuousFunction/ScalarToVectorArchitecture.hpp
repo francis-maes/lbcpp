@@ -37,7 +37,7 @@ struct ScalarToVectorArchitecture
     scalarArchitecture.compute(parameters, input->getSubGeneratorWithIndex(outputNumber),
       output, gradientWrtParameters, gradientWrtInput);
   }
-    
+  
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 FeatureGeneratorPtr* output,
                 FeatureGeneratorPtr* gradientWrtParameters,
@@ -47,13 +47,15 @@ struct ScalarToVectorArchitecture
     
     DenseVectorPtr res;
     if (output)
-      res = new DenseVector(n); // FIXME: dictionary
+      res = new DenseVector(input->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
     
     CompositeFeatureGeneratorPtr gParam, gInput;
     if (gradientWrtParameters)
-      gParam = new CompositeFeatureGenerator(n); // FIXME: dictionary
+      gParam = new CompositeFeatureGenerator(new FeatureDictionary(input->getDictionary()->getName(),
+        StringDictionaryPtr(), input->getDictionary()->getScopes()), n);
     if (gradientWrtInput)
-      gInput = new CompositeFeatureGenerator(n); // FIXME: dictionary
+      gInput = new CompositeFeatureGenerator(new FeatureDictionary(input->getDictionary()->getName(),
+        StringDictionaryPtr(), input->getDictionary()->getScopes()), n);
     
     for (size_t i = 0; i < n; ++i)
     {

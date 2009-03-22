@@ -19,20 +19,9 @@ class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, F
 public:
   typedef FeatureGeneratorDefaultImplementations<DenseVector, FeatureVector> BaseClass;
 
-  DenseVector(const DenseVector& otherVector)
-    : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors) {}
-
-  DenseVector(FeatureDictionaryPtr dictionary, size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
-    : BaseClass(dictionary)
-  {
-    initialize(initialNumValues, initialNumSubVectors);
-  }
-    
-  DenseVector(size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
-    {initialize(initialNumValues, initialNumSubVectors);}
-  
-  DenseVector(const std::vector<double>& values, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr())
-    : BaseClass(dictionary), values(values) {}
+  DenseVector(const DenseVector& otherVector);
+  DenseVector(FeatureDictionaryPtr dictionary, const std::vector<double>& values);
+  DenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr(), size_t initialNumValues = 0, size_t initialNumSubVectors = 0);
   
   virtual ~DenseVector()
     {clear();}
@@ -172,7 +161,6 @@ private:
   std::vector<DenseVectorPtr> subVectors;
 
   double denseDotProduct(const DenseVectorPtr otherVector) const;
-  void initialize(size_t initialNumValues, size_t initialNumSubVectors);
 };
 
 }; /* namespace cralgo */

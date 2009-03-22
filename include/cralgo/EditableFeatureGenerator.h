@@ -90,9 +90,9 @@ class CompositeFeatureGenerator :
 public:
   typedef FeatureGeneratorDefaultImplementations<CompositeFeatureGenerator, EditableFeatureGenerator> BaseClass;
 
-  CompositeFeatureGenerator(const std::vector<FeatureGeneratorPtr>& featureGenerators, FeatureDictionaryPtr dictionary)
+  CompositeFeatureGenerator(FeatureDictionaryPtr dictionary, const std::vector<FeatureGeneratorPtr>& featureGenerators)
     : BaseClass(dictionary), featureGenerators(featureGenerators) {}
-  CompositeFeatureGenerator(size_t numSubGenerators, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr())
+  CompositeFeatureGenerator(FeatureDictionaryPtr dictionary, size_t numSubGenerators)
     : BaseClass(dictionary), featureGenerators(numSubGenerators, FeatureGeneratorPtr()) {}
   CompositeFeatureGenerator() {}
     

@@ -156,7 +156,7 @@ FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featu
       size_t n = composite->getNumSubGenerators();
       if (n)
       {
-        CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator(n, featureGenerator->getDictionary());
+        CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator(featureGenerator->getDictionary(), n);
         for (size_t i = 0; i < n; ++i)
           res->setSubGenerator(composite->getSubGeneratorIndex(i), multiplyByScalar(composite->getSubGenerator(i), weight));
         return res;

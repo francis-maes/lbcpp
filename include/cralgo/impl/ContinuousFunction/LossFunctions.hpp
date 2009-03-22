@@ -189,7 +189,7 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
     }
     BaseClass::_this().computeRankingLoss(scores->getValues(), costs, output, gdir, gradient ? &g : NULL);
     if (gradient)
-      *gradient = new DenseVector(g, input->getDictionary());
+      *gradient = new DenseVector(input->getDictionary(), g);
   }
 
 protected:

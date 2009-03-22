@@ -106,7 +106,7 @@ bool LearningExamplesParser::parseFeatureIdentifier(const std::string& identifie
 class ClassificationExamplesParser : public LearningExamplesParser
 {
 public:
-  ClassificationExamplesParser(std::vector<ClassificationExample>& target, FeatureDictionaryPtr labels)
+  ClassificationExamplesParser(std::vector<ClassificationExample>& target, StringDictionaryPtr labels)
     : target(target), labels(labels) {}
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
@@ -117,16 +117,16 @@ public:
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;
-    target.push_back(ClassificationExample(x, labels->getFeatures().add(label)));
+    target.push_back(ClassificationExample(x, labels->add(label)));
     return true;
   }
   
 private:
   std::vector<ClassificationExample>& target;
-  FeatureDictionaryPtr labels;
+  StringDictionaryPtr labels;
 };
 
-bool cralgo::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, FeatureDictionaryPtr labels, std::vector<ClassificationExample>& res)
+bool cralgo::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res)
 {
   ClassificationExamplesParser parser(res, labels);
   return parser.parse(istr, dictionary);

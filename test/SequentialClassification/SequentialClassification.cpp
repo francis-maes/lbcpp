@@ -97,9 +97,9 @@ public:
 
 void testClassifier(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
 {
-  FeatureDictionaryPtr classes = new FeatureDictionary("__classes__");
+  StringDictionaryPtr classes = new StringDictionary();
   for (size_t i = 0; i < numClasses; ++i)
-    classes->getFeatures().add("class " + cralgo::toString(i));
+    classes->add("class " + cralgo::toString(i));
   
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
