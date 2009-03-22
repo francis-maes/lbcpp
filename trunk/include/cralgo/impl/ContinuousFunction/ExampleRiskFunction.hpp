@@ -33,16 +33,16 @@ struct ScalarArchitectureToParametersFunction
   
   enum {isDerivable = ArchitectureType::isDerivable};
   
-  void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
     DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
     assert(denseParameters);
     // FIXME: use gradientDirection
-    architecture.compute(denseParameters, input, output, gradient, LazyVectorPtr());
+    architecture.compute(denseParameters, input, output, gradient, NULL);
     if (output)
       *output *= weight;
     if (gradient)
-      gradient->multiplyByScalar(weight);
+      *gradient = multiplyByScalar(*gradient, weight);
   }
 };
 

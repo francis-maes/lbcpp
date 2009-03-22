@@ -66,28 +66,28 @@ STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ScalarVectorFunction_, Object)
     {return ImplementationType::isDerivable;}
 
   virtual double compute(const FeatureGeneratorPtr input) const
-    {assert(input); double res; BaseClass::impl.compute(input, &res, FeatureGeneratorPtr(), LazyVectorPtr()); return res;}
+    {assert(input); double res; BaseClass::impl.compute(input, &res, FeatureGeneratorPtr(), NULL); return res;}
     
-  virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input) const
+  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const
   {
     assert(input);
-    LazyVectorPtr res(new LazyVector(input->getDictionary()));
-    BaseClass::impl.compute(input, NULL, FeatureGeneratorPtr(), res);
+    FeatureGeneratorPtr res;
+    BaseClass::impl.compute(input, NULL, FeatureGeneratorPtr(), &res);
     return res;
   }
   
-  virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const
-    {assert(input); LazyVectorPtr res(new LazyVector()); BaseClass::impl.compute(input, NULL, gradientDirection, res); return res;}
+  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const
+    {assert(input); FeatureGeneratorPtr res; BaseClass::impl.compute(input, NULL, gradientDirection, &res); return res;}
 
-  virtual void compute(const FeatureGeneratorPtr input, double* output,
-                       const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
-    {assert(input); BaseClass::impl.compute(input, output, gradientDirection, gradient);}
-  
-  virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const
+  virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const
   {
     assert(input);
     BaseClass::impl.compute(input, output, FeatureGeneratorPtr(), gradient);
   }
+
+  virtual void compute(const FeatureGeneratorPtr input, double* output,
+                       const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
+    {assert(input); BaseClass::impl.compute(input, output, gradientDirection, gradient);}  
 };
 
 STATIC_TO_DYNAMIC_CLASS(ScalarVectorFunction, ScalarVectorFunction_)
@@ -113,8 +113,8 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(parameters && input);
     BaseClass::impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
@@ -124,7 +124,7 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
   {
     assert(parameters && input);
     double res;
-    BaseClass::impl.compute(parameters, input, &res, LazyVectorPtr(), LazyVectorPtr());
+    BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
     return res;
   }
 
@@ -144,8 +144,8 @@ STATIC_TO_DYNAMIC_CLASS(VectorArchitecture, Object)
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 size_t outputNumber, double* output, 
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(parameters && input);
     return BaseClass::impl.compute(parameters, input, outputNumber, output, gradientWrtParameters, gradientWrtInput);
@@ -155,24 +155,24 @@ STATIC_TO_DYNAMIC_CLASS(VectorArchitecture, Object)
   {
     assert(parameters && input);
     double res;
-    BaseClass::impl.compute(parameters, input, outputNumber, &res, LazyVectorPtr(), LazyVectorPtr());
+    BaseClass::impl.compute(parameters, input, outputNumber, &res, NULL, NULL);
     return res;
   }
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-                        LazyVectorPtr output,
-                        LazyVectorPtr gradientWrtParameters,
-                        LazyVectorPtr gradientWrtInput) const
+                        FeatureGeneratorPtr* output,
+                        FeatureGeneratorPtr* gradientWrtParameters,
+                        FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(parameters && input);
     BaseClass::impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
   }
 
-  virtual LazyVectorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const
+  virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const
   {
     assert(parameters && input);
-    LazyVectorPtr res(new LazyVector());
-    BaseClass::impl.compute(parameters, input, res, LazyVectorPtr(), LazyVectorPtr());
+    FeatureGeneratorPtr res;
+    BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
     return res;
   }
 

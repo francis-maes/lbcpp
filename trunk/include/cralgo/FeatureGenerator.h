@@ -20,6 +20,9 @@ namespace cralgo
 class FeatureGenerator : public Object
 {
 public:
+  static FeatureGeneratorPtr getEmptyGenerator();
+  static FeatureGeneratorPtr getUnitGenerator();
+
   virtual FeatureDictionaryPtr getDictionary() const = 0;
   
   /*
@@ -67,6 +70,12 @@ public:
   ** Dot-product operation
   */
   virtual double dotProduct(const DenseVectorPtr vector, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const = 0;
+  
+  /*
+  ** Sub-generators
+  */
+  virtual size_t getNumSubGenerators() const = 0;
+  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const = 0;
 };
 
 template<>
@@ -133,78 +142,6 @@ protected:
   void featureGenerator(StaticVisitorType& visitor, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr()) const
     {_this().staticFeatureGenerator(visitor, dictionary ? dictionary : _this().getDictionary());}
 };
-
-class SumFeatureGenerator : 
-  public FeatureGeneratorDefaultImplementations<SumFeatureGenerator, FeatureGenerator>
-{
-public:
-  SumFeatureGenerator(const std::vector<FeatureGeneratorPtr>& featureGenerators)
-    : featureGenerators(featureGenerators) {}
-  SumFeatureGenerator() {}
-      
-  virtual std::string getName() const
-    {return "SumFeatureGenerator";}
-
-  template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
-  {
-    for (size_t i = 0; i < featureGenerators.size(); ++i)
-      visitor.featureCall(dictionary, featureGenerators[i]);
-  }
-
-  void add(FeatureGeneratorPtr featureGenerator)
-    {featureGenerators.push_back(featureGenerator);}
-  
-  virtual FeatureDictionaryPtr getDictionary() const
-  {
-    static FeatureDictionaryPtr defaultCompositeDictionary = new FeatureDictionary("SumFeatureGenerator");
-    return defaultCompositeDictionary;
-  }
-
-protected:
-  std::vector<FeatureGeneratorPtr> featureGenerators;
-};
-
-typedef ReferenceCountedObjectPtr<SumFeatureGenerator> SumFeatureGeneratorPtr;
-
-class CompositeFeatureGenerator : 
-  public FeatureGeneratorDefaultImplementations<CompositeFeatureGenerator, FeatureGenerator>
-{
-public:
-  CompositeFeatureGenerator(const std::vector<FeatureGeneratorPtr>& featureGenerators)
-    : featureGenerators(featureGenerators) {}
-  CompositeFeatureGenerator() {}
-      
-  virtual std::string getName() const
-    {return "CompositeFeatureGenerator";}
-
-  template<class VisitorType>
-  void staticFeatureGenerator(VisitorType& visitor, FeatureDictionaryPtr dictionary) const
-  {
-    for (size_t i = 0; i < featureGenerators.size(); ++i)
-      visitor.featureCall(dictionary, i, featureGenerators[i]);
-  }
-
-  void add(FeatureGeneratorPtr featureGenerator)
-    {featureGenerators.push_back(featureGenerator);}
-  
-  virtual FeatureDictionaryPtr getDictionary() const
-  {
-    static FeatureDictionaryPtr defaultCompositeDictionary = new FeatureDictionary("CompositeFeatureGenerator");
-    return defaultCompositeDictionary;
-  }
-  
-  size_t getNumFeatureGenerators() const
-    {return featureGenerators.size();}
-    
-  FeatureGeneratorPtr getFeatureGenerator(size_t index) const
-    {assert(index < featureGenerators.size()); return featureGenerators[index];}
-
-protected:
-  std::vector<FeatureGeneratorPtr> featureGenerators;
-};
-
-typedef ReferenceCountedObjectPtr<CompositeFeatureGenerator> CompositeFeatureGeneratorPtr;
 
 }; /* namespace cralgo */
 

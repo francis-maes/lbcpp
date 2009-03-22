@@ -13,10 +13,10 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/RandomVariable.h
   ../include/cralgo/FeatureDictionary.h
   ../include/cralgo/FeatureGenerator.h
+  ../include/cralgo/LazyFeatureGenerators.h
   ../include/cralgo/DoubleVector.h
   ../include/cralgo/SparseVector.h
   ../include/cralgo/DenseVector.h
-  ../include/cralgo/LazyVector.h
   ../include/cralgo/LearningExample.h
   ../include/cralgo/LearningMachine.h
   ../include/cralgo/ContinuousFunction.h
@@ -64,6 +64,8 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
 
   ${CRALGO_IMPL}/ContinuousFunction/LossFunctions.hpp
 
+  ${CRALGO_IMPL}/ContinuousFunction/AbsoluteLossFunction.hpp
+  ${CRALGO_IMPL}/ContinuousFunction/SquareLossFunction.hpp
   ${CRALGO_IMPL}/ContinuousFunction/PerceptronLossFunction.hpp
   ${CRALGO_IMPL}/ContinuousFunction/HingeLossFunction.hpp
   ${CRALGO_IMPL}/ContinuousFunction/LogBinomialLossFunction.hpp
@@ -131,9 +133,9 @@ SET(CRALGO_LIBRARY_SOURCES
   Object.cpp
   ErrorHandler.cpp
   FeatureDictionary.cpp
+  LazyFeatureGenerators.cpp
   SparseVector.cpp
   DenseVector.cpp
-  LazyVector.cpp
   DoubleVectorHelpers.hpp
   ContinuousFunction.cpp
   Optimizer.cpp

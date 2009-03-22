@@ -24,8 +24,8 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const
   {
     if (output)
       *output = parameters->get(0);
@@ -33,7 +33,7 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
     {
       DenseVectorPtr g = new DenseVector(getDictionary());
       g->set(0, 1.0);
-      gradientWrtParameters->set(g);
+      *gradientWrtParameters = g;
     }
     // gradientWrtInput : empty
   }

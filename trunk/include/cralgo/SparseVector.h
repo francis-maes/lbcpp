@@ -54,6 +54,7 @@ public:
   size_t getNumSubVectors() const
     {return subVectors.size();}
 
+  SparseVectorPtr getSubVector(size_t index) const;
   SparseVectorPtr& getSubVector(size_t index);
 
   void setSubVector(size_t index, SparseVectorPtr subVector)
@@ -84,6 +85,12 @@ public:
 
   virtual SparseVectorPtr toSparseVector(FeatureDictionaryPtr dictionary)
     {/* todo: check dictionary */ return SparseVectorPtr(this);}
+
+  virtual size_t getNumSubGenerators() const
+    {return subVectors.size() ? subVectors.back().first + 1 : 0;}
+
+  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+    {return getSubVector(index);}
 
 protected:
   /*

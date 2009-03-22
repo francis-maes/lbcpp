@@ -9,9 +9,9 @@
 #ifndef CRALGO_CONTINUOUS_FUNCTION_H_
 # define CRALGO_CONTINUOUS_FUNCTION_H_
 
+# include "LazyFeatureGenerators.h"
 # include "SparseVector.h"
 # include "DenseVector.h"
-# include "LazyVector.h"
 # include "LearningExample.h"
 
 namespace cralgo
@@ -54,10 +54,10 @@ class ScalarVectorFunction : public ContinuousFunction
 {
 public:
   virtual double compute(const FeatureGeneratorPtr input) const = 0;
-  virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input) const = 0;
-  virtual LazyVectorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const = 0;
-  virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const = 0;
-  virtual void compute(const FeatureGeneratorPtr input, double* output, LazyVectorPtr gradient) const = 0;
+  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const = 0;
+  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const = 0;
+  virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const = 0;
+  virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const = 0;
 };
 
 /*
@@ -83,8 +83,8 @@ public:
   
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const = 0;
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const = 0;
 };
 
 /*
@@ -97,19 +97,19 @@ public:
 
   virtual DenseVectorPtr createInitialParameters() const = 0;
 
-  virtual LazyVectorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
+  virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
 
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber) const = 0;
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 size_t outputNumber, double* output, 
-                LazyVectorPtr gradientWrtParameters,
-                LazyVectorPtr gradientWrtInput) const = 0;
+                FeatureGeneratorPtr* gradientWrtParameters,
+                FeatureGeneratorPtr* gradientWrtInput) const = 0;
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-      LazyVectorPtr output,
-      LazyVectorPtr gradientWrtParameters,
-      LazyVectorPtr gradientWrtInput) const = 0;
+      FeatureGeneratorPtr* output,
+      FeatureGeneratorPtr* gradientWrtParameters,
+      FeatureGeneratorPtr* gradientWrtInput) const = 0;
 };
 
 }; /* namespace cralgo */

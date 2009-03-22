@@ -55,7 +55,7 @@ public:
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
-    parameters->addWeighted(gradient, -weight * computeAlpha(gradient));
+    parameters->addWeighted(gradient, -weight * computeAlpha());
     ++epoch;
   }
   
@@ -71,8 +71,8 @@ public:
     for (int i = 0; i < 100; ++i)
     {
       std::cout << "Iteration " << i << " objective = " << objective->compute(parameters) << std::endl; 
-      LazyVectorPtr gradient = objective->computeGradient(parameters);
-      parameters->addWeighted(gradient, -computeAlpha(gradient) * numExamples);
+      FeatureGeneratorPtr gradient = objective->computeGradient(parameters);
+      parameters->addWeighted(gradient, -computeAlpha() * numExamples);
       epoch += numExamples;
     }
   }
@@ -82,7 +82,7 @@ protected:
   bool normalizeLearningRate;
   size_t epoch;
   
-  double computeAlpha(LazyVectorPtr gradient = LazyVectorPtr())
+  double computeAlpha()
   {
     //std::cout << "Alpha = 1.0";
     double res = 1.0;

@@ -13,7 +13,6 @@
 # include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
 # include "../../SparseVector.h"
 # include "../../DenseVector.h"
-# include "../../LazyVector.h"
 
 namespace cralgo
 {
@@ -74,6 +73,7 @@ struct Traits<DenseVectorPtr> : public ObjectPtrTraits<DenseVector> {};
 template<>
 struct Traits<DenseVector> : public ObjectTraits<DenseVector> {};
 
+#if 0
 /*
 ** Lazy Vector
 */
@@ -100,6 +100,7 @@ template<>
 struct Traits<LazyVectorPtr> : public ObjectPtrTraits<LazyVector> {};
 template<>
 struct Traits<LazyVector> : public ObjectTraits<LazyVector> {};
+#endif
 
 /*
 ** Double Vector
@@ -119,12 +120,12 @@ inline void DoubleVector::staticFeatureGenerator(FeatureVisitor& visitor, Featur
     denseVector->staticFeatureGenerator(visitor, featureDictionary);
     return;
   }
-  const LazyVector* lazyVector = dynamic_cast<const LazyVector* >(this);
+/*  const LazyVector* lazyVector = dynamic_cast<const LazyVector* >(this);
   if (lazyVector)
   {
     lazyVector->staticFeatureGenerator(visitor, featureDictionary);
     return;
-  }
+  }*/
   // dynamic version must be implemented
   accept(impl::staticToDynamic(visitor), featureDictionary);
 }

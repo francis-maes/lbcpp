@@ -1,31 +1,40 @@
+Remplacement du LazyVector
 
-* Valeurs de retour LazyVectorPtr => FeatureGeneratorPtr*
-* GPomdp -> ScalarVectorFunction
- 
-* Optimizer
-* Gerer les regularizers
-* Faire sauter impl::constant et ScalarConstant
+* MultiLinearArchitecture et ScalarToVectorArchitecture
+   - Dictionary en sortie
+
+* getNumSubGenerators / getSubGenerator => partout
+
+* Renomage DoubleVector => EditableFeatureGenerator
 
 LC++ library:
 =============
 
-* Task, Tables, InstanceSet
+Gros:
+  * Task, Tables, InstanceSet, SWIG, Doxygen, Tests
 
-* Policies:
-  * Finir QLearning, MonteCarloControl, OlPomdp
-  * CRankPost
-  * TableLogger
-  * policyRun inline
+ContinuousFunctions:
+  * Valeurs de retour LazyVectorPtr => FeatureGeneratorPtr*
+  * Faire sauter impl::constant et ScalarConstant
+  * ScalarDerivableArchitecturesDotProduct
+  * TransferArchitecture
+  * Gerer le gradientDirection/derivativeDirection partout
+  * SŽrialisation et fonctions de crŽation pour les dynamiques
 
-* Functions:
-  - L1Regularizer
-  - ScalarDerivableArchitecturesDotProduct
-  - TransferArchitecture
+Optimizers:
+  * Permettre ˆ l'optimiser d'arrter l'optimisation lui-meme avec un etat OK ou ERROR
+  * renomage OptimizerTerminationTest => OptimizerStopingCriterion
+  * LBFGS / OWLQN
 
-* LBFGS / OLWQL
+LearningMachine:
+  * Gerer les regularizers
 
-* SWIG
-* Doxygen
+Policy:
+ * GPomdp -> ScalarVectorFunction
+ * Finir QLearning, MonteCarloControl, OlPomdp
+ * CRankPost
+ * TableLogger
+ * policyRun inline
 
 LC++ translator:
 ================

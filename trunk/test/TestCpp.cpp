@@ -24,7 +24,7 @@ int testClassification(std::istream& istr)
   
   for (int i = 0; i < 1; ++i)
   {
-   // LazyVectorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
+   // FeatureGeneratorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
 //    std::cout << "GRADIENT = " << cralgo::toString(gradient) << std::endl;
     
     //std::cout << "EmpRisk: " << classifier->computeEmpiricalRisk(examples)
@@ -54,7 +54,7 @@ int testRegression(std::istream& istr)
   regressor->createParameters();
   for (int i = 0; i < 100; ++i)
   {
-   // LazyVectorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
+   // FeatureGeneratorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
 //    std::cout << "GRADIENT = " << cralgo::toString(gradient) << std::endl;
     
     std::cout << "EmpRisk: " << regressor->computeEmpiricalRisk(examples)

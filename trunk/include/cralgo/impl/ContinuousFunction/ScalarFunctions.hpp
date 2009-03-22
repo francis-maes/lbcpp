@@ -66,23 +66,6 @@ struct AddConstantScalarFunction : public ScalarFunction<AddConstantScalarFuncti
 inline AddConstantScalarFunction addConstant(double constant)
   {return AddConstantScalarFunction(constant);}
 
-// f(x) = x^2
-struct SquareScalarFunction : public ScalarFunction<SquareScalarFunction>
-{
-  enum {isDerivable = true};
-
-  void compute(double input, double* output, const double* , double* derivative) const
-  {
-    if (output)
-      *output = input * input;
-    if (derivative)
-      *derivative = 2 * input;
-  }
-};
-inline SquareScalarFunction squareFunction()
-  {return SquareScalarFunction();}
-  
-
 // f(x) = (exp(x) - exp(-x)) / (exp(x) + exp(-x))
 // f(x) in [-1, 1]
 struct TanhScalarFunction : public ScalarFunction<TanhScalarFunction>
@@ -137,19 +120,12 @@ struct VectorLineScalarFunction
     DenseVectorPtr vectorInput = new DenseVector(parameters->getDictionary());
     vectorInput->add(parameters);
     vectorInput->addWeighted(direction, input);
-    FeatureGeneratorPtr gradientDirection;
+    FeatureGeneratorPtr gradientDirection, gradient;
     if (derivativeDirection)
-    {
-      LazyVectorPtr v = new LazyVector(parameters->getDictionary());
-      v->addWeighted(direction, *derivativeDirection);
-      gradientDirection = v;
-    }
-    LazyVectorPtr gradient;
+      gradientDirection = new WeightedFeatureGenerator(direction, *derivativeDirection);
+    function.compute(vectorInput, output, gradientDirection, derivative ? &gradient : NULL);
     if (derivative)
-      gradient = new LazyVector(parameters->getDictionary());
-    function.compute(vectorInput, output, gradientDirection, gradient);
-    if (derivative)
-      *derivative = direction->dotProduct(gradient->toDenseVector());
+      *derivative = direction->dotProduct(gradient);
   }
   
 private:

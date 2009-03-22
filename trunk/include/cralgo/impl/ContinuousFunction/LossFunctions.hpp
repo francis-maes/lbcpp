@@ -11,6 +11,7 @@
 
 # include "FunctionStatic.hpp"
 # include "FunctionPairTraits.hpp"
+# include "ScalarFunctions.hpp"
 
 namespace cralgo {
 namespace impl {
@@ -84,7 +85,7 @@ struct MulticlassLoss : public VectorLossFunction<ExactType>
   void setLearningExample(const LearningExampleType& learningExample)
     {vectorToScalarFunction.setCorrectClass(learningExample.getOutput());}
 
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
     {vectorToScalarFunction.compute(input, output, gradientDirection, gradient);}
 
 private:
@@ -106,7 +107,7 @@ struct RankingLoss : public VectorLossFunction<ExactType>
   void setLearningExample(const LearningExampleType& example)
     {vectorToScalarFunction.setCosts(example.getCosts());}
 
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
     {vectorToScalarFunction.compute(input, output, gradientDirection, gradient);}
 
 private:
@@ -160,7 +161,7 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
                double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
     {assert(false);}
                               
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
     if (output)
       *output = 0.0;
@@ -183,7 +184,7 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
     }
     BaseClass::_this().computeRankingLoss(scores->getValues(), costs, output, gdir, gradient ? &g : NULL);
     if (gradient)
-      gradient->set(DenseVectorPtr(new DenseVector(g)));
+      *gradient = new DenseVector(g, input->getDictionary());
   }
 
 protected:

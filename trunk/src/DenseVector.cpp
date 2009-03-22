@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <cralgo/DenseVector.h>
-#include <cralgo/LazyVector.h>
 #include <cralgo/impl/Bridge/DoubleVector.hpp>
 #include <cfloat>
 using namespace cralgo;
@@ -49,12 +48,6 @@ size_t DenseVector::size() const
       res += subVector->size();
   }
   return res;
-}
-
-void DenseVector::addWeighted(const LazyVectorPtr lazyVector, double weight)
-{
-  assert(lazyVector);
-  lazyVector->addWeightedTo(DenseVectorPtr(this), weight);
 }
 
 // todo: factorize binary operations between dense vectors

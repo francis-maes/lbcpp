@@ -23,7 +23,7 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
   void setCorrectClass(size_t correctClass)
     {this->correctClass = (int)correctClass;}
     
-  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr, LazyVectorPtr gradient) const
+  void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr, FeatureGeneratorPtr* gradient) const
   {
     assert(correctClass >= 0);
     DenseVectorPtr scores = input->toDenseVector();
@@ -47,7 +47,7 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
         res->set(i, derivative);
       }
       res->get(correctClass) -= 1.0;
-      gradient->set(res);
+      *gradient = res;
     }
   }
   

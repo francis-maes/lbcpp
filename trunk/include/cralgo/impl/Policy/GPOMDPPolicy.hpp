@@ -105,7 +105,7 @@ private:
     ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionFeatures, selectedAction));
     
     // -gradient(p[y|x], parameters) / p[y|x]
-    LazyVectorPtr gradient = loss->computeGradient(classifier->getParameters());
+    FeatureGeneratorPtr gradient = loss->computeGradient(classifier->getParameters());
 
     // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
     trace->multiplyByScalar(beta);

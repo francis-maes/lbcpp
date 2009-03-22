@@ -31,8 +31,8 @@ public:
   DenseVector(size_t initialNumValues = 0, size_t initialNumSubVectors = 0)
     {initialize(initialNumValues, initialNumSubVectors);}
   
-  DenseVector(const std::vector<double>& values)
-    : values(values) {}
+  DenseVector(const std::vector<double>& values, FeatureDictionaryPtr dictionary = FeatureDictionaryPtr())
+    : BaseClass(dictionary), values(values) {}
   
   virtual ~DenseVector()
     {clear();}
@@ -98,7 +98,6 @@ public:
   virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
   void multiplyByScalar(double scalar);
   
-  void addWeighted(const LazyVectorPtr lazyVector, double weight);
   void addWeighted(const DenseVectorPtr otherVector, double weight);
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
     {featureGenerator->addWeightedTo(DenseVectorPtr(this), weight, dictionary);}
@@ -125,6 +124,12 @@ public:
   
   virtual DenseVectorPtr toDenseVector(FeatureDictionaryPtr dictionary)
     {/* todo: check dictionary */ return DenseVectorPtr(this);}
+
+  virtual size_t getNumSubGenerators() const
+    {return subVectors.size();}
+
+  virtual FeatureGeneratorPtr getSubGenerator(size_t index) const
+    {return index < subVectors.size() ? (FeatureGeneratorPtr)subVectors[index] : FeatureGeneratorPtr();}
 
 protected:
   /*
