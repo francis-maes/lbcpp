@@ -21,7 +21,7 @@ public:
   void clear()
     {stringToIndex.clear(); indexToString.clear();}
 
-  size_t count() const
+  size_t getNumElements() const
     {return (unsigned)indexToString.size();}
 
   bool exists(size_t index) const;
@@ -60,7 +60,10 @@ public:
     {return featuresDictionary;}
   
   size_t getNumFeatures() const
-    {return featuresDictionary ? featuresDictionary->count() : 0.0;}
+    {return featuresDictionary ? featuresDictionary->getNumElements() : 0.0;}
+    
+  size_t addFeature(const std::string& identifier)
+    {assert(featuresDictionary); return featuresDictionary->add(identifier);}
     
   /*
   ** Scopes
@@ -69,7 +72,7 @@ public:
     {return scopesDictionary;}
 
   size_t getNumScopes() const
-    {return scopesDictionary ? scopesDictionary->count() : 0.0;}
+    {return scopesDictionary ? scopesDictionary->getNumElements() : 0.0;}
   
   /*
   ** Related dictionaries

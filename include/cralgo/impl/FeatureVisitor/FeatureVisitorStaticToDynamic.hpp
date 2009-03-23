@@ -62,14 +62,14 @@ public:
 template<class ExactType>
 inline void FeatureVisitor<ExactType>::featureCall(cralgo::FeatureDictionaryPtr dictionary, cralgo::FeatureGeneratorPtr featureGenerator)
 {
-  StaticToDynamicFeatureVisitorRef<ExactType> ref(_this());
-  ReferenceObjectScope _(ref);
+  StaticToDynamicFeatureVisitorRef<ExactType> dynamicVisitor(_this());
+  StaticallyAllocatedReferenceCountedObjectPtr<cralgo::FeatureVisitor> dynamicVisitorPtr(dynamicVisitor);
   {
     EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
     if (editable)
       editable->staticFeatureGenerator(_this());
     else
-      featureGenerator->accept(FeatureVisitorPtr(&ref));
+      featureGenerator->accept(dynamicVisitorPtr);
   }
 }
 

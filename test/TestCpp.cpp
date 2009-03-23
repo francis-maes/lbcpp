@@ -12,14 +12,14 @@ int testClassification(std::istream& istr)
   if (!parseClassificationExamples(istr, features, labels, examples))
     return 1;
 
-  std::cout << examples.size() << " Examples, " << toString(features->getFeatures()->count()) << " features, "<< toString(labels->count()) << " labels." << std::endl;
+  std::cout << examples.size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features, "<< toString(labels->getNumElements()) << " labels." << std::endl;
 
 /*  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
-    GradientBasedLearner::createGradientDescent(
+    GradientBasedLearner::createStochasticDescent(
       IterationFunction::createConstant(0.01)), labels);
 */
-//  GradientBasedLearnerPtr learner = GradientBasedLearner::createGradientDescent(IterationFunction::createConstant(0.01));
-  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)), OptimizerTerminationTest::createMaxIterations(50));
+//  GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(IterationFunction::createConstant(0.01));
+  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createStochasticDescent(IterationFunction::createConstant(1)), OptimizerTerminationTest::createMaxIterations(50));
   GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
   
   for (int i = 0; i < 1; ++i)
@@ -46,10 +46,10 @@ int testRegression(std::istream& istr)
   if (!parseRegressionExamples(istr, features, examples))
     return 1;
 
-  std::cout << examples.size() << " Examples, " << toString(features->getFeatures()->count()) << " features." << std::endl;
+  std::cout << examples.size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features." << std::endl;
 
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-      GradientBasedLearner::createGradientDescent(
+      GradientBasedLearner::createStochasticDescent(
       IterationFunction::createConstant(0.01)));
   regressor->createParameters();
   for (int i = 0; i < 100; ++i)

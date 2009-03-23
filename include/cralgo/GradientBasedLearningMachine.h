@@ -23,7 +23,6 @@ public:
   typedef ExampleType_ ExampleType;
 
   virtual DenseVectorPtr createInitialParameters() const = 0;
-  virtual ScalarVectorFunctionPtr getRegularizer() const = 0;
   virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const = 0;
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
@@ -81,7 +80,19 @@ public:
     
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
+  
+  /*
+  ** Regularizer
+  */
+  ScalarVectorFunctionPtr getRegularizer() const
+    {return regularizer;}
 
+  void setRegularizer(ScalarVectorFunctionPtr regularizer)
+    {this->regularizer = regularizer;}
+
+  void setL2Regularizer(double weight)
+    {regularizer = ScalarVectorFunction::createSumOfSquares(weight);}
+  
   /*
   ** Learner
   */
@@ -99,7 +110,7 @@ public:
   ** Shortcuts for functions computation
   */
   double computeRegularizer() const
-    {assert(parameters); return getRegularizer()->compute(parameters);}
+    {assert(parameters); return regularizer ? regularizer->compute(parameters) : 0.0;}
 
   double computeEmpiricalRisk(const std::vector<ExampleType>& examples) const
     {assert(parameters); return getEmpiricalRisk(examples)->compute(parameters);}
@@ -109,6 +120,7 @@ public:
   
 protected:
   DenseVectorPtr parameters;
+  ScalarVectorFunctionPtr regularizer;
   GradientBasedLearnerPtr learner;
   ScalarRandomVariableMean inputSize;
 };

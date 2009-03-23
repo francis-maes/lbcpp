@@ -103,7 +103,7 @@ protected:
   }
 };
 
-GradientBasedLearnerPtr GradientBasedLearner::createGradientDescent(IterationFunctionPtr learningRate, bool normalizeLearningRate)
+GradientBasedLearnerPtr GradientBasedLearner::createStochasticDescent(IterationFunctionPtr learningRate, bool normalizeLearningRate)
   {return GradientBasedLearnerPtr(new GradientDescentLearner(learningRate, normalizeLearningRate));}
 
 class BatchLearner : public GradientBasedLearner

@@ -28,10 +28,10 @@ public:
   ** Accessors
   */
   size_t getNumNodes() const
-    {return graph.getNumNodes();}
+    {return graph->getNumNodes();}
 
   size_t getNumLinks() const
-    {return graph.getNumLinks();}
+    {return graph->getNumLinks();}
   
   ContentGraph& getGraph()
     {return graph;}
@@ -40,7 +40,7 @@ public:
     {return graph;}
 
   bool hasLabels() const
-    {return labels.size() > 0;}
+    {return labels->size() > 0;}
 
   LabelSequence& getLabels()
     {return labels;}
@@ -49,7 +49,7 @@ public:
     {return labels;}
     
   const LabelDictionary& getDictionary() const
-    {return labels.getDictionary();}
+    {return labels->getDictionary();}
     
   /*
   ** Feature Generators
@@ -57,7 +57,7 @@ public:
   featureGenerator nodeFeatures(size_t nodeIndex, size_t numPredecessors, size_t numSuccessors, bool includeCurrentLabel)
   {
     // Content
-    featureCall graph.contentFeatures(nodeIndex);
+    featureCall graph->contentFeatures(nodeIndex);
     
     // Structural Features
     if (numPredecessors)
@@ -67,7 +67,7 @@ public:
 
     // Current Label
     if (includeCurrentLabel)
-      featureCall("currentLabel") labels.labelFeature((int)nodeIndex);
+      featureCall("currentLabel") labels->labelFeature((int)nodeIndex);
   }
   
   featureGenerator structuralFeaturesRec(size_t initialNode, size_t node, size_t recursion, size_t count, bool isPredecessors)
@@ -75,21 +75,21 @@ public:
     if (initialNode == node && recursion > 0) return;
     
     if (recursion > 0)
-        featureCall(recursion) labels.labelFeature((int)node);
+        featureCall(recursion) labels->labelFeature((int)node);
         
     if (recursion < count)
     {
       if (isPredecessors)
       {
-        size_t n = graph.getNumPredecessors(node);
+        size_t n = graph->getNumPredecessors(node);
         for (size_t i = 0; i < n; ++i)
-          featureCall structuralFeaturesRec(initialNode, graph.getPredecessor(node, i), recursion + 1, count, true);
+          featureCall structuralFeaturesRec(initialNode, graph->getPredecessor(node, i), recursion + 1, count, true);
       }
       else
       {
-        size_t n = graph.getNumSuccessors(node);
+        size_t n = graph->getNumSuccessors(node);
         for (size_t i = 0; i < n; ++i)
-          featureCall structuralFeaturesRec(initialNode, graph.getSuccessor(node, i), recursion + 1, count, false);
+          featureCall structuralFeaturesRec(initialNode, graph->getSuccessor(node, i), recursion + 1, count, false);
       }
     }
   }
@@ -98,13 +98,13 @@ public:
   ** Modifiers
   */
   void addNode(FeatureGeneratorPtr content, size_t label)
-    {graph.addNode(content); labels.append(label);}
+    {graph->addNode(content); labels->append(label);}
   
   void reserveNodes(size_t count)
-    {graph.reserveNodes(count); labels.reserve(count);}
+    {graph->reserveNodes(count); labels->reserve(count);}
     
   void setLabel(size_t index, size_t label)
-    {assert(index < labels.size()); labels[index] = label;}
+    {assert(index < labels->size()); labels[index] = label;}
 
   /*
   ** Streaming operator

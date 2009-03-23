@@ -103,7 +103,7 @@ void testClassifier(const std::vector<ClassificationExample>& train, const std::
   
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
-    GradientBasedLearner::createGradientDescent(learningRate), classes);
+    GradientBasedLearner::createStochasticDescent(learningRate), classes);
   
   for (size_t i = 0; i < 15; ++i)
   {
@@ -167,7 +167,7 @@ void testMonteCarloControl(const std::vector<ClassificationExample>& train, cons
   
 // Regressor::createVerbose(std::cout);
   RegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
+    GradientBasedLearner::createStochasticDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
   
@@ -182,7 +182,7 @@ void testOLPOMDP(const std::vector<ClassificationExample>& train, const std::vec
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.01, 10000);
 
   GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
+    GradientBasedLearner::createStochasticDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
   PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0.4, 1.3);
@@ -197,13 +197,13 @@ void testCRank(const std::vector<ClassificationExample>& train, const std::vecto
 //  IterationFunctionPtr learningRate2 = IterationFunction::createInvLinear(0.01, 10000);
 
   GradientBasedRankerPtr ranker = GradientBasedRanker::createLargeMarginBestAgainstAllLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
+    GradientBasedLearner::createStochasticDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
   PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(exploration ? exploration : learnedPolicy, ranker, supervision);
 
 /*  GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createGradientDescent(learningRate2));  
+    GradientBasedLearner::createStochasticDescent(learningRate2));  
   classifier->setParameters(ranker->getParameters());
   PolicyPtr learnerPolicy2 = Policy::createGPOMDP(classifier, 0.8, 1.1);
 */

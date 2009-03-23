@@ -57,7 +57,7 @@ public:
   ** Labels
   */
   size_t getNumLabels() const
-    {assert(labels); return labels->count();}
+    {assert(labels); return labels->getNumElements();}
   
   StringDictionaryPtr getLabels() const
     {assert(labels); return labels;}

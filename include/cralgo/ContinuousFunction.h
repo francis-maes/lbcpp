@@ -52,6 +52,9 @@ public:
 class ScalarVectorFunction : public ContinuousFunction
 {
 public:
+  static ScalarVectorFunctionPtr createSumOfSquares(double weight = 1.0);
+
+public:
   virtual double compute(const FeatureGeneratorPtr input) const = 0;
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const = 0;
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const = 0;
