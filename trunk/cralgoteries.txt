@@ -1,8 +1,4 @@
-* Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe)
-  - StaticToDynamicChoose::computeActionFeatures
-  - ScalarToVectorArchitecture::compute
-
-* Clarifier ReferenceObjectScope
+o Clarifier ReferenceObjectScope
 
 LC++ library:
 =============
@@ -34,6 +30,10 @@ Policy:
  * CRankPost
  * TableLogger
  * policyRun inline
+
+Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe)
+ * StaticToDynamicChoose::computeActionFeatures
+ * ScalarToVectorArchitecture::compute
 
 LC++ translator:
 ================

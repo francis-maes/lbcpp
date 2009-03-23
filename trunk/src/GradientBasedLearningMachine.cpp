@@ -16,10 +16,7 @@ class StaticToDynamicGradientBasedLearningMachine : public BaseClass
 public:
   typedef typename BaseClass::ExampleType ExampleType;
   
-  // abstract: static functions for architecture(), loss() and regularizer()
-  
-  virtual ScalarVectorFunctionPtr getRegularizer() const
-    {return impl::staticToDynamic(_this().regularizer());}
+  // abstract: static functions for architecture() and loss()
   
   virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const
     {return impl::staticToDynamic(impl::exampleRisk(_this().architecture(), _this().loss(), example));}
@@ -28,7 +25,13 @@ public:
     {return impl::staticToDynamic(impl::empiricalRisk(_this().architecture(), _this().loss(), examples));}
     
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
-    {return impl::staticToDynamic(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples), _this().regularizer()));}
+  {
+    if (BaseClass::regularizer)
+      return impl::staticToDynamic(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples),
+          impl::dynamicToStatic(BaseClass::regularizer)));
+    else
+      return getEmpiricalRisk(examples);
+  }
 
 protected:
   const ExactType& _this() const  {return *(const ExactType* )this;}
@@ -76,11 +79,7 @@ public:
   
   inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
     {return impl::parallelArchitecture(baseArchitecture());}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
-
 
 /*
 ** Regression
@@ -97,9 +96,6 @@ public:
 
   inline impl::SquareLoss<RegressionExample> loss() const
     {return impl::squareLoss<RegressionExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedRegressorPtr GradientBasedRegressor::createLeastSquaresLinear(GradientBasedLearnerPtr learner)
@@ -125,9 +121,6 @@ public:
 
   inline impl::MultiClassLogBinomialLoss<ClassificationExample> loss() const
     {return impl::multiClassLogBinomialLoss<ClassificationExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0));}
 };
 
 GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
@@ -150,9 +143,6 @@ public:
 
   inline impl::LogBinomialLoss<ClassificationExample> loss() const
     {return impl::logBinomialLoss<ClassificationExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRegression(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
@@ -175,9 +165,6 @@ public:
 
   inline impl::HingeLoss<ClassificationExample> loss() const
     {return impl::hingeLoss<ClassificationExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
@@ -204,9 +191,6 @@ public:
 
   inline impl::MultiClassLogBinomialLoss<GeneralizedClassificationExample> loss() const
     {return impl::multiClassLogBinomialLoss<GeneralizedClassificationExample>();}
-    
-  inline impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication regularizer() const
-    {return impl::multiply(impl::sumOfSquares(), impl::constant(0.0));}
 };
 
 GradientBasedGeneralizedClassifierPtr GradientBasedGeneralizedClassifier::createLinear(GradientBasedLearnerPtr learner)

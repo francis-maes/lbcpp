@@ -24,7 +24,8 @@ public:
 protected:
   template<class T>
   friend struct ReferenceCountedObjectPtr;
-  friend struct ReferenceObjectScope;
+  template<class T>
+  friend struct StaticallyAllocatedReferenceCountedObjectPtr;
 
   size_t refCount;
 
@@ -38,19 +39,6 @@ protected:
     if (refCount == 0)
       delete this;
   }
-};
-
-struct ReferenceObjectScope
-{
-  ReferenceObjectScope(ReferenceCountedObject& object)
-    : object(object)
-    {++object.refCount;}
-  
-  ~ReferenceObjectScope()
-    {--object.refCount;}
-    
-private:
-  ReferenceCountedObject& object;
 };
 
 template <class T>
@@ -142,6 +130,25 @@ private:
       if (oldPtr) cast(oldPtr).decrementReferenceCounter();
     }
   }
+};
+
+template<class T>
+struct StaticallyAllocatedReferenceCountedObjectPtr
+{
+  StaticallyAllocatedReferenceCountedObjectPtr(T& ptr) : ptr(ptr)
+    {++(ptr.refCount);}
+    
+  ~StaticallyAllocatedReferenceCountedObjectPtr()
+    {--(ptr.refCount);}
+    
+  operator ReferenceCountedObjectPtr<T>() const
+    {return ReferenceCountedObjectPtr<T>(&ptr);}
+
+  T* operator -> () const
+    {return &ptr;}
+
+private:
+  T& ptr;
 };
 
 }; /* namespace cralgo */

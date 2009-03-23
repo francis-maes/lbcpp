@@ -153,7 +153,7 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, String
   IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);
 
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
-    GradientBasedLearner::createGradientDescent(learningRate), labels);
+    GradientBasedLearner::createStochasticDescent(learningRate), labels);
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));
   
@@ -161,12 +161,12 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, String
     Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels->count());
+  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels->getNumElements());
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy, learningExamples, labels->count());
+    runPolicy(learnerPolicy, learningExamples, labels->getNumElements());
   }
 }
 
@@ -178,7 +178,7 @@ void testCRank(const std::vector<SequenceExample>& learningExamples, StringDicti
     //createLargeMarginBestAgainstAllLinear
     //createLargeMarginMostViolatedPairLinear
     createLargeMarginAllPairsLinear
-    (GradientBasedLearner::createGradientDescent(learningRate));
+    (GradientBasedLearner::createStochasticDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
   PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
@@ -186,7 +186,7 @@ void testCRank(const std::vector<SequenceExample>& learningExamples, StringDicti
   for (size_t i = 0; i < 5; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(0)->addComputeStatistics(), learningExamples, labels->count());
+    runPolicy(learnerPolicy->verbose(0)->addComputeStatistics(), learningExamples, labels->getNumElements());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -197,19 +197,19 @@ void testSarsa(const std::vector<SequenceExample>& learningExamples, StringDicti
   IterationFunctionPtr epsilon = IterationFunction::createConstant(0.1);
 
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
+    GradientBasedLearner::createStochasticDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
   
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(0), learningExamples, labels->count());
+  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(0), learningExamples, labels->getNumElements());
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(0), learningExamples, labels->count());
+    runPolicy(learnerPolicy->verbose(0), learningExamples, labels->getNumElements());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -236,7 +236,7 @@ void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDic
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
 
   GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createGradientDescent(learningRate));
+    GradientBasedLearner::createStochasticDescent(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
   PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0, 2.0);
@@ -247,7 +247,7 @@ void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDic
     PolicyPtr p = learnerPolicy->addComputeStatistics()->verbose(0);
   //  testTrivial(p);
 //    std::cout << p->toString() << std::endl;
-    runPolicy(p, learningExamples, labels->count());
+    runPolicy(p, learningExamples, labels->getNumElements());
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -272,7 +272,7 @@ int main(int argc, char* argv[])
   std::vector<SequenceExample> learningExamples;
   SequenceExamplesParser parser(learningExamples, labels);
   parser.parse(istr, features);
-  std::cout << learningExamples.size() << " sequences, " << labels->count()
+  std::cout << learningExamples.size() << " sequences, " << labels->getNumElements()
     << " labels, " << features->getNumFeatures() << " features." << std::endl;
 
   

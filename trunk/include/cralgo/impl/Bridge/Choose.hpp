@@ -75,8 +75,7 @@ public:
     }
     valueFunction->setChoose(getReferenceCountedPointer());
     StaticToDynamicVariable< ChoiceType > v;
-    ReferenceObjectScope _(v);
-    VariablePtr variable(&v);
+    StaticallyAllocatedReferenceCountedObjectPtr<Variable> variable(v);
     
     res.clear();
     res.reserve(ContainerTraits::size(container));
@@ -96,8 +95,7 @@ public:
     f->setChoose(getReferenceCountedPointer());
     
     StaticToDynamicVariable< ChoiceType > v;
-    ReferenceObjectScope _(v);
-    VariablePtr variable(&v);
+    StaticallyAllocatedReferenceCountedObjectPtr<Variable> variable(v);
     
     if (transformIntoSparseVectors)
     {

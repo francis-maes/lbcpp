@@ -8,9 +8,13 @@
 
 #include <cralgo/LearningExample.h>
 #include <cralgo/SparseVector.h>
+#include <fstream>
 using namespace cralgo;
 
-bool LearningExamplesParser::parseLine(const std::string& line)
+/*
+** TextFileParser
+*/
+bool TextFileParser::parseLine(const std::string& line)
 {
   size_t begin = line.find_first_not_of(" \t");
   bool isEmpty = begin == std::string::npos;
@@ -23,30 +27,7 @@ bool LearningExamplesParser::parseLine(const std::string& line)
   return parseDataLine(columns);
 }
 
-bool LearningExamplesParser::parse(std::istream& istr, FeatureDictionaryPtr dictionary)
-{
-  this->dictionary = dictionary;
-  parseBegin();
-  while (!istr.eof())
-  {
-    std::string line;
-    std::getline(istr, line);
-    if (!parseLine(line))
-    {
-      Object::error("LearningExamplesParser::parse", "Could not parse line '" + line + "'");
-      return false;
-    }
-  }
-  if (!parseEnd())
-  {
-    Object::error("LearningExamplesParser::parse", "Error in parse end");
-      return false;
-  }
-  this->dictionary = FeatureDictionaryPtr();
-  return true;
-}
-
-void LearningExamplesParser::tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators)
+void TextFileParser::tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators)
 {
   //std::cout << "Tokenize " << cralgo::toString(line) << " => ";
   size_t b = line.find_first_not_of(separators);
@@ -62,6 +43,47 @@ void LearningExamplesParser::tokenize(const std::string& line, std::vector< std:
   //std::cout << cralgo::toString(columns) << std::endl;
 }
 
+bool TextFileParser::parseStream(std::istream& istr)
+{
+  parsingBreaked = false;
+  parseBegin();
+  while (!istr.eof() && !parsingBreaked)
+  {
+    std::string line;
+    std::getline(istr, line);
+    if (!parseLine(line))
+    {
+      Object::error("TextFileParser::parse", "Could not parse line '" + line + "'");
+      return false;
+    }
+  }
+  if (!parseEnd())
+  {
+    Object::error("TextFileParser::parse", "Error in parse end");
+      return false;
+  }
+  return true;
+}
+
+bool TextFileParser::parseFile(const std::string& filename)
+{
+  if (filename == "")
+  {
+    Object::error("TextFileParser::parseFile", "No filename specified");
+    return false;
+  }
+  std::ifstream istr(filename.c_str());
+  if (!istr.is_open())
+  {
+    Object::error("TextFileParser::parseFile", "Could not open file '" + filename + "'");
+    return false;
+  }
+  return parseStream(istr);
+}
+
+/*
+** LearningExampleParser
+*/
 bool LearningExamplesParser::parseFeatureList(const std::vector<std::string>& columns, size_t firstColumn, SparseVectorPtr& res)
 {
   assert(dictionary);
@@ -93,13 +115,21 @@ bool LearningExamplesParser::parseFeature(const std::string& str, std::string& f
   {
     featureId = str.substr(0, n);
     std::string featureStringValue = str.substr(n + 1);
-    return parse(featureStringValue, featureValue);
+    return TextFileParser::parse(featureStringValue, featureValue);
   }
 }
 
 bool LearningExamplesParser::parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path)
 {
   tokenize(identifier, path, ".");
+  return true;
+}
+
+bool LearningExamplesParser::parse(std::istream& istr, FeatureDictionaryPtr dictionary)
+{
+  this->dictionary = dictionary;
+  parseStream(istr);
+  this->dictionary = FeatureDictionaryPtr();
   return true;
 }
 
@@ -112,7 +142,7 @@ public:
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
     std::string label;
-    if (!parse(columns[0], label))
+    if (!TextFileParser::parse(columns[0], label))
       return false;
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
@@ -141,7 +171,7 @@ public:
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
     double y;
-    if (!parse(columns[0], y))
+    if (!TextFileParser::parse(columns[0], y))
       return false;
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))

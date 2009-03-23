@@ -82,8 +82,21 @@ public:
   double sampleDoubleFromGaussian(double mean, double standardDeviation)
     {return sampleDoubleFromGaussian() * standardDeviation + mean;}
   
+  inline void sampleOrder(size_t size, std::vector<size_t>& res)
+  {
+    assert(size);
+    res.resize(size);
+    for (size_t i = 0; i < size; ++i)
+      res[i] = i;
+    for (size_t i = 1; i < size; ++i)
+      swap(res[i], res[sampleSize(i + 1)]);
+  }
+
 private:
   long long seed;
+  
+  inline void swap(size_t& a, size_t& b)
+    {size_t tmp = a; a = b; b = tmp;}
 };
 
 }; /* namespace cralgo */

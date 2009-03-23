@@ -11,6 +11,7 @@ ENDIF(CRALGO_TESTS)
 
 ADD_SUBDIRECTORY(ludovic)
 ADD_SUBDIRECTORY(SequentialClassification)
+ADD_SUBDIRECTORY(GraphLabeling)
 
 ADD_EXECUTABLE(test-cralgo TestCpp.cpp)
 TARGET_LINK_LIBRARIES(test-cralgo cralgo)

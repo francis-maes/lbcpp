@@ -23,12 +23,12 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       paramsGradientDictionary(new FeatureDictionary("MultiLinearArchitecture gradient wrt parameters", StringDictionaryPtr(), outputs))
   {
     classParamsGradientDictionary = new FeatureDictionary("MultiLinearArchitecture gradient wrt class-parameters", StringDictionaryPtr(), outputs);
-    for (size_t i = 0; i < outputs->count(); ++i)
+    for (size_t i = 0; i < outputs->getNumElements(); ++i)
       paramsGradientDictionary->setSubDictionary(i, classParamsGradientDictionary);
   }
     
   size_t getNumOutputs() const
-    {assert(outputs->count()); return outputs->count();}
+    {assert(outputs->getNumElements()); return outputs->getNumElements();}
   
   DenseVectorPtr createInitialParameters() const
     {return new DenseVector(paramsDictionary, 0, getNumOutputs());}

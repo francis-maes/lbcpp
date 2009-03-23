@@ -25,3 +25,9 @@ ScalarFunctionPtr ScalarFunction::createVectorFunctionLine(ScalarVectorFunctionP
   return new VectorFunctionLineScalarFunction(function, parameters, direction);
 }
 
+ScalarVectorFunctionPtr ScalarVectorFunction::createSumOfSquares(double weight)
+{
+  return weight != 1.0
+    ? impl::staticToDynamic(impl::multiply(impl::sumOfSquares(), impl::constant(weight)))
+    : impl::staticToDynamic(impl::sumOfSquares());
+}

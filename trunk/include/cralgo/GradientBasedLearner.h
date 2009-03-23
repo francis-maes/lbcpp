@@ -18,7 +18,7 @@ namespace cralgo
 class GradientBasedLearner : public Object
 {
 public:
-  static GradientBasedLearnerPtr createGradientDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
+  static GradientBasedLearnerPtr createStochasticDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
   static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination);
   
 public:

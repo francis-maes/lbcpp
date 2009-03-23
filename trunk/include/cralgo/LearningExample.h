@@ -116,18 +116,12 @@ private:
   std::vector<double> costs;
 };
 
-class SparseVector;
-typedef ReferenceCountedObjectPtr<SparseVector> SparseVectorPtr;
-
-class LearningExamplesParser
+// todo: move
+class TextFileParser
 {
 public:
-  LearningExamplesParser() : dictionary(NULL) {}
-  virtual ~LearningExamplesParser() {}
+  virtual ~TextFileParser() {}
 
-  /*
-  ** Overridable
-  */
   virtual void parseBegin()
     {}
   virtual bool parseEmptyLine()
@@ -139,17 +133,14 @@ public:
   virtual bool parseEnd()
     {return parseEmptyLine();}
   
-  virtual bool parseLine(const std::string& line);
-  
-  /*
-  ** Top-level function
-  */
-  bool parse(std::istream& istr, FeatureDictionaryPtr dictionary);
+  bool parseLine(const std::string& line);
+  bool parseStream(std::istream& istr);
+  bool parseFile(const std::string& filename);
   
 protected:
-  FeatureDictionaryPtr dictionary;
-
-protected:
+  void breakParsing()
+    {parsingBreaked = true;}
+  
   static void tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators = " \t");
   
   template<class T>
@@ -159,7 +150,21 @@ protected:
   template<class T>
   static bool parse(const std::string& str, T& res)
     {std::istringstream istr(str); return parse(istr, res);}
+    
+private:
+  bool parsingBreaked;
+};
+
+class LearningExamplesParser : public TextFileParser
+{
+public:
+  LearningExamplesParser() : dictionary(NULL) {}
+
+  bool parse(std::istream& istr, FeatureDictionaryPtr dictionary);
   
+protected:
+  FeatureDictionaryPtr dictionary;
+
   // featureList ::= feature featureList | feature
   bool parseFeatureList(const std::vector<std::string>& columns, size_t firstColumn, SparseVectorPtr& res);
   // feature ::= featureId . featureValue
