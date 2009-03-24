@@ -47,6 +47,17 @@ public:
   virtual size_t getNumResults() const {return 0;}
   virtual ObjectPtr getResult(size_t i) const
     {assert(false); return ObjectPtr();}
+  
+  virtual ObjectPtr getResultWithName(const std::string& name) const
+  {
+    for (size_t i = 0; i < getNumResults(); ++i)
+    {
+      ObjectPtr res = getResult(i);
+      if (res->getName() == name)
+        return res;
+    }
+    return ObjectPtr();
+  }
 };
 
 template<>

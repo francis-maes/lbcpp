@@ -266,6 +266,45 @@ struct Traits< std::pair<T1, T2> > : public BuiltinTypeTraits< std::pair<T1, T2>
   }
 };
 
+/*
+** Ranges
+*/
+struct SizeRange
+{
+  SizeRange(size_t begin, size_t end)
+    : begin(begin), end(end) {}
+  SizeRange(size_t end = 0)
+    : begin(0), end(end) {}
+    
+  size_t begin, end;
+};
+
+template<>
+struct Traits< SizeRange > 
+  : public DefaultContainerTraits< Traits<SizeRange>, SizeRange, size_t, size_t >
+{
+  static size_t size(const SizeRange& range)
+    {return range.end - range.begin;}
+
+  static size_t begin(const SizeRange& range)
+    {return range.begin;}
+
+  static size_t end(const SizeRange& range)
+    {return range.end;}
+  
+  static const size_t& value(const size_t& iterator)
+    {return iterator;}
+
+  static std::string toString(const SizeRange& range)
+    {return "[" + cralgo::toString(range.begin) + ", " + cralgo::toString(range.end) + "[";}
+    
+  static void write(std::ostream& ostr, const SizeRange& range)
+    {cralgo::write(ostr, range.begin); cralgo::write(ostr, range.end);}
+    
+  static bool read(std::istream& istr, const SizeRange& range)
+    {return cralgo::read(istr, range.begin) && cralgo::read(istr, range.end);}
+};
+
 
 }; /* namespace cralgo */
 

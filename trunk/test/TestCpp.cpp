@@ -19,7 +19,7 @@ int testClassification(std::istream& istr)
       IterationFunction::createConstant(0.01)), labels);
 */
 //  GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(IterationFunction::createConstant(0.01));
-  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createStochasticDescent(IterationFunction::createConstant(1)), OptimizerTerminationTest::createMaxIterations(50));
+  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)), OptimizerTerminationTest::createMaxIterations(50));
   GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
   
   for (int i = 0; i < 1; ++i)

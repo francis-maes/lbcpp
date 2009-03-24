@@ -87,15 +87,19 @@ public:
     return ostr << "]";
   }
   
-  size_t numberOfLabelsInCommonWith(const LabelSequencePtr otherSequence) const
+  size_t numberOfLabelsInCommonWith(const LabelSequencePtr otherSequence, size_t begin, size_t end) const
   {
     assert(v.size() == otherSequence->v.size());
+    assert(begin < end && end <= v.size());
     size_t res = 0;
-    for (size_t i = 0; i < v.size(); ++i)
+    for (size_t i = begin; i < end; ++i)
       if (v[i] == otherSequence->v[i])
         ++res;
     return res;
   }
+
+  size_t numberOfLabelsInCommonWith(const LabelSequencePtr otherSequence) const
+    {return numberOfLabelsInCommonWith(otherSequence, 0, v.size());}
 
 private:
   StringDictionaryPtr labels;
