@@ -132,7 +132,7 @@ public:
             }
         }
       }
-      if (initializeByAssignment)
+   //   if (initializeByAssignment) /// TEST: force initialize by assignment
         variablesInitializedByAssignment->insert(var.getIdentifierString());
               
       currentVariableDeclaration = &var;

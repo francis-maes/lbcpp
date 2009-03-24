@@ -17,6 +17,7 @@ public:
   LabelSequence(const LabelSequence& other) : labels(other.labels), v(other.v) {}
   LabelSequence(const LabelDictionary& labels, size_t size) : labels(&labels), v(size, labels.getNumLabels()) {}
   LabelSequence(const LabelDictionary& labels) : labels(&labels) {}
+  LabelSequence() : labels(NULL) {}
   
   LabelSequence& operator =(const LabelSequence& other)
     {labels = other.labels; v = other.v; return *this;}

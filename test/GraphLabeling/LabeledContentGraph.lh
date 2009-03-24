@@ -88,8 +88,8 @@ public:
   featureGenerator neighborhoodLabelsFrequencyFeatures(size_t nodeIndex)
   {
     size_t numLabels = getLabelDictionary()->getNumElements();
-    std::vector<size_t> predecessorLabels(numLabels, 0);
-    std::vector<size_t> successorLabels(numLabels, 0);
+    std::vector<size_t> predecessorLabels(numLabels + 1, 0);
+    std::vector<size_t> successorLabels(numLabels + 1, 0);
     size_t n, i;
     
     n = graph->getNumPredecessors(nodeIndex);
@@ -100,12 +100,12 @@ public:
       successorLabels[getLabel(graph->getSuccessor(nodeIndex, i))]++;
     
     featureScope(0) {
-      for (i = 0; i < numLabels; ++i)
+      for (i = 0; i <= numLabels; ++i)
         if (predecessorLabels[i])
           featureSense(i, (double)predecessorLabels[i]);
     }
     featureScope(1) {
-      for (i = 0; i < numLabels; ++i)
+      for (i = 0; i <= numLabels; ++i)
         if (successorLabels[i])
           featureSense(i, (double)successorLabels[i]);      
     }
@@ -154,7 +154,7 @@ public:
     {graph->reserveNodes(count); labels->reserve(count);}
     
   void setLabel(size_t index, size_t label)
-    {assert(index < labels.size()); labels->set(index, label);}
+    {assert(index < getNumNodes() && label < getLabelDictionary()->getNumElements()); labels->set(index, label);}
 
   /*
   ** Streaming operator
@@ -168,7 +168,13 @@ public:
   */
   static LabeledContentGraphPtr parseGetoorGraph(const std::string& contentFile, const std::string& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes = 0);
 
-  void splitRandomly(size_t numFolds, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabeledContentGraphPtr>& testGraphs);
+  struct LabelsFold
+  {
+    LabeledContentGraphPtr graph;
+    size_t foldBegin;
+    size_t foldEnd;
+  };
+  void splitRandomly(size_t numFolds, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs);
 
 private:
   ContentGraphPtr graph;

@@ -136,7 +136,7 @@ inline size_t remapIndexWrtFold(size_t index, size_t foldBegin, size_t foldEnd)
     return index - (foldEnd - foldBegin);
 }
 
-void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabeledContentGraphPtr>& testGraphs)
+void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs)
 {
   size_t numNodes = getNumNodes();
   assert(numFolds > 1 && numNodes);
@@ -153,31 +153,41 @@ void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledCont
     size_t foldBegin = (size_t)(i * foldMeanSize);
     size_t foldEnd = (size_t)((i + 1) * foldMeanSize);
     
+    /*
+    ** Train graph
+    */
     LabeledContentGraphPtr trainGraph = new LabeledContentGraph(getLabelDictionary()); // all but the current fold
-    LabeledContentGraphPtr testGraph = new LabeledContentGraph(getLabelDictionary()); // the current fold
     
-    // create nodes
+    // create train nodes
     for (size_t j = 0; j < numNodes; ++j)
-      (j >= foldBegin && j < foldEnd ? testGraph : trainGraph)->addNode(getNode(j), getLabel(j));
+      if (j < foldBegin || j >= foldEnd)
+        trainGraph->addNode(getNode(j), getLabel(j));
     
-    // create links
+    // create train links
     for (size_t j = 0; j < numNodes; ++j)
-    {
-      LabeledContentGraphPtr target = j >= foldBegin && j < foldEnd ? testGraph : trainGraph;
-      for (size_t k = 0; k < getNumSuccessors(j); ++k)
+      if (j < foldBegin || j >= foldEnd)
       {
-        size_t succ = getSuccessor(j, k);
-        LabeledContentGraphPtr succTarget = succ >= foldBegin && succ < foldEnd ? testGraph : trainGraph;
-        if (succTarget == target)
+        for (size_t k = 0; k < getNumSuccessors(j); ++k)
         {
-          size_t mappedSourceIndex = remapIndexWrtFold(j, foldBegin, foldEnd);
-          size_t mappedSuccIndex = remapIndexWrtFold(succ, foldBegin, foldEnd);
-          target->addLink(mappedSourceIndex, mappedSuccIndex);
+          size_t succ = getSuccessor(j, k);
+          if (succ < foldBegin || succ >= foldEnd)
+          {
+            size_t mappedSourceIndex = j < foldBegin ? j : j - (foldEnd - foldBegin);
+            size_t mappedSuccIndex = succ < foldBegin ? succ : succ - (foldEnd - foldBegin);
+            trainGraph->addLink(mappedSourceIndex, mappedSuccIndex);
+          }
         }
       }
-    }
     
     trainGraphs[i] = trainGraph;
+    
+    /*
+    ** Test graph
+    */
+    LabelsFold testGraph;
+    testGraph.graph = LabeledContentGraphPtr(this);
+    testGraph.foldBegin = foldBegin;
+    testGraph.foldEnd = foldEnd;
     testGraphs[i] = testGraph;
   }
 }

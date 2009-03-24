@@ -4,42 +4,6 @@
 namespace cralgo
 {
 
-struct SizeRange
-{
-  SizeRange(size_t begin, size_t end)
-    : begin(begin), end(end) {}
-  SizeRange(size_t end)
-    : begin(0), end(end) {}
-    
-  size_t begin, end;
-};
-
-template<>
-struct Traits< SizeRange > 
-  : public DefaultContainerTraits< Traits<SizeRange>, SizeRange, size_t, size_t >
-{
-  static size_t size(const SizeRange& range)
-    {return range.end - range.begin;}
-
-  static size_t begin(const SizeRange& range)
-    {return range.begin;}
-
-  static size_t end(const SizeRange& range)
-    {return range.end;}
-  
-  static const size_t& value(const size_t& iterator)
-    {return iterator;}
-
-  static std::string toString(const SizeRange& range)
-    {return "[" + cralgo::toString(range.begin) + ", " + cralgo::toString(range.end) + "[";}
-    
-  static void write(std::ostream& ostr, const SizeRange& range)
-    {cralgo::write(ostr, range.begin); cralgo::write(ostr, range.end);}
-    
-  static bool read(std::istream& istr, const SizeRange& range)
-    {return cralgo::read(istr, range.begin) && cralgo::read(istr, range.end);}
-};
-
 crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<FeatureGeneratorPtr>& x, size_t numLabels, const std::vector<size_t>* y = NULL)
 {
   std::vector<size_t> res(x.size(), numLabels);
@@ -108,7 +72,7 @@ public:
   {
     assert(columns.size());
     std::string label;
-    if (!parse(columns[0], label))
+    if (!TextFileParser::parse(columns[0], label))
       return false;
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))

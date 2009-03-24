@@ -9,6 +9,7 @@ SET(GRAPH_LABELING_LHEADERS
   ContentGraph.lh
   LabelSequence.lh
   LabeledContentGraph.lh
+  GraphLabelingCRAlgorithms.lh
 )
 
 ADD_CRALGORITHM_SOURCES(${GRAPH_LABELING_LHEADERS})

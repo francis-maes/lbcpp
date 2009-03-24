@@ -81,14 +81,17 @@ public:
   
   double sampleDoubleFromGaussian(double mean, double standardDeviation)
     {return sampleDoubleFromGaussian() * standardDeviation + mean;}
-  
+
   inline void sampleOrder(size_t size, std::vector<size_t>& res)
+    {sampleOrder(0, size, res);}
+  
+  inline void sampleOrder(size_t begin, size_t end, std::vector<size_t>& res)
   {
-    assert(size);
-    res.resize(size);
-    for (size_t i = 0; i < size; ++i)
-      res[i] = i;
-    for (size_t i = 1; i < size; ++i)
+    assert(end > begin);
+    res.resize(end - begin);
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = begin + i;
+    for (size_t i = 1; i < res.size(); ++i)
       swap(res[i], res[sampleSize(i + 1)]);
   }
 

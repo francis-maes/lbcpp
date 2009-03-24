@@ -159,6 +159,7 @@ public:
   virtual StateFeaturesFunctionPtr getStateFeaturesFunction() const
   {
     StateFeaturesFunctionPtr res = choose.getStateFeaturesFunction();
+    // TODO: check result
     res->setChoose(getReferenceCountedPointer());
     return res;
   }
@@ -166,6 +167,7 @@ public:
   virtual ActionFeaturesFunctionPtr getActionFeaturesFunction() const
   {
     ActionFeaturesFunctionPtr res = choose.getActionFeaturesFunction();
+    // TODO: check result
     res->setChoose(getReferenceCountedPointer());
     return res;
   }
