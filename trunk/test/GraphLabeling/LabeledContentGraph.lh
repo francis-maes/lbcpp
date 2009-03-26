@@ -26,6 +26,7 @@ public:
       
   LabeledContentGraph(StringDictionaryPtr labelsDictionary)
     : graph(new ContentGraph()), labels(new LabelSequence(labelsDictionary)) {}
+  ~LabeledContentGraph();
 
   /*
   ** Accessors

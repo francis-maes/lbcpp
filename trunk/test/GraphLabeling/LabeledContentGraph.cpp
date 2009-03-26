@@ -47,6 +47,11 @@ protected:
 };
 */
 
+LabeledContentGraph::~LabeledContentGraph()
+{
+  //  std::cout << "delete labeled content graph: " << this << std::endl;
+}
+
 class ContentFileParser : public TextFileParser
 {
 public:
@@ -98,14 +103,18 @@ public:
     std::map<std::string, size_t>::iterator it1, it2;
     it1 = nodeIdentifiers.find(columns[1]);
     it2 = nodeIdentifiers.find(columns[0]);
-    if (it1 == nodeIdentifiers.end() || it2 == nodeIdentifiers.end())
+    if (it1 == nodeIdentifiers.end())
     {
-      if (maxNodes)
-        return true;
-      Object::error("LinkFileParser::parseDataLine", "Invalid node identifier");
-      return false;
+      if (!maxNodes)
+	Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[1] + "'");
     }
-    res->addLink(it1->second, it2->second);
+    else if (it2 == nodeIdentifiers.end())
+    {
+      if (!maxNodes)
+	Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[0] + "'");
+    }
+    else
+      res->addLink(it1->second, it2->second);
     return true;
   }
   
@@ -142,17 +151,19 @@ void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledCont
   assert(numFolds > 1 && numNodes);
   
   std::vector<size_t> order;
+  // std::cout << "splitRandomly 1 numFolds = " << numFolds << " numNodes = " << numNodes << " this = " << this << std::endl;
   Random::getInstance().sampleOrder(numNodes, order);
-  
   trainGraphs.resize(numFolds);
   testGraphs.resize(numFolds);
   
-  double foldMeanSize = getNumNodes() / (double)numFolds;
+  double foldMeanSize = numNodes / (double)numFolds;
   for (size_t i = 0; i < numFolds; ++i)
   {
+    //    std::cout << "splitRandomly fold " << i << std::endl;
     size_t foldBegin = (size_t)(i * foldMeanSize);
     size_t foldEnd = (size_t)((i + 1) * foldMeanSize);
-    
+    assert(foldEnd <= numNodes);    
+
     /*
     ** Train graph
     */
@@ -178,7 +189,6 @@ void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledCont
           }
         }
       }
-    
     trainGraphs[i] = trainGraph;
     
     /*
