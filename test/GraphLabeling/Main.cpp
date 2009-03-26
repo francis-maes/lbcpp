@@ -61,9 +61,8 @@ public:
     {return iterativeClassificationCRAlgorithm(graph, begin, end, 5, oneClassifierPerPass);}
 };
 
+static std::ostream* resultsOutputFile = NULL;
 static std::string allResults;
-
-static std::ofstream resultsFile("results.txt", std::ios::app);
 
 void testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraph)
@@ -76,19 +75,34 @@ void testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, c
   
   std::cout << results << std::endl;
   allResults += results + "\n";
-  resultsFile << results << std::endl;
+  (*resultsOutputFile) << results << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
-  std::cout << "HO5 ! " << std::endl;
+  // contentFile citeFile numFolds resultsFile
+  if (argc < 5)
+  {
+    std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds resultsFile.txt" << std::endl;
+    return 1;
+  }
+  std::string contentFile = argv[1];
+  std::string linkFile = argv[2];
+  int numFolds = atoi(argv[3]);
+  std::ofstream resultsFile(argv[4], std::ios::app);
+  if (!resultsFile.is_open())
+  {
+    std::cerr << "Error: could not open file " << argv[4] << std::endl;
+    return 1;
+  }
+  resultsOutputFile = &resultsFile;
 
-  static const std::string basename = "/Users/francis/Projets/CRAlgo/trunk/test/GraphLabeling/data/cora/cora";
+//  static const std::string basename = "/Users/francis/Projets/CRAlgo/trunk/test/GraphLabeling/data/cora/cora";
   FeatureDictionaryPtr featuresDictionary = new FeatureDictionary("features");
   StringDictionaryPtr labelsDictionary = new StringDictionary();
 
   std::cout << "Parsing graph..." << std::endl;
-  LabeledContentGraphPtr graph = LabeledContentGraph::parseGetoorGraph(basename + ".content", basename + ".cites", featuresDictionary, labelsDictionary);
+  LabeledContentGraphPtr graph = LabeledContentGraph::parseGetoorGraph(contentFile, linkFile, featuresDictionary, labelsDictionary);
   if (!graph)
     return 1;
 
@@ -102,7 +116,7 @@ int main(int argc, char* argv[])
   std::cout << "Splitting graph..." << std::endl;
   std::vector<LabeledContentGraphPtr> trainGraphs;
   std::vector<LabeledContentGraph::LabelsFold> testGraphs;
-  graph->splitRandomly(10, trainGraphs, testGraphs);
+  graph->splitRandomly(numFolds, trainGraphs, testGraphs);
   
   for (size_t i = 0; i < trainGraphs.size(); ++i)
   {
@@ -116,34 +130,41 @@ int main(int argc, char* argv[])
 //  ContentOnlyGraphLabelingAlgorithm contentOnly;
 //  testAlgorithm(contentOnly, "Content Only", trainGraphs, testGraphs);
 
-
-  for (int i = 4; i < 12; i += 4)
+  for (int i = 0; i < 12; i += 2)
   {
     double regularizer = (double)i;
 
-/*    ContentOnlyGraphLabelingAlgorithm contentOnly;
+    ContentOnlyGraphLabelingAlgorithm contentOnly;
     contentOnly.l2regularizer = regularizer;
     testAlgorithm(contentOnly, "Content Only with reg = " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
     PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
     perfectContext.l2regularizer = regularizer;
     testAlgorithm(perfectContext, "Perfect Context with reg " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-*/
-   /* IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
+   
+    IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
     iterativeClassification.l2regularizer = regularizer;
-    testAlgorithm(iterativeClassification, "Iterative Classification with reg " + cralgo::toString(regularizer), trainGraphs, testGraphs);*/
+    testAlgorithm(iterativeClassification, "Iterative Classification with reg " + cralgo::toString(regularizer), trainGraphs, testGraphs);
     
-/*    GibbsSamplingGraphLabelingAlgorithm gibbsProb;
+    GibbsSamplingGraphLabelingAlgorithm gibbsProb;
     gibbsProb.l2regularizer = regularizer;
-    testAlgorithm(gibbsProb, "Gibbs" + cralgo::toString(regularizer), trainGraphs, testGraphs);*/
+    testAlgorithm(gibbsProb, "Gibbs" + cralgo::toString(regularizer), trainGraphs, testGraphs);
   
 
       CRIterativeClassificationGraphLabelingAlgorithm crIterative;
       crIterative.l2regularizer = regularizer;
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " deterministic", trainGraphs, testGraphs);
       testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " deterministic", trainGraphs, testGraphs);
 
       crIterative.probabilistic = true;
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
       testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
+
+      crIterative.oneClassifierPerPass = true;
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
 
 /*
     double t = -1.5;//for (double t = -3; t <= 3; t += 0.5)
