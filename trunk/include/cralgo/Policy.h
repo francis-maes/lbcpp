@@ -19,6 +19,8 @@ class Policy : public Object
 public:
   static PolicyPtr createRandom();
   static PolicyPtr createGreedy(ActionValueFunctionPtr actionValues);
+  static PolicyPtr createGibbsGreedy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature);
+  static PolicyPtr createNonDeterministic(ActionValueFunctionPtr actionProbabilities);
 
   static PolicyPtr createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
   static PolicyPtr createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);

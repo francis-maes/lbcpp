@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ErrorHandler.cpp               | Error handling                  |
+| Filename: Utilities.cpp                  | Utilities                       |
 | Author  : Francis Maes                   |                                 |
 | Started : 06/03/2009 17:11               |                                 |
 `------------------------------------------/                                 |
@@ -50,7 +50,8 @@ size_t Random::sampleWithProbabilities(const std::vector<double>& probabilities,
       return i;
     number -= prob;
   }
-  return probabilities.size() - 1;
+  assert(false);
+  return 0;
 }
 
 int Random::sampleInt()
