@@ -38,6 +38,8 @@ Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe)
 LC++ translator:
 ================
 
+* gerer appel de chooseFunction depuis un autre chooseFunction ou depuis le corps du cr-algo
+
 * ChooseArgumentsClass: generer des StateDescriptionFUnction et ActionDescriptionFunction si il n'existent pas
 
 * PrettyPrinter: if-else: sauter a la ligne pour les deux blocs

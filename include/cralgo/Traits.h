@@ -243,6 +243,10 @@ public:
     {assert(false); return false;}
 };
 
+template<>
+struct Traits<std::set<size_t>::iterator>
+  : public IteratorTraits< std::set<size_t>::iterator> {};
+
 /*template<class T>
 struct Traits< typename std::vector<T>::iterator >
   : public IteratorTraits< typename std::vector<T>::iterator > {};

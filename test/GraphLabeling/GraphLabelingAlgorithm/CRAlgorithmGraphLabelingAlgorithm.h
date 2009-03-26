@@ -29,8 +29,8 @@ public:
   
   enum
   {
-    maxLearningIterations = 10,
-    maxLearningIterationsWithoutImprovement = 2,
+    maxLearningIterations = 100,
+    maxLearningIterationsWithoutImprovement = 5,
   };
   
   virtual void train(LabeledContentGraphPtr graph)

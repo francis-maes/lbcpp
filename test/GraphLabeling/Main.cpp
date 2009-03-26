@@ -1,5 +1,6 @@
 #include "GeneratedCode/LabeledContentGraph.lh"
-#include "GeneratedCode/GraphLabelingCRAlgorithms.lh"
+#include "GeneratedCode/crIterativeClassification.lh"
+#include "GeneratedCode/crOrderFreeGraphLabeling.lh"
 
 #include "GraphLabelingAlgorithm/ClassifierBasedGraphLabelingAlgorithm.h"
 #include "GraphLabelingAlgorithm/IterativeClassificationAlgorithm.h"
@@ -58,7 +59,7 @@ public:
   }
   
   virtual CRAlgorithmPtr createCRAlgorithm(LabeledContentGraphPtr graph, size_t begin, size_t end)
-    {return iterativeClassificationCRAlgorithm(graph, begin, end, 5, oneClassifierPerPass);}
+    {return crIterativeClassification(graph, begin, end, 5, oneClassifierPerPass);}
 };
 
 static std::ostream* resultsOutputFile = NULL;
