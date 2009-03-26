@@ -19,7 +19,7 @@ inline void addLabelsForPosition(size_t position, size_t numLabels, std::vector<
     res.push_back(PositionAndLabel(position, i));
 }
 
-inline void addUnlabeledNeighboorhood(LabeledContentGraphPtr graph, size_t nodeIndex, const std::set<size_t>& unlabeledNodes, std::vector<PositionAndLabel>& res)
+inline void addUnlabeledNeighboorhood(LabeledContentGraphPtr graph, size_t foldBegin, size_t foldEnd, size_t nodeIndex, const std::set<size_t>& unlabeledNodes, std::vector<PositionAndLabel>& res)
 {
   size_t numLabels = graph->getLabelDictionary()->getNumElements();
   size_t j, n;
@@ -28,14 +28,14 @@ inline void addUnlabeledNeighboorhood(LabeledContentGraphPtr graph, size_t nodeI
   for (j = 0; j < n; ++j)
   {
     size_t succ = graph->getSuccessor(nodeIndex, j);
-    if (unlabeledNodes.find(succ) != unlabeledNodes.end())
+    if (succ >= foldBegin && succ < foldEnd && unlabeledNodes.find(succ) != unlabeledNodes.end())
       addLabelsForPosition(succ, numLabels, res);
   }
   n = graph->getNumPredecessors(nodeIndex);
   for (j = 0; j < n; ++j)
   {
     size_t pred = graph->getPredecessor(nodeIndex, j);
-    if (unlabeledNodes.find(pred) != unlabeledNodes.end())
+    if (pred >= foldBegin && pred < foldEnd && unlabeledNodes.find(pred) != unlabeledNodes.end())
       addLabelsForPosition(pred, numLabels, res);
   }
 }
@@ -66,8 +66,9 @@ crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPt
   for (i = 0; i < foldEnd - foldBegin; ++i)
   {
     std::vector<PositionAndLabel> choices;
+    choices.clear();
     if (lastLabeledNode >= 0)
-      addUnlabeledNeighboorhood(predictedGraph, (size_t)lastLabeledNode, unlabeledNodes, choices);
+      addUnlabeledNeighboorhood(predictedGraph, foldBegin, foldEnd, (size_t)lastLabeledNode, unlabeledNodes, choices);
     if (choices.empty())
     {
       std::set<size_t>::iterator it = unlabeledNodes.begin();
@@ -82,10 +83,16 @@ crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPt
     assert(choices.size());
     
     PositionAndLabel positionAndLabel = choose<PositionAndLabel>(choices, actionValueFunction, contentAndStructureActionFeatures);
-    double pr = prediction->get(positionAndLabel.first) == graph->getLabel(positionAndLabel.first) ? -1.0 : 0.0;
-    reward (pr + (positionAndLabel.second == graph->getLabel(positionAndLabel.first) ? 1.0 : 0.0));
+    //std::cout << cralgo::toString(positionAndLabel) << " | " << std::flush;
+    assert(positionAndLabel.first >= foldBegin && positionAndLabel.second < foldEnd);
+    if (positionAndLabel.second == graph->getLabel(positionAndLabel.first))
+      reward (1.0);
     predictedGraph->setLabel(positionAndLabel.first, positionAndLabel.second);
+    lastLabeledNode = positionAndLabel.first;
+    unlabeledNodes.erase(positionAndLabel.first);
   }
+  //std::cout << std::endl;
+  assert(unlabeledNodes.size() == 0);
   return prediction;
 }
 

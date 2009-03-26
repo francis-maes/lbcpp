@@ -10,6 +10,28 @@
 #include <fstream>
 using namespace cralgo;
 
+class OnePassOrderFreeGraphLabelingAlgorithm : public CRAlgorithmGraphLabelingAlgorithm
+{
+public:
+  virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(StringDictionaryPtr labels)
+  {
+    // CRANK - PREDICTED 
+    IterationFunctionPtr learningRate = IterationFunction::createInvLinear(10, 10000);
+    RankerPtr ranker = GradientBasedRanker::
+      //createLargeMarginBestAgainstAllLinear
+     // createLargeMarginMostViolatedPairLinear
+      createLargeMarginAllPairsLinear
+      (GradientBasedLearner::createStochasticDescent(learningRate));
+    
+    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));
+    PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+    return std::make_pair(learnedPolicy, learnerPolicy);
+  }
+
+  virtual CRAlgorithmPtr createCRAlgorithm(LabeledContentGraphPtr graph, size_t begin, size_t end)
+    {return onePassOrderFreeGraphLabeling(graph, begin, end);}
+};
+
 class CRIterativeClassificationGraphLabelingAlgorithm : public CRAlgorithmGraphLabelingAlgorithm
 {
 public:
@@ -130,42 +152,52 @@ int main(int argc, char* argv[])
   
 //  ContentOnlyGraphLabelingAlgorithm contentOnly;
 //  testAlgorithm(contentOnly, "Content Only", trainGraphs, testGraphs);
-
-  for (int i = 0; i < 12; i += 2)
+/*
+  OnePassOrderFreeGraphLabelingAlgorithm onePassOrderFree;
+  testAlgorithm(onePassOrderFree, "One pass order-free", trainGraphs, testGraphs);
+  return 0;
+  */
+  
+  for (int i = 0; i < 16; ++i)
   {
     double regularizer = (double)i;
 
     ContentOnlyGraphLabelingAlgorithm contentOnly;
     contentOnly.l2regularizer = regularizer;
-    testAlgorithm(contentOnly, "Content Only with reg = " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+    testAlgorithm(contentOnly, "CO" + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
     PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
     perfectContext.l2regularizer = regularizer;
-    testAlgorithm(perfectContext, "Perfect Context with reg " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+    testAlgorithm(perfectContext, "OPT" + cralgo::toString(regularizer), trainGraphs, testGraphs);
    
     IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
     iterativeClassification.l2regularizer = regularizer;
-    testAlgorithm(iterativeClassification, "Iterative Classification with reg " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+    testAlgorithm(iterativeClassification, "ICA " + cralgo::toString(regularizer), trainGraphs, testGraphs);
     
     GibbsSamplingGraphLabelingAlgorithm gibbsProb;
     gibbsProb.l2regularizer = regularizer;
-    testAlgorithm(gibbsProb, "Gibbs" + cralgo::toString(regularizer), trainGraphs, testGraphs);
+    testAlgorithm(gibbsProb, "GS" + cralgo::toString(regularizer), trainGraphs, testGraphs);
   
-
       CRIterativeClassificationGraphLabelingAlgorithm crIterative;
       crIterative.l2regularizer = regularizer;
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " deterministic", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " deterministic", trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "CRICA " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
       crIterative.probabilistic = true;
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "CRICA-PROB" + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
       crIterative.oneClassifierPerPass = true;
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "CRICA-PROB-CPP" + cralgo::toString(regularizer), trainGraphs, testGraphs);
+
+      crIterative.probabilistic = false;
+      crIterative.oneClassifierPerPass = true;
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
+//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "CRICA-CPP" + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
 /*
     double t = -1.5;//for (double t = -3; t <= 3; t += 0.5)
