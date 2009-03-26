@@ -14,13 +14,23 @@ SET(GRAPH_LABELING_LHEADERS
 
 ADD_CRALGORITHM_SOURCES(${GRAPH_LABELING_LHEADERS})
 
+SET(GRAPH_LABELING_ALGORITHM_SOURCES
+  GraphLabelingAlgorithm/GraphLabelingAlgorithm.h
+  GraphLabelingAlgorithm/ClassifierBasedGraphLabelingAlgorithm.h
+  GraphLabelingAlgorithm/IterativeClassificationGraphLabelingAlgorithm.h
+  GraphLabelingAlgorithm/GibbsSamplingGraphLabelingAlgorithm.h
+  GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h
+)
+
 SET(GRAPH_LABELING_SOURCES
   ${CRALGORITHMS_OUTPUT_FILES}
+  ${GRAPH_LABELING_ALGORITHM_SOURCES}
   LabeledContentGraph.cpp
   Main.cpp
 )
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
+SOURCE_GROUP(GraphLabelingAlgorithm FILES ${GRAPH_LABELING_ALGORITHM_SOURCES})
 
 ADD_EXECUTABLE(GraphLabeling ${GRAPH_LABELING_SOURCES})
 
