@@ -12,6 +12,7 @@
 # include "FunctionStatic.hpp"
 # include "FunctionPairTraits.hpp"
 # include "ScalarFunctions.hpp"
+# include <algorithm>
 
 namespace cralgo {
 namespace impl {
