@@ -3,11 +3,12 @@
 namespace cralgo
 {
 
-crAlgorithm LabelSequencePtr iterativeClassificationCRAlgorithm(LabeledContentGraphPtr graph, size_t foldBegin, size_t foldEnd, size_t maxNumPasses = 5)
+crAlgorithm LabelSequencePtr iterativeClassificationCRAlgorithm(LabeledContentGraphPtr graph, size_t foldBegin, size_t foldEnd, size_t maxNumPasses = 5, bool includePassInFeatures = false)
 {
   LabelSequencePtr prediction = new LabelSequence(*graph->getLabels());
   LabeledContentGraphPtr predictedGraph = new LabeledContentGraph(graph->getContentGraph(), prediction);
   size_t currentNode;
+  size_t passNumber = 0;
   SizeRange labelChoices(0, graph->getLabelDictionary()->getNumElements());
   
 /*  chooseFunction featureGenerator contentActionFeatures(size_t label) {
@@ -16,13 +17,15 @@ crAlgorithm LabelSequencePtr iterativeClassificationCRAlgorithm(LabeledContentGr
   
   chooseFunction featureGenerator contentAndStructureActionFeatures(size_t label)
   {
-    featureCall(label)
-      inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
+    featureScope(label)
+      featureScope(includePassInFeatures ? passNumber : 0)
+        featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
   }
   
   chooseFunction featureGenerator contentAndStructureStateFeatures()
   {
-    featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
+    featureScope(includePassInFeatures ? passNumber : 0)
+      featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
   }
   
   chooseFunction double actionValueFunction(size_t label)
@@ -36,6 +39,7 @@ crAlgorithm LabelSequencePtr iterativeClassificationCRAlgorithm(LabeledContentGr
       reward (1.0);
     prediction->set(currentNode, label);
   }
+  ++passNumber;
   
   // iterative classification
   LabelSequencePtr previousLabels = new LabelSequence(*prediction);
@@ -63,6 +67,7 @@ crAlgorithm LabelSequencePtr iterativeClassificationCRAlgorithm(LabeledContentGr
     if (changeRatio < 0.0001)
       break;
     previousLabels = new LabelSequence(*prediction);
+    ++passNumber;
   }
   return prediction;
 }

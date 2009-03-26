@@ -17,8 +17,8 @@ ADD_CRALGORITHM_SOURCES(${GRAPH_LABELING_LHEADERS})
 SET(GRAPH_LABELING_ALGORITHM_SOURCES
   GraphLabelingAlgorithm/GraphLabelingAlgorithm.h
   GraphLabelingAlgorithm/ClassifierBasedGraphLabelingAlgorithm.h
-  GraphLabelingAlgorithm/IterativeClassificationGraphLabelingAlgorithm.h
-  GraphLabelingAlgorithm/GibbsSamplingGraphLabelingAlgorithm.h
+  GraphLabelingAlgorithm/IterativeClassificationAlgorithm.h
+  GraphLabelingAlgorithm/GibbsSamplingAlgorithm.h
   GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h
 )
 

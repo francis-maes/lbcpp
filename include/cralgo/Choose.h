@@ -30,6 +30,7 @@ public:
   virtual VariableIteratorPtr newIterator() const = 0;
   virtual VariablePtr sampleRandomChoice() const = 0;
   virtual VariablePtr sampleBestChoice(ActionValueFunctionPtr valueFunction) const = 0;
+  virtual VariablePtr sampleChoiceWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0) const = 0;
 
   /*
   ** CR-algorithm related

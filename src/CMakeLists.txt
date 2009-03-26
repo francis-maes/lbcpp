@@ -130,7 +130,7 @@ SET(CRALGO_LIBRARY_IMPL_BRIDGE
 SET(CRALGO_LIBRARY_SOURCES
   classes.cpp
   Object.cpp
-  ErrorHandler.cpp
+  Utilities.cpp
   FeatureDictionary.cpp
   FeatureGenerator.cpp
   SparseVector.cpp

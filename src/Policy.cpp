@@ -23,6 +23,12 @@ PolicyPtr Policy::createRandom()
 PolicyPtr Policy::createGreedy(ActionValueFunctionPtr actionValues)
   {return impl::staticToDynamic(impl::GreedyPolicy(actionValues));}
 
+PolicyPtr Policy::createGibbsGreedy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature)
+  {return impl::staticToDynamic(impl::GibbsGreedyPolicy(actionValue, temperature));}
+
+PolicyPtr Policy::createNonDeterministic(ActionValueFunctionPtr actionProbabilities)
+  {return impl::staticToDynamic(impl::NonDeterministicPolicy(actionProbabilities));}
+
 PolicyPtr Policy::createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
 {
   return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(

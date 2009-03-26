@@ -37,6 +37,69 @@ struct GreedyPolicy : public Policy<GreedyPolicy>
     {return read(istr, actionValue);}
 };
 
+struct NonDeterministicPolicy : public Policy<NonDeterministicPolicy>
+{
+  NonDeterministicPolicy(ActionValueFunctionPtr actionProbabilities)
+    : actionProbabilities(actionProbabilities) {}
+    
+  ActionValueFunctionPtr actionProbabilities;
+
+  VariablePtr policyChoose(ChoosePtr choose)
+  {
+    std::vector<double> probabilities;
+    choose->computeActionValues(probabilities, actionProbabilities);
+#ifdef NDEBUG
+    double sum = 0.0;
+    for (size_t i = 0; i < probabilities.size(); ++i)
+      sum += probabilities[i];
+    assert(fabs(sum - 1.0) < 0.000001);
+#endif
+    return choose->sampleChoiceWithProbabilities(probabilities, 1.0);
+  }
+  
+  void save(std::ostream& ostr) const
+    {write(ostr, actionProbabilities);}
+
+  bool load(std::istream& istr)
+    {return read(istr, actionProbabilities);}
+};
+
+struct GibbsGreedyPolicy : public Policy<GibbsGreedyPolicy>
+{
+  GibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature)
+    : actionValue(actionValue), temperature(temperature) {}
+
+  // P[a | s] = exp(Q(s,a) / T)
+  VariablePtr policyChoose(ChoosePtr choose)
+  {
+    double T = temperature->compute(numChooses);
+    assert(T);
+    ++numChooses;
+
+    std::vector<double> actionValues;
+    choose->computeActionValues(actionValues, actionValue);
+    double sum = 0;
+    for (size_t i = 0; i < actionValues.size(); ++i)
+    {
+      double p = exp(actionValues[i] / T);
+      sum += p;
+      actionValues[i] = p;
+    }
+    return choose->sampleChoiceWithProbabilities(actionValues, sum);
+  }
+  
+  void save(std::ostream& ostr) const
+    {write(ostr, actionValue);}
+
+  bool load(std::istream& istr)
+    {return read(istr, actionValue);}
+    
+private:
+  size_t numChooses;
+  ActionValueFunctionPtr actionValue;
+  IterationFunctionPtr temperature;
+};
+
 template<class DecoratedType>
 struct EpsilonGreedyPolicy
   : public DecoratorPolicy<EpsilonGreedyPolicy<DecoratedType>, DecoratedType>

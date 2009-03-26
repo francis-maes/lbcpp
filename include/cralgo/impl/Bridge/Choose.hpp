@@ -61,6 +61,26 @@ public:
     return Variable::create(ContainerTraits::value(best));
   }
 
+  virtual VariablePtr sampleChoiceWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0) const
+  {
+    assert(probabilities.size() == ContainerTraits::size(container));
+    if (!probabilitiesSum)
+      for (size_t i = 0; i < probabilities.size(); ++i)
+        probabilitiesSum += probabilities[i];
+    double number = Random::getInstance().sampleDouble(probabilitiesSum);
+    typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
+    for (size_t i = 0; i < probabilities.size(); ++i, ++it)
+    {
+      assert(it != ContainerTraits::end(container));
+      double prob = probabilities[i];
+      if (number <= prob)
+        return Variable::create(ContainerTraits::value(it));
+      number -= prob;
+    }
+    assert(false);
+    return VariablePtr();
+  }
+
   virtual void computeActionValues(std::vector<double>& res, ActionValueFunctionPtr valueFunction) const
   {
     if (!valueFunction)
