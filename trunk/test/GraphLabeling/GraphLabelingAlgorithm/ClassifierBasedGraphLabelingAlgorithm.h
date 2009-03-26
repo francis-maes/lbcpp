@@ -54,15 +54,35 @@ public:
     return correct / (double)(end - begin);
   }
 
+  enum
+  {
+    maxLearningIterations = 500,
+    maxLearningIterationsWithoutImprovement = 5,
+  };
+  
 protected:
   ClassifierPtr classifier;
   
   void trainClassifier(ClassifierPtr classifier, const std::vector<ClassificationExample>& examples)
   {
-    for (size_t i = 0; i < 10; ++i)
+    size_t numIterationsWithoutImprovement = 0;
+    double bestAccuracy = 0.0;
+    for (size_t i = 0; i < maxLearningIterations; ++i)
     {
-      std::cout << classifier->evaluateAccuracy(examples) << " " << std::flush;
       classifier->trainStochastic(examples);
+      double accuracy = classifier->evaluateAccuracy(examples);
+      std::cout << accuracy << " " << std::flush;
+      if (accuracy > bestAccuracy)
+      {
+        bestAccuracy = accuracy;
+        numIterationsWithoutImprovement = 0;
+      }
+      else
+      {
+        ++numIterationsWithoutImprovement;
+        if (numIterationsWithoutImprovement >= maxLearningIterationsWithoutImprovement)
+          break;
+      }
     }
     std::cout << std::endl;
   }

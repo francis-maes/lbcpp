@@ -1,0 +1,92 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: crOrderFreeGraphLabeling.lh    | OrderFree Graph Labeling        |
+| Author  : Francis Maes                   |                                 |
+| Started : 26/03/2009 20:37               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "LabeledContentGraph.lh"
+
+namespace cralgo
+{
+
+typedef std::pair<size_t, size_t> PositionAndLabel;
+
+inline void addLabelsForPosition(size_t position, size_t numLabels, std::vector<PositionAndLabel>& res)
+{
+  for (size_t i = 0; i < numLabels; ++i)
+    res.push_back(PositionAndLabel(position, i));
+}
+
+inline void addUnlabeledNeighboorhood(LabeledContentGraphPtr graph, size_t nodeIndex, const std::set<size_t>& unlabeledNodes, std::vector<PositionAndLabel>& res)
+{
+  size_t numLabels = graph->getLabelDictionary()->getNumElements();
+  size_t j, n;
+  
+  n = graph->getNumSuccessors(nodeIndex);
+  for (j = 0; j < n; ++j)
+  {
+    size_t succ = graph->getSuccessor(nodeIndex, j);
+    if (unlabeledNodes.find(succ) != unlabeledNodes.end())
+      addLabelsForPosition(succ, numLabels, res);
+  }
+  n = graph->getNumPredecessors(nodeIndex);
+  for (j = 0; j < n; ++j)
+  {
+    size_t pred = graph->getPredecessor(nodeIndex, j);
+    if (unlabeledNodes.find(pred) != unlabeledNodes.end())
+      addLabelsForPosition(pred, numLabels, res);
+  }
+}
+
+crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPtr graph, size_t foldBegin, size_t foldEnd, size_t numNodesWhenLost = 20)
+{
+  LabelSequencePtr prediction = new LabelSequence(*graph->getLabels());
+  LabeledContentGraphPtr predictedGraph = new LabeledContentGraph(graph->getContentGraph(), prediction);
+  size_t numLabels = graph->getLabelDictionary()->getNumElements();
+  
+  chooseFunction featureGenerator contentAndStructureActionFeatures(const PositionAndLabel& positionAndLabel)
+  {
+    featureCall(positionAndLabel.second)
+      inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(positionAndLabel.first);
+  }
+  
+  chooseFunction double actionValueFunction(const PositionAndLabel& positionAndLabel)
+    {return graph->getLabels()->get(positionAndLabel.first) == positionAndLabel.second ? 1.0 : 0.0;}
+
+  // unlabeled nodes
+  std::set<size_t> unlabeledNodes;
+  size_t i;
+  for (i = foldBegin; i < foldEnd; ++i)
+    unlabeledNodes.insert(i);
+  
+  // order-free classification
+  int lastLabeledNode = -1;
+  for (i = 0; i < foldEnd - foldBegin; ++i)
+  {
+    std::vector<PositionAndLabel> choices;
+    if (lastLabeledNode >= 0)
+      addUnlabeledNeighboorhood(predictedGraph, (size_t)lastLabeledNode, unlabeledNodes, choices);
+    if (choices.empty())
+    {
+      std::set<size_t>::iterator it = unlabeledNodes.begin();
+      while (choices.size() < numNodesWhenLost * numLabels)
+      {
+        if (it == unlabeledNodes.end())
+          break;
+        addLabelsForPosition(*it, numLabels, choices);
+        ++it;
+      }
+    }
+    assert(choices.size());
+    
+    PositionAndLabel positionAndLabel = choose<PositionAndLabel>(choices, actionValueFunction, contentAndStructureActionFeatures);
+    double pr = prediction->get(positionAndLabel.first) == graph->getLabel(positionAndLabel.first) ? -1.0 : 0.0;
+    reward (pr + (positionAndLabel.second == graph->getLabel(positionAndLabel.first) ? 1.0 : 0.0));
+    predictedGraph->setLabel(positionAndLabel.first, positionAndLabel.second);
+  }
+  return prediction;
+}
+
+}; /* namespace cralgo */
