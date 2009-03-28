@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
       << std::endl;
   }
   
-  ContentOnlyGraphLabelingAlgorithm contentOnly;
+//  ContentOnlyGraphLabelingAlgorithm contentOnly;
  // testAlgorithm(contentOnly, "Content Only", trainGraphs, testGraphs);
 /*
   OnePassOrderFreeGraphLabelingAlgorithm onePassOrderFree;
@@ -165,28 +165,31 @@ int main(int argc, char* argv[])
   return 0;
   */
   
-  StackedGraphLabelingAlgorithm stacked2(&contentOnly);
-  testAlgorithm(stacked2, "STACK2", trainGraphs, testGraphs);
-  assert(&stacked2.getBaseAlgorithm() == &contentOnly);
-
-  StackedGraphLabelingAlgorithm stacked3(&stacked2);
-  assert(&stacked3.getBaseAlgorithm() == &stacked2);
-  testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs);
-
-  StackedGraphLabelingAlgorithm stacked4(&stacked3);
-  assert(&stacked4.getBaseAlgorithm() == &stacked3);
-  testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs);
-
-  StackedGraphLabelingAlgorithm stacked5(&stacked4);
-  assert(&stacked5.getBaseAlgorithm() == &stacked4);
-  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs);
-  
-  return 0;
-  
   for (int i = 0; i < 16; ++i)
   {
     double regularizer = (double)i;
 
+    ContentOnlyGraphLabelingAlgorithm contentOnly;
+    contentOnly.l2regularizer = regularizer;
+    
+    StackedGraphLabelingAlgorithm stacked2(&contentOnly);
+    testAlgorithm(stacked2, "STACK2 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+    assert(&stacked2.getBaseAlgorithm() == &contentOnly);
+
+    StackedGraphLabelingAlgorithm stacked3(&stacked2);
+    assert(&stacked3.getBaseAlgorithm() == &stacked2);
+    testAlgorithm(stacked3, "STACK3 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+
+    StackedGraphLabelingAlgorithm stacked4(&stacked3);
+    assert(&stacked4.getBaseAlgorithm() == &stacked3);
+    testAlgorithm(stacked4, "STACK4 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+
+    StackedGraphLabelingAlgorithm stacked5(&stacked4);
+    assert(&stacked5.getBaseAlgorithm() == &stacked4);
+    testAlgorithm(stacked5, "STACK5 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+  
+  /*
+  
     ContentOnlyGraphLabelingAlgorithm contentOnly;
     contentOnly.l2regularizer = regularizer;
     testAlgorithm(contentOnly, "CO " + cralgo::toString(regularizer), trainGraphs, testGraphs);
@@ -224,6 +227,8 @@ int main(int argc, char* argv[])
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
       testAlgorithm(crIterative, "CRICA-CPP " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
+  */
+    
 /*
     double t = -1.5;//for (double t = -3; t <= 3; t += 0.5)
     {
