@@ -36,14 +36,8 @@ public:
     {classifier = createClassifier(labels);}
 
   virtual void train(LabeledContentGraphPtr graph)
-  {
-    std::vector<ClassificationExample> examples;
-    examples.reserve(graph->getNumNodes());
-    for (size_t i = 0; i < graph->getNumNodes(); ++i)
-      examples.push_back(ClassificationExample(getNodeFeatures(graph, i), graph->getLabel(i)));
-    trainClassifier(classifier, examples);
-  }
-    
+    {train(graph, graph);}
+
   virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
     {return evaluateClassifier(graph, graph, begin, end);}
 
@@ -56,6 +50,16 @@ public:
 protected:
   ClassifierPtr classifier;
   
+  void train(LabeledContentGraphPtr predictedGraph, LabeledContentGraphPtr correctGraph)
+  {
+    assert(predictedGraph->getNumNodes() == correctGraph->getNumNodes());
+    std::vector<ClassificationExample> examples;
+    examples.reserve(predictedGraph->getNumNodes());
+    for (size_t i = 0; i < predictedGraph->getNumNodes(); ++i)
+      examples.push_back(ClassificationExample(getNodeFeatures(predictedGraph, i), correctGraph->getLabel(i)));
+    trainClassifier(classifier, examples);
+  }
+    
   void trainClassifier(ClassifierPtr classifier, const std::vector<ClassificationExample>& examples)
   {
     size_t numIterationsWithoutImprovement = 0;

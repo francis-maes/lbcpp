@@ -42,6 +42,7 @@ public:
     assert(trainGraphs.size() == numFolds && testGraphs.size() == numFolds);
 
     LabelSequencePtr intermediaryLabels = new LabelSequence(graph->getLabelDictionary(), graph->getNumNodes());
+    LabeledContentGraphPtr intermediaryGraph = new LabeledContentGraph(graph->getContentGraph(), intermediaryLabels);
     for (size_t i = 0; i < numFolds; ++i)
     {
       assert(testGraphs[i].graph == graph);
@@ -62,7 +63,7 @@ public:
     
     baseAlgorithm->reset(graph->getLabelDictionary());
     baseAlgorithm->train(graph);
-    ClassifierBasedGraphLabelingAlgorithm::train(new LabeledContentGraph(graph->getContentGraph(), intermediaryLabels));
+    ClassifierBasedGraphLabelingAlgorithm::train(intermediaryGraph, graph);
   }
   
   virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
