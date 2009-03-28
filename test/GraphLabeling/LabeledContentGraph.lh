@@ -61,6 +61,9 @@ public:
   LabelSequencePtr getLabels() const
     {return labels;}
     
+  void setLabels(LabelSequencePtr labels)
+    {this->labels = labels;}
+    
   size_t getLabel(size_t index) const
     {return labels->get(index);}
     

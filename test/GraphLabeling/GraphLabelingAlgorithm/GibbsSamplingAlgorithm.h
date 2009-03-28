@@ -23,17 +23,17 @@ public:
     numGibbsSamples = 1000,
   };
 
-  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
+  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
     assert(end > begin);
-    LabeledContentGraphPtr predictedGraph 
-      = new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
+    if (!res)
+      res = new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
     
     // initial predictions
-    makeInitialPredictions(predictedGraph, begin, end);
+    makeInitialPredictions(res, begin, end);
     
     // burn-in 
-    double iterativeClassificationAccuracy = iterativeClassification(graph, predictedGraph, begin, end, maxInferencePasses);
+    double iterativeClassificationAccuracy = iterativeClassification(graph, res, begin, end, maxInferencePasses);
     
     // initialize sample counts
     size_t numLabels = graph->getLabelDictionary()->getNumElements();
@@ -48,9 +48,9 @@ public:
       for (size_t j = 0; j < order.size(); ++j)
       {
         size_t nodeIndex = order[j];
-        size_t label = classifier->sample(getNodeFeatures(predictedGraph, nodeIndex));
+        size_t label = classifier->sample(getNodeFeatures(res, nodeIndex));
         labelFrequencies[nodeIndex - begin][label]++;
-        predictedGraph->setLabel(nodeIndex, label);
+        res->setLabel(nodeIndex, label);
       }
     }
     
@@ -64,10 +64,10 @@ public:
         if (labelCounts[j] > max)
           max = labelCounts[j], label = j;
       assert(label != (size_t)-1);
-      predictedGraph->setLabel(i, label);
+      res->setLabel(i, label);
     }
     
-    double finalAccuracy = computeAccuracy(graph->getLabels(), predictedGraph, begin, end);
+    double finalAccuracy = computeAccuracy(graph->getLabels(), res, begin, end);
     std::cout << "Gibbs gain: " << (finalAccuracy - iterativeClassificationAccuracy) * 100 << "%" << std::endl; 
     return finalAccuracy;
   }

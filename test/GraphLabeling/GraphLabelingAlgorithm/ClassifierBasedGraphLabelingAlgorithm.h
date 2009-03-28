@@ -38,8 +38,8 @@ public:
   virtual void train(LabeledContentGraphPtr graph)
     {train(graph, graph);}
 
-  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
-    {return evaluateClassifier(graph, graph, begin, end);}
+  virtual double evaluate(LabeledContentGraphPtr correctGraph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
+    {return evaluateClassifier(correctGraph, correctGraph, begin, end, res);}
 
   enum
   {
@@ -84,13 +84,18 @@ protected:
     std::cout << std::endl;
   }
   
-  double evaluateClassifier(LabeledContentGraphPtr predictedGraph, LabeledContentGraphPtr correctGraph, size_t begin, size_t end)
+  double evaluateClassifier(LabeledContentGraphPtr featuresGraphs, LabeledContentGraphPtr correctGraph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
     assert(end > begin);
     size_t correct = 0;
     for (size_t i = begin; i < end; ++i)
-      if (classifier->predict(getNodeFeatures(predictedGraph, i)) == correctGraph->getLabel(i))
+    {
+      size_t prediction = classifier->predict(getNodeFeatures(featuresGraphs, i));
+      if (res)
+        res->setLabel(i, prediction);
+      if (prediction == correctGraph->getLabel(i))
         ++correct;
+    }
     return correct / (double)(end - begin);
   }
 };

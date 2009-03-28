@@ -39,13 +39,13 @@ public:
   
   enum {maxInferencePasses = 100};
 
-  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
+  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
     assert(end > begin);
-    LabeledContentGraphPtr predictedGraph 
-      = new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
-    makeInitialPredictions(predictedGraph, begin, end);
-    return iterativeClassification(graph, predictedGraph, begin, end, maxInferencePasses);
+    if (!res)
+      res = new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
+    makeInitialPredictions(res, begin, end);
+    return iterativeClassification(graph, res, begin, end, maxInferencePasses);
   }
 
   
