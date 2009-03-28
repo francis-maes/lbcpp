@@ -175,7 +175,9 @@ public:
     size_t foldBegin;
     size_t foldEnd;
   };
-  void splitRandomly(size_t numFolds, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs);
+  void makeFolds(size_t numFolds, bool removeTrainTestLinks, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs);
+
+  LabeledContentGraphPtr randomizeOrder() const;
 
 private:
   ContentGraphPtr graph;

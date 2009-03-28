@@ -106,16 +106,17 @@ int main(int argc, char* argv[])
   // contentFile citeFile numFolds resultsFile
   if (argc < 5)
   {
-    std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds resultsFile.txt" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds removeTrainTestLinks resultsFile.txt" << std::endl;
     return 1;
   }
   std::string contentFile = argv[1];
   std::string linkFile = argv[2];
   int numFolds = atoi(argv[3]);
-  std::ofstream resultsFile(argv[4], std::ios::app);
+  bool removeTrainTestLinks = argv[4] == std::string("true");
+  std::ofstream resultsFile(argv[5], std::ios::app);
   if (!resultsFile.is_open())
   {
-    std::cerr << "Error: could not open file " << argv[4] << std::endl;
+    std::cerr << "Error: could not open file " << argv[5] << std::endl;
     return 1;
   }
   resultsOutputFile = &resultsFile;
@@ -128,10 +129,15 @@ int main(int argc, char* argv[])
   LabeledContentGraphPtr graph = LabeledContentGraph::parseGetoorGraph(contentFile, linkFile, featuresDictionary, labelsDictionary);
   if (!graph)
     return 1;
-
+    
   std::cout << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
     << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
   std::cout << *labelsDictionary << std::endl;
+
+  std::cout << "Randomize order..." << std::endl;
+  graph = graph->randomizeOrder();
+  std::cout << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
+    << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
   
   resultsFile << std::endl << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
     << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl << std::endl;
@@ -139,7 +145,7 @@ int main(int argc, char* argv[])
   std::cout << "Splitting graph..." << std::endl;
   std::vector<LabeledContentGraphPtr> trainGraphs;
   std::vector<LabeledContentGraph::LabelsFold> testGraphs;
-  graph->splitRandomly(numFolds, trainGraphs, testGraphs);
+  graph->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
   
   for (size_t i = 0; i < trainGraphs.size(); ++i)
   {
@@ -197,7 +203,7 @@ int main(int argc, char* argv[])
       crIterative.oneClassifierPerPass = true;
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CRICA-CPP" + cralgo::toString(regularizer), trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "CRICA-CPP " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
 /*
     double t = -1.5;//for (double t = -3; t <= 3; t += 0.5)

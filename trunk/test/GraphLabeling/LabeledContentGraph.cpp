@@ -135,31 +135,47 @@ LabeledContentGraphPtr LabeledContentGraph::parseGetoorGraph(const std::string& 
   return res;
 }
 
-inline size_t remapIndexWrtFold(size_t index, size_t foldBegin, size_t foldEnd)
+LabeledContentGraphPtr LabeledContentGraph::randomizeOrder() const
 {
-  if (index < foldBegin)
-    return index;
-  else if (index < foldEnd)
-    return index - foldBegin;
-  else
-    return index - (foldEnd - foldBegin);
+  std::vector<size_t> order;
+  Random::getInstance().sampleOrder(getNumNodes(), order);
+  std::vector<size_t> invOrder(order.size());
+  for (size_t i = 0; i < order.size(); ++i)
+    invOrder[order[i]] = i;
+  
+  ContentGraphPtr newGraph = new ContentGraph();
+  newGraph->reserveNodes(order.size());
+  LabelSequencePtr newLabels = new LabelSequence(getLabelDictionary(), order.size());
+  
+  // order[i] -> i
+  // i -> invOrder[i]
+  for (size_t i = 0; i < order.size(); ++i)
+  {
+    newGraph->addNode(graph->getNode(order[i]));
+    newLabels->set(i, labels->get(order[i]));
+  }
+  for (size_t i = 0; i < order.size(); ++i)
+  {
+    size_t idx = order[i];
+    size_t n = graph->getNumSuccessors(idx);
+    for (size_t j = 0; j < n; ++j)
+      newGraph->addLink(i, invOrder[graph->getSuccessor(idx, j)]);
+  }
+  return new LabeledContentGraph(newGraph, newLabels);
 }
 
-void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs)
+void LabeledContentGraph::makeFolds(size_t numFolds, bool removeTrainTestLinks, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs)
 {
   size_t numNodes = getNumNodes();
   assert(numFolds > 1 && numNodes);
   
-  std::vector<size_t> order;
-  // std::cout << "splitRandomly 1 numFolds = " << numFolds << " numNodes = " << numNodes << " this = " << this << std::endl;
-  Random::getInstance().sampleOrder(numNodes, order);
   trainGraphs.resize(numFolds);
   testGraphs.resize(numFolds);
   
   double foldMeanSize = numNodes / (double)numFolds;
   for (size_t i = 0; i < numFolds; ++i)
   {
-    //    std::cout << "splitRandomly fold " << i << std::endl;
+    //    std::cout << "makeFolds fold " << i << std::endl;
     size_t foldBegin = (size_t)(i * foldMeanSize);
     size_t foldEnd = (size_t)((i + 1) * foldMeanSize);
     assert(foldEnd <= numNodes);    
@@ -194,10 +210,36 @@ void LabeledContentGraph::splitRandomly(size_t numFolds, std::vector<LabeledCont
     /*
     ** Test graph
     */
-    LabelsFold testGraph;
-    testGraph.graph = LabeledContentGraphPtr(this);
-    testGraph.foldBegin = foldBegin;
-    testGraph.foldEnd = foldEnd;
-    testGraphs[i] = testGraph;
+    if (removeTrainTestLinks)
+    {
+      LabelsFold testGraph;
+      testGraph.graph = new LabeledContentGraph(getLabelDictionary()); // current fold
+      testGraph.foldBegin = 0;
+      testGraph.foldEnd = foldEnd - foldBegin;
+      
+      // create test nodes
+      for (size_t j = foldBegin; j < foldEnd; ++j)
+        testGraph.graph->addNode(getNode(j), getLabel(j));
+      // create test links
+      for (size_t j = foldBegin; j < foldEnd; ++j)
+      {
+        size_t n = getNumSuccessors(j);
+        for (size_t k = 0; k < n; ++k)
+        {
+          size_t succ = getSuccessor(j, k);
+          if (succ >= foldBegin && succ < foldEnd)
+            testGraph.graph->addLink(j - foldBegin, succ - foldBegin);
+        }
+      }
+      testGraphs[i] = testGraph;
+    }
+    else
+    {
+      LabelsFold testGraph;
+      testGraph.graph = LabeledContentGraphPtr(this);
+      testGraph.foldBegin = foldBegin;
+      testGraph.foldEnd = foldEnd;
+      testGraphs[i] = testGraph;
+    }
   }
 }
