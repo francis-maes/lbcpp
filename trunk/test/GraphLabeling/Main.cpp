@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
   std::string linkFile = argv[2];
   int numFolds = atoi(argv[3]);
   bool removeTrainTestLinks = argv[4] == std::string("true");
-  std::ofstream resultsFile(argv[5], std::ios::app);
+  std::ofstream resultsFile(argv[5]);
   if (!resultsFile.is_open())
   {
     std::cerr << "Error: could not open file " << argv[5] << std::endl;

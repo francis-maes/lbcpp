@@ -54,11 +54,11 @@ public:
       baseAlgorithm->train(trainGraphs[i]);
       std::cout << "FOLD " << (i+1) << " / " << numFolds << " OK." << std::endl;
 
-      LabeledContentGraphPtr testGraph =
+      LabeledContentGraphPtr tmpGraph =
         new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
-      baseAlgorithm->evaluate(testGraph, foldBegin, foldEnd);
+      baseAlgorithm->evaluate(graph, foldBegin, foldEnd, tmpGraph);
       for (size_t j = foldBegin; j < foldEnd; ++j)
-        intermediaryLabels->set(j, testGraph->getLabel(j));
+        intermediaryLabels->set(j, tmpGraph->getLabel(j));
     }
     
     baseAlgorithm->reset(graph->getLabelDictionary());
@@ -66,12 +66,12 @@ public:
     ClassifierBasedGraphLabelingAlgorithm::train(intermediaryGraph, graph);
   }
   
-  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
+  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
-    LabelSequencePtr intermediaryLabels = new LabelSequence(*graph->getLabels());
-    LabeledContentGraphPtr intermediaryGraph = new LabeledContentGraph(graph->getContentGraph(), intermediaryLabels);
-    baseAlgorithm->evaluate(intermediaryGraph, begin, end);
-    return evaluateClassifier(intermediaryGraph, graph, begin, end);
+    LabeledContentGraphPtr intermediaryGraph = 
+      new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
+    baseAlgorithm->evaluate(graph, begin, end, intermediaryGraph);
+    return evaluateClassifier(intermediaryGraph, graph, begin, end, res);
   }
 
   GraphLabelingAlgorithm& getBaseAlgorithm()

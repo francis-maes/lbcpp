@@ -21,7 +21,10 @@ public:
   
   virtual void reset(StringDictionaryPtr labels) = 0;
   virtual void train(LabeledContentGraphPtr graph) = 0;
-  virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end) = 0;
+  
+  // predictedGraph must be initialized as a copy of correctGraph
+  // evaluate() fills the predictions into predictedGraph
+  virtual double evaluate(LabeledContentGraphPtr correctGraph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr()) = 0;
   
   void crossValidate(const std::vector<LabeledContentGraphPtr>& trainGraphs,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraphs, 
