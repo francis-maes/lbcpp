@@ -45,14 +45,7 @@ public:
   }
     
   virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end)
-  {
-    assert(end > begin);
-    size_t correct = 0;
-    for (size_t i = begin; i < end; ++i)
-      if (classifier->predict(getNodeFeatures(graph, i)) == graph->getLabel(i))
-        ++correct;
-    return correct / (double)(end - begin);
-  }
+    {return evaluateClassifier(graph, graph, begin, end);}
 
   enum
   {
@@ -86,6 +79,16 @@ protected:
     }
     std::cout << std::endl;
   }
+  
+  double evaluateClassifier(LabeledContentGraphPtr predictedGraph, LabeledContentGraphPtr correctGraph, size_t begin, size_t end)
+  {
+    assert(end > begin);
+    size_t correct = 0;
+    for (size_t i = begin; i < end; ++i)
+      if (classifier->predict(getNodeFeatures(predictedGraph, i)) == correctGraph->getLabel(i))
+        ++correct;
+    return correct / (double)(end - begin);
+  }
 };
 
 class ContentOnlyGraphLabelingAlgorithm : public ClassifierBasedGraphLabelingAlgorithm
@@ -99,8 +102,8 @@ class PerfectContextAndContentGraphLabelingAlgorithm : public ClassifierBasedGra
 {
 public:
   virtual FeatureGeneratorPtr getNodeFeatures(LabeledContentGraphPtr graph, size_t nodeIndex)
-//    {return graph->nodeAndNeighborhoodLabelsFrequencyFeatures(nodeIndex);}
-    {return graph->nodeFeatures(nodeIndex, 1, 1, false);}
+    {return graph->nodeAndNeighborhoodLabelsFrequencyFeatures(nodeIndex);}
+//    {return graph->nodeFeatures(nodeIndex, 1, 1, false);}
 };
 
 }; /* namespace cralgo */

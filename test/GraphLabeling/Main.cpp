@@ -5,6 +5,7 @@
 #include "GraphLabelingAlgorithm/ClassifierBasedGraphLabelingAlgorithm.h"
 #include "GraphLabelingAlgorithm/IterativeClassificationAlgorithm.h"
 #include "GraphLabelingAlgorithm/GibbsSamplingAlgorithm.h"
+#include "GraphLabelingAlgorithm/StackedGraphLabelingAlgorithm.h"
 #include "GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h"
   
 #include <fstream>
@@ -104,7 +105,7 @@ void testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, c
 int main(int argc, char* argv[])
 {
   // contentFile citeFile numFolds resultsFile
-  if (argc < 5)
+  if (argc < 6)
   {
     std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds removeTrainTestLinks resultsFile.txt" << std::endl;
     return 1;
@@ -156,13 +157,31 @@ int main(int argc, char* argv[])
       << std::endl;
   }
   
-//  ContentOnlyGraphLabelingAlgorithm contentOnly;
-//  testAlgorithm(contentOnly, "Content Only", trainGraphs, testGraphs);
+  ContentOnlyGraphLabelingAlgorithm contentOnly;
+ // testAlgorithm(contentOnly, "Content Only", trainGraphs, testGraphs);
 /*
   OnePassOrderFreeGraphLabelingAlgorithm onePassOrderFree;
   testAlgorithm(onePassOrderFree, "One pass order-free", trainGraphs, testGraphs);
   return 0;
   */
+  
+  StackedGraphLabelingAlgorithm stacked2(&contentOnly);
+  testAlgorithm(stacked2, "STACK2", trainGraphs, testGraphs);
+  assert(&stacked2.getBaseAlgorithm() == &contentOnly);
+
+  StackedGraphLabelingAlgorithm stacked3(&stacked2);
+  assert(&stacked3.getBaseAlgorithm() == &stacked2);
+  testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs);
+
+  StackedGraphLabelingAlgorithm stacked4(&stacked3);
+  assert(&stacked4.getBaseAlgorithm() == &stacked3);
+  testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs);
+
+  StackedGraphLabelingAlgorithm stacked5(&stacked4);
+  assert(&stacked5.getBaseAlgorithm() == &stacked4);
+  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs);
+  
+  return 0;
   
   for (int i = 0; i < 16; ++i)
   {
