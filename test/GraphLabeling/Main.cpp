@@ -173,18 +173,22 @@ int main(int argc, char* argv[])
     contentOnly.l2regularizer = regularizer;
     
     StackedGraphLabelingAlgorithm stacked2(&contentOnly);
+    stacked2.l2regularizer = regularizer;
     testAlgorithm(stacked2, "STACK2 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
     assert(&stacked2.getBaseAlgorithm() == &contentOnly);
 
     StackedGraphLabelingAlgorithm stacked3(&stacked2);
+    stacked3.l2regularizer = regularizer;
     assert(&stacked3.getBaseAlgorithm() == &stacked2);
     testAlgorithm(stacked3, "STACK3 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
     StackedGraphLabelingAlgorithm stacked4(&stacked3);
+    stacked4.l2regularizer = regularizer;
     assert(&stacked4.getBaseAlgorithm() == &stacked3);
     testAlgorithm(stacked4, "STACK4 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
     StackedGraphLabelingAlgorithm stacked5(&stacked4);
+    stacked5.l2regularizer = regularizer;
     assert(&stacked5.getBaseAlgorithm() == &stacked4);
     testAlgorithm(stacked5, "STACK5 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
   
