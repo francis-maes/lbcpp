@@ -20,6 +20,7 @@ SET(GRAPH_LABELING_ALGORITHM_SOURCES
   GraphLabelingAlgorithm/ClassifierBasedGraphLabelingAlgorithm.h
   GraphLabelingAlgorithm/IterativeClassificationAlgorithm.h
   GraphLabelingAlgorithm/GibbsSamplingAlgorithm.h
+  GraphLabelingAlgorithm/StackedGraphLabelingAlgorithm.h
   GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h
 )
 
