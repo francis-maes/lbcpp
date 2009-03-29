@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BackTrackingLineSearchOptim...h| Backtracking line search        |
+| Filename: BackTrackingLineSearch.h       | Backtracking line search        |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/03/2009 17:18               |                                 |
 `------------------------------------------/                                 |
@@ -64,17 +64,14 @@ public:
     if (i == maxIterations)
     {
       error("BackTrackingLineSearch::search", "Backtracking: warning max backtrackline search performed. Derivative = " + cralgo::toString(origDirDeriv));
-      std::cerr << "Parameters = " << (const char* )parameters->toString() << std::endl;
-      std::cerr << "Gradient = " << (const char* )gradient->toString() << std::endl;
-      std::cerr << "Direction = " << (const char* )direction->toString() << std::endl;
+      std::cerr << "Parameters = " << parameters->toString() << std::endl;
+      std::cerr << "Gradient = " << gradient->toString() << std::endl;
+      std::cerr << "Direction = " << direction->toString() << std::endl;
     }
     return true;
   }
-
-protected:
-  EnergyPtr energy;
 };
-
+/*
 class L1RegularizedBackTrackingLineSearch : public BackTrackingLineSearch
 {
 public:
@@ -105,7 +102,7 @@ public:
       }
     }
   }
-};
+};*/
 
 }; /* namespace cralgo */
 

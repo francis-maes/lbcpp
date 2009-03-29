@@ -34,7 +34,7 @@ public:
       dir->addWeighted(gradientDeltas[i], alphas[i]);
     }
     
-    const DoubleVectorPtr lastGradientDelta = gradientDeltas.back();
+    const FeatureGeneratorPtr lastGradientDelta = gradientDeltas.back();
     double lastGradientDeltaNorm = lastGradientDelta->l2norm();
     dir->multiplyByScalar(dotProducts[count - 1] / (lastGradientDeltaNorm * lastGradientDeltaNorm));
 

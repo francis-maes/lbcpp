@@ -152,7 +152,7 @@ SET(CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES
 SET(CRALGO_LIBRARY_OPTIMIZER_SOURCES
   Optimizer/RPropOptimizer.h
   Optimizer/GradientDescentOptimizer.h
-  Optimizer/BacktrackingLineSearchOptimizer.h
+  Optimizer/BackTrackingLineSearch.h
   Optimizer/QuasiNewtonMemory.h
   Optimizer/OWLQNOptimizer.h
 )
