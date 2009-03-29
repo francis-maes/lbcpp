@@ -20,12 +20,16 @@ class GradientBasedLearner : public Object
 public:
   static GradientBasedLearnerPtr createStochasticDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
   static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination);
+  static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
   
 public:
   GradientBasedLearner() : meanInputSize(0.0) {}
   
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
+    
+  DenseVectorPtr getParameters() const
+    {return parameters;}
     
   void setRegularizer(ScalarVectorFunctionPtr regularizer)
     {this->regularizer = regularizer;}

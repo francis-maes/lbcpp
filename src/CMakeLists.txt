@@ -154,7 +154,7 @@ SET(CRALGO_LIBRARY_OPTIMIZER_SOURCES
   Optimizer/GradientDescentOptimizer.h
   Optimizer/BackTrackingLineSearch.h
   Optimizer/QuasiNewtonMemory.h
-  Optimizer/OWLQNOptimizer.h
+  Optimizer/LBFGSOptimizer.h
 )
 
 SET(CRALGO_LIBRARY

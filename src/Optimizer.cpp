@@ -9,7 +9,7 @@
 #include <cralgo/Optimizer.h>
 #include "Optimizer/RPropOptimizer.h"
 #include "Optimizer/GradientDescentOptimizer.h"
-#include "Optimizer/OWLQNOptimizer.h"
+#include "Optimizer/LBFGSOptimizer.h"
 #include <deque>
 using namespace cralgo;
 
@@ -119,38 +119,34 @@ VectorOptimizerPtr VectorOptimizer::createRProp()
 VectorOptimizerPtr VectorOptimizer::createGradientDescent(IterationFunctionPtr stepSize)
   {return new GradientDescentOptimizer(stepSize);}
 
-bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, DenseVectorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress)
-{
-  FeatureGeneratorPtr p = parameters;
-  bool res = optimize(function, p, stoppingCriterion, progress);
-  parameters = p->toDenseVector();
-  return res;
-}
+VectorOptimizerPtr VectorOptimizer::createLBFGS()
+  {return new LBFGSOptimizer();}
 
-bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress)
+bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress)
 {
-  if (!initialize(function, parameters))
+  this->function = function;
+  setParameters(params);
+  if (!initialize())
     return false;
   
-  for (size_t i = 0; true; ++i)
+  stoppingCriterion->reset();
+  for (iteration = 0; true; ++iteration)
   {
-    double value;
-    FeatureGeneratorPtr gradient;
-    function->compute(parameters, &value, FeatureGeneratorPtr(), &gradient);
-    if (progress && !progress->progressStep("Optimizing, f = " + cralgo::toString(value) + " norm = " + cralgo::toString(parameters->l2norm()), (double)i))
+    if (progress && !progress->progressStep("Optimizing, f = " + cralgo::toString(value) + " norm = " + cralgo::toString(parameters->l2norm()), (double)iteration))
       return false;
     if (stoppingCriterion->isTerminated(value, parameters, gradient))
       break;
-    OptimizerState state = step(function, parameters, value, gradient);
+    OptimizerState state = step();
     if (state == optimizerError)
       return false;
     else if (state == optimizerDone)
-      return true;
+      break;
     if (!parameters)
     {
       error("VectorOptimizer::optimize", "null parameters");
       return false;
     }
   }
+  params = parameters;
   return true;
 }

@@ -50,14 +50,31 @@ class VectorOptimizer : public Object
 public:
   static VectorOptimizerPtr createGradientDescent(IterationFunctionPtr stepSize);
   static VectorOptimizerPtr createRProp();
+  static VectorOptimizerPtr createLBFGS();
 
 public:
   virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
-  virtual bool optimize(ScalarVectorFunctionPtr function, DenseVectorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
 
 protected:
-  virtual bool initialize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr parameters) = 0;
-  virtual OptimizerState step(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, double value, FeatureGeneratorPtr gradient) = 0;
+  size_t iteration;
+  ScalarVectorFunctionPtr function;
+  
+  FeatureGeneratorPtr parameters;
+  double value;
+  FeatureGeneratorPtr gradientDirection;
+  FeatureGeneratorPtr gradient;
+  
+  void setParameters(FeatureGeneratorPtr parameters)
+  {
+    this->parameters = parameters;
+    function->compute(parameters, &value, gradientDirection, &gradient);
+  }
+  
+  void setParametersGradientAndValue(FeatureGeneratorPtr parameters, FeatureGeneratorPtr gradient, double value)
+    {this->parameters = parameters; this->value = value; this->gradient = gradient;}
+
+  virtual bool initialize()   {return true;}
+  virtual OptimizerState step() = 0;
 };
 
 }; /* namespace cralgo */

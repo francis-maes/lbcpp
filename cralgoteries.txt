@@ -7,6 +7,9 @@ LC++ library:
 Gros:
   * Task, Tables, InstanceSet, SWIG, Doxygen, Tests
 
+FeatureGenerator:
+  * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar
+
 ContinuousFunctions:
   * Implementation optimisŽes pour Sparse vs Sparse et Dense vs Dense
   * Faire sauter impl::constant et ScalarConstant
@@ -17,10 +20,7 @@ ContinuousFunctions:
   * L1-norm
 
 Optimizers:
-  * Optimizer: passer les DenseVector en FeatureGenerator => repousser au maximum le toDenseVector()
-  * Permettre ˆ l'optimiser d'arrter l'optimisation lui-meme avec un etat OK ou ERROR
-  * renomage OptimizerTerminationTest => OptimizerStopingCriterion
-  * LBFGS / OWLQN
+  * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
 
 LearningMachine:
   * Gerer les regularizers

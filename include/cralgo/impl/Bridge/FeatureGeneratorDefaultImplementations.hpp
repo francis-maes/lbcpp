@@ -137,12 +137,28 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, d
   _this().staticFeatureGenerator(staticVisitor);
 }
 
+FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const SparseVectorPtr vector) const
+{
+  vector->ensureDictionary(_this().getDictionary());
+  impl::DotProductSparseVectorVisitor staticVisitor(vector);
+  _this().staticFeatureGenerator(staticVisitor);
+  return staticVisitor.getResult();
+}
+
 FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector) const
 {
   vector->ensureDictionary(_this().getDictionary());
   impl::DotProductDenseVectorVisitor staticVisitor(vector);
   _this().staticFeatureGenerator(staticVisitor);
   return staticVisitor.getResult();
+}
+
+FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const FeatureGeneratorPtr featureGenerator) const
+{
+  if (featureGenerator->isDense())
+    return dotProduct(featureGenerator->toDenseVector());
+  else
+    return dotProduct(featureGenerator->toSparseVector());
 }
 
 # undef FEATURE_GENERATOR_DEFAULT_IMPL

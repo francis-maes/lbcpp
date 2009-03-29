@@ -21,19 +21,15 @@ public:
   GradientDescentOptimizer(IterationFunctionPtr stepSize)
     : stepSize(stepSize) {}
   
-  virtual bool initialize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr parameters)
-    {iteration = 0; return true;}
-
-  virtual OptimizerState step(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, double value, FeatureGeneratorPtr gradient)
+  virtual OptimizerState step()
   {
     DenseVectorPtr denseParameters = parameters->toDenseVector();
-    denseParameters->addWeighted(gradient, -(stepSize->compute(iteration++)));
-    parameters = denseParameters;
+    denseParameters->addWeighted(gradient, -(stepSize->compute(iteration)));
+    setParameters(denseParameters);
     return optimizerContinue;
   }
   
 private:
-  size_t iteration;
   IterationFunctionPtr stepSize;
 };
 

@@ -24,6 +24,7 @@ public:
   bool search(ScalarVectorFunctionPtr energy, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr gradient, const FeatureGeneratorPtr direction, double& value,
               bool isFirstIteration, FeatureGeneratorPtr& resParameters, FeatureGeneratorPtr& resGradient)
   {
+    // // /dot product entre FeatureGenerator
     double origDirDeriv = direction->dotProduct(gradient);
     if (origDirDeriv >= 0) 
     {
@@ -39,6 +40,7 @@ public:
       //alpha = 0.1;
       //backoff = 0.5;
       double normDir = direction->l2norm();
+      assert(normDir);
       alpha = (1 / normDir);
       backoff = 0.1;
     }
@@ -54,7 +56,7 @@ public:
       resParameters = computeSuccessorPoint(parameters, direction, alpha);
       resGradient = FeatureGeneratorPtr();
       energy->compute(resParameters, &value, direction, &resGradient);
-      
+
       //std::cout << "backtrack: " << (const char* )resParameters->getShortDescription() << " alpha = " << alpha << std::endl;
       //std::cout << "   energy = " << value << " gradient = " << (const char* )resGradient->getShortDescription() << std::endl;
       if (value <= oldValue + c1 * origDirDeriv * alpha)

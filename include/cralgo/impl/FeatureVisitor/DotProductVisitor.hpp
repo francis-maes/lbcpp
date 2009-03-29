@@ -15,15 +15,18 @@
 namespace cralgo {
 namespace impl {
 
-class DotProductDenseVectorVisitor : public FeatureVisitor<DotProductDenseVectorVisitor>
+template<class ExactType, class VectorType>
+class DotProductVectorVisitor : public FeatureVisitor<ExactType>
 {
 public:
-  DotProductDenseVectorVisitor(DenseVectorPtr vector)
+  typedef ReferenceCountedObjectPtr<VectorType> VectorPtr;
+  
+  DotProductVectorVisitor(VectorPtr vector)
     : currentVector(vector), res(0.0) {}
   
   bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
   {
-    DenseVectorPtr& subVector = currentVector->getSubVector(index);
+    VectorPtr& subVector = currentVector->getSubVector(index);
     if (!subVector)
       return false;
     currentVectorStack.push_back(currentVector);
@@ -45,13 +48,28 @@ public:
     {return res;}
   
 private:
-  std::vector<DenseVectorPtr> currentVectorStack;
-  DenseVectorPtr currentVector;
+  std::vector<VectorPtr> currentVectorStack;
+  VectorPtr currentVector;
   double res;
+};
+
+class DotProductDenseVectorVisitor 
+  : public DotProductVectorVisitor<DotProductDenseVectorVisitor, DenseVector>
+{
+public:
+  DotProductDenseVectorVisitor(DenseVectorPtr vector)
+    : DotProductVectorVisitor<DotProductDenseVectorVisitor, DenseVector>(vector) {}
+};
+
+class DotProductSparseVectorVisitor 
+  : public DotProductVectorVisitor<DotProductSparseVectorVisitor, SparseVector>
+{
+public:
+  DotProductSparseVectorVisitor(SparseVectorPtr vector)
+    : DotProductVectorVisitor<DotProductSparseVectorVisitor, SparseVector>(vector) {}
 };
 
 }; /* namespace impl */
 }; /* namespace cralgo */
 
 #endif // !CRALGO_FEATURE_VISITOR_DOT_PRODUCT_HPP_
-

@@ -17,19 +17,19 @@ namespace cralgo
 class RPropOptimizer : public VectorOptimizer
 {
 public:
-  virtual bool initialize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr parameters)
+  virtual bool initialize()
   {
     previousGradient = new DenseVector(parameters->getDictionary());
     derivativeSpeeds = new DenseVector(parameters->getDictionary());
     return true;
   }
 
-  virtual OptimizerState step(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, double value, FeatureGeneratorPtr gradient)
+  virtual OptimizerState step()
   {
     DenseVectorPtr denseParameters = parameters->toDenseVector();
     DenseVectorPtr denseGradient = gradient->toDenseVector();
     updateRecursive(denseGradient, previousGradient, derivativeSpeeds, denseParameters);
-    parameters = denseParameters;
+    setParameters(denseParameters);
     return optimizerContinue;
   }
   

@@ -21,16 +21,23 @@ public:
   QuasiNewtonMemory(size_t memorySize = 10)
     : memorySize(memorySize) {}
     
+  void reset()
+  {
+    parametersDeltas.clear();
+    gradientDeltas.clear();
+    dotProducts.clear();
+  }
+    
   void mapDirectionByInverseHessian(DenseVectorPtr dir)
   {
-    int count = (int)parameterDeltas.size();
+    int count = (int)parametersDeltas.size();
     if (!count)
       return;
      
     std::vector<double> alphas(count);
     for (int i = count - 1; i >= 0; i--)
     {
-      alphas[i] = -(parameterDeltas[i]->dotProduct(dir)) / dotProducts[i];
+      alphas[i] = -(parametersDeltas[i]->dotProduct(dir)) / dotProducts[i];
       dir->addWeighted(gradientDeltas[i], alphas[i]);
     }
     
@@ -41,22 +48,22 @@ public:
     for (int i = 0; i < count; i++)
     {
       double beta = gradientDeltas[i]->dotProduct(dir) / dotProducts[i];
-      dir->addWeighted(parameterDeltas[i], -alphas[i] - beta);
+      dir->addWeighted(parametersDeltas[i], -alphas[i] - beta);
     }
   }
   
   void shift(FeatureGeneratorPtr& currentParameters, FeatureGeneratorPtr& currentGradient,
              const FeatureGeneratorPtr newParameters, const FeatureGeneratorPtr newGradient)
   {
-    if (parameterDeltas.size() >= memorySize)
+    if (parametersDeltas.size() >= memorySize)
     {
-      parameterDeltas.pop_front();
+      parametersDeltas.pop_front();
       gradientDeltas.pop_front();
       dotProducts.pop_front();
     }
     FeatureGeneratorPtr parametersDelta = FeatureGenerator::difference(newParameters, currentParameters, true);
     FeatureGeneratorPtr gradientDelta = FeatureGenerator::difference(newGradient, currentGradient, true);
-    parameterDeltas.push_back(parametersDelta);
+    parametersDeltas.push_back(parametersDelta);
     gradientDeltas.push_back(gradientDelta);
     dotProducts.push_back(parametersDelta->dotProduct(gradientDelta));
     currentParameters = newParameters;
@@ -65,7 +72,7 @@ public:
   
 private:
   size_t memorySize;
-  std::deque<FeatureGeneratorPtr> parameterDeltas, gradientDeltas;
+  std::deque<FeatureGeneratorPtr> parametersDeltas, gradientDeltas;
   std::deque<double> dotProducts;  
 };
 

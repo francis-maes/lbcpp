@@ -89,7 +89,9 @@ public:
   /*
   ** Dot-product operation
   */
+  virtual double dotProduct(const SparseVectorPtr vector) const = 0;
   virtual double dotProduct(const DenseVectorPtr vector) const = 0;
+  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const = 0;
   
   /*
   ** Sub-generators
@@ -153,7 +155,9 @@ public:
   virtual void addWeightedTo(DenseVectorPtr target, double weight) const;
   virtual void addWeightedTo(SparseVectorPtr target, double weight) const;
   virtual void addWeightedSignsTo(DenseVectorPtr target, double weight) const;
+  virtual double dotProduct(const SparseVectorPtr vector) const;
   virtual double dotProduct(const DenseVectorPtr vector) const;
+  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
 
 protected:
   const ExactType& _this() const {return *static_cast<const ExactType* >(this);}

@@ -1,20 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: OWLQNOptimizer.h               | Orthant-Wise Limited memory     |
+| Filename: LBFGSOptimizer.h               | Limited Memory                  |
 | Author  : Francis Maes                   | Quasi Newton optimizer          |
 | Started : 29/03/2009 19:52               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_OPTIMIZER_OWLQN_H_
-# define CRALGO_OPTIMIZER_OWLQN_H_
+#ifndef CRALGO_OPTIMIZER_LBFGS_H_
+# define CRALGO_OPTIMIZER_LBFGS_H_
 
 /*
-** from:
-** "Scalable Training of L1-regularized Log-linear Models", Galen Andrew, ICML 2007
-** www.machinelearning.org/proceedings/icml2007/papers/449.pdf
+** "On the limited memory BFGS method for large scale optimization",
+** by D. Liu and J. Nocedal, Mathematical Programming B 45 (1989) 503-528
 */
-
 # include <cralgo/Optimizer.h>
 # include "QuasiNewtonMemory.h"
 # include "BackTrackingLineSearch.h"
@@ -31,33 +29,26 @@ public:
     : memory(quasiNewtonMemory), lineSearch(lineSearch)
   {
     if (!lineSearch)
-      lineSearch = new BackTrackingLineSearch();
+      this->lineSearch = new BackTrackingLineSearch();
   }
   
   virtual ~LBFGSOptimizer()
     {delete lineSearch;}
   
-  virtual bool initialize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr parameters)
+  virtual OptimizerState step()
   {
-    iteration = 0;
-    return true;
-  }
-  
-  virtual OptimizerState step(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, double value, FeatureGeneratorPtr gradient)
-  {
-    DenseVectorPtr direction = FeatureGenerator::multiplyByScalar(gradient, -1.0)->toDenseVector();
+    DenseVectorPtr direction = new DenseVector();
+    direction->addWeighted(gradient, -1.0);
     memory.mapDirectionByInverseHessian(direction);
     FeatureGeneratorPtr newParameters, newGradient;
     if (!lineSearch->search(function, parameters, gradient, direction, value, iteration == 0, newParameters, newGradient))
       return optimizerError;
-    // FIXME: le gradient est calculé deux fois
     memory.shift(parameters, gradient, newParameters, newGradient);
-    ++iteration;
+    setParametersGradientAndValue(parameters, gradient, value);
     return optimizerContinue;
   }
 
 protected:
-  size_t iteration;
   QuasiNewtonMemory memory;
   BackTrackingLineSearch* lineSearch;
 };
@@ -65,4 +56,4 @@ protected:
 
 }; /* namespace cralgo */
 
-#endif // !CRALGO_OPTIMIZER_OWLQN_H_
+#endif // !CRALGO_OPTIMIZER_LBFGS_H_

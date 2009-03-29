@@ -41,8 +41,18 @@ public:
   */
   virtual FeatureVectorPtr computeVector() const
   {
-    assert(false);
-    return FeatureVectorPtr();
+    if (isDense())
+    {
+      DenseVectorPtr res = new DenseVector(getDictionary());
+      res->addWeighted(featureGenerator, weight);
+      return res;
+    }
+    else
+    {
+      SparseVectorPtr res = new SparseVector(getDictionary());
+      res->addWeighted(featureGenerator, weight);
+      return res;
+    }
   }
   
   /*
@@ -54,10 +64,6 @@ public:
   /*
   ** FeatureGenerator
   */
-  template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor) const
-    {assert(false);}
-
   virtual bool isDense() const
     {return featureGenerator->isDense();}
 
