@@ -16,11 +16,12 @@ class VerboseLearningMachine : public BaseClass
 public:
   VerboseLearningMachine(std::ostream& ostr) : ostr(ostr) {}
   
-  virtual void trainBatch(const std::vector<ExampleType>& examples)
+  virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL)
   {
     ostr << "trainBatch() with " << examples.size() << " examples:" << std::endl;
     for (size_t i = 0; i < examples.size(); ++i)
       ostr << "  " << i << ": " << examples[i] << std::endl;
+    return true;
   }
 
   virtual void trainStochasticBegin()

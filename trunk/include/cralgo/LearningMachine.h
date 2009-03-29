@@ -23,7 +23,7 @@ template<class ExampleType>
 class LearningMachine_ : public LearningMachine
 {
 public:
-  virtual void trainBatch(const std::vector<ExampleType>& examples) = 0;
+  virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL) = 0;
 
   virtual void trainStochastic(const std::vector<ExampleType>& examples)
   {

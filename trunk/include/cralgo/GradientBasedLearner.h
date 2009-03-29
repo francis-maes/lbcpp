@@ -19,7 +19,7 @@ class GradientBasedLearner : public Object
 {
 public:
   static GradientBasedLearnerPtr createStochasticDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
-  static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination);
+  static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination);
   
 public:
   GradientBasedLearner() : meanInputSize(0.0) {}
@@ -39,7 +39,7 @@ public:
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}    
   virtual void trainStochasticEnd() {}
 
-  virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples) = 0;
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress) = 0;
 
 protected:
   DenseVectorPtr parameters;

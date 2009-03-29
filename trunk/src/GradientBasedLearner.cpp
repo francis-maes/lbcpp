@@ -68,8 +68,10 @@ public:
       parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
   }
 
-  virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples)
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
   {
+    assert(false);
+    return false;
     for (int i = 0; i < 100; ++i)
     {
       std::cout << "Iteration " << i << " objective = " << objective->compute(parameters) << std::endl; 
@@ -109,8 +111,8 @@ GradientBasedLearnerPtr GradientBasedLearner::createStochasticDescent(IterationF
 class BatchLearner : public GradientBasedLearner
 {
 public:
-  BatchLearner(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination)
-    : optimizer(optimizer), termination(termination) {}
+  BatchLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
+    : optimizer(optimizer), stoppingCriterion(stoppingCriterion) {}
     
   virtual void trainStochasticBegin()
   {
@@ -130,19 +132,21 @@ public:
     assert(false);
   }
 
-  virtual void trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples)
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
   {
     //ProgressCallback silentCallback;
-    ConsoleProgressCallback callback;
-    callback.progressStart("BatchLearner::trainBatch");
-    optimizer->optimize(objective, parameters, termination, callback);
-    callback.progressEnd();
+    if (progress)
+      progress->progressStart("BatchLearner::trainBatch");
+    bool res = optimizer->optimize(objective, parameters, stoppingCriterion, progress);
+    if (progress)
+      progress->progressEnd();
+    return res;
   }
   
 protected:
   VectorOptimizerPtr optimizer;
-  OptimizerTerminationTestPtr termination;
+  OptimizerStoppingCriterionPtr stoppingCriterion;
 };
 
-GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, OptimizerTerminationTestPtr termination)
+GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination)
   {return GradientBasedLearnerPtr(new BatchLearner(optimizer, termination));}

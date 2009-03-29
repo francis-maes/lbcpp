@@ -55,7 +55,7 @@ public:
   virtual void trainStochasticEnd()
     {assert(learner); learner->trainStochasticEnd();}
   
-  virtual void trainBatch(const std::vector<ExampleType>& examples)
+  virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL)
   {
     assert(learner && examples.size());
     // sample mean input size
@@ -66,7 +66,7 @@ public:
     learner->setMeanInputSize(inputSize.getMean());
     learner->setParameters(parameters);
     learner->setRegularizer(getRegularizer());
-    learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples.size());
+    return learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples.size(), progress);
   }
   
   /*

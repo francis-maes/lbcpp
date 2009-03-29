@@ -19,7 +19,7 @@ int testClassification(std::istream& istr)
       IterationFunction::createConstant(0.01)), labels);
 */
 //  GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(IterationFunction::createConstant(0.01));
-  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)), OptimizerTerminationTest::createMaxIterations(50));
+  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)), OptimizerStoppingCriterion::createMaxIterations(50));
   GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
   
   for (int i = 0; i < 1; ++i)
@@ -31,7 +31,7 @@ int testClassification(std::istream& istr)
     //          << " RegEmpRisk: " << classifier->computeRegularizedEmpiricalRisk(examples) << " ";
 
     
-    classifier->trainBatch(examples);
+    classifier->trainBatch(examples, &ProgressCallback::getConsoleProgressCallback());
     //classifier->trainStochastic(examples);
     double acc = classifier->evaluateAccuracy(examples);
     std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;

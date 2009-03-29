@@ -60,6 +60,20 @@ public:
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const = 0;
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const = 0;
   virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const = 0;
+
+  bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
+  {
+    double dirNorm = direction->l2norm();
+    double epsilon = 5e-6 / dirNorm;
+    double value1 = compute(FeatureGenerator::weightedSum(parameters, 1.0, direction, -epsilon, true));
+    double value2 = compute(FeatureGenerator::weightedSum(parameters, 1.0, direction, epsilon, true));
+    double numericalDerivative = (value2 - value1) / (2.0 * epsilon);
+    FeatureGeneratorPtr gradient = computeGradient(parameters, direction);
+    double analyticDerivative = gradient->dotProduct(direction);
+    Object::warning("ScalarVectorFunction::checkDerivativeWrtDirection",
+      "Derivative Check: " + cralgo::toString(numericalDerivative) + " vs. " cralgo::toString(analyticDerivative));
+    return fabs(numericalDerivative - analyticDerivative) < 0.00001;
+  }
 };
 
 /*

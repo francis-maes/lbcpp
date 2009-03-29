@@ -6,10 +6,38 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/Object.h>
+#include <cralgo/Utilities.h>
 #include <cralgo/Random.h>
 #include <iostream>
 using namespace cralgo;
+
+/*
+** ProgressCallback
+*/
+class ConsoleProgressCallback : public ProgressCallback
+{
+public:
+  virtual void progressBegin(const std::string& description)
+    {std::cout << "Begin '" << description << "'" << std::endl;}
+    
+  // return false to stop the task
+  virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
+  {
+    std::cout << "Step '" << description << "' iteration = " << iteration;
+    if (totalIterations)
+      std::cout << " / " << totalIterations;
+    std::cout << std::endl;
+    return true;
+  }
+    
+  virtual void progressEnd()
+    {std::cout << "End." << std::endl;}
+};
+
+static ConsoleProgressCallback consoleProgressCallback;
+
+ProgressCallback& ProgressCallback::getConsoleProgressCallback()
+  {return consoleProgressCallback;}
 
 /*
 ** ErrorHandler

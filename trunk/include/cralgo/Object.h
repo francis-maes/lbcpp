@@ -11,29 +11,10 @@
 
 # include "ContainerTraits.h"
 # include "ReferenceCountedObject.h"
+# include "Utilities.h"
 
 namespace cralgo
 {
-
-class ErrorHandler
-{
-public:
-  virtual ~ErrorHandler() {}
-  virtual void errorMessage(const std::string& where, const std::string& what) = 0;
-  virtual void warningMessage(const std::string& where, const std::string& what) = 0;
-
-  static void setInstance(ErrorHandler& handler);
-  static ErrorHandler& getInstance() {assert(instance); return *instance;}
-  
-  static void error(const std::string& where, const std::string& what)
-    {getInstance().errorMessage(where, what);}
-
-  static void warning(const std::string& where, const std::string& what)
-    {getInstance().warningMessage(where, what);}
-  
-private:
-  static ErrorHandler* instance;
-};
 
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
