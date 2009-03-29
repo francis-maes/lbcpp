@@ -9,6 +9,7 @@
 #include <cralgo/Optimizer.h>
 #include "Optimizer/RPropOptimizer.h"
 #include "Optimizer/GradientDescentOptimizer.h"
+#include "Optimizer/OWLQNOptimizer.h"
 #include <deque>
 using namespace cralgo;
 

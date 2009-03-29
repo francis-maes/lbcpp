@@ -71,7 +71,7 @@ public:
     FeatureGeneratorPtr gradient = computeGradient(parameters, direction);
     double analyticDerivative = gradient->dotProduct(direction);
     Object::warning("ScalarVectorFunction::checkDerivativeWrtDirection",
-      "Derivative Check: " + cralgo::toString(numericalDerivative) + " vs. " cralgo::toString(analyticDerivative));
+      "Derivative Check: " + cralgo::toString(numericalDerivative) + " vs. " + cralgo::toString(analyticDerivative));
     return fabs(numericalDerivative - analyticDerivative) < 0.00001;
   }
 };
