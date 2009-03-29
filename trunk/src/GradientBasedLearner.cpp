@@ -11,41 +11,6 @@
 #include <cralgo/impl/impl.h>
 using namespace cralgo;
 
-/*
-** TODO: move somewhere
-*/
-class ConstantIterationFunction : public IterationFunction
-{
-public:
-  ConstantIterationFunction(double value) : value(value) {}
-  
-  virtual double compute(size_t iteration) const
-    {return value;}
-    
-private:
-  double value;
-};
-
-IterationFunctionPtr IterationFunction::createConstant(double value)
-  {return new ConstantIterationFunction(value);}
-
-class InvLinearIterationFunction : public IterationFunction
-{
-public:
-  InvLinearIterationFunction(double initialValue, size_t numberIterationsToReachHalfInitialValue)
-    : initialValue(initialValue), numberIterationsToReachHalfInitialValue(numberIterationsToReachHalfInitialValue) {}
-    
-  virtual double compute(size_t iteration) const
-    {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
-
-private:
-  double initialValue;
-  size_t numberIterationsToReachHalfInitialValue;
-};
-
-IterationFunctionPtr IterationFunction::createInvLinear(double initialValue, size_t numberIterationsToReachHalfInitialValue)
-  {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
-
 class GradientDescentLearner : public GradientBasedLearner
 {
 public:
@@ -137,10 +102,13 @@ public:
     //ProgressCallback silentCallback;
     if (progress)
       progress->progressStart("BatchLearner::trainBatch");
-    bool res = optimizer->optimize(objective, parameters, stoppingCriterion, progress);
+    FeatureGeneratorPtr params = parameters;
+    if (!optimizer->optimize(objective, params, stoppingCriterion, progress))
+      return false;
+    parameters = params;
     if (progress)
       progress->progressEnd();
-    return res;
+    return true;
   }
   
 protected:
@@ -148,5 +116,19 @@ protected:
   OptimizerStoppingCriterionPtr stoppingCriterion;
 };
 
-GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination)
-  {return GradientBasedLearnerPtr(new BatchLearner(optimizer, termination));}
+GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
+  {return GradientBasedLearnerPtr(new BatchLearner(optimizer, stoppingCriterion));}
+
+GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, size_t maxIterations, double tolerance)
+{
+  OptimizerStoppingCriterionPtr stoppingCriterion;
+  if (maxIterations > 0)
+    stoppingCriterion = OptimizerStoppingCriterion::createMaxIterations(maxIterations);
+  if (tolerance > 0)
+  {
+    OptimizerStoppingCriterionPtr c = OptimizerStoppingCriterion::createAverageImprovementThreshold(tolerance);
+    stoppingCriterion = stoppingCriterion ? OptimizerStoppingCriterion::createOr(stoppingCriterion, c) : c;
+  }
+  assert(stoppingCriterion);
+  return createBatch(optimizer, stoppingCriterion);
+}

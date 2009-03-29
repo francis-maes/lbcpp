@@ -66,7 +66,10 @@ public:
     learner->setMeanInputSize(inputSize.getMean());
     learner->setParameters(parameters);
     learner->setRegularizer(getRegularizer());
-    return learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples.size(), progress);
+    if (!learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples.size(), progress))
+      return false;
+    parameters = learner->getParameters();
+    return true;
   }
   
   /*

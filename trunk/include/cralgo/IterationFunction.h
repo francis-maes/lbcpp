@@ -9,7 +9,7 @@
 #ifndef CRALGO_ITERATION_FUNCTION_H_
 # define CRALGO_ITERATION_FUNCTION_H_
 
-# include "Object.h"
+# include "ObjectPredeclarations.h"
 
 namespace cralgo
 {

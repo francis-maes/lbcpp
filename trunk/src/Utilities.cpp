@@ -8,6 +8,7 @@
 
 #include <cralgo/Utilities.h>
 #include <cralgo/Random.h>
+#include <cralgo/IterationFunction.h>
 #include <iostream>
 using namespace cralgo;
 
@@ -103,3 +104,37 @@ double Random::sampleDoubleFromGaussian()
   return x1 * w; // (x2 * w) is another sample from the same gaussian
 }
 
+/*
+** IterationFunction
+*/
+class ConstantIterationFunction : public IterationFunction
+{
+public:
+  ConstantIterationFunction(double value) : value(value) {}
+  
+  virtual double compute(size_t iteration) const
+    {return value;}
+    
+private:
+  double value;
+};
+
+IterationFunctionPtr IterationFunction::createConstant(double value)
+  {return new ConstantIterationFunction(value);}
+
+class InvLinearIterationFunction : public IterationFunction
+{
+public:
+  InvLinearIterationFunction(double initialValue, size_t numberIterationsToReachHalfInitialValue)
+    : initialValue(initialValue), numberIterationsToReachHalfInitialValue(numberIterationsToReachHalfInitialValue) {}
+    
+  virtual double compute(size_t iteration) const
+    {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
+
+private:
+  double initialValue;
+  size_t numberIterationsToReachHalfInitialValue;
+};
+
+IterationFunctionPtr IterationFunction::createInvLinear(double initialValue, size_t numberIterationsToReachHalfInitialValue)
+  {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}

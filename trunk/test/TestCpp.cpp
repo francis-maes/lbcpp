@@ -19,9 +19,15 @@ int testClassification(std::istream& istr)
       IterationFunction::createConstant(0.01)), labels);
 */
 //  GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(IterationFunction::createConstant(0.01));
-  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)), OptimizerStoppingCriterion::createMaxIterations(50));
+  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(
+     // VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)),
+      VectorOptimizer::createLBFGS(),
+    50);
   GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
   
+    double acc = classifier->evaluateAccuracy(examples);
+    std::cout << "Initial Accuracy: " << (100.0 * acc) << "%" << std::endl;
+
   for (int i = 0; i < 1; ++i)
   {
    // FeatureGeneratorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
