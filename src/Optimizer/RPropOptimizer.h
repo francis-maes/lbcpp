@@ -1,32 +1,36 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RPropOptimiezr.hpp             | R-Prop Optimizer                |
+| Filename: RPropOptimizer.h               | R-Prop Optimizer                |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/03/2009 21:13               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_IMPL_OPTIMIZER_RPROP_H_
-# define CRALGO_IMPL_OPTIMIZER_RPROP_H_
+#ifndef CRALGO_OPTIMIZER_RPROP_H_
+# define CRALGO_OPTIMIZER_RPROP_H_
 
-# include "OptimizerStatic.hpp"
+# include <cralgo/Optimizer.h>
 
-namespace cralgo {
-namespace impl {
-
-struct RPropOptimizer : public VectorOptimizer<RPropOptimizer>
+namespace cralgo
 {
-  DenseVectorPtr optimizerStart(ScalarVectorFunctionPtr function, DenseVectorPtr parameters)
+
+class RPropOptimizer : public VectorOptimizer
+{
+public:
+  virtual bool initialize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr parameters)
   {
     previousGradient = new DenseVector(parameters->getDictionary());
     derivativeSpeeds = new DenseVector(parameters->getDictionary());
-    return parameters;
+    return true;
   }
-    
-  DenseVectorPtr optimizerStep(ScalarVectorFunctionPtr function, DenseVectorPtr parameters, const DenseVectorPtr gradient, double value)
+
+  virtual OptimizerState step(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, double value, FeatureGeneratorPtr gradient)
   {
-    updateRecursive(gradient, previousGradient, derivativeSpeeds, parameters);
-    return parameters;
+    DenseVectorPtr denseParameters = parameters->toDenseVector();
+    DenseVectorPtr denseGradient = gradient->toDenseVector();
+    updateRecursive(denseGradient, previousGradient, derivativeSpeeds, denseParameters);
+    parameters = denseParameters;
+    return optimizerContinue;
   }
   
 private:
@@ -87,7 +91,6 @@ private:
     {return k < 0 ? -1 : (k > 0 ? 1 : 0);}
 };
 
-}; /* namespace impl */
 }; /* namespace cralgo */
 
-#endif // !CRALGO_IMPL_OPTIMIZER_RPROP_H_
+#endif // !CRALGO_OPTIMIZER_RPROP_H_

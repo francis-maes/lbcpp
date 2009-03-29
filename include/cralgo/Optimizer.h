@@ -14,53 +14,35 @@
 namespace cralgo
 {
 
-class ProgressCallback
+class OptimizerStoppingCriterion : public Object
 {
 public:
-  virtual ~ProgressCallback() {}
+  static OptimizerStoppingCriterionPtr createMaxIterations(size_t maxIterations);
+  static OptimizerStoppingCriterionPtr createAverageImprovementThreshold(double tolerance);
+  static OptimizerStoppingCriterionPtr createOr(OptimizerStoppingCriterionPtr criterion1, OptimizerStoppingCriterionPtr criterion2);
   
-  virtual void progressStart(const std::string& description)
-    {}
-    
-  // return false to stop the task
-  virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
-    {return true;}
-    
-  virtual void progressEnd()
-    {}
-};
-
-class ConsoleProgressCallback : public ProgressCallback
-{
-public:
-  virtual void progressBegin(const std::string& description)
-    {std::cout << "Begin '" << description << "'" << std::endl;}
-    
-  // return false to stop the task
-  virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
-    {std::cout << "Step '" << description << "' iteration = " << iteration << " / " << totalIterations << std::endl; return true;}
-    
-  virtual void progressEnd()
-    {std::cout << "End." << std::endl;}
-};
-
-class OptimizerTerminationTest : public Object
-{
-public:
-  static OptimizerTerminationTestPtr createMaxIterations(size_t maxIterations);
-  static OptimizerTerminationTestPtr createAverageImprovementThreshold(double tolerance);
-
 public:
   virtual void reset() = 0;
 
   virtual bool isTerminated(double value, double parameter, double derivative) = 0;
-  virtual bool isTerminated(double value, const DenseVectorPtr parameters, const DenseVectorPtr gradient) = 0;
+  virtual bool isTerminated(double value, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr gradient) = 0;
+};
+
+enum OptimizerState
+{
+  optimizerError,
+  optimizerContinue,
+  optimizerDone,
 };
 
 class ScalarOptimizer : public Object
 {
 public:
-  virtual bool optimize(ScalarFunctionPtr function, double& value, OptimizerTerminationTestPtr termination, ProgressCallback& callback) = 0;
+  virtual bool optimize(ScalarFunctionPtr function, double& value, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
+
+protected:
+  virtual bool initialize(ScalarFunctionPtr function, double parameter) = 0;
+  virtual OptimizerState step(ScalarFunctionPtr function, double& parameter, double value, double derivative) = 0;
 };
 
 class VectorOptimizer : public Object
@@ -70,7 +52,12 @@ public:
   static VectorOptimizerPtr createRProp();
 
 public:
-  virtual bool optimize(ScalarVectorFunctionPtr function, DenseVectorPtr& parameters, OptimizerTerminationTestPtr termination, ProgressCallback& callback) = 0;
+  virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
+  virtual bool optimize(ScalarVectorFunctionPtr function, DenseVectorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
+
+protected:
+  virtual bool initialize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr parameters) = 0;
+  virtual OptimizerState step(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, double value, FeatureGeneratorPtr gradient) = 0;
 };
 
 }; /* namespace cralgo */

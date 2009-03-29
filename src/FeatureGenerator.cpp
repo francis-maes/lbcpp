@@ -112,6 +112,7 @@ FeatureGeneratorPtr FeatureGenerator::unitGenerator()
   static FeatureGeneratorPtr instance = new UnitFeatureGenerator();
   return instance;
 }
+
 FeatureGeneratorPtr FeatureGenerator::subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
 {
   return new SubFeatureGenerator(dictionary, index, featureGenerator);
@@ -179,6 +180,35 @@ FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featu
 
   // default: k * x 
   return new WeightedFeatureGenerator(featureGenerator, weight);
+}
+
+FeatureGeneratorPtr FeatureGenerator::weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow)
+{
+  if (computeNow)
+  {
+    if (featureGenerator1->isDense() || featureGenerator2->isDense())
+    {
+      DenseVectorPtr res = new DenseVector(featureGenerator1->getDictionary());
+      res->addWeighted(featureGenerator1, weight1);
+      res->addWeighted(featureGenerator2, weight2);
+      return res;
+    }
+    else
+    {
+      SparseVectorPtr res = new SparseVector(featureGenerator1->getDictionary());
+      res->addWeighted(featureGenerator1, weight1);
+      res->addWeighted(featureGenerator2, weight2);
+      return res;
+    }
+  }
+  else
+  {
+    std::vector<std::pair<FeatureGeneratorPtr, double> >* combination =
+      new std::vector<std::pair<FeatureGeneratorPtr, double> >(2);
+    (*combination)[0] = std::make_pair(featureGenerator1, weight1);
+    (*combination)[1] = std::make_pair(featureGenerator2, weight2);
+    return linearCombination(combination);
+  }
 }
 
 FeatureGeneratorPtr FeatureGenerator::linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights)

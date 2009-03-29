@@ -24,6 +24,15 @@ public:
   static FeatureGeneratorPtr unitGenerator();
   
   static FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight);
+
+  static FeatureGeneratorPtr weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow = false);
+  
+  static FeatureGeneratorPtr addition(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
+    {return weightedSum(featureGenerator1, 1.0, featureGenerator2, 1.0, computeNow);}
+    
+  static FeatureGeneratorPtr difference(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
+    {return weightedSum(featureGenerator1, 1.0, featureGenerator2, -1.0, computeNow);}
+  
   static FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights);
   static FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
   static FeatureGeneratorPtr subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);

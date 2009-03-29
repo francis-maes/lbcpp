@@ -8,6 +8,7 @@ SET(CRALGO_LIBRARY_HEADERS
   ../include/cralgo/Random.h
   ../include/cralgo/ContainerTraits.h
   ../include/cralgo/ReferenceCountedObject.h
+  ../include/cralgo/Utilities.h
   ../include/cralgo/Object.h
   ../include/cralgo/ObjectPredeclarations.h
   ../include/cralgo/RandomVariable.h
@@ -83,13 +84,6 @@ SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
   ${CRALGO_IMPL}/ContinuousFunction/TransferArchitecture.hpp
   ${CRALGO_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
 )
-SET(CRALGO_LIBRARY_IMPL_OPTIMIZER
-  ${CRALGO_IMPL}/Optimizer/OptimizerStatic.hpp
-  ${CRALGO_IMPL}/Optimizer/OptimizerStaticToDynamic.hpp
-  ${CRALGO_IMPL}/Optimizer/RPropOptimizer.hpp
-  ${CRALGO_IMPL}/Optimizer/GradientDescentOptimizer.hpp
-  ${CRALGO_IMPL}/Optimizer/BacktrackingLineSearchOptimizer.hpp
-)
 
 SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION
   ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
@@ -155,6 +149,14 @@ SET(CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES
   FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
 )
 
+SET(CRALGO_LIBRARY_OPTIMIZER_SOURCES
+  Optimizer/RPropOptimizer.h
+  Optimizer/GradientDescentOptimizer.h
+  Optimizer/BacktrackingLineSearchOptimizer.h
+  Optimizer/QuasiNewtonMemory.h
+  Optimizer/OWLQNOptimizer.h
+)
+
 SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_HEADERS}
   ${CRALGO_LIBRARY_IMPL_HEADERS}
@@ -166,6 +168,7 @@ SET(CRALGO_LIBRARY
   ${CRALGO_LIBRARY_IMPL_BRIDGE}
   ${CRALGO_LIBRARY_SOURCES}
   ${CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES}
+  ${CRALGO_LIBRARY_OPTIMIZER_SOURCES}
 )
 
 SOURCE_GROUP(includes FILES ${CRALGO_LIBRARY_HEADERS})
@@ -178,5 +181,6 @@ SOURCE_GROUP(impl/Policy FILES ${CRALGO_LIBRARY_IMPL_POLICY})
 SOURCE_GROUP(impl/Bridge FILES ${CRALGO_LIBRARY_IMPL_BRIDGE})
 SOURCE_GROUP(sources FILES ${CRALGO_LIBRARY_SOURCES})
 SOURCE_GROUP(FeatureGenerator FILES ${CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES})
+SOURCE_GROUP(Optimizer FILES ${CRALGO_LIBRARY_OPTIMIZER_SOURCES})
 
 ADD_LIBRARY(cralgo ${CRALGO_LIBRARY})

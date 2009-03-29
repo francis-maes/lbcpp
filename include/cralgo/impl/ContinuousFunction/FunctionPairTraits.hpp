@@ -233,12 +233,9 @@ struct ScalarVectorFunctionPair : public ContinuousFunctionPair<Function1, Funct
       if (output)
         *output = operation.compute(leftOutput, rightOutput);
       if (gradient)
-      {
-        std::vector<std::pair<FeatureGeneratorPtr, double> >* g = new std::vector<std::pair<FeatureGeneratorPtr, double> >(2);
-        (*g)[0] = std::make_pair(leftGradient, operation.computeDerivativeWrtLeft(leftOutput, rightOutput));
-        (*g)[1] = std::make_pair(rightGradient, operation.computeDerivativeWrtRight(leftOutput, rightOutput));
-        *gradient = FeatureGenerator::linearCombination(g);
-      }
+        *gradient = FeatureGenerator::weightedSum(
+          leftGradient, operation.computeDerivativeWrtLeft(leftOutput, rightOutput),
+          rightGradient, operation.computeDerivativeWrtRight(leftOutput, rightOutput));
     }
   };
 };
@@ -396,20 +393,10 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
         rightGradientDense = rightGradient->toDenseVector();
       
       if (gradientWrtParameters)
-      {
-/*        LinearCombinationFeatureGeneratorPtr linearCombination = new LinearCombinationFeatureGenerator();
-        for (size_t i = 0; i < rightGradientDense->getNumValues(); ++i)
-          linearCombination->addWeighted(leftGradientWrtParameters->getSubGeneratorWithIndex(i), rightGradientDense->get(i));*/
         *gradientWrtParameters = FeatureGenerator::linearCombination(leftGradientWrtParameters, rightGradientDense);
-      }
 
       if (gradientWrtInput)
-      {
-/*        LinearCombinationFeatureGeneratorPtr linearCombination = new LinearCombinationFeatureGenerator();
-        for (size_t i = 0; i < rightGradientDense->getNumValues(); ++i)
-          linearCombination->addWeighted(leftGradientWrtInput->getSubGeneratorWithIndex(i), rightGradientDense->get(i));*/
         *gradientWrtInput = FeatureGenerator::linearCombination(leftGradientWrtInput, rightGradientDense);
-      }
     }
   };
 };

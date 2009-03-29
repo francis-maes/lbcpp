@@ -1,4 +1,5 @@
-o Clarifier ReferenceObjectScope
+o fichier Utilities.h pour le ErrorManager et le ProgressCallback
+o ProgressCallback dans LearningMachine::trainBatch
 
 LC++ library:
 =============
