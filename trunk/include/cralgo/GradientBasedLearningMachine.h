@@ -20,9 +20,12 @@ template<class BaseClass, class ExampleType_>
 class GradientBasedLearningMachine : public BaseClass
 {
 public:
+  GradientBasedLearningMachine() : initializeParametersRandomly(false)
+    {}
+    
   typedef ExampleType_ ExampleType;
 
-  virtual DenseVectorPtr createInitialParameters() const = 0;
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
   virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const = 0;
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
@@ -41,12 +44,17 @@ public:
   void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
     assert(learner);
+    if (!parameters)
+      parameters = createInitialParameters(gradient->getDictionary(), initializeParametersRandomly);
+    learner->setParameters(parameters);
     learner->trainStochasticExample(gradient, weight);
   }
 
   virtual void trainStochasticExample(const ExampleType& example)
   {
     assert(learner);
+    if (!parameters)
+      learner->setParameters(parameters = createInitialParameters(example.getInput()->getDictionary(), initializeParametersRandomly));
     inputSize.push((double)(example.getInput()->l0norm()));
     learner->setMeanInputSize(inputSize.getMean());
     learner->trainStochasticExample(getLoss(example));
@@ -58,6 +66,10 @@ public:
   virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL)
   {
     assert(learner && examples.size());
+
+    if (!parameters)
+      parameters = createInitialParameters(examples[0].getInput()->getDictionary(), initializeParametersRandomly);
+
     // sample mean input size
     for (size_t i = 0; i < 20; ++i)
       inputSize.push((double)(examples[Random::getInstance().sampleSize(examples.size())].getInput()->l0norm()));
@@ -78,12 +90,18 @@ public:
   DenseVectorPtr getParameters() const
     {return parameters;}
     
-  void createParameters()
-    {assert(!parameters); parameters = createInitialParameters();}
+  void createParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly)
+    {assert(!parameters); parameters = createInitialParameters(inputDictionary, initializeRandomly);}
     
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
-  
+    
+  void setInitializeParametersRandomly()
+  {
+    assert(!parameters); // This function should be called before parameters creation.
+    initializeParametersRandomly = true;
+  }
+      
   /*
   ** Regularizer
   */
@@ -126,6 +144,7 @@ protected:
   ScalarVectorFunctionPtr regularizer;
   GradientBasedLearnerPtr learner;
   ScalarRandomVariableMean inputSize;
+  bool initializeParametersRandomly;
 };
 
 /*
@@ -138,8 +157,8 @@ public:
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
-  virtual DenseVectorPtr createInitialParameters() const
-    {return getPredictionArchitecture()->createInitialParameters();}
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
     
   virtual double predict(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
@@ -156,8 +175,8 @@ public:
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
-  virtual DenseVectorPtr createInitialParameters() const
-    {return getPredictionArchitecture()->createInitialParameters();}
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
   virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
@@ -173,8 +192,9 @@ public:
 
   virtual VectorArchitecturePtr getPredictionArchitecture() const = 0;
 
-  virtual DenseVectorPtr createInitialParameters() const
-    {return getPredictionArchitecture()->createInitialParameters();}
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
+
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input)->toDenseVector();}
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const
@@ -192,11 +212,11 @@ public:
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
   
-  virtual DenseVectorPtr createInitialParameters() const
-    {return getPredictionArchitecture()->createInitialParameters();}
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
        
   virtual double predictScore(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input);}
+    {return parameters ? getPredictionArchitecture()->compute(parameters, input) : 0.0;}
 };
 
 
@@ -213,8 +233,8 @@ public:
 
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
   
-  virtual DenseVectorPtr createInitialParameters() const
-    {return getPredictionArchitecture()->createInitialParameters();}
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
        
   virtual double predictScore(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}

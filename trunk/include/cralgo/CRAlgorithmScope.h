@@ -23,10 +23,18 @@ public:
   virtual size_t getNumVariables() const = 0;
   virtual VariablePtr getVariable(size_t num) const = 0;
   virtual VariablePtr getVariable(const std::string& name) const = 0;
+
   template<class T>
   const T& getVariableReference(const std::string& name) const
-    {VariablePtr v = getVariable(name); /* todo: error message */ assert(v); return v->getConstReference<T>();}
-
+  {
+    VariablePtr v = getVariable(name);
+    if (!v)
+    {
+      Object::error("CRAlgorithmScope::getVariableReference", "Could not find variable called '" + name + "'");
+      assert(false);
+    }
+    return v->getConstReference<T>();
+  }
   
   virtual std::string getVariableType(size_t num) const = 0;
   virtual std::string getVariableName(size_t num) const = 0;

@@ -23,10 +23,16 @@ struct GPOMDPPolicy : public EpisodicPolicy<GPOMDPPolicy>
   GPOMDPPolicy(GradientBasedGeneralizedClassifierPtr classifier, double beta, double exploration = 1.0)
     : classifier(classifier), beta(beta), exploration(exploration)
     {}
+  GPOMDPPolicy(GradientBasedGeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy)
+    : classifier(classifier), beta(beta), explorationPolicy(explorationPolicy)
+    {}
+
 
   VariablePtr policyStart(ChoosePtr choose)
   {
-    trace = classifier->createInitialParameters();
+    if (explorationPolicy)
+      explorationPolicy->policyEnter(choose->getCRAlgorithm());
+    trace = DenseVectorPtr();
     classifier->trainStochasticBegin();
     return processChoose(choose);
   }
@@ -40,6 +46,8 @@ struct GPOMDPPolicy : public EpisodicPolicy<GPOMDPPolicy>
   void policyEnd(double reward)
   {
     processReward(reward);
+    if (explorationPolicy)
+      explorationPolicy->policyLeave();
     classifier->trainStochasticEnd();
   }
 
@@ -47,6 +55,7 @@ private:
   GradientBasedGeneralizedClassifierPtr classifier;
   double beta;
   double exploration;
+  PolicyPtr explorationPolicy;
   DenseVectorPtr trace;
   
   FeatureGeneratorPtr actionsFeatures;
@@ -80,6 +89,21 @@ private:
     actionsFeatures = choose->computeActionsFeatures(true);
     actionProbabilities = classifier->predictProbabilities(actionsFeatures);
     assert(actionProbabilities->getNumValues());
+    if (explorationPolicy)
+    {
+      VariablePtr res = explorationPolicy->policyChoose(choose);
+      size_t i = 0;
+      selectedAction = (size_t)-1;
+      // FIXME: non-efficient !!, do not use toString()
+      for (VariableIteratorPtr iterator = choose->newIterator(); iterator->exists(); iterator->next(), ++i)
+        if (iterator->get()->toString() == res->toString())
+        {
+          selectedAction = i;
+          break;
+        }
+      assert(selectedAction != (size_t)-1);
+      return res;
+    }
     if (exploration == 1.0)
       return sampleChoice(choose, actionProbabilities);
     else
@@ -103,6 +127,10 @@ private:
   {
     if (!actionsFeatures->getNumSubGenerators())
       return;
+    if (explorationPolicy)
+      explorationPolicy->policyReward(reward);
+    if (!classifier->getParameters())
+      classifier->createParameters(actionsFeatures->getSubGenerator(0)->getDictionary(), false);
     
     // -(log p[y|x])
     ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionsFeatures, selectedAction));
@@ -117,9 +145,13 @@ private:
     classifier->pushInputSize((double)anInput->l0norm());
 
     // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
+    
     if (beta)
     {
-      trace->multiplyByScalar(beta);
+      if (!trace)
+        trace = classifier->createInitialParameters(classifier->getParameters()->getDictionary(), false);
+      else
+        trace->multiplyByScalar(beta);
       trace->substract(gradient);
       if (reward)
         classifier->trainStochasticExample(trace, -reward);

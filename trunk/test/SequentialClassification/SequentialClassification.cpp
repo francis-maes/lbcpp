@@ -7,93 +7,9 @@
                                `--------------------------------------------*/
 
 #include "GeneratedCode/SequentialClassification.h"
+#include "SyntheticDataGenerator.h"
 #include <cralgo/cralgo.h>
 using namespace cralgo;
-
-class SyntheticLinearMultiClassGenerator
-{
-public:
-  SyntheticLinearMultiClassGenerator(size_t numFeatures, size_t numClasses)
-    : parameters(numClasses), numFeatures(numFeatures)
-  {
-    for (size_t i = 0; i < parameters.size(); ++i)
-      parameters[i] = sampleVectorGaussian(numFeatures);
-  }
-  
-  ClassificationExample sample() const
-  {
-    DenseVectorPtr x = sampleVectorGaussian(numFeatures);
- //   std::cout << "BestScore: " << bestScore << " y = " << y << std::endl;
-    return ClassificationExample(x, getClass(x));
-  }
-  
-  size_t getClass(FeatureGeneratorPtr x) const
-  {
-    double bestScore = -DBL_MAX;
-    size_t y = 0;
-    //std::cout << "X dictionary: " << x->getDictionary().getName() << std::endl;
-    for (size_t i = 0; i < parameters.size(); ++i)
-    {
-      //std::cout << "params i dictionary: " << parameters[i]->getDictionary().getName() << std::endl;
-      double score = parameters[i]->dotProduct(x);
-      if (score > bestScore)
-        bestScore = score, y = i;
-    }
-    return y;
-  }
-  
-  static FeatureDictionaryPtr getDictionary()
-  {
-    static FeatureDictionaryPtr dictionary = new FeatureDictionary("SyntheticLinearMultiClassGenerator");
-    return dictionary;
-  }
-  
-private:
-  std::vector<DenseVectorPtr> parameters;
-  size_t numFeatures;
-  
-  static DenseVectorPtr sampleVectorGaussian(size_t numFeatures)
-  {
-    DenseVectorPtr res = new DenseVector(getDictionary(), numFeatures);
-    for (size_t i = 0; i < numFeatures; ++i)
-      res->set(i, Random::getInstance().sampleDoubleFromGaussian());
-    return res;
-  }
-};
-
-class SyntheticDataGenerator
-{
-public:
-  SyntheticDataGenerator(size_t numFeaturesInBranch, size_t numFolds, size_t numFeaturesPerFold, size_t numClasses)
-    : branchGenerator(numFeaturesInBranch, numFolds), foldGenerators(numFolds, SyntheticLinearMultiClassGenerator(numFeaturesPerFold, numClasses))
-    {}
-
-  ClassificationExample sample() const
-  {
-    DenseVectorPtr x = new DenseVector(getDictionary(), 0, 1 + foldGenerators.size());
-    ClassificationExample branch = branchGenerator.sample();
-    x->setSubVector(0, branch.getInput());
-  //  std::cout << "BRANCH output: " << branch.getOutput() << std::endl;
-    size_t y = 0;
-    for (size_t i = 0; i < foldGenerators.size(); ++i)
-    {
-      ClassificationExample fold = foldGenerators[i].sample();
-      x->setSubVector(i + 1, fold.getInput());
-      if (i == branch.getOutput())
-        y = fold.getOutput();
-    }
-    return ClassificationExample(x, y);
-  }
-
-  static FeatureDictionaryPtr getDictionary()
-  {
-    static FeatureDictionaryPtr dictionary = new FeatureDictionary("SyntheticDataGenerator");
-    return dictionary;
-  }
-
-  SyntheticLinearMultiClassGenerator branchGenerator;
-  std::vector<SyntheticLinearMultiClassGenerator> foldGenerators;
-};
 
 void testClassifier(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
 {
@@ -134,7 +50,7 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
       for (size_t j = 0; j < input->getNumSubVectors(); ++j)
         x.push_back(input->getSubVector(j));
       size_t y = ex.getOutput();
-      sequentialClassification(((i % 2) && learnerPolicy2) ? learnerPolicy2 : policy, x, 0.1, numClasses, &y);
+      sequentialClassification(((i % 2) && learnerPolicy2) ? learnerPolicy2 : policy, x, 0.1, numClasses, y);
     }
     
     size_t correct = 0;
@@ -149,7 +65,7 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
       for (size_t i = 0; i < input->getNumSubVectors(); ++i)
         x.push_back(input->getSubVector(i));
       size_t y = ex.getOutput();
-      size_t ypredicted = sequentialClassification(learnedPolicy, x, 0.1, numClasses, &y);
+      size_t ypredicted = sequentialClassification(learnedPolicy, x, 0.1, numClasses, y);
       if (ypredicted == y)
         ++correct;
     }
@@ -176,19 +92,6 @@ void testMonteCarloControl(const std::vector<ClassificationExample>& train, cons
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
 }
 
-
-void testOLPOMDP(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
-{
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.01, 10000);
-
-  GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
-  
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
-  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0.4, 1.3);
-
-  trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
-}
 
 void testCRank(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses,
               PolicyPtr exploration = PolicyPtr(), ActionValueFunctionPtr supervision = ActionValueFunctionPtr())
@@ -261,53 +164,234 @@ private:
 };
 
 
+void runPolicy(const std::vector<CRAlgorithmPtr>& crAlgorithms, PolicyPtr policy)
+{
+  for (size_t i = 0; i < crAlgorithms.size(); ++i)
+    crAlgorithms[Random::getInstance().sampleSize(crAlgorithms.size())]->clone()->run(policy);
+//  std::cout << policy->toString() << std::endl;
+}
 
+void convertExamplesToCRAlgorithms(const std::vector<ClassificationExample>& examples, size_t numClasses, std::vector<CRAlgorithmPtr>& res)
+{
+  res.clear();
+  res.resize(examples.size());
+  for (size_t i = 0; i < examples.size(); ++i)
+  {
+    ClassificationExample ex = examples[Random::getInstance().sampleSize(examples.size())];
+//    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
+    std::vector<FeatureGeneratorPtr> x;
+//      x.push_back(input);
+    SparseVectorPtr input = ex.getInput()->toSparseVector();
+    if (input->getNumSubVectors())
+      for (size_t j = 0; j < input->getNumSubVectors(); ++j)
+        x.push_back(input->getSubVector(j));
+    else
+      x.push_back(input);
+    size_t y = ex.getOutput();
+    res[i] = sequentialClassification(x, 0, numClasses, y);
+  }
+}
+
+double evaluatePolicy(const std::vector<CRAlgorithmPtr>& examples, PolicyPtr policy)
+{
+  size_t correct = 0;
+  PolicyPtr p = policy->addComputeStatistics();
+  for (size_t i = 0; i < examples.size(); ++i)
+  {
+    CRAlgorithmPtr crAlgorithm = examples[i]->clone();
+    crAlgorithm->run(p);
+    size_t ypredicted = crAlgorithm->getReturn()->getCopy<size_t>();
+    if (ypredicted == crAlgorithm->getVariableReference<size_t>("ycorrect"))
+      ++correct;
+  }
+ // std::cout << "Reward per choose: " << (p->getResultWithName("rewardPerChoose").dynamicCast<ScalarRandomVariableStatistics>()->getMean()) << std::endl;
+  return correct / (double)examples.size();
+}
+
+class GPOMDPAverageRewardFunction : public ScalarVectorFunction
+{
+public:
+  GPOMDPAverageRewardFunction(GradientBasedGeneralizedClassifierPtr classifier, double beta, const std::vector<CRAlgorithmPtr>& instances)
+    : classifier(classifier), beta(beta), instances(instances) {}
+  
+  virtual bool isDerivable() const
+    {return false;}
+    
+  struct ComputeRiskGradientLearner : public GradientBasedLearner
+  {
+    ComputeRiskGradientLearner() : numTerms(0), sumOfGradients(new DenseVector()) {}
+    
+    virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
+      {++numTerms; sumOfGradients->addWeighted(gradient, weight);}
+
+    DenseVectorPtr getGradient()
+    {
+      if (!sumOfGradients->hasDictionary())
+        sumOfGradients->setDictionary(parameters->getDictionary());
+      if (numTerms > 1)
+        sumOfGradients->multiplyByScalar(1.0 / numTerms);
+      if (regularizer)
+        sumOfGradients->add(regularizer->computeGradient(parameters));
+      return sumOfGradients;
+    }
+    
+  private:
+    size_t numTerms;
+    DenseVectorPtr sumOfGradients;
+  };
+
+  typedef ReferenceCountedObjectPtr<ComputeRiskGradientLearner> ComputeRiskGradientLearnerPtr;
+
+  virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
+  {
+    ComputeRiskGradientLearnerPtr learner = new ComputeRiskGradientLearner();
+    
+    GradientBasedLearnerPtr previousLearner = classifier->getLearner();
+    classifier->setLearner(learner);
+    classifier->setParameters(input->toDenseVector());
+
+    PolicyPtr policy = Policy::createGPOMDP(classifier, beta)->addComputeStatistics();
+    for (size_t i = 0; i < instances.size(); ++i)
+      instances[i]->clone()->run(policy);
+    if (output)
+      *output = -(policy->getResultWithName("rewardPerChoose").dynamicCast<ScalarRandomVariableStatistics>()->getMean());
+    if (gradient)
+      *gradient = learner->getGradient();
+    classifier->setLearner(previousLearner);
+  }
+        
+private:
+  GradientBasedGeneralizedClassifierPtr classifier;
+  double beta;
+  std::vector<CRAlgorithmPtr> instances;
+};
+
+
+void testBatchGPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector<CRAlgorithmPtr>& test)
+{
+  for (size_t i = 0; i <= 10; ++i)
+  {
+    double beta = i / 10.0; //pow(10.0, (double)(i - 5.0));
+    //IterationFunctionPtr stepSize = IterationFunction::createConstant(10.0);
+    double reg = 0.0; // (double)pow(10.0, (double)(i - 5.0));
+    
+    VectorOptimizerPtr optimizer = VectorOptimizer::createRProp(); //GradientDescent(stepSize);
+    GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
+      GradientBasedLearner::createBatch(optimizer));
+    classifier->setL2Regularizer(reg);
+    //classifier->setInitializeParametersRandomly();
+    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
+
+    ScalarVectorFunctionPtr objective = new GPOMDPAverageRewardFunction(classifier, beta, train);
+    FeatureGeneratorPtr parameters 
+      = optimizer->optimize(objective, OptimizerStoppingCriterion::createMaxIterations(50), &ProgressCallback::getConsoleProgressCallback());
+    double trainAccuracy = evaluatePolicy(train, learnedPolicy);
+    double testAccuracy = evaluatePolicy(test, learnedPolicy);
+    std::cout << "REG = " << reg 
+      << " train = " << trainAccuracy << " test = " << testAccuracy << std::endl;
+  }
+};
+
+class OverrideDecideStepsPolicy : public Policy
+{
+public:
+  OverrideDecideStepsPolicy(PolicyPtr explorationPolicy)
+    : explorationPolicy(explorationPolicy) {}
+
+  virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
+    {explorationPolicy->policyEnter(crAlgorithm);}
+
+  virtual VariablePtr policyChoose(ChoosePtr choose)
+  {
+    VariablePtr res = explorationPolicy->policyChoose(choose);
+    std::pair<bool, size_t>& c = res->getReference< std::pair<bool, size_t> >();
+   // if (c.first)
+   //   c.second = choose->getCRAlgorithm()->getVariableReference<size_t>("ycorrect");
+    return res;
+  }
+  
+  virtual void policyReward(double reward)
+    {explorationPolicy->policyReward(reward);}
+
+  virtual void policyLeave()
+    {explorationPolicy->policyLeave();}
+  
+private:
+  PolicyPtr explorationPolicy;
+};
+
+void testOLPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector<CRAlgorithmPtr>& test)
+{
+ // for (size_t i = 0; i <= 10; ++i)
+  {
+    double beta = 1.0; // i / 10.0; //pow(10.0, (double)(i - 5.0));
+    
+    IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
+
+    GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
+      GradientBasedLearner::createStochasticDescent(learningRate));
+    
+    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
+    PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, beta, new OverrideDecideStepsPolicy(
+      Policy::createNonDeterministic(ActionValueFunction::createProbabilities(classifier))));
+
+    for (size_t iteration = 0; iteration < 1000; ++iteration)
+    {
+      PolicyPtr p = learnerPolicy->addComputeStatistics();
+      runPolicy(train, p);
+      //std::cout << "Learner: " << p->toString() << std::endl;
+      p = learnedPolicy->addComputeStatistics();
+      runPolicy(test, p);
+      double trainAccuracy = evaluatePolicy(train, learnedPolicy);
+      double testAccuracy = evaluatePolicy(test, learnedPolicy);
+//      if ((iteration % 10) == 9)
+        std::cout << "Beta = " << beta << " Iteration " << iteration
+          << " train = " << trainAccuracy << " test = " << testAccuracy
+          << " test mean steps = " << p->getResultWithName("choosesPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean() << std::endl;
+    }
+  }
+}
 int main(int argc, char* argv[])
 {
-  static const size_t numFeaturesToDecideFold = 2;
-  static const size_t numFolds = 2;
-  static const size_t numClasses = 10;
-  static const size_t numFeatures = 2;
+  static const size_t numFeaturesToDecideFold = 20;
+  static const size_t numFolds = 10;
+  static const size_t numClasses = 3;
+  static const size_t numFeatures = 4;
   SyntheticDataGenerator generator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
  
- // SyntheticLinearMultiClassGenerator generator(numFeatures, numClasses);
+//  SyntheticLinearMultiClassGenerator generator(numFeatures, numClasses);
   
-  std::vector<ClassificationExample> train(1000), test(1000);
+  std::vector<ClassificationExample> train(50000), test(1000);
   
   for (size_t i = 0; i < train.size(); ++i)
     train[i] = generator.sample();
+  std::vector<double> classFrequencies(numClasses, 0.0);
   for (size_t i = 0; i < test.size(); ++i)
+  {
     test[i] = generator.sample();
+    classFrequencies[test[i].getOutput()]++;
+  }
+  std::cout << "Test Class Frequencies: " << cralgo::toString(classFrequencies) << std::endl;
+  for (size_t i = 0; i < classFrequencies.size(); ++i)
+    classFrequencies[i] /= (double)test.size();
+  std::cout << "Normalized Test Class Frequencies: " << cralgo::toString(classFrequencies) << std::endl;
+  
   testClassifier(train, test, numClasses);  
   
-  testOLPOMDP(train, test, numClasses);
+  std::vector<CRAlgorithmPtr> crTrain, crTest;
+  convertExamplesToCRAlgorithms(train, numClasses, crTrain);
+  convertExamplesToCRAlgorithms(test, numClasses, crTest);
+  
+//  testBatchGPOMDP(crTrain, crTest);
+  testOLPOMDP(crTrain, crTest);
 
 //  testCRank(train, test, numClasses);
  return 0; 
-  PolicyPtr optimalPolicy = new SequenceClassificationSyntheticOptimalPolicy(generator);
+/*  PolicyPtr optimalPolicy = new SequenceClassificationSyntheticOptimalPolicy(generator);
   ActionValueFunctionPtr optimalActionValues = new ZeroOneActionValueFunction(optimalPolicy);
   testCRank(train, test, numClasses, optimalPolicy, optimalActionValues);
 
-  
-  PolicyPtr policy = optimalPolicy->addComputeStatistics();
-  size_t correct = 0;
-  for (size_t i = 0; i < train.size(); ++i)
-  {
-      ClassificationExample ex = train[i];
-  //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
-      SparseVectorPtr input = ex.getInput()->toSparseVector();
-      
-    std::vector<FeatureGeneratorPtr> x;
-//      x.push_back(input);
-    for (size_t i = 0; i < input->getNumSubVectors(); ++i)
-      x.push_back(input->getSubVector(i));
-    size_t y = ex.getOutput();
-    size_t ypredicted = sequentialClassification(policy, x, 0.1, numClasses, &y);
-    if (ypredicted == y)
-      ++correct;
-  }
-  std::cout << "EVALUATION: " << correct << " / 1000" << std::endl << std::endl;
-  std::cout << "EVALUATION OF OPTIMAL POLICY: " << std::endl << policy->toString() << std::endl;
-
-  return 0;
+  double accuracy = evaluatePolicy(crTrain, optimalPolicy);
+  std::cout << "EVALUATION: " << accuracy * 100 << "%" << std::endl << std::endl;
+  return 0;*/
 }

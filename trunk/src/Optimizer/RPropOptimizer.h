@@ -49,7 +49,8 @@ private:
     for (size_t i = 0; i < gradient->getNumValues(); ++i)
       update(gradient->get(i), previousGradient->get(i), derivativeSpeed->get(i), parameters->get(i));
     for (size_t i = 0; i < gradient->getNumSubVectors(); ++i)
-      updateRecursive(gradient->getSubVector(i), previousGradient->getSubVector(i), derivativeSpeed->getSubVector(i), parameters->getSubVector(i));
+      if (gradient->getSubVector(i))
+        updateRecursive(gradient->getSubVector(i), previousGradient->getSubVector(i), derivativeSpeed->getSubVector(i), parameters->getSubVector(i));
   }
   
   void update(double derivative, double& previousDerivative, double& derivativeSpeed, double& parameter)

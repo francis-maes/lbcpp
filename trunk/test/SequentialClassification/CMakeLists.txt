@@ -4,6 +4,7 @@ ADD_CRALGORITHM(GeneratedCode/SequentialClassification.h SequentialClassificatio
 
 SET(SEQUENTIAL_CLASSIFICATION_SOURCES
   GeneratedCode/SequentialClassification.h
+  SyntheticDataGenerator.h
   SequentialClassification.cpp
 )
 

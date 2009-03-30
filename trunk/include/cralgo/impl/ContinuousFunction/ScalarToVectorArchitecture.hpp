@@ -26,8 +26,8 @@ struct ScalarToVectorArchitecture
   
   enum {isDerivable = ScalarArchitectureType::isDerivable};
   
-  DenseVectorPtr createInitialParameters() const
-    {return scalarArchitecture.createInitialParameters();}
+  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return scalarArchitecture.createInitialParameters(inputDictionary, initializeRandomly);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
                 FeatureGeneratorPtr* gradientWrtParameters,

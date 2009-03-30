@@ -81,8 +81,10 @@ public:
   ** Operations
   */
   size_t size() const;
+  
   virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
   void multiplyByScalar(double scalar);
+  void initializeRandomly(double mean = 0.0, double standardDeviation = 1.0);
   
   void addWeighted(const DenseVectorPtr otherVector, double weight);
   

@@ -29,6 +29,9 @@ public:
   /*
   ** Dictionary
   */
+  bool hasDictionary() const
+    {return dictionary != FeatureDictionaryPtr();}
+    
   void setDictionary(FeatureDictionaryPtr dictionary);
   void ensureDictionary(FeatureDictionaryPtr dictionary);
     

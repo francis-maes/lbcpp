@@ -55,6 +55,14 @@ public:
 public:
   virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
 
+  FeatureGeneratorPtr optimize(ScalarVectorFunctionPtr function, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL)
+  {
+    FeatureGeneratorPtr res = new DenseVector();
+    if (!optimize(function, res, stoppingCriterion, progress))
+      return FeatureGeneratorPtr();
+    return res;
+  }
+
 protected:
   size_t iteration;
   ScalarVectorFunctionPtr function;
@@ -67,7 +75,9 @@ protected:
   void setParameters(FeatureGeneratorPtr parameters)
   {
     this->parameters = parameters;
+    gradient = FeatureGeneratorPtr();
     function->compute(parameters, &value, gradientDirection, &gradient);
+    assert(gradient->getDictionary() == parameters->getDictionary());
   }
   
   void setParametersGradientAndValue(FeatureGeneratorPtr parameters, FeatureGeneratorPtr gradient, double value)
