@@ -21,6 +21,7 @@ public:
   static GradientBasedLearnerPtr createStochasticDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
   static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination);
   static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
+  static GradientBasedLearnerPtr createNonLearner();
   
 public:
   GradientBasedLearner() : meanInputSize(0.0) {}
@@ -43,7 +44,11 @@ public:
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}    
   virtual void trainStochasticEnd() {}
 
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress) = 0;
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
+  {
+    error("GradientBasedLearner::trainBatch", "This is a non-batch learner");
+    return false;
+  }
 
 protected:
   DenseVectorPtr parameters;

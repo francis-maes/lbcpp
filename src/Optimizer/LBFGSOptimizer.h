@@ -37,7 +37,7 @@ public:
   
   virtual OptimizerState step()
   {
-    DenseVectorPtr direction = new DenseVector();
+    DenseVectorPtr direction = new DenseVector(parameters->getDictionary());
     direction->addWeighted(gradient, -1.0);
     memory.mapDirectionByInverseHessian(direction);
     FeatureGeneratorPtr newParameters, newGradient;

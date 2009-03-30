@@ -53,6 +53,23 @@ size_t DenseVector::size() const
   return res;
 }
 
+void DenseVector::initializeRandomly(double mean, double standardDeviation)
+{
+  Random& random = Random::getInstance();
+  
+  assert(dictionary);
+  values.resize(dictionary->getNumFeatures());
+  for (size_t i = 0; i < values.size(); ++i)
+    values[i] = random.sampleDoubleFromGaussian(mean, standardDeviation);
+  subVectors.resize(dictionary->getNumScopes());
+  for (size_t i = 0; i < subVectors.size(); ++i)
+  { 
+    DenseVectorPtr subVector = new DenseVector(dictionary->getSubDictionary(i));
+    subVector->initializeRandomly(mean, standardDeviation);
+    subVectors[i] = subVector;
+  }
+}
+
 // todo: factorize binary operations between dense vectors
 
 void DenseVector::addWeighted(const DenseVectorPtr otherVector, double weight)

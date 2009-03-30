@@ -1,5 +1,3 @@
-o fichier Utilities.h pour le ErrorManager et le ProgressCallback
-o ProgressCallback dans LearningMachine::trainBatch
 
 LC++ library:
 =============
@@ -21,9 +19,6 @@ ContinuousFunctions:
 
 Optimizers:
   * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
-
-LearningMachine:
-  * Gerer les regularizers
 
 Policy:
  * GPomdp -> ScalarVectorFunction

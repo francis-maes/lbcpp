@@ -19,8 +19,12 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
 {
   enum {isDerivable = true};
 
-  DenseVectorPtr createInitialParameters() const
-    {return new DenseVector(getDictionary(), 1);}
+  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+  {
+    DenseVectorPtr res = new DenseVector(getDictionary(), 1);
+    res->set(0, Random::getInstance().sampleDoubleFromGaussian());
+    return res;
+  }
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,

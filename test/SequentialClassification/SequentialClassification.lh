@@ -14,26 +14,24 @@ namespace cralgo
     {return "iterator";}
 };
 
-featureGenerator unit() {featureScope("unit") featureSense(0);}
-
-featureGenerator describeUsedFeatureGenerators(const std::vector<SparseVectorPtr>& usedFeatureGenerators)
+featureGenerator describeUsedFeatureGenerators(const std::vector<  std::pair<size_t, SparseVectorPtr> >& usedFeatureGenerators)
 {
   featureSense("unit");
   for (int i = 0; i < (int)usedFeatureGenerators.size(); ++i)
-    featureCall((size_t)(usedFeatureGenerators.size() - 1 - i)) usedFeatureGenerators[i];    
+    featureCall(usedFeatureGenerators[i].first)
+      usedFeatureGenerators[i].second;
 }
 
-crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPtr>& featureGenerators, double featureCosts, size_t numClasses, size_t* ycorrect = NULL)
+// FIXME: passer le featureGEnerators en const& (necessite les InstanceSet)
+crAlgorithm size_t sequentialClassification(std::vector<FeatureGeneratorPtr> featureGenerators, double featureCosts, size_t numClasses, size_t ycorrect = (size_t)-1)
 {
   typedef std::pair<bool, size_t> Choice; // decision: (true, classNumber), feature-request: (false, featureScopeNumber)
   
   std::set<size_t> unusedFeatureGenerators;
   for (size_t i = 0; i < featureGenerators.size(); ++i)
-  {
     unusedFeatureGenerators.insert(i);
-    //currentRepresentation->setSubVector(i, unit()->toSparseVector());
-  }
-  std::vector<SparseVectorPtr> usedFeatureGenerators;
+  std::vector< std::pair<size_t, SparseVectorPtr> > usedFeatureGenerators;
+  std::string currentStateString;
   
   for (size_t step = 0; true; ++step)
   {
@@ -52,7 +50,7 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
       {
         // decision: -1 for classification error
         // 0 otherwise
-        return ycorrect && choice.second != *ycorrect ? -1 : 0;
+        return ycorrect != (size_t)-1 && choice.second != ycorrect ? -1 : 0;
       }
       else
       {
@@ -63,40 +61,47 @@ crAlgorithm size_t sequentialClassification(const std::vector<FeatureGeneratorPt
     
     chooseFunction featureGenerator actionFeatures(const Choice& choice)
     {
-      featureScope(step)
+      featureScope(currentStateString)
         if (choice.first)
         {
-          featureScope("decision")
+          featureScope(0)
             featureCall(choice.second)
               inline describeUsedFeatureGenerators(usedFeatureGenerators);
         }
         else
         {
-          featureScope("feature-request")
+          featureScope(1)
             featureCall(choice.second)
               inline describeUsedFeatureGenerators(usedFeatureGenerators);
         }
     }
     
-    Choice c = choose<Choice>(choices, actionValues, actionFeatures);
-    
+    Choice c;
+    if (step == 0)
+      c = Choice(false, 0);
+    else
+    {
+      c = choose<Choice>(choices, actionValues, actionFeatures);
+    }
+   
     if (c.first)
     {
-      if (ycorrect && c.second != *ycorrect) // reward -1 for a classification error
-        reward (-1.0);
+      if (ycorrect != (size_t)-1) // reward -1 for a classification error
+        reward (c.second == ycorrect ? 1.0 : -1.0);
       return c.second;
     }
     else
     {
       SparseVectorPtr newFeatures;
-
+      assert(unusedFeatureGenerators.find(c.second) != unusedFeatureGenerators.end());
       unusedFeatureGenerators.erase(c.second);
       assert(c.second < featureGenerators.size());
       assert(featureGenerators[c.second]);
       newFeatures = featureGenerators[c.second]->toSparseVector();
       assert(newFeatures);
-      usedFeatureGenerators.push_back(newFeatures);
+      usedFeatureGenerators.push_back(std::make_pair(c.second, newFeatures));
       reward (-featureCosts);
+      currentStateString += "_" + cralgo::toString(c.second);
     }
   }
   return 0;

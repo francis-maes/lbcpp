@@ -270,8 +270,8 @@ struct ScalarArchitectureScalarConstantPair : public ContinuousFunctionPair<Func
     
     enum {isDerivable = Function1::isDerivable};
     
-    DenseVectorPtr createInitialParameters() const
-      {return left.createInitialParameters();}
+    DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+      {return left.createInitialParameters(inputDictionary, initializeRandomly);}
   
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
@@ -324,8 +324,8 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
 
     enum {isDerivable = Function1::isDerivable && Function2::isDerivable};
 
-    DenseVectorPtr createInitialParameters() const
-      {return left.createInitialParameters();}
+    DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+      {return left.createInitialParameters(inputDictionary, initializeRandomly);}
       
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
@@ -370,8 +370,8 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
 
     enum {isDerivable = Function1::isDerivable && Function2::isDerivable};
 
-    DenseVectorPtr createInitialParameters() const
-      {return left.createInitialParameters();}
+    DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+      {return left.createInitialParameters(inputDictionary, initializeRandomly);}
   
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,

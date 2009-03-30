@@ -29,6 +29,9 @@ ActionValueFunctionPtr ActionValueFunction::createPredictions(RankerPtr ranker)
 ActionValueFunctionPtr ActionValueFunction::createProbabilities(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierProbabilitiesActionValue(classifier));}
 
+ActionValueFunctionPtr ActionValueFunction::createProbabilities(GeneralizedClassifierPtr classifier)
+  {return impl::staticToDynamic(impl::GeneralizedClassifierProbabilitiesActionValue(classifier));}
+
 ActionValueFunctionPtr ActionValueFunction::createPredictions(RegressorPtr regressor)
   {return impl::staticToDynamic(impl::RegressorActionValueFunction(regressor));}
 

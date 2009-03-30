@@ -19,6 +19,7 @@ public:
     
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
+    assert(parameters);
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
     //std::cout << "Params.addWeighted(" << gradient->toString() << " , " << (-weight * computeAlpha()) << ")" << std::endl;
     parameters->addWeighted(gradient, -weight * computeAlpha());
@@ -31,19 +32,6 @@ public:
     // apply regularizer
     if (regularizer)
       parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
-  }
-
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
-  {
-    assert(false);
-    return false;
-    for (int i = 0; i < 100; ++i)
-    {
-      std::cout << "Iteration " << i << " objective = " << objective->compute(parameters) << std::endl; 
-      FeatureGeneratorPtr gradient = objective->computeGradient(parameters);
-      parameters->addWeighted(gradient, -computeAlpha() * numExamples);
-      epoch += numExamples;
-    }
   }
   
 protected:
@@ -132,3 +120,16 @@ GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr opt
   assert(stoppingCriterion);
   return createBatch(optimizer, stoppingCriterion);
 }
+
+class NonLearnerGradientBasedLearner : public GradientBasedLearner
+{
+public:
+  virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
+    {}
+    
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
+    {return true;}
+};
+
+GradientBasedLearnerPtr GradientBasedLearner::createNonLearner()
+  {return new NonLearnerGradientBasedLearner();}

@@ -35,6 +35,7 @@ public:
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
                         
   static PolicyPtr createGPOMDP(GeneralizedClassifierPtr classifier, double beta, double exploration = 1.0);
+  static PolicyPtr createGPOMDP(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy);
 
   PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
   PolicyPtr addComputeStatistics() const;
@@ -58,6 +59,7 @@ public:
       if (res->getName() == name)
         return res;
     }
+    error("Policy::getResultWithName", "Could not find result with name '" + name + "'");
     return ObjectPtr();
   }
 };

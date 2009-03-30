@@ -30,10 +30,10 @@ class ScalarFunction : public ContinuousFunction
 public:
   static ScalarFunctionPtr createVectorFunctionLine(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
 
-  virtual double compute(double input) const = 0;
-  virtual double computeDerivative(double input) const = 0;
-  virtual double computeDerivative(double input, double direction) const = 0;
-  virtual void compute(double input, double* output, double* derivative) const = 0;
+  virtual double compute(double input) const;
+  virtual double computeDerivative(double input) const;
+  virtual double computeDerivative(double input, double direction) const;
+  virtual void compute(double input, double* output, double* derivative) const;
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
 };
 
@@ -55,25 +55,13 @@ public:
   static ScalarVectorFunctionPtr createSumOfSquares(double weight = 1.0);
 
 public:
-  virtual double compute(const FeatureGeneratorPtr input) const = 0;
-  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const = 0;
-  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const = 0;
+  virtual double compute(const FeatureGeneratorPtr input) const;
+  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const;
+  virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const;
+  virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const;
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const = 0;
-  virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const = 0;
 
-  bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
-  {
-    double dirNorm = direction->l2norm();
-    double epsilon = 5e-6 / dirNorm;
-    double value1 = compute(FeatureGenerator::weightedSum(parameters, 1.0, direction, -epsilon, true));
-    double value2 = compute(FeatureGenerator::weightedSum(parameters, 1.0, direction, epsilon, true));
-    double numericalDerivative = (value2 - value1) / (2.0 * epsilon);
-    FeatureGeneratorPtr gradient = computeGradient(parameters, direction);
-    double analyticDerivative = gradient->dotProduct(direction);
-    Object::warning("ScalarVectorFunction::checkDerivativeWrtDirection",
-      "Derivative Check: " + cralgo::toString(numericalDerivative) + " vs. " + cralgo::toString(analyticDerivative));
-    return fabs(numericalDerivative - analyticDerivative) < 0.00001;
-  }
+  bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
 };
 
 /*
@@ -93,7 +81,7 @@ class ScalarArchitecture : public ContinuousFunction
 public:
   // todo: non-derivable scalar architectures
   
-  virtual DenseVectorPtr createInitialParameters() const = 0;
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
 
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
   
@@ -111,7 +99,7 @@ class VectorArchitecture : public ContinuousFunction
 public:
   // todo: non-derivable vector architectures
 
-  virtual DenseVectorPtr createInitialParameters() const = 0;
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
 
   virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
 

@@ -102,7 +102,6 @@ GradientBasedRegressorPtr GradientBasedRegressor::createLeastSquaresLinear(Gradi
 {
   GradientBasedRegressorPtr res = new LeastSquaresLinearRegressor();
   res->setLearner(learner);
-  res->createParameters();
   return res;
 }
 
@@ -128,7 +127,6 @@ GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(Gradien
   GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
   res->setLearner(learner);
   res->setLabels(labels);
-  res->createParameters();
   return res;
 }
 
@@ -150,7 +148,6 @@ GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRe
   GradientBasedBinaryClassifierPtr res = new LogisticRegressionClassifier();
   res->setLearner(learner);
   res->setLabels(labels);
-  res->createParameters();
   return res;
 }
 
@@ -172,7 +169,6 @@ GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(
   GradientBasedBinaryClassifierPtr res = new LinearSupportVectorMachine();
   res->setLearner(learner);
   res->setLabels(labels);
-  res->createParameters();
   return res;
 }
 
@@ -197,7 +193,6 @@ GradientBasedGeneralizedClassifierPtr GradientBasedGeneralizedClassifier::create
 {
   GradientBasedGeneralizedClassifierPtr res = new LinearGeneralizedClassifier();
   res->setLearner(learner);
-  res->createParameters();
   return res;
 }
 
@@ -216,7 +211,6 @@ GradientBasedRankerPtr GradientBasedRanker::createLargeMarginAllPairsLinear(Grad
 {
   GradientBasedRankerPtr res = new LargeMarginAllPairsLinearRanker();
   res->setLearner(learner);
-  res->createParameters();
   return res;
 }
 
@@ -232,7 +226,6 @@ GradientBasedRankerPtr GradientBasedRanker::createLargeMarginBestAgainstAllLinea
 {
   GradientBasedRankerPtr res = new LargeMarginBestAgainstAllLinearRanker();
   res->setLearner(learner);
-  res->createParameters();
   return res;
 }
 
@@ -248,6 +241,5 @@ GradientBasedRankerPtr GradientBasedRanker::createLargeMarginMostViolatedPairLin
 {
   GradientBasedRankerPtr res = new LargeMarginMostViolatedPairLinearRanker();
   res->setLearner(learner);
-  res->createParameters();
   return res;
 }

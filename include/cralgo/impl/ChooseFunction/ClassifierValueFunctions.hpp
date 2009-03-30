@@ -73,6 +73,30 @@ struct GeneralizedClassifierScoresActionValue
     {return classifier->predictScore(choose->computeActionFeatures(variable));}
 };
 
+struct GeneralizedClassifierProbabilitiesActionValue
+  : public ActionValueFunction<GeneralizedClassifierProbabilitiesActionValue>
+{
+  GeneralizedClassifierProbabilitiesActionValue(GeneralizedClassifierPtr classifier)
+    : classifier(classifier) {}
+    
+  GeneralizedClassifierPtr classifier;
+  std::map<std::string, double> probs;
+    
+  void setChoose(ChoosePtr choose)
+  {
+    DenseVectorPtr probabilities = classifier->predictProbabilities(choose->computeActionsFeatures(false));
+    size_t i = 0;
+    for (VariableIteratorPtr iterator = choose->newIterator(); iterator->exists(); iterator->next())
+      probs[iterator->get()->toString()] = probabilities->get(i++);
+  }
+
+  double computeDynamicType(cralgo::VariablePtr variable) const
+  {
+    assert(probs.find(variable->toString()) != probs.end());
+    return probs.find(variable->toString())->second;
+  }
+};
+
 }; /* namespace impl */
 }; /* namespace cralgo */
 

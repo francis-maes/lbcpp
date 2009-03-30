@@ -19,8 +19,13 @@ struct LinearArchitecture : public ScalarArchitecture<LinearArchitecture>
 {
   enum {isDerivable = true};
   
-  DenseVectorPtr createInitialParameters() const
-    {return new DenseVector();} // FIXME: architecture
+  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+  {
+    DenseVectorPtr res = new DenseVector(inputDictionary);
+    if (initializeRandomly)
+      res->initializeRandomly();
+    return res;
+  }
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
