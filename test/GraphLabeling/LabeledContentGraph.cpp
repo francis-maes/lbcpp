@@ -121,23 +121,26 @@ public:
     it1 = nodeIdentifiers.find(columns[1]);
     it2 = nodeIdentifiers.find(columns[0]);
     if (it1 == nodeIdentifiers.end())
-    {
-      if (!maxNodes)
-        Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[1] + "'");
-    }
-    else if (it2 == nodeIdentifiers.end())
-    {
-      if (!maxNodes)
-        Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[0] + "'");
-    }
-    else
+      invalidIdentifiers.insert(columns[1]);
+    if (it2 == nodeIdentifiers.end())
+      invalidIdentifiers.insert(columns[0]);
+    if (it1 != nodeIdentifiers.end() && it2 != nodeIdentifiers.end())
       res->addLink(it1->second, it2->second);
+    return true;
+  }
+  
+  virtual bool parseEnd()
+  {
+    if (invalidIdentifiers.size())
+      Object::warning("LinkFileParser::parseEnd", cralgo::toString(invalidIdentifiers.size()) + " invalid identifiers in link file");
+    invalidIdentifiers.clear();
     return true;
   }
   
 private:
   LabeledContentGraphPtr res;
   std::map<std::string, size_t>& nodeIdentifiers;
+  std::set<std::string> invalidIdentifiers;
   size_t maxNodes;
 };
 
