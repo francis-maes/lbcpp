@@ -1,4 +1,4 @@
-INCLUDE_DIRECTORIES(${CRAlgo_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${Lcpp_SOURCE_DIR}/include)
 
 SET(LCPP_CORE_IMPL ../include/lcpp/impl)
 

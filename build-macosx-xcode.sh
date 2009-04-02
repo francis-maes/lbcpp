@@ -5,5 +5,5 @@ mkdir macosx-xcode
 cd macosx-xcode
 ccmake -G"Xcode" ../..
 # xcodebuild -alltargets
-open CRAlgo.xcodeproj
+open Lcpp.xcodeproj
 cd ../..
