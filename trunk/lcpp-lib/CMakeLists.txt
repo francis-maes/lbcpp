@@ -1,5 +1,5 @@
 INCLUDE_DIRECTORIES(
-  ${CRAlgo_SOURCE_DIR}/include
+  ${Lcpp_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/GeneratedCode
 )
 
