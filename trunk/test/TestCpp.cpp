@@ -57,7 +57,7 @@ int testRegression(std::istream& istr)
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
       GradientBasedLearner::createStochasticDescent(
       IterationFunction::createConstant(0.01)));
-  regressor->createParameters();
+//  regressor->createParameters();
   for (int i = 0; i < 100; ++i)
   {
    // FeatureGeneratorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());

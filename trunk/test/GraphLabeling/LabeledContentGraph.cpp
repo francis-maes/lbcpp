@@ -168,78 +168,87 @@ void LabeledContentGraph::makeFolds(size_t numFolds, bool removeTrainTestLinks, 
 {
   size_t numNodes = getNumNodes();
   assert(numFolds > 1 && numNodes);
-  
-  trainGraphs.resize(numFolds);
-  testGraphs.resize(numFolds);
-  
+  trainGraphs.reserve(trainGraphs.size() + numFolds);
+  testGraphs.reserve(testGraphs.size() + numFolds);
   double foldMeanSize = numNodes / (double)numFolds;
+
   for (size_t i = 0; i < numFolds; ++i)
   {
     //    std::cout << "makeFolds fold " << i << std::endl;
     size_t foldBegin = (size_t)(i * foldMeanSize);
     size_t foldEnd = (size_t)((i + 1) * foldMeanSize);
-    assert(foldEnd <= numNodes);    
+    std::pair<LabeledContentGraphPtr, LabelsFold> graphs = makeFold(foldBegin, foldEnd, removeTrainTestLinks);
+    trainGraphs.push_back(graphs.first);
+    testGraphs.push_back(graphs.second);
+  }
+}
 
-    /*
-    ** Train graph
-    */
-    LabeledContentGraphPtr trainGraph = new LabeledContentGraph(getLabelDictionary()); // all but the current fold
-    
-    // create train nodes
-    for (size_t j = 0; j < numNodes; ++j)
-      if (j < foldBegin || j >= foldEnd)
-        trainGraph->addNode(getNode(j), getLabel(j));
-    
-    // create train links
-    for (size_t j = 0; j < numNodes; ++j)
-      if (j < foldBegin || j >= foldEnd)
-      {
-        for (size_t k = 0; k < getNumSuccessors(j); ++k)
-        {
-          size_t succ = getSuccessor(j, k);
-          if (succ < foldBegin || succ >= foldEnd)
-          {
-            size_t mappedSourceIndex = j < foldBegin ? j : j - (foldEnd - foldBegin);
-            size_t mappedSuccIndex = succ < foldBegin ? succ : succ - (foldEnd - foldBegin);
-            trainGraph->addLink(mappedSourceIndex, mappedSuccIndex);
-          }
-        }
-      }
-    trainGraphs[i] = trainGraph;
-    
-    /*
-    ** Test graph
-    */
-    if (removeTrainTestLinks)
+std::pair<LabeledContentGraphPtr, LabeledContentGraph::LabelsFold> LabeledContentGraph::makeFold(size_t testBegin, size_t testEnd, bool removeTrainTestLinks)
+{
+  size_t numNodes = getNumNodes();
+  assert(numNodes && testBegin < testEnd && testEnd <= numNodes);    
+  std::pair<LabeledContentGraphPtr, LabelsFold> res;
+
+  /*
+  ** Train graph
+  */
+  LabeledContentGraphPtr trainGraph = new LabeledContentGraph(getLabelDictionary()); // all but the current fold
+  
+  // create train nodes
+  for (size_t j = 0; j < numNodes; ++j)
+    if (j < testBegin || j >= testEnd)
+      trainGraph->addNode(getNode(j), getLabel(j));
+  
+  // create train links
+  for (size_t j = 0; j < numNodes; ++j)
+    if (j < testBegin || j >= testEnd)
     {
-      LabelsFold testGraph;
-      testGraph.graph = new LabeledContentGraph(getLabelDictionary()); // current fold
-      testGraph.foldBegin = 0;
-      testGraph.foldEnd = foldEnd - foldBegin;
-      
-      // create test nodes
-      for (size_t j = foldBegin; j < foldEnd; ++j)
-        testGraph.graph->addNode(getNode(j), getLabel(j));
-      // create test links
-      for (size_t j = foldBegin; j < foldEnd; ++j)
+      for (size_t k = 0; k < getNumSuccessors(j); ++k)
       {
-        size_t n = getNumSuccessors(j);
-        for (size_t k = 0; k < n; ++k)
+        size_t succ = getSuccessor(j, k);
+        if (succ < testBegin || succ >= testEnd)
         {
-          size_t succ = getSuccessor(j, k);
-          if (succ >= foldBegin && succ < foldEnd)
-            testGraph.graph->addLink(j - foldBegin, succ - foldBegin);
+          size_t mappedSourceIndex = j < testBegin ? j : j - (testEnd - testBegin);
+          size_t mappedSuccIndex = succ < testBegin ? succ : succ - (testEnd - testBegin);
+          trainGraph->addLink(mappedSourceIndex, mappedSuccIndex);
         }
       }
-      testGraphs[i] = testGraph;
     }
-    else
+  res.first = trainGraph;
+  
+  /*
+  ** Test graph
+  */
+  LabelsFold testGraph;
+  if (removeTrainTestLinks)
+  {
+    testGraph.graph = new LabeledContentGraph(getLabelDictionary()); // current fold
+    testGraph.foldBegin = 0;
+    testGraph.foldEnd = testEnd - testBegin;
+    
+    // create test nodes
+    for (size_t j = testBegin; j < testEnd; ++j)
+      testGraph.graph->addNode(getNode(j), getLabel(j));
+
+    // create test links
+    for (size_t j = testBegin; j < testEnd; ++j)
     {
-      LabelsFold testGraph;
-      testGraph.graph = LabeledContentGraphPtr(this);
-      testGraph.foldBegin = foldBegin;
-      testGraph.foldEnd = foldEnd;
-      testGraphs[i] = testGraph;
+      size_t n = getNumSuccessors(j);
+      for (size_t k = 0; k < n; ++k)
+      {
+        size_t succ = getSuccessor(j, k);
+        if (succ >= testBegin && succ < testEnd)
+          testGraph.graph->addLink(j - testBegin, succ - testBegin);
+      }
     }
   }
+  else
+  {
+    testGraph.graph = LabeledContentGraphPtr(this);
+    testGraph.foldBegin = testBegin;
+    testGraph.foldEnd = testEnd;
+  }
+  res.second = testGraph;
+  
+  return res;
 }

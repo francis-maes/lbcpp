@@ -50,6 +50,8 @@ public:
   static ActionValueFunctionPtr createPredictions(RankerPtr ranker);    
   static ActionValueFunctionPtr createPredictions(RegressorPtr regressor);
 
+  static ActionValueFunctionPtr createProbabilities(GradientBasedClassifierPtr classifier)
+    {return createProbabilities(ClassifierPtr(classifier));}
   static ActionValueFunctionPtr createScores(GradientBasedClassifierPtr classifier)
     {return createScores(ClassifierPtr(classifier));}
   static ActionValueFunctionPtr createScores(GradientBasedGeneralizedClassifierPtr classifier)
