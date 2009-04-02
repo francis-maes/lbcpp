@@ -10,6 +10,7 @@
 #include <cralgo/Random.h>
 #include <cralgo/IterationFunction.h>
 #include <iostream>
+#include <fstream>
 using namespace cralgo;
 
 /*
@@ -138,3 +139,76 @@ private:
 
 IterationFunctionPtr IterationFunction::createInvLinear(double initialValue, size_t numberIterationsToReachHalfInitialValue)
   {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
+
+/*
+** TextFileParser
+*/
+bool TextFileParser::parseLine(const std::string& line)
+{
+  size_t begin = line.find_first_not_of(" \t");
+  bool isEmpty = begin == std::string::npos;
+  if (isEmpty)
+    return parseEmptyLine();
+  if (line[begin] == '#')
+    return parseCommentLine(line.substr(begin + 1));
+  std::vector<std::string> columns;
+  tokenize(line, columns);
+  return parseDataLine(columns);
+}
+
+void TextFileParser::tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators)
+{
+  //std::cout << "Tokenize " << cralgo::toString(line) << " => ";
+  size_t b = line.find_first_not_of(separators);
+  while (b != std::string::npos)
+  {
+    size_t e = line.find_first_of(separators, b);
+    if (e == std::string::npos)
+      columns.push_back(line.substr(b));
+    else
+      columns.push_back(line.substr(b, e - b));
+    b = line.find_first_not_of(separators, e);
+  }
+  //std::cout << cralgo::toString(columns) << std::endl;
+}
+
+bool TextFileParser::parseStream(std::istream& istr)
+{
+  parsingBreaked = false;
+  parseBegin();
+  while (!istr.eof() && !parsingBreaked)
+  {
+    std::string line;
+    std::getline(istr, line);
+    size_t n = line.find_last_not_of("\r\n");
+    if (n != std::string::npos)
+      line = line.substr(0, n + 1);
+    if (!parseLine(line))
+    {
+      Object::error("TextFileParser::parse", "Could not parse line '" + line + "'");
+      return false;
+    }
+  }
+  if (!parseEnd())
+  {
+    Object::error("TextFileParser::parse", "Error in parse end");
+      return false;
+  }
+  return true;
+}
+
+bool TextFileParser::parseFile(const std::string& filename)
+{
+  if (filename == "")
+  {
+    Object::error("TextFileParser::parseFile", "No filename specified");
+    return false;
+  }
+  std::ifstream istr(filename.c_str());
+  if (!istr.is_open())
+  {
+    Object::error("TextFileParser::parseFile", "Could not open file '" + filename + "'");
+    return false;
+  }
+  return parseStream(istr);
+}
