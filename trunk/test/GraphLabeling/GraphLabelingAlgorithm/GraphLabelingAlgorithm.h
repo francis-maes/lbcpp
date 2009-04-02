@@ -17,7 +17,12 @@ namespace cralgo
 class GraphLabelingAlgorithm
 {
 public:
+  GraphLabelingAlgorithm() : l2regularizer(0.0) {}
+  
   virtual ~GraphLabelingAlgorithm() {}
+
+  virtual void setL2Regularizer(double reg)
+    {l2regularizer = reg;}
   
   virtual void reset(StringDictionaryPtr labels) = 0;
   virtual void train(LabeledContentGraphPtr graph) = 0;
@@ -41,6 +46,9 @@ public:
       testAccuracy->push(evaluate(testGraphs[i].graph, testGraphs[i].foldBegin, testGraphs[i].foldEnd));
     }
   }
+  
+protected:
+  double l2regularizer;
 };
 
 }; /* namespace cralgo */

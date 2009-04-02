@@ -17,12 +17,8 @@ namespace cralgo
 class ClassifierBasedGraphLabelingAlgorithm : public GraphLabelingAlgorithm
 {
 public:  
-  ClassifierBasedGraphLabelingAlgorithm() : l2regularizer(0.0) {}
-  
   virtual FeatureGeneratorPtr getNodeFeatures(LabeledContentGraphPtr graph, size_t nodeIndex) = 0;
 
-  double l2regularizer; // a la rache
-  
   virtual ClassifierPtr createClassifier(StringDictionaryPtr labels)
   {
     IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);

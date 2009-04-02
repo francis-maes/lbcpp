@@ -36,9 +36,8 @@ public:
 class CRIterativeClassificationGraphLabelingAlgorithm : public CRAlgorithmGraphLabelingAlgorithm
 {
 public:
-  CRIterativeClassificationGraphLabelingAlgorithm() : l2regularizer(0.0), epsilon(0.0), temperature(0.0), probabilistic(false), oneClassifierPerPass(false) {}
+  CRIterativeClassificationGraphLabelingAlgorithm() : epsilon(0.0), temperature(0.0), probabilistic(false), oneClassifierPerPass(false) {}
   
-  double l2regularizer;
   double epsilon;
   double temperature;
   bool probabilistic;
@@ -88,18 +87,83 @@ public:
 static std::ostream* resultsOutputFile = NULL;
 static std::string allResults;
 
-void testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
+double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraph)
 {
   std::cout << "Testing Algorithm " << name << std::endl;
-  ScalarRandomVariableStatisticsPtr trainAccuracy = new ScalarRandomVariableStatistics("trainAccuracy");
-  ScalarRandomVariableStatisticsPtr testAccuracy = new ScalarRandomVariableStatistics("testAccuracy");
-  algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
-  std::string results = name + " => Train Accuracy: " + cralgo::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + cralgo::toString(testAccuracy->getMean() * 100);
-  
-  std::cout << results << std::endl;
-  allResults += results + "\n";
-  (*resultsOutputFile) << "+" << results << std::endl;
+  double bestTestAccuracy = 0.0;
+  int iterationsWithoutImprovement = 0;
+  for (int i = 0; i < 16; ++i)
+  {
+    double regularizer = (double)i;
+    ScalarRandomVariableStatisticsPtr trainAccuracy = new ScalarRandomVariableStatistics("trainAccuracy");
+    ScalarRandomVariableStatisticsPtr testAccuracy = new ScalarRandomVariableStatistics("testAccuracy");
+    algorithm.setL2Regularizer(regularizer);
+    algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
+    double score = testAccuracy->getMean();
+    std::string results = name + " reg = " + cralgo::toString(regularizer) + " => Train Accuracy: " + cralgo::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + cralgo::toString(score * 100);
+    if (score > bestTestAccuracy)
+    {
+      iterationsWithoutImprovement = 0;
+      bestTestAccuracy = score;
+    }
+    else
+    {
+      ++iterationsWithoutImprovement;
+      if (iterationsWithoutImprovement == 5)
+        break;
+    }
+    std::cout << results << std::endl;
+    allResults += results + "\n";
+    (*resultsOutputFile) << "+" << results << std::endl;
+  }
+  (*resultsOutputFile) << "==> " << name << " " << bestTestAccuracy;
+  return bestTestAccuracy;
+}
+
+void testAllAlgorithms( const std::vector<LabeledContentGraphPtr>& trainGraphs,
+                        const std::vector<LabeledContentGraph::LabelsFold>& testGraphs)
+{
+  ContentOnlyGraphLabelingAlgorithm contentOnly;
+  testAlgorithm(contentOnly, "CO", trainGraphs, testGraphs);
+
+  IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
+  testAlgorithm(iterativeClassification, "ICA", trainGraphs, testGraphs);
+
+  GibbsSamplingGraphLabelingAlgorithm gibbsProb;
+  testAlgorithm(gibbsProb, "GS", trainGraphs, testGraphs);
+
+  CRIterativeClassificationGraphLabelingAlgorithm crIterative;
+  testAlgorithm(crIterative, "CRICA", trainGraphs, testGraphs);
+
+  crIterative.probabilistic = true;
+  testAlgorithm(crIterative, "CRICA-PROB", trainGraphs, testGraphs);
+
+  crIterative.oneClassifierPerPass = true;
+  testAlgorithm(crIterative, "CRICA-PROB-CPP", trainGraphs, testGraphs);
+
+  crIterative.probabilistic = false;
+  crIterative.oneClassifierPerPass = true;
+  testAlgorithm(crIterative, "CRICA-CPP", trainGraphs, testGraphs);
+
+  StackedGraphLabelingAlgorithm stacked2(&contentOnly);
+  testAlgorithm(stacked2, "STACK2", trainGraphs, testGraphs);
+  assert(&stacked2.getBaseAlgorithm() == &contentOnly);
+
+  StackedGraphLabelingAlgorithm stacked3(&stacked2);
+  assert(&stacked3.getBaseAlgorithm() == &stacked2);
+  testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs);
+
+  StackedGraphLabelingAlgorithm stacked4(&stacked3);
+  assert(&stacked4.getBaseAlgorithm() == &stacked3);
+  testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs);
+
+  StackedGraphLabelingAlgorithm stacked5(&stacked4);
+  assert(&stacked5.getBaseAlgorithm() == &stacked4);
+  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs);
+
+  PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
+  testAlgorithm(perfectContext, "OPT", trainGraphs, testGraphs);
 }
 
 int main(int argc, char* argv[])
@@ -157,89 +221,7 @@ int main(int argc, char* argv[])
       << testGraphs[i].foldEnd - testGraphs[i].foldBegin << " test nodes."
       << std::endl;
   }
-  
-//  ContentOnlyGraphLabelingAlgorithm contentOnly;
- // testAlgorithm(contentOnly, "Content Only", trainGraphs, testGraphs);
-/*
-  OnePassOrderFreeGraphLabelingAlgorithm onePassOrderFree;
-  testAlgorithm(onePassOrderFree, "One pass order-free", trainGraphs, testGraphs);
-  return 0;
-  */
-  
-  for (int i = 0; i < 16; ++i)
-  {
-    double regularizer = (double)i;
-
-    ContentOnlyGraphLabelingAlgorithm contentOnly;
-    contentOnly.l2regularizer = regularizer;
-    testAlgorithm(contentOnly, "CO " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-  
-    IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
-    iterativeClassification.l2regularizer = regularizer;
-    testAlgorithm(iterativeClassification, "ICA " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-    
-    GibbsSamplingGraphLabelingAlgorithm gibbsProb;
-    gibbsProb.l2regularizer = regularizer;
-    testAlgorithm(gibbsProb, "GS " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-  
-      CRIterativeClassificationGraphLabelingAlgorithm crIterative;
-      crIterative.l2regularizer = regularizer;
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " deterministic", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CRICA " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-      crIterative.probabilistic = true;
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CRICA-PROB " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-      crIterative.oneClassifierPerPass = true;
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CRICA-PROB-CPP " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-      crIterative.probabilistic = false;
-      crIterative.oneClassifierPerPass = true;
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
-//      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
-      testAlgorithm(crIterative, "CRICA-CPP " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-    
-      StackedGraphLabelingAlgorithm stacked2(&contentOnly);
-      stacked2.l2regularizer = regularizer;
-      testAlgorithm(stacked2, "STACK2 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-      assert(&stacked2.getBaseAlgorithm() == &contentOnly);
-
-      StackedGraphLabelingAlgorithm stacked3(&stacked2);
-      stacked3.l2regularizer = regularizer;
-      assert(&stacked3.getBaseAlgorithm() == &stacked2);
-      testAlgorithm(stacked3, "STACK3 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-      StackedGraphLabelingAlgorithm stacked4(&stacked3);
-      stacked4.l2regularizer = regularizer;
-      assert(&stacked4.getBaseAlgorithm() == &stacked3);
-      testAlgorithm(stacked4, "STACK4 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-      StackedGraphLabelingAlgorithm stacked5(&stacked4);
-      stacked5.l2regularizer = regularizer;
-      assert(&stacked5.getBaseAlgorithm() == &stacked4);
-      testAlgorithm(stacked5, "STACK5 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-  
-      PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
-      perfectContext.l2regularizer = regularizer;
-      testAlgorithm(perfectContext, "OPT " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-     
-    
-/*
-    double t = -1.5;//for (double t = -3; t <= 3; t += 0.5)
-    {
-      double temperature = pow(2.0, (double)t);
-      CRIterativeClassificationGraphLabelingAlgorithm crIterative;
-      crIterative.l2regularizer = regularizer;
-      crIterative.temperature = temperature;
-      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " temp " + cralgo::toString(temperature), trainGraphs, testGraphs);
-    }*/
-  }
-
+  testAllAlgorithms(trainGraphs, testGraphs);
 
   std::cout << std::endl << std::endl << std::endl;
   std::cout << allResults << std::endl;
