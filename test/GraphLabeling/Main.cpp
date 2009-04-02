@@ -199,8 +199,6 @@ int main(int argc, char* argv[])
     << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
   std::cout << *labelsDictionary << std::endl;
 
-  std::cout << "Randomize order..." << std::endl;
-  graph = graph->randomizeOrder();
   std::cout << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
     << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
   
@@ -211,7 +209,7 @@ int main(int argc, char* argv[])
   std::vector<LabeledContentGraphPtr> trainGraphs;
   std::vector<LabeledContentGraph::LabelsFold> testGraphs;
   while (trainGraphs.size() < 10)
-    graph->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
+    graph->randomizeOrder()->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
   
   for (size_t i = 0; i < trainGraphs.size(); ++i)
   {
