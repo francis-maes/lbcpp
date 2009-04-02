@@ -166,9 +166,28 @@ void testAllAlgorithms( const std::vector<LabeledContentGraphPtr>& trainGraphs,
   testAlgorithm(perfectContext, "OPT", trainGraphs, testGraphs);
 }
 
-int main(int argc, char* argv[])
+void displayFolds(const std::vector<LabeledContentGraphPtr>& trainGraphs,
+                  const std::vector<LabeledContentGraph::LabelsFold>& testGraphs)
 {
-  // contentFile citeFile numFolds resultsFile
+  assert(trainGraphs.size() == testGraphs.size());
+  for (size_t i = 0; i < trainGraphs.size(); ++i)
+  {
+    std::cout << "Fold " << i << ": "
+      << trainGraphs[i]->getNumNodes() << " train nodes, "
+      << trainGraphs[i]->getNumLinks() << " train links, "
+      << testGraphs[i].foldEnd - testGraphs[i].foldBegin << " test nodes."
+      << std::endl;
+  }
+}
+
+void displayGraphInfo(std::ostream& ostr, LabeledContentGraphPtr graph, FeatureDictionaryPtr featuresDictionary, StringDictionaryPtr labelsDictionary)
+{
+  ostr << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
+    << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
+}
+
+int crossValidateAll(int argc, char* argv[])
+{
   if (argc < 6)
   {
     std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds removeTrainTestLinks resultsFile.txt" << std::endl;
@@ -186,7 +205,6 @@ int main(int argc, char* argv[])
   }
   resultsOutputFile = &resultsFile;
 
-//  static const std::string basename = "/Users/francis/Projets/CRAlgo/trunk/test/GraphLabeling/data/cora/cora";
   FeatureDictionaryPtr featuresDictionary = new FeatureDictionary("features");
   StringDictionaryPtr labelsDictionary = new StringDictionary();
 
@@ -194,31 +212,17 @@ int main(int argc, char* argv[])
   LabeledContentGraphPtr graph = LabeledContentGraph::parseGetoorGraph(contentFile, linkFile, featuresDictionary, labelsDictionary);
   if (!graph)
     return 1;
-    
-  std::cout << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
-    << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
+  displayGraphInfo(std::cout, graph, featuresDictionary, labelsDictionary);  
   std::cout << *labelsDictionary << std::endl;
+  displayGraphInfo(resultsFile, graph, featuresDictionary, labelsDictionary);
 
-  std::cout << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
-    << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
-  
-  resultsFile << std::endl << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
-    << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl << std::endl;
-  
   std::cout << "Splitting graph..." << std::endl;
   std::vector<LabeledContentGraphPtr> trainGraphs;
   std::vector<LabeledContentGraph::LabelsFold> testGraphs;
   while (trainGraphs.size() < 10)
     graph->randomizeOrder()->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
   
-  for (size_t i = 0; i < trainGraphs.size(); ++i)
-  {
-    std::cout << "Fold " << i << ": "
-      << trainGraphs[i]->getNumNodes() << " train nodes, "
-      << trainGraphs[i]->getNumLinks() << " train links, "
-      << testGraphs[i].foldEnd - testGraphs[i].foldBegin << " test nodes."
-      << std::endl;
-  }
+  displayFolds(trainGraphs, testGraphs);
   testAllAlgorithms(trainGraphs, testGraphs);
 
   std::cout << std::endl << std::endl << std::endl;
@@ -226,3 +230,62 @@ int main(int argc, char* argv[])
   return 0;
 }
 
+int trainTestFixedTrainSize(int argc, char* argv[])
+{
+  if (argc < 6)
+  {
+    std::cerr << "Usage: " << argv[0] << " data.content data.links trainPercentage removeTrainTestLinks resultsFile.txt" << std::endl;
+    return 1;
+  }
+  std::string contentFile = argv[1];
+  std::string linkFile = argv[2];
+  int trainPercentage = atoi(argv[3]);
+  if (trainPercentage <= 0 || trainPercentage >= 100)
+  {
+    std::cerr << "Train percentage must be in interval ]0, 100[" << std::endl;
+    return 1;
+  }
+  bool removeTrainTestLinks = argv[4] == std::string("true");
+  std::ofstream resultsFile(argv[5]);
+  if (!resultsFile.is_open())
+  {
+    std::cerr << "Error: could not open file " << argv[5] << std::endl;
+    return 1;
+  }
+  resultsOutputFile = &resultsFile;
+
+  FeatureDictionaryPtr featuresDictionary = new FeatureDictionary("features");
+  StringDictionaryPtr labelsDictionary = new StringDictionary();
+
+  std::cout << "Parsing graph..." << std::endl;
+  LabeledContentGraphPtr graph = LabeledContentGraph::parseGetoorGraph(contentFile, linkFile, featuresDictionary, labelsDictionary);
+  if (!graph)
+    return 1;
+  displayGraphInfo(std::cout, graph, featuresDictionary, labelsDictionary);  
+  std::cout << *labelsDictionary << std::endl;
+  displayGraphInfo(resultsFile, graph, featuresDictionary, labelsDictionary);
+
+  std::cout << "Splitting graph..." << std::endl;
+  std::vector<LabeledContentGraphPtr> trainGraphs;
+  std::vector<LabeledContentGraph::LabelsFold> testGraphs;
+  while (trainGraphs.size() < 10)
+  {
+    std::pair<LabeledContentGraphPtr, LabeledContentGraph::LabelsFold> fold = 
+      graph->randomizeOrder()->makeFold((graph->getNumNodes() * trainPercentage) / 100, graph->getNumNodes(), removeTrainTestLinks);
+    trainGraphs.push_back(fold.first);
+    testGraphs.push_back(fold.second);
+  }
+  
+  displayFolds(trainGraphs, testGraphs);
+  testAllAlgorithms(trainGraphs, testGraphs);
+
+  std::cout << std::endl << std::endl << std::endl;
+  std::cout << allResults << std::endl;
+  return 0;
+}
+
+int main(int argc, char* argv[])
+{
+//  return crossValidateAll(argc, argv);
+  return trainTestFixedTrainSize(argc, argv);
+}
