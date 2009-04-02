@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/Optimizer.h>
+#include <lcpp/Optimizer.h>
 #include "Optimizer/RPropOptimizer.h"
 #include "Optimizer/GradientDescentOptimizer.h"
 #include "Optimizer/LBFGSOptimizer.h"
 #include <deque>
-using namespace cralgo;
+using namespace lcpp;
 
 class MaxIterationsOptimizerStoppingCriterion : public OptimizerStoppingCriterion
 {
@@ -132,7 +132,7 @@ bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGenerato
   stoppingCriterion->reset();
   for (iteration = 0; true; ++iteration)
   {
-    if (progress && !progress->progressStep("Optimizing, f = " + cralgo::toString(value) + " norm = " + cralgo::toString(parameters->l2norm()), (double)iteration))
+    if (progress && !progress->progressStep("Optimizing, f = " + lcpp::toString(value) + " norm = " + lcpp::toString(parameters->l2norm()), (double)iteration))
       return false;
     if (stoppingCriterion->isTerminated(value, parameters, gradient))
       break;

@@ -3,7 +3,7 @@
 */
 #include "../Data/LabeledContentGraph.cr++"
 
-namespace cralgo
+namespace lcpp
 {
 
 crAlgorithm LabelSequence indexOrderedGraphLabeling(const ContentGraph& x, const LabelDictionary& labels, const LabelSequence* ycorrect = NULL, size_t contextSize = 1)
@@ -34,20 +34,20 @@ crAlgorithm LabelSequence indexOrderedGraphLabeling(const ContentGraph& x, const
   return prediction.getLabels();
 }
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 class GraphLabelingCRAlgorithmInstanceSet : public CRAlgorithmInstanceSet
 {
 public:
-  virtual cralgo::CRAlgorithmPtr createInstance(const cralgo::ContentGraph& x, const cralgo::LabelDictionary& labels, const cralgo::LabelSequence* ycorrect) = 0;
+  virtual lcpp::CRAlgorithmPtr createInstance(const lcpp::ContentGraph& x, const lcpp::LabelDictionary& labels, const lcpp::LabelSequence* ycorrect) = 0;
 
   virtual unsigned getNumInstances()
     {return graphs.size();}
   
-  virtual cralgo::CRAlgorithmPtr createInstance(size_t i)
+  virtual lcpp::CRAlgorithmPtr createInstance(size_t i)
   {
     assert(i < graphs.size());
-    const cralgo::LabeledContentGraph& g = graphs[i];
+    const lcpp::LabeledContentGraph& g = graphs[i];
     return createInstance(g.getGraph(), g.getDictionary(), g.hasLabels() ? &g.getLabels() : NULL);
   }
   
@@ -73,12 +73,12 @@ public:
   }
   
 private:
-  cralgo::LabelDictionary labels;
-  std::vector<cralgo::LabeledContentGraph> graphs;
+  lcpp::LabelDictionary labels;
+  std::vector<lcpp::LabeledContentGraph> graphs;
   
-  cralgo::LabeledContentGraph convertGraph(GraphLabelingExamplePtr niemeGraph)
+  lcpp::LabeledContentGraph convertGraph(GraphLabelingExamplePtr niemeGraph)
   {
-    cralgo::LabeledContentGraph res(labels);
+    lcpp::LabeledContentGraph res(labels);
     res.reserveNodes(niemeGraph->getNumNodes());
     
     GraphConceptPtr niemeContentGraph = niemeGraph->getInputGraph();
@@ -103,6 +103,6 @@ private:
 class IndexOrderedGraphLabelingInstanceSet : public GraphLabelingCRAlgorithmInstanceSet
 {
 public:
-  virtual cralgo::CRAlgorithmPtr createInstance(const cralgo::ContentGraph& x, const cralgo::LabelDictionary& labels, const cralgo::LabelSequence* ycorrect)
-    {return cralgo::indexOrderedGraphLabeling(x, labels, ycorrect);}
+  virtual lcpp::CRAlgorithmPtr createInstance(const lcpp::ContentGraph& x, const lcpp::LabelDictionary& labels, const lcpp::LabelSequence* ycorrect)
+    {return lcpp::indexOrderedGraphLabeling(x, labels, ycorrect);}
 };

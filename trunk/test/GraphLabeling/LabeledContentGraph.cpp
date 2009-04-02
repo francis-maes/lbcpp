@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "GeneratedCode/LabeledContentGraph.lh"
-using namespace cralgo;
+using namespace lcpp;
 
 /*
 class InstanceSet;
@@ -70,7 +70,7 @@ public:
     {
       size_t index = i - 1;
       if (features->getNumFeatures() <= index)
-        features->addFeature("word " + cralgo::toString(index));
+        features->addFeature("word " + lcpp::toString(index));
       
       std::string featureName;
       double featureValue;
@@ -83,7 +83,7 @@ public:
       }
       else
       {
-        featureName = cralgo::toString(index);
+        featureName = lcpp::toString(index);
         if (!parse(columns[i], featureValue))
           return false;
       }
@@ -132,7 +132,7 @@ public:
   virtual bool parseEnd()
   {
     if (invalidIdentifiers.size())
-      Object::warning("LinkFileParser::parseEnd", cralgo::toString(invalidIdentifiers.size()) + " invalid identifiers in link file");
+      Object::warning("LinkFileParser::parseEnd", lcpp::toString(invalidIdentifiers.size()) + " invalid identifiers in link file");
     invalidIdentifiers.clear();
     return true;
   }

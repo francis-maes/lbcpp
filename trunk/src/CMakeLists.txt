@@ -1,127 +1,127 @@
 INCLUDE_DIRECTORIES(${CRAlgo_SOURCE_DIR}/include)
 
-SET(CRALGO_IMPL ../include/cralgo/impl)
+SET(LCPP_CORE_IMPL ../include/lcpp/impl)
 
-SET(CRALGO_LIBRARY_HEADERS
-  ../include/cralgo/cralgo.h
-  ../include/cralgo/Traits.h
-  ../include/cralgo/Random.h
-  ../include/cralgo/ContainerTraits.h
-  ../include/cralgo/ReferenceCountedObject.h
-  ../include/cralgo/Utilities.h
-  ../include/cralgo/Object.h
-  ../include/cralgo/ObjectPredeclarations.h
-  ../include/cralgo/RandomVariable.h
-  ../include/cralgo/FeatureDictionary.h
-  ../include/cralgo/FeatureGenerator.h
-  ../include/cralgo/EditableFeatureGenerator.h
-  ../include/cralgo/SparseVector.h
-  ../include/cralgo/DenseVector.h
-  ../include/cralgo/LearningExample.h
-  ../include/cralgo/LearningMachine.h
-  ../include/cralgo/ContinuousFunction.h
-  ../include/cralgo/IterationFunction.h
-  ../include/cralgo/Optimizer.h
-  ../include/cralgo/GradientBasedLearner.h
-  ../include/cralgo/GradientBasedLearningMachine.h
-  ../include/cralgo/ChooseFunction.h
-  ../include/cralgo/Variable.h
-  ../include/cralgo/Choose.h
-  ../include/cralgo/Callback.h
-  ../include/cralgo/Policy.h
-  ../include/cralgo/CRAlgorithmScope.h
-  ../include/cralgo/CRAlgorithm.h
+SET(LCPP_CORE_HEADERS
+  ../include/lcpp/lcpp.h
+  ../include/lcpp/Traits.h
+  ../include/lcpp/Random.h
+  ../include/lcpp/ContainerTraits.h
+  ../include/lcpp/ReferenceCountedObject.h
+  ../include/lcpp/Utilities.h
+  ../include/lcpp/Object.h
+  ../include/lcpp/ObjectPredeclarations.h
+  ../include/lcpp/RandomVariable.h
+  ../include/lcpp/FeatureDictionary.h
+  ../include/lcpp/FeatureGenerator.h
+  ../include/lcpp/EditableFeatureGenerator.h
+  ../include/lcpp/SparseVector.h
+  ../include/lcpp/DenseVector.h
+  ../include/lcpp/LearningExample.h
+  ../include/lcpp/LearningMachine.h
+  ../include/lcpp/ContinuousFunction.h
+  ../include/lcpp/IterationFunction.h
+  ../include/lcpp/Optimizer.h
+  ../include/lcpp/GradientBasedLearner.h
+  ../include/lcpp/GradientBasedLearningMachine.h
+  ../include/lcpp/ChooseFunction.h
+  ../include/lcpp/Variable.h
+  ../include/lcpp/Choose.h
+  ../include/lcpp/Callback.h
+  ../include/lcpp/Policy.h
+  ../include/lcpp/CRAlgorithmScope.h
+  ../include/lcpp/CRAlgorithm.h
 )
 
-SET(CRALGO_LIBRARY_IMPL_HEADERS
-  ${CRALGO_IMPL}/Macros.hpp
-  ${CRALGO_IMPL}/Object.hpp
-  ${CRALGO_IMPL}/StaticToDynamic.hpp
-  ${CRALGO_IMPL}/DynamicToStatic.hpp
-  ${CRALGO_IMPL}/impl.h
+SET(LCPP_CORE_IMPL_HEADERS
+  ${LCPP_CORE_IMPL}/Macros.hpp
+  ${LCPP_CORE_IMPL}/Object.hpp
+  ${LCPP_CORE_IMPL}/StaticToDynamic.hpp
+  ${LCPP_CORE_IMPL}/DynamicToStatic.hpp
+  ${LCPP_CORE_IMPL}/impl.h
 )
 
-SET(CRALGO_LIBRARY_IMPL_FEATURE_VISITOR
-  ${CRALGO_IMPL}/FeatureVisitor/FeatureVisitorStatic.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/FeatureVisitorStaticToDynamic.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/CreateSparseVectorVisitor.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/UnaryOperationVisitor.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/AssignmentVisitor.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/DotProductVisitor.hpp
-  ${CRALGO_IMPL}/FeatureVisitor/StringDescriptionVisitor.hpp
+SET(LCPP_CORE_IMPL_FEATURE_VISITOR
+  ${LCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStatic.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStaticToDynamic.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/CreateSparseVectorVisitor.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/UnaryOperationVisitor.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/AssignmentVisitor.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/DotProductVisitor.hpp
+  ${LCPP_CORE_IMPL}/FeatureVisitor/StringDescriptionVisitor.hpp
 )
 
-SET(CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION
-  ${CRALGO_IMPL}/ContinuousFunction/BinaryScalarOperation.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/FunctionStatic.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/FunctionPairTraits.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/FunctionStaticToDynamic.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/FunctionDynamicToStatic.hpp
+SET(LCPP_CORE_IMPL_CONTINUOUS_FUNCTION
+  ${LCPP_CORE_IMPL}/ContinuousFunction/BinaryScalarOperation.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionStatic.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionPairTraits.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionStaticToDynamic.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionDynamicToStatic.hpp
 
-  ${CRALGO_IMPL}/ContinuousFunction/ScalarFunctions.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/ScalarVectorFunctions.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/ScalarFunctions.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/ScalarVectorFunctions.hpp
 
-  ${CRALGO_IMPL}/ContinuousFunction/LossFunctions.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/LossFunctions.hpp
 
-  ${CRALGO_IMPL}/ContinuousFunction/AbsoluteLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/SquareLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/PerceptronLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/HingeLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/LogBinomialLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/ExponentialLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/MulticlassLogBinomialLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/AllPairsLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/MostViolatedPairLossFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/BestAgainstAllLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/AbsoluteLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/SquareLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/PerceptronLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/HingeLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/LogBinomialLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/ExponentialLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/MulticlassLogBinomialLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/AllPairsLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/MostViolatedPairLossFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/BestAgainstAllLossFunction.hpp
 
-  ${CRALGO_IMPL}/ContinuousFunction/ExampleRiskFunction.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/EmpiricalRiskFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/ExampleRiskFunction.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/EmpiricalRiskFunction.hpp
 
-  ${CRALGO_IMPL}/ContinuousFunction/BiasArchitecture.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/LinearArchitecture.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/MultiLinearArchitecture.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/TransferArchitecture.hpp
-  ${CRALGO_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/BiasArchitecture.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/LinearArchitecture.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/MultiLinearArchitecture.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/TransferArchitecture.hpp
+  ${LCPP_CORE_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
 )
 
-SET(CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION
-  ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
-  ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
-  ${CRALGO_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
-  ${CRALGO_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
-  ${CRALGO_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
-  ${CRALGO_IMPL}/ChooseFunction/RegressorValueFunctions.hpp
-  ${CRALGO_IMPL}/ChooseFunction/RankerValueFunctions.hpp
+SET(LCPP_CORE_IMPL_CHOOSE_FUNCTION
+  ${LCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
+  ${LCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
+  ${LCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
+  ${LCPP_CORE_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
+  ${LCPP_CORE_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
+  ${LCPP_CORE_IMPL}/ChooseFunction/RegressorValueFunctions.hpp
+  ${LCPP_CORE_IMPL}/ChooseFunction/RankerValueFunctions.hpp
 )
 
-SET(CRALGO_LIBRARY_IMPL_POLICY
-  ${CRALGO_IMPL}/Policy/PolicyStatic.hpp
-  ${CRALGO_IMPL}/Policy/PolicyStaticToDynamic.hpp
-  ${CRALGO_IMPL}/Policy/PolicyDynamicToStatic.hpp
-  ${CRALGO_IMPL}/Policy/BasicPolicies.hpp
-  ${CRALGO_IMPL}/Policy/ComputeStatisticsPolicy.hpp
-  ${CRALGO_IMPL}/Policy/VerbosePolicy.hpp
-  ${CRALGO_IMPL}/Policy/QLearningPolicy.hpp
-  ${CRALGO_IMPL}/Policy/MonteCarloControlPolicy.hpp
-  ${CRALGO_IMPL}/Policy/GPOMDPPolicy.hpp
-  ${CRALGO_IMPL}/Policy/ClassificationExampleCreatorPolicy.hpp
-  ${CRALGO_IMPL}/Policy/RankingExampleCreatorPolicy.hpp
+SET(LCPP_CORE_IMPL_POLICY
+  ${LCPP_CORE_IMPL}/Policy/PolicyStatic.hpp
+  ${LCPP_CORE_IMPL}/Policy/PolicyStaticToDynamic.hpp
+  ${LCPP_CORE_IMPL}/Policy/PolicyDynamicToStatic.hpp
+  ${LCPP_CORE_IMPL}/Policy/BasicPolicies.hpp
+  ${LCPP_CORE_IMPL}/Policy/ComputeStatisticsPolicy.hpp
+  ${LCPP_CORE_IMPL}/Policy/VerbosePolicy.hpp
+  ${LCPP_CORE_IMPL}/Policy/QLearningPolicy.hpp
+  ${LCPP_CORE_IMPL}/Policy/MonteCarloControlPolicy.hpp
+  ${LCPP_CORE_IMPL}/Policy/GPOMDPPolicy.hpp
+  ${LCPP_CORE_IMPL}/Policy/ClassificationExampleCreatorPolicy.hpp
+  ${LCPP_CORE_IMPL}/Policy/RankingExampleCreatorPolicy.hpp
 )
 
-SET(CRALGO_LIBRARY_IMPL_BRIDGE
-  ${CRALGO_IMPL}/Bridge/StaticInterface.hpp
-  ${CRALGO_IMPL}/Bridge/FeatureGeneratorDefaultImplementations.hpp
-  ${CRALGO_IMPL}/Bridge/FeatureGenerator.hpp
-  ${CRALGO_IMPL}/Bridge/DoubleVector.hpp
-  ${CRALGO_IMPL}/Bridge/Variable.hpp
-  ${CRALGO_IMPL}/Bridge/Choose.hpp
-  ${CRALGO_IMPL}/Bridge/Callback.hpp
-  ${CRALGO_IMPL}/Bridge/CRAlgorithmScope.hpp
-  ${CRALGO_IMPL}/Bridge/CRAlgorithm.hpp
+SET(LCPP_CORE_IMPL_BRIDGE
+  ${LCPP_CORE_IMPL}/Bridge/StaticInterface.hpp
+  ${LCPP_CORE_IMPL}/Bridge/FeatureGeneratorDefaultImplementations.hpp
+  ${LCPP_CORE_IMPL}/Bridge/FeatureGenerator.hpp
+  ${LCPP_CORE_IMPL}/Bridge/DoubleVector.hpp
+  ${LCPP_CORE_IMPL}/Bridge/Variable.hpp
+  ${LCPP_CORE_IMPL}/Bridge/Choose.hpp
+  ${LCPP_CORE_IMPL}/Bridge/Callback.hpp
+  ${LCPP_CORE_IMPL}/Bridge/CRAlgorithmScope.hpp
+  ${LCPP_CORE_IMPL}/Bridge/CRAlgorithm.hpp
 )
 
-SET(CRALGO_LIBRARY_SOURCES
+SET(LCPP_CORE_SOURCES
   classes.cpp
   Object.cpp
   Utilities.cpp
@@ -140,7 +140,7 @@ SET(CRALGO_LIBRARY_SOURCES
   Policy.cpp
 )
 
-SET(CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES
+SET(LCPP_CORE_FEATURE_GENERATOR_SOURCES
   FeatureGenerator/EmptyFeatureGenerator.h
   FeatureGenerator/UnitFeatureGenerator.h
   FeatureGenerator/SubFeatureGenerator.h
@@ -149,7 +149,7 @@ SET(CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES
   FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
 )
 
-SET(CRALGO_LIBRARY_OPTIMIZER_SOURCES
+SET(LCPP_CORE_OPTIMIZER_SOURCES
   Optimizer/RPropOptimizer.h
   Optimizer/GradientDescentOptimizer.h
   Optimizer/BackTrackingLineSearch.h
@@ -157,30 +157,30 @@ SET(CRALGO_LIBRARY_OPTIMIZER_SOURCES
   Optimizer/LBFGSOptimizer.h
 )
 
-SET(CRALGO_LIBRARY
-  ${CRALGO_LIBRARY_HEADERS}
-  ${CRALGO_LIBRARY_IMPL_HEADERS}
-  ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR}
-  ${CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION}
-  ${CRALGO_LIBRARY_IMPL_OPTIMIZER}
-  ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION}
-  ${CRALGO_LIBRARY_IMPL_POLICY}
-  ${CRALGO_LIBRARY_IMPL_BRIDGE}
-  ${CRALGO_LIBRARY_SOURCES}
-  ${CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES}
-  ${CRALGO_LIBRARY_OPTIMIZER_SOURCES}
+SET(LCPP_CORE
+  ${LCPP_CORE_HEADERS}
+  ${LCPP_CORE_IMPL_HEADERS}
+  ${LCPP_CORE_IMPL_FEATURE_VISITOR}
+  ${LCPP_CORE_IMPL_CONTINUOUS_FUNCTION}
+  ${LCPP_CORE_IMPL_OPTIMIZER}
+  ${LCPP_CORE_IMPL_CHOOSE_FUNCTION}
+  ${LCPP_CORE_IMPL_POLICY}
+  ${LCPP_CORE_IMPL_BRIDGE}
+  ${LCPP_CORE_SOURCES}
+  ${LCPP_CORE_FEATURE_GENERATOR_SOURCES}
+  ${LCPP_CORE_OPTIMIZER_SOURCES}
 )
 
-SOURCE_GROUP(includes FILES ${CRALGO_LIBRARY_HEADERS})
-SOURCE_GROUP(impl FILES ${CRALGO_LIBRARY_IMPL_HEADERS})
-SOURCE_GROUP(impl/FeatureVisitor FILES ${CRALGO_LIBRARY_IMPL_FEATURE_VISITOR})
-SOURCE_GROUP(impl/ContinuousFunction FILES ${CRALGO_LIBRARY_IMPL_CONTINUOUS_FUNCTION})
-SOURCE_GROUP(impl/Optimizer FILES ${CRALGO_LIBRARY_IMPL_OPTIMIZER})
-SOURCE_GROUP(impl/ChooseFunction FILES ${CRALGO_LIBRARY_IMPL_CHOOSE_FUNCTION})
-SOURCE_GROUP(impl/Policy FILES ${CRALGO_LIBRARY_IMPL_POLICY})
-SOURCE_GROUP(impl/Bridge FILES ${CRALGO_LIBRARY_IMPL_BRIDGE})
-SOURCE_GROUP(sources FILES ${CRALGO_LIBRARY_SOURCES})
-SOURCE_GROUP(FeatureGenerator FILES ${CRALGO_LIBRARY_FEATURE_GENERATOR_SOURCES})
-SOURCE_GROUP(Optimizer FILES ${CRALGO_LIBRARY_OPTIMIZER_SOURCES})
+SOURCE_GROUP(includes FILES ${LCPP_CORE_HEADERS})
+SOURCE_GROUP(impl FILES ${LCPP_CORE_IMPL_HEADERS})
+SOURCE_GROUP(impl/FeatureVisitor FILES ${LCPP_CORE_IMPL_FEATURE_VISITOR})
+SOURCE_GROUP(impl/ContinuousFunction FILES ${LCPP_CORE_IMPL_CONTINUOUS_FUNCTION})
+SOURCE_GROUP(impl/Optimizer FILES ${LCPP_CORE_IMPL_OPTIMIZER})
+SOURCE_GROUP(impl/ChooseFunction FILES ${LCPP_CORE_IMPL_CHOOSE_FUNCTION})
+SOURCE_GROUP(impl/Policy FILES ${LCPP_CORE_IMPL_POLICY})
+SOURCE_GROUP(impl/Bridge FILES ${LCPP_CORE_IMPL_BRIDGE})
+SOURCE_GROUP(sources FILES ${LCPP_CORE_SOURCES})
+SOURCE_GROUP(FeatureGenerator FILES ${LCPP_CORE_FEATURE_GENERATOR_SOURCES})
+SOURCE_GROUP(Optimizer FILES ${LCPP_CORE_OPTIMIZER_SOURCES})
 
-ADD_LIBRARY(cralgo ${CRALGO_LIBRARY})
+ADD_LIBRARY(lcpp ${LCPP_CORE})

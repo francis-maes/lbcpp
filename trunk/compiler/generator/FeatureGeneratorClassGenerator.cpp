@@ -158,7 +158,7 @@ private:
     // [body]; __feature_visitor__.featureLeave();
     BlockPTreeGenerator block;
     PTree::Identifier* newDictionaryIdentifier = identifier("__currentFeatureDictionary" + size2str(dictionaryStack.size()) + "__");
-    block.addVariableDeclaration(atom("cralgo::FeatureDictionaryPtr"), newDictionaryIdentifier, 
+    block.addVariableDeclaration(atom("lcpp::FeatureDictionaryPtr"), newDictionaryIdentifier, 
       list(dictionaryStack.back(), atom("->getSubDictionary("), rewritedScopeArgument, atom(")")));
     
     dictionaryStack.push_back(newDictionaryIdentifier);
@@ -247,8 +247,8 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   }
   
   body.add(atom("static const char* getName() {return " + quote(input.getIdentifierString()) + ";}\n"));
-  body.add(atom("static cralgo::FeatureDictionaryPtr getDictionary()\n"
-                "  {static cralgo::FeatureDictionaryPtr dictionary = new cralgo::FeatureDictionary(" + quote(input.getIdentifierString()) + "); return dictionary;}\n"));
+  body.add(atom("static lcpp::FeatureDictionaryPtr getDictionary()\n"
+                "  {static lcpp::FeatureDictionaryPtr dictionary = new lcpp::FeatureDictionary(" + quote(input.getIdentifierString()) + "); return dictionary;}\n"));
   
   // static feature generator
   FunctionPTreeGenerator staticFunction;
@@ -257,7 +257,7 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   staticFunction.setReturnType(voidKeyword());
   staticFunction.setIdentifier(atom("staticFeatureGenerator"));
   staticFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
-  staticFunction.addParameter(atom("cralgo::FeatureDictionaryPtr"), atom("__featureDictionary__"));
+  staticFunction.addParameter(atom("lcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
   
   for (size_t i = 0; i < parameters.size(); ++i)
     staticFunction.addParameter(parameters[i].getPTree());
@@ -270,7 +270,7 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   normalizedFunction.setReturnType(voidKeyword());
   normalizedFunction.setIdentifier(atom("featureGenerator"));
   normalizedFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
-  normalizedFunction.addParameter(atom("cralgo::FeatureDictionaryPtr"), atom("__featureDictionary__"));
+  normalizedFunction.addParameter(atom("lcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
   FuncallPTreeGenerator funcall;
   funcall.setName("staticFeatureGenerator");
   funcall.addArgument(identifier("__featureVisitor__"));
@@ -298,7 +298,7 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   if (isStatic)
     staticToDynamicFunction.addModifier(staticKeyword());
   staticToDynamicFunction.addModifier(inlineKeyword());
-  staticToDynamicFunction.setReturnType(atom("cralgo::FeatureGeneratorPtr"));
+  staticToDynamicFunction.setReturnType(atom("lcpp::FeatureGeneratorPtr"));
   staticToDynamicFunction.setName(input.getIdentifierString());
   staticToDynamicFunction.setConst(input.isConst());
   for (size_t i = 0; i < parameters.size(); ++i)
@@ -321,7 +321,7 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
     newCall.addArgument(thisKeyword());
   for (size_t i = 0; i < parameters.size(); ++i)
     newCall.addArgument(parameters[i].getIdentifier());
-  staticToDynamicFunction.body.add(returnStatement(funcallExpr(atom("cralgo::staticToDynamicFeatureGenerator"), newCall.createExpression())));
+  staticToDynamicFunction.body.add(returnStatement(funcallExpr(atom("lcpp::staticToDynamicFeatureGenerator"), newCall.createExpression())));
   PTree::FunctionDefinition* staticToDynamicFundef = staticToDynamicFunction.createDeclaration();
   if (staticToDynamicFunctionDefinition)
     *staticToDynamicFunctionDefinition = staticToDynamicFundef;
@@ -338,7 +338,7 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   featureCallFunction.setReturnType(voidKeyword());
   featureCallFunction.setName(input.getIdentifierString() + "InlineCall");
   featureCallFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
-  featureCallFunction.addParameter(atom("cralgo::FeatureDictionaryPtr"), atom("__featureDictionary__"));
+  featureCallFunction.addParameter(atom("lcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
 
   featureCallFunction.setConst(input.isConst());
   for (size_t i = 0; i < parameters.size(); ++i)

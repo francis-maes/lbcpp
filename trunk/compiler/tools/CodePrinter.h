@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_TOOLS_CODE_PRINTER_H_
-# define CRALGO_TOOLS_CODE_PRINTER_H_
+#ifndef LCPP_TOOLS_CODE_PRINTER_H_
+# define LCPP_TOOLS_CODE_PRINTER_H_
 
 # include "PTreeGenerator.h"
 # include "PreprocessorAndCommentsChunker.h"
@@ -139,4 +139,4 @@ private:
   }
 };
 
-#endif // !CRALGO_TOOLS_CODE_PRINTER_H_
+#endif // !LCPP_TOOLS_CODE_PRINTER_H_

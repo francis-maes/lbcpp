@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
-# define CRALGO_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
+#ifndef LCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
+# define LCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
 
-# include <cralgo/FeatureGenerator.h>
+# include <lcpp/FeatureGenerator.h>
 # include <deque>
 
-namespace cralgo
+namespace lcpp
 {
 
 class QuasiNewtonMemory
@@ -76,6 +76,6 @@ private:
   std::deque<double> dotProducts;  
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
+#endif // !LCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_

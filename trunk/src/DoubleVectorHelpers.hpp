@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_DOUBLE_VECTOR_HELPERS_HPP_
-# define CRALGO_DOUBLE_VECTOR_HELPERS_HPP_
+#ifndef LCPP_DOUBLE_VECTOR_HELPERS_HPP_
+# define LCPP_DOUBLE_VECTOR_HELPERS_HPP_
 
-namespace cralgo
+namespace lcpp
 {
 
 template<class ElementType>
@@ -150,6 +150,6 @@ private:
 typedef SortedArrayHelper<double> SortedFeatureArrayHelper;
 typedef SortedArrayHelper<SparseVectorPtr> SortedSubVectorArrayHelper;
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_DOUBLE_VECTOR_HELPERS_HPP_
+#endif // !LCPP_DOUBLE_VECTOR_HELPERS_HPP_

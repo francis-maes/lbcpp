@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
-# define CRALGO_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
+#ifndef LCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
+# define LCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
 
-# include <cralgo/FeatureGenerator.h>
-# include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lcpp/FeatureGenerator.h>
+# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace cralgo
+namespace lcpp
 {
 
 class ExplicitLinearCombinationFeatureGenerator
@@ -103,6 +103,6 @@ private:
   LinearCombinationVector* terms;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
+#endif // !LCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_

@@ -1,17 +1,17 @@
 INCLUDE_DIRECTORIES(${CRAlgo_SOURCE_DIR}/include)
 
-IF(CRALGO_TESTS)
+IF(LCPP_TESTS)
 
 ADD_CRTEST(EmptyCRAlgorithm.cr++)	
 ADD_CRTEST(SenseOneFeature.cr++)
 ADD_CRTEST(UserTypeTraits.cr++)
 ADD_CRTEST(SimplestSequenceLabeling.cr++)
 
-ENDIF(CRALGO_TESTS)
+ENDIF(LCPP_TESTS)
 
 ADD_SUBDIRECTORY(ludovic)
 ADD_SUBDIRECTORY(SequentialClassification)
 ADD_SUBDIRECTORY(GraphLabeling)
 
-ADD_EXECUTABLE(test-cralgo TestCpp.cpp)
-TARGET_LINK_LIBRARIES(test-cralgo cralgo)
+ADD_EXECUTABLE(test-lcpp TestCpp.cpp)
+TARGET_LINK_LIBRARIES(test-lcpp lcpp)

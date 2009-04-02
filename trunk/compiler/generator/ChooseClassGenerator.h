@@ -36,7 +36,7 @@ private:
   
 
   static std::string getDynamicClassName(const std::string& kind)
-    {return "cralgo::" + kind + "Function";}
+    {return "lcpp::" + kind + "Function";}
 
   std::string className;
   std::string crAlgorithmClassName;

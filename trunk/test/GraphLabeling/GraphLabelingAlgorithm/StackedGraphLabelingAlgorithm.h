@@ -11,7 +11,7 @@
 
 # include "ClassifierBasedGraphLabelingAlgorithm.h"
 
-namespace cralgo
+namespace lcpp
 {
 
 class StackedGraphLabelingAlgorithm : public ClassifierBasedGraphLabelingAlgorithm
@@ -87,7 +87,7 @@ private:
   GraphLabelingAlgorithm* baseAlgorithm;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_STACKED_H_
 

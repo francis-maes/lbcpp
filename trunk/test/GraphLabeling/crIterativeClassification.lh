@@ -8,7 +8,7 @@
 
 #include "LabeledContentGraph.lh"
 
-namespace cralgo
+namespace lcpp
 {
 
 crAlgorithm LabelSequencePtr crIterativeClassification(LabeledContentGraphPtr graph, size_t foldBegin, size_t foldEnd, size_t maxNumPasses = 5, bool includePassInFeatures = false)
@@ -86,4 +86,4 @@ crAlgorithm LabelSequencePtr crIterativeClassification(LabeledContentGraphPtr gr
   return prediction;
 }
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

@@ -5,9 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <cralgo/cralgo.h>
-#include <cralgo/impl/impl.h>
-using namespace cralgo;
+#include <lcpp/lcpp.h>
+#include <lcpp/impl/impl.h>
+using namespace lcpp;
 
 inline impl::DynamicToStaticPolicy dynamicToStatic(const Policy* policy)
   {return impl::dynamicToStatic(PolicyPtr(const_cast<Policy* >(policy)));}

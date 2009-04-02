@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
-# define CRALGO_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
+#ifndef LCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
+# define LCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
 
-# include <cralgo/Optimizer.h>
-# include <cralgo/IterationFunction.h>
+# include <lcpp/Optimizer.h>
+# include <lcpp/IterationFunction.h>
 
-namespace cralgo
+namespace lcpp
 {
 
 class BackTrackingLineSearch : public Object
@@ -65,7 +65,7 @@ public:
     }
     if (i == maxIterations)
     {
-      error("BackTrackingLineSearch::search", "Backtracking: warning max backtrackline search performed. Derivative = " + cralgo::toString(origDirDeriv));
+      error("BackTrackingLineSearch::search", "Backtracking: warning max backtrackline search performed. Derivative = " + lcpp::toString(origDirDeriv));
       std::cerr << "Parameters = " << parameters->toString() << std::endl;
       std::cerr << "Gradient = " << gradient->toString() << std::endl;
       std::cerr << "Direction = " << direction->toString() << std::endl;
@@ -106,6 +106,6 @@ public:
   }
 };*/
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
+#endif // !LCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_

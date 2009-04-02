@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
 
 class LabelDictionary
@@ -50,13 +50,13 @@ struct Traits<LabelDictionary>
     {return iterator;}
 
   static std::string toString(const LabelDictionary& labels)
-    {return cralgo::toString(labels.labels);}
+    {return lcpp::toString(labels.labels);}
     
   static void write(std::ostream& ostr, const LabelDictionary& labels)
-    {cralgo::write(ostr, labels.labels);}
+    {lcpp::write(ostr, labels.labels);}
     
   static bool read(std::istream& istr, const LabelDictionary& labels)
-    {return cralgo::read(istr, labels.labels);}
+    {return lcpp::read(istr, labels.labels);}
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

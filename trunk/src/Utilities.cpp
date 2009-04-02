@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/Utilities.h>
-#include <cralgo/Random.h>
-#include <cralgo/IterationFunction.h>
+#include <lcpp/Utilities.h>
+#include <lcpp/Random.h>
+#include <lcpp/IterationFunction.h>
 #include <iostream>
 #include <fstream>
-using namespace cralgo;
+using namespace lcpp;
 
 /*
 ** ProgressCallback
@@ -158,7 +158,7 @@ bool TextFileParser::parseLine(const std::string& line)
 
 void TextFileParser::tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators)
 {
-  //std::cout << "Tokenize " << cralgo::toString(line) << " => ";
+  //std::cout << "Tokenize " << lcpp::toString(line) << " => ";
   size_t b = line.find_first_not_of(separators);
   while (b != std::string::npos)
   {
@@ -169,7 +169,7 @@ void TextFileParser::tokenize(const std::string& line, std::vector< std::string 
       columns.push_back(line.substr(b, e - b));
     b = line.find_first_not_of(separators, e);
   }
-  //std::cout << cralgo::toString(columns) << std::endl;
+  //std::cout << lcpp::toString(columns) << std::endl;
 }
 
 bool TextFileParser::parseStream(std::istream& istr)

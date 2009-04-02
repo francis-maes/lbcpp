@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_LANGUAGE_PARSER_H_
-# define CRALGO_LANGUAGE_PARSER_H_
+#ifndef LCPP_LANGUAGE_PARSER_H_
+# define LCPP_LANGUAGE_PARSER_H_
 
 # include "../common.h"
 
@@ -30,4 +30,4 @@ protected:
   bool featureScope(PTree::Node*& st);
 };
 
-#endif // !CRALGO_LANGUAGE_PARSER_H_
+#endif // !LCPP_LANGUAGE_PARSER_H_

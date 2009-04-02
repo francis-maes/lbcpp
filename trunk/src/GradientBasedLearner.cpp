@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/GradientBasedLearner.h>
-#include <cralgo/Optimizer.h>
-#include <cralgo/impl/impl.h>
-using namespace cralgo;
+#include <lcpp/GradientBasedLearner.h>
+#include <lcpp/Optimizer.h>
+#include <lcpp/impl/impl.h>
+using namespace lcpp;
 
 class GradientDescentLearner : public GradientBasedLearner
 {

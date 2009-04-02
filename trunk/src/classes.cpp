@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/SparseVector.h>
-#include <cralgo/DenseVector.h>
-#include <cralgo/ContinuousFunction.h>
-using namespace cralgo;
+#include <lcpp/SparseVector.h>
+#include <lcpp/DenseVector.h>
+#include <lcpp/ContinuousFunction.h>
+using namespace lcpp;
 
 //class PerceptronLoss : public StaticToDynamicScalarFunction<impl::PerceptronLoss> {};
 //class HingeLoss : public StaticToDynamicScalarFunction<impl::HingeLoss> {};
@@ -18,9 +18,9 @@ using namespace cralgo;
 
 void declareStandardCRAlgoClasses()
 {
-  DECLARE_CRALGO_CLASS(SparseVector);
-  DECLARE_CRALGO_CLASS(DenseVector);
+  DECLARE_LCPP_CLASS(SparseVector);
+  DECLARE_LCPP_CLASS(DenseVector);
 
-//  DECLARE_CRALGO_CLASS(PerceptronLoss);
-//  DECLARE_CRALGO_CLASS(HingeLoss);
+//  DECLARE_LCPP_CLASS(PerceptronLoss);
+//  DECLARE_LCPP_CLASS(HingeLoss);
 }

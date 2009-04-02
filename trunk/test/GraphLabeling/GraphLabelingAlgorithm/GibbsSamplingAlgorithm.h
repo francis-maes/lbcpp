@@ -11,7 +11,7 @@
 
 # include "IterativeClassificationAlgorithm.h"
 
-namespace cralgo
+namespace lcpp
 {
 
 class GibbsSamplingGraphLabelingAlgorithm : public IterativeClassificationGraphLabelingAlgorithm
@@ -73,6 +73,6 @@ public:
   }
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_GIBBS_SAMPLING_

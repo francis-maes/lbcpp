@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_TOOLS_RECURSIVE_VISITOR_H_
-# define CRALGO_TOOLS_RECURSIVE_VISITOR_H_
+#ifndef LCPP_TOOLS_RECURSIVE_VISITOR_H_
+# define LCPP_TOOLS_RECURSIVE_VISITOR_H_
 
 # include "../common.h"
 
@@ -42,4 +42,4 @@ private:
   bool visitorBreaked;
 };
 
-#endif // !CRALGO_TOOLS_RECURSIVE_VISITOR_H_
+#endif // !LCPP_TOOLS_RECURSIVE_VISITOR_H_

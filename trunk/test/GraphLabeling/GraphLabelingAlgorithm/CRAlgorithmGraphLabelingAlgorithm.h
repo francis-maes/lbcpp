@@ -11,7 +11,7 @@
 
 # include "GraphLabelingAlgorithm.h"
 
-namespace cralgo
+namespace lcpp
 {
 
 class CRAlgorithmGraphLabelingAlgorithm : public GraphLabelingAlgorithm
@@ -78,6 +78,6 @@ protected:
   PolicyPtr learnedPolicy;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_CRALGORITHM_H_

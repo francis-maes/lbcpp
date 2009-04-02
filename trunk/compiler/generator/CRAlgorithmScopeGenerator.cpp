@@ -24,20 +24,20 @@
 
 
 /*
-** cralgo::CRAlgorithmScopePtr getCurrentInnerScope() {...}
+** lcpp::CRAlgorithmScopePtr getCurrentInnerScope() {...}
 */
 class GetCurrentInnerScopeGenerator : public FunctionPTreeGenerator
 {
 public:
   void prepare(const std::vector<CRAlgorithmLocalScope>& localScopes)
   {
-    setReturnType(atom("cralgo::CRAlgorithmScopePtr"));
+    setReturnType(atom("lcpp::CRAlgorithmScopePtr"));
     setName("getCurrentInnerScope");
     SwitchPTreeGenerator switchgen;
     switchgen.setCondition(atom("__state__"));
     for (size_t i = 0; i < localScopes.size(); ++i)
-      switchgen.addCase(literal(i), returnStatement(atom("cralgo::staticToDynamicCRAlgorithmScope(" + localScopes[i].getVariableName() + ")")));
-    switchgen.setDefault(returnStatement(atom("cralgo::CRAlgorithmScopePtr()")));
+      switchgen.addCase(literal(i), returnStatement(atom("lcpp::staticToDynamicCRAlgorithmScope(" + localScopes[i].getVariableName() + ")")));
+    switchgen.setDefault(returnStatement(atom("lcpp::CRAlgorithmScopePtr()")));
     body.add(switchgen.createStatement());
   }
 };
@@ -218,7 +218,7 @@ void CRAlgorithmScopeGenerator::addIntrospectionMembers()
     for (size_t i = 0; i < parametersAndVariables.size(); ++i)
     {
       ParameterPTreeAnalyser& v = parametersAndVariables[i];
-      getVariableValue.addCase(returnStatement(funcallExpr(atom("cralgo::toString"), v.getIdentifier())), v.getIdentifier());
+      getVariableValue.addCase(returnStatement(funcallExpr(atom("lcpp::toString"), v.getIdentifier())), v.getIdentifier());
     }
     getVariableValue.setDefault(returnStatement(atom(quote(""))));
     getVariableValue.prepare("std::string", "getVariableValue");

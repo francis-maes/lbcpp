@@ -27,7 +27,7 @@ public:
     setKeyword(structKeyword());
     setName("__" + identifier + "Function__");
     std::string kind = stateFundef->getKind();
-    std::string baseClass = "cralgo::impl::";
+    std::string baseClass = "lcpp::impl::";
     if (kind == "ActionValue") // todo: ActionFeatures et ActionDescription
       baseClass += "Typed";    
     baseClass += stateFundef->getKind() + "Function<__" + identifier + "Function__";
@@ -51,8 +51,8 @@ public:
     // ctor, getName(), setChoose()
     body.add(atom("__" + identifier + "Function__() : __crAlgorithm__(NULL) {}\n"));
     body.add(atom("inline std::string getName() const {return " + quote(identifier) + ";}\n"));
-    body.add(atom("inline void setChoose(cralgo::ChoosePtr choose) {\n"
-        "__crAlgorithm__ = &cralgo::dynamicToStaticCRAlgorithm<" + translator.getCRAlgorithmClassName() + ">(choose->getCRAlgorithm()); }\n"));
+    body.add(atom("inline void setChoose(lcpp::ChoosePtr choose) {\n"
+        "__crAlgorithm__ = &lcpp::dynamicToStaticCRAlgorithm<" + translator.getCRAlgorithmClassName() + ">(choose->getCRAlgorithm()); }\n"));
     body.add(atom(translator.getCRAlgorithmClassName() + "* __crAlgorithm__;\n"));
 
     // function body
@@ -82,7 +82,7 @@ private:
   PTree::Node* additionalCode;
 
   PTree::Node* getReturnType(FunctionPTreeAnalyser& input)
-    {return input.getReturnTypeString() == "featureGenerator" ? identifier("cralgo::FeatureGeneratorPtr") : input.getReturnType();}
+    {return input.getReturnTypeString() == "featureGenerator" ? identifier("lcpp::FeatureGeneratorPtr") : input.getReturnType();}
 
   PTree::FunctionDefinition* translateFunctionDefinition(CRAlgorithmVariableTranslator& translator, CRAlgo::StateFundefStatement* stateFundef, SymbolLookup::UserScope* scope)
   {
@@ -117,7 +117,7 @@ private:
       
       FunctionPTreeGenerator output;
       output.addModifiers(input.getModifiers());
-      output.setReturnType(identifier("cralgo::FeatureGeneratorPtr"));
+      output.setReturnType(identifier("lcpp::FeatureGeneratorPtr"));
       output.setIdentifier(input.getIdentifier());
       output.addParameters(parameters);
       

@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_FEATURE_GENERATOR_WEIGHTED_H_
-# define CRALGO_FEATURE_GENERATOR_WEIGHTED_H_
+#ifndef LCPP_FEATURE_GENERATOR_WEIGHTED_H_
+# define LCPP_FEATURE_GENERATOR_WEIGHTED_H_
 
-# include <cralgo/FeatureGenerator.h>
-# include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lcpp/FeatureGenerator.h>
+# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace cralgo
+namespace lcpp
 {
 
 class WeightedFeatureGenerator
@@ -80,7 +80,7 @@ public:
     {return exists() ? FeatureGenerator::multiplyByScalar(featureGenerator->getSubGeneratorWithIndex(index), weight) : FeatureGenerator::emptyGenerator();}
 
   virtual std::string toString() const
-    {return cralgo::toString(weight) + " * " + featureGenerator->toString();}
+    {return lcpp::toString(weight) + " * " + featureGenerator->toString();}
     
   virtual size_t l0norm() const
     {return exists() ? featureGenerator->l0norm() : 0;}
@@ -114,6 +114,6 @@ private:
   double weight;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_FEATURE_GENERATOR_WEIGHTED_H_
+#endif // !LCPP_FEATURE_GENERATOR_WEIGHTED_H_

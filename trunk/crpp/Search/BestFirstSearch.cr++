@@ -1,7 +1,7 @@
 #include "TreeSearchSpace.cr++"
 #include "SortedTreeSearchNodeMap.cr++"
 
-namespace cralgo
+namespace lcpp
 {
 
 crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
@@ -108,7 +108,7 @@ crAlgorithm int bestFirstSearch(TreeSearchSpace& searchSpace, size_t maxSteps)
 }
 
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 /*
 class BestFirstSearchInstanceSet : public CRAlgorithmInstanceSet
 {
@@ -125,20 +125,20 @@ public:
   virtual std::string getInstanceName(size_t i)
     {CRAlgorithmInstanceSetPtr target = getTarget(); return target ? target->getInstanceName(i) : "<null>";}
 
-  virtual cralgo::CRAlgorithmPtr createInstance(size_t i)
+  virtual lcpp::CRAlgorithmPtr createInstance(size_t i)
   {
     CRAlgorithmInstanceSetPtr target = getTarget();
     if (!target)
-      return cralgo::CRAlgorithmPtr();
-    cralgo::CRAlgorithmPtr c = target->createInstance(i);
+      return lcpp::CRAlgorithmPtr();
+    lcpp::CRAlgorithmPtr c = target->createInstance(i);
     if (!c)
-      return cralgo::CRAlgorithmPtr();
+      return lcpp::CRAlgorithmPtr();
     searchSpace.reset(c);
-    return cralgo::bestFirstSearch(searchSpace, getMaxSteps());
+    return lcpp::bestFirstSearch(searchSpace, getMaxSteps());
   }
   
 private:
-  cralgo::TreeSearchSpace searchSpace;
+  lcpp::TreeSearchSpace searchSpace;
 };
 
 */

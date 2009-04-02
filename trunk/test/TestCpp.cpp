@@ -1,7 +1,7 @@
-#include <cralgo/cralgo.h>
-#include <cralgo/impl/impl.h>
+#include <lcpp/lcpp.h>
+#include <lcpp/impl/impl.h>
 #include <fstream>
-using namespace cralgo;
+using namespace lcpp;
 
 int testClassification(std::istream& istr)
 {
@@ -31,7 +31,7 @@ int testClassification(std::istream& istr)
   for (int i = 0; i < 1; ++i)
   {
    // FeatureGeneratorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
-//    std::cout << "GRADIENT = " << cralgo::toString(gradient) << std::endl;
+//    std::cout << "GRADIENT = " << lcpp::toString(gradient) << std::endl;
     
     //std::cout << "EmpRisk: " << classifier->computeEmpiricalRisk(examples)
     //          << " RegEmpRisk: " << classifier->computeRegularizedEmpiricalRisk(examples) << " ";
@@ -61,7 +61,7 @@ int testRegression(std::istream& istr)
   for (int i = 0; i < 100; ++i)
   {
    // FeatureGeneratorPtr gradient = classifier->getEmpiricalRisk(examples)->computeGradient(classifier->getParameters());
-//    std::cout << "GRADIENT = " << cralgo::toString(gradient) << std::endl;
+//    std::cout << "GRADIENT = " << lcpp::toString(gradient) << std::endl;
     
     std::cout << "EmpRisk: " << regressor->computeEmpiricalRisk(examples)
               << " RegEmpRisk: " << regressor->computeRegularizedEmpiricalRisk(examples) << " ";

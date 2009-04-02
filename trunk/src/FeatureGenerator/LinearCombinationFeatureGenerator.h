@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_FEATURE_GENERATOR_LINEAR_COMBINATION_H_
-# define CRALGO_FEATURE_GENERATOR_LINEAR_COMBINATION_H_
+#ifndef LCPP_FEATURE_GENERATOR_LINEAR_COMBINATION_H_
+# define LCPP_FEATURE_GENERATOR_LINEAR_COMBINATION_H_
 
-# include <cralgo/FeatureGenerator.h>
-# include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lcpp/FeatureGenerator.h>
+# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace cralgo
+namespace lcpp
 {
 
 class LinearCombinationFeatureGenerator
@@ -85,7 +85,7 @@ public:
     std::string res = "LinearCombination:\n";
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
-      res += "\t" + cralgo::toString(weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)))
+      res += "\t" + lcpp::toString(weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)))
           + " x " + compositeFeatureGenerator->getSubGenerator(i)->toString() + "\n";
     return res;
   }
@@ -137,6 +137,6 @@ private:
   DenseVectorPtr weights;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_FEATURE_GENERATOR_LINEAR_COMBINATION_H_
+#endif // !LCPP_FEATURE_GENERATOR_LINEAR_COMBINATION_H_

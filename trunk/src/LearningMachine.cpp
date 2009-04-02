@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/LearningMachine.h>
+#include <lcpp/LearningMachine.h>
 #include <cfloat>
-using namespace cralgo;
+using namespace lcpp;
 
 template<class BaseClass, class ExampleType>
 class VerboseLearningMachine : public BaseClass

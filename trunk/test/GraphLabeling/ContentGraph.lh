@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
 
 class ContentGraph : public Object
@@ -96,4 +96,4 @@ private:
 
 typedef ReferenceCountedObjectPtr<ContentGraph> ContentGraphPtr;
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

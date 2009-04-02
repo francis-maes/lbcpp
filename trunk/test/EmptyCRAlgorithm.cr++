@@ -8,6 +8,6 @@ crAlgorithm void emptyCRAlgorithm()
 
 int main(int argc, char* argv[])
 {
-  cralgo::ChoosePtr choose = emptyCRAlgorithm()->runUntilFirstChoose();
+  lcpp::ChoosePtr choose = emptyCRAlgorithm()->runUntilFirstChoose();
   return choose ? 1 : 0;
 }

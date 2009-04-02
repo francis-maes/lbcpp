@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_FEATURE_GENERATOR_SUB_H_
-# define CRALGO_FEATURE_GENERATOR_SUB_H_
+#ifndef LCPP_FEATURE_GENERATOR_SUB_H_
+# define LCPP_FEATURE_GENERATOR_SUB_H_
 
-# include <cralgo/FeatureGenerator.h>
-# include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lcpp/FeatureGenerator.h>
+# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace cralgo
+namespace lcpp
 {
 
 class SubFeatureGenerator :
@@ -144,6 +144,6 @@ private:
   }
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_FEATURE_GENERATOR_SUB_H_
+#endif // !LCPP_FEATURE_GENERATOR_SUB_H_

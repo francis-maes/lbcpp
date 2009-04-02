@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_TOOLS_SCOPE_BASED_REWRITE_VISITOR_H_
-# define CRALGO_TOOLS_SCOPE_BASED_REWRITE_VISITOR_H_
+#ifndef LCPP_TOOLS_SCOPE_BASED_REWRITE_VISITOR_H_
+# define LCPP_TOOLS_SCOPE_BASED_REWRITE_VISITOR_H_
 
 # include "RewriteVisitor.h"
 
@@ -86,4 +86,4 @@ private:
   std::vector<SymbolLookup::Scope* > scopes;
 };
 
-#endif // !CRALGO_TOOLS_SCOPE_BASED_REWRITE_VISITOR_H_
+#endif // !LCPP_TOOLS_SCOPE_BASED_REWRITE_VISITOR_H_
