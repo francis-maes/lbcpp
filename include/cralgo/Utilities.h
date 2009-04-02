@@ -10,6 +10,7 @@
 # define CRALGO_UTILITIES_H_
 
 # include <string>
+# include <cassert>
 
 namespace cralgo
 {

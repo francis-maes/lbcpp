@@ -117,7 +117,7 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
     allResults += results + "\n";
     (*resultsOutputFile) << "+" << results << std::endl;
   }
-  (*resultsOutputFile) << "==> " << name << " " << bestTestAccuracy;
+  (*resultsOutputFile) << "==> " << name << " " << bestTestAccuracy << std::endl;
   return bestTestAccuracy;
 }
 
