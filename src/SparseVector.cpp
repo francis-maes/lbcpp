@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/SparseVector.h>
-#include <cralgo/impl/Bridge/DoubleVector.hpp>
+#include <lcpp/SparseVector.h>
+#include <lcpp/impl/Bridge/DoubleVector.hpp>
 #include "DoubleVectorHelpers.hpp" 
-using namespace cralgo;
+using namespace lcpp;
 
 SparseVector::SparseVector(const SparseVector& otherVector)
   : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(subVectors)

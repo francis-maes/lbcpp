@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/EditableFeatureGenerator.h>
-#include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
-#include <cralgo/impl/Bridge/DoubleVector.hpp>
+#include <lcpp/EditableFeatureGenerator.h>
+#include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+#include <lcpp/impl/Bridge/DoubleVector.hpp>
 
 #include "FeatureGenerator/EmptyFeatureGenerator.h"
 #include "FeatureGenerator/UnitFeatureGenerator.h"
@@ -16,7 +16,7 @@
 #include "FeatureGenerator/WeightedFeatureGenerator.h"
 #include "FeatureGenerator/LinearCombinationFeatureGenerator.h"
 #include "FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h"
-using namespace cralgo;
+using namespace lcpp;
 
 /*
 ** EditableFeatureGenerator

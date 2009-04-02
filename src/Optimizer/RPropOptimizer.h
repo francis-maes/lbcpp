@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_OPTIMIZER_RPROP_H_
-# define CRALGO_OPTIMIZER_RPROP_H_
+#ifndef LCPP_OPTIMIZER_RPROP_H_
+# define LCPP_OPTIMIZER_RPROP_H_
 
-# include <cralgo/Optimizer.h>
+# include <lcpp/Optimizer.h>
 
-namespace cralgo
+namespace lcpp
 {
 
 class RPropOptimizer : public VectorOptimizer
@@ -92,6 +92,6 @@ private:
     {return k < 0 ? -1 : (k > 0 ? 1 : 0);}
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_OPTIMIZER_RPROP_H_
+#endif // !LCPP_OPTIMIZER_RPROP_H_

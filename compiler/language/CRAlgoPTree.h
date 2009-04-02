@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_LANGUAGE_PTREE_H_
-# define CRALGO_LANGUAGE_PTREE_H_
+#ifndef LCPP_LANGUAGE_PTREE_H_
+# define LCPP_LANGUAGE_PTREE_H_
 
 # include "../common.h"
 
@@ -98,4 +98,4 @@ extern bool isFeatureSense(PTree::Node* identifier);
 
 }; /* namespace CRAlgo */
 
-#endif // !CRALGO_LANGUAGE_PTREE_H_
+#endif // !LCPP_LANGUAGE_PTREE_H_

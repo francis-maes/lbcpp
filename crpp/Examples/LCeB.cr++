@@ -26,11 +26,11 @@ featureGenerator numberLogFeatures(double positiveNumber)
   double base = pow(10.0, fl);
 
   if (frac < clog2)
-    featureCall inline numberLogFeaturesBase(cralgo::toString(base), cralgo::toString(2 * base), 0, clog2, frac);
+    featureCall inline numberLogFeaturesBase(lcpp::toString(base), lcpp::toString(2 * base), 0, clog2, frac);
   else if (frac < clog5)
-    featureCall inline numberLogFeaturesBase(cralgo::toString(2 * base), cralgo::toString(5 * base), clog2, clog5, frac);
+    featureCall inline numberLogFeaturesBase(lcpp::toString(2 * base), lcpp::toString(5 * base), clog2, clog5, frac);
   else
-    featureCall inline numberLogFeaturesBase(cralgo::toString(5 * base), cralgo::toString(10 * base), clog5, 1.0, frac);
+    featureCall inline numberLogFeaturesBase(lcpp::toString(5 * base), lcpp::toString(10 * base), clog5, 1.0, frac);
 }
 
 featureGenerator numberFeatures(double value)
@@ -218,7 +218,7 @@ public:
   {
     Expression* result = new Expression(compute(op));
     result->setNonLeaf(op.operation, v[op.leftIndex], v[op.rightIndex]);
-    std::cout << cralgo::toString(*result) << std::endl;
+    std::cout << lcpp::toString(*result) << std::endl;
     
     int i1 = op.leftIndex;
     int i2 = op.rightIndex;
@@ -233,7 +233,7 @@ public:
     {assert(index < v.size()); return *v[index];}
     
   friend std::ostream& operator <<(std::ostream& ostr, const ExpressionSet& expressions)
-    {return ostr << cralgo::toString(expressions.v);}
+    {return ostr << lcpp::toString(expressions.v);}
   
 private:
   std::vector<Expression* > v;
@@ -307,9 +307,9 @@ crAlgorithm bool searchSpace(std::vector<int> numbers, int target, int featureVe
     }
     
     chooseFunction std::string operationToString(const Operation& op) {
-      return cralgo::toString(expressions.getExpression(op.leftIndex)) + " " + 
+      return lcpp::toString(expressions.getExpression(op.leftIndex)) + " " + 
         Operation::getChar(op.operation) + " " + 
-        cralgo::toString(expressions.getExpression(op.rightIndex));
+        lcpp::toString(expressions.getExpression(op.rightIndex));
     }
     
     Operation operation = choose<Operation>(candidateOperations, greedyHeuristic, actionFeatures, operationToString);
@@ -319,12 +319,12 @@ crAlgorithm bool searchSpace(std::vector<int> numbers, int target, int featureVe
   return false;
 }
 
-cralgo::CRAlgorithmPtr sampleInstance(size_t numNumbers,
+lcpp::CRAlgorithmPtr sampleInstance(size_t numNumbers,
                           int minTarget = 100, int maxTarget = 999,
                           size_t chanceInfTen = 2, size_t chanceSpecial = 1)
 {
   assert(maxTarget > minTarget);
-  cralgo::Random& random = cralgo::Random::getInstance();
+  lcpp::Random& random = lcpp::Random::getInstance();
   
   std::vector<int> remaining;
   remaining.reserve(10 * chanceInfTen + 4 * chanceSpecial);
@@ -364,7 +364,7 @@ public:
   virtual unsigned getNumInstances()
     {return getCount();}
 
-  virtual cralgo::CRAlgorithmPtr createInstance(size_t i)
+  virtual lcpp::CRAlgorithmPtr createInstance(size_t i)
     {return lceb::sampleInstance(getNumInputs());}
 };
 */

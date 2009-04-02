@@ -9,7 +9,7 @@
 #include "ContentGraph.cr++"
 #include "LabelSequence.cr++"
 
-namespace cralgo
+namespace lcpp
 {
 
 class LabeledContentGraph
@@ -110,11 +110,11 @@ public:
   ** Streaming operator
   */
   friend std::ostream& operator <<(std::ostream& ostr, const LabeledContentGraph& graph)
-    {return ostr << "graph = " << cralgo::toString(graph.graph) << ", labels = " << cralgo::toString(graph.labels);}
+    {return ostr << "graph = " << lcpp::toString(graph.graph) << ", labels = " << lcpp::toString(graph.labels);}
   
 private:
   ContentGraph graph;
   LabelSequence labels;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/GradientBasedLearningMachine.h>
-#include <cralgo/impl/impl.h>
-using namespace cralgo;
+#include <lcpp/GradientBasedLearningMachine.h>
+#include <lcpp/impl/impl.h>
+using namespace lcpp;
 
 template<class ExactType, class BaseClass>
 class StaticToDynamicGradientBasedLearningMachine : public BaseClass

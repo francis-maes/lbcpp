@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
 
 class TreeSearchNode
@@ -115,4 +115,4 @@ private:
   VariablePtr    choice;  // the choice performed to transform parent into this 
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

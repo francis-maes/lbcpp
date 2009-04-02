@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
 
 class ContentSequence
@@ -25,10 +25,10 @@ public:
     {v.push_back(element);}
 
   friend std::ostream& operator <<(std::ostream& ostr, const ContentSequence& v)
-    {return ostr << cralgo::toString(v.v);}
+    {return ostr << lcpp::toString(v.v);}
 
 private:
   std::vector<FeatureGeneratorPtr> v;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

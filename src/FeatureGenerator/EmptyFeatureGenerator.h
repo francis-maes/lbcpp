@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_FEATURE_GENERATOR_EMPTY_H_
-# define CRALGO_FEATURE_GENERATOR_EMPTY_H_
+#ifndef LCPP_FEATURE_GENERATOR_EMPTY_H_
+# define LCPP_FEATURE_GENERATOR_EMPTY_H_
 
-# include <cralgo/FeatureGenerator.h>
-# include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lcpp/FeatureGenerator.h>
+# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace cralgo
+namespace lcpp
 {
 
 class EmptyFeatureGenerator
@@ -27,6 +27,6 @@ public:
     {return FeatureDictionaryPtr();} // can be combined with any other dictionary
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_FEATURE_GENERATOR_EMPTY_H_
+#endif // !LCPP_FEATURE_GENERATOR_EMPTY_H_

@@ -1,6 +1,6 @@
 struct Toto {int i;};
 
-namespace cralgo
+namespace lcpp
 {
 
 template<>
@@ -14,7 +14,7 @@ struct Traits<Toto>
     {return Traits<int>::read(istr, result.i);}
 };
 
-};  // namespace cralgo 
+};  // namespace lcpp 
 
 int main(int argc, char* argv[])
 {
@@ -27,14 +27,14 @@ int main(int argc, char* argv[])
   std::vector<Toto* > totoptrs(5);
   for (size_t i = 0; i < totoptrs.size(); ++i) {totoptrs[i] = new Toto(); totoptrs[i]->i = i;}
   
-  std::cout << cralgo::toString(toto1) << std::endl;
-  std::cout << cralgo::toString(toto2) << std::endl;
-  std::cout << cralgo::toString(&toto1) << std::endl;
-  std::cout << cralgo::toString(&toto2) << std::endl;
-  std::cout << cralgo::toString(totoptr) << std::endl;
-  std::cout << cralgo::toString(totoptrptr) << std::endl;
-  std::cout << cralgo::toString(totos) << std::endl;
-  std::cout << cralgo::toString(totoptrs) << std::endl;
-  std::cout << cralgo::toString(&totoptrs) << std::endl;
+  std::cout << lcpp::toString(toto1) << std::endl;
+  std::cout << lcpp::toString(toto2) << std::endl;
+  std::cout << lcpp::toString(&toto1) << std::endl;
+  std::cout << lcpp::toString(&toto2) << std::endl;
+  std::cout << lcpp::toString(totoptr) << std::endl;
+  std::cout << lcpp::toString(totoptrptr) << std::endl;
+  std::cout << lcpp::toString(totos) << std::endl;
+  std::cout << lcpp::toString(totoptrs) << std::endl;
+  std::cout << lcpp::toString(&totoptrs) << std::endl;
   return 0;
 }

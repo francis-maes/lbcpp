@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/LearningExample.h>
-#include <cralgo/SparseVector.h>
+#include <lcpp/LearningExample.h>
+#include <lcpp/SparseVector.h>
 #include <fstream>
-using namespace cralgo;
+using namespace lcpp;
 
 /*
 ** LearningExampleParser
@@ -86,7 +86,7 @@ private:
   StringDictionaryPtr labels;
 };
 
-bool cralgo::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res)
+bool lcpp::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res)
 {
   ClassificationExamplesParser parser(res, labels);
   return parser.parse(istr, dictionary);
@@ -114,7 +114,7 @@ private:
   std::vector<RegressionExample>& target;
 };
 
-bool cralgo::parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res)
+bool lcpp::parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res)
 {
   RegressionExamplesParser parser(res);
   return parser.parse(istr, dictionary);

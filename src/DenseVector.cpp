@@ -5,10 +5,10 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <cralgo/DenseVector.h>
-#include <cralgo/impl/Bridge/DoubleVector.hpp>
+#include <lcpp/DenseVector.h>
+#include <lcpp/impl/Bridge/DoubleVector.hpp>
 #include <cfloat>
-using namespace cralgo;
+using namespace lcpp;
 
 DenseVector::DenseVector(const DenseVector& otherVector)
   : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors) {}

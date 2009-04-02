@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/CRAlgorithm.h>
-#include <cralgo/FeatureGenerator.h>
-#include <cralgo/impl/impl.h>
-using namespace cralgo;
+#include <lcpp/CRAlgorithm.h>
+#include <lcpp/FeatureGenerator.h>
+#include <lcpp/impl/impl.h>
+using namespace lcpp;
 
 StateValueFunctionPtr StateValueFunction::createPredictions(RegressorPtr regressor)
   {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
@@ -132,7 +132,7 @@ std::string Choose::toString() const
     for (size_t i = 0; i < actionValues.size(); ++i)
     {
       ActionValueFunctionPtr f = actionValues[i];
-      res += " " + f->getName() + ": " + cralgo::toString(f->compute(choice));
+      res += " " + f->getName() + ": " + lcpp::toString(f->compute(choice));
     }
     res += "\n";
   }

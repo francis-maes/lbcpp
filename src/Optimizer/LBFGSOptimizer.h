@@ -6,18 +6,18 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_OPTIMIZER_LBFGS_H_
-# define CRALGO_OPTIMIZER_LBFGS_H_
+#ifndef LCPP_OPTIMIZER_LBFGS_H_
+# define LCPP_OPTIMIZER_LBFGS_H_
 
 /*
 ** "On the limited memory BFGS method for large scale optimization",
 ** by D. Liu and J. Nocedal, Mathematical Programming B 45 (1989) 503-528
 */
-# include <cralgo/Optimizer.h>
+# include <lcpp/Optimizer.h>
 # include "QuasiNewtonMemory.h"
 # include "BackTrackingLineSearch.h"
 
-namespace cralgo
+namespace lcpp
 {
 
 class LBFGSOptimizer : public VectorOptimizer
@@ -54,6 +54,6 @@ protected:
 };
 
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_OPTIMIZER_LBFGS_H_
+#endif // !LCPP_OPTIMIZER_LBFGS_H_

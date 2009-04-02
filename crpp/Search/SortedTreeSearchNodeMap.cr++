@@ -9,7 +9,7 @@
 #include "TreeSearchSpace.cr++"
 #include <cfloat>
 
-namespace cralgo
+namespace lcpp
 {
 
 class SortedTreeSearchNodeMap
@@ -77,13 +77,13 @@ struct Traits<SortedTreeSearchNodeMap>
   : public BuiltinContainerTraits< SortedTreeSearchNodeMap >
 {    
   static inline std::string toString(const SortedTreeSearchNodeMap& nodes)
-    {return cralgo::toString(nodes.m);}
+    {return lcpp::toString(nodes.m);}
 
   static void write(std::ostream& ostr, const SortedTreeSearchNodeMap& nodes)
-    {cralgo::write(ostr, nodes.m);}
+    {lcpp::write(ostr, nodes.m);}
     
   static bool read(std::istream& istr, const SortedTreeSearchNodeMap& nodes)
-    {return cralgo::read(istr, nodes.m);}
+    {return lcpp::read(istr, nodes.m);}
 
   template<class ScoringFunction>
   static inline ConstIterator sampleBests(const SortedTreeSearchNodeMap& nodes, const ScoringFunction& scoringFunction)
@@ -106,4 +106,4 @@ struct Traits<SortedTreeSearchNodeMap>
   }
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

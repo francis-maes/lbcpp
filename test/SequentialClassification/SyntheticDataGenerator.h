@@ -9,9 +9,9 @@
 #ifndef SYNTHETIC_DATA_GENERATOR_H_
 # define SYNTHETIC_DATA_GENERATOR_H_
 
-#include <cralgo/cralgo.h>
+#include <lcpp/lcpp.h>
 
-namespace cralgo
+namespace lcpp
 {
 
 class SyntheticLinearMultiClassGenerator
@@ -99,6 +99,6 @@ public:
   std::vector<SyntheticLinearMultiClassGenerator> foldGenerators;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 #endif // !SYNTHETIC_DATA_GENERATOR_H_

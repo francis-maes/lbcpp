@@ -31,11 +31,11 @@ public:
   
   // break
   virtual void visit(PTree::BreakStatement* node)
-    {setResult(returnStatement(atom("cralgo::stateBreak")));}
+    {setResult(returnStatement(atom("lcpp::stateBreak")));}
 
   // continue
   virtual void visit(PTree::ContinueStatement* node)
-    {setResult(returnStatement(atom("cralgo::stateContinue")));}
+    {setResult(returnStatement(atom("lcpp::stateContinue")));}
   
   virtual void visit(PTree::UserStatementExpr* node)
   {

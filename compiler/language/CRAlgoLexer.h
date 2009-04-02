@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_LEXER_H_
-# define CRALGO_LEXER_H_
+#ifndef LCPP_LEXER_H_
+# define LCPP_LEXER_H_
 
 # include "../common.h"
 
@@ -46,4 +46,4 @@ public:
   CRAlgoLexer(Buffer* buffer, int tokenset = CXX|GCC);
 };
 
-#endif // !CRALGO_LEXER_H_
+#endif // !LCPP_LEXER_H_

@@ -9,7 +9,7 @@
 # include "../Data/ContentSequence.cr++"
 # include "../Data/LabelSequence.cr++"
 
-namespace cralgo
+namespace lcpp
 {
 
 crAlgorithm LabelSequence leftRightLabeling(const ContentSequence& x, const LabelDictionary& labels, const LabelSequence* ycorrect, size_t contextSize = 3)
@@ -41,7 +41,7 @@ crAlgorithm LabelSequence leftRightLabeling(const ContentSequence& x, const Labe
   return res;
 }
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 /*
 class LeftRightLabelingTestInstanceSet : public CRAlgorithmInstanceSet
 {
@@ -51,9 +51,9 @@ public:
   virtual unsigned getNumInstances()
     {return 10;}
 
-  cralgo::ContentSequence x;
-  cralgo::LabelDictionary labels;
-  cralgo::LabelSequence correct;
+  lcpp::ContentSequence x;
+  lcpp::LabelDictionary labels;
+  lcpp::LabelSequence correct;
   
   featureGenerator testContent(size_t instance, size_t t)
   {
@@ -63,7 +63,7 @@ public:
           featureScope("feat") featureSense(i);
   }
   
-  virtual cralgo::CRAlgorithmPtr createInstance(size_t index)
+  virtual lcpp::CRAlgorithmPtr createInstance(size_t index)
   {
     if (!labels.size())
     {
@@ -78,7 +78,7 @@ public:
       for (size_t i = 0; i < correct.size(); ++i)
         x.add(testContent(index, i));
     }
-    return cralgo::leftRightLabeling(x, labels, &correct);
+    return lcpp::leftRightLabeling(x, labels, &correct);
   }
 };
 */

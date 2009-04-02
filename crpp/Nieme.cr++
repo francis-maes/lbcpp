@@ -11,7 +11,7 @@
 # include "learning/instanceset/InstanceSet.h"
 # include "graphs/graph/GraphLabelingExample.h"
 
-namespace cralgo
+namespace lcpp
 {
   inline std::string toString(representation::DoubleVectorPtr frame)
     {return (const char* )frame->getShortDescription();}
@@ -20,10 +20,10 @@ namespace cralgo
 class CRAlgorithmInstanceSet : public learning::InstanceSet
 {
 public:
-  virtual cralgo::CRAlgorithmPtr createInstance(size_t i) = 0;
+  virtual lcpp::CRAlgorithmPtr createInstance(size_t i) = 0;
 
   virtual std::string getInstanceName(size_t i)
-    {return "Instance " + cralgo::toString(i);}
+    {return "Instance " + lcpp::toString(i);}
 
 protected:  
   virtual representation::FramePtr open(unsigned i)

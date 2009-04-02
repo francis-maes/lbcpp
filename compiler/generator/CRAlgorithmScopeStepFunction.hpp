@@ -52,7 +52,7 @@ public:
     body.add(switchgen.createStatement());
     body.add(rewrite(node, scope));
     body.add(exprStatement(atom("__crAlgorithmScope__.__state__ = " + size2str(localScopes.size() + chooses.size()))));
-    body.add(returnStatement(atom("cralgo::stateFinish"))); // execution finished normally
+    body.add(returnStatement(atom("lcpp::stateFinish"))); // execution finished normally
   }
   
   virtual void visit(PTree::Typedef* node)
@@ -89,11 +89,11 @@ public:
   
   // break
   virtual void visit(PTree::BreakStatement* node)
-    {setResult(returnStatement(atom("cralgo::stateBreak")));}
+    {setResult(returnStatement(atom("lcpp::stateBreak")));}
 
   // continue
   virtual void visit(PTree::ContinueStatement* node)
-    {setResult(returnStatement(atom("cralgo::stateContinue")));}
+    {setResult(returnStatement(atom("lcpp::stateContinue")));}
   
   // variable declaration
   virtual void visit(PTree::Declaration* node)
@@ -290,9 +290,9 @@ protected:
     PTree::Node* subStepReturn = atom("__stepState__");
     block.addVariableDeclaration(intKeyword(), subStepReturn, subStepFuncall);
     
-    // if (__stepState__ == cralgo::stateChoose) return cralgo::stateChoose
-    block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("cralgo::stateChoose")),
-            returnStatement(atom("cralgo::stateChoose"))));
+    // if (__stepState__ == lcpp::stateChoose) return lcpp::stateChoose
+    block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("lcpp::stateChoose")),
+            returnStatement(atom("lcpp::stateChoose"))));
     
     // __callback__.leaveLocalScope();
     block.add(atom("__callback__.leaveLocalScope();"));
@@ -301,20 +301,20 @@ protected:
     block.add(exprStatement(atom("delete __crAlgorithmScope__." + localScope.getVariableName())));
     block.add(exprStatement(atom("__crAlgorithmScope__." + localScope.getVariableName() + "= NULL")));
     
-    // if (__stepState == cralgo::stateReturn) {
+    // if (__stepState == lcpp::stateReturn) {
     //      __crAlgorithm__.__state__ = ENDSTATE;
-    //      return cralgo::stateReturn; 
+    //      return lcpp::stateReturn; 
     // }
-    block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("cralgo::stateReturn")),
-      atom("{ __crAlgorithm__.__state__ = " + size2str(getFinalStateNumber()) + "; return cralgo::stateReturn;}")));
+    block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("lcpp::stateReturn")),
+      atom("{ __crAlgorithm__.__state__ = " + size2str(getFinalStateNumber()) + "; return lcpp::stateReturn;}")));
 
     if (isInsideBreakableStatement)
     {
-      // if (__stepState__ == cralgo::stateBreak) break;
-      // else if (__stepState__ == cralgo::stateContinue) continue;
-      block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("cralgo::stateBreak")), 
+      // if (__stepState__ == lcpp::stateBreak) break;
+      // else if (__stepState__ == lcpp::stateContinue) continue;
+      block.add(ifStatement(infixExpr(subStepReturn, equalAtom(), atom("lcpp::stateBreak")), 
         breakStatement(), 
-        ifStatement(infixExpr(subStepReturn, equalAtom(), atom("cralgo::stateContinue")),
+        ifStatement(infixExpr(subStepReturn, equalAtom(), atom("lcpp::stateContinue")),
           continueStatement())));
     }
     else
@@ -322,9 +322,9 @@ protected:
       // forward stateBreak and stateContinue
       // continue if the sub-block finished normally (stateFinish)
       
-      // if (__stepState__ != cralgo::stateFinish)
+      // if (__stepState__ != lcpp::stateFinish)
       //    return __stepState__;
-      block.add(ifStatement(infixExpr(subStepReturn, notEqualAtom(), atom("cralgo::stateFinish")), returnStatement(subStepReturn)));
+      block.add(ifStatement(infixExpr(subStepReturn, notEqualAtom(), atom("lcpp::stateFinish")), returnStatement(subStepReturn)));
     }
   }
 
@@ -341,7 +341,7 @@ protected:
     block.add(exprStatement(assignExpr(atom("__crAlgorithmScope__.__state__"), literal(localScopes->size() + choose.getChooseNumber()))));
 
     // return
-    block.add(returnStatement(atom("cralgo::stateChoose")));
+    block.add(returnStatement(atom("lcpp::stateChoose")));
     
     // label
     block.add(labelStatement(atom(choose.getLabelName())));
@@ -375,7 +375,7 @@ protected:
     
     // final state, return false
     block.add(exprStatement(atom("__crAlgorithmScope__.__state__ = " + size2str(getFinalStateNumber()))));
-    block.add(returnStatement(atom("cralgo::stateReturn")));
+    block.add(returnStatement(atom("lcpp::stateReturn")));
   }
 
 private:

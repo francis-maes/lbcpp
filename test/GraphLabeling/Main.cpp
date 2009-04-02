@@ -9,7 +9,7 @@
 #include "GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h"
   
 #include <fstream>
-using namespace cralgo;
+using namespace lcpp;
 
 class OnePassOrderFreeGraphLabelingAlgorithm : public CRAlgorithmGraphLabelingAlgorithm
 {
@@ -101,7 +101,7 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
     algorithm.setL2Regularizer(regularizer);
     algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
     double score = testAccuracy->getMean();
-    std::string results = name + " reg = " + cralgo::toString(regularizer) + " => Train Accuracy: " + cralgo::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + cralgo::toString(score * 100);
+    std::string results = name + " reg = " + lcpp::toString(regularizer) + " => Train Accuracy: " + lcpp::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + lcpp::toString(score * 100);
     if (score > bestTestAccuracy)
     {
       iterationsWithoutImprovement = 0;

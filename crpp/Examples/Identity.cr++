@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
 
 crAlgorithm void identity(CRAlgorithmPtr crAlgorithm)
@@ -50,4 +50,4 @@ crAlgorithm void identity(CRAlgorithmPtr crAlgorithm)
   }
 }
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

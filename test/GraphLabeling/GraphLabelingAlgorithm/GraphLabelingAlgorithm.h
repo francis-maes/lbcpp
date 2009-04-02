@@ -9,9 +9,9 @@
 #ifndef GRAPH_LABELING_ALGORITHM_H_
 # define GRAPH_LABELING_ALGORITHM_H_
 
-# include <cralgo/cralgo.h>
+# include <lcpp/lcpp.h>
 
-namespace cralgo
+namespace lcpp
 {
 
 class GraphLabelingAlgorithm
@@ -51,6 +51,6 @@ protected:
   double l2regularizer;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_H_

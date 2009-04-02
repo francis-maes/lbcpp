@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
                                
-#ifndef CRALGO_COMMON_H_
-# define CRALGO_COMMON_H_
+#ifndef LCPP_COMMON_H_
+# define LCPP_COMMON_H_
 
 # ifdef WIN32
 #  pragma warning(disable:4996)
@@ -30,4 +30,4 @@
 
 using namespace Synopsis;
 
-#endif // !CRALGO_COMMON_H_
+#endif // !LCPP_COMMON_H_

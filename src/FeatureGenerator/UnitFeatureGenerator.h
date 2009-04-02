@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_FEATURE_GENERATOR_UNIT_H_
-# define CRALGO_FEATURE_GENERATOR_UNIT_H_
+#ifndef LCPP_FEATURE_GENERATOR_UNIT_H_
+# define LCPP_FEATURE_GENERATOR_UNIT_H_
 
-# include <cralgo/FeatureGenerator.h>
-# include <cralgo/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lcpp/FeatureGenerator.h>
+# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace cralgo
+namespace lcpp
 {
 
 class UnitFeatureGenerator : public FeatureGeneratorDefaultImplementations<UnitFeatureGenerator, FlatFeatureGenerator>
@@ -37,6 +37,6 @@ private:
   }
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_FEATURE_GENERATOR_UNIT_H_
+#endif // !LCPP_FEATURE_GENERATOR_UNIT_H_

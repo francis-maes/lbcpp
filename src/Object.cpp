@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/Object.h>
+#include <lcpp/Object.h>
 #include <map>
 #include <fstream>
-using namespace cralgo;
+using namespace lcpp;
 
 extern void declareStandardCRAlgoClasses();
 class ObjectFactory
@@ -87,7 +87,7 @@ ObjectPtr Object::loadFromFile(const std::string& fileName)
 
 std::string Object::getClassName() const
 {
-  return cralgo::toString(typeid(*this));
+  return lcpp::toString(typeid(*this));
 }
 
 void Object::saveToStream(std::ostream& ostr) const

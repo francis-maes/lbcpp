@@ -8,14 +8,14 @@
 
 #include "GeneratedCode/SequentialClassification.h"
 #include "SyntheticDataGenerator.h"
-#include <cralgo/cralgo.h>
-using namespace cralgo;
+#include <lcpp/lcpp.h>
+using namespace lcpp;
 
 void testClassifier(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
 {
   StringDictionaryPtr classes = new StringDictionary();
   for (size_t i = 0; i < numClasses; ++i)
-    classes->add("class " + cralgo::toString(i));
+    classes->add("class " + lcpp::toString(i));
   
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
@@ -371,10 +371,10 @@ int main(int argc, char* argv[])
     test[i] = generator.sample();
     classFrequencies[test[i].getOutput()]++;
   }
-  std::cout << "Test Class Frequencies: " << cralgo::toString(classFrequencies) << std::endl;
+  std::cout << "Test Class Frequencies: " << lcpp::toString(classFrequencies) << std::endl;
   for (size_t i = 0; i < classFrequencies.size(); ++i)
     classFrequencies[i] /= (double)test.size();
-  std::cout << "Normalized Test Class Frequencies: " << cralgo::toString(classFrequencies) << std::endl;
+  std::cout << "Normalized Test Class Frequencies: " << lcpp::toString(classFrequencies) << std::endl;
   
   testClassifier(train, test, numClasses);  
   

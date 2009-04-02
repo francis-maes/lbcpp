@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
   struct TrueOrFalse
   {
@@ -68,7 +68,7 @@ namespace cralgo
     const_iterator end() const {return const_iterator(endValue);}
     
     friend std::ostream& operator <<(std::ostream& ostr, const RangeContainer<RangeType>& range)
-      {return ostr << "[" + cralgo::toString(range.beginValue) + " - " + cralgo::toString(range.endValue) + "]";}
+      {return ostr << "[" + lcpp::toString(range.beginValue) + " - " + lcpp::toString(range.endValue) + "]";}
     
   private:
     RangeType beginValue;
@@ -78,4 +78,4 @@ namespace cralgo
   typedef RangeContainer<int> IntRange;
   typedef RangeContainer<size_t> SizeRange;
   
-}; /* namespace cralgo */
+}; /* namespace lcpp */

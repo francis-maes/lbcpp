@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "TreeSearchNode.cr++"
 
-namespace cralgo
+namespace lcpp
 {
 
 class TreeSearchSpace
@@ -75,4 +75,4 @@ private:
 };
 
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

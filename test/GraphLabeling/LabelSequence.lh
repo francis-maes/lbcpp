@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace cralgo
+namespace lcpp
 {
 
 class LabelSequence;
@@ -106,4 +106,4 @@ private:
   std::vector<size_t> v;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */

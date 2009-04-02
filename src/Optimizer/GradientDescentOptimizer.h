@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef CRALGO_OPTIMIZER_GRADIENT_DESCENT_H_
-# define CRALGO_OPTIMIZER_GRADIENT_DESCENT_H_
+#ifndef LCPP_OPTIMIZER_GRADIENT_DESCENT_H_
+# define LCPP_OPTIMIZER_GRADIENT_DESCENT_H_
 
-# include <cralgo/Optimizer.h>
-# include <cralgo/IterationFunction.h>
+# include <lcpp/Optimizer.h>
+# include <lcpp/IterationFunction.h>
 
-namespace cralgo
+namespace lcpp
 {
 
 class GradientDescentOptimizer : public VectorOptimizer
@@ -33,6 +33,6 @@ private:
   IterationFunctionPtr stepSize;
 };
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
-#endif // !CRALGO_OPTIMIZER_GRADIENT_DESCENT_H_
+#endif // !LCPP_OPTIMIZER_GRADIENT_DESCENT_H_

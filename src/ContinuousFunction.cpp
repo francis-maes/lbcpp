@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/ContinuousFunction.h>
-#include <cralgo/impl/impl.h>
-using namespace cralgo;
+#include <lcpp/ContinuousFunction.h>
+#include <lcpp/impl/impl.h>
+using namespace lcpp;
 
 /*
 ** Scalar Function
@@ -92,7 +92,7 @@ bool ScalarVectorFunction::checkDerivativeWrtDirection(const FeatureGeneratorPtr
   FeatureGeneratorPtr gradient = computeGradient(parameters, direction);
   double analyticDerivative = gradient->dotProduct(direction);
   Object::warning("ScalarVectorFunction::checkDerivativeWrtDirection",
-    "Derivative Check: " + cralgo::toString(numericalDerivative) + " vs. " + cralgo::toString(analyticDerivative));
+    "Derivative Check: " + lcpp::toString(numericalDerivative) + " vs. " + lcpp::toString(analyticDerivative));
   return fabs(numericalDerivative - analyticDerivative) < 0.00001;
 }
 

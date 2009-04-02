@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <cralgo/FeatureDictionary.h>
-using namespace cralgo;
+#include <lcpp/FeatureDictionary.h>
+using namespace lcpp;
 
 /*
 ** StringDictionary
@@ -44,12 +44,12 @@ size_t StringDictionary::add(const std::string& str)
 std::string StringDictionary::getString(size_t index) const
 {
   if (index >= indexToString.size() || indexToString[index] == "")
-    return cralgo::toString(index);
+    return lcpp::toString(index);
   else
     return indexToString[index];
 }
 
-namespace cralgo
+namespace lcpp
 {
 
   std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings)
@@ -63,7 +63,7 @@ namespace cralgo
     return ostr;
   }
 
-}; /* namespace cralgo */
+}; /* namespace lcpp */
 
 /*
 ** FeatureDictionary
@@ -93,7 +93,7 @@ FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDi
   }
   else
     res = defaultValue ? defaultValue : new FeatureDictionary(name + "." + 
-      (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : cralgo::toString(index)));
+      (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : lcpp::toString(index)));
   return res;
 }
 
