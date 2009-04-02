@@ -180,6 +180,8 @@ public:
   };
   void makeFolds(size_t numFolds, bool removeTrainTestLinks, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs);
 
+  std::pair<LabeledContentGraphPtr, LabelsFold> makeFold(size_t testBegin, size_t testEnd, bool removeTrainTestLinks);
+
   LabeledContentGraphPtr randomizeOrder() const;
 
 private:

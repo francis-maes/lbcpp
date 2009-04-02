@@ -146,7 +146,8 @@ int main(int argc, char* argv[])
   std::cout << "Splitting graph..." << std::endl;
   std::vector<LabeledContentGraphPtr> trainGraphs;
   std::vector<LabeledContentGraph::LabelsFold> testGraphs;
-  graph->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
+  while (trainGraphs.size() < 10)
+    graph->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
   
   for (size_t i = 0; i < trainGraphs.size(); ++i)
   {
@@ -171,37 +172,8 @@ int main(int argc, char* argv[])
 
     ContentOnlyGraphLabelingAlgorithm contentOnly;
     contentOnly.l2regularizer = regularizer;
-    
-    StackedGraphLabelingAlgorithm stacked2(&contentOnly);
-    stacked2.l2regularizer = regularizer;
-    testAlgorithm(stacked2, "STACK2 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-    assert(&stacked2.getBaseAlgorithm() == &contentOnly);
-
-    StackedGraphLabelingAlgorithm stacked3(&stacked2);
-    stacked3.l2regularizer = regularizer;
-    assert(&stacked3.getBaseAlgorithm() == &stacked2);
-    testAlgorithm(stacked3, "STACK3 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-    StackedGraphLabelingAlgorithm stacked4(&stacked3);
-    stacked4.l2regularizer = regularizer;
-    assert(&stacked4.getBaseAlgorithm() == &stacked3);
-    testAlgorithm(stacked4, "STACK4 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-    StackedGraphLabelingAlgorithm stacked5(&stacked4);
-    stacked5.l2regularizer = regularizer;
-    assert(&stacked5.getBaseAlgorithm() == &stacked4);
-    testAlgorithm(stacked5, "STACK5 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-  
-  /*
-  
-    ContentOnlyGraphLabelingAlgorithm contentOnly;
-    contentOnly.l2regularizer = regularizer;
     testAlgorithm(contentOnly, "CO " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-
-    PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
-    perfectContext.l2regularizer = regularizer;
-    testAlgorithm(perfectContext, "OPT " + cralgo::toString(regularizer), trainGraphs, testGraphs);
-   
+  
     IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
     iterativeClassification.l2regularizer = regularizer;
     testAlgorithm(iterativeClassification, "ICA " + cralgo::toString(regularizer), trainGraphs, testGraphs);
@@ -231,7 +203,31 @@ int main(int argc, char* argv[])
 //      testAlgorithm(crIterative, "CR-Iterative Classification with Maxent reg " + cralgo::toString(regularizer) + " probabilistic oneClassifierPerPass", trainGraphs, testGraphs);
       testAlgorithm(crIterative, "CRICA-CPP " + cralgo::toString(regularizer), trainGraphs, testGraphs);
 
-  */
+    
+      StackedGraphLabelingAlgorithm stacked2(&contentOnly);
+      stacked2.l2regularizer = regularizer;
+      testAlgorithm(stacked2, "STACK2 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+      assert(&stacked2.getBaseAlgorithm() == &contentOnly);
+
+      StackedGraphLabelingAlgorithm stacked3(&stacked2);
+      stacked3.l2regularizer = regularizer;
+      assert(&stacked3.getBaseAlgorithm() == &stacked2);
+      testAlgorithm(stacked3, "STACK3 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+
+      StackedGraphLabelingAlgorithm stacked4(&stacked3);
+      stacked4.l2regularizer = regularizer;
+      assert(&stacked4.getBaseAlgorithm() == &stacked3);
+      testAlgorithm(stacked4, "STACK4 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+
+      StackedGraphLabelingAlgorithm stacked5(&stacked4);
+      stacked5.l2regularizer = regularizer;
+      assert(&stacked5.getBaseAlgorithm() == &stacked4);
+      testAlgorithm(stacked5, "STACK5 " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+  
+      PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
+      perfectContext.l2regularizer = regularizer;
+      testAlgorithm(perfectContext, "OPT " + cralgo::toString(regularizer), trainGraphs, testGraphs);
+     
     
 /*
     double t = -1.5;//for (double t = -3; t <= 3; t += 0.5)
