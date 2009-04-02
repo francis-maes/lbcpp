@@ -14,4 +14,4 @@ ADD_SUBDIRECTORY(SequentialClassification)
 ADD_SUBDIRECTORY(GraphLabeling)
 
 ADD_EXECUTABLE(test-lcpp TestCpp.cpp)
-TARGET_LINK_LIBRARIES(test-lcpp lcpp)
+TARGET_LINK_LIBRARIES(test-lcpp lcpp-core)

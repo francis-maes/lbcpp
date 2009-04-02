@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: lcpp.h                       | global include file for lcpp  |
+| Filename: lcpp.h                         | global include file for lcpp  |
 | Author  : Francis Maes                   |                                 |
 | Started : 04/01/2009 20:15               |                                 |
 `------------------------------------------/                                 |
