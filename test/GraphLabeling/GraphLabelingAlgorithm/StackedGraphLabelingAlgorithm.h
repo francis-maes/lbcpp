@@ -20,6 +20,12 @@ public:
   StackedGraphLabelingAlgorithm(GraphLabelingAlgorithm* baseAlgorithm)
     : baseAlgorithm(baseAlgorithm) {}
 
+  virtual void setL2Regularizer(double reg)
+  {
+    baseAlgorithm->setL2Regularizer(reg);
+    ClassifierBasedGraphLabelingAlgorithm::setL2Regularizer(reg);
+  }
+
   enum
   {
     numFolds = 5

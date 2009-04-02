@@ -68,12 +68,26 @@ public:
       size_t index = i - 1;
       if (features->getNumFeatures() <= index)
         features->addFeature("word " + cralgo::toString(index));
-      double value;
-      if (!parse(columns[i], value))
-        return false;
-      if (value != 0.0)
-        content->set(index, value);
+      
+      std::string featureName;
+      double featureValue;
+      size_t semiColonPos = columns[i].find(':');
+      if (semiColonPos != std::string::npos)
+      {
+        featureName = columns[i].substr(0, semiColonPos);
+        if (!parse(columns[i].substr(semiColonPos + 1), featureValue))
+          return false;
+      }
+      else
+      {
+        featureName = cralgo::toString(index);
+        if (!parse(columns[i], featureValue))
+          return false;
+      }
+      if (featureValue != 0.0)
+        content->set(features->addFeature(featureName), featureValue);
     }
+    content->set(features->addFeature("__unit__"), 1.0); // unit feature
     nodeIdentifiers[columns[0]] = res->addNode(content, res->getLabelDictionary()->add(columns.back()));
     if (maxNodes && res->getNumNodes() >= maxNodes)
       breakParsing();
