@@ -60,8 +60,11 @@ public:
     
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
-    if (columns.size() < 3)
+    if (columns.size() < 2)
+    {
+      Object::error("ContentFileParser::parseDataLine", "Invalid number of columns");
       return false;
+    }
     SparseVectorPtr content = new SparseVector(features);
     for (size_t i = 1; i < columns.size() - 1; ++i)
     {
@@ -120,12 +123,12 @@ public:
     if (it1 == nodeIdentifiers.end())
     {
       if (!maxNodes)
-	Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[1] + "'");
+        Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[1] + "'");
     }
     else if (it2 == nodeIdentifiers.end())
     {
       if (!maxNodes)
-	Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[0] + "'");
+        Object::warning("LinkFileParser::parseDataLine", "Invalid node identifier '" + columns[0] + "'");
     }
     else
       res->addLink(it1->second, it2->second);
