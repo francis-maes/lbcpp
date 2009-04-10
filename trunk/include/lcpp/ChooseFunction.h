@@ -43,6 +43,8 @@ public:
 class ActionValueFunction : public ChooseFunction
 {
 public:
+  static ActionValueFunctionPtr createChooseActionValue();
+
   static ActionValueFunctionPtr createProbabilities(ClassifierPtr classifier);
   static ActionValueFunctionPtr createProbabilities(GeneralizedClassifierPtr classifier);
   static ActionValueFunctionPtr createScores(ClassifierPtr classifier);
