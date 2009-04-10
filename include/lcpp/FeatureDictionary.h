@@ -60,7 +60,7 @@ public:
     {return featuresDictionary;}
   
   size_t getNumFeatures() const
-    {return featuresDictionary ? featuresDictionary->getNumElements() : 0.0;}
+    {return featuresDictionary ? featuresDictionary->getNumElements() : 0;}
     
   size_t addFeature(const std::string& identifier)
     {assert(featuresDictionary); return featuresDictionary->add(identifier);}
@@ -72,7 +72,7 @@ public:
     {return scopesDictionary;}
 
   size_t getNumScopes() const
-    {return scopesDictionary ? scopesDictionary->getNumElements() : 0.0;}
+    {return scopesDictionary ? scopesDictionary->getNumElements() : 0;}
   
   /*
   ** Related dictionaries
