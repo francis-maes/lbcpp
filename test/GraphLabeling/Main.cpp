@@ -60,7 +60,13 @@ public:
     else if (temperature)
       explorationPolicy = Policy::createGibbsGreedy(learnedScores, IterationFunction::createConstant(temperature));
     else if (epsilon)
-      explorationPolicy = learnedPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
+      {
+	// predit + bruit:
+	//explorationPolicy = learnedPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
+
+	// optimal + bruit:
+	explorationPolicy = Policy::createGreedy(ActionValueFunction::createChooseActionValue())->epsilonGreedy(IterationFunction::createConstant(epsilon));
+      }
     else
       explorationPolicy = learnedPolicy;
       

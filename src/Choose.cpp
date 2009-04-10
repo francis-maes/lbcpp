@@ -11,6 +11,22 @@
 #include <lcpp/impl/impl.h>
 using namespace lcpp;
 
+class ChooseActionValueFunction : public ActionValueFunction
+{
+public:
+   virtual void setChoose(ChoosePtr choose)
+     {function = choose->getActionValueFunction();}
+
+   virtual double compute(VariablePtr choice) const
+     {return function->compute(choice);}
+
+private:
+  ActionValueFunctionPtr function;     
+};
+
+ActionValueFunctionPtr ActionValueFunction::createChooseActionValue()
+  {return new ChooseActionValueFunction();}
+
 StateValueFunctionPtr StateValueFunction::createPredictions(RegressorPtr regressor)
   {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
 
