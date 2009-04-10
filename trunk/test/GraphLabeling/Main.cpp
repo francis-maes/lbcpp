@@ -46,18 +46,6 @@ public:
   
   virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(StringDictionaryPtr labels)
   {
-/* CRANK - PREDICTED 
-    IterationFunctionPtr learningRate = IterationFunction::createInvLinear(10, 10000);
-    RankerPtr ranker = GradientBasedRanker::
-      //createLargeMarginBestAgainstAllLinear
-      //createLargeMarginMostViolatedPairLinear
-      createLargeMarginAllPairsLinear
-      (GradientBasedLearner::createStochasticDescent(learningRate));
-    
-    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
-    PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
-    */
-
     // Classifier Maxent
     IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);
     GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(learningRate);
@@ -284,8 +272,60 @@ int trainTestFixedTrainSize(int argc, char* argv[])
   return 0;
 }
 
+int testUniformNoise(int argc, char* argv[])
+{
+  if (argc < 6)
+  {
+    std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds removeTrainTestLinks resultsFile.txt" << std::endl;
+    return 1;
+  }
+  std::string contentFile = argv[1];
+  std::string linkFile = argv[2];
+  int numFolds = atoi(argv[3]);
+  bool removeTrainTestLinks = argv[4] == std::string("true");
+  std::ofstream resultsFile(argv[5]);
+  if (!resultsFile.is_open())
+  {
+    std::cerr << "Error: could not open file " << argv[5] << std::endl;
+    return 1;
+  }
+  resultsOutputFile = &resultsFile;
+
+  FeatureDictionaryPtr featuresDictionary = new FeatureDictionary("features");
+  StringDictionaryPtr labelsDictionary = new StringDictionary();
+
+  std::cout << "Parsing graph..." << std::endl;
+  LabeledContentGraphPtr graph = LabeledContentGraph::parseGetoorGraph(contentFile, linkFile, featuresDictionary, labelsDictionary);
+  if (!graph)
+    return 1;
+  displayGraphInfo(std::cout, graph, featuresDictionary, labelsDictionary);  
+  std::cout << *labelsDictionary << std::endl;
+  displayGraphInfo(resultsFile, graph, featuresDictionary, labelsDictionary);
+
+  std::cout << "Splitting graph..." << std::endl;
+  std::vector<LabeledContentGraphPtr> trainGraphs;
+  std::vector<LabeledContentGraph::LabelsFold> testGraphs;
+  while (trainGraphs.size() < 10)
+    graph->randomizeOrder()->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
+  
+  displayFolds(trainGraphs, testGraphs);
+
+  for (int percentNoise = 0; percentNoise <= 100; percentNoise += 10)
+    {
+      CRIterativeClassificationGraphLabelingAlgorithm crIterative;
+      crIterative.epsilon = percentNoise / 100.0;
+      testAlgorithm(crIterative, "SICA noise " + lcpp::toString(percentNoise), trainGraphs, testGraphs);
+    }
+
+
+  std::cout << std::endl << std::endl << std::endl;
+  std::cout << allResults << std::endl;
+  return 0;
+}
+
 int main(int argc, char* argv[])
 {
 //  return crossValidateAll(argc, argv);
-  return trainTestFixedTrainSize(argc, argv);
+//  return trainTestFixedTrainSize(argc, argv);
+  return testUniformNoise(argc, argv);
 }
