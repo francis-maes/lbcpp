@@ -26,7 +26,7 @@ crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<Featu
     }
     
     chooseFunction double actionValues(size_t label) {
-      return y && (*y)[i] == label;
+      return y && (*y)[i] == label ? 1.0 : 0.0;
     }
 
     res[i] = choose<size_t>(range, stateFeatures, actionFeatures, actionValues);

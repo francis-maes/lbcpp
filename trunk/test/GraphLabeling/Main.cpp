@@ -81,83 +81,109 @@ public:
 static std::ostream* resultsOutputFile = NULL;
 static std::string allResults;
 
+#include <sys/time.h>
+#include <unistd.h>
+inline double getTimeInSeconds()
+{
+  timeval t;
+  if (gettimeofday(&t, 0))
+      return 0.0;
+  return (double)t.tv_sec + t.tv_usec / 1000000.0;
+}
+
 double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
-                     const std::vector<LabeledContentGraph::LabelsFold>& testGraph)
+                     const std::vector<LabeledContentGraph::LabelsFold>& testGraph, bool profile)
 {
   std::cout << "Testing Algorithm " << name << std::endl;
-  double bestTestAccuracy = 0.0;
-  int iterationsWithoutImprovement = 0;
-  for (int i = 0; i < 16; ++i)
+  if (profile)
   {
-    double regularizer = (double)i;
-    ScalarRandomVariableStatisticsPtr trainAccuracy = new ScalarRandomVariableStatistics("trainAccuracy");
-    ScalarRandomVariableStatisticsPtr testAccuracy = new ScalarRandomVariableStatistics("testAccuracy");
-    algorithm.setL2Regularizer(regularizer);
-    algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
-    double score = testAccuracy->getMean();
-    std::string results = name + " reg = " + lcpp::toString(regularizer) + " => Train Accuracy: " + lcpp::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + lcpp::toString(score * 100);
-    if (score > bestTestAccuracy)
-    {
-      iterationsWithoutImprovement = 0;
-      bestTestAccuracy = score;
-    }
-    else
-    {
-      ++iterationsWithoutImprovement;
-      if (iterationsWithoutImprovement == 5)
-        break;
-    }
-    std::cout << results << std::endl;
-    allResults += results + "\n";
-    (*resultsOutputFile) << "+" << results << std::endl;
+    algorithm.setL2Regularizer(0.0);
+    algorithm.reset(trainGraph[0]->getLabelDictionary());
+    double t0 = getTimeInSeconds();
+    algorithm.train(trainGraph[0]);
+    double t1 = getTimeInSeconds();
+    algorithm.evaluate(testGraph[0].graph, testGraph[0].foldBegin, testGraph[0].foldEnd);
+    double t2 = getTimeInSeconds();
+    (*resultsOutputFile) << name << " " << (t1 - t0) << " " << (t2 - t1) << std::endl;
+    return t2 - t1;
   }
-  (*resultsOutputFile) << "==> " << name << " " << bestTestAccuracy << std::endl;
-  return bestTestAccuracy;
+  else
+  {
+    double bestTestAccuracy = 0.0;
+    int iterationsWithoutImprovement = 0;
+    for (int i = 0; i < 16; ++i)
+    {
+      double regularizer = (double)i;
+      ScalarRandomVariableStatisticsPtr trainAccuracy = new ScalarRandomVariableStatistics("trainAccuracy");
+      ScalarRandomVariableStatisticsPtr testAccuracy = new ScalarRandomVariableStatistics("testAccuracy");
+      algorithm.setL2Regularizer(regularizer);
+      algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
+      double score = testAccuracy->getMean();
+      std::string results = name + " reg = " + lcpp::toString(regularizer) + " => Train Accuracy: " + lcpp::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + lcpp::toString(score * 100);
+      if (score > bestTestAccuracy)
+      {
+        iterationsWithoutImprovement = 0;
+        bestTestAccuracy = score;
+      }
+      else
+      {
+        ++iterationsWithoutImprovement;
+        if (iterationsWithoutImprovement == 5)
+          break;
+      }
+      std::cout << results << std::endl;
+      allResults += results + "\n";
+      (*resultsOutputFile) << "+" << results << std::endl;
+    }
+    (*resultsOutputFile) << "==> " << name << " " << bestTestAccuracy << std::endl;
+    return bestTestAccuracy;
+  }
 }
 
 void testAllAlgorithms( const std::vector<LabeledContentGraphPtr>& trainGraphs,
-                        const std::vector<LabeledContentGraph::LabelsFold>& testGraphs)
+                        const std::vector<LabeledContentGraph::LabelsFold>& testGraphs,
+                        bool profile)
 {
   ContentOnlyGraphLabelingAlgorithm contentOnly;
-  testAlgorithm(contentOnly, "CO", trainGraphs, testGraphs);
+  testAlgorithm(contentOnly, "CO", trainGraphs, testGraphs, profile);
 
   IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
-  testAlgorithm(iterativeClassification, "ICA", trainGraphs, testGraphs);
+  testAlgorithm(iterativeClassification, "ICA", trainGraphs, testGraphs, profile);
 
   GibbsSamplingGraphLabelingAlgorithm gibbsProb;
-  testAlgorithm(gibbsProb, "GS", trainGraphs, testGraphs);
+  testAlgorithm(gibbsProb, "GS", trainGraphs, testGraphs, profile);
 
   CRIterativeClassificationGraphLabelingAlgorithm crIterative;
-  testAlgorithm(crIterative, "CRICA", trainGraphs, testGraphs);
+  testAlgorithm(crIterative, "CRICA", trainGraphs, testGraphs, profile);
 
   crIterative.probabilistic = true;
-  testAlgorithm(crIterative, "CRICA-PROB", trainGraphs, testGraphs);
+  testAlgorithm(crIterative, "CRICA-PROB", trainGraphs, testGraphs, profile);
 
   crIterative.oneClassifierPerPass = true;
-  testAlgorithm(crIterative, "CRICA-PROB-CPP", trainGraphs, testGraphs);
+  testAlgorithm(crIterative, "CRICA-PROB-CPP", trainGraphs, testGraphs, profile);
 
   crIterative.probabilistic = false;
   crIterative.oneClassifierPerPass = true;
-  testAlgorithm(crIterative, "CRICA-CPP", trainGraphs, testGraphs);
+  testAlgorithm(crIterative, "CRICA-CPP", trainGraphs, testGraphs, profile);
 
   StackedGraphLabelingAlgorithm stacked2(&contentOnly);
-  testAlgorithm(stacked2, "STACK2", trainGraphs, testGraphs);
+  testAlgorithm(stacked2, "STACK2", trainGraphs, testGraphs, profile);
   assert(&stacked2.getBaseAlgorithm() == &contentOnly);
 
   StackedGraphLabelingAlgorithm stacked3(&stacked2);
   assert(&stacked3.getBaseAlgorithm() == &stacked2);
-  testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs);
+  testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs, profile);
 
   StackedGraphLabelingAlgorithm stacked4(&stacked3);
   assert(&stacked4.getBaseAlgorithm() == &stacked3);
-  testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs);
+  testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs, profile);
 
   StackedGraphLabelingAlgorithm stacked5(&stacked4);
   assert(&stacked5.getBaseAlgorithm() == &stacked4);
-  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs);
+  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs, profile);
 
   PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
-  testAlgorithm(perfectContext, "OPT", trainGraphs, testGraphs);
+  testAlgorithm(perfectContext, "OPT", trainGraphs, testGraphs, profile);
 }
 
 void displayFolds(const std::vector<LabeledContentGraphPtr>& trainGraphs,
@@ -217,14 +243,14 @@ int crossValidateAll(int argc, char* argv[])
     graph->randomizeOrder()->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
   
   displayFolds(trainGraphs, testGraphs);
-  testAllAlgorithms(trainGraphs, testGraphs);
+  testAllAlgorithms(trainGraphs, testGraphs, false);
 
   std::cout << std::endl << std::endl << std::endl;
   std::cout << allResults << std::endl;
   return 0;
 }
 
-int trainTestFixedTrainSize(int argc, char* argv[])
+int trainTestFixedTrainSize(int argc, char* argv[], bool profile)
 {
   if (argc < 6)
   {
@@ -271,7 +297,7 @@ int trainTestFixedTrainSize(int argc, char* argv[])
   }
   
   displayFolds(trainGraphs, testGraphs);
-  testAllAlgorithms(trainGraphs, testGraphs);
+  testAllAlgorithms(trainGraphs, testGraphs, profile);
 
   std::cout << std::endl << std::endl << std::endl;
   std::cout << allResults << std::endl;
@@ -320,7 +346,7 @@ int testUniformNoise(int argc, char* argv[])
     {
       CRIterativeClassificationGraphLabelingAlgorithm crIterative;
       crIterative.epsilon = percentNoise / 100.0;
-      testAlgorithm(crIterative, "SICA noise " + lcpp::toString(percentNoise), trainGraphs, testGraphs);
+      testAlgorithm(crIterative, "SICA noise " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
     }
 
 
@@ -332,6 +358,6 @@ int testUniformNoise(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
 //  return crossValidateAll(argc, argv);
-//  return trainTestFixedTrainSize(argc, argv);
-  return testUniformNoise(argc, argv);
+  return trainTestFixedTrainSize(argc, argv, true);
+//  return testUniformNoise(argc, argv);
 }
