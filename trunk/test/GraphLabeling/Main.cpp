@@ -62,9 +62,9 @@ public:
       explorationPolicy = Policy::createGibbsGreedy(learnedScores, IterationFunction::createConstant(temperature));
     else
       {
-	explorationPolicy = predicted ? learnedPolicy :Policy::createGreedy(ActionValueFunction::createChooseActionValue());
-	if (epsilon)
-	  explorationPolicy = explorationPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
+        explorationPolicy = predicted ? learnedPolicy : Policy::createGreedy(ActionValueFunction::createChooseActionValue());
+        if (epsilon)
+          explorationPolicy = explorationPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
       }
       
     PolicyPtr learnerPolicy = Policy::createClassificationExampleCreator(explorationPolicy, classifier);
@@ -331,27 +331,38 @@ int testUniformNoise(int argc, char* argv[])
   std::cout << *labelsDictionary << std::endl;
   displayGraphInfo(resultsFile, graph, featuresDictionary, labelsDictionary);
 
+/*  std::cout << "Splitting graph..." << std::endl;
+  std::vector<LabeledContentGraphPtr> trainGraphs;
+  std::vector<LabeledContentGraph::LabelsFold> testGraphs;
+  while (trainGraphs.size() < 10)
+    graph->randomizeOrder()->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);*/
+    
   std::cout << "Splitting graph..." << std::endl;
   std::vector<LabeledContentGraphPtr> trainGraphs;
   std::vector<LabeledContentGraph::LabelsFold> testGraphs;
   while (trainGraphs.size() < 10)
-    graph->randomizeOrder()->makeFolds(numFolds, removeTrainTestLinks, trainGraphs, testGraphs);
+  {
+    std::pair<LabeledContentGraphPtr, LabeledContentGraph::LabelsFold> fold = 
+      graph->randomizeOrder()->makeFold((graph->getNumNodes() * trainPercentage) / 100, graph->getNumNodes(), removeTrainTestLinks);
+    trainGraphs.push_back(fold.first);
+    testGraphs.push_back(fold.second);
+  }
   
   displayFolds(trainGraphs, testGraphs);
 
   for (int percentNoise = 0; percentNoise <= 100; percentNoise += 10)
-    {
-      CRIterativeClassificationGraphLabelingAlgorithm crIterative;
-      crIterative.epsilon = percentNoise / 100.0;
-      crIterative.predicted = false;
-      testAlgorithm(crIterative, "SICA opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
-      crIterative.predicted = true;
-      testAlgorithm(crIterative, "SICA pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
-      crIterative.oneClassifierPerPass = true;
-      testAlgorithm(crIterative, "SICA-CPP pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
-      crIterative.predicted = false;
-      testAlgorithm(crIterative, "SICA-CPP opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
-    }
+  {
+    CRIterativeClassificationGraphLabelingAlgorithm crIterative;
+    crIterative.epsilon = percentNoise / 100.0;
+    crIterative.predicted = false;
+    testAlgorithm(crIterative, "SICA opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    crIterative.predicted = true;
+    testAlgorithm(crIterative, "SICA pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    crIterative.oneClassifierPerPass = true;
+    testAlgorithm(crIterative, "SICA-CPP pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    crIterative.predicted = false;
+    testAlgorithm(crIterative, "SICA-CPP opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+  }
 
   std::cout << std::endl << std::endl << std::endl;
   std::cout << allResults << std::endl;
