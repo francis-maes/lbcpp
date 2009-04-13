@@ -36,10 +36,11 @@ public:
 class CRIterativeClassificationGraphLabelingAlgorithm : public CRAlgorithmGraphLabelingAlgorithm
 {
 public:
-  CRIterativeClassificationGraphLabelingAlgorithm() : epsilon(0.0), temperature(0.0), probabilistic(false), oneClassifierPerPass(false) {}
+  CRIterativeClassificationGraphLabelingAlgorithm() : epsilon(0.0), temperature(0.0), predicted(true), probabilistic(false), oneClassifierPerPass(false) {}
   
   double epsilon;
   double temperature;
+  bool predicted;
   bool probabilistic;
   
   bool oneClassifierPerPass;
@@ -59,16 +60,12 @@ public:
       explorationPolicy = Policy::createNonDeterministic(ActionValueFunction::createProbabilities(classifier));
     else if (temperature)
       explorationPolicy = Policy::createGibbsGreedy(learnedScores, IterationFunction::createConstant(temperature));
-    else if (epsilon)
-      {
-	// predit + bruit:
-	//explorationPolicy = learnedPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
-
-	// optimal + bruit:
-	explorationPolicy = Policy::createGreedy(ActionValueFunction::createChooseActionValue())->epsilonGreedy(IterationFunction::createConstant(epsilon));
-      }
     else
-      explorationPolicy = learnedPolicy;
+      {
+	explorationPolicy = predicted ? learnedPolicy :Policy::createGreedy(ActionValueFunction::createChooseActionValue());
+	if (epsilon)
+	  explorationPolicy = explorationPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
+      }
       
     PolicyPtr learnerPolicy = Policy::createClassificationExampleCreator(explorationPolicy, classifier);
     return std::make_pair(learnerPolicy, learnedPolicy);
@@ -346,9 +343,15 @@ int testUniformNoise(int argc, char* argv[])
     {
       CRIterativeClassificationGraphLabelingAlgorithm crIterative;
       crIterative.epsilon = percentNoise / 100.0;
-      testAlgorithm(crIterative, "SICA noise " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+      crIterative.predicted = false;
+      testAlgorithm(crIterative, "SICA opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+      crIterative.predicted = true;
+      testAlgorithm(crIterative, "SICA pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+      crIterative.oneClassifierPerPass = true;
+      testAlgorithm(crIterative, "SICA-CPP pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+      crIterative.predicted = false;
+      testAlgorithm(crIterative, "SICA-CPP opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
     }
-
 
   std::cout << std::endl << std::endl << std::endl;
   std::cout << allResults << std::endl;
@@ -358,6 +361,6 @@ int testUniformNoise(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
 //  return crossValidateAll(argc, argv);
-  return trainTestFixedTrainSize(argc, argv, true);
-//  return testUniformNoise(argc, argv);
+//  return trainTestFixedTrainSize(argc, argv, true);
+  return testUniformNoise(argc, argv);
 }
