@@ -305,12 +305,13 @@ int testUniformNoise(int argc, char* argv[])
 {
   if (argc < 6)
   {
-    std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds removeTrainTestLinks resultsFile.txt" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " data.content data.links trainPercentage removeTrainTestLinks resultsFile.txt" << std::endl;
     return 1;
   }
   std::string contentFile = argv[1];
   std::string linkFile = argv[2];
-  int numFolds = atoi(argv[3]);
+  //int numFolds = atoi(argv[3]);
+  int trainPercentage = atoi(argv[3]);
   bool removeTrainTestLinks = argv[4] == std::string("true");
   std::ofstream resultsFile(argv[5]);
   if (!resultsFile.is_open())
