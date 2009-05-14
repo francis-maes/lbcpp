@@ -1,5 +1,5 @@
 INCLUDE_DIRECTORIES(
-  ${Lcpp_SOURCE_DIR}/include
+  ${LBCpp_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 

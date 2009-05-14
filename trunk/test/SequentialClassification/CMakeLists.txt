@@ -1,4 +1,4 @@
-INCLUDE_DIRECTORIES(${Lcpp_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 
 ADD_CRALGORITHM(GeneratedCode/SequentialClassification.h SequentialClassification.lh)
 
