@@ -3,8 +3,6 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-ADD_CRALGORITHM(GeneratedCode/SequentialClassification.h SequentialClassification.lh)
-
 SET(GRAPH_LABELING_LHEADERS
   ContentGraph.lh
   LabelSequence.lh

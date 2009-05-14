@@ -9,9 +9,10 @@ ADD_CRTEST(SimplestSequenceLabeling.cr++)
 
 ENDIF(LBCPP_TESTS)
 
-ADD_SUBDIRECTORY(ludovic)
-ADD_SUBDIRECTORY(SequentialClassification)
-ADD_SUBDIRECTORY(GraphLabeling)
+#ADD_SUBDIRECTORY(ludovic)
+#ADD_SUBDIRECTORY(SequentialClassification)
+#ADD_SUBDIRECTORY(GraphLabeling)
+ADD_SUBDIRECTORY(SemanticRoleLabeling)
 
 ADD_EXECUTABLE(test-lbcpp TestCpp.cpp)
 TARGET_LINK_LIBRARIES(test-lbcpp lbcpp-core)

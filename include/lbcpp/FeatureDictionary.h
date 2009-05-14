@@ -32,6 +32,9 @@ public:
   
   size_t add(const std::string& str);
 
+  std::string toString() const
+    {std::ostringstream ostr; ostr << *this; return ostr.str();}
+
   friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
 
 protected:
@@ -73,6 +76,12 @@ public:
 
   size_t getNumScopes() const
     {return scopesDictionary ? scopesDictionary->getNumElements() : 0;}
+    
+  void addScope(const std::string& name, FeatureDictionaryPtr subDictionary)
+  {
+    FeatureDictionaryPtr d = getSubDictionary(getScopes()->add(name), subDictionary);
+    assert(d == subDictionary);
+  }
   
   /*
   ** Related dictionaries

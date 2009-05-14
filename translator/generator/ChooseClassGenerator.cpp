@@ -92,7 +92,8 @@ ChooseClassGenerator::ChooseClassGenerator(CRAlgorithmChoose& choose, SymbolLook
     className + " instance; return instance;}\n"));
   body.add(atom("static std::string getChoiceType() {return " + quote(chooseType) + ";}\n"));
 
-  body.addNewLine();  
+  body.addNewLine();
+  body.add(atom("enum {chooseNumber = " + size2str(choose.getChooseNumber()) + "};\n"));
   body.add(createNumStateValuesEnum());
   body.addNewLine();
   for (size_t i = 0; i < numCompositeStateFunctionKinds; ++i)
@@ -102,6 +103,7 @@ ChooseClassGenerator::ChooseClassGenerator(CRAlgorithmChoose& choose, SymbolLook
   for (size_t i = 0; i < numCompositeStateFunctionKinds; ++i)
     body.add(createCompositeStateFunctionGetter(stateFunctionKinds[i]));    
   body.addNewLine();
+  body.addVariableDeclaration(atom("lbcpp::FeatureDictionaryPtr"), identifier("actionsFeatureDictionary"));
   body.addAccessSpecifier(privateKeyword());
   addMemberVariables(body);
   body.add(createConstructor());

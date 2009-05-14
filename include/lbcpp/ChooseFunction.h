@@ -78,6 +78,7 @@ public:
 class ActionFeaturesFunction : public ChooseFunction
 {
 public:
+  virtual FeatureDictionaryPtr getDictionary() const = 0;
   virtual FeatureGeneratorPtr compute(VariablePtr choice) const = 0;
 };
 

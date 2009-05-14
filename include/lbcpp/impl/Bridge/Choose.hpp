@@ -25,12 +25,20 @@ public:
   typedef typename ChooseType::ChoiceType ChoiceType;
   typedef Traits<ContainerType> ContainerTraits;
   
-  StaticToDynamicChoose(const ContainerType& container, CRAlgorithmPtr crAlgorithm = CRAlgorithmPtr())
+  StaticToDynamicChoose(const ContainerType& container, CRAlgorithmPtr crAlgorithm)
     : Choose(crAlgorithm), choose(ChooseType::getInstance()), container(container) {}
   
   const ChooseType& choose;
   const ContainerType& container;
   
+  enum {chooseNumber = ChooseType::chooseNumber};
+
+  /*
+  ** Object
+  */
+  virtual std::string getName() const
+    {return crAlgorithm->getName() + "::choose" + lbcpp::toString((size_t)chooseNumber);}
+
   /*
   ** Choices
   */
@@ -108,18 +116,31 @@ public:
     variable->getUntypedPointer() = NULL;
   }
 
+  FeatureDictionaryPtr getActionsFeatureDictionary() const
+  {
+    if (!choose.actionsFeatureDictionary)
+      const_cast<ChooseType& >(choose).actionsFeatureDictionary = new FeatureDictionary(getName());
+    return choose.actionsFeatureDictionary;
+  }
+
   virtual FeatureGeneratorPtr computeActionsFeatures(bool transformIntoSparseVectors) const
   {
     ActionFeaturesFunctionPtr f = choose.getActionFeaturesFunction();
     assert(f); // todo: error message
     f->setChoose(getReferenceCountedPointer());
+    size_t numChoices = ContainerTraits::size(container);
+
+    // get dictionary and complete sub-dictionaries
+    FeatureDictionaryPtr featureDictionary = getActionsFeatureDictionary(); 
+    for (size_t i = featureDictionary->getNumScopes(); i < numChoices; ++i)
+      featureDictionary->addScope("choice " + lbcpp::toString(i), f->getDictionary());
     
     StaticToDynamicVariable< ChoiceType > v;
     StaticallyAllocatedReferenceCountedObjectPtr<Variable> variable(v);
     
     if (transformIntoSparseVectors)
     {
-      SparseVectorPtr res = new SparseVector(new FeatureDictionary("choices"), 0, ContainerTraits::size(container));
+      SparseVectorPtr res = new SparseVector(featureDictionary, 0, numChoices);
       size_t i = 0;
       typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
       for (; it != ContainerTraits::end(container); ++it, ++i)
@@ -132,7 +153,7 @@ public:
     }
     else
     {
-      CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator(new FeatureDictionary("choices"), ContainerTraits::size(container));
+      CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator(featureDictionary, numChoices);
       size_t i = 0;
       typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
       for (; it != ContainerTraits::end(container); ++it, ++i)

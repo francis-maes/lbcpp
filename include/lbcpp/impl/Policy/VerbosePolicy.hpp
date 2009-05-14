@@ -67,6 +67,7 @@ struct VerbosePolicy
       ostr << "policyEnter(" << crAlgorithm->getName() << ")" << std::endl;
     BaseClass::policyEnter(crAlgorithm);
     stepNumber = 0;
+    episodeReward = 0.0;
     ++inclusionLevel;
   }
     

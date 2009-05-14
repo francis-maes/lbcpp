@@ -234,7 +234,7 @@ public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
   
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary->getSubDictionary(0), initializeRandomly);}
        
   virtual double predictScore(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
