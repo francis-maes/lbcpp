@@ -64,11 +64,11 @@ PTree::Node* CRAlgorithmGenerator::createCode()
   ** Contruction function
   e.g.: 
 CRAlgorithm* leftRightLabeling(const std::vector<FeatureGeneratorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
-  {return lcpp::staticToDynamicCRAlgorithm(new leftRightLabelingCRAlgorithm(x, classes, &correct));}
+  {return lbcpp::staticToDynamicCRAlgorithm(new leftRightLabelingCRAlgorithm(x, classes, &correct));}
   */  
   FunctionPTreeGenerator createFunction;
   createFunction.addModifier(inlineKeyword());
-  createFunction.setReturnType(atom("lcpp::CRAlgorithmPtr"));
+  createFunction.setReturnType(atom("lbcpp::CRAlgorithmPtr"));
   createFunction.setIdentifier(input.getIdentifier());
   for (size_t i = 0; i < parameters.size(); ++i)
     createFunction.addParameter(parameters[i]);
@@ -76,15 +76,15 @@ CRAlgorithm* leftRightLabeling(const std::vector<FeatureGeneratorPtr>& x, const 
   newCall.setName("new " + input.getIdentifierString() + "CRAlgorithm");
   for (size_t i = 0; i < parameters.size(); ++i)
     newCall.addArgument(parameters[i].getIdentifier());
-  createFunction.body.add(returnStatement(funcallExpr(atom("lcpp::staticToDynamicCRAlgorithm"), newCall.createExpression())));
+  createFunction.body.add(returnStatement(funcallExpr(atom("lbcpp::staticToDynamicCRAlgorithm"), newCall.createExpression())));
   block.add(createFunction.createDeclaration());
 
   /*
   ** Policy run function
   e.g.:
-std::vector<std::string> leftRightLabeling(lcpp::PolicyPtr policy, const std::vector<FeatureGeneratorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
+std::vector<std::string> leftRightLabeling(lbcpp::PolicyPtr policy, const std::vector<FeatureGeneratorPtr>& x, const std::set<std::string>& labels, const std::vector<std::string>* ycorrect, size_t contextSize)
 {
-  lcpp::CRAlgorithmPtr __crAlgorithm__ = leftRightLabeling(x, labels, ycorrect, contextSize);
+  lbcpp::CRAlgorithmPtr __crAlgorithm__ = leftRightLabeling(x, labels, ycorrect, contextSize);
   __crAlgorithm__->run(policy);
   return *(const std::vector<std::string>* )__crAlgorithm__->getResult();
 }
@@ -93,7 +93,7 @@ std::vector<std::string> leftRightLabeling(lcpp::PolicyPtr policy, const std::ve
   runFunction.addModifier(inlineKeyword());
   runFunction.setReturnType(input.getReturnType());
   runFunction.setIdentifier(input.getIdentifier());
-  runFunction.addParameter(atom("lcpp::PolicyPtr"), atom("__policy__"));
+  runFunction.addParameter(atom("lbcpp::PolicyPtr"), atom("__policy__"));
   for (size_t i = 0; i < parameters.size(); ++i)
     runFunction.addParameter(parameters[i]);
 
@@ -101,7 +101,7 @@ std::vector<std::string> leftRightLabeling(lcpp::PolicyPtr policy, const std::ve
   dynCall.setIdentifier(input.getIdentifier());
   for (size_t i = 0; i < parameters.size(); ++i)
     dynCall.addArgument(parameters[i].getIdentifier());
-  runFunction.body.addVariableDeclaration(atom("lcpp::CRAlgorithmPtr"), atom("__crAlgorithm__"), 
+  runFunction.body.addVariableDeclaration(atom("lbcpp::CRAlgorithmPtr"), atom("__crAlgorithm__"), 
     dynCall.createExpression());
   runFunction.body.addExpressionStatement(funcallExpr(atom("__crAlgorithm__->run"), list(atom("__policy__"))));
   if (!input.getReturnType().isVoid())

@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/GradientBasedLearningMachine.h>
-#include <lcpp/impl/impl.h>
-using namespace lcpp;
+#include <lbcpp/GradientBasedLearningMachine.h>
+#include <lbcpp/impl/impl.h>
+using namespace lbcpp;
 
 template<class ExactType, class BaseClass>
 class StaticToDynamicGradientBasedLearningMachine : public BaseClass

@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace lcpp
+namespace lbcpp
 {
 
 class LabelSequence;
@@ -106,4 +106,4 @@ private:
   std::vector<size_t> v;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */

@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_DOUBLE_VECTOR_HELPERS_HPP_
-# define LCPP_DOUBLE_VECTOR_HELPERS_HPP_
+#ifndef LBCPP_DOUBLE_VECTOR_HELPERS_HPP_
+# define LBCPP_DOUBLE_VECTOR_HELPERS_HPP_
 
-namespace lcpp
+namespace lbcpp
 {
 
 template<class ElementType>
@@ -150,6 +150,6 @@ private:
 typedef SortedArrayHelper<double> SortedFeatureArrayHelper;
 typedef SortedArrayHelper<SparseVectorPtr> SortedSubVectorArrayHelper;
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_DOUBLE_VECTOR_HELPERS_HPP_
+#endif // !LBCPP_DOUBLE_VECTOR_HELPERS_HPP_

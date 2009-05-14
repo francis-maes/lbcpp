@@ -1,6 +1,6 @@
 #include <cmath>
 
-using namespace lcpp;
+using namespace lbcpp;
 
 featureGenerator oneFeatureWithIndex() {featureSense((size_t)0, 1.0);}
 featureGenerator oneFeatureWithString() {featureSense("hello", 1.0);}
@@ -36,11 +36,11 @@ featureGenerator numberLogFeatures(double positiveNumber)
   double base = pow(10.0, fl);
 
   if (frac < clog2)
-    featureCall numberLogFeaturesBase(lcpp::toString(base), lcpp::toString(2 * base), 0, clog2, frac);
+    featureCall numberLogFeaturesBase(lbcpp::toString(base), lbcpp::toString(2 * base), 0, clog2, frac);
   else if (frac < clog5)
-    featureCall numberLogFeaturesBase(lcpp::toString(2 * base), lcpp::toString(5 * base), clog2, clog5, frac);
+    featureCall numberLogFeaturesBase(lbcpp::toString(2 * base), lbcpp::toString(5 * base), clog2, clog5, frac);
   else
-    featureCall numberLogFeaturesBase(lcpp::toString(5 * base), lcpp::toString(10 * base), clog5, 1.0, frac);
+    featureCall numberLogFeaturesBase(lbcpp::toString(5 * base), lbcpp::toString(10 * base), clog5, 1.0, frac);
 }
 
 featureGenerator numberFeatures(double value)

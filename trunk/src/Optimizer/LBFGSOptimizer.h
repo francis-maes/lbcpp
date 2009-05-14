@@ -6,18 +6,18 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_OPTIMIZER_LBFGS_H_
-# define LCPP_OPTIMIZER_LBFGS_H_
+#ifndef LBCPP_OPTIMIZER_LBFGS_H_
+# define LBCPP_OPTIMIZER_LBFGS_H_
 
 /*
 ** "On the limited memory BFGS method for large scale optimization",
 ** by D. Liu and J. Nocedal, Mathematical Programming B 45 (1989) 503-528
 */
-# include <lcpp/Optimizer.h>
+# include <lbcpp/Optimizer.h>
 # include "QuasiNewtonMemory.h"
 # include "BackTrackingLineSearch.h"
 
-namespace lcpp
+namespace lbcpp
 {
 
 class LBFGSOptimizer : public VectorOptimizer
@@ -54,6 +54,6 @@ protected:
 };
 
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_OPTIMIZER_LBFGS_H_
+#endif // !LBCPP_OPTIMIZER_LBFGS_H_

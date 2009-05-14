@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-namespace lcpp
+namespace lbcpp
 {
 
 crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<FeatureGeneratorPtr>& x, size_t numLabels, const std::vector<size_t>* y = NULL)
@@ -98,9 +98,9 @@ private:
   std::vector<size_t> currentLabels;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-using namespace lcpp;
+using namespace lbcpp;
 
 void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
 {
@@ -190,7 +190,7 @@ crAlgorithm void testTrivial()
   }
   
   c = choose<size_t>(choices, features);
-  std::cout << "CHOICE = " << lcpp::toString(c) << std::endl;
+  std::cout << "CHOICE = " << lbcpp::toString(c) << std::endl;
   if (c)
     reward (1.0);
 }*/
@@ -241,11 +241,11 @@ int main(int argc, char* argv[])
 
   
 /*  const SequenceExample& sequence = learningExamples[0];
-  CRAlgorithmPtr lcpp = simplestSequenceLabeling(sequence.getContent(), labels->getNumFeatures(), &sequence.getLabels());
-  ChoosePtr choose = lcpp->runUntilFirstChoose();
-  choose = lcpp->runUntilNextChoose(choose->sampleRandomChoice());
+  CRAlgorithmPtr lbcpp = simplestSequenceLabeling(sequence.getContent(), labels->getNumFeatures(), &sequence.getLabels());
+  ChoosePtr choose = lbcpp->runUntilFirstChoose();
+  choose = lbcpp->runUntilNextChoose(choose->sampleRandomChoice());
   std::cout << "Choose: " << choose->toString() << std::endl;
-  std::cout << "State: " << lcpp->toString() << std::endl;
+  std::cout << "State: " << lbcpp->toString() << std::endl;
   std::cout << "State description: " << choose->stateFeatures()->toString() << std::endl;
   std::cout << "First action description: " << choose->actionFeatures(choose->newIterator()->get())->toString() << std::endl;*/
   

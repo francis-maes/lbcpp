@@ -8,7 +8,7 @@
 
 #include "LabeledContentGraph.lh"
 
-namespace lcpp
+namespace lbcpp
 {
 
 typedef std::pair<size_t, size_t> PositionAndLabel;
@@ -83,7 +83,7 @@ crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPt
     assert(choices.size());
     
     PositionAndLabel positionAndLabel = choose<PositionAndLabel>(choices, actionValueFunction, contentAndStructureActionFeatures);
-    //std::cout << lcpp::toString(positionAndLabel) << " | " << std::flush;
+    //std::cout << lbcpp::toString(positionAndLabel) << " | " << std::flush;
     assert(positionAndLabel.first >= foldBegin && positionAndLabel.second < foldEnd);
     if (positionAndLabel.second == graph->getLabel(positionAndLabel.first))
       reward (1.0);
@@ -96,4 +96,4 @@ crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPt
   return prediction;
 }
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */

@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
-# define LCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
+#ifndef LBCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
+# define LBCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
 
-# include <lcpp/FeatureGenerator.h>
+# include <lbcpp/FeatureGenerator.h>
 # include <deque>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class QuasiNewtonMemory
@@ -76,6 +76,6 @@ private:
   std::deque<double> dotProducts;  
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
+#endif // !LBCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_

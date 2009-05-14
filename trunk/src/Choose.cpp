@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/CRAlgorithm.h>
-#include <lcpp/FeatureGenerator.h>
-#include <lcpp/impl/impl.h>
-using namespace lcpp;
+#include <lbcpp/CRAlgorithm.h>
+#include <lbcpp/FeatureGenerator.h>
+#include <lbcpp/impl/impl.h>
+using namespace lbcpp;
 
 class ChooseActionValueFunction : public ActionValueFunction
 {
@@ -148,7 +148,7 @@ std::string Choose::toString() const
     for (size_t i = 0; i < actionValues.size(); ++i)
     {
       ActionValueFunctionPtr f = actionValues[i];
-      res += " " + f->getName() + ": " + lcpp::toString(f->compute(choice));
+      res += " " + f->getName() + ": " + lbcpp::toString(f->compute(choice));
     }
     res += "\n";
   }

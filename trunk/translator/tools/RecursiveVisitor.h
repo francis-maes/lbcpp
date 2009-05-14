@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_TOOLS_RECURSIVE_VISITOR_H_
-# define LCPP_TOOLS_RECURSIVE_VISITOR_H_
+#ifndef LBCPP_TOOLS_RECURSIVE_VISITOR_H_
+# define LBCPP_TOOLS_RECURSIVE_VISITOR_H_
 
 # include "../common.h"
 
@@ -42,4 +42,4 @@ private:
   bool visitorBreaked;
 };
 
-#endif // !LCPP_TOOLS_RECURSIVE_VISITOR_H_
+#endif // !LBCPP_TOOLS_RECURSIVE_VISITOR_H_

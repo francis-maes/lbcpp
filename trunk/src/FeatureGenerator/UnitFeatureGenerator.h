@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_FEATURE_GENERATOR_UNIT_H_
-# define LCPP_FEATURE_GENERATOR_UNIT_H_
+#ifndef LBCPP_FEATURE_GENERATOR_UNIT_H_
+# define LBCPP_FEATURE_GENERATOR_UNIT_H_
 
-# include <lcpp/FeatureGenerator.h>
-# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lbcpp/FeatureGenerator.h>
+# include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class UnitFeatureGenerator : public FeatureGeneratorDefaultImplementations<UnitFeatureGenerator, FlatFeatureGenerator>
@@ -37,6 +37,6 @@ private:
   }
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_FEATURE_GENERATOR_UNIT_H_
+#endif // !LBCPP_FEATURE_GENERATOR_UNIT_H_

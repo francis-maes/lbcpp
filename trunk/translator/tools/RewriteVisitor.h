@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_TOOLS_REWRITE_VISITOR_H_
-# define LCPP_TOOLS_REWRITE_VISITOR_H_
+#ifndef LBCPP_TOOLS_REWRITE_VISITOR_H_
+# define LBCPP_TOOLS_REWRITE_VISITOR_H_
 
 # include "../common.h"
 # include "../language/CRAlgoPTree.h"
@@ -178,4 +178,4 @@ private:
   PTree::Node* result;
 };
 
-#endif // !LCPP_TOOLS_REWRITE_VISITOR_H_
+#endif // !LBCPP_TOOLS_REWRITE_VISITOR_H_

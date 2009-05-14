@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/GradientBasedLearner.h>
-#include <lcpp/Optimizer.h>
-#include <lcpp/impl/impl.h>
-using namespace lcpp;
+#include <lbcpp/GradientBasedLearner.h>
+#include <lbcpp/Optimizer.h>
+#include <lbcpp/impl/impl.h>
+using namespace lbcpp;
 
 class GradientDescentLearner : public GradientBasedLearner
 {

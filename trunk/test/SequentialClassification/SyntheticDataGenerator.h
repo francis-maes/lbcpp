@@ -9,9 +9,9 @@
 #ifndef SYNTHETIC_DATA_GENERATOR_H_
 # define SYNTHETIC_DATA_GENERATOR_H_
 
-#include <lcpp/lcpp.h>
+#include <lbcpp/lbcpp.h>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class SyntheticLinearMultiClassGenerator
@@ -99,6 +99,6 @@ public:
   std::vector<SyntheticLinearMultiClassGenerator> foldGenerators;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 #endif // !SYNTHETIC_DATA_GENERATOR_H_

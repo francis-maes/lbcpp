@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
                                
-using namespace lcpp;
+using namespace lbcpp;
 
-namespace lcpp
+namespace lbcpp
 {
   std::string toString(std::set<size_t>::const_iterator it)
     {return "iterator";}
@@ -101,7 +101,7 @@ crAlgorithm size_t sequentialClassification(std::vector<FeatureGeneratorPtr> fea
       assert(newFeatures);
       usedFeatureGenerators.push_back(std::make_pair(c.second, newFeatures));
       reward (-featureCosts);
-      currentStateString += "_" + lcpp::toString(c.second);
+      currentStateString += "_" + lbcpp::toString(c.second);
     }
   }
   return 0;

@@ -1,0 +1,34 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ContentSequence.cr++           | A content vector                |
+| Author  : Francis Maes                   |                                 |
+| Started : 10/02/2009 22:30               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace lbcpp
+{
+
+class ContentSequence
+{
+public:
+  featureGenerator contentFeatures(size_t position) const
+  {
+    assert(position < v.size());
+    featureCall("content") v[position];
+  }
+    
+  size_t size() const
+    {return v.size();}
+
+  void add(FeatureGeneratorPtr element)
+    {v.push_back(element);}
+
+  friend std::ostream& operator <<(std::ostream& ostr, const ContentSequence& v)
+    {return ostr << lbcpp::toString(v.v);}
+
+private:
+  std::vector<FeatureGeneratorPtr> v;
+};
+
+}; /* namespace lbcpp */

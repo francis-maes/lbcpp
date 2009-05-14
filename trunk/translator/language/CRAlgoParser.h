@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_LANGUAGE_PARSER_H_
-# define LCPP_LANGUAGE_PARSER_H_
+#ifndef LBCPP_LANGUAGE_PARSER_H_
+# define LBCPP_LANGUAGE_PARSER_H_
 
 # include "../common.h"
 
@@ -30,4 +30,4 @@ protected:
   bool featureScope(PTree::Node*& st);
 };
 
-#endif // !LCPP_LANGUAGE_PARSER_H_
+#endif // !LBCPP_LANGUAGE_PARSER_H_

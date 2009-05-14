@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_FEATURE_GENERATOR_EMPTY_H_
-# define LCPP_FEATURE_GENERATOR_EMPTY_H_
+#ifndef LBCPP_FEATURE_GENERATOR_EMPTY_H_
+# define LBCPP_FEATURE_GENERATOR_EMPTY_H_
 
-# include <lcpp/FeatureGenerator.h>
-# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lbcpp/FeatureGenerator.h>
+# include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class EmptyFeatureGenerator
@@ -27,6 +27,6 @@ public:
     {return FeatureDictionaryPtr();} // can be combined with any other dictionary
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_FEATURE_GENERATOR_EMPTY_H_
+#endif // !LBCPP_FEATURE_GENERATOR_EMPTY_H_

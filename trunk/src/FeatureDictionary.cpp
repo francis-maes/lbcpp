@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/FeatureDictionary.h>
-using namespace lcpp;
+#include <lbcpp/FeatureDictionary.h>
+using namespace lbcpp;
 
 /*
 ** StringDictionary
@@ -44,12 +44,12 @@ size_t StringDictionary::add(const std::string& str)
 std::string StringDictionary::getString(size_t index) const
 {
   if (index >= indexToString.size() || indexToString[index] == "")
-    return lcpp::toString(index);
+    return lbcpp::toString(index);
   else
     return indexToString[index];
 }
 
-namespace lcpp
+namespace lbcpp
 {
 
   std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings)
@@ -63,7 +63,7 @@ namespace lcpp
     return ostr;
   }
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 /*
 ** FeatureDictionary
@@ -93,7 +93,7 @@ FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDi
   }
   else
     res = defaultValue ? defaultValue : new FeatureDictionary(name + "." + 
-      (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : lcpp::toString(index)));
+      (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : lbcpp::toString(index)));
   return res;
 }
 

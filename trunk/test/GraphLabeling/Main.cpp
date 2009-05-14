@@ -9,7 +9,7 @@
 #include "GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h"
   
 #include <fstream>
-using namespace lcpp;
+using namespace lbcpp;
 
 class OnePassOrderFreeGraphLabelingAlgorithm : public CRAlgorithmGraphLabelingAlgorithm
 {
@@ -116,7 +116,7 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
       algorithm.setL2Regularizer(regularizer);
       algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
       double score = testAccuracy->getMean();
-      std::string results = name + " reg = " + lcpp::toString(regularizer) + " => Train Accuracy: " + lcpp::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + lcpp::toString(score * 100);
+      std::string results = name + " reg = " + lbcpp::toString(regularizer) + " => Train Accuracy: " + lbcpp::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + lbcpp::toString(score * 100);
       if (score > bestTestAccuracy)
       {
         iterationsWithoutImprovement = 0;
@@ -356,13 +356,13 @@ int testUniformNoise(int argc, char* argv[])
     CRIterativeClassificationGraphLabelingAlgorithm crIterative;
     crIterative.epsilon = percentNoise / 100.0;
     crIterative.predicted = false;
-    testAlgorithm(crIterative, "SICA opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    testAlgorithm(crIterative, "SICA opt+uniform " + lbcpp::toString(percentNoise), trainGraphs, testGraphs, false);
     crIterative.predicted = true;
-    testAlgorithm(crIterative, "SICA pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    testAlgorithm(crIterative, "SICA pred+uniform " + lbcpp::toString(percentNoise), trainGraphs, testGraphs, false);
     crIterative.oneClassifierPerPass = true;
-    testAlgorithm(crIterative, "SICA-CPP pred+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    testAlgorithm(crIterative, "SICA-CPP pred+uniform " + lbcpp::toString(percentNoise), trainGraphs, testGraphs, false);
     crIterative.predicted = false;
-    testAlgorithm(crIterative, "SICA-CPP opt+uniform " + lcpp::toString(percentNoise), trainGraphs, testGraphs, false);
+    testAlgorithm(crIterative, "SICA-CPP opt+uniform " + lbcpp::toString(percentNoise), trainGraphs, testGraphs, false);
   }
 
   std::cout << std::endl << std::endl << std::endl;

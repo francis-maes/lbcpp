@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-namespace lcpp
+namespace lbcpp
 {
 
 class ContentGraph : public Object
@@ -96,4 +96,4 @@ private:
 
 typedef ReferenceCountedObjectPtr<ContentGraph> ContentGraphPtr;
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */

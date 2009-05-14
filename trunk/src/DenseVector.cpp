@@ -5,10 +5,10 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lcpp/DenseVector.h>
-#include <lcpp/impl/Bridge/DoubleVector.hpp>
+#include <lbcpp/DenseVector.h>
+#include <lbcpp/impl/Bridge/DoubleVector.hpp>
 #include <cfloat>
-using namespace lcpp;
+using namespace lbcpp;
 
 DenseVector::DenseVector(const DenseVector& otherVector)
   : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors) {}
