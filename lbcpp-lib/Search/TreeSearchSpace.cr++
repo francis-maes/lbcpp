@@ -1,0 +1,78 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: TreeSearchSpace.cr++           | A set of search nodes           |
+| Author  : Francis Maes                   |                                 |
+| Started : 15/02/2009 20:31               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+#include "TreeSearchNode.cr++"
+
+namespace lbcpp
+{
+
+class TreeSearchSpace
+{
+public:
+  ~TreeSearchSpace() {clear();}
+  
+  void clear()
+  {
+    for (int i = (int)nodes.size() - 1; i >= 0; --i)
+      delete nodes[i];
+    nodes.clear();
+  }
+  
+  size_t insert(TreeSearchNode* newNode)
+  {
+    size_t res = nodes.size();
+    nodes.push_back(newNode);
+    return res;
+  }
+  
+  size_t getChildrenNode(size_t nodeIndex, VariablePtr choice)
+  {
+    return insert(new TreeSearchNode(&getNode(nodeIndex), choice));
+  }
+  
+  void reset(CRAlgorithmPtr initialState)
+  {
+    clear();
+    nodes.push_back(new TreeSearchNode(initialState));
+  }
+  
+  size_t size() const
+    {return nodes.size();}
+    
+  const TreeSearchNode& getNode(size_t index) const
+    {assert(index < nodes.size()); return *nodes[index];}
+
+  TreeSearchNode& getNode(size_t index)
+    {assert(index < nodes.size()); return *nodes[index];}
+    
+  bool isAncestorOf(size_t current, size_t target) const
+  {
+    assert(current < nodes.size() && target < nodes.size());
+    const TreeSearchNode* ncurrent = nodes[current];
+    const TreeSearchNode* ptr = nodes[target];
+    while (ptr && ptr != ncurrent)
+      ptr = ptr->getParent();
+    return ptr != NULL;
+  }
+    
+  friend std::ostream& operator <<(std::ostream& ostr, const TreeSearchSpace& searchSpace)
+  {
+    size_t opened = 0, closed = 0;
+    for (size_t i = 0; i < searchSpace.nodes.size(); ++i)
+      if (searchSpace.nodes[i]->opened())
+        ++opened;
+      else
+        ++closed;
+    return ostr << opened << " opened nodes, " << closed << " closed nodes";
+  }
+
+private:
+  std::vector<TreeSearchNode* > nodes;
+};
+
+
+}; /* namespace lbcpp */

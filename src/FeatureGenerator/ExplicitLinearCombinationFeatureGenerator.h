@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
-# define LCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
+#ifndef LBCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
+# define LBCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
 
-# include <lcpp/FeatureGenerator.h>
-# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lbcpp/FeatureGenerator.h>
+# include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class ExplicitLinearCombinationFeatureGenerator
@@ -103,6 +103,6 @@ private:
   LinearCombinationVector* terms;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
+#endif // !LBCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_

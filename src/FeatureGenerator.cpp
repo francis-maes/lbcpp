@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/EditableFeatureGenerator.h>
-#include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
-#include <lcpp/impl/Bridge/DoubleVector.hpp>
+#include <lbcpp/EditableFeatureGenerator.h>
+#include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+#include <lbcpp/impl/Bridge/DoubleVector.hpp>
 
 #include "FeatureGenerator/EmptyFeatureGenerator.h"
 #include "FeatureGenerator/UnitFeatureGenerator.h"
@@ -16,7 +16,7 @@
 #include "FeatureGenerator/WeightedFeatureGenerator.h"
 #include "FeatureGenerator/LinearCombinationFeatureGenerator.h"
 #include "FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h"
-using namespace lcpp;
+using namespace lbcpp;
 
 /*
 ** EditableFeatureGenerator

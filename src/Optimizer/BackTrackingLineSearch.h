@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
-# define LCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
+#ifndef LBCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
+# define LBCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
 
-# include <lcpp/Optimizer.h>
-# include <lcpp/IterationFunction.h>
+# include <lbcpp/Optimizer.h>
+# include <lbcpp/IterationFunction.h>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class BackTrackingLineSearch : public Object
@@ -65,7 +65,7 @@ public:
     }
     if (i == maxIterations)
     {
-      error("BackTrackingLineSearch::search", "Backtracking: warning max backtrackline search performed. Derivative = " + lcpp::toString(origDirDeriv));
+      error("BackTrackingLineSearch::search", "Backtracking: warning max backtrackline search performed. Derivative = " + lbcpp::toString(origDirDeriv));
       std::cerr << "Parameters = " << parameters->toString() << std::endl;
       std::cerr << "Gradient = " << gradient->toString() << std::endl;
       std::cerr << "Direction = " << direction->toString() << std::endl;
@@ -106,6 +106,6 @@ public:
   }
 };*/
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
+#endif // !LBCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_

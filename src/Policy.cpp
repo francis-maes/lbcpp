@@ -5,9 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lcpp/lcpp.h>
-#include <lcpp/impl/impl.h>
-using namespace lcpp;
+#include <lbcpp/lbcpp.h>
+#include <lbcpp/impl/impl.h>
+using namespace lbcpp;
 
 inline impl::DynamicToStaticPolicy dynamicToStatic(const Policy* policy)
   {return impl::dynamicToStatic(PolicyPtr(const_cast<Policy* >(policy)));}

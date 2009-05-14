@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_TOOLS_CODE_PRINTER_H_
-# define LCPP_TOOLS_CODE_PRINTER_H_
+#ifndef LBCPP_TOOLS_CODE_PRINTER_H_
+# define LBCPP_TOOLS_CODE_PRINTER_H_
 
 # include "PTreeGenerator.h"
 # include "PreprocessorAndCommentsChunker.h"
@@ -139,4 +139,4 @@ private:
   }
 };
 
-#endif // !LCPP_TOOLS_CODE_PRINTER_H_
+#endif // !LBCPP_TOOLS_CODE_PRINTER_H_

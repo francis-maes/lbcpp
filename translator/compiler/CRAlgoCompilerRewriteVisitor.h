@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_COMPILER_REWRITE_VISITOR_H_
-# define LCPP_COMPILER_REWRITE_VISITOR_H_
+#ifndef LBCPP_COMPILER_REWRITE_VISITOR_H_
+# define LBCPP_COMPILER_REWRITE_VISITOR_H_
 
 # include "../tools/PTreeGenerator.h"
 # include "../tools/ScopeBasedRewriteVisitor.h"
@@ -92,4 +92,4 @@ protected:
   bool verbose;
 };
 
-#endif // !LCPP_COMPILER_REWRITE_VISITOR_H_
+#endif // !LBCPP_COMPILER_REWRITE_VISITOR_H_

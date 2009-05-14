@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_FEATURE_GENERATOR_WEIGHTED_H_
-# define LCPP_FEATURE_GENERATOR_WEIGHTED_H_
+#ifndef LBCPP_FEATURE_GENERATOR_WEIGHTED_H_
+# define LBCPP_FEATURE_GENERATOR_WEIGHTED_H_
 
-# include <lcpp/FeatureGenerator.h>
-# include <lcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lbcpp/FeatureGenerator.h>
+# include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class WeightedFeatureGenerator
@@ -80,7 +80,7 @@ public:
     {return exists() ? FeatureGenerator::multiplyByScalar(featureGenerator->getSubGeneratorWithIndex(index), weight) : FeatureGenerator::emptyGenerator();}
 
   virtual std::string toString() const
-    {return lcpp::toString(weight) + " * " + featureGenerator->toString();}
+    {return lbcpp::toString(weight) + " * " + featureGenerator->toString();}
     
   virtual size_t l0norm() const
     {return exists() ? featureGenerator->l0norm() : 0;}
@@ -114,6 +114,6 @@ private:
   double weight;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_FEATURE_GENERATOR_WEIGHTED_H_
+#endif // !LBCPP_FEATURE_GENERATOR_WEIGHTED_H_

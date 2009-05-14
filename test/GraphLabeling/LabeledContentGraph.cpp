@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "GeneratedCode/LabeledContentGraph.lh"
-using namespace lcpp;
+using namespace lbcpp;
 
 /*
 class InstanceSet;
@@ -70,7 +70,7 @@ public:
     {
       size_t index = i - 1;
       if (features->getNumFeatures() <= index)
-        features->addFeature("word " + lcpp::toString(index));
+        features->addFeature("word " + lbcpp::toString(index));
       
       std::string featureName;
       double featureValue;
@@ -83,7 +83,7 @@ public:
       }
       else
       {
-        featureName = lcpp::toString(index);
+        featureName = lbcpp::toString(index);
         if (!parse(columns[i], featureValue))
           return false;
       }
@@ -132,7 +132,7 @@ public:
   virtual bool parseEnd()
   {
     if (invalidIdentifiers.size())
-      Object::warning("LinkFileParser::parseEnd", lcpp::toString(invalidIdentifiers.size()) + " invalid identifiers in link file");
+      Object::warning("LinkFileParser::parseEnd", lbcpp::toString(invalidIdentifiers.size()) + " invalid identifiers in link file");
     invalidIdentifiers.clear();
     return true;
   }

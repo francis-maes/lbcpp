@@ -9,9 +9,9 @@
 #ifndef GRAPH_LABELING_ALGORITHM_H_
 # define GRAPH_LABELING_ALGORITHM_H_
 
-# include <lcpp/lcpp.h>
+# include <lbcpp/lbcpp.h>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class GraphLabelingAlgorithm
@@ -51,6 +51,6 @@ protected:
   double l2regularizer;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_H_

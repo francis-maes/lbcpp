@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/LearningExample.h>
-#include <lcpp/SparseVector.h>
+#include <lbcpp/LearningExample.h>
+#include <lbcpp/SparseVector.h>
 #include <fstream>
-using namespace lcpp;
+using namespace lbcpp;
 
 /*
 ** LearningExampleParser
@@ -86,7 +86,7 @@ private:
   StringDictionaryPtr labels;
 };
 
-bool lcpp::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res)
+bool lbcpp::parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res)
 {
   ClassificationExamplesParser parser(res, labels);
   return parser.parse(istr, dictionary);
@@ -114,7 +114,7 @@ private:
   std::vector<RegressionExample>& target;
 };
 
-bool lcpp::parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res)
+bool lbcpp::parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res)
 {
   RegressionExamplesParser parser(res);
   return parser.parse(istr, dictionary);

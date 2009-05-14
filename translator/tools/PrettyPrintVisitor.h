@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_TOOLS_PRETTY_PRINT_VISITOR_H_
-# define LCPP_TOOLS_PRETTY_PRINT_VISITOR_H_
+#ifndef LBCPP_TOOLS_PRETTY_PRINT_VISITOR_H_
+# define LBCPP_TOOLS_PRETTY_PRINT_VISITOR_H_
 
 # include "RecursiveVisitor.h"
 # include "../language/CRAlgoPTree.h"
@@ -272,4 +272,4 @@ inline std::string prettyPrint(PTree::Node* node)
   return ostr.str();
 }
 
-#endif // !LCPP_TOOLS_PRETTY_PRINT_VISITOR_H_
+#endif // !LBCPP_TOOLS_PRETTY_PRINT_VISITOR_H_

@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/LearningMachine.h>
+#include <lbcpp/LearningMachine.h>
 #include <cfloat>
-using namespace lcpp;
+using namespace lbcpp;
 
 template<class BaseClass, class ExampleType>
 class VerboseLearningMachine : public BaseClass

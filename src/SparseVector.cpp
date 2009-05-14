@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/SparseVector.h>
-#include <lcpp/impl/Bridge/DoubleVector.hpp>
+#include <lbcpp/SparseVector.h>
+#include <lbcpp/impl/Bridge/DoubleVector.hpp>
 #include "DoubleVectorHelpers.hpp" 
-using namespace lcpp;
+using namespace lbcpp;
 
 SparseVector::SparseVector(const SparseVector& otherVector)
   : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(subVectors)

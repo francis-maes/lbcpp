@@ -11,7 +11,7 @@
 
 # include "GraphLabelingAlgorithm.h"
 
-namespace lcpp
+namespace lbcpp
 {
 
 class ClassifierBasedGraphLabelingAlgorithm : public GraphLabelingAlgorithm
@@ -111,6 +111,6 @@ public:
 //    {return graph->nodeFeatures(nodeIndex, 1, 1, false);}
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_CLASSIFIER_BASED_H_

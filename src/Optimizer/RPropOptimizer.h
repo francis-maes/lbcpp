@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_OPTIMIZER_RPROP_H_
-# define LCPP_OPTIMIZER_RPROP_H_
+#ifndef LBCPP_OPTIMIZER_RPROP_H_
+# define LBCPP_OPTIMIZER_RPROP_H_
 
-# include <lcpp/Optimizer.h>
+# include <lbcpp/Optimizer.h>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class RPropOptimizer : public VectorOptimizer
@@ -92,6 +92,6 @@ private:
     {return k < 0 ? -1 : (k > 0 ? 1 : 0);}
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_OPTIMIZER_RPROP_H_
+#endif // !LBCPP_OPTIMIZER_RPROP_H_

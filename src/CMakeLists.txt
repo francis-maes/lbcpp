@@ -1,127 +1,127 @@
 INCLUDE_DIRECTORIES(${Lcpp_SOURCE_DIR}/include)
 
-SET(LCPP_CORE_IMPL ../include/lcpp/impl)
+SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
-SET(LCPP_CORE_HEADERS
-  ../include/lcpp/lcpp.h
-  ../include/lcpp/Traits.h
-  ../include/lcpp/Random.h
-  ../include/lcpp/ContainerTraits.h
-  ../include/lcpp/ReferenceCountedObject.h
-  ../include/lcpp/Utilities.h
-  ../include/lcpp/Object.h
-  ../include/lcpp/ObjectPredeclarations.h
-  ../include/lcpp/RandomVariable.h
-  ../include/lcpp/FeatureDictionary.h
-  ../include/lcpp/FeatureGenerator.h
-  ../include/lcpp/EditableFeatureGenerator.h
-  ../include/lcpp/SparseVector.h
-  ../include/lcpp/DenseVector.h
-  ../include/lcpp/LearningExample.h
-  ../include/lcpp/LearningMachine.h
-  ../include/lcpp/ContinuousFunction.h
-  ../include/lcpp/IterationFunction.h
-  ../include/lcpp/Optimizer.h
-  ../include/lcpp/GradientBasedLearner.h
-  ../include/lcpp/GradientBasedLearningMachine.h
-  ../include/lcpp/ChooseFunction.h
-  ../include/lcpp/Variable.h
-  ../include/lcpp/Choose.h
-  ../include/lcpp/Callback.h
-  ../include/lcpp/Policy.h
-  ../include/lcpp/CRAlgorithmScope.h
-  ../include/lcpp/CRAlgorithm.h
+SET(LBCPP_CORE_HEADERS
+  ../include/lbcpp/lbcpp.h
+  ../include/lbcpp/Traits.h
+  ../include/lbcpp/Random.h
+  ../include/lbcpp/ContainerTraits.h
+  ../include/lbcpp/ReferenceCountedObject.h
+  ../include/lbcpp/Utilities.h
+  ../include/lbcpp/Object.h
+  ../include/lbcpp/ObjectPredeclarations.h
+  ../include/lbcpp/RandomVariable.h
+  ../include/lbcpp/FeatureDictionary.h
+  ../include/lbcpp/FeatureGenerator.h
+  ../include/lbcpp/EditableFeatureGenerator.h
+  ../include/lbcpp/SparseVector.h
+  ../include/lbcpp/DenseVector.h
+  ../include/lbcpp/LearningExample.h
+  ../include/lbcpp/LearningMachine.h
+  ../include/lbcpp/ContinuousFunction.h
+  ../include/lbcpp/IterationFunction.h
+  ../include/lbcpp/Optimizer.h
+  ../include/lbcpp/GradientBasedLearner.h
+  ../include/lbcpp/GradientBasedLearningMachine.h
+  ../include/lbcpp/ChooseFunction.h
+  ../include/lbcpp/Variable.h
+  ../include/lbcpp/Choose.h
+  ../include/lbcpp/Callback.h
+  ../include/lbcpp/Policy.h
+  ../include/lbcpp/CRAlgorithmScope.h
+  ../include/lbcpp/CRAlgorithm.h
 )
 
-SET(LCPP_CORE_IMPL_HEADERS
-  ${LCPP_CORE_IMPL}/Macros.hpp
-  ${LCPP_CORE_IMPL}/Object.hpp
-  ${LCPP_CORE_IMPL}/StaticToDynamic.hpp
-  ${LCPP_CORE_IMPL}/DynamicToStatic.hpp
-  ${LCPP_CORE_IMPL}/impl.h
+SET(LBCPP_CORE_IMPL_HEADERS
+  ${LBCPP_CORE_IMPL}/Macros.hpp
+  ${LBCPP_CORE_IMPL}/Object.hpp
+  ${LBCPP_CORE_IMPL}/StaticToDynamic.hpp
+  ${LBCPP_CORE_IMPL}/DynamicToStatic.hpp
+  ${LBCPP_CORE_IMPL}/impl.h
 )
 
-SET(LCPP_CORE_IMPL_FEATURE_VISITOR
-  ${LCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStatic.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStaticToDynamic.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/CreateSparseVectorVisitor.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/UnaryOperationVisitor.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/AssignmentVisitor.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/DotProductVisitor.hpp
-  ${LCPP_CORE_IMPL}/FeatureVisitor/StringDescriptionVisitor.hpp
+SET(LBCPP_CORE_IMPL_FEATURE_VISITOR
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStatic.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStaticToDynamic.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/CreateSparseVectorVisitor.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/UnaryOperationVisitor.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/AssignmentVisitor.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/DotProductVisitor.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/StringDescriptionVisitor.hpp
 )
 
-SET(LCPP_CORE_IMPL_CONTINUOUS_FUNCTION
-  ${LCPP_CORE_IMPL}/ContinuousFunction/BinaryScalarOperation.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionStatic.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionPairTraits.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionStaticToDynamic.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/FunctionDynamicToStatic.hpp
+SET(LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/BinaryScalarOperation.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/FunctionStatic.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/FunctionPairTraits.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/FunctionStaticToDynamic.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/FunctionDynamicToStatic.hpp
 
-  ${LCPP_CORE_IMPL}/ContinuousFunction/ScalarFunctions.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/ScalarVectorFunctions.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/ScalarFunctions.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/ScalarVectorFunctions.hpp
 
-  ${LCPP_CORE_IMPL}/ContinuousFunction/LossFunctions.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/LossFunctions.hpp
 
-  ${LCPP_CORE_IMPL}/ContinuousFunction/AbsoluteLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/SquareLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/PerceptronLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/HingeLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/LogBinomialLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/ExponentialLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/MulticlassLogBinomialLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/AllPairsLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/MostViolatedPairLossFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/BestAgainstAllLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/AbsoluteLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/SquareLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/PerceptronLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/HingeLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/LogBinomialLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/ExponentialLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/MulticlassLogBinomialLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/AllPairsLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/MostViolatedPairLossFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/BestAgainstAllLossFunction.hpp
 
-  ${LCPP_CORE_IMPL}/ContinuousFunction/ExampleRiskFunction.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/EmpiricalRiskFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/ExampleRiskFunction.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/EmpiricalRiskFunction.hpp
 
-  ${LCPP_CORE_IMPL}/ContinuousFunction/BiasArchitecture.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/LinearArchitecture.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/MultiLinearArchitecture.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/TransferArchitecture.hpp
-  ${LCPP_CORE_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/BiasArchitecture.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/LinearArchitecture.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/MultiLinearArchitecture.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/TransferArchitecture.hpp
+  ${LBCPP_CORE_IMPL}/ContinuousFunction/ScalarToVectorArchitecture.hpp
 )
 
-SET(LCPP_CORE_IMPL_CHOOSE_FUNCTION
-  ${LCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
-  ${LCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
-  ${LCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
-  ${LCPP_CORE_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
-  ${LCPP_CORE_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
-  ${LCPP_CORE_IMPL}/ChooseFunction/RegressorValueFunctions.hpp
-  ${LCPP_CORE_IMPL}/ChooseFunction/RankerValueFunctions.hpp
+SET(LBCPP_CORE_IMPL_CHOOSE_FUNCTION
+  ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
+  ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
+  ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
+  ${LBCPP_CORE_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
+  ${LBCPP_CORE_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
+  ${LBCPP_CORE_IMPL}/ChooseFunction/RegressorValueFunctions.hpp
+  ${LBCPP_CORE_IMPL}/ChooseFunction/RankerValueFunctions.hpp
 )
 
-SET(LCPP_CORE_IMPL_POLICY
-  ${LCPP_CORE_IMPL}/Policy/PolicyStatic.hpp
-  ${LCPP_CORE_IMPL}/Policy/PolicyStaticToDynamic.hpp
-  ${LCPP_CORE_IMPL}/Policy/PolicyDynamicToStatic.hpp
-  ${LCPP_CORE_IMPL}/Policy/BasicPolicies.hpp
-  ${LCPP_CORE_IMPL}/Policy/ComputeStatisticsPolicy.hpp
-  ${LCPP_CORE_IMPL}/Policy/VerbosePolicy.hpp
-  ${LCPP_CORE_IMPL}/Policy/QLearningPolicy.hpp
-  ${LCPP_CORE_IMPL}/Policy/MonteCarloControlPolicy.hpp
-  ${LCPP_CORE_IMPL}/Policy/GPOMDPPolicy.hpp
-  ${LCPP_CORE_IMPL}/Policy/ClassificationExampleCreatorPolicy.hpp
-  ${LCPP_CORE_IMPL}/Policy/RankingExampleCreatorPolicy.hpp
+SET(LBCPP_CORE_IMPL_POLICY
+  ${LBCPP_CORE_IMPL}/Policy/PolicyStatic.hpp
+  ${LBCPP_CORE_IMPL}/Policy/PolicyStaticToDynamic.hpp
+  ${LBCPP_CORE_IMPL}/Policy/PolicyDynamicToStatic.hpp
+  ${LBCPP_CORE_IMPL}/Policy/BasicPolicies.hpp
+  ${LBCPP_CORE_IMPL}/Policy/ComputeStatisticsPolicy.hpp
+  ${LBCPP_CORE_IMPL}/Policy/VerbosePolicy.hpp
+  ${LBCPP_CORE_IMPL}/Policy/QLearningPolicy.hpp
+  ${LBCPP_CORE_IMPL}/Policy/MonteCarloControlPolicy.hpp
+  ${LBCPP_CORE_IMPL}/Policy/GPOMDPPolicy.hpp
+  ${LBCPP_CORE_IMPL}/Policy/ClassificationExampleCreatorPolicy.hpp
+  ${LBCPP_CORE_IMPL}/Policy/RankingExampleCreatorPolicy.hpp
 )
 
-SET(LCPP_CORE_IMPL_BRIDGE
-  ${LCPP_CORE_IMPL}/Bridge/StaticInterface.hpp
-  ${LCPP_CORE_IMPL}/Bridge/FeatureGeneratorDefaultImplementations.hpp
-  ${LCPP_CORE_IMPL}/Bridge/FeatureGenerator.hpp
-  ${LCPP_CORE_IMPL}/Bridge/DoubleVector.hpp
-  ${LCPP_CORE_IMPL}/Bridge/Variable.hpp
-  ${LCPP_CORE_IMPL}/Bridge/Choose.hpp
-  ${LCPP_CORE_IMPL}/Bridge/Callback.hpp
-  ${LCPP_CORE_IMPL}/Bridge/CRAlgorithmScope.hpp
-  ${LCPP_CORE_IMPL}/Bridge/CRAlgorithm.hpp
+SET(LBCPP_CORE_IMPL_BRIDGE
+  ${LBCPP_CORE_IMPL}/Bridge/StaticInterface.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/FeatureGeneratorDefaultImplementations.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/FeatureGenerator.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/DoubleVector.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/Variable.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/Choose.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/Callback.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/CRAlgorithmScope.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/CRAlgorithm.hpp
 )
 
-SET(LCPP_CORE_SOURCES
+SET(LBCPP_CORE_SOURCES
   classes.cpp
   Object.cpp
   Utilities.cpp
@@ -140,7 +140,7 @@ SET(LCPP_CORE_SOURCES
   Policy.cpp
 )
 
-SET(LCPP_CORE_FEATURE_GENERATOR_SOURCES
+SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
   FeatureGenerator/EmptyFeatureGenerator.h
   FeatureGenerator/UnitFeatureGenerator.h
   FeatureGenerator/SubFeatureGenerator.h
@@ -149,7 +149,7 @@ SET(LCPP_CORE_FEATURE_GENERATOR_SOURCES
   FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
 )
 
-SET(LCPP_CORE_OPTIMIZER_SOURCES
+SET(LBCPP_CORE_OPTIMIZER_SOURCES
   Optimizer/RPropOptimizer.h
   Optimizer/GradientDescentOptimizer.h
   Optimizer/BackTrackingLineSearch.h
@@ -157,30 +157,30 @@ SET(LCPP_CORE_OPTIMIZER_SOURCES
   Optimizer/LBFGSOptimizer.h
 )
 
-SET(LCPP_CORE
-  ${LCPP_CORE_HEADERS}
-  ${LCPP_CORE_IMPL_HEADERS}
-  ${LCPP_CORE_IMPL_FEATURE_VISITOR}
-  ${LCPP_CORE_IMPL_CONTINUOUS_FUNCTION}
-  ${LCPP_CORE_IMPL_OPTIMIZER}
-  ${LCPP_CORE_IMPL_CHOOSE_FUNCTION}
-  ${LCPP_CORE_IMPL_POLICY}
-  ${LCPP_CORE_IMPL_BRIDGE}
-  ${LCPP_CORE_SOURCES}
-  ${LCPP_CORE_FEATURE_GENERATOR_SOURCES}
-  ${LCPP_CORE_OPTIMIZER_SOURCES}
+SET(LBCPP_CORE
+  ${LBCPP_CORE_HEADERS}
+  ${LBCPP_CORE_IMPL_HEADERS}
+  ${LBCPP_CORE_IMPL_FEATURE_VISITOR}
+  ${LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION}
+  ${LBCPP_CORE_IMPL_OPTIMIZER}
+  ${LBCPP_CORE_IMPL_CHOOSE_FUNCTION}
+  ${LBCPP_CORE_IMPL_POLICY}
+  ${LBCPP_CORE_IMPL_BRIDGE}
+  ${LBCPP_CORE_SOURCES}
+  ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES}
+  ${LBCPP_CORE_OPTIMIZER_SOURCES}
 )
 
-SOURCE_GROUP(includes FILES ${LCPP_CORE_HEADERS})
-SOURCE_GROUP(impl FILES ${LCPP_CORE_IMPL_HEADERS})
-SOURCE_GROUP(impl/FeatureVisitor FILES ${LCPP_CORE_IMPL_FEATURE_VISITOR})
-SOURCE_GROUP(impl/ContinuousFunction FILES ${LCPP_CORE_IMPL_CONTINUOUS_FUNCTION})
-SOURCE_GROUP(impl/Optimizer FILES ${LCPP_CORE_IMPL_OPTIMIZER})
-SOURCE_GROUP(impl/ChooseFunction FILES ${LCPP_CORE_IMPL_CHOOSE_FUNCTION})
-SOURCE_GROUP(impl/Policy FILES ${LCPP_CORE_IMPL_POLICY})
-SOURCE_GROUP(impl/Bridge FILES ${LCPP_CORE_IMPL_BRIDGE})
-SOURCE_GROUP(sources FILES ${LCPP_CORE_SOURCES})
-SOURCE_GROUP(FeatureGenerator FILES ${LCPP_CORE_FEATURE_GENERATOR_SOURCES})
-SOURCE_GROUP(Optimizer FILES ${LCPP_CORE_OPTIMIZER_SOURCES})
+SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
+SOURCE_GROUP(impl FILES ${LBCPP_CORE_IMPL_HEADERS})
+SOURCE_GROUP(impl/FeatureVisitor FILES ${LBCPP_CORE_IMPL_FEATURE_VISITOR})
+SOURCE_GROUP(impl/ContinuousFunction FILES ${LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION})
+SOURCE_GROUP(impl/Optimizer FILES ${LBCPP_CORE_IMPL_OPTIMIZER})
+SOURCE_GROUP(impl/ChooseFunction FILES ${LBCPP_CORE_IMPL_CHOOSE_FUNCTION})
+SOURCE_GROUP(impl/Policy FILES ${LBCPP_CORE_IMPL_POLICY})
+SOURCE_GROUP(impl/Bridge FILES ${LBCPP_CORE_IMPL_BRIDGE})
+SOURCE_GROUP(sources FILES ${LBCPP_CORE_SOURCES})
+SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
+SOURCE_GROUP(Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 
-ADD_LIBRARY(lcpp-core ${LCPP_CORE})
+ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})

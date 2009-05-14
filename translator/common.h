@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
                                
-#ifndef LCPP_COMMON_H_
-# define LCPP_COMMON_H_
+#ifndef LBCPP_COMMON_H_
+# define LBCPP_COMMON_H_
 
 # ifdef WIN32
 #  pragma warning(disable:4996)
@@ -30,4 +30,4 @@
 
 using namespace Synopsis;
 
-#endif // !LCPP_COMMON_H_
+#endif // !LBCPP_COMMON_H_

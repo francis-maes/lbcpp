@@ -1,0 +1,73 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Nieme.cr++                     | Bridge between CR-algorithms    |
+| Author  : Francis Maes                   |    and nieme                    |
+| Started : 19/02/2009 16:16               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+# include "representation/vector/dynamic/DoubleVector.h"
+# include "representation/vector/dynamic/FlatVectors.h"
+# include "learning/instanceset/InstanceSet.h"
+# include "graphs/graph/GraphLabelingExample.h"
+
+namespace lbcpp
+{
+  inline std::string toString(representation::DoubleVectorPtr frame)
+    {return (const char* )frame->getShortDescription();}
+};
+
+class CRAlgorithmInstanceSet : public learning::InstanceSet
+{
+public:
+  virtual lbcpp::CRAlgorithmPtr createInstance(size_t i) = 0;
+
+  virtual std::string getInstanceName(size_t i)
+    {return "Instance " + lbcpp::toString(i);}
+
+protected:  
+  virtual representation::FramePtr open(unsigned i)
+  {
+    CRAlgorithmPtr crAlgorithm = createInstance(i);
+    mdp::DecisionProcessPtr decisionProcess = CRAlgorithmDecisionProcess::create(crAlgorithm);
+    decisionProcess->setElements(*this);
+    decisionProcess->setStringAttribute(elementName, getInstanceName(i).c_str());
+    return decisionProcess;
+  }
+
+  virtual String getInstanceShortDescription(unsigned i)
+    {return getInstanceName(i).c_str();}
+};
+
+typedef boost::shared_ptr<CRAlgorithmInstanceSet> CRAlgorithmInstanceSetPtr;
+
+featureGenerator niemeDoubleVectorFeatures(representation::DoubleVectorPtr vector)
+{
+  representation::CompositeVectorPtr cvector = Frame::castFrame<representation::CompositeVector>(vector);
+  if (cvector)
+  {
+    std::vector< std::pair<index_t, representation::DoubleVectorPtr> > elements = cvector->getElements();
+    for (size_t i = 0; i < elements.size(); ++i)
+      featureCall((const char* )representation::Frame::getString(elements[i].first))
+        niemeDoubleVectorFeatures(elements[i].second);
+    return;
+  }
+  representation::FlatVectorPtr fvector = Frame::castFrame<representation::FlatVector>(vector);
+  if (fvector)
+  {
+    std::vector< std::pair<index_t, double> > elements = fvector->getElements();
+    for (size_t i = 0; i < elements.size(); ++i)
+      featureSense((const char* )representation::Frame::getString(elements[i].first), elements[i].second);
+    return;
+  }
+  assert(false);
+}
+
+featureGenerator niemeConceptFeatures(representation::ConceptPtr concept)
+{
+  representation::DoubleVectorPtr doubleVector = Frame::castFrame<representation::DoubleVector>(concept);
+  if (doubleVector)
+    featureCall niemeDoubleVectorFeatures(doubleVector);
+  else
+    assert(false);
+}

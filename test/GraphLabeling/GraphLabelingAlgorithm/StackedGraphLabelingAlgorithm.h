@@ -11,7 +11,7 @@
 
 # include "ClassifierBasedGraphLabelingAlgorithm.h"
 
-namespace lcpp
+namespace lbcpp
 {
 
 class StackedGraphLabelingAlgorithm : public ClassifierBasedGraphLabelingAlgorithm
@@ -87,7 +87,7 @@ private:
   GraphLabelingAlgorithm* baseAlgorithm;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_STACKED_H_
 

@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LCPP_OPTIMIZER_GRADIENT_DESCENT_H_
-# define LCPP_OPTIMIZER_GRADIENT_DESCENT_H_
+#ifndef LBCPP_OPTIMIZER_GRADIENT_DESCENT_H_
+# define LBCPP_OPTIMIZER_GRADIENT_DESCENT_H_
 
-# include <lcpp/Optimizer.h>
-# include <lcpp/IterationFunction.h>
+# include <lbcpp/Optimizer.h>
+# include <lbcpp/IterationFunction.h>
 
-namespace lcpp
+namespace lbcpp
 {
 
 class GradientDescentOptimizer : public VectorOptimizer
@@ -33,6 +33,6 @@ private:
   IterationFunctionPtr stepSize;
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
-#endif // !LCPP_OPTIMIZER_GRADIENT_DESCENT_H_
+#endif // !LBCPP_OPTIMIZER_GRADIENT_DESCENT_H_

@@ -11,7 +11,7 @@
 
 # include "IterativeClassificationAlgorithm.h"
 
-namespace lcpp
+namespace lbcpp
 {
 
 class GibbsSamplingGraphLabelingAlgorithm : public IterativeClassificationGraphLabelingAlgorithm
@@ -73,6 +73,6 @@ public:
   }
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_GIBBS_SAMPLING_

@@ -11,7 +11,7 @@
 
 # include "ClassifierBasedGraphLabelingAlgorithm.h"
 
-namespace lcpp
+namespace lbcpp
 {
 
 class IterativeClassificationGraphLabelingAlgorithm : public ClassifierBasedGraphLabelingAlgorithm
@@ -93,6 +93,6 @@ protected:
   }
 };
 
-}; /* namespace lcpp */
+}; /* namespace lbcpp */
 
 #endif // !GRAPH_LABELING_ALGORITHM_ITERATIVE_CLASSIFICATION_H_

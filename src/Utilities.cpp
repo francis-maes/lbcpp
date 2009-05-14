@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lcpp/Utilities.h>
-#include <lcpp/Random.h>
-#include <lcpp/IterationFunction.h>
+#include <lbcpp/Utilities.h>
+#include <lbcpp/Random.h>
+#include <lbcpp/IterationFunction.h>
 #include <iostream>
 #include <fstream>
-using namespace lcpp;
+using namespace lbcpp;
 
 /*
 ** ProgressCallback
@@ -158,7 +158,7 @@ bool TextFileParser::parseLine(const std::string& line)
 
 void TextFileParser::tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators)
 {
-  //std::cout << "Tokenize " << lcpp::toString(line) << " => ";
+  //std::cout << "Tokenize " << lbcpp::toString(line) << " => ";
   size_t b = line.find_first_not_of(separators);
   while (b != std::string::npos)
   {
@@ -169,7 +169,7 @@ void TextFileParser::tokenize(const std::string& line, std::vector< std::string 
       columns.push_back(line.substr(b, e - b));
     b = line.find_first_not_of(separators, e);
   }
-  //std::cout << lcpp::toString(columns) << std::endl;
+  //std::cout << lbcpp::toString(columns) << std::endl;
 }
 
 bool TextFileParser::parseStream(std::istream& istr)
