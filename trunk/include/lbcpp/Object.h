@@ -110,6 +110,9 @@ public:
 template<>
 struct Traits<ObjectPtr> : public ObjectPtrTraits<Object> {};
 
+template<class T>
+struct Traits< ReferenceCountedObjectPtr<T> > : public ObjectPtrTraits<T> {};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_H_

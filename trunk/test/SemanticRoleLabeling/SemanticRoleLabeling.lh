@@ -1,0 +1,169 @@
+using namespace lbcpp;
+
+class Word : public Object
+{
+public:
+  Word(const std::string& word)
+    : word(word) {}
+  
+  std::string getWord() const
+    {return word;}
+    
+  virtual std::string toString() const
+    {return word;}
+
+  friend std::ostream& operator <<(std::ostream& ostr, const Word& w)
+    {return ostr << w.word;}
+    
+private:
+  std::string word;
+};
+
+typedef ReferenceCountedObjectPtr<Word> WordPtr;
+
+class Sentence : public Object
+{
+public:
+  Sentence(const std::vector<std::string>& tokens)
+  {
+    words.resize(tokens.size());
+    for (size_t i = 0; i < words.size(); ++i)
+      words[i] = new Word(tokens[i]);
+  }
+  
+  featureGenerator firstWords(size_t count)
+  {
+    for (size_t i = 0; i < count; ++i)
+      featureScope(i)
+        featureSense(i < words.size() ? words[i]->getWord() : "n/a");
+  }
+
+  featureGenerator lastWords(size_t count)
+  {
+    for (size_t i = 0; i < count; ++i)
+      featureScope(i)
+      {
+        int ii = (int)words.size() - 1 - i;
+        featureSense(ii >= 0 ? words[ii]->getWord() : "n/a");
+      }
+  }
+  
+  featureGenerator bagOfWords()
+  {
+    for (size_t i = 0; i < words.size(); ++i)
+      featureSense(words[i]->getWord());
+  }
+    
+  virtual std::string toString() const
+  {
+    std::string res;
+    for (size_t i = 0; i < words.size(); ++i)
+    {
+      if (!res.empty())
+        res += " ";
+      res += words[i]->toString();
+    }
+    return res;
+  }
+  
+  friend std::ostream& operator <<(std::ostream& ostr, const Sentence& s)
+    {return ostr << s.toString();}
+
+private:
+  std::vector<WordPtr> words;
+};
+
+typedef ReferenceCountedObjectPtr<Sentence> SentencePtr;
+
+class SRLLabel : public Object
+{
+public:
+  SRLLabel() : rel(0), arg0(0), arg1(0) {}
+  
+  size_t rel;
+  size_t arg0;
+  size_t arg1;
+  
+  bool operator ==(const SRLLabel& label) const
+    {return rel == label.rel && arg0 == label.arg0 && arg1 == label.arg1;}
+  
+  virtual std::string toString() const
+    {return "(" + lbcpp::toString(rel) + ", " + lbcpp::toString(arg0) + ", " + lbcpp::toString(arg1) + ")";}
+    
+  friend std::ostream& operator <<(std::ostream& ostr, SRLLabel& label)
+    {return ostr << "(" << label.rel << " " << label.arg0 << " " << label.arg1 << ")";}
+};
+
+typedef ReferenceCountedObjectPtr<SRLLabel> SRLLabelPtr;
+
+crAlgorithm SRLLabelPtr crSemanticRoleLabeling(SentencePtr sentence, StringDictionaryPtr relations, StringDictionaryPtr arguments, SRLLabelPtr label = SRLLabelPtr())
+{
+  typedef std::pair<size_t, size_t> Choice; // (0, 1 or 2 = rel/arg0/arg1, index in relations or arguments)
+  
+  SRLLabelPtr res = new SRLLabel();
+  size_t i;
+  
+  std::vector<Choice> choices;
+  for (i = 0; i < relations->getNumElements(); ++i)
+    choices.push_back(Choice(0, i));
+  for (i = 0; i < arguments->getNumElements(); ++i)
+  {
+    choices.push_back(Choice(1, i));
+    choices.push_back(Choice(2, i));
+  }
+  
+  for (i = 0; i < 3; ++i)
+  {
+    chooseFunction double supervision(const Choice& c)
+    {
+      if (!label)
+        return 0.0;
+      if (c.first == 0)
+        return c.second == label->rel ? 1 : 0;
+      if (c.first == 1)
+        return c.second == label->arg0 ? 1 : 0;
+      if (c.first == 2)
+        return c.second == label->arg1 ? 1 : 0;
+      assert(false);
+      return 0.0;
+    }
+    
+    chooseFunction featureGenerator SRLfeatures(const Choice& c)
+    {
+      featureScope(c.first)
+        featureScope(c.second)
+        {
+          featureScope(0) featureSense(res->rel);
+          featureScope(1) featureSense(res->arg0);
+          featureScope(2) featureSense(res->arg1);
+          featureCall(3) sentence->firstWords(2);
+          featureCall(4) sentence->lastWords(2);
+          featureCall(5) sentence->bagOfWords();
+        }
+    }
+    
+    // make choice
+    Choice c = choose<Choice>(choices, SRLfeatures, supervision);
+    if (c.first == 0)
+      res->rel = c.second;
+    else if (c.first == 1)
+      res->arg0 = c.second;
+    else if (c.first == 2)
+      res->arg1 = c.second;
+  
+    // remove choices
+    for (size_t j = 0; j < choices.size(); )
+    {
+      if (choices[j].first == c.first)
+        choices.erase(choices.begin() + j);
+      else
+        ++j;
+    }
+  }
+  
+  if (label && *label == *res)
+    reward(1.0);
+  
+//  std::cout << "Desired: " << *label << " Predicted: " << *res << std::endl;
+  return res;
+}

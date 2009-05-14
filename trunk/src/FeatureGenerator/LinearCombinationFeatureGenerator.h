@@ -85,8 +85,11 @@ public:
     std::string res = "LinearCombination:\n";
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
-      res += "\t" + lbcpp::toString(weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)))
-          + " x " + compositeFeatureGenerator->getSubGenerator(i)->toString() + "\n";
+    {
+      double weight = weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
+      if (weight)
+        res += "\t" + lbcpp::toString(weight) + " times " + compositeFeatureGenerator->getSubGenerator(i)->toString() + "\n";
+    }
     return res;
   }
 
@@ -104,21 +107,27 @@ public:
 
   virtual void addWeightedTo(DenseVectorPtr target, double weight) const
   {
+    if (!weight)
+      return;
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
     {
       double w = weight * (weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)));
-      compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
+      if (w)
+        compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
     }
   }
   
   virtual void addWeightedTo(SparseVectorPtr target, double weight) const
   {
+    if (!weight)
+      return;
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
     {
       double w = weight * weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
-      compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
+      if (w)
+        compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
     }
   }
   
@@ -127,8 +136,11 @@ public:
     double res = 0.0;
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
-      res += compositeFeatureGenerator->getSubGenerator(i)->dotProduct(vector) *
-        weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
+    {
+      double weight = weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
+      if (weight)
+        res += compositeFeatureGenerator->getSubGenerator(i)->dotProduct(vector) * weight;
+    }
     return res;
   }  
     

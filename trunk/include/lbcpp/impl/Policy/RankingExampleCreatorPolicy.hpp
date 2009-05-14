@@ -61,7 +61,10 @@ struct RankingExampleCreatorPolicy
         bestValue = costs[i];
     for (size_t i = 0; i < costs.size(); ++i)
       costs[i] = bestValue - costs[i];
+      
+    //std::cout << "COSTS => " << lbcpp::toString(costs) << std::endl;
     
+    //std::cout << "ALTERNATIVES ===> " << std::endl << alternatives->toString() << std::endl;
     ranker->trainStochasticExample(RankingExample(alternatives, costs));
     return BaseClass::policyChoose(choose);
   }

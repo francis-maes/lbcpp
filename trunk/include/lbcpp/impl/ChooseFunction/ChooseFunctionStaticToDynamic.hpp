@@ -50,16 +50,11 @@ STATIC_TO_DYNAMIC_CLASS(StateFeaturesFunction, ChooseFunction_)
     {return BaseClass::impl.compute();}
 STATIC_TO_DYNAMIC_ENDCLASS(StateFeaturesFunction);
 
-/*STATIC_TO_DYNAMIC_BEGIN_0_1(ActionFeaturesFunctionDirect, ChooseFunction_, lbcpp::ActionFeaturesFunction) 
-  virtual FeatureGeneratorPtr compute(VariablePtr choice) const
-    {return BaseClass::impl.compute(choice);}
-};
-template<class ExactType>
-inline ActionFeaturesFunctionPtr staticToDynamic(const ActionFeaturesFunction<ExactType, VariablePtr>& impl)
-  {return ActionFeaturesFunctionPtr(new StaticToDynamicActionFeaturesFunctionDirect<ExactType>(static_cast<const ExactType& >(impl)));}
-*/
 
 STATIC_TO_DYNAMIC_CLASS(ActionFeaturesFunction, ChooseFunction_)
+  virtual FeatureDictionaryPtr getDictionary() const
+    {typedef typename ImplementationType::FeatureGenerator FG; return FG::getDictionary();}
+
   virtual FeatureGeneratorPtr compute(VariablePtr choice) const
     {assert(choice); return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
 STATIC_TO_DYNAMIC_ENDCLASS_1(ActionFeaturesFunction);

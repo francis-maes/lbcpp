@@ -67,7 +67,7 @@ public:
     
     body.add(function.createDeclaration());
     
-    if (input.getReturnType().getString() == "featureGenerator")
+    if (input.getReturnType().getString() == "lbcpp::FeatureGeneratorPtr")
       body.add(atom("typedef " + identifier + "FeatureGenerator FeatureGenerator;\n"));
   }
   
