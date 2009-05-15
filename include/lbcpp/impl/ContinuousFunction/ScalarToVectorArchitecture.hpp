@@ -15,6 +15,9 @@
 namespace lbcpp {
 namespace impl {
 
+// transforms a scalar architecture into a vector parallel architecture:
+// parameter: x -> f_theta(x)  
+// is transformed into: x = (x1, ..., xn) -> (f_theta(x1), ..., f_theta(xn))
 template<class ScalarArchitectureType>
 struct ScalarToVectorArchitecture
   : public VectorArchitecture< ScalarToVectorArchitecture<ScalarArchitectureType> >
@@ -26,8 +29,8 @@ struct ScalarToVectorArchitecture
   
   enum {isDerivable = ScalarArchitectureType::isDerivable};
   
-  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {return scalarArchitecture.createInitialParameters(inputDictionary, initializeRandomly);}
+  FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
+    {return scalarArchitecture.getParametersDictionary(inputDictionary);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
                 FeatureGeneratorPtr* gradientWrtParameters,
@@ -52,7 +55,7 @@ struct ScalarToVectorArchitecture
     CompositeFeatureGeneratorPtr gParam, gInput;
     if (gradientWrtParameters)
       gParam = new CompositeFeatureGenerator(new FeatureDictionary(input->getDictionary()->getName(),
-        StringDictionaryPtr(), input->getDictionary()->getScopes()), n);
+        StringDictionaryPtr(), getParametersDictionary(input->getDictionary())->getScopes()), n);
     if (gradientWrtInput)
       gInput = new CompositeFeatureGenerator(new FeatureDictionary(input->getDictionary()->getName(),
         StringDictionaryPtr(), input->getDictionary()->getScopes()), n);

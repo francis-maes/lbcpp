@@ -13,6 +13,7 @@ ENDIF(LBCPP_TESTS)
 #ADD_SUBDIRECTORY(SequentialClassification)
 #ADD_SUBDIRECTORY(GraphLabeling)
 ADD_SUBDIRECTORY(SemanticRoleLabeling)
+ADD_SUBDIRECTORY(Search)
 
 ADD_EXECUTABLE(test-lbcpp TestCpp.cpp)
 TARGET_LINK_LIBRARIES(test-lbcpp lbcpp-core)

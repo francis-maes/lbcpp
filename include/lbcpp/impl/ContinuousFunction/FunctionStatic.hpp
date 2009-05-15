@@ -84,9 +84,9 @@ struct VectorLossFunction : public ScalarVectorFunction<ExactType>
 template<class ExactType>
 struct ScalarArchitecture : public ContinuousFunction<ExactType>
 {
-  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {assert(false); return DenseVectorPtr();}
-
+  FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
+    {assert(false); return FeatureDictionaryPtr();}
+    
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
       FeatureGeneratorPtr* gradientWrtParameters,
@@ -100,8 +100,8 @@ struct ScalarArchitecture : public ContinuousFunction<ExactType>
 template<class ExactType>
 struct VectorArchitecture : public ContinuousFunction<ExactType>
 {
-  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {assert(false); return DenseVectorPtr();}
+  FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
+    {assert(false); return FeatureDictionaryPtr();}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 size_t outputNumber, double* output, 

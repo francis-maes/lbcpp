@@ -119,8 +119,8 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
   virtual bool isDerivable() const
     {return ImplementationType::isDerivable;}
 
-  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {return BaseClass::impl.createInitialParameters(inputDictionary, initializeRandomly);}
+  virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
+    {return BaseClass::impl.getParametersDictionary(inputDictionary);}
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
@@ -152,8 +152,8 @@ STATIC_TO_DYNAMIC_CLASS(VectorArchitecture, Object)
   virtual bool isDerivable() const
     {return ImplementationType::isDerivable;}
 
-  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {return BaseClass::impl.createInitialParameters(inputDictionary, initializeRandomly);}
+  virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
+    {return BaseClass::impl.getParametersDictionary(inputDictionary);}
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 size_t outputNumber, double* output, 

@@ -80,8 +80,15 @@ class ScalarArchitecture : public ContinuousFunction
 {
 public:
   // todo: non-derivable scalar architectures
+  virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const = 0;
   
-  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
+  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+  {
+    DenseVectorPtr res = new DenseVector(getParametersDictionary(inputDictionary));
+    if (initializeRandomly)
+      res->initializeRandomly();
+    return res;
+  }
 
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
   
@@ -98,8 +105,15 @@ class VectorArchitecture : public ContinuousFunction
 {
 public:
   // todo: non-derivable vector architectures
+  virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const = 0;
 
-  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
+  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+  {
+    DenseVectorPtr res = new DenseVector(getParametersDictionary(inputDictionary));
+    if (initializeRandomly)
+      res->initializeRandomly();
+    return res;
+  }
 
   virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
 
