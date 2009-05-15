@@ -1,0 +1,73 @@
+namespace nqueens
+{
+
+typedef std::pair<int, int> Position;
+typedef std::vector<Position> SearchNode;
+
+bool respectsAllConstraints(const SearchNode& node)
+{
+  std::set<int> occupedRows, occupedColumns, occupedDiag1, occupedDiag2;
+  
+  for (size_t i = 0; i < node.size(); ++i)
+  {
+    int row = node[i].first;
+    int column = node[i].second;
+    int diag1 = node[i].first + node[i].second;
+    int diag2 = node[i].first - node[i].second;
+    
+    if (occupedRows.find(row) == occupedRows.end())
+      occupedRows.insert(row);
+    else
+      return false;
+    if (occupedColumns.find(column) == occupedColumns.end())
+      occupedColumns.insert(column);
+    else
+      return false;
+    if (occupedDiag1.find(diag1) == occupedDiag1.end())
+      occupedDiag1.insert(diag1);
+    else
+      return false;
+    if (occupedDiag2.find(diag2) == occupedDiag2.end())
+      occupedDiag2.insert(diag2);
+    else
+      return false;
+  }
+  return true;
+}
+
+crAlgorithm bool searchSpace(int n)
+{
+  std::set<Position> freePositions;
+  int i;
+  for (i = 0; i < n; ++i)
+    for (int j = 0; j < n; ++j)
+      freePositions.insert(Position(i, j));
+
+  SearchNode node;
+  for (i = 0; i < n; ++i)
+  {
+    if (freePositions.empty())
+    {
+      //std::cout << "Fail: " << lbcpp::toString(node) << std::endl;
+      return false;
+    }
+
+    Position ithPosition = choose<Position>(freePositions);
+    node.push_back(ithPosition);
+    assert(respectsAllConstraints(node));
+
+    for (int j = -n; j < n; ++j)
+    {
+      freePositions.erase(Position(ithPosition.first + j, ithPosition.second));
+      freePositions.erase(Position(ithPosition.first, ithPosition.second + j));
+      freePositions.erase(Position(ithPosition.first + j, ithPosition.second + j));
+      freePositions.erase(Position(ithPosition.first + j, ithPosition.second - j));
+    }
+  }
+
+  std::cout << "SOLUTION !!! : " << lbcpp::toString(node) << std::endl;
+  reward (1.0);
+  return true;
+}
+
+}; /* namespace nqueens */

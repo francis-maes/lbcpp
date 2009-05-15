@@ -30,18 +30,8 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   size_t getNumOutputs() const
     {assert(outputs->getNumElements()); return outputs->getNumElements();}
   
-  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-  {
-    DenseVectorPtr res = new DenseVector(paramsDictionary, 0, getNumOutputs());
-    for (size_t i = 0; i < outputs->getNumElements(); ++i)
-    {
-      DenseVectorPtr classParams = new DenseVector(inputDictionary);
-      if (initializeRandomly)
-        classParams->initializeRandomly();
-      res->setSubVector(i, classParams);
-    }
-    return res;
-  }
+  FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
+    {return new FeatureDictionary("MultiLinearArchitecture parameters", StringDictionaryPtr(), outputs);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
                 FeatureGeneratorPtr* gradientWrtParameters,
