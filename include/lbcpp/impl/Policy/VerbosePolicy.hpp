@@ -85,7 +85,7 @@ struct VerbosePolicy
         ostr << " -> " << episodeReward << std::endl;
       else if (verbosity >= 3)
       {
-        if (verbosity >= 3)
+        if (verbosity > 3)
           ostr << std::endl << "==================" << std::endl;
         ostr << "Episode Reward: " << episodeReward << std::endl << std::endl;
       }

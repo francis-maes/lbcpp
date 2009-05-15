@@ -58,6 +58,9 @@ public:
     
   std::string getTypeName() const
     {return typeName;}
+  
+  virtual std::string toString() const
+    {return "Variable " + getTypeName() + " " + getName();}
     
 protected:
   void* ptr;
@@ -77,6 +80,9 @@ public:
   virtual bool exists() const = 0;
   virtual VariablePtr get() const = 0;
   virtual void next() = 0;
+  
+  std::string toString() const
+    {return exists() ? get()->toString() : "<null>";}
 };
 
 }; /* namespace lbcpp */
