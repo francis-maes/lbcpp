@@ -1,4 +1,5 @@
-
+* Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe) dans ScalarToVectorArchitecture::compute
+* Passage des Policy en dynamique
 
 LC++ library:
 =============
@@ -28,8 +29,6 @@ Policy:
  * TableLogger
  * policyRun inline
 
-Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe)
- * ScalarToVectorArchitecture::compute
 
 LC++ translator:
 ================
@@ -47,6 +46,8 @@ LC++ translator:
 * remettre policyRun
 * Generer un operateur de stream dans chaque classe, si il n'existe pas
 * cralgo-cpp: Mettre un reward par default equivalent a la premiere actionValue de chaque choose
+
+* BUG: for (size_t i) dans une chooseFunction => la resolution du i passe mal
 * BUG: Une struct qui ne se finit pas par ; dans une classe => fait peter le assert(prototype) de synopsis
 * BUG: => faire marcher "size_t nodeIndex = choose<size_t>(closedNodes, nodeValues);
     SearchNode& node = searchSpace.get(nodeIndex);"
