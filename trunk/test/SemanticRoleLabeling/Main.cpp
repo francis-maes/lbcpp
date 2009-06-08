@@ -2,28 +2,31 @@
 #include <fstream>
 using namespace lbcpp;
 
-class SentencesParser : public TextFileParser
+class SentencesParser : public LearningDataObjectParser
 {
 public:
-  SentencesParser(std::vector<SentencePtr>& sentences)
-    : sentences(sentences) {}
+  SentencesParser(const std::string& filename)
+    : LearningDataObjectParser(filename) {}
+  
+  virtual std::string getContentClassName() const
+    {return "Sentence";}
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
     assert(columns.size() > 0);
-    sentences.push_back(new Sentence(columns));
+    setResult(new Sentence(columns));
     return true;
   }
-  
-private:
-  std::vector<SentencePtr>& sentences;
 };
 
-class SRLLabelsParser : public TextFileParser
+class SRLLabelsParser : public LearningDataObjectParser
 {
 public:
-  SRLLabelsParser(StringDictionaryPtr relations, StringDictionaryPtr arguments, std::vector<SRLLabelChoicePtr>& labels)
-    : relations(relations), arguments(arguments), labels(labels) {}
+  SRLLabelsParser(const std::string& filename, StringDictionaryPtr relations, StringDictionaryPtr arguments)
+    : LearningDataObjectParser(filename), relations(relations), arguments(arguments) {}
+    
+  virtual std::string getContentClassName() const
+    {return "SRLLabelChoice";}
     
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
@@ -49,7 +52,7 @@ public:
       while (i < columns.size() && columns[i] == ";")
         ++i;
     }
-    labels.push_back(res);
+    setResult(res);
     //std::cout << "Parsed: " << *res << std::endl;
     return true;
   }
@@ -58,8 +61,6 @@ private:
   StringDictionaryPtr relations;
   StringDictionaryPtr arguments;
   
-  std::vector<SRLLabelChoicePtr>& labels;
-
   static std::string toLowerCase(const std::string& str)
   {
     std::string res;
@@ -72,7 +73,6 @@ private:
   }
 };
 
-
 class SRLTrainingSet : public Object
 {
 public:
@@ -81,24 +81,24 @@ public:
 
   bool parse(const std::string& sentencesFile, const std::string& labelsFile)
   {
-    SentencesParser sentencesParser(sentences);
-    SRLLabelsParser labelsParser(relations, arguments, labels);
-    return sentencesParser.parseFile(sentencesFile) && labelsParser.parseFile(labelsFile);
+    sentences = (new SentencesParser(sentencesFile))->load();
+    labels = (new SRLLabelsParser(labelsFile, relations, arguments))->load();
+    return sentences && labels;
   }
 
   void convertToCRAlgorithms(std::vector<CRAlgorithmPtr>& res)
   {
-    assert(sentences.size() == labels.size());
-    res.resize(sentences.size());
+    assert(sentences->size() == labels->size());
+    res.resize(sentences->size());
     for (size_t i = 0; i < res.size(); ++i)
-      res[i] = crSemanticRoleLabeling(sentences[i], relations, arguments, labels[i]);
+      res[i] = crSemanticRoleLabeling(sentences->getCast<Sentence>(i), relations, arguments, labels->getCast<SRLLabelChoice>(i));
   }
 
 private:
   StringDictionaryPtr relations;
   StringDictionaryPtr arguments;
-  std::vector<SentencePtr> sentences;
-  std::vector<SRLLabelChoicePtr> labels;
+  ObjectContainerPtr sentences; // Sentence
+  ObjectContainerPtr labels;    // SRLLabelChoice
 };
 
 double evaluate(PolicyPtr policy, const std::vector<CRAlgorithmPtr>& instances)

@@ -197,6 +197,7 @@ double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 
 bool DenseVector::load(std::istream& istr)
 {
+  assert(dictionary);
   size_t numSubVectors;
   if (!read(istr, values) || !read(istr, numSubVectors))
     return false;

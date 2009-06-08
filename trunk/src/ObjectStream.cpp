@@ -30,6 +30,20 @@ ObjectContainerPtr ObjectStream::load(size_t maximumCount)
   return res;
 }
 
+bool ObjectStream::iterate(size_t maximumCount)
+{
+  size_t count = 0;
+  while (maximumCount == 0 || count < maximumCount)
+  {
+    ObjectPtr object = next();
+    if (object)
+      ++count;
+    else
+      break;
+  }
+  return true;
+}
+
 bool ObjectStream::checkContentClassName(const std::string& expectedClassName)
 {
   if (getContentClassName() != expectedClassName)
@@ -52,7 +66,7 @@ TextObjectParser::TextObjectParser(const std::string& filename)
 {
   if (filename.empty())
   {
-    Object::error("TextFileParser::parseFile", "No filename specified");
+    Object::error("TextObjectParser::parseFile", "No filename specified");
     return;
   }
   std::ifstream* istr = new std::ifstream(filename.c_str());
@@ -60,7 +74,7 @@ TextObjectParser::TextObjectParser(const std::string& filename)
     this->istr = istr;
   else
   {
-    Object::error("TextFileParser::parseFile", "Could not open file '" + filename + "'");
+    Object::error("TextObjectParser::parseFile", "Could not open file '" + filename + "'");
     delete istr;
   }
 }
@@ -115,7 +129,7 @@ ObjectPtr TextObjectParser::next()
   }
   
   if (!parseEnd())
-    Object::error("TextFileParser::parse", "Error in parse end");
+    Object::error("TextObjectParser::next", "Error in parse end");
   delete istr;
   istr = NULL;
   return ObjectPtr();

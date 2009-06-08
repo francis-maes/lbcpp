@@ -16,10 +16,16 @@ namespace impl {
 
 struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitecture >
 {
-  MultiLinearArchitecture(StringDictionaryPtr outputs)
-    : outputs(outputs),
-      outputsDictionary(new FeatureDictionary("MultiLinearArchitecture outputs", outputs, StringDictionaryPtr()))
+  MultiLinearArchitecture(StringDictionaryPtr outputs = StringDictionaryPtr())
   {
+    if (outputs)
+      setOutputs(outputs);
+  }
+  
+  void setOutputs(StringDictionaryPtr outputs)
+  {
+    this->outputs = outputs;
+    outputsDictionary = new FeatureDictionary("MultiLinearArchitecture outputs", outputs, StringDictionaryPtr());
   }
     
   size_t getNumOutputs() const

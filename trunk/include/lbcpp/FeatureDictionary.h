@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class StringDictionary : public ReferenceCountedObject
+class StringDictionary : public Object
 {
 public:
   void clear()
@@ -32,7 +32,7 @@ public:
   
   size_t add(const std::string& str);
 
-  std::string toString() const
+  virtual std::string toString() const
     {std::ostringstream ostr; ostr << *this; return ostr.str();}
 
   friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
@@ -43,6 +43,9 @@ protected:
  
   StringToIndexMap stringToIndex;
   StringVector indexToString;
+
+  virtual void save(std::ostream& ostr) const;
+  virtual bool load(std::istream& istr);  
 };
 
 typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;

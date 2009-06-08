@@ -126,30 +126,6 @@ private:
 
 typedef ReferenceCountedObjectPtr<RankingExample> RankingExamplePtr;
 
-/* --------------- */
-// /!\ Dead code, replaced by the ObjectStream hierarchy
-class LearningExamplesParser : public TextFileParser
-{
-public:
-  LearningExamplesParser() : dictionary(NULL) {}
-
-  bool parse(std::istream& istr, FeatureDictionaryPtr dictionary);
-  
-protected:
-  FeatureDictionaryPtr dictionary;
-
-  // featureList ::= feature featureList | feature
-  bool parseFeatureList(const std::vector<std::string>& columns, size_t firstColumn, SparseVectorPtr& res);
-  // feature ::= featureId . featureValue
-  static bool parseFeature(const std::string& str, std::string& featureId, double& featureValue);
-    // featureId ::= name . featureId  | name
-  static bool parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path);
-};
-
-extern bool parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res);
-extern bool parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res);
-/* --------------- */
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_LEARNING_EXAMPLE_H_

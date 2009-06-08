@@ -49,6 +49,22 @@ std::string StringDictionary::getString(size_t index) const
     return indexToString[index];
 }
 
+void StringDictionary::save(std::ostream& ostr) const
+{
+  write(ostr, indexToString);
+}
+
+bool StringDictionary::load(std::istream& istr)
+{
+  clear();
+  if (!read(istr, indexToString))
+    return false;
+  for (size_t i = 0; i < indexToString.size(); ++i)
+    stringToIndex[indexToString[i]] = i;
+  return true;
+}
+
+
 namespace lbcpp
 {
 

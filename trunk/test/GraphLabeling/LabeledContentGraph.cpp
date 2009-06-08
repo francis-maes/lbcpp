@@ -52,11 +52,11 @@ LabeledContentGraph::~LabeledContentGraph()
   //  std::cout << "delete labeled content graph: " << this << std::endl;
 }
 
-class ContentFileParser : public TextFileParser
+class ContentFileParser : public LearningDataObjectParser
 {
 public:
-  ContentFileParser(LabeledContentGraphPtr res, FeatureDictionaryPtr features, std::map<std::string, size_t>& nodeIdentifiers, size_t maxNodes)
-    : res(res), features(features), nodeIdentifiers(nodeIdentifiers), maxNodes(maxNodes) {}
+  ContentFileParser(const std::string& filename, LabeledContentGraphPtr graph, FeatureDictionaryPtr features, std::map<std::string, size_t>& nodeIdentifiers)
+    : LearningDataObjectParser(filename, features), graph(graph), nodeIdentifiers(nodeIdentifiers) {}
     
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
@@ -91,24 +91,23 @@ public:
         content->set(features->addFeature(featureName), featureValue);
     }
     content->set(features->addFeature("__unit__"), 1.0); // unit feature
-    nodeIdentifiers[columns[0]] = res->addNode(content, res->getLabelDictionary()->add(columns.back()));
-    if (maxNodes && res->getNumNodes() >= maxNodes)
-      breakParsing();
+    nodeIdentifiers[columns[0]] = graph->addNode(content, graph->getLabelDictionary()->add(columns.back()));
+    setResult(content);
     return true;
   }
 
 private:
-  LabeledContentGraphPtr res;
+  LabeledContentGraphPtr graph;
   FeatureDictionaryPtr features;
   std::map<std::string, size_t>& nodeIdentifiers;
   size_t maxNodes;
 };
 
-class LinkFileParser : public TextFileParser
+class LinkFileParser : public LearningDataObjectParser
 {
 public:
-  LinkFileParser(LabeledContentGraphPtr res, std::map<std::string, size_t>& nodeIdentifiers, size_t maxNodes)
-    : res(res), nodeIdentifiers(nodeIdentifiers), maxNodes(maxNodes) {}
+  LinkFileParser(const std::string& filename, LabeledContentGraphPtr graph, std::map<std::string, size_t>& nodeIdentifiers)
+    : LearningDataObjectParser(filename), graph(graph), nodeIdentifiers(nodeIdentifiers) {}
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
@@ -125,7 +124,8 @@ public:
     if (it2 == nodeIdentifiers.end())
       invalidIdentifiers.insert(columns[0]);
     if (it1 != nodeIdentifiers.end() && it2 != nodeIdentifiers.end())
-      res->addLink(it1->second, it2->second);
+      graph->addLink(it1->second, it2->second);
+    setResult(graph);
     return true;
   }
   
@@ -138,19 +138,17 @@ public:
   }
   
 private:
-  LabeledContentGraphPtr res;
+  LabeledContentGraphPtr graph;
   std::map<std::string, size_t>& nodeIdentifiers;
   std::set<std::string> invalidIdentifiers;
-  size_t maxNodes;
 };
 
 LabeledContentGraphPtr LabeledContentGraph::parseGetoorGraph(const std::string& contentFile, const std::string& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes)
 {
   LabeledContentGraphPtr res = new LabeledContentGraph(labels);
   std::map<std::string, size_t> nodeIdentifiers;
-  ContentFileParser contentParser(res, features, nodeIdentifiers, maxNodes);
-  LinkFileParser linkParser(res, nodeIdentifiers, maxNodes);
-  if (!contentParser.parseFile(contentFile) || !linkParser.parseFile(linkFile))
+  if (!(new ContentFileParser(contentFile, res, features, nodeIdentifiers))->iterate(maxNodes) ||
+      !(new LinkFileParser(linkFile, res, nodeIdentifiers))->iterate())
     return LabeledContentGraphPtr();
   return res;
 }

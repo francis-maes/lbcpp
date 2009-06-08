@@ -11,12 +11,15 @@
 #include <fstream>
 using namespace lbcpp;
 
-extern void declareStandardCRAlgoClasses();
+extern void declareLBCppCoreClasses();
+
 class ObjectFactory
 {
 public:
   ObjectFactory()
-    {declareStandardCRAlgoClasses();}
+  {
+    std::cout << "Create Object Factory" << std::endl;
+  }
 
   void declare(const std::string& className, Object::Constructor constructor)
   {
@@ -25,11 +28,16 @@ public:
     else if (constructors.find(className) != constructors.end())
       Object::error("Object::declare", "Class '" + className + "' is already declared.");
     else
+    {
+      std::cout << "Object::declare " << className << std::endl;
       constructors[className] = constructor;
+    }
   }
 
   Object* create(const std::string& className)
   {
+    if (!constructors.size())
+      declareLBCppCoreClasses();
     if (className.empty())
     {
       Object::error("Object::create", "Empty class name");
@@ -52,13 +60,17 @@ private:
   ObjectConstructorMap constructors;
 };
 
-static ObjectFactory objectFactory;
+inline ObjectFactory& getObjectFactoryInstance()
+{
+  static ObjectFactory instance;
+  return instance;
+}
 
 void Object::declare(const std::string& className, Constructor constructor)
-  {objectFactory.declare(className, constructor);}
+  {getObjectFactoryInstance().declare(className, constructor);}
 
 Object* Object::create(const std::string& className)
-  {return objectFactory.create(className);}
+  {return getObjectFactoryInstance().create(className);}
 
 ObjectPtr Object::loadFromStream(std::istream& istr)
 {

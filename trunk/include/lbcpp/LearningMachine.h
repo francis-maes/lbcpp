@@ -59,7 +59,7 @@ public:
   StringDictionaryPtr getLabels() const
     {assert(labels); return labels;}
   
-  void setLabels(StringDictionaryPtr labels)
+  virtual void setLabels(StringDictionaryPtr labels)
     {this->labels = labels;}
     
   /*
@@ -72,7 +72,16 @@ public:
   double evaluateWeightedAccuracy(ObjectStreamPtr examples) const;
   double evaluateWeightedAccuracy(ObjectContainerPtr examples) const
     {return evaluateWeightedAccuracy(examples->toStream());}
+
+  /*
+  ** Serialization
+  */
+  virtual void save(std::ostream& ostr) const
+    {write(ostr, labels);}
   
+  virtual bool load(std::istream& istr)
+    {return read(istr, labels);}
+    
 protected:
   StringDictionaryPtr labels;
 };
@@ -80,7 +89,7 @@ protected:
 class BinaryClassifier : public Classifier
 {
 public:
-  void setLabels(StringDictionaryPtr labels)
+  virtual void setLabels(StringDictionaryPtr labels)
     {this->labels = labels; outputsDictionary = new FeatureDictionary("BinaryClassifier outputs", labels, StringDictionaryPtr());}
   
   virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const = 0;

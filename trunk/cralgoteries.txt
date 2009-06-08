@@ -1,9 +1,3 @@
-ok test du ConsoleLogger
-
-* save des classifiers
-* constructeurs plus simple ˆ Žcrire
-* virer les anciens trucs de parsing
-
 
 LC++ library:
 =============

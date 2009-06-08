@@ -20,7 +20,9 @@ public:
   virtual std::string getContentClassName() const
     {return "Object";}
 
-  virtual bool isValid() const = 0;
+  virtual bool isValid() const
+    {return true;}
+    
   virtual ObjectPtr next() = 0;
   
   template<class T>
@@ -32,6 +34,7 @@ public:
 
   bool checkContentClassName(const std::string& expectedClassName);
   ObjectContainerPtr load(size_t maximumCount = 0);
+  bool iterate(size_t maximumCount = 0);
 };
 
 extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
