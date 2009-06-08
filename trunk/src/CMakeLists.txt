@@ -12,6 +12,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/Object.h
   ../include/lbcpp/ObjectPredeclarations.h
   ../include/lbcpp/ObjectStream.h
+  ../include/lbcpp/ObjectContainer.h
   ../include/lbcpp/RandomVariable.h
   ../include/lbcpp/FeatureDictionary.h
   ../include/lbcpp/FeatureGenerator.h
@@ -126,6 +127,7 @@ SET(LBCPP_CORE_SOURCES
   classes.cpp
   Object.cpp
   ObjectStream.cpp
+  ObjectContainer.cpp
   Utilities.cpp
   FeatureDictionary.cpp
   FeatureGenerator.cpp

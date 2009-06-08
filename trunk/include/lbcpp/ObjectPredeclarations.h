@@ -32,6 +32,12 @@ typedef ReferenceCountedObjectPtr<ObjectStream> ObjectStreamPtr;
 class LearningDataObjectParser;
 typedef ReferenceCountedObjectPtr<LearningDataObjectParser> LearningDataObjectParserPtr;
 
+// object containers
+class ObjectContainer;
+typedef ReferenceCountedObjectPtr<ObjectContainer> ObjectContainerPtr;
+class VectorObjectContainer;
+typedef ReferenceCountedObjectPtr<VectorObjectContainer> VectorObjectContainerPtr;
+
 // feature generators
 class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;

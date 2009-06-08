@@ -19,8 +19,9 @@ int main(int argc, char* argv[])
   ObjectStreamPtr parser = ObjectStream::createClassificationExamplesParser("../data/classification/small.train", features, labels);
   if (!parser)
     return 1;
-/*  ObjectContainerPtr trainingData = ObjectContainer::load(parser);
-  trainingData = trainingData->randomize();*/
+  ObjectContainerPtr trainingData = parser->load();
+  trainingData = trainingData->randomize();
+  std::cout << trainingData->size() << " training examples of class " << trainingData->getContentClassName() << std::endl;
   
   // Second Step: learning a classifier
   GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createLBFGS());

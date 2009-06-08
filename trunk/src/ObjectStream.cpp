@@ -158,6 +158,9 @@ public:
   ClassificationExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
     : LearningDataObjectParser(filename, features), labels(labels) {}
 
+  virtual std::string getContentClassName() const
+    {return "ClassificationExample";}
+
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {
     std::string label;
@@ -186,6 +189,9 @@ class RegressionExamplesParser : public LearningDataObjectParser
 public:
   RegressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
     : LearningDataObjectParser(filename, features) {}
+
+  virtual std::string getContentClassName() const
+    {return "RegressionExample";}
 
   virtual bool parseDataLine(const std::vector<std::string>& columns)
   {

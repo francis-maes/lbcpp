@@ -22,6 +22,8 @@ public:
 
   virtual ObjectPtr next() = 0;
 
+  ObjectContainerPtr load(size_t maximumCount = 0);
+
 public:
   static ObjectStreamPtr createClassificationExamplesParser(const std::string& filename,
                                   FeatureDictionaryPtr features, StringDictionaryPtr labels);

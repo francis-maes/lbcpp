@@ -14,6 +14,7 @@
 # include "Traits.h"
 # include "ContainerTraits.h"
 # include "Object.h"
+# include "ObjectContainer.h"
 # include "ObjectStream.h"
 
 # include "RandomVariable.h"
