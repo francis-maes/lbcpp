@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: TrainMaxentClassifierBatch.cpp | An example that illustrates     |
-| Author  : Francis Maes                   |   batch training of a classifier|
-| Started : 08/06/2009 14:52               |                                 |
+| Filename: TrainMaxentClassifierStoch..cpp| An example that illustrates     |
+| Author  : Francis Maes                   |   stochastic training of        |
+| Started : 08/06/2009 20:49               |     a classifier                |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -24,26 +24,23 @@ int main(int argc, char* argv[])
   if (!parser->isValid())
     return 1;
   ObjectContainerPtr trainingData = parser->load();
-  std::cout << "Labels: " << labels->toString() << std::endl;
   
   /*
-  ** Create a maximum-entropy classifier (training with LBFGS, 20 iterations max, L2 regularizer: 0.001)
+  ** Create a maximum-entropy classifier (training with stochastic descent, L2 regularizer: 1)
   */
-  ClassifierPtr classifier = maximumEntropyClassifier(batchLearner(lbfgsOptimizer(), 20), labels, 0.001);
+  GradientBasedLearnerPtr learner = stochasticDescentLearner(constantIterationFunction(10.0));
+  ClassifierPtr classifier = maximumEntropyClassifier(learner, labels, 1);
 
   /*
-  ** Perform batch training with LBFGS
+  ** Perform training for 5 iterations
   */
-  static const bool verbose = true;
-  if (verbose)
-    classifier->trainBatch(trainingData, &ProgressCallback::getConsoleProgressCallback());
-  else
-    classifier->trainBatch(trainingData);
-  
-  /*
-  ** Evaluate training accuracy
-  */
-  std::cout << "Training Accuracy: " << classifier->evaluateAccuracy(trainingData) * 100 << "%." << std::endl;
+  for (size_t i = 0; i < 5; ++i)
+  {
+    classifier->trainStochastic(trainingData);
+    std::cout << "Iteration " << (i+1)
+              << " Training Accuracy: " << classifier->evaluateAccuracy(trainingData) * 100 << "%."
+              << std::endl;
+  }
   
   /*
   ** Parse test data and evaluate testing accuracy in one pass

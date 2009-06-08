@@ -209,8 +209,7 @@ private:
 ObjectStreamPtr lbcpp::classificationExamplesParser(
           const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
 {
-  LearningDataObjectParserPtr res = new ClassificationExamplesParser(filename, features, labels);
-  return res->isValid() ? res : LearningDataObjectParserPtr();
+  return new ClassificationExamplesParser(filename, features, labels);
 }
 
 class RegressionExamplesParser : public LearningDataObjectParser
@@ -237,6 +236,5 @@ public:
 
 ObjectStreamPtr lbcpp::regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
 {
-  LearningDataObjectParserPtr res = new RegressionExamplesParser(filename, features);
-  return res->isValid() ? res : LearningDataObjectParserPtr();
+  return new RegressionExamplesParser(filename, features);
 }

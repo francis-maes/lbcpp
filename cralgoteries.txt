@@ -38,6 +38,9 @@ Policy:
  * TableLogger
  * policyRun inline
 
+LearningMachine:
+  * dans le StochasticDescentLearner, options pour la frequence de l'application du regularizer
+
 * Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe) dans ScalarToVectorArchitecture::compute
 
 

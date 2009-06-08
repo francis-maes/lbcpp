@@ -23,13 +23,13 @@ void testClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t nu
   for (size_t i = 0; i < 15; ++i)
   {
     classifier->trainStochastic(train);
-    double acc = classifier->evaluateAccuracy(test->toStream());
+    double acc = classifier->evaluateAccuracy(test);
     std::cout << "ITERATION " << i+1 << " accuracy = " << acc << std::endl;
   }
   DenseVectorPtr parameters = classifier->getParameters();
   std::cout << "Params: size = " << parameters->size() << " l2norm = " << parameters->l2norm() << " l1norm = " << parameters->l1norm() << std::endl;
-  std::cout << "TRAIN SCORE = " << classifier->evaluateAccuracy(train->toStream()) << std::endl;
-  std::cout << "TEST SCORE = " << classifier->evaluateAccuracy(test->toStream()) << std::endl;
+  std::cout << "TRAIN SCORE = " << classifier->evaluateAccuracy(train) << std::endl;
+  std::cout << "TEST SCORE = " << classifier->evaluateAccuracy(test) << std::endl;
 }
 
 void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses,

@@ -25,7 +25,7 @@ int testClassification(const std::string& filename)
     50);
   GradientBasedBinaryClassifierPtr classifier = linearSVMBinaryClassifier(learner, labels);
   
-    double acc = classifier->evaluateAccuracy(examples->toStream());
+    double acc = classifier->evaluateAccuracy(examples);
     std::cout << "Initial Accuracy: " << (100.0 * acc) << "%" << std::endl;
 
   for (int i = 0; i < 1; ++i)
@@ -39,7 +39,7 @@ int testClassification(const std::string& filename)
     
     classifier->trainBatch(examples, &ProgressCallback::getConsoleProgressCallback());
     //classifier->trainStochastic(examples);
-    double acc = classifier->evaluateAccuracy(examples->toStream());
+    double acc = classifier->evaluateAccuracy(examples);
     std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;
   }
   return 0; 
@@ -66,7 +66,7 @@ int testRegression(const std::string& filename)
               << " RegEmpRisk: " << regressor->computeRegularizedEmpiricalRisk(examples) << " ";
     regressor->trainStochastic(examples);
     
-    double err = regressor->evaluateMeanAbsoluteError(examples->toStream());
+    double err = regressor->evaluateMeanAbsoluteError(examples);
     std::cout << "Mean Abs Error: " << err << std::endl;
   }
   return 0;

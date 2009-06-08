@@ -112,11 +112,13 @@ class MaximumEntropyClassifier
   : public StaticToDynamicGradientBasedLearningMachine<MaximumEntropyClassifier, GradientBasedClassifier>
 {
 public:
-  MaximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+  MaximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
     : architecture_(labels)
   {
     setLearner(learner);
     setLabels(labels);
+    if (l2regularizer)
+      setL2Regularizer(l2regularizer);
   }
   
   virtual VectorArchitecturePtr getPredictionArchitecture() const
@@ -132,9 +134,9 @@ private:
   impl::MultiLinearArchitecture architecture_;
 };
 
-GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
 {
-  return new MaximumEntropyClassifier(learner, labels);
+  return new MaximumEntropyClassifier(learner, labels, l2regularizer);
 }
 
 /*

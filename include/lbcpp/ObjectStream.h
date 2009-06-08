@@ -20,6 +20,7 @@ public:
   virtual std::string getContentClassName() const
     {return "Object";}
 
+  virtual bool isValid() const = 0;
   virtual ObjectPtr next() = 0;
   
   template<class T>
@@ -45,7 +46,7 @@ public:
   TextObjectParser(std::istream* newInputStream);
   virtual ~TextObjectParser();
     
-  bool isValid() const
+  virtual bool isValid() const
     {return istr != NULL;}
     
   virtual void parseBegin()   {}
