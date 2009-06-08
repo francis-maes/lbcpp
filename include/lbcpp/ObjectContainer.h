@@ -15,7 +15,6 @@ namespace lbcpp
 {
 
 // -> reprend les fonctionalites de nieme::InstanceSet, voir la doc de InstanceSet
-
 class ObjectContainer : public Object
 {
 public:
@@ -25,8 +24,18 @@ public:
   virtual size_t size() const = 0;
   virtual ObjectPtr get(size_t index) const = 0;
   
+  template<class T>
+  inline ReferenceCountedObjectPtr<T> getCast(size_t index) const
+  {
+    ObjectPtr res = get(index);
+    return res ? res.staticCast<T>() : ReferenceCountedObjectPtr<T>();
+  }
+
   // Convert to a VectorObjectContainer (based on a 'std::vector<ObjectPtr>' container).
-  virtual VectorObjectContainerPtr toVectorContainer() const;
+  virtual VectorObjectContainerPtr toVector() const;
+  
+  // Convert to an Object Stream.
+  virtual ObjectStreamPtr toStream() const;
   
 public:
   // Creates a randomized version of a dataset.
@@ -54,6 +63,9 @@ public:
 class VectorObjectContainer : public ObjectContainer
 {
 public:
+  VectorObjectContainer(const std::vector<ObjectPtr>& objects, const std::string& contentClassName = "Object")
+    : objects(objects), contentClassName(contentClassName) {}
+    
   VectorObjectContainer(const std::string& contentClassName = "Object")
     : contentClassName(contentClassName) {}
     
@@ -66,7 +78,7 @@ public:
   virtual ObjectPtr get(size_t index) const
     {assert(index < objects.size()); return objects[index];}
 
-  virtual VectorObjectContainerPtr toVectorContainer() const
+  virtual VectorObjectContainerPtr toVector() const
     {return VectorObjectContainerPtr(const_cast<VectorObjectContainer* >(this));}
 
   void reserve(size_t size)

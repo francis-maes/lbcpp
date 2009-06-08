@@ -65,7 +65,7 @@ struct RankingExampleCreatorPolicy
     //std::cout << "COSTS => " << lbcpp::toString(costs) << std::endl;
     
     //std::cout << "ALTERNATIVES ===> " << std::endl << alternatives->toString() << std::endl;
-    ranker->trainStochasticExample(RankingExample(alternatives, costs));
+    ranker->trainStochasticExample(new RankingExample(alternatives, costs));
     return BaseClass::policyChoose(choose);
   }
 };

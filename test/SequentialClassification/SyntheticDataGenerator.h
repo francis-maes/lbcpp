@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class SyntheticLinearMultiClassGenerator
+class SyntheticLinearMultiClassGenerator : public ObjectStream
 {
 public:
   SyntheticLinearMultiClassGenerator(size_t numFeatures, size_t numClasses)
@@ -24,11 +24,14 @@ public:
       parameters[i] = sampleVectorGaussian(numFeatures);
   }
   
-  ClassificationExample sample() const
+  virtual std::string getContentClassName() const
+    {return "ClassificationExample";}
+
+  virtual ObjectPtr next()
   {
     DenseVectorPtr x = sampleVectorGaussian(numFeatures);
  //   std::cout << "BestScore: " << bestScore << " y = " << y << std::endl;
-    return ClassificationExample(x, getClass(x));
+    return new ClassificationExample(x, getClass(x));
   }
   
   size_t getClass(FeatureGeneratorPtr x) const
@@ -65,28 +68,36 @@ private:
   }
 };
 
-class SyntheticDataGenerator
+typedef ReferenceCountedObjectPtr<SyntheticLinearMultiClassGenerator> SyntheticLinearMultiClassGeneratorPtr;
+
+class SyntheticDataGenerator : public ObjectStream
 {
 public:
   SyntheticDataGenerator(size_t numFeaturesInBranch, size_t numFolds, size_t numFeaturesPerFold, size_t numClasses)
-    : branchGenerator(numFeaturesInBranch, numFolds), foldGenerators(numFolds, SyntheticLinearMultiClassGenerator(numFeaturesPerFold, numClasses))
-    {}
+    : branchGenerator(new SyntheticLinearMultiClassGenerator(numFeaturesInBranch, numFolds)), foldGenerators(numFolds)
+  {
+    for (size_t i = 0; i < foldGenerators.size(); ++i)
+      foldGenerators[i] = new SyntheticLinearMultiClassGenerator(numFeaturesPerFold, numClasses);
+  }
 
-  ClassificationExample sample() const
+  virtual std::string getContentClassName() const
+    {return "ClassificationExample";}
+
+  virtual ObjectPtr next()
   {
     DenseVectorPtr x = new DenseVector(getDictionary(), 0, 1 + foldGenerators.size());
-    ClassificationExample branch = branchGenerator.sample();
-    x->setSubVector(0, branch.getInput());
+    ClassificationExamplePtr branch = branchGenerator->next();
+    x->setSubVector(0, branch->getInput());
   //  std::cout << "BRANCH output: " << branch.getOutput() << std::endl;
     size_t y = 0;
     for (size_t i = 0; i < foldGenerators.size(); ++i)
     {
-      ClassificationExample fold = foldGenerators[i].sample();
-      x->setSubVector(i + 1, fold.getInput());
-      if (i == branch.getOutput())
-        y = fold.getOutput();
+      ClassificationExamplePtr fold = foldGenerators[i]->next();
+      x->setSubVector(i + 1, fold->getInput());
+      if (i == branch->getOutput())
+        y = fold->getOutput();
     }
-    return ClassificationExample(x, y);
+    return new ClassificationExample(x, y);
   }
 
   static FeatureDictionaryPtr getDictionary()
@@ -95,8 +106,8 @@ public:
     return dictionary;
   }
 
-  SyntheticLinearMultiClassGenerator branchGenerator;
-  std::vector<SyntheticLinearMultiClassGenerator> foldGenerators;
+  SyntheticLinearMultiClassGeneratorPtr branchGenerator;
+  std::vector<SyntheticLinearMultiClassGeneratorPtr> foldGenerators;
 };
 
 }; /* namespace lbcpp */

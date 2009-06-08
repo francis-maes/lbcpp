@@ -19,14 +19,16 @@ int main(int argc, char* argv[])
   ObjectStreamPtr parser = ObjectStream::createClassificationExamplesParser("../data/classification/small.train", features, labels);
   if (!parser)
     return 1;
-  ObjectContainerPtr trainingData = parser->load();
+  ObjectContainerPtr trainingData = parser->load(50);
   trainingData = trainingData->randomize();
   std::cout << trainingData->size() << " training examples of class " << trainingData->getContentClassName() << std::endl;
   
   // Second Step: learning a classifier
   GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(VectorOptimizer::createLBFGS());
   GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(learner, labels);
-//  classifier->trainBatch(trainingData);
+  classifier->trainBatch(trainingData);
+  
+  std::cout << "Training Accuracy: " << classifier->evaluateAccuracy(trainingData->toStream()) * 100 << "%." << std::endl;
   
   // Third Step: saving the classifier
   classifier->saveToFile("classifier.model"); 

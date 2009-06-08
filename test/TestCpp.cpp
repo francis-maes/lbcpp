@@ -3,16 +3,16 @@
 #include <fstream>
 using namespace lbcpp;
 
-int testClassification(std::istream& istr)
+int testClassification(const std::string& filename)
 {
   FeatureDictionaryPtr features = new FeatureDictionary("testcpp-features");
   StringDictionaryPtr labels = new StringDictionary();
-
-  std::vector<ClassificationExample> examples;
-  if (!parseClassificationExamples(istr, features, labels, examples))
+  ObjectStreamPtr parser = ObjectStream::createClassificationExamplesParser(filename, features, labels);
+  if (!parser)
     return 1;
+  ObjectContainerPtr examples = parser->load();
 
-  std::cout << examples.size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features, "<< toString(labels->getNumElements()) << " labels." << std::endl;
+  std::cout << examples->size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features, "<< toString(labels->getNumElements()) << " labels." << std::endl;
 
 /*  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
     GradientBasedLearner::createStochasticDescent(
@@ -25,7 +25,7 @@ int testClassification(std::istream& istr)
     50);
   GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
   
-    double acc = classifier->evaluateAccuracy(examples);
+    double acc = classifier->evaluateAccuracy(examples->toStream());
     std::cout << "Initial Accuracy: " << (100.0 * acc) << "%" << std::endl;
 
   for (int i = 0; i < 1; ++i)
@@ -39,20 +39,21 @@ int testClassification(std::istream& istr)
     
     classifier->trainBatch(examples, &ProgressCallback::getConsoleProgressCallback());
     //classifier->trainStochastic(examples);
-    double acc = classifier->evaluateAccuracy(examples);
+    double acc = classifier->evaluateAccuracy(examples->toStream());
     std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;
   }
   return 0; 
 }
 
-int testRegression(std::istream& istr)
+int testRegression(const std::string& filename)
 {
   FeatureDictionaryPtr features = new FeatureDictionary("regression-features");
-  std::vector<RegressionExample> examples;
-  if (!parseRegressionExamples(istr, features, examples))
+  ObjectStreamPtr parser = ObjectStream::createRegressionExamplesParser(filename, features);
+  if (!parser)
     return 1;
+  ObjectContainerPtr examples = parser->load();
 
-  std::cout << examples.size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features." << std::endl;
+  std::cout << examples->size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features." << std::endl;
 
   GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
       GradientBasedLearner::createStochasticDescent(
@@ -67,7 +68,7 @@ int testRegression(std::istream& istr)
               << " RegEmpRisk: " << regressor->computeRegularizedEmpiricalRisk(examples) << " ";
     regressor->trainStochastic(examples);
     
-    double err = regressor->evaluateMeanAbsoluteError(examples);
+    double err = regressor->evaluateMeanAbsoluteError(examples->toStream());
     std::cout << "Mean Abs Error: " << err << std::endl;
   }
   return 0;
@@ -80,13 +81,6 @@ int main(int argc, char* argv[])
 //  static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.test";
  // static const char* filename = "/Users/francis/Projets/Francis/data/sequences/NER-small.train";
 
-  std::ifstream istr(filename);
-  if (!istr.is_open())
-  {
-    std::cerr << "Could not open file " << filename << std::endl;
-    return 1;
-  }
-
 //  return testRegression(istr);
-  return testClassification(istr);
+  return testClassification(filename);
 }

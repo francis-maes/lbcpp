@@ -39,6 +39,9 @@ public:
 
 public:
   virtual FeatureDictionaryPtr getDictionary() const = 0;
+  
+  bool checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const;
+  
   virtual bool isDense() const
     {return false;}
   

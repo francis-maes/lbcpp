@@ -24,8 +24,6 @@ public:
   static GradientBasedLearnerPtr createNonLearner();
   
 public:
-  GradientBasedLearner() : meanInputSize(0.0) {}
-  
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
     
@@ -35,9 +33,6 @@ public:
   void setRegularizer(ScalarVectorFunctionPtr regularizer)
     {this->regularizer = regularizer;}
     
-  void setMeanInputSize(double meanInputSize)
-    {this->meanInputSize = meanInputSize;}
-
   virtual void trainStochasticBegin() {}
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight) = 0;
   virtual void trainStochasticExample(ScalarVectorFunctionPtr exampleLoss)
@@ -53,7 +48,6 @@ public:
 protected:
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;
-  double meanInputSize;
 };
 
 }; /* namespace lbcpp */

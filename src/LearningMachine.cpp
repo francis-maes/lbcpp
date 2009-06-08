@@ -7,28 +7,81 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/LearningMachine.h>
+#include <lbcpp/ObjectStream.h>
+#include <lbcpp/ObjectContainer.h>
 #include <cfloat>
 using namespace lbcpp;
 
-template<class BaseClass, class ExampleType>
+/*
+** LearningMachine
+*/
+void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallback* progress)
+{
+  trainStochasticBegin();
+  if (progress)
+    progress->progressStart("LearningMachine::trainStochastic");
+  size_t count = 0;
+  while (true)
+  {
+    ObjectPtr example = examples->next();
+    if (example)
+    {
+      trainStochasticExample(example);
+      ++count;
+      if (progress && (count % 50) == 0)
+        progress->progressStep("LearningMachine::trainStochastic", (double)count);
+    }
+    else
+      break;
+  }
+  if (progress)
+    progress->progressEnd();
+  trainStochasticEnd();
+}
+  
+void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallback* progress)
+{
+  trainStochasticBegin();
+  if (progress)
+    progress->progressStart("LearningMachine::trainStochastic");
+  for (size_t i = 0; i < examples->size(); ++i)
+  {
+    trainStochasticExample(examples->get(i));
+    if (progress && (i % 50) == 0)
+      progress->progressStep("LearningMachine::trainStochastic", (double)i, (double)examples->size());
+  }
+  if (progress)
+    progress->progressEnd();
+  trainStochasticEnd();
+}
+
+bool LearningMachine::trainBatch(ObjectStreamPtr examples, ProgressCallback* progress)
+{
+  return trainBatch(examples->load(), progress);
+}
+
+/*
+** VerboseLearningMachine
+*/
+template<class BaseClass>
 class VerboseLearningMachine : public BaseClass
 {
 public:
   VerboseLearningMachine(std::ostream& ostr) : ostr(ostr) {}
   
-  virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL)
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
   {
-    ostr << "trainBatch() with " << examples.size() << " examples:" << std::endl;
-    for (size_t i = 0; i < examples.size(); ++i)
-      ostr << "  " << i << ": " << examples[i] << std::endl;
+    ostr << "trainBatch() with " << examples->size() << " examples:" << std::endl;
+    for (size_t i = 0; i < examples->size(); ++i)
+      ostr << "  " << i << ": " << examples->get(i)->toString() << std::endl;
     return true;
   }
 
   virtual void trainStochasticBegin()
     {ostr << "trainStochasticBegin()" << std::endl;}
     
-  virtual void trainStochasticExample(const ExampleType& example)
-    {ostr << "trainStochasticExample(" << example << ")" << std::endl;}
+  virtual void trainStochasticExample(ObjectPtr example)
+    {ostr << "trainStochasticExample(" << example->toString() << ")" << std::endl;}
     
   virtual void trainStochasticEnd()
     {ostr << "trainStochasticEnd()" << std::endl;}
@@ -40,23 +93,31 @@ protected:
 /*
 ** Regression
 */
-double Regressor::evaluateMeanAbsoluteError(const std::vector<RegressionExample>& examples) const
+double Regressor::evaluateMeanAbsoluteError(ObjectStreamPtr examples) const
 {
-  assert(examples.size());
+  if (!examples->checkContentClassName("RegressionExample"))
+    return 0.0;
   double res = 0;
-  for (size_t i = 0; i < examples.size(); ++i)
+  size_t count = 0;
+  while (true)
   {
-    const RegressionExample& example = examples[i];
-    res += fabs(example.getOutput() - predict(example.getInput()));
+    RegressionExamplePtr example = examples->nextCast<RegressionExample>();
+    if (example)
+    {
+      ++count;
+      res += fabs(example->getOutput() - predict(example->getInput()));
+    }
+    else
+      break;
   }
-  return res / examples.size();
+  return count ? res / (double)count : 0.0;
 }
 
-class VerboseRegressor : public VerboseLearningMachine<Regressor, RegressionExample>
+class VerboseRegressor : public VerboseLearningMachine<Regressor>
 {
 public:
   VerboseRegressor(std::ostream& ostr)
-    : VerboseLearningMachine<Regressor, RegressionExample>(ostr) {}
+    : VerboseLearningMachine<Regressor>(ostr) {}
     
   virtual double predict(const FeatureGeneratorPtr input) const
   { 
@@ -98,29 +159,38 @@ size_t Classifier::sample(const FeatureGeneratorPtr input) const
   return Random::getInstance().sampleWithNormalizedProbabilities(probs->getValues());
 }
 
-double Classifier::evaluateAccuracy(const std::vector<ClassificationExample>& examples) const
+double Classifier::evaluateAccuracy(ObjectStreamPtr examples) const
 {
-  assert(examples.size());
+  if (!examples->checkContentClassName("ClassificationExample"))
+    return 0.0;
+
   size_t correct = 0;
-  for (size_t i = 0; i < examples.size(); ++i)
+  size_t count = 0;
+  while (true)
   {
-    const ClassificationExample& example = examples[i];
-    if (predict(example.getInput()) == example.getOutput())
+    ClassificationExamplePtr example = examples->nextCast<ClassificationExample>();
+    if (!example)
+      break;
+    ++count;
+    if (predict(example->getInput()) == example->getOutput())
       ++correct;
   }
-  return correct / (double)examples.size();
+  return correct / (double)count;
 }
 
-double Classifier::evaluateWeightedAccuracy(const std::vector<ClassificationExample>& examples) const
+double Classifier::evaluateWeightedAccuracy(ObjectStreamPtr examples) const
 {
-  assert(examples.size());
+  if (!examples->checkContentClassName("ClassificationExample"))
+    return 0.0;
   double correctWeight = 0.0, totalWeight = 0.0;
-  for (size_t i = 0; i < examples.size(); ++i)
+  while (true)
   {
-    const ClassificationExample& example = examples[i];
-    if (predict(example.getInput()) == example.getOutput())
-      correctWeight += example.getWeight();
-    totalWeight += example.getWeight();
+    ClassificationExamplePtr example = examples->nextCast<ClassificationExample>();
+    if (!example)
+      break;
+    totalWeight += example->getWeight();
+    if (predict(example->getInput()) == example->getOutput())
+      correctWeight += example->getWeight();
   }
   assert(totalWeight);
   return correctWeight / totalWeight;

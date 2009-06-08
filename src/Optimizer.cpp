@@ -124,6 +124,7 @@ VectorOptimizerPtr VectorOptimizer::createLBFGS()
 
 bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress)
 {
+  assert(params);
   this->function = function;
   setParameters(params);
   if (!initialize())

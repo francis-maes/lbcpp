@@ -57,7 +57,7 @@ struct QLearningPolicy
     double ycorrect = reward + discount * regressor->predict(nextActionDescription);
     double ypredicted = regressor->predict(lastActionDescription);
     predictionError->push(fabs(ycorrect - ypredicted));
-    regressor->trainStochasticExample(RegressionExample(lastActionDescription, ycorrect));
+    regressor->trainStochasticExample(new RegressionExample(lastActionDescription, ycorrect));
     
     lastActionDescription = nextActionDescription;
     return res;
@@ -67,7 +67,7 @@ struct QLearningPolicy
   {
     BaseClass::policyEnd(reward);
     if (lastActionDescription)
-      regressor->trainStochasticExample(RegressionExample(lastActionDescription, reward));
+      regressor->trainStochasticExample(new RegressionExample(lastActionDescription, reward));
     regressor->trainStochasticEnd();
   }
   

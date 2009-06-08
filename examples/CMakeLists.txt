@@ -5,4 +5,4 @@ MACRO(ADD_CPP_EXAMPLE NAME FILE)
   TARGET_LINK_LIBRARIES(${NAME} lbcpp-core)
 ENDMACRO(ADD_CPP_EXAMPLE)
 
-ADD_CPP_EXAMPLE(LearningMachine-BasicOperations LearningMachine/BasicOperations.cpp)
+ADD_CPP_EXAMPLE(LearningMachine-TrainMaxentClassifierBatch LearningMachine/TrainMaxentClassifierBatch.cpp)

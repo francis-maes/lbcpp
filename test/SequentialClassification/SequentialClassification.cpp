@@ -11,7 +11,7 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-void testClassifier(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
+void testClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
 {
   StringDictionaryPtr classes = new StringDictionary();
   for (size_t i = 0; i < numClasses; ++i)
@@ -24,24 +24,24 @@ void testClassifier(const std::vector<ClassificationExample>& train, const std::
   for (size_t i = 0; i < 15; ++i)
   {
     classifier->trainStochastic(train);
-    double acc = classifier->evaluateAccuracy(test);
+    double acc = classifier->evaluateAccuracy(test->toStream());
     std::cout << "ITERATION " << i+1 << " accuracy = " << acc << std::endl;
   }
   DenseVectorPtr parameters = classifier->getParameters();
   std::cout << "Params: size = " << parameters->size() << " l2norm = " << parameters->l2norm() << " l1norm = " << parameters->l1norm() << std::endl;
-  std::cout << "TRAIN SCORE = " << classifier->evaluateAccuracy(train) << std::endl;
-  std::cout << "TEST SCORE = " << classifier->evaluateAccuracy(test) << std::endl;
+  std::cout << "TRAIN SCORE = " << classifier->evaluateAccuracy(train->toStream()) << std::endl;
+  std::cout << "TEST SCORE = " << classifier->evaluateAccuracy(test->toStream()) << std::endl;
 }
 
-void trainAndTest(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses,
+void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses,
       PolicyPtr learnedPolicy, PolicyPtr learnerPolicy, DenseVectorPtr parameters = DenseVectorPtr(), PolicyPtr learnerPolicy2 = PolicyPtr())
 {
   for (size_t iteration = 0; iteration < 100; ++iteration)
   {
     PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(4);
-    for (size_t i = 0; i < train.size(); ++i)
+    for (size_t i = 0; i < train->size(); ++i)
     {
-      ClassificationExample ex = train[Random::getInstance().sampleSize(train.size())];
+      ClassificationExample ex = *train->getCast<ClassificationExample>(Random::getInstance().sampleSize(train->size()));
   //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
@@ -54,9 +54,9 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
     }
     
     size_t correct = 0;
-    for (size_t i = 0; i < test.size(); ++i)
+    for (size_t i = 0; i < test->size(); ++i)
     {
-      ClassificationExample ex = test[i];
+      ClassificationExample ex = *test->getCast<ClassificationExample>(i);
   //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
@@ -76,7 +76,7 @@ void trainAndTest(const std::vector<ClassificationExample>& train, const std::ve
   }
 }
 
-void testMonteCarloControl(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses)
+void testMonteCarloControl(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
 {
   IterationFunctionPtr learningRate = IterationFunction::createConstant(0.001);
   IterationFunctionPtr epsilon = IterationFunction::createConstant(0.01);
@@ -93,7 +93,7 @@ void testMonteCarloControl(const std::vector<ClassificationExample>& train, cons
 }
 
 
-void testCRank(const std::vector<ClassificationExample>& train, const std::vector<ClassificationExample>& test, size_t numClasses,
+void testCRank(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses,
               PolicyPtr exploration = PolicyPtr(), ActionValueFunctionPtr supervision = ActionValueFunctionPtr())
 {
   IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 10000);
@@ -129,17 +129,17 @@ public:
      return Variable::create(std::pair<bool, size_t>(false, 0)); // first step: request the first features
    else if (step == 1)
    {
-     size_t goodFeatures = generator.branchGenerator.getClass(currentRepresentation[0]);
+     size_t goodFeatures = generator.branchGenerator->getClass(currentRepresentation[0]);
      return Variable::create(std::pair<bool, size_t>(false, goodFeatures + 1));
    }
    else
    {
      assert(step == 2);
-     size_t goodFeatures = generator.branchGenerator.getClass(currentRepresentation[0]);
-//     size_t goodFeaturesIndex = generator.branchGenerator.getClass(currentRepresentation[0]);
+     size_t goodFeatures = generator.branchGenerator->getClass(currentRepresentation[0]);
+//     size_t goodFeaturesIndex = generator.branchGenerator->getClass(currentRepresentation[0]);
      SparseVectorPtr features = currentRepresentation[1];
 //     assert(goodFeatures);
-     return Variable::create(std::pair<bool, size_t>(true, generator.foldGenerators[goodFeatures].getClass(features)));
+     return Variable::create(std::pair<bool, size_t>(true, generator.foldGenerators[goodFeatures]->getClass(features)));
    }
  }
 
@@ -171,23 +171,23 @@ void runPolicy(const std::vector<CRAlgorithmPtr>& crAlgorithms, PolicyPtr policy
 //  std::cout << policy->toString() << std::endl;
 }
 
-void convertExamplesToCRAlgorithms(const std::vector<ClassificationExample>& examples, size_t numClasses, std::vector<CRAlgorithmPtr>& res)
+void convertExamplesToCRAlgorithms(ObjectContainerPtr examples, size_t numClasses, std::vector<CRAlgorithmPtr>& res)
 {
   res.clear();
-  res.resize(examples.size());
-  for (size_t i = 0; i < examples.size(); ++i)
+  res.resize(examples->size());
+  for (size_t i = 0; i < examples->size(); ++i)
   {
-    ClassificationExample ex = examples[Random::getInstance().sampleSize(examples.size())];
+    ClassificationExamplePtr ex = examples->getCast<ClassificationExample>(Random::getInstance().sampleSize(examples->size()));
 //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
     std::vector<FeatureGeneratorPtr> x;
 //      x.push_back(input);
-    SparseVectorPtr input = ex.getInput()->toSparseVector();
+    SparseVectorPtr input = ex->getInput()->toSparseVector();
     if (input->getNumSubVectors())
       for (size_t j = 0; j < input->getNumSubVectors(); ++j)
         x.push_back(input->getSubVector(j));
     else
       x.push_back(input);
-    size_t y = ex.getOutput();
+    size_t y = ex->getOutput();
     res[i] = sequentialClassification(x, 0, numClasses, y);
   }
 }
@@ -357,15 +357,13 @@ int main(int argc, char* argv[])
   static const size_t numFolds = 10;
   static const size_t numClasses = 3;
   static const size_t numFeatures = 4;
-  SyntheticDataGenerator generator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
- 
+  ObjectStreamPtr generator = new SyntheticDataGenerator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
+  ObjectContainerPtr train = generator->load(50000);
+  ObjectContainerPtr test = generator->load(1000);
+  
 //  SyntheticLinearMultiClassGenerator generator(numFeatures, numClasses);
   
-  std::vector<ClassificationExample> train(50000), test(1000);
-  
-  for (size_t i = 0; i < train.size(); ++i)
-    train[i] = generator.sample();
-  std::vector<double> classFrequencies(numClasses, 0.0);
+/*  std::vector<double> classFrequencies(numClasses, 0.0);
   for (size_t i = 0; i < test.size(); ++i)
   {
     test[i] = generator.sample();
@@ -375,7 +373,7 @@ int main(int argc, char* argv[])
   for (size_t i = 0; i < classFrequencies.size(); ++i)
     classFrequencies[i] /= (double)test.size();
   std::cout << "Normalized Test Class Frequencies: " << lbcpp::toString(classFrequencies) << std::endl;
-  
+  */
   testClassifier(train, test, numClasses);  
   
   std::vector<CRAlgorithmPtr> crTrain, crTest;

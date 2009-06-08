@@ -45,7 +45,7 @@ template <class T>
 struct ReferenceCountedObjectPtr
 {
   template<class O>
-  ReferenceCountedObjectPtr(const ReferenceCountedObjectPtr<O>& other) : ptr((T* )other.get())
+  ReferenceCountedObjectPtr(const ReferenceCountedObjectPtr<O>& other) : ptr(static_cast<T* >(other.get()))
     {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
 
   ReferenceCountedObjectPtr(const ReferenceCountedObjectPtr<T>& other) : ptr(other.get())
@@ -105,6 +105,17 @@ struct ReferenceCountedObjectPtr
       O* res = dynamic_cast<O* >(ptr);
       if (res)
         return ReferenceCountedObjectPtr<O>(res);
+    }
+    return ReferenceCountedObjectPtr<O>();
+  }
+  
+  template<class O>
+  inline ReferenceCountedObjectPtr<O> staticCast() const
+  {
+    if (ptr)
+    {
+      assert(dynamic_cast<O* >(ptr));
+      return ReferenceCountedObjectPtr<O>(static_cast<O* >(ptr));
     }
     return ReferenceCountedObjectPtr<O>();
   }

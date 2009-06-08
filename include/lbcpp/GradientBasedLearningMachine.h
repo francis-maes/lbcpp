@@ -12,6 +12,7 @@
 # include "LearningMachine.h"
 # include "GradientBasedLearner.h"
 # include "RandomVariable.h"
+# include "ObjectContainer.h"
 
 namespace lbcpp
 {
@@ -24,11 +25,12 @@ public:
     {}
     
   typedef ExampleType_ ExampleType;
+  typedef ReferenceCountedObjectPtr<ExampleType> ExampleTypePtr;
 
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
-  virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const = 0;
-  virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
-  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const = 0;
+  virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const = 0;
+  virtual ScalarVectorFunctionPtr getEmpiricalRisk(ObjectContainerPtr examples) const = 0;
+  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(ObjectContainerPtr examples) const = 0;
 
   /*
   ** LearningMachine
@@ -50,35 +52,27 @@ public:
     learner->trainStochasticExample(gradient, weight);
   }
 
-  virtual void trainStochasticExample(const ExampleType& example)
+  virtual void trainStochasticExample(ObjectPtr example)
   {
     assert(learner);
     if (!parameters)
-      learner->setParameters(parameters = createInitialParameters(example.getInput()->getDictionary(), initializeParametersRandomly));
-    inputSize.push((double)(example.getInput()->l0norm()));
-    learner->setMeanInputSize(inputSize.getMean());
+      learner->setParameters(parameters = createInitialParameters(example.staticCast<ExampleType>()->getInput()->getDictionary(), initializeParametersRandomly));
     learner->trainStochasticExample(getLoss(example));
   }
   
   virtual void trainStochasticEnd()
     {assert(learner); learner->trainStochasticEnd();}
   
-  virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL)
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
   {
-    assert(learner && examples.size());
-
+    assert(learner && examples->size());
     if (!parameters)
-      parameters = createInitialParameters(examples[0].getInput()->getDictionary(), initializeParametersRandomly);
-
-    // sample mean input size
-    for (size_t i = 0; i < 20; ++i)
-      inputSize.push((double)(examples[Random::getInstance().sampleSize(examples.size())].getInput()->l0norm()));
+      parameters = createInitialParameters(examples->getCast<ExampleType>(0)->getInput()->getDictionary(), initializeParametersRandomly);
 
     // delegate to learner
-    learner->setMeanInputSize(inputSize.getMean());
     learner->setParameters(parameters);
     learner->setRegularizer(getRegularizer());
-    if (!learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples.size(), progress))
+    if (!learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples->size(), progress))
       return false;
     parameters = learner->getParameters();
     return true;
@@ -123,27 +117,22 @@ public:
   void setLearner(GradientBasedLearnerPtr learner)
     {this->learner = learner;}
 
-  void pushInputSize(double inputSize)
-    {this->inputSize.push(inputSize);}
-
-
   /*
   ** Shortcuts for functions computation
   */
   double computeRegularizer() const
     {assert(parameters); return regularizer ? regularizer->compute(parameters) : 0.0;}
 
-  double computeEmpiricalRisk(const std::vector<ExampleType>& examples) const
+  double computeEmpiricalRisk(ObjectContainerPtr examples) const
     {assert(parameters); return getEmpiricalRisk(examples)->compute(parameters);}
   
-  double computeRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
+  double computeRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
     {assert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
   
 protected:
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;
   GradientBasedLearnerPtr learner;
-  ScalarRandomVariableMean inputSize;
   bool initializeParametersRandomly;
 };
 

@@ -57,7 +57,7 @@ struct MonteCarloControlPolicy
       SparseVectorPtr features = actionFeatures[i];
       double prediction = regressor->predict(features);
       predictionError->push(fabs(prediction - R));
-      regressor->trainStochasticExample(RegressionExample(features, R));
+      regressor->trainStochasticExample(new RegressionExample(features, R));
     }
     regressor->trainStochasticEnd();
   }

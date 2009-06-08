@@ -19,24 +19,34 @@
 using namespace lbcpp;
 
 /*
+** FeatureGenerator
+*/
+bool FeatureGenerator::checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const
+{
+  FeatureDictionaryPtr dictionary = getDictionary();
+  if (dictionary != otherDictionary)
+  {
+    Object::error("FeatureGenerator::checkDictionaryEquals", 
+                  "Dictionary mismatch. This dictionary = '" + dictionary->getName() + "', " + 
+                  "required dictionary = '" + otherDictionary->getName() + "'");
+    assert(false);
+    return false;
+  }
+  return true;
+}  
+
+/*
 ** EditableFeatureGenerator
 */
 void EditableFeatureGenerator::setDictionary(FeatureDictionaryPtr dictionary)
   {this->dictionary = dictionary;}
-  
+
 void EditableFeatureGenerator::ensureDictionary(FeatureDictionaryPtr dictionary)
 {
   if (!dictionary)
     return;
   if (this->dictionary)
-  {
-    if (this->dictionary != dictionary)
-    {
-      std::cerr << "Error: dictionary mismatch. This dictionary = '" << this->dictionary->getName() << "', "
-                   "required dictionary = '" << dictionary->getName() << "'" << std::endl;
-      assert(false);
-    }
-  }
+    checkDictionaryEquals(dictionary);
   else
     this->dictionary = dictionary;
 }

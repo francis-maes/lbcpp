@@ -133,7 +133,7 @@ private:
       classifier->createParameters(actionsFeatures->getSubGenerator(0)->getDictionary(), false);
     
     // -(log p[y|x])
-    ScalarVectorFunctionPtr loss = classifier->getLoss(GeneralizedClassificationExample(actionsFeatures, selectedAction));
+    ScalarVectorFunctionPtr loss = classifier->getLoss(new GeneralizedClassificationExample(actionsFeatures, selectedAction));
     
     // -gradient(p[y|x], parameters) / p[y|x]
     FeatureGeneratorPtr gradient = loss->computeGradient(classifier->getParameters());
@@ -141,9 +141,6 @@ private:
 /*    std::cout << "GRADIENT norm: " << std::endl << gradient->l2norm() << std::endl;
     std::cout << "TRACE norm: " << std::endl << trace->l2norm() << std::endl;
     std::cout << "PARAMS norm: " << std::endl << classifier->getParameters()->l2norm() << std::endl;*/
-    FeatureGeneratorPtr anInput = actionsFeatures->getSubGenerator(Random::getInstance().sampleSize(actionsFeatures->getNumSubGenerators()));
-    classifier->pushInputSize((double)anInput->l0norm());
-
     // trace <- trace * beta + gradient(p[y|x], parameters) / p[y|x]
     
     if (beta)

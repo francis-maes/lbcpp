@@ -16,29 +16,28 @@
 namespace lbcpp
 {
 
-class LearningMachine : public Object {};
-typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
-
-template<class ExampleType>
-class LearningMachine_ : public LearningMachine
+class LearningMachine : public Object
 {
 public:
-  virtual bool trainBatch(const std::vector<ExampleType>& examples, ProgressCallback* progress = NULL) = 0;
-
-  virtual void trainStochastic(const std::vector<ExampleType>& examples)
-  {
-    trainStochasticBegin();
-    for (size_t i = 0; i < examples.size(); ++i)
-      trainStochasticExample(examples[i]);
-    trainStochasticEnd();
-  }
+  /*
+  ** Stochastic training
+  */
+  virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallback* progress = NULL);  
+  virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallback* progress = NULL);
 
   virtual void trainStochasticBegin() = 0;
-  virtual void trainStochasticExample(const ExampleType& example) = 0;
+  virtual void trainStochasticExample(ObjectPtr example) = 0;
   virtual void trainStochasticEnd() = 0;
+  
+  /*
+  ** Batch training
+  */
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL) = 0;  
+  virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallback* progress = NULL);
 };
+typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 
-class Classifier : public LearningMachine_<ClassificationExample>
+class Classifier : public LearningMachine
 {
 public:
   Classifier() : labels(NULL) {}
@@ -51,7 +50,6 @@ public:
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
   virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
   virtual size_t sample(const FeatureGeneratorPtr input) const;
-
   
   /*
   ** Labels
@@ -63,22 +61,24 @@ public:
     {assert(labels); return labels;}
   
   void setLabels(StringDictionaryPtr labels)
-    {this->labels = labels; outputsDictionary = new FeatureDictionary("Classifier output", labels, StringDictionaryPtr());}
+    {this->labels = labels;}
     
   /*
   ** Evaluation
   */
-  double evaluateAccuracy(const std::vector<ClassificationExample>& examples) const;
-  double evaluateWeightedAccuracy(const std::vector<ClassificationExample>& examples) const;
+  double evaluateAccuracy(ObjectStreamPtr examples) const;
+  double evaluateWeightedAccuracy(ObjectStreamPtr examples) const;
   
 protected:
   StringDictionaryPtr labels;
-  FeatureDictionaryPtr outputsDictionary;
 };
 
 class BinaryClassifier : public Classifier
 {
 public:
+  void setLabels(StringDictionaryPtr labels)
+    {this->labels = labels; outputsDictionary = new FeatureDictionary("BinaryClassifier outputs", labels, StringDictionaryPtr());}
+  
   virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const = 0;
 
   virtual double scoreToProbability(double score) const
@@ -89,10 +89,13 @@ public:
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const;
   virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
   virtual size_t sample(const FeatureGeneratorPtr input) const;
+
+private:
+  FeatureDictionaryPtr outputsDictionary;
 };
 
 
-class GeneralizedClassifier : public LearningMachine_<GeneralizedClassificationExample>
+class GeneralizedClassifier : public LearningMachine
 {
 public:
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
@@ -103,17 +106,17 @@ public:
   virtual size_t sample(const FeatureGeneratorPtr compositeInput) const;
 };
 
-class Regressor : public LearningMachine_<RegressionExample>
+class Regressor : public LearningMachine
 {
 public:
   static RegressorPtr createVerbose(std::ostream& ostr);
 
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
   
-  double evaluateMeanAbsoluteError(const std::vector<RegressionExample>& examples) const;
+  double evaluateMeanAbsoluteError(ObjectStreamPtr examples) const;
 };
 
-class Ranker : public LearningMachine_<RankingExample>
+class Ranker : public LearningMachine
 {
 public:
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
