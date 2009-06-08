@@ -52,14 +52,14 @@ private:
   std::vector<FeatureGeneratorPtr> x;
   std::vector<size_t> y;
 };
+typedef ReferenceCountedObjectPtr<SequenceExample> SequenceExamplePtr;
 
-class SequenceExamplesParser : public LearningExamplesParser
+class SequenceExamplesParser : public LearningDataObjectParser
 {
 public:
-  SequenceExamplesParser(std::vector<SequenceExample>& target, StringDictionaryPtr labels)
-    : target(target), labels(labels) {}
+  SequenceExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+    : LearningDataObjectParser(filename, features), labels(labels) {}
     
-  std::vector<SequenceExample>& target;
   StringDictionaryPtr labels;
 
   virtual void parseBegin()
@@ -72,7 +72,7 @@ public:
   {
     assert(columns.size());
     std::string label;
-    if (!TextFileParser::parse(columns[0], label))
+    if (!TextObjectParser::parse(columns[0], label))
       return false;
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))
@@ -86,7 +86,7 @@ public:
   {
     if (currentContent.size())
     {
-      target.push_back(SequenceExample(currentContent, currentLabels));
+      setResult(new SequenceExample(currentContent, currentLabels));
       currentContent.clear();
       currentLabels.clear();
     }
@@ -102,17 +102,17 @@ private:
 
 using namespace lbcpp;
 
-void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, size_t numLabels)
+void runPolicy(PolicyPtr policy, ObjectContainerPtr examples, size_t numLabels)
 {
-  for (size_t i = 0; i < examples.size(); ++i)
+  for (size_t i = 0; i < examples->size(); ++i)
   {
-    const SequenceExample& sequence = examples[i];
-    simplestSequenceLabeling(policy, sequence.getContent(), numLabels, &sequence.getLabels());
+    SequenceExamplePtr sequence = examples->getCast<SequenceExample>(i);
+    simplestSequenceLabeling(policy, sequence->getContent(), numLabels, &sequence->getLabels());
   }
   std::cout << "==> " << policy->toString() << std::endl;
 }
 
-void testClassifier(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
+void testClassifier(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
 
@@ -134,7 +134,7 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, String
   }
 }
 
-void testCRank(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
+void testCRank(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = invLinearIterationFunction(10, 10000);
 
@@ -153,7 +153,7 @@ void testCRank(const std::vector<SequenceExample>& learningExamples, StringDicti
   }
 }
 
-void testSarsa(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
+void testSarsa(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = constantIterationFunction(0.01);
   IterationFunctionPtr epsilon = constantIterationFunction(0.1);
@@ -192,7 +192,7 @@ crAlgorithm void testTrivial()
     reward (1.0);
 }*/
 
-void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
+void testOLPOMDP(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = invLinearIterationFunction(0.1, 10000);
 
@@ -218,21 +218,11 @@ int main(int argc, char* argv[])
   static const char* filename = 
     "/Users/francis/Projets/Francis/NiemeTrunk/src/problems/sequences/experiments/test.smousse";
 
-  std::ifstream istr(filename);
-  if (!istr.is_open())
-  {
-    std::cerr << "Could not open file " << filename << std::endl;
-    return 1;
-  }
-
-  
   FeatureDictionaryPtr features = new FeatureDictionary("myFeatures");
   StringDictionaryPtr labels = new StringDictionary();
 
-  std::vector<SequenceExample> learningExamples;
-  SequenceExamplesParser parser(learningExamples, labels);
-  parser.parse(istr, features);
-  std::cout << learningExamples.size() << " sequences, " << labels->getNumElements()
+  ObjectContainerPtr learningExamples = (new SequenceExamplesParser(filename, features, labels))->load();
+  std::cout << learningExamples->size() << " sequences, " << labels->getNumElements()
     << " labels, " << features->getNumFeatures() << " features." << std::endl;
 
   

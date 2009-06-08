@@ -78,10 +78,13 @@ protected:
 };
 
 template<class Type>
-struct ObjectConstructor_
-  {static Object* construct() {return new Type();} };
-#define DECLARE_LBCPP_CLASS(Name) \
-  lbcpp::Object::declare(lbcpp::toString(typeid(Name)), lbcpp::ObjectConstructor_<Name>::construct)
+struct ClassDeclarator
+{
+  ClassDeclarator()           {Object::declare(toString(typeid(Type)), construct);}
+  static Object* construct()  {return new Type();}
+};
+
+#define LBCPP_DECLARE_CLASS(Name) lbcpp::ClassDeclarator<Name> __##Name##decl__
 
 template<class T>
 struct ObjectPtrTraits

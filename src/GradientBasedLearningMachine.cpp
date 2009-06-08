@@ -112,14 +112,8 @@ class MaximumEntropyClassifier
   : public StaticToDynamicGradientBasedLearningMachine<MaximumEntropyClassifier, GradientBasedClassifier>
 {
 public:
-  MaximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
-    : architecture_(labels)
-  {
-    setLearner(learner);
-    setLabels(labels);
-    if (l2regularizer)
-      setL2Regularizer(l2regularizer);
-  }
+  virtual void setLabels(StringDictionaryPtr labels)
+    {architecture_.setOutputs(labels);}
   
   virtual VectorArchitecturePtr getPredictionArchitecture() const
     {return impl::staticToDynamic(architecture());}
@@ -136,7 +130,12 @@ private:
 
 GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
 {
-  return new MaximumEntropyClassifier(learner, labels, l2regularizer);
+  GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
+  res->setLearner(learner);
+  res->setLabels(labels);
+  if (l2regularizer)
+    res->setL2Regularizer(l2regularizer);
+  return res;
 }
 
 /*
@@ -251,4 +250,16 @@ GradientBasedRankerPtr lbcpp::largeMarginMostViolatedPairLinearRanker(GradientBa
   GradientBasedRankerPtr res = new LargeMarginMostViolatedPairLinearRanker();
   res->setLearner(learner);
   return res;
+}
+
+void declareGradientBasedLearningMachines()
+{
+  LBCPP_DECLARE_CLASS(LeastSquaresLinearRegressor);
+  LBCPP_DECLARE_CLASS(MaximumEntropyClassifier);
+  LBCPP_DECLARE_CLASS(LogisticRegressionClassifier);
+  LBCPP_DECLARE_CLASS(LinearSupportVectorMachine);
+  LBCPP_DECLARE_CLASS(LinearGeneralizedClassifier);
+  LBCPP_DECLARE_CLASS(LargeMarginAllPairsLinearRanker);
+  LBCPP_DECLARE_CLASS(LargeMarginBestAgainstAllLinearRanker);
+  LBCPP_DECLARE_CLASS(LargeMarginMostViolatedPairLinearRanker);
 }

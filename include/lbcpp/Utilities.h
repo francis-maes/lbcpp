@@ -56,44 +56,6 @@ public:
     {}
 };
 
-class TextFileParser
-{
-public:
-  virtual ~TextFileParser() {}
-
-  virtual void parseBegin()
-    {}
-  virtual bool parseEmptyLine()
-    {return true;}
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
-    {return false;}
-  virtual bool parseCommentLine(const std::string& comment)
-    {return true;}
-  virtual bool parseEnd()
-    {return parseEmptyLine();}
-  
-  bool parseLine(const std::string& line);
-  bool parseStream(std::istream& istr);
-  bool parseFile(const std::string& filename);
-  
-protected:
-  void breakParsing()
-    {parsingBreaked = true;}
-  
-  static void tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators = " \t");
-  
-  template<class T>
-  static bool parse(std::istream& istr, T& res)
-    {return !(istr >> res).fail();}
-
-  template<class T>
-  static bool parse(const std::string& str, T& res)
-    {std::istringstream istr(str); return parse(istr, res);}
-    
-private:
-  bool parsingBreaked;
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_UTILITIES_H_

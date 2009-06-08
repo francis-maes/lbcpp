@@ -134,6 +134,7 @@ public:
   */
   virtual void save(std::ostream& ostr) const
   {
+    BaseClass::save(ostr);
     write(ostr, parameters);
     write(ostr, regularizer);
     write(ostr, learner);
@@ -141,7 +142,11 @@ public:
   }
   
   virtual bool load(std::istream& istr)
-    {return read(istr, parameters) && read(istr, regularizer) && read(istr, learner) && read(istr, initializeParametersRandomly);}
+  {
+    return BaseClass::load(istr) &&
+      read(istr, parameters) && read(istr, regularizer) &&
+      read(istr, learner) && read(istr, initializeParametersRandomly);
+  }
     
 protected:
   DenseVectorPtr parameters;

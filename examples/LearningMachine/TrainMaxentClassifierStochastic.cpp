@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   */
   for (size_t i = 0; i < 5; ++i)
   {
-    classifier->trainStochastic(trainingData);
+    classifier->trainStochastic(trainingData->randomize());
     std::cout << "Iteration " << (i+1)
               << " Training Accuracy: " << classifier->evaluateAccuracy(trainingData) * 100 << "%."
               << std::endl;

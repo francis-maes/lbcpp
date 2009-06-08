@@ -1,26 +1,24 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: classes.cpp                    | The list of serializable classes|
-| Author  : Francis Maes                   |  objects                        |
+| Filename: classes.cpp                    | Declaration of serializable     |
+| Author  : Francis Maes                   |   classes                       |
 | Started : 06/03/2009 19:21               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/SparseVector.h>
-#include <lbcpp/DenseVector.h>
-#include <lbcpp/ContinuousFunction.h>
+#include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-//class PerceptronLoss : public StaticToDynamicScalarFunction<impl::PerceptronLoss> {};
-//class HingeLoss : public StaticToDynamicScalarFunction<impl::HingeLoss> {};
-//class ExponentialLoss : public StaticToDynamicScalarFunction<impl::ExponentialLoss> {};
-//class LinearArchitecture : public StaticToDynamicScalarArchitecture<impl::LinearArchitecture> {};
+extern void declareGradientBasedLearningMachines();
 
-void declareStandardCRAlgoClasses()
+void declareFeatureGenerators()
 {
-  DECLARE_LBCPP_CLASS(SparseVector);
-  DECLARE_LBCPP_CLASS(DenseVector);
+  LBCPP_DECLARE_CLASS(SparseVector);
+  LBCPP_DECLARE_CLASS(DenseVector);
+}
 
-//  DECLARE_LBCPP_CLASS(PerceptronLoss);
-//  DECLARE_LBCPP_CLASS(HingeLoss);
+void declareLBCppCoreClasses()
+{
+  declareGradientBasedLearningMachines();
+  declareFeatureGenerators();
 }
