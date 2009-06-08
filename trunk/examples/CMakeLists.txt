@@ -6,3 +6,5 @@ MACRO(ADD_CPP_EXAMPLE NAME FILE)
 ENDMACRO(ADD_CPP_EXAMPLE)
 
 ADD_CPP_EXAMPLE(LearningMachine-TrainMaxentClassifierBatch LearningMachine/TrainMaxentClassifierBatch.cpp)
+ADD_CPP_EXAMPLE(LearningMachine-TrainMaxentClassifierStochastic LearningMachine/TrainMaxentClassifierStochastic.cpp)
+ADD_CPP_EXAMPLE(LearningMachine-TrainMaxentClassifierOnline LearningMachine/TrainMaxentClassifierOnline.cpp)

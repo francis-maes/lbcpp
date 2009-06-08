@@ -25,6 +25,9 @@ public:
   ObjectContainerStream(ObjectContainerPtr container)
     : container(container), position(0) {}
     
+  virtual bool isValid() const
+    {return true;}
+
   virtual std::string getContentClassName() const
     {return container->getContentClassName();}
 

@@ -10,6 +10,7 @@
 # define LBCPP_CORE_IMPL_POLICY_BASIC_POLICIES_H_
 
 # include "PolicyStatic.hpp"
+# include "../../IterationFunction.h"
 
 namespace lbcpp {
 namespace impl {

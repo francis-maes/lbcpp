@@ -10,8 +10,7 @@
 # define LBCPP_LEARNING_MACHINE_H_
 
 # include "ContinuousFunction.h"
-
-# include "GradientBasedLearner.h" // only for GradientBasedMachines
+# include "ObjectContainer.h"
 
 namespace lbcpp
 {
@@ -67,7 +66,12 @@ public:
   ** Evaluation
   */
   double evaluateAccuracy(ObjectStreamPtr examples) const;
+  double evaluateAccuracy(ObjectContainerPtr examples) const
+    {return evaluateAccuracy(examples->toStream());}
+
   double evaluateWeightedAccuracy(ObjectStreamPtr examples) const;
+  double evaluateWeightedAccuracy(ObjectContainerPtr examples) const
+    {return evaluateWeightedAccuracy(examples->toStream());}
   
 protected:
   StringDictionaryPtr labels;
@@ -112,6 +116,8 @@ public:
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
   
   double evaluateMeanAbsoluteError(ObjectStreamPtr examples) const;
+  double evaluateMeanAbsoluteError(ObjectContainerPtr examples) const
+    {return evaluateMeanAbsoluteError(examples->toStream());}
 };
 
 extern RegressorPtr verboseRegressor(std::ostream& ostr);

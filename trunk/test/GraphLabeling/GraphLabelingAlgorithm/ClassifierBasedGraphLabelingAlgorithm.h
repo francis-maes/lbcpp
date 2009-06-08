@@ -64,7 +64,7 @@ protected:
     for (size_t i = 0; i < maxLearningIterations; ++i)
     {
       classifier->trainStochastic(examples);
-      double accuracy = classifier->evaluateAccuracy(examples->toStream());
+      double accuracy = classifier->evaluateAccuracy(examples);
       std::cout << accuracy << " " << std::flush;
       if (accuracy > bestAccuracy)
       {

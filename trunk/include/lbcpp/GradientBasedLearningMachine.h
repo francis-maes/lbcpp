@@ -203,7 +203,7 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input, output);}
 };
 
-extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
+extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
 ** Generalized Classification
