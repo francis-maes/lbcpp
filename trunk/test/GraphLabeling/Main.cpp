@@ -17,12 +17,10 @@ public:
   virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(StringDictionaryPtr labels)
   {
     // CRANK - PREDICTED 
-    IterationFunctionPtr learningRate = IterationFunction::createInvLinear(10, 10000);
-    RankerPtr ranker = GradientBasedRanker::
-      //createLargeMarginBestAgainstAllLinear
-     // createLargeMarginMostViolatedPairLinear
-      createLargeMarginAllPairsLinear
-      (GradientBasedLearner::createStochasticDescent(learningRate));
+    IterationFunctionPtr learningRate = invLinearIterationFunction(10, 10000);
+    RankerPtr ranker = largeMarginAllPairsLinearRanker(stochasticDescentLearner(learningRate));
+      //largeMarginBestAgainstAllLinearRanker
+     // largeMarginMostViolatedPairLinearRanker
     
     PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));
     PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
@@ -48,9 +46,9 @@ public:
   virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(StringDictionaryPtr labels)
   {
     // Classifier Maxent
-    IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);
-    GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(learningRate);
-    GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(/*learner->stochasticToBatch(100)*/learner, labels);
+    IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
+    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
+    GradientBasedClassifierPtr classifier = maximumEntropyClassifier(/*learner->stochasticToBatch(100)*/learner, labels);
     classifier->setL2Regularizer(l2regularizer);
 
     ActionValueFunctionPtr learnedScores = ActionValueFunction::createScores(classifier);
@@ -59,12 +57,12 @@ public:
     if (probabilistic)
       explorationPolicy = Policy::createNonDeterministic(ActionValueFunction::createProbabilities(classifier));
     else if (temperature)
-      explorationPolicy = Policy::createGibbsGreedy(learnedScores, IterationFunction::createConstant(temperature));
+      explorationPolicy = Policy::createGibbsGreedy(learnedScores, constantIterationFunction(temperature));
     else
       {
         explorationPolicy = predicted ? learnedPolicy : Policy::createGreedy(ActionValueFunction::createChooseActionValue());
         if (epsilon)
-          explorationPolicy = explorationPolicy->epsilonGreedy(IterationFunction::createConstant(epsilon));
+          explorationPolicy = explorationPolicy->epsilonGreedy(constantIterationFunction(epsilon));
       }
       
     PolicyPtr learnerPolicy = Policy::createClassificationExampleCreator(explorationPolicy, classifier);

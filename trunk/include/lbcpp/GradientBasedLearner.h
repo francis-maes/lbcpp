@@ -18,12 +18,6 @@ namespace lbcpp
 class GradientBasedLearner : public Object
 {
 public:
-  static GradientBasedLearnerPtr createStochasticDescent(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
-  static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination);
-  static GradientBasedLearnerPtr createBatch(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
-  static GradientBasedLearnerPtr createNonLearner();
-  
-public:
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
     
@@ -49,6 +43,11 @@ protected:
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;
 };
+
+extern GradientBasedLearnerPtr stochasticDescentLearner(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
+extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination);
+extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
+extern GradientBasedLearnerPtr dummyLearner();
 
 }; /* namespace lbcpp */
 

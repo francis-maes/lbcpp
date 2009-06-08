@@ -31,13 +31,12 @@ public:
 
   bool checkContentClassName(const std::string& expectedClassName);
   ObjectContainerPtr load(size_t maximumCount = 0);
-
-public:
-  static ObjectStreamPtr createClassificationExamplesParser(const std::string& filename,
-                                  FeatureDictionaryPtr features, StringDictionaryPtr labels);
-
-  static ObjectStreamPtr createRegressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features);
 };
+
+extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
+                                FeatureDictionaryPtr features, StringDictionaryPtr labels);
+
+extern ObjectStreamPtr regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features);
 
 class TextObjectParser : public ObjectStream
 {

@@ -55,10 +55,10 @@ public:
   
   // Excludes a range.
   ObjectContainerPtr invRange(size_t begin, size_t end);
-  
-  // Append two object containers.
-  static ObjectContainerPtr append(ObjectContainerPtr left, ObjectContainerPtr right);
 };
+
+// Append two object containers.
+extern ObjectContainerPtr append(ObjectContainerPtr left, ObjectContainerPtr right);
 
 class VectorObjectContainer : public ObjectContainer
 {

@@ -119,9 +119,6 @@ private:
   FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
 };
 
-template<>
-struct Traits<FeatureDictionaryPtr> : public ObjectPtrTraits<FeatureDictionary> {};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_STRING_DICTIONARY_H_

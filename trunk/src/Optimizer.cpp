@@ -32,7 +32,7 @@ private:
   size_t iterations, maxIterations;
 };
 
-OptimizerStoppingCriterionPtr OptimizerStoppingCriterion::createMaxIterations(size_t maxIterations)
+OptimizerStoppingCriterionPtr lbcpp::maxIterationsStoppingCriterion(size_t maxIterations)
   {return new MaxIterationsOptimizerStoppingCriterion(maxIterations);}
 
 class AverageImprovementOptimizerStoppingCriterion : public OptimizerStoppingCriterion
@@ -76,7 +76,7 @@ private:
   std::deque<double> prevs;
 };
 
-OptimizerStoppingCriterionPtr OptimizerStoppingCriterion::createAverageImprovementThreshold(double tolerance)
+OptimizerStoppingCriterionPtr lbcpp::averageImprovementThresholdStoppingCriterion(double tolerance)
   {return new AverageImprovementOptimizerStoppingCriterion(tolerance);}
 
 class OrOptimizerStoppingCriterion : public OptimizerStoppingCriterion
@@ -107,19 +107,19 @@ private:
   OptimizerStoppingCriterionPtr criterion2;
 };
 
-OptimizerStoppingCriterionPtr OptimizerStoppingCriterion::createOr(OptimizerStoppingCriterionPtr criterion1, OptimizerStoppingCriterionPtr criterion2)
+OptimizerStoppingCriterionPtr lbcpp::logicalOr(OptimizerStoppingCriterionPtr criterion1, OptimizerStoppingCriterionPtr criterion2)
   {return new OrOptimizerStoppingCriterion(criterion1, criterion2);}
 
 /*
 ** Vector Optimizer
 */
-VectorOptimizerPtr VectorOptimizer::createRProp()
+VectorOptimizerPtr lbcpp::rpropOptimizer()
   {return new RPropOptimizer();}
 
-VectorOptimizerPtr VectorOptimizer::createGradientDescent(IterationFunctionPtr stepSize)
+VectorOptimizerPtr lbcpp::gradientDescentOptimizer(IterationFunctionPtr stepSize)
   {return new GradientDescentOptimizer(stepSize);}
 
-VectorOptimizerPtr VectorOptimizer::createLBFGS()
+VectorOptimizerPtr lbcpp::lbfgsOptimizer()
   {return new LBFGSOptimizer();}
 
 bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress)

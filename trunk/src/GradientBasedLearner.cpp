@@ -14,25 +14,25 @@
 #include "GradientBasedLearner/StochasticGradientDescentLearner.h"
 using namespace lbcpp;
 
-GradientBasedLearnerPtr GradientBasedLearner::createStochasticDescent(IterationFunctionPtr learningRate, bool normalizeLearningRate)
-  {return GradientBasedLearnerPtr(new StochasticGradientDescentLearner(learningRate, normalizeLearningRate));}
+GradientBasedLearnerPtr lbcpp::stochasticDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
+  {return new StochasticGradientDescentLearner(learningRate, normalizeLearningRate);}
 
-GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
-  {return GradientBasedLearnerPtr(new BatchGradientBasedLearner(optimizer, stoppingCriterion));}
+GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
+  {return new BatchGradientBasedLearner(optimizer, stoppingCriterion);}
 
-GradientBasedLearnerPtr GradientBasedLearner::createBatch(VectorOptimizerPtr optimizer, size_t maxIterations, double tolerance)
+GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, size_t maxIterations, double tolerance)
 {
   OptimizerStoppingCriterionPtr stoppingCriterion;
   if (maxIterations > 0)
-    stoppingCriterion = OptimizerStoppingCriterion::createMaxIterations(maxIterations);
+    stoppingCriterion = maxIterationsStoppingCriterion(maxIterations);
   if (tolerance > 0)
   {
-    OptimizerStoppingCriterionPtr c = OptimizerStoppingCriterion::createAverageImprovementThreshold(tolerance);
-    stoppingCriterion = stoppingCriterion ? OptimizerStoppingCriterion::createOr(stoppingCriterion, c) : c;
+    OptimizerStoppingCriterionPtr c = averageImprovementThresholdStoppingCriterion(tolerance);
+    stoppingCriterion = stoppingCriterion ? logicalOr(stoppingCriterion, c) : c;
   }
   assert(stoppingCriterion);
-  return createBatch(optimizer, stoppingCriterion);
+  return batchLearner(optimizer, stoppingCriterion);
 }
 
-GradientBasedLearnerPtr GradientBasedLearner::createNonLearner()
+GradientBasedLearnerPtr lbcpp::dummyLearner()
   {return new NonLearnerGradientBasedLearner();}

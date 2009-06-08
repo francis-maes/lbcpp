@@ -19,8 +19,8 @@ using namespace lbcpp;
 class ConsoleProgressCallback : public ProgressCallback
 {
 public:
-  virtual void progressBegin(const std::string& description)
-    {std::cout << "Begin '" << description << "'" << std::endl;}
+  virtual void progressStart(const std::string& description)
+    {std::cout << "=============== " << description << " ===============" << std::endl;}
     
   // return false to stop the task
   virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
@@ -33,7 +33,7 @@ public:
   }
     
   virtual void progressEnd()
-    {std::cout << "End." << std::endl;}
+    {std::cout << "===========================================" << std::endl;}
 };
 
 static ConsoleProgressCallback consoleProgressCallback;
@@ -120,7 +120,7 @@ private:
   double value;
 };
 
-IterationFunctionPtr IterationFunction::createConstant(double value)
+IterationFunctionPtr lbcpp::constantIterationFunction(double value)
   {return new ConstantIterationFunction(value);}
 
 class InvLinearIterationFunction : public IterationFunction
@@ -137,7 +137,7 @@ private:
   size_t numberIterationsToReachHalfInitialValue;
 };
 
-IterationFunctionPtr IterationFunction::createInvLinear(double initialValue, size_t numberIterationsToReachHalfInitialValue)
+IterationFunctionPtr lbcpp::invLinearIterationFunction(double initialValue, size_t numberIterationsToReachHalfInitialValue)
   {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
 
 /*

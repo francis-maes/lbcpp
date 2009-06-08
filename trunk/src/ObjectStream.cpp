@@ -206,7 +206,7 @@ private:
   StringDictionaryPtr labels;
 };
 
-ObjectStreamPtr ObjectStream::createClassificationExamplesParser(
+ObjectStreamPtr lbcpp::classificationExamplesParser(
           const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
 {
   LearningDataObjectParserPtr res = new ClassificationExamplesParser(filename, features, labels);
@@ -235,7 +235,7 @@ public:
   }
 };
 
-ObjectStreamPtr ObjectStream::createRegressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
+ObjectStreamPtr lbcpp::regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
 {
   LearningDataObjectParserPtr res = new RegressionExamplesParser(filename, features);
   return res->isValid() ? res : LearningDataObjectParserPtr();

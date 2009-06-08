@@ -19,7 +19,7 @@ class BackTrackingLineSearch : public Object
 {
 public:
   virtual FeatureGeneratorPtr computeSuccessorPoint(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction, double alpha)
-    {return FeatureGenerator::weightedSum(parameters, 1.0, direction, alpha, true);}
+    {return weightedSum(parameters, 1.0, direction, alpha, true);}
 
   bool search(ScalarVectorFunctionPtr energy, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr gradient, const FeatureGeneratorPtr direction, double& value,
               bool isFirstIteration, FeatureGeneratorPtr& resParameters, FeatureGeneratorPtr& resGradient)

@@ -68,6 +68,8 @@ ObjectPtr Object::loadFromStream(std::istream& istr)
     error("Object::create", "Could not read class name");
     return ObjectPtr();
   }
+  if (className == "__null__")
+    return ObjectPtr();
   ObjectPtr res(create(className));
   if (res && !res->load(istr))
     error("Object::create", "Could not load object of class '" + className + "'");

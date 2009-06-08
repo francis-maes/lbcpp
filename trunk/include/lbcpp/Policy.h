@@ -64,9 +64,6 @@ public:
   }
 };
 
-template<>
-struct Traits<PolicyPtr> : public ObjectPtrTraits<Policy> {};
-
 class DecoratorPolicy : public Policy
 {
 public:

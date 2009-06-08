@@ -188,7 +188,7 @@ private:
 };
 
 // Append two object containers.
-ObjectContainerPtr ObjectContainer::append(ObjectContainerPtr left, ObjectContainerPtr right)
+ObjectContainerPtr lbcpp::append(ObjectContainerPtr left, ObjectContainerPtr right)
 {
   return new BinaryAppendObjectContainer(left, right);
 }

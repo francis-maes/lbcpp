@@ -36,7 +36,7 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
       *gradientWrtParameters = g;
     }
     if (gradientWrtInput)
-      *gradientWrtInput = FeatureGenerator::emptyGenerator();
+      *gradientWrtInput = emptyFeatureGenerator();
   }
   
   static FeatureDictionaryPtr getDictionary()

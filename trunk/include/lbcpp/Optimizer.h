@@ -17,11 +17,6 @@ namespace lbcpp
 class OptimizerStoppingCriterion : public Object
 {
 public:
-  static OptimizerStoppingCriterionPtr createMaxIterations(size_t maxIterations);
-  static OptimizerStoppingCriterionPtr createAverageImprovementThreshold(double tolerance);
-  static OptimizerStoppingCriterionPtr createOr(OptimizerStoppingCriterionPtr criterion1, OptimizerStoppingCriterionPtr criterion2);
-  
-public:
   virtual void reset() = 0;
 
   virtual bool isTerminated(double value, double parameter, double derivative) = 0;
@@ -35,6 +30,10 @@ enum OptimizerState
   optimizerDone,
 };
 
+extern OptimizerStoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);
+extern OptimizerStoppingCriterionPtr averageImprovementThresholdStoppingCriterion(double tolerance);
+extern OptimizerStoppingCriterionPtr logicalOr(OptimizerStoppingCriterionPtr criterion1, OptimizerStoppingCriterionPtr criterion2);
+
 class ScalarOptimizer : public Object
 {
 public:
@@ -47,11 +46,6 @@ protected:
 
 class VectorOptimizer : public Object
 {
-public:
-  static VectorOptimizerPtr createGradientDescent(IterationFunctionPtr stepSize);
-  static VectorOptimizerPtr createRProp();
-  static VectorOptimizerPtr createLBFGS();
-
 public:
   virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
 
@@ -86,6 +80,10 @@ protected:
   virtual bool initialize()   {return true;}
   virtual OptimizerState step() = 0;
 };
+
+extern VectorOptimizerPtr gradientDescentOptimizer(IterationFunctionPtr stepSize);
+extern VectorOptimizerPtr rpropOptimizer();
+extern VectorOptimizerPtr lbfgsOptimizer();
 
 }; /* namespace lbcpp */
 

@@ -112,10 +112,9 @@ double evaluate(PolicyPtr policy, const std::vector<CRAlgorithmPtr>& instances)
 /*
 void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(0.1, 10000);
 
-  GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
+  GeneralizedClassifierPtr classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
   PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0, 2.0);
@@ -133,10 +132,9 @@ void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDic
 */
 std::pair<PolicyPtr, PolicyPtr> createOLPOMDPPolicies(GradientBasedGeneralizedClassifierPtr& classifier, DenseVectorPtr initialParameters = DenseVectorPtr())
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(0.1, 10000);
 
-  classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
+  classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
   if (initialParameters)
     classifier->setParameters(initialParameters);
   
@@ -147,12 +145,11 @@ std::pair<PolicyPtr, PolicyPtr> createOLPOMDPPolicies(GradientBasedGeneralizedCl
 
 std::pair<PolicyPtr, PolicyPtr> createCRankPolicies(GradientBasedRankerPtr& ranker, DenseVectorPtr initialParameters = DenseVectorPtr())
 {
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(10);
-  ranker = GradientBasedRanker::
-//    createLargeMarginBestAgainstAllLinear
-    createLargeMarginMostViolatedPairLinear
-//    createLargeMarginAllPairsLinear
-    (GradientBasedLearner::createStochasticDescent(learningRate));
+  IterationFunctionPtr learningRate = constantIterationFunction(10);
+  ranker = largeMarginMostViolatedPairLinearRanker(stochasticDescentLearner(learningRate));
+//    largeMarginBestAgainstAllLinearRanker
+//    largeMarginAllPairsLinearRanker
+    
   if (initialParameters)
     ranker->setParameters(initialParameters);
   

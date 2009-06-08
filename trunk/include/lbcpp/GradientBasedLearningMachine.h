@@ -106,7 +106,7 @@ public:
     {this->regularizer = regularizer;}
 
   void setL2Regularizer(double weight)
-    {regularizer = ScalarVectorFunction::createSumOfSquares(weight);}
+    {regularizer = sumOfSquaresFunction(weight);}
   
   /*
   ** Learner
@@ -129,6 +129,20 @@ public:
   double computeRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
     {assert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
   
+  /*
+  ** Serialization
+  */
+  virtual void save(std::ostream& ostr) const
+  {
+    write(ostr, parameters);
+    write(ostr, regularizer);
+    write(ostr, learner);
+    write(ostr, initializeParametersRandomly);
+  }
+  
+  virtual bool load(std::istream& istr)
+    {return read(istr, parameters) && read(istr, regularizer) && read(istr, learner) && read(istr, initializeParametersRandomly);}
+    
 protected:
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;
@@ -142,8 +156,6 @@ protected:
 class GradientBasedRegressor : public GradientBasedLearningMachine<Regressor, RegressionExample>
 {
 public:
-  static GradientBasedRegressorPtr createLeastSquaresLinear(GradientBasedLearnerPtr learner);
-
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
@@ -153,15 +165,15 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
+extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner);
+
+
 /*
 ** Binary Classification
 */
 class GradientBasedBinaryClassifier : public GradientBasedLearningMachine<BinaryClassifier, ClassificationExample>
 {
 public:
-  static GradientBasedBinaryClassifierPtr createLinearSVM(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
-  static GradientBasedBinaryClassifierPtr createLogisticRegression(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
-
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
@@ -171,14 +183,15 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
+extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
+extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
+
 /*
 ** Classification
 */
 class GradientBasedClassifier : public GradientBasedLearningMachine<Classifier, ClassificationExample>
 {
 public:
-  static GradientBasedClassifierPtr createMaximumEntropy(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
-
   virtual VectorArchitecturePtr getPredictionArchitecture() const = 0;
 
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
@@ -190,6 +203,8 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input, output);}
 };
 
+extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
+
 /*
 ** Generalized Classification
 */
@@ -197,8 +212,6 @@ class GradientBasedGeneralizedClassifier
   : public GradientBasedLearningMachine<GeneralizedClassifier, GeneralizedClassificationExample>
 {
 public:
-  static GradientBasedGeneralizedClassifierPtr createLinear(GradientBasedLearnerPtr learner);
-
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
   
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
@@ -208,6 +221,7 @@ public:
     {return parameters ? getPredictionArchitecture()->compute(parameters, input) : 0.0;}
 };
 
+extern GradientBasedGeneralizedClassifierPtr linearGeneralizedClassifier(GradientBasedLearnerPtr learner);
 
 /*
 ** Ranker
@@ -216,10 +230,6 @@ class GradientBasedRanker
   : public GradientBasedLearningMachine<Ranker, RankingExample>
 {
 public:
-  static GradientBasedRankerPtr createLargeMarginAllPairsLinear(GradientBasedLearnerPtr learner);
-  static GradientBasedRankerPtr createLargeMarginMostViolatedPairLinear(GradientBasedLearnerPtr learner);
-  static GradientBasedRankerPtr createLargeMarginBestAgainstAllLinear(GradientBasedLearnerPtr learner);
-
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
   
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
@@ -228,6 +238,10 @@ public:
   virtual double predictScore(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
+
+extern GradientBasedRankerPtr largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner);
+extern GradientBasedRankerPtr largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner);
+extern GradientBasedRankerPtr largeMarginBestAgainstAllLinearRanker(GradientBasedLearnerPtr learner);
 
 }; /* namespace lbcpp */
 

@@ -114,10 +114,10 @@ void runPolicy(PolicyPtr policy, const std::vector<SequenceExample>& examples, s
 
 void testClassifier(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);
+  IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
 
-  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
-    GradientBasedLearner::createStochasticDescent(learningRate), labels);
+  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(
+        stochasticDescentLearner(learningRate), labels);
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));
   
@@ -136,13 +136,11 @@ void testClassifier(const std::vector<SequenceExample>& learningExamples, String
 
 void testCRank(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(10, 10000);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(10, 10000);
 
-  RankerPtr ranker = GradientBasedRanker::
-    //createLargeMarginBestAgainstAllLinear
-    //createLargeMarginMostViolatedPairLinear
-    createLargeMarginAllPairsLinear
-    (GradientBasedLearner::createStochasticDescent(learningRate));
+  RankerPtr ranker = largeMarginAllPairsLinearRanker(stochasticDescentLearner(learningRate));
+    //largeMarginBestAgainstAllLinearRanker
+    //largeMarginMostViolatedPairLinearRanker
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
   PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
@@ -157,11 +155,10 @@ void testCRank(const std::vector<SequenceExample>& learningExamples, StringDicti
 
 void testSarsa(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
-  IterationFunctionPtr epsilon = IterationFunction::createConstant(0.1);
+  IterationFunctionPtr learningRate = constantIterationFunction(0.01);
+  IterationFunctionPtr epsilon = constantIterationFunction(0.1);
 
-  GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
+  GradientBasedRegressorPtr regressor = leastSquaresLinearRegressor(stochasticDescentLearner(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
   
@@ -197,10 +194,9 @@ crAlgorithm void testTrivial()
 
 void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(0.1, 10000);
 
-  GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
+  GeneralizedClassifierPtr classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
   PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0, 2.0);

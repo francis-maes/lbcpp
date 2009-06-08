@@ -17,9 +17,8 @@ void testClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t nu
   for (size_t i = 0; i < numClasses; ++i)
     classes->add("class " + lbcpp::toString(i));
   
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.01);
-  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
-    GradientBasedLearner::createStochasticDescent(learningRate), classes);
+  IterationFunctionPtr learningRate = constantIterationFunction(0.01);
+  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(stochasticDescentLearner(learningRate), classes);
   
   for (size_t i = 0; i < 15; ++i)
   {
@@ -78,12 +77,11 @@ void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numC
 
 void testMonteCarloControl(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
 {
-  IterationFunctionPtr learningRate = IterationFunction::createConstant(0.001);
-  IterationFunctionPtr epsilon = IterationFunction::createConstant(0.01);
+  IterationFunctionPtr learningRate = constantIterationFunction(0.001);
+  IterationFunctionPtr epsilon = constantIterationFunction(0.01);
   
 // Regressor::createVerbose(std::cout);
-  RegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
+  RegressorPtr regressor = leastSquaresLinearRegressor(stochasticDescentLearner(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
   
@@ -96,17 +94,16 @@ void testMonteCarloControl(ObjectContainerPtr train, ObjectContainerPtr test, si
 void testCRank(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses,
               PolicyPtr exploration = PolicyPtr(), ActionValueFunctionPtr supervision = ActionValueFunctionPtr())
 {
-  IterationFunctionPtr learningRate = IterationFunction::createInvLinear(1, 10000);
-//  IterationFunctionPtr learningRate2 = IterationFunction::createInvLinear(0.01, 10000);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(1, 10000);
+//  IterationFunctionPtr learningRate2 = invLinearIterationFunction(0.01, 10000);
 
-  GradientBasedRankerPtr ranker = GradientBasedRanker::createLargeMarginBestAgainstAllLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate));
+  GradientBasedRankerPtr ranker = largeMarginBestAgainstAllLinearRanker(stochasticDescentLearner(learningRate));
   
   PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
   PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(exploration ? exploration : learnedPolicy, ranker, supervision);
 
-/*  GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-    GradientBasedLearner::createStochasticDescent(learningRate2));  
+/*  GradientBasedGeneralizedClassifierPtr classifier = linearGeneralizedClassifier(
+    stochasticDescentLearner(learningRate2));  
   classifier->setParameters(ranker->getParameters());
   PolicyPtr learnerPolicy2 = Policy::createGPOMDP(classifier, 0.8, 1.1);
 */
@@ -272,19 +269,18 @@ void testBatchGPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector
   for (size_t i = 0; i <= 10; ++i)
   {
     double beta = i / 10.0; //pow(10.0, (double)(i - 5.0));
-    //IterationFunctionPtr stepSize = IterationFunction::createConstant(10.0);
+    //IterationFunctionPtr stepSize = constantIterationFunction(10.0);
     double reg = 0.0; // (double)pow(10.0, (double)(i - 5.0));
     
-    VectorOptimizerPtr optimizer = VectorOptimizer::createRProp(); //GradientDescent(stepSize);
-    GradientBasedGeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-      GradientBasedLearner::createBatch(optimizer));
+    VectorOptimizerPtr optimizer = rpropOptimizer(); //gradientDescentOptimizer(stepSize);
+    GradientBasedGeneralizedClassifierPtr classifier = linearGeneralizedClassifier(batchLearner(optimizer));
     classifier->setL2Regularizer(reg);
     //classifier->setInitializeParametersRandomly();
     PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
 
     ScalarVectorFunctionPtr objective = new GPOMDPAverageRewardFunction(classifier, beta, train);
     FeatureGeneratorPtr parameters 
-      = optimizer->optimize(objective, OptimizerStoppingCriterion::createMaxIterations(50), &ProgressCallback::getConsoleProgressCallback());
+      = optimizer->optimize(objective, maxIterationsStoppingCriterion(50), &ProgressCallback::getConsoleProgressCallback());
     double trainAccuracy = evaluatePolicy(train, learnedPolicy);
     double testAccuracy = evaluatePolicy(test, learnedPolicy);
     std::cout << "REG = " << reg 
@@ -326,10 +322,9 @@ void testOLPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector<CRA
   {
     double beta = 1.0; // i / 10.0; //pow(10.0, (double)(i - 5.0));
     
-    IterationFunctionPtr learningRate = IterationFunction::createInvLinear(0.1, 10000);
+    IterationFunctionPtr learningRate = invLinearIterationFunction(0.1, 10000);
 
-    GeneralizedClassifierPtr classifier = GradientBasedGeneralizedClassifier::createLinear(
-      GradientBasedLearner::createStochasticDescent(learningRate));
+    GeneralizedClassifierPtr classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
     
     PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
     PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, beta, new OverrideDecideStepsPolicy(
