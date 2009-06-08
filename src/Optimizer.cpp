@@ -11,6 +11,7 @@
 #include "Optimizer/GradientDescentOptimizer.h"
 #include "Optimizer/LBFGSOptimizer.h"
 #include <deque>
+#include <cfloat>
 using namespace lbcpp;
 
 class MaxIterationsOptimizerStoppingCriterion : public OptimizerStoppingCriterion
@@ -55,8 +56,8 @@ public:
       {
         double averageImprovement = (prevVal - value) / prevs.size();
         double relAvgImpr = value ? averageImprovement / fabs(value) : 0;
-        //std::cout << "Av-Improvment: " << averageImprovement << " RealImprovment: " << relAvgImpr << " tol = " << getTolerance() << std::endl;
-        if (relAvgImpr >= 0 && relAvgImpr <= tolerance)
+//        std::cout << "Av-Improvment: " << averageImprovement << " RealImprovment: " << relAvgImpr << " tol = " << tolerance << std::endl;
+        if ((averageImprovement >= 0 && averageImprovement < DBL_EPSILON) || (relAvgImpr >= 0 && relAvgImpr <= tolerance))
           return true;
         prevs.pop_front();
       }

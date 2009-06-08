@@ -3,7 +3,7 @@ LC++ library:
 =============
 
 Gros:
-  * Task, Tables, InstanceSet, SWIG, Doxygen, Tests
+  * Tables, SWIG, Doxygen, Tests
 
 FeatureGenerator:
   * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar
