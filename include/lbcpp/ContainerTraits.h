@@ -30,7 +30,7 @@ ContainerTraits:
   Traits
   
   typedef ... ValueType;
-  typedef ... Iterator;
+  typedef ... ConstIterator;
   
   static size_t size(const T& container)
   static ConstIterator begin(const T& container)
