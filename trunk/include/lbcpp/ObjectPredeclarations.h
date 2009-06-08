@@ -14,6 +14,10 @@
 namespace lbcpp
 {
 
+// reference counted objects
+class StringDictionary;
+typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
+
 // tools
 class ScalarRandomVariableStatistics;
 typedef ReferenceCountedObjectPtr<ScalarRandomVariableStatistics> ScalarRandomVariableStatisticsPtr;
@@ -21,6 +25,12 @@ class IterationFunction;
 typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 class FeatureDictionary;
 typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
+
+// object stream
+class ObjectStream;
+typedef ReferenceCountedObjectPtr<ObjectStream> ObjectStreamPtr;
+class LearningDataObjectParser;
+typedef ReferenceCountedObjectPtr<LearningDataObjectParser> LearningDataObjectParserPtr;
 
 // feature generators
 class FeatureVisitor;

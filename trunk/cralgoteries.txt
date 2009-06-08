@@ -1,3 +1,9 @@
+* ObjectContainer (InstanceSet)
+* LearningMachine::trainBatch, trainStochastic, avec des LearningExamplePtr et des ObjectStream/ObjectContainer
+* save des classifiers
+* constructeurs plus simple ˆ Žcrire
+* virer les anciens trucs de parsing
+
 
 LC++ library:
 =============
