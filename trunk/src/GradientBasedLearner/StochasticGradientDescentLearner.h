@@ -18,11 +18,14 @@ class StochasticGradientDescentLearner : public GradientBasedLearner
 {
 public:
   StochasticGradientDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
-    : learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
+    : epoch(0), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate) {}
     
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
     assert(parameters);
+    if (normalizeLearningRate)
+      inputSize.push((double)(gradient->l0norm()));
+    
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
 //    std::cout << "Params.addWeighted(" << gradient->toString() << " , " << (-weight * computeAlpha()) << ")" << std::endl;
     parameters->addWeighted(gradient, -weight * computeAlpha());
@@ -38,25 +41,18 @@ public:
   }
   
 protected:
+  size_t epoch;
   IterationFunctionPtr learningRate;
   bool normalizeLearningRate;
-  size_t epoch;
+  ScalarRandomVariableMean inputSize;
   
   double computeAlpha()
   {
-    //std::cout << "Alpha = 1.0";
     double res = 1.0;
     if (learningRate)
-    {
-      //std::cout << " x " << learningRate->compute(epoch);
       res *= learningRate->compute(epoch);
-    }
-    if (normalizeLearningRate && meanInputSize)
-    {
-      //std::cout << " / " << meanInputSize;
-      res /= meanInputSize;
-    }
-    //std::cout << " = " << res << std::endl;
+    if (normalizeLearningRate && inputSize.getMean())
+      res /= inputSize.getMean();
     return res;
   }
 };

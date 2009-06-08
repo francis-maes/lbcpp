@@ -29,6 +29,8 @@ private:
   double weight;
 };
 
+typedef ReferenceCountedObjectPtr<LearningExample> LearningExamplePtr;
+
 class ClassificationExample : public LearningExample
 {
 public:
@@ -56,6 +58,8 @@ private:
   size_t y;
 };
 
+typedef ReferenceCountedObjectPtr<ClassificationExample> ClassificationExamplePtr;
+
 class GeneralizedClassificationExample : public LearningExample
 {
 public:
@@ -79,6 +83,8 @@ private:
   size_t output;
 };
 
+typedef ReferenceCountedObjectPtr<GeneralizedClassificationExample> GeneralizedClassificationExamplePtr;
+
 class RegressionExample : public LearningExample
 {
 public:
@@ -99,6 +105,8 @@ private:
   double y;
 };
 
+typedef ReferenceCountedObjectPtr<RegressionExample> RegressionExamplePtr;
+
 class RankingExample : public LearningExample
 {
 public:
@@ -116,6 +124,10 @@ private:
   std::vector<double> costs;
 };
 
+typedef ReferenceCountedObjectPtr<RankingExample> RankingExamplePtr;
+
+/* --------------- */
+// /!\ Dead code, replaced by the ObjectStream hierarchy
 class LearningExamplesParser : public TextFileParser
 {
 public:
@@ -136,7 +148,7 @@ protected:
 
 extern bool parseClassificationExamples(std::istream& istr, FeatureDictionaryPtr dictionary, StringDictionaryPtr labels, std::vector<ClassificationExample>& res);
 extern bool parseRegressionExamples(std::istream& istr, FeatureDictionaryPtr dictionary, std::vector<RegressionExample>& res);
-
+/* --------------- */
 
 }; /* namespace lbcpp */
 

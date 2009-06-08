@@ -71,11 +71,13 @@ namespace lbcpp
 FeatureDictionary::FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes)
   : name(name), featuresDictionary(features), scopesDictionary(scopes)
 {
+  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
 FeatureDictionary::FeatureDictionary(const std::string& name)
   : name(name), featuresDictionary(new StringDictionary()), scopesDictionary(new StringDictionary())
 {
+  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
 FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue)

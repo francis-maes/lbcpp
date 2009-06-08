@@ -7,10 +7,39 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/ObjectStream.h>
+#include <lbcpp/ObjectContainer.h>
 #include <lbcpp/SparseVector.h>
 #include <lbcpp/LearningExample.h>
 #include <fstream>
 using namespace lbcpp;
+
+/*
+** ObjectStream
+*/
+ObjectContainerPtr ObjectStream::load(size_t maximumCount)
+{
+  VectorObjectContainerPtr res = new VectorObjectContainer(getContentClassName());
+  while (maximumCount == 0 || res->size() < maximumCount)
+  {
+    ObjectPtr object = next();
+    if (object)
+      res->append(object);
+    else
+      break;
+  }
+  return res;
+}
+
+bool ObjectStream::checkContentClassName(const std::string& expectedClassName)
+{
+  if (getContentClassName() != expectedClassName)
+  {
+    Object::error("ObjectStream::checkContentClassName",
+        "Expected objects of class '" + expectedClassName + "', found objects of class '" + getContentClassName() + "'");
+    return false;
+  }
+  return true;
+}
 
 /*
 ** TextObjectParser

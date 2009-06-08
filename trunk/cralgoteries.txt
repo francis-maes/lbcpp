@@ -1,5 +1,4 @@
-
-* LearningMachine::trainBatch, trainStochastic, avec des LearningExamplePtr et des ObjectStream/ObjectContainer
+* ConsoleLogger
 * save des classifiers
 * constructeurs plus simple ˆ Žcrire
 * virer les anciens trucs de parsing

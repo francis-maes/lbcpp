@@ -10,27 +10,35 @@
 #include <lbcpp/ObjectStream.h>
 using namespace lbcpp;
 
-ObjectContainerPtr ObjectStream::load(size_t maximumCount)
-{
-  VectorObjectContainerPtr res = new VectorObjectContainer(getContentClassName());
-  while (maximumCount == 0 || res->size() < maximumCount)
-  {
-    ObjectPtr object = next();
-    if (object)
-      res->append(object);
-    else
-      break;
-  }
-  return res;
-}
-
-VectorObjectContainerPtr ObjectContainer::toVectorContainer() const
+VectorObjectContainerPtr ObjectContainer::toVector() const
 {
   VectorObjectContainerPtr res = new VectorObjectContainer(getContentClassName());
   res->reserve(size());
   for (size_t i = 0; i < size(); ++i)
     res->append(get(i));
   return res;
+}
+
+class ObjectContainerStream : public ObjectStream
+{
+public:
+  ObjectContainerStream(ObjectContainerPtr container)
+    : container(container), position(0) {}
+    
+  virtual std::string getContentClassName() const
+    {return container->getContentClassName();}
+
+  virtual ObjectPtr next()
+    {return position < container->size() ? container->get(position++) : ObjectPtr();}
+
+private:
+  ObjectContainerPtr container;
+  size_t position;
+};
+
+ObjectStreamPtr ObjectContainer::toStream() const
+{
+  return new ObjectContainerStream(const_cast<ObjectContainer* >(this));
 }
 
 class RandomizedObjectContainer : public DecoratorObjectContainer
@@ -45,7 +53,7 @@ public:
     assert(order.size() == target->size() && index < order.size());
     return target->get(order[index]);
   }
-
+  
 private:
   std::vector<size_t> order;
 };

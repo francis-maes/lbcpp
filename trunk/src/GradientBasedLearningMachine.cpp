@@ -18,16 +18,16 @@ public:
   
   // abstract: static functions for architecture() and loss()
   
-  virtual ScalarVectorFunctionPtr getLoss(const ExampleType& example) const
-    {return impl::staticToDynamic(impl::exampleRisk(_this().architecture(), _this().loss(), example));}
+  virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const
+    {return impl::staticToDynamic(impl::exampleRisk(_this().architecture(), _this().loss(), *example.staticCast<ExampleType>()));}
     
-  virtual ScalarVectorFunctionPtr getEmpiricalRisk(const std::vector<ExampleType>& examples) const
-    {return impl::staticToDynamic(impl::empiricalRisk(_this().architecture(), _this().loss(), examples));}
+  virtual ScalarVectorFunctionPtr getEmpiricalRisk(ObjectContainerPtr examples) const
+    {return impl::staticToDynamic(impl::empiricalRisk(_this().architecture(), _this().loss(), examples, (ExampleType* )0));}
     
-  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(const std::vector<ExampleType>& examples) const
+  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
   {
     if (BaseClass::regularizer)
-      return impl::staticToDynamic(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples),
+      return impl::staticToDynamic(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples, (ExampleType* )0),
           impl::dynamicToStatic(BaseClass::regularizer)));
     else
       return getEmpiricalRisk(examples);
@@ -112,22 +112,29 @@ class MaximumEntropyClassifier
   : public StaticToDynamicGradientBasedLearningMachine<MaximumEntropyClassifier, GradientBasedClassifier>
 {
 public:
+  MaximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+    : architecture_(labels)
+  {
+    setLearner(learner);
+    setLabels(labels);
+  }
+  
   virtual VectorArchitecturePtr getPredictionArchitecture() const
     {return impl::staticToDynamic(architecture());}
 
   inline impl::MultiLinearArchitecture architecture() const
-    {return impl::multiLinearArchitecture(getLabels());}
+    {return architecture_;}
 
   inline impl::MultiClassLogBinomialLoss<ClassificationExample> loss() const
     {return impl::multiClassLogBinomialLoss<ClassificationExample>();}
+
+private:
+  impl::MultiLinearArchitecture architecture_;
 };
 
 GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
-  GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
-  res->setLearner(learner);
-  res->setLabels(labels);
-  return res;
+  return new MaximumEntropyClassifier(learner, labels);
 }
 
 /*

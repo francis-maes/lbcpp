@@ -29,7 +29,7 @@ FeatureDictionaryPtr DenseVector::getDictionary() const
 {
   if (dictionary)
     return dictionary;
-  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("DenseVector");
+  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("DenseVector Default");
   return defaultDictionary;
 }
 

@@ -375,28 +375,36 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
   
     void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
         double* output,
-        FeatureGeneratorPtr* gradientWrtParameters,
-        FeatureGeneratorPtr* gradientWrtInput) const
+        FeatureGeneratorPtr* gradientsWrtParameters,
+        FeatureGeneratorPtr* gradientsWrtInput) const
     {
       FeatureGeneratorPtr leftOutput, leftGradientWrtParameters, leftGradientWrtInput;
-      left.compute(parameters, input, &leftOutput, gradientWrtParameters ? &leftGradientWrtParameters : NULL, gradientWrtInput ? &leftGradientWrtInput : NULL);
+      left.compute(parameters, input, &leftOutput,
+                    gradientsWrtParameters ? &leftGradientWrtParameters : NULL,
+                    gradientsWrtInput ? &leftGradientWrtInput : NULL);
       
 //      std::cout << "Gradient of the multi-linear architecture: " << lbcpp::toString(leftGradientWrtParameters) << std::endl;
       
       FeatureGeneratorPtr rightGradient;
       const static FeatureGeneratorPtr zero = FeatureGeneratorPtr(); // FIXME : derivative direction
       assert(leftOutput->toDenseVector()->getNumValues());
-      right.compute(leftOutput, output, zero, gradientWrtParameters || gradientWrtInput ? &rightGradient : NULL);
+      right.compute(leftOutput, output, zero, gradientsWrtParameters || gradientsWrtInput ? &rightGradient : NULL);
       
       DenseVectorPtr rightGradientDense;
       if (rightGradient)
         rightGradientDense = rightGradient->toDenseVector();
       
-      if (gradientWrtParameters)
-        *gradientWrtParameters = FeatureGenerator::linearCombination(leftGradientWrtParameters, rightGradientDense);
+      if (gradientsWrtParameters)
+      {
+        *gradientsWrtParameters = FeatureGenerator::linearCombination(leftGradientWrtParameters, rightGradientDense);
+        (*gradientsWrtParameters)->checkDictionaryEquals(parameters->getDictionary());
+      }
 
-      if (gradientWrtInput)
-        *gradientWrtInput = FeatureGenerator::linearCombination(leftGradientWrtInput, rightGradientDense);
+      if (gradientsWrtInput)
+      {
+        *gradientsWrtInput = FeatureGenerator::linearCombination(leftGradientWrtInput, rightGradientDense);
+        (*gradientsWrtInput)->checkDictionaryEquals(input->getDictionary());
+      }
     }
   };
 };

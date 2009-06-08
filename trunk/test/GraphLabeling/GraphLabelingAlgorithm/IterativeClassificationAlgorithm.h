@@ -25,13 +25,15 @@ public:
 
   virtual void train(LabeledContentGraphPtr graph)
   {
-    std::vector<ClassificationExample> examples, examplesWithContext;
-    examples.reserve(graph->getNumNodes());
-    examplesWithContext.reserve(graph->getNumNodes());
+    VectorObjectContainerPtr examples = new VectorObjectContainer("ClassificationExample");
+    VectorObjectContainerPtr examplesWithContext = new VectorObjectContainer("ClassificationExample");
+
+    examples->reserve(graph->getNumNodes());
+    examplesWithContext->reserve(graph->getNumNodes());
     for (size_t i = 0; i < graph->getNumNodes(); ++i)
     {
-      examples.push_back(ClassificationExample(graph->getNode(i), graph->getLabel(i)));
-      examplesWithContext.push_back(ClassificationExample(getNodeFeatures(graph, i), graph->getLabel(i)));
+      examples->append(new ClassificationExample(graph->getNode(i), graph->getLabel(i)));
+      examplesWithContext->append(new ClassificationExample(getNodeFeatures(graph, i), graph->getLabel(i)));
     }
     trainClassifier(initialClassifier, examples);
     trainClassifier(classifier, examplesWithContext);

@@ -126,8 +126,8 @@ public:
 
   virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       FeatureGeneratorPtr* output,
-      FeatureGeneratorPtr* gradientWrtParameters,
-      FeatureGeneratorPtr* gradientWrtInput) const = 0;
+      FeatureGeneratorPtr* gradientsWrtParameters,
+      FeatureGeneratorPtr* gradientsWrtInput) const = 0;
 };
 
 }; /* namespace lbcpp */

@@ -40,7 +40,7 @@ public:
 
   virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
   {
-    //ProgressCallback silentCallback;
+    assert(parameters);
     if (progress)
       progress->progressStart("BatchLearner::trainBatch");
     FeatureGeneratorPtr params = parameters;

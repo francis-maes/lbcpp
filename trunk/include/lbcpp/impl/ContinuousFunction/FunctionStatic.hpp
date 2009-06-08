@@ -111,8 +111,8 @@ struct VectorArchitecture : public ContinuousFunction<ExactType>
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       FeatureGeneratorPtr* output,
-      FeatureGeneratorPtr* gradientWrtParameters,
-      FeatureGeneratorPtr* gradientWrtInput) const
+      FeatureGeneratorPtr* gradientsWrtParameters,
+      FeatureGeneratorPtr* gradientsWrtInput) const
     {assert(false);}
 
   // todo: non-derivable vector architectures

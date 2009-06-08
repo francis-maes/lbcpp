@@ -97,7 +97,8 @@ STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ScalarVectorFunction_, Object)
   {
     assert(input);
     BaseClass::impl.compute(input, output, gradientDirection, gradient);
-    assert(!gradient || (*gradient)->getDictionary() == input->getDictionary());
+    if (gradient)
+      (*gradient)->checkDictionaryEquals(input->getDictionary());
   }
 };
 

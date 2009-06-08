@@ -49,21 +49,22 @@ protected:
   void train(LabeledContentGraphPtr predictedGraph, LabeledContentGraphPtr correctGraph)
   {
     assert(predictedGraph->getNumNodes() == correctGraph->getNumNodes());
-    std::vector<ClassificationExample> examples;
-    examples.reserve(predictedGraph->getNumNodes());
+    VectorObjectContainerPtr examples = new VectorObjectContainer("ClassificationExample");
+    
+    examples->reserve(predictedGraph->getNumNodes());
     for (size_t i = 0; i < predictedGraph->getNumNodes(); ++i)
-      examples.push_back(ClassificationExample(getNodeFeatures(predictedGraph, i), correctGraph->getLabel(i)));
+      examples->append(new ClassificationExample(getNodeFeatures(predictedGraph, i), correctGraph->getLabel(i)));
     trainClassifier(classifier, examples);
   }
     
-  void trainClassifier(ClassifierPtr classifier, const std::vector<ClassificationExample>& examples)
+  void trainClassifier(ClassifierPtr classifier, ObjectContainerPtr examples)
   {
     size_t numIterationsWithoutImprovement = 0;
     double bestAccuracy = 0.0;
     for (size_t i = 0; i < maxLearningIterations; ++i)
     {
       classifier->trainStochastic(examples);
-      double accuracy = classifier->evaluateAccuracy(examples);
+      double accuracy = classifier->evaluateAccuracy(examples->toStream());
       std::cout << accuracy << " " << std::flush;
       if (accuracy > bestAccuracy)
       {

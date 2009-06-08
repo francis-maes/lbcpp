@@ -18,13 +18,8 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
 {
   MultiLinearArchitecture(StringDictionaryPtr outputs)
     : outputs(outputs),
-      paramsDictionary(new FeatureDictionary("MultiLinearArchitecture parameters", StringDictionaryPtr(), outputs)),
-      outputsDictionary(new FeatureDictionary("MultiLinearArchitecture outputs", outputs, StringDictionaryPtr())),
-      paramsGradientDictionary(new FeatureDictionary("MultiLinearArchitecture gradient wrt parameters", StringDictionaryPtr(), outputs))
+      outputsDictionary(new FeatureDictionary("MultiLinearArchitecture outputs", outputs, StringDictionaryPtr()))
   {
-    classParamsGradientDictionary = new FeatureDictionary("MultiLinearArchitecture gradient wrt class-parameters", StringDictionaryPtr(), outputs);
-    for (size_t i = 0; i < outputs->getNumElements(); ++i)
-      paramsGradientDictionary->setSubDictionary(i, classParamsGradientDictionary);
   }
     
   size_t getNumOutputs() const
@@ -44,15 +39,15 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
     if (output)
       *output = classParameters->dotProduct(input);
     if (gradientWrtParameters)
-      *gradientWrtParameters = input;
+      *gradientWrtParameters = FeatureGenerator::subFeatureGenerator(parameters->getDictionary(), outputNumber, input);
     if (gradientWrtInput)
-      *gradientWrtInput = classParameters;
+      *gradientWrtInput = FeatureGenerator::subFeatureGenerator(input->getDictionary(), outputNumber, classParameters);
   }
   
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 FeatureGeneratorPtr* output,
-                FeatureGeneratorPtr* gradientWrtParameters,
-                FeatureGeneratorPtr* gradientWrtInput) const
+                FeatureGeneratorPtr* gradientsWrtParameters,
+                FeatureGeneratorPtr* gradientsWrtInput) const
   {
     size_t numOutputs = getNumOutputs();
     if (output)
@@ -68,26 +63,25 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       assert(res->getNumValues() == numOutputs);
       *output = res;
     }
-    if (gradientWrtParameters)
+    if (gradientsWrtParameters)
     {
       // parameters gradient of output i depends linearly on class parameters i
       // e.g.
       // 0.0.input
       // 1.1.input
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
-      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(paramsGradientDictionary, numOutputs);
+      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(parameters->getDictionary(), numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
-        g->setSubGenerator(i, FeatureGenerator::subFeatureGenerator(classParamsGradientDictionary, i, input));
-      *gradientWrtParameters = g;
+        g->setSubGenerator(i, FeatureGenerator::subFeatureGenerator(parameters->getDictionary(), i, input));
+      *gradientsWrtParameters = g;
     }
-    if (gradientWrtInput)
-      *gradientWrtInput = parameters;
+    if (gradientsWrtInput)
+      *gradientsWrtInput = parameters;
   }
   
 private:
   StringDictionaryPtr outputs;
-  FeatureDictionaryPtr paramsDictionary, outputsDictionary;
-  FeatureDictionaryPtr paramsGradientDictionary, classParamsGradientDictionary;
+  FeatureDictionaryPtr outputsDictionary;
 };
 
 inline MultiLinearArchitecture multiLinearArchitecture(StringDictionaryPtr outputs)

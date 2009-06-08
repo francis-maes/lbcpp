@@ -21,7 +21,15 @@ public:
     {return "Object";}
 
   virtual ObjectPtr next() = 0;
+  
+  template<class T>
+  inline ReferenceCountedObjectPtr<T> nextCast()
+  {
+    ObjectPtr res = next();
+    return res ? res.staticCast<T>() : ReferenceCountedObjectPtr<T>();
+  }
 
+  bool checkContentClassName(const std::string& expectedClassName);
   ObjectContainerPtr load(size_t maximumCount = 0);
 
 public:

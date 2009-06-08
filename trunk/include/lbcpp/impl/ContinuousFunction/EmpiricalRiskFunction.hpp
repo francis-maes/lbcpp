@@ -11,59 +11,58 @@
 
 # include "FunctionStatic.hpp"
 # include "FunctionPairTraits.hpp"
+# include "../../ObjectContainer.h"
 
 namespace lbcpp {
 namespace impl {
 
 // f : params -> R
 // f(theta) = 1/N sum_{i=1}^{N} (Architecture(theta) o Loss(y_i))(x_i)
-template<class ExactType, class PenalizationType, class ContainerType>
+template<class ExactType, class PenalizationType, class ExampleType>
 struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
 {
-  EmpiricalRisk(const PenalizationType& penalization, const ContainerType& examples)
+  typedef ReferenceCountedObjectPtr<ExampleType> ExampleTypePtr;
+  
+  EmpiricalRisk(const PenalizationType& penalization, ObjectContainerPtr examples)
     : penalization(penalization), examples(examples) {}
 
   PenalizationType penalization;
-  const ContainerType&  examples;
+  ObjectContainerPtr examples;
   
   enum {isDerivable = PenalizationType::isDerivable};
   
   void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
-    typedef Traits<ContainerType> ContainerTraits;
-
     DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
     assert(denseParameters);
     
     if (output)
       *output = 0;
-    if (!examples.size())
+    if (!examples->size())
     {
       if (gradient)
         *gradient = FeatureGenerator::emptyGenerator();
       return;
     }
-    double Z = 1.0 / examples.size();
+    double Z = 1.0 / examples->size();
     
     std::vector<std::pair<FeatureGeneratorPtr, double> >* gradientLinearCombination = NULL;
     if (gradient)
     {
       gradientLinearCombination = new std::vector<std::pair<FeatureGeneratorPtr, double> >();
-      gradientLinearCombination->reserve(ContainerTraits::size(examples));
+      gradientLinearCombination->reserve(examples->size());
     }
 
-    for (typename ContainerTraits::ConstIterator it = ContainerTraits::begin(examples); it != ContainerTraits::end(examples); ++it)
+    for (size_t i = 0; i < examples->size(); ++i)
     {
-      typedef typename ContainerTraits::ValueType ValueType;
-      const ValueType& example = ContainerTraits::value(it);
-
-      const_cast<PenalizationType& >(penalization).right.setLearningExample(example);
+      ExampleTypePtr example = examples->getCast<ExampleType>(i);
+      const_cast<PenalizationType& >(penalization).right.setLearningExample(*example);
 
       // FIXME : gradient direction
       double lossOutput;
       FeatureGeneratorPtr lossGradient;
-      penalization.compute(denseParameters, example.getInput(), output ? &lossOutput : NULL, gradient ? &lossGradient : NULL, NULL);
-      double kZ = example.getWeight() * Z;
+      penalization.compute(denseParameters, example->getInput(), output ? &lossOutput : NULL, gradient ? &lossGradient : NULL, NULL);
+      double kZ = example->getWeight() * Z;
       if (output)
         *output += lossOutput * kZ;
       if (gradient)
@@ -78,25 +77,25 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
 /*
 ** Empirical risk with scalar outputs
 */
-template<class ArchitectureType, class LossType, class ContainerType>
+template<class ArchitectureType, class LossType, class ExampleType>
 struct ScalarEmpiricalRisk : public EmpiricalRisk< 
-      ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType> , 
+      ScalarEmpiricalRisk<ArchitectureType, LossType, ExampleType> , 
       typename ScalarArchitectureScalarFunctionPair<ArchitectureType, LossType, void>::Composition,
-      ContainerType
+      ExampleType
     >
 {
-  typedef ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType> ExactType;
+  typedef ScalarEmpiricalRisk<ArchitectureType, LossType, ExampleType> ExactType;
   typedef typename ScalarArchitectureScalarFunctionPair<ArchitectureType, LossType, void>::Composition PenalizationType;
-  typedef EmpiricalRisk<ExactType, PenalizationType, ContainerType> BaseClassType;
+  typedef EmpiricalRisk<ExactType, PenalizationType, ExampleType> BaseClassType;
   
-  ScalarEmpiricalRisk(const ArchitectureType& architecture, const LossType& loss, const ContainerType& examples) 
+  ScalarEmpiricalRisk(const ArchitectureType& architecture, const LossType& loss, ObjectContainerPtr examples) 
     : BaseClassType(PenalizationType(architecture, loss), examples) {}
 };
 
-template<class ArchitectureType, class LossType, class ContainerType>
-inline ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType>
-  empiricalRisk(const ScalarArchitecture<ArchitectureType>& architecture, const ScalarLossFunction<LossType>& loss, const ContainerType& examples)
-  {return ScalarEmpiricalRisk<ArchitectureType, LossType, ContainerType >(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss), examples);}
+template<class ArchitectureType, class LossType, class ExampleType>
+inline ScalarEmpiricalRisk<ArchitectureType, LossType, ExampleType>
+  empiricalRisk(const ScalarArchitecture<ArchitectureType>& architecture, const ScalarLossFunction<LossType>& loss, ObjectContainerPtr examples, ExampleType* dummy)
+  {return ScalarEmpiricalRisk<ArchitectureType, LossType, ExampleType >(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss), examples);}
 
 /*
 ** Empirical risk with vector outputs
@@ -112,14 +111,14 @@ struct VectorEmpiricalRisk : public EmpiricalRisk<
   typedef typename VectorArchitectureScalarVectorFunctionPair<ArchitectureType, LossType, void>::Composition PenalizationType;
   typedef EmpiricalRisk<ExactType, PenalizationType, ContainerType> BaseClassType;
   
-  VectorEmpiricalRisk(const ArchitectureType& architecture, const LossType& loss, const ContainerType& examples) 
+  VectorEmpiricalRisk(const ArchitectureType& architecture, const LossType& loss, ObjectContainerPtr examples) 
     : BaseClassType(PenalizationType(architecture, loss), examples) {}
 };
 
-template<class ArchitectureType, class LossType, class ContainerType>
-inline VectorEmpiricalRisk<ArchitectureType, LossType, ContainerType>
-  empiricalRisk(const VectorArchitecture<ArchitectureType>& architecture, const VectorLossFunction<LossType>& loss, const ContainerType& examples)
-  {return VectorEmpiricalRisk<ArchitectureType, LossType, ContainerType >(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss), examples);}
+template<class ArchitectureType, class LossType, class ExampleType>
+inline VectorEmpiricalRisk<ArchitectureType, LossType, ExampleType>
+  empiricalRisk(const VectorArchitecture<ArchitectureType>& architecture, const VectorLossFunction<LossType>& loss, ObjectContainerPtr examples, ExampleType* dummy)
+  {return VectorEmpiricalRisk<ArchitectureType, LossType, ExampleType >(static_cast<const ArchitectureType& >(architecture), static_cast<const LossType& >(loss), examples);}
 
 
 }; /* namespace impl */

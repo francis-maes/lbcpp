@@ -54,11 +54,9 @@ struct ScalarToVectorArchitecture
     
     CompositeFeatureGeneratorPtr gParam, gInput;
     if (gradientWrtParameters)
-      gParam = new CompositeFeatureGenerator(new FeatureDictionary(input->getDictionary()->getName(),
-        StringDictionaryPtr(), getParametersDictionary(input->getDictionary())->getScopes()), n);
+      gParam = new CompositeFeatureGenerator(parameters->getDictionary(), n);
     if (gradientWrtInput)
-      gInput = new CompositeFeatureGenerator(new FeatureDictionary(input->getDictionary()->getName(),
-        StringDictionaryPtr(), input->getDictionary()->getScopes()), n);
+      gInput = new CompositeFeatureGenerator(input->getDictionary(), n);
     
     for (size_t i = 0; i < n; ++i)
     {

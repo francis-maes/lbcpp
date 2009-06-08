@@ -56,7 +56,7 @@ struct ClassificationExampleCreatorPolicy
       VariablePtr bestChoice = choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
 //      std::cout << "Best Choice: " << bestChoice->getReference<size_t>() << std::endl;
       assert(bestChoice);
-      classifier->trainStochasticExample(ClassificationExample(stateFeatures, bestChoice->getReference<size_t>()));
+      classifier->trainStochasticExample(new ClassificationExample(stateFeatures, bestChoice->getReference<size_t>()));
     }
     else
       BaseClass::error("ClassificationExampleCreatorPolicy::policyChoose", 
