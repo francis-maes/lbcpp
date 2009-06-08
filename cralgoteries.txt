@@ -1,4 +1,5 @@
-* ConsoleLogger
+ok test du ConsoleLogger
+
 * save des classifiers
 * constructeurs plus simple ˆ Žcrire
 * virer les anciens trucs de parsing
@@ -25,7 +26,11 @@ ContinuousFunctions:
 Optimizers:
   * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
 
+ChooseFunction, Variable:
+ * Passer les constructeurs static en fonctions externes
+ 
 Policy:
+ * Passer les constructeurs static en fonctions externes
  * GPomdp -> ScalarVectorFunction
  * Finir QLearning, MonteCarloControl, OlPomdp
  * Passage des Policy en dynamique

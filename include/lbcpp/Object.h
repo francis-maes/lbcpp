@@ -90,9 +90,17 @@ public:
   static inline std::string toString(const ReferenceCountedObjectPtr<T> value)
     {return value ? value->toString() : "null";}
   static inline void write(std::ostream& ostr, const ReferenceCountedObjectPtr<T> value)
-    {assert(value); value->saveToStream(ostr);}
+  {
+    if (value)
+      value->saveToStream(ostr);
+    else
+      lbcpp::write(ostr, std::string("__null__"));
+  }
   static inline bool read(std::istream& istr, ReferenceCountedObjectPtr<T>& result)
-    {result = Object::loadFromStreamCast<T>(istr); return result;}
+  {
+    result = Object::loadFromStreamCast<T>(istr);
+    return true;
+  }
 };
 
 template<class T>

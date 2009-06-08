@@ -98,7 +98,7 @@ public:
     {return impl::squareLoss<RegressionExample>();}
 };
 
-GradientBasedRegressorPtr GradientBasedRegressor::createLeastSquaresLinear(GradientBasedLearnerPtr learner)
+GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearnerPtr learner)
 {
   GradientBasedRegressorPtr res = new LeastSquaresLinearRegressor();
   res->setLearner(learner);
@@ -132,7 +132,7 @@ private:
   impl::MultiLinearArchitecture architecture_;
 };
 
-GradientBasedClassifierPtr GradientBasedClassifier::createMaximumEntropy(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
   return new MaximumEntropyClassifier(learner, labels);
 }
@@ -150,7 +150,7 @@ public:
     {return impl::logBinomialLoss<ClassificationExample>();}
 };
 
-GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLogisticRegression(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
   GradientBasedBinaryClassifierPtr res = new LogisticRegressionClassifier();
   res->setLearner(learner);
@@ -171,7 +171,7 @@ public:
     {return impl::hingeLoss<ClassificationExample>();}
 };
 
-GradientBasedBinaryClassifierPtr GradientBasedBinaryClassifier::createLinearSVM(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+GradientBasedBinaryClassifierPtr lbcpp::linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
   GradientBasedBinaryClassifierPtr res = new LinearSupportVectorMachine();
   res->setLearner(learner);
@@ -196,7 +196,7 @@ public:
     {return impl::multiClassLogBinomialLoss<GeneralizedClassificationExample>();}
 };
 
-GradientBasedGeneralizedClassifierPtr GradientBasedGeneralizedClassifier::createLinear(GradientBasedLearnerPtr learner)
+GradientBasedGeneralizedClassifierPtr lbcpp::linearGeneralizedClassifier(GradientBasedLearnerPtr learner)
 {
   GradientBasedGeneralizedClassifierPtr res = new LinearGeneralizedClassifier();
   res->setLearner(learner);
@@ -214,7 +214,7 @@ public:
     {return impl::allPairsLoss<impl::HingeLossFunction, RankingExample>();}
 };
 
-GradientBasedRankerPtr GradientBasedRanker::createLargeMarginAllPairsLinear(GradientBasedLearnerPtr learner)
+GradientBasedRankerPtr lbcpp::largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner)
 {
   GradientBasedRankerPtr res = new LargeMarginAllPairsLinearRanker();
   res->setLearner(learner);
@@ -229,7 +229,7 @@ public:
     {return impl::bestAgainstAllLoss<impl::HingeLossFunction, RankingExample>();}
 };
 
-GradientBasedRankerPtr GradientBasedRanker::createLargeMarginBestAgainstAllLinear(GradientBasedLearnerPtr learner)
+GradientBasedRankerPtr lbcpp::largeMarginBestAgainstAllLinearRanker(GradientBasedLearnerPtr learner)
 {
   GradientBasedRankerPtr res = new LargeMarginBestAgainstAllLinearRanker();
   res->setLearner(learner);
@@ -244,7 +244,7 @@ public:
     {return impl::mostViolatedPairLoss<impl::HingeLossFunction, RankingExample>();}
 };
 
-GradientBasedRankerPtr GradientBasedRanker::createLargeMarginMostViolatedPairLinear(GradientBasedLearnerPtr learner)
+GradientBasedRankerPtr lbcpp::largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner)
 {
   GradientBasedRankerPtr res = new LargeMarginMostViolatedPairLinearRanker();
   res->setLearner(learner);

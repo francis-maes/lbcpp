@@ -182,12 +182,12 @@ struct ScalarVectorFunctionScalarConstantPair
         if (output)
           *output *= right;
         if (gradient)
-          *gradient = FeatureGenerator::multiplyByScalar(*gradient, right);
+          *gradient = multiplyByScalar(*gradient, right);
       }
       else
       {
         if (output) *output = 0;
-        if (gradient) *gradient = FeatureGenerator::emptyGenerator();
+        if (gradient) *gradient = emptyFeatureGenerator();
       }
     }
   };
@@ -233,7 +233,7 @@ struct ScalarVectorFunctionPair : public ContinuousFunctionPair<Function1, Funct
       if (output)
         *output = operation.compute(leftOutput, rightOutput);
       if (gradient)
-        *gradient = FeatureGenerator::weightedSum(
+        *gradient = weightedSum(
           leftGradient, operation.computeDerivativeWrtLeft(leftOutput, rightOutput),
           rightGradient, operation.computeDerivativeWrtRight(leftOutput, rightOutput));
     }
@@ -284,9 +284,9 @@ struct ScalarArchitectureScalarConstantPair : public ContinuousFunctionPair<Func
         *output = operation.compute(leftOutput, right);
       double k = left.computeDerivativeWrtLeft(leftOutput, right);
       if (gradientWrtParameters)
-        *gradientWrtParameters = FeatureGenerator::multiplyByScalar(*gradientWrtParameters, k);
+        *gradientWrtParameters = multiplyByScalar(*gradientWrtParameters, k);
       if (gradientWrtInput)
-        *gradientWrtInput = FeatureGenerator::multiplyByScalar(*gradientWrtInput, k);
+        *gradientWrtInput = multiplyByScalar(*gradientWrtInput, k);
     }
   };
 
@@ -340,10 +340,10 @@ struct ScalarArchitectureScalarFunctionPair : public ContinuousFunctionPair<Func
       right.compute(leftOutput, output, &zero, gradientWrtParameters || gradientWrtInput ? &rightDerivative : NULL);
       
       if (gradientWrtParameters)
-        *gradientWrtParameters = FeatureGenerator::multiplyByScalar(*gradientWrtParameters, rightDerivative);
+        *gradientWrtParameters = multiplyByScalar(*gradientWrtParameters, rightDerivative);
       
       if (gradientWrtInput)
-        *gradientWrtInput = FeatureGenerator::multiplyByScalar(*gradientWrtInput, rightDerivative);
+        *gradientWrtInput = multiplyByScalar(*gradientWrtInput, rightDerivative);
     }
   };
 };
@@ -396,13 +396,13 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
       
       if (gradientsWrtParameters)
       {
-        *gradientsWrtParameters = FeatureGenerator::linearCombination(leftGradientWrtParameters, rightGradientDense);
+        *gradientsWrtParameters = linearCombination(leftGradientWrtParameters, rightGradientDense);
         (*gradientsWrtParameters)->checkDictionaryEquals(parameters->getDictionary());
       }
 
       if (gradientsWrtInput)
       {
-        *gradientsWrtInput = FeatureGenerator::linearCombination(leftGradientWrtInput, rightGradientDense);
+        *gradientsWrtInput = linearCombination(leftGradientWrtInput, rightGradientDense);
         (*gradientsWrtInput)->checkDictionaryEquals(input->getDictionary());
       }
     }

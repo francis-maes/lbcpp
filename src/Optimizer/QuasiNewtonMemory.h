@@ -61,8 +61,8 @@ public:
       gradientDeltas.pop_front();
       dotProducts.pop_front();
     }
-    FeatureGeneratorPtr parametersDelta = FeatureGenerator::difference(newParameters, currentParameters, true);
-    FeatureGeneratorPtr gradientDelta = FeatureGenerator::difference(newGradient, currentGradient, true);
+    FeatureGeneratorPtr parametersDelta = difference(newParameters, currentParameters, true);
+    FeatureGeneratorPtr gradientDelta = difference(newGradient, currentGradient, true);
     parametersDeltas.push_back(parametersDelta);
     gradientDeltas.push_back(gradientDelta);
     dotProducts.push_back(parametersDelta->dotProduct(gradientDelta));

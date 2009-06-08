@@ -126,7 +126,7 @@ public:
   }
 };
 
-RegressorPtr Regressor::createVerbose(std::ostream& ostr)
+RegressorPtr lbcpp::verboseRegressor(std::ostream& ostr)
   {return RegressorPtr(new VerboseRegressor(ostr));}
 
 /*

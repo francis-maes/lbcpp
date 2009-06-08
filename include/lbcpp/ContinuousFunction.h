@@ -28,8 +28,6 @@ public:
 class ScalarFunction : public ContinuousFunction
 {
 public:
-  static ScalarFunctionPtr createVectorFunctionLine(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
-
   virtual double compute(double input) const;
   virtual double computeDerivative(double input) const;
   virtual double computeDerivative(double input, double direction) const;
@@ -52,9 +50,6 @@ public:
 class ScalarVectorFunction : public ContinuousFunction
 {
 public:
-  static ScalarVectorFunctionPtr createSumOfSquares(double weight = 1.0);
-
-public:
   virtual double compute(const FeatureGeneratorPtr input) const;
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const;
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const;
@@ -62,7 +57,13 @@ public:
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const = 0;
 
   bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
+
+  // returns g : R -> R
+  //   with g(x) = f(parameters + x * direction)
+  ScalarFunctionPtr lineFunction(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction) const;
 };
+
+extern ScalarVectorFunctionPtr sumOfSquaresFunction(double weight = 1.0);
 
 /*
 ** f : example x R^n -> R

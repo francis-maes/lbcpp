@@ -122,7 +122,7 @@ struct VectorLineScalarFunction
     vectorInput->addWeighted(direction, input);
     FeatureGeneratorPtr gradientDirection, gradient;
     if (derivativeDirection)
-      gradientDirection = FeatureGenerator::multiplyByScalar(direction, *derivativeDirection > 0 ? 1.0 : -1.0);
+      gradientDirection = multiplyByScalar(direction, *derivativeDirection > 0 ? 1.0 : -1.0);
     function.compute(vectorInput, output, gradientDirection, derivative ? &gradient : NULL);
     if (derivative)
       *derivative = direction->dotProduct(gradient);

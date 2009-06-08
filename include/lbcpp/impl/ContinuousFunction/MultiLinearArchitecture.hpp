@@ -39,9 +39,9 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
     if (output)
       *output = classParameters->dotProduct(input);
     if (gradientWrtParameters)
-      *gradientWrtParameters = FeatureGenerator::subFeatureGenerator(parameters->getDictionary(), outputNumber, input);
+      *gradientWrtParameters = subFeatureGenerator(parameters->getDictionary(), outputNumber, input);
     if (gradientWrtInput)
-      *gradientWrtInput = FeatureGenerator::subFeatureGenerator(input->getDictionary(), outputNumber, classParameters);
+      *gradientWrtInput = subFeatureGenerator(input->getDictionary(), outputNumber, classParameters);
   }
   
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
@@ -72,7 +72,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
       CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(parameters->getDictionary(), numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
-        g->setSubGenerator(i, FeatureGenerator::subFeatureGenerator(parameters->getDictionary(), i, input));
+        g->setSubGenerator(i, subFeatureGenerator(parameters->getDictionary(), i, input));
       *gradientsWrtParameters = g;
     }
     if (gradientsWrtInput)

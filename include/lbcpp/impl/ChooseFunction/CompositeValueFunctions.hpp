@@ -111,7 +111,7 @@ TEMPLATE_INHERIT_BEGIN_3(CompositeStateFeaturesFunction, CompositeChooseFunction
     std::vector<std::pair<FeatureGeneratorPtr, double> >* res = new std::vector<std::pair<FeatureGeneratorPtr, double> >(n);
     for (size_t i = 0; i < n; ++i)
       (*res)[i] = std::make_pair(BaseClass::functions[i]->compute(), 1.0);
-    return FeatureGenerator::linearCombination(res);
+    return linearCombination(res);
   }
 };
 
@@ -132,7 +132,7 @@ struct CompositeActionFeaturesFunction : public CompositeChooseFunction<
     std::vector<std::pair<FeatureGeneratorPtr, double> >* res = new std::vector<std::pair<FeatureGeneratorPtr, double> >(n);
     for (size_t i = 0; i < n; ++i)
       (*res)[i] = std::make_pair(BaseClass::functions[i]->compute(choice), 1.0);
-    return FeatureGenerator::linearCombination(res);
+    return linearCombination(res);
   }
 };
 

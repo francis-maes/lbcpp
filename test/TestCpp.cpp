@@ -7,23 +7,23 @@ int testClassification(const std::string& filename)
 {
   FeatureDictionaryPtr features = new FeatureDictionary("testcpp-features");
   StringDictionaryPtr labels = new StringDictionary();
-  ObjectStreamPtr parser = ObjectStream::createClassificationExamplesParser(filename, features, labels);
+  ObjectStreamPtr parser = classificationExamplesParser(filename, features, labels);
   if (!parser)
     return 1;
   ObjectContainerPtr examples = parser->load();
 
   std::cout << examples->size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features, "<< toString(labels->getNumElements()) << " labels." << std::endl;
 
-/*  GradientBasedClassifierPtr classifier = GradientBasedClassifier::createMaximumEntropy(
-    GradientBasedLearner::createStochasticDescent(
-      IterationFunction::createConstant(0.01)), labels);
+/*  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(
+    stochasticDescentLearner(
+      constantIterationFunction(0.01)), labels);
 */
-//  GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(IterationFunction::createConstant(0.01));
-  GradientBasedLearnerPtr learner = GradientBasedLearner::createBatch(
-     // VectorOptimizer::createGradientDescent(IterationFunction::createConstant(1)),
-      VectorOptimizer::createLBFGS(),
+//  GradientBasedLearnerPtr learner = stochasticDescentLearner(constantIterationFunction(0.01));
+  GradientBasedLearnerPtr learner = batchLearner(
+     // gradientDescentOptimizer(constantIterationFunction(1)),
+      lbfgsOptimizer(),
     50);
-  GradientBasedBinaryClassifierPtr classifier = GradientBasedBinaryClassifier::createLinearSVM(learner, labels);
+  GradientBasedBinaryClassifierPtr classifier = linearSVMBinaryClassifier(learner, labels);
   
     double acc = classifier->evaluateAccuracy(examples->toStream());
     std::cout << "Initial Accuracy: " << (100.0 * acc) << "%" << std::endl;
@@ -48,16 +48,14 @@ int testClassification(const std::string& filename)
 int testRegression(const std::string& filename)
 {
   FeatureDictionaryPtr features = new FeatureDictionary("regression-features");
-  ObjectStreamPtr parser = ObjectStream::createRegressionExamplesParser(filename, features);
+  ObjectStreamPtr parser = regressionExamplesParser(filename, features);
   if (!parser)
     return 1;
   ObjectContainerPtr examples = parser->load();
 
   std::cout << examples->size() << " Examples, " << toString(features->getFeatures()->getNumElements()) << " features." << std::endl;
 
-  GradientBasedRegressorPtr regressor = GradientBasedRegressor::createLeastSquaresLinear(
-      GradientBasedLearner::createStochasticDescent(
-      IterationFunction::createConstant(0.01)));
+  GradientBasedRegressorPtr regressor = leastSquaresLinearRegressor(stochasticDescentLearner(constantIterationFunction(0.01)));
 //  regressor->createParameters();
   for (int i = 0; i < 100; ++i)
   {

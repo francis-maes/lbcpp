@@ -109,12 +109,12 @@ public:
 class Regressor : public LearningMachine
 {
 public:
-  static RegressorPtr createVerbose(std::ostream& ostr);
-
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
   
   double evaluateMeanAbsoluteError(ObjectStreamPtr examples) const;
 };
+
+extern RegressorPtr verboseRegressor(std::ostream& ostr);
 
 class Ranker : public LearningMachine
 {

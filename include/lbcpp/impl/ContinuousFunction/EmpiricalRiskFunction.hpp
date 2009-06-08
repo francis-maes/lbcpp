@@ -41,7 +41,7 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
     if (!examples->size())
     {
       if (gradient)
-        *gradient = FeatureGenerator::emptyGenerator();
+        *gradient = emptyFeatureGenerator();
       return;
     }
     double Z = 1.0 / examples->size();
@@ -70,7 +70,7 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
     }
     
     if (gradient)
-      *gradient = FeatureGenerator::linearCombination(gradientLinearCombination);
+      *gradient = linearCombination(gradientLinearCombination);
   }
 };
 

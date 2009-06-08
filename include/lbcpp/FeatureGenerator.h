@@ -20,24 +20,6 @@ namespace lbcpp
 class FeatureGenerator : public Object
 {
 public:
-  static FeatureGeneratorPtr emptyGenerator();
-  static FeatureGeneratorPtr unitGenerator();
-  
-  static FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight);
-
-  static FeatureGeneratorPtr weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow = false);
-  
-  static FeatureGeneratorPtr addition(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
-    {return weightedSum(featureGenerator1, 1.0, featureGenerator2, 1.0, computeNow);}
-    
-  static FeatureGeneratorPtr difference(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
-    {return weightedSum(featureGenerator1, 1.0, featureGenerator2, -1.0, computeNow);}
-  
-  static FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights);
-  static FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
-  static FeatureGeneratorPtr subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);
-
-public:
   virtual FeatureDictionaryPtr getDictionary() const = 0;
   
   bool checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const;
@@ -105,8 +87,22 @@ public:
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const = 0;
 };
 
-template<>
-struct Traits<FeatureGeneratorPtr> : public ObjectPtrTraits<FeatureGenerator> {};
+extern FeatureGeneratorPtr emptyFeatureGenerator();
+extern FeatureGeneratorPtr unitFeatureGenerator();
+
+extern FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight);
+
+extern FeatureGeneratorPtr weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow = false);
+
+inline FeatureGeneratorPtr addition(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
+  {return weightedSum(featureGenerator1, 1.0, featureGenerator2, 1.0, computeNow);}
+  
+inline FeatureGeneratorPtr difference(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
+  {return weightedSum(featureGenerator1, 1.0, featureGenerator2, -1.0, computeNow);}
+
+extern FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights);
+extern FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
+extern FeatureGeneratorPtr subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);
 
 class FeatureVisitor : public Object
 {

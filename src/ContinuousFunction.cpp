@@ -37,22 +37,6 @@ double ScalarFunction::computeDerivative(double input, double direction) const
 void ScalarFunction::compute(double input, double* output, double* derivative) const
   {compute(input, output, NULL, derivative);}
 
-
-class VectorFunctionLineScalarFunction
-  : public impl::StaticToDynamicScalarFunction< impl::VectorLineScalarFunction< impl::DynamicToStaticScalarVectorFunction > >
-{
-public:
-  typedef impl::StaticToDynamicScalarFunction< impl::VectorLineScalarFunction< impl::DynamicToStaticScalarVectorFunction > > BaseClass;
-  
-  VectorFunctionLineScalarFunction(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
-    : BaseClass(impl::vectorLineScalarFunction(impl::dynamicToStatic(function), parameters, direction)) {}
-};
-
-ScalarFunctionPtr ScalarFunction::createVectorFunctionLine(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
-{
-  return new VectorFunctionLineScalarFunction(function, parameters, direction);
-}
-
 /*
 ** ScalarVectorFunction
 */
@@ -86,8 +70,8 @@ bool ScalarVectorFunction::checkDerivativeWrtDirection(const FeatureGeneratorPtr
 {
   double dirNorm = direction->l2norm();
   double epsilon = 5e-6 / dirNorm;
-  double value1 = compute(FeatureGenerator::weightedSum(parameters, 1.0, direction, -epsilon, true));
-  double value2 = compute(FeatureGenerator::weightedSum(parameters, 1.0, direction, epsilon, true));
+  double value1 = compute(weightedSum(parameters, 1.0, direction, -epsilon, true));
+  double value2 = compute(weightedSum(parameters, 1.0, direction, epsilon, true));
   double numericalDerivative = (value2 - value1) / (2.0 * epsilon);
   FeatureGeneratorPtr gradient = computeGradient(parameters, direction);
   double analyticDerivative = gradient->dotProduct(direction);
@@ -96,7 +80,22 @@ bool ScalarVectorFunction::checkDerivativeWrtDirection(const FeatureGeneratorPtr
   return fabs(numericalDerivative - analyticDerivative) < 0.00001;
 }
 
-ScalarVectorFunctionPtr ScalarVectorFunction::createSumOfSquares(double weight)
+class VectorFunctionLineScalarFunction
+  : public impl::StaticToDynamicScalarFunction< impl::VectorLineScalarFunction< impl::DynamicToStaticScalarVectorFunction > >
+{
+public:
+  typedef impl::StaticToDynamicScalarFunction< impl::VectorLineScalarFunction< impl::DynamicToStaticScalarVectorFunction > > BaseClass;
+  
+  VectorFunctionLineScalarFunction(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
+    : BaseClass(impl::vectorLineScalarFunction(impl::dynamicToStatic(function), parameters, direction)) {}
+};
+
+ScalarFunctionPtr ScalarVectorFunction::lineFunction(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction) const
+{
+  return new VectorFunctionLineScalarFunction(const_cast<ScalarVectorFunction* >(this), parameters, direction);
+}
+
+ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction(double weight)
 {
   return weight != 1.0
     ? impl::staticToDynamic(impl::multiply(impl::sumOfSquares(), impl::constant(weight)))

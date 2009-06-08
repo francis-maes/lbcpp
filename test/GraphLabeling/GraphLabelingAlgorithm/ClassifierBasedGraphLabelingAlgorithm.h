@@ -21,9 +21,9 @@ public:
 
   virtual ClassifierPtr createClassifier(StringDictionaryPtr labels)
   {
-    IterationFunctionPtr learningRate = IterationFunction::createConstant(1.0);//InvLinear(26, 10000);
-    GradientBasedLearnerPtr learner = GradientBasedLearner::createStochasticDescent(learningRate);
-    GradientBasedClassifierPtr res = GradientBasedClassifier::createMaximumEntropy(/*learner->stochasticToBatch(100)*/learner, labels);
+    IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
+    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
+    GradientBasedClassifierPtr res = maximumEntropyClassifier(/*learner->stochasticToBatch(100)*/learner, labels);
     res->setL2Regularizer(l2regularizer);
     return res;
   }

@@ -112,29 +112,29 @@ FeatureVectorPtr LazyFeatureVector::getResult() const
 /*
 ** Lazy vectors
 */    
-FeatureGeneratorPtr FeatureGenerator::emptyGenerator()
+FeatureGeneratorPtr lbcpp::emptyFeatureGenerator()
 {
   static FeatureGeneratorPtr instance = new EmptyFeatureGenerator();
   return instance;
 }
-FeatureGeneratorPtr FeatureGenerator::unitGenerator()
+FeatureGeneratorPtr lbcpp::unitFeatureGenerator()
 {
   static FeatureGeneratorPtr instance = new UnitFeatureGenerator();
   return instance;
 }
 
-FeatureGeneratorPtr FeatureGenerator::subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
+FeatureGeneratorPtr lbcpp::subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
 {
   return new SubFeatureGenerator(dictionary, index, featureGenerator);
 }
 
-FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight)
+FeatureGeneratorPtr lbcpp::multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight)
 {
   assert(featureGenerator);
   
   // x * 0 = <empty>
   if (weight == 0)
-    return FeatureGenerator::emptyGenerator();
+    return emptyFeatureGenerator();
   
   // x * 1 = x
   if (weight == 1)
@@ -147,17 +147,17 @@ FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featu
     if (weighted)
       return weighted->exists()
         ? multiplyByScalar(weighted->getFeatureGenerator(), weight * weighted->getWeight())
-        : FeatureGenerator::emptyGenerator();
+        : emptyFeatureGenerator();
       
     // k * (sum_i w_i * x_i) = sum_i (w_i * k) * x_i
-    LinearCombinationFeatureGeneratorPtr linearCombination = featureGenerator.dynamicCast<LinearCombinationFeatureGenerator>();
-    if (linearCombination)
+    LinearCombinationFeatureGeneratorPtr combination = featureGenerator.dynamicCast<LinearCombinationFeatureGenerator>();
+    if (combination)
     {
-      if (linearCombination->exists())
-        return FeatureGenerator::linearCombination(linearCombination->getCompositeFeatureGenerator(),
-          multiplyByScalar(linearCombination->getWeights(), weight)->toDenseVector());
+      if (combination->exists())
+        return linearCombination(combination->getCompositeFeatureGenerator(),
+                  lbcpp::multiplyByScalar(combination->getWeights(), weight)->toDenseVector());
       else
-        return FeatureGenerator::emptyGenerator();
+        return emptyFeatureGenerator();
     }
     
     // k * (composite(x_1, ..., x_n)) = composite(k * x_1, ... k * x_n)
@@ -173,26 +173,26 @@ FeatureGeneratorPtr FeatureGenerator::multiplyByScalar(FeatureGeneratorPtr featu
         return res;
       }
       else
-        return FeatureGenerator::emptyGenerator();
+        return emptyFeatureGenerator();
     }
     
     // k * sub(index, x) = sub(index, k * x)
     SubFeatureGeneratorPtr sub = featureGenerator.dynamicCast<SubFeatureGenerator>();
     if (sub)
       return sub->exists()
-        ? FeatureGenerator::subFeatureGenerator(sub->getDictionary(), sub->getIndex(), multiplyByScalar(sub->getFeatureGenerator(), weight))
-        : FeatureGenerator::emptyGenerator();
+        ? subFeatureGenerator(sub->getDictionary(), sub->getIndex(), multiplyByScalar(sub->getFeatureGenerator(), weight))
+        : emptyFeatureGenerator();
   }
 
   // k * <empty> = <empty>
   if (featureGenerator.dynamicCast<EmptyFeatureGenerator>())
-    return FeatureGenerator::emptyGenerator();
+    return emptyFeatureGenerator();
 
   // default: k * x 
   return new WeightedFeatureGenerator(featureGenerator, weight);
 }
 
-FeatureGeneratorPtr FeatureGenerator::weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow)
+FeatureGeneratorPtr lbcpp::weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow)
 {
   if (computeNow)
   {
@@ -221,12 +221,12 @@ FeatureGeneratorPtr FeatureGenerator::weightedSum(FeatureGeneratorPtr featureGen
   }
 }
 
-FeatureGeneratorPtr FeatureGenerator::linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights)
+FeatureGeneratorPtr lbcpp::linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights)
 {
   return new LinearCombinationFeatureGenerator(compositeFeatureGenerator, weights);
 }
 
-FeatureGeneratorPtr FeatureGenerator::linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms)
+FeatureGeneratorPtr lbcpp::linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms)
 {
   return new ExplicitLinearCombinationFeatureGenerator(newTerms);
 }
