@@ -95,9 +95,46 @@ ScalarFunctionPtr ScalarVectorFunction::lineFunction(const FeatureGeneratorPtr p
   return new VectorFunctionLineScalarFunction(const_cast<ScalarVectorFunction* >(this), parameters, direction);
 }
 
+class SumOfSquaresScalarVectorFunction
+  : public impl::StaticToDynamicScalarVectorFunction<impl::SumOfSquaresScalarVectorFunction>
+{
+public:
+  typedef impl::StaticToDynamicScalarVectorFunction<impl::SumOfSquaresScalarVectorFunction> BaseClass;
+  
+  SumOfSquaresScalarVectorFunction() 
+    : BaseClass(impl::sumOfSquares()) {}
+};
+
+class WeightedSumOfSquaresScalarVectorFunction 
+  : public impl::StaticToDynamicScalarVectorFunction<
+      impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication
+    >
+{
+public:
+  typedef impl::StaticToDynamicScalarVectorFunction<
+      impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication
+    > BaseClass;
+    
+  WeightedSumOfSquaresScalarVectorFunction(double weight = 1.0)
+    : BaseClass(BaseClass::ImplementationType(impl::sumOfSquares(), weight)) {}
+};
+
 ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction(double weight)
 {
-  return weight != 1.0
-    ? impl::staticToDynamic(impl::multiply(impl::sumOfSquares(), impl::constant(weight)))
-    : impl::staticToDynamic(impl::sumOfSquares());
+  if (weight == 1)
+    return new SumOfSquaresScalarVectorFunction();
+  return new WeightedSumOfSquaresScalarVectorFunction(weight);
+    
+//  return weight != 1.0 ? 
+//    ? impl::staticToDynamic(impl::multiply(impl::sumOfSquares(), impl::constant(weight)))
+//    : impl::staticToDynamic(impl::sumOfSquares());
+}
+
+/*
+** Serializable classes declaration
+*/
+void declareContinuousFunctions()
+{
+  LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction);
+  LBCPP_DECLARE_CLASS(WeightedSumOfSquaresScalarVectorFunction);
 }

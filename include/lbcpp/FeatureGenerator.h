@@ -22,7 +22,8 @@ class FeatureGenerator : public Object
 public:
   virtual FeatureDictionaryPtr getDictionary() const = 0;
   
-  bool checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const;
+  bool checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const
+    {return getDictionary()->checkEquals(otherDictionary);}
   
   virtual bool isDense() const
     {return false;}

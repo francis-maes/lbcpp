@@ -223,6 +223,7 @@ private:
 ObjectStreamPtr lbcpp::classificationExamplesParser(
           const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
 {
+  assert(features && labels);
   return new ClassificationExamplesParser(filename, features, labels);
 }
 
@@ -250,5 +251,6 @@ public:
 
 ObjectStreamPtr lbcpp::regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
 {
+  assert(features);
   return new RegressionExamplesParser(filename, features);
 }

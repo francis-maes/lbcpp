@@ -42,6 +42,16 @@ public:
   virtual std::string toString() const
     {return lbcpp::toString(getMean());}
 
+  virtual void save(std::ostream& ostr) const
+  { 
+    write(ostr, name);
+    write(ostr, value);
+    write(ostr, cnt);
+  }
+  
+  virtual bool load(std::istream& istr)
+    {return read(istr, name) && read(istr, value) && read(istr, cnt);}
+
 protected:
   std::string name;
   double value;
@@ -68,6 +78,15 @@ public:
 
   virtual std::string toString() const
     {return ScalarRandomVariableMean::toString() + " +/- " + lbcpp::toString(getStandardDeviation());}
+
+  virtual void save(std::ostream& ostr) const
+  { 
+    ScalarRandomVariableMean::save(ostr);
+    meansqr.save(ostr);
+  }
+  
+  virtual bool load(std::istream& istr)
+    {return ScalarRandomVariableMean::load(istr) && meansqr.load(istr);}
 
 private:
   ScalarRandomVariableMean meansqr;
@@ -114,6 +133,16 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
     return ScalarRandomVariableMeanAndVariance::toString() + " [" +
       lbcpp::toString(min) + " - " + lbcpp::toString(max) + "]";
   }
+
+  virtual void save(std::ostream& ostr) const
+  { 
+    ScalarRandomVariableMeanAndVariance::save(ostr);
+    write(ostr, min);
+    write(ostr, max);
+  }
+  
+  virtual bool load(std::istream& istr)
+    {return ScalarRandomVariableMeanAndVariance::load(istr) && read(istr, min) && read(istr, max);}
 
 private:
   double min, max;

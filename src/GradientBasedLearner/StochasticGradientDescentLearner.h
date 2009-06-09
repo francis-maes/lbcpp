@@ -19,7 +19,11 @@ class StochasticGradientDescentLearner : public GradientBasedLearner
 public:
   StochasticGradientDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
     : epoch(0), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate) {}
+  StochasticGradientDescentLearner() : epoch(0), normalizeLearningRate(false) {}
     
+  virtual std::string toString() const
+    {return "StochasticGradientDescentLearner(" + lbcpp::toString(learningRate) + ")";}
+
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
     assert(parameters);
@@ -38,6 +42,20 @@ public:
     // apply regularizer
     if (regularizer)
       parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
+  }
+  
+  virtual void save(std::ostream& ostr) const
+  {
+    write(ostr, epoch);
+    write(ostr, learningRate);
+    write(ostr, normalizeLearningRate);
+    inputSize.save(ostr);
+  }
+  
+  virtual bool load(std::istream& istr)
+  {
+    return read(istr, epoch) && read(istr, learningRate) &&
+      read(istr, normalizeLearningRate) && inputSize.load(istr);
   }
   
 protected:

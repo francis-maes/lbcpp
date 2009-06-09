@@ -17,6 +17,9 @@ namespace lbcpp
 class RPropOptimizer : public VectorOptimizer
 {
 public:
+  virtual std::string toString() const
+    {return "RPropOptimizer";}
+
   virtual bool initialize()
   {
     previousGradient = new DenseVector(parameters->getDictionary());
@@ -33,6 +36,12 @@ public:
     return optimizerContinue;
   }
   
+  virtual void save(std::ostream& ostr) const
+    {}
+
+  virtual bool load(std::istream& istr)
+    {return true;}
+
 private:
   DenseVectorPtr previousGradient;
   DenseVectorPtr derivativeSpeeds;

@@ -32,6 +32,9 @@ public:
       this->lineSearch = new BackTrackingLineSearch();
   }
   
+  virtual std::string toString() const
+    {return "LBFGSOptimizer";}
+
   virtual ~LBFGSOptimizer()
     {delete lineSearch;}
   
@@ -50,6 +53,12 @@ public:
     setParametersGradientAndValue(parameters, gradient, value);
     return optimizerContinue;
   }
+
+  virtual void save(std::ostream& ostr) const
+    {}
+
+  virtual bool load(std::istream& istr)
+    {return true;}
 
 protected:
   QuasiNewtonMemory memory;

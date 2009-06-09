@@ -9,16 +9,39 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
+extern void declareContinuousFunctions();
+extern void declareIterationFunctions();
+extern void declareOptimizerStoppingCriterions();
+extern void declareOptimizers();
+extern void declareGradientBasedLearners();
 extern void declareGradientBasedLearningMachines();
+
+void declareRandomVariableStatistics()
+{
+  LBCPP_DECLARE_CLASS(ScalarRandomVariableMean);
+  LBCPP_DECLARE_CLASS(ScalarRandomVariableMeanAndVariance);
+  LBCPP_DECLARE_CLASS(ScalarRandomVariableStatistics);
+}
 
 void declareFeatureGenerators()
 {
+  LBCPP_DECLARE_CLASS(StringDictionary);
+  LBCPP_DECLARE_CLASS(FeatureDictionary);
+
   LBCPP_DECLARE_CLASS(SparseVector);
   LBCPP_DECLARE_CLASS(DenseVector);
 }
 
 void declareLBCppCoreClasses()
 {
-  declareGradientBasedLearningMachines();
+  declareRandomVariableStatistics();
   declareFeatureGenerators();
+  
+  declareContinuousFunctions();
+  declareIterationFunctions();
+  declareOptimizerStoppingCriterions();
+  declareOptimizers();
+  
+  declareGradientBasedLearners();
+  declareGradientBasedLearningMachines();
 }

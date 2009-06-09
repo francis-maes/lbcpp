@@ -38,6 +38,9 @@ typedef ReferenceCountedObjectPtr<ObjectContainer> ObjectContainerPtr;
 class VectorObjectContainer;
 typedef ReferenceCountedObjectPtr<VectorObjectContainer> VectorObjectContainerPtr;
 
+class ObjectGraph;
+typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
+
 // feature generators
 class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;

@@ -18,7 +18,7 @@ using namespace lbcpp;
 */
 void GradientBasedLearningMachine::saveImpl(std::ostream& ostr) const
 {
-  write(ostr, parameters->getDictionary());
+  FeatureDictionary::save(ostr, inputDictionary, parameters->getDictionary());
   parameters->save(ostr);
   write(ostr, regularizer);
   write(ostr, learner);
@@ -28,12 +28,13 @@ void GradientBasedLearningMachine::saveImpl(std::ostream& ostr) const
 bool GradientBasedLearningMachine::loadImpl(std::istream& istr)
 {
   FeatureDictionaryPtr paramsDictionary;
-  if (!read(istr, paramsDictionary) || !paramsDictionary)
+  if (!FeatureDictionary::load(istr, inputDictionary, paramsDictionary))
     return false;
   parameters = new DenseVector(paramsDictionary);
-  if (!parameters->load(istr))
-    return false;
-  return read(istr, regularizer) && read(istr, learner) && read(istr, initializeParametersRandomly);
+  return parameters->load(istr) &&
+            read(istr, regularizer) &&
+            read(istr, learner) &&
+            read(istr, initializeParametersRandomly);
 }
 
 void GradientBasedLearningMachine::trainStochasticBeginImpl()
@@ -48,7 +49,7 @@ void GradientBasedLearningMachine::trainStochasticExampleImpl(FeatureGeneratorPt
 {
   assert(learner);
   if (!parameters)
-    parameters = createInitialParameters(gradient->getDictionary(), initializeParametersRandomly);
+    createParameters(gradient->getDictionary(), initializeParametersRandomly);
   learner->setParameters(parameters);
   learner->trainStochasticExample(gradient, weight);
 }
@@ -57,7 +58,8 @@ void GradientBasedLearningMachine::trainStochasticExampleImpl(ObjectPtr example)
 {
   assert(learner);
   if (!parameters)
-    learner->setParameters(parameters = createInitialParameters(getInputDictionary(example), initializeParametersRandomly));
+    createParameters(getInputDictionaryFromExample(example), initializeParametersRandomly);
+  learner->setParameters(parameters);
   learner->trainStochasticExample(getLoss(example));
 }
 
@@ -71,7 +73,7 @@ bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, P
 {
   assert(learner && examples->size());
   if (!parameters)
-    parameters = createInitialParameters(getInputDictionary(examples->get(0)), initializeParametersRandomly);
+    createParameters(getInputDictionaryFromExample(examples->get(0)), initializeParametersRandomly);
 
   // delegate to learner
   learner->setParameters(parameters);

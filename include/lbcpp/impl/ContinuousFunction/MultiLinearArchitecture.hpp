@@ -29,19 +29,33 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   }
     
   size_t getNumOutputs() const
-    {assert(outputs->getNumElements()); return outputs->getNumElements();}
+    {assert(outputs && outputs->getNumElements()); return outputs->getNumElements();}
   
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
-    {return new FeatureDictionary("MultiLinearArchitecture parameters", StringDictionaryPtr(), outputs);}
+  {
+    FeatureDictionaryPtr res = new FeatureDictionary("MultiLinearArchitecture parameters", StringDictionaryPtr(), outputs);
+    for (size_t i = 0; i < outputs->getNumElements(); ++i)
+      res->setSubDictionary(i, inputDictionary);
+    return res;
+  }
+  
+  DenseVectorPtr getClassParameters(DenseVectorPtr parameters, size_t outputNumber, FeatureDictionaryPtr inputDictionary) const
+  {
+    DenseVectorPtr& res = parameters->getSubVector(outputNumber);
+    if (!res)
+    {
+      res = new DenseVector(inputDictionary);
+      parameters->getDictionary()->setSubDictionary(outputNumber, inputDictionary);
+    }
+    return res;
+  }
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber, double* output, 
                 FeatureGeneratorPtr* gradientWrtParameters,
                 FeatureGeneratorPtr* gradientWrtInput) const
   {
     assert(outputNumber < getNumOutputs());
-    DenseVectorPtr& classParameters = parameters->getSubVector(outputNumber);
-    if (!classParameters)
-      classParameters = new DenseVector(input->getDictionary());
+    DenseVectorPtr classParameters = getClassParameters(parameters, outputNumber, input->getDictionary());
     if (output)
       *output = classParameters->dotProduct(input);
     if (gradientWrtParameters)
@@ -61,9 +75,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       DenseVectorPtr res = new DenseVector(outputsDictionary, numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
       {
-        DenseVectorPtr& classParameters = parameters->getSubVector(i);
-        if (!classParameters)
-          classParameters = new DenseVector(input->getDictionary());
+        DenseVectorPtr classParameters = getClassParameters(parameters, i, input->getDictionary());
         res->set(i, classParameters->dotProduct(input));
       }
       assert(res->getNumValues() == numOutputs);

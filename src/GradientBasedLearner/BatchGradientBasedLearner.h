@@ -19,7 +19,11 @@ class BatchGradientBasedLearner : public GradientBasedLearner
 public:
   BatchGradientBasedLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
     : optimizer(optimizer), stoppingCriterion(stoppingCriterion) {}
+  BatchGradientBasedLearner() {}
     
+  virtual std::string toString() const
+    {return "BatchGradientBasedLearner(" + lbcpp::toString(optimizer) + ", " + lbcpp::toString(stoppingCriterion) + ")";}
+
   virtual void trainStochasticBegin()
   {
     Object::error("Batch::trainStochasticBegin", "This is not a stochastic learner");
@@ -51,6 +55,15 @@ public:
       progress->progressEnd();
     return true;
   }
+  
+  virtual void save(std::ostream& ostr) const
+  {
+    write(ostr, optimizer);
+    write(ostr, stoppingCriterion);
+  }
+  
+  virtual bool load(std::istream& istr)
+    {return read(istr, optimizer) && read(istr, stoppingCriterion);}
   
 protected:
   VectorOptimizerPtr optimizer;

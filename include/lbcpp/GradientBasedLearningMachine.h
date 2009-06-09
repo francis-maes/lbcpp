@@ -27,11 +27,25 @@ public:
   /*
   ** Abstract
   */
-  virtual FeatureDictionaryPtr getInputDictionary(ObjectPtr example) = 0;
+  virtual FeatureDictionaryPtr getInputDictionaryFromExample(ObjectPtr example) = 0;
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
   virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const = 0;
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(ObjectContainerPtr examples) const = 0;
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(ObjectContainerPtr examples) const = 0;
+
+  /*
+  ** Input Dictionary
+  */
+  FeatureDictionaryPtr getInputDictionary() const
+    {return inputDictionary;}
+    
+  bool ensureInputDictionary(FeatureDictionaryPtr dictionary)
+  {
+    if (inputDictionary)
+      return inputDictionary->checkEquals(dictionary);
+    inputDictionary = dictionary;
+    return true;
+  }
 
   /*
   ** Parameters
@@ -40,7 +54,11 @@ public:
     {return parameters;}
     
   void createParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly)
-    {assert(!parameters); parameters = createInitialParameters(inputDictionary, initializeRandomly);}
+  {
+    ensureInputDictionary(inputDictionary);
+    assert(!parameters);
+    parameters = createInitialParameters(inputDictionary, initializeRandomly);
+  }
     
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
@@ -83,8 +101,9 @@ public:
   
   double computeRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
     {assert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
-      
+    
 protected:
+  FeatureDictionaryPtr inputDictionary;
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;
   GradientBasedLearnerPtr learner;
@@ -113,9 +132,12 @@ public:
   typedef ExampleType_ ExampleType;
   typedef ReferenceCountedObjectPtr<ExampleType> ExampleTypePtr;
 
-  virtual FeatureDictionaryPtr getInputDictionary(ObjectPtr example)
+  virtual FeatureDictionaryPtr getInputDictionaryFromExample(ObjectPtr example)
     {return example.staticCast<ExampleType>()->getInput()->getDictionary();}
 
+  virtual FeatureDictionaryPtr getInputDictionary() const
+    {return GradientBasedLearningMachine::getInputDictionary();}
+  
   /*
   ** LearningMachine
   */
@@ -134,7 +156,6 @@ public:
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
     {return trainBatchImpl(examples, progress);}
   
-
   /*
   ** Serialization
   */

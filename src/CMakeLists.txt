@@ -13,6 +13,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/ObjectPredeclarations.h
   ../include/lbcpp/ObjectStream.h
   ../include/lbcpp/ObjectContainer.h
+  ../include/lbcpp/ObjectGraph.h
   ../include/lbcpp/RandomVariable.h
   ../include/lbcpp/FeatureDictionary.h
   ../include/lbcpp/FeatureGenerator.h
@@ -128,6 +129,7 @@ SET(LBCPP_CORE_SOURCES
   Object.cpp
   ObjectStream.cpp
   ObjectContainer.cpp
+  ObjectGraph.cpp
   Utilities.cpp
   FeatureDictionary.cpp
   FeatureGenerator.cpp
@@ -135,6 +137,8 @@ SET(LBCPP_CORE_SOURCES
   DenseVector.cpp
   DoubleVectorHelpers.hpp
   ContinuousFunction.cpp
+  IterationFunction.cpp
+  OptimizerStoppingCriterion.cpp
   Optimizer.cpp
   LearningExample.cpp
   LearningMachine.cpp

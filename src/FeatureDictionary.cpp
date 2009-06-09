@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/FeatureDictionary.h>
+#include <lbcpp/ObjectGraph.h>
 using namespace lbcpp;
 
 /*
@@ -70,12 +71,14 @@ namespace lbcpp
 
   std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings)
   {
+    ostr << "[";
     for (size_t i = 0; i < strings.indexToString.size(); ++i)
     {
-      ostr << strings.indexToString[i] << " [" << i << "]";
+      ostr << strings.indexToString[i]; // << " [" << i << "]";
       if (i < strings.indexToString.size() - 1)
         ostr << ", ";
     }
+    ostr << "]";
     return ostr;
   }
 
@@ -122,21 +125,55 @@ FeatureDictionaryPtr FeatureDictionary::getDictionaryWithSubScopesAsFeatures()
   return dictionaryWithSubScopesAsFeatures;
 }
 
-void FeatureDictionary::enumerateUniqueDictionaries(std::map<FeatureDictionaryPtr, size_t>& indices, std::vector<FeatureDictionaryPtr>& res)
+bool FeatureDictionary::checkEquals(FeatureDictionaryPtr otherDictionary) const
 {
-  if (indices.find(this) == indices.end())
+  FeatureDictionaryPtr dictionary = const_cast<FeatureDictionary* >(this);
+  if (dictionary != otherDictionary)
   {
-    indices[this] = indices.size();
-    res.push_back(this);
+    Object::error("FeatureGenerator::checkDictionaryEquals", 
+                  "Dictionary mismatch. This dictionary = '" + dictionary->getName() + "', " + 
+                  "required dictionary = '" + otherDictionary->getName() + "'");
+    assert(false);
+    return false;
   }
-  for (size_t i = 0; i < getNumScopes(); ++i)
+  return true;
+}
+
+inline std::string indentSpaces(size_t indent)
+{
+  std::string res;
+  for (size_t i = 0; i < indent; ++i)
+    res += "  ";
+  return res;
+}
+
+void FeatureDictionary::toStringRec(size_t indent, std::string& res) const
+{
+  if (featuresDictionary)
+    res += indentSpaces(indent) + "Features: " + lbcpp::toString(featuresDictionary) + "\n";
+  if (scopesDictionary)
+    res += indentSpaces(indent) + "Scopes: " + lbcpp::toString(scopesDictionary) + "\n";
+  for (size_t i = 0; i < subDictionaries.size(); ++i)
   {
-    FeatureDictionaryPtr subDictionary = getSubDictionary(i);
-    if (subDictionary)
-      subDictionary->enumerateUniqueDictionaries(indices, res);
+    res += indentSpaces(indent) + "Sub Dictionary " + lbcpp::toString(i+1) + "/" +
+      lbcpp::toString(subDictionaries.size());
+    if (scopesDictionary)
+      res += ": " + scopesDictionary->getString(i);
+    res += "\n";
+    if (subDictionaries[i])
+      subDictionaries[i]->toStringRec(indent + 1, res);
+    else
+      res += indentSpaces(indent+1) + "<null>" + "\n";
   }
 }
 
+std::string FeatureDictionary::toString() const
+{
+  std::string res;
+  toStringRec(0, res);
+  return res;
+}
+/*
 bool FeatureDictionary::load(std::istream& istr)
 {
   size_t numUniqueDictionaries;
@@ -153,30 +190,27 @@ bool FeatureDictionary::load(std::istream& istr)
     if (!read(istr, name))
       return false;
     FeatureDictionaryPtr dictionary = new FeatureDictionary(name);
-    if (!dictionary->getFeatures()->load(istr) ||
-        !dictionary->getScopes()->load(istr))
+    if (!read(istr, dictionary->featuresDictionary) || !read(istr, dictionary->scopesDictionary))
       return false;
     dictionaries[i] = dictionary;
-    subDictionaryIndices[i].resize(dictionary->getNumScopes());
-    for (size_t j = 0; j < dictionary->getNumScopes(); ++j)
-    {
-      size_t subDictionaryIndex;
-      if (!read(istr, subDictionaryIndex))
-        return false;
-      if (subDictionaryIndex >= dictionaries.size())
+    std::vector<size_t>& indices = subDictionaryIndices[i];
+    if (!read(istr, indices))
+      return false;
+    for (size_t j = 0; j < indices.size(); ++j)
+      if (indices[j] >= dictionaries.size())
       {
-        Object::error("FeatureDictionary::load", "Invalid sub-dictionary index");
+        Object::error("FeatureDictionary::load", "Invalid sub-dictionary index: " + lbcpp::toString(indices[j]));
         return false;
       }
-      subDictionaryIndices[i][j] = subDictionaryIndex;
-    }
   }
   
   for (size_t i = 0; i < dictionaries.size(); ++i)
   {
     FeatureDictionaryPtr dictionary = dictionaries[i];
-    for (size_t j = 0; j < subDictionaryIndices[i].size(); ++j)
-      dictionary->setSubDictionary(j, dictionaries[subDictionaryIndices[i][j]]);
+    const std::vector<size_t>& indices = subDictionaryIndices[i];
+    dictionary->subDictionaries.resize(indices.size());
+    for (size_t j = 0; j < indices.size(); ++j)
+      dictionary->subDictionaries[j] = dictionaries[indices[j]];
   }
   FeatureDictionaryPtr topDictionary = dictionaries[0];
   assert(topDictionary);
@@ -187,7 +221,23 @@ bool FeatureDictionary::load(std::istream& istr)
   return true;
 }
 
-void FeatureDictionary::save(std::ostream& ostr)
+void FeatureDictionary::enumerateUniqueDictionaries(std::map<FeatureDictionaryPtr, size_t>& indices, std::vector<FeatureDictionaryPtr>& res) const
+{
+  FeatureDictionaryPtr pthis = const_cast<FeatureDictionary* >(this);
+  if (indices.find(pthis) == indices.end())
+  {
+    indices[pthis] = res.size();
+    res.push_back(pthis);
+  }
+  for (size_t i = 0; i < subDictionaries.size(); ++i)
+  {
+    FeatureDictionaryPtr subDictionary = subDictionaries[i];
+    if (subDictionary)
+      subDictionary->enumerateUniqueDictionaries(indices, res);
+  }
+}
+
+void FeatureDictionary::save(std::ostream& ostr) const
 {
   std::map<FeatureDictionaryPtr, size_t> indices;
   std::vector<FeatureDictionaryPtr> dictionaries;
@@ -199,13 +249,127 @@ void FeatureDictionary::save(std::ostream& ostr)
   {
     FeatureDictionaryPtr dictionary = dictionaries[i];
     write(ostr, dictionary->getName());
-    dictionary->getFeatures()->save(ostr);
-    dictionary->getScopes()->save(ostr);
-    for (size_t j = 0; j < dictionary->getNumScopes(); ++j)
+    write(ostr, dictionary->featuresDictionary);
+    write(ostr, dictionary->scopesDictionary);
+    std::vector<size_t> subDictionaryIndices(dictionary->subDictionaries.size());
+    for (size_t j = 0; j < subDictionaryIndices.size(); ++j)
     {
-      std::map<FeatureDictionaryPtr, size_t>::iterator it = indices.find(dictionary->getSubDictionary(j));
+      std::map<FeatureDictionaryPtr, size_t>::iterator it = indices.find(dictionary->subDictionaries[j]);
       assert(it != indices.end());
-      write(ostr, it->second);
+      assert(it->second < dictionaries.size());
+      subDictionaryIndices[j] = it->second;
     }
+    write(ostr, subDictionaryIndices);
   }
+}
+*/
+class FeatureDictionaryGraph : public ObjectGraph
+{
+public:
+  void addDictionary(FeatureDictionaryPtr dictionary)
+    {roots.push_back(dictionary);}
+  
+  virtual size_t getNumRoots() const
+    {return roots.size();}
+    
+  virtual ObjectPtr getRoot(size_t index) const
+    {assert(index < roots.size()); return roots[index];}
+
+  virtual void setRoots(const std::vector<ObjectPtr>& successors)
+    {roots = *(const std::vector<FeatureDictionaryPtr>* )(&successors);}
+  
+  virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors)
+  {
+    FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
+    assert(dictionary);
+    dictionary->setSubDictionaries(*(const std::vector<FeatureDictionaryPtr>* )(&successors));
+  }
+  
+  virtual size_t getNumSuccessors(ObjectPtr node) const
+  {
+    FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
+    assert(dictionary);
+    return dictionary->getNumSubDictionaries();
+  }
+  
+  virtual ObjectPtr getSuccessor(ObjectPtr node, size_t index) const
+  {
+    FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
+    assert(dictionary);
+    return dictionary->getSubDictionary(index);
+  }
+
+  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const
+  {
+    FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
+    assert(dictionary);
+    write(ostr, dictionary->getName());
+    write(ostr, dictionary->getFeatures());
+    write(ostr, dictionary->getScopes());    
+  }
+  
+  virtual ObjectPtr loadNode(std::istream& istr) const
+  {
+    std::string name;
+    StringDictionaryPtr features, scopes;
+    if (!read(istr, name) || !read(istr, features) || !read(istr, scopes))
+      return ObjectPtr();
+    return new FeatureDictionary(name, features, scopes);
+  }
+
+protected:
+  std::vector<FeatureDictionaryPtr> roots;
+};
+
+void FeatureDictionary::save(std::ostream& ostr) const
+{
+  FeatureDictionaryGraph graph;
+  graph.addDictionary(const_cast<FeatureDictionary* >(this));
+  graph.save(ostr);
+}
+
+bool FeatureDictionary::load(std::istream& istr)
+{
+  FeatureDictionaryGraph graph;
+  if (!graph.load(istr))
+    return false;
+  if (graph.getNumRoots() != 1)
+  {
+    Object::error("FeatureDictionary::load", "Invalid number of roots in the FeatureDictionary graph");
+    return false;
+  }
+  FeatureDictionaryPtr rootDictionary = graph.getRoot(0);
+  name = rootDictionary->name;
+  featuresDictionary = rootDictionary->featuresDictionary;
+  scopesDictionary = rootDictionary->scopesDictionary;
+  subDictionaries = rootDictionary->subDictionaries;  
+  return true;
+}
+
+void FeatureDictionary::save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2)
+{
+  FeatureDictionaryGraph graph;
+  graph.addDictionary(dictionary1);
+  graph.addDictionary(dictionary2);
+  graph.save(ostr);
+}
+
+bool FeatureDictionary::load(std::istream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2)
+{
+  FeatureDictionaryGraph graph;
+  if (!graph.load(istr))
+    return false;
+  if (graph.getNumRoots() != 2)
+  {
+    Object::error("FeatureDictionary::load", "Invalid number of roots in the FeatureDictionary graph");
+    return false;
+  }
+  dictionary1 = graph.getRoot(0).dynamicCast<FeatureDictionary>();
+  dictionary2 = graph.getRoot(1).dynamicCast<FeatureDictionary>();
+  if (!dictionary1 || !dictionary2)
+  {
+    Object::error("FeatureDictionary::load", "Could not load one of the dictionaries");
+    return false;
+  }
+  return true;
 }
