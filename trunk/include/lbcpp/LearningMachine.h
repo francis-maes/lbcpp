@@ -33,6 +33,11 @@ public:
   */
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL) = 0;  
   virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallback* progress = NULL);
+
+  /*
+  ** Input dictionary
+  */
+  virtual FeatureDictionaryPtr getInputDictionary() const = 0;
 };
 typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 
@@ -76,11 +81,8 @@ public:
   /*
   ** Serialization
   */
-  virtual void save(std::ostream& ostr) const
-    {write(ostr, labels);}
-  
-  virtual bool load(std::istream& istr)
-    {return read(istr, labels);}
+  virtual void save(std::ostream& ostr) const;
+  virtual bool load(std::istream& istr);
     
 protected:
   StringDictionaryPtr labels;

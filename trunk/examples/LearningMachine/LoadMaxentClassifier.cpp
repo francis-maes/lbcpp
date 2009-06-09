@@ -13,26 +13,22 @@ int main(int argc, char* argv[])
 {
   /*
   ** Load a Classifier from file "classifier.model"
-  ** FIXME: loading does not work yet
   */
   GradientBasedClassifierPtr classifier = Object::loadFromFileCast<GradientBasedClassifier>("classifier.model");
   assert(classifier);
-  std::cout << "Labels: " << classifier->getLabels() << std::endl;  
-  std::cout << "Parameters: " << classifier->getParameters() << std::endl;
-  
+
   /*
   ** Evaluate training accuracy
-  *
+  */
   double accuracy = classifier->evaluateAccuracy(
-    classificationExamplesParser("../data/classification/small.train", features, classifier->getLabels()));
+    classificationExamplesParser("../data/classification/small.train", classifier->getInputDictionary(), classifier->getLabels()));
   std::cout << "Training Accuracy: " << accuracy * 100 << "%." << std::endl;
 
   /*
   ** Evaluate testing accuracy
-  *
-  accuracy = classifier->evaluateAccuracy(
-    classificationExamplesParser("../data/classification/small.test", features, classifier->getLabels()));
-  std::cout << "Testing Accuracy: " << accuracy * 100 << "%." << std::endl;
   */
+  accuracy = classifier->evaluateAccuracy(
+    classificationExamplesParser("../data/classification/small.test", classifier->getInputDictionary(), classifier->getLabels()));
+  std::cout << "Testing Accuracy: " << accuracy * 100 << "%." << std::endl;
   return 0;
 }

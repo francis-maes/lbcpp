@@ -16,11 +16,6 @@ extern void declareLBCppCoreClasses();
 class ObjectFactory
 {
 public:
-  ObjectFactory()
-  {
-    std::cout << "Create Object Factory" << std::endl;
-  }
-
   void declare(const std::string& className, Object::Constructor constructor)
   {
     if (className.empty())
@@ -29,7 +24,7 @@ public:
       Object::error("Object::declare", "Class '" + className + "' is already declared.");
     else
     {
-      std::cout << "Object::declare " << className << std::endl;
+      //std::cout << "Object::declare " << className << std::endl;
       constructors[className] = constructor;
     }
   }

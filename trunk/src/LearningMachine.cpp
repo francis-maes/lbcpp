@@ -69,6 +69,9 @@ class VerboseLearningMachine : public BaseClass
 public:
   VerboseLearningMachine(std::ostream& ostr) : ostr(ostr) {}
   
+  virtual FeatureDictionaryPtr getInputDictionary() const
+    {return FeatureDictionaryPtr();}
+
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
   {
     ostr << "trainBatch() with " << examples->size() << " examples:" << std::endl;
@@ -194,6 +197,21 @@ double Classifier::evaluateWeightedAccuracy(ObjectStreamPtr examples) const
   }
   assert(totalWeight);
   return correctWeight / totalWeight;
+}
+
+void Classifier::save(std::ostream& ostr) const
+{
+  assert(labels);
+  write(ostr, labels);
+}
+
+bool Classifier::load(std::istream& istr)
+{
+  StringDictionaryPtr labels;
+  if (!read(istr, labels))
+    return false;
+  setLabels(labels);
+  return true;
 }
 
 /*

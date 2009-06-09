@@ -53,10 +53,12 @@ inline Class##Ptr staticToDynamic(const Class<ExactType, ClassArg0>& impl) \
 namespace lbcpp {
 namespace impl {
 
-template<class ImplementationType, class BaseClass>
+template<class ImplementationType_, class BaseClass>
 class StaticToDynamicObject : public BaseClass
 {
 public:
+  typedef ImplementationType_ ImplementationType;
+  
   StaticToDynamicObject(const ImplementationType& impl)
     : impl(impl) {}
 

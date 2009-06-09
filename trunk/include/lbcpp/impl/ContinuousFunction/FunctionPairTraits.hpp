@@ -190,6 +190,13 @@ struct ScalarVectorFunctionScalarConstantPair
         if (gradient) *gradient = emptyFeatureGenerator();
       }
     }
+    
+    std::string toString() const
+      {return "(" + left.toString() + " * " + lbcpp::toString(right) + ")";}
+    void save(std::ostream& ostr) const
+      {write(ostr, right);}
+    bool load(std::istream& istr)
+      {return read(istr, right);}
   };
 };
 

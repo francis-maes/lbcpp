@@ -62,6 +62,8 @@ public:
   bool empty() const
     {return getNumFeatures() == 0 && getNumScopes() == 0;}
   
+  bool checkEquals(FeatureDictionaryPtr otherDictionary) const;
+
   /*
   ** Features
   */
@@ -92,8 +94,14 @@ public:
   /*
   ** Related dictionaries
   */
+  size_t getNumSubDictionaries() const
+    {return subDictionaries.size();}
+    
   void setSubDictionary(size_t index, FeatureDictionaryPtr dictionary)
     {if (subDictionaries.size() < index + 1) subDictionaries.resize(index + 1); subDictionaries[index] = dictionary;}
+    
+  void setSubDictionaries(const std::vector<FeatureDictionaryPtr>& subDictionaries)
+    {this->subDictionaries = subDictionaries;}
     
   const FeatureDictionaryPtr getSubDictionary(size_t index) const
     {assert(index < subDictionaries.size()); return subDictionaries[index];}
@@ -111,14 +119,13 @@ public:
   virtual std::string getName() const
     {return name;}
     
-  virtual std::string toString() const
-  {
-    return "Features: " + lbcpp::toString(*featuresDictionary) + "\n"
-           "Scopes: " + lbcpp::toString(*scopesDictionary) + "\n";
-  }
+  virtual std::string toString() const;
 
   virtual bool load(std::istream& istr);
-  virtual void save(std::ostream& ostr);
+  virtual void save(std::ostream& ostr) const;
+  
+  static bool load(std::istream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2);
+  static void save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
   
 private:
   std::string name;
@@ -127,7 +134,7 @@ private:
   std::vector<FeatureDictionaryPtr> subDictionaries;
   FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
 
-  void enumerateUniqueDictionaries(std::map<FeatureDictionaryPtr, size_t>& indices, std::vector<FeatureDictionaryPtr>& res);
+  void toStringRec(size_t indent, std::string& res) const;
 };
 
 }; /* namespace lbcpp */

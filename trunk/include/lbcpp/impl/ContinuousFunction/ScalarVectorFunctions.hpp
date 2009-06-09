@@ -27,6 +27,9 @@ struct SumOfSquaresScalarVectorFunction : public ScalarVectorFunction< SumOfSqua
     if (gradient)
       *gradient = multiplyByScalar(input, 2.0);
   }
+  
+  std::string toString() const
+    {return "(sum_i x_i^2)";}
 };
 
 inline SumOfSquaresScalarVectorFunction sumOfSquares()

@@ -36,3 +36,13 @@ GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, size_t
 
 GradientBasedLearnerPtr lbcpp::dummyLearner()
   {return new NonLearnerGradientBasedLearner();}
+
+/*
+** Serializable classes declaration
+*/
+void declareGradientBasedLearners()
+{
+  LBCPP_DECLARE_CLASS(StochasticGradientDescentLearner);
+  LBCPP_DECLARE_CLASS(BatchGradientBasedLearner);
+  LBCPP_DECLARE_CLASS(NonLearnerGradientBasedLearner);
+}

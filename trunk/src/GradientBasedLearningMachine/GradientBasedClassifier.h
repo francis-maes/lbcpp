@@ -19,7 +19,7 @@ class MaximumEntropyClassifier
 {
 public:
   virtual void setLabels(StringDictionaryPtr labels)
-    {architecture_.setOutputs(labels);}
+    {architecture_.setOutputs(labels); GradientBasedClassifier::setLabels(labels);}
   
   virtual VectorArchitecturePtr getPredictionArchitecture() const
     {return impl::staticToDynamic(architecture());}

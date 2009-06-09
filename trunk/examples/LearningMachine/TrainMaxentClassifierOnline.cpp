@@ -20,7 +20,8 @@ int main(int argc, char* argv[])
   /*
   ** Create a maximum-entropy classifier with stochastic gradient descent, with a (normalized) learning rate of 10.0
   */
-  ClassifierPtr classifier = maximumEntropyClassifier(stochasticDescentLearner(constantIterationFunction(10.0)), labels, 0.001);
+  ClassifierPtr classifier = 
+    maximumEntropyClassifier(stochasticDescentLearner(constantIterationFunction(10.0)), labels, 0.001);
 
   /*
   ** Create classification data parser and perform online training

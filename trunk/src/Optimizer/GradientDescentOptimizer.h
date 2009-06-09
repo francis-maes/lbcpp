@@ -20,14 +20,25 @@ class GradientDescentOptimizer : public VectorOptimizer
 public:
   GradientDescentOptimizer(IterationFunctionPtr stepSize)
     : stepSize(stepSize) {}
+  GradientDescentOptimizer() {}
+
+  virtual std::string toString() const
+    {return "GradientDescentOptimizer(" + lbcpp::toString(stepSize) + ")";}
   
   virtual OptimizerState step()
   {
+    assert(stepSize);
     DenseVectorPtr denseParameters = parameters->toDenseVector();
     denseParameters->addWeighted(gradient, -(stepSize->compute(iteration)));
     setParameters(denseParameters);
     return optimizerContinue;
   }
+
+  virtual void save(std::ostream& ostr) const
+    {write(ostr, stepSize);}
+
+  virtual bool load(std::istream& istr)
+    {return read(istr, stepSize);}
   
 private:
   IterationFunctionPtr stepSize;
