@@ -138,7 +138,6 @@ public:
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return index < subVectors.size() ? (FeatureGeneratorPtr)subVectors[index] : FeatureGeneratorPtr();}
 
-protected:
   /*
   ** Object
   */

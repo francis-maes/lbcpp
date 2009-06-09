@@ -17,67 +17,22 @@
 namespace lbcpp
 {
 
-template<class BaseClass, class ExampleType_>
-class GradientBasedLearningMachine : public BaseClass
+class GradientBasedLearningMachine
 {
 public:
   GradientBasedLearningMachine() : initializeParametersRandomly(false)
     {}
+  virtual ~GradientBasedLearningMachine() {}
     
-  typedef ExampleType_ ExampleType;
-  typedef ReferenceCountedObjectPtr<ExampleType> ExampleTypePtr;
-
+  /*
+  ** Abstract
+  */
+  virtual FeatureDictionaryPtr getInputDictionary(ObjectPtr example) = 0;
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
   virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const = 0;
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(ObjectContainerPtr examples) const = 0;
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(ObjectContainerPtr examples) const = 0;
 
-  /*
-  ** LearningMachine
-  */
-  virtual void trainStochasticBegin()
-  {
-    assert(learner);
-    learner->setParameters(parameters);
-    learner->setRegularizer(getRegularizer());
-    learner->trainStochasticBegin();
-  }
-    
-  void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
-  {
-    assert(learner);
-    if (!parameters)
-      parameters = createInitialParameters(gradient->getDictionary(), initializeParametersRandomly);
-    learner->setParameters(parameters);
-    learner->trainStochasticExample(gradient, weight);
-  }
-
-  virtual void trainStochasticExample(ObjectPtr example)
-  {
-    assert(learner);
-    if (!parameters)
-      learner->setParameters(parameters = createInitialParameters(example.staticCast<ExampleType>()->getInput()->getDictionary(), initializeParametersRandomly));
-    learner->trainStochasticExample(getLoss(example));
-  }
-  
-  virtual void trainStochasticEnd()
-    {assert(learner); learner->trainStochasticEnd();}
-  
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
-  {
-    assert(learner && examples->size());
-    if (!parameters)
-      parameters = createInitialParameters(examples->getCast<ExampleType>(0)->getInput()->getDictionary(), initializeParametersRandomly);
-
-    // delegate to learner
-    learner->setParameters(parameters);
-    learner->setRegularizer(getRegularizer());
-    if (!learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples->size(), progress))
-      return false;
-    parameters = learner->getParameters();
-    return true;
-  }
-  
   /*
   ** Parameters
   */
@@ -128,37 +83,72 @@ public:
   
   double computeRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
     {assert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
-  
-  /*
-  ** Serialization
-  */
-  virtual void save(std::ostream& ostr) const
-  {
-    BaseClass::save(ostr);
-    write(ostr, parameters);
-    write(ostr, regularizer);
-    write(ostr, learner);
-    write(ostr, initializeParametersRandomly);
-  }
-  
-  virtual bool load(std::istream& istr)
-  {
-    return BaseClass::load(istr) &&
-      read(istr, parameters) && read(istr, regularizer) &&
-      read(istr, learner) && read(istr, initializeParametersRandomly);
-  }
-    
+      
 protected:
   DenseVectorPtr parameters;
   ScalarVectorFunctionPtr regularizer;
   GradientBasedLearnerPtr learner;
   bool initializeParametersRandomly;
+  
+  /*
+  ** Serialization
+  */
+  void saveImpl(std::ostream& ostr) const;
+  bool loadImpl(std::istream& istr);  
+
+  /*
+  ** Training
+  */
+  void trainStochasticBeginImpl();
+  void trainStochasticExampleImpl(FeatureGeneratorPtr gradient, double weight);
+  void trainStochasticExampleImpl(ObjectPtr example);
+  void trainStochasticEndImpl();
+  bool trainBatchImpl(ObjectContainerPtr examples, ProgressCallback* progress);
+};
+
+template<class BaseClass, class ExampleType_>
+class GradientBasedLearningMachine_ : public BaseClass, public GradientBasedLearningMachine
+{
+public:
+  typedef ExampleType_ ExampleType;
+  typedef ReferenceCountedObjectPtr<ExampleType> ExampleTypePtr;
+
+  virtual FeatureDictionaryPtr getInputDictionary(ObjectPtr example)
+    {return example.staticCast<ExampleType>()->getInput()->getDictionary();}
+
+  /*
+  ** LearningMachine
+  */
+  virtual void trainStochasticBegin()
+    {trainStochasticBeginImpl();}
+
+  void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
+    {trainStochasticExampleImpl(gradient, weight);}
+
+  virtual void trainStochasticExample(ObjectPtr example)
+    {trainStochasticExampleImpl(example);}
+  
+  virtual void trainStochasticEnd()
+    {trainStochasticEndImpl();}
+  
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
+    {return trainBatchImpl(examples, progress);}
+  
+
+  /*
+  ** Serialization
+  */
+  virtual void save(std::ostream& ostr) const
+    {BaseClass::save(ostr); saveImpl(ostr);}
+  
+  virtual bool load(std::istream& istr)
+    {return BaseClass::load(istr) && loadImpl(istr);}
 };
 
 /*
 ** Regression
 */
-class GradientBasedRegressor : public GradientBasedLearningMachine<Regressor, RegressionExample>
+class GradientBasedRegressor : public GradientBasedLearningMachine_<Regressor, RegressionExample>
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
@@ -176,7 +166,7 @@ extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearne
 /*
 ** Binary Classification
 */
-class GradientBasedBinaryClassifier : public GradientBasedLearningMachine<BinaryClassifier, ClassificationExample>
+class GradientBasedBinaryClassifier : public GradientBasedLearningMachine_<BinaryClassifier, ClassificationExample>
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
@@ -194,7 +184,7 @@ extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(Gradi
 /*
 ** Classification
 */
-class GradientBasedClassifier : public GradientBasedLearningMachine<Classifier, ClassificationExample>
+class GradientBasedClassifier : public GradientBasedLearningMachine_<Classifier, ClassificationExample>
 {
 public:
   virtual VectorArchitecturePtr getPredictionArchitecture() const = 0;
@@ -214,7 +204,7 @@ extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerP
 ** Generalized Classification
 */
 class GradientBasedGeneralizedClassifier
-  : public GradientBasedLearningMachine<GeneralizedClassifier, GeneralizedClassificationExample>
+  : public GradientBasedLearningMachine_<GeneralizedClassifier, GeneralizedClassificationExample>
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
@@ -232,7 +222,7 @@ extern GradientBasedGeneralizedClassifierPtr linearGeneralizedClassifier(Gradien
 ** Ranker
 */
 class GradientBasedRanker
-  : public GradientBasedLearningMachine<Ranker, RankingExample>
+  : public GradientBasedLearningMachine_<Ranker, RankingExample>
 {
 public:
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
