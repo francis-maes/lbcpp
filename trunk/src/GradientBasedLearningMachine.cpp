@@ -151,11 +151,13 @@ public:
     {return impl::logBinomialLoss<ClassificationExample>();}
 };
 
-GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
 {
   GradientBasedBinaryClassifierPtr res = new LogisticRegressionClassifier();
   res->setLearner(learner);
   res->setLabels(labels);
+  if (l2regularizer)
+    res->setL2Regularizer(l2regularizer);
   return res;
 }
 
