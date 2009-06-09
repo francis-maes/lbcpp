@@ -322,3 +322,18 @@ DenseVectorPtr Ranker::predictScores(const FeatureGeneratorPtr compositeInput) c
     res->set(compositeInput->getSubGeneratorIndex(i), predictScore(compositeInput->getSubGenerator(i)));
   return res;  
 }
+
+double Ranker::evaluateMeanTopRankCost(ObjectStreamPtr examples) const
+{
+  size_t count = 0;
+  double costSum = 0.0;
+  while (true)
+  {
+    RankingExamplePtr example = examples->nextCast<RankingExample>();
+    if (!example)
+      break;
+    ++count;
+    costSum += example->getCost(predict(example->getInput()));
+  }
+  return count ? costSum / count : 0.0;
+}

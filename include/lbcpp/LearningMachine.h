@@ -140,6 +140,10 @@ public:
   
   virtual size_t predict(const FeatureGeneratorPtr compositeInput) const;
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr compositeInput) const;
+  
+  double evaluateMeanTopRankCost(ObjectStreamPtr examples) const;
+  double evaluateMeanTopRankCost(ObjectContainerPtr examples) const
+    {return evaluateMeanTopRankCost(examples->toStream());}  
 };
 
 

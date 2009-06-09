@@ -118,13 +118,21 @@ public:
     
   const std::vector<double>& getCosts() const
     {return costs;}
-    
+  
+  FeatureGeneratorPtr getAlternative(size_t alternativeIndex) const
+    {return alternatives->getSubGenerator(alternativeIndex);}
+  
+  double getCost(size_t alternativeIndex) const
+    {assert(alternativeIndex < costs.size()); return costs[alternativeIndex];}
+  
 private:
   FeatureGeneratorPtr alternatives;
   std::vector<double> costs;
 };
 
 typedef ReferenceCountedObjectPtr<RankingExample> RankingExamplePtr;
+
+extern ObjectFunctionPtr transformClassificationExampleIntoRankingExample(StringDictionaryPtr labels);
 
 }; /* namespace lbcpp */
 
