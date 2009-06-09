@@ -14,6 +14,13 @@
 namespace lbcpp
 {
 
+class ObjectFunction : public Object
+{
+public:
+  virtual std::string getOutputClassName() const = 0;
+  virtual ObjectPtr function(ObjectPtr object) const = 0;
+};
+
 class ObjectStream : public Object
 {
 public:
@@ -33,8 +40,10 @@ public:
   }
 
   bool checkContentClassName(const std::string& expectedClassName);
-  ObjectContainerPtr load(size_t maximumCount = 0);
+
   bool iterate(size_t maximumCount = 0);
+  ObjectContainerPtr load(size_t maximumCount = 0);
+  ObjectStreamPtr apply(ObjectFunctionPtr function);
 };
 
 extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,

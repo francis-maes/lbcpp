@@ -55,6 +55,34 @@ bool ObjectStream::checkContentClassName(const std::string& expectedClassName)
   return true;
 }
 
+class ApplyFunctionObjectStream : public ObjectStream
+{
+public:
+  ApplyFunctionObjectStream(ObjectStreamPtr stream, ObjectFunctionPtr function)
+    : stream(stream), function(function) {}
+    
+  virtual std::string getContentClassName() const
+    {return function->getOutputClassName();}
+
+  virtual bool isValid() const
+    {return stream->isValid();}
+    
+  virtual ObjectPtr next()
+  {
+    ObjectPtr object = stream->next();
+    return object ? function->function(object) : ObjectPtr();
+  }
+
+private:
+  ObjectStreamPtr stream;
+  ObjectFunctionPtr function;
+};
+
+ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
+{
+  return new ApplyFunctionObjectStream(this, function);
+}
+
 /*
 ** TextObjectParser
 */
