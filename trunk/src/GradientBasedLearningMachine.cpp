@@ -7,97 +7,84 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/GradientBasedLearningMachine.h>
-#include <lbcpp/impl/impl.h>
+#include "GradientBasedLearningMachine/GradientBasedRegressor.h"
+#include "GradientBasedLearningMachine/GradientBasedClassifier.h"
+#include "GradientBasedLearningMachine/GradientBasedBinaryClassifier.h"
+#include "GradientBasedLearningMachine/GradientBasedRanker.h"
 using namespace lbcpp;
 
-template<class ExactType, class BaseClass>
-class StaticToDynamicGradientBasedLearningMachine : public BaseClass
+/*
+** Gradient Based Learning Machine
+*/
+void GradientBasedLearningMachine::saveImpl(std::ostream& ostr) const
 {
-public:
-  typedef typename BaseClass::ExampleType ExampleType;
-  
-  // abstract: static functions for architecture() and loss()
-  
-  virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const
-    {return impl::staticToDynamic(impl::exampleRisk(_this().architecture(), _this().loss(), *example.staticCast<ExampleType>()));}
-    
-  virtual ScalarVectorFunctionPtr getEmpiricalRisk(ObjectContainerPtr examples) const
-    {return impl::staticToDynamic(impl::empiricalRisk(_this().architecture(), _this().loss(), examples, (ExampleType* )0));}
-    
-  virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
-  {
-    if (BaseClass::regularizer)
-      return impl::staticToDynamic(impl::add(impl::empiricalRisk(_this().architecture(), _this().loss(), examples, (ExampleType* )0),
-          impl::dynamicToStatic(BaseClass::regularizer)));
-    else
-      return getEmpiricalRisk(examples);
-  }
+  write(ostr, parameters->getDictionary());
+  parameters->save(ostr);
+  write(ostr, regularizer);
+  write(ostr, learner);
+  write(ostr, initializeParametersRandomly);
+}
 
-protected:
-  const ExactType& _this() const  {return *(const ExactType* )this;}
-};
-
-template<class ExactType>
-class StaticToDynamicGradientBasedBinaryClassifier
-  : public StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedBinaryClassifier>
+bool GradientBasedLearningMachine::loadImpl(std::istream& istr)
 {
-public:
-  typedef StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedBinaryClassifier> BaseClass;
-  
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(BaseClass::_this().architecture());}
-};
+  FeatureDictionaryPtr paramsDictionary;
+  if (!read(istr, paramsDictionary) || !paramsDictionary)
+    return false;
+  parameters = new DenseVector(paramsDictionary);
+  if (!parameters->load(istr))
+    return false;
+  return read(istr, regularizer) && read(istr, learner) && read(istr, initializeParametersRandomly);
+}
 
-template<class ExactType>
-class StaticToDynamicGradientBasedGeneralizedClassifier
-  : public StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedGeneralizedClassifier>
+void GradientBasedLearningMachine::trainStochasticBeginImpl()
 {
-public:
-  typedef StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedGeneralizedClassifier> BaseClass;
+  assert(learner);
+  learner->setParameters(parameters);
+  learner->setRegularizer(getRegularizer());
+  learner->trainStochasticBegin();
+}
   
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(BaseClass::_this().baseArchitecture());}
-};
+void GradientBasedLearningMachine::trainStochasticExampleImpl(FeatureGeneratorPtr gradient, double weight)
+{
+  assert(learner);
+  if (!parameters)
+    parameters = createInitialParameters(gradient->getDictionary(), initializeParametersRandomly);
+  learner->setParameters(parameters);
+  learner->trainStochasticExample(gradient, weight);
+}
 
-template<class ExactType>
-class StaticToDynamicGradientBasedRanker
-  : public StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedRanker>
+void GradientBasedLearningMachine::trainStochasticExampleImpl(ObjectPtr example)
 {
-public:
-  typedef StaticToDynamicGradientBasedLearningMachine<ExactType, GradientBasedRanker> BaseClass;
-  
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(BaseClass::_this().baseArchitecture());}
-};
+  assert(learner);
+  if (!parameters)
+    learner->setParameters(parameters = createInitialParameters(getInputDictionary(example), initializeParametersRandomly));
+  learner->trainStochasticExample(getLoss(example));
+}
 
-template<class ExactType>
-class StaticToDynamicGradientBasedLinearRanker : public StaticToDynamicGradientBasedRanker<ExactType>
+void GradientBasedLearningMachine::trainStochasticEndImpl()
 {
-public:
-  inline impl::LinearArchitecture baseArchitecture() const
-    {return impl::linearArchitecture();}
-  
-  inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
-    {return impl::parallelArchitecture(baseArchitecture());}
-};
+  assert(learner);
+  learner->trainStochasticEnd();
+}
+
+bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, ProgressCallback* progress)
+{
+  assert(learner && examples->size());
+  if (!parameters)
+    parameters = createInitialParameters(getInputDictionary(examples->get(0)), initializeParametersRandomly);
+
+  // delegate to learner
+  learner->setParameters(parameters);
+  learner->setRegularizer(getRegularizer());
+  if (!learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples->size(), progress))
+    return false;
+  parameters = learner->getParameters();
+  return true;
+}
 
 /*
-** Regression
+** Regressor
 */
-class LeastSquaresLinearRegressor
-  : public StaticToDynamicGradientBasedLearningMachine<LeastSquaresLinearRegressor, GradientBasedRegressor>
-{
-public:
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(architecture());}
-
-  inline impl::LinearArchitecture architecture() const
-    {return impl::linearArchitecture();}
-
-  inline impl::SquareLoss<RegressionExample> loss() const
-    {return impl::squareLoss<RegressionExample>();}
-};
-
 GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearnerPtr learner)
 {
   GradientBasedRegressorPtr res = new LeastSquaresLinearRegressor();
@@ -108,26 +95,6 @@ GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearne
 /*
 ** Classifier
 */
-class MaximumEntropyClassifier
-  : public StaticToDynamicGradientBasedLearningMachine<MaximumEntropyClassifier, GradientBasedClassifier>
-{
-public:
-  virtual void setLabels(StringDictionaryPtr labels)
-    {architecture_.setOutputs(labels);}
-  
-  virtual VectorArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(architecture());}
-
-  inline impl::MultiLinearArchitecture architecture() const
-    {return architecture_;}
-
-  inline impl::MultiClassLogBinomialLoss<ClassificationExample> loss() const
-    {return impl::multiClassLogBinomialLoss<ClassificationExample>();}
-
-private:
-  impl::MultiLinearArchitecture architecture_;
-};
-
 GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
 {
   GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
@@ -141,16 +108,6 @@ GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerP
 /*
 ** BinaryClassifier
 */
-class LogisticRegressionClassifier : public StaticToDynamicGradientBasedBinaryClassifier<LogisticRegressionClassifier>
-{
-public:
-  inline impl::LinearArchitecture architecture() const
-    {return impl::linearArchitecture();}
-
-  inline impl::LogBinomialLoss<ClassificationExample> loss() const
-    {return impl::logBinomialLoss<ClassificationExample>();}
-};
-
 GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
 {
   GradientBasedBinaryClassifierPtr res = new LogisticRegressionClassifier();
@@ -160,19 +117,6 @@ GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(Gradi
     res->setL2Regularizer(l2regularizer);
   return res;
 }
-
-class LinearSupportVectorMachine : public StaticToDynamicGradientBasedBinaryClassifier<LinearSupportVectorMachine>
-{
-public:
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const
-    {return impl::staticToDynamic(architecture());}
-
-  inline impl::LinearArchitecture architecture() const
-    {return impl::linearArchitecture();}
-
-  inline impl::HingeLoss<ClassificationExample> loss() const
-    {return impl::hingeLoss<ClassificationExample>();}
-};
 
 GradientBasedBinaryClassifierPtr lbcpp::linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
 {
@@ -185,20 +129,6 @@ GradientBasedBinaryClassifierPtr lbcpp::linearSVMBinaryClassifier(GradientBasedL
 /*
 ** Generalized classifier
 */
-class LinearGeneralizedClassifier
-  : public StaticToDynamicGradientBasedGeneralizedClassifier<LinearGeneralizedClassifier>
-{
-public:
-  inline impl::LinearArchitecture baseArchitecture() const
-    {return impl::linearArchitecture();}
-  
-  inline impl::ScalarToVectorArchitecture<impl::LinearArchitecture> architecture() const
-    {return impl::parallelArchitecture(baseArchitecture());}
-
-  inline impl::MultiClassLogBinomialLoss<GeneralizedClassificationExample> loss() const
-    {return impl::multiClassLogBinomialLoss<GeneralizedClassificationExample>();}
-};
-
 GradientBasedGeneralizedClassifierPtr lbcpp::linearGeneralizedClassifier(GradientBasedLearnerPtr learner)
 {
   GradientBasedGeneralizedClassifierPtr res = new LinearGeneralizedClassifier();
@@ -209,28 +139,12 @@ GradientBasedGeneralizedClassifierPtr lbcpp::linearGeneralizedClassifier(Gradien
 /*
 ** Ranker
 */
-class LargeMarginAllPairsLinearRanker
-  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginAllPairsLinearRanker>
-{
-public:
-  inline impl::AllPairsLoss<impl::HingeLossFunction, RankingExample> loss() const
-    {return impl::allPairsLoss<impl::HingeLossFunction, RankingExample>();}
-};
-
 GradientBasedRankerPtr lbcpp::largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner)
 {
   GradientBasedRankerPtr res = new LargeMarginAllPairsLinearRanker();
   res->setLearner(learner);
   return res;
 }
-
-class LargeMarginBestAgainstAllLinearRanker
-  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginBestAgainstAllLinearRanker>
-{
-public:
-  inline impl::BestAgainstAllLoss<impl::HingeLossFunction, RankingExample> loss() const
-    {return impl::bestAgainstAllLoss<impl::HingeLossFunction, RankingExample>();}
-};
 
 GradientBasedRankerPtr lbcpp::largeMarginBestAgainstAllLinearRanker(GradientBasedLearnerPtr learner)
 {
@@ -239,14 +153,6 @@ GradientBasedRankerPtr lbcpp::largeMarginBestAgainstAllLinearRanker(GradientBase
   return res;
 }
 
-class LargeMarginMostViolatedPairLinearRanker
-  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginMostViolatedPairLinearRanker>
-{
-public:
-  inline impl::MostViolatedPairLoss<impl::HingeLossFunction, RankingExample> loss() const
-    {return impl::mostViolatedPairLoss<impl::HingeLossFunction, RankingExample>();}
-};
-
 GradientBasedRankerPtr lbcpp::largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner)
 {
   GradientBasedRankerPtr res = new LargeMarginMostViolatedPairLinearRanker();
@@ -254,6 +160,9 @@ GradientBasedRankerPtr lbcpp::largeMarginMostViolatedPairLinearRanker(GradientBa
   return res;
 }
 
+/*
+** Serializable classes declaration
+*/
 void declareGradientBasedLearningMachines()
 {
   LBCPP_DECLARE_CLASS(LeastSquaresLinearRegressor);

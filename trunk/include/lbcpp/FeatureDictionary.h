@@ -32,10 +32,16 @@ public:
   
   size_t add(const std::string& str);
 
+  friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
+
+  /*
+  ** Object
+  */
   virtual std::string toString() const
     {std::ostringstream ostr; ostr << *this; return ostr.str();}
 
-  friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
+  virtual void save(std::ostream& ostr) const;
+  virtual bool load(std::istream& istr);  
 
 protected:
   typedef std::map<std::string, size_t> StringToIndexMap;
@@ -43,9 +49,6 @@ protected:
  
   StringToIndexMap stringToIndex;
   StringVector indexToString;
-
-  virtual void save(std::ostream& ostr) const;
-  virtual bool load(std::istream& istr);  
 };
 
 typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
@@ -113,6 +116,9 @@ public:
     return "Features: " + lbcpp::toString(*featuresDictionary) + "\n"
            "Scopes: " + lbcpp::toString(*scopesDictionary) + "\n";
   }
+
+  virtual bool load(std::istream& istr);
+  virtual void save(std::ostream& ostr);
   
 private:
   std::string name;
@@ -120,6 +126,8 @@ private:
   StringDictionaryPtr scopesDictionary;
   std::vector<FeatureDictionaryPtr> subDictionaries;
   FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
+
+  void enumerateUniqueDictionaries(std::map<FeatureDictionaryPtr, size_t>& indices, std::vector<FeatureDictionaryPtr>& res);
 };
 
 }; /* namespace lbcpp */

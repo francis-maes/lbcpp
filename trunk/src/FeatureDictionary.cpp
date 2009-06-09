@@ -121,3 +121,91 @@ FeatureDictionaryPtr FeatureDictionary::getDictionaryWithSubScopesAsFeatures()
     dictionaryWithSubScopesAsFeatures = new FeatureDictionary(name, scopesDictionary, StringDictionaryPtr());
   return dictionaryWithSubScopesAsFeatures;
 }
+
+void FeatureDictionary::enumerateUniqueDictionaries(std::map<FeatureDictionaryPtr, size_t>& indices, std::vector<FeatureDictionaryPtr>& res)
+{
+  if (indices.find(this) == indices.end())
+  {
+    indices[this] = indices.size();
+    res.push_back(this);
+  }
+  for (size_t i = 0; i < getNumScopes(); ++i)
+  {
+    FeatureDictionaryPtr subDictionary = getSubDictionary(i);
+    if (subDictionary)
+      subDictionary->enumerateUniqueDictionaries(indices, res);
+  }
+}
+
+bool FeatureDictionary::load(std::istream& istr)
+{
+  size_t numUniqueDictionaries;
+  if (!read(istr, numUniqueDictionaries))
+    return false;
+  assert(numUniqueDictionaries > 0);
+
+  std::vector< FeatureDictionaryPtr > dictionaries(numUniqueDictionaries);
+  std::vector< std::vector<size_t> > subDictionaryIndices(numUniqueDictionaries);
+
+  for (size_t i = 0; i < dictionaries.size(); ++i)
+  {
+    std::string name;
+    if (!read(istr, name))
+      return false;
+    FeatureDictionaryPtr dictionary = new FeatureDictionary(name);
+    if (!dictionary->getFeatures()->load(istr) ||
+        !dictionary->getScopes()->load(istr))
+      return false;
+    dictionaries[i] = dictionary;
+    subDictionaryIndices[i].resize(dictionary->getNumScopes());
+    for (size_t j = 0; j < dictionary->getNumScopes(); ++j)
+    {
+      size_t subDictionaryIndex;
+      if (!read(istr, subDictionaryIndex))
+        return false;
+      if (subDictionaryIndex >= dictionaries.size())
+      {
+        Object::error("FeatureDictionary::load", "Invalid sub-dictionary index");
+        return false;
+      }
+      subDictionaryIndices[i][j] = subDictionaryIndex;
+    }
+  }
+  
+  for (size_t i = 0; i < dictionaries.size(); ++i)
+  {
+    FeatureDictionaryPtr dictionary = dictionaries[i];
+    for (size_t j = 0; j < subDictionaryIndices[i].size(); ++j)
+      dictionary->setSubDictionary(j, dictionaries[subDictionaryIndices[i][j]]);
+  }
+  FeatureDictionaryPtr topDictionary = dictionaries[0];
+  assert(topDictionary);
+  name = topDictionary->name;
+  featuresDictionary = topDictionary->featuresDictionary;
+  scopesDictionary = topDictionary->scopesDictionary;
+  subDictionaries = topDictionary->subDictionaries;
+  return true;
+}
+
+void FeatureDictionary::save(std::ostream& ostr)
+{
+  std::map<FeatureDictionaryPtr, size_t> indices;
+  std::vector<FeatureDictionaryPtr> dictionaries;
+
+  enumerateUniqueDictionaries(indices, dictionaries);
+  assert(dictionaries.size() > 0);
+  write(ostr, dictionaries.size());
+  for (size_t i = 0; i < dictionaries.size(); ++i)
+  {
+    FeatureDictionaryPtr dictionary = dictionaries[i];
+    write(ostr, dictionary->getName());
+    dictionary->getFeatures()->save(ostr);
+    dictionary->getScopes()->save(ostr);
+    for (size_t j = 0; j < dictionary->getNumScopes(); ++j)
+    {
+      std::map<FeatureDictionaryPtr, size_t>::iterator it = indices.find(dictionary->getSubDictionary(j));
+      assert(it != indices.end());
+      write(ostr, it->second);
+    }
+  }
+}
