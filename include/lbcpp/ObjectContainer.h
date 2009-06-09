@@ -24,6 +24,9 @@ public:
   virtual size_t size() const = 0;
   virtual ObjectPtr get(size_t index) const = 0;
   
+  bool empty() const
+    {return size() == 0;}
+  
   template<class T>
   inline ReferenceCountedObjectPtr<T> getCast(size_t index) const
   {
