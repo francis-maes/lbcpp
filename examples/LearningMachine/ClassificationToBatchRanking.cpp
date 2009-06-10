@@ -33,8 +33,11 @@ int main(int argc, char* argv[])
   ObjectFunctionPtr conversionFunction = transformClassificationExampleIntoRankingExample(labels);
   ObjectStreamPtr trainingParser = classificationExamplesParser("../data/classification/small.train", features, labels);
   ObjectContainerPtr trainingData = trainingParser->apply(conversionFunction)->load();
+  return 0.0;
   ObjectStreamPtr testingParser = classificationExamplesParser("../data/classification/small.test", features, labels);
   ObjectContainerPtr testingData = testingParser->apply(conversionFunction)->load();
+  if (trainingData->empty() || testingData->empty())
+    return 1.0;
   
   /*
   ** Create ranking machines
