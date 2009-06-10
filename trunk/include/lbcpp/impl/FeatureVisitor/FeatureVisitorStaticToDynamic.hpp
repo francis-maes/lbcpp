@@ -60,16 +60,20 @@ public:
 };
 
 template<class ExactType>
+inline FeatureVisitorPtr staticToDynamic(impl::FeatureVisitor<ExactType>& implementation)
+  {return FeatureVisitorPtr(new StaticToDynamicFeatureVisitorRef<ExactType>(static_cast<ExactType& >(implementation)));}
+
+template<class ExactType>
 inline void FeatureVisitor<ExactType>::featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator)
 {
-  StaticToDynamicFeatureVisitorRef<ExactType> dynamicVisitor(_this());
-  StaticallyAllocatedReferenceCountedObjectPtr<lbcpp::FeatureVisitor> dynamicVisitorPtr(dynamicVisitor);
+  EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
+  if (editable)
+    editable->staticFeatureGenerator(_this());
+  else
   {
-    EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
-    if (editable)
-      editable->staticFeatureGenerator(_this());
-    else
-      featureGenerator->accept(dynamicVisitorPtr);
+    StaticToDynamicFeatureVisitorRef<ExactType> dynamicVisitor(_this());
+    StaticallyAllocatedReferenceCountedObjectPtr<lbcpp::FeatureVisitor> dynamicVisitorPtr(dynamicVisitor);
+    featureGenerator->accept(dynamicVisitorPtr);
   }
 }
 
