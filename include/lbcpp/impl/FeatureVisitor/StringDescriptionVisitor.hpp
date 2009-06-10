@@ -21,6 +21,7 @@ public:
 
   bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
   {
+   //res += "DICO = " + dictionary->getName() + " (" + lbcpp::toString((int)dictionary.get()) + ")\n";
     flushCurrentFeatures();
     addIndent(indent);
     res += dictionary->getScopes()->getString(number) + "\n";

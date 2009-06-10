@@ -88,7 +88,9 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       // 0.0.input
       // 1.1.input
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
-      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(parameters->getDictionary(), numOutputs);
+      
+      // parameters->getDictionary()->getParentDictionary(outputsDictionary->getFeatures())
+      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(new FeatureDictionary("parameters per output", StringDictionaryPtr(), outputsDictionary->getFeatures()), numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
         g->setSubGenerator(i, subFeatureGenerator(parameters->getDictionary(), i, input));
       *gradientsWrtParameters = g;

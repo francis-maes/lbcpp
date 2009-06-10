@@ -99,21 +99,24 @@ FeatureDictionary::FeatureDictionary(const std::string& name)
 //  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
-FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue)
+void FeatureDictionary::ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary)
 {
   if (subDictionaries.size() < index + 1)
     subDictionaries.resize(index + 1);
   FeatureDictionaryPtr& res = subDictionaries[index];
   if (res)
-  {
-    if (defaultValue && res != defaultValue)
-    {
-      std::cerr << "Error: sub-dictionary mismatch. This dictionary = '" << res->name << "', required dictionary = '" << defaultValue << "'" << std::endl;
-      assert(false);
-    }
-  }
+    res->checkEquals(subDictionary);
   else
-    res = defaultValue ? defaultValue : new FeatureDictionary(name + "." + 
+    res = subDictionary;
+}
+
+FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index)
+{
+  if (subDictionaries.size() < index + 1)
+    subDictionaries.resize(index + 1);
+  FeatureDictionaryPtr& res = subDictionaries[index];
+  if (!res)
+    res = new FeatureDictionary(name + "." + 
       (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : lbcpp::toString(index)));
   return res;
 }

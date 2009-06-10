@@ -71,10 +71,7 @@ public:
     ensureSize(subVectors, index + 1, DenseVectorPtr());
     subVectors[index] = subVector;
     if (dictionary)
-    {
-      // ensure 
-      dictionary->getSubDictionary(index, subVector->dictionary);
-    }
+      dictionary->ensureSubDictionary(index, subVector->dictionary);
   }
   
   /*

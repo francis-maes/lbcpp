@@ -57,7 +57,11 @@ public:
   SparseVectorPtr& getSubVector(size_t index);
 
   void setSubVector(size_t index, SparseVectorPtr subVector)
-    {getSubVector(index) = subVector;}
+  {
+    getSubVector(index) = subVector;
+    if (dictionary)
+      dictionary->ensureSubDictionary(index, subVector->dictionary);
+  }
   
   /*
   ** Operations

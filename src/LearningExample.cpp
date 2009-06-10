@@ -11,26 +11,6 @@
 #include <lbcpp/SparseVector.h>
 using namespace lbcpp;
 
-class VerboseFeatureVisitor : public FeatureVisitor
-{
-public:
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
-  {
-    std::cout << "Enter(" << dictionary->getScopes()->getString(index) << ")" << std::endl;
-    return true;
-  }
-  
-  virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
-  {
-    std::cout << "." << std::flush;
-  }
-
-  virtual void featureLeave()
-  {
-    std::cout << "Leave()" << std::endl;
-  }
-};
-
 class TransformClassificationExampleIntoRankingExample : public ObjectFunction
 {
 public:
@@ -57,29 +37,8 @@ public:
     for (size_t i = 0; i < numLabels; ++i)
     {
       alternatives->setSubGenerator(i, subFeatureGenerator(dictionary2, i, input));
-      dictionary->setSubDictionary(i, input->getDictionary());
       costs[i] = (i == output ? 0.0 : 1.0);
     }
-    
-    static int pouet = 0;
-    ++pouet;
-    if (pouet == 5)
-    {
-      
-      FeatureVisitorPtr verbose = new VerboseFeatureVisitor();
-//      std::cout << " ===== ALTERNATIVES1 ===== " << std::endl;
-//      alternatives->accept(verbose);
-      std::cout << std::endl << " ===== ALTERNATIVES2 ===== " << std::endl;
-      std::cout << alternatives->toString() << std::endl;
-//      std::cout << std::endl << " ===== ALTERNATIVES1b ===== " << std::endl;
-//      alternatives->toSparseVector()->accept(verbose);
-//      std::cout << std::endl << " ===== ALTERNATIVES2b ===== " << std::endl;
-//      std::cout << alternatives->toSparseVector()->toString() << std::endl;
-//      std::cout << std::endl << std::endl;
-      exit(0);
-    }
-    
-//    std::cout << "ALTERNATIVES vec: " << alternatives->toSparseVector()->toString() << std::endl;
     return new RankingExample(alternatives, costs);
   }
 };
