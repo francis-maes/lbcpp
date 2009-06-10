@@ -33,7 +33,6 @@ int main(int argc, char* argv[])
   ObjectFunctionPtr conversionFunction = transformClassificationExampleIntoRankingExample(labels);
   ObjectStreamPtr trainingParser = classificationExamplesParser("../data/classification/small.train", features, labels);
   ObjectContainerPtr trainingData = trainingParser->apply(conversionFunction)->load();
-  return 0.0;
   ObjectStreamPtr testingParser = classificationExamplesParser("../data/classification/small.test", features, labels);
   ObjectContainerPtr testingData = testingParser->apply(conversionFunction)->load();
   if (trainingData->empty() || testingData->empty())
@@ -45,7 +44,7 @@ int main(int argc, char* argv[])
   std::vector<std::pair<std::string, RankerPtr> > rankers;
   
   GradientBasedLearnerPtr gradientDescentLearner =
-    batchLearner(gradientDescentOptimizer(constantIterationFunction(0.0)));
+    batchLearner(gradientDescentOptimizer(constantIterationFunction(1.0)));
   GradientBasedLearnerPtr rpropLearner = batchLearner(rpropOptimizer());
   
   rankers.push_back(std::make_pair("AllPairs, Gradient Descent",

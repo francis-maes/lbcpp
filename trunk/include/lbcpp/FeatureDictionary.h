@@ -86,10 +86,7 @@ public:
     {return scopesDictionary ? scopesDictionary->getNumElements() : 0;}
     
   void addScope(const std::string& name, FeatureDictionaryPtr subDictionary)
-  {
-    FeatureDictionaryPtr d = getSubDictionary(getScopes()->add(name), subDictionary);
-    assert(d == subDictionary);
-  }
+    {ensureSubDictionary(getScopes()->add(name), subDictionary);}
   
   /*
   ** Related dictionaries
@@ -106,10 +103,12 @@ public:
   const FeatureDictionaryPtr getSubDictionary(size_t index) const
     {assert(index < subDictionaries.size()); return subDictionaries[index];}
     
-  FeatureDictionaryPtr getSubDictionary(size_t index, FeatureDictionaryPtr defaultValue = FeatureDictionaryPtr());
+  FeatureDictionaryPtr getSubDictionary(size_t index);
   
-  FeatureDictionaryPtr getSubDictionary(const std::string& name, FeatureDictionaryPtr defaultValue = FeatureDictionaryPtr())
-    {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name), defaultValue);}
+  FeatureDictionaryPtr getSubDictionary(const std::string& name)
+    {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
+
+  void ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary);
 
   FeatureDictionaryPtr getDictionaryWithSubScopesAsFeatures();
   

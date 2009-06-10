@@ -50,6 +50,7 @@ void CompositeFeatureGenerator::setSubGenerator(size_t index, FeatureGeneratorPt
   if (featureGenerators.size() < index + 1)
     featureGenerators.resize(index + 1, FeatureGeneratorPtr());
   featureGenerators[index] = featureGenerator;
+  getDictionary()->ensureSubDictionary(index, featureGenerator->getDictionary());
 }
 
 void CompositeFeatureGenerator::appendSubGenerator(FeatureGeneratorPtr featureGenerator)

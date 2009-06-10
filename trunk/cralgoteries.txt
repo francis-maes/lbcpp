@@ -34,7 +34,7 @@ Policy:
 LearningMachine:
   * dans le StochasticDescentLearner, options pour la frequence de l'application du regularizer
 
-* Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe) dans ScalarToVectorArchitecture::compute
+* Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe ou getParentDictionary) dans ScalarToVectorArchitecture::compute et dans MultiLinearArchitecture::compute
 
 
 LC++ translator:

@@ -43,8 +43,8 @@ struct ScalarToVectorArchitecture
   
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 FeatureGeneratorPtr* output,
-                FeatureGeneratorPtr* gradientWrtParameters,
-                FeatureGeneratorPtr* gradientWrtInput) const
+                FeatureGeneratorPtr* gradientsWrtParameters,
+                FeatureGeneratorPtr* gradientsWrtInput) const
   {
     size_t n = input->getNumSubGenerators();
     
@@ -53,10 +53,12 @@ struct ScalarToVectorArchitecture
       res = new DenseVector(input->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
     
     CompositeFeatureGeneratorPtr gParam, gInput;
-    if (gradientWrtParameters)
-      gParam = new CompositeFeatureGenerator(parameters->getDictionary(), n);
-    if (gradientWrtInput)
-      gInput = new CompositeFeatureGenerator(input->getDictionary(), n);
+    if (gradientsWrtParameters)
+        // parameters->getDictionary()->getParentDictionary(input->getDictionary()->getScopes())
+      gParam = new CompositeFeatureGenerator(new FeatureDictionary("parameters per output", StringDictionaryPtr(), input->getDictionary()->getScopes()), n);
+    if (gradientsWrtInput)
+        // input->getDictionary()->getParentDictionary(input->getDictionary()->getScopes())
+      gInput = new CompositeFeatureGenerator(new FeatureDictionary("inputs per output", StringDictionaryPtr(), input->getDictionary()->getScopes()), n);
     
     for (size_t i = 0; i < n; ++i)
     {
@@ -74,10 +76,10 @@ struct ScalarToVectorArchitecture
     }
     if (output)
       *output = res;
-    if (gradientWrtParameters)
-      *gradientWrtParameters = gParam;
-    if (gradientWrtInput)
-      *gradientWrtInput = gInput;
+    if (gradientsWrtParameters)
+      *gradientsWrtParameters = gParam;
+    if (gradientsWrtInput)
+      *gradientsWrtInput = gInput;
   }  
 };
 

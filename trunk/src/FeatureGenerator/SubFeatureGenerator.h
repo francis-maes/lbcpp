@@ -22,7 +22,10 @@ public:
   typedef FeatureGeneratorDefaultImplementations<SubFeatureGenerator, EditableFeatureGenerator> BaseClass;
   
   SubFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
-    : BaseClass(dictionary), index(index), featureGenerator(featureGenerator) {}
+    : BaseClass(dictionary), index(index), featureGenerator(featureGenerator)
+  {
+    dictionary->ensureSubDictionary(index, featureGenerator->getDictionary());
+  }
   
   /*
   ** Accessors
