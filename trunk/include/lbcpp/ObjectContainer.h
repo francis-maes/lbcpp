@@ -28,7 +28,7 @@ public:
     {return size() == 0;}
   
   template<class T>
-  inline ReferenceCountedObjectPtr<T> getCast(size_t index) const
+  inline ReferenceCountedObjectPtr<T> getAndCast(size_t index) const
   {
     ObjectPtr res = get(index);
     return res ? res.staticCast<T>() : ReferenceCountedObjectPtr<T>();

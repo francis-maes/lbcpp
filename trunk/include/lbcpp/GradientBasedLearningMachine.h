@@ -113,7 +113,8 @@ protected:
   ** Serialization
   */
   void saveImpl(std::ostream& ostr) const;
-  bool loadImpl(std::istream& istr);  
+  bool loadImpl(std::istream& istr);
+  void cloneImpl(GradientBasedLearningMachine& target) const;
 
   /*
   ** Training
@@ -164,6 +165,12 @@ public:
   
   virtual bool load(std::istream& istr)
     {return BaseClass::load(istr) && loadImpl(istr);}
+
+  void cloneImpl(GradientBasedLearningMachine_<BaseClass, ExampleType>& target) const
+  {
+    BaseClass::cloneImpl(target);
+    GradientBasedLearningMachine::cloneImpl(target);
+  }
 };
 
 /*
@@ -258,6 +265,7 @@ public:
 extern GradientBasedRankerPtr largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner);
 extern GradientBasedRankerPtr largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner);
 extern GradientBasedRankerPtr largeMarginBestAgainstAllLinearRanker(GradientBasedLearnerPtr learner);
+extern GradientBasedRankerPtr logBinomialAllPairsLinearRanker(GradientBasedLearnerPtr learner);
 
 }; /* namespace lbcpp */
 

@@ -28,8 +28,8 @@ void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallback
     {
       trainStochasticExample(example);
       ++count;
-      if (progress && (count % 50) == 0)
-        progress->progressStep("LearningMachine::trainStochastic", (double)count);
+      if (progress && (count % 50) == 0 && !progress->progressStep("LearningMachine::trainStochastic", (double)count))
+        break;
     }
     else
       break;
@@ -47,8 +47,9 @@ void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallb
   for (size_t i = 0; i < examples->size(); ++i)
   {
     trainStochasticExample(examples->get(i));
-    if (progress && (i % 50) == 0)
-      progress->progressStep("LearningMachine::trainStochastic", (double)i, (double)examples->size());
+    if (progress && (i % 50) == 0 && 
+      !progress->progressStep("LearningMachine::trainStochastic", (double)i, (double)examples->size()))
+      break;
   }
   if (progress)
     progress->progressEnd();
@@ -59,6 +60,44 @@ bool LearningMachine::trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr p
 {
   return trainBatch(examples->load(), progress);
 }
+/*
+class BatchToStochasticLearningMachine : public LearningMachine
+{
+public:
+  BatchToStochasticLearningMachine(LearningMachinePtr target)
+    : target(target) {}
+  
+  virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {target->trainBatch(examples, progress);}
+    
+  virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {target->trainBatch(examples, progress);}
+
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+    {examples = new VectorObjectContainer();}
+  virtual void trainStochasticExample(ObjectPtr example)
+    {examples->append(example);}
+  virtual void trainStochasticEnd()
+    {target->trainBatch(examples);}
+  
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {return target->trainBatch(examples, progress);}
+  
+  virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {return target->trainBatch(examples, progress);}
+
+  virtual FeatureDictionaryPtr getInputDictionary() const
+    {return target->getInputDictionary();}
+  
+private:
+  LearningMachinePtr target;
+  VectorObjectContainerPtr examples;
+};
+
+LearningMachinePtr LearningMachine::batchToStochasticMachine() const
+{
+  return new BatchToStochasticLearningMachine(this);
+}*/
 
 /*
 ** VerboseLearningMachine
@@ -104,7 +143,7 @@ double Regressor::evaluateMeanAbsoluteError(ObjectStreamPtr examples) const
   size_t count = 0;
   while (true)
   {
-    RegressionExamplePtr example = examples->nextCast<RegressionExample>();
+    RegressionExamplePtr example = examples->nextAndCast<RegressionExample>();
     if (example)
     {
       ++count;
@@ -171,7 +210,7 @@ double Classifier::evaluateAccuracy(ObjectStreamPtr examples) const
   size_t count = 0;
   while (true)
   {
-    ClassificationExamplePtr example = examples->nextCast<ClassificationExample>();
+    ClassificationExamplePtr example = examples->nextAndCast<ClassificationExample>();
     if (!example)
       break;
     ++count;
@@ -188,7 +227,7 @@ double Classifier::evaluateWeightedAccuracy(ObjectStreamPtr examples) const
   double correctWeight = 0.0, totalWeight = 0.0;
   while (true)
   {
-    ClassificationExamplePtr example = examples->nextCast<ClassificationExample>();
+    ClassificationExamplePtr example = examples->nextAndCast<ClassificationExample>();
     if (!example)
       break;
     totalWeight += example->getWeight();
@@ -329,7 +368,7 @@ double Ranker::evaluateMeanTopRankCost(ObjectStreamPtr examples) const
   double costSum = 0.0;
   while (true)
   {
-    RankingExamplePtr example = examples->nextCast<RankingExample>();
+    RankingExamplePtr example = examples->nextAndCast<RankingExample>();
     if (!example)
       break;
     ++count;

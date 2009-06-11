@@ -17,33 +17,13 @@ namespace lbcpp
 class Policy : public Object
 {
 public:
-  static PolicyPtr createRandom();
-  static PolicyPtr createGreedy(ActionValueFunctionPtr actionValues);
-  static PolicyPtr createGibbsGreedy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature);
-  static PolicyPtr createNonDeterministic(ActionValueFunctionPtr actionProbabilities);
-
-  static PolicyPtr createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
-  static PolicyPtr createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
-  static PolicyPtr createMonteCarloControl(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
-
-  static PolicyPtr createClassificationExampleCreator(PolicyPtr explorationPolicy,
-                        ClassifierPtr classifier,
-                        ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
-                        
-  static PolicyPtr createRankingExampleCreator(PolicyPtr explorationPolicy,
-                        RankerPtr ranker,
-                        ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
-                        
-  static PolicyPtr createGPOMDP(GeneralizedClassifierPtr classifier, double beta, double exploration = 1.0);
-  static PolicyPtr createGPOMDP(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy);
+  bool run(CRAlgorithmPtr crAlgorithm);
+  bool run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  bool run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
   PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
   PolicyPtr addComputeStatistics() const;
   PolicyPtr verbose(size_t verbosity, std::ostream& ostr = std::cout) const;
-
-  bool run(CRAlgorithmPtr crAlgorithm);
-  bool run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
-  bool run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
 public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}
@@ -55,18 +35,31 @@ public:
   virtual ObjectPtr getResult(size_t i) const
     {assert(false); return ObjectPtr();}
   
-  virtual ObjectPtr getResultWithName(const std::string& name) const
-  {
-    for (size_t i = 0; i < getNumResults(); ++i)
-    {
-      ObjectPtr res = getResult(i);
-      if (res->getName() == name)
-        return res;
-    }
-    error("Policy::getResultWithName", "Could not find result with name '" + name + "'");
-    return ObjectPtr();
-  }
+  virtual ObjectPtr getResultWithName(const std::string& name) const;
 };
+
+extern PolicyPtr randomPolicy();
+extern PolicyPtr greedyPolicy(ActionValueFunctionPtr actionValues);
+extern PolicyPtr gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature);
+extern PolicyPtr stochasticPolicy(ActionValueFunctionPtr actionProbabilities);
+
+extern PolicyPtr mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient);
+
+extern PolicyPtr qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
+extern PolicyPtr sarsaZeroPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
+extern PolicyPtr monteCarloControlPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
+
+extern PolicyPtr classificationExampleCreatorPolicy(PolicyPtr explorationPolicy,
+                        ClassifierPtr classifier,
+                        ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
+                        
+extern PolicyPtr rankingExampleCreatorPolicy(PolicyPtr explorationPolicy,
+                        RankerPtr ranker,
+                        ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
+                        
+extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, double exploration = 1.0);
+extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy);
+
 
 class DecoratorPolicy : public Policy
 {

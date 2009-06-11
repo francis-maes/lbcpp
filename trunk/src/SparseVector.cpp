@@ -12,8 +12,11 @@
 using namespace lbcpp;
 
 SparseVector::SparseVector(const SparseVector& otherVector)
-  : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(subVectors)
+  : BaseClass(otherVector.dictionary), values(otherVector.values), subVectors(otherVector.subVectors.size())
 {
+  for (size_t i = 0; i < subVectors.size(); ++i)
+    subVectors[i] = std::make_pair(otherVector.subVectors[i].first,
+      new SparseVector(*otherVector.subVectors[i].second));
 }
 
 SparseVector::SparseVector(FeatureDictionaryPtr dictionary, size_t reserveNumValues, size_t reserveNumSubVectors)

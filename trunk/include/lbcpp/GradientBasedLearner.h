@@ -29,7 +29,7 @@ public:
     
   virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {}
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight) = 0;
-  virtual void trainStochasticExample(ScalarVectorFunctionPtr exampleLoss)
+  virtual void trainStochasticExample(ObjectPtr example, ScalarVectorFunctionPtr exampleLoss)
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}    
   virtual void trainStochasticEnd() {}
 

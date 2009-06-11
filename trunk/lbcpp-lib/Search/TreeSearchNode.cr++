@@ -14,7 +14,7 @@ class TreeSearchNode
 public:
   TreeSearchNode(CRAlgorithmPtr initialState) : reward(0.0), parent(NULL)
   {
-    state = initialState->clone();
+    state = initialState->cloneAndCast<CRAlgorithm>();
     choose = state->runUntilFirstChoose(&reward);
     assert(choose); // the search space must have at least one node
   }
@@ -64,7 +64,7 @@ public:
     {
       assert(parent && choice);
       parent->open();
-      state = parent->state->clone();
+      state = parent->state->cloneAndCast<CRAlgorithm>();
       choose = state->runUntilNextChoose(choice, &reward);
     }
   }

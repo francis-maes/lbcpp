@@ -37,6 +37,16 @@ bool GradientBasedLearningMachine::loadImpl(std::istream& istr)
             read(istr, initializeParametersRandomly);
 }
 
+void GradientBasedLearningMachine::cloneImpl(GradientBasedLearningMachine& target) const
+{
+  target.inputDictionary = inputDictionary;
+  target.parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+  target.regularizer = regularizer;
+  target.learner = learner->cloneAndCast<GradientBasedLearner>();
+  target.initializeParametersRandomly = initializeParametersRandomly;
+}
+
+
 void GradientBasedLearningMachine::trainStochasticBeginImpl(FeatureDictionaryPtr inputDictionary)
 {
   assert(learner);
@@ -60,7 +70,7 @@ void GradientBasedLearningMachine::trainStochasticExampleImpl(ObjectPtr example)
   if (!parameters)
     createParameters(getInputDictionaryFromExample(example), initializeParametersRandomly);
   learner->setParameters(parameters);
-  learner->trainStochasticExample(getLoss(example));
+  learner->trainStochasticExample(example, getLoss(example));
 }
 
 void GradientBasedLearningMachine::trainStochasticEndImpl()
@@ -162,6 +172,13 @@ GradientBasedRankerPtr lbcpp::largeMarginMostViolatedPairLinearRanker(GradientBa
   return res;
 }
 
+GradientBasedRankerPtr lbcpp::logBinomialAllPairsLinearRanker(GradientBasedLearnerPtr learner)
+{
+  GradientBasedRankerPtr res = new LogBinomialAllPairsLinearRanker();
+  res->setLearner(learner);
+  return res;
+}
+
 /*
 ** Serializable classes declaration
 */
@@ -175,4 +192,5 @@ void declareGradientBasedLearningMachines()
   LBCPP_DECLARE_CLASS(LargeMarginAllPairsLinearRanker);
   LBCPP_DECLARE_CLASS(LargeMarginBestAgainstAllLinearRanker);
   LBCPP_DECLARE_CLASS(LargeMarginMostViolatedPairLinearRanker);
+  LBCPP_DECLARE_CLASS(LogBinomialAllPairsLinearRanker);
 }

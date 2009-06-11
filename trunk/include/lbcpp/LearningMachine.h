@@ -24,20 +24,27 @@ public:
   virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());  
   virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) = 0;
-  virtual void trainStochasticExample(ObjectPtr example) = 0;
-  virtual void trainStochasticEnd() = 0;
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {assert(false);}
+  virtual void trainStochasticExample(ObjectPtr example) {assert(false);}
+  virtual void trainStochasticEnd() {assert(false);}
   
   /*
   ** Batch training
   */
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr()) = 0;  
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {assert(false); return false;}
   virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
   /*
   ** Input dictionary
   */
-  virtual FeatureDictionaryPtr getInputDictionary() const = 0;
+  virtual FeatureDictionaryPtr getInputDictionary() const
+    {return FeatureDictionaryPtr();}
+  
+  //LearningMachinePtr batchToStochasticMachine() const;
+  
+protected:
+  void cloneImpl(LearningMachine& target) const {}
 };
 typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 
@@ -86,6 +93,9 @@ public:
     
 protected:
   StringDictionaryPtr labels;
+  
+  void cloneImpl(Classifier& target) const
+    {target.labels = labels;}
 };
 
 class BinaryClassifier : public Classifier

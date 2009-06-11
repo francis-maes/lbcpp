@@ -98,12 +98,14 @@ public:
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return getSubVector(index);}
 
-protected:
   /*
   ** Object
   */
   virtual bool load(std::istream& istr);
   virtual void save(std::ostream& ostr) const;
+
+  virtual ObjectPtr clone() const
+    {return new SparseVector(*this);}
 
 private:
   typedef std::vector<std::pair<size_t, double> > FeatureVector;

@@ -115,11 +115,13 @@ private:
   size_t numLabels;  
 };
 
+
+
 void runPolicy(PolicyPtr policy, ObjectContainerPtr examples, size_t numLabels)
 {
   for (size_t i = 0; i < examples->size(); ++i)
   {
-    SequenceExamplePtr sequence = examples->getCast<SequenceExample>(i);
+    SequenceExamplePtr sequence = examples->getAndCast<SequenceExample>(i);
     simplestSequenceLabeling(policy, sequence->getContent(), numLabels, &sequence->getLabels());
   }
   std::cout << "==> " << policy->toString() << std::endl;
@@ -132,13 +134,12 @@ void testClassifier(ObjectContainerPtr learningExamples, StringDictionaryPtr lab
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(
         stochasticDescentLearner(learningRate), labels);
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(classifier));
   
-  PolicyPtr learnerPolicy =
-    Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
+  PolicyPtr learnerPolicy = classificationExampleCreatorPolicy(learnedPolicy, classifier)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  Policy::createRandom()->addComputeStatistics()->run(learningExamples);
+  randomPolicy()->addComputeStatistics()->run(learningExamples);
   
   for (size_t i = 0; i < 15; ++i)
   {
@@ -155,8 +156,8 @@ void testCRank(ObjectContainerPtr learningExamples)
     //largeMarginBestAgainstAllLinearRanker
     //largeMarginMostViolatedPairLinearRanker
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
-  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));  
+  PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(learnedPolicy, ranker);
 
   for (size_t i = 0; i < 5; ++i)
   {
@@ -173,11 +174,11 @@ void testSarsa(ObjectContainerPtr learningExamples)
 
   GradientBasedRegressorPtr regressor = leastSquaresLinearRegressor(stochasticDescentLearner(learningRate));
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(regressor));
   
-  PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
+  PolicyPtr learnerPolicy = sarsaZeroPolicy(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
-  PolicyPtr p = Policy::createRandom()->addComputeStatistics()->verbose(0);
+  PolicyPtr p = randomPolicy()->addComputeStatistics()->verbose(0);
   p->run(learningExamples);
   std::cout << "RANDOM: " << p->toString() << std::endl;
   
@@ -212,8 +213,8 @@ void testOLPOMDP(ObjectContainerPtr learningExamples)
 
   GeneralizedClassifierPtr classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
-  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0, 2.0);
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(classifier));  
+  PolicyPtr learnerPolicy = gpomdpPolicy(classifier, 0, 2.0);
 
   for (size_t i = 0; i < 10; ++i)
   {
@@ -240,9 +241,16 @@ int main(int argc, char* argv[])
   
   std::cout << crAlgorithms->size() << " sequences, " << labels->getNumElements()
     << " labels, " << features->getNumFeatures() << " features." << std::endl;
-    
-  std::cout << " === SARSA === " << std::endl;
-  testSarsa(crAlgorithms);
+  
+  CRAlgorithmLearnerPtr searn = searnLearner();
+  searn->trainBatch(crAlgorithms, consoleProgressCallback());
+  PolicyPtr policy = searn->getPolicy()->addComputeStatistics();
+
+  policy->run(crAlgorithms);
+  std::cout << "RESULT => " << policy->toString() << std::endl;
+
+//  std::cout << " === SARSA === " << std::endl;
+//  testSarsa(crAlgorithms);
 //  std::cout << " === CLASSIFIER === " << std::endl;
 //  testClassifier(crAlgorithms);
 //  std::cout << " === RANKING === " << std::endl;

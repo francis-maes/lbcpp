@@ -35,5 +35,6 @@
 # include "Callback.h"
 # include "Policy.h"
 # include "CRAlgorithm.h"
+# include "CRAlgorithmLearner.h"
 
 #endif // !LBCPP_LBCPP_H_

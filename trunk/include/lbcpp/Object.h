@@ -33,12 +33,12 @@ public:
   static ObjectPtr loadFromFile(const std::string& fileName);
   
   template<class T>
-  static ReferenceCountedObjectPtr<T> loadFromStreamCast(std::istream& istr)
-    {return checkCast<T>("Object::createFromStreamCast", loadFromStream(istr));}
+  static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
+    {return checkCast<T>("Object::loadFromStreamAndCast", loadFromStream(istr));}
 
   template<class T>
-  static ReferenceCountedObjectPtr<T> loadFromFileCast(const std::string& fileName)
-    {return checkCast<T>("Object::createFromFileCast", loadFromFile(fileName));}
+  static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const std::string& fileName)
+    {return checkCast<T>("Object::loadFromFileAndCast", loadFromFile(fileName));}
 
   std::string getClassName() const;
   virtual std::string getName() const
@@ -46,7 +46,14 @@ public:
     
   virtual std::string toString() const
     {return getClassName() + "::toString() unimplemented";}
+  
+  virtual ObjectPtr clone() const
+    {assert(false); return ObjectPtr();}
     
+  template<class T>
+  ReferenceCountedObjectPtr<T> cloneAndCast() const
+    {return checkCast<T>("Object::cloneAndCast", clone());}
+  
   bool saveToFile(const std::string& fileName) const;
   void saveToStream(std::ostream& ostr) const;
 
@@ -101,7 +108,7 @@ public:
   }
   static inline bool read(std::istream& istr, ReferenceCountedObjectPtr<T>& result)
   {
-    result = Object::loadFromStreamCast<T>(istr);
+    result = Object::loadFromStreamAndCast<T>(istr);
     return true;
   }
 };

@@ -22,6 +22,9 @@ public:
     
   virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
     {return true;}
+
+  virtual ObjectPtr clone() const
+    {return new NonLearnerGradientBasedLearner();}
 };
 
 }; /* namespace lbcpp */

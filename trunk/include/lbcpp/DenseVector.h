@@ -140,6 +140,8 @@ public:
   */
   virtual bool load(std::istream& istr);
   virtual void save(std::ostream& ostr) const;
+  virtual ObjectPtr clone() const
+    {return new DenseVector(*this);}
 
 protected:
   template<class VectorType, class ContentType>

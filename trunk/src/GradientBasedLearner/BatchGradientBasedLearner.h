@@ -19,6 +19,8 @@ class BatchGradientBasedLearner : public GradientBasedLearner
 public:
   BatchGradientBasedLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
     : optimizer(optimizer), stoppingCriterion(stoppingCriterion) {}
+  BatchGradientBasedLearner(const BatchGradientBasedLearner& other)
+    : optimizer(other.optimizer), stoppingCriterion(other.stoppingCriterion) {}
   BatchGradientBasedLearner() {}
     
   virtual std::string toString() const
@@ -64,6 +66,9 @@ public:
   
   virtual bool load(std::istream& istr)
     {return read(istr, optimizer) && read(istr, stoppingCriterion);}
+
+  virtual ObjectPtr clone() const
+    {return new BatchGradientBasedLearner(*this);}
   
 protected:
   VectorOptimizerPtr optimizer;

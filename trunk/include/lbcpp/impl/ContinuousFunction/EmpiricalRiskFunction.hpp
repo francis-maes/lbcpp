@@ -55,7 +55,7 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
 
     for (size_t i = 0; i < examples->size(); ++i)
     {
-      ExampleTypePtr example = examples->getCast<ExampleType>(i);
+      ExampleTypePtr example = examples->getAndCast<ExampleType>(i);
       const_cast<PenalizationType& >(penalization).right.setLearningExample(*example);
 
       // FIXME : gradient direction

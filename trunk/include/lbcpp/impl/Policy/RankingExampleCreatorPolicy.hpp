@@ -52,7 +52,7 @@ struct RankingExampleCreatorPolicy
 
   VariablePtr policyChoose(ChoosePtr choose)
   {
-    FeatureGeneratorPtr alternatives = choose->computeActionsFeatures(false);
+    FeatureGeneratorPtr alternatives = choose->computeActionsFeatures(true);
 
     std::vector<double> costs;
     choose->computeActionValues(costs, supervisor);

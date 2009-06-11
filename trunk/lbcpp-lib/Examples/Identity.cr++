@@ -11,7 +11,7 @@ namespace lbcpp
 
 crAlgorithm void identity(CRAlgorithmPtr crAlgorithm)
 {
-  CRAlgorithmPtr currentState = crAlgorithm->clone();
+  CRAlgorithmPtr currentState = crAlgorithm->cloneAndCast<CRAlgorithm>();
   const void* lastChoice = NULL;
   while (true)
   {

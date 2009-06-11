@@ -21,11 +21,8 @@ class CRAlgorithm : public CRAlgorithmScope
 {
 public:
   /*
-  ** Clone/assignment
+  ** Assignment
   */
-  CRAlgorithmPtr clone() const
-    {return cloneScope().dynamicCast<CRAlgorithm>();}
-
   CRAlgorithm& operator =(const CRAlgorithm& otherCRAlgorithm)
     {setScope(otherCRAlgorithm); return *this;}
    

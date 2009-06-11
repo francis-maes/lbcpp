@@ -19,6 +19,8 @@ class StochasticGradientDescentLearner : public GradientBasedLearner
 public:
   StochasticGradientDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
     : epoch(0), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate) {}
+  StochasticGradientDescentLearner(const StochasticGradientDescentLearner& other)
+    : epoch(other.epoch), learningRate(other.learningRate), normalizeLearningRate(other.normalizeLearningRate) {}
   StochasticGradientDescentLearner() : epoch(0), normalizeLearningRate(false) {}
     
   virtual std::string toString() const
@@ -58,6 +60,9 @@ public:
       read(istr, normalizeLearningRate) && inputSize.load(istr);
   }
   
+  virtual ObjectPtr clone() const
+    {return new StochasticGradientDescentLearner(*this);}
+
 protected:
   size_t epoch;
   IterationFunctionPtr learningRate;

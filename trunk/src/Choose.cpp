@@ -11,6 +11,18 @@
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
+/*
+** StateValueFunction
+*/
+StateValueFunctionPtr lbcpp::predictedStateValues(RegressorPtr regressor)
+  {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
+
+StateValueFunctionPtr lbcpp::predictedStateValues(RankerPtr ranker)
+  {return impl::staticToDynamic(impl::RankerStateValueFunction(ranker));}
+
+/*
+** ActionValueFunction
+*/
 class ChooseActionValueFunction : public ActionValueFunction
 {
 public:
@@ -24,32 +36,26 @@ private:
   ActionValueFunctionPtr function;     
 };
 
-ActionValueFunctionPtr ActionValueFunction::createChooseActionValue()
+ActionValueFunctionPtr lbcpp::chooseActionValues()
   {return new ChooseActionValueFunction();}
 
-StateValueFunctionPtr StateValueFunction::createPredictions(RegressorPtr regressor)
-  {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
-
-StateValueFunctionPtr StateValueFunction::createPredictions(RankerPtr ranker)
-  {return impl::staticToDynamic(impl::RankerStateValueFunction(ranker));}
-
-ActionValueFunctionPtr ActionValueFunction::createScores(ClassifierPtr classifier)
+ActionValueFunctionPtr lbcpp::predictedActionValues(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierScoresActionValue(classifier));}
 
-ActionValueFunctionPtr ActionValueFunction::createScores(GeneralizedClassifierPtr classifier)
+ActionValueFunctionPtr lbcpp::predictedActionValues(GeneralizedClassifierPtr classifier)
   {return impl::staticToDynamic(impl::GeneralizedClassifierScoresActionValue(classifier));}
 
-ActionValueFunctionPtr ActionValueFunction::createPredictions(RankerPtr ranker)
+ActionValueFunctionPtr lbcpp::predictedActionValues(RankerPtr ranker)
   {return impl::staticToDynamic(impl::RankerActionValueFunction(ranker));}
 
-ActionValueFunctionPtr ActionValueFunction::createProbabilities(ClassifierPtr classifier)
+ActionValueFunctionPtr lbcpp::predictedActionValues(RegressorPtr regressor)
+  {return impl::staticToDynamic(impl::RegressorActionValueFunction(regressor));}
+
+ActionValueFunctionPtr lbcpp::probabilitiesActionValues(ClassifierPtr classifier)
   {return impl::staticToDynamic(impl::ClassifierProbabilitiesActionValue(classifier));}
 
-ActionValueFunctionPtr ActionValueFunction::createProbabilities(GeneralizedClassifierPtr classifier)
+ActionValueFunctionPtr lbcpp::probabilitiesActionValues(GeneralizedClassifierPtr classifier)
   {return impl::staticToDynamic(impl::GeneralizedClassifierProbabilitiesActionValue(classifier));}
-
-ActionValueFunctionPtr ActionValueFunction::createPredictions(RegressorPtr regressor)
-  {return impl::staticToDynamic(impl::RegressorActionValueFunction(regressor));}
 
 /*
 ** Choose
