@@ -176,7 +176,7 @@ void testSarsa(ObjectContainerPtr learningExamples)
   
   PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(regressor));
   
-  PolicyPtr learnerPolicy = sarsaZeroPolicy(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
+  PolicyPtr learnerPolicy = sarsaZeroPolicy(epsilonGreedyPolicy(learnedPolicy, epsilon), regressor, 0.0)->addComputeStatistics();
   
   PolicyPtr p = randomPolicy()->addComputeStatistics()->verbose(0);
   p->run(learningExamples);

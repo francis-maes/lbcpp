@@ -85,7 +85,7 @@ void testMonteCarloControl(ObjectContainerPtr train, ObjectContainerPtr test, si
   
   PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(regressor));
   
-  PolicyPtr learnerPolicy = monteCarloControlPolicy(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.8);
+  PolicyPtr learnerPolicy = monteCarloControlPolicy(epsilonGreedyPolicy(learnedPolicy, epsilon), regressor, 0.8);
   
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
 }

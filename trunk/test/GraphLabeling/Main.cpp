@@ -62,7 +62,7 @@ public:
       {
         explorationPolicy = predicted ? learnedPolicy : greedyPolicy(chooseActionValues());
         if (epsilon)
-          explorationPolicy = explorationPolicy->epsilonGreedy(constantIterationFunction(epsilon));
+          explorationPolicy = epsilonGreedyPolicy(explorationPolicy, constantIterationFunction(epsilon));
       }
       
     PolicyPtr learnerPolicy = classificationExampleCreatorPolicy(explorationPolicy, classifier);

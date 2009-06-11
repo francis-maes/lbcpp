@@ -26,12 +26,15 @@ StateValueFunctionPtr lbcpp::predictedStateValues(RankerPtr ranker)
 class ChooseActionValueFunction : public ActionValueFunction
 {
 public:
-   virtual void setChoose(ChoosePtr choose)
-     {function = choose->getActionValueFunction();}
+  virtual void setChoose(ChoosePtr choose)
+    {function = choose->getActionValueFunction();}
 
-   virtual double compute(VariablePtr choice) const
-     {return function->compute(choice);}
-
+  virtual double compute(VariablePtr choice) const
+    {return function->compute(choice);}
+    
+  virtual std::string toString() const
+    {return "chooseActionValue()";}
+    
 private:
   ActionValueFunctionPtr function;     
 };

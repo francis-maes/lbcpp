@@ -6,7 +6,15 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/lbcpp.h>
-#include <lbcpp/impl/impl.h>
+#include <lbcpp/impl/impl.h> // tmp
+
+#include "Policy/RandomPolicy.h"
+#include "Policy/GreedyPolicy.h"
+#include "Policy/StochasticPolicy.h"
+#include "Policy/EpsilonGreedyPolicy.h"
+#include "Policy/GibbsGreedyPolicy.h"
+#include "Policy/MixturePolicy.h"
+
 using namespace lbcpp;
 
 ObjectPtr Policy::getResultWithName(const std::string& name) const
@@ -80,59 +88,22 @@ inline impl::DynamicToStaticPolicy dynamicToStatic(const PolicyPtr policy)
 // 
 
 PolicyPtr lbcpp::randomPolicy()
-  {return impl::staticToDynamic(impl::RandomPolicy());}
+  {return new RandomPolicy();}
 
 PolicyPtr lbcpp::greedyPolicy(ActionValueFunctionPtr actionValues)
-  {return impl::staticToDynamic(impl::GreedyPolicy(actionValues));}
+  {return new GreedyPolicy(actionValues);}
 
 PolicyPtr lbcpp::gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature)
-  {return impl::staticToDynamic(impl::GibbsGreedyPolicy(actionValue, temperature));}
+  {return new GibbsGreedyPolicy(actionValue, temperature);}
 
 PolicyPtr lbcpp::stochasticPolicy(ActionValueFunctionPtr actionProbabilities)
-  {return impl::staticToDynamic(impl::NonDeterministicPolicy(actionProbabilities));}
-
-// todo: ranger
-class MixturePolicy : public Policy
-{
-public:
-  MixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient)
-    : policy1(policy1), policy2(policy2), mixtureCoefficient(mixtureCoefficient) {}
-    
-  virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
-  {
-    policy1->policyEnter(crAlgorithm);
-    policy2->policyEnter(crAlgorithm);
-  }
-  
-  virtual VariablePtr policyChoose(ChoosePtr choose)
-  {
-    VariablePtr choice1 = policy1->policyChoose(choose);
-    VariablePtr choice2 = policy2->policyChoose(choose);
-    return Random::getInstance().sampleBool(mixtureCoefficient) ? choice2 : choice1;
-  }
-  
-  virtual void policyReward(double reward)
-  {
-    policy1->policyReward(reward);
-    policy2->policyReward(reward);
-  }
-  
-  virtual void policyLeave()
-  {
-    policy1->policyLeave();
-    policy2->policyLeave();
-  }
-  
-private:
-  PolicyPtr policy1;
-  PolicyPtr policy2;
-  double mixtureCoefficient;
-};
+  {return new StochasticPolicy(actionProbabilities);}
 
 PolicyPtr lbcpp::mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient)
-{
-  return new MixturePolicy(policy1, policy2, mixtureCoefficient);
-}
+  {return new MixturePolicy(policy1, policy2, mixtureCoefficient);}
+
+PolicyPtr lbcpp::epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr epsilon)
+  {return new EpsilonGreedyPolicy(basePolicy, epsilon);}
 
 PolicyPtr lbcpp::qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
 {
@@ -179,10 +150,19 @@ PolicyPtr Policy::verbose(size_t verbosity, std::ostream& ostr) const
             dynamicToStatic(this), verbosity, ostr));
 }
 
-PolicyPtr Policy::epsilonGreedy(IterationFunctionPtr epsilon) const
-  {return impl::staticToDynamic(impl::EpsilonGreedyPolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(this), epsilon));}
-  
 PolicyPtr Policy::addComputeStatistics() const
   {return impl::staticToDynamic(impl::ComputeStatisticsPolicy<impl::DynamicToStaticPolicy>(
             dynamicToStatic(this)));}
+
+/*
+** Serializable classes declaration
+*/
+void declarePolicies()
+{
+  LBCPP_DECLARE_CLASS(RandomPolicy);
+  LBCPP_DECLARE_CLASS(GreedyPolicy);
+  LBCPP_DECLARE_CLASS(GibbsGreedyPolicy);
+  LBCPP_DECLARE_CLASS(StochasticPolicy);
+  LBCPP_DECLARE_CLASS(MixturePolicy);
+  LBCPP_DECLARE_CLASS(EpsilonGreedyPolicy);
+}

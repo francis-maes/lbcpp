@@ -15,6 +15,7 @@ extern void declareOptimizerStoppingCriterions();
 extern void declareOptimizers();
 extern void declareGradientBasedLearners();
 extern void declareGradientBasedLearningMachines();
+extern void declarePolicies();
 
 void declareRandomVariableStatistics()
 {
@@ -44,4 +45,6 @@ void declareLBCppCoreClasses()
   
   declareGradientBasedLearners();
   declareGradientBasedLearningMachines();
+  
+  declarePolicies();
 }
