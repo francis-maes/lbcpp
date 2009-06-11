@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
   SparseVectorPtr v4 = f4->toSparseVector();
   v4->saveToFile("f4.vector");
   
-  SparseVectorPtr f4loaded = Object::loadFromFileCast<SparseVector>("f4.vector");
+  SparseVectorPtr f4loaded = Object::loadFromFileAndCast<SparseVector>("f4.vector");
   assert(f4loaded);
   f4loaded->setDictionary(f4->getDictionary());
   std::cout << "V4 Loaded: " << std::endl << f4loaded->toString() << std::endl;
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
         << std::endl;
         
   dense2->saveToFile("d2.vector");
-  dense2 = Object::loadFromFileCast<DenseVector>("d2.vector");
+  dense2 = Object::loadFromFileAndCast<DenseVector>("d2.vector");
   std::cout << "size: " << dense2->size()
         << " l0 norm: " << dense2->l0norm()
         << " l1 norm: " << dense2->l1norm()

@@ -69,6 +69,15 @@ public:
     {return impl::allPairsLoss<impl::HingeLossFunction, RankingExample>();}
 };
 
+class LogBinomialAllPairsLinearRanker
+  : public StaticToDynamicGradientBasedLinearRanker<LargeMarginAllPairsLinearRanker>
+{
+public:
+  inline impl::AllPairsLoss<impl::LogBinomialLossFunction, RankingExample> loss() const
+    {return impl::allPairsLoss<impl::LogBinomialLossFunction, RankingExample>();}
+};
+
+
 class LargeMarginBestAgainstAllLinearRanker
   : public StaticToDynamicGradientBasedLinearRanker<LargeMarginBestAgainstAllLinearRanker>
 {

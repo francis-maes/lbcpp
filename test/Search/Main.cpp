@@ -8,7 +8,7 @@ CRAlgorithmPtr backTrackingDepthFirstSearchRec(ChoosePtr choose)
   assert(choose);
   for (VariableIteratorPtr it = choose->newIterator(); it->exists(); it->next())
   {
-    CRAlgorithmPtr nextState = choose->getCRAlgorithm()->clone();
+    CRAlgorithmPtr nextState = choose->getCRAlgorithm()->cloneAndCast<CRAlgorithm>();
     double reward;
     ChoosePtr nextChoose = nextState->runUntilNextChoose(it->get(), &reward);
     if (reward > 0)
@@ -25,7 +25,7 @@ CRAlgorithmPtr backTrackingDepthFirstSearchRec(ChoosePtr choose)
 
 CRAlgorithmPtr backTrackingDepthFirstSearch(CRAlgorithmPtr initialState)
 {
-  CRAlgorithmPtr state = initialState->clone();
+  CRAlgorithmPtr state = initialState->cloneAndCast<CRAlgorithm>();
   ChoosePtr choose = state->runUntilFirstChoose();
   assert(choose);
   return backTrackingDepthFirstSearchRec(choose);

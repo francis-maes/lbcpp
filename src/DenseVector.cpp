@@ -11,7 +11,11 @@
 using namespace lbcpp;
 
 DenseVector::DenseVector(const DenseVector& otherVector)
-  : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors) {}
+  : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors.size())
+{
+  for (size_t i = 0; i < subVectors.size(); ++i)
+    subVectors[i] = new DenseVector(*otherVector.subVectors[i]);
+}
 
 DenseVector::DenseVector(FeatureDictionaryPtr dictionary, const std::vector<double>& values)
   : BaseClass(dictionary), values(values) {}

@@ -10,6 +10,7 @@
 # define LBCPP_CHOOSE_FUNCTION_H_
 
 # include "ObjectPredeclarations.h"
+# include "GradientBasedLearningMachine.h"
 
 namespace lbcpp
 {
@@ -24,47 +25,53 @@ public:
 };
 
 /*
-** Values
+** State Values
 */
 class StateValueFunction : public ChooseFunction
 {
 public:
-  static StateValueFunctionPtr createPredictions(RegressorPtr regressor);
-  static StateValueFunctionPtr createPredictions(GradientBasedRegressorPtr regressor)
-    {return createPredictions(RegressorPtr(regressor));}
-    
-  static StateValueFunctionPtr createPredictions(RankerPtr ranker);
-  static StateValueFunctionPtr createPredictions(GradientBasedRankerPtr ranker)
-    {return createPredictions(RankerPtr(ranker));}
-
   virtual double compute() const = 0;
 };
 
+extern StateValueFunctionPtr predictedStateValues(RegressorPtr regressor);
+inline StateValueFunctionPtr predictedStateValues(GradientBasedRegressorPtr regressor)
+  {return predictedStateValues(RegressorPtr(regressor));}
+  
+extern StateValueFunctionPtr predictedStateValues(RankerPtr ranker);
+inline StateValueFunctionPtr predictedStateValues(GradientBasedRankerPtr ranker)
+  {return predictedStateValues(RankerPtr(ranker));}
+
+/*
+** Action Values
+*/
 class ActionValueFunction : public ChooseFunction
 {
 public:
-  static ActionValueFunctionPtr createChooseActionValue();
-
-  static ActionValueFunctionPtr createProbabilities(ClassifierPtr classifier);
-  static ActionValueFunctionPtr createProbabilities(GeneralizedClassifierPtr classifier);
-  static ActionValueFunctionPtr createScores(ClassifierPtr classifier);
-  static ActionValueFunctionPtr createScores(GeneralizedClassifierPtr classifier);
-  static ActionValueFunctionPtr createPredictions(RankerPtr ranker);    
-  static ActionValueFunctionPtr createPredictions(RegressorPtr regressor);
-
-  static ActionValueFunctionPtr createProbabilities(GradientBasedClassifierPtr classifier)
-    {return createProbabilities(ClassifierPtr(classifier));}
-  static ActionValueFunctionPtr createScores(GradientBasedClassifierPtr classifier)
-    {return createScores(ClassifierPtr(classifier));}
-  static ActionValueFunctionPtr createScores(GradientBasedGeneralizedClassifierPtr classifier)
-    {return createScores(GeneralizedClassifierPtr(classifier));}
-  static ActionValueFunctionPtr createPredictions(GradientBasedRankerPtr ranker)
-    {return createPredictions(RankerPtr(ranker));}
-  static ActionValueFunctionPtr createPredictions(GradientBasedRegressorPtr regressor)
-    {return createPredictions(RegressorPtr(regressor));}
-
   virtual double compute(VariablePtr choice) const = 0;
 };
+
+extern ActionValueFunctionPtr chooseActionValues();
+
+extern ActionValueFunctionPtr predictedActionValues(ClassifierPtr classifier);
+inline ActionValueFunctionPtr predictedActionValues(GradientBasedClassifierPtr classifier)
+  {return predictedActionValues(ClassifierPtr(classifier));}
+
+extern ActionValueFunctionPtr predictedActionValues(GeneralizedClassifierPtr classifier);
+inline ActionValueFunctionPtr predictedActionValues(GradientBasedGeneralizedClassifierPtr classifier)
+  {return predictedActionValues(GeneralizedClassifierPtr(classifier));}
+
+extern ActionValueFunctionPtr predictedActionValues(RankerPtr ranker);    
+inline ActionValueFunctionPtr predictedActionValues(GradientBasedRankerPtr ranker)
+  {return predictedActionValues(RankerPtr(ranker));}
+
+extern ActionValueFunctionPtr predictedActionValues(RegressorPtr regressor);
+inline ActionValueFunctionPtr predictedActionValues(GradientBasedRegressorPtr regressor)
+  {return predictedActionValues(RegressorPtr(regressor));}
+
+extern ActionValueFunctionPtr probabilitiesActionValues(ClassifierPtr classifier);
+extern ActionValueFunctionPtr probabilitiesActionValues(GeneralizedClassifierPtr classifier);
+inline ActionValueFunctionPtr probabilitiesActionValues(GradientBasedClassifierPtr classifier)
+  {return probabilitiesActionValues(ClassifierPtr(classifier));}
 
 /*
 ** Features

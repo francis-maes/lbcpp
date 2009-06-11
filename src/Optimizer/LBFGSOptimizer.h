@@ -38,6 +38,12 @@ public:
   virtual ~LBFGSOptimizer()
     {delete lineSearch;}
   
+  virtual bool initialize()
+  {
+    memory.reset();
+    return true;
+  }
+
   virtual OptimizerState step()
   {
     assert(isNumberValid(gradient->l2norm()));

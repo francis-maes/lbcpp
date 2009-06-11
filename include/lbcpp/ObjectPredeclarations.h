@@ -147,6 +147,8 @@ typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
 // policies
 class Policy;
 typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
+class CRAlgorithmLearner;
+typedef ReferenceCountedObjectPtr<CRAlgorithmLearner> CRAlgorithmLearnerPtr;
 
 }; /* namespace lbcpp */
 

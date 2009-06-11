@@ -22,8 +22,8 @@ public:
       //largeMarginBestAgainstAllLinearRanker
      // largeMarginMostViolatedPairLinearRanker
     
-    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));
-    PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+    PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));
+    PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(learnedPolicy, ranker);
     return std::make_pair(learnedPolicy, learnerPolicy);
   }
 
@@ -51,21 +51,21 @@ public:
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(/*learner->stochasticToBatch(100)*/learner, labels);
     classifier->setL2Regularizer(l2regularizer);
 
-    ActionValueFunctionPtr learnedScores = ActionValueFunction::createScores(classifier);
-    PolicyPtr learnedPolicy = Policy::createGreedy(learnedScores);
+    ActionValueFunctionPtr learnedScores = predictedActionValues(classifier);
+    PolicyPtr learnedPolicy = greedyPolicy(learnedScores);
     PolicyPtr explorationPolicy = learnedPolicy;
     if (probabilistic)
-      explorationPolicy = Policy::createNonDeterministic(ActionValueFunction::createProbabilities(classifier));
+      explorationPolicy = stochasticPolicy(probabilitiesActionValues(classifier));
     else if (temperature)
-      explorationPolicy = Policy::createGibbsGreedy(learnedScores, constantIterationFunction(temperature));
+      explorationPolicy = gibbsGreedyPolicy(learnedScores, constantIterationFunction(temperature));
     else
       {
-        explorationPolicy = predicted ? learnedPolicy : Policy::createGreedy(ActionValueFunction::createChooseActionValue());
+        explorationPolicy = predicted ? learnedPolicy : greedyPolicy(chooseActionValues());
         if (epsilon)
           explorationPolicy = explorationPolicy->epsilonGreedy(constantIterationFunction(epsilon));
       }
       
-    PolicyPtr learnerPolicy = Policy::createClassificationExampleCreator(explorationPolicy, classifier);
+    PolicyPtr learnerPolicy = classificationExampleCreatorPolicy(explorationPolicy, classifier);
     return std::make_pair(learnerPolicy, learnedPolicy);
   }
   

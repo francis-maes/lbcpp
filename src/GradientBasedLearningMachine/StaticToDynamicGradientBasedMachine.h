@@ -22,7 +22,13 @@ public:
   typedef typename BaseClass::ExampleType ExampleType;
   
   // abstract: static functions for architecture() and loss()
-  
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<ExactType> res = new ExactType();
+    BaseClass::cloneImpl(*res);
+    return res;
+  }
+
   virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const
     {return impl::staticToDynamic(impl::exampleRisk(_this().architecture(), _this().loss(), *example.staticCast<ExampleType>()));}
     

@@ -43,7 +43,7 @@ public:
   /*
   ** Clone / assignment / swap
   */
-  virtual CRAlgorithmScopePtr cloneScope() const = 0;
+  virtual ObjectPtr clone() const = 0;
   virtual void setScope(const CRAlgorithmScope& otherScope) = 0;
   virtual void swapScope(CRAlgorithmScope& otherScope) = 0;
 

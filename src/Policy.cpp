@@ -9,80 +9,17 @@
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
-inline impl::DynamicToStaticPolicy dynamicToStatic(const Policy* policy)
-  {return impl::dynamicToStatic(PolicyPtr(const_cast<Policy* >(policy)));}
-
-inline impl::DynamicToStaticPolicy dynamicToStatic(const PolicyPtr policy)
-  {return impl::dynamicToStatic(policy);}
-
-// 
-
-PolicyPtr Policy::createRandom()
-  {return impl::staticToDynamic(impl::RandomPolicy());}
-
-PolicyPtr Policy::createGreedy(ActionValueFunctionPtr actionValues)
-  {return impl::staticToDynamic(impl::GreedyPolicy(actionValues));}
-
-PolicyPtr Policy::createGibbsGreedy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature)
-  {return impl::staticToDynamic(impl::GibbsGreedyPolicy(actionValue, temperature));}
-
-PolicyPtr Policy::createNonDeterministic(ActionValueFunctionPtr actionProbabilities)
-  {return impl::staticToDynamic(impl::NonDeterministicPolicy(actionProbabilities));}
-
-PolicyPtr Policy::createQLearning(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+ObjectPtr Policy::getResultWithName(const std::string& name) const
 {
-  return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(
-        dynamicToStatic(explorationPolicy), regressor, discount, false));
+  for (size_t i = 0; i < getNumResults(); ++i)
+  {
+    ObjectPtr res = getResult(i);
+    if (res->getName() == name)
+      return res;
+  }
+  error("Policy::getResultWithName", "Could not find result with name '" + name + "'");
+  return ObjectPtr();
 }
-
-PolicyPtr Policy::createSarsaZero(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
-{
-  return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(
-        dynamicToStatic(explorationPolicy), regressor, discount, true));
-}
-
-PolicyPtr Policy::createMonteCarloControl(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
-{
-  return impl::staticToDynamic(impl::MonteCarloControlPolicy<impl::DynamicToStaticPolicy>(
-        dynamicToStatic(explorationPolicy), regressor, discount));
-}
-
-PolicyPtr Policy::createClassificationExampleCreator(PolicyPtr explorationPolicy,
-          ClassifierPtr classifier, ActionValueFunctionPtr supervisor)
-{
-  return impl::staticToDynamic(impl::ClassificationExampleCreatorPolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(explorationPolicy), classifier, supervisor));
-}
-
-
-PolicyPtr Policy::createRankingExampleCreator(PolicyPtr explorationPolicy,
-          RankerPtr ranker, ActionValueFunctionPtr supervisor)
-{
-  return impl::staticToDynamic(impl::RankingExampleCreatorPolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(explorationPolicy), ranker, supervisor));
-}
-
-PolicyPtr Policy::createGPOMDP(GeneralizedClassifierPtr classifier, double beta, double exploration)
-  {return impl::staticToDynamic(impl::GPOMDPPolicy(classifier, beta, exploration));}
-
-PolicyPtr Policy::createGPOMDP(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy)
-  {return impl::staticToDynamic(impl::GPOMDPPolicy(classifier, beta, explorationPolicy));}
-
-PolicyPtr Policy::verbose(size_t verbosity, std::ostream& ostr) const
-{
-  return impl::staticToDynamic(impl::VerbosePolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(this), verbosity, ostr));
-}
-
-PolicyPtr Policy::epsilonGreedy(IterationFunctionPtr epsilon) const
-  {return impl::staticToDynamic(impl::EpsilonGreedyPolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(this), epsilon));}
-  
-PolicyPtr Policy::addComputeStatistics() const
-  {return impl::staticToDynamic(impl::ComputeStatisticsPolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(this)));}
-
-///
 
 bool Policy::run(CRAlgorithmPtr crAlgorithm)
 {
@@ -97,13 +34,13 @@ bool Policy::run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress)
   size_t i = 0;
   while (true)
   {
-    CRAlgorithmPtr crAlgorithm = crAlgorithms->nextCast<CRAlgorithm>();
+    CRAlgorithmPtr crAlgorithm = crAlgorithms->nextAndCast<CRAlgorithm>();
     if (!crAlgorithm)
       break;
-    if (progress)
-      progress->progressStep("Policy::run", (double)i);
+    if (progress && !progress->progressStep("Policy::run", (double)i))
+      break;
     ++i;
-    if (!run(crAlgorithm->clone()))
+    if (!run(crAlgorithm->cloneAndCast<CRAlgorithm>()))
     {
       res = false;
       break;
@@ -121,13 +58,131 @@ bool Policy::run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress)
   size_t n = crAlgorithms->size();
   for (size_t i = 0; i < n; ++i)
   {
-    CRAlgorithmPtr crAlgorithm = crAlgorithms->getCast<CRAlgorithm>(i);
-    if (progress)
-      progress->progressStep("Policy::run", (double)i, (double)n);
-    if (crAlgorithm && !run(crAlgorithm->clone()))
+    CRAlgorithmPtr crAlgorithm = crAlgorithms->getAndCast<CRAlgorithm>(i);
+    if (progress && !progress->progressStep("Policy::run", (double)i, (double)n))
+      return false;
+    if (crAlgorithm && !run(crAlgorithm->cloneAndCast<CRAlgorithm>()))
       return false;
   }
   if (progress)
     progress->progressEnd();
   return true;
 }
+
+// 
+
+inline impl::DynamicToStaticPolicy dynamicToStatic(const Policy* policy)
+  {return impl::dynamicToStatic(PolicyPtr(const_cast<Policy* >(policy)));}
+
+inline impl::DynamicToStaticPolicy dynamicToStatic(const PolicyPtr policy)
+  {return impl::dynamicToStatic(policy);}
+
+// 
+
+PolicyPtr lbcpp::randomPolicy()
+  {return impl::staticToDynamic(impl::RandomPolicy());}
+
+PolicyPtr lbcpp::greedyPolicy(ActionValueFunctionPtr actionValues)
+  {return impl::staticToDynamic(impl::GreedyPolicy(actionValues));}
+
+PolicyPtr lbcpp::gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature)
+  {return impl::staticToDynamic(impl::GibbsGreedyPolicy(actionValue, temperature));}
+
+PolicyPtr lbcpp::stochasticPolicy(ActionValueFunctionPtr actionProbabilities)
+  {return impl::staticToDynamic(impl::NonDeterministicPolicy(actionProbabilities));}
+
+// todo: ranger
+class MixturePolicy : public Policy
+{
+public:
+  MixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient)
+    : policy1(policy1), policy2(policy2), mixtureCoefficient(mixtureCoefficient) {}
+    
+  virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
+  {
+    policy1->policyEnter(crAlgorithm);
+    policy2->policyEnter(crAlgorithm);
+  }
+  
+  virtual VariablePtr policyChoose(ChoosePtr choose)
+  {
+    VariablePtr choice1 = policy1->policyChoose(choose);
+    VariablePtr choice2 = policy2->policyChoose(choose);
+    return Random::getInstance().sampleBool(mixtureCoefficient) ? choice2 : choice1;
+  }
+  
+  virtual void policyReward(double reward)
+  {
+    policy1->policyReward(reward);
+    policy2->policyReward(reward);
+  }
+  
+  virtual void policyLeave()
+  {
+    policy1->policyLeave();
+    policy2->policyLeave();
+  }
+  
+private:
+  PolicyPtr policy1;
+  PolicyPtr policy2;
+  double mixtureCoefficient;
+};
+
+PolicyPtr lbcpp::mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient)
+{
+  return new MixturePolicy(policy1, policy2, mixtureCoefficient);
+}
+
+PolicyPtr lbcpp::qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+{
+  return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(
+        dynamicToStatic(explorationPolicy), regressor, discount, false));
+}
+
+PolicyPtr lbcpp::sarsaZeroPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+{
+  return impl::staticToDynamic(impl::QLearningPolicy<impl::DynamicToStaticPolicy>(
+        dynamicToStatic(explorationPolicy), regressor, discount, true));
+}
+
+PolicyPtr lbcpp::monteCarloControlPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
+{
+  return impl::staticToDynamic(impl::MonteCarloControlPolicy<impl::DynamicToStaticPolicy>(
+        dynamicToStatic(explorationPolicy), regressor, discount));
+}
+
+PolicyPtr lbcpp::classificationExampleCreatorPolicy(PolicyPtr explorationPolicy,
+          ClassifierPtr classifier, ActionValueFunctionPtr supervisor)
+{
+  return impl::staticToDynamic(impl::ClassificationExampleCreatorPolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(explorationPolicy), classifier, supervisor));
+}
+
+
+PolicyPtr lbcpp::rankingExampleCreatorPolicy(PolicyPtr explorationPolicy,
+          RankerPtr ranker, ActionValueFunctionPtr supervisor)
+{
+  return impl::staticToDynamic(impl::RankingExampleCreatorPolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(explorationPolicy), ranker, supervisor));
+}
+
+PolicyPtr lbcpp::gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, double exploration)
+  {return impl::staticToDynamic(impl::GPOMDPPolicy(classifier, beta, exploration));}
+
+PolicyPtr lbcpp::gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy)
+  {return impl::staticToDynamic(impl::GPOMDPPolicy(classifier, beta, explorationPolicy));}
+
+PolicyPtr Policy::verbose(size_t verbosity, std::ostream& ostr) const
+{
+  return impl::staticToDynamic(impl::VerbosePolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(this), verbosity, ostr));
+}
+
+PolicyPtr Policy::epsilonGreedy(IterationFunctionPtr epsilon) const
+  {return impl::staticToDynamic(impl::EpsilonGreedyPolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(this), epsilon));}
+  
+PolicyPtr Policy::addComputeStatistics() const
+  {return impl::staticToDynamic(impl::ComputeStatisticsPolicy<impl::DynamicToStaticPolicy>(
+            dynamicToStatic(this)));}

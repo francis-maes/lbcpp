@@ -73,8 +73,8 @@ public:
   /*
   ** Clone / assignment
   */
-  virtual CRAlgorithmScopePtr cloneScope() const
-    {return CRAlgorithmScopePtr(new T_exact(new T_impl(*impl)));}
+  virtual ObjectPtr clone() const
+    {return new T_exact(new T_impl(*impl));}
     
   virtual void setScope(const CRAlgorithmScope& otherScope)
   {

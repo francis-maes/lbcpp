@@ -40,7 +40,7 @@ void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numC
     PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(4);
     for (size_t i = 0; i < train->size(); ++i)
     {
-      ClassificationExample ex = *train->getCast<ClassificationExample>(Random::getInstance().sampleSize(train->size()));
+      ClassificationExample ex = *train->getAndCast<ClassificationExample>(Random::getInstance().sampleSize(train->size()));
   //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
@@ -55,7 +55,7 @@ void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numC
     size_t correct = 0;
     for (size_t i = 0; i < test->size(); ++i)
     {
-      ClassificationExample ex = *test->getCast<ClassificationExample>(i);
+      ClassificationExample ex = *test->getAndCast<ClassificationExample>(i);
   //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
@@ -83,9 +83,9 @@ void testMonteCarloControl(ObjectContainerPtr train, ObjectContainerPtr test, si
 // Regressor::createVerbose(std::cout);
   RegressorPtr regressor = leastSquaresLinearRegressor(stochasticDescentLearner(learningRate));
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(regressor));
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(regressor));
   
-  PolicyPtr learnerPolicy = Policy::createMonteCarloControl(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.8);
+  PolicyPtr learnerPolicy = monteCarloControlPolicy(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.8);
   
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy);
 }
@@ -99,13 +99,13 @@ void testCRank(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClas
 
   GradientBasedRankerPtr ranker = largeMarginBestAgainstAllLinearRanker(stochasticDescentLearner(learningRate));
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));  
-  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(exploration ? exploration : learnedPolicy, ranker, supervision);
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));  
+  PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(exploration ? exploration : learnedPolicy, ranker, supervision);
 
 /*  GradientBasedGeneralizedClassifierPtr classifier = linearGeneralizedClassifier(
     stochasticDescentLearner(learningRate2));  
   classifier->setParameters(ranker->getParameters());
-  PolicyPtr learnerPolicy2 = Policy::createGPOMDP(classifier, 0.8, 1.1);
+  PolicyPtr learnerPolicy2 = gpomdpPolicy(classifier, 0.8, 1.1);
 */
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(2)*/, ranker->getParameters()/*, learnerPolicy2*/);
 }
@@ -164,7 +164,7 @@ private:
 void runPolicy(const std::vector<CRAlgorithmPtr>& crAlgorithms, PolicyPtr policy)
 {
   for (size_t i = 0; i < crAlgorithms.size(); ++i)
-    crAlgorithms[Random::getInstance().sampleSize(crAlgorithms.size())]->clone()->run(policy);
+    crAlgorithms[Random::getInstance().sampleSize(crAlgorithms.size())]->cloneAndCast<CRAlgorithm>()->run(policy);
 //  std::cout << policy->toString() << std::endl;
 }
 
@@ -174,7 +174,7 @@ void convertExamplesToCRAlgorithms(ObjectContainerPtr examples, size_t numClasse
   res.resize(examples->size());
   for (size_t i = 0; i < examples->size(); ++i)
   {
-    ClassificationExamplePtr ex = examples->getCast<ClassificationExample>(Random::getInstance().sampleSize(examples->size()));
+    ClassificationExamplePtr ex = examples->getAndCast<ClassificationExample>(Random::getInstance().sampleSize(examples->size()));
 //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
     std::vector<FeatureGeneratorPtr> x;
 //      x.push_back(input);
@@ -195,7 +195,7 @@ double evaluatePolicy(const std::vector<CRAlgorithmPtr>& examples, PolicyPtr pol
   PolicyPtr p = policy->addComputeStatistics();
   for (size_t i = 0; i < examples.size(); ++i)
   {
-    CRAlgorithmPtr crAlgorithm = examples[i]->clone();
+    CRAlgorithmPtr crAlgorithm = examples[i]->cloneAndCast<CRAlgorithm>();
     crAlgorithm->run(p);
     size_t ypredicted = crAlgorithm->getReturn()->getCopy<size_t>();
     if (ypredicted == crAlgorithm->getVariableReference<size_t>("ycorrect"))
@@ -247,9 +247,9 @@ public:
     classifier->setLearner(learner);
     classifier->setParameters(input->toDenseVector());
 
-    PolicyPtr policy = Policy::createGPOMDP(classifier, beta)->addComputeStatistics();
+    PolicyPtr policy = gpomdpPolicy(classifier, beta)->addComputeStatistics();
     for (size_t i = 0; i < instances.size(); ++i)
-      instances[i]->clone()->run(policy);
+      instances[i]->cloneAndCast<CRAlgorithm>()->run(policy);
     if (output)
       *output = -(policy->getResultWithName("rewardPerChoose").dynamicCast<ScalarRandomVariableStatistics>()->getMean());
     if (gradient)
@@ -276,7 +276,7 @@ void testBatchGPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector
     GradientBasedGeneralizedClassifierPtr classifier = linearGeneralizedClassifier(batchLearner(optimizer));
     classifier->setL2Regularizer(reg);
     //classifier->setInitializeParametersRandomly();
-    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
+    PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(classifier));  
 
     ScalarVectorFunctionPtr objective = new GPOMDPAverageRewardFunction(classifier, beta, train);
     FeatureGeneratorPtr parameters 
@@ -326,9 +326,9 @@ void testOLPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector<CRA
 
     GeneralizedClassifierPtr classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
     
-    PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
-    PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, beta, new OverrideDecideStepsPolicy(
-      Policy::createNonDeterministic(ActionValueFunction::createProbabilities(classifier))));
+    PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(classifier));  
+    PolicyPtr learnerPolicy = gpomdpPolicy(classifier, beta, new OverrideDecideStepsPolicy(
+      stochasticPolicy(probabilitiesActionValues(classifier))));
 
     for (size_t iteration = 0; iteration < 1000; ++iteration)
     {

@@ -26,9 +26,15 @@ public:
   {
     // // /dot product entre FeatureGenerator
     double origDirDeriv = direction->dotProduct(gradient);
-    if (origDirDeriv >= 0) 
+    if (origDirDeriv >= 0 || !isNumberValid(origDirDeriv))
     {
       error("BackTrackingLineSearch::search", "Non-descent direction in backtracking line search: check your gradient!");
+      if (!isNumberValid(origDirDeriv))
+      {
+        std::cerr << "Direction = " << direction->toString() << std::endl;
+        std::cerr << "Gradient = " << gradient->toString() << std::endl;
+        assert(false);
+      }
       energy->checkDerivativeWrtDirection(parameters, direction);
       return false;
     }
@@ -65,7 +71,7 @@ public:
     }
     if (i == maxIterations)
     {
-      error("BackTrackingLineSearch::search", "Backtracking: warning max backtrackline search performed. Derivative = " + lbcpp::toString(origDirDeriv));
+      error("BackTrackingLineSearch::search", "Max backtrackline search performed. Derivative = " + lbcpp::toString(origDirDeriv));
       std::cerr << "Parameters = " << parameters->toString() << std::endl;
       std::cerr << "Gradient = " << gradient->toString() << std::endl;
       std::cerr << "Direction = " << direction->toString() << std::endl;

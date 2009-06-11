@@ -9,44 +9,6 @@
 #include "GeneratedCode/LabeledContentGraph.lh"
 using namespace lbcpp;
 
-/*
-class InstanceSet;
-typedef ReferenceCountedObjectPtr<InstanceSet> InstanceSetPtr;
-class VectorInstanceSet;
-typedef ReferenceCountedObjectPtr<VectorInstanceSet> VectorInstanceSetPtr;
-
-class InstanceSet : public Object
-{
-public:
-  virtual size_t getNumInstances() const = 0;
-  virtual ObjectPtr getInstance(size_t i) const = 0;
-  
-  template<class T>
-  ReferenceCountedObjectPtr<T> getInstanceCast(size_t i) const
-    {return getInstance(i).dynamicCast<T>();}
-};
-
-class VectorInstanceSet : public InstanceSet
-{
-public:
-  virtual size_t getNumInstances() const 
-    {return instances.size();}
-    
-  virtual ObjectPtr getInstance(size_t i) const 
-    {return instances[i];}
-
-  void append(ObjectPtr instance)
-    {instances.push_back(instance);}
-    
-protected:
-  std::vector<ObjectPtr> instances;
-  size_t index;
-  
-  ObjectPtr getCurrentInstance() const
-    {return index < instances.size() ? instances[index] : ObjectPtr();}
-};
-*/
-
 LabeledContentGraph::~LabeledContentGraph()
 {
   //  std::cout << "delete labeled content graph: " << this << std::endl;

@@ -33,7 +33,7 @@ public:
   virtual ObjectPtr next() = 0;
   
   template<class T>
-  inline ReferenceCountedObjectPtr<T> nextCast()
+  inline ReferenceCountedObjectPtr<T> nextAndCast()
   {
     ObjectPtr res = next();
     return res ? res.staticCast<T>() : ReferenceCountedObjectPtr<T>();

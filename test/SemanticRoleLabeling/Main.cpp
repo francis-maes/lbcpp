@@ -91,7 +91,7 @@ public:
     assert(sentences->size() == labels->size());
     res.resize(sentences->size());
     for (size_t i = 0; i < res.size(); ++i)
-      res[i] = crSemanticRoleLabeling(sentences->getCast<Sentence>(i), relations, arguments, labels->getCast<SRLLabelChoice>(i));
+      res[i] = crSemanticRoleLabeling(sentences->getAndCast<Sentence>(i), relations, arguments, labels->getAndCast<SRLLabelChoice>(i));
   }
 
 private:
@@ -105,7 +105,7 @@ double evaluate(PolicyPtr policy, const std::vector<CRAlgorithmPtr>& instances)
 {
   PolicyPtr p = policy->addComputeStatistics();
   for (size_t j = 0; j < instances.size(); ++j)
-    instances[j]->clone()->run(p);
+    instances[j]->cloneAndCast<CRAlgorithm>()->run(p);
   return p->getResultWithName("rewardPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean();
 }
 
@@ -116,8 +116,8 @@ void testOLPOMDP(const std::vector<SequenceExample>& learningExamples, StringDic
 
   GeneralizedClassifierPtr classifier = linearGeneralizedClassifier(stochasticDescentLearner(learningRate));
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
-  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0, 2.0);
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(classifier));  
+  PolicyPtr learnerPolicy = gpomdpPolicy(classifier, 0, 2.0);
 
   for (size_t i = 0; i < 10; ++i)
   {
@@ -138,8 +138,8 @@ std::pair<PolicyPtr, PolicyPtr> createOLPOMDPPolicies(GradientBasedGeneralizedCl
   if (initialParameters)
     classifier->setParameters(initialParameters);
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createScores(classifier));  
-  PolicyPtr learnerPolicy = Policy::createGPOMDP(classifier, 0.999, 1.2);
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(classifier));  
+  PolicyPtr learnerPolicy = gpomdpPolicy(classifier, 0.999, 1.2);
   return std::make_pair(learnedPolicy, learnerPolicy);
 }
 
@@ -153,8 +153,8 @@ std::pair<PolicyPtr, PolicyPtr> createCRankPolicies(GradientBasedRankerPtr& rank
   if (initialParameters)
     ranker->setParameters(initialParameters);
   
-  PolicyPtr learnedPolicy = Policy::createGreedy(ActionValueFunction::createPredictions(ranker));
-  PolicyPtr learnerPolicy = Policy::createRankingExampleCreator(learnedPolicy, ranker);
+  PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));
+  PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(learnedPolicy, ranker);
   return std::make_pair(learnedPolicy, learnerPolicy);
 }
 
@@ -177,7 +177,7 @@ std::pair<PolicyPtr, DenseVectorPtr> learn(const std::vector<CRAlgorithmPtr>& in
     std::vector<size_t> order;
     Random::getInstance().sampleOrder(0, instances.size(), order);
     for (size_t j = 0; j < order.size(); ++j)
-      instances[order[j]]->clone()->run(policy->verbose(0));
+      instances[order[j]]->cloneAndCast<CRAlgorithm>()->run(policy->verbose(0));
       
     std::cout << "[" << numIterationsWithoutImprovement << "] Learning Iteration " << i;// << " => " << policy->toString() << std::endl;
     double totalReward = policy->getResultWithName("rewardPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean();
