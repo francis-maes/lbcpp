@@ -36,10 +36,11 @@ public:
     {std::cout << "===========================================" << std::endl;}
 };
 
-static ConsoleProgressCallback consoleProgressCallback;
-
-ProgressCallback& ProgressCallback::getConsoleProgressCallback()
-  {return consoleProgressCallback;}
+ProgressCallbackPtr lbcpp::consoleProgressCallback()
+{
+  static ProgressCallbackPtr consoleProgressCallback = new ConsoleProgressCallback();
+  return consoleProgressCallback;
+}
 
 /*
 ** ErrorHandler

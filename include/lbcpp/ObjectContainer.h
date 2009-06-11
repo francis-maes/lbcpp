@@ -40,6 +40,8 @@ public:
   // Convert to an Object Stream.
   virtual ObjectStreamPtr toStream() const;
   
+  ObjectContainerPtr apply(ObjectFunctionPtr function, bool lazyCompute = true);
+  
 public:
   // Creates a randomized version of a dataset.
   ObjectContainerPtr randomize();

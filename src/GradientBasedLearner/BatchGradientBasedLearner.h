@@ -24,7 +24,7 @@ public:
   virtual std::string toString() const
     {return "BatchGradientBasedLearner(" + lbcpp::toString(optimizer) + ", " + lbcpp::toString(stoppingCriterion) + ")";}
 
-  virtual void trainStochasticBegin()
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
   {
     Object::error("Batch::trainStochasticBegin", "This is not a stochastic learner");
     assert(false);
@@ -42,7 +42,7 @@ public:
     assert(false);
   }
 
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
   {
     assert(parameters);
     if (progress)

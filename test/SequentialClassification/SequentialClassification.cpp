@@ -280,7 +280,7 @@ void testBatchGPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector
 
     ScalarVectorFunctionPtr objective = new GPOMDPAverageRewardFunction(classifier, beta, train);
     FeatureGeneratorPtr parameters 
-      = optimizer->optimize(objective, maxIterationsStoppingCriterion(50), &ProgressCallback::getConsoleProgressCallback());
+      = optimizer->optimize(objective, maxIterationsStoppingCriterion(50), consoleProgressCallback());
     double trainAccuracy = evaluatePolicy(train, learnedPolicy);
     double testAccuracy = evaluatePolicy(test, learnedPolicy);
     std::cout << "REG = " << reg 

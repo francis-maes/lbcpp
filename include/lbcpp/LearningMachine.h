@@ -21,18 +21,18 @@ public:
   /*
   ** Stochastic training
   */
-  virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallback* progress = NULL);  
-  virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallback* progress = NULL);
+  virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());  
+  virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  virtual void trainStochasticBegin() = 0;
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) = 0;
   virtual void trainStochasticExample(ObjectPtr example) = 0;
   virtual void trainStochasticEnd() = 0;
   
   /*
   ** Batch training
   */
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL) = 0;  
-  virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallback* progress = NULL);
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr()) = 0;  
+  virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
   /*
   ** Input dictionary

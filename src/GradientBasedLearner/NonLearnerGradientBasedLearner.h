@@ -20,7 +20,7 @@ public:
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
     {}
     
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
     {return true;}
 };
 

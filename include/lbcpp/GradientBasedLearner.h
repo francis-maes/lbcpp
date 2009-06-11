@@ -27,13 +27,13 @@ public:
   void setRegularizer(ScalarVectorFunctionPtr regularizer)
     {this->regularizer = regularizer;}
     
-  virtual void trainStochasticBegin() {}
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {}
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight) = 0;
   virtual void trainStochasticExample(ScalarVectorFunctionPtr exampleLoss)
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}    
   virtual void trainStochasticEnd() {}
 
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallback* progress)
+  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
   {
     error("GradientBasedLearner::trainBatch", "This is a non-batch learner");
     return false;

@@ -1,8 +1,6 @@
 #include <iostream>
 #include <fstream>
-
-namespace lbcpp
-{
+using namespace lbcpp;
 
 crAlgorithm std::vector<size_t> simplestSequenceLabeling(const std::vector<FeatureGeneratorPtr>& x, size_t numLabels, const std::vector<size_t>* y = NULL)
 {
@@ -98,9 +96,24 @@ private:
   std::vector<size_t> currentLabels;
 };
 
-}; /* namespace lbcpp */
-
-using namespace lbcpp;
+class SequenceToCRAlgorithmInstance : public ObjectFunction
+{
+public:
+  SequenceToCRAlgorithmInstance(size_t numLabels) : numLabels(numLabels) {}
+  
+  virtual std::string getOutputClassName() const
+    {return "CRAlgorithm";}
+    
+  virtual ObjectPtr function(ObjectPtr object) const
+  {
+    SequenceExamplePtr example = object.dynamicCast<SequenceExample>();
+    assert(example);
+    return simplestSequenceLabeling(example->getContent(), numLabels, &example->getLabels());
+  }
+  
+private:
+  size_t numLabels;  
+};
 
 void runPolicy(PolicyPtr policy, ObjectContainerPtr examples, size_t numLabels)
 {
@@ -125,16 +138,16 @@ void testClassifier(ObjectContainerPtr learningExamples, StringDictionaryPtr lab
     Policy::createClassificationExampleCreator(learnedPolicy, classifier)->addComputeStatistics();
   
   std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics(), learningExamples, labels->getNumElements());
+  Policy::createRandom()->addComputeStatistics()->run(learningExamples);
   
   for (size_t i = 0; i < 15; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy, learningExamples, labels->getNumElements());
+    learnerPolicy->run(learningExamples);
   }
 }
 
-void testCRank(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
+void testCRank(ObjectContainerPtr learningExamples)
 {
   IterationFunctionPtr learningRate = invLinearIterationFunction(10, 10000);
 
@@ -148,12 +161,12 @@ void testCRank(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
   for (size_t i = 0; i < 5; ++i)
   {
     std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(0)->addComputeStatistics(), learningExamples, labels->getNumElements());
+    learnerPolicy->verbose(0)->addComputeStatistics()->run(learningExamples);
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
 
-void testSarsa(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
+void testSarsa(ObjectContainerPtr learningExamples)
 {
   IterationFunctionPtr learningRate = constantIterationFunction(0.01);
   IterationFunctionPtr epsilon = constantIterationFunction(0.1);
@@ -164,13 +177,14 @@ void testSarsa(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
   
   PolicyPtr learnerPolicy = Policy::createSarsaZero(learnedPolicy->epsilonGreedy(epsilon), regressor, 0.0)->addComputeStatistics();
   
-  std::cout << "RANDOM: " << std::endl;
-  runPolicy(Policy::createRandom()->addComputeStatistics()->verbose(0), learningExamples, labels->getNumElements());
+  PolicyPtr p = Policy::createRandom()->addComputeStatistics()->verbose(0);
+  p->run(learningExamples);
+  std::cout << "RANDOM: " << p->toString() << std::endl;
   
   for (size_t i = 0; i < 15; ++i)
   {
-    std::cout << "ITERATION: " << (i+1) << std::endl;
-    runPolicy(learnerPolicy->verbose(0), learningExamples, labels->getNumElements());
+    learnerPolicy->verbose(0)->run(learningExamples);
+    std::cout << "ITERATION: " << (i+1) << " " << learnerPolicy->toString() << std::endl;
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -192,7 +206,7 @@ crAlgorithm void testTrivial()
     reward (1.0);
 }*/
 
-void testOLPOMDP(ObjectContainerPtr learningExamples, StringDictionaryPtr labels)
+void testOLPOMDP(ObjectContainerPtr learningExamples)
 {
   IterationFunctionPtr learningRate = invLinearIterationFunction(0.1, 10000);
 
@@ -207,7 +221,7 @@ void testOLPOMDP(ObjectContainerPtr learningExamples, StringDictionaryPtr labels
     PolicyPtr p = learnerPolicy->addComputeStatistics()->verbose(0);
   //  testTrivial(p);
 //    std::cout << p->toString() << std::endl;
-    runPolicy(p, learningExamples, labels->getNumElements());
+    p->run(learningExamples);
  //   std::cout << "Params: " << regressor->getParameters()->toString() << std::endl;
   }
 }
@@ -222,27 +236,19 @@ int main(int argc, char* argv[])
   StringDictionaryPtr labels = new StringDictionary();
 
   ObjectContainerPtr learningExamples = (new SequenceExamplesParser(filename, features, labels))->load();
-  std::cout << learningExamples->size() << " sequences, " << labels->getNumElements()
+  ObjectContainerPtr crAlgorithms = learningExamples->apply(new SequenceToCRAlgorithmInstance(labels->getNumElements()), false);
+  
+  std::cout << crAlgorithms->size() << " sequences, " << labels->getNumElements()
     << " labels, " << features->getNumFeatures() << " features." << std::endl;
-
-  
-/*  const SequenceExample& sequence = learningExamples[0];
-  CRAlgorithmPtr lbcpp = simplestSequenceLabeling(sequence.getContent(), labels->getNumFeatures(), &sequence.getLabels());
-  ChoosePtr choose = lbcpp->runUntilFirstChoose();
-  choose = lbcpp->runUntilNextChoose(choose->sampleRandomChoice());
-  std::cout << "Choose: " << choose->toString() << std::endl;
-  std::cout << "State: " << lbcpp->toString() << std::endl;
-  std::cout << "State description: " << choose->stateFeatures()->toString() << std::endl;
-  std::cout << "First action description: " << choose->actionFeatures(choose->newIterator()->get())->toString() << std::endl;*/
-  
+    
   std::cout << " === SARSA === " << std::endl;
-  testSarsa(learningExamples, labels);
+  testSarsa(crAlgorithms);
 //  std::cout << " === CLASSIFIER === " << std::endl;
-//  testClassifier(learningExamples, labels);
+//  testClassifier(crAlgorithms);
 //  std::cout << " === RANKING === " << std::endl;
-//  testCRank(learningExamples, labels);
+//  testCRank(crAlgorithms);
   
  // std::cout << " === OLPOMDP === " << std::endl;
- // testOLPOMDP(learningExamples, labels);
+ // testOLPOMDP(crAlgorithms);
   return 0;
 }

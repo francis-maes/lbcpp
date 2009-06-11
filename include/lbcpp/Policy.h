@@ -41,6 +41,10 @@ public:
   PolicyPtr addComputeStatistics() const;
   PolicyPtr verbose(size_t verbosity, std::ostream& ostr = std::cout) const;
 
+  bool run(CRAlgorithmPtr crAlgorithm);
+  bool run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  bool run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
+
 public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}
   virtual VariablePtr policyChoose(ChoosePtr choose) = 0;

@@ -29,7 +29,7 @@ struct QLearningPolicy
   VariablePtr policyStart(ChoosePtr choose)
   {
     lastActionDescription = SparseVectorPtr();
-    regressor->trainStochasticBegin();
+    regressor->trainStochasticBegin(choose->getActionFeaturesFunction()->getDictionary());
     VariablePtr res = BaseClass::policyStart(choose);
     lastActionDescription = choose->computeActionFeatures(res)->toSparseVector();
     return res;

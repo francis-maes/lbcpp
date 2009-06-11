@@ -13,6 +13,7 @@
 # include <cassert>
 # include <sstream>
 # include <vector>
+# include "ReferenceCountedObject.h"
 
 namespace lbcpp
 {
@@ -37,11 +38,8 @@ private:
   static ErrorHandler* instance;
 };
 
-class ProgressCallback
+class ProgressCallback : public ReferenceCountedObject
 {
-public:
-  static ProgressCallback& getConsoleProgressCallback();
-
 public:
   virtual ~ProgressCallback() {}
   
@@ -55,6 +53,9 @@ public:
   virtual void progressEnd()
     {}
 };
+typedef ReferenceCountedObjectPtr<ProgressCallback> ProgressCallbackPtr;
+
+extern ProgressCallbackPtr consoleProgressCallback();
 
 }; /* namespace lbcpp */
 

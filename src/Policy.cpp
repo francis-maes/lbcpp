@@ -81,3 +81,53 @@ PolicyPtr Policy::epsilonGreedy(IterationFunctionPtr epsilon) const
 PolicyPtr Policy::addComputeStatistics() const
   {return impl::staticToDynamic(impl::ComputeStatisticsPolicy<impl::DynamicToStaticPolicy>(
             dynamicToStatic(this)));}
+
+///
+
+bool Policy::run(CRAlgorithmPtr crAlgorithm)
+{
+  return crAlgorithm->run(this);
+}
+
+bool Policy::run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress)
+{
+  if (progress)
+    progress->progressStart("Policy::run");
+  bool res = true;
+  size_t i = 0;
+  while (true)
+  {
+    CRAlgorithmPtr crAlgorithm = crAlgorithms->nextCast<CRAlgorithm>();
+    if (!crAlgorithm)
+      break;
+    if (progress)
+      progress->progressStep("Policy::run", (double)i);
+    ++i;
+    if (!run(crAlgorithm->clone()))
+    {
+      res = false;
+      break;
+    }
+  }
+  if (progress)
+    progress->progressEnd();
+  return res;
+}
+
+bool Policy::run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress)
+{
+  if (progress)
+    progress->progressStart("Policy::run");
+  size_t n = crAlgorithms->size();
+  for (size_t i = 0; i < n; ++i)
+  {
+    CRAlgorithmPtr crAlgorithm = crAlgorithms->getCast<CRAlgorithm>(i);
+    if (progress)
+      progress->progressStep("Policy::run", (double)i, (double)n);
+    if (crAlgorithm && !run(crAlgorithm->clone()))
+      return false;
+  }
+  if (progress)
+    progress->progressEnd();
+  return true;
+}

@@ -37,7 +37,7 @@ int testClassification(const std::string& filename)
     //          << " RegEmpRisk: " << classifier->computeRegularizedEmpiricalRisk(examples) << " ";
 
     
-    classifier->trainBatch(examples, &ProgressCallback::getConsoleProgressCallback());
+    classifier->trainBatch(examples, consoleProgressCallback());
     //classifier->trainStochastic(examples);
     double acc = classifier->evaluateAccuracy(examples);
     std::cout << "Accuracy: " << (100.0 * acc) << "%" << std::endl;

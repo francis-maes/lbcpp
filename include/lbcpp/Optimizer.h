@@ -37,7 +37,7 @@ extern OptimizerStoppingCriterionPtr logicalOr(OptimizerStoppingCriterionPtr cri
 class ScalarOptimizer : public Object
 {
 public:
-  virtual bool optimize(ScalarFunctionPtr function, double& value, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
+  virtual bool optimize(ScalarFunctionPtr function, double& value, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
 protected:
   virtual bool initialize(ScalarFunctionPtr function, double parameter) = 0;
@@ -47,9 +47,9 @@ protected:
 class VectorOptimizer : public Object
 {
 public:
-  virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL);
+  virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  FeatureGeneratorPtr optimize(ScalarVectorFunctionPtr function, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress = NULL)
+  FeatureGeneratorPtr optimize(ScalarVectorFunctionPtr function, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     FeatureGeneratorPtr res = new DenseVector();
     if (!optimize(function, res, stoppingCriterion, progress))

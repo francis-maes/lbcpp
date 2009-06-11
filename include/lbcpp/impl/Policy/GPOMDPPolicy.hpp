@@ -33,7 +33,7 @@ struct GPOMDPPolicy : public EpisodicPolicy<GPOMDPPolicy>
     if (explorationPolicy)
       explorationPolicy->policyEnter(choose->getCRAlgorithm());
     trace = DenseVectorPtr();
-    classifier->trainStochasticBegin();
+    classifier->trainStochasticBegin(choose->getActionFeaturesFunction()->getDictionary());
     return processChoose(choose);
   }
   

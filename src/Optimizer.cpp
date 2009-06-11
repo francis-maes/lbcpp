@@ -12,7 +12,7 @@
 #include "Optimizer/LBFGSOptimizer.h"
 using namespace lbcpp;
 
-bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallback* progress)
+bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress)
 {
   assert(params);
   this->function = function;
