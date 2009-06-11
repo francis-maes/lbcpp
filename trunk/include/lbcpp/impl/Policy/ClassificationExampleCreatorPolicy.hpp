@@ -23,16 +23,17 @@ struct ClassificationExampleCreatorPolicy
   typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   ClassificationExampleCreatorPolicy(const DecoratedType& explorationPolicy, ClassifierPtr classifier, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
-    : BaseClass(explorationPolicy), classifier(classifier), supervisor(supervisor), inclusionLevel(0) {}
+    : BaseClass(explorationPolicy), classifier(classifier), supervisor(supervisor), inclusionLevel(0), isTraining(false) {}
     
   ClassifierPtr classifier;
   ActionValueFunctionPtr supervisor;
   size_t inclusionLevel;
+  bool isTraining;
 
   void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
     if (inclusionLevel == 0)
-      classifier->trainStochasticBegin();
+      isTraining = true;
     BaseClass::policyEnter(crAlgorithm);
     ++inclusionLevel;
   }
@@ -41,8 +42,11 @@ struct ClassificationExampleCreatorPolicy
   {
     BaseClass::policyLeave();
     --inclusionLevel;
-    if (inclusionLevel == 0)
+    if (inclusionLevel == 0 && isTraining)
+    {
       classifier->trainStochasticEnd();
+      isTraining = false;
+    }
   }
 
   VariablePtr policyChoose(ChoosePtr choose)
@@ -56,6 +60,11 @@ struct ClassificationExampleCreatorPolicy
       VariablePtr bestChoice = choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
 //      std::cout << "Best Choice: " << bestChoice->getReference<size_t>() << std::endl;
       assert(bestChoice);
+      if (!isTraining)
+      {
+        classifier->trainStochasticBegin(stateFeatures->getDictionary());
+        isTraining = true;
+      }
       classifier->trainStochasticExample(new ClassificationExample(stateFeatures, bestChoice->getReference<size_t>()));
     }
     else

@@ -23,16 +23,17 @@ struct RankingExampleCreatorPolicy
   typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
   
   RankingExampleCreatorPolicy(const DecoratedType& explorationPolicy, RankerPtr ranker, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
-    : BaseClass(explorationPolicy), ranker(ranker), supervisor(supervisor), inclusionLevel(0) {}
+    : BaseClass(explorationPolicy), ranker(ranker), supervisor(supervisor), inclusionLevel(0), isTraining(false) {}
     
   RankerPtr ranker;
   ActionValueFunctionPtr supervisor;
   size_t inclusionLevel;
+  bool isTraining;
 
   void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
     if (inclusionLevel == 0)
-      ranker->trainStochasticBegin();
+      isTraining = true;
     BaseClass::policyEnter(crAlgorithm);
     ++inclusionLevel;
   }
@@ -41,8 +42,12 @@ struct RankingExampleCreatorPolicy
   {
     BaseClass::policyLeave();
     --inclusionLevel;
-    if (inclusionLevel == 0)
+    if (inclusionLevel == 0 && isTraining)
+    {
       ranker->trainStochasticEnd();
+      isTraining = false;
+    }
+      
   }
 
   VariablePtr policyChoose(ChoosePtr choose)
@@ -65,6 +70,11 @@ struct RankingExampleCreatorPolicy
     //std::cout << "COSTS => " << lbcpp::toString(costs) << std::endl;
     
     //std::cout << "ALTERNATIVES ===> " << std::endl << alternatives->toString() << std::endl;
+    if (!isTraining)
+    {
+      ranker->trainStochasticBegin(alternatives->getDictionary());
+      isTraining = true;
+    }
     ranker->trainStochasticExample(new RankingExample(alternatives, costs));
     return BaseClass::policyChoose(choose);
   }

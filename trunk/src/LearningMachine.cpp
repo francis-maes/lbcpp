@@ -15,9 +15,9 @@ using namespace lbcpp;
 /*
 ** LearningMachine
 */
-void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallback* progress)
+void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress)
 {
-  trainStochasticBegin();
+  trainStochasticBegin(FeatureDictionaryPtr());
   if (progress)
     progress->progressStart("LearningMachine::trainStochastic");
   size_t count = 0;
@@ -39,9 +39,9 @@ void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallback
   trainStochasticEnd();
 }
   
-void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallback* progress)
+void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress)
 {
-  trainStochasticBegin();
+  trainStochasticBegin(FeatureDictionaryPtr());
   if (progress)
     progress->progressStart("LearningMachine::trainStochastic");
   for (size_t i = 0; i < examples->size(); ++i)
@@ -55,7 +55,7 @@ void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallb
   trainStochasticEnd();
 }
 
-bool LearningMachine::trainBatch(ObjectStreamPtr examples, ProgressCallback* progress)
+bool LearningMachine::trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress)
 {
   return trainBatch(examples->load(), progress);
 }
@@ -72,7 +72,7 @@ public:
   virtual FeatureDictionaryPtr getInputDictionary() const
     {return FeatureDictionaryPtr();}
 
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     ostr << "trainBatch() with " << examples->size() << " examples:" << std::endl;
     for (size_t i = 0; i < examples->size(); ++i)
@@ -80,7 +80,7 @@ public:
     return true;
   }
 
-  virtual void trainStochasticBegin()
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
     {ostr << "trainStochasticBegin()" << std::endl;}
     
   virtual void trainStochasticExample(ObjectPtr example)

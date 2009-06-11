@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   */
   static const bool verbose = true;
   if (verbose)
-    classifier->trainBatch(trainingData, &ProgressCallback::getConsoleProgressCallback());
+    classifier->trainBatch(trainingData, consoleProgressCallback());
   else
     classifier->trainBatch(trainingData);
   

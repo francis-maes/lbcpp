@@ -118,11 +118,11 @@ protected:
   /*
   ** Training
   */
-  void trainStochasticBeginImpl();
+  void trainStochasticBeginImpl(FeatureDictionaryPtr inputDictionary);
   void trainStochasticExampleImpl(FeatureGeneratorPtr gradient, double weight);
   void trainStochasticExampleImpl(ObjectPtr example);
   void trainStochasticEndImpl();
-  bool trainBatchImpl(ObjectContainerPtr examples, ProgressCallback* progress);
+  bool trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress);
 };
 
 template<class BaseClass, class ExampleType_>
@@ -141,8 +141,8 @@ public:
   /*
   ** LearningMachine
   */
-  virtual void trainStochasticBegin()
-    {trainStochasticBeginImpl();}
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+    {trainStochasticBeginImpl(inputDictionary);}
 
   void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
     {trainStochasticExampleImpl(gradient, weight);}
@@ -153,7 +153,7 @@ public:
   virtual void trainStochasticEnd()
     {trainStochasticEndImpl();}
   
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallback* progress = NULL)
+  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {return trainBatchImpl(examples, progress);}
   
   /*

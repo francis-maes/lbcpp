@@ -41,6 +41,39 @@ ObjectStreamPtr ObjectContainer::toStream() const
   return new ObjectContainerStream(const_cast<ObjectContainer* >(this));
 }
 
+class ApplyFunctionObjectContainer : public DecoratorObjectContainer
+{
+public:
+  ApplyFunctionObjectContainer(ObjectContainerPtr target, ObjectFunctionPtr function)
+    : DecoratorObjectContainer(target), function(function)
+    {}
+    
+  virtual std::string getContentClassName() const
+    {return function->getOutputClassName();}
+
+  virtual ObjectPtr get(size_t index) const
+    {return function->function(target->get(index));}
+  
+private:
+  ObjectFunctionPtr function;
+};
+
+
+ObjectContainerPtr ObjectContainer::apply(ObjectFunctionPtr function, bool lazyCompute)
+{
+  if (lazyCompute)
+    return new ApplyFunctionObjectContainer(this, function);
+  else
+  {
+    VectorObjectContainerPtr res = new VectorObjectContainer(function->getOutputClassName());
+    size_t n = size();
+    res->reserve(n);
+    for (size_t i = 0; i < n; ++i)
+      res->append(function->function(get(i)));
+    return res;
+  }
+}
+
 class RandomizedObjectContainer : public DecoratorObjectContainer
 {
 public:

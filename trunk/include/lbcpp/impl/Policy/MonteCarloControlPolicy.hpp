@@ -49,7 +49,7 @@ struct MonteCarloControlPolicy
     BaseClass::policyEnd(reward);
     assert(rewards.size() == actionFeatures.size());
     
-    regressor->trainStochasticBegin();
+    regressor->trainStochasticBegin(actionFeatures[0]->getDictionary());
     double R = 0.0;
     for (int i = rewards.size() - 1; i >= 0; --i)
     {

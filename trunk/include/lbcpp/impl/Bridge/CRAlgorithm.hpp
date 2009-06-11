@@ -67,7 +67,6 @@ public:
       if (!choice)
       {
         Object::error("CRAlgorithm::run", "No choices made");
-        std::exit(1); // FIXME: gerer l'appel du run() dans la code genere 
         return false;
       }
       if (stepImpl(staticCallback, choice))

@@ -37,19 +37,19 @@ bool GradientBasedLearningMachine::loadImpl(std::istream& istr)
             read(istr, initializeParametersRandomly);
 }
 
-void GradientBasedLearningMachine::trainStochasticBeginImpl()
+void GradientBasedLearningMachine::trainStochasticBeginImpl(FeatureDictionaryPtr inputDictionary)
 {
   assert(learner);
+  if (!parameters && inputDictionary)
+    createParameters(inputDictionary, initializeParametersRandomly);
   learner->setParameters(parameters);
   learner->setRegularizer(getRegularizer());
-  learner->trainStochasticBegin();
+  learner->trainStochasticBegin(inputDictionary);
 }
   
 void GradientBasedLearningMachine::trainStochasticExampleImpl(FeatureGeneratorPtr gradient, double weight)
 {
   assert(learner);
-  if (!parameters)
-    createParameters(gradient->getDictionary(), initializeParametersRandomly);
   learner->setParameters(parameters);
   learner->trainStochasticExample(gradient, weight);
 }
@@ -69,7 +69,7 @@ void GradientBasedLearningMachine::trainStochasticEndImpl()
   learner->trainStochasticEnd();
 }
 
-bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, ProgressCallback* progress)
+bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress)
 {
   assert(learner && examples->size());
   if (!parameters)
