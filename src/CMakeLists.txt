@@ -103,7 +103,6 @@ SET(LBCPP_CORE_IMPL_POLICY
   ${LBCPP_CORE_IMPL}/Policy/PolicyStatic.hpp
   ${LBCPP_CORE_IMPL}/Policy/PolicyStaticToDynamic.hpp
   ${LBCPP_CORE_IMPL}/Policy/PolicyDynamicToStatic.hpp
-  ${LBCPP_CORE_IMPL}/Policy/BasicPolicies.hpp
   ${LBCPP_CORE_IMPL}/Policy/ComputeStatisticsPolicy.hpp
   ${LBCPP_CORE_IMPL}/Policy/VerbosePolicy.hpp
   ${LBCPP_CORE_IMPL}/Policy/QLearningPolicy.hpp
@@ -181,6 +180,15 @@ SET(LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES
   GradientBasedLearningMachine/GradientBasedRanker.h
 )
 
+SET(LBCPP_CORE_POLICY_SOURCES
+  Policy/RandomPolicy.h
+  Policy/GreedyPolicy.h
+  Policy/StochasticPolicy.h
+  Policy/EpsilonGreedyPolicy.h
+  Policy/GibbsGreedyPolicy.h
+  Policy/MixturePolicy.h
+)
+
 SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
   CRAlgorithmLearner/SearnLearner.h
 )
@@ -199,6 +207,7 @@ SET(LBCPP_CORE
   ${LBCPP_CORE_OPTIMIZER_SOURCES}
   ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES}
   ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES}
+  ${LBCPP_CORE_POLICY_SOURCES}
   ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES}
 )
 
@@ -215,5 +224,6 @@ SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 SOURCE_GROUP(GradientBasedLearningMachine FILES ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES})
 SOURCE_GROUP(GradientBasedLearner FILES ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES})
+SOURCE_GROUP(Policy FILES ${LBCPP_CORE_POLICY_SOURCES})
 SOURCE_GROUP(CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES})
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})

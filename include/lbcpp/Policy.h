@@ -21,7 +21,6 @@ public:
   bool run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
   bool run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  PolicyPtr epsilonGreedy(IterationFunctionPtr epsilon) const;
   PolicyPtr addComputeStatistics() const;
   PolicyPtr verbose(size_t verbosity, std::ostream& ostr = std::cout) const;
 
@@ -42,8 +41,10 @@ extern PolicyPtr randomPolicy();
 extern PolicyPtr greedyPolicy(ActionValueFunctionPtr actionValues);
 extern PolicyPtr gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature);
 extern PolicyPtr stochasticPolicy(ActionValueFunctionPtr actionProbabilities);
+extern PolicyPtr epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr epsilon);
 
-extern PolicyPtr mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient);
+// mixtureCoefficient = Probability of selecting policy2
+extern PolicyPtr mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient = 0.5);
 
 extern PolicyPtr qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
 extern PolicyPtr sarsaZeroPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
@@ -59,7 +60,6 @@ extern PolicyPtr rankingExampleCreatorPolicy(PolicyPtr explorationPolicy,
                         
 extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, double exploration = 1.0);
 extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy);
-
 
 class DecoratorPolicy : public Policy
 {
@@ -79,6 +79,12 @@ public:
   virtual void policyLeave()
     {decorated->policyLeave();}
     
+  virtual void save(std::ostream& ostr) const
+    {write(ostr, decorated);}
+
+  virtual bool load(std::istream& istr)
+    {return read(istr, decorated);}
+
 protected:
   PolicyPtr decorated;
 };
