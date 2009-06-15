@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
   /*
   ** Load a Classifier from file "classifier.model"
   */
-  GradientBasedClassifierPtr classifier = Object::loadFromFileAndCast<GradientBasedClassifier>("classifier.model");
+  ClassifierPtr classifier = loadClassifier("classifier.model");
   assert(classifier);
 
   /*
