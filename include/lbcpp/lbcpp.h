@@ -17,6 +17,7 @@
 # include "ObjectContainer.h"
 # include "ObjectStream.h"
 # include "ObjectGraph.h"
+# include "Table.h"
 
 # include "RandomVariable.h"
 # include "FeatureGenerator.h"

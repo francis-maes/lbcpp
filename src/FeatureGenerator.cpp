@@ -8,6 +8,7 @@
 
 #include <lbcpp/EditableFeatureGenerator.h>
 #include <lbcpp/ObjectGraph.h>
+#include <lbcpp/Table.h>
 #include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 #include <lbcpp/impl/Bridge/DoubleVector.hpp>
 
@@ -215,6 +216,79 @@ FeatureGeneratorPtr lbcpp::linearCombination(std::vector< std::pair<FeatureGener
 {
   return new ExplicitLinearCombinationFeatureGenerator(newTerms);
 }
+
+class FeatureGeneratorTable : public Table
+{
+public:
+  FeatureGeneratorTable(FeatureGeneratorPtr featureGenerator)
+    : header(new TableHeader())
+  {
+    header->addColumn("name", TableHeader::stringType);
+    header->addColumn("value", TableHeader::doubleType);
+    header->addColumn("absvalue", TableHeader::doubleType);
+    featureGenerator->accept(new EnumerateFeatures(features));
+  }
+  
+  virtual TableHeaderPtr getHeader() const
+    {return header;}
+    
+  virtual size_t getNumRows() const
+    {return features.size();}
+  
+  virtual double getDouble(size_t rowNumber, size_t columnNumber) const
+  {
+    assert(columnNumber == 1 || columnNumber == 2);
+    double value = features[rowNumber].second;
+    return columnNumber == 1 || value >= 0 ? value : -value;
+  }
+  
+  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+  {
+    assert(columnNumber == 0);
+    return features[rowNumber].first;
+  }
+
+private:
+  TableHeaderPtr header;
+  std::vector< std::pair<std::string, double> > features;
+  
+  struct EnumerateFeatures : public FeatureVisitor
+  {
+    EnumerateFeatures(std::vector< std::pair<std::string, double> >& features)
+      : features(features) {}
+      
+    std::vector< std::pair<std::string, double> >& features;
+    
+    virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
+    {
+      std::string newPrefix = dictionary->getScopes()->getString(index);
+      currentPrefix = currentPrefix.size() ? currentPrefix + "." + newPrefix : newPrefix;
+      return true;
+    }
+    
+    virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
+    {
+      std::string name = dictionary->getFeatures()->getString(index);
+      if (currentPrefix.size())
+        name = currentPrefix + "." + name;
+      features.push_back(std::make_pair(name, value));
+    }
+    
+    virtual void featureLeave()
+    {
+      size_t i = currentPrefix.rfind('.');
+      if (i == std::string::npos)
+        currentPrefix = "";
+      else
+        currentPrefix = currentPrefix.substr(0, i);
+    }
+    
+    std::string currentPrefix;
+  };
+};
+
+TablePtr FeatureGenerator::toTable() const
+  {return new FeatureGeneratorTable(const_cast<FeatureGenerator* >(this));}
 
 class FeatureGeneratorGraph : public ObjectGraph
 {

@@ -39,6 +39,7 @@ public:
   */
   virtual std::string toString() const
     {std::ostringstream ostr; ostr << *this; return ostr.str();}
+  virtual TablePtr toTable() const;
 
   virtual void save(std::ostream& ostr) const;
   virtual bool load(std::istream& istr);  
@@ -120,6 +121,7 @@ public:
     
   virtual std::string toString() const;
   virtual ObjectGraphPtr toGraph() const;
+  virtual TablePtr toTable() const;
 
   virtual bool load(std::istream& istr);
   virtual void save(std::ostream& ostr) const;

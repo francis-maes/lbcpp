@@ -8,6 +8,7 @@
 
 #include <lbcpp/FeatureDictionary.h>
 #include <lbcpp/ObjectGraph.h>
+#include <lbcpp/Table.h>
 using namespace lbcpp;
 
 /*
@@ -83,6 +84,38 @@ namespace lbcpp
   }
 
 }; /* namespace lbcpp */
+
+class StringDictionaryTable : public Table
+{
+public:
+  StringDictionaryTable(StringDictionaryPtr dictionary)
+    : dictionary(dictionary), header(new TableHeader())
+  {
+    header->addColumn("index", TableHeader::integerType);
+    header->addColumn("string", TableHeader::stringType);
+  }
+    
+  virtual TableHeaderPtr getHeader() const
+    {return header;}
+    
+  virtual size_t getNumRows() const
+    {return dictionary->getNumElements();}
+
+  virtual int getInteger(size_t rowNumber, size_t columnNumber) const
+    {assert(columnNumber == 0); return (int)rowNumber;}
+  
+  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+    {assert(columnNumber == 1); return dictionary->getString(rowNumber);}
+  
+private:
+  StringDictionaryPtr dictionary;
+  TableHeaderPtr header;
+};
+
+TablePtr StringDictionary::toTable() const
+{
+  return new StringDictionaryTable(const_cast<StringDictionary* >(this));
+}
 
 /*
 ** FeatureDictionary
@@ -294,4 +327,59 @@ bool FeatureDictionary::load(std::istream& istr, FeatureDictionaryPtr& dictionar
     return false;
   }
   return true;
+}
+
+class FeatureDictionaryTable : public Table
+{
+public:
+  FeatureDictionaryTable(FeatureDictionaryPtr dictionary)
+    : header(new TableHeader())
+  {
+    header->addColumn("index", TableHeader::stringType);
+    header->addColumn("name", TableHeader::stringType);
+    enumerateFeaturesRec(dictionary);
+  }
+  
+  virtual TableHeaderPtr getHeader() const
+    {return header;}
+    
+  virtual size_t getNumRows() const
+    {return features.size();}
+
+  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+  {
+    assert(columnNumber <= 1);
+    return columnNumber ? features[rowNumber].second : features[rowNumber].first;
+  }
+  
+private:
+  TableHeaderPtr header;
+  std::vector< std::pair<std::string, std::string> > features;
+  
+ static std::string concatString(const std::string& str1, const std::string& str2)
+    {return str1.empty() ? str2 : str1 + "." + str2;}
+  
+  void enumerateFeaturesRec(FeatureDictionaryPtr dictionary, const std::string& indexPrefix = "", const std::string& namePrefix = "")
+  {
+    StringDictionaryPtr f = dictionary->getFeatures();
+    if (f)
+    {
+      for (size_t i = 0; i < f->getNumElements(); ++i)
+        features.push_back(std::make_pair(concatString(indexPrefix, lbcpp::toString(i)), 
+          concatString(namePrefix, f->getString(i))));
+    }
+
+    StringDictionaryPtr s = dictionary->getScopes();
+    for (size_t i = 0; i < dictionary->getNumSubDictionaries(); ++i)
+    {
+      assert(s);
+      enumerateFeaturesRec(dictionary->getSubDictionary(i),
+        concatString(indexPrefix, lbcpp::toString(i)), concatString(namePrefix, s->getString(i)));
+    }
+  }
+};
+
+TablePtr FeatureDictionary::toTable() const
+{
+  return new FeatureDictionaryTable(const_cast<FeatureDictionary* >(this));
 }
