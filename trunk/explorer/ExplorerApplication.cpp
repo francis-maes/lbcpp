@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "juce/juce_amalgamated.h"
+#include "Juce/juce_amalgamated.h"
 /*#include "MainWindow.h"
 #include "StoredSettings.h"
 #include "../userinterface/resources/icons.h"*/
