@@ -11,12 +11,39 @@ using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
 
-class ExplorerMainWindow : public DocumentWindow
+Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
+{
+  ObjectGraphPtr graph = object->toGraph();
+  if (topLevelComponent && graph)
+    return new ObjectGraphAndContentComponent(graph);
+  TablePtr table = object->toTable();
+  if (table)
+    return new TableComponent(table);
+  return new StringComponent(object);
+}
+
+class ExplorerErrorHandler : public ErrorHandler
+{
+public:
+  virtual void errorMessage(const std::string& where, const std::string& what)
+  {
+    AlertWindow::showMessageBox(AlertWindow::WarningIcon, ("Error in '" + where + "'").c_str(), what.c_str());
+  }
+  
+  virtual void warningMessage(const std::string& where, const std::string& what)
+  {
+    AlertWindow::showMessageBox(AlertWindow::WarningIcon, ("Warning in '" + where + "'").c_str(), what.c_str());
+  }
+};
+
+static ExplorerErrorHandler explorerErrorHandler;
+
+class ExplorerMainWindow : public DocumentWindow, public MenuBarModel
 {
 public:
   ExplorerMainWindow() : DocumentWindow("LBC++ Explorer", Colours::whitesmoke, allButtons)
   {
-    //setMenuBar(this);
+    setMenuBar(this);
     setResizable(true, true);
     centreWithSize(700, 600);
 #ifdef JUCE_MAC
@@ -32,11 +59,18 @@ public:
     
 //    FeatureDictionaryPtr dictionary = createRandomDictionary(5);
     
-    GradientBasedClassifierPtr classifier = loadGradientBasedClassifier("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/classifier.model");
+  /*  GradientBasedClassifierPtr classifier = loadGradientBasedClassifier("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/classifier.model");
     DenseVectorPtr params = classifier->getParameters();
     assert(params);
-    setContentComponent(new ObjectGraphAndContentComponent(params->toGraph()));
+    new ObjectGraphAndContentComponent(params->toGraph())*/
+    
+    setContentComponent(content = new ObjectComponentContainer());
     //setContentComponent(new TableComponent(params->getDictionary()->toTable()));
+  }
+  
+  virtual ~ExplorerMainWindow()
+  {
+    setMenuBar(NULL);
   }
     
   virtual void closeButtonPressed()
@@ -44,8 +78,54 @@ public:
     JUCEApplication::quit();
   }
   
+  virtual const StringArray getMenuBarNames()
+  {
+    const tchar* const names[] = {T("File"), 0 };
+    return StringArray((const tchar**) names);
+  }
+
+  virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const String& menuName)
+  {
+    PopupMenu menu;
+    enum {iconSizes = 20};
+
+    if (topLevelMenuIndex == 0)
+    {
+      menu.addItem(1, "Open");
+      menu.addItem(2, "Close", content->getObject() != ObjectPtr());
+      menu.addSeparator();
+      menu.addItem(3, "Quit");
+    }
+    return menu;
+  }
+
+  virtual void menuItemSelected(int menuItemID, int topLevelMenuIndex)
+  {
+    if (menuItemID == 1)
+    {
+      FileChooser chooser("Please select the file you want to load...",
+                               File::getSpecialLocation (File::userHomeDirectory),
+                               "*.*");
+
+      if (chooser.browseForFileToOpen())
+      {
+        ObjectPtr object = loadObject((const char* )chooser.getResult().getFullPathName());
+        if (object)
+          content->setObject(object, true);
+      }
+    }
+    else if (menuItemID == 2)
+    {
+      content->setObject(ObjectPtr());
+    }
+    else if (menuItemID == 3)
+    {
+      JUCEApplication::quit();
+    }
+  }
+  
 private:
-  Component* content;
+  ObjectComponentContainer* content;
   
   FeatureDictionaryPtr createRandomDictionary(size_t maxChildrens)
   {
@@ -67,6 +147,8 @@ public:
 
   virtual void initialise(const String& commandLine)
   {    
+    ErrorHandler::setInstance(explorerErrorHandler);
+
     theCommandManager = new ApplicationCommandManager();
     
     mainWindow = new ExplorerMainWindow();
