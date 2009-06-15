@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
                                
-#ifndef LBCPP_OBJET_GRAPH_H_
-# define LBCPP_OBJET_GRAPH_H_
+#ifndef LBCPP_OBJECT_GRAPH_H_
+# define LBCPP_OBJECT_GRAPH_H_
 
 # include "ObjectPredeclarations.h"
 
@@ -40,4 +40,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJET_GRAPH_H_
+#endif // !LBCPP_OBJECT_GRAPH_H_

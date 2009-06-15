@@ -10,6 +10,8 @@
 # define EXPLORER_COMPONENTS_OBJECT_GRAPH_AND_CONTENT_H_
 
 # include "ObjectGraphComponent.h"
+# include "StringComponent.h"
+# include "TableComponent.h"
 # include "../Utilities/SplittedLayout.h"
 
 namespace lbcpp
@@ -18,16 +20,39 @@ namespace lbcpp
 class ObjectComponentContainer : public Component
 {
 public:
+  ObjectComponentContainer() : component(NULL) {}
+  virtual ~ObjectComponentContainer()
+    {deleteAllChildren();}
+  
   void setObject(ObjectPtr object)
   {
     deleteAllChildren();
     if (object)
     {
-      Label* tmp = new Label("pouet", object->getName().c_str());
-      tmp->setBoundsRelative(0, 0, 1, 1);
-      addAndMakeVisible(tmp);
+      component = createComponentForObject(object);
+      addAndMakeVisible(component);
+      component->setBoundsRelative(0, 0, 1, 1);
     }
+    else
+      component = NULL;
   }
+  
+  virtual void resized()
+  {
+    if (component)
+      component->setBoundsRelative(0, 0, 1, 1);
+  }
+  
+  static Component* createComponentForObject(ObjectPtr object)
+  {
+    TablePtr table = object->toTable();
+    if (table)
+      return new TableComponent(table);
+    return new StringComponent(object);
+  }
+  
+private:
+  Component* component;
 };
 
 class ObjectGraphAndContentComponent : public SplittedLayout
@@ -43,12 +68,10 @@ public:
   };
   
   ObjectGraphAndContentComponent(ObjectGraphPtr graph)
-    : SplittedLayout(new GraphComponent(graph), new ObjectComponentContainer(), 0.7, typicalHorizontal), graph(graph) {}
+    : SplittedLayout(new GraphComponent(graph), new ObjectComponentContainer(), 0.5, typicalHorizontal), graph(graph) {}
   
   void selectionChanged(ObjectPtr selected)
-  {
-    ((ObjectComponentContainer* )second)->setObject(selected);
-  }
+    {((ObjectComponentContainer* )second)->setObject(selected);}
   
 private:
   ObjectGraphPtr graph;

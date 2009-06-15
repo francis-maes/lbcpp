@@ -44,6 +44,12 @@ typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class ObjectFunction;
 typedef ReferenceCountedObjectPtr<ObjectFunction> ObjectFunctionPtr;
 
+// tables
+class TableHeader;
+typedef ReferenceCountedObjectPtr<TableHeader> TableHeaderPtr;
+class Table;
+typedef ReferenceCountedObjectPtr<Table> TablePtr;
+
 // feature generators
 class FeatureVisitor;
 typedef ReferenceCountedObjectPtr<FeatureVisitor> FeatureVisitorPtr;

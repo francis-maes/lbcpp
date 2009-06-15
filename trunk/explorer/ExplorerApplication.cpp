@@ -14,7 +14,7 @@ ApplicationCommandManager* theCommandManager = NULL;
 class ExplorerMainWindow : public DocumentWindow
 {
 public:
-  ExplorerMainWindow() : DocumentWindow("LBC++ Explorer", Colours::white, allButtons)
+  ExplorerMainWindow() : DocumentWindow("LBC++ Explorer", Colours::whitesmoke, allButtons)
   {
     //setMenuBar(this);
     setResizable(true, true);
@@ -36,6 +36,7 @@ public:
     DenseVectorPtr params = classifier->getParameters();
     assert(params);
     setContentComponent(new ObjectGraphAndContentComponent(params->toGraph()));
+    //setContentComponent(new TableComponent(params->getDictionary()->toTable()));
   }
     
   virtual void closeButtonPressed()

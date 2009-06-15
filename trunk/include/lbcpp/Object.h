@@ -18,6 +18,10 @@ namespace lbcpp
 
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
+class ObjectGraph;
+typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
+class Table;
+typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
 class Object : public ReferenceCountedObject
 {
@@ -46,6 +50,12 @@ public:
     
   virtual std::string toString() const
     {return getClassName() + "::toString() unimplemented";}
+
+  virtual ObjectGraphPtr toGraph() const
+    {return ObjectGraphPtr();}
+    
+  virtual TablePtr toTable() const
+    {return TablePtr();}
   
   virtual ObjectPtr clone() const
     {assert(false); return ObjectPtr();}
