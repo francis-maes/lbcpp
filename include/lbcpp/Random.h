@@ -68,13 +68,19 @@ public:
   float sampleFloat() // in range [0, 1[
     {return ((unsigned int) sampleInt()) / (float) 0xffffffff;}
 
+  float sampleFloat(float maxValue) // in range [0, maxValue[
+    {return sampleFloat() * maxValue;}
+    
+  float sampleFloat(float minValue, float maxValue) // in range [minValue, maxValue[
+    {return minValue + sampleFloat() * (maxValue - minValue);}
+
   double sampleDouble() // in range [0, 1[
     {return ((unsigned int) sampleInt()) / (double) 0xffffffff;}
 
-  double sampleDouble(double maxValue) // in range [0, maxValue]
+  double sampleDouble(double maxValue) // in range [0, maxValue[
     {return sampleDouble() * maxValue;}
     
-  double sampleDouble(double minValue, double maxValue)
+  double sampleDouble(double minValue, double maxValue) // in range [minValue, maxValue[
     {return minValue + sampleDouble() * (maxValue - minValue);}
   
   double sampleDoubleFromGaussian();

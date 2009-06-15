@@ -27,6 +27,8 @@ public:
   
   virtual bool isDense() const
     {return false;}
+
+  ObjectGraphPtr toGraph() const;
   
   /*
   ** General

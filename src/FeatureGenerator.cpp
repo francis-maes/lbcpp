@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/EditableFeatureGenerator.h>
+#include <lbcpp/ObjectGraph.h>
 #include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 #include <lbcpp/impl/Bridge/DoubleVector.hpp>
 
@@ -213,4 +214,65 @@ FeatureGeneratorPtr lbcpp::linearCombination(FeatureGeneratorPtr compositeFeatur
 FeatureGeneratorPtr lbcpp::linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms)
 {
   return new ExplicitLinearCombinationFeatureGenerator(newTerms);
+}
+
+class FeatureGeneratorGraph : public ObjectGraph
+{
+public:
+  FeatureGeneratorGraph(FeatureGeneratorPtr generator)
+    : roots(1, generator) {}
+  FeatureGeneratorGraph() {}
+  
+  void addFeatureGenerator(FeatureGeneratorPtr featureGenerator)
+    {roots.push_back(featureGenerator);}
+  
+  virtual size_t getNumRoots() const
+    {return roots.size();}
+    
+  virtual ObjectPtr getRoot(size_t index) const
+    {assert(index < roots.size()); return roots[index];}
+
+  virtual void setRoots(const std::vector<ObjectPtr>& successors)
+    {roots = *(const std::vector<FeatureGeneratorPtr>* )(&successors);}
+  
+  virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors)
+    {assert(false);} // not implemented
+    
+  virtual size_t getNumSuccessors(ObjectPtr node) const
+  {
+    FeatureGeneratorPtr featureGenerator = node.dynamicCast<FeatureGenerator>();
+    if (featureGenerator)
+      return 1 + featureGenerator->getNumSubGenerators();
+    FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
+    assert(dictionary);
+    return dictionary->getNumSubDictionaries();
+  }
+  
+  virtual ObjectPtr getSuccessor(ObjectPtr node, size_t index) const
+  {
+    FeatureGeneratorPtr featureGenerator = node.dynamicCast<FeatureGenerator>();
+    if (featureGenerator)
+    {
+      if (index == 0)
+        return featureGenerator->getDictionary();
+      return featureGenerator->getSubGenerator(index - 1);
+    }
+    FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
+    assert(dictionary);
+    return dictionary->getSubDictionary(index);
+  }
+
+  // serialisation is not implemented
+  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const
+    {assert(false);}
+  virtual ObjectPtr loadNode(std::istream& istr) const
+    {assert(false); return ObjectPtr();}
+    
+protected:
+  std::vector<FeatureGeneratorPtr> roots;
+};
+
+ObjectGraphPtr FeatureGenerator::toGraph() const
+{
+  return new FeatureGeneratorGraph(const_cast<FeatureGenerator* >(this));
 }

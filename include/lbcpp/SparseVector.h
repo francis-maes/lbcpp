@@ -115,6 +115,9 @@ private:
   SubVectorVector subVectors;
 };
 
+inline SparseVectorPtr loadSparseVector(const std::string& filename)
+  {return Object::loadFromFileAndCast<SparseVector>(filename);}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SPARSE_VECTOR_H_

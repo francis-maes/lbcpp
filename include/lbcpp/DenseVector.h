@@ -163,6 +163,9 @@ private:
   double denseDotProduct(const DenseVectorPtr otherVector) const;
 };
 
+inline DenseVectorPtr loadDenseVector(const std::string& filename)
+  {return Object::loadFromFileAndCast<DenseVector>(filename);}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DENSE_VECTOR_H_
