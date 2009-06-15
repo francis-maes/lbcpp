@@ -6,27 +6,31 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "Juce/juce_amalgamated.h"
-/*#include "MainWindow.h"
-#include "StoredSettings.h"
-#include "../userinterface/resources/icons.h"*/
+#include "Components/ObjectGraphAndContentComponent.h"
+using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
 
-class ExplorerMainWindow : public DialogWindow
+class ExplorerMainWindow : public DocumentWindow
 {
 public:
-  ExplorerMainWindow() : DialogWindow("LBC++ Explorer", Colours::white, false)
+  ExplorerMainWindow() : DocumentWindow("LBC++ Explorer", Colours::white, allButtons)
   {
-    setContentComponent(content = new Label("toto", "Hello !"));
     //setMenuBar(this);
-    setResizable(true, false);
+    setResizable(true, true);
     centreWithSize(700, 600);
 #ifdef JUCE_MAC
-    setUsingNativeTitleBar(true);
+//    setUsingNativeTitleBar(true);
 #endif // JUCE_MAC
+
+    FeatureDictionaryPtr dictionary = loadFeatureDictionary("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/features.dic");
+    assert(dictionary);
+    dictionary->addScope("coucou", new FeatureDictionary());
+    dictionary->addScope("pouet", new FeatureDictionary());
+   // setContentComponent(new ObjectGraphAndContent(dictionary->toGraph()));      
+    setContentComponent(new ObjectGraphComponent(dictionary->toGraph()));
   }
-  
+    
   virtual void closeButtonPressed()
   {
     JUCEApplication::quit();

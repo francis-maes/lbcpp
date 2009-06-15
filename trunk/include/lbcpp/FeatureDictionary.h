@@ -119,6 +119,7 @@ public:
     {return name;}
     
   virtual std::string toString() const;
+  virtual ObjectGraphPtr toGraph() const;
 
   virtual bool load(std::istream& istr);
   virtual void save(std::ostream& ostr) const;
@@ -135,6 +136,10 @@ private:
 
   void toStringRec(size_t indent, std::string& res) const;
 };
+
+inline FeatureDictionaryPtr loadFeatureDictionary(const std::string& filename)
+  {return Object::loadFromFileAndCast<FeatureDictionary>(filename);}
+
 
 }; /* namespace lbcpp */
 

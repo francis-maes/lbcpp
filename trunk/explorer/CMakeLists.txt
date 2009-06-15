@@ -1,17 +1,28 @@
+INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
+
 FIND_PACKAGE(OpenGL REQUIRED)
 INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 
 IF(APPLE)
   SET(JUCE_SOURCES
-    juce/juce_amalgamated.h
-    juce/juce_amalgamated.mm
+    Juce/juce_amalgamated.h
+    Juce/juce_amalgamated.mm
   )
 ELSE(APPLE)
   SET(JUCE_SOURCES
-    juce/juce_amalgamated.h
-    juce/juce_amalgamated.cpp
+    Juce/juce_amalgamated.h
+    Juce/juce_amalgamated.cpp
   )
 ENDIF(APPLE)
+
+SET(EXPLORER_UTILITIES_SOURCES
+  Utilities/SplittedLayout.h
+)
+
+SET(EXPLORER_COMPONENTS_SOURCES
+  Components/ObjectGraphComponent.h
+  Components/ObjectGraphAndContentComponent.h
+)
 
 SET(EXPLORER_APPLICATION_SOURCES
   ExplorerApplication.cpp
@@ -19,10 +30,14 @@ SET(EXPLORER_APPLICATION_SOURCES
 
 SET(LBCPP_EXPLORER_SOURCES
  ${JUCE_SOURCES}
+ ${EXPLORER_UTILITIES_SOURCES}
+ ${EXPLORER_COMPONENTS_SOURCES}
  ${EXPLORER_APPLICATION_SOURCES}
 )
 
 SOURCE_GROUP(Juce FILES ${JUCE_SOURCES})
+SOURCE_GROUP(Utilities FILES ${EXPLORER_UTILITIES_SOURCES})
+SOURCE_GROUP(Components FILES ${EXPLORER_COMPONENTS_SOURCES})
 SOURCE_GROUP(Explorer FILES ${EXPLORER_APPLICATION_SOURCES})
 
 IF   (WIN32)

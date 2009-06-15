@@ -180,6 +180,10 @@ std::string FeatureDictionary::toString() const
 class FeatureDictionaryGraph : public ObjectGraph
 {
 public:
+  FeatureDictionaryGraph(FeatureDictionaryPtr dictionary)
+    : roots(1, dictionary) {}
+  FeatureDictionaryGraph() {}
+  
   void addDictionary(FeatureDictionaryPtr dictionary)
     {roots.push_back(dictionary);}
   
@@ -235,10 +239,14 @@ protected:
   std::vector<FeatureDictionaryPtr> roots;
 };
 
+ObjectGraphPtr FeatureDictionary::toGraph() const
+{
+  return new FeatureDictionaryGraph(const_cast<FeatureDictionary* >(this));
+}
+
 void FeatureDictionary::save(std::ostream& ostr) const
 {
-  FeatureDictionaryGraph graph;
-  graph.addDictionary(const_cast<FeatureDictionary* >(this));
+  FeatureDictionaryGraph graph(const_cast<FeatureDictionary* >(this));
   graph.save(ostr);
 }
 

@@ -57,5 +57,6 @@ int main(int argc, char* argv[])
   ** Save the classifier
   */
   classifier->saveToFile("classifier.model"); 
+  features->saveToFile("features.dic");
   return 0;
 }

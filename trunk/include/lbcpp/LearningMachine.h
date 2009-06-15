@@ -98,6 +98,9 @@ protected:
     {target.labels = labels;}
 };
 
+inline ClassifierPtr loadClassifier(const std::string& filename)
+  {return Object::loadFromFileAndCast<Classifier>(filename);}
+
 class BinaryClassifier : public Classifier
 {
 public:
@@ -118,6 +121,9 @@ public:
 private:
   FeatureDictionaryPtr outputsDictionary;
 };
+
+inline BinaryClassifierPtr loadBinaryClassifier(const std::string& filename)
+  {return Object::loadFromFileAndCast<BinaryClassifier>(filename);}
 
 
 class GeneralizedClassifier : public LearningMachine
@@ -141,6 +147,9 @@ public:
     {return evaluateMeanAbsoluteError(examples->toStream());}
 };
 
+inline RegressorPtr loadRegressor(const std::string& filename)
+  {return Object::loadFromFileAndCast<Regressor>(filename);}
+
 extern RegressorPtr verboseRegressor(std::ostream& ostr);
 
 class Ranker : public LearningMachine
@@ -156,6 +165,8 @@ public:
     {return evaluateMeanTopRankCost(examples->toStream());}  
 };
 
+inline RankerPtr loadRanker(const std::string& filename)
+  {return Object::loadFromFileAndCast<Ranker>(filename);}
 
 }; /* namespace lbcpp */
 
