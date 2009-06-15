@@ -188,26 +188,10 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
+inline GradientBasedRegressorPtr loadGradientBasedRegressor(const std::string& filename)
+  {return Object::loadFromFileAndCast<GradientBasedRegressor>(filename);}
+
 extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner);
-
-
-/*
-** Binary Classification
-*/
-class GradientBasedBinaryClassifier : public GradientBasedLearningMachine_<BinaryClassifier, ClassificationExample>
-{
-public:
-  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
-
-  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
-
-  virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input);}
-};
-
-extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
-extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
 ** Classification
@@ -226,7 +210,32 @@ public:
     {return getPredictionArchitecture()->compute(parameters, input, output);}
 };
 
+inline GradientBasedClassifierPtr loadGradientBasedClassifier(const std::string& filename)
+  {return Object::loadFromFileAndCast<GradientBasedClassifier>(filename);}
+
 extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
+
+
+/*
+** Binary Classification
+*/
+class GradientBasedBinaryClassifier : public GradientBasedLearningMachine_<BinaryClassifier, ClassificationExample>
+{
+public:
+  virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
+
+  virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
+    {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
+
+  virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const
+    {return getPredictionArchitecture()->compute(parameters, input);}
+};
+
+inline GradientBasedBinaryClassifierPtr loadGradientBasedBinaryClassifier(const std::string& filename)
+  {return Object::loadFromFileAndCast<GradientBasedBinaryClassifier>(filename);}
+
+extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
+extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
 ** Generalized Classification
@@ -261,6 +270,9 @@ public:
   virtual double predictScore(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
+
+inline GradientBasedRankerPtr loadGradientBasedRanker(const std::string& filename)
+  {return Object::loadFromFileAndCast<GradientBasedRanker>(filename);}
 
 extern GradientBasedRankerPtr largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner);
 extern GradientBasedRankerPtr largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner);

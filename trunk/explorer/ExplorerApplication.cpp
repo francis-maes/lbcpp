@@ -23,12 +23,19 @@ public:
 //    setUsingNativeTitleBar(true);
 #endif // JUCE_MAC
 
-    FeatureDictionaryPtr dictionary = loadFeatureDictionary("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/features.dic");
+/*    FeatureDictionaryPtr dictionary = loadFeatureDictionary("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/features.dic");
     assert(dictionary);
     dictionary->addScope("coucou", new FeatureDictionary());
     dictionary->addScope("pouet", new FeatureDictionary());
    // setContentComponent(new ObjectGraphAndContent(dictionary->toGraph()));      
-    setContentComponent(new ObjectGraphComponent(dictionary->toGraph()));
+    setContentComponent(new ObjectGraphComponent(dictionary->toGraph()));*/
+    
+//    FeatureDictionaryPtr dictionary = createRandomDictionary(5);
+    
+    GradientBasedClassifierPtr classifier = loadGradientBasedClassifier("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/classifier.model");
+    DenseVectorPtr params = classifier->getParameters();
+    assert(params);
+    setContentComponent(new ObjectGraphAndContentComponent(params->toGraph()));
   }
     
   virtual void closeButtonPressed()
@@ -38,6 +45,18 @@ public:
   
 private:
   Component* content;
+  
+  FeatureDictionaryPtr createRandomDictionary(size_t maxChildrens)
+  {
+    FeatureDictionaryPtr res = new FeatureDictionary("random");
+    if (maxChildrens)
+    {
+      size_t n = maxChildrens;//lbcpp::Random::getInstance().sampleSize(maxChildrens);
+      for (size_t i = 0; i < n; ++i)
+        res->addScope("pouet " + lbcpp::toString(i), createRandomDictionary(maxChildrens - 1));
+    }
+    return res;
+  }
 };
 
 class ExplorerApplication : public JUCEApplication

@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
   /*
   ** Create a maximum-entropy classifier (training with LBFGS, 20 iterations max, L2 regularizer: 0.001)
   */
-  ClassifierPtr classifier = maximumEntropyClassifier(batchLearner(lbfgsOptimizer(), 20), labels, 0.001);
+  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(batchLearner(lbfgsOptimizer(), 20), labels, 0.001);
 
   /*
   ** Perform batch training with LBFGS
@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
   ** Save the classifier
   */
   classifier->saveToFile("classifier.model"); 
+  classifier->getParameters()->saveToFile("parameters.vector");
   features->saveToFile("features.dic");
   return 0;
 }

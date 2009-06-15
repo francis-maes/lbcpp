@@ -31,15 +31,14 @@ public:
     {
       Node& n = nodes[i];
       n.object = nodeObjects[i];
-      n.position = Point(random.sampleFloat(), random.sampleFloat());
+      n.position = Point(random.sampleFloat(0, 100.f), random.sampleFloat(0, 100.f));
     }
    // std::cout << "Num Nodes: " << nodes.size() << std::endl;
   }
   
   void update()
   {
-    static const float damping = 0.9;
-    /*float energy = */layoutIteration(damping);
+    /*float energy = */layoutIteration();
     //std::cout << "Energy = " << energy << std::endl;
   }
   
@@ -63,6 +62,29 @@ public:
     std::map<ObjectPtr, size_t>::const_iterator it = inverseTable.find(graph->getSuccessor(getNode(node), index));
     assert(it != inverseTable.end());
     return it->second;
+  }
+  
+  /*
+  ** Operation on nodes
+  */
+  void setNodePosition(size_t index, const Point& position)
+  {
+    nodes[index].position = position;
+    nodes[index].velocity = Point(); // reset velocity
+  }
+
+  // returns -1 if the nearest point is farther from position than maxDistance
+  int getNearestNode(const Point& position, double maxDistance) const
+  {
+    int nearest = -1;
+    float minDistance = FLT_MAX;
+    for (size_t i = 0; i < nodes.size(); ++i)
+    {
+      float distance = sumOfSquares(substract(position, nodes[i].position));
+      if (distance < minDistance)
+        minDistance = distance, nearest = (int)i;
+    }
+    return minDistance < maxDistance ? nearest : -1;
   }
 
 private:
@@ -89,12 +111,14 @@ private:
   static float sumOfSquares(const Point& p)
     {return p.getX() * p.getX() + p.getY() * p.getY();}
   
-  float layoutIteration(float damping)
+  float layoutIteration()
   {
-    static const float minimumSquaredDistance = 0.01;
-    static const float maximumSquaredDistance = 2500;
-    static const float timeStep = 1.0;
-    static const float nodeMass = 1.0;
+    static const float minimumSquaredDistance = 0.01f;
+    static const float maximumSquaredDistance = 2500.f;
+    static const float timeStep = 1.f;
+    static const float nodeMass = 0.1f;
+    static const float damping = 0.9f;
+    static const float edgesK = 0.01;
 
     std::vector<Point> forces(nodes.size(), Point(0.f, 0.f));
 
@@ -121,7 +145,6 @@ private:
       // successors
       //std::cout << "Successors: ";
       size_t count = getNumSuccessors(i);
-      static const float edgesK = 0.01;
       for (size_t j = 0; j < count; ++j)
       {
         size_t successor = getSuccessor(i, j);
@@ -151,14 +174,27 @@ private:
 class ObjectGraphComponent : public OpenGLComponent, public Timer
 {
 public:
-  ObjectGraphComponent(ObjectGraphPtr graph) : layouter(graph), viewportCenter(0.5f, 0.5f), pixelsPerUnit(10)
+  ObjectGraphComponent(ObjectGraphPtr graph)
+    : layouter(graph), viewportCenter(50, 50), pixelsPerUnit(10), selectedNode(-1)
   {
     startTimer(20);
   }
   
+  virtual void selectionChanged(int selectedNode) {}
+  
   virtual void renderOpenGL()
   {
     layouter.update();
+    if (selectedNode >= 0 && isMouseButtonDown())
+    {
+      int x, y;
+      getMouseXYRelative(x, y);
+      layouter.setNodePosition(selectedNode, pixelsToLogicalPosition(Point((float)x, (float)y)));
+    }
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, getWidth(), getHeight(), 0, -100, 100);
 
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -189,26 +225,35 @@ public:
 
   void renderNodes(ObjectGraphLayouter& layouter)
   {
-    size_t numNodes = layouter.getNumNodes();
+    static const float nodeColors[] = {0, 0, 0,  1, 0, 0,  0, 1, 0,  0, 0, 1};
+    static const size_t numColors = sizeof (nodeColors) / (3 * sizeof (float));
 
+    size_t numNodes = layouter.getNumNodes();
+    
     glPointSize(10.f);
-    glColor3f(0, 0, 0); 
     glBegin(GL_POINTS);
     for (size_t i = 0; i < numNodes; ++i)
     {
       Point pos = layouter.getNodePosition(i);
+      size_t classNumber = getNodeClassNumber(layouter.getNode(i)->getClassName());
+      const float* c = nodeColors + (classNumber % numColors) * 3;
+      glColor3f(c[0], c[1], c[2]);
       glVertex(pos);
     }
     glEnd();
+    if (selectedNode >= 0)
+    {
+      glPointSize(20.f);
+      glBegin(GL_POINTS);
+      Point pos = layouter.getNodePosition(selectedNode);
+      size_t classNumber = getNodeClassNumber(layouter.getNode(selectedNode)->getClassName());
+      const float* c = nodeColors + (classNumber % numColors) * 3;
+      glColor3f(c[0], c[1], c[2]);
+      glVertex(pos);
+      glEnd();
+    }
   }
-  
-  void glVertex(const Point& p)
-  {
-    float x = (p.getX() - viewportCenter.getX()) * pixelsPerUnit / getWidth() + 0.5f;
-    float y = (p.getY() - viewportCenter.getY()) * pixelsPerUnit / getHeight() + 0.5f;
-    glVertex2f(x, y);
-  }
-  
+
   virtual void newOpenGLContextCreated()
   {
     glMatrixMode(GL_PROJECTION);
@@ -221,11 +266,84 @@ public:
   
   virtual void timerCallback()
     {repaint();}
+  
+  virtual void mouseDown(const MouseEvent& e)
+  {
+    selectedNode = hitTestNode(e.getMouseDownX(), e.getMouseDownY());
+    selectionChanged(selectedNode);
+    mouseDownViewportCenter = viewportCenter;
+  }
+  
+  virtual void mouseDrag(const MouseEvent& e)
+  {
+    if (selectedNode >= 0)
+    {
+      Point pixelsPosition((float)(e.getMouseDownX() + e.getDistanceFromDragStartX()),
+                        (float)(e.getMouseDownY() + e.getDistanceFromDragStartY()));
+      layouter.setNodePosition(selectedNode, pixelsToLogicalPosition(pixelsPosition));
+    }
+    else
+      viewportCenter.setXY(mouseDownViewportCenter.getX() - e.getDistanceFromDragStartX() / pixelsPerUnit,
+          mouseDownViewportCenter.getY() - e.getDistanceFromDragStartY() / pixelsPerUnit);
+  }
+  
+  virtual void mouseUp(const MouseEvent& e)
+  {
+  }
     
-private:
+  virtual void mouseWheelMove(const MouseEvent& e, float wheelIncrementX, float wheelIncrementY)
+  {
+    if (wheelIncrementY)
+      pixelsPerUnit *= jlimit(0.00001, 10000.0, pow(2, wheelIncrementY));
+  }
+  
+protected:
   ObjectGraphLayouter layouter;
   Point viewportCenter;
-  float pixelsPerUnit;  
+  Point mouseDownViewportCenter;
+  float pixelsPerUnit;
+  int selectedNode;
+
+  Point pixelsToLogicalPosition(const Point& p) const
+  {
+    return Point(
+      (p.getX() - getWidth() / 2.f) / pixelsPerUnit + viewportCenter.getX(),
+      (p.getY() - getHeight() / 2.f) / pixelsPerUnit + viewportCenter.getY());
+  }
+  
+  Point logicalPositionToPixels(const Point& p) const
+  {
+    return Point(
+        (p.getX() - viewportCenter.getX()) * pixelsPerUnit + getWidth() / 2.f,
+        (p.getY() - viewportCenter.getY()) * pixelsPerUnit + getHeight() / 2.f);
+  }
+  
+  void glVertex(const Point& p)
+  {
+    Point pp = logicalPositionToPixels(p);
+    glVertex2f(pp.getX(), pp.getY());
+  }
+
+  int hitTestNode(int x, int y) const
+  {
+    static const int maxDistanceInPixels = 15;
+    Point p = pixelsToLogicalPosition(Point((float)x, (float)y));
+    return layouter.getNearestNode(p, maxDistanceInPixels / pixelsPerUnit);
+  }
+  
+  std::map< std::string, size_t > nodeClassNumbers;
+
+  size_t getNodeClassNumber(const std::string& className)
+  {
+    std::map< std::string, size_t >::iterator it = nodeClassNumbers.find(className);
+    if (it == nodeClassNumbers.end())
+    {
+      size_t numClasses = nodeClassNumbers.size();
+      return (nodeClassNumbers[className] = numClasses);
+    }
+    else
+      return it->second;
+  }
 };
 
 }; /* namespace lbcpp */
