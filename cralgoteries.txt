@@ -1,13 +1,3 @@
-Table:
-
-  * MemoryTable
-  * sort
-
-* ObjectGraphAndContentComponent
-* Menu File
-* Text dans l'opengl
-* Tables
-
 
 LC++ library:
 =============

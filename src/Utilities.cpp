@@ -58,6 +58,11 @@ static DefaultErrorHandler defaultErrorHandler;
 
 ErrorHandler* ErrorHandler::instance = &defaultErrorHandler;
 
+void ErrorHandler::setInstance(ErrorHandler& handler)
+{
+  instance = &handler;
+}
+
 /*
 ** Random
 */

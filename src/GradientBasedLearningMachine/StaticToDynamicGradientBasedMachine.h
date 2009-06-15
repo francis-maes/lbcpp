@@ -21,6 +21,14 @@ class StaticToDynamicGradientBasedLearningMachine : public BaseClass
 public:
   typedef typename BaseClass::ExampleType ExampleType;
   
+  virtual std::string toString() const
+  {
+    std::string className = BaseClass::getClassName();
+    if (className[0] >= 'A' && className[0] <= 'Z')
+      className[0] += 'a' - 'A';
+    return className + "(" + BaseClass::getLearner()->toString() + ", " + BaseClass::getRegularizer()->toString() + ")";
+  }
+  
   // abstract: static functions for architecture() and loss()
   virtual ObjectPtr clone() const
   {

@@ -24,18 +24,22 @@ public:
   virtual ~ObjectComponentContainer()
     {deleteAllChildren();}
   
-  void setObject(ObjectPtr object)
+  void setObject(ObjectPtr object, bool topLevelComponent = false)
   {
     deleteAllChildren();
     if (object)
     {
-      component = createComponentForObject(object);
+      component = createComponentForObject(object, topLevelComponent);
       addAndMakeVisible(component);
       component->setBoundsRelative(0, 0, 1, 1);
     }
     else
       component = NULL;
+    this->object = object;
   }
+  
+  ObjectPtr getObject() const
+    {return object;}
   
   virtual void resized()
   {
@@ -43,16 +47,9 @@ public:
       component->setBoundsRelative(0, 0, 1, 1);
   }
   
-  static Component* createComponentForObject(ObjectPtr object)
-  {
-    TablePtr table = object->toTable();
-    if (table)
-      return new TableComponent(table);
-    return new StringComponent(object);
-  }
-  
 private:
   Component* component;
+  ObjectPtr object;
 };
 
 class ObjectGraphAndContentComponent : public SplittedLayout

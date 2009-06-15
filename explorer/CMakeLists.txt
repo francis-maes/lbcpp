@@ -20,6 +20,7 @@ SET(EXPLORER_UTILITIES_SOURCES
 )
 
 SET(EXPLORER_COMPONENTS_SOURCES
+  Components/common.h
   Components/StringComponent.h
   Components/TableComponent.h
   Components/ObjectGraphComponent.h

@@ -94,6 +94,9 @@ protected:
   virtual void save(std::ostream& ostr) const {}
 };
 
+inline ObjectPtr loadObject(const std::string& filename)
+  {return Object::loadFromFile(filename);}
+
 template<class Type>
 struct ClassDeclarator
 {

@@ -9,8 +9,7 @@
 #ifndef EXPLORER_COMPONENTS_OBJECT_GRAPH_H_
 # define EXPLORER_COMPONENTS_OBJECT_GRAPH_H_
 
-# include "../Juce/juce_amalgamated.h"
-# include <lbcpp/lbcpp.h>
+# include "common.h"
 # include <opengl/gl.h>
 # include <opengl/glu.h>
 
