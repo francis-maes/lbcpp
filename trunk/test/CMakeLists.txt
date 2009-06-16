@@ -5,10 +5,11 @@ IF(LBCPP_TESTS)
 ADD_CRTEST(EmptyCRAlgorithm.cr++)	
 ADD_CRTEST(SenseOneFeature.cr++)
 
-ENDIF(LBCPP_TESTS)
-
 #ADD_SUBDIRECTORY(ludovic)
 ADD_SUBDIRECTORY(SequentialClassification)
 ADD_SUBDIRECTORY(GraphLabeling)
 ADD_SUBDIRECTORY(SemanticRoleLabeling)
 ADD_SUBDIRECTORY(Search)
+
+ENDIF(LBCPP_TESTS)
+
