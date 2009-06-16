@@ -36,9 +36,6 @@ CRAlgorithmChoose::CRAlgorithmChoose(CRAlgo::ChooseExpression* node, SymbolLooku
   }
   if (!choicesAlreadyDeclared)
     ErrorManager::getInstance().addError("Missing choices in choose", node);
-
-  if (!stateFunctions.size())
-    ErrorManager::getInstance().addWarning("No arguments in choose", node);
 }
 
 std::vector<PTree::Node* > CRAlgorithmChoose::getArguments() const
