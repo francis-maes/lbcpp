@@ -97,10 +97,12 @@ bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, P
 /*
 ** Regressor
 */
-GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearnerPtr learner)
+GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer)
 {
   GradientBasedRegressorPtr res = new LeastSquaresLinearRegressor();
   res->setLearner(learner);
+  if (l2Regularizer)
+    res->setL2Regularizer(l2Regularizer);
   return res;
 }
 
