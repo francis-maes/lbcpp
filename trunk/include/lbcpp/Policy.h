@@ -237,7 +237,7 @@ extern PolicyPtr monteCarloControlPolicy(PolicyPtr explorationPolicy, RegressorP
 **
 ** @return
 */
-extern PolicyPtr classificationExampleCreatorPolicy(PolicyPtr explorationPolicy,
+extern PolicyPtr classificationExamplesCreatorPolicy(PolicyPtr explorationPolicy,
                         ClassifierPtr classifier,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
 
@@ -250,7 +250,7 @@ extern PolicyPtr classificationExampleCreatorPolicy(PolicyPtr explorationPolicy,
 **
 ** @return
 */
-extern PolicyPtr rankingExampleCreatorPolicy(PolicyPtr explorationPolicy,
+extern PolicyPtr rankingExamplesCreatorPolicy(PolicyPtr explorationPolicy,
                         RankerPtr ranker,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
 
@@ -346,6 +346,74 @@ public:
 
 protected:
   PolicyPtr decorated;          /*!< */
+};
+
+class EpisodicPolicy : public Policy
+{
+public:
+  EpisodicPolicy();
+
+  virtual VariablePtr policyStart(ChoosePtr choose) = 0;
+  virtual VariablePtr policyStep(double reward, ChoosePtr choose) = 0;
+  virtual void policyEnd(double reward) = 0;
+  
+  virtual void policyEnter(CRAlgorithmPtr crAlgorithm);
+  virtual VariablePtr policyChoose(ChoosePtr choose);
+  virtual void policyReward(double reward);
+  virtual void policyLeave();
+  
+protected:
+  size_t inclusionLevel;
+  size_t stepNumber;  
+  double currentReward;
+};
+
+class EpisodicDecoratorPolicy : public EpisodicPolicy
+{
+public:
+  EpisodicDecoratorPolicy(PolicyPtr decorated = PolicyPtr())
+    : decorated(decorated) {}
+  
+  virtual VariablePtr policyStart(ChoosePtr choose)
+  {
+    decorated->policyEnter(choose->getCRAlgorithm());
+    return decorated->policyChoose(choose);
+  }
+  
+  virtual VariablePtr policyStep(double reward, ChoosePtr choose)
+  {
+    if (reward)
+      decorated->policyReward(reward);
+    return decorated->policyChoose(choose);
+  }
+  
+  virtual void policyEnd(double reward)
+  {
+    if (reward)
+      decorated->policyReward(reward);
+    decorated->policyLeave();
+  }
+
+  /*!
+  **
+  **
+  ** @param ostr
+  */
+  virtual void save(std::ostream& ostr) const
+    {write(ostr, decorated);}
+
+  /*!
+  **
+  **
+  ** @param istr
+  **
+  ** @return
+  */
+  virtual bool load(std::istream& istr)
+    {return read(istr, decorated);}
+    
+protected:
+  PolicyPtr decorated;
 };
 
 }; /* namespace lbcpp */

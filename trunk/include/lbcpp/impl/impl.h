@@ -40,15 +40,6 @@
 # include "ChooseFunction/ClassifierValueFunctions.hpp"
 # include "ChooseFunction/RegressorValueFunctions.hpp"
 # include "ChooseFunction/RankerValueFunctions.hpp"
-
-# include "Policy/PolicyStaticToDynamic.hpp"
-# include "Policy/PolicyDynamicToStatic.hpp"
-# include "Policy/VerbosePolicy.hpp"
-# include "Policy/QLearningPolicy.hpp"
-# include "Policy/MonteCarloControlPolicy.hpp"
-# include "Policy/GPOMDPPolicy.hpp"
-# include "Policy/ClassificationExampleCreatorPolicy.hpp"
-# include "Policy/RankingExampleCreatorPolicy.hpp"
   
 # include "Bridge/FeatureGenerator.hpp"
 # include "Bridge/DoubleVector.hpp"

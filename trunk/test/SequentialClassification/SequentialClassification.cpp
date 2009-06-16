@@ -100,7 +100,7 @@ void testCRank(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClas
   GradientBasedRankerPtr ranker = largeMarginBestAgainstAllLinearRanker(stochasticDescentLearner(learningRate));
   
   PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));  
-  PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(exploration ? exploration : learnedPolicy, ranker, supervision);
+  PolicyPtr learnerPolicy = rankingExamplesCreatorPolicy(exploration ? exploration : learnedPolicy, ranker, supervision);
 
 /*  GradientBasedGeneralizedClassifierPtr classifier = linearGeneralizedClassifier(
     stochasticDescentLearner(learningRate2));  

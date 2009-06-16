@@ -103,7 +103,7 @@ protected:
   ObjectContainerPtr createCostSensitiveClassificationExamples(ObjectContainerPtr examples, PolicyPtr explorationPolicy, double& rewardPerEpisode)
   {
     VectorObjectContainerPtr res = new VectorObjectContainer();
-    PolicyPtr policy = rankingExampleCreatorPolicy(explorationPolicy, new StoreExamplesRanker(res), optimalActionValues);
+    PolicyPtr policy = rankingExamplesCreatorPolicy(explorationPolicy, new StoreExamplesRanker(res), optimalActionValues);
     PolicyStatisticsPtr statistics = new PolicyStatistics();
     policy->run(examples, statistics);
     rewardPerEpisode = statistics->getRewardPerEpisodeMean();

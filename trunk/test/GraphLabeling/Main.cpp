@@ -23,7 +23,7 @@ public:
      // largeMarginMostViolatedPairLinearRanker
     
     PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));
-    PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(learnedPolicy, ranker);
+    PolicyPtr learnerPolicy = rankingExamplesCreatorPolicy(learnedPolicy, ranker);
     return std::make_pair(learnedPolicy, learnerPolicy);
   }
 
@@ -65,7 +65,7 @@ public:
           explorationPolicy = epsilonGreedyPolicy(explorationPolicy, constantIterationFunction(epsilon));
       }
       
-    PolicyPtr learnerPolicy = classificationExampleCreatorPolicy(explorationPolicy, classifier);
+    PolicyPtr learnerPolicy = classificationExamplesCreatorPolicy(explorationPolicy, classifier);
     return std::make_pair(learnerPolicy, learnedPolicy);
   }
   

@@ -1,52 +1,69 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: MonteCarloControlPolicy.hpp    | Monte Carlo Control Policy      |
+| Filename: MonteCarloControlPolicy.h      | Monte Carlo Control Policy      |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/03/2009 02:04               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_POLICY_MONTE_CARLO_CONTROL_H_
-# define LBCPP_CORE_IMPL_POLICY_MONTE_CARLO_CONTROL_H_
+#ifndef LBCPP_POLICY_MONTE_CARLO_CONTROL_H_
+# define LBCPP_POLICY_MONTE_CARLO_CONTROL_H_
 
-# include "PolicyStatic.hpp"
-# include "../../RandomVariable.h"
+# include <lbcpp/Policy.h>
+# include <lbcpp/RandomVariable.h>
 
-namespace lbcpp {
-namespace impl {
-
-template<class DecoratedType>
-struct MonteCarloControlPolicy
-  : public EpisodicDecoratorPolicy<MonteCarloControlPolicy<DecoratedType> , DecoratedType>
+namespace lbcpp
 {
-  typedef EpisodicDecoratorPolicy<MonteCarloControlPolicy<DecoratedType>, DecoratedType> BaseClass;
-  
-  MonteCarloControlPolicy(const DecoratedType& decorated, RegressorPtr regressor, double discount)
-    : BaseClass(decorated), regressor(regressor), discount(discount),
+
+class MonteCarloControlPolicy : public EpisodicDecoratorPolicy
+{
+public:  
+  MonteCarloControlPolicy(PolicyPtr decorated, RegressorPtr regressor, double discount)
+    : EpisodicDecoratorPolicy(decorated), regressor(regressor), discount(discount),
       predictionError(new ScalarVariableStatistics("predictionError"))
     {}
+
+  MonteCarloControlPolicy() : discount(0.0) {}
   
-  VariablePtr policyStart(ChoosePtr choose)
+  /*
+  ** Object
+  */
+  virtual std::string toString() const
+  {
+    return "monteCarloControlPolicy(" + decorated->toString() + ", " + 
+      regressor->toString() + ", " + lbcpp::toString(discount) + ")";
+  }
+  
+  virtual void save(std::ostream& ostr) const
+    {EpisodicDecoratorPolicy::save(ostr); write(ostr, regressor); write(ostr, discount);}
+    
+  virtual bool load(std::istream& istr)
+    {return EpisodicDecoratorPolicy::load(istr) && read(istr, regressor) && read(istr, discount);}
+  
+  /*
+  ** EpisodicPolicy
+  */
+  virtual VariablePtr policyStart(ChoosePtr choose)
   {
     actionFeatures.clear();
     rewards.clear();
-    VariablePtr res = BaseClass::policyStart(choose);
+    VariablePtr res = EpisodicDecoratorPolicy::policyStart(choose);
     actionFeatures.push_back(choose->computeActionFeatures(res)->toSparseVector());
     return res;
   }
   
-  VariablePtr policyStep(double reward, ChoosePtr choose)
+  virtual VariablePtr policyStep(double reward, ChoosePtr choose)
   {
     rewards.push_back(reward);
-    VariablePtr res = BaseClass::policyStep(reward, choose);
+    VariablePtr res = EpisodicDecoratorPolicy::policyStep(reward, choose);
     actionFeatures.push_back(choose->computeActionFeatures(res)->toSparseVector());
     return res;
   }
   
-  void policyEnd(double reward)
+  virtual void policyEnd(double reward)
   {
     rewards.push_back(reward);
-    BaseClass::policyEnd(reward);
+    EpisodicDecoratorPolicy::policyEnd(reward);
     assert(rewards.size() == actionFeatures.size());
     
     regressor->trainStochasticBegin(actionFeatures[0]->getDictionary());
@@ -63,14 +80,14 @@ struct MonteCarloControlPolicy
   }
   
   size_t getNumResults() const
-    {return 1 + BaseClass::getNumResults();}
+    {return 1 + EpisodicDecoratorPolicy::getNumResults();}
     
   ObjectPtr getResult(size_t i) const
   {
     if (i == 0)
       return predictionError;
     else
-      return BaseClass::getResult(i - 1);
+      return EpisodicDecoratorPolicy::getResult(i - 1);
   }
 
 private:
@@ -82,7 +99,6 @@ private:
   std::vector<double> rewards;
 };
 
-}; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_POLICY_MONTE_CARLO_CONTROL_H_
+#endif // !LBCPP_POLICY_MONTE_CARLO_CONTROL_H_

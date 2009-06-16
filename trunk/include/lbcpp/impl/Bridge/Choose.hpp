@@ -10,6 +10,7 @@
 # define LBCPP_STATIC_CHOOSE_HPP_
 
 # include "../../Choose.h"
+# include "../../CRAlgorithm.h"
 # include "../ChooseFunction/ChooseFunctionDynamicToStatic.hpp"
 # include "Variable.hpp"
 # include "FeatureGenerator.hpp"
