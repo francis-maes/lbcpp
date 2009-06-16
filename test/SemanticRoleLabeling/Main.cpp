@@ -154,7 +154,7 @@ std::pair<PolicyPtr, PolicyPtr> createCRankPolicies(GradientBasedRankerPtr& rank
     ranker->setParameters(initialParameters);
   
   PolicyPtr learnedPolicy = greedyPolicy(predictedActionValues(ranker));
-  PolicyPtr learnerPolicy = rankingExampleCreatorPolicy(learnedPolicy, ranker);
+  PolicyPtr learnerPolicy = rankingExamplesCreatorPolicy(learnedPolicy, ranker);
   return std::make_pair(learnedPolicy, learnerPolicy);
 }
 

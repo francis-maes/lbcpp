@@ -1,56 +1,68 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RankingExampleCreatorPolicy.hpp| A policy that creates           |
+| Filename: RankingExamplesCreatorPolicy.h | A policy that creates           |
 | Author  : Francis Maes                   |   ranking examples              |
 | Started : 13/03/2009 18:30               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_POLICY_RANKING_EXAMPLE_CREATOR_H_
-# define LBCPP_CORE_IMPL_POLICY_RANKING_EXAMPLE_CREATOR_H_
+#ifndef LBCPP_POLICY_RANKING_EXAMPLES_CREATOR_H_
+# define LBCPP_POLICY_RANKING_EXAMPLES_CREATOR_H_
 
-# include "PolicyStatic.hpp"
-# include "../../LearningMachine.h"
+# include <lbcpp/Policy.h>
+# include <lbcpp/LearningMachine.h>
 
-namespace lbcpp {
-namespace impl {
-
-template<class DecoratedType>
-struct RankingExampleCreatorPolicy
-  : public DecoratorPolicy<RankingExampleCreatorPolicy<DecoratedType> , DecoratedType>
+namespace lbcpp
 {
-  typedef RankingExampleCreatorPolicy<DecoratedType> ExactType;
-  typedef DecoratorPolicy<ExactType, DecoratedType> BaseClass;
-  
-  RankingExampleCreatorPolicy(const DecoratedType& explorationPolicy, RankerPtr ranker, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
-    : BaseClass(explorationPolicy), ranker(ranker), supervisor(supervisor), inclusionLevel(0), isTraining(false) {}
-    
-  RankerPtr ranker;
-  ActionValueFunctionPtr supervisor;
-  size_t inclusionLevel;
-  bool isTraining;
 
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
+class RankingExamplesCreatorPolicy : public DecoratorPolicy
+{
+public:
+  RankingExamplesCreatorPolicy(PolicyPtr explorationPolicy, RankerPtr ranker, ActionValueFunctionPtr supervisor = ActionValueFunctionPtr())
+    : DecoratorPolicy(explorationPolicy), ranker(ranker), supervisor(supervisor), inclusionLevel(0), isTraining(false) {}
+  
+  RankingExamplesCreatorPolicy() {}
+    
+  /*
+  ** Object
+  */
+  virtual std::string toString() const
+  {
+    std::string res = "rankingExamplesCreatorPolicy(" + decorated->toString() + ", " + ranker->toString();
+    if (supervisor)
+      res += ", " + supervisor->toString();
+    return res + ")";
+  }
+  
+  virtual void save(std::ostream& ostr) const
+    {DecoratorPolicy::save(ostr); write(ostr, ranker); write(ostr, supervisor);}
+    
+  virtual bool load(std::istream& istr)
+    {return DecoratorPolicy::load(istr) && read(istr, ranker) && read(istr, supervisor);}
+  
+  /*
+  ** Policy
+  */
+  virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
     if (inclusionLevel == 0)
       isTraining = true;
-    BaseClass::policyEnter(crAlgorithm);
+    DecoratorPolicy::policyEnter(crAlgorithm);
     ++inclusionLevel;
   }
     
-  void policyLeave()
+  virtual void policyLeave()
   {
-    BaseClass::policyLeave();
+    DecoratorPolicy::policyLeave();
     --inclusionLevel;
     if (inclusionLevel == 0 && isTraining)
     {
       ranker->trainStochasticEnd();
       isTraining = false;
     }
-      
   }
 
-  VariablePtr policyChoose(ChoosePtr choose)
+  virtual VariablePtr policyChoose(ChoosePtr choose)
   {
     FeatureGeneratorPtr alternatives = choose->computeActionsFeatures(true);
 
@@ -76,11 +88,16 @@ struct RankingExampleCreatorPolicy
       isTraining = true;
     }
     ranker->trainStochasticExample(new RankingExample(alternatives, costs));
-    return BaseClass::policyChoose(choose);
+    return DecoratorPolicy::policyChoose(choose);
   }
+  
+private:
+  RankerPtr ranker;
+  ActionValueFunctionPtr supervisor;
+  size_t inclusionLevel;
+  bool isTraining;
 };
 
-}; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_POLICY_RANKING_EXAMPLE_CREATOR_H_
+#endif // !LBCPP_POLICY_RANKING_EXAMPLES_CREATOR_H_

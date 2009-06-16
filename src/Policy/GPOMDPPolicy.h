@@ -1,34 +1,58 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GPOMDPPolicy.hpp               | GPOMDP Policy Gradient          |
+| Filename: GPOMDPPolicy.h                 | GPOMDP Policy Gradient          |
 | Author  : Francis Maes                   |                                 |
 | Started : 16/03/2009 17:29               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_POLICY_GPOMDP_H_
-# define LBCPP_CORE_IMPL_POLICY_GPOMDP_H_
+#ifndef LBCPP_POLICY_GPOMDP_H_
+# define LBCPP_POLICY_GPOMDP_H_
 
-# include "PolicyStatic.hpp"
-# include "../../RandomVariable.h"
-# include "../../GradientBasedLearningMachine.h"
+# include <lbcpp/Policy.h>
+# include <lbcpp/RandomVariable.h>
+# include <lbcpp/GradientBasedLearningMachine.h>
 
-namespace lbcpp {
-namespace impl {
-
-struct GPOMDPPolicy : public EpisodicPolicy<GPOMDPPolicy>
+namespace lbcpp
 {
-  typedef EpisodicPolicy<GPOMDPPolicy> BaseClass;
-  
+
+class GPOMDPPolicy : public EpisodicPolicy
+{
+public:  
   GPOMDPPolicy(GradientBasedGeneralizedClassifierPtr classifier, double beta, double exploration = 1.0)
     : classifier(classifier), beta(beta), exploration(exploration)
     {}
+    
   GPOMDPPolicy(GradientBasedGeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy)
-    : classifier(classifier), beta(beta), explorationPolicy(explorationPolicy)
+    : classifier(classifier), beta(beta), exploration(0.0), explorationPolicy(explorationPolicy)
     {}
+    
+  GPOMDPPolicy()
+    : beta(0.0), exploration(0.0) {}
 
-
-  VariablePtr policyStart(ChoosePtr choose)
+  /*
+  ** Object
+  */
+  virtual std::string toString() const
+  {
+    std::string res = "gpomdpPolicy(" + classifier->toString() + ", " + lbcpp::toString(beta);
+    if (explorationPolicy)
+      res += ", " + explorationPolicy->toString();
+    else
+      res += ", " + lbcpp::toString(exploration);
+    return res + ")";
+  }
+  
+  virtual void save(std::ostream& ostr) const
+    {write(ostr, classifier); write(ostr, beta); write(ostr, exploration); write(ostr, explorationPolicy);}
+    
+  virtual bool load(std::istream& istr)
+    {return read(istr, classifier) && read(istr, beta) && read(istr, exploration) && read(istr, explorationPolicy);}
+  
+  /*
+  ** EpisodicPolicy
+  */
+  virtual VariablePtr policyStart(ChoosePtr choose)
   {
     if (explorationPolicy)
       explorationPolicy->policyEnter(choose->getCRAlgorithm());
@@ -37,13 +61,13 @@ struct GPOMDPPolicy : public EpisodicPolicy<GPOMDPPolicy>
     return processChoose(choose);
   }
   
-  VariablePtr policyStep(double reward, ChoosePtr choose)
+  virtual VariablePtr policyStep(double reward, ChoosePtr choose)
   {
     processReward(reward);
     return processChoose(choose);
   }
   
-  void policyEnd(double reward)
+  virtual void policyEnd(double reward)
   {
     processReward(reward);
     if (explorationPolicy)
@@ -161,7 +185,6 @@ private:
   }
 };
 
-}; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_POLICY_GPOMDP_H_
+#endif // !LBCPP_POLICY_GPOMDP_H_

@@ -1,44 +1,62 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: QLearningPolicy.hpp            | QLearning/Sarsa Policy          |
+| Filename: QLearningPolicy.h              | QLearning/Sarsa Policy          |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/03/2009 02:04               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_POLICY_QLEARNING_H_
-# define LBCPP_CORE_IMPL_POLICY_QLEARNING_H_
+#ifndef LBCPP_POLICY_QLEARNING_H_
+# define LBCPP_POLICY_QLEARNING_H_
 
-# include "PolicyStatic.hpp"
-# include "../../RandomVariable.h"
+# include <lbcpp/Policy.h>
+# include <lbcpp/RandomVariable.h>
 
-namespace lbcpp {
-namespace impl {
-
-template<class DecoratedType>
-struct QLearningPolicy
-  : public EpisodicDecoratorPolicy<QLearningPolicy<DecoratedType> , DecoratedType>
+namespace lbcpp
 {
-  typedef EpisodicDecoratorPolicy<QLearningPolicy<DecoratedType>, DecoratedType> BaseClass;
-  
-  QLearningPolicy(const DecoratedType& decorated, RegressorPtr regressor, double discount, bool useSarsaRule = false)
-    : BaseClass(decorated), regressor(regressor), discount(discount), useSarsaRule(useSarsaRule),
+
+class QLearningPolicy : public EpisodicDecoratorPolicy
+{
+public:  
+  QLearningPolicy(PolicyPtr decorated, RegressorPtr regressor, double discount, bool useSarsaRule = false)
+    : EpisodicDecoratorPolicy(decorated), regressor(regressor), discount(discount), useSarsaRule(useSarsaRule),
       predictionError(new ScalarVariableStatistics("predictionError"))
     {}
+
+  QLearningPolicy() : discount(0.0), useSarsaRule(false) {}
   
-  VariablePtr policyStart(ChoosePtr choose)
+  /*
+  ** Object
+  */
+  virtual std::string toString() const
+  {
+    std::string res = useSarsaRule ? "sarsaZeroPolicy" : "qLearningPolicy";
+    return res + "(" + decorated->toString() + ", " + 
+      regressor->toString() + ", " + lbcpp::toString(discount) + ")";
+  }
+  
+  virtual void save(std::ostream& ostr) const
+    {EpisodicDecoratorPolicy::save(ostr); write(ostr, regressor); write(ostr, discount); write(ostr, useSarsaRule);}
+    
+  virtual bool load(std::istream& istr)
+    {return EpisodicDecoratorPolicy::load(istr) && read(istr, regressor) && read(istr, discount) && read(istr, useSarsaRule);}
+
+  /*
+  ** EpisodicPolicy
+  */
+  virtual VariablePtr policyStart(ChoosePtr choose)
   {
     lastActionDescription = SparseVectorPtr();
     regressor->trainStochasticBegin(choose->getActionFeaturesFunction()->getDictionary());
-    VariablePtr res = BaseClass::policyStart(choose);
+    VariablePtr res = EpisodicDecoratorPolicy::policyStart(choose);
     lastActionDescription = choose->computeActionFeatures(res)->toSparseVector();
     return res;
   }
   
-  VariablePtr policyStep(double reward, ChoosePtr choose)
+  virtual VariablePtr policyStep(double reward, ChoosePtr choose)
   {
     assert(lastActionDescription);
-    VariablePtr res = BaseClass::policyStep(reward, choose);
+    VariablePtr res = EpisodicDecoratorPolicy::policyStep(reward, choose);
     
     VariablePtr nextAction;
     if (useSarsaRule)
@@ -63,23 +81,23 @@ struct QLearningPolicy
     return res;
   }
   
-  void policyEnd(double reward)
+  virtual void policyEnd(double reward)
   {
-    BaseClass::policyEnd(reward);
+    EpisodicDecoratorPolicy::policyEnd(reward);
     if (lastActionDescription)
       regressor->trainStochasticExample(new RegressionExample(lastActionDescription, reward));
     regressor->trainStochasticEnd();
   }
   
   size_t getNumResults() const
-    {return 1 + BaseClass::getNumResults();}
+    {return 1 + EpisodicDecoratorPolicy::getNumResults();}
     
   ObjectPtr getResult(size_t i) const
   {
     if (i == 0)
       return predictionError;
     else
-      return BaseClass::getResult(i - 1);
+      return EpisodicDecoratorPolicy::getResult(i - 1);
   }
 
 private:
@@ -90,7 +108,6 @@ private:
   SparseVectorPtr lastActionDescription;
 };
 
-}; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_POLICY_QLEARNING_H_
+#endif // !LBCPP_POLICY_QLEARNING_H_

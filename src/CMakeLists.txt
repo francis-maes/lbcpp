@@ -105,12 +105,6 @@ SET(LBCPP_CORE_IMPL_POLICY
   ${LBCPP_CORE_IMPL}/Policy/PolicyStatic.hpp
   ${LBCPP_CORE_IMPL}/Policy/PolicyStaticToDynamic.hpp
   ${LBCPP_CORE_IMPL}/Policy/PolicyDynamicToStatic.hpp
-  ${LBCPP_CORE_IMPL}/Policy/VerbosePolicy.hpp
-  ${LBCPP_CORE_IMPL}/Policy/QLearningPolicy.hpp
-  ${LBCPP_CORE_IMPL}/Policy/MonteCarloControlPolicy.hpp
-  ${LBCPP_CORE_IMPL}/Policy/GPOMDPPolicy.hpp
-  ${LBCPP_CORE_IMPL}/Policy/ClassificationExampleCreatorPolicy.hpp
-  ${LBCPP_CORE_IMPL}/Policy/RankingExampleCreatorPolicy.hpp
 )
 
 SET(LBCPP_CORE_IMPL_BRIDGE
@@ -190,6 +184,12 @@ SET(LBCPP_CORE_POLICY_SOURCES
   Policy/GibbsGreedyPolicy.h
   Policy/MixturePolicy.h
   Policy/ComputeStatisticsPolicy.h
+  Policy/VerbosePolicy.h
+  Policy/ClassificationExamplesCreatorPolicy.h
+  Policy/RankingExamplesCreatorPolicy.h
+  Policy/QLearningPolicy.h
+  Policy/MonteCarloControlPolicy.h
+  Policy/GPOMDPPolicy.h
 )
 
 SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES

@@ -1,43 +1,66 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VerbosePolicy.hpp              | A policy that displays          |
+| Filename: VerbosePolicy.h                | A policy that displays          |
 | Author  : Francis Maes                   | information on an output stream |
 | Started : 13/03/2009 13:24               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_POLICY_VERBOSE_H_
-# define LBCPP_CORE_IMPL_POLICY_VERBOSE_H_
+#ifndef LBCPP_POLICY_VERBOSE_H_
+# define LBCPP_POLICY_VERBOSE_H_
 
-# include "PolicyStatic.hpp"
+# include <lbcpp/Policy.h>
 
-namespace lbcpp {
-namespace impl {
-
-template<class DecoratedType>
-struct VerbosePolicy
-  : public DecoratorPolicy<VerbosePolicy<DecoratedType> , DecoratedType>
+namespace lbcpp
 {
-  typedef DecoratorPolicy<VerbosePolicy, DecoratedType> BaseClass;
+
+/*
+** Verbosity
+*/
+// 0: nothing
+// 1: one '.' per episode
+// 2: one '.' per action
+// 3: chosen action descriptions
+// 4: state descriptions
+// 5: ActionSet descriptions
+
+class VerbosePolicy : public DecoratorPolicy
+{
+public:
+  VerbosePolicy(PolicyPtr decorated, size_t verbosity, std::ostream& ostr)
+    : DecoratorPolicy(decorated), ostr(ostr), verbosity(verbosity), inclusionLevel(0), stepNumber(0)
+    {}
+    
+  VerbosePolicy() : ostr(std::cout), verbosity(0), inclusionLevel(0), stepNumber(0) {}
   
   /*
-  ** Verbosity
+  ** Object
   */
-  // 0: nothing
-  // 1: one '.' per episode
-  // 2: one '.' per action
-  // 3: chosen action descriptions
-  // 4: state descriptions
-  // 5: ActionSet descriptions
+  virtual std::string toString() const
+    {return decorated->toString() + "->verbose(" + lbcpp::toString(verbosity) + ")";}
+
+  virtual bool load(std::istream& istr)
+    {return DecoratorPolicy::load(istr) && read(istr, verbosity);}
     
-  VerbosePolicy(const DecoratedType& decorated, size_t verbosity, std::ostream& ostr)
-    : BaseClass(decorated), ostr(ostr), verbosity(verbosity), inclusionLevel(0), stepNumber(0)
+  virtual void save(std::ostream& ostr) const
+    {DecoratorPolicy::save(ostr); write(ostr, verbosity);}
+  
+  /*
+  ** Policy
+  */
+  virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
+    if (verbosity >= 3)
+      ostr << "policyEnter(" << crAlgorithm->getName() << ")" << std::endl;
+    DecoratorPolicy::policyEnter(crAlgorithm);
+    stepNumber = 0;
+    episodeReward = 0.0;
+    ++inclusionLevel;
   }
   
-  VariablePtr policyChoose(ChoosePtr choose)
+  virtual VariablePtr policyChoose(ChoosePtr choose)
   {
-    VariablePtr res = BaseClass::policyChoose(choose);
+    VariablePtr res = DecoratorPolicy::policyChoose(choose);
     if (verbosity == 2)
       ostr << "." << std::flush;
     else if (verbosity >= 4)
@@ -53,29 +76,19 @@ struct VerbosePolicy
     return res;
   }
 
-  void policyReward(double reward)
+  virtual void policyReward(double reward)
   {
     if (verbosity >= 3)
       ostr << "  => Reward: " << reward << std::endl;
     episodeReward += reward;
-    BaseClass::policyReward(reward);
-  }
-  
-  void policyEnter(CRAlgorithmPtr crAlgorithm)
-  {
-    if (verbosity >= 3)
-      ostr << "policyEnter(" << crAlgorithm->getName() << ")" << std::endl;
-    BaseClass::policyEnter(crAlgorithm);
-    stepNumber = 0;
-    episodeReward = 0.0;
-    ++inclusionLevel;
+    DecoratorPolicy::policyReward(reward);
   }
     
-  void policyLeave()
+  virtual void policyLeave()
   {
     if (verbosity >= 3)
       ostr << "policyLeave()" << std::endl;
-    BaseClass::policyLeave();
+    DecoratorPolicy::policyLeave();
     --inclusionLevel;
     if (inclusionLevel == 0)
     {
@@ -100,7 +113,6 @@ private:
   double episodeReward;
 };
 
-}; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_POLICY_CONSOLE_LOGGER_H_
+#endif // !LBCPP_POLICY_VERBOSE_H_
