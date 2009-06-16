@@ -416,10 +416,11 @@ inline GradientBasedRegressorPtr loadGradientBasedRegressor(const std::string& f
 **
 **
 ** @param learner
+** @param l2Regularizer
 **
 ** @return
 */
-extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner);
+extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer = 0.0);
 
 /*
 ** Classification

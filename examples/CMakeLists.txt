@@ -18,8 +18,10 @@ ADD_CPP_EXAMPLE(LearningMachine TrainMaxentClassifierStochastic)
 ADD_CPP_EXAMPLE(LearningMachine TrainMaxentClassifierOnline)
 ADD_CPP_EXAMPLE(LearningMachine LoadMaxentClassifier)
 ADD_CPP_EXAMPLE(LearningMachine SyntheticLinearRegression)
+ADD_CPP_EXAMPLE(LearningMachine TrainLinearRegressorStochastic)
 ADD_CPP_EXAMPLE(LearningMachine TuneMaxentRegularizerWithCrossValidation)
 ADD_CPP_EXAMPLE(LearningMachine ClassificationToBatchRanking)
+
 
 ADD_LBCPP_EXAMPLE(CRAlgorithm FirstOrderSequenceLabeling)
 
