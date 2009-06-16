@@ -4,7 +4,6 @@ IF(LBCPP_TESTS)
 
 ADD_CRTEST(EmptyCRAlgorithm.cr++)	
 ADD_CRTEST(SenseOneFeature.cr++)
-ADD_CRTEST(UserTypeTraits.cr++)
 
 ENDIF(LBCPP_TESTS)
 

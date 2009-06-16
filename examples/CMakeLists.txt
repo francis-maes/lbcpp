@@ -11,6 +11,8 @@ MACRO(ADD_LBCPP_EXAMPLE CATEGORY FILENAME)
   ADD_CREXECUTABLE(${NAME} ${CATEGORY}/${FILENAME}.lcpp)
 ENDMACRO(ADD_LBCPP_EXAMPLE)
 
+ADD_CPP_EXAMPLE(Misc UserTypeTraits)
+
 ADD_CPP_EXAMPLE(LearningMachine TrainMaxentClassifierBatch)
 ADD_CPP_EXAMPLE(LearningMachine TrainMaxentClassifierStochastic)
 ADD_CPP_EXAMPLE(LearningMachine TrainMaxentClassifierOnline)
