@@ -26,11 +26,11 @@ namespace lbcpp
 {
 
 /*!
-** @class ScalarRandomVariable
+** @class ScalarVariable
 ** @brief
 */
 
-class ScalarRandomVariableMean : public Object
+class ScalarVariableMean : public Object
 {
 public:
   /*!
@@ -40,7 +40,7 @@ public:
   **
   ** @return
   */
-  ScalarRandomVariableMean(const std::string& name = "")
+  ScalarVariableMean(const std::string& name = "")
     : name(name), value(0), cnt(0) {}
 
   /*!
@@ -135,10 +135,10 @@ protected:
 
 
 /*!
-** @class ScalarRandomVariableMeanAndVariance
+** @class ScalarVariableMeanAndVariance
 ** @brief
 */
-class ScalarRandomVariableMeanAndVariance : public ScalarRandomVariableMean
+class ScalarVariableMeanAndVariance : public ScalarVariableMean
 {
 public:
   /*!
@@ -148,8 +148,8 @@ public:
   **
   ** @return
   */
-  ScalarRandomVariableMeanAndVariance(const std::string& name = "")
-    : ScalarRandomVariableMean(name) {}
+  ScalarVariableMeanAndVariance(const std::string& name = "")
+    : ScalarVariableMean(name) {}
 
   /*!
   **
@@ -157,7 +157,7 @@ public:
   ** @param val
   */
   void push(double val)
-    {ScalarRandomVariableMean::push(val); meansqr.push(sqr(val));}
+    {ScalarVariableMean::push(val); meansqr.push(sqr(val));}
 
   /*!
   **
@@ -166,7 +166,7 @@ public:
   ** @param weight
   */
   void push(double val, double weight)
-    {ScalarRandomVariableMean::push(val, weight); meansqr.push(sqr(val), weight);}
+    {ScalarVariableMean::push(val, weight); meansqr.push(sqr(val), weight);}
 
   /*!
   **
@@ -193,7 +193,7 @@ public:
   ** @return
   */
   virtual std::string toString() const
-    {return ScalarRandomVariableMean::toString() + " +/- " + lbcpp::toString(getStandardDeviation());}
+    {return ScalarVariableMean::toString() + " +/- " + lbcpp::toString(getStandardDeviation());}
 
   /*!
   **
@@ -202,7 +202,7 @@ public:
   */
   virtual void save(std::ostream& ostr) const
   {
-    ScalarRandomVariableMean::save(ostr);
+    ScalarVariableMean::save(ostr);
     meansqr.save(ostr);
   }
 
@@ -214,10 +214,10 @@ public:
   ** @return
   */
   virtual bool load(std::istream& istr)
-    {return ScalarRandomVariableMean::load(istr) && meansqr.load(istr);}
+    {return ScalarVariableMean::load(istr) && meansqr.load(istr);}
 
 private:
-  ScalarRandomVariableMean meansqr; /*!< */
+  ScalarVariableMean meansqr; /*!< */
 
   /*!
   **
@@ -231,10 +231,10 @@ private:
 };
 
 /*!
-** @class ScalarRandomVariableStatics
+** @class ScalarVariableStatics
 ** @brief
 */
-class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVariance
+class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
  public:
   /*!
@@ -244,8 +244,8 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
   **
   ** @return
   */
-  ScalarRandomVariableStatistics(const std::string& name = "")
-    : ScalarRandomVariableMeanAndVariance(name), min(DBL_MAX), max(-DBL_MAX) {}
+  ScalarVariableStatistics(const std::string& name = "")
+    : ScalarVariableMeanAndVariance(name), min(DBL_MAX), max(-DBL_MAX) {}
 
   /*!
   **
@@ -254,7 +254,7 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
   */
   void push(double val)
   {
-    ScalarRandomVariableMeanAndVariance::push(val);
+    ScalarVariableMeanAndVariance::push(val);
     if (val < min)
 	    min = val;
     if (val > max)
@@ -269,7 +269,7 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
   */
   void push(double val, double weight)
   {
-    ScalarRandomVariableMeanAndVariance::push(val, weight);
+    ScalarVariableMeanAndVariance::push(val, weight);
     if (val < min)
 	    min = val;
     if (val > max)
@@ -311,7 +311,7 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
   */
   virtual std::string toString() const
   {
-    return ScalarRandomVariableMeanAndVariance::toString() + " [" +
+    return ScalarVariableMeanAndVariance::toString() + " [" +
       lbcpp::toString(min) + " - " + lbcpp::toString(max) + "]";
   }
 
@@ -322,7 +322,7 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
   */
   virtual void save(std::ostream& ostr) const
   {
-    ScalarRandomVariableMeanAndVariance::save(ostr);
+    ScalarVariableMeanAndVariance::save(ostr);
     write(ostr, min);
     write(ostr, max);
   }
@@ -335,11 +335,55 @@ class ScalarRandomVariableStatistics : public ScalarRandomVariableMeanAndVarianc
   ** @return
   */
   virtual bool load(std::istream& istr)
-    {return ScalarRandomVariableMeanAndVariance::load(istr) && read(istr, min) && read(istr, max);}
+    {return ScalarVariableMeanAndVariance::load(istr) && read(istr, min) && read(istr, max);}
 
 private:
   double min;                   /*!< */
   double max;                   /*!< */
+};
+
+class PolicyStatistics : public Object
+{
+public:
+  PolicyStatistics();
+  
+  ScalarVariableStatisticsPtr getRewardPerChoose() const
+    {return rewardPerChoose;}
+
+  ScalarVariableStatisticsPtr getRewardPerEpisode() const
+    {return rewardPerEpisode;}
+    
+  ScalarVariableStatisticsPtr getChoicesPerChoose() const
+    {return choicesPerChoose;}
+
+  ScalarVariableStatisticsPtr getChoosesPerEpisode() const
+    {return choosesPerEpisode;}
+
+  ScalarVariableStatisticsPtr getChoicesPerEpisode() const
+    {return choicesPerEpisode;}
+    
+  // shortcuts
+  double getRewardPerChooseMean() const
+    {return rewardPerChoose->getMean();}
+    
+  double getRewardPerChooseStddev() const
+    {return rewardPerChoose->getStandardDeviation();}
+
+  double getRewardPerEpisodeMean() const  
+    {return rewardPerEpisode->getMean();}
+    
+  double getRewardPerEpisodeStddev() const
+    {return rewardPerEpisode->getStandardDeviation();}
+
+  // Object
+  virtual std::string toString() const;
+
+private:
+  ScalarVariableStatisticsPtr rewardPerChoose;
+  ScalarVariableStatisticsPtr choicesPerChoose;
+  ScalarVariableStatisticsPtr rewardPerEpisode;
+  ScalarVariableStatisticsPtr choosesPerEpisode;
+  ScalarVariableStatisticsPtr choicesPerEpisode;
 };
 
 }; /* namespace lbcpp */

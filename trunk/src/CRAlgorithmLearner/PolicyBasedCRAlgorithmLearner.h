@@ -51,14 +51,15 @@ public:
       progress->progressStart("PolicyBasedCRAlgorithmLearner::trainBatch");
     initialize();
     assert(stoppingCriterion);
+    stoppingCriterion->reset();
     size_t iteration = 0;
     while (true)
     {
       if (progress && !progress->progressStep("PolicyBasedCRAlgorithmLearner::trainBatch", iteration))
         return false;
-      PolicyPtr p = learnerPolicy->addComputeStatistics();
-      p->run(examples);
-      std::cout << "STATS: " << p->toString() << std::endl;
+      PolicyStatisticsPtr statistics = new PolicyStatistics();
+      learnerPolicy->run(examples, statistics);
+      std::cout << statistics->toString() << std::endl;
       if (stoppingCriterion->shouldCRAlgorithmLearnerStop(learnedPolicy, examples))
         break;
       ++iteration;

@@ -23,7 +23,7 @@ struct QLearningPolicy
   
   QLearningPolicy(const DecoratedType& decorated, RegressorPtr regressor, double discount, bool useSarsaRule = false)
     : BaseClass(decorated), regressor(regressor), discount(discount), useSarsaRule(useSarsaRule),
-      predictionError(new ScalarRandomVariableStatistics("predictionError"))
+      predictionError(new ScalarVariableStatistics("predictionError"))
     {}
   
   VariablePtr policyStart(ChoosePtr choose)
@@ -86,7 +86,7 @@ private:
   RegressorPtr regressor;
   double discount;
   bool useSarsaRule;
-  ScalarRandomVariableStatisticsPtr predictionError;
+  ScalarVariableStatisticsPtr predictionError;
   SparseVectorPtr lastActionDescription;
 };
 

@@ -37,7 +37,7 @@ void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numC
 {
   for (size_t iteration = 0; iteration < 100; ++iteration)
   {
-    PolicyPtr policy = learnerPolicy->addComputeStatistics();//->verbose(4);
+    PolicyPtr policy = learnerPolicy;//->verbose(4);
     for (size_t i = 0; i < train->size(); ++i)
     {
       ClassificationExample ex = *train->getAndCast<ClassificationExample>(Random::getInstance().sampleSize(train->size()));
@@ -192,7 +192,7 @@ void convertExamplesToCRAlgorithms(ObjectContainerPtr examples, size_t numClasse
 double evaluatePolicy(const std::vector<CRAlgorithmPtr>& examples, PolicyPtr policy)
 {
   size_t correct = 0;
-  PolicyPtr p = policy->addComputeStatistics();
+  PolicyPtr p = policy;
   for (size_t i = 0; i < examples.size(); ++i)
   {
     CRAlgorithmPtr crAlgorithm = examples[i]->cloneAndCast<CRAlgorithm>();
@@ -201,7 +201,7 @@ double evaluatePolicy(const std::vector<CRAlgorithmPtr>& examples, PolicyPtr pol
     if (ypredicted == crAlgorithm->getVariableReference<size_t>("ycorrect"))
       ++correct;
   }
- // std::cout << "Reward per choose: " << (p->getResultWithName("rewardPerChoose").dynamicCast<ScalarRandomVariableStatistics>()->getMean()) << std::endl;
+ // std::cout << "Reward per choose: " << (p->getResultWithName("rewardPerChoose").dynamicCast<ScalarVariableStatistics>()->getMean()) << std::endl;
   return correct / (double)examples.size();
 }
 
@@ -247,11 +247,12 @@ public:
     classifier->setLearner(learner);
     classifier->setParameters(input->toDenseVector());
 
-    PolicyPtr policy = gpomdpPolicy(classifier, beta)->addComputeStatistics();
+    PolicyStatisticsPtr statistics = new PolicyStatistics();
+    PolicyPtr policy = gpomdpPolicy(classifier, beta);
     for (size_t i = 0; i < instances.size(); ++i)
-      instances[i]->cloneAndCast<CRAlgorithm>()->run(policy);
+      policy->run(instances[i], statistics);
     if (output)
-      *output = -(policy->getResultWithName("rewardPerChoose").dynamicCast<ScalarRandomVariableStatistics>()->getMean());
+      *output = -statistics->getRewardPerChooseMean();
     if (gradient)
       *gradient = learner->getGradient();
     classifier->setLearner(previousLearner);
@@ -332,17 +333,17 @@ void testOLPOMDP(const std::vector<CRAlgorithmPtr>& train, const std::vector<CRA
 
     for (size_t iteration = 0; iteration < 1000; ++iteration)
     {
-      PolicyPtr p = learnerPolicy->addComputeStatistics();
+      PolicyPtr p = learnerPolicy;
       runPolicy(train, p);
       //std::cout << "Learner: " << p->toString() << std::endl;
-      p = learnedPolicy->addComputeStatistics();
-      runPolicy(test, p);
+      PolicyStatisticsPtr statistics = new PolicyStatistics();
+      runPolicy(test, computeStatisticsPolicy(learnedPolicy, statistics));
       double trainAccuracy = evaluatePolicy(train, learnedPolicy);
       double testAccuracy = evaluatePolicy(test, learnedPolicy);
 //      if ((iteration % 10) == 9)
         std::cout << "Beta = " << beta << " Iteration " << iteration
           << " train = " << trainAccuracy << " test = " << testAccuracy
-          << " test mean steps = " << p->getResultWithName("choosesPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean() << std::endl;
+          << " test mean steps = " << statistics->getChoosesPerEpisode()->getMean() << std::endl;
     }
   }
 }

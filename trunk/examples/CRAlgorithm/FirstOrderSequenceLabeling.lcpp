@@ -1,0 +1,104 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: FirstOrderSequenceLabeling.lcpp| An example to illustrate a      |
+| Author  : Francis Maes                   |  simple CRAlgorithm based       |
+| Started : 16/06/2009 17:19               |  sequence labeling model.       |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include <lbcpp/lbcpp.h>
+using namespace lbcpp;
+
+crAlgorithm std::vector<size_t> firstOrderSequenceLabeling(std::vector<FeatureGeneratorPtr> x, StringDictionaryPtr labels, std::vector<size_t> y)
+{
+  std::vector<size_t> res(x.size());
+  SizeRange range(labels->getNumElements());
+  
+  for (size_t i = 0; i < x.size(); ++i)
+  {
+    chooseFunction featureGenerator actionFeatures(size_t label) {
+      featureScope(label) {
+        featureCall("content") x[i];
+        if (i > 0)
+          featureScope("previousLabel") featureSense(res[i - 1]);
+      }
+    }
+    
+    chooseFunction double actionValues(size_t label) {
+      return y.size() && y[i] == label ? 1.0 : 0.0;
+    }
+
+    res[i] = choose<size_t>(range, actionFeatures, actionValues);
+    if (y.size() && y[i] == res[i])
+      reward(1.0);
+  }
+  return res;
+}
+
+class SequenceExamplesParser : public LearningDataObjectParser
+{
+public:
+  SequenceExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+    : LearningDataObjectParser(filename, features), labels(labels) {}
+    
+  StringDictionaryPtr labels;
+
+  virtual void parseBegin()
+  {
+    currentContent.clear();
+    currentLabels.clear();
+  }
+
+  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  {
+    assert(columns.size());
+    std::string label;
+    if (!TextObjectParser::parse(columns[0], label))
+      return false;
+    SparseVectorPtr features;
+    if (!parseFeatureList(columns, 1, features))
+      return false;
+    currentContent.push_back(features);
+    currentLabels.push_back(labels->add(label));
+    return true;
+  }
+
+  virtual bool parseEmptyLine()
+  {
+    if (currentContent.size())
+    {
+      setResult(firstOrderSequenceLabeling(currentContent, labels, currentLabels));
+      currentContent.clear();
+      currentLabels.clear();
+    }
+    return true;
+  }
+  
+private:
+  std::vector<FeatureGeneratorPtr> currentContent;
+  std::vector<size_t> currentLabels;
+};
+
+int main(int argc, char* argv[])
+{
+  FeatureDictionaryPtr features = new FeatureDictionary("myFeatures");
+  StringDictionaryPtr labels = new StringDictionary();
+
+  ObjectStreamPtr crAlgorithmParser = new SequenceExamplesParser("../Data/SequenceLabeling/handwritten.train", features, labels);
+  ObjectContainerPtr crAlgorithms = crAlgorithmParser->load(1000);
+  
+  std::cout << crAlgorithms->size() << " sequences, "
+            << labels->getNumElements() << " labels, "
+            << features->getNumFeatures() << " features." << std::endl;
+  
+//  CRAlgorithmLearnerPtr learner = searnLearner();
+
+  CRAlgorithmLearnerPtr learner = sarsaLearner(RegressorPtr(), 0);
+  learner->trainBatch(crAlgorithms, consoleProgressCallback());
+  PolicyPtr policy = learner->getPolicy();
+
+  std::cout << "TRAINING STATISTICS:\n" << policy->computeStatistics(crAlgorithms)->toString() << std::endl;  
+  ObjectStreamPtr testingCRAlgorithms = new SequenceExamplesParser("../Data/SequenceLabeling/handwritten.train", features, labels);
+  std::cout << "TESTING STATISTICS:\n" << policy->computeStatistics(testingCRAlgorithms)->toString() << std::endl;  
+  return 0;
+}

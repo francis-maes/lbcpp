@@ -43,6 +43,7 @@ public:
     learnedPolicy = PolicyPtr();
     PolicyPtr currentPolicy = greedyPolicy(optimalActionValues);
     size_t iteration = 0;
+    stoppingCriterion->reset();
     while (true)
     {
       double rewardPerEpisode;
@@ -103,9 +104,9 @@ protected:
   {
     VectorObjectContainerPtr res = new VectorObjectContainer();
     PolicyPtr policy = rankingExampleCreatorPolicy(explorationPolicy, new StoreExamplesRanker(res), optimalActionValues);
-    PolicyPtr p = policy->addComputeStatistics();
-    p->run(examples);
-    rewardPerEpisode = p->getResultWithName("rewardPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean();
+    PolicyStatisticsPtr statistics = new PolicyStatistics();
+    policy->run(examples, statistics);
+    rewardPerEpisode = statistics->getRewardPerEpisodeMean();
     return res;
   }
   

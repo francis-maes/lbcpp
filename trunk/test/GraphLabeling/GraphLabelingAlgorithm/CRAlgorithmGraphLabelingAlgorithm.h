@@ -39,11 +39,11 @@ public:
     size_t numIterationsWithoutImprovement = 0;
     for (size_t i = 0; i < maxLearningIterations; ++i)
     {
-      PolicyPtr policy = learnerPolicy->addComputeStatistics();
+      PolicyStatisticsPtr statistics = new PolicyStatistics();
       CRAlgorithmPtr crAlgorithm = createCRAlgorithm(graph, 0, graph->getNumNodes());
-      crAlgorithm->run(policy);
+      crAlgorithm->run(computeStatisticsPolicy(learnerPolicy, statistics));
       std::cout << "[" << numIterationsWithoutImprovement << "] Learning Iteration " << i;// << " => " << policy->toString() << std::endl;
-      double totalReward = policy->getResultWithName("rewardPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean();
+      double totalReward = statistics->getRewardPerEpisodeMean();
       std::cout << " TOTAL REWARD = " << totalReward << " => online accuracy = " << totalReward / (double)graph->getNumNodes() << std::endl;
       if (totalReward > bestTotalReward)
       {
@@ -63,8 +63,7 @@ public:
   {
     assert(end > begin);
     CRAlgorithmPtr crAlgorithm = createCRAlgorithm(graph, begin, end);
-    PolicyPtr policy = learnedPolicy->addComputeStatistics();
-    crAlgorithm->run(policy);
+    crAlgorithm->run(learnedPolicy);
     assert(crAlgorithm->hasReturn());
     LabelSequencePtr predictedLabels = crAlgorithm->getReturn()->getConstReference<LabelSequencePtr>();
     assert(predictedLabels);

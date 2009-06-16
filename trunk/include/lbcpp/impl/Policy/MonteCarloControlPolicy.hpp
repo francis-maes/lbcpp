@@ -23,7 +23,7 @@ struct MonteCarloControlPolicy
   
   MonteCarloControlPolicy(const DecoratedType& decorated, RegressorPtr regressor, double discount)
     : BaseClass(decorated), regressor(regressor), discount(discount),
-      predictionError(new ScalarRandomVariableStatistics("predictionError"))
+      predictionError(new ScalarVariableStatistics("predictionError"))
     {}
   
   VariablePtr policyStart(ChoosePtr choose)
@@ -76,7 +76,7 @@ struct MonteCarloControlPolicy
 private:
   RegressorPtr regressor;
   double discount;
-  ScalarRandomVariableStatisticsPtr predictionError;
+  ScalarVariableStatisticsPtr predictionError;
 
   std::vector<SparseVectorPtr> actionFeatures;
   std::vector<double> rewards;

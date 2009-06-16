@@ -67,7 +67,7 @@ protected:
   size_t epoch;
   IterationFunctionPtr learningRate;
   bool normalizeLearningRate;
-  ScalarRandomVariableMean inputSize;
+  ScalarVariableMean inputSize;
   
   double computeAlpha()
   {

@@ -21,14 +21,14 @@ int main(int argc, char* argv[])
   ** Evaluate training accuracy
   */
   double accuracy = classifier->evaluateAccuracy(
-    classificationExamplesParser("../data/classification/small.train", classifier->getInputDictionary(), classifier->getLabels()));
+    classificationExamplesParser("../Data/Classification/small.train", classifier->getInputDictionary(), classifier->getLabels()));
   std::cout << "Training Accuracy: " << accuracy * 100 << "%." << std::endl;
 
   /*
   ** Evaluate testing accuracy
   */
   accuracy = classifier->evaluateAccuracy(
-    classificationExamplesParser("../data/classification/small.test", classifier->getInputDictionary(), classifier->getLabels()));
+    classificationExamplesParser("../Data/Classification/small.test", classifier->getInputDictionary(), classifier->getLabels()));
   std::cout << "Testing Accuracy: " << accuracy * 100 << "%." << std::endl;
   return 0;
 }

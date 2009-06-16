@@ -109,8 +109,8 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
     for (int i = 0; i < 16; ++i)
     {
       double regularizer = (double)i;
-      ScalarRandomVariableStatisticsPtr trainAccuracy = new ScalarRandomVariableStatistics("trainAccuracy");
-      ScalarRandomVariableStatisticsPtr testAccuracy = new ScalarRandomVariableStatistics("testAccuracy");
+      ScalarVariableStatisticsPtr trainAccuracy = new ScalarVariableStatistics("trainAccuracy");
+      ScalarVariableStatisticsPtr testAccuracy = new ScalarVariableStatistics("testAccuracy");
       algorithm.setL2Regularizer(regularizer);
       algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
       double score = testAccuracy->getMean();

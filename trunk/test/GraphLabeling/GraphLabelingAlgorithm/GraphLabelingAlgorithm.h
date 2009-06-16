@@ -33,8 +33,8 @@ public:
   
   void crossValidate(const std::vector<LabeledContentGraphPtr>& trainGraphs,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraphs, 
-                     ScalarRandomVariableStatisticsPtr trainAccuracy,
-                     ScalarRandomVariableStatisticsPtr testAccuracy)
+                     ScalarVariableStatisticsPtr trainAccuracy,
+                     ScalarVariableStatisticsPtr testAccuracy)
   {
     assert(trainGraphs.size() == testGraphs.size());
     for (size_t i = 0; i < trainGraphs.size(); ++i)
