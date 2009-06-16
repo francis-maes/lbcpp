@@ -25,3 +25,4 @@ ADD_CPP_EXAMPLE(LearningMachine ClassificationToBatchRanking)
 
 ADD_LBCPP_EXAMPLE(CRAlgorithm FirstOrderSequenceLabeling)
 ADD_LBCPP_EXAMPLE(CRAlgorithm NQueensDepthFirstSearch)
+ADD_LBCPP_EXAMPLE(CRAlgorithm GridWorldReinforcementLearning)
