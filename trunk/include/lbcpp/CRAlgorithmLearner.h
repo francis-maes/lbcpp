@@ -21,6 +21,8 @@
 
 # include "LearningMachine.h"
 # include "CRAlgorithm.h"
+# include "IterationFunction.h"
+# include "StoppingCriterion.h"
 
 namespace lbcpp
 {
@@ -41,6 +43,19 @@ public:
   virtual PolicyPtr getPolicy() const = 0;
 };
 
+enum ExplorationType
+{
+  optimal,
+  optimalEpsilonGreedy,
+  optimalGibbsGreedy,
+  optimalToPredicted,
+  predicted,
+  predictedEpsilonGreedy,
+  predictedGibbsGreedy,
+  predictedProbabilistic, // only for policies represented as probabilistic classifier 
+  random,
+};
+  
 /*!
 **
 **
@@ -48,7 +63,16 @@ public:
 **
 ** @return
 */
-extern CRAlgorithmLearnerPtr searnLearner(RankerPtr ranker = RankerPtr(), ActionValueFunctionPtr optimalActionValues = ActionValueFunctionPtr(), double beta = 0.1, size_t numIterations = 10);
+extern CRAlgorithmLearnerPtr searnLearner(RankerPtr ranker = RankerPtr(),
+    ActionValueFunctionPtr optimalActionValues = ActionValueFunctionPtr(),
+    double beta = 0.1,
+    StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr());
+
+extern CRAlgorithmLearnerPtr sarsaLearner(RegressorPtr regressor = RegressorPtr(),
+      double discount = 0.95,
+      ExplorationType exploration = predictedEpsilonGreedy,
+      IterationFunctionPtr explorationParameter = constantIterationFunction(0.1),
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(100));
 
 }; /* namespace lbcpp */
 

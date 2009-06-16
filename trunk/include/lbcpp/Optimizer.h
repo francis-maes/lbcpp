@@ -19,46 +19,11 @@
 #ifndef LBCPP_OPTIMIZER_H_
 # define LBCPP_OPTIMIZER_H_
 
+# include "StoppingCriterion.h"
 # include "ContinuousFunction.h"
 
 namespace lbcpp
 {
-
-/*!
-** @class OptimizerStoppingCriterion
-** @brief
-*/
-class OptimizerStoppingCriterion : public Object
-{
-public:
-  /*!
-  **
-  **
-  */
-  virtual void reset() = 0;
-
-  /*!
-  **
-  **
-  ** @param value
-  ** @param parameter
-  ** @param derivative
-  **
-  ** @return
-  */
-  virtual bool isTerminated(double value, double parameter, double derivative) = 0;
-
-  /*!
-  **
-  **
-  ** @param value
-  ** @param parameters
-  ** @param gradient
-  **
-  ** @return
-  */
-  virtual bool isTerminated(double value, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr gradient) = 0;
-};
 
 enum OptimizerState
 {
@@ -66,35 +31,6 @@ enum OptimizerState
   optimizerContinue,
   optimizerDone,
 };
-
-/*!
-**
-**
-** @param maxIterations
-**
-** @return
-*/
-extern OptimizerStoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);
-
-/*!
-**
-**
-** @param tolerance
-**
-** @return
-*/
-extern OptimizerStoppingCriterionPtr averageImprovementThresholdStoppingCriterion(double tolerance);
-
-/*!
-**
-**
-** @param criterion1
-** @param criterion2
-**
-** @return
-*/
-extern OptimizerStoppingCriterionPtr logicalOr(OptimizerStoppingCriterionPtr criterion1, OptimizerStoppingCriterionPtr criterion2);
-
 
 /*!
 ** @class ScalarOptimizer
@@ -113,7 +49,7 @@ public:
   **
   ** @return
   */
-  virtual bool optimize(ScalarFunctionPtr function, double& value, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  virtual bool optimize(ScalarFunctionPtr function, double& value, StoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
 protected:
   /*!
@@ -157,7 +93,7 @@ public:
   **
   ** @return
   */
-  virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  virtual bool optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& parameters, StoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
   /*!
   **
@@ -168,7 +104,7 @@ public:
   **
   ** @return
   */
-  FeatureGeneratorPtr optimize(ScalarVectorFunctionPtr function, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  FeatureGeneratorPtr optimize(ScalarVectorFunctionPtr function, StoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     FeatureGeneratorPtr res = new DenseVector();
     if (!optimize(function, res, stoppingCriterion, progress))

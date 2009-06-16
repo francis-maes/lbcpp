@@ -17,17 +17,17 @@ using namespace lbcpp;
 GradientBasedLearnerPtr lbcpp::stochasticDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
   {return new StochasticGradientDescentLearner(learningRate, normalizeLearningRate);}
 
-GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
+GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr stoppingCriterion)
   {return new BatchGradientBasedLearner(optimizer, stoppingCriterion);}
 
 GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, size_t maxIterations, double tolerance)
 {
-  OptimizerStoppingCriterionPtr stoppingCriterion;
+  StoppingCriterionPtr stoppingCriterion;
   if (maxIterations > 0)
     stoppingCriterion = maxIterationsStoppingCriterion(maxIterations);
   if (tolerance > 0)
   {
-    OptimizerStoppingCriterionPtr c = averageImprovementThresholdStoppingCriterion(tolerance);
+    StoppingCriterionPtr c = averageImprovementStoppingCriterion(tolerance);
     stoppingCriterion = stoppingCriterion ? logicalOr(stoppingCriterion, c) : c;
   }
   assert(stoppingCriterion);

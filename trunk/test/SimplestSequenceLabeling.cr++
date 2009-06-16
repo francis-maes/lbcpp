@@ -242,10 +242,12 @@ int main(int argc, char* argv[])
   std::cout << crAlgorithms->size() << " sequences, " << labels->getNumElements()
     << " labels, " << features->getNumFeatures() << " features." << std::endl;
   
-  CRAlgorithmLearnerPtr searn = searnLearner();
-  searn->trainBatch(crAlgorithms, consoleProgressCallback());
-  PolicyPtr policy = searn->getPolicy()->addComputeStatistics();
+//  CRAlgorithmLearnerPtr learner = searnLearner();
 
+  CRAlgorithmLearnerPtr learner = sarsaLearner(RegressorPtr(), 0);
+  
+  learner->trainBatch(crAlgorithms, consoleProgressCallback());
+  PolicyPtr policy = learner->getPolicy()->addComputeStatistics();
   policy->run(crAlgorithms);
   std::cout << "RESULT => " << policy->toString() << std::endl;
 

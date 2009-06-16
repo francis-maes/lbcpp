@@ -25,6 +25,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/LearningMachine.h
   ../include/lbcpp/ContinuousFunction.h
   ../include/lbcpp/IterationFunction.h
+  ../include/lbcpp/StoppingCriterion.h
   ../include/lbcpp/Optimizer.h
   ../include/lbcpp/GradientBasedLearner.h
   ../include/lbcpp/GradientBasedLearningMachine.h
@@ -140,7 +141,7 @@ SET(LBCPP_CORE_SOURCES
   DoubleVectorHelpers.hpp
   ContinuousFunction.cpp
   IterationFunction.cpp
-  OptimizerStoppingCriterion.cpp
+  StoppingCriterion.cpp
   Optimizer.cpp
   LearningExample.cpp
   LearningMachine.cpp
@@ -193,6 +194,8 @@ SET(LBCPP_CORE_POLICY_SOURCES
 
 SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
   CRAlgorithmLearner/SearnLearner.h
+  CRAlgorithmLearner/PolicyBasedCRAlgorithmLearner.h
+  CRAlgorithmLearner/SarsaLearner.h
 )
 
 SET(LBCPP_CORE

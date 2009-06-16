@@ -11,11 +11,12 @@ using namespace lbcpp;
 
 extern void declareContinuousFunctions();
 extern void declareIterationFunctions();
-extern void declareOptimizerStoppingCriterions();
+extern void declareStoppingCriterions();
 extern void declareOptimizers();
 extern void declareGradientBasedLearners();
 extern void declareGradientBasedLearningMachines();
 extern void declarePolicies();
+extern void declareCRAlgorithmLearners();
 
 void declareRandomVariableStatistics()
 {
@@ -40,11 +41,12 @@ void declareLBCppCoreClasses()
   
   declareContinuousFunctions();
   declareIterationFunctions();
-  declareOptimizerStoppingCriterions();
+  declareStoppingCriterions();
   declareOptimizers();
   
   declareGradientBasedLearners();
   declareGradientBasedLearningMachines();
   
   declarePolicies();
+  declareCRAlgorithmLearners();
 }

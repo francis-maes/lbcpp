@@ -31,7 +31,7 @@ ObjectPtr Policy::getResultWithName(const std::string& name) const
 
 bool Policy::run(CRAlgorithmPtr crAlgorithm)
 {
-  return crAlgorithm->run(this);
+  return crAlgorithm->cloneAndCast<CRAlgorithm>()->run(this);
 }
 
 bool Policy::run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress)

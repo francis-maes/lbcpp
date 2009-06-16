@@ -276,7 +276,23 @@ extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, 
 ** @return
 */
 extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy);
-
+/*
+class PolicyStatistics : public Object
+{
+public:
+  double getRewardPerChoose() const;
+  double getRewardPerChooseStddev() const;
+  RandomVariableStatisticsPtr getRewardPerChooseStatistics() const;
+  
+  double getRewardPerEpisode() const;
+  double getRewardPerEpisodeStddev() const;
+  RandomVariableStatisticsPtr getRewardPerEpisodeStatistics() const;
+  
+  // ...
+  
+private:
+  
+};*/
 
 /*!
 ** @class DecoratorPolicy

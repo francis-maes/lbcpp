@@ -12,7 +12,7 @@
 #include "Optimizer/LBFGSOptimizer.h"
 using namespace lbcpp;
 
-bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, OptimizerStoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress)
+bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, StoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress)
 {
   assert(params);
   this->function = function;
@@ -25,7 +25,7 @@ bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGenerato
   {
     if (progress && !progress->progressStep("Optimizing, f = " + lbcpp::toString(value) + " norm = " + lbcpp::toString(parameters->l2norm()), (double)iteration))
       return false;
-    if (stoppingCriterion->isTerminated(value, parameters, gradient))
+    if (stoppingCriterion->shouldOptimizerStop(value))
       break;
     OptimizerState state = step();
     if (state == optimizerError)
