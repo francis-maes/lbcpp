@@ -6,6 +6,16 @@
                                |                                             |
                                `--------------------------------------------*/
 
+/*!
+**@file   Traits.h
+**@author Francis MAES
+**@date   Sat Jun 13 17:59:46 2009
+**
+**@brief  #FIXME: all
+**
+**
+*/
+
 #ifndef LBCPP_TRAITS_H_
 # define LBCPP_TRAITS_H_
 
@@ -24,28 +34,77 @@ namespace lbcpp
 template<bool> struct StaticAssert;
 template<> struct StaticAssert<true> {};
 
+/*!
+** @struct Traits
+** @brief
+*/
 template<class T>
 struct Traits
 {
 public:
   typedef T Type;
+
+  /*!
+  **
+  **
+  ** @param value
+  **
+  ** @return
+  */
   static inline std::string toString(const T& value)
     {std::ostringstream ostr; ostr << value; return ostr.str();}
-  
+
+  /*!
+  **
+  **
+  ** @param ostr
+  ** @param value
+  */
   static inline void write(std::ostream& ostr, const T& value)
     {assert(false);}
+
+  /*!
+  **
+  **
+  ** @param istr
+  ** @param result
+  **
+  ** @return
+  */
   static inline bool read(std::istream& istr, T& result)
     {assert(false); return false;}
 };
 
+
+/*!
+**
+**
+** @param value
+**
+** @return
+*/
 template<class T>
 inline std::string toString(const T& value)
   {return Traits<T>::toString(value);}
 
+/*!
+**
+**
+** @param ostr
+** @param value
+*/
 template<class T>
 inline void write(std::ostream& ostr, const T& value)
   {Traits<T>::write(ostr, value);}
 
+/*!
+**
+**
+** @param istr
+** @param result
+**
+** @return
+*/
 template<class T>
 inline bool read(std::istream& istr, T& result)
   {return Traits<T>::read(istr, result);}
@@ -53,21 +112,47 @@ inline bool read(std::istream& istr, T& result)
 /*
 ** Builtin-type traits
 */
+/*!
+** @struct BuiltinTypeTraits
+** @brief
+*/
 template<class T>
 struct BuiltinTypeTraits
 {
   typedef T Type;
 
+  /*!
+  **
+  **
+  ** @param value
+  **
+  ** @return
+  */
   static inline std::string toString(const T& value)
 // if this fails, you need to declare a "friend std::ostream& operator << (std::ostream& ostr, const T& value)" operator
-    {std::ostringstream ostr; ostr << value; return ostr.str();}  
+    {std::ostringstream ostr; ostr << value; return ostr.str();}
 
+  /*!
+  **
+  **
+  ** @param ostr
+  ** @param value
+  */
   static inline void write(std::ostream& ostr, const T& value)
     {ostr.write((const char* )&value, sizeof (T));}
-  
+
+  /*!
+  **
+  **
+  ** @param istr
+  ** @param result
+  **
+  ** @return
+  */
   static inline bool read(std::istream& istr, T& result)
     {istr.read((char* )&result, sizeof (T)); return istr.good();}
 };
+
 
 template<>
 struct Traits<size_t> : public BuiltinTypeTraits<size_t> {};
@@ -78,6 +163,13 @@ struct Traits<float> : public BuiltinTypeTraits<float> {};
 template<>
 struct Traits<double> : public BuiltinTypeTraits<double> {};
 
+/*!
+**
+**
+** @param number
+**
+** @return
+*/
 inline bool isNumberValid(double number)
 {
 #ifdef WIN32
@@ -87,6 +179,13 @@ inline bool isNumberValid(double number)
 #endif
 }
 
+/*!
+**
+**
+** @param value
+**
+** @return
+*/
 inline bool isNumberNearlyNull(double value)
 {
   static const double epsilon = 0.00001;
@@ -101,7 +200,7 @@ template<>
 struct Traits<bool>
 {
   typedef bool Type;
-  
+
   static inline std::string toString(bool value)
     {return value ? "true" : "false";}
 
@@ -142,7 +241,7 @@ struct Traits<std::string>
 
   static inline std::string toString(const std::string& value)
     {return "\"" + value + "\"";} // todo: improve
-    
+
   static inline void write(std::ostream& ostr, const std::string& string)
     {ostr.write(string.c_str(), string.size() + 1);}
 
@@ -225,20 +324,42 @@ struct Traits<TargetType*>
 };
 
 /*
-** Iterator Traits
+** @struct IteratorTraits
+** @brief Iterator Traits
 */
 template<class T>
 struct IteratorTraits
 {
 public:
   typedef T Type;
-    
+
+  /*!
+  **
+  **
+  ** @param value
+  **
+  ** @return
+  */
   static inline std::string toString(const T& value)
     {return "&" + lbcpp::toString(*value);}
 
+  /*!
+  **
+  **
+  ** @param ostr
+  ** @param value
+  */
   static inline void write(std::ostream& ostr, const T& value)
     {assert(false);}
 
+  /*!
+  **
+  **
+  ** @param istr
+  ** @param result
+  **
+  ** @return
+  */
   static inline bool read(std::istream& istr, T& result)
     {assert(false); return false;}
 };

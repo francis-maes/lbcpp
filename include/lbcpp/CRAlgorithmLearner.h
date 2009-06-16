@@ -5,7 +5,17 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-                               
+
+/*!
+**@file   CRAlgorithmLearner.h
+**@author Francis MAES
+**@date   Fri Jun 12 16:57:27 2009
+**
+**@brief  #FIXME: all
+**
+**
+*/
+
 #ifndef LBCPP_CRALGORITHM_LEARNER_H_
 # define LBCPP_CRALGORITHM_LEARNER_H_
 
@@ -15,12 +25,29 @@
 namespace lbcpp
 {
 
+/*!
+** @class CRAlgorithmLearner
+** @brief
+*/
 class CRAlgorithmLearner : public LearningMachine
 {
 public:
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual PolicyPtr getPolicy() const = 0;
 };
 
+/*!
+**
+**
+** @param numIterations
+**
+** @return
+*/
 extern CRAlgorithmLearnerPtr searnLearner(RankerPtr ranker = RankerPtr(), ActionValueFunctionPtr optimalActionValues = ActionValueFunctionPtr(), double beta = 0.1, size_t numIterations = 10);
 
 }; /* namespace lbcpp */

@@ -5,7 +5,17 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-                               
+
+/*!
+**@file   Object.h
+**@author Francis MAES
+**@date   Mon Jun 15 23:43:59 2009
+**
+**@brief  #FIXME: all
+**
+**
+*/
+
 #ifndef LBCPP_OBJECT_H_
 # define LBCPP_OBJECT_H_
 
@@ -23,56 +33,170 @@ typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class Table;
 typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
+/*!
+** @class Object
+** @brief
+*/
 class Object : public ReferenceCountedObject
 {
 public:
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual ~Object() {}
-  
+
   typedef Object* (*Constructor)();
-    
+
+  /*!
+  **
+  **
+  ** @param className
+  ** @param constructor
+  */
   static void declare(const std::string& className, Constructor constructor);
+
+  /*!
+  **
+  **
+  ** @param className
+  **
+  ** @return
+  */
   static Object* create(const std::string& className);
-  
+
+  /*!
+  **
+  **
+  ** @param istr
+  **
+  ** @return
+  */
   static ObjectPtr loadFromStream(std::istream& istr);
+
+  /*!
+  **
+  **
+  ** @param fileName
+  **
+  ** @return
+  */
   static ObjectPtr loadFromFile(const std::string& fileName);
-  
+
+  /*!
+  **
+  **
+  ** @param istr
+  **
+  ** @return
+  */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
     {return checkCast<T>("Object::loadFromStreamAndCast", loadFromStream(istr));}
 
+  /*!
+  **
+  **
+  ** @param fileName
+  **
+  ** @return
+  */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const std::string& fileName)
     {return checkCast<T>("Object::loadFromFileAndCast", loadFromFile(fileName));}
 
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   std::string getClassName() const;
   virtual std::string getName() const
     {return getClassName() + "::getName() unimplemented";}
-    
+
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual std::string toString() const
     {return getClassName() + "::toString() unimplemented";}
 
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual ObjectGraphPtr toGraph() const
     {return ObjectGraphPtr();}
-    
+
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual TablePtr toTable() const
     {return TablePtr();}
-  
+
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual ObjectPtr clone() const
     {assert(false); return ObjectPtr();}
-    
+
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   template<class T>
   ReferenceCountedObjectPtr<T> cloneAndCast() const
     {return checkCast<T>("Object::cloneAndCast", clone());}
-  
+
+  /*!
+  **
+  **
+  ** @param fileName
+  **
+  ** @return
+  */
   bool saveToFile(const std::string& fileName) const;
+
+  /*!
+  **
+  **
+  ** @param ostr
+  */
   void saveToStream(std::ostream& ostr) const;
 
+  /*!
+  **
+  **
+  ** @param where
+  ** @param what
+  */
   static void error(const std::string& where, const std::string& what)
     {ErrorHandler::error(where, what);}
-    
+
+  /*!
+  **
+  **
+  ** @param where
+  ** @param what
+  */
   static void warning(const std::string& where, const std::string& what)
     {ErrorHandler::warning(where, what);}
-  
+
 protected:
   template<class T>
   friend struct ObjectTraits;

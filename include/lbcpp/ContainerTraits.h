@@ -6,6 +6,16 @@
                                |                                             |
                                `--------------------------------------------*/
 
+/*!
+**@file   ContainerTraits.h
+**@author Francis MAES
+**@date   Fri Jun 12 17:09:14 2009
+**
+**@brief  #FIXME: all
+**
+**
+*/
+
 #ifndef LBCPP_CONTAINER_TRAITS_H_
 # define LBCPP_CONTAINER_TRAITS_H_
 
@@ -28,28 +38,40 @@ Traits:
 
 ContainerTraits:
   Traits
-  
+
   typedef ... ValueType;
   typedef ... ConstIterator;
-  
+
   static size_t size(const T& container)
   static ConstIterator begin(const T& container)
   static ConstIterator end(const T& container)
   static const ValueType& value(const ConstIterator& iterator)
-    
-  static ValueType& sampleRandom(const T& s)  
+
+  static ValueType& sampleRandom(const T& s)
   template<class CRAlgorithmType, class ScoringFunction>
   static inline ConstIterator sampleBests(const T& container, const ScoringFunction& scoringFunction)
 */
 
+/*!
+** @struct SampleRandomImplementation
+** @brief #FIXME
+**
+*/
 template<class IteratorType>
 struct SampleRandomImplementation
 {
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   template<class ContainerType>
   static inline const typename Traits<ContainerType>::ValueType& sampleRandom(const ContainerType& container)
   {
     typedef Traits<ContainerType> ContainerTraits;
-    
+
     // not tested
     assert(ContainerTraits::size(container));
     int r = Random::getInstance().sampleSize(ContainerTraits::size(container));
@@ -72,7 +94,7 @@ struct SampleRandomImplementation<size_t>
     static size_t result;
     typedef Traits<ContainerType> ContainerTraits;
     assert(ContainerTraits::size(container));
-    
+
     // not tested
     size_t b = ContainerTraits::begin(container);
     size_t e = ContainerTraits::end(container);
@@ -83,6 +105,11 @@ struct SampleRandomImplementation<size_t>
 };
 
 // ContainerTraits: size(), begin(), end(), value()
+/*!
+** @struct DefaultContainerTraits
+** @brief #FIXME
+**
+*/
 template<class ContainerTraits, class ContainerType, class ValType, class IteratorType>
 struct DefaultContainerTraits
 {
@@ -90,6 +117,13 @@ struct DefaultContainerTraits
   typedef ValType ValueType;
   typedef IteratorType ConstIterator;
 
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static inline std::string toString(const ContainerType& container)
   {
     std::string res;
@@ -102,16 +136,37 @@ struct DefaultContainerTraits
     return res;
   }
 
+  /*!
+  **
+  **
+  ** @param ostr
+  ** @param container
+  */
   static inline void write(std::ostream& ostr, const ContainerType& container)
   {
     Traits<size_t>::write(ostr, ContainerTraits::size(container));
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
       lbcpp::write(ostr, ContainerTraits::value(it));
   }
-  
+
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static inline const ValueType& sampleRandom(const ContainerType& container)
     {return SampleRandomImplementation<ConstIterator>::sampleRandom(container);}
-  
+
+  /*!
+  **
+  **
+  ** @param container
+  ** @param scoringFunction
+  **
+  ** @return
+  */
   template<class ScoringFunction>
   static inline ConstIterator sampleBests(const ContainerType& container, const ScoringFunction& scoringFunction)
   {
@@ -139,7 +194,7 @@ struct DefaultContainerTraits
       std::cerr << std::endl;
       assert(false);
     }
-    
+
 //    std::cout << "Num bests: " << bests.size();
 //    ConstIterator it = Traits< std::vector<ConstIterator> >::sampleRandom(bests);
 //    std::cout << " =sample> " << lbcpp::toString(ContainerTraits::value(it)) << std::endl;
@@ -147,6 +202,11 @@ struct DefaultContainerTraits
   }
 };
 
+/*!
+** @class ContainerTraits
+** @brief #FIXME
+**
+*/
 template<class ContainerType>
 struct BuiltinContainerTraits : public DefaultContainerTraits<
       BuiltinContainerTraits<ContainerType>,
@@ -154,18 +214,53 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
       typename ContainerType::value_type,
       typename ContainerType::const_iterator >
 {
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static inline size_t size(const ContainerType& container)
     {return container.size();}
-  
+
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static typename ContainerType::const_iterator begin(const ContainerType& container)
     {return container.begin();}
 
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static typename ContainerType::const_iterator end(const ContainerType& container)
     {return container.end();}
 
+  /*!
+  **
+  **
+  ** @param iterator
+  **
+  ** @return
+  */
   static const typename ContainerType::value_type& value(const typename ContainerType::const_iterator& iterator)
     {return *iterator;}
 
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static inline const typename ContainerType::value_type& sampleRandom(const ContainerType& container)
   {
     // not tested
@@ -195,12 +290,32 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
 /*
 ** Vectors
 */
+/*!
+** @struct Traits
+** @brief #FIXME
+**
+*/
 template<class T>
 struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> >
 {
+  /*!
+  **
+  **
+  ** @param vector
+  **
+  ** @return
+  */
   static inline std::string toString(const std::vector<T>& vector)
     {return "[" + BuiltinContainerTraits< std::vector<T> >::toString(vector) + "]";}
 
+  /*!
+  **
+  **
+  ** @param istr
+  ** @param res
+  **
+  ** @return
+  */
   static inline bool read(std::istream& istr, std::vector<T>& res)
   {
     size_t size;
@@ -213,6 +328,13 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
     return true;
   }
 
+  /*!
+  **
+  **
+  ** @param vector
+  **
+  ** @return
+  */
   static const T& sampleRandom(const std::vector<T>& vector)
   {
     assert(vector.size());
@@ -226,6 +348,13 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
 template<class T>
 struct Traits< std::set<T> > : public BuiltinContainerTraits< std::set<T> >
 {
+  /*!
+  **
+  **
+  ** @param container
+  **
+  ** @return
+  */
   static inline std::string toString(const std::set<T>& container)
     {return "{" + BuiltinContainerTraits< std::set<T> >::toString(container) + "}";}
 };
@@ -269,18 +398,40 @@ struct Traits< std::pair<T1, T2> > : public BuiltinTypeTraits< std::pair<T1, T2>
 /*
 ** Ranges
 */
+/*!
+** @struct SizeRange
+** @brief #FIXME
+**
+*/
 struct SizeRange
 {
+  /*!
+  **
+  **
+  ** @param begin
+  ** @param end
+  **
+  ** @return
+  */
   SizeRange(size_t begin, size_t end)
     : begin(begin), end(end) {}
+
+  /*!
+  **
+  **
+  ** @param end
+  **
+  ** @return
+  */
   SizeRange(size_t end = 0)
     : begin(0), end(end) {}
-    
-  size_t begin, end;
+
+  size_t begin;                 /*!< */
+  size_t end;                   /*!< */
 };
 
 template<>
-struct Traits< SizeRange > 
+struct Traits< SizeRange >
   : public DefaultContainerTraits< Traits<SizeRange>, SizeRange, size_t, size_t >
 {
   static size_t size(const SizeRange& range)
@@ -291,16 +442,16 @@ struct Traits< SizeRange >
 
   static size_t end(const SizeRange& range)
     {return range.end;}
-  
+
   static const size_t& value(const size_t& iterator)
     {return iterator;}
 
   static std::string toString(const SizeRange& range)
     {return "[" + lbcpp::toString(range.begin) + ", " + lbcpp::toString(range.end) + "[";}
-    
+
   static void write(std::ostream& ostr, const SizeRange& range)
     {lbcpp::write(ostr, range.begin); lbcpp::write(ostr, range.end);}
-    
+
   static bool read(std::istream& istr, const SizeRange& range)
     {return lbcpp::read(istr, range.begin) && lbcpp::read(istr, range.end);}
 };
