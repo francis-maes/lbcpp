@@ -5,7 +5,17 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-                               
+
+/*!
+**@file   Callback.h
+**@author Francis MAES
+**@date   Fri Jun 12 17:00:21 2009
+**
+**@brief  #FIXME: all
+**
+**
+*/
+
 #ifndef LBCPP_CALLBACK_H_
 # define LBCPP_CALLBACK_H_
 
@@ -14,12 +24,35 @@
 namespace lbcpp
 {
 
+/*!
+** @class Callback
+** @brief #FIXME
+**
+*/
 class Callback
 {
 public:
+
+  /*!
+  **
+  **
+  **
+  ** @return
+  */
   virtual ~Callback() {}
-  
+
+  /*!
+  **
+  **
+  ** @param choose
+  */
   virtual void choose(ChoosePtr choose) {}
+
+  /*!
+  **
+  **
+  ** @param reward
+  */
   virtual void reward(double reward) {}
 };
 

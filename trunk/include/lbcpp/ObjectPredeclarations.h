@@ -5,7 +5,17 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-                               
+
+/*!
+**@file   ObjectPredeclarations.h
+**@author Francis MAES
+**@date   Mon Jun 15 20:05:15 2009
+**
+**@brief  #FIXME: all
+**
+**
+*/
+
 #ifndef LBCPP_OBJECT_PREDECLARATIONS_H_
 # define LBCPP_OBJECT_PREDECLARATIONS_H_
 
