@@ -124,7 +124,7 @@ extern GradientBasedLearnerPtr stochasticDescentLearner(IterationFunctionPtr lea
 **
 ** @return
 */
-extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr termination);
+extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr termination);
 
 /*!
 **

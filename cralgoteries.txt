@@ -1,4 +1,7 @@
 
+* Objectif CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
+* Passer les policy en dynamique
+
 LC++ library:
 =============
 
@@ -20,14 +23,8 @@ ContinuousFunctions:
 Optimizers:
   * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
 
-ChooseFunction, Variable:
- * Passer les constructeurs static en fonctions externes
- 
 Policy:
- * Passer les constructeurs static en fonctions externes
  * GPomdp -> ScalarVectorFunction
- * Finir QLearning, MonteCarloControl, OlPomdp
- * Passage des Policy en dynamique
  * CRankPost
  * TableLogger
  * policyRun inline

@@ -17,7 +17,7 @@ namespace lbcpp
 class BatchGradientBasedLearner : public GradientBasedLearner
 {
 public:
-  BatchGradientBasedLearner(VectorOptimizerPtr optimizer, OptimizerStoppingCriterionPtr stoppingCriterion)
+  BatchGradientBasedLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr stoppingCriterion)
     : optimizer(optimizer), stoppingCriterion(stoppingCriterion) {}
   BatchGradientBasedLearner(const BatchGradientBasedLearner& other)
     : optimizer(other.optimizer), stoppingCriterion(other.stoppingCriterion) {}
@@ -72,7 +72,7 @@ public:
   
 protected:
   VectorOptimizerPtr optimizer;
-  OptimizerStoppingCriterionPtr stoppingCriterion;
+  StoppingCriterionPtr stoppingCriterion;
 };
 
 }; /* namespace lbcpp */

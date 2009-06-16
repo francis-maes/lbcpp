@@ -98,8 +98,8 @@ class VectorArchitecture;
 typedef ReferenceCountedObjectPtr<VectorArchitecture> VectorArchitecturePtr;
 
 // optimizer
-class OptimizerStoppingCriterion;
-typedef ReferenceCountedObjectPtr<OptimizerStoppingCriterion> OptimizerStoppingCriterionPtr;
+class StoppingCriterion;
+typedef ReferenceCountedObjectPtr<StoppingCriterion> StoppingCriterionPtr;
 class ScalarOptimizer;
 typedef ReferenceCountedObjectPtr<ScalarOptimizer> ScalarOptimizerPtr;
 class VectorOptimizer;

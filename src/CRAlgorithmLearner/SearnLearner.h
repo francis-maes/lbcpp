@@ -19,15 +19,18 @@ namespace lbcpp
 class SearnLearner : public CRAlgorithmLearner
 {
 public:
-  SearnLearner(RankerPtr initialRanker, ActionValueFunctionPtr optimalActionValues, double beta, size_t numIterations)
-    : initialRanker(initialRanker), optimalActionValues(optimalActionValues), beta(beta), numIterations(numIterations)
+  SearnLearner(RankerPtr initialRanker, ActionValueFunctionPtr optimalActionValues, double beta, StoppingCriterionPtr stoppingCriterion)
+    : initialRanker(initialRanker), optimalActionValues(optimalActionValues), beta(beta), stoppingCriterion(stoppingCriterion)
   {
     if (!optimalActionValues)
       this->optimalActionValues = chooseActionValues();
     if (!initialRanker)
     // todo: change default ?
       this->initialRanker = logBinomialAllPairsLinearRanker(batchLearner(lbfgsOptimizer(), 50));
+    if (!stoppingCriterion)
+      stoppingCriterion = maxIterationsStoppingCriterion(10);
   }
+  SearnLearner() : beta(0.0) {}
   
   virtual PolicyPtr getPolicy() const
     {return learnedPolicy;}
@@ -39,13 +42,14 @@ public:
 
     learnedPolicy = PolicyPtr();
     PolicyPtr currentPolicy = greedyPolicy(optimalActionValues);
-    for (size_t i = 0; i < numIterations; ++i)
+    size_t iteration = 0;
+    while (true)
     {
       double rewardPerEpisode;
       ObjectContainerPtr classificationExamples = createCostSensitiveClassificationExamples(examples, currentPolicy, rewardPerEpisode);
-      if (progress && !progress->progressStep("SearnLearner::trainBatch, reward/episode = " + lbcpp::toString(rewardPerEpisode), (double)i, (double)numIterations))
+      if (progress && !progress->progressStep("SearnLearner::trainBatch, reward/episode = " + lbcpp::toString(rewardPerEpisode), (double)iteration))
         return false;
-      std::cout << "ITERATION " << i << "currentPolicy = " << currentPolicy->toString();
+      std::cout << "ITERATION " << iteration << "currentPolicy = " << currentPolicy->toString();
       if (learnedPolicy)
         std::cout << " learnedPolicy = " << learnedPolicy->toString();
       std::cout << std::endl;
@@ -55,12 +59,21 @@ public:
       PolicyPtr newPolicy = greedyPolicy(predictedActionValues(ranker));
       currentPolicy = mixturePolicy(currentPolicy, newPolicy, beta);
       learnedPolicy = learnedPolicy ? mixturePolicy(learnedPolicy, newPolicy, beta) : newPolicy;
+      if (stoppingCriterion->shouldCRAlgorithmLearnerStop(learnedPolicy, examples))
+        break;
+      ++iteration;
     }
 
     if (progress)
       progress->progressEnd();
     return true;
   }
+  
+  virtual bool load(std::istream& istr)
+    {return read(istr, initialRanker) && read(istr, optimalActionValues) && read(istr, beta) && read(istr, stoppingCriterion);}
+  
+  virtual void save(std::ostream& ostr) const
+    {write(ostr, initialRanker); write(ostr, optimalActionValues); write(ostr, beta); write(ostr, stoppingCriterion);}
 
 protected:
   PolicyPtr learnedPolicy;
@@ -100,7 +113,7 @@ private:
   RankerPtr initialRanker;
   ActionValueFunctionPtr optimalActionValues;
   double beta;
-  size_t numIterations;
+  StoppingCriterionPtr stoppingCriterion;
 };
 
 }; /* namespace lbcpp */
