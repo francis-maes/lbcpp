@@ -20,9 +20,9 @@ extern void declareCRAlgorithmLearners();
 
 void declareRandomVariableStatistics()
 {
-  LBCPP_DECLARE_CLASS(ScalarRandomVariableMean);
-  LBCPP_DECLARE_CLASS(ScalarRandomVariableMeanAndVariance);
-  LBCPP_DECLARE_CLASS(ScalarRandomVariableStatistics);
+  LBCPP_DECLARE_CLASS(ScalarVariableMean);
+  LBCPP_DECLARE_CLASS(ScalarVariableMeanAndVariance);
+  LBCPP_DECLARE_CLASS(ScalarVariableStatistics);
 }
 
 void declareFeatureGenerators()

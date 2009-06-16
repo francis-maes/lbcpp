@@ -105,7 +105,6 @@ SET(LBCPP_CORE_IMPL_POLICY
   ${LBCPP_CORE_IMPL}/Policy/PolicyStatic.hpp
   ${LBCPP_CORE_IMPL}/Policy/PolicyStaticToDynamic.hpp
   ${LBCPP_CORE_IMPL}/Policy/PolicyDynamicToStatic.hpp
-  ${LBCPP_CORE_IMPL}/Policy/ComputeStatisticsPolicy.hpp
   ${LBCPP_CORE_IMPL}/Policy/VerbosePolicy.hpp
   ${LBCPP_CORE_IMPL}/Policy/QLearningPolicy.hpp
   ${LBCPP_CORE_IMPL}/Policy/MonteCarloControlPolicy.hpp
@@ -190,6 +189,7 @@ SET(LBCPP_CORE_POLICY_SOURCES
   Policy/EpsilonGreedyPolicy.h
   Policy/GibbsGreedyPolicy.h
   Policy/MixturePolicy.h
+  Policy/ComputeStatisticsPolicy.h
 )
 
 SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES

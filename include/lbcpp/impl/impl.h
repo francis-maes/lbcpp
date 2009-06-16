@@ -44,7 +44,6 @@
 # include "Policy/PolicyStaticToDynamic.hpp"
 # include "Policy/PolicyDynamicToStatic.hpp"
 # include "Policy/VerbosePolicy.hpp"
-# include "Policy/ComputeStatisticsPolicy.hpp"
 # include "Policy/QLearningPolicy.hpp"
 # include "Policy/MonteCarloControlPolicy.hpp"
 # include "Policy/GPOMDPPolicy.hpp"

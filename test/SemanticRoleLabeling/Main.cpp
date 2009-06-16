@@ -103,10 +103,10 @@ private:
 
 double evaluate(PolicyPtr policy, const std::vector<CRAlgorithmPtr>& instances)
 {
-  PolicyPtr p = policy->addComputeStatistics();
+  PolicyStatisticsPtr statistics = new PolicyStatistics();
   for (size_t j = 0; j < instances.size(); ++j)
-    instances[j]->cloneAndCast<CRAlgorithm>()->run(p);
-  return p->getResultWithName("rewardPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean();
+    policy->run(instances[j], statistics);
+  return statistics->getRewardPerEpisodeMean();
 }
 
 /*
@@ -173,14 +173,14 @@ std::pair<PolicyPtr, DenseVectorPtr> learn(const std::vector<CRAlgorithmPtr>& in
   
   for (size_t i = 0; i < maxLearningIterations; ++i)
   {
-    PolicyPtr policy = learnerPolicy->addComputeStatistics();
+    PolicyStatisticsPtr statistics = new PolicyStatistics();
     std::vector<size_t> order;
     Random::getInstance().sampleOrder(0, instances.size(), order);
     for (size_t j = 0; j < order.size(); ++j)
-      instances[order[j]]->cloneAndCast<CRAlgorithm>()->run(policy->verbose(0));
+      learnerPolicy->verbose(0)->run(instances[order[j]], statistics);
       
     std::cout << "[" << numIterationsWithoutImprovement << "] Learning Iteration " << i;// << " => " << policy->toString() << std::endl;
-    double totalReward = policy->getResultWithName("rewardPerEpisode").dynamicCast<ScalarRandomVariableStatistics>()->getMean();
+    double totalReward = statistics->getRewardPerEpisodeMean();
     std::cout << " REWARD PER EPISODE = " << totalReward << std::endl;
     std::cout << "TRAINING SCORE = " << (1.0 - evaluate(learnedPolicy, instances)) * 100 << "%" << std::endl;
     std::cout << "TESTING SCORE = " << (1.0 - evaluate(learnedPolicy, testingInstances)) * 100 << "%" << std::endl;

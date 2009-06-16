@@ -10,9 +10,6 @@
 using namespace lbcpp;
 
 
-/*
-** FIXME: cet exemple ne marche pas encore
-*/
 double evaluateAccuracy(ObjectContainerPtr trainingData, ObjectContainerPtr testingData, RankerPtr ranker)
 {
   ranker->trainBatch(trainingData);
@@ -31,9 +28,9 @@ int main(int argc, char* argv[])
   ** Create parser and apply the classification example -> ranking example function.
   */
   ObjectFunctionPtr conversionFunction = transformClassificationExampleIntoRankingExample(labels);
-  ObjectStreamPtr trainingParser = classificationExamplesParser("../data/classification/small.train", features, labels);
+  ObjectStreamPtr trainingParser = classificationExamplesParser("../Data/Classification/small.train", features, labels);
   ObjectContainerPtr trainingData = trainingParser->apply(conversionFunction)->load();
-  ObjectStreamPtr testingParser = classificationExamplesParser("../data/classification/small.test", features, labels);
+  ObjectStreamPtr testingParser = classificationExamplesParser("../Data/Classification/small.test", features, labels);
   ObjectContainerPtr testingData = testingParser->apply(conversionFunction)->load();
   if (trainingData->empty() || testingData->empty())
     return 1.0;

@@ -1,6 +1,5 @@
-
-* Objectif CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
 * Passer les policy en dynamique
+* Objectif CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
 
 LC++ library:
 =============

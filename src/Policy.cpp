@@ -14,6 +14,7 @@
 #include "Policy/EpsilonGreedyPolicy.h"
 #include "Policy/GibbsGreedyPolicy.h"
 #include "Policy/MixturePolicy.h"
+#include "Policy/ComputeStatisticsPolicy.h"
 
 using namespace lbcpp;
 
@@ -29,15 +30,17 @@ ObjectPtr Policy::getResultWithName(const std::string& name) const
   return ObjectPtr();
 }
 
-bool Policy::run(CRAlgorithmPtr crAlgorithm)
+bool Policy::run(CRAlgorithmPtr crAlgorithm, PolicyStatisticsPtr statistics)
 {
-  return crAlgorithm->cloneAndCast<CRAlgorithm>()->run(this);
+  PolicyPtr policy = statistics ? computeStatisticsPolicy(this, statistics) : PolicyPtr(this);
+  return crAlgorithm->cloneAndCast<CRAlgorithm>()->run(policy);
 }
 
-bool Policy::run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress)
+bool Policy::run(ObjectStreamPtr crAlgorithms, PolicyStatisticsPtr statistics, ProgressCallbackPtr progress)
 {
   if (progress)
     progress->progressStart("Policy::run");
+  PolicyPtr policy = statistics ? computeStatisticsPolicy(this, statistics) : PolicyPtr(this);
   bool res = true;
   size_t i = 0;
   while (true)
@@ -48,7 +51,7 @@ bool Policy::run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress)
     if (progress && !progress->progressStep("Policy::run", (double)i))
       break;
     ++i;
-    if (!run(crAlgorithm->cloneAndCast<CRAlgorithm>()))
+    if (!policy->run(crAlgorithm))
     {
       res = false;
       break;
@@ -59,17 +62,18 @@ bool Policy::run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress)
   return res;
 }
 
-bool Policy::run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress)
+bool Policy::run(ObjectContainerPtr crAlgorithms, PolicyStatisticsPtr statistics, ProgressCallbackPtr progress)
 {
   if (progress)
     progress->progressStart("Policy::run");
+  PolicyPtr policy = statistics ? computeStatisticsPolicy(this, statistics) : PolicyPtr(this);
   size_t n = crAlgorithms->size();
   for (size_t i = 0; i < n; ++i)
   {
     CRAlgorithmPtr crAlgorithm = crAlgorithms->getAndCast<CRAlgorithm>(i);
     if (progress && !progress->progressStep("Policy::run", (double)i, (double)n))
       return false;
-    if (crAlgorithm && !run(crAlgorithm->cloneAndCast<CRAlgorithm>()))
+    if (crAlgorithm && !policy->run(crAlgorithm->cloneAndCast<CRAlgorithm>()))
       return false;
   }
   if (progress)
@@ -104,6 +108,10 @@ PolicyPtr lbcpp::mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixt
 
 PolicyPtr lbcpp::epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr epsilon)
   {return new EpsilonGreedyPolicy(basePolicy, epsilon);}
+
+PolicyPtr lbcpp::computeStatisticsPolicy(PolicyPtr policy, PolicyStatisticsPtr statistics)
+  {return new ComputeStatisticsPolicy(policy, statistics);}
+
 
 PolicyPtr lbcpp::qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount)
 {
@@ -150,9 +158,26 @@ PolicyPtr Policy::verbose(size_t verbosity, std::ostream& ostr) const
             dynamicToStatic(this), verbosity, ostr));
 }
 
-PolicyPtr Policy::addComputeStatistics() const
-  {return impl::staticToDynamic(impl::ComputeStatisticsPolicy<impl::DynamicToStaticPolicy>(
-            dynamicToStatic(this)));}
+/*
+** PolicyStatistics
+*/
+PolicyStatistics::PolicyStatistics()
+  : rewardPerChoose(new ScalarVariableStatistics("rewardPerChoose")),
+    choicesPerChoose(new ScalarVariableStatistics("choicesPerChoose")),
+    rewardPerEpisode(new ScalarVariableStatistics("rewardPerEpisode")),
+    choosesPerEpisode(new ScalarVariableStatistics("choosesPerEpisode")),
+    choicesPerEpisode(new ScalarVariableStatistics("choicesPerEpisode"))
+{
+}
+
+std::string PolicyStatistics::toString() const
+{
+  return "reward/choose:   " + rewardPerChoose->toString() + "\n" +
+         "choices/choose:  " + choicesPerChoose->toString() + "\n" +
+         "reward/episode:  " + rewardPerEpisode->toString() + "\n" +
+         "chooses/episode: " + choosesPerEpisode->toString() + "\n" +
+         "choices/epsiode: " + choicesPerEpisode->toString() + "\n";
+}
 
 /*
 ** Serializable classes declaration
@@ -165,4 +190,5 @@ void declarePolicies()
   LBCPP_DECLARE_CLASS(StochasticPolicy);
   LBCPP_DECLARE_CLASS(MixturePolicy);
   LBCPP_DECLARE_CLASS(EpsilonGreedyPolicy);
+  LBCPP_DECLARE_CLASS(ComputeStatisticsPolicy);
 }

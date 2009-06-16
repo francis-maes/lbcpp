@@ -29,8 +29,8 @@ class StringDictionary;
 typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
 
 // tools
-class ScalarRandomVariableStatistics;
-typedef ReferenceCountedObjectPtr<ScalarRandomVariableStatistics> ScalarRandomVariableStatisticsPtr;
+class ScalarVariableStatistics;
+typedef ReferenceCountedObjectPtr<ScalarVariableStatistics> ScalarVariableStatisticsPtr;
 class IterationFunction;
 typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 class FeatureDictionary;
@@ -163,6 +163,9 @@ typedef ReferenceCountedObjectPtr<CRAlgorithm> CRAlgorithmPtr;
 // policies
 class Policy;
 typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;
+class PolicyStatistics;
+typedef ReferenceCountedObjectPtr<PolicyStatistics> PolicyStatisticsPtr;
+
 class CRAlgorithmLearner;
 typedef ReferenceCountedObjectPtr<CRAlgorithmLearner> CRAlgorithmLearnerPtr;
 

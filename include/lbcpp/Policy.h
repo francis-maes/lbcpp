@@ -39,7 +39,7 @@ public:
   **
   ** @return
   */
-  bool run(CRAlgorithmPtr crAlgorithm);
+  bool run(CRAlgorithmPtr crAlgorithm, PolicyStatisticsPtr statistics = PolicyStatisticsPtr());
 
   /*!
   **
@@ -49,7 +49,7 @@ public:
   **
   ** @return
   */
-  bool run(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  bool run(ObjectStreamPtr crAlgorithms, PolicyStatisticsPtr statistics = PolicyStatisticsPtr(), ProgressCallbackPtr progress = ProgressCallbackPtr());
 
   /*!
   **
@@ -59,15 +59,13 @@ public:
   **
   ** @return
   */
-  bool run(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  bool run(ObjectContainerPtr crAlgorithms, PolicyStatisticsPtr statistics = PolicyStatisticsPtr(), ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
-  PolicyPtr addComputeStatistics() const;
+  PolicyStatisticsPtr computeStatistics(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {PolicyStatisticsPtr res = new PolicyStatistics(); run(crAlgorithms, res, progress); return res;}
+
+  PolicyStatisticsPtr computeStatistics(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {PolicyStatisticsPtr res = new PolicyStatistics(); run(crAlgorithms, res, progress); return res;}
 
   /*!
   **
@@ -137,7 +135,6 @@ public:
   virtual ObjectPtr getResultWithName(const std::string& name) const;
 };
 
-
 /*!
 **
 **
@@ -195,6 +192,8 @@ extern PolicyPtr epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr 
 ** @return
 */
 extern PolicyPtr mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient = 0.5);
+
+extern PolicyPtr computeStatisticsPolicy(PolicyPtr policy, PolicyStatisticsPtr statistics);
 
 /*!
 **
@@ -276,23 +275,6 @@ extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, 
 ** @return
 */
 extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, PolicyPtr explorationPolicy);
-/*
-class PolicyStatistics : public Object
-{
-public:
-  double getRewardPerChoose() const;
-  double getRewardPerChooseStddev() const;
-  RandomVariableStatisticsPtr getRewardPerChooseStatistics() const;
-  
-  double getRewardPerEpisode() const;
-  double getRewardPerEpisodeStddev() const;
-  RandomVariableStatisticsPtr getRewardPerEpisodeStatistics() const;
-  
-  // ...
-  
-private:
-  
-};*/
 
 /*!
 ** @class DecoratorPolicy
