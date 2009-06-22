@@ -174,6 +174,8 @@ SET(LBCPP_CORE_CHOOSE_FUNCTION_SOURCES
   ChooseFunction/RegressorValueFunctions.h
   ChooseFunction/ClassifierValueFunctions.h
   ChooseFunction/RankerValueFunctions.h
+  ChooseFunction/SimulationStateValueFunction.h
+  ChooseFunction/StateValueBasedActionValueFunction.h
 )
 
 SET(LBCPP_CORE_POLICY_SOURCES

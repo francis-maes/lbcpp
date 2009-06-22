@@ -60,6 +60,9 @@ public:
   virtual std::string getName() const
     {return crAlgorithm->getName() + "::choose" + lbcpp::toString((size_t)chooseNumber);}
 
+  virtual ObjectPtr clone() const
+    {return new StaticToDynamicChoose(container, crAlgorithm->cloneAndCast<CRAlgorithm>());}
+
   /*
   ** Choices
   */

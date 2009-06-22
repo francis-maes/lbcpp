@@ -11,16 +11,24 @@
 #include "ChooseFunction/ClassifierValueFunctions.h"
 #include "ChooseFunction/RankerValueFunctions.h"
 #include "ChooseFunction/RegressorValueFunctions.h"
+#include "ChooseFunction/SimulationStateValueFunction.h"
+#include "ChooseFunction/StateValueBasedActionValueFunction.h"
 using namespace lbcpp;
 
 /*
 ** StateValueFunction
 */
+StateValueFunctionPtr lbcpp::chooseStateValues()
+  {return new ChooseStateValueFunction();}
+
 StateValueFunctionPtr lbcpp::predictedStateValues(RegressorPtr regressor)
   {return new RegressorStateValueFunction(regressor);}
 
 StateValueFunctionPtr lbcpp::predictedStateValues(RankerPtr ranker)
   {return new RankerStateValueFunction(ranker);}
+  
+StateValueFunctionPtr lbcpp::simulationStateValues(PolicyPtr policy, double discount, size_t horizon)
+  {return new SimulationStateValueFunction(policy, discount, horizon);}
 
 /*
 ** ActionValueFunction
@@ -46,16 +54,21 @@ ActionValueFunctionPtr lbcpp::probabilitiesActionValues(ClassifierPtr classifier
 ActionValueFunctionPtr lbcpp::probabilitiesActionValues(GeneralizedClassifierPtr classifier)
   {return new GeneralizedClassifierProbabilitiesActionValue(classifier);}
 
+ActionValueFunctionPtr lbcpp::stateValueBasedActionValues(StateValueFunctionPtr stateValues, double discount)
+  {return new StateValueBasedActionValueFunction(stateValues, discount);}
 
 /*
 ** Serializable classes declaration
 */
 void declareChooseFunctions()
 {
+  LBCPP_DECLARE_CLASS(ChooseStateValueFunction);
   LBCPP_DECLARE_CLASS(RegressorStateValueFunction);
   LBCPP_DECLARE_CLASS(RankerStateValueFunction);
+  LBCPP_DECLARE_CLASS(SimulationStateValueFunction);
   
   LBCPP_DECLARE_CLASS(ChooseActionValueFunction);
+  LBCPP_DECLARE_CLASS(StateValueBasedActionValueFunction);
   LBCPP_DECLARE_CLASS(ClassifierScoresActionValue);
   LBCPP_DECLARE_CLASS(GeneralizedClassifierScoresActionValue);
   LBCPP_DECLARE_CLASS(RankerActionValueFunction);
