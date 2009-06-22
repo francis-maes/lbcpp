@@ -11,27 +11,101 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-void testClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
+class ClassificationExampleToCRAlgorithm : public ObjectFunction
 {
+public:
+  ClassificationExampleToCRAlgorithm(double featureCosts, size_t numClasses)
+    : featureCosts(featureCosts), numClasses(numClasses) {}
+    
+  virtual std::string getOutputClassName() const
+    {return "CRAlgorithm";}
+
+  virtual ObjectPtr function(ObjectPtr object) const
+  {
+    ClassificationExamplePtr example = object.dynamicCast<ClassificationExample>();
+    assert(example);
+    return sequentialClassification(example->getInput(), featureCosts, numClasses, example->getOutput());
+  }
+  
+private:
+  double featureCosts;
+  size_t numClasses;
+};
+
+void testBaselineClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
+{
+  std::cout << "TESTING BASELINE LINEAR CLASSIFIER" << std::endl;
+  
   StringDictionaryPtr classes = new StringDictionary();
   for (size_t i = 0; i < numClasses; ++i)
     classes->add("class " + lbcpp::toString(i));
   
-  IterationFunctionPtr learningRate = constantIterationFunction(0.01);
-  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(stochasticDescentLearner(learningRate), classes);
-  
-  for (size_t i = 0; i < 15; ++i)
-  {
-    classifier->trainStochastic(train);
-    double acc = classifier->evaluateAccuracy(test);
-    std::cout << "ITERATION " << i+1 << " accuracy = " << acc << std::endl;
-  }
+  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(batchLearner(lbfgsOptimizer()), classes, 0.001);
+  classifier->trainBatch(train, consoleProgressCallback());
   DenseVectorPtr parameters = classifier->getParameters();
   std::cout << "Params: size = " << parameters->size() << " l2norm = " << parameters->l2norm() << " l1norm = " << parameters->l1norm() << std::endl;
   std::cout << "TRAIN SCORE = " << classifier->evaluateAccuracy(train) << std::endl;
   std::cout << "TEST SCORE = " << classifier->evaluateAccuracy(test) << std::endl;
 }
 
+static const size_t numFeaturesToDecideFold = 20;
+static const size_t numFolds = 10;
+static const size_t numClasses = 3;
+static const size_t numFeatures = 4;
+static const double featureCosts = 0.1;
+
+double evaluatePolicy(PolicyPtr policy, ObjectContainerPtr classificationExamples)
+{
+  size_t correct = 0;
+  for (size_t i = 0; i < classificationExamples->size(); ++i)
+  {
+    ClassificationExamplePtr example = classificationExamples->getAndCast<ClassificationExample>(i);
+    assert(example);
+    size_t predicted = sequentialClassification(policy, example->getInput(), featureCosts, numClasses, example->getOutput());
+    if (predicted == example->getOutput())
+      ++correct;
+  }
+  return correct / (double)classificationExamples->size();
+}
+
+void testCRAlgorithmLearner(CRAlgorithmLearnerPtr learner, ObjectContainerPtr train, ObjectContainerPtr test, ObjectFunctionPtr createCRAlgorithmsFunction)
+{
+  std::cout << "TESTING LEARNER " << learner->toString() << std::endl;
+  
+  learner->trainBatch(train->apply(createCRAlgorithmsFunction), consoleProgressCallback());
+  std::cout << "TRAIN: " << evaluatePolicy(learner->getPolicy(), train) << std::endl;
+  std::cout << "TEST: " << evaluatePolicy(learner->getPolicy(), test) << std::endl;
+}
+
+int main(int argc, char* argv[])
+{
+  ObjectStreamPtr generator = new SyntheticDataGenerator(numFeaturesToDecideFold, numFolds, numFeatures, numClasses);
+  ObjectContainerPtr train = generator->load(1000);
+  ObjectContainerPtr test = generator->load(1000);
+
+  testBaselineClassifier(train, test, numClasses);  
+  
+  ObjectFunctionPtr exampleToCRAlgorithm = new ClassificationExampleToCRAlgorithm(featureCosts, numClasses);
+  
+  CRAlgorithmLearnerPtr learner = searnLearner(RankerPtr(), ActionValueFunctionPtr(), 0.5);
+  
+  testCRAlgorithmLearner(learner, train, test, exampleToCRAlgorithm);
+  /*
+  extern CRAlgorithmLearnerPtr searnLearner(RankerPtr ranker = RankerPtr(),
+    ActionValueFunctionPtr optimalActionValues = ActionValueFunctionPtr(),
+    double beta = 0.1,
+    StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr());
+
+extern CRAlgorithmLearnerPtr sarsaLearner(RegressorPtr regressor = RegressorPtr(),
+      double discount = 0.95,
+      ExplorationType exploration = predictedEpsilonGreedy,
+      IterationFunctionPtr explorationParameter = constantIterationFunction(0.1),
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(100));*/
+  
+  return 0;
+}
+
+#if 0
 void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses,
       PolicyPtr learnedPolicy, PolicyPtr learnerPolicy, DenseVectorPtr parameters = DenseVectorPtr(), PolicyPtr learnerPolicy2 = PolicyPtr())
 {
@@ -389,3 +463,5 @@ int main(int argc, char* argv[])
   std::cout << "EVALUATION: " << accuracy * 100 << "%" << std::endl << std::endl;
   return 0;*/
 }
+
+#endif

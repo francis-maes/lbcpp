@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: CompositeValueFunctions.hpp    | Composite value functions       |
+| Filename: CompositeValueFunctions.h      | Composite value functions       |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/03/2009 17:32               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_VALUE_FUNCTION_COMPOSITE_H_
-# define LBCPP_CORE_IMPL_VALUE_FUNCTION_COMPOSITE_H_
+#ifndef LBCPP_CORE_CHOOSE_FUNCTION_COMPOSITE_VALUES_H_
+# define LBCPP_CORE_CHOOSE_FUNCTION_COMPOSITE_VALUES_H_
 
 # include "ChooseFunctionStatic.hpp"
 # include "../../EditableFeatureGenerator.h"
@@ -70,6 +70,7 @@ struct CompositeActionValueFunction : public ActionValueFunction<CompositeAction
 private:
   ActionValueFunctionPtr actionValue;    
 };
+
 
 template<class ExactType, class BaseClass, class DynamicType>
 struct CompositeChooseFunction : public BaseClass
@@ -180,6 +181,7 @@ struct CompositeActionDescriptionFunction : public CompositeChooseFunction<
 };
 
 }; /* namespace impl */
+
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_VALUE_FUNCTION_COMPOSITE_H_
+#endif // !LBCPP_CORE_CHOOSE_FUNCTION_COMPOSITE_VALUES_H_

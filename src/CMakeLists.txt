@@ -95,10 +95,6 @@ SET(LBCPP_CORE_IMPL_CHOOSE_FUNCTION
   ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
   ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
   ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
-  ${LBCPP_CORE_IMPL}/ChooseFunction/CompositeValueFunctions.hpp
-  ${LBCPP_CORE_IMPL}/ChooseFunction/ClassifierValueFunctions.hpp
-  ${LBCPP_CORE_IMPL}/ChooseFunction/RegressorValueFunctions.hpp
-  ${LBCPP_CORE_IMPL}/ChooseFunction/RankerValueFunctions.hpp
 )
 
 SET(LBCPP_CORE_IMPL_BRIDGE
@@ -134,6 +130,7 @@ SET(LBCPP_CORE_SOURCES
   LearningMachine.cpp
   GradientBasedLearner.cpp
   GradientBasedLearningMachine.cpp
+  ChooseFunction.cpp
   Choose.cpp
   Policy.cpp
   CRAlgorithmLearner.cpp
@@ -176,6 +173,14 @@ SET(LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES
   GradientBasedLearningMachine/GradientBasedRanker.h
 )
 
+SET(LBCPP_CORE_CHOOSE_FUNCTION_SOURCES
+  ChooseFunction/CompositeValueFunctions.h
+  ChooseFunction/ChooseValueFunctions.h
+  ChooseFunction/RegressorValueFunctions.h
+  ChooseFunction/ClassifierValueFunctions.h
+  ChooseFunction/RankerValueFunctions.h
+)
+
 SET(LBCPP_CORE_POLICY_SOURCES
   Policy/RandomPolicy.h
   Policy/GreedyPolicy.h
@@ -212,6 +217,7 @@ SET(LBCPP_CORE
   ${LBCPP_CORE_OPTIMIZER_SOURCES}
   ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES}
   ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES}
+  ${LBCPP_CORE_CHOOSE_FUNCTION_SOURCES}
   ${LBCPP_CORE_POLICY_SOURCES}
   ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES}
 )
@@ -229,6 +235,7 @@ SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 SOURCE_GROUP(GradientBasedLearningMachine FILES ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES})
 SOURCE_GROUP(GradientBasedLearner FILES ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES})
+SOURCE_GROUP(ChooseFunction FILES ${LBCPP_CORE_CHOOSE_FUNCTION_SOURCES})
 SOURCE_GROUP(Policy FILES ${LBCPP_CORE_POLICY_SOURCES})
 SOURCE_GROUP(CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES})
 
