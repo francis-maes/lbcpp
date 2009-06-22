@@ -7,62 +7,9 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/CRAlgorithm.h>
-#include <lbcpp/FeatureGenerator.h>
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
-/*
-** StateValueFunction
-*/
-StateValueFunctionPtr lbcpp::predictedStateValues(RegressorPtr regressor)
-  {return impl::staticToDynamic(impl::RegressorStateValueFunction(regressor));}
-
-StateValueFunctionPtr lbcpp::predictedStateValues(RankerPtr ranker)
-  {return impl::staticToDynamic(impl::RankerStateValueFunction(ranker));}
-
-/*
-** ActionValueFunction
-*/
-class ChooseActionValueFunction : public ActionValueFunction
-{
-public:
-  virtual void setChoose(ChoosePtr choose)
-    {function = choose->getActionValueFunction();}
-
-  virtual double compute(VariablePtr choice) const
-    {return function->compute(choice);}
-    
-  virtual std::string toString() const
-    {return "chooseActionValue()";}
-    
-private:
-  ActionValueFunctionPtr function;     
-};
-
-ActionValueFunctionPtr lbcpp::chooseActionValues()
-  {return new ChooseActionValueFunction();}
-
-ActionValueFunctionPtr lbcpp::predictedActionValues(ClassifierPtr classifier)
-  {return impl::staticToDynamic(impl::ClassifierScoresActionValue(classifier));}
-
-ActionValueFunctionPtr lbcpp::predictedActionValues(GeneralizedClassifierPtr classifier)
-  {return impl::staticToDynamic(impl::GeneralizedClassifierScoresActionValue(classifier));}
-
-ActionValueFunctionPtr lbcpp::predictedActionValues(RankerPtr ranker)
-  {return impl::staticToDynamic(impl::RankerActionValueFunction(ranker));}
-
-ActionValueFunctionPtr lbcpp::predictedActionValues(RegressorPtr regressor)
-  {return impl::staticToDynamic(impl::RegressorActionValueFunction(regressor));}
-
-ActionValueFunctionPtr lbcpp::probabilitiesActionValues(ClassifierPtr classifier)
-  {return impl::staticToDynamic(impl::ClassifierProbabilitiesActionValue(classifier));}
-
-ActionValueFunctionPtr lbcpp::probabilitiesActionValues(GeneralizedClassifierPtr classifier)
-  {return impl::staticToDynamic(impl::GeneralizedClassifierProbabilitiesActionValue(classifier));}
-
-/*
-** Choose
-*/
 std::string Choose::computeStateDescription() const
 {
   StateDescriptionFunctionPtr f = getStateDescriptionFunction();

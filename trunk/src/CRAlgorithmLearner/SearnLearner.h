@@ -28,7 +28,7 @@ public:
     // todo: change default ?
       this->initialRanker = logBinomialAllPairsLinearRanker(batchLearner(lbfgsOptimizer(), 50));
     if (!stoppingCriterion)
-      stoppingCriterion = maxIterationsStoppingCriterion(10);
+      this->stoppingCriterion = maxIterationsStoppingCriterion(10);
   }
   SearnLearner() : beta(0.0) {}
   
@@ -50,9 +50,9 @@ public:
       ObjectContainerPtr classificationExamples = createCostSensitiveClassificationExamples(examples, currentPolicy, rewardPerEpisode);
       if (progress && !progress->progressStep("SearnLearner::trainBatch, reward/episode = " + lbcpp::toString(rewardPerEpisode), (double)iteration))
         return false;
-      std::cout << "ITERATION " << iteration << "currentPolicy = " << currentPolicy->toString();
-      if (learnedPolicy)
-        std::cout << " learnedPolicy = " << learnedPolicy->toString();
+//      std::cout << "ITERATION " << iteration << "currentPolicy = " << currentPolicy->toString();
+//      if (learnedPolicy)
+//        std::cout << " learnedPolicy = " << learnedPolicy->toString();
       std::cout << std::endl;
 
       RankerPtr ranker = initialRanker->cloneAndCast<Ranker>();

@@ -34,12 +34,12 @@
 # include "ContinuousFunction/TransferArchitecture.hpp"
 # include "ContinuousFunction/ScalarToVectorArchitecture.hpp"
 
-# include "ChooseFunction/ChooseFunctionStaticToDynamic.hpp"
+/*# include "ChooseFunction/ChooseFunctionStaticToDynamic.hpp"
 # include "ChooseFunction/ChooseFunctionDynamicToStatic.hpp"
 # include "ChooseFunction/CompositeValueFunctions.hpp"
 # include "ChooseFunction/ClassifierValueFunctions.hpp"
 # include "ChooseFunction/RegressorValueFunctions.hpp"
-# include "ChooseFunction/RankerValueFunctions.hpp"
+# include "ChooseFunction/RankerValueFunctions.hpp"*/
   
 # include "Bridge/FeatureGenerator.hpp"
 # include "Bridge/DoubleVector.hpp"

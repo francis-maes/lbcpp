@@ -18,17 +18,15 @@ featureGenerator describeUsedFeatureGenerators(const std::vector<  std::pair<siz
 {
   featureSense("unit");
   for (int i = 0; i < (int)usedFeatureGenerators.size(); ++i)
-    featureCall(usedFeatureGenerators[i].first)
-      usedFeatureGenerators[i].second;
+    featureCall(usedFeatureGenerators[i].first) usedFeatureGenerators[i].second;
 }
 
-// FIXME: passer le featureGEnerators en const& (necessite les InstanceSet)
-crAlgorithm size_t sequentialClassification(std::vector<FeatureGeneratorPtr> featureGenerators, double featureCosts, size_t numClasses, size_t ycorrect = (size_t)-1)
+crAlgorithm size_t sequentialClassification(FeatureGeneratorPtr compositeFeatureGenerator, double featureCosts, size_t numClasses, size_t ycorrect = (size_t)-1)
 {
   typedef std::pair<bool, size_t> Choice; // decision: (true, classNumber), feature-request: (false, featureScopeNumber)
   
   std::set<size_t> unusedFeatureGenerators;
-  for (size_t i = 0; i < featureGenerators.size(); ++i)
+  for (size_t i = 0; i < compositeFeatureGenerator->getNumSubGenerators(); ++i)
     unusedFeatureGenerators.insert(i);
   std::vector< std::pair<size_t, SparseVectorPtr> > usedFeatureGenerators;
   std::string currentStateString;
@@ -93,14 +91,15 @@ crAlgorithm size_t sequentialClassification(std::vector<FeatureGeneratorPtr> fea
     else
     {
       SparseVectorPtr newFeatures;
+
       assert(unusedFeatureGenerators.find(c.second) != unusedFeatureGenerators.end());
+
       unusedFeatureGenerators.erase(c.second);
-      assert(c.second < featureGenerators.size());
-      assert(featureGenerators[c.second]);
-      newFeatures = featureGenerators[c.second]->toSparseVector();
-      assert(newFeatures);
+
+      newFeatures = compositeFeatureGenerator->getSubGenerator(c.second)->toSparseVector();
       usedFeatureGenerators.push_back(std::make_pair(c.second, newFeatures));
       reward (-featureCosts);
+
       currentStateString += "_" + lbcpp::toString(c.second);
     }
   }
