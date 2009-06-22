@@ -22,9 +22,6 @@ ContinuousFunctions:
 Optimizers:
   * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
 
-ChooseFunctions:
-  * Passage statique => dynamique
-
 Policy:
  * GPomdp -> ScalarVectorFunction
  * CRankPost
