@@ -149,6 +149,10 @@ public:
 extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
                                 FeatureDictionaryPtr features, StringDictionaryPtr labels);
 
+// generateur d'exemples de classification linéairement séparable
+extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses);
+
+
 /*!
 **
 **
