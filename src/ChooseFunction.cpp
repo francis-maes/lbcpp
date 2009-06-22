@@ -9,7 +9,6 @@
 #include <lbcpp/CRAlgorithm.h>
 #include "ChooseFunction/ChooseValueFunctions.h"
 #include "ChooseFunction/ClassifierValueFunctions.h"
-#include "ChooseFunction/CompositeValueFunctions.h"
 #include "ChooseFunction/RankerValueFunctions.h"
 #include "ChooseFunction/RegressorValueFunctions.h"
 using namespace lbcpp;
