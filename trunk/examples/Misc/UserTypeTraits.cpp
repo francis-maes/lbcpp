@@ -32,29 +32,28 @@ private:
 /*
 ** The Traits for MyClass. Note that, in order to be valid, the traits must be defined inside the lbcpp namespace.
 */
-namespace lbcpp
-{
+namespace lbcpp {
 
-template<>
-struct Traits<MyClass>
-{
-  static inline std::string toString(const MyClass& c)
-    {return "value = " + lbcpp::toString(c.getValue());}
-
-  static inline void write(std::ostream& ostr, const MyClass& c)
-    {lbcpp::write(ostr, c.getValue());}
-    
-  static inline bool read(std::istream& istr, MyClass& result)
+  template<>
+  struct Traits<MyClass>
   {
-    int val;
-    if (lbcpp::read(istr, val))
+    static inline std::string toString(const MyClass& c)
+      {return "value = " + lbcpp::toString(c.getValue());}
+
+    static inline void write(std::ostream& ostr, const MyClass& c)
+      {lbcpp::write(ostr, c.getValue());}
+      
+    static inline bool read(std::istream& istr, MyClass& result)
     {
-      result.setValue(val);
-      return true;
+      int val;
+      if (lbcpp::read(istr, val))
+      {
+        result.setValue(val);
+        return true;
+      }
+      return false;
     }
-    return false;
-  }
-};
+  };
 
 };  // namespace lbcpp 
 

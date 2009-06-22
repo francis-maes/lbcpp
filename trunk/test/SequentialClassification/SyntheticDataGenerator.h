@@ -14,70 +14,14 @@
 namespace lbcpp
 {
 
-class SyntheticLinearMultiClassGenerator : public ObjectStream
-{
-public:
-  SyntheticLinearMultiClassGenerator(size_t numFeatures, size_t numClasses)
-    : parameters(numClasses), numFeatures(numFeatures)
-  {
-    for (size_t i = 0; i < parameters.size(); ++i)
-      parameters[i] = sampleVectorGaussian(numFeatures);
-  }
-  
-  virtual std::string getContentClassName() const
-    {return "ClassificationExample";}
-
-  virtual ObjectPtr next()
-  {
-    DenseVectorPtr x = sampleVectorGaussian(numFeatures);
- //   std::cout << "BestScore: " << bestScore << " y = " << y << std::endl;
-    return new ClassificationExample(x, getClass(x));
-  }
-  
-  size_t getClass(FeatureGeneratorPtr x) const
-  {
-    double bestScore = -DBL_MAX;
-    size_t y = 0;
-    //std::cout << "X dictionary: " << x->getDictionary().getName() << std::endl;
-    for (size_t i = 0; i < parameters.size(); ++i)
-    {
-      //std::cout << "params i dictionary: " << parameters[i]->getDictionary().getName() << std::endl;
-      double score = parameters[i]->dotProduct(x);
-      if (score > bestScore)
-        bestScore = score, y = i;
-    }
-    return y;
-  }
-  
-  static FeatureDictionaryPtr getDictionary()
-  {
-    static FeatureDictionaryPtr dictionary = new FeatureDictionary("SyntheticLinearMultiClassGenerator");
-    return dictionary;
-  }
-  
-private:
-  std::vector<DenseVectorPtr> parameters;
-  size_t numFeatures;
-  
-  static DenseVectorPtr sampleVectorGaussian(size_t numFeatures)
-  {
-    DenseVectorPtr res = new DenseVector(getDictionary(), numFeatures);
-    for (size_t i = 0; i < numFeatures; ++i)
-      res->set(i, Random::getInstance().sampleDoubleFromGaussian());
-    return res;
-  }
-};
-
-typedef ReferenceCountedObjectPtr<SyntheticLinearMultiClassGenerator> SyntheticLinearMultiClassGeneratorPtr;
-
 class SyntheticDataGenerator : public ObjectStream
 {
 public:
   SyntheticDataGenerator(size_t numFeaturesInBranch, size_t numFolds, size_t numFeaturesPerFold, size_t numClasses)
-    : branchGenerator(new SyntheticLinearMultiClassGenerator(numFeaturesInBranch, numFolds)), foldGenerators(numFolds)
+    : branchGenerator(classificationExamplesSyntheticGenerator(numFeaturesInBranch, numFolds)), foldGenerators(numFolds)
   {
     for (size_t i = 0; i < foldGenerators.size(); ++i)
-      foldGenerators[i] = new SyntheticLinearMultiClassGenerator(numFeaturesPerFold, numClasses);
+      foldGenerators[i] = classificationExamplesSyntheticGenerator(numFeaturesPerFold, numClasses);
   }
 
   virtual std::string getContentClassName() const
@@ -106,8 +50,8 @@ public:
     return dictionary;
   }
 
-  SyntheticLinearMultiClassGeneratorPtr branchGenerator;
-  std::vector<SyntheticLinearMultiClassGeneratorPtr> foldGenerators;
+  ObjectStreamPtr branchGenerator;
+  std::vector<ObjectStreamPtr> foldGenerators;
 };
 
 }; /* namespace lbcpp */

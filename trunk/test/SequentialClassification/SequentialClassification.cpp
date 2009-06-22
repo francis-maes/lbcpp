@@ -109,7 +109,7 @@ void testCRank(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClas
 */
   trainAndTest(train, test, numClasses, learnedPolicy, learnerPolicy/*->verbose(2)*/, ranker->getParameters()/*, learnerPolicy2*/);
 }
-
+/*
 class SequenceClassificationSyntheticOptimalPolicy : public Policy
 {
 public:
@@ -142,7 +142,7 @@ public:
 
 private:
  SyntheticDataGenerator& generator;
-};
+};*/
 
 class ZeroOneActionValueFunction : public ActionValueFunction
 {

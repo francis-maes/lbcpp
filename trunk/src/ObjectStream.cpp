@@ -9,7 +9,13 @@
 #include <lbcpp/ObjectStream.h>
 #include <lbcpp/ObjectContainer.h>
 #include <lbcpp/SparseVector.h>
+#include <lbcpp/DenseVector.h>
 #include <lbcpp/LearningExample.h>
+
+#include "ObjectStream/ClassificationExamplesParser.h"
+#include "ObjectStream/RegressionExamplesParser.h"
+#include "ObjectStream/ClassificationExamplesSyntheticGenerator.h"
+
 #include <fstream>
 using namespace lbcpp;
 
@@ -220,33 +226,6 @@ bool LearningDataObjectParser::parseFeatureIdentifier(const std::string& identif
   return true;
 }
 
-/*
-** ClassificationExamplesParser
-*/
-class ClassificationExamplesParser : public LearningDataObjectParser
-{
-public:
-  ClassificationExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
-    : LearningDataObjectParser(filename, features), labels(labels) {}
-
-  virtual std::string getContentClassName() const
-    {return "ClassificationExample";}
-
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
-  {
-    std::string label;
-    if (!TextObjectParser::parse(columns[0], label))
-      return false;
-    SparseVectorPtr x;
-    if (!parseFeatureList(columns, 1, x))
-      return false;
-    setResult(new ClassificationExample(x, labels->add(label)));
-    return true;
-  }
-  
-private:
-  StringDictionaryPtr labels;
-};
 
 ObjectStreamPtr lbcpp::classificationExamplesParser(
           const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
@@ -255,30 +234,14 @@ ObjectStreamPtr lbcpp::classificationExamplesParser(
   return new ClassificationExamplesParser(filename, features, labels);
 }
 
-class RegressionExamplesParser : public LearningDataObjectParser
-{
-public:
-  RegressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
-    : LearningDataObjectParser(filename, features) {}
-
-  virtual std::string getContentClassName() const
-    {return "RegressionExample";}
-
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
-  {
-    double y;
-    if (!TextObjectParser::parse(columns[0], y))
-      return false;
-    SparseVectorPtr x;
-    if (!parseFeatureList(columns, 1, x))
-      return false;
-    setResult(new RegressionExample(x, y));
-    return true;
-  }
-};
-
 ObjectStreamPtr lbcpp::regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
 {
   assert(features);
   return new RegressionExamplesParser(filename, features);
+}
+
+ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses)
+{
+  assert(numClasses >= 2);
+  return new ClassificationExamplesSyntheticGenerator(numFeatures, numClasses);
 }

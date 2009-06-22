@@ -70,7 +70,7 @@ CRAlgorithmPtr backTrackingDepthFirstSearchRec(ChoosePtr choose)
 }
 
 /*
-** This function initialized backtraking depth first search
+** This function initializes backtraking depth first search
 */
 CRAlgorithmPtr backTrackingDepthFirstSearch(CRAlgorithmPtr initialState)
 {
