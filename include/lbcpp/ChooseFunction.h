@@ -61,6 +61,8 @@ public:
   virtual double compute() const = 0;
 };
 
+extern StateValueFunctionPtr chooseStateValues();
+
 /*!
 **
 **
@@ -100,6 +102,9 @@ inline StateValueFunctionPtr predictedStateValues(GradientBasedRankerPtr ranker)
   {return predictedStateValues(RankerPtr(ranker));}
 
 
+extern StateValueFunctionPtr simulationStateValues(PolicyPtr policy, double discount = 1, size_t horizon = 0);
+
+
 /*!
 ** @class ActionValueFunction
 ** @brief Action values
@@ -125,6 +130,8 @@ public:
 ** @return
 */
 extern ActionValueFunctionPtr chooseActionValues();
+
+extern ActionValueFunctionPtr stateValueBasedActionValues(StateValueFunctionPtr stateValues, double discount = 1.0);
 
 /*!
 **

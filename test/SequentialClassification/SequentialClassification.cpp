@@ -32,6 +32,8 @@ private:
   size_t numClasses;
 };
 
+
+
 void testBaselineClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
 {
   std::cout << "TESTING BASELINE LINEAR CLASSIFIER" << std::endl;
@@ -86,9 +88,10 @@ int main(int argc, char* argv[])
   testBaselineClassifier(train, test, numClasses);  
   
   ObjectFunctionPtr exampleToCRAlgorithm = new ClassificationExampleToCRAlgorithm(featureCosts, numClasses);
-  
+
   CRAlgorithmLearnerPtr learner = searnLearner(RankerPtr(), ActionValueFunctionPtr(), 0.5);
-  
+  //ActionValueFunctionPtr actionValues = new StateValueBasedActionValueFunction(simulationActionValues(
+    
   testCRAlgorithmLearner(learner, train, test, exampleToCRAlgorithm);
   /*
   extern CRAlgorithmLearnerPtr searnLearner(RankerPtr ranker = RankerPtr(),
