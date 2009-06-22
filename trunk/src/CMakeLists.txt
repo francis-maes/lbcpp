@@ -92,7 +92,6 @@ SET(LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION
 )
 
 SET(LBCPP_CORE_IMPL_CHOOSE_FUNCTION
-  ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStatic.hpp
   ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionStaticToDynamic.hpp
   ${LBCPP_CORE_IMPL}/ChooseFunction/ChooseFunctionDynamicToStatic.hpp
 )
@@ -103,6 +102,8 @@ SET(LBCPP_CORE_IMPL_BRIDGE
   ${LBCPP_CORE_IMPL}/Bridge/FeatureGenerator.hpp
   ${LBCPP_CORE_IMPL}/Bridge/DoubleVector.hpp
   ${LBCPP_CORE_IMPL}/Bridge/Variable.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/ChooseFunction.hpp
+  ${LBCPP_CORE_IMPL}/Bridge/CompositeChooseFunctions.hpp
   ${LBCPP_CORE_IMPL}/Bridge/Choose.hpp
   ${LBCPP_CORE_IMPL}/Bridge/Callback.hpp
   ${LBCPP_CORE_IMPL}/Bridge/CRAlgorithmScope.hpp
@@ -174,7 +175,6 @@ SET(LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES
 )
 
 SET(LBCPP_CORE_CHOOSE_FUNCTION_SOURCES
-  ChooseFunction/CompositeValueFunctions.h
   ChooseFunction/ChooseValueFunctions.h
   ChooseFunction/RegressorValueFunctions.h
   ChooseFunction/ClassifierValueFunctions.h
