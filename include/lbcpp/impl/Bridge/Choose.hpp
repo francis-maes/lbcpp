@@ -11,12 +11,32 @@
 
 # include "../../Choose.h"
 # include "../../CRAlgorithm.h"
-# include "../ChooseFunction/ChooseFunctionDynamicToStatic.hpp"
 # include "Variable.hpp"
 # include "FeatureGenerator.hpp"
+# include "ChooseFunction.hpp"
+# include "CompositeChooseFunctions.hpp"
 
 namespace lbcpp
 {
+
+namespace impl {
+struct DynamicToStaticActionValueFunction : public ActionValueFunction<DynamicToStaticActionValueFunction>
+{
+  DynamicToStaticActionValueFunction(ActionValueFunctionPtr function) 
+    : function(function) {}
+  
+  ActionValueFunctionPtr function;
+
+  void setChoose(ChoosePtr choose)
+    {return function->setChoose(choose);}
+
+  double computeDynamicType(VariablePtr choice) const
+    {return function->compute(choice);}
+};
+
+inline DynamicToStaticActionValueFunction dynamicToStatic(ActionValueFunctionPtr function)
+  {return DynamicToStaticActionValueFunction(function);}
+}; /* namespace impl */
 
 template<class ChooseType>
 class StaticToDynamicChoose : public Choose

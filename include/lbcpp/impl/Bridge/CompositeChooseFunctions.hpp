@@ -9,7 +9,7 @@
 #ifndef LBCPP_CORE_CHOOSE_FUNCTION_COMPOSITE_VALUES_H_
 # define LBCPP_CORE_CHOOSE_FUNCTION_COMPOSITE_VALUES_H_
 
-# include "ChooseFunctionStatic.hpp"
+# include "ChooseFunction.hpp"
 # include "../../EditableFeatureGenerator.h"
 # include "../../LearningMachine.h"
 
