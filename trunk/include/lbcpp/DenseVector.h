@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Tue Jun 16 08:30:42 2009
 **
-**@brief  #FIXME: all
+**@brief  Composite dense vector declarations.
 **
 **
 */
@@ -26,7 +26,7 @@ namespace lbcpp
 
 /*!
 ** @class DenseVector
-** @brief
+** @brief Dense vector are vectors where every features are specify whatever the values are.
 */
 
 class DenseVector : public FeatureGeneratorDefaultImplementations<DenseVector, FeatureVector>
@@ -35,46 +35,47 @@ public:
   typedef FeatureGeneratorDefaultImplementations<DenseVector, FeatureVector> BaseClass;
 
   /*!
+  ** Copy constructor.
   **
+  ** @param otherVector : original dense vector.
   **
-  ** @param otherVector
-  **
-  ** @return
+  ** @return a DenseVector instance.
   */
   DenseVector(const DenseVector& otherVector);
+
   /*!
+  ** Constructor.
   **
+  ** @param dictionary : feature dictionary.
+  ** @param values : features values.
   **
-  ** @param dictionary
-  ** @param values
-  **
-  ** @return
+  ** @return a DenseVector instance.
   */
   DenseVector(FeatureDictionaryPtr dictionary, const std::vector<double>& values);
+
   /*!
+  ** Constructor.
   **
+  ** @param dictionary : feature dictionary.
+  ** @param initialNumValues :
+  ** @param initialNumSubVectors :
   **
-  ** @param initialNumSubVectors
-  **
-  ** @return
+  ** @return a DenseVector instance.
   */
   DenseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr(), size_t initialNumValues = 0, size_t initialNumSubVectors = 0);
 
   /*!
-  **
-  **
-  **
-  ** @return
+  ** Destructor.
   */
   virtual ~DenseVector()
     {clear();}
 
   /*!
+  ** = operator.
   **
+  ** @param otherVector : original dense vector.
   **
-  ** @param otherVector
-  **
-  ** @return
+  ** @return a DenseVector instance.
   */
   DenseVector& operator =(const DenseVector& otherVector);
 
@@ -82,120 +83,113 @@ public:
   ** Features
   */
   /*!
+  ** Check if some features are setted.
   **
-  **
-  **
-  ** @return
+  ** @return True if any feature is setted.
   */
   bool hasValues() const
     {return values.size() > 0;}
 
   /*!
+  ** Values getter.
   **
-  **
-  **
-  ** @return
+  ** @return a vector of values.
   */
   const std::vector<double>& getValues() const
     {return values;}
 
   /*!
+  ** Get number of values.
   **
-  **
-  **
-  ** @return
+  ** @return number of values.
   */
   size_t getNumValues() const
     {return values.size();}
 
   /*!
+  ** Feature value setter.
   **
-  **
-  ** @param index
-  ** @param value
+  ** @param index : feature index.
+  ** @param value : feature value.
   */
   void set(size_t index, double value)
     {ensureSize(values, index + 1, 0.0); values[index] = value;}
 
   /*!
+  ** Feature value getter.
   **
+  ** @param index : feature index.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return feature value at the index @a index.
   */
   const double& get(size_t index) const
     {assert(index < values.size()); return values[index];}
 
   /*!
+  ** Feature value getter.
   **
+  ** @param index : feature index.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return feature value at the index @a index.
   */
   double& get(size_t index)
     {ensureSize(values, index + 1, 0.0); return values[index];}
 
   /*!
+  ** Return the index of the maximum value.
   **
-  **
-  **
-  ** @return
+  ** @return the index of the maximum value.
   */
   int findIndexOfMaximumValue() const;
+
   /*!
+  ** Return the maximum value.
   **
-  **
-  **
-  ** @return
+  ** @return the maximum value.
   */
   double findMaximumValue() const;
 
   /*!
+  ** Compute the logarithmic sum of exponentials.
   **
-  **
-  **
-  ** @return
+  ** @return log(sum_i exp(x_i)), avoiding numerical errors with too big exponentials
   */
-  double computeLogSumOfExponentials() const;   // return log(sum_i exp(x_i)), avoiding numerical errors with too big exponentials
+  double computeLogSumOfExponentials() const;
 
   /*
   ** Sub Vectors
   */
   /*!
+  ** Check if any subvector is setted.
   **
-  **
-  **
-  ** @return
+  ** @return True if any subvector is setted.
   */
   bool hasSubVectors() const
     {return subVectors.size() > 0;}
 
   /*!
+  ** Get number of subvectors.
   **
-  **
-  **
-  ** @return
+  ** @return number of subvectors.
   */
   size_t getNumSubVectors() const
     {return subVectors.size();}
 
   /*!
+  ** Subvector geter.
   **
+  ** @param index : subvector index.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return a DenseVector reference.
   */
   DenseVectorPtr& getSubVector(size_t index)
     {ensureSize(subVectors, index + 1, DenseVectorPtr()); return subVectors[index];}
 
   /*!
+  ** Subvector setter.
   **
-  **
-  ** @param index
-  ** @param subVector
+  ** @param index : subvector index.
+  ** @param subVector : subvector value.
   */
   void setSubVector(size_t index, DenseVectorPtr subVector)
   {
@@ -209,48 +203,49 @@ public:
   ** Operations
   */
   /*!
+  ** Size getter (number of values, recursive).
   **
-  **
-  **
-  ** @return
+  ** @return number of values.
   */
   size_t size() const;
 
   /*!
+  ** Scalar product.
   **
+  ** @param featureGenerator : right operand.
   **
-  ** @param featureGenerator
-  **
-  ** @return
+  ** @return scalar product result.
   */
   virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
+
   /*!
+  ** Multiplication by a scalar value.
   **
-  **
-  ** @param scalar
+  ** @param scalar : scalar value.
   */
   void multiplyByScalar(double scalar);
+
   /*!
+  ** Randomly initialize the dense vector.
   **
-  **
-  ** @param mean
-  ** @param standardDeviation
+  ** @param mean : mean.
+  ** @param standardDeviation : standard deviation.
   */
   void initializeRandomly(double mean = 0.0, double standardDeviation = 1.0);
 
   /*!
+  ** Add a weighted dense vector.
   **
-  **
-  ** @param otherVector
-  ** @param weight
+  ** @param otherVector : dense vector.
+  ** @param weight : scalar value.
   */
   void addWeighted(const DenseVectorPtr otherVector, double weight);
 
   /*!
+  ** Add a weighted feature generator (read only dense vector).
   **
-  **
-  ** @param featureGenerator
-  ** @param weight
+  ** @param featureGenerator : feature generator.
+  ** @param weight : scalar value.
   */
   void addWeighted(const FeatureGeneratorPtr featureGenerator, double weight)
   {
@@ -262,20 +257,22 @@ public:
   }
 
   /*!
+  ** Add a dense vector.
   **
-  **
-  ** @param otherVector
+  ** @param otherVector : dense vector.
   */
   void add(const DenseVectorPtr otherVector);
+
   /*!
+  ** Add a feature generator (read only dense vector).
   **
-  **
-  ** @param featureGenerator
+  ** @param featureGenerator : feature generator.
   */
   void add(const FeatureGeneratorPtr featureGenerator)
     {featureGenerator->addTo(DenseVectorPtr(this));}
+
   /*!
-  **
+  ** Substract a feature generator (read only dense vector).
   **
   ** @param featureGenerator
   */
@@ -286,7 +283,7 @@ public:
   ** EditableFeatureGenerator
   */
   /*!
-  **
+  ** Clear all (values, subvectors, dictionary).
   **
   */
   virtual void clear()
@@ -296,7 +293,7 @@ public:
   ** Static FeatureGenerator
   */
   /*!
-  **
+  ** #FIXME
   **
   ** @param visitor
   */
@@ -307,36 +304,32 @@ public:
   ** FeatureGenerator
   */
   /*!
+  ** Feature dictionary getter.
   **
-  **
-  **
-  ** @return
+  ** @return a feature dictionary pointer.
   */
   virtual FeatureDictionaryPtr getDictionary() const;
 
   /*!
+  ** Check if the vector is dense.
   **
-  **
-  **
-  ** @return
+  ** @return True if the vector is dense.
   */
   virtual bool isDense() const
     {return true;}
 
   /*!
+  ** Convert vector to dense vector.
   **
-  **
-  **
-  ** @return
+  ** @return a dense vector pointer.
   */
   virtual DenseVectorPtr toDenseVector() const
     {return DenseVectorPtr(const_cast<DenseVector* >(this));}
 
   /*!
+  ** Get number of subvectors.
   **
-  **
-  **
-  ** @return
+  ** @return number of subvectors
   */
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}
@@ -352,7 +345,7 @@ public:
     {assert(num < subVectors.size()); return subVectors[num];}
 
   /*!
-  **
+  ** #FIXME
   **
   ** @param num
   **
@@ -362,7 +355,7 @@ public:
     {assert(num < subVectors.size()); return num;}
 
   /*!
-  **
+  ** #FIXME
   **
   ** @param index
   **
@@ -375,24 +368,23 @@ public:
   ** Object
   */
   /*!
+  ** Load dense vector from a stream.
   **
+  ** @param istr : input stream.
   **
-  ** @param istr
-  **
-  ** @return
+  ** @return False if any error occurs.
   */
   virtual bool load(std::istream& istr);
 
   /*!
+  ** Save dense vector to a stream.
   **
-  **
-  ** @param ostr
+  ** @param ostr : output stream.
   */
   virtual void save(std::ostream& ostr) const;
 
   /*!
-  **
-  **
+  ** Clone dense vector.
   **
   ** @return
   */
@@ -420,11 +412,11 @@ private:
 };
 
 /*!
+** Load dense vector from file @a filename.
 **
+** @param filename : input file name.
 **
-** @param filename
-**
-** @return
+** @return a dense vector pointer.
 */
 inline DenseVectorPtr loadDenseVector(const std::string& filename)
   {return Object::loadFromFileAndCast<DenseVector>(filename);}

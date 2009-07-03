@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Mon Jun 15 19:58:26 2009
 **
-**@brief  #FIXME: all
+**@brief  Base class for graph of objects.
 **
 **
 */
@@ -33,19 +33,18 @@ class ObjectGraph : public Object
 {
 public:
   /*!
+  ** Get the number of roots.
   **
-  **
-  **
-  ** @return
+  ** @return number of roots.
   */
   virtual size_t getNumRoots() const = 0;
 
   /*!
+  ** Get root of node @a index.
   **
+  ** @param index : node index.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return root (object pointer) of node @a index.
   */
   virtual ObjectPtr getRoot(size_t index) const = 0;
 
