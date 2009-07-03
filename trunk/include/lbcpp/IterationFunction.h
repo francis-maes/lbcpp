@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 18:26:12 2009
 **
-**@brief  #FIXME: all
+**@brief  A function that depends on an iteration number.
 **
 **
 */
@@ -32,26 +32,26 @@ class IterationFunction : public Object
 {
 public:
   /*!
+  ** Compute @a iteration iterations.
   **
+  ** @param iteration : iteration number.
   **
-  ** @param iteration
-  **
-  ** @return
+  ** @return the result of @a iteration iterations.
   */
   virtual double compute(size_t iteration) const = 0;
 };
 
 /*!
+** Constant function. Always returns @a value.
 **
+** @param value : constant value.
 **
-** @param value
-**
-** @return
+** @return a constant iteration function instance.
 */
 extern IterationFunctionPtr constantIterationFunction(double value);
 
 /*!
-**
+** #FIXME
 **
 ** @param initialValue
 ** @param numberIterationsToReachHalfInitialValue
