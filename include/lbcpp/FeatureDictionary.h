@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Tue Jun 16 08:27:18 2009
 **
-**@brief  #FIXME: all
+**@brief  A dictionary of feature and feature-scope names.
 **
 **
 */
@@ -27,64 +27,75 @@ namespace lbcpp
 
 /*!
 ** @class StringDictionary
-** @brief
+** @brief A string dictionary reference all string names that may be
+** used as keyword during the execution. Avoiding dupplicity errors.
 */
 
 class StringDictionary : public Object
 {
 public:
   /*!
-  **
+  ** Clear dictionary. Remove all couples <index, string>.
   **
   */
   void clear()
     {stringToIndex.clear(); indexToString.clear();}
 
   /*!
+  ** Get number of elements (number of couples <index, string>).
   **
-  **
-  **
-  ** @return
+  ** @return number of elements.
   */
   size_t getNumElements() const
     {return (unsigned)indexToString.size();}
 
   /*!
+  ** Check if it exists an association for the index @a index.
   **
+  ** @param index : index to check.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return False if there is no association with @a index.
   */
   bool exists(size_t index) const;
+
+  /*!
+  ** Get string associated to @a index..
+  **
+  ** @param index : key.
+  **
+  ** @return the string associated to @a index if any, or convert
+  ** @a index to string.
+  */
   std::string getString(size_t index) const;
 
-  // returns -1 if not found
   /*!
+  ** Get index associated to @a str.
   **
+  ** @param str : string value used as key.
   **
-  ** @param str
-  **
-  ** @return
+  ** @return -1 if not found, the corresponding index otherwise.
   */
   int getIndex(const std::string& str) const;
 
   /*!
+  ** Add a new string value to the dictionary.
   **
+  ** @param str : string value.
   **
-  ** @param str
-  **
-  ** @return
+  ** @return the corresponding index value.
   */
   size_t add(const std::string& str);
 
   /*!
+  ** Convert a string dictionary to a stream.
   **
+  ** Put a string dictionary to an output stream following this form:
+  ** [indexToString[0], ..., indexToString[indexToString.size()-1]]
   **
-  ** @param ostr
-  ** @param strings
+  ** @param ostr : output stream.
+  ** @param strings : string dictionary.
   **
-  ** @return
+  ** @return a stream instance.
   */
   friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
 
@@ -92,35 +103,36 @@ public:
   ** Object
   */
   /*!
+  ** Convert a string dictionary to a string.
   **
+  ** Put a string dictionary to a string following this form:
+  ** [indexToString[0], ..., indexToString[indexToString.size()-1]]
   **
-  **
-  ** @return
+  ** @return string value.
   */
   virtual std::string toString() const
     {std::ostringstream ostr; ostr << *this; return ostr.str();}
 
   /*!
+  ** Convert a string dictionary to a table.
   **
-  **
-  **
-  ** @return
+  ** @return a table pointer.
   */
   virtual TablePtr toTable() const;
 
   /*!
+  ** Save a string dictionary to an output stream.
   **
-  **
-  ** @param ostr
+  ** @param ostr : output stream.
   */
   virtual void save(std::ostream& ostr) const;
 
   /*!
+  ** Load a string dictionary from an input stream.
   **
+  ** @param istr : input stream.
   **
-  ** @param istr
-  **
-  ** @return
+  ** @return False if any error occurs.
   */
   virtual bool load(std::istream& istr);
 
@@ -128,8 +140,8 @@ protected:
   typedef std::map<std::string, size_t> StringToIndexMap;
   typedef std::vector<std::string> StringVector;
 
-  StringToIndexMap stringToIndex; /*!< */
-  StringVector indexToString;   /*!< */
+  StringToIndexMap stringToIndex; /*!< String to index correspondance. */
+  StringVector indexToString;   /*!< Index to string correspondance. */
 };
 
 typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
@@ -137,45 +149,45 @@ typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
 
 /*!
 ** @class FeatureDictionary
-** @brief
+** @brief Feature dictionary
 */
 class FeatureDictionary : public Object
 {
 public:
   /*!
+  ** Constructor.
   **
+  ** @param name : dictionary name.
+  ** @param features : feature string dictionary.
+  ** @param scopes : scope string dicitonary.
   **
-  ** @param name
-  ** @param features
-  ** @param scopes
-  **
-  ** @return
+  ** @return a FeatureDictionary instance.
   */
   FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes);
+
   /*!
+  ** Constructor.
   **
+  ** @param name : dictionary name.
   **
-  ** @param name
-  **
-  ** @return
+  ** @return a FeatureDicitonary instance.
   */
   FeatureDictionary(const std::string& name = "unnamed");
 
   /*!
+  ** Check if the dictionary is empty or not.
   **
-  **
-  **
-  ** @return
+  ** @return True if there is no entry in the dictionary.
   */
   bool empty() const
     {return getNumFeatures() == 0 && getNumScopes() == 0;}
 
   /*!
+  ** Check if two feature dictionaries are equals.
   **
+  ** @param otherDictionary : feature dictionary pointer.
   **
-  ** @param otherDictionary
-  **
-  ** @return
+  ** @return True if the two feature dictionaries are equals.
   */
   bool checkEquals(FeatureDictionaryPtr otherDictionary) const;
 
@@ -183,29 +195,27 @@ public:
   ** Features
   */
   /*!
+  ** Features getter.
   **
-  **
-  **
-  ** @return
+  ** @return a feature string dictionary pointer.
   */
   StringDictionaryPtr getFeatures()
     {return featuresDictionary;}
 
   /*!
+  ** Get number of features.
   **
-  **
-  **
-  ** @return
+  ** @return number of features.
   */
   size_t getNumFeatures() const
     {return featuresDictionary ? featuresDictionary->getNumElements() : 0;}
 
   /*!
+  ** Add a new feature.
   **
+  ** @param identifier : feature identifier.
   **
-  ** @param identifier
-  **
-  ** @return
+  ** @return index of the new feature.
   */
   size_t addFeature(const std::string& identifier)
     {assert(featuresDictionary); return featuresDictionary->add(identifier);}
@@ -214,28 +224,26 @@ public:
   ** Scopes
   */
   /*!
+  ** Scopes getter.
   **
-  **
-  **
-  ** @return
+  ** @return a scope string dictionary pointer.
   */
   StringDictionaryPtr getScopes()
     {return scopesDictionary;}
 
   /*!
+  ** Get number of scopes.
   **
-  **
-  **
-  ** @return
+  ** @return number of scopes.
   */
   size_t getNumScopes() const
     {return scopesDictionary ? scopesDictionary->getNumElements() : 0;}
 
   /*!
+  ** Add a new scope.
   **
-  **
-  ** @param name
-  ** @param subDictionary
+  ** @param name : scope name.
+  ** @param subDictionary : subdictionary.
   */
   void addScope(const std::string& name, FeatureDictionaryPtr subDictionary)
     {ensureSubDictionary(getScopes()->add(name), subDictionary);}
@@ -244,70 +252,70 @@ public:
   ** Related dictionaries
   */
   /*!
+  ** Get number of subdictionaries.
   **
-  **
-  **
-  ** @return
+  ** @return number of subdictionaries.
   */
   size_t getNumSubDictionaries() const
     {return subDictionaries.size();}
 
   /*!
+  ** Subdictionary setter.
   **
-  **
-  ** @param index
-  ** @param dictionary
+  ** @param index : subdictionary index.
+  ** @param dictionary : subdictionary.
   */
   void setSubDictionary(size_t index, FeatureDictionaryPtr dictionary)
     {if (subDictionaries.size() < index + 1) subDictionaries.resize(index + 1); subDictionaries[index] = dictionary;}
 
   /*!
+  ** Subdictionaries setter.
   **
-  **
-  ** @param subDictionaries
+  ** @param subDictionaries : subdictionaries.
   */
   void setSubDictionaries(const std::vector<FeatureDictionaryPtr>& subDictionaries)
     {this->subDictionaries = subDictionaries;}
 
   /*!
+  ** Subdictionary getter by index (read only).
   **
+  ** @param index : index of the subdictionary.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return the corresponding subdictionary or throw an error.
   */
   const FeatureDictionaryPtr getSubDictionary(size_t index) const
     {assert(index < subDictionaries.size()); return subDictionaries[index];}
 
   /*!
+  ** Subdictionary getter by index.
   **
+  ** @param index : index of the subdictionary.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return the corresponding subdictionary or an empty dictionary if
+  ** there is no correspondance with @a index.
   */
   FeatureDictionaryPtr getSubDictionary(size_t index);
 
   /*!
+  ** Subdictionary getter by name.
   **
+  ** @param name : subdictionary name.
   **
-  ** @param name
-  **
-  ** @return
+  ** @return the corresponding subdictionary or throw an error.
   */
   FeatureDictionaryPtr getSubDictionary(const std::string& name)
     {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
 
   /*!
+  ** #FIXME : insère le subdictionary s'il n'y a rien a l'index, mais sinon?
   **
-  **
-  ** @param index
-  ** @param subDictionary
+  ** @param index : index of the subdictionary.
+  ** @param subDictionary : subdictionary to insert or check.
   */
   void ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary);
 
   /*!
-  **
+  ** #FIXME : ?
   **
   **
   ** @return
@@ -318,92 +326,86 @@ public:
   ** Object
   */
   /*!
+  ** Dictionary name getter.
   **
-  **
-  **
-  ** @return
+  ** @return dictionary name.
   */
   virtual std::string getName() const
     {return name;}
 
   /*!
+  ** Convert to string.
   **
-  **
-  **
-  ** @return
+  ** @return a string corresponding to the dictionary.
   */
   virtual std::string toString() const;
+
   /*!
+  ** Convert to graph.
   **
-  **
-  **
-  ** @return
+  ** @return an object graph pointer corresponding to the dictionary.
   */
   virtual ObjectGraphPtr toGraph() const;
+
   /*!
+  ** Convert to a table.
   **
-  **
-  **
-  ** @return
+  ** @return a table pointer corresponding to the dictionary.
   */
   virtual TablePtr toTable() const;
 
   /*!
+  ** Load a dictionary from a stream.
   **
+  ** @param istr : input stream.
   **
-  ** @param istr
-  **
-  ** @return
+  ** @return False if any error occurs.
   */
   virtual bool load(std::istream& istr);
+
   /*!
+  ** Save to an output stream.
   **
-  **
-  ** @param ostr
+  ** @param ostr : output stream.
   */
   virtual void save(std::ostream& ostr) const;
 
   /*!
+  ** #FIXME
   **
-  **
-  ** @param istr
+  ** @param istr : input stream.
   ** @param dictionary1
   ** @param dictionary2
   **
   ** @return
   */
   static bool load(std::istream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2);
+
   /*!
+  ** #FIXME
   **
-  **
-  ** @param ostr
+  ** @param ostr : output stream
   ** @param dictionary1
   ** @param dictionary2
   */
   static void save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
 
 private:
-  std::string name;             /*!< */
-  StringDictionaryPtr featuresDictionary; /*!< */
-  StringDictionaryPtr scopesDictionary; /*!< */
-  std::vector<FeatureDictionaryPtr> subDictionaries; /*!< */
-  FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures; /*!< */
+  std::string name;             /*!< Dictionary name. */
+  StringDictionaryPtr featuresDictionary; /*!< Feature dictionary. */
+  StringDictionaryPtr scopesDictionary; /*!< Scope dictionary. */
+  std::vector<FeatureDictionaryPtr> subDictionaries; /*!< Subdictionaries. */
+  FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
 
-  /*!
-  **
-  **
-  ** @param indent
-  ** @param res
-  */
   void toStringRec(size_t indent, std::string& res) const;
 };
 
 /*!
+** Load a feature dictionary from a file.
 **
+** @param filename : file name.
 **
-** @param filename
-**
-** @return
+** @return a feature dictionary pointer.
 */
 inline FeatureDictionaryPtr loadFeatureDictionary(const std::string& filename)
   {return Object::loadFromFileAndCast<FeatureDictionary>(filename);}

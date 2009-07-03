@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 18:06:36 2009
 **
-**@brief  #FIXME: all
+**@brief  Gradient-based learner.
 **
 **
 */
@@ -27,30 +27,29 @@ namespace lbcpp
 
 /*!
 ** @class GradientBasedLearner
-** @brief
+** @brief Gradient-based learner.
 */
 class GradientBasedLearner : public Object
 {
 public:
   /*!
+  ** Parameters setter.
   **
-  **
-  ** @param parameters
+  ** @param parameters : dense vector pointer of gradient-based learner parameters.
   */
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
 
   /*!
+  ** Parameters getter.
   **
-  **
-  **
-  ** @return
+  ** @return a dense vector instance of gradient-based learner parameters.
   */
   DenseVectorPtr getParameters() const
     {return parameters;}
 
   /*!
-  **
+  ** #FIXME
   **
   ** @param regularizer
   */

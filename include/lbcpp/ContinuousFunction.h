@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 17:13:40 2009
 **
-**@brief  #FIXME: all
+**@brief  Continuous functions.
 **
 **
 */
@@ -28,17 +28,16 @@ namespace lbcpp
 
 /*!
 ** @class ContinuousFunction
-** @brief #FIXME
+** @brief Continuous function class declaration.
 **
 */
 class ContinuousFunction : public Object
 {
 public:
   /*!
+  ** Check if the function is derivable or not.
   **
-  **
-  **
-  ** @return
+  ** @return True if derivable.
   */
   virtual bool isDerivable() const = 0;
 };
@@ -53,11 +52,11 @@ class ScalarFunction : public ContinuousFunction
 {
 public:
   /*!
+  ** Compute function value in @a input. Compute f(input).
   **
+  ** @param input : function argument.
   **
-  ** @param input
-  **
-  ** @return
+  ** @return f(input) value.
   */
   virtual double compute(double input) const;
 
@@ -83,8 +82,8 @@ public:
   /*!
   **
   **
-  ** @param input
-  ** @param output
+  ** @param input : function argument.
+  ** @param output : result container.
   ** @param derivative
   */
   virtual void compute(double input, double* output, double* derivative) const;
@@ -92,8 +91,8 @@ public:
   /*!
   **
   **
-  ** @param input
-  ** @param output
+  ** @param input : function argument.
+  ** @param output : result container.
   ** @param derivativeDirection
   ** @param derivative
   */
@@ -127,11 +126,11 @@ class ScalarVectorFunction : public ContinuousFunction
 {
 public:
   /*!
+  ** Compute f(@a input).
   **
+  ** @param input : function argument.
   **
-  ** @param input
-  **
-  ** @return
+  ** @return f(input).
   */
   virtual double compute(const FeatureGeneratorPtr input) const;
 
@@ -147,7 +146,7 @@ public:
   /*!
   **
   **
-  ** @param input
+  ** @param input : function argument.
   ** @param gradientDirection
   **
   ** @return
@@ -157,8 +156,8 @@ public:
   /*!
   **
   **
-  ** @param input
-  ** @param output
+  ** @param input : function argument.
+  ** @param output : result container.
   ** @param gradient
   */
   virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const;
@@ -166,8 +165,8 @@ public:
   /*!
   **
   **
-  ** @param input
-  ** @param output
+  ** @param input : function argument.
+  ** @param output : result container.
   ** @param gradientDirection
   ** @param gradient
   */
@@ -274,8 +273,8 @@ public:
   **
   **
   ** @param parameters
-  ** @param input
-  ** @param output
+  ** @param input : function argument.
+  ** @param output : result container.
   ** @param gradientWrtParameters
   ** @param gradientWrtInput
   */

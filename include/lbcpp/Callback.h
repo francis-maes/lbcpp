@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 17:00:21 2009
 **
-**@brief  #FIXME: all
+**@brief  CR-algorithm callback.
 **
 **
 */
@@ -26,7 +26,7 @@ namespace lbcpp
 
 /*!
 ** @class Callback
-** @brief #FIXME
+** @brief CR-algorithm callback.
 **
 */
 class Callback
@@ -34,24 +34,23 @@ class Callback
 public:
 
   /*!
-  **
-  **
-  **
-  ** @return
+  ** Destructor.
   */
   virtual ~Callback() {}
 
   /*!
-  **
+  ** #FIXME
   **
   ** @param choose
   */
   virtual void choose(ChoosePtr choose) {}
 
   /*!
+  ** @brief Reward classifier.
   **
+  ** #FIXME
   **
-  ** @param reward
+  ** @param reward : reward value.
   */
   virtual void reward(double reward) {}
 };
