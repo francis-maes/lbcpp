@@ -114,7 +114,7 @@ public:
   **
   ** @return true if ContentClassName == expectClassName, false otherwise.
   */
-  bool checkContentClassName(const std::string& expectedClassName);
+  bool checkContentClassName(const std::string& expectedClassName) const;
 
   /*!
   ** Load object at the position currentPosition + @a maximumCount
@@ -124,8 +124,7 @@ public:
   ** count == number of objects.
   **
   ** @param maximumCount : iteration steps.
-  **
-  ** @return always True.
+  ** @return false if any errors occurs.
   */
   bool iterate(size_t maximumCount = 0);
 

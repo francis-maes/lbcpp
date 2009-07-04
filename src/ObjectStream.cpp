@@ -50,7 +50,7 @@ bool ObjectStream::iterate(size_t maximumCount)
   return true;
 }
 
-bool ObjectStream::checkContentClassName(const std::string& expectedClassName)
+bool ObjectStream::checkContentClassName(const std::string& expectedClassName) const
 {
   if (getContentClassName() != expectedClassName)
   {
