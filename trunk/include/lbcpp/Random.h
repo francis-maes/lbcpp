@@ -160,7 +160,7 @@ public:
   **
   ** @return any size_t type value in range [0, maxSize[
   */
-  size_t sampleSize(size_t maxSize) //
+  size_t sampleSize(size_t maxSize)
     {return (size_t)sampleInt((int)maxSize);}
 
   /*!
