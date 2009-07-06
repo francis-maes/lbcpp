@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Mon Jun 15 23:43:59 2009
 **
-**@brief  #FIXME: all
+**@brief  A base class for serializable objects.
 **
 **
 */
@@ -35,73 +35,77 @@ typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
 /*!
 ** @class Object
-** @brief
+** @brief Object factory.
 */
 class Object : public ReferenceCountedObject
 {
 public:
   /*!
-  **
-  **
-  **
-  ** @return
+  ** Destructor.
   */
   virtual ~Object() {}
 
   typedef Object* (*Constructor)();
 
   /*!
-  ** Object declaration.
+  ** Object declaration. A @a className object with a defaut
+  ** @a contructor may be declare into the Object factory. After what,
+  ** you can use Object::create() (@see Object::create) function to
+  ** dynamically create that kind of objects.
   **
   ** @param className : class name.
-  ** @param constructor : constructor.
+  ** @param constructor : class constructor.
   */
   static void declare(const std::string& className, Constructor constructor);
 
   /*!
-  ** Create an object of class @a className.
+  ** Creates an object of class @a className. You should declare class
+  ** @a className with Object::declare() (@see Object::declare)
+  ** function before using the Object factory.
   **
   ** @param className : class name.
   **
-  ** @return a pointer on a @a className object.
+  ** @return an instance of @a className object.
   */
   static Object* create(const std::string& className);
 
   /*!
-  ** Load an object from a stream.
+  ** Loads an object from a stream.
   **
   ** @param istr : input stream.
   **
-  ** @return a pointer on the loaded (if any) object.
+  ** @return a pointer on the loaded object or ObjectPtr if an error
+  ** occurs.
   */
   static ObjectPtr loadFromStream(std::istream& istr);
 
   /*!
-  ** Load an object from a file.
+  ** Loads an object from a file.
   **
   ** @param fileName : file name.
   **
-  ** @return a pointer on the loaded (if any) object.
+  ** @return a pointer on the loaded object or ObjectPtr if any error
+  ** occurs.
   */
   static ObjectPtr loadFromFile(const std::string& fileName);
 
   /*!
-  ** Load an object from a stream an cast it.
+  ** Loads an object from a stream and cast it.
   **
   ** @param istr : input stream.
   **
-  ** @return a pointer on the loaded (if any) object.
+  ** @return a pointer on the loaded object or NULL if invalid cast.
   */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
     {return checkCast<T>("Object::loadFromStreamAndCast", loadFromStream(istr));}
 
   /*!
-  ** Load an object from a file and cast it.
+  ** Loads an object from a file and cast it.
   **
   ** @param fileName : file name.
   **
-  ** @return a pointer on the loaded( if any) object.
+  ** @return a pointer on the loaded object or NULL if invalid cast.
   */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const std::string& fileName)
@@ -123,7 +127,7 @@ public:
     {return getClassName() + "::getName() unimplemented";}
 
   /*!
-  ** Convert the current object to string.
+  ** Converts the current object to a string.
   **
   ** @return the current object (string form).
   */
@@ -131,23 +135,25 @@ public:
     {return getClassName() + "::toString() unimplemented";}
 
   /*!
-  ** Convert the current object to graph.
+  ** Converts the current object to graph (optional).
   **
-  ** @return the current object (graph form).
+  ** @return the current object (graph form) or ObjectGraphPtr if any
+  ** error occurs.
   */
   virtual ObjectGraphPtr toGraph() const
     {return ObjectGraphPtr();}
 
   /*!
-  ** Convert the current object to table.
+  ** Converts the current object to table (optional).
   **
-  ** @return the current object (table form).
+  ** @return the current object (table form) or TablePtr if any error
+  ** occurs. .
   */
   virtual TablePtr toTable() const
     {return TablePtr();}
 
   /*!
-  ** Clone the current object.
+  ** Clones the current object.
   **
   ** @return a copy of the current object.
   */
@@ -155,7 +161,7 @@ public:
     {assert(false); return ObjectPtr();}
 
   /*!
-  ** Clone and cast the current object.
+  ** Clones and cast the current object.
   **
   ** @return a casted copy of the current object.
   */
@@ -164,7 +170,7 @@ public:
     {return checkCast<T>("Object::cloneAndCast", clone());}
 
   /*!
-  ** Save the current object to the file @a filename.
+  ** Saves the current object to the file @a filename.
   **
   ** @param fileName : output file name.
   **
@@ -173,7 +179,7 @@ public:
   bool saveToFile(const std::string& fileName) const;
 
   /*!
-  ** Save the current object to a stream.
+  ** Saves the current object to a stream.
   **
   ** @param ostr : output stream.
   */
@@ -182,6 +188,7 @@ public:
   /*!
   ** Error manager.
   **
+  ** @see ErrorHandler (in Utilities.h)
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
   */
@@ -191,6 +198,7 @@ public:
   /*!
   ** Warning manager.
   **
+  ** @see ErrorHandler (in Utilities.h)
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
   */
@@ -219,8 +227,10 @@ protected:
 };
 
 /*!
-** Load an object from the file @a filename.
+** Loads an object from the file @a filename.
 **
+** @see Object::saveToStream
+** @see Object::saveToFile
 ** @param filename : file name.
 **
 ** @return an object pointer.
