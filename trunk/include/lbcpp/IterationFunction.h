@@ -7,11 +7,16 @@
                                `--------------------------------------------*/
 
 /*!
-**@file   IterationFunction.h
-**@author Francis MAES
-**@date   Fri Jun 12 18:26:12 2009
+** @file   IterationFunction.h
+** @author Francis MAES
+** @date   Fri Jun 12 18:26:12 2009
 **
-**@brief  A function that depends on an iteration number.
+** @brief IterationFunction is the class that represents a parameter
+** that evolves <i>w.r.t.</i> iterations. Such parameters are for
+** example used in online learning, in order to specify how the
+** learning rate should evolve <i>w.r.t.</i> the number of
+** corrections. An IterationFunction can be seen as a function from
+** iteration numbers to scalars.
 **
 **
 */
@@ -26,13 +31,13 @@ namespace lbcpp
 
 /*!
 ** @class IterationFunction
-** @brief
+** @brief A function that depends on an iteration number.
 */
 class IterationFunction : public Object
 {
 public:
   /*!
-  ** Compute @a iteration iterations.
+  ** Computes @a iteration iterations.
   **
   ** @param iteration : iteration number.
   **
@@ -42,21 +47,33 @@ public:
 };
 
 /*!
-** Constant function. Always returns @a value.
+** Creates a constant IterationFunction.
 **
-** @param value : constant value.
+** This function creates a new IterationFunction that always returns
+** the constant value @a value.
 **
-** @return a constant iteration function instance.
+** @param value : constant value to return.
+**
+** @returns a new IterationFunction.
 */
 extern IterationFunctionPtr constantIterationFunction(double value);
 
 /*!
-** #FIXME
+** Creates a new IterativeFunction that decreases conversely
+** proportionately.
+*
+** Defined by :
+** - f(0) = @a initialValue
+** - f(@a numberIterationsToReachHalfInitialValue) = @a initialValue/2
+** - f(i) = @a initialValue * @a numberIterationsToReachHalfInitialValue /
+** (double)(@a numberIterationsToReachHalfInitialValue + i);
 **
-** @param initialValue
-** @param numberIterationsToReachHalfInitialValue
 **
-** @return
+** @param initialValue : initial value.
+** @param numberIterationsToReachHalfInitialValue : number of
+** iteration to reach half initial value.
+**
+** @return a new IterativeFunction.
 */
 extern IterationFunctionPtr invLinearIterationFunction(double initialValue = 1.0, size_t numberIterationsToReachHalfInitialValue = 1000);
 

@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Sat Jun 13 18:03:22 2009
 **
-**@brief  #FIXME: all
+**@brief Utilities, especially the ErrorHandler.
 **
 **
 */
@@ -30,70 +30,66 @@ namespace lbcpp
 
 /*!
 ** @class ErrorHandler
-** @brief
+** @brief Error handler.
 */
 class ErrorHandler
 {
 public:
   /*!
-  **
-  **
-  **
-  ** @return
+  ** Destructor.
   */
   virtual ~ErrorHandler() {}
 
   /*!
+  ** Displays an error message.
   **
-  **
-  ** @param where
-  ** @param what
+  ** @param where : where the error occurs.
+  ** @param what : what's going wrong.
   */
   virtual void errorMessage(const std::string& where, const std::string& what) = 0;
 
   /*!
+  ** Displays a warning message.
   **
-  **
-  ** @param where
-  ** @param what
+  ** @param where : where the problem occurs.
+  ** @param what : what's going wrong.
   */
   virtual void warningMessage(const std::string& where, const std::string& what) = 0;
 
   /*!
+  ** ErrorHandler instance setter.
   **
-  **
-  ** @param handler
+  ** @param handler : ErrorHandler instance.
   */
   static void setInstance(ErrorHandler& handler);
 
   /*!
+  ** ErrorHandler instance getter.
   **
-  **
-  **
-  ** @return
+  ** @return the ErrorHandler instance.
   */
   static ErrorHandler& getInstance() {assert(instance); return *instance;}
 
   /*!
+  ** Displays an error message.
   **
-  **
-  ** @param where
-  ** @param what
+  ** @param where : where the error occurs.
+  ** @param what : what's going wrong.
   */
   static void error(const std::string& where, const std::string& what)
     {getInstance().errorMessage(where, what);}
 
   /*!
+  ** Displays a warning message.
   **
-  **
-  ** @param where
-  ** @param what
+  ** @param where : where the problem occurs.
+  ** @param what : what's going wrong.
   */
   static void warning(const std::string& where, const std::string& what)
     {getInstance().warningMessage(where, what);}
 
 private:
-  static ErrorHandler* instance; /*!< */
+  static ErrorHandler* instance;
 };
 
 

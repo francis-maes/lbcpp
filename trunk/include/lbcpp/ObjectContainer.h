@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 19:11:19 2009
 **
-**@brief  #FIXME: all
+**@brief  Random acces object container base classe.
 **
 **
 */
@@ -24,10 +24,10 @@
 namespace lbcpp
 {
 
-// -> reprend les fonctionalites de nieme::InstanceSet, voir la doc de InstanceSet
+
 /*!
 ** @class ObjectContainer
-** @brief
+** @brief Random acces object container base classe.
 */
 class ObjectContainer : public Object
 {
@@ -35,7 +35,8 @@ public:
   /*!
   ** Content class name getter.
   **
-  ** @return content class name.
+  ** @return the name of the base class which is common for all
+  ** objects contained in this container .
   */
   virtual std::string getContentClassName() const
     {return "Object";}
@@ -50,14 +51,14 @@ public:
   /*!
   ** Item getter (by index).
   **
-  ** @param index : item index.
+  ** @param index : item index (must be from range [0, size()[).
   **
   ** @return an object pointer.
   */
   virtual ObjectPtr get(size_t index) const = 0;
 
   /*!
-  ** Check if the container is empty or not.
+  ** Checks if the container is empty or not.
   **
   ** @return size == 0.
   */
@@ -65,9 +66,9 @@ public:
     {return size() == 0;}
 
   /*!
-  ** Get (by index) and cast item from the container.
+  ** Gets (by index) and casts item from the container.
   **
-  ** @param index : item index.
+  ** @param index : item index (must be from range [0, size()[).
   **
   ** @return an object pointer.
   */
@@ -79,7 +80,7 @@ public:
   }
 
   /*!
-  ** Convert to a VectorObjectContainer (based on a
+  ** Converts to a VectorObjectContainer (based on a
   ** 'std::vector<ObjectPtr>' container).
   **
   ** @return a VectorObjectContainer pointer.
@@ -87,18 +88,22 @@ public:
   virtual VectorObjectContainerPtr toVector() const;
 
   /*!
-  ** Convert to an Object Stream.
+  ** Creates an object stream from the current container.
   **
+  ** @see ObjectStream
   ** @return an object stream pointer.
   */
   virtual ObjectStreamPtr toStream() const;
 
   /*!
-  ** Apply a @a function to all item contained into the object container.
+  ** Applies a @a function to all item contained into the object container.
   **
   ** @param function : function to apply to the current object container.
-  ** @param lazyCompute : specify if the machine is powerful enought
-  ** or not.
+  ** @param lazyCompute : specify if the function is applicated
+  ** immediately on all container items (True), or at each call
+  ** to get() or getAndCast() (False).
+  **
+  ** @see ObjectFunction
   **
   ** @return an object container pointer.
   */
@@ -106,42 +111,83 @@ public:
 
 public:
   /*!
-  ** Create a randomized version of a dataset.
+  ** Creates a randomized version of a dataset.
   **
-  ** @return an object container pointer.
+  ** The randomization is lazy: only a mapping table between old
+  ** indices and new ones is stored and no data is copied.
+  **
+  ** @returns the randomized ObjectContainer that has an internal
+  ** reference to this one.
   */
   ObjectContainerPtr randomize();
 
   /*!
-  ** Create a set where each instance is duplicated @a count times.
+  ** Creates a set where each instance is duplicated multiple times.
   **
-  ** @param count : number of times an instance is duplicated.
+  ** This function creates a new ObjectContainer that references this
+  ** one. Each element of this ObjectContainer is duplicated <i>count</i>
+  ** times in the new ObjectContainer. For example, if this ObjectContainer contains
+  ** three examples A, B and C, <i>duplicate(4)</i> will contain A, B, C, A,
+  ** B, C, A, B, C, A, B and C.
   **
-  ** @return an object container pointer.
+  ** The duplication is lazy and does not consume any memory nor cpu
+  ** time.
+  **
+  ** Duplicating an ObjectContainer can for example be useful when
+  ** training online learning machines. Indeed, with online learning,
+  ** one call to LearningMachine::train performs a single pass on the
+  ** dataset. The following code shows how to perform 10 passes on the
+  ** data with a single call to the train function:
+  ** @code
+  ** LearningMachine anOnlineMachine = ...;
+  ** ObjectContainer trainingData = ...;
+  **
+  ** ObjectContainer trainingData10Passes =
+  ** trainingData.duplicate(10);
+  ** if (randomize)
+  **  trainingData10Passes = trainingData10Passes.randomize();
+  ** anOnlineMachine.train(trainingData10Passes);
+  ** @endcode
+  **
+  ** Note that one can alternatively use a loop that calls ten
+  ** times the train function.
+  **
+  ** @param count : The number of times the instance set is
+  ** duplicated.
+  ** @returns a new ObjectContainer that refers this one internally.
   */
   ObjectContainerPtr duplicate(size_t count);
 
   /*!
-  ** Select a fold in the object container.
+  ** Creates a fold of instances.
   **
-  ** @param fold : fold index.
-  ** @param numFolds : number of folds.
+  ** This function is typically used in the context of
+  ** cross-validation.
+  ** The instances are splitted into <i>numFolds</i> groups. This
+  ** method construct a new ObjectContainer that refers to the
+  ** <i>fold</i>'s group.
   **
-  ** @return an object container pointer of the fold
-  ** [@a fold * meanFoldSize, (@a fold + 1) * meanFoldSize], where
-  ** meanFoldSize == size() / @a numFolds.
+  ** @param fold : the number of the fold. This number should be in
+  ** the interval 0 to numFolds - 1.
+  ** @param numFolds : the total number of folds.
+  **
+  ** @returns a new ObjectContainer that refers this one internally.
   */
   ObjectContainerPtr fold(size_t fold, size_t numFolds);
 
   /*!
-  ** Exclude a fold.
+  ** Excludes a fold of instances.
   **
-  ** @param fold : fold index to exclude.
-  ** @param numFolds : number of folds.
+  ** This function compute the complementary set of the one
+  ** returned by fold().
+  ** The returned ObjectContainer contains all instances except the
+  ** one from the <i>fold</i>'s group.
   **
-  ** @return an object container pointer of all folds without the fold
-  ** [@a fold * meanFoldSize, (@a fold + 1) * meanFoldSize], where
-  ** meanFoldSize == size() / @a numFolds.
+  ** @param fold : the number of the fold that will be excluded from
+  ** data. This number should be in the interval 0 to numFolds - 1.
+  ** @param numFolds : the total number of folds.
+  **
+  ** @returns a new ObjectContainer that refers this one internally.
   */
   ObjectContainerPtr invFold(size_t fold, size_t numFolds);
 
@@ -157,19 +203,26 @@ public:
   ObjectContainerPtr range(size_t begin, size_t end);
 
   /*!
-  ** Excludes a range.
+  ** Selects a range of instances.
   **
-  ** @param begin : first item index.
-  ** @param end : last item index.
+  ** This functions creates an instance set that refer to a range
+  ** of examples of this instance set. The range is defined through
+  ** the begin and end indices that respectively correspond to the
+  ** first instance inside the range and the first instance below the
+  ** range.
   **
-  ** @return an object container pointer of the all items precudling
-  ** items between @a begin and @a end.
+  **  @param begin : the index of the first instance inside the
+  **  range.
+  **  @param end : the index of the first instance below the range.
+  **
+  **  @returns a new ObjectContainer that refers to this internally
+  **  and whose size is (end - begin).
   */
   ObjectContainerPtr invRange(size_t begin, size_t end);
 };
 
 /*!
-** Append two object containers.
+** Appends two object containers.
 **
 ** @param left : first object container.
 ** @param right : second object container.
@@ -181,7 +234,7 @@ extern ObjectContainerPtr append(ObjectContainerPtr left, ObjectContainerPtr rig
 
 /*!
 ** @class VectorObjectContainer
-** @brief Object container (vector).
+** @brief Object container (std::vector).
 */
 class VectorObjectContainer : public ObjectContainer
 {
@@ -234,15 +287,15 @@ public:
     {assert(index < objects.size()); return objects[index];}
 
   /*!
-  ** Convert to vector.
+  ** Returns a reference on itself.
   **
-  ** @return a VectorObjectContainer pointer.
+  ** @return a reference on itself.
   */
   virtual VectorObjectContainerPtr toVector() const
     {return VectorObjectContainerPtr(const_cast<VectorObjectContainer* >(this));}
 
   /*!
-  ** Reserve @a size space.
+  ** Reserves @a size space.
   **
   ** @param size : space to reserve.
   */
@@ -250,7 +303,7 @@ public:
     {objects.reserve(size);}
 
   /*!
-  ** Append @a object to the container.
+  ** Appends @a object to the container.
   **
   ** @param object : object to append to the container.
   */
@@ -282,7 +335,7 @@ protected:
 
 /*!
 ** @class DecoratorObjectContainer
-** @brief
+** @brief Object container base classe (design pattern Decorator).
 */
 class DecoratorObjectContainer : public ObjectContainer
 {
@@ -314,7 +367,7 @@ public:
     {return target->size();}
 
   /*!
-  ** Get @a index item.
+  ** Gets @a index item.
   **
   ** @param index : item index.
   **
