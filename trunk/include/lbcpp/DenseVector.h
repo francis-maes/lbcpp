@@ -57,8 +57,8 @@ public:
   ** Constructor.
   **
   ** @param dictionary : feature dictionary.
-  ** @param initialNumValues :
-  ** @param initialNumSubVectors :
+  ** @param initialNumValues : initial number of values.
+  ** @param initialNumSubVectors : initial number of subvectors.
   **
   ** @return a DenseVector instance.
   */
@@ -91,7 +91,7 @@ public:
     {return values.size() > 0;}
 
   /*!
-  ** Values getter.
+  ** Returns a vector containing all DenseVector values.
   **
   ** @return a vector of values.
   */
@@ -126,11 +126,11 @@ public:
     {assert(index < values.size()); return values[index];}
 
   /*!
-  ** Feature value getter.
+  ** Returns the value at the index @a index.
   **
   ** @param index : feature index.
   **
-  ** @return feature value at the index @a index.
+  ** @return the value at the index @a index.
   */
   double& get(size_t index)
     {ensureSize(values, index + 1, 0.0); return values[index];}
@@ -294,9 +294,10 @@ public:
   ** Static FeatureGenerator
   */
   /*!
-  ** #FIXME
+  ** Visitor entry point.
   **
-  ** @param visitor
+  ** @see FeatureVisitor
+  ** @param visitor : feature visitor.
   */
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor) const;
@@ -336,31 +337,19 @@ public:
     {return subVectors.size();}
 
   /*!
-  ** #FIXME
-  **
-  ** @param num
-  **
-  ** @return
+  ** @see FeatureGenerator::getSubGenerator
   */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
     {assert(num < subVectors.size()); return subVectors[num];}
 
   /*!
-  ** #FIXME
-  **
-  ** @param num
-  **
-  ** @return
+  ** @see FeatureGenerator::getSubGeneratorIndex
   */
   virtual size_t getSubGeneratorIndex(size_t num) const
     {assert(num < subVectors.size()); return num;}
 
   /*!
-  ** #FIXME
-  **
-  ** @param index
-  **
-  ** @return
+  ** @see FeatureGenerator::getSubGeneratorWithIndex
   */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return index < subVectors.size() ? (FeatureGeneratorPtr)subVectors[index] : FeatureGeneratorPtr();}
