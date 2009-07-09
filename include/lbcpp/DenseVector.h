@@ -296,8 +296,8 @@ public:
   /**
   ** Visitor entry point.
   **
-  ** @see FeatureVisitor
   ** @param visitor : feature visitor.
+  ** @see FeatureVisitor
   */
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor) const;

@@ -90,8 +90,8 @@ public:
   /**
   ** Creates an object stream from the current container.
   **
-  ** @see ObjectStream
   ** @return an object stream pointer.
+  ** @see ObjectStream
   */
   virtual ObjectStreamPtr toStream() const;
 
@@ -103,9 +103,9 @@ public:
   ** immediately on all container items (True), or at each call
   ** to get() or getAndCast() (False).
   **
-  ** @see ObjectFunction
   **
   ** @return an object container pointer.
+  ** @see ObjectFunction
   */
   ObjectContainerPtr apply(ObjectFunctionPtr function, bool lazyCompute = true);
 

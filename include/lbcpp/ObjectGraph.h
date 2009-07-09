@@ -103,22 +103,19 @@ public:
   /**
   ** Saves the current directed graph.
   **
-  ** @see ObjectGraph::saveNode
-  **
   ** @param ostr : output stream.
+  ** @see ObjectGraph::saveNode
   */
   virtual void save(std::ostream& ostr) const;
 
   /**
   ** Loads a directed graph contain from an input stream.
   **
+  ** @param istr : input stream.
+  ** @return a boolean.
   ** @see ObjectGraph::loadNode
   ** @see ObjectGraph::setRoots
   ** @see ObjectGraph::setSuccessors
-  **
-  ** @param istr : input stream.
-  **
-  ** @return a boolean.
   */
   virtual bool load(std::istream& istr);
 

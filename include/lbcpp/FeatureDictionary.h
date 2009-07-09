@@ -53,7 +53,6 @@ public:
   ** Checks if it exists an association for the index @a index.
   **
   ** @param index : index to check.
-  **
   ** @return False if there is no association with @a index.
   */
   bool exists(size_t index) const;
@@ -62,7 +61,6 @@ public:
   ** Returns the string associated to @a index.
   **
   ** @param index : key.
-  **
   ** @return the string associated to @a index if any, or convert
   ** @a index to string.
   */
@@ -72,7 +70,6 @@ public:
   ** Returns the index associated to @a str.
   **
   ** @param str : string value used as key.
-  **
   ** @return -1 if not found, the corresponding index otherwise.
   */
   int getIndex(const std::string& str) const;
@@ -81,7 +78,6 @@ public:
   ** Adds a new string value to the dictionary.
   **
   ** @param str : string value.
-  **
   ** @return the corresponding index value.
   */
   size_t add(const std::string& str);
@@ -94,7 +90,6 @@ public:
   **
   ** @param ostr : output stream.
   ** @param strings : string dictionary.
-  **
   ** @return a stream instance.
   */
   friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
@@ -115,8 +110,8 @@ public:
 
   /**
   ** Converts a string dictionary to a Table.
-  ** @see Table
   ** @return a table pointer.
+  ** @see Table
   */
   virtual TablePtr toTable() const;
 
@@ -131,7 +126,6 @@ public:
   ** Loads a string dictionary from an input stream.
   **
   ** @param istr : input stream.
-  **
   ** @return False if any error occurs.
   */
   virtual bool load(std::istream& istr);
@@ -169,8 +163,7 @@ public:
   **
   ** @param name : dictionary name.
   ** @param features : feature string dictionary.
-  ** @param scopes : scope string dicitonary.
-  **
+  ** @param scopes : scope string dictionary.
   ** @return a FeatureDictionary instance.
   */
   FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes);
@@ -179,7 +172,6 @@ public:
   ** Constructor.
   **
   ** @param name : dictionary name.
-  **
   ** @return a FeatureDicitonary instance.
   */
   FeatureDictionary(const std::string& name = "unnamed");
@@ -196,7 +188,6 @@ public:
   ** Checks if two feature dictionaries are equals.
   **
   ** @param otherDictionary : feature dictionary pointer.
-  **
   ** @return True if the two feature dictionaries are equals.
   */
   bool checkEquals(FeatureDictionaryPtr otherDictionary) const;
@@ -224,7 +215,6 @@ public:
   ** Adds a new feature.
   **
   ** @param identifier : feature identifier.
-  **
   ** @return index of the new feature.
   */
   size_t addFeature(const std::string& identifier)
@@ -290,7 +280,6 @@ public:
   ** Subdictionary getter by index (read only).
   **
   ** @param index : index of the subdictionary.
-  **
   ** @return the corresponding subdictionary or throw an error.
   */
   const FeatureDictionaryPtr getSubDictionary(size_t index) const
@@ -300,7 +289,6 @@ public:
   ** Subdictionary getter by index.
   **
   ** @param index : index of the subdictionary.
-  **
   ** @return the corresponding subdictionary or an empty dictionary if
   ** there is no correspondance with @a index.
   */
@@ -310,7 +298,6 @@ public:
   ** Subdictionary getter by name.
   **
   ** @param name : subdictionary name.
-  **
   ** @return the corresponding subdictionary or throw an error.
   */
   FeatureDictionaryPtr getSubDictionary(const std::string& name)
@@ -324,9 +311,9 @@ public:
   ** not. It throws an error to the ErrorHandler if you try to overide
   ** an existing (and different) subdictionary.
   **
-  ** @see ErrorHandler
   ** @param index : index of the subdictionary.
   ** @param subDictionary : subdictionary to insert or check.
+  ** @see ErrorHandler
   */
   void ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary);
 
@@ -356,16 +343,18 @@ public:
   virtual std::string toString() const;
 
   /**
-  ** Converts to an ObjectGraph.
-  ** @see ObjectGraph
+  ** Converts to an ObjectGraph
+  **
   ** @return an object graph pointer corresponding to the dictionary.
+  ** @see ObjectGraph
   */
   virtual ObjectGraphPtr toGraph() const;
 
   /**
   ** Converts to a Table.
-  ** @see Table
+  **
   ** @return a table pointer corresponding to the dictionary.
+  ** @see Table
   */
   virtual TablePtr toTable() const;
 
@@ -373,7 +362,6 @@ public:
   ** Loads a dictionary from a stream.
   **
   ** @param istr : input stream.
-  **
   ** @return False if any error occurs.
   */
   virtual bool load(std::istream& istr);
@@ -390,12 +378,12 @@ public:
   ** distinct feature dictionariers called @a dictionary1 and @a
   ** dictionary2.
   **
-  ** @see ObjectGraph
   ** @param istr : input stream.
   ** @param dictionary1 : first dictionary container.
   ** @param dictionary2 : second dictionary container.
   **
   ** @return False if any error occurs.
+  ** @see ObjectGraph
   */
   static bool load(std::istream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2);
 
@@ -403,10 +391,10 @@ public:
   ** Saves @a dictionary1 and @a dictionary2 to @a ostr stream (as
   ** ObjectGraph).
   **
-  ** @see ObjectGraph
   ** @param ostr : output stream
   ** @param dictionary1 : first dictionary.
   ** @param dictionary2 : second dictionary.
+  ** @see ObjectGraph
   */
   static void save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
 
@@ -424,7 +412,6 @@ private:
 ** Loads a feature dictionary from a file.
 **
 ** @param filename : file name.
-**
 ** @return a feature dictionary pointer.
 */
 inline FeatureDictionaryPtr loadFeatureDictionary(const std::string& filename)

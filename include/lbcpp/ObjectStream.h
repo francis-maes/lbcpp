@@ -114,12 +114,12 @@ public:
   /**
   ** Checks if getContentClassName() == @a expectedClassName.
   **
-  ** @see ObjectStream::getContentClassName
-  ** @see Object::error
   ** @param expectedClassName : expected class name.
   **
   ** @return True if (ContentClassName == expectClassName), False
   ** otherwise and throw an error to ErrorManager.
+  ** @see ObjectStream::getContentClassName
+  ** @see Object::error
   */
   bool checkContentClassName(const std::string& expectedClassName) const;
 
@@ -141,10 +141,10 @@ public:
   ** them into memory. If
   ** @a maximumCount == 0, @a load() loads all items into memory.
   **
-  ** @see ObjectContainer
   ** @param maximumCount : number of item to load.
   **
   ** @return an object container instance containing loaded items.
+  ** @see ObjectContainer
   */
   ObjectContainerPtr load(size_t maximumCount = 0);
 
@@ -228,7 +228,7 @@ extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
 ** Creates a synthetic generator of linearly separable classification
 ** data.
 **
-** Each time you call next() function (@see ObjectStream::next), a new
+** Each time you call next() function, a new
 ** classification example is generated where each feature is drawed
 ** from a normal Gaussian distribution and class labels are drawed from
 ** range [0, @a numClasses[.
@@ -237,6 +237,7 @@ extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
 ** @param numClasses : number of classes.
 **
 ** @return a new object stream pointer.
+** @see ObjectStream::next
 */
 extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses);
 
@@ -502,9 +503,8 @@ public:
   ** @a parseEnd is called when the parser reaches the end of file. It
   ** calls parseEmptyLine().
   **
-  ** @see LearningDataObjectParser::parseEmptyLine
-  **
   ** @return parseEmptyLine() result.
+  ** @see LearningDataObjectParser::parseEmptyLine
   */
   virtual bool parseEnd()
     {return parseEmptyLine();}
@@ -515,13 +515,13 @@ public:
   ** - if the line starts by '#', it calls @a parseCommentLine()
   ** - otherwise, it tokenizes the line before calling @a parseDataLine()
   **
-  ** @see LearningDataObjectParser::parseEmptyLine
-  ** @see LearningDataObjectParser::parseCommentLine
-  ** @see LearningDataObjectParser::parseDataLine
   **
   ** @param line : text line.
   **
   ** @return a boolean.
+  ** @see LearningDataObjectParser::parseEmptyLine
+  ** @see LearningDataObjectParser::parseCommentLine
+  ** @see LearningDataObjectParser::parseDataLine
   */
   virtual bool parseLine(const std::string& line);
 

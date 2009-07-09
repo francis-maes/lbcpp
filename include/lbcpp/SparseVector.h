@@ -218,8 +218,8 @@ public:
   /**
   ** Visitor entry point.
   **
-  ** @see FeatureVisitor
   ** @param visitor : visitor.
+  ** @see FeatureVisitor
   */
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor) const;
@@ -230,8 +230,8 @@ public:
   /**
   ** Returns the vector FeatureDictionary.
   **
-  ** @see FeatureDictionary
   ** @return a feature dictionary pointer.
+  ** @see FeatureDictionary
   */
   virtual FeatureDictionaryPtr getDictionary() const;
 
