@@ -35,7 +35,14 @@ typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
 /*!
 ** @class Object
-** @brief Object factory.
+** @brief Object is the base class of nearly all classes of LBC++ library.
+**   Object provides three main features:
+**    - Support for reference counting: Object override from ReferenceCountedObject,
+**      so that Objects are reference counted.
+**    - Support for serialization: Objects can be saved and loaded
+**      into C++ streams. Objects can be created dynamically given their class name.
+**    - Support for conversion: Objects provide conversion functions to strings,
+**      to tables and to graphs.
 */
 class Object : public ReferenceCountedObject
 {
@@ -44,38 +51,43 @@ public:
   ** Destructor.
   */
   virtual ~Object() {}
-
+  
+  /** Pointer to a function that create objects
+  */
   typedef Object* (*Constructor)();
 
-  /**
-  ** Object declaration. A @a className object with a defaut
-  ** @a contructor may be declare into the Object factory. After what,
-  ** you can use Object::create() (@see Object::create) function to
-  ** dynamically create that kind of objects.
+  /** Declares a class to enable dynamic creation of this class.
+  **
+  ** Objects rely internally on an Object factory that keeps a trace of classes
+  ** that can be created dynamically. This function registers a new class
+  ** to this ObjectFactory.
   **
   ** @param className : class name.
   ** @param constructor : class constructor.
+  ** @see Object::create
   */
   static void declare(const std::string& className, Constructor constructor);
 
-  /**
-  ** Creates an object of class @a className. You should declare class
-  ** @a className with Object::declare() (@see Object::declare)
-  ** function before using the Object factory.
+  /** Creates dynamically an object of class @a className. 
+  **
+  ** The class @a className must be declared with Object::declare()
+  ** before being able to instantiate it dynamically.
   **
   ** @param className : class name.
   **
   ** @return an instance of @a className object.
+  ** @see Object::declare
   */
   static Object* create(const std::string& className);
 
   /**
-  ** Loads an object from a stream.
+  ** Loads an object from a C++ stream.
   **
-  ** @param istr : input stream.
+  ** @param istr : C++ input stream.
   **
-  ** @return a pointer on the loaded object or ObjectPtr if an error
+  ** @return a pointer on the loaded object or ObjectPtr() if an error
   ** occurs.
+  ** @see saveToStream
   */
   static ObjectPtr loadFromStream(std::istream& istr);
 
@@ -84,8 +96,9 @@ public:
   **
   ** @param fileName : file name.
   **
-  ** @return a pointer on the loaded object or ObjectPtr if any error
+  ** @return a pointer on the loaded object or ObjectPtr() if any error
   ** occurs.
+  ** @see saveToFile
   */
   static ObjectPtr loadFromFile(const std::string& fileName);
 
@@ -94,7 +107,7 @@ public:
   **
   ** @param istr : input stream.
   **
-  ** @return a pointer on the loaded object or NULL if invalid cast.
+  ** @return a pointer on the loaded object or a null pointer if the cast fails.
   */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
@@ -105,7 +118,7 @@ public:
   **
   ** @param fileName : file name.
   **
-  ** @return a pointer on the loaded object or NULL if invalid cast.
+  ** @return a pointer on the loaded object or a null pointer if the cast fails.
   */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const std::string& fileName)
@@ -121,6 +134,11 @@ public:
   /**
   ** Name getter.
   **
+  ** Note that not all Objects implement this function. Furthermore,
+  ** there is not particular semantic assigned to the name of an Object: 
+  ** The getName() function may be used in different ways depending 
+  ** on the kinds of Objects.
+  **
   ** @return object name.
   */
   virtual std::string getName() const
@@ -135,19 +153,25 @@ public:
     {return getClassName() + "::toString() unimplemented";}
 
   /**
-  ** Converts the current object to graph (optional).
+  ** Converts the current object to a graph.
   **
-  ** @return the current object (graph form) or ObjectGraphPtr if any
-  ** error occurs.
+  ** Try to convert the object into a graph (for serialization
+  ** or visualization purpose).
+  **
+  ** @return the current object (graph form) or ObjectGraphPtr() if the
+  ** conversion to graph is undefined for this object.
   */
   virtual ObjectGraphPtr toGraph() const
     {return ObjectGraphPtr();}
 
   /**
-  ** Converts the current object to table (optional).
+  ** Converts the current object to a table.
   **
-  ** @return the current object (table form) or TablePtr if any error
-  ** occurs. .
+  ** Try to convert the object into a table (for serialization
+  ** or visualization purpose).
+  **
+  ** @return the current object (table form) or TablePtr() if the
+  ** conversion to table is undefined for this object.
   */
   virtual TablePtr toTable() const
     {return TablePtr();}
@@ -155,7 +179,10 @@ public:
   /**
   ** Clones the current object.
   **
-  ** @return a copy of the current object.
+  ** Note that the clone() function is not defined on all objects.
+  **  
+  ** @return a copy of the current object or ObjectPtr() if
+  ** the clone() operation is undefined for this object.
   */
   virtual ObjectPtr clone() const
     {assert(false); return ObjectPtr();}
@@ -175,22 +202,24 @@ public:
   ** @param fileName : output file name.
   **
   ** @return False if any error occurs.
+  ** @see loadFromFile
   */
   bool saveToFile(const std::string& fileName) const;
 
   /**
-  ** Saves the current object to a stream.
+  ** Saves the current object to a C++ stream.
   **
   ** @param ostr : output stream.
+  ** @see loadFromStream
   */
   void saveToStream(std::ostream& ostr) const;
 
   /**
   ** Error manager.
   **
-  ** @see ErrorHandler (in Utilities.h)
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
+  ** @see ErrorHandler (in Utilities.h)
   */
   static void error(const std::string& where, const std::string& what)
     {ErrorHandler::error(where, what);}
@@ -198,9 +227,9 @@ public:
   /**
   ** Warning manager.
   **
-  ** @see ErrorHandler (in Utilities.h)
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
+  ** @see ErrorHandler (in Utilities.h)
   */
   static void warning(const std::string& where, const std::string& what)
     {ErrorHandler::warning(where, what);}
@@ -209,6 +238,14 @@ protected:
   template<class T>
   friend struct ObjectTraits;
 
+  /** Checks if a cast is valid and throw an error if not.
+  **
+  ** @param where : a description of the caller function
+  ** that will be used in case of an error.
+  ** @param object : to object to cast.
+  ** @return false is the loading fails, true otherwise. If loading fails,
+  ** load() is responsible for declaring an error to the ErrorManager.
+  */
   template<class T>
   static ReferenceCountedObjectPtr<T> checkCast(const std::string& where, ObjectPtr object)
   {
@@ -222,7 +259,20 @@ protected:
     return res;
   }
 
+  /**
+  ** Override this function to load the object from a C++ stream.
+  **
+  ** @param istr : a C++ input stream.
+  ** @return false is the loading fails, true otherwise. If loading fails,
+  ** load() is responsible for declaring an error to the ErrorManager.
+  */
   virtual bool load(std::istream& istr) {return true;}
+  
+  /**
+  ** Override this function to save the object to a C++ stream.
+  **
+  ** @param ostr : a C++ output stream.
+  */
   virtual void save(std::ostream& ostr) const {}
 };
 
