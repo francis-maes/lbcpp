@@ -33,55 +33,50 @@ namespace lbcpp
 class Random
 {
 public:
-  /**
-  ** Singleton instance getter.
+  /** Singleton instance getter.
   **
   ** @return a reference on the Random singleton.
   */
   static Random& getInstance()
     {static Random instance(1664518616645186LL); return instance;}
 
-  /**
-  ** Constructor.
+  /** Constructor.
   **
   ** @param seedValue : seed for the random numbers generator.
   */
   Random(long long seedValue = 0)
     : seed(seedValue) {}
 
-  /**
-  ** Constructor.
+  /** Constructor.
   **
   ** @param seedValue : seed for the random numbers generator.  
   */
   Random(int seedValue)
     {setSeed(seedValue);}
 
-  /**
-  ** Seed setter.
+  /** Seed setter.
   **
   ** @param seed : random seed.
   */
   void setSeed(int seed)
     {this->seed = (long long)seed; sampleInt();}
 
-  /**
-  ** Seed setter.
+  /** Seed setter.
   **
   ** @param seed1 : random seed.
   ** @param seed2 : random seed.
   */
   void setSeed(int seed1, int seed2);
 
-  /**
-  ** Seed setter.
+  /** Seed setter.
   **
   ** @param seed : random seed.
   */
   void setSeed(long long seed)
     {this->seed = seed;}
 
-  /**
+  /** Samples a Boolean value uniformly.
+  **
   ** Samples True or False according to the following probilities:
   ** \f$ P(True) = 0.5 \f$ et \f$ P(False) = 0.5 \f$.
   **
@@ -91,7 +86,8 @@ public:
   bool sampleBool()
     {return (sampleInt() & 0x80000000) != 0;}
 
-  /** 
+  /** Samples a Boolean value using a Bernoulli distribution.
+  **
   ** Samples True of False according to the following probalities:
   ** \f$ P(True) = probabilityOfTrue \f$ and \f$ P(False) = 1 -
   ** probabilityOfTrue \f$.
@@ -104,10 +100,10 @@ public:
     {return probabilityOfTrue && sampleDouble() <= probabilityOfTrue;}
 
 
-  /**
-  ** Samples a number in interval [0, probabilities.size()[ <i>w.r.t.</i> a
-  ** discrete probability distribution.
+  /** Samples a number given a discrete probability distribution.
   **
+  ** Samples a number in interval [0, probabilities.size()[ <i>w.r.t.</i>
+  ** @a probabilities.
   ** By default, the probabilities are not normalized. If the sum of the 
   ** probabilities is known, it can be given with argument @a probabilitiesSum. 
   ** By default (@a probabilitiesSum = 0), the probabilities sum will be computed
@@ -136,7 +132,8 @@ public:
   */
   size_t sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0.0);
 
-  /**
+  /** Samples a number given a discrete normalized probability distribution.
+  **
   ** Samples a number in interval [0, @a probabilities.size()[ according
   ** to the normalized probability distribution list @a
   ** probabilities.
@@ -152,15 +149,13 @@ public:
   size_t sampleWithNormalizedProbabilities(const std::vector<double>& probabilities)
     {return sampleWithProbabilities(probabilities, 1.0);}
 
-  /**
-  ** Samples an integer value.
+  /** Samples an integer value uniformly.
   **
   ** @return an integer value.
   */
   int sampleInt();
 
-  /**
-  ** Samples an integer value in range [0, @a maxValue[.
+  /** Samples an integer value in range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
   **
@@ -169,8 +164,7 @@ public:
   int sampleInt(int maxValue)
     {assert(maxValue > 0); return (sampleInt() & 0x7fffffff) % maxValue;}
 
-  /**
-  ** Samples an integer value in range [@a minValue, @a maxValue[.
+  /** Samples an integer value in range [@a minValue, @a maxValue[.
   **
   ** @param minValue : lower bound.
   ** @param maxValue : upper bound.
@@ -180,8 +174,7 @@ public:
   int sampleInt(int minValue, int maxValue)
     {assert(maxValue > minValue); return (sampleInt() & 0x7fffffff) % (maxValue - minValue) + minValue;}
 
-  /**
-  ** Samples an size_t (unsigned) type value in range [0, @a maxSize[.
+  /** Samples an unsigned integer value in range [0, @a maxSize[.
   **
   ** @see sampleInt
   ** @param maxSize : upper bound.
@@ -191,8 +184,7 @@ public:
   size_t sampleSize(size_t maxSize)
     {return (size_t)sampleInt((int)maxSize);}
 
-  /**
-  ** Samples an size_t type (unsigned) value in range [@a minSize, @a maxSize[.
+  /** Samples an unsigned integer value in range [@a minSize, @a maxSize[.
   **
   ** @see sampleInt
   ** @param minSize : lower bound.
@@ -203,16 +195,14 @@ public:
   size_t sampleSize(size_t minSize, size_t maxSize)
     {assert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
 
-  /**
-  ** Samples a float value uniformly from range [0, 1[.
+  /** Samples a float value uniformly from range [0, 1[.
   **
   ** @return a float value uniformly from range [0, 1[
   */
   float sampleFloat()
     {return ((unsigned int) sampleInt()) / (float) 0xffffffff;}
 
-  /**
-  ** Samples any float value uniformly from range [0, @a maxValue[.
+  /** Samples a float value uniformly from range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
   **
@@ -221,8 +211,7 @@ public:
   float sampleFloat(float maxValue)
     {return sampleFloat() * maxValue;}
   
-  /**
-  ** Samples a float value uniformly from range [@a minValue, @a maxValue[.
+  /** Samples a float value uniformly from range [@a minValue, @a maxValue[.
   **
   ** @param minValue : lower bound.
   ** @param maxValue : upper bound.
@@ -232,16 +221,14 @@ public:
   float sampleFloat(float minValue, float maxValue)
     {return minValue + sampleFloat() * (maxValue - minValue);}
 
-  /**
-  ** Samples a double value uniformly from range [0, 1[.
+  /** Samples a double value uniformly from range [0, 1[.
   **
   ** @return a double value uniformly from range [0, 1[
   */
   double sampleDouble()
     {return ((unsigned int) sampleInt()) / (double) 0xffffffff;}
 
-  /**
-  ** Samples a double value uniformly from range [0, @a maxValue[.
+  /** Samples a double value uniformly from range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
   **
@@ -250,8 +237,7 @@ public:
   double sampleDouble(double maxValue)
     {return sampleDouble() * maxValue;}
 
-  /**
-  ** Samples a double value uniformly from range [@a minValue, @a maxValue[.
+  /** Samples a double value uniformly from range [@a minValue, @a maxValue[.
   **
   ** @param minValue : lower bound.
   ** @param maxValue : upper bound.
@@ -261,29 +247,27 @@ public:
   double sampleDouble(double minValue, double maxValue)
     {return minValue + sampleDouble() * (maxValue - minValue);}
 
-  /**
-  ** Samples a double value uniformly from range [0, 1[ according to a Gaussian
-  ** distribution.
+  /** Samples a double value from a normal Gaussian distribution.
   **
-  ** @return a double value uniformly from range [0, 1[ according to a Gaussian
-  ** distribution.
+  ** @return a double value sampled from a Gaussian
+  ** distribution which mean is 0 and which standart deviation is 1.
   */
   double sampleDoubleFromGaussian();
 
-  /**
-  ** Samples a double value uniformly from range [0, 1[ according to a Gaussian
-  ** distribution (mean = @a mean, standard deviation = @a standardDeviation).
+  /** Samples a double value from a Gaussian distribution.
   **
   ** @param mean : gaussian mean.
   ** @param standardDeviation : gaussian standard deviation.
   **
-  ** @return a double value uniformly from range [0, 1[ (Gaussian distribution).
+  ** @return a double value sampled from the Gaussian distribution.
   */
   double sampleDoubleFromGaussian(double mean, double standardDeviation)
     {return sampleDoubleFromGaussian() * standardDeviation + mean;}
 
-  /**
-  ** Randomly fills up @a res vector with index from 0 to size()-1.
+  /** Samples an ordering of fixed size.
+  **
+  ** This functions fills the vector @a res with all the indices
+  ** comprised between 0 and @a size - 1 in a randomly sampled order.
   **
   ** @param size : number of item.
   ** @param res : vector to fill up.
@@ -291,8 +275,10 @@ public:
   inline void sampleOrder(size_t size, std::vector<size_t>& res)
     {sampleOrder(0, size, res);}
 
-  /**
-  ** Randomly fills up @a res vector with index from @a begin to @a end.
+  /** Samples an ordering of fixed size.
+  **
+  ** This functions fills the vector @a res with all the indices
+  ** comprised between @a begin and @a end - 1 in a randomly sampled order.
   **
   ** @param begin : first item index.
   ** @param end : last item index.
