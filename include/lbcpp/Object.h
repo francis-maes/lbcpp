@@ -40,14 +40,14 @@ typedef ReferenceCountedObjectPtr<Table> TablePtr;
 class Object : public ReferenceCountedObject
 {
 public:
-  /*!
+  /**
   ** Destructor.
   */
   virtual ~Object() {}
 
   typedef Object* (*Constructor)();
 
-  /*!
+  /**
   ** Object declaration. A @a className object with a defaut
   ** @a contructor may be declare into the Object factory. After what,
   ** you can use Object::create() (@see Object::create) function to
@@ -58,7 +58,7 @@ public:
   */
   static void declare(const std::string& className, Constructor constructor);
 
-  /*!
+  /**
   ** Creates an object of class @a className. You should declare class
   ** @a className with Object::declare() (@see Object::declare)
   ** function before using the Object factory.
@@ -69,7 +69,7 @@ public:
   */
   static Object* create(const std::string& className);
 
-  /*!
+  /**
   ** Loads an object from a stream.
   **
   ** @param istr : input stream.
@@ -79,7 +79,7 @@ public:
   */
   static ObjectPtr loadFromStream(std::istream& istr);
 
-  /*!
+  /**
   ** Loads an object from a file.
   **
   ** @param fileName : file name.
@@ -89,7 +89,7 @@ public:
   */
   static ObjectPtr loadFromFile(const std::string& fileName);
 
-  /*!
+  /**
   ** Loads an object from a stream and cast it.
   **
   ** @param istr : input stream.
@@ -100,7 +100,7 @@ public:
   static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
     {return checkCast<T>("Object::loadFromStreamAndCast", loadFromStream(istr));}
 
-  /*!
+  /**
   ** Loads an object from a file and cast it.
   **
   ** @param fileName : file name.
@@ -111,14 +111,14 @@ public:
   static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const std::string& fileName)
     {return checkCast<T>("Object::loadFromFileAndCast", loadFromFile(fileName));}
 
-  /*!
+  /**
   ** Class name getter.
   **
   ** @return class name.
   */
   std::string getClassName() const;
 
-  /*!
+  /**
   ** Name getter.
   **
   ** @return object name.
@@ -126,7 +126,7 @@ public:
   virtual std::string getName() const
     {return getClassName() + "::getName() unimplemented";}
 
-  /*!
+  /**
   ** Converts the current object to a string.
   **
   ** @return the current object (string form).
@@ -134,7 +134,7 @@ public:
   virtual std::string toString() const
     {return getClassName() + "::toString() unimplemented";}
 
-  /*!
+  /**
   ** Converts the current object to graph (optional).
   **
   ** @return the current object (graph form) or ObjectGraphPtr if any
@@ -143,7 +143,7 @@ public:
   virtual ObjectGraphPtr toGraph() const
     {return ObjectGraphPtr();}
 
-  /*!
+  /**
   ** Converts the current object to table (optional).
   **
   ** @return the current object (table form) or TablePtr if any error
@@ -152,7 +152,7 @@ public:
   virtual TablePtr toTable() const
     {return TablePtr();}
 
-  /*!
+  /**
   ** Clones the current object.
   **
   ** @return a copy of the current object.
@@ -160,7 +160,7 @@ public:
   virtual ObjectPtr clone() const
     {assert(false); return ObjectPtr();}
 
-  /*!
+  /**
   ** Clones and cast the current object.
   **
   ** @return a casted copy of the current object.
@@ -169,7 +169,7 @@ public:
   ReferenceCountedObjectPtr<T> cloneAndCast() const
     {return checkCast<T>("Object::cloneAndCast", clone());}
 
-  /*!
+  /**
   ** Saves the current object to the file @a filename.
   **
   ** @param fileName : output file name.
@@ -178,14 +178,14 @@ public:
   */
   bool saveToFile(const std::string& fileName) const;
 
-  /*!
+  /**
   ** Saves the current object to a stream.
   **
   ** @param ostr : output stream.
   */
   void saveToStream(std::ostream& ostr) const;
 
-  /*!
+  /**
   ** Error manager.
   **
   ** @see ErrorHandler (in Utilities.h)
@@ -195,7 +195,7 @@ public:
   static void error(const std::string& where, const std::string& what)
     {ErrorHandler::error(where, what);}
 
-  /*!
+  /**
   ** Warning manager.
   **
   ** @see ErrorHandler (in Utilities.h)
@@ -226,7 +226,7 @@ protected:
   virtual void save(std::ostream& ostr) const {}
 };
 
-/*!
+/**
 ** Loads an object from the file @a filename.
 **
 ** @see Object::saveToStream

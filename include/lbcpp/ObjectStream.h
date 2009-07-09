@@ -27,7 +27,7 @@
 namespace lbcpp
 {
 
-/*!
+/**
 ** @class ObjectFunction
 ** @brief Represents a function which takes an Object as input and
 ** returns an Object. ObjectFunction can be applied to Object streams
@@ -42,14 +42,14 @@ namespace lbcpp
 class ObjectFunction : public Object
 {
 public:
-  /*!
+  /**
   ** Returns the class name of the function output.
   **
   ** @return the class name of the function output.
   */
   virtual std::string getOutputClassName() const = 0;
 
-  /*!
+  /**
   ** @a function apply object function (named f(x)) to an object pointer.
   **
   ** @param object : an object pointer passed as function parameter.
@@ -60,7 +60,7 @@ public:
 };
 
 
-/*!
+/**
 ** @class ObjectStream
 ** @brief Object stream.
 **
@@ -75,7 +75,7 @@ public:
 class ObjectStream : public Object
 {
 public:
-  /*!
+  /**
   ** Content class name getter.
   **
   ** @return content class name (std::string).
@@ -83,7 +83,7 @@ public:
   virtual std::string getContentClassName() const
     {return "Object";}
 
-  /*!
+  /**
   ** Checks if the stream is OK or not.
   **
   ** @return True, if the stream is valid. Returns False if any
@@ -92,14 +92,14 @@ public:
   virtual bool isValid() const
     {return true;}
 
-  /*!
+  /**
   ** Loads and returns the next item from the stream.
   **
   ** @return an object pointer on the next database item.
   */
   virtual ObjectPtr next() = 0;
 
-  /*!
+  /**
   ** Loads, casts and returns the next item from the stream.
   **
   ** @return an object pointer (of type @a T) on the next database item.
@@ -111,7 +111,7 @@ public:
     return res ? res.staticCast<T>() : ReferenceCountedObjectPtr<T>();
   }
 
-  /*!
+  /**
   ** Checks if getContentClassName() == @a expectedClassName.
   **
   ** @see ObjectStream::getContentClassName
@@ -123,7 +123,7 @@ public:
   */
   bool checkContentClassName(const std::string& expectedClassName) const;
 
-  /*!
+  /**
   ** Calls next() up to @a maximumCount times and ignores the loaded
   ** objects. If @a maximumCount == 0, the function calls next() until
   ** the end of the stream. Otherwise, if the end of the stream occurs
@@ -136,7 +136,7 @@ public:
   */
   bool iterate(size_t maximumCount = 0);
 
-  /*!
+  /**
   ** Loads \a maximumCount items (maximum) from the stream and stores
   ** them into memory. If
   ** @a maximumCount == 0, @a load() loads all items into memory.
@@ -148,7 +148,7 @@ public:
   */
   ObjectContainerPtr load(size_t maximumCount = 0);
 
-  /*!
+  /**
   ** Applies the function @a function to a new stream derivated from the
   ** current stream.
   **
@@ -159,7 +159,7 @@ public:
   ObjectStreamPtr apply(ObjectFunctionPtr function);
 };
 
-/*!
+/**
 ** Creates a classification examples parser.
 **
 ** Each line of the datafile should contain a classification example.
@@ -224,7 +224,7 @@ public:
 extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
                                 FeatureDictionaryPtr features, StringDictionaryPtr labels);
 
-/*!
+/**
 ** Creates a synthetic generator of linearly separable classification
 ** data.
 **
@@ -241,7 +241,7 @@ extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
 extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses);
 
 
-/*!
+/**
 **  Creates a regression examples parser.
 **
 ** @param filename : regression examples file name.
@@ -252,7 +252,7 @@ extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatur
 extern ObjectStreamPtr regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features);
 
 
-/*!
+/**
 ** @class TextObjectParser
 ** @brief Text object parser.
 **
@@ -269,7 +269,7 @@ extern ObjectStreamPtr regressionExamplesParser(const std::string& filename, Fea
 class TextObjectParser : public ObjectStream
 {
 public:
-  /*!
+  /**
   ** Constructor.
   **
   ** @param filename : file name.
@@ -278,7 +278,7 @@ public:
   */
   TextObjectParser(const std::string& filename);
 
-  /*!
+  /**
   ** Constructor.
   **
   ** @param newInputStream : new input stream.
@@ -287,12 +287,12 @@ public:
   */
   TextObjectParser(std::istream* newInputStream);
 
-  /*!
+  /**
   ** Destructor.
   */
   virtual ~TextObjectParser();
 
-  /*!
+  /**
   ** Checks if the stream is OK or not.
   **
   ** @return True, if the stream is valid. Returns False if any
@@ -301,13 +301,13 @@ public:
   virtual bool isValid() const
     {return istr != NULL;}
 
-  /*!
+  /**
   ** Function called at the begin of the parsing.
   **
   */
   virtual void parseBegin()   {}
 
-  /*!
+  /**
   ** Parses a string line.
   **
   ** @param line : text line.
@@ -316,7 +316,7 @@ public:
   */
   virtual bool parseLine(const std::string& line) = 0;
 
-  /*!
+  /**
   **
   ** Function called at the end of the parsing.
   **
@@ -324,7 +324,7 @@ public:
   */
   virtual bool parseEnd()     {return true;}
 
-  /*!
+  /**
   ** Loads the next object in the stream (ie. the current object
   ** pointer is updated).
   **
@@ -335,7 +335,7 @@ public:
 
 protected:
 
-  /*!
+  /**
   ** currentObject setter.
   **
   ** @param object : object pointer.
@@ -343,7 +343,7 @@ protected:
   void setResult(ObjectPtr object)
     {currentObject = object;}
 
-  /*!
+  /**
   ** Tokenizes a line.
   **
   ** @param line : example text line.
@@ -354,7 +354,7 @@ protected:
                        std::vector< std::string >& columns,
                        const char* separators = " \t");
 
-  /*!
+  /**
   ** Generic input stream parser.
   **
   ** @param istr : input stream.
@@ -366,7 +366,7 @@ protected:
   static bool parse(std::istream& istr, T& res)
     {return !(istr >> res).fail();}
 
-  /*!
+  /**
   ** Wrapper text -> input stream parse.
   **
   ** @param str : text to parse.
@@ -384,7 +384,7 @@ private:
 };
 
 
-/*!
+/**
 ** @class LearningDataObjectParser
 ** @brief Base classe for data file parsers.
 **
@@ -448,7 +448,7 @@ class LearningDataObjectParser : public TextObjectParser
 {
 public:
 
-  /*!
+  /**
   ** Constructor.
   **
   ** @param filename : learning data file name.
@@ -459,7 +459,7 @@ public:
   LearningDataObjectParser(const std::string& filename, FeatureDictionaryPtr features = FeatureDictionaryPtr())
     : TextObjectParser(filename), features(features) {}
 
-  /*!
+  /**
   ** Constructor
   **
   ** @param newInputStream : new input stream.
@@ -470,7 +470,7 @@ public:
   LearningDataObjectParser(std::istream* newInputStream, FeatureDictionaryPtr features = FeatureDictionaryPtr())
     : TextObjectParser(newInputStream), features(features) {}
 
-  /*!
+  /**
   ** Parses an empty line.
   **
   ** @return a boolean.
@@ -478,7 +478,7 @@ public:
   virtual bool parseEmptyLine()
     {return true;}
 
-  /*!
+  /**
   ** Parses a tokenized data line.
   **
   ** @param columns : tokenized data line.
@@ -488,7 +488,7 @@ public:
   virtual bool parseDataLine(const std::vector<std::string>& columns)
     {return false;}
 
-  /*!
+  /**
   ** Parses comment line (a line starting by '#').
   **
   ** @param comment : comment line.
@@ -498,7 +498,7 @@ public:
   virtual bool parseCommentLine(const std::string& comment)
     {return true;}
 
-  /*!
+  /**
   ** @a parseEnd is called when the parser reaches the end of file. It
   ** calls parseEmptyLine().
   **
@@ -509,7 +509,7 @@ public:
   virtual bool parseEnd()
     {return parseEmptyLine();}
 
-  /*!
+  /**
   ** Parses a text line following these rules:
   ** - if the line is empty, it calls @a parseEmptyLine()
   ** - if the line starts by '#', it calls @a parseCommentLine()
@@ -529,7 +529,7 @@ protected:
   FeatureDictionaryPtr features; /*!< A pointer to features dictionary.*/
 
 
-  /*!
+  /**
   ** featureList ::= feature featureList | feature
   **
   ** @param columns : feature container.
@@ -541,7 +541,7 @@ protected:
   bool parseFeatureList(const std::vector<std::string>& columns,
                         size_t firstColumn, SparseVectorPtr& res);
 
-  /*!
+  /**
   ** Feature parser.
   **
   ** feature ::= featureId : featureValue
@@ -554,7 +554,7 @@ protected:
   */
   static bool parseFeature(const std::string& str, std::string& featureId, double& featureValue);
 
-  /*!
+  /**
   ** Feature identifier parser.
   **
   ** featureId ::= name . featureId  | name

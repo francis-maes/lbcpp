@@ -1,4 +1,4 @@
-/*-----------------------------------------.---------------------------------.
+%/*-----------------------------------------.---------------------------------.
 | Filename: ObjectContainer.h              | Object RandomAccess Containers  |
 | Author  : Francis Maes                   |                                 |
 | Started : 08/06/2009 15:18               |                                 |
@@ -32,7 +32,7 @@ namespace lbcpp
 class ObjectContainer : public Object
 {
 public:
-  /*!
+  /**
   ** Content class name getter.
   **
   ** @return the name of the base class which is common for all
@@ -41,14 +41,14 @@ public:
   virtual std::string getContentClassName() const
     {return "Object";}
 
-  /*!
+  /**
   ** Container size getter.
   **
   ** @return container size.
   */
   virtual size_t size() const = 0;
 
-  /*!
+  /**
   ** Item getter (by index).
   **
   ** @param index : item index (must be from range [0, size()[).
@@ -57,7 +57,7 @@ public:
   */
   virtual ObjectPtr get(size_t index) const = 0;
 
-  /*!
+  /**
   ** Checks if the container is empty or not.
   **
   ** @return size == 0.
@@ -65,7 +65,7 @@ public:
   bool empty() const
     {return size() == 0;}
 
-  /*!
+  /**
   ** Gets (by index) and casts item from the container.
   **
   ** @param index : item index (must be from range [0, size()[).
@@ -79,7 +79,7 @@ public:
     return res ? res.staticCast<T>() : ReferenceCountedObjectPtr<T>();
   }
 
-  /*!
+  /**
   ** Converts to a VectorObjectContainer (based on a
   ** 'std::vector<ObjectPtr>' container).
   **
@@ -87,7 +87,7 @@ public:
   */
   virtual VectorObjectContainerPtr toVector() const;
 
-  /*!
+  /**
   ** Creates an object stream from the current container.
   **
   ** @see ObjectStream
@@ -95,7 +95,7 @@ public:
   */
   virtual ObjectStreamPtr toStream() const;
 
-  /*!
+  /**
   ** Applies a @a function to all item contained into the object container.
   **
   ** @param function : function to apply to the current object container.
@@ -110,7 +110,7 @@ public:
   ObjectContainerPtr apply(ObjectFunctionPtr function, bool lazyCompute = true);
 
 public:
-  /*!
+  /**
   ** Creates a randomized version of a dataset.
   **
   ** The randomization is lazy: only a mapping table between old
@@ -121,7 +121,7 @@ public:
   */
   ObjectContainerPtr randomize();
 
-  /*!
+  /**
   ** Creates a set where each instance is duplicated multiple times.
   **
   ** This function creates a new ObjectContainer that references this
@@ -158,7 +158,7 @@ public:
   */
   ObjectContainerPtr duplicate(size_t count);
 
-  /*!
+  /**
   ** Creates a fold of instances.
   **
   ** This function is typically used in the context of
@@ -175,7 +175,7 @@ public:
   */
   ObjectContainerPtr fold(size_t fold, size_t numFolds);
 
-  /*!
+  /**
   ** Excludes a fold of instances.
   **
   ** This function compute the complementary set of the one
@@ -191,18 +191,18 @@ public:
   */
   ObjectContainerPtr invFold(size_t fold, size_t numFolds);
 
-  /*!
+  /**
   ** Select a range.
   **
   ** @param begin : first item index.
   ** @param end : last item index.
   **
-  ** @return an object container pointer of the items between indexes
+  ** @return an object container pointer of the items between indices
   ** @a begin and @a end.
   */
   ObjectContainerPtr range(size_t begin, size_t end);
 
-  /*!
+  /**
   ** Selects a range of instances.
   **
   ** This functions creates an instance set that refer to a range
@@ -221,7 +221,7 @@ public:
   ObjectContainerPtr invRange(size_t begin, size_t end);
 };
 
-/*!
+/**
 ** Appends two object containers.
 **
 ** @param left : first object container.
@@ -232,14 +232,14 @@ public:
 extern ObjectContainerPtr append(ObjectContainerPtr left, ObjectContainerPtr right);
 
 
-/*!
+/**
 ** @class VectorObjectContainer
 ** @brief Object container (std::vector).
 */
 class VectorObjectContainer : public ObjectContainer
 {
 public:
-  /*!
+  /**
   ** Constructor.
   **
   ** @param objects : object vector.
@@ -250,7 +250,7 @@ public:
   VectorObjectContainer(const std::vector<ObjectPtr>& objects, const std::string& contentClassName = "Object")
     : objects(objects), contentClassName(contentClassName) {}
 
-  /*!
+  /**
   ** Constructor.
   **
   ** @param contentClassName : content class name.
@@ -260,7 +260,7 @@ public:
   VectorObjectContainer(const std::string& contentClassName = "Object")
     : contentClassName(contentClassName) {}
 
-  /*!
+  /**
   ** Content class name getter.
   **
   ** @return content class name.
@@ -268,7 +268,7 @@ public:
   virtual std::string getContentClassName() const
     {return contentClassName;}
 
-  /*!
+  /**
   ** Container size getter.
   **
   ** @return container size.
@@ -276,7 +276,7 @@ public:
   virtual size_t size() const
     {return objects.size();}
 
-  /*!
+  /**
   ** Item getter.
   **
   ** @param index : item index.
@@ -286,7 +286,7 @@ public:
   virtual ObjectPtr get(size_t index) const
     {assert(index < objects.size()); return objects[index];}
 
-  /*!
+  /**
   ** Returns a reference on itself.
   **
   ** @return a reference on itself.
@@ -294,7 +294,7 @@ public:
   virtual VectorObjectContainerPtr toVector() const
     {return VectorObjectContainerPtr(const_cast<VectorObjectContainer* >(this));}
 
-  /*!
+  /**
   ** Reserves @a size space.
   **
   ** @param size : space to reserve.
@@ -302,7 +302,7 @@ public:
   void reserve(size_t size)
     {objects.reserve(size);}
 
-  /*!
+  /**
   ** Appends @a object to the container.
   **
   ** @param object : object to append to the container.
@@ -310,7 +310,7 @@ public:
   void append(ObjectPtr object)
     {objects.push_back(object);}
 
-  /*!
+  /**
   ** Data getter.
   **
   ** @return data vector.
@@ -318,7 +318,7 @@ public:
   const std::vector<ObjectPtr>& getData() const
     {return objects;}
 
-  /*!
+  /**
   ** Data getter.
   **
   ** @return data vector.
@@ -333,14 +333,14 @@ protected:
 };
 
 
-/*!
+/**
 ** @class DecoratorObjectContainer
 ** @brief Object container base classe (design pattern Decorator).
 */
 class DecoratorObjectContainer : public ObjectContainer
 {
 public:
-  /*!
+  /**
   ** Constructor.
   **
   ** @param target : target.
@@ -350,7 +350,7 @@ public:
   DecoratorObjectContainer(ObjectContainerPtr target)
     : target(target) {}
 
-  /*!
+  /**
   ** Content class name getter.
   **
   ** @return content class name.
@@ -358,7 +358,7 @@ public:
   virtual std::string getContentClassName() const
     {return target->getContentClassName();}
 
-  /*!
+  /**
   ** Container size getter.
   **
   ** @return container size.
@@ -366,7 +366,7 @@ public:
   virtual size_t size() const
     {return target->size();}
 
-  /*!
+  /**
   ** Gets @a index item.
   **
   ** @param index : item index.
