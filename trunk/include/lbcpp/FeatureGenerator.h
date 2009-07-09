@@ -303,13 +303,13 @@ extern FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator
 /**
 ** Weighted sum. Defined by: \f$ weight1.\text{featureGenerator1}+weight2.\text{FeatureGenerator}\f$
 **
-** @param featureGenerator1
-** @param weight1
-** @param featureGenerator2
-** @param weight2
-** @param computeNow
+** @param featureGenerator1 : first FeatureGenerator.
+** @param weight1 : first weight.
+** @param featureGenerator2 : second FeatureGenerator.
+** @param weight2 : second weight.
+** @param computeNow : compute now or only if necessary.
 **
-** @return
+** @return a new FeatureGenerator instance.
 */
 extern FeatureGeneratorPtr weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow = false);
 
