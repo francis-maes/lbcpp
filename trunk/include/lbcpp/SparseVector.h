@@ -34,7 +34,7 @@ class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector,
 public:
   typedef FeatureGeneratorDefaultImplementations<SparseVector, FeatureVector> BaseClass;
 
-  /*!
+  /**
   ** Copy constructor.
   **
   ** @param otherVector : original sparse vector.
@@ -43,7 +43,7 @@ public:
   */
   SparseVector(const SparseVector& otherVector);
 
-  /*!
+  /**
   ** Constructor.
   **
   ** @param dictionary : feature dictionary.
@@ -54,19 +54,19 @@ public:
   */
   SparseVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr(), size_t reserveNumValues = 0, size_t reserveNumSubVectors = 0);
 
-  /*!
+  /**
   ** Destructor.
   */
   virtual ~SparseVector()
     {clear();}
 
-  /*!
+  /**
   ** Clears vector.
   **
   */
   virtual void clear();
 
-  /*!
+  /**
   ** = operator.
   **
   ** @param otherVector : right operand (SparseVector).
@@ -78,7 +78,7 @@ public:
   /*
   ** Features
   */
-  /*!
+  /**
   ** Checks if the sparse vector has some values.
   **
   ** @return False if there is no value.
@@ -86,7 +86,7 @@ public:
   bool hasValues() const
     {return values.size() > 0;}
 
-  /*!
+  /**
   ** Returns the number of values.
   **
   ** @return the number of values.
@@ -94,7 +94,7 @@ public:
   size_t getNumValues() const
     {return values.size();}
 
-  /*!
+  /**
   ** Value setter.
   **
   ** @param index : value index.
@@ -102,7 +102,7 @@ public:
   */
   void set(size_t index, double value);
 
-  /*!
+  /**
   ** Name setter.
   **
   ** @param name : name.
@@ -110,7 +110,7 @@ public:
   */
   void set(const std::string& name, double value);
 
-  /*!
+  /**
   ** Path setter.
   **
   ** @param path : path.
@@ -118,7 +118,7 @@ public:
   */
   void set(const std::vector<std::string>& path, double value);
 
-  /*!
+  /**
   ** Returns the value at the index @a index.
   **
   ** @param index : value index.
@@ -127,7 +127,7 @@ public:
   */
   double get(size_t index) const;
 
-  /*!
+  /**
   ** Value getter (reference).
   **
   ** @param index : value index.
@@ -139,7 +139,7 @@ public:
   /*
   ** Sub Vectors
   */
-  /*!
+  /**
   ** Checks if the sparse vector has subvectors.
   **
   ** @return False if there is no subvectors.
@@ -147,7 +147,7 @@ public:
   bool hasSubVectors() const
     {return subVectors.size() > 0;}
 
-  /*!
+  /**
   ** Returns the number of subvectors.
   **
   ** @return the number of subvectors.
@@ -155,7 +155,7 @@ public:
   size_t getNumSubVectors() const
     {return subVectors.size();}
 
-  /*!
+  /**
   ** Subvector getter.
   **
   ** @param index : subvector index.
@@ -164,7 +164,7 @@ public:
   */
   SparseVectorPtr getSubVector(size_t index) const;
 
-  /*!
+  /**
   ** Subvector getter (reference).
   **
   ** @param index : subvector index.
@@ -173,7 +173,7 @@ public:
   */
   SparseVectorPtr& getSubVector(size_t index);
 
-  /*!
+  /**
   ** Subvector setter.
   **
   ** @param index : subvector index.
@@ -189,21 +189,21 @@ public:
   /*
   ** Operations
   */
-  /*!
+  /**
   ** Returns the number of values (including values of subvectors).
   **
   ** @return number of values (including values of subvectors).
   */
   size_t size() const;
 
-  /*!
+  /**
   ** Scalar multiplication.
   **
   ** @param scalar : scalar value.
   */
   void multiplyByScalar(double scalar);
 
-  /*!
+  /**
   ** Adds a weighted feature generator.
   **
   ** @param featureGenerator : feature generator.
@@ -215,7 +215,7 @@ public:
   /*
   ** Static FeatureGenerator
   */
-  /*!
+  /**
   ** Visitor entry point.
   **
   ** @see FeatureVisitor
@@ -227,7 +227,7 @@ public:
   /*
   ** FeatureGenerator
   */
-  /*!
+  /**
   ** Returns the vector FeatureDictionary.
   **
   ** @see FeatureDictionary
@@ -235,7 +235,7 @@ public:
   */
   virtual FeatureDictionaryPtr getDictionary() const;
 
-  /*!
+  /**
   ** Converts to a SparseVector.
   **
   ** @return a sparse vector pointer.
@@ -243,7 +243,7 @@ public:
   virtual SparseVectorPtr toSparseVector() const
     {return SparseVectorPtr(const_cast<SparseVector* >(this));}
 
-  /*!
+  /**
   ** Returns the number of sub generators.
   **
   ** @return the number of subvectors.
@@ -251,7 +251,7 @@ public:
   virtual size_t getNumSubGenerators() const
     {return subVectors.size();}
 
-  /*!
+  /**
   ** Subgenerator getter.
   **
   ** @param num : subvector index.
@@ -261,7 +261,7 @@ public:
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
     {assert(num < subVectors.size()); return subVectors[num].second;}
 
-  /*!
+  /**
   ** Subgenerator index getter.
   **
   ** @param num : subvector index.
@@ -271,7 +271,7 @@ public:
   virtual size_t getSubGeneratorIndex(size_t num) const
     {assert(num < subVectors.size()); return subVectors[num].first;}
 
-  /*!
+  /**
   ** Returns the subgenerator at the index @a index.
   **
   ** @param index : subgenerator index.
@@ -284,7 +284,7 @@ public:
   /*
   ** Object
   */
-  /*!
+  /**
   ** Loads sparse vector from a stream.
   **
   ** @param istr : input stream.
@@ -293,14 +293,14 @@ public:
   */
   virtual bool load(std::istream& istr);
 
-  /*!
+  /**
   ** Saves sparse vector to a stream.
   **
   ** @param ostr : output stream.
   */
   virtual void save(std::ostream& ostr) const;
 
-  /*!
+  /**
   ** Clones sparse vector.
   **
   ** @return a copy of the current sparse vector.
@@ -312,11 +312,11 @@ private:
   typedef std::vector<std::pair<size_t, double> > FeatureVector;
   typedef std::vector<std::pair<size_t, SparseVectorPtr> > SubVectorVector;
 
-  FeatureVector   values;       /*!< Sparse vector values. */
-  SubVectorVector subVectors;   /*!< Sparse vector subvectors. */
+  FeatureVector   values;       /**< Sparse vector values. */
+  SubVectorVector subVectors;   /**< Sparse vector subvectors. */
 };
 
-  /*!
+  /**
   ** Loads sparse vector from a file.
   **
   ** @param filename : file name.

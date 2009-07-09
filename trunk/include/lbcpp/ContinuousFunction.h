@@ -26,7 +26,7 @@
 namespace lbcpp
 {
 
-/*!
+/**
 ** @class ContinuousFunction
 ** @brief Continuous function class declaration.
 **
@@ -34,7 +34,7 @@ namespace lbcpp
 class ContinuousFunction : public Object
 {
 public:
-  /*!
+  /**
   ** Checks if the function is derivable or not.
   **
   ** @return True if derivable.
@@ -43,7 +43,7 @@ public:
 };
 
 
-/*!
+/**
 ** @class ScalarFunction
 ** @brief \f$ f :  R  \to  R  \f$
 **
@@ -51,7 +51,7 @@ public:
 class ScalarFunction : public ContinuousFunction
 {
 public:
-  /*!
+  /**
   ** Computes function value in @a input. Computes f(input).
   **
   ** @param input : function argument.
@@ -60,7 +60,7 @@ public:
   */
   virtual double compute(double input) const;
 
-  /*!
+  /**
   **
   **
   ** @param input
@@ -69,7 +69,7 @@ public:
   */
   virtual double computeDerivative(double input) const;
 
-  /*!
+  /**
   **
   **
   ** @param input
@@ -79,7 +79,7 @@ public:
   */
   virtual double computeDerivative(double input, double direction) const;
 
-  /*!
+  /**
   **
   **
   ** @param input : function argument.
@@ -88,7 +88,7 @@ public:
   */
   virtual void compute(double input, double* output, double* derivative) const;
 
-  /*!
+  /**
   **
   **
   ** @param input : function argument.
@@ -100,7 +100,7 @@ public:
 };
 
 
-/*!
+/**
 ** @class ScalarLossFunction
 ** @brief \f$ f : \text{example}\times R  \to  R  \f$
 **
@@ -108,7 +108,7 @@ public:
 class ScalarLossFunction : public ScalarFunction
 {
 public:
-  /*!
+  /**
   **
   **
   ** @param learningExample
@@ -117,7 +117,7 @@ public:
 };
 
 
-/*!
+/**
 ** @class ScalarVectorFunction
 ** @brief \f$ f :  R^n \to  R  \f$
 **
@@ -125,7 +125,7 @@ public:
 class ScalarVectorFunction : public ContinuousFunction
 {
 public:
-  /*!
+  /**
   ** Computes f(@a input).
   **
   ** @param input : function argument.
@@ -134,7 +134,7 @@ public:
   */
   virtual double compute(const FeatureGeneratorPtr input) const;
 
-  /*!
+  /**
   **
   **
   ** @param input
@@ -143,7 +143,7 @@ public:
   */
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const;
 
-  /*!
+  /**
   **
   **
   ** @param input : function argument.
@@ -153,7 +153,7 @@ public:
   */
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const;
 
-  /*!
+  /**
   **
   **
   ** @param input : function argument.
@@ -162,7 +162,7 @@ public:
   */
   virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const;
 
-  /*!
+  /**
   **
   **
   ** @param input : function argument.
@@ -172,7 +172,7 @@ public:
   */
   virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param parameters
@@ -182,7 +182,7 @@ public:
   */
   bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
 
-  /*!
+  /**
   ** Returns \f$ g :  R \to R  \f$
   ** with \f$ g(x) = f(\text{parameters} + x * \text{direction}) \f$
   **
@@ -194,7 +194,7 @@ public:
   ScalarFunctionPtr lineFunction(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction) const;
 };
 
-/*!
+/**
 **
 **
 ** @param weight
@@ -203,7 +203,7 @@ public:
 */
 extern ScalarVectorFunctionPtr sumOfSquaresFunction(double weight = 1.0);
 
-/*!
+/**
 ** @class VectorLossFunctionm
 ** @brief \f$ f : \text{example}\times R^n \to  R  \f$
 **
@@ -211,7 +211,7 @@ extern ScalarVectorFunctionPtr sumOfSquaresFunction(double weight = 1.0);
 class VectorLossFunction : public ScalarVectorFunction
 {
 public:
-  /*!
+  /**
   **
   **
   ** @param learningExample
@@ -220,7 +220,7 @@ public:
 };
 
 
-/*!
+/**
 ** @class CRAlgorithm
 ** @brief \f$ f : \text{params}\times\text{features}\to R \f$
 **
@@ -229,7 +229,7 @@ class ScalarArchitecture : public ContinuousFunction
 {
 public:
   // todo: non-derivable scalar architectures
-  /*!
+  /**
   **
   **
   ** @param inputDictionary
@@ -238,7 +238,7 @@ public:
   */
   virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param inputDictionary
@@ -254,7 +254,7 @@ public:
     return res;
   }
 
-  /*!
+  /**
   **
   **
   ** @param parameters
@@ -264,7 +264,7 @@ public:
   */
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param parameters
@@ -280,7 +280,7 @@ public:
 };
 
 
-/*!
+/**
 ** @class VectorArchitecture
 ** @brief \f$ f : \text{params}\times\text{features}\to R^n\f$
 **
@@ -289,7 +289,7 @@ class VectorArchitecture : public ContinuousFunction
 {
 public:
   // todo: non-derivable vector architectures
-  /*!
+  /**
   **
   **
   ** @param inputDictionary
@@ -298,7 +298,7 @@ public:
   */
   virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param inputDictionary
@@ -314,7 +314,7 @@ public:
     return res;
   }
 
-  /*!
+  /**
   **
   **
   ** @param parameters
@@ -324,7 +324,7 @@ public:
   */
   virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param parameters
@@ -335,7 +335,7 @@ public:
   */
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param parameters
@@ -350,7 +350,7 @@ public:
                 FeatureGeneratorPtr* gradientWrtParameters,
                 FeatureGeneratorPtr* gradientWrtInput) const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param parameters

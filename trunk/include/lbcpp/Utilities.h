@@ -35,12 +35,12 @@ namespace lbcpp
 class ErrorHandler
 {
 public:
-  /*!
+  /**
   ** Destructor.
   */
   virtual ~ErrorHandler() {}
 
-  /*!
+  /**
   ** Displays an error message.
   **
   ** @param where : where the error occurs.
@@ -48,7 +48,7 @@ public:
   */
   virtual void errorMessage(const std::string& where, const std::string& what) = 0;
 
-  /*!
+  /**
   ** Displays a warning message.
   **
   ** @param where : where the problem occurs.
@@ -56,21 +56,21 @@ public:
   */
   virtual void warningMessage(const std::string& where, const std::string& what) = 0;
 
-  /*!
+  /**
   ** ErrorHandler instance setter.
   **
   ** @param handler : ErrorHandler instance.
   */
   static void setInstance(ErrorHandler& handler);
 
-  /*!
+  /**
   ** ErrorHandler instance getter.
   **
   ** @return the ErrorHandler instance.
   */
   static ErrorHandler& getInstance() {assert(instance); return *instance;}
 
-  /*!
+  /**
   ** Displays an error message.
   **
   ** @param where : where the error occurs.
@@ -79,7 +79,7 @@ public:
   static void error(const std::string& where, const std::string& what)
     {getInstance().errorMessage(where, what);}
 
-  /*!
+  /**
   ** Displays a warning message.
   **
   ** @param where : where the problem occurs.
@@ -93,14 +93,14 @@ private:
 };
 
 
-/*!
+/**
 ** @class ProgressCallback
 ** @brief
 */
 class ProgressCallback : public ReferenceCountedObject
 {
 public:
-  /*!
+  /**
   **
   **
   **
@@ -108,7 +108,7 @@ public:
   */
   virtual ~ProgressCallback() {}
 
-  /*!
+  /**
   **
   **
   ** @param description
@@ -117,7 +117,7 @@ public:
     {}
 
   // return false to stop the task
-  /*!
+  /**
   **
   **
   ** @param description
@@ -129,7 +129,7 @@ public:
   virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
     {return true;}
 
-  /*!
+  /**
   **
   **
   */
@@ -138,7 +138,7 @@ public:
 };
 typedef ReferenceCountedObjectPtr<ProgressCallback> ProgressCallbackPtr;
 
-/*!
+/**
 **
 **
 **
