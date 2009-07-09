@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Mon Jun 15 23:41:50 2009
 **
-**@brief  Sparce composite vector declarations.
+**@brief  Sparse composite vector declarations.
 **
 **
 */
@@ -27,7 +27,7 @@ namespace lbcpp
 /*!
 ** @class SparseVector
 ** @brief A sparse vector is a vector where only few features are
-** specified. Each item is a couple < feature id, value >.
+** specified. Each item is a pair < feature id, value >.
 */
 class SparseVector : public FeatureGeneratorDefaultImplementations<SparseVector, FeatureVector>
 {
@@ -61,7 +61,7 @@ public:
     {clear();}
 
   /*!
-  ** Clear vector.
+  ** Clears vector.
   **
   */
   virtual void clear();
@@ -69,7 +69,7 @@ public:
   /*!
   ** = operator.
   **
-  ** @param otherVector : right operand (SparceVector).
+  ** @param otherVector : right operand (SparseVector).
   **
   ** @return a SparseVector reference.
   */
@@ -87,7 +87,7 @@ public:
     {return values.size() > 0;}
 
   /*!
-  ** Number of value getter.
+  ** Returns the number of values.
   **
   ** @return the number of values.
   */
@@ -101,6 +101,7 @@ public:
   ** @param value : value.
   */
   void set(size_t index, double value);
+
   /*!
   ** Name setter.
   **
@@ -108,6 +109,7 @@ public:
   ** @param value : value.
   */
   void set(const std::string& name, double value);
+
   /*!
   ** Path setter.
   **
@@ -117,13 +119,14 @@ public:
   void set(const std::vector<std::string>& path, double value);
 
   /*!
-  ** Value getter.
+  ** Returns the value at the index @a index.
   **
   ** @param index : value index.
   **
-  ** @return value.
+  ** @return the value stores at the index @a index.
   */
   double get(size_t index) const;
+
   /*!
   ** Value getter (reference).
   **
@@ -187,7 +190,7 @@ public:
   ** Operations
   */
   /*!
-  ** Size getter.
+  ** Returns the number of values (including values of subvectors).
   **
   ** @return number of values (including values of subvectors).
   */
@@ -215,6 +218,7 @@ public:
   /*!
   ** Visitor entry point.
   **
+  ** @see FeatureVisitor
   ** @param visitor : visitor.
   */
   template<class FeatureVisitor>
@@ -224,16 +228,17 @@ public:
   ** FeatureGenerator
   */
   /*!
-  ** Feature dictionary getter.
+  ** Returns the vector FeatureDictionary.
   **
+  ** @see FeatureDictionary
   ** @return a feature dictionary pointer.
   */
   virtual FeatureDictionaryPtr getDictionary() const;
 
   /*!
-  ** Converts to sparce vector.
+  ** Converts to a SparseVector.
   **
-  ** @return a sparce vector pointer.
+  ** @return a sparse vector pointer.
   */
   virtual SparseVectorPtr toSparseVector() const
     {return SparseVectorPtr(const_cast<SparseVector* >(this));}

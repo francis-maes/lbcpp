@@ -281,7 +281,7 @@ public:
   /*!
   ** Constructor.
   **
-  ** @param newInputStream : input stream.
+  ** @param newInputStream : new input stream.
   **
   ** @return a TextObjectParser.
   */
@@ -462,7 +462,7 @@ public:
   /*!
   ** Constructor
   **
-  ** @param newInputStream : input stream.
+  ** @param newInputStream : new input stream.
   ** @param features : feature dictionary.
   **
   ** @return a @a LearningDataObjectParser.
@@ -546,7 +546,7 @@ protected:
   **
   ** feature ::= featureId : featureValue
   **
-  ** @param str : couple < featureId, featureValue >.
+  ** @param str : pair < featureId, featureValue >.
   ** @param featureId : feature ID container.
   ** @param featureValue : feature value container.
   **

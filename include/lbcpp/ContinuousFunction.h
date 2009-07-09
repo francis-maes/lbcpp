@@ -35,7 +35,7 @@ class ContinuousFunction : public Object
 {
 public:
   /*!
-  ** Check if the function is derivable or not.
+  ** Checks if the function is derivable or not.
   **
   ** @return True if derivable.
   */
@@ -45,14 +45,14 @@ public:
 
 /*!
 ** @class ScalarFunction
-** @brief f : R -> R
+** @brief \f$ f :  R  \to  R  \f$
 **
 */
 class ScalarFunction : public ContinuousFunction
 {
 public:
   /*!
-  ** Compute function value in @a input. Compute f(input).
+  ** Computes function value in @a input. Computes f(input).
   **
   ** @param input : function argument.
   **
@@ -102,7 +102,7 @@ public:
 
 /*!
 ** @class ScalarLossFunction
-** @brief f : example x R -> R
+** @brief \f$ f : \text{example}\times R  \to  R  \f$
 **
 */
 class ScalarLossFunction : public ScalarFunction
@@ -119,14 +119,14 @@ public:
 
 /*!
 ** @class ScalarVectorFunction
-** @brief \f[ f : R^n \to R \f]
+** @brief \f$ f :  R^n \to  R  \f$
 **
 */
 class ScalarVectorFunction : public ContinuousFunction
 {
 public:
   /*!
-  ** Compute f(@a input).
+  ** Computes f(@a input).
   **
   ** @param input : function argument.
   **
@@ -183,8 +183,8 @@ public:
   bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
 
   /*!
-  ** returns g : R -> R
-  ** with g(x) = f(parameters + x * direction)
+  ** Returns \f$ g :  R \to R  \f$
+  ** with \f$ g(x) = f(\text{parameters} + x * \text{direction}) \f$
   **
   ** @param parameters
   ** @param direction
@@ -203,12 +203,9 @@ public:
 */
 extern ScalarVectorFunctionPtr sumOfSquaresFunction(double weight = 1.0);
 
-/*
-** f : example x R^n -> R
-*/
 /*!
 ** @class VectorLossFunctionm
-** @brief \f[ f : \text{example} x R^n \to R \f]
+** @brief \f$ f : \text{example}\times R^n \to  R  \f$
 **
 */
 class VectorLossFunction : public ScalarVectorFunction
@@ -222,12 +219,10 @@ public:
   virtual void setLearningExample(const LearningExample& learningExample) = 0;
 };
 
-/*
-** f : params x features -> R
-*/
+
 /*!
 ** @class CRAlgorithm
-** @brief #FIXME
+** @brief \f$ f : \text{params}\times\text{features}\to R \f$
 **
 */
 class ScalarArchitecture : public ContinuousFunction
@@ -287,7 +282,7 @@ public:
 
 /*!
 ** @class VectorArchitecture
-** @brief f : params x features -> R^n
+** @brief \f$ f : \text{params}\times\text{features}\to R^n\f$
 **
 */
 class VectorArchitecture : public ContinuousFunction

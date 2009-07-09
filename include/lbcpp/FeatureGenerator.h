@@ -35,26 +35,26 @@ class FeatureGenerator : public Object
 {
 public:
   /*!
+  ** Returns the FeatureDictionary.
   **
-  **
-  **
-  ** @return
+  ** @see FeatureDictionary
+  ** @return a pointer on the FeatureDictionary.
   */
   virtual FeatureDictionaryPtr getDictionary() const = 0;
 
   /*!
-  ** Check if the current feature generator and a feature dictionary
+  ** Checks if the current feature generator and a feature dictionary
   ** are equals.
   **
   ** @param otherDictionary : feature dictionary.
-  **
+  ** @see FeatureDictionary
   ** @return True is they are equals.
   */
   bool checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const
     {return getDictionary()->checkEquals(otherDictionary);}
 
   /*!
-  ** Check if the vector is dense.
+  ** Checks if the vector is dense. majorite non nulle
   **
   ** @return False if it's not dense.
   */
@@ -62,15 +62,17 @@ public:
     {return false;}
 
   /*!
-  ** Convert to graph.
+  ** Converts to an ObjectGraph.
   **
+  ** @see ObjectGraph
   ** @return an object graph pointer.
   */
   virtual ObjectGraphPtr toGraph() const;
 
   /*!
-  ** Convert to table.
+  ** Converts to a Table.
   **
+  ** @see Table
   ** @return a table pointer.
   */
   virtual TablePtr toTable() const;
@@ -79,22 +81,25 @@ public:
   ** General
   */
   /*!
-  ** Feature visitor entry point.
+  ** Feature visitor entry point. + important tout se passze ici
   **
+  ** @see FeatureVisitor
   ** @param visitor : feature visitor pointer.
   */
   virtual void accept(FeatureVisitorPtr visitor) const = 0;
 
   /*!
-  ** Convert to a sparse vector.
+  ** Converts to a SparseVector.
   **
+  ** @see SparseVector
   ** @return a sparse vector pointer.
   */
   virtual SparseVectorPtr toSparseVector() const = 0;
 
   /*!
-  ** Convert to a dense vector.
+  ** Converts to a DenseVector.
   **
+  ** @see DenseVector
   ** @return a dense vector pointer.
   */
   virtual DenseVectorPtr toDenseVector() const = 0;
@@ -103,30 +108,37 @@ public:
   ** Const unary operations
   */
   /*!
-  ** Compute l0-norm.
+  ** Computes l0-norm, defined by
+  ** \f[ |x|_0=\underset{p\to\infty}{\lim}(\sum_{k=1}^n|x_k|^p) \f]
+  ** where \f$ x \f$ is the current vector and \f$ n \f$ its dimension.
   **
   ** @return the l0-norm.
   */
   virtual size_t l0norm() const = 0;
 
   /*!
-  ** Compute l1-norm.
+  ** Computes l1-norm, defined by
+  ** \f[ |x|_1=\sum_{k=1}^n|x_k| \f]
+  ** where \f$ x \f$ is the current vector and \f$ n \f$ its dimension.
   **
   ** @return the l1-norm.
   */
   virtual double l1norm() const = 0;
 
   /*!
-  ** Compute some of squares.
+  ** Computes the sum of squares, defined by
+  ** \f[ \sum_{k=1}^n x_k^2 \f]
   **
-  ** @return the some of squares.
+  ** @return the sum of squares.
   */
   virtual double sumOfSquares() const = 0;
 
   /*!
-  ** Compute l2-norm.
+  ** Computes l2-norm, defined by
+  ** \f[ |x|_2=\sqrt{\sum_{k=1}^n|x_k|^2} \f]
+  ** where \f$ x \f$ is the current vector and \f$ n \f$ its dimension.
   **
-  ** @return the l2-norm.
+  ** @return the l2-norm of the current vector.
   */
   inline double l2norm() const
     {return std::sqrt(sumOfSquares());}
@@ -135,7 +147,7 @@ public:
   ** Assignment operations
   */
   /*!
-  ** Add feature generator to @a target.
+  ** Adds feature generator to @a target.
   **
   ** @param target : dense vector pointer.
   */
@@ -143,7 +155,7 @@ public:
     {addWeightedTo(target, 1.0);}
 
   /*!
-  ** Add feature generator to @a target.
+  ** Adds feature generator to @a target.
   **
   ** @param target : sparse vector pointer.
   */
@@ -151,7 +163,7 @@ public:
     {addWeightedTo(target, 1.0);}
 
   /*!
-  ** Substract feature generator to @a target.
+  ** Substracts feature generator to @a target.
   **
   ** @param target : dense vector pointer.
   */
@@ -159,7 +171,7 @@ public:
     {addWeightedTo(target, -1.0);}
 
   /*!
-  ** Substract feature generator to @a target.
+  ** Substracts feature generator to @a target.
   **
   ** @param target : sparse vector pointer.
   */
@@ -167,7 +179,7 @@ public:
     {addWeightedTo(target, -1.0);}
 
   /*!
-  ** Add weighted feature generator to @a target.
+  ** Adds weighted feature generator to @a target.
   **
   ** @param target : dense vector pointer.
   ** @param weight : feature generator weight.
@@ -175,7 +187,7 @@ public:
   virtual void addWeightedTo(DenseVectorPtr target, double weight) const = 0;
 
   /*!
-  ** Add weighted feature generator to @a target.
+  ** Adds weighted feature generator to @a target.
   **
   ** @param target : sparse vector pointer.
   ** @param weight : feature generator weight.
@@ -183,7 +195,7 @@ public:
   virtual void addWeightedTo(SparseVectorPtr target, double weight) const = 0;
 
   /*!
-  ** Add weighted and signed feature generator to @a target.
+  ** Adds weighted&signed feature generator to @a target.
   **
   ** i.e. target <- target + weight * sign(featureGenerator),
   ** if (x < 0), sign(x) = -1, else if (x > 0), sign(x) = 1, else
@@ -224,55 +236,57 @@ public:
   */
   virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const = 0;
 
+
+
   /*
   ** Sub-generators
   */
   /*!
-  ** Get number of subgenerators.
+  ** Returns the number of sub-FeatureGenerators.
   **
-  ** @return number of subgenerators.
+  ** @return the number of sub-FeatureGenerators.
   */
   virtual size_t getNumSubGenerators() const = 0;
 
   /*!
-  ** #FIXME:
+  ** Returns the index of the sub-FeatureGenerator number @a num.
   **
-  ** @param num
+  ** @param num : sub-FeatureGenerator number.
   **
-  ** @return
+  ** @return the index of the sub-FeatureGenerator number @a num.
   */
   virtual size_t getSubGeneratorIndex(size_t num) const = 0;
 
   /*!
-  ** #FIXME
+  ** Returns the sub-FeatureGenerator number @a num.
   **
-  ** @param num : subgenerator index.
+  ** @param num : sub-FeatureGenerator number.
   **
-  ** @return the feature generator instance corresponding.
+  ** @return the sub-FeatureGenerator number @a num.
   */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const = 0;
 
   /*!
-  ** #FIXME
+  ** Returns the sub-FeatureGenerator at the index @a index.
   **
-  ** @param index
+  ** @param index : index of the sub-FeatureGenerator.
   **
-  ** @return
+  ** @return the sub-FeatureGenerator at the index @a num.
   */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const = 0;
 };
 
   /*!
-  ** Create an empty feature generator.
+  ** Creates an empty feature generator.
   **
-  ** @return an empty feature generator instance.
+  ** @return an empty FeatureGenerator instance.
   */
 extern FeatureGeneratorPtr emptyFeatureGenerator();
 
 /*!
-** Create an unit feature generator.
+** Creates an unit feature generator. une seule feat ki vo 1
 **
-** @return an unit feature generator instance.
+** @return an unit FeatureGenerator instance.
 */
 extern FeatureGeneratorPtr unitFeatureGenerator();
 
@@ -344,7 +358,7 @@ extern FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatur
 extern FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
 
 /*!
-** #FIXME
+** #FIXM
 **
 ** @param dictionary
 ** @param index
