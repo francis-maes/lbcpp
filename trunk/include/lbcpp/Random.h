@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Mon Jun 15 23:39:13 2009
 **
-**@brief  Random generator singleton.
+**@brief  Random numbers generator.
 **
 **
 */
@@ -33,7 +33,7 @@ namespace lbcpp
 class Random
 {
 public:
-  /*!
+  /**
   ** Singleton instance getter.
   **
   ** @return a reference on the Random singleton.
@@ -41,23 +41,23 @@ public:
   static Random& getInstance()
     {static Random instance(1664518616645186LL); return instance;}
 
-  /*!
+  /**
   ** Constructor.
   **
-  ** @param seedValue : random seed.
+  ** @param seedValue : seed for the random numbers generator.
   */
   Random(long long seedValue = 0)
     : seed(seedValue) {}
 
-  /*!
+  /**
   ** Constructor.
   **
-  ** @param seedValue : random seed.
+  ** @param seedValue : seed for the random numbers generator.  
   */
   Random(int seedValue)
     {setSeed(seedValue);}
 
-  /*!
+  /**
   ** Seed setter.
   **
   ** @param seed : random seed.
@@ -65,7 +65,7 @@ public:
   void setSeed(int seed)
     {this->seed = (long long)seed; sampleInt();}
 
-  /*!
+  /**
   ** Seed setter.
   **
   ** @param seed1 : random seed.
@@ -73,7 +73,7 @@ public:
   */
   void setSeed(int seed1, int seed2);
 
-  /*!
+  /**
   ** Seed setter.
   **
   ** @param seed : random seed.
@@ -81,7 +81,7 @@ public:
   void setSeed(long long seed)
     {this->seed = seed;}
 
-  /*!
+  /**
   ** Samples True or False according to the following probilities:
   ** \f$ P(True) = 0.5 \f$ et \f$ P(False) = 0.5 \f$.
   **
@@ -91,10 +91,10 @@ public:
   bool sampleBool()
     {return (sampleInt() & 0x80000000) != 0;}
 
-  /*!
+  /** 
   ** Samples True of False according to the following probalities:
-  ** \f$ P(True) = @a probabilityOfTrue \f$ and \f$ P(False) = 1 -
-  ** @a probabilityOfTrue \f$.
+  ** \f$ P(True) = probabilityOfTrue \f$ and \f$ P(False) = 1 -
+  ** probabilityOfTrue \f$.
   **
   ** @param probabilityOfTrue : probability of True.
   **
@@ -104,57 +104,63 @@ public:
     {return probabilityOfTrue && sampleDouble() <= probabilityOfTrue;}
 
 
-  /*!
-  ** Samples a number in interval [0, probabilities.size()[ w.r.t. the
-  ** probability distribution by default, the probabilities are not normalized
-  ** \f$ probabilitiesSum = 0 \f$ => the probabilities sum will be computed
-  ** \f$ probabilitiesSum > 0 \f$ => the probabilities sum is known in advance
-  ** \f$ probabilitiesSum = 1 \f$ => normalized probability distribution, you
-  ** may also use sampleWithNormalizedProbabilities() (@see
-  ** sampleWithNormalizedProbabilities).
+  /**
+  ** Samples a number in interval [0, probabilities.size()[ <i>w.r.t.</i> a
+  ** discrete probability distribution.
   **
-  * Example:
+  ** By default, the probabilities are not normalized. If the sum of the 
+  ** probabilities is known, it can be given with argument @a probabilitiesSum. 
+  ** By default (@a probabilitiesSum = 0), the probabilities sum will be computed
+  ** For a normalized probability distribution, use @a probabilitiesSum = 1 or
+  ** see the sampleWithNormalizedProbabilities() function.
+  **
+  *     @code
   *     std::vector<double> probs;
   *     probs.push_back(0.5);
   *     probs.push_back(0.2);
   *     probs.push_back(0.3);
+  *     return Random::sampleWithProbabilities(probs, 1.0);
+  *     @endcode
   *
-  *     ==> Random::sampleWithProbabilities(probs, 1.0) returns:
+  *    This examples returns:
   *      - 0 with probability 0.5
   *      - 1 with probability 0.2
   *      - 2 with probability 0.3
   **
-  ** @param probabilities : probability distribution list.
+  ** @param probabilities : discrete probability distribution.
   ** @param probabilitiesSum : sum of the @a probabilites.
   **
   ** @return a number in interval [0, probabilities.size()[ according
-  ** to the probability distribution list.
+  ** to the probability distribution.
+  ** @see sampleWithNormalizedProbabilities
   */
   size_t sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0.0);
 
-  /*!
-  ** Samples a number in interval [0, probabilities.size()[ according
-  ** to the normalized probility distribution list @a
-  ** probabilities. You may also use
-  ** sampleWithProbabilities(probs,1.0) (@see sampleWithProbabilites).
+  /**
+  ** Samples a number in interval [0, @a probabilities.size()[ according
+  ** to the normalized probability distribution list @a
+  ** probabilities.
   **
-  ** @param probabilities : probability distribution list.
+  ** This function is equivalent to sampleWithProbabilities(@a probabilities, 1.0).
   **
-  ** @return a number in interval [0, probabilities.size()[ according
-  ** to the probability distribution list.
+  ** @param probabilities : discrete normalized probability distribution.
+  **
+  ** @return a number in interval [0, @a probabilities.size()[ according
+  ** to the probability distribution @a probabilities.
+  ** @see sampleWithProbabilites
   */
   size_t sampleWithNormalizedProbabilities(const std::vector<double>& probabilities)
     {return sampleWithProbabilities(probabilities, 1.0);}
 
-  /*!
+  /**
   ** Samples an integer value.
   **
   ** @return an integer value.
   */
   int sampleInt();
 
-  /*!
-  ** Samples an integer value in range [0, @a maxValue[
+  /**
+  ** Samples an integer value in range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
   **
@@ -163,8 +169,8 @@ public:
   int sampleInt(int maxValue)
     {assert(maxValue > 0); return (sampleInt() & 0x7fffffff) % maxValue;}
 
-  /*!
-  ** Samples an integer value in range [@a minValue, @a maxValue[
+  /**
+  ** Samples an integer value in range [@a minValue, @a maxValue[.
   **
   ** @param minValue : lower bound.
   ** @param maxValue : upper bound.
@@ -174,8 +180,8 @@ public:
   int sampleInt(int minValue, int maxValue)
     {assert(maxValue > minValue); return (sampleInt() & 0x7fffffff) % (maxValue - minValue) + minValue;}
 
-  /*!
-  ** Samples an size_t (unsigned) type value in range [0, @a maxSize[
+  /**
+  ** Samples an size_t (unsigned) type value in range [0, @a maxSize[.
   **
   ** @see sampleInt
   ** @param maxSize : upper bound.
@@ -185,8 +191,8 @@ public:
   size_t sampleSize(size_t maxSize)
     {return (size_t)sampleInt((int)maxSize);}
 
-  /*!
-  ** Samples an size_t type (unsigned) value in range [@a minSize, @a maxSize[
+  /**
+  ** Samples an size_t type (unsigned) value in range [@a minSize, @a maxSize[.
   **
   ** @see sampleInt
   ** @param minSize : lower bound.
@@ -197,16 +203,16 @@ public:
   size_t sampleSize(size_t minSize, size_t maxSize)
     {assert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
 
-  /*!
-  ** Samples a float value uniformly from range [0, 1[
+  /**
+  ** Samples a float value uniformly from range [0, 1[.
   **
   ** @return a float value uniformly from range [0, 1[
   */
   float sampleFloat()
     {return ((unsigned int) sampleInt()) / (float) 0xffffffff;}
 
-  /*!
-  ** Samples any float value uniformly from range [0, @a maxValue[
+  /**
+  ** Samples any float value uniformly from range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
   **
@@ -214,9 +220,9 @@ public:
   */
   float sampleFloat(float maxValue)
     {return sampleFloat() * maxValue;}
-
-  /*!
-  ** Samples a float value uniformly from range [@a minValue, @a maxValue[
+  
+  /**
+  ** Samples a float value uniformly from range [@a minValue, @a maxValue[.
   **
   ** @param minValue : lower bound.
   ** @param maxValue : upper bound.
@@ -226,16 +232,16 @@ public:
   float sampleFloat(float minValue, float maxValue)
     {return minValue + sampleFloat() * (maxValue - minValue);}
 
-  /*!
-  ** Samples a double value uniformly from range [0, 1[
+  /**
+  ** Samples a double value uniformly from range [0, 1[.
   **
   ** @return a double value uniformly from range [0, 1[
   */
   double sampleDouble()
     {return ((unsigned int) sampleInt()) / (double) 0xffffffff;}
 
-  /*!
-  ** Samples a double value uniformly from range [0, @a maxValue[
+  /**
+  ** Samples a double value uniformly from range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
   **
@@ -244,8 +250,8 @@ public:
   double sampleDouble(double maxValue)
     {return sampleDouble() * maxValue;}
 
-  /*!
-  ** Samples a double value uniformly from range [@a minValue, @a maxValue[
+  /**
+  ** Samples a double value uniformly from range [@a minValue, @a maxValue[.
   **
   ** @param minValue : lower bound.
   ** @param maxValue : upper bound.
@@ -255,7 +261,7 @@ public:
   double sampleDouble(double minValue, double maxValue)
     {return minValue + sampleDouble() * (maxValue - minValue);}
 
-  /*!
+  /**
   ** Samples a double value uniformly from range [0, 1[ according to a Gaussian
   ** distribution.
   **
@@ -264,9 +270,9 @@ public:
   */
   double sampleDoubleFromGaussian();
 
-  /*!
+  /**
   ** Samples a double value uniformly from range [0, 1[ according to a Gaussian
-  ** distribution (mean = @a mean, standard deviation = @a standardDeviation)
+  ** distribution (mean = @a mean, standard deviation = @a standardDeviation).
   **
   ** @param mean : gaussian mean.
   ** @param standardDeviation : gaussian standard deviation.
@@ -276,7 +282,7 @@ public:
   double sampleDoubleFromGaussian(double mean, double standardDeviation)
     {return sampleDoubleFromGaussian() * standardDeviation + mean;}
 
-  /*!
+  /**
   ** Randomly fills up @a res vector with index from 0 to size()-1.
   **
   ** @param size : number of item.
@@ -285,7 +291,7 @@ public:
   inline void sampleOrder(size_t size, std::vector<size_t>& res)
     {sampleOrder(0, size, res);}
 
-  /*!
+  /**
   ** Randomly fills up @a res vector with index from @a begin to @a end.
   **
   ** @param begin : first item index.
@@ -305,7 +311,7 @@ public:
 private:
   long long seed;               /*!< Random seed. */
 
-  /*!
+  /**
   ** Swaps @a a and @a b content.
   **
   ** @param a : first item.
