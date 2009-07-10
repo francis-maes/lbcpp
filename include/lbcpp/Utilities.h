@@ -31,6 +31,13 @@ namespace lbcpp
 /*!
 ** @class ErrorHandler
 ** @brief Error handler.
+**
+** The Error Handler is a singleton which receives all the
+** error and warning messages produced by the library. By
+** default, errors and warnings are displayed on the standard
+** output. This behavior can be changed by overriding the ErrorHandler
+** class and by changing the singleton.
+** 
 */
 class ErrorHandler
 {
@@ -71,19 +78,21 @@ public:
   static ErrorHandler& getInstance() {assert(instance); return *instance;}
 
   /**
-  ** Displays an error message.
+  ** Displays an error message using the ErrorManager singleton.
   **
   ** @param where : where the error occurs.
   ** @param what : what's going wrong.
+  ** @see Object::error
   */
   static void error(const std::string& where, const std::string& what)
     {getInstance().errorMessage(where, what);}
 
   /**
-  ** Displays a warning message.
+  ** Displays a warning message using the ErrorManager singleton.
   **
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
+  ** @see Object::warning
   */
   static void warning(const std::string& where, const std::string& what)
     {getInstance().warningMessage(where, what);}
@@ -95,54 +104,54 @@ private:
 
 /**
 ** @class ProgressCallback
-** @brief
+** @brief A callback that receives information about
+** the progression of a task. 
+**
+** This class is used to display to progression of
+** a task that may eventually take a long time to complete.
+** Such tasks may for example be optimization tasks or
+** learning tasks.
 */
 class ProgressCallback : public ReferenceCountedObject
 {
 public:
-  /**
-  **
-  **
-  **
-  ** @return
-  */
+  /** Destructor. */
   virtual ~ProgressCallback() {}
 
-  /**
+  /** This function is called when the task begins.
   **
-  **
-  ** @param description
+  ** @param description : a string that describes the task which begins.
   */
   virtual void progressStart(const std::string& description)
     {}
 
-  // return false to stop the task
-  /**
+  /** This function is called each time the task progresses.
   **
+  ** Some tasks have a fixed length, which makes it possible to compute 
+  ** a percentage of progression. In this case the parameter 
+  ** @a totalIterations indicates the length of the task.
+  ** If the task's length is unknown in advance, the @a
+  ** totalIterations parameter is equal to zero.
   **
-  ** @param description
-  ** @param iteration
-  ** @param totalIterations
+  ** @param description : a string that describes the task.
+  ** @param iteration : a progression indicator.
+  ** @param totalIterations : the length of the task,
+  ** <i>i.e.</i> the maximum value of @a iteration.
   **
-  ** @return
+  ** @return false to cancel the task or true to continue the task.
   */
   virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
     {return true;}
 
-  /**
-  **
-  **
-  */
+  /** This function is called at the end of the task. */
   virtual void progressEnd()
     {}
 };
 typedef ReferenceCountedObjectPtr<ProgressCallback> ProgressCallbackPtr;
 
-/**
+/** Creates a ProgressCallback that displays progression on the standard output.
 **
-**
-**
-** @return
+** @return a new ProgressCallback.
 */
 extern ProgressCallbackPtr consoleProgressCallback();
 
