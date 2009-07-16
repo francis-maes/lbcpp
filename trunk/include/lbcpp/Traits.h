@@ -11,7 +11,7 @@
 **@author Francis MAES
 **@date   Sat Jun 13 17:59:46 2009
 **
-**@brief  #FIXME: all
+**@brief  Type traits
 **
 **
 */

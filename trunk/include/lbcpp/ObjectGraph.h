@@ -26,9 +26,12 @@ namespace lbcpp
 
 /**
 ** @class ObjectGraph
-** @brief Base class for directed graph representation.
+** @brief Base class for directed graphs with nodes inherited from Object.
+** This base class defines a wrapper from objects to
+** a generic directed graph representation.
+** It provides generic tools for serialization of the graph
+** and for enumeration of its content.
 */
-
 class ObjectGraph : public Object
 {
 public:
@@ -40,23 +43,16 @@ public:
   virtual size_t getNumRoots() const = 0;
 
   /**
-  ** Returns root of node @a index.
+  ** Returns one of the root nodes.
   **
-  ** @param index : node index.
+  ** @param index : node index in range [0, getNumRoots()[
   **
-  ** @return root (object pointer) of node @a index.
+  ** @return the root node @a index
   */
   virtual ObjectPtr getRoot(size_t index) const = 0;
 
   /**
-  ** Roots setter.
-  **
-  ** @param successors : successors list.
-  */
-  virtual void setRoots(const std::vector<ObjectPtr>& successors) = 0;
-
-  /**
-  ** Returns the number of successors of the node @a node.
+  ** Returns the number of successors of a given node.
   **
   ** @param node : origin node.
   **
@@ -70,28 +66,34 @@ public:
   ** @param node : origin node.
   ** @param index : successor index.
   **
-  ** @return a pointer on the @a index@em th successor of @a node.
+  ** @return a pointer on the @a index successor of @a node.
   */
   virtual ObjectPtr getSuccessor(ObjectPtr node, size_t index) const = 0;
+
+protected:
+  /**
+  ** Roots setter.
+  ** 
+  ** This function is used for serialization purpose.
+  **
+  ** @param roots : the vector of root nodes.
+  ** @see load
+  */
+  virtual void setRoots(const std::vector<ObjectPtr>& roots) = 0;
 
   /**
   ** Successors setter.
   **
+  ** This function is used for serialization purpose.
+  **
   ** @param node : target node.
   ** @param successors : node successor list.
+  ** @see load
   */
   virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors) = 0;
 
   /**
-  ** Saves @a node contain into the output stream @a ostr.
-  **
-  ** @param ostr : output stream.
-  ** @param node : target node.
-  */
-  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const = 0;
-
-  /**
-  ** Loads a node from an input stream.
+  ** Loads the content of a node from a C++ input stream.
   **
   ** @param istr : input stream.
   **
@@ -99,30 +101,45 @@ public:
   */
   virtual ObjectPtr loadNode(std::istream& istr) const = 0;
 
-public:
   /**
-  ** Saves the current directed graph.
+  ** Saves the content of a node to a C++ output stream.
   **
   ** @param ostr : output stream.
-  ** @see ObjectGraph::saveNode
+  ** @param node : node to save.
+  */
+  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const = 0;
+
+public:
+  /**
+  ** Saves the current directed graph to a C++ output stream.
+  **
+  ** @param ostr : output stream.
+  ** @see saveNode
   */
   virtual void save(std::ostream& ostr) const;
 
   /**
-  ** Loads a directed graph contain from an input stream.
+  ** Loads a directed graph from a C++ input stream.
   **
   ** @param istr : input stream.
   ** @return a boolean.
-  ** @see ObjectGraph::loadNode
-  ** @see ObjectGraph::setRoots
-  ** @see ObjectGraph::setSuccessors
+  ** @see loadNode
+  ** @see setRoots
+  ** @see setSuccessors
   */
   virtual bool load(std::istream& istr);
 
   /**
-  ** Fills up @a nodes table with graph node contain and also fills
-  ** up the inverse table. The inverse table is a map that links node
-  ** contain and their index in the table.
+  ** Enumerate the nodes contained in this graph.
+  **
+  ** The nodes are filled into the @a nodes vector, ensuring that
+  ** each element of @a nodes is unique. This function also 
+  ** fills up @a inverseTable, a map that associate nodes to their index in @a nodes.
+  **
+  ** For any node <i>n</i> of the graph, we have:
+  ** @code
+  ** nodes[inverseTable[n]] == n
+  ** @endcode 
   **
   ** @param nodes : node contain table.
   ** @param inverseTable : inverse node contain table.
