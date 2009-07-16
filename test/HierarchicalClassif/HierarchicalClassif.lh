@@ -1,0 +1,59 @@
+using namespace lbcpp;
+
+class HierarchyNode
+{
+public:
+	int id;
+	std::map<int,HierarchyNode *> allnodes;
+	HierarchyNode *parent;
+	std::map<int,HierarchyNode *> children;
+	std::set<int> childrenIds;
+	
+	friend std::ostream& operator <<(std::ostream& ostr, const HierarchyNode& node)
+		{return ostr << node.allnodes.size() << " labels.";}				
+		
+};
+
+
+crAlgorithm int hierarchicalDescenteUniquement(HierarchyNode *root_hierarchy,FeatureGeneratorPtr example,int category)
+{
+	HierarchyNode* node = root_hierarchy;
+	
+	HierarchyNode *lnode=root_hierarchy->allnodes[category];
+	
+	while(node->children.size()!=0)
+	{
+		chooseFunction featureGenerator actionFeatures(int label)
+		{
+			featureScope(label)
+			{
+				featureCall example;
+			}
+		}
+		
+		chooseFunction double actionValues(int label)
+		{
+			while(lnode->parent!=0)
+			{
+				if (lnode->id==label) return(1.0);
+				lnode=lnode->parent;
+			}
+			return(0.0);
+		}
+	
+		std::set<int> *choix_possibles=&node->childrenIds;
+		int choix=choose<int>(*choix_possibles,actionFeatures,actionValues);
+		
+		bool flag=false;
+		while(lnode->parent!=0)
+			{
+				if (lnode->id==choix) {flag=true; reward(1.0); break;}
+				lnode=lnode->parent;
+			}
+		if (!flag) reward(-1.0);
+		
+		node=node->children[choix];
+	}
+	if (node->id==category) reward(1.0); else reward(-1.0);
+	return(node->id);
+}
