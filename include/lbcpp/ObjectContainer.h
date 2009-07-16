@@ -11,8 +11,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 19:11:19 2009
 **
-**@brief  Random acces object container base classe.
-**
+**@brief  Random acces object container base class.
 **
 */
 
@@ -27,16 +26,20 @@ namespace lbcpp
 
 /*!
 ** @class ObjectContainer
-** @brief Random acces object container base classe.
+** @brief Base class for object containers with random access.
+** @see ObjectStream
 */
 class ObjectContainer : public Object
 {
 public:
   /**
-  ** Content class name getter.
+  ** Returns the class name of the objects contained by this stream.
   **
-  ** @return the name of the base class which is common for all
-  ** objects contained in this container .
+  ** If objects from multiple classes are mixed in this stream, this
+  ** functions returns the highest base-class that is common between
+  ** these classes.
+  ** 
+  ** @return content class name (std::string).
   */
   virtual std::string getContentClassName() const
     {return "Object";}
@@ -49,9 +52,9 @@ public:
   virtual size_t size() const = 0;
 
   /**
-  ** Item getter (by index).
+  ** Element getter (by index).
   **
-  ** @param index : item index (must be from range [0, size()[).
+  ** @param index : element index (must be from range [0, size()[).
   **
   ** @return an object pointer.
   */
@@ -66,9 +69,9 @@ public:
     {return size() == 0;}
 
   /**
-  ** Gets (by index) and casts item from the container.
+  ** Gets an element from the container and casts it.
   **
-  ** @param index : item index (must be from range [0, size()[).
+  ** @param index : element index (must be from range [0, size()[).
   **
   ** @return an object pointer.
   */
@@ -80,8 +83,11 @@ public:
   }
 
   /**
-  ** Converts to a VectorObjectContainer (based on a
-  ** 'std::vector<ObjectPtr>' container).
+  ** Converts to a VectorObjectContainer.
+  **
+  ** VectorObjectContainer is represented internally thanks to 
+  ** a 'std::vector<ObjectPtr>'. It enables full read/write access
+  ** and can be used to iterate efficiently over all elements.
   **
   ** @return a VectorObjectContainer pointer.
   */
@@ -103,7 +109,6 @@ public:
   ** immediately on all container items (True), or at each call
   ** to get() or getAndCast() (False).
   **
-  **
   ** @return an object container pointer.
   ** @see ObjectFunction
   */
@@ -113,7 +118,7 @@ public:
   /**
   ** Creates a randomized version of a dataset.
   **
-  ** The randomization is lazy: only a mapping table between old
+  ** The randomization is lazy: only a mapping between old
   ** indices and new ones is stored and no data is copied.
   **
   ** @returns the randomized ObjectContainer that has an internal
@@ -125,32 +130,29 @@ public:
   ** Creates a set where each instance is duplicated multiple times.
   **
   ** This function creates a new ObjectContainer that references this
-  ** one. Each element of this ObjectContainer is duplicated <i>count</i>
+  ** one. Each element of this ObjectContainer is duplicated @a count
   ** times in the new ObjectContainer. For example, if this ObjectContainer contains
-  ** three examples A, B and C, <i>duplicate(4)</i> will contain A, B, C, A,
+  ** three examples A, B and C, duplicate(4) will contain A, B, C, A,
   ** B, C, A, B, C, A, B and C.
   **
   ** The duplication is lazy and does not consume any memory nor cpu
   ** time.
   **
-  ** Duplicating an ObjectContainer can for example be useful when
-  ** training online learning machines. Indeed, with online learning,
-  ** one call to LearningMachine::train performs a single pass on the
-  ** dataset. The following code shows how to perform 10 passes on the
-  ** data with a single call to the train function:
+  ** Duplicating an ObjectContainer can for example be useful to perform
+  ** stochastic training. The following code shows how to perform
+  ** 10 passes on the data with a single call to the trainStochastic function:
   ** @code
-  ** LearningMachine anOnlineMachine = ...;
-  ** ObjectContainer trainingData = ...;
+  ** ClassifierPtr aStochasticClassifier = ...;
+  ** ObjectContainerPtr trainingData = ...;
   **
-  ** ObjectContainer trainingData10Passes =
-  ** trainingData.duplicate(10);
+  ** ObjectContainerPtr trainingData10Passes = trainingData->duplicate(10);
   ** if (randomize)
-  **  trainingData10Passes = trainingData10Passes.randomize();
-  ** anOnlineMachine.train(trainingData10Passes);
+  **  trainingData10Passes = trainingData10Passes->randomize();
+  ** aStochasticClassifier->trainStochastic(trainingData10Passes);
   ** @endcode
   **
   ** Note that one can alternatively use a loop that calls ten
-  ** times the train function.
+  ** times the trainStochastic function.
   **
   ** @param count : The number of times the instance set is
   ** duplicated.
@@ -163,9 +165,9 @@ public:
   **
   ** This function is typically used in the context of
   ** cross-validation.
-  ** The instances are splitted into <i>numFolds</i> groups. This
+  ** The instances are splitted into @a numFolds groups. This
   ** method construct a new ObjectContainer that refers to the
-  ** <i>fold</i>'s group.
+  ** @a fold 's group.
   **
   ** @param fold : the number of the fold. This number should be in
   ** the interval 0 to numFolds - 1.
@@ -181,7 +183,7 @@ public:
   ** This function compute the complementary set of the one
   ** returned by fold().
   ** The returned ObjectContainer contains all instances except the
-  ** one from the <i>fold</i>'s group.
+  ** one from the @a fold 's group.
   **
   ** @param fold : the number of the fold that will be excluded from
   ** data. This number should be in the interval 0 to numFolds - 1.
@@ -190,17 +192,6 @@ public:
   ** @returns a new ObjectContainer that refers this one internally.
   */
   ObjectContainerPtr invFold(size_t fold, size_t numFolds);
-
-  /**
-  ** Select a range.
-  **
-  ** @param begin : first item index.
-  ** @param end : last item index.
-  **
-  ** @return an object container pointer of the items between indices
-  ** @a begin and @a end.
-  */
-  ObjectContainerPtr range(size_t begin, size_t end);
 
   /**
   ** Selects a range of instances.
@@ -217,24 +208,44 @@ public:
   **
   **  @returns a new ObjectContainer that refers to this internally
   **  and whose size is (end - begin).
+  **  @see fold
   */
-  ObjectContainerPtr invRange(size_t begin, size_t end);
+  ObjectContainerPtr range(size_t begin, size_t end);
+
+  /** Excludes a range of instances.
+  
+      This functions creates the complementary instance set 
+      of range(begin, end), <i>i.e.</i> the instance set
+      containing all the examples of this except those belonging 
+      to the range (begin, end). 
+
+      @param begin The index of the first instance inside the range to exclude.
+      @param end The index of the first instance below the range to exclude.
+      @returns a new InstanceSet that refers to this internally and 
+        whose size is (size() - (end - begin)).
+      @see range, invFold
+    */
+    ObjectContainerPtr invRange(size_t begin, size_t end);
 };
 
 /**
 ** Appends two object containers.
 **
+** This operation is implemented by using
+** references and does not perform any data copy.
+**
 ** @param left : first object container.
 ** @param right : second object container.
 **
-** @return an object container pointer (left + right).
+** @return a new ObjectContainer containing all the elements
+** of @a left followed by all the elements of @a right.
 */
 extern ObjectContainerPtr append(ObjectContainerPtr left, ObjectContainerPtr right);
 
 
 /**
 ** @class VectorObjectContainer
-** @brief Object container (std::vector).
+** @brief An object container that provides read/write access.
 */
 class VectorObjectContainer : public ObjectContainer
 {
@@ -244,8 +255,6 @@ public:
   **
   ** @param objects : object vector.
   ** @param contentClassName : content class name.
-  **
-  ** @return a VectorObjectContainer.
   */
   VectorObjectContainer(const std::vector<ObjectPtr>& objects, const std::string& contentClassName = "Object")
     : objects(objects), contentClassName(contentClassName) {}
@@ -277,9 +286,9 @@ public:
     {return objects.size();}
 
   /**
-  ** Item getter.
+  ** Element getter.
   **
-  ** @param index : item index.
+  ** @param index : element index.
   **
   ** @return an object pointer.
   */
@@ -303,7 +312,7 @@ public:
     {objects.reserve(size);}
 
   /**
-  ** Appends @a object to the container.
+  ** Appends an object to the container.
   **
   ** @param object : object to append to the container.
   */
@@ -335,7 +344,11 @@ protected:
 
 /**
 ** @class DecoratorObjectContainer
-** @brief Object container base classe (design pattern Decorator).
+** @brief Base class for ObjectContainer decorators.
+** This base class is used internally to implement
+** the ObjectContainer::fold(), ObjectContainer::invFold(),
+** ObjectContainer::range(), ObjectContaner::invRange() and
+** ObjectContainer::randomize() functions.
 */
 class DecoratorObjectContainer : public ObjectContainer
 {
@@ -343,9 +356,7 @@ public:
   /**
   ** Constructor.
   **
-  ** @param target : target.
-  **
-  ** @return a DecoratorObjectContainer.
+  ** @param target : the decorated ObjectContainer.
   */
   DecoratorObjectContainer(ObjectContainerPtr target)
     : target(target) {}
@@ -367,7 +378,7 @@ public:
     {return target->size();}
 
   /**
-  ** Gets @a index item.
+  ** Gets an element.
   **
   ** @param index : item index.
   **
@@ -377,7 +388,7 @@ public:
     {return target->get(index);}
 
 protected:
-  ObjectContainerPtr target;    /*!< Object container pointer (target). */
+  ObjectContainerPtr target;    /*!< A pointer to the decorated ObjectContainer. */
 };
 
 }; /* namespace lbcpp */
