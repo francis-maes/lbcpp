@@ -293,7 +293,7 @@ extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatur
 **  0.8 aaa AAA bbb BBB
 **  \endverbatim     
 **  
-**  @param datafile : The file containing regression data.
+**  @param filename : The file containing regression data.
 **  @param features : The dictionary of features.
 **  @return a new ObjectStream containing regression examples.
 **  @see classificationExamplesParser
