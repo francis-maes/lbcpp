@@ -10,15 +10,7 @@
 ** @file   IterationFunction.h
 ** @author Francis MAES
 ** @date   Fri Jun 12 18:26:12 2009
-**
-** @brief IterationFunction is the class that represents a parameter
-** that evolves <i>w.r.t.</i> iterations. Such parameters are for
-** example used in online learning, in order to specify how the
-** learning rate should evolve <i>w.r.t.</i> the number of
-** corrections. An IterationFunction can be seen as a function from
-** iteration numbers to scalars.
-**
-**
+** @brief IterationFunction
 */
 
 #ifndef LBCPP_ITERATION_FUNCTION_H_
@@ -32,6 +24,14 @@ namespace lbcpp
 /*!
 ** @class IterationFunction
 ** @brief A function that depends on an iteration number.
+**
+** IterationFunction is the class that represents a parameter
+** that evolves <i>w.r.t.</i> iterations. Such parameters are for
+** example used in online learning, in order to specify how the
+** learning rate should evolve <i>w.r.t.</i> the number of
+** corrections. An IterationFunction can be seen as a function from
+** iteration numbers to scalars.
+**
 */
 class IterationFunction : public Object
 {
@@ -59,8 +59,8 @@ public:
 extern IterationFunctionPtr constantIterationFunction(double value);
 
 /*!
-** Creates a new IterativeFunction that decreases conversely
-** proportionately.
+** Creates a new IterativeFunction that decreases 
+** with an inversly linear function.
 *
 ** Defined by :
 ** - f(0) = @a initialValue
@@ -73,7 +73,7 @@ extern IterationFunctionPtr constantIterationFunction(double value);
 ** @param numberIterationsToReachHalfInitialValue : number of
 ** iteration to reach half initial value.
 **
-** @return a new IterativeFunction.
+** @return a new IterationFunction.
 */
 extern IterationFunctionPtr invLinearIterationFunction(double initialValue = 1.0, size_t numberIterationsToReachHalfInitialValue = 1000);
 
