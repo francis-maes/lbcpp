@@ -10,6 +10,7 @@ ADD_SUBDIRECTORY(SequentialClassification)
 ADD_SUBDIRECTORY(GraphLabeling)
 ADD_SUBDIRECTORY(SemanticRoleLabeling)
 ADD_SUBDIRECTORY(Search)
+ADD_SUBDIRECTORY(HierarchicalClassif)
 
 ENDIF(LBCPP_TESTS)
 

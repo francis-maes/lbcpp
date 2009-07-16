@@ -76,6 +76,9 @@ public:
 static std::ostream* resultsOutputFile = NULL;
 static std::string allResults;
 
+#ifdef WIN32
+inline double getTimeInSeconds() {return 0;} // FIXME
+#else
 #include <sys/time.h>
 #include <unistd.h>
 inline double getTimeInSeconds()
@@ -85,6 +88,7 @@ inline double getTimeInSeconds()
       return 0.0;
   return (double)t.tv_sec + t.tv_usec / 1000000.0;
 }
+#endif
 
 double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraph, bool profile)
