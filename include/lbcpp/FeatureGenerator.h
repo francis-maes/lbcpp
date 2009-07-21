@@ -181,6 +181,8 @@ public:
   /**
   ** Adds weighted feature generator to @a target.
   **
+  ** target <- target + weight * this 
+  **
   ** @param target : dense vector pointer.
   ** @param weight : feature generator weight.
   */

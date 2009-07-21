@@ -76,6 +76,8 @@ public:
   /*!
   **
   **
+  ** deprecated
+  **
   ** @param callback
   ** @param choice
   **
