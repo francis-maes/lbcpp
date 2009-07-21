@@ -45,7 +45,7 @@ crAlgorithm void gridWorld(GridWorldEnvironment& environment, int x, int y)
   bool isFinalState = false;
   while (!isFinalState)
   {
-    chooseFunction featureGenerator actionFeatures(Direction direction) {
+    localFunction featureGenerator actionFeatures(Direction direction) {
       featureScope(x) featureScope(y) featureSense(direction);
     }
     
