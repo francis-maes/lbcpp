@@ -108,7 +108,7 @@ public:
   virtual void policyLeave() {}
 
   /*!
-  **
+  ** deprecated
   **
   **
   ** @return
@@ -116,7 +116,7 @@ public:
   virtual size_t getNumResults() const {return 0;}
 
   /*!
-  **
+  ** deprecated
   **
   ** @param i
   **

@@ -285,6 +285,7 @@ public:
 
 /*
 ** String Descriptions
+** deprecated
 */
 /*!
 ** @class StateDescriptionFunction

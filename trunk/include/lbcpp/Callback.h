@@ -28,6 +28,8 @@ namespace lbcpp
 ** @class Callback
 ** @brief CR-algorithm callback.
 **
+** deprecated
+**
 */
 class Callback
 {

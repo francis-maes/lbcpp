@@ -9,16 +9,17 @@ FeatureGenerator:
 CRALGO:
   -> Variable, CRAlgorithmScope, CRAlgorithm, Choose, Policy (enlever Callback), ChooseFunctions
 
-Taches:
+Taches Francis:
  * Splitter et clarifier le subset de classes
  * CMakeries
  * Papier
  * Scripts python de release
  * Site Web
 
+Taches Guillaume:
  * License dans les fichiers
  * Documenter toutes les classes
- * Exemples
+ * Exemples, Tutorials
  * Tests
 
 ==============
