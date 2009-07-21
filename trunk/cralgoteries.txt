@@ -1,8 +1,29 @@
-
-* Objectif CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
-
-LC++ library:
 =============
+ LBC++ v1.0
+============
+
+General:
+  -> ReferenceCountedObject, Object, ProgressCallback, ErrorManager, Random
+FeatureGenerator:
+  -> StringDictionary, FeatureDictionary, FeatureGenerator, FeatureVisitor, SparseVector, DenseVector
+CRALGO:
+  -> Variable, CRAlgorithmScope, CRAlgorithm, Choose, Policy (enlever Callback), ChooseFunctions
+
+Taches:
+ * Splitter et clarifier le subset de classes
+ * CMakeries
+ * Papier
+ * Scripts python de release
+ * Site Web
+
+ * License dans les fichiers
+ * Documenter toutes les classes
+ * Exemples
+ * Tests
+
+==============
+ LBC++ library
+==============
 
 Gros:
   * Tables, SWIG, Doxygen, Tests
@@ -33,9 +54,12 @@ LearningMachine:
 
 * Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe ou getParentDictionary) dans ScalarToVectorArchitecture::compute et dans MultiLinearArchitecture::compute
 
+* CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
 
-LC++ translator:
-================
+
+==================
+ LC++ translator
+==================
 
 * gerer appel de chooseFunction depuis un autre chooseFunction ou depuis le corps du cr-algo
 
@@ -69,11 +93,3 @@ GROS:
  * clarifier les CRAlgoVisitor
  * crAlgorithmCall
  * gestion des options
-
-LC++ applications:
-==================
- * semi-supervised classification
- * active learning
- * feature-group selection
- * multi-label classification
- * ...

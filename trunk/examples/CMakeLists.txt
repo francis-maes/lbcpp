@@ -22,6 +22,7 @@ ADD_CPP_EXAMPLE(LearningMachine TrainLinearRegressorStochastic)
 ADD_CPP_EXAMPLE(LearningMachine TuneMaxentRegularizerWithCrossValidation)
 ADD_CPP_EXAMPLE(LearningMachine ClassificationToBatchRanking)
 
+ADD_LBCPP_EXAMPLE(FeatureGenerator FeatureAcceptVisitor)
 
 ADD_LBCPP_EXAMPLE(CRAlgorithm FirstOrderSequenceLabeling)
 ADD_LBCPP_EXAMPLE(CRAlgorithm NQueensDepthFirstSearch)
