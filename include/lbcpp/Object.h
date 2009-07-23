@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: Object.h                       | A base class for serializable   |
 | Author  : Francis Maes                   |  objects                        |
@@ -51,7 +69,7 @@ public:
   ** Destructor.
   */
   virtual ~Object() {}
-  
+
   /** Pointer to a function that create objects
   */
   typedef Object* (*Constructor)();
@@ -68,7 +86,7 @@ public:
   */
   static void declare(const std::string& className, Constructor constructor);
 
-  /** Creates dynamically an object of class @a className. 
+  /** Creates dynamically an object of class @a className.
   **
   ** The class @a className must be declared with Object::declare()
   ** before being able to instantiate it dynamically.
@@ -135,8 +153,8 @@ public:
   ** Name getter.
   **
   ** Note that not all Objects implement this function. Furthermore,
-  ** there is not particular semantic assigned to the name of an Object: 
-  ** The getName() function may be used in different ways depending 
+  ** there is not particular semantic assigned to the name of an Object:
+  ** The getName() function may be used in different ways depending
   ** on the kinds of Objects.
   **
   ** @return object name.
@@ -180,7 +198,7 @@ public:
   ** Clones the current object.
   **
   ** Note that the clone() function is not defined on all objects.
-  **  
+  **
   ** @return a copy of the current object or ObjectPtr() if
   ** the clone() operation is undefined for this object.
   */
@@ -267,7 +285,7 @@ protected:
   ** load() is responsible for declaring an error to the ErrorManager.
   */
   virtual bool load(std::istream& istr) {return true;}
-  
+
   /**
   ** Override this function to save the object to a C++ stream.
   **

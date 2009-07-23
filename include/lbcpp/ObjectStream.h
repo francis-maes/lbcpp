@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: ObjectStream.h                 | Object Streams                  |
 | Author  : Francis Maes                   |                                 |
@@ -30,7 +48,7 @@ namespace lbcpp
 /**
 ** @class ObjectFunction
 ** @brief Represents a function which takes an Object as input and
-** returns an Object. 
+** returns an Object.
 **
 ** A function object is a computer programming construct allowing an
 ** object to be invoked or called as if it were an ordinary function.
@@ -68,13 +86,13 @@ public:
 ** It is used as a base class for parsers and generators of data.
 **
 ** ObjectStream is particurlaly usefull for large-scale learning
-** where the whole dataset does not fit in memory. 
-** With an ObjectStream, it is possible to apply learning, 
+** where the whole dataset does not fit in memory.
+** With an ObjectStream, it is possible to apply learning,
 ** by loading the training examples one at a time.
-** 
+**
 ** In order to fit all usages, users can load the whole content
 ** of an ObjectStream  into memory, to have a random access on
-** its elements. 
+** its elements.
 */
 class ObjectStream : public Object
 {
@@ -85,7 +103,7 @@ public:
   ** If objects from multiple classes are mixed in this stream, this
   ** functions returns the highest base-class that is common between
   ** these classes.
-  ** 
+  **
   ** @return content class name (std::string).
   */
   virtual std::string getContentClassName() const
@@ -149,7 +167,7 @@ public:
   /**
   ** Loads \a maximumCount items (maximum) from the stream and stores
   ** them into memory.
-  ** 
+  **
   ** If @a maximumCount == 0, all the items will be loaded.
   **
   ** @param maximumCount : number of item to load.
@@ -164,7 +182,7 @@ public:
   **
   ** This function creates a new stream derivated from this one.
   ** Each time next() is called on this stream, a new element
-  ** is loaded from this one and @a function is applied on 
+  ** is loaded from this one and @a function is applied on
   ** this element.
   **
   ** @param function : function to apply on elements.
@@ -267,32 +285,32 @@ extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatur
 **  begins with the output scalar value followed by a list of input features.
 **  As in classification data files, a feature is defined by an identifier and
 **  an optional associated real value. When no feature value is specified,
-**  the default value 1.0 is assumed. 
-**  
+**  the default value 1.0 is assumed.
+**
 **  Examples:
-**  
+**
 **  - Dense Vectors, 8 continuous features:
 **  \verbatim
-**  20 1:0.2 2:0.22973 3:0.210084 4:-0.734513 5:-0.450682 6:-0.682582 7:-0.628703 8:-0.345291 
-**  16 1:0.6 2:0.27027 3:0.243697 4:-0.778761 5:-0.457411 6:-0.605918 7:-0.607637 8:-0.484803 
-**  9 1:-1.2 2:0.0810811 3:0.0588235 4:-0.778761 5:-0.640517 6:-0.710155 7:-0.705069 8:-0.674141 
+**  20 1:0.2 2:0.22973 3:0.210084 4:-0.734513 5:-0.450682 6:-0.682582 7:-0.628703 8:-0.345291
+**  16 1:0.6 2:0.27027 3:0.243697 4:-0.778761 5:-0.457411 6:-0.605918 7:-0.607637 8:-0.484803
+**  9 1:-1.2 2:0.0810811 3:0.0588235 4:-0.778761 5:-0.640517 6:-0.710155 7:-0.705069 8:-0.674141
 **  \endverbatim
-**  
+**
 **  - Sparse Vectors, binary features:
 **  \verbatim
-**  0.26 6 8 15 21 29 33 34 37 42 50 53 57 67 76 78 81 84 86 93 103 111 
-**  0.72 6 8 20 21 23 33 34 36 42 50 53 57 67 76 78 81 84 86 95 102 107 
-**  0.35 2 8 19 21 27 33 34 36 44 50 53 57 67 76 78 81 84 86 95 102 108 
+**  0.26 6 8 15 21 29 33 34 37 42 50 53 57 67 76 78 81 84 86 93 103 111
+**  0.72 6 8 20 21 23 33 34 36 42 50 53 57 67 76 78 81 84 86 95 102 107
+**  0.35 2 8 19 21 27 33 34 36 44 50 53 57 67 76 78 81 84 86 95 102 108
 **  \endverbatim
-**  
+**
 **  - Sparse Vectors, alphanumeric identifiers:
 **  \verbatim
 **  0.9 afeature anotherfeature
 **  0.1 feat150 feat12 feat315
 **  0.2 501636 23543 2353262
 **  0.8 aaa AAA bbb BBB
-**  \endverbatim     
-**  
+**  \endverbatim
+**
 **  @param filename : The file containing regression data.
 **  @param features : The dictionary of features.
 **  @return a new ObjectStream containing regression examples.
@@ -306,7 +324,7 @@ extern ObjectStreamPtr regressionExamplesParser(const std::string& filename, Fea
 ** @class TextObjectParser
 ** @brief Text object parser.
 **
-** Base class for parsing text files line by line. 
+** Base class for parsing text files line by line.
 */
 class TextObjectParser : public ObjectStream
 {
@@ -369,7 +387,7 @@ public:
   /**
   ** This function is called at the end of the parsing.
   **
-  ** This function may call setResult(), if an object 
+  ** This function may call setResult(), if an object
   ** has been fully loaded thanks to the end of parsing.
   **
   ** @return False if end of parsing failed. In this case
@@ -388,7 +406,7 @@ public:
   ** a result is set through a call to setResult(). This result
   ** is then returned. When reaching end-of-file, this
   ** function calls parseEnd().
-  ** 
+  **
   ** @return a pointer on the next parsed object or ObjectPtr()
   ** if there are no more object in the stream.
   */
@@ -401,7 +419,7 @@ protected:
   ** This function may be called by parseLine() and by parseEnd()
   ** to transmit the lastly parsed object, which will be returned
   ** by next().
-  ** 
+  **
   ** @param object : object pointer.
   */
   void setResult(ObjectPtr object)
@@ -547,7 +565,7 @@ public:
 protected:
   FeatureDictionaryPtr features; /*!< A pointer to features dictionary.*/
 
-  /** 
+  /**
   ** Parses a list of features.
   **
   ** Feature lists have the following grammar:

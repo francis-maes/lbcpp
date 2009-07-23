@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: ObjectContainer.h              | Object RandomAccess Containers  |
 | Author  : Francis Maes                   |                                 |
@@ -38,7 +56,7 @@ public:
   ** If objects from multiple classes are mixed in this stream, this
   ** functions returns the highest base-class that is common between
   ** these classes.
-  ** 
+  **
   ** @return content class name (std::string).
   */
   virtual std::string getContentClassName() const
@@ -85,7 +103,7 @@ public:
   /**
   ** Converts to a VectorObjectContainer.
   **
-  ** VectorObjectContainer is represented internally thanks to 
+  ** VectorObjectContainer is represented internally thanks to
   ** a 'std::vector<ObjectPtr>'. It enables full read/write access
   ** and can be used to iterate efficiently over all elements.
   **
@@ -213,15 +231,15 @@ public:
   ObjectContainerPtr range(size_t begin, size_t end);
 
   /** Excludes a range of instances.
-  
-      This functions creates the complementary instance set 
+
+      This functions creates the complementary instance set
       of range(begin, end), <i>i.e.</i> the instance set
-      containing all the examples of this except those belonging 
-      to the range (begin, end). 
+      containing all the examples of this except those belonging
+      to the range (begin, end).
 
       @param begin The index of the first instance inside the range to exclude.
       @param end The index of the first instance below the range to exclude.
-      @returns a new InstanceSet that refers to this internally and 
+      @returns a new InstanceSet that refers to this internally and
         whose size is (size() - (end - begin)).
       @see range, invFold
     */

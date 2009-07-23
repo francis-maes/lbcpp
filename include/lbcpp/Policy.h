@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: Policy.h                       | CR-algorithm policy             |
 | Author  : Francis Maes                   |                                 |
@@ -356,15 +374,15 @@ public:
   virtual VariablePtr policyStart(ChoosePtr choose) = 0;
   virtual VariablePtr policyStep(double reward, ChoosePtr choose) = 0;
   virtual void policyEnd(double reward) = 0;
-  
+
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm);
   virtual VariablePtr policyChoose(ChoosePtr choose);
   virtual void policyReward(double reward);
   virtual void policyLeave();
-  
+
 protected:
   size_t inclusionLevel;
-  size_t stepNumber;  
+  size_t stepNumber;
   double currentReward;
 };
 
@@ -373,20 +391,20 @@ class EpisodicDecoratorPolicy : public EpisodicPolicy
 public:
   EpisodicDecoratorPolicy(PolicyPtr decorated = PolicyPtr())
     : decorated(decorated) {}
-  
+
   virtual VariablePtr policyStart(ChoosePtr choose)
   {
     decorated->policyEnter(choose->getCRAlgorithm());
     return decorated->policyChoose(choose);
   }
-  
+
   virtual VariablePtr policyStep(double reward, ChoosePtr choose)
   {
     if (reward)
       decorated->policyReward(reward);
     return decorated->policyChoose(choose);
   }
-  
+
   virtual void policyEnd(double reward)
   {
     if (reward)
@@ -411,7 +429,7 @@ public:
   */
   virtual bool load(std::istream& istr)
     {return read(istr, decorated);}
-    
+
 protected:
   PolicyPtr decorated;
 };

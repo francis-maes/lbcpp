@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: FeatureGenerator.h             | Feature generator               |
 | Author  : Francis Maes                   |                                 |
@@ -11,7 +29,7 @@
 **@author Francis MAES
 **@date   Mon Jun 15 23:56:06 2009
 **
-**@brief  Read only feature dictionary.
+**@brief  FeatureGenerator(s) and visitor declarations.
 **
 **
 */
@@ -37,8 +55,8 @@ public:
   /**
   ** Returns the FeatureDictionary.
   **
-  ** @see FeatureDictionary
   ** @return a pointer on the FeatureDictionary.
+  ** @see FeatureDictionary
   */
   virtual FeatureDictionaryPtr getDictionary() const = 0;
 
@@ -47,8 +65,8 @@ public:
   ** are equals.
   **
   ** @param otherDictionary : feature dictionary.
-  ** @see FeatureDictionary
   ** @return True is they are equals.
+  ** @see FeatureDictionary
   */
   bool checkDictionaryEquals(FeatureDictionaryPtr otherDictionary) const
     {return getDictionary()->checkEquals(otherDictionary);}
@@ -64,16 +82,16 @@ public:
   /**
   ** Converts to an ObjectGraph.
   **
-  ** @see ObjectGraph
   ** @return an object graph pointer.
+  ** @see ObjectGraph
   */
   virtual ObjectGraphPtr toGraph() const;
 
   /**
   ** Converts to a Table.
   **
-  ** @see Table
   ** @return a table pointer.
+  ** @see Table
   */
   virtual TablePtr toTable() const;
 
@@ -81,26 +99,26 @@ public:
   ** General
   */
   /**
-  ** Feature visitor entry point. + important tout se passze ici
+  ** Feature visitor entry point.
   **
-  ** @see FeatureVisitor
   ** @param visitor : feature visitor pointer.
+  ** @see FeatureVisitor
   */
   virtual void accept(FeatureVisitorPtr visitor) const = 0;
 
   /**
   ** Converts to a SparseVector.
   **
-  ** @see SparseVector
   ** @return a sparse vector pointer.
+  ** @see SparseVector
   */
   virtual SparseVectorPtr toSparseVector() const = 0;
 
   /**
   ** Converts to a DenseVector.
   **
-  ** @see DenseVector
   ** @return a dense vector pointer.
+  ** @see DenseVector
   */
   virtual DenseVectorPtr toDenseVector() const = 0;
 
@@ -181,7 +199,7 @@ public:
   /**
   ** Adds weighted feature generator to @a target.
   **
-  ** target <- target + weight * this 
+  ** target <- target + weight * this
   **
   ** @param target : dense vector pointer.
   ** @param weight : feature generator weight.
@@ -303,106 +321,131 @@ extern FeatureGeneratorPtr unitFeatureGenerator();
 extern FeatureGeneratorPtr multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight);
 
 /**
-** Weighted sum. Defined by: \f$ weight1.\text{featureGenerator1}+weight2.\text{FeatureGenerator}\f$
+** Computes the weighted sum defined by:
+** \f[ weight1.\text{featureGenerator1}+weight2.\text{FeatureGenerator}\f]
 **
 ** @param featureGenerator1 : first FeatureGenerator.
 ** @param weight1 : first weight.
 ** @param featureGenerator2 : second FeatureGenerator.
 ** @param weight2 : second weight.
-** @param computeNow : compute now or only if necessary.
+** @param computeNow : compute now (True) or only if necessary (False).
 **
 ** @return a new FeatureGenerator instance.
 */
 extern FeatureGeneratorPtr weightedSum(FeatureGeneratorPtr featureGenerator1, double weight1, FeatureGeneratorPtr featureGenerator2, double weight2, bool computeNow = false);
 
 /**
-** #FIXME
+** Computes the addition of @a featureGenerator1 and @a featureGenerator2.
 **
-** @param featureGenerator1
-** @param featureGenerator2
-** @param computeNow
+** @param featureGenerator1 : first FeatureGenerator.
+** @param featureGenerator2 : second FeatureGenerator.
+** @param computeNow : compute now (True) or only if necessary (False).
 **
-** @return
+** @return a new FeatureGenerator instance.
 */
 inline FeatureGeneratorPtr addition(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
   {return weightedSum(featureGenerator1, 1.0, featureGenerator2, 1.0, computeNow);}
 
 /**
-** #FIXME
+** Computes the difference between @a featureGenerator1 and @a featureGenerator2.
 **
-** @param featureGenerator1
-** @param featureGenerator2
-** @param computeNow
+** @param featureGenerator1 : first FeatureGenerator.
+** @param featureGenerator2 : second FeatureGenerator.
+** @param computeNow : compute now (True) or only if necessary (False).
 **
-** @return
+** @return a new FeatureGenerator instance.
 */
 inline FeatureGeneratorPtr difference(FeatureGeneratorPtr featureGenerator1, FeatureGeneratorPtr featureGenerator2, bool computeNow = false)
   {return weightedSum(featureGenerator1, 1.0, featureGenerator2, -1.0, computeNow);}
 
 /**
-** #FIXME
+** Computes a linear combination between FeatureGenerators contained
+** into the @a compositeFeatureGenerator (weighted with the @a weights
+** vector).
+*
+**      Example:
+*
+**      compositeFeatureGenerator is composed by three
+**      FeatureGenerators named FG1,FG2 and FG3. So we have:
+**      - compositeFG = { FG1, FG2, FG3 }
+**      - weights = [ 3.0, 2.0, 1.5 ]
 **
-** @param compositeFeatureGenerator
-** @param weights
+**      linearCombination(compositeFG, weights) returns a
+**      new FeatureGenerator resulting on the linear combination of
+**      3.0FG1, 2.0FG2 and 1.5FG3 (3.0FG1 + 2.0FG2 + 1.5FG3).
 **
-** @return
+** @param compositeFeatureGenerator : composite FeatureGenerator.
+** @param weights : weight vector.
+**
+** @return a new FeatureGenerator instance resulting on the linear
+** combination.
 */
 extern FeatureGeneratorPtr linearCombination(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights);
 
 /**
-** #FIXME
+** Computes a linear combination of the pairs < FeatureGenerator,
+** scalar value >.
 **
-** @param FeatureGeneratorPtr
-** @param newTerms
+** @param newTerms : pairs <FeatureGenerator,scalar value>.
 **
-** @return
+** @return a new FeatureGenerator instance resulting on the linear
+** combination.
 */
 extern FeatureGeneratorPtr linearCombination(std::vector< std::pair<FeatureGeneratorPtr, double> >* newTerms);
 
 /**
-** #FIXM
+** Returns a sub FeatureGenerator
 **
-** @param dictionary
-** @param index
-** @param featureGenerator
+** @param dictionary : feature dictionary.
+** @param index : feature index.
+** @param featureGenerator : feature generator.
 **
-** @return
+** @return a new FeatureGenerator instance.
 */
 extern FeatureGeneratorPtr subFeatureGenerator(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);
 
 
 /**
-** @class featureVisitor
-** @brief #FIXME all.
+** @class FeatureVisitor
+** @brief FeatureGenerator visitor.
 */
 class FeatureVisitor : public Object
 {
 public:
   /**
+  ** This function is executed each time the visitor enters into a new
+  ** FeatureGenerator scope.
   **
+  ** @param dictionary : feature dictionary of the current FeatureGenerator.
+  ** @param index : current scope index.
   **
-  ** @param dictionary
-  ** @param index
-  **
-  ** @return
+  ** @return a boolean.
   */
   virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index) = 0;
 
   /**
+  ** Adds a new feature. A pair <@em name, @a value> where @em name is
+  ** composed by a scope prefix and the given feature name.
   **
+  ** Example: we are in the scope "contact" and we want to add a
+  ** feature "firstname" with the value "Paul". The complete variable
+  ** name will be: "contact.firstname" and its value "Paul".
   **
-  ** @param dictionary
-  ** @param index
-  ** @param value
+  ** @param dictionary : feature dictionary of the current FeatureGenerator.
+  ** @param index : feature index.
+  ** @param value : feature value.
   */
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value) = 0;
 
   /**
+  ** Calls another FeatureGenerator. A FeatureGenerator is a composite
+  ** structure that could be composed by several FeatureGenerators,
+  ** and also pointers to FeatureGenerators. So, the featureCall()
+  ** function allows to explore them.
   **
-  **
-  ** @param dictionary
-  ** @param scopeIndex
-  ** @param featureGenerator
+  ** @param dictionary : feature dictionary of the current FeatureGenerator.
+  ** @param scopeIndex : scope index.
+  ** @param featureGenerator : feature generator to call.
   */
   virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
   {
@@ -414,17 +457,19 @@ public:
   }
 
   /**
+  ** Calls another FeatureGenerator. A FeatureGenerator is a composite
+  ** structure that could be composed by several FeatureGenerators,
+  ** and also pointers to FeatureGenerators. So, the featureCall()
+  ** function allows to explore them.
   **
-  **
-  ** @param dictionary
-  ** @param featureGenerator
+  ** @param dictionary : feature dictionary of the current FeatureGenerator.
+  ** @param featureGenerator : feature generator to call.
   */
   virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
     {featureGenerator->accept(FeatureVisitorPtr(this));}
 
   /**
-  **
-  **
+  ** This function is executed each time the visitor leaves a scope.
   */
   virtual void featureLeave() = 0;
 };
@@ -432,26 +477,25 @@ public:
 
 /**
 ** @class featureGeneratorDefaultImplementation
-** @brief
+** @brief Feature generator base class implementation.
+** @see FeatureGenerator
 */
 template<class ExactType, class BaseType>
 class FeatureGeneratorDefaultImplementations : public BaseType
 {
 public:
   /**
+  ** Constructor
   **
-  **
-  ** @param dictionary
-  **
-  ** @return
+  ** @param dictionary : feature dictionary.
+  ** @return a new FeatureGeneratorDefaultImplementations instance.
   */
   FeatureGeneratorDefaultImplementations(FeatureDictionaryPtr dictionary) : BaseType(dictionary) {}
 
   /**
+  ** Constructor.
   **
-  **
-  **
-  ** @return
+  ** @return a new FeatureGeneratorDefaultImplementations instance.
   */
   FeatureGeneratorDefaultImplementations() {}
 
@@ -464,177 +508,137 @@ public:
 
 public:
   /**
-  **
-  **
-  ** @param visitor
+  ** @see FeatureGenerator::accept
   */
   virtual void accept(FeatureVisitorPtr visitor) const;
+
   /**
-  **
-  **
-  **
-  ** @return
+  ** @see FeatureGenerator::toSparseVector
   */
   virtual SparseVectorPtr toSparseVector() const;
+
   /**
-  **
-  **
-  **
-  ** @return
+  ** @see FeatureGenerator::toDenseVector
   */
   virtual DenseVectorPtr toDenseVector() const;
+
   /**
-  **
-  **
-  **
-  ** @return
+  ** @see FeatureGenerator::toString
   */
   virtual std::string toString() const;
+
   /**
-  **
-  **
-  **
-  ** @return
+  ** @see FeatureGenerator::l0norm
   */
   virtual size_t l0norm() const;
+
   /**
-  **
-  **
-  **
-  ** @return
+  ** @see FeatureGenerator::l1norm
   */
   virtual double l1norm() const;
+
   /**
-  **
-  **
-  **
-  ** @return
+  ** @see FeatureGenerator::sumOfSquares
   */
   virtual double sumOfSquares() const;
+
   /**
-  **
-  **
-  ** @param target
+  ** @see FeatureGenerator::addTo
   */
   virtual void addTo(DenseVectorPtr target) const;
+
   /**
-  **
-  **
-  ** @param target
+  ** @see FeatureGenerator::addTo
   */
   virtual void addTo(SparseVectorPtr target) const;
+
   /**
-  **
-  **
-  ** @param target
+  ** @see FeatureGenerator::substractFrom
   */
   virtual void substractFrom(DenseVectorPtr target) const;
+
   /**
-  **
-  **
-  ** @param target
+   ** @see FeatureGenerator::substractFrom
   */
   virtual void substractFrom(SparseVectorPtr target) const;
+
   /**
-  **
-  **
-  ** @param target
-  ** @param weight
+  ** @see FeatureGenerator::addWaightedTo
   */
   virtual void addWeightedTo(DenseVectorPtr target, double weight) const;
+
   /**
-  **
-  **
-  ** @param target
-  ** @param weight
+  ** @see FeatureGenerator::addWeightedTo
   */
   virtual void addWeightedTo(SparseVectorPtr target, double weight) const;
+
   /**
-  **
-  **
-  ** @param target
-  ** @param weight
+  ** @see FeatureGenerator::addWaightedSignsTo
   */
   virtual void addWeightedSignsTo(DenseVectorPtr target, double weight) const;
+
   /**
-  **
-  **
-  ** @param vector
-  **
-  ** @return
+  ** @see FeatureGenerator::dotProduct
   */
   virtual double dotProduct(const SparseVectorPtr vector) const;
+
   /**
-  **
-  **
-  ** @param vector
-  **
-  ** @return
+  ** @see FeatureGenerator::dotProduct
   */
   virtual double dotProduct(const DenseVectorPtr vector) const;
+
   /**
-  **
-  **
-  ** @param featureGenerator
-  **
-  ** @return
+  ** @see FeatureGenerator::dotProduct
   */
   virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
 
 protected:
-  /**
-  **
-  **
-  **
-  ** @return
-  */
   const ExactType& _this() const {return *static_cast<const ExactType* >(this);}
 };
 
 
 /**
-** @class FlatfeatureGenerator
-** @brief
+** @class FlatFeatureGenerator
+** @brief #FIXME
 */
 
 class FlatFeatureGenerator : public FeatureGenerator
 {
 public:
   /**
+  ** Returns the number of subgenerators.
   **
-  **
-  **
-  ** @return
+  ** @return the number of subgenerators.
   */
   virtual size_t getNumSubGenerators() const
     {return 0;}
 
   /**
+  ** Returns subgenerator number @a num.
   **
+  ** @param num : number of the subgenerator.
   **
-  ** @param num
-  **
-  ** @return
+  ** @return a FeatureGenerator instance.
   */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
     {assert(false); return FeatureGeneratorPtr();}
 
   /**
+  ** Returns the index of the subgenerator number @a num.
   **
+  ** @param num : number of the subgenerator.
   **
-  ** @param num
-  **
-  ** @return
+  ** @return the index of the subgenerator number @a num.
   */
   virtual size_t getSubGeneratorIndex(size_t num) const
     {assert(false); return (size_t)-1;}
 
   /**
+  ** Returns the subgenerator corresponding to the index @a index.
   **
+  ** @param index : index of the subgenerator.
   **
-  ** @param index
-  **
-  ** @return
+  ** @return a FeatureGenerator instance.
   */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {assert(false); return FeatureGeneratorPtr();}
