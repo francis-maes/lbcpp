@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: CRAlgorithm.h                  | CR-algorithm base class         |
 | Author  : Francis Maes                   |                                 |
@@ -47,22 +65,22 @@ public:
   ** Policy running
   */
 
-  /*!
+  /**
+  ** Runs a @a policy from the initial state.
   **
-  **
-  ** @param policy
+  ** @param policy :
   **
   ** @return
   */
-  virtual bool run(PolicyPtr policy) = 0; // run a policy from the initial state
+  virtual bool run(PolicyPtr policy) = 0;
 
-  /*!
+  /**
+  ** Runs a @a policy from the current state.
   **
-  **
-  ** @param policy
-  ** @param choice
+  ** @param policy :
+  ** @param choice :
   */
-  virtual void run(PolicyPtr policy, VariablePtr choice) = 0; // run a policy from the current state
+  virtual void run(PolicyPtr policy, VariablePtr choice) = 0;
 
   /*}
   **
@@ -73,7 +91,7 @@ public:
   ** Step by step
   */
 
-  /*!
+  /**
   **
   **
   ** deprecated
@@ -85,24 +103,28 @@ public:
   */
   virtual bool step(Callback& callback, VariablePtr choice) = 0; // returns false if the new state is a final state
 
-  /*!
+  /**
+  ** Runs the CRAlgorithm until it reachs the first @em choose
+  ** keyword.
   **
+  ** @param reward : a pointer to the reward value (if any, NULL by
+  ** default).
   **
-  ** @param reward
-  **
-  ** @return
+  ** @return False if there was no choose keyword.
   */
-  virtual ChoosePtr runUntilFirstChoose(double* reward = NULL) = 0; // returns false if there was no choose
+  virtual ChoosePtr runUntilFirstChoose(double* reward = NULL) = 0;
 
-  /*!
-  **
+  /**
+  ** Runs the CRAlogirthm until it reachs the next @em choose
+  ** keayword.
   **
   ** @param choice
-  ** @param reward
+  ** @param reward : a pointer to the reward value (if any, NULL by
+  ** default).
   **
-  ** @return
+  ** @return False if there was no remaining chooses.
   */
-  virtual ChoosePtr runUntilNextChoose(VariablePtr choice, double* reward = NULL) = 0; // returns false if there was no remaining chooses
+  virtual ChoosePtr runUntilNextChoose(VariablePtr choice, double* reward = NULL) = 0;
 
   /*}
   **
@@ -112,15 +134,14 @@ public:
   ** Result
   */
 
-  /*!
+  /**
+  ** Returns True if there was any return keyword into the CRAlgorithm.
   **
-  **
-  **
-  ** @return
+  ** @return True if there was any return keyword into the CRAlgorithm.
   */
   virtual bool hasReturn() const = 0;
 
-  /*!
+  /**
   **
   **
   **

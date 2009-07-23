@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: FeatureDictionary.h            | A dictionary of feature and     |
 | Author  : Francis Maes                   | feature-scope names             |
@@ -304,11 +322,11 @@ public:
     {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
 
   /**
-  ** Ensures that you don't try to overide a subdictionary.
+  ** Ensures that you don't try to override a subdictionary.
   ** @a ensureSubDictionary() adds @a subDictionary at the index @a
   ** index if there is nothing at that place. Otherwise it checks if
   ** @a subDictionary and subDictionaries[@a index] are equals or
-  ** not. It throws an error to the ErrorHandler if you try to overide
+  ** not. It throws an error to the ErrorHandler if you try to override
   ** an existing (and different) subdictionary.
   **
   ** @param index : index of the subdictionary.

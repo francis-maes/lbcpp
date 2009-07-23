@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: Utilities.h                    | Miscelaneous Utilities          |
 | Author  : Francis Maes                   |                                 |
@@ -37,7 +55,7 @@ namespace lbcpp
 ** default, errors and warnings are displayed on the standard
 ** output. This behavior can be changed by overriding the ErrorHandler
 ** class and by changing the singleton.
-** 
+**
 */
 class ErrorHandler
 {
@@ -105,7 +123,7 @@ private:
 /**
 ** @class ProgressCallback
 ** @brief A callback that receives information about
-** the progression of a task. 
+** the progression of a task.
 **
 ** This class is used to display to progression of
 ** a task that may eventually take a long time to complete.
@@ -127,8 +145,8 @@ public:
 
   /** This function is called each time the task progresses.
   **
-  ** Some tasks have a fixed length, which makes it possible to compute 
-  ** a percentage of progression. In this case the parameter 
+  ** Some tasks have a fixed length, which makes it possible to compute
+  ** a percentage of progression. In this case the parameter
   ** @a totalIterations indicates the length of the task.
   ** If the task's length is unknown in advance, the @a
   ** totalIterations parameter is equal to zero.

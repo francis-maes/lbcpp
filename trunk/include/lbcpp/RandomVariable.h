@@ -1,3 +1,21 @@
+/*
+** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+**
+** Copyright (C) 2009 Francis MAES
+** This program is free software; you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation; either version 3 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /*-----------------------------------------.---------------------------------.
 | Filename: RandomVariable.h               | Random variable statistics      |
 | Author  : Francis Maes                   |                                 |
@@ -346,13 +364,13 @@ class PolicyStatistics : public Object
 {
 public:
   PolicyStatistics();
-  
+
   ScalarVariableStatisticsPtr getRewardPerChoose() const
     {return rewardPerChoose;}
 
   ScalarVariableStatisticsPtr getRewardPerEpisode() const
     {return rewardPerEpisode;}
-    
+
   ScalarVariableStatisticsPtr getChoicesPerChoose() const
     {return choicesPerChoose;}
 
@@ -361,17 +379,17 @@ public:
 
   ScalarVariableStatisticsPtr getChoicesPerEpisode() const
     {return choicesPerEpisode;}
-    
+
   // shortcuts
   double getRewardPerChooseMean() const
     {return rewardPerChoose->getMean();}
-    
+
   double getRewardPerChooseStddev() const
     {return rewardPerChoose->getStandardDeviation();}
 
-  double getRewardPerEpisodeMean() const  
+  double getRewardPerEpisodeMean() const
     {return rewardPerEpisode->getMean();}
-    
+
   double getRewardPerEpisodeStddev() const
     {return rewardPerEpisode->getStandardDeviation();}
 
