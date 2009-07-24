@@ -116,9 +116,9 @@ public:
 
   /**
   ** Runs the CRAlogirthm until it reachs the next @em choose
-  ** keayword.
+  ** keyword.
   **
-  ** @param choice
+  ** @param choice : 
   ** @param reward : a pointer to the reward value (if any, NULL by
   ** default).
   **

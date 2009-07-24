@@ -52,11 +52,10 @@ namespace lbcpp
 class Choose : public Object
 {
 public:
-  /*!
+  /**
+  ** Returns a reference on the current Choose instance.
   **
-  **
-  **
-  ** @return
+  ** @return a reference on the current Choose instance.
   */
   ChoosePtr getReferenceCountedPointer() const
     {return ChoosePtr(const_cast<Choose* >(this));}
@@ -64,95 +63,90 @@ public:
   /*
   ** Choices
   */
-  /*!
+  /**
+  ** Returns the choice type.
   **
-  **
-  **
-  ** @return
+  ** @return the choice type.
   */
   virtual std::string getChoiceType() const = 0;
 
-  /*!
+  /**
+  ** Returns the number of available choices.
   **
-  **
-  **
-  ** @return
+  ** @return the number of available choices.
   */
   virtual size_t getNumChoices() const = 0;
 
-  /*!
+  /**
+  ** Returns a new iterartor on the choice list.
   **
-  **
-  **
-  ** @return
+  ** @return a new iterartor on the choice list.
   */
   virtual VariableIteratorPtr newIterator() const = 0;
 
-  /*!
+  /**
+  ** Returns a random choice.
   **
-  **
-  **
-  ** @return
+  ** @return a random choice.
   */
   virtual VariablePtr sampleRandomChoice() const = 0;
 
-  /*!
+  /**
+  ** Samples the best choice according to the @a valueFunction.
   **
+  ** @param valueFunction : function that measures choices.
   **
-  ** @param valueFunction
-  **
-  ** @return
+  ** @return the best choice according to the @a valueFunction.
   */
   virtual VariablePtr sampleBestChoice(ActionValueFunctionPtr valueFunction) const = 0;
 
-  /*!
+  /**
+  ** Samples a choice given a discrete probability distribution.
   **
+  ** @param probabilities : discrete probability distribution.
+  ** @param probabilitiesSum : sum of the @a probabilites.
   **
-  ** @param probabilities
-  ** @param probabilitiesSum
-  **
-  ** @return
+  ** @return a choice given a discrete probability distribution.
+  ** @see Random::sampleWithProbabilities
   */
   virtual VariablePtr sampleChoiceWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0) const = 0;
 
   /*
   ** CR-algorithm related
   */
-  /*!
+  /**
+  ** Returns the CRAlgorithm related.
   **
-  **
-  **
-  ** @return
+  ** @return a pointer on the CRAlgorithm related.
   */
   CRAlgorithmPtr getCRAlgorithm() const
     {return crAlgorithm;}
 
-  /*!
+  /**
+  ** Changes the CRAlgorithm related.
   **
-  **
-  ** @param crAlgorithm
+  ** @param crAlgorithm : another CRAlgorithm.
   */
   void setCRAlgorithm(CRAlgorithmPtr crAlgorithm)
     {this->crAlgorithm = crAlgorithm;}
 
-  /*!
+  /**
+  ** Computes the CRAlgorithm state description.
   **
-  **
-  **
-  ** @return
+  ** @return the CRAlgorithm state description.
   */
   std::string computeStateDescription() const;
 
-  /*!
+  /**
+  ** Computes the description of the action related to @a choice.
   **
+  ** @param choice : target choice.
   **
-  ** @param choice
-  **
-  ** @return
+  ** @return the description of the action related to @a choice.
   */
   std::string computeActionDescription(VariablePtr choice) const;
 
-  /*!
+  /**
   **
   **
   **
@@ -160,7 +154,7 @@ public:
   */
   double computeStateValue() const;
 
-  /*!
+  /**
   **
   **
   ** @param choice
@@ -169,7 +163,7 @@ public:
   */
   double computeActionValue(VariablePtr choice) const;
 
-  /*!
+  /**
   **
   **
   ** @param res
@@ -177,7 +171,7 @@ public:
   */
   virtual void computeActionValues(std::vector<double>& res, ActionValueFunctionPtr actionValues = ActionValueFunctionPtr()) const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -185,7 +179,7 @@ public:
   */
   FeatureGeneratorPtr computeStateFeatures() const;
 
-  /*!
+  /**
   **
   **
   ** @param choice
@@ -194,7 +188,7 @@ public:
   */
   FeatureGeneratorPtr computeActionFeatures(VariablePtr choice) const;
 
-  /*!
+  /**
   **
   **
   ** @param transformIntoSparseVectors
@@ -206,7 +200,7 @@ public:
   /*
   ** Composite functions
   */
-  /*!
+  /**
   **
   **
   **
@@ -214,7 +208,7 @@ public:
   */
   virtual StateDescriptionFunctionPtr   getStateDescriptionFunction() const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -222,7 +216,7 @@ public:
   */
   virtual ActionDescriptionFunctionPtr  getActionDescriptionFunction() const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -230,7 +224,7 @@ public:
   */
   virtual StateValueFunctionPtr         getStateValueFunction() const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -238,7 +232,7 @@ public:
   */
   virtual ActionValueFunctionPtr        getActionValueFunction() const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -246,7 +240,7 @@ public:
   */
   virtual StateFeaturesFunctionPtr      getStateFeaturesFunction() const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -259,7 +253,7 @@ public:
   */
   virtual size_t getNumStateDescriptions() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param index
@@ -268,7 +262,7 @@ public:
   */
   virtual StateDescriptionFunctionPtr getStateDescription(size_t index) const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -276,7 +270,7 @@ public:
   */
   virtual size_t getNumActionDescriptions() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param index
@@ -285,7 +279,7 @@ public:
   */
   virtual ActionDescriptionFunctionPtr getActionDescription(size_t index) const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -293,7 +287,7 @@ public:
   */
   virtual size_t getNumStateValues() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param index
@@ -302,7 +296,7 @@ public:
   */
   virtual StateValueFunctionPtr getStateValue(size_t index) const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -310,7 +304,7 @@ public:
   */
   virtual size_t getNumActionValues() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param index
@@ -319,7 +313,7 @@ public:
   */
   virtual ActionValueFunctionPtr getActionValue(size_t index) const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -327,7 +321,7 @@ public:
   */
   virtual size_t getNumStateFeatures() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param index
@@ -336,7 +330,7 @@ public:
   */
   virtual StateFeaturesFunctionPtr getStateFeatures(size_t index) const = 0;
 
-  /*!
+  /**
   **
   **
   **
@@ -344,7 +338,7 @@ public:
   */
   virtual size_t getNumActionFeatures() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param index
@@ -356,26 +350,18 @@ public:
   /*
   ** Object
   */
-  /*!
+  /**
+  ** Converts choices to a String.
   **
-  **
-  **
-  ** @return
+  ** @return the conversion of choices to a string.
   */
   virtual std::string toString() const;
 
 protected:
-  /*!
-  **
-  **
-  ** @param crAlgorithm
-  **
-  ** @return
-  */
   Choose(CRAlgorithmPtr crAlgorithm = CRAlgorithmPtr())
     : crAlgorithm(crAlgorithm) {}
 
-  CRAlgorithmPtr crAlgorithm;   /*!< */
+  CRAlgorithmPtr crAlgorithm;
 };
 
 
