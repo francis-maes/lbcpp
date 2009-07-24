@@ -29,7 +29,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 16:58:16 2009
 **
-**@brief  #FIXME: all
+**@brief  CRAlgorithmScope class declaration.
 **
 **
 */
@@ -53,38 +53,37 @@ public:
   ** Introspection
   */
 
-  /*!
+  /**
+  ** Returns the number of variables into the CRAlgorithm.
   **
-  **
-  **
-  ** @return
+  ** @return the number of variables into the CRAlgorithm.
   */
   virtual size_t getNumVariables() const = 0;
 
-  /*!
+  /**
+  ** Returns the variable number @a num.
   **
+  ** @param num : number of the variable.
   **
-  ** @param num
-  **
-  ** @return
+  ** @return the variable number @a num.
   */
   virtual VariablePtr getVariable(size_t num) const = 0;
 
-  /*!
+  /**
+  ** Returns the variable @a name.
   **
+  ** @param name : name of the variable.
   **
-  ** @param name
-  **
-  ** @return
+  ** @return the variable @a name.
   */
   virtual VariablePtr getVariable(const std::string& name) const = 0;
 
-  /*!
+  /**
+  ** Returns a reference on the variable @a name.
   **
+  ** @param name : name of the variable.
   **
-  ** @param name
-  **
-  ** @return
+  ** @return a reference on the variable @a name.
   */
   template<class T>
   const T& getVariableReference(const std::string& name) const
@@ -98,30 +97,30 @@ public:
     return v->getConstReference<T>();
   }
 
-  /*!
+  /**
+  ** Returns the type of the variable number @a num.
   **
+  ** @param num : number of the variable.
   **
-  ** @param num
-  **
-  ** @return
+  ** @return the type of the variable number @a num.
   */
   virtual std::string getVariableType(size_t num) const = 0;
 
-  /*!
+  /**
+  ** Returns the name of the variable number @a num.
   **
+  ** @param num : number of the variable.
   **
-  ** @param num
-  **
-  ** @return
+  ** @return the name of the variable number @a num.
   */
   virtual std::string getVariableName(size_t num) const = 0;
 
-  /*!
+  /**
+  ** Returns the value of the variable number @a num.
   **
+  ** @param num : number of the variable.
   **
-  ** @param num
-  **
-  ** @return
+  ** @return the value of the variable number @a num.
   */
   virtual std::string getVariableValue(size_t num) const = 0;
 
@@ -129,25 +128,24 @@ public:
   ** Clone / assignment / swap
   */
 
-  /*!
+  /**
+  ** Clones the current state of the CRAlgorithm.
   **
-  **
-  **
-  ** @return
+  ** @return a copy of the current state of the CRAlgorithm.
   */
   virtual ObjectPtr clone() const = 0;
 
-  /*!
+  /**
+  ** Sets the current CRAlgorithm scope to another CRAlgorithm scope.
   **
-  **
-  ** @param otherScope
+  ** @param otherScope : another CRAlgorithm scope.
   */
   virtual void setScope(const CRAlgorithmScope& otherScope) = 0;
 
-  /*!
+  /**
+  ** Swaps the current CRAlgorithm scope with @a otherScope.
   **
-  **
-  ** @param otherScope
+  ** @param otherScope : another CRAlgorithm scope.
   */
   virtual void swapScope(CRAlgorithmScope& otherScope) = 0;
 
@@ -155,7 +153,7 @@ public:
   ** Current State
   */
 
-  /*!
+  /**
   **
   **
   **
@@ -163,22 +161,20 @@ public:
   */
   virtual int getState() const = 0;
 
-  /*!
+  /**
+  ** Returns a pointer on the current inner CRAlgorithm scope.
   **
-  **
-  **
-  ** @return
+  ** @return a pointer on the current inner CRAlgorithm scope.
   */
   virtual CRAlgorithmScopePtr getCurrentInnerScope() = 0;
 
   /*
   ** To string
   */
-  /*!
+  /**
+  ** Converts the current CRAlgorithm state to a string, ie the state of all the variables.
   **
-  **
-  **
-  ** @return
+  ** @return the state of all the variables ("variable name = variable value\n...").
   */
   virtual std::string toString() const
   {

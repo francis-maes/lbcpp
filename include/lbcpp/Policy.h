@@ -50,7 +50,7 @@ namespace lbcpp
 class Policy : public Object
 {
 public:
-  /*!
+  /**
   **
   **
   ** @param crAlgorithm
@@ -59,7 +59,7 @@ public:
   */
   bool run(CRAlgorithmPtr crAlgorithm, PolicyStatisticsPtr statistics = PolicyStatisticsPtr());
 
-  /*!
+  /**
   **
   **
   ** @param crAlgorithms
@@ -69,7 +69,7 @@ public:
   */
   bool run(ObjectStreamPtr crAlgorithms, PolicyStatisticsPtr statistics = PolicyStatisticsPtr(), ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  /*!
+  /**
   **
   **
   ** @param crAlgorithms
@@ -85,7 +85,7 @@ public:
   PolicyStatisticsPtr computeStatistics(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {PolicyStatisticsPtr res = new PolicyStatistics(); run(crAlgorithms, res, progress); return res;}
 
-  /*!
+  /**
   **
   **
   ** @param verbosity
@@ -96,14 +96,14 @@ public:
   PolicyPtr verbose(size_t verbosity, std::ostream& ostr = std::cout) const;
 
 public:
-  /*!
+  /**
   **
   **
   ** @param crAlgorithm
   */
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}
 
-  /*!
+  /**
   **
   **
   ** @param choose
@@ -112,20 +112,20 @@ public:
   */
   virtual VariablePtr policyChoose(ChoosePtr choose) = 0;
 
-  /*!
+  /**
   **
   **
   ** @param reward
   */
   virtual void policyReward(double reward) {}
 
-  /*!
+  /**
   **
   **
   */
   virtual void policyLeave() {}
 
-  /*!
+  /**
   ** deprecated
   **
   **
@@ -133,7 +133,7 @@ public:
   */
   virtual size_t getNumResults() const {return 0;}
 
-  /*!
+  /**
   ** deprecated
   **
   ** @param i
@@ -143,7 +143,7 @@ public:
   virtual ObjectPtr getResult(size_t i) const
     {assert(false); return ObjectPtr();}
 
-  /*!
+  /**
   **
   **
   ** @param name
@@ -153,7 +153,7 @@ public:
   virtual ObjectPtr getResultWithName(const std::string& name) const;
 };
 
-/*!
+/**
 **
 **
 **
@@ -161,7 +161,7 @@ public:
 */
 extern PolicyPtr randomPolicy();
 
-/*!
+/**
 **
 **
 ** @param actionValues
@@ -170,7 +170,7 @@ extern PolicyPtr randomPolicy();
 */
 extern PolicyPtr greedyPolicy(ActionValueFunctionPtr actionValues);
 
-/*!
+/**
 **
 **
 ** @param actionValue
@@ -180,7 +180,7 @@ extern PolicyPtr greedyPolicy(ActionValueFunctionPtr actionValues);
 */
 extern PolicyPtr gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature);
 
-/*!
+/**
 **
 **
 ** @param actionProbabilities
@@ -189,7 +189,7 @@ extern PolicyPtr gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, Iteration
 */
 extern PolicyPtr stochasticPolicy(ActionValueFunctionPtr actionProbabilities);
 
-/*!
+/**
 **
 **
 ** @param basePolicy
@@ -200,7 +200,7 @@ extern PolicyPtr stochasticPolicy(ActionValueFunctionPtr actionProbabilities);
 extern PolicyPtr epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr epsilon);
 
 // mixtureCoefficient = Probability of selecting policy2
-/*!
+/**
 **
 **
 ** @param policy1
@@ -211,9 +211,17 @@ extern PolicyPtr epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr 
 */
 extern PolicyPtr mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient = 0.5);
 
+/**
+**
+**
+** @param policy
+** @param statistics
+**
+** @return
+*/
 extern PolicyPtr computeStatisticsPolicy(PolicyPtr policy, PolicyStatisticsPtr statistics);
 
-/*!
+/**
 **
 **
 ** @param explorationPolicy
@@ -224,7 +232,7 @@ extern PolicyPtr computeStatisticsPolicy(PolicyPtr policy, PolicyStatisticsPtr s
 */
 extern PolicyPtr qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
 
-/*!
+/**
 **
 **
 ** @param explorationPolicy
@@ -235,7 +243,7 @@ extern PolicyPtr qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regre
 */
 extern PolicyPtr sarsaZeroPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
 
-/*!
+/**
 **
 **
 ** @param explorationPolicy
@@ -246,7 +254,7 @@ extern PolicyPtr sarsaZeroPolicy(PolicyPtr explorationPolicy, RegressorPtr regre
 */
 extern PolicyPtr monteCarloControlPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
 
-/*!
+/**
 **
 **
 ** @param explorationPolicy
@@ -259,7 +267,7 @@ extern PolicyPtr classificationExamplesCreatorPolicy(PolicyPtr explorationPolicy
                         ClassifierPtr classifier,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
 
-/*!
+/**
 **
 **
 ** @param explorationPolicy
@@ -272,7 +280,7 @@ extern PolicyPtr rankingExamplesCreatorPolicy(PolicyPtr explorationPolicy,
                         RankerPtr ranker,
                         ActionValueFunctionPtr supervisor = ActionValueFunctionPtr());
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -283,7 +291,7 @@ extern PolicyPtr rankingExamplesCreatorPolicy(PolicyPtr explorationPolicy,
 */
 extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, double exploration = 1.0);
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -301,7 +309,7 @@ extern PolicyPtr gpomdpPolicy(GeneralizedClassifierPtr classifier, double beta, 
 class DecoratorPolicy : public Policy
 {
 public:
-  /*!
+  /**
   **
   **
   ** @param decorated
@@ -311,7 +319,7 @@ public:
   DecoratorPolicy(PolicyPtr decorated = PolicyPtr())
     : decorated(decorated) {}
 
-  /*!
+  /**
   **
   **
   ** @param crAlgorithm
@@ -319,7 +327,7 @@ public:
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
     {decorated->policyEnter(crAlgorithm);}
 
-  /*!
+  /**
   **
   **
   ** @param choose
@@ -329,7 +337,7 @@ public:
   virtual VariablePtr policyChoose(ChoosePtr choose)
     {return decorated->policyChoose(choose);}
 
-  /*!
+  /**
   **
   **
   ** @param reward
@@ -337,14 +345,14 @@ public:
   virtual void policyReward(double reward)
     {decorated->policyReward(reward);}
 
-  /*!
+  /**
   **
   **
   */
   virtual void policyLeave()
     {decorated->policyLeave();}
 
-  /*!
+  /**
   **
   **
   ** @param ostr
@@ -352,7 +360,7 @@ public:
   virtual void save(std::ostream& ostr) const
     {write(ostr, decorated);}
 
-  /*!
+  /**
   **
   **
   ** @param istr
@@ -363,7 +371,7 @@ public:
     {return read(istr, decorated);}
 
 protected:
-  PolicyPtr decorated;          /*!< */
+  PolicyPtr decorated;
 };
 
 class EpisodicPolicy : public Policy
@@ -412,7 +420,7 @@ public:
     decorated->policyLeave();
   }
 
-  /*!
+  /**
   **
   **
   ** @param ostr
@@ -420,7 +428,7 @@ public:
   virtual void save(std::ostream& ostr) const
     {write(ostr, decorated);}
 
-  /*!
+  /**
   **
   **
   ** @param istr

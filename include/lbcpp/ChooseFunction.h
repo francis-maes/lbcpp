@@ -51,10 +51,10 @@ namespace lbcpp
 class ChooseFunction : public Object
 {
 public:
-  /*!
+  /**
+  ** Choice setter.
   **
-  **
-  ** @param choose
+  ** @param choose : a choice.
   */
   virtual void setChoose(ChoosePtr choose) = 0;
 };
@@ -70,7 +70,7 @@ public:
 class StateValueFunction : public ChooseFunction
 {
 public:
-  /*!
+  /**
   **
   **
   **
@@ -81,7 +81,7 @@ public:
 
 extern StateValueFunctionPtr chooseStateValues();
 
-/*!
+/**
 **
 **
 ** @param regressor
@@ -90,7 +90,7 @@ extern StateValueFunctionPtr chooseStateValues();
 */
 extern StateValueFunctionPtr predictedStateValues(RegressorPtr regressor);
 
-/*!
+/**
 **
 **
 ** @param regressor
@@ -100,7 +100,7 @@ extern StateValueFunctionPtr predictedStateValues(RegressorPtr regressor);
 inline StateValueFunctionPtr predictedStateValues(GradientBasedRegressorPtr regressor)
   {return predictedStateValues(RegressorPtr(regressor));}
 
-/*!
+/**
 **
 **
 ** @param ranker
@@ -109,7 +109,7 @@ inline StateValueFunctionPtr predictedStateValues(GradientBasedRegressorPtr regr
 */
 extern StateValueFunctionPtr predictedStateValues(RankerPtr ranker);
 
-/*!
+/**
 **
 **
 ** @param ranker
@@ -131,7 +131,7 @@ extern StateValueFunctionPtr simulationStateValues(PolicyPtr policy, double disc
 class ActionValueFunction : public ChooseFunction
 {
 public:
-  /*!
+  /**
   **
   **
   ** @param choice
@@ -141,7 +141,7 @@ public:
   virtual double compute(VariablePtr choice) const = 0;
 };
 
-/*!
+/**
 **
 **
 **
@@ -151,7 +151,7 @@ extern ActionValueFunctionPtr chooseActionValues();
 
 extern ActionValueFunctionPtr stateValueBasedActionValues(StateValueFunctionPtr stateValues, double discount = 1.0);
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -160,7 +160,7 @@ extern ActionValueFunctionPtr stateValueBasedActionValues(StateValueFunctionPtr 
 */
 extern ActionValueFunctionPtr predictedActionValues(ClassifierPtr classifier);
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -170,7 +170,7 @@ extern ActionValueFunctionPtr predictedActionValues(ClassifierPtr classifier);
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedClassifierPtr classifier)
   {return predictedActionValues(ClassifierPtr(classifier));}
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -179,7 +179,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedClassifierPtr c
 */
 extern ActionValueFunctionPtr predictedActionValues(GeneralizedClassifierPtr classifier);
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -189,7 +189,7 @@ extern ActionValueFunctionPtr predictedActionValues(GeneralizedClassifierPtr cla
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedGeneralizedClassifierPtr classifier)
   {return predictedActionValues(GeneralizedClassifierPtr(classifier));}
 
-/*!
+/**
 **
 **
 ** @param ranker
@@ -198,7 +198,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedGeneralizedClas
 */
 extern ActionValueFunctionPtr predictedActionValues(RankerPtr ranker);
 
-/*!
+/**
 **
 **
 ** @param ranker
@@ -208,7 +208,7 @@ extern ActionValueFunctionPtr predictedActionValues(RankerPtr ranker);
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedRankerPtr ranker)
   {return predictedActionValues(RankerPtr(ranker));}
 
-/*!
+/**
 **
 **
 ** @param regressor
@@ -217,7 +217,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedRankerPtr ranke
 */
 extern ActionValueFunctionPtr predictedActionValues(RegressorPtr regressor);
 
-/*!
+/**
 **
 **
 ** @param regressor
@@ -227,7 +227,7 @@ extern ActionValueFunctionPtr predictedActionValues(RegressorPtr regressor);
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedRegressorPtr regressor)
   {return predictedActionValues(RegressorPtr(regressor));}
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -236,7 +236,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedRegressorPtr re
 */
 extern ActionValueFunctionPtr probabilitiesActionValues(ClassifierPtr classifier);
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -245,7 +245,7 @@ extern ActionValueFunctionPtr probabilitiesActionValues(ClassifierPtr classifier
 */
 extern ActionValueFunctionPtr probabilitiesActionValues(GeneralizedClassifierPtr classifier);
 
-/*!
+/**
 **
 **
 ** @param classifier
@@ -266,7 +266,7 @@ inline ActionValueFunctionPtr probabilitiesActionValues(GradientBasedClassifierP
 class StateFeaturesFunction : public ChooseFunction
 {
 public:
-  /*!
+  /**
   **
   **
   **
@@ -283,7 +283,7 @@ public:
 class ActionFeaturesFunction : public ChooseFunction
 {
 public:
-  /*!
+  /**
   **
   **
   **
@@ -291,7 +291,7 @@ public:
   */
   virtual FeatureDictionaryPtr getDictionary() const = 0;
 
-  /*!
+  /**
   **
   **
   ** @param choice
@@ -313,7 +313,7 @@ public:
 class StateDescriptionFunction : public ChooseFunction
 {
 public:
-  /*!
+  /**
   **
   **
   **
@@ -330,7 +330,7 @@ public:
 class ActionDescriptionFunction : public ChooseFunction
 {
 public:
-  /*!
+  /**
   **
   **
   ** @param choice
