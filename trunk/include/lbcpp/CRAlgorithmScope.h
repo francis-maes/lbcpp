@@ -1,7 +1,7 @@
 /*
-** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+** This file is part of the LBC++ library - "Learning Based C++"
+** Copyright (C) 2009 by Francis Maes, francis.maes@lip6.fr.
 **
-** Copyright (C) 2009 Francis MAES
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 3 of the License, or
@@ -154,10 +154,14 @@ public:
   */
 
   /**
+  ** Specifies the progression into the CRAlgorithm according to the following 
+  ** convention:
+  ** - 0: the scope was not launch.
+  ** - 1...n: the CRAlgorithm is stopped at the "choose" number i.
+  ** - n+1...m: the CRAlgorithm is stopped at the sub-scope number i - (n+1).  
   **
   **
-  **
-  ** @return
+  ** @return an integer value according to the previous convention (internal).
   */
   virtual int getState() const = 0;
 
