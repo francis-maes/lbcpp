@@ -1,7 +1,7 @@
 /*
-** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+** This file is part of the LBC++ library - "Learning Based C++"
+** Copyright (C) 2009 by Francis Maes, francis.maes@lip6.fr.
 **
-** Copyright (C) 2009 Francis MAES
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 3 of the License, or
@@ -29,7 +29,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 17:04:39 2009
 **
-**@brief  #FIXME: all
+**@brief  Functions that depend on a choose.
 **
 **
 */
@@ -52,9 +52,9 @@ class ChooseFunction : public Object
 {
 public:
   /**
-  ** Choice setter.
+  ** Choose setter.
   **
-  ** @param choose : a choice.
+  ** @param choose : a choose.
   */
   virtual void setChoose(ChoosePtr choose) = 0;
 };
@@ -64,25 +64,30 @@ public:
 */
 /*!
 ** @class StateValueFunction
-** @brief State values
+** @brief State quality measure.
 **
+**  
 */
 class StateValueFunction : public ChooseFunction
 {
 public:
   /**
+  ** Returns a float (double) value corresponding on the quality of the current state.
   **
-  **
-  **
-  ** @return
+  ** @return a float (double) value corresponding on the quality of the current state.
   */
   virtual double compute() const = 0;
 };
 
+/**
+** #FIXME
+**
+** @return
+*/	
 extern StateValueFunctionPtr chooseStateValues();
 
 /**
-**
+** #FIXME
 **
 ** @param regressor
 **
@@ -91,7 +96,7 @@ extern StateValueFunctionPtr chooseStateValues();
 extern StateValueFunctionPtr predictedStateValues(RegressorPtr regressor);
 
 /**
-**
+** #FIXME
 **
 ** @param regressor
 **
@@ -101,7 +106,7 @@ inline StateValueFunctionPtr predictedStateValues(GradientBasedRegressorPtr regr
   {return predictedStateValues(RegressorPtr(regressor));}
 
 /**
-**
+** #FIXME
 **
 ** @param ranker
 **
@@ -110,7 +115,7 @@ inline StateValueFunctionPtr predictedStateValues(GradientBasedRegressorPtr regr
 extern StateValueFunctionPtr predictedStateValues(RankerPtr ranker);
 
 /**
-**
+** #FIXME
 **
 ** @param ranker
 **
@@ -120,6 +125,15 @@ inline StateValueFunctionPtr predictedStateValues(GradientBasedRankerPtr ranker)
   {return predictedStateValues(RankerPtr(ranker));}
 
 
+/**
+** #FIXME
+**
+** @param policy :
+** @param discount :
+** @param horzon :
+**
+** @return
+*/
 extern StateValueFunctionPtr simulationStateValues(PolicyPtr policy, double discount = 1, size_t horizon = 0);
 
 
@@ -132,17 +146,16 @@ class ActionValueFunction : public ChooseFunction
 {
 public:
   /**
+  ** Returns a float (double) value corresponding on the @a choice quality.
   **
-  **
-  ** @param choice
-  **
-  ** @return
+  ** @param choice : choice to estimate.
+  ** @return a float (double) value corresponding on the quality of the current state.
   */
   virtual double compute(VariablePtr choice) const = 0;
 };
 
 /**
-**
+** #FIXME
 **
 **
 ** @return
@@ -152,7 +165,7 @@ extern ActionValueFunctionPtr chooseActionValues();
 extern ActionValueFunctionPtr stateValueBasedActionValues(StateValueFunctionPtr stateValues, double discount = 1.0);
 
 /**
-**
+** #FIXME
 **
 ** @param classifier
 **
@@ -161,7 +174,7 @@ extern ActionValueFunctionPtr stateValueBasedActionValues(StateValueFunctionPtr 
 extern ActionValueFunctionPtr predictedActionValues(ClassifierPtr classifier);
 
 /**
-**
+** #FIXME
 **
 ** @param classifier
 **
@@ -171,7 +184,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedClassifierPtr c
   {return predictedActionValues(ClassifierPtr(classifier));}
 
 /**
-**
+** #FIXME
 **
 ** @param classifier
 **
@@ -180,7 +193,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedClassifierPtr c
 extern ActionValueFunctionPtr predictedActionValues(GeneralizedClassifierPtr classifier);
 
 /**
-**
+** #FIXME
 **
 ** @param classifier
 **
@@ -190,7 +203,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedGeneralizedClas
   {return predictedActionValues(GeneralizedClassifierPtr(classifier));}
 
 /**
-**
+** #FIXME
 **
 ** @param ranker
 **
@@ -199,7 +212,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedGeneralizedClas
 extern ActionValueFunctionPtr predictedActionValues(RankerPtr ranker);
 
 /**
-**
+** #FIXME
 **
 ** @param ranker
 **
@@ -209,7 +222,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedRankerPtr ranke
   {return predictedActionValues(RankerPtr(ranker));}
 
 /**
-**
+** #FIXME
 **
 ** @param regressor
 **
@@ -218,7 +231,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedRankerPtr ranke
 extern ActionValueFunctionPtr predictedActionValues(RegressorPtr regressor);
 
 /**
-**
+** #FIXME
 **
 ** @param regressor
 **
@@ -227,8 +240,8 @@ extern ActionValueFunctionPtr predictedActionValues(RegressorPtr regressor);
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedRegressorPtr regressor)
   {return predictedActionValues(RegressorPtr(regressor));}
 
-/**
-**
+/** 
+** #FIXME
 **
 ** @param classifier
 **
@@ -237,7 +250,7 @@ inline ActionValueFunctionPtr predictedActionValues(GradientBasedRegressorPtr re
 extern ActionValueFunctionPtr probabilitiesActionValues(ClassifierPtr classifier);
 
 /**
-**
+** #FIXME
 **
 ** @param classifier
 **
@@ -246,7 +259,7 @@ extern ActionValueFunctionPtr probabilitiesActionValues(ClassifierPtr classifier
 extern ActionValueFunctionPtr probabilitiesActionValues(GeneralizedClassifierPtr classifier);
 
 /**
-**
+** #FIXME
 **
 ** @param classifier
 **
@@ -260,43 +273,44 @@ inline ActionValueFunctionPtr probabilitiesActionValues(GradientBasedClassifierP
 */
 /*!
 ** @class StatFeaturesFunction
-** @brief Features
+** @brief State conversion class to FeatureGenerator.
 **
 */
 class StateFeaturesFunction : public ChooseFunction
 {
 public:
   /**
+  ** Computes a FeatureGenerator describeing the current state.
   **
-  **
-  **
-  ** @return
+  ** @return a FeatureGenerator describeing the current state.
+  ** @see FeatureGenerator 
   */
   virtual FeatureGeneratorPtr compute() const = 0;
 };
 
 /*!
 ** @class ActionFeaturesFunction
-** @brief #FIXME
+** @brief Action conversion class to FeatureGenerator.
 **
 */
 class ActionFeaturesFunction : public ChooseFunction
 {
 public:
   /**
+  ** Returns the FeatureDictionary of the current Actions.
   **
-  **
-  **
-  ** @return
+  ** @return the FeatureDictionary of the current Actions.
+  ** @see FeatureDictionary 
   */
   virtual FeatureDictionaryPtr getDictionary() const = 0;
 
   /**
-  **
+  ** Computes a FeatureGenerator describeing the choice
   **
   ** @param choice
   **
   ** @return
+  ** @see FeatureGenerator 
   */
   virtual FeatureGeneratorPtr compute(VariablePtr choice) const = 0;
 };
@@ -307,35 +321,34 @@ public:
 */
 /*!
 ** @class StateDescriptionFunction
-** @brief String descriptions
+** @brief String description of the States.
 **
 */
 class StateDescriptionFunction : public ChooseFunction
 {
 public:
   /**
+  ** Computes the String description of the current state.
   **
-  **
-  **
-  ** @return
+  ** @return the String description of the current state.
   */
   virtual std::string compute() const = 0;
 };
 
 /*!
 ** @class ActionDescriptionFunction
-** @brief #FIXME
+** @brief String description of the Actions.
 **
 */
 class ActionDescriptionFunction : public ChooseFunction
 {
 public:
   /**
+  ** Computes the String description of choices at the @a choice node.
   **
+  ** @param choice : choice node.
   **
-  ** @param choice
-  **
-  ** @return
+  ** @return the String description of choices at the @a choice node.
   */
   virtual std::string compute(VariablePtr choice) const = 0;
 };

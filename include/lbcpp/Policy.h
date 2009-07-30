@@ -1,7 +1,7 @@
 /*
-** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+** This file is part of the LBC++ library - "Learning Based C++"
+** Copyright (C) 2009 by Francis Maes, francis.maes@lip6.fr.
 **
-** Copyright (C) 2009 Francis MAES
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 3 of the License, or
@@ -29,7 +29,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 19:20:10 2009
 **
-**@brief  #FIXME: all
+**@brief  Policy class declaration.
 **
 **
 */
@@ -45,68 +45,98 @@ namespace lbcpp
 
 /*!
 ** @class Policy
-** @brief
+** @brief A Policy describe the way choices are made.
 */
 class Policy : public Object
 {
 public:
   /**
+  ** Runs the current policy on the @a crAlgorithm from its initial state. 
   **
+  ** @param crAlgorithm : CRAlgorithm to run.
+  ** @param statistics : policy statistics container. 
   **
-  ** @param crAlgorithm
-  **
-  ** @return
+  ** @return a boolean.
+  ** @see CRAlgorithm
+  ** @see PolicyStatistics 
   */
   bool run(CRAlgorithmPtr crAlgorithm, PolicyStatisticsPtr statistics = PolicyStatisticsPtr());
 
   /**
+  ** Runs the current policy on the @a crAlgorithm from its initial state. 
   **
+  ** @param crAlgorithms : CRAlgorithm to run.
+  ** @param statistics : policy statistics container. 
+  ** @param progress : progress bar callback.
   **
-  ** @param crAlgorithms
-  ** @param progress
-  **
-  ** @return
+  ** @return a boolean.
+  ** @see ObjectStream
+  ** @see PolicyStatistics
   */
   bool run(ObjectStreamPtr crAlgorithms, PolicyStatisticsPtr statistics = PolicyStatisticsPtr(), ProgressCallbackPtr progress = ProgressCallbackPtr());
 
   /**
+  ** Runs the current policy on the @a crAlgorithm from its initial state. 
   **
+  ** @param crAlgorithms : CRAlgorithm to run.
+  ** @param statistics : policy statistics container. 
+  ** @param progress : progress bar callback.
   **
-  ** @param crAlgorithms
-  ** @param progress
-  **
-  ** @return
+  ** @return a boolean.
+  ** @see ObjectContainer
+  ** @see PolicyStatistics
   */
   bool run(ObjectContainerPtr crAlgorithms, PolicyStatisticsPtr statistics = PolicyStatisticsPtr(), ProgressCallbackPtr progress = ProgressCallbackPtr());
 
+	/**
+	 ** Computes policy statistics and runs the current policy.
+	 **
+	 ** @param crAlgorithms : CRAlgorithm to run.
+	 ** @param progress : progress bar callback.
+	 **
+	 ** @return a PolicyStatistics instance.
+	 ** @see ObjectStream
+	 ** @see PolicyStatistics
+	 */	
   PolicyStatisticsPtr computeStatistics(ObjectStreamPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {PolicyStatisticsPtr res = new PolicyStatistics(); run(crAlgorithms, res, progress); return res;}
 
+	/**
+	 ** Computes policy statistics and runs the current policy.
+	 **
+	 ** @param crAlgorithms : CRAlgorithm to run.
+	 ** @param progress : progress bar callback.
+	 **
+	 ** @return a boolean.
+	 ** @see ObjectContainer
+	 ** @see PolicyStatistics
+	 */
   PolicyStatisticsPtr computeStatistics(ObjectContainerPtr crAlgorithms, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {PolicyStatisticsPtr res = new PolicyStatistics(); run(crAlgorithms, res, progress); return res;}
 
   /**
+  ** Sets the level of verbosity.
   **
+  ** @param verbosity : level of verbosity.
+  ** @param ostr : output stream.
   **
-  ** @param verbosity
-  ** @param ostr
-  **
-  ** @return
+  ** @return a new (Verbose)Policy instance.
   */
   PolicyPtr verbose(size_t verbosity, std::ostream& ostr = std::cout) const;
 
 public:
   /**
+  ** Policy behaviour when entering into the @a crAlgorithm.
   **
-  **
-  ** @param crAlgorithm
+  ** @param crAlgorithm : CRALgorithm.
+  ** @see CRAlgorithm 
   */
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm) {}
 
   /**
   **
   **
-  ** @param choose
+  ** @param choose : choose.
   **
   ** @return
   */
@@ -115,12 +145,12 @@ public:
   /**
   **
   **
-  ** @param reward
+  ** @param reward :  reward value.
   */
   virtual void policyReward(double reward) {}
 
   /**
-  **
+  ** Policy behaviour when leaving a scope.
   **
   */
   virtual void policyLeave() {}
@@ -144,7 +174,7 @@ public:
     {assert(false); return ObjectPtr();}
 
   /**
-  **
+  ** #FIXME
   **
   ** @param name
   **
@@ -154,81 +184,86 @@ public:
 };
 
 /**
+** Returns a Policy that does randomly choices.
 **
-**
-**
-** @return
+** @return a random Policy instance.
+** @see RandomPolicy 
 */
 extern PolicyPtr randomPolicy();
 
 /**
+** Returns a greedy policy instance.
 **
+** @param actionValues : 
 **
-** @param actionValues
-**
-** @return
+** @return a greedy policy instance.
+** @see GreedyPolicy 
 */
 extern PolicyPtr greedyPolicy(ActionValueFunctionPtr actionValues);
 
 /**
-**
+** Returns a Gibbs greedy policy instance. 
 **
 ** @param actionValue
 ** @param temperature
 **
-** @return
+** @return a Gibbs greedy policy instance. 
+** @see GibbsGreedyPolicy 
 */
 extern PolicyPtr gibbsGreedyPolicy(ActionValueFunctionPtr actionValue, IterationFunctionPtr temperature);
 
 /**
-**
+** Returns a stochastic policy instance.
 **
 ** @param actionProbabilities
 **
-** @return
+** @return a stochastic policy instance.
+** @see StochasticPolicy
 */
 extern PolicyPtr stochasticPolicy(ActionValueFunctionPtr actionProbabilities);
 
 /**
-**
+** Returns an epsilon-greedy policy instance.
 **
 ** @param basePolicy
 ** @param epsilon
 **
-** @return
+** @return an epsilon-greedy policy instance.
+** @see EpsilonGreedyPolicy
 */
 extern PolicyPtr epsilonGreedyPolicy(PolicyPtr basePolicy, IterationFunctionPtr epsilon);
 
-// mixtureCoefficient = Probability of selecting policy2
 /**
+** Returns a mixture policy instance.
 **
+** @param policy1 : first policy.
+** @param policy2 : second policy.
+** @param mixtureCoefficient : probability of selecting @a policy2.
 **
-** @param policy1
-** @param policy2
-** @param mixtureCoefficient
-**
-** @return
+** @return a mixture policy instance.
+** @see MixturePolicy 
 */
 extern PolicyPtr mixturePolicy(PolicyPtr policy1, PolicyPtr policy2, double mixtureCoefficient = 0.5);
 
 /**
+** #FIXME
 **
+** @param policy : search policy.
+** @param statistics :
 **
-** @param policy
-** @param statistics
-**
-** @return
+** @return a
+** @see ComputeStatisticsolicy 
 */
 extern PolicyPtr computeStatisticsPolicy(PolicyPtr policy, PolicyStatisticsPtr statistics);
 
 /**
-**
+** Returns a QLearning policy instance.
 **
 ** @param explorationPolicy
 ** @param regressor
 ** @param discount
 **
-** @return
+** @return a QLearning policy instance.
 */
 extern PolicyPtr qlearningPolicy(PolicyPtr explorationPolicy, RegressorPtr regressor, double discount);
 

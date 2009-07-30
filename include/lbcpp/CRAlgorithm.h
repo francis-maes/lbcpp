@@ -1,7 +1,7 @@
 /*
-** $PROJECT_PRESENTATION_AND_CONTACT_INFOS$
+** This file is part of the LBC++ library - "Learning Based C++"
+** Copyright (C) 2009 by Francis Maes, francis.maes@lip6.fr.
 **
-** Copyright (C) 2009 Francis MAES
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation; either version 3 of the License, or
@@ -31,7 +31,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 16:53:50 2009
 **
-**@brief  #FIXME: all
+**@brief  CRAlgorithm class declaration.
 **
 **
 */
@@ -68,17 +68,17 @@ public:
   /**
   ** Runs a @a policy from the initial state.
   **
-  ** @param policy :
+  ** @param policy : search policy.
   **
-  ** @return
+  ** @return a boolean.
   */
   virtual bool run(PolicyPtr policy) = 0;
 
   /**
-  ** Runs a @a policy from the current state.
+  ** Runs a @a policy from the current state (@a choice).
   **
-  ** @param policy :
-  ** @param choice :
+  ** @param policy : search policy.
+  ** @param choice : a choice.
   */
   virtual void run(PolicyPtr policy, VariablePtr choice) = 0;
 
@@ -118,7 +118,7 @@ public:
   ** Runs the CRAlogirthm until it reachs the next @em choose
   ** keyword.
   **
-  ** @param choice : 
+  ** @param choice : a choice.
   ** @param reward : a pointer to the reward value (if any, NULL by
   ** default).
   **
@@ -142,10 +142,12 @@ public:
   virtual bool hasReturn() const = 0;
 
   /**
+  ** Returns something according to the execution of the CRALgorithm:
+  ** - VariablePtr() if the execution is not yet over.
+  ** - VariablePtr() if the return value is "void". 
+  ** - return value if the execution is over.
   **
-  **
-  **
-  ** @return
+  ** @return something according to the execution of the CRALgorithm (see above)
   */
   virtual VariablePtr getReturn() const = 0;
 
