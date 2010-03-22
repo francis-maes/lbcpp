@@ -207,6 +207,78 @@ void displayGraphInfo(std::ostream& ostr, LabeledContentGraphPtr graph, FeatureD
 
 ////////// Sequences ////////////
 
+class HierarchicalToFlatFeatureMap : public Object
+{
+public:
+  HierarchicalToFlatFeatureMap(const std::string& name = "HierarchicalToFlatFeatureMap")
+    {dictionary = new FeatureDictionary(name, new StringDictionary(), StringDictionaryPtr());}
+  
+  int getIndex(const std::vector<size_t>& path) const
+  {
+    FeatureMap::const_iterator it = m.find(path);
+    return it == m.end() ? -1 : (int)it->second;
+  }
+  
+  size_t add(const std::vector<size_t>& path, const std::string& flatName)
+  {
+    FeatureMap::const_iterator it = m.find(path);
+    if (it == m.end())
+    {
+      assert(dictionary->getFeatures()->getIndex(flatName) < 0);
+      return (m[path] = dictionary->getFeatures()->add(flatName));
+    }
+    else
+      return it->second;
+  }
+
+  SparseVectorPtr toFlatVector(FeatureGeneratorPtr featureGenerator)
+  {
+    ReferenceCountedObjectPtr<ConversionVisitor> visitor = new ConversionVisitor(*this);
+    visitor->res = new SparseVector(dictionary);
+    featureGenerator->accept(visitor);
+    return visitor->res;
+  }
+  
+  struct FeatureGeneratorToFlatSparseVectorFunction : public ObjectFunction
+  {
+    FeatureGeneratorToFlatSparseVectorFunction(HierarchicalToFlatFeatureMap& map) 
+      : map(map) {}
+    
+    HierarchicalToFlatFeatureMap& map;
+    
+    virtual std::string getOutputClassName(const std::string& inputClassName) const
+      {return "SparseVector";}
+
+    virtual ObjectPtr function(ObjectPtr object) const
+    {
+      FeatureGeneratorPtr featureGenerator = object.dynamicCast<FeatureGenerator>();
+      assert(featureGenerator);
+      return map.toFlatVector(featureGenerator);
+    }
+  };
+  
+  ObjectFunctionPtr createFeatureGeneratorToFlatSparseVectorFunction()
+    {return new FeatureGeneratorToFlatSparseVectorFunction(*this);}
+
+private:
+  typedef std::map< std::vector<size_t>, size_t > FeatureMap;
+  FeatureMap m;
+  FeatureDictionaryPtr dictionary;
+  
+  struct ConversionVisitor : public PathBasedFeatureVisitor
+  {
+    ConversionVisitor(HierarchicalToFlatFeatureMap& map) 
+      : map(map) {}
+    
+    HierarchicalToFlatFeatureMap& map;
+    SparseVectorPtr res;
+
+    virtual void featureSense(const std::vector<size_t>& path, const std::string& name, double value)
+      {res->set(map.add(path, lbcpp::toString(map.m.size()) /* name */), value);}
+  };
+};
+
+
 class SequenceExample : public LearningExample
 {
 public:
@@ -234,7 +306,7 @@ public:
       }
     }
   }
-
+  
   std::vector<FeatureGeneratorPtr> content;
   std::vector<size_t> labels;
 };
@@ -291,6 +363,22 @@ LabeledContentGraphPtr convertSequencesToGraph(ObjectContainerPtr sequences, Str
   return res;
 }
 
+void sequencesToClassificationDataSet(ObjectContainerPtr sequences, StringDictionaryPtr labels, size_t inputHalfWindowSize, const std::string& outputFileName)
+{
+  static HierarchicalToFlatFeatureMap hierarchicalToFlatMap;
+  
+  ObjectConsumerPtr printer = classificationExamplesPrinter(outputFileName, labels);
+
+  for (size_t i = 0; i < sequences->size(); ++i)
+  {
+    ReferenceCountedObjectPtr<SequenceExample> example = sequences->getAndCast<SequenceExample>(i);
+    for (size_t j = 0; j < example->getLength(); ++j)
+      printer->consume(new ClassificationExample(
+        hierarchicalToFlatMap.toFlatVector(sparseVectorWindowFeatures(example->content, j, inputHalfWindowSize)),
+        example->labels[j]));
+  }
+}
+
 int crossValidateAllOnSequences(int argc, char* argv[])
 {
   if (argc < 4)
@@ -324,7 +412,18 @@ int crossValidateAllOnSequences(int argc, char* argv[])
   std::cout << "Labels: " << labels->toString() << std::endl;
   std::cout << "Features: " << features->toString() << std::endl;
 
-  for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 20; ++inputHalfWindowSize)
+  {
+    ObjectContainerPtr trainSequences = allSequences->invFold(0, 7);
+    ObjectContainerPtr testSequences = allSequences->fold(0, 7);
+    for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 10; ++inputHalfWindowSize)
+    {
+      sequencesToClassificationDataSet(trainSequences, labels, inputHalfWindowSize, dataFile + ".train" + lbcpp::toString(inputHalfWindowSize) + ".classif");
+      sequencesToClassificationDataSet(testSequences, labels, inputHalfWindowSize, dataFile + ".test" + lbcpp::toString(inputHalfWindowSize) + ".classif");
+    }
+  }
+  return 0;
+
+  for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 10; ++inputHalfWindowSize)
   {
     // make folds and convert to graphs
     std::vector<LabeledContentGraphPtr> trainGraphs;

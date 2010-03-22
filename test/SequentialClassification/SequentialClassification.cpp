@@ -17,7 +17,7 @@ public:
   ClassificationExampleToCRAlgorithm(double featureCosts, size_t numClasses)
     : featureCosts(featureCosts), numClasses(numClasses) {}
     
-  virtual std::string getOutputClassName() const
+  virtual std::string getOutputClassName(const std::string& inputClassName) const
     {return "CRAlgorithm";}
 
   virtual ObjectPtr function(ObjectPtr object) const

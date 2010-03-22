@@ -252,38 +252,15 @@ private:
   TableHeaderPtr header;
   std::vector< std::pair<std::string, double> > features;
   
-  struct EnumerateFeatures : public FeatureVisitor
+  struct EnumerateFeatures : public PathBasedFeatureVisitor
   {
     EnumerateFeatures(std::vector< std::pair<std::string, double> >& features)
       : features(features) {}
       
     std::vector< std::pair<std::string, double> >& features;
     
-    virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
-    {
-      std::string newPrefix = dictionary->getScopes()->getString(index);
-      currentPrefix = currentPrefix.size() ? currentPrefix + "." + newPrefix : newPrefix;
-      return true;
-    }
-    
-    virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
-    {
-      std::string name = dictionary->getFeatures()->getString(index);
-      if (currentPrefix.size())
-        name = currentPrefix + "." + name;
-      features.push_back(std::make_pair(name, value));
-    }
-    
-    virtual void featureLeave()
-    {
-      size_t i = currentPrefix.rfind('.');
-      if (i == std::string::npos)
-        currentPrefix = "";
-      else
-        currentPrefix = currentPrefix.substr(0, i);
-    }
-    
-    std::string currentPrefix;
+    virtual void featureSense(const std::vector<size_t>& path, const std::string& name, double value)
+      {features.push_back(std::make_pair(name, value));}
   };
 };
 

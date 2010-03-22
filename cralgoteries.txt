@@ -1,33 +1,6 @@
-=============
- LBC++ v1.0
-============
-
-General:
-  -> ReferenceCountedObject, Object, ProgressCallback, ErrorManager, Random
-FeatureGenerator:
-  -> StringDictionary, FeatureDictionary, FeatureGenerator, FeatureVisitor, SparseVector, DenseVector
-CRALGO:
-  -> Variable, CRAlgorithmScope, CRAlgorithm, Choose, Policy (enlever Callback), ChooseFunctions
-
-Taches Francis:
- * Splitter et clarifier le subset de classes
- * CMakeries
- * Papier
- * Scripts python de release
- * Site Web
-
-Taches Guillaume:
- * License dans les fichiers
- * Documenter toutes les classes
- * Exemples, Tutorials
- * Tests
-
-==============
- LBC++ library
-==============
 
 Gros:
-  * Tables, SWIG, Doxygen, Tests
+  * SWIG, Doxygen, Tests
 
 FeatureGenerator:
   * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar

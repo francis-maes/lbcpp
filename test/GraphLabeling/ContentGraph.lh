@@ -99,8 +99,6 @@ typedef ReferenceCountedObjectPtr<ContentGraph> ContentGraphPtr;
 // tmp
 featureGenerator sparseVectorWindowFeatures(const std::vector<FeatureGeneratorPtr>& v, size_t position, size_t halfWindowSize)
 {
-  assert(windowSize);
-  
   featureSense("__unit__");
 
   // previouses
@@ -120,7 +118,7 @@ featureGenerator sparseVectorWindowFeatures(const std::vector<FeatureGeneratorPt
   
   // nexts
   featureScope("nexts")
-    for (size_t i = 1; i <= halfWindowSize; ++i)
+    for (size_t i = 0; i < halfWindowSize; ++i)
       featureScope(i)
       {
         size_t index = position + i + 1;

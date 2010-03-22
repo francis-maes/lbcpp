@@ -104,7 +104,7 @@ std::string file_hierarchy="../../../../../data/cat_hier.txt";
     double beta = 0.1,
     StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr());
 */
-  
+  return 0;
 }
 
 
