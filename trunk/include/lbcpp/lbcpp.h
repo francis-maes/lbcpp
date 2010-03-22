@@ -34,11 +34,14 @@
 # include "Object.h"
 # include "ObjectContainer.h"
 # include "ObjectStream.h"
+# include "ObjectConsumer.h"
+
 # include "ObjectGraph.h"
 # include "Table.h"
 
 # include "RandomVariable.h"
 # include "FeatureGenerator.h"
+# include "FeatureVisitor.h"
 # include "EditableFeatureGenerator.h"
 # include "SparseVector.h"
 # include "DenseVector.h"

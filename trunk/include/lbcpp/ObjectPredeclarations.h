@@ -66,11 +66,17 @@ typedef ReferenceCountedObjectPtr<ObjectContainer> ObjectContainerPtr;
 class VectorObjectContainer;
 typedef ReferenceCountedObjectPtr<VectorObjectContainer> VectorObjectContainerPtr;
 
-class ObjectGraph;
-typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
+// object consumer
+class ObjectConsumer;
+typedef ReferenceCountedObjectPtr<ObjectConsumer> ObjectConsumerPtr;
 
+// object function
 class ObjectFunction;
 typedef ReferenceCountedObjectPtr<ObjectFunction> ObjectFunctionPtr;
+
+// graph
+class ObjectGraph;
+typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 
 // tables
 class TableHeader;

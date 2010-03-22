@@ -49,7 +49,7 @@ public:
     {}
     
   virtual std::string getContentClassName() const
-    {return function->getOutputClassName();}
+    {return function->getOutputClassName(target->getContentClassName());}
 
   virtual ObjectPtr get(size_t index) const
     {return function->function(target->get(index));}
@@ -65,7 +65,7 @@ ObjectContainerPtr ObjectContainer::apply(ObjectFunctionPtr function, bool lazyC
     return new ApplyFunctionObjectContainer(this, function);
   else
   {
-    VectorObjectContainerPtr res = new VectorObjectContainer(function->getOutputClassName());
+    VectorObjectContainerPtr res = new VectorObjectContainer(function->getOutputClassName(getContentClassName()));
     size_t n = size();
     res->reserve(n);
     for (size_t i = 0; i < n; ++i)

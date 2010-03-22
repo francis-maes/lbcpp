@@ -23,20 +23,6 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
-
-/*!
-**@file   ObjectStream.h
-**@author Francis MAES
-**@date   Fri Jun 12 11:28:21 2009
-**
-**@brief  Declaration of Object Streams.
-**
-**
-**
-**
-*/
-
 #ifndef LBCPP_OBJECT_STREAM_H_
 # define LBCPP_OBJECT_STREAM_H_
 
@@ -63,9 +49,10 @@ public:
   /**
   ** Returns the class name of the function's output.
   **
+  ** @param inputClassName : the input's class name.
   ** @return the class name of the function's output.
   */
-  virtual std::string getOutputClassName() const = 0;
+  virtual std::string getOutputClassName(const std::string& inputClassName) const = 0;
 
   /**
   ** Applies object function to an object.

@@ -68,7 +68,7 @@ public:
     : stream(stream), function(function) {}
     
   virtual std::string getContentClassName() const
-    {return function->getOutputClassName();}
+    {return function->getOutputClassName(stream->getContentClassName());}
 
   virtual bool isValid() const
     {return stream->isValid();}

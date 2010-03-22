@@ -93,7 +93,7 @@ public:
   int getIndex(const std::string& str) const;
 
   /**
-  ** Adds a new string value to the dictionary.
+  ** Adds a string value to the dictionary if it not already exists
   **
   ** @param str : string value.
   ** @return the corresponding index value.

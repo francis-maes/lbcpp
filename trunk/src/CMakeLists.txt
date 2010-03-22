@@ -13,11 +13,13 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/ObjectPredeclarations.h
   ../include/lbcpp/ObjectStream.h
   ../include/lbcpp/ObjectContainer.h
+  ../include/lbcpp/ObjectConsumer.h
   ../include/lbcpp/ObjectGraph.h
   ../include/lbcpp/Table.h
   ../include/lbcpp/RandomVariable.h
   ../include/lbcpp/FeatureDictionary.h
   ../include/lbcpp/FeatureGenerator.h
+  ../include/lbcpp/FeatureVisitor.h
   ../include/lbcpp/EditableFeatureGenerator.h
   ../include/lbcpp/SparseVector.h
   ../include/lbcpp/DenseVector.h
@@ -110,11 +112,13 @@ SET(LBCPP_CORE_SOURCES
   Object.cpp
   ObjectStream.cpp
   ObjectContainer.cpp
+  ObjectConsumer.cpp
   ObjectGraph.cpp
   Table.cpp
   Utilities.cpp
   FeatureDictionary.cpp
   FeatureGenerator.cpp
+  FeatureVisitor.cpp
   SparseVector.cpp
   DenseVector.cpp
   DoubleVectorHelpers.hpp

@@ -22,7 +22,7 @@ public:
   FeatureDictionaryPtr dictionary;
   FeatureDictionaryPtr dictionary2;
 
-  virtual std::string getOutputClassName() const
+  virtual std::string getOutputClassName(const std::string& inputClassName) const
     {return "RankingExample";}
     
   virtual ObjectPtr function(ObjectPtr object) const
