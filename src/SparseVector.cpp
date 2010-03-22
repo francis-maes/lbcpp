@@ -85,7 +85,10 @@ void SparseVector::set(const std::vector<std::string>& path, double value)
     dictionary = dictionary->getSubDictionary(subVectorIndex);
     SparseVectorPtr subVector = ptr->getSubVector(subVectorIndex);
     if (!subVector)
+    {
       subVector = new SparseVector(dictionary);
+      ptr->setSubVector(subVectorIndex, subVector);
+    }
     else
       subVector->ensureDictionary(dictionary);
     ptr = subVector;

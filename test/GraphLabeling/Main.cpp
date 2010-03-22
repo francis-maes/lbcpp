@@ -110,7 +110,7 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
   {
     double bestTestAccuracy = 0.0;
     int iterationsWithoutImprovement = 0;
-    for (int i = 0; i < 16; ++i)
+    for (int i = 0; i < 16; i += 16) // tmp (was i < 16; ++i)
     {
       double regularizer = (double)i;
       ScalarVariableStatisticsPtr trainAccuracy = new ScalarVariableStatistics("trainAccuracy");
@@ -146,11 +146,14 @@ void testAllAlgorithms( const std::vector<LabeledContentGraphPtr>& trainGraphs,
   ContentOnlyGraphLabelingAlgorithm contentOnly;
   testAlgorithm(contentOnly, "CO", trainGraphs, testGraphs, profile);
 
+  PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
+  testAlgorithm(perfectContext, "OPT", trainGraphs, testGraphs, profile);
+
   IterativeClassificationGraphLabelingAlgorithm iterativeClassification;
   testAlgorithm(iterativeClassification, "ICA", trainGraphs, testGraphs, profile);
 
-  GibbsSamplingGraphLabelingAlgorithm gibbsProb;
-  testAlgorithm(gibbsProb, "GS", trainGraphs, testGraphs, profile);
+//  GibbsSamplingGraphLabelingAlgorithm gibbsProb;
+//  testAlgorithm(gibbsProb, "GS", trainGraphs, testGraphs, profile);
 
   CRIterativeClassificationGraphLabelingAlgorithm crIterative;
   testAlgorithm(crIterative, "CRICA", trainGraphs, testGraphs, profile);
@@ -173,16 +176,13 @@ void testAllAlgorithms( const std::vector<LabeledContentGraphPtr>& trainGraphs,
   assert(&stacked3.getBaseAlgorithm() == &stacked2);
   testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs, profile);
 
-  StackedGraphLabelingAlgorithm stacked4(&stacked3);
+/*  StackedGraphLabelingAlgorithm stacked4(&stacked3);
   assert(&stacked4.getBaseAlgorithm() == &stacked3);
   testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs, profile);
 
   StackedGraphLabelingAlgorithm stacked5(&stacked4);
   assert(&stacked5.getBaseAlgorithm() == &stacked4);
-  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs, profile);
-
-  PerfectContextAndContentGraphLabelingAlgorithm perfectContext;
-  testAlgorithm(perfectContext, "OPT", trainGraphs, testGraphs, profile);
+  testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs, profile);*/
 }
 
 void displayFolds(const std::vector<LabeledContentGraphPtr>& trainGraphs,
@@ -204,6 +204,164 @@ void displayGraphInfo(std::ostream& ostr, LabeledContentGraphPtr graph, FeatureD
   ostr << graph->getNumNodes() << " nodes, " << graph->getNumLinks() << " links, "
     << featuresDictionary->getNumFeatures() << " features, " << labelsDictionary->getNumElements() << " classes." << std::endl;
 }
+
+////////// Sequences ////////////
+
+class SequenceExample : public LearningExample
+{
+public:
+  SequenceExample(const std::vector<FeatureGeneratorPtr>& content, const std::vector<size_t>& labels)
+    : content(content), labels(labels) {}
+    
+  size_t getLength() const
+    {return content.size();}
+  
+  void addToGraph(LabeledContentGraphPtr graph, size_t inputHalfWindowSize = 0, int markovOrder = 1)
+  {
+    assert(content.size() == labels.size());
+    ContentGraphPtr contentGraph = graph->getContentGraph();
+    LabelSequencePtr graphLabels = graph->getLabels();
+    size_t startNodeIndex = contentGraph->getNumNodes();
+    for (size_t i = 0; i < content.size(); ++i)
+    {
+      contentGraph->addNode(sparseVectorWindowFeatures(content, i, inputHalfWindowSize));
+      graphLabels->append(labels[i]);
+      for (int j = 1; j <= markovOrder; ++j)
+      {
+        int d = (int)i - j;
+        if (d >= 0)
+          contentGraph->addLink(startNodeIndex + d, startNodeIndex + i);
+      }
+    }
+  }
+
+  std::vector<FeatureGeneratorPtr> content;
+  std::vector<size_t> labels;
+};
+
+class SequenceExamplesParser : public LearningDataObjectParser
+{
+public:
+  SequenceExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+    : LearningDataObjectParser(filename, features), labels(labels) {}
+    
+  StringDictionaryPtr labels;
+
+  virtual void parseBegin()
+  {
+    currentContent.clear();
+    currentLabels.clear();
+  }
+
+  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  {
+    assert(columns.size());
+    std::string label;
+    if (!TextObjectParser::parse(columns[0], label))
+      return false;
+    SparseVectorPtr features;
+    if (!parseFeatureList(columns, 1, features))
+      return false;
+    currentContent.push_back(features);
+    currentLabels.push_back(labels->add(label));
+    return true;
+  }
+
+  virtual bool parseEmptyLine()
+  {
+    if (currentContent.size())
+    {
+      setResult(ObjectPtr(new SequenceExample(currentContent, currentLabels)));
+      currentContent.clear();
+      currentLabels.clear();
+    }
+    return true;
+  }
+  
+private:
+  std::vector<FeatureGeneratorPtr> currentContent;
+  std::vector<size_t> currentLabels;
+};
+
+LabeledContentGraphPtr convertSequencesToGraph(ObjectContainerPtr sequences, StringDictionaryPtr labels, size_t inputHalfWindowSize = 0, int markovOrder = 1)
+{
+  LabeledContentGraphPtr res = new LabeledContentGraph(new ContentGraph(), new LabelSequence(labels));
+  for (size_t i = 0; i < sequences->size(); ++i)
+    sequences->getAndCast<SequenceExample>(i)->addToGraph(res, inputHalfWindowSize, markovOrder);
+  return res;
+}
+
+int crossValidateAllOnSequences(int argc, char* argv[])
+{
+  if (argc < 4)
+  {
+    std::cerr << "Usage: " << argv[0] << " sequences.data numFolds resultsFile.txt" << std::endl;
+    return 1;
+  }
+  std::string dataFile = argv[1];
+  int numFolds = atoi(argv[2]);
+  std::ofstream resultsFile(argv[3]);
+  if (!resultsFile.is_open())
+  {
+    std::cerr << "Error: could not open file " << argv[3] << std::endl;
+    return 1;
+  }
+  resultsOutputFile = &resultsFile;
+  
+  FeatureDictionaryPtr features = new FeatureDictionary("features");
+  StringDictionaryPtr labels = new StringDictionary();
+
+  // loading sequences
+  std::cout << "Loading sequences..." << std::endl;
+  ObjectStreamPtr sequencesParser = new SequenceExamplesParser(dataFile, features, labels);
+  ObjectContainerPtr allSequences = sequencesParser->load();
+  
+  size_t numElements = 0;
+  for (size_t i = 0; i < allSequences->size(); ++i)
+    numElements += allSequences->getAndCast<SequenceExample>(i)->getLength();
+  std::cout << "Found " << allSequences->size() << " sequences with a total of " << numElements << " elements" << std::endl;
+
+  std::cout << "Labels: " << labels->toString() << std::endl;
+  std::cout << "Features: " << features->toString() << std::endl;
+
+  for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 20; ++inputHalfWindowSize)
+  {
+    // make folds and convert to graphs
+    std::vector<LabeledContentGraphPtr> trainGraphs;
+    std::vector<LabeledContentGraph::LabelsFold> testGraphs;
+    
+    allSequences = allSequences->randomize();
+    for (int i = 0; i < numFolds; ++i)
+    {
+      static const int markovOrder = 1;
+      LabeledContentGraphPtr trainGraph = convertSequencesToGraph(allSequences->invFold(i, numFolds), labels, inputHalfWindowSize, markovOrder);
+      LabeledContentGraphPtr testGraph = convertSequencesToGraph(allSequences->fold(i, numFolds), labels, inputHalfWindowSize, markovOrder);
+      
+      trainGraphs.push_back(trainGraph);
+      LabeledContentGraph::LabelsFold test;
+      test.graph = testGraph;
+      test.foldBegin = 0;
+      test.foldEnd = testGraph->getNumNodes();
+      testGraphs.push_back(test);
+    }
+
+    // display folds
+    displayFolds(trainGraphs, testGraphs);
+    
+    // test content only
+    ContentOnlyGraphLabelingAlgorithm contentOnly;
+    testAlgorithm(contentOnly, "CO ihws = " + lbcpp::toString(inputHalfWindowSize), trainGraphs, testGraphs, false);
+
+    // run all algorithms
+    //testAllAlgorithms(trainGraphs, testGraphs, false);
+  }
+  
+  std::cout << std::endl << std::endl << std::endl;
+  std::cout << allResults << std::endl;
+  return 0;
+}
+
+////////// Sequences ////////////
 
 int crossValidateAll(int argc, char* argv[])
 {
@@ -374,7 +532,8 @@ int testUniformNoise(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+  return crossValidateAllOnSequences(argc, argv);
 //  return crossValidateAll(argc, argv);
 //  return trainTestFixedTrainSize(argc, argv, true);
-  return testUniformNoise(argc, argv);
+//  return testUniformNoise(argc, argv);
 }

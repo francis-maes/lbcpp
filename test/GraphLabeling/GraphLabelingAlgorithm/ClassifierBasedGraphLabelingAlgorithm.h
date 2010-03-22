@@ -59,10 +59,11 @@ protected:
     
   void trainClassifier(ClassifierPtr classifier, ObjectContainerPtr examples)
   {
+    //std::cout << "Training classifier with " << examples->size() << " examples" << std::endl;
     size_t numIterationsWithoutImprovement = 0;
     double bestAccuracy = 0.0;
     for (size_t i = 0; i < maxLearningIterations; ++i)
-    {
+    {    
       classifier->trainStochastic(examples);
       double accuracy = classifier->evaluateAccuracy(examples);
       std::cout << accuracy << " " << std::flush;
@@ -78,6 +79,14 @@ protected:
           break;
       }
     }
+    
+    GradientBasedClassifierPtr gradientBasedClassifier = classifier.dynamicCast<GradientBasedClassifier>();
+    if (gradientBasedClassifier)
+    {
+      DenseVectorPtr parameters = gradientBasedClassifier->getParameters();
+      if (parameters)
+        std::cout << " => paramsL0 = " << parameters->l0norm() << " paramsL1 = " << parameters->l1norm() << " paramsL2 = " << parameters->l2norm() << std::endl;
+    }  
     std::cout << std::endl;
   }
   
