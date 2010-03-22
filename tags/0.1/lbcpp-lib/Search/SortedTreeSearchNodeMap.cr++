@@ -1,0 +1,109 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: SortedTreeSearchNodeMap.cr++   | A sorted set of search nodes    |
+| Author  : Francis Maes                   |                                 |
+| Started : 15/02/2009 20:31               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "TreeSearchSpace.cr++"
+#include <cfloat>
+
+namespace lbcpp
+{
+
+class SortedTreeSearchNodeMap
+{
+public:
+  typedef size_t value_type;
+  
+  void setValueFunction(ActionValueFunctionPtr valueFunction)
+    {this->valueFunction = valueFunction;}
+  
+  void insert(size_t node)
+    {m.insert(std::make_pair(-valueFunction->compute(Variable::create(node)), node));}
+    
+  bool remove(size_t node)
+  {
+    // in practice node should be top-ranked, or at-least good-ranked
+    // the empirical complexity of the following loop should thus much lower than linear
+    for (SearchNodeMap::iterator it = m.begin(); it != m.end(); ++it)
+      if (it->second == node)
+      {
+        m.erase(it);
+        return true;
+      }
+    return false;
+  }
+  
+  typedef std::multimap<double, size_t> SearchNodeMap;
+  
+  struct const_iterator
+  {
+    const_iterator(SearchNodeMap::const_iterator it) : it(it) {}
+    
+    SearchNodeMap::const_iterator it;
+    
+    bool operator ==(const const_iterator& other) const
+      {return it == other.it;}
+    bool operator !=(const const_iterator& other) const
+      {return it != other.it;}
+      
+    const_iterator& operator ++()
+      {++it; return *this;}
+      
+    const size_t& operator *() const
+      {return it->second;}
+  };
+
+  const_iterator begin() const
+    {return const_iterator(m.begin());}
+    
+  const_iterator end() const
+    {return const_iterator(m.end());}
+    
+  size_t size() const
+    {return m.size();}
+  
+private:
+  friend struct Traits<SortedTreeSearchNodeMap>;
+
+  SearchNodeMap m; // nodeIndex -> negativeScore
+  ActionValueFunctionPtr valueFunction;
+};
+
+template<>
+struct Traits<SortedTreeSearchNodeMap>
+  : public BuiltinContainerTraits< SortedTreeSearchNodeMap >
+{    
+  static inline std::string toString(const SortedTreeSearchNodeMap& nodes)
+    {return lbcpp::toString(nodes.m);}
+
+  static void write(std::ostream& ostr, const SortedTreeSearchNodeMap& nodes)
+    {lbcpp::write(ostr, nodes.m);}
+    
+  static bool read(std::istream& istr, const SortedTreeSearchNodeMap& nodes)
+    {return lbcpp::read(istr, nodes.m);}
+
+  template<class ScoringFunction>
+  static inline ConstIterator sampleBests(const SortedTreeSearchNodeMap& nodes, const ScoringFunction& scoringFunction)
+  {
+    assert(nodes.size());
+/*    if (actionValues == nodes.valueFunction)
+    {
+      std::vector<size_t> bests;
+      double bestScore = nodes.m.begin()->first;
+      for (SortedTreeSearchNodeMap::SearchNodeMap::const_iterator it = nodes.m.begin(); 
+            it != nodes.m.end(); ++it)
+        if (it->first == bestScore)
+          bests.push_back(it->second);
+        else
+          break;
+      return Traits< std::vector<size_t> >::sampleRandom(bests);
+    }
+    else*/
+      return BuiltinContainerTraits< SortedTreeSearchNodeMap >::sampleBests(nodes, scoringFunction);
+  }
+};
+
+}; /* namespace lbcpp */

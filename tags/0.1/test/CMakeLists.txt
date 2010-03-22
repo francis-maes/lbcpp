@@ -1,0 +1,16 @@
+INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
+
+IF(LBCPP_TESTS)
+
+ADD_CRTEST(EmptyCRAlgorithm.cr++)	
+ADD_CRTEST(SenseOneFeature.cr++)
+
+#ADD_SUBDIRECTORY(ludovic)
+ADD_SUBDIRECTORY(SequentialClassification)
+ADD_SUBDIRECTORY(GraphLabeling)
+ADD_SUBDIRECTORY(SemanticRoleLabeling)
+ADD_SUBDIRECTORY(Search)
+ADD_SUBDIRECTORY(HierarchicalClassif)
+
+ENDIF(LBCPP_TESTS)
+

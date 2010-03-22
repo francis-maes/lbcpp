@@ -1,0 +1,41 @@
+namespace nqueens
+{
+
+typedef std::pair<int, int> Position;
+typedef std::vector<Position> SearchNode;
+
+crAlgorithm bool searchSpace(int n)
+{
+  std::set<Position> freePositions;
+  int i;
+  for (i = 0; i < n; ++i)
+    for (int j = 0; j < n; ++j)
+      freePositions.insert(Position(i, j));
+
+  SearchNode node;
+  for (i = 0; i < n; ++i)
+  {
+    if (freePositions.empty())
+    {
+      //std::cout << "Fail: " << lbcpp::toString(node) << std::endl;
+      return false;
+    }
+
+    Position ithPosition = choose<Position>(freePositions);
+    node.push_back(ithPosition);
+
+    for (int j = -n; j < n; ++j)
+    {
+      freePositions.erase(Position(ithPosition.first + j, ithPosition.second));
+      freePositions.erase(Position(ithPosition.first, ithPosition.second + j));
+      freePositions.erase(Position(ithPosition.first + j, ithPosition.second + j));
+      freePositions.erase(Position(ithPosition.first + j, ithPosition.second - j));
+    }
+  }
+
+  std::cout << "SOLUTION !!! : " << lbcpp::toString(node) << std::endl;
+  reward (1.0);
+  return true;
+}
+
+}; /* namespace nqueens */

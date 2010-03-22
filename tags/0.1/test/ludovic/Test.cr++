@@ -1,0 +1,38 @@
+
+double f()
+{
+return(0.8);
+}
+
+crAlgorithm int toto()
+{
+  int t = 5;
+ std::vector<int> choices;
+ 
+  int t2;
+  
+	chooseFunction featureGenerator stateFeatures()
+	{
+	  // ...
+	}
+
+ 	chooseFunction featureGenerator choiceFeatures(int choice)
+ 	{
+ 		featureSense ((size_t)choice);
+ 	}
+
+  choices.push_back(1);
+  choices.push_back(2);
+  choices.push_back(3);
+  
+  int res = choose<int>(choices, choiceFeatures);
+  double coucou=0.8;
+  reward(f());
+  t = 1;
+  
+  int res2 = choose<int>(choices, choiceFeatures);
+  
+  t = 2;
+  
+	return res2;
+}
