@@ -29,6 +29,8 @@ public:
   virtual void resized()
     {label->setBoundsRelative(0, 0, 1, 1);}
   
+  juce_UseDebuggingNewOperator
+
 private:
   Label* label;
 };

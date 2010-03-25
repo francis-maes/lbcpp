@@ -96,7 +96,7 @@ class TableComponent : public TableListBox
 {
 public:
   TableComponent(TablePtr table)
-    : TableListBox(T("table"), NULL)
+    : TableListBox("table", NULL)
   {
     TableHeaderPtr header = table->getHeader();
     TableHeaderComponent* hdr = getHeader();

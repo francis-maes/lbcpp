@@ -34,6 +34,8 @@ public:
   {
     AlertWindow::showMessageBox(AlertWindow::WarningIcon, ("Warning in '" + where + "'").c_str(), what.c_str());
   }
+
+  juce_UseDebuggingNewOperator
 };
 
 static ExplorerErrorHandler explorerErrorHandler;
@@ -80,7 +82,7 @@ public:
   
   virtual const StringArray getMenuBarNames()
   {
-    const tchar* const names[] = {T("File"), 0 };
+    const tchar* const names[] = {JUCE_T("File"), 0 };
     return StringArray((const tchar**) names);
   }
 
@@ -124,6 +126,8 @@ public:
     }
   }
   
+  juce_UseDebuggingNewOperator
+
 private:
   ObjectComponentContainer* content;
   
@@ -177,10 +181,10 @@ public:
   }
 
   virtual const String getApplicationName()
-    {return T("LBC++ Explorer");}
+    {return JUCE_T("LBC++ Explorer");}
 
   const String getApplicationVersion()
-    {return T("1.0");}
+    {return JUCE_T("1.0");}
 
   virtual bool moreThanOneInstanceAllowed()
   {
@@ -196,6 +200,8 @@ public:
 //    if (mainWindow != 0)
 //      mainWindow->openFile(File::getCurrentWorkingDirectory().getChildFile(commandLine.unquoted()));
   }
+
+  juce_UseDebuggingNewOperator
 
 private:
   ExplorerMainWindow* mainWindow;

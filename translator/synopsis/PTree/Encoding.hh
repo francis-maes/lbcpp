@@ -94,6 +94,7 @@ public:
     static int_type not_eof(const int_type &c) { return !eq_int_type(c, eof()) ? c : to_int_type(char_type());}
   };
 
+#pragma warning(disable:4996)
   typedef std::basic_string<unsigned char, char_traits> Code;
   typedef Code::const_iterator iterator;
 
