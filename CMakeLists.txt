@@ -57,23 +57,9 @@ MACRO(ADD_CREXECUTABLE NAME) #SOURCES
   TARGET_LINK_LIBRARIES(${NAME} lbcpp-core)
 ENDMACRO(ADD_CREXECUTABLE)
 
-# add_crtest macro
-MACRO(ADD_CRTEST SOURCEFILE)
-  STRING(REPLACE ".cr++" "" targetname ${SOURCEFILE})
-  SET(targetname "test-${targetname}")
-  ADD_CREXECUTABLE(${targetname} ${SOURCEFILE})
-  ADD_TEST(${targetname} ${targetname})
-ENDMACRO(ADD_CRTEST)
-
 ADD_SUBDIRECTORY(src)
-
-OPTION(LBCPP_TESTS "Include tests into the project" OFF)
-
-IF(LBCPP_TESTS)
-  ADD_SUBDIRECTORY(lbcpp-lib)
-  ENABLE_TESTING()
-ENDIF(LBCPP_TESTS)
-ADD_SUBDIRECTORY(test)
+ADD_SUBDIRECTORY(projects)
+#ADD_SUBDIRECTORY(lbcpp-lib)
 
 OPTION(LBCPP_EXAMPLES "Include examples into the project" ON)
 IF (LBCPP_EXAMPLES)
