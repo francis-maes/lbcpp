@@ -10,8 +10,17 @@
 # define EXPLORER_COMPONENTS_OBJECT_GRAPH_H_
 
 # include "common.h"
-# include <opengl/gl.h>
-# include <opengl/glu.h>
+
+# ifdef WIN32
+# undef T
+# undef Rectangle
+#  include <windows.h>
+#  include <gl/gl.h>
+#  include <gl/glu.h>
+# else
+#  include <opengl/gl.h>
+#  include <opengl/glu.h>
+# endif
 
 namespace lbcpp
 {
@@ -117,7 +126,7 @@ private:
     static const float timeStep = 1.f;
     static const float nodeMass = 0.1f;
     static const float damping = 0.9f;
-    static const float edgesK = 0.01;
+    static const float edgesK = 0.01f;
 
     std::vector<Point> forces(nodes.size(), Point(0.f, 0.f));
 
@@ -135,7 +144,7 @@ private:
         Point deltaPosition = substract(nodes[i].position, nodes[j].position);
         float squaredDistance = jmax(minimumSquaredDistance, sumOfSquares(deltaPosition));
         if (squaredDistance < maximumSquaredDistance)
-          addWeighted(forces[i], deltaPosition, 1.0 / squaredDistance);
+          addWeighted(forces[i], deltaPosition, 1.f / squaredDistance);
         //std::cout << forceX << ", " << forceY << " ";
       }
       //std::cout << std::endl;
@@ -293,7 +302,7 @@ public:
   virtual void mouseWheelMove(const MouseEvent& e, float wheelIncrementX, float wheelIncrementY)
   {
     if (wheelIncrementY)
-      pixelsPerUnit *= jlimit(0.00001, 10000.0, pow(2, wheelIncrementY));
+      pixelsPerUnit *= jlimit(0.00001f, 10000.f, pow(2, wheelIncrementY));
   }
   
 protected:

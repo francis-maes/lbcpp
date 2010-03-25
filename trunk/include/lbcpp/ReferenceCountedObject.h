@@ -84,11 +84,15 @@ public:
 
 protected:
   template<class T>
-  friend struct ReferenceCountedObjectPtr; /*!< */
+  friend class ReferenceCountedObjectPtr; /*!< */
   template<class T>
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
 
   size_t refCount;              /*!< The object's reference count */
+
+#ifdef WIN32 // msvc compiler bug: the template friend class ReferenceCountedObjectPtr does not work
+public:
+#endif
 
   /** Increments the object's reference count.  */
   inline void incrementReferenceCounter()
@@ -115,8 +119,9 @@ protected:
     @see ReferenceCountedObject
 */
 template <class T>
-struct ReferenceCountedObjectPtr
+class ReferenceCountedObjectPtr
 {
+public:
   /** Copies another pointer.
 
       This will increment the object's reference-count (if it is non-null).
