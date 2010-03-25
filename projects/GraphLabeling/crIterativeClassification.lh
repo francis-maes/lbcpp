@@ -1,0 +1,89 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: crIterativeClassification.lh   | CR-Iterative Classification     |
+| Author  : Francis Maes                   |                                 |
+| Started : 23/03/2009 17:19               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "LabeledContentGraph.lh"
+
+namespace lbcpp
+{
+
+crAlgorithm LabelSequencePtr crIterativeClassification(LabeledContentGraphPtr graph, size_t foldBegin, size_t foldEnd, size_t maxNumPasses = 5, bool includePassInFeatures = false)
+{
+  LabelSequencePtr prediction = new LabelSequence(*graph->getLabels());
+  LabeledContentGraphPtr predictedGraph = new LabeledContentGraph(graph->getContentGraph(), prediction);
+  size_t currentNode;
+  size_t passNumber = 0;
+  SizeRange labelChoices(0, graph->getLabelDictionary()->getNumElements());
+  
+  chooseFunction featureGenerator contentAndStructureActionFeatures(size_t label)
+  {
+    featureScope(label)
+      featureScope(includePassInFeatures ? passNumber : (passNumber > 0 ? 1 : 0))
+      {
+        if (passNumber == 0)
+          featureCall graph->getNode(currentNode); // initial prediction, only depend on the content
+        else
+          featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
+      }
+  }
+  
+  chooseFunction featureGenerator contentAndStructureStateFeatures()
+  {
+    featureScope(includePassInFeatures ? passNumber : (passNumber > 0 ? 1 : 0))
+    {
+      if (passNumber == 0)
+        featureCall graph->getNode(currentNode); // initial prediction, only depend on the content
+      else
+        featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
+    }
+  }
+  
+  chooseFunction double actionValueFunction(size_t label)
+    {return graph->getLabels()->get(currentNode) == label ? 1.0 : 0.0;}
+
+  // initial predictions
+  for (currentNode = foldBegin; currentNode < foldEnd; ++currentNode)
+  {
+    size_t label = choose<size_t>(labelChoices, contentAndStructureStateFeatures, contentAndStructureActionFeatures, actionValueFunction);
+    if (label == graph->getLabel(currentNode))
+      reward (1.0);
+    prediction->set(currentNode, label);
+  }
+  ++passNumber;
+  
+  // iterative classification
+  LabelSequencePtr previousLabels = new LabelSequence(*prediction);
+  double accuracy = 0.0;
+  for (size_t i = 0; i < maxNumPasses; ++i)
+  {
+    // label each node in a randomly sampled order
+    std::vector<size_t> order;
+    Random::getInstance().sampleOrder(foldBegin, foldEnd, order);
+    for (size_t j = 0; j < order.size(); ++j)
+    {
+      currentNode = order[j];
+      double pr = prediction->get(currentNode) == graph->getLabel(currentNode) ? -1.0 : 0.0;
+      size_t label = choose<size_t>(labelChoices, contentAndStructureStateFeatures, contentAndStructureActionFeatures, actionValueFunction);
+      reward (pr + (label == graph->getLabel(currentNode) ? 1.0 : 0.0));
+      predictedGraph->setLabel(currentNode, label);
+    }
+    accuracy = prediction->numberOfLabelsInCommonWith(graph->getLabels(), foldBegin, foldEnd) / (double)(foldEnd - foldBegin);
+     
+     // stopping criterion
+    size_t numCommon = previousLabels->numberOfLabelsInCommonWith(predictedGraph->getLabels(), foldBegin, foldEnd);
+    double changeRatio = 1.0 - numCommon / (double)(foldEnd - foldBegin);
+    //std::cout << "ITERATION " << i << " NumCommon = " << numCommon << " changeRatio = " << changeRatio
+    //    << " accuracy = " << accuracy << std::endl;
+    if (changeRatio < 0.0001)
+      break;
+    previousLabels = new LabelSequence(*prediction);
+    ++passNumber;
+  }
+  return prediction;
+}
+
+}; /* namespace lbcpp */
