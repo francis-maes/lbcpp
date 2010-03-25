@@ -1,0 +1,132 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ContentGraph.lh                | A graph of content elements     |
+| Author  : Francis Maes                   |                                 |
+| Started : 18/02/2009 21:11               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace lbcpp
+{
+
+class ContentGraph : public Object
+{
+public:
+  ContentGraph() : numLinks(0) {}
+  ContentGraph(const ContentGraph& other)
+    : n(other.n), numLinks(other.numLinks) {}
+  
+  /*
+  ** Accessors
+  */
+  size_t getNumNodes() const
+    {return n.size();}
+    
+  size_t getNumLinks() const
+    {return numLinks;}
+    
+  FeatureGeneratorPtr getNode(size_t index) const
+    {assert(index < n.size()); return n[index].content;}
+
+  size_t getNumSuccessors(size_t nodeIndex) const
+    {assert(nodeIndex < n.size()); return n[nodeIndex].successors.size();}
+    
+  size_t getSuccessor(size_t nodeIndex, size_t successorIndex) const
+  {
+    assert(nodeIndex < n.size() && successorIndex < n[nodeIndex].successors.size());
+    return n[nodeIndex].successors[successorIndex];
+  }
+
+  size_t getNumPredecessors(size_t nodeIndex) const
+    {assert(nodeIndex < n.size()); return n[nodeIndex].predecessors.size();}
+  
+  size_t getPredecessor(size_t nodeIndex, size_t predecessorIndex) const
+  {
+    assert(nodeIndex < n.size() && predecessorIndex < n[nodeIndex].predecessors.size());
+    return n[nodeIndex].predecessors[predecessorIndex];
+  }
+
+  /*
+  ** Feature Generator
+  */
+  featureGenerator contentFeatures(size_t index) const
+  {
+    assert(index < n.size());
+    featureCall("content") n[index].content;
+  }
+  
+  /*
+  ** Modifiers
+  */
+  void reserveNodes(size_t count)
+    {n.reserve(n.size() + count);}
+    
+  size_t addNode(FeatureGeneratorPtr content)
+    {size_t res = n.size(); n.push_back(NodeInfo(content)); return res;}
+    
+  void addLink(size_t source, size_t target)
+  {
+    // /!\ does not check edge unicity
+    assert(source < n.size() && target < n.size());
+    n[target].predecessors.push_back(source);
+    n[source].successors.push_back(target);
+    ++numLinks;
+  }
+  
+  /*
+  ** Streaming operator
+  */
+  friend std::ostream& operator <<(std::ostream& ostr, const ContentGraph& graph)
+  {
+    return ostr << graph.getNumNodes() << " nodes, " << graph.getNumLinks() << " links";
+  }
+
+private:
+  struct NodeInfo
+  {
+    NodeInfo(FeatureGeneratorPtr content) : content(content) {}
+    
+    FeatureGeneratorPtr content;
+    std::vector<size_t> successors;
+    std::vector<size_t> predecessors;
+  };
+  std::vector<NodeInfo> n;
+  size_t numLinks;
+};
+
+typedef ReferenceCountedObjectPtr<ContentGraph> ContentGraphPtr;
+
+// tmp
+featureGenerator sparseVectorWindowFeatures(const std::vector<FeatureGeneratorPtr>& v, size_t position, size_t halfWindowSize)
+{
+  featureSense("__unit__");
+
+  // previouses
+  featureScope("previous")
+    for (size_t i = 0; i < halfWindowSize; ++i)
+      featureScope(i)
+      {
+        int index = (int)position - (int)(i + 1);
+        if (index < 0)
+          featureSense("OOB");
+        else
+          featureCall v[index];
+      }
+  
+  // current
+  featureCall("current") v[position];
+  
+  // nexts
+  featureScope("nexts")
+    for (size_t i = 0; i < halfWindowSize; ++i)
+      featureScope(i)
+      {
+        size_t index = position + i + 1;
+        if (index >= v.size())
+          featureSense("OOB");
+        else
+          featureCall v[index];
+      }
+}
+
+}; /* namespace lbcpp */
