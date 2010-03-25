@@ -1,6 +1,16 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
+class NamedObjectMap : public Object
+{
+public:
+  
+private:
+  typedef std::map<std::string, ObjectPtr> ObjectsMap;
+  
+  ObjectsMap objects;
+};
+
 class AminoAcid : public Object
 {
 public:
