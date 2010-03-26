@@ -93,7 +93,7 @@ protected:
     virtual void trainStochasticEnd()
       {}
     virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-      {assert(false); return false;}
+      {jassert(false); return false;}
     virtual FeatureDictionaryPtr getInputDictionary() const
       {return FeatureDictionaryPtr();}
       

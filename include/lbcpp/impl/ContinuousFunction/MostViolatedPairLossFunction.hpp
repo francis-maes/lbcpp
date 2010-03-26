@@ -53,7 +53,7 @@ struct MostViolatedPairLossFunction
 private:
   double computeViolation(double deltaScore, double deltaCost) const
   {
-    assert(deltaCost > 0);
+    jassert(deltaCost > 0);
     double violation;
     BaseClass::discriminantLoss.compute(deltaScore, &violation, NULL, NULL);
     return violation * deltaCost;

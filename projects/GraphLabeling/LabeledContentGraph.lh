@@ -158,7 +158,7 @@ public:
     {graph->reserveNodes(count); labels->reserve(count);}
     
   void setLabel(size_t index, size_t label)
-    {assert(index < getNumNodes() && label < getLabelDictionary()->getNumElements()); labels->set(index, label);}
+    {jassert(index < getNumNodes() && label < getLabelDictionary()->getNumElements()); labels->set(index, label);}
 
   /*
   ** Streaming operator

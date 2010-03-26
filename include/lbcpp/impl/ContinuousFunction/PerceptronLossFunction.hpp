@@ -27,7 +27,7 @@ struct PerceptronLossFunction : public ScalarFunction<PerceptronLossFunction>
     else if (input == 0)
     {
       if (output) *output = 0.0;
-      if (derivative) {assert(derivativeDirection); *derivative = derivativeDirection <= 0 ? -1 : 0;}
+      if (derivative) {jassert(derivativeDirection); *derivative = derivativeDirection <= 0 ? -1 : 0;}
     }
     else
     {

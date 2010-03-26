@@ -3,7 +3,7 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
 SET(LBCPP_CORE_HEADERS
-  ../include/lbcpp/lbcpp.h
+  ../include/lbcpp/common.h
   ../include/lbcpp/Traits.h
   ../include/lbcpp/RandomGenerator.h
   ../include/lbcpp/ContainerTraits.h
@@ -39,6 +39,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/CRAlgorithmScope.h
   ../include/lbcpp/CRAlgorithm.h
   ../include/lbcpp/CRAlgorithmLearner.h
+  ../include/lbcpp/lbcpp.h
 )
 
 SET(LBCPP_CORE_IMPL_HEADERS

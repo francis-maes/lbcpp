@@ -17,7 +17,7 @@ namespace impl {
 
 struct ConstUnaryVectorOperation
 {
-  void process(const double value) {assert(false);}
+  void process(const double value) {jassert(false);}
 };
 
 struct ComputeL0NormVectorOperation : public ConstUnaryVectorOperation

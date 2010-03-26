@@ -40,7 +40,7 @@ FeatureDictionaryPtr EditableFeatureGenerator::getDictionary() const
 {
   if (!dictionary)
     Object::error(getClassName() + "::getDictionary", "Missing dictionary");
-  assert(dictionary);
+  jassert(dictionary);
   return dictionary;
 }
 
@@ -68,10 +68,10 @@ FeatureGeneratorPtr CompositeFeatureGenerator::getSubGenerator(size_t num) const
   {return getSubGeneratorWithIndex(num);}
 
 size_t CompositeFeatureGenerator::getSubGeneratorIndex(size_t num) const
-  {assert(num < featureGenerators.size()); return num;}
+  {jassert(num < featureGenerators.size()); return num;}
 
 FeatureGeneratorPtr CompositeFeatureGenerator::getSubGeneratorWithIndex(size_t index) const
-  {assert(index < featureGenerators.size()); return featureGenerators[index];}
+  {jassert(index < featureGenerators.size()); return featureGenerators[index];}
     
 /*
 ** LazyFeatureVector
@@ -116,7 +116,7 @@ FeatureGeneratorPtr lbcpp::subFeatureGenerator(FeatureDictionaryPtr dictionary, 
 
 FeatureGeneratorPtr lbcpp::multiplyByScalar(FeatureGeneratorPtr featureGenerator, double weight)
 {
-  assert(featureGenerator);
+  jassert(featureGenerator);
   
   // x * 0 = <empty>
   if (weight == 0)
@@ -237,14 +237,14 @@ public:
   
   virtual double getDouble(size_t rowNumber, size_t columnNumber) const
   {
-    assert(columnNumber == 1 || columnNumber == 2);
+    jassert(columnNumber == 1 || columnNumber == 2);
     double value = features[rowNumber].second;
     return columnNumber == 1 || value >= 0 ? value : -value;
   }
   
   virtual String getString(size_t rowNumber, size_t columnNumber) const
   {
-    assert(columnNumber == 0);
+    jassert(columnNumber == 0);
     return features[rowNumber].first;
   }
 
@@ -281,13 +281,13 @@ public:
     {return roots.size();}
     
   virtual ObjectPtr getRoot(size_t index) const
-    {assert(index < roots.size()); return roots[index];}
+    {jassert(index < roots.size()); return roots[index];}
 
   virtual void setRoots(const std::vector<ObjectPtr>& successors)
     {roots = *(const std::vector<FeatureGeneratorPtr>* )(&successors);}
   
   virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors)
-    {assert(false);} // not implemented
+    {jassert(false);} // not implemented
     
   virtual size_t getNumSuccessors(ObjectPtr node) const
   {
@@ -295,7 +295,7 @@ public:
     if (featureGenerator)
       return 1 + featureGenerator->getNumSubGenerators();
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
-    assert(dictionary);
+    jassert(dictionary);
     return dictionary->getNumSubDictionaries();
   }
   
@@ -309,15 +309,15 @@ public:
       return featureGenerator->getSubGenerator(index - 1);
     }
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
-    assert(dictionary);
+    jassert(dictionary);
     return dictionary->getSubDictionary(index);
   }
 
   // serialisation is not implemented
   virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const
-    {assert(false);}
+    {jassert(false);}
   virtual ObjectPtr loadNode(std::istream& istr) const
-    {assert(false); return ObjectPtr();}
+    {jassert(false); return ObjectPtr();}
     
 protected:
   std::vector<FeatureGeneratorPtr> roots;

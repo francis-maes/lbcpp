@@ -196,7 +196,7 @@ bool LearningDataObjectParser::parseLine(const String& line)
 
 bool LearningDataObjectParser::parseFeatureList(const std::vector<String>& columns, size_t firstColumn, SparseVectorPtr& res)
 {
-  assert(features);
+  jassert(features);
   res = new SparseVector(features);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
@@ -239,18 +239,18 @@ bool LearningDataObjectParser::parseFeatureIdentifier(const String& identifier, 
 ObjectStreamPtr lbcpp::classificationExamplesParser(
           const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
 {
-  assert(features && labels);
+  jassert(features && labels);
   return new ClassificationExamplesParser(file, features, labels);
 }
 
 ObjectStreamPtr lbcpp::regressionExamplesParser(const File& file, FeatureDictionaryPtr features)
 {
-  assert(features);
+  jassert(features);
   return new RegressionExamplesParser(file, features);
 }
 
 ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses)
 {
-  assert(numClasses >= 2);
+  jassert(numClasses >= 2);
   return new ClassificationExamplesSyntheticGenerator(numFeatures, numClasses);
 }

@@ -34,7 +34,7 @@ struct EmpiricalRisk : public ScalarVectorFunction< ExactType >
   void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
     DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
-    assert(denseParameters);
+    jassert(denseParameters);
     
     if (output)
       *output = 0;

@@ -170,7 +170,7 @@ void EpisodicPolicy::policyReward(double reward)
 
 void EpisodicPolicy::policyLeave()
 {
-  assert(inclusionLevel > 0);
+  jassert(inclusionLevel > 0);
   --inclusionLevel;
   if (inclusionLevel == 0)
   {

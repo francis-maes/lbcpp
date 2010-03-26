@@ -33,7 +33,7 @@ public:
       {
         std::cerr << "Direction = " << direction->toString() << std::endl;
         std::cerr << "Gradient = " << gradient->toString() << std::endl;
-        assert(false);
+        jassert(false);
       }
       energy->checkDerivativeWrtDirection(parameters, direction);
       return false;
@@ -46,7 +46,7 @@ public:
       //alpha = 0.1;
       //backoff = 0.5;
       double normDir = direction->l2norm();
-      assert(normDir);
+      jassert(normDir);
       alpha = (1 / normDir);
       backoff = 0.1;
     }

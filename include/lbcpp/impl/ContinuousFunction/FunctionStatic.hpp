@@ -43,7 +43,7 @@ template<class ExactType>
 struct ScalarFunction : public ContinuousFunction<ExactType>
 {
   void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-    {assert(false);}
+    {jassert(false);}
 };
 
 template<class ExactType>
@@ -57,14 +57,14 @@ struct ScalarLossFunction : public ScalarFunction<ExactType>
     
   template<class LearningExampleType>
   void setLearningExample(const LearningExampleType& learningExample)
-    {assert(false);}
+    {jassert(false);}
 };
 
 template<class ExactType>
 struct ScalarVectorFunction : public ContinuousFunction<ExactType>
 {
   void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
-    {assert(false);}
+    {jassert(false);}
 };
 
 template<class ExactType>
@@ -78,20 +78,20 @@ struct VectorLossFunction : public ScalarVectorFunction<ExactType>
   
   template<class LearningExampleType>
   void setLearningExample(const LearningExampleType& learningExample)
-    {assert(false);}
+    {jassert(false);}
 };
 
 template<class ExactType>
 struct ScalarArchitecture : public ContinuousFunction<ExactType>
 {
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
-    {assert(false); return FeatureDictionaryPtr();}
+    {jassert(false); return FeatureDictionaryPtr();}
     
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       double* output,
       FeatureGeneratorPtr* gradientWrtParameters,
       FeatureGeneratorPtr* gradientWrtInput) const
-    {assert(false);}
+    {jassert(false);}
   
   
   // todo: non-derivable scalar architectures
@@ -101,19 +101,19 @@ template<class ExactType>
 struct VectorArchitecture : public ContinuousFunction<ExactType>
 {
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
-    {assert(false); return FeatureDictionaryPtr();}
+    {jassert(false); return FeatureDictionaryPtr();}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
                 size_t outputNumber, double* output, 
                 FeatureGeneratorPtr* gradientWrtParameters,
                 FeatureGeneratorPtr* gradientWrtInput) const
-    {assert(false);}
+    {jassert(false);}
 
   void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
       FeatureGeneratorPtr* output,
       FeatureGeneratorPtr* gradientsWrtParameters,
       FeatureGeneratorPtr* gradientsWrtInput) const
-    {assert(false);}
+    {jassert(false);}
 
   // todo: non-derivable vector architectures
 };

@@ -24,7 +24,7 @@ public:
 
   virtual void policyEnter(CRAlgorithmPtr crAlgorithm)
   {
-    assert(inclusionLevel == 0);
+    jassert(inclusionLevel == 0);
     ++inclusionLevel;
     episodeNumChooses = 0;
     episodeNumChoices = 0;
@@ -63,7 +63,7 @@ public:
       statistics->getChoicesPerEpisode()->push((double)episodeNumChoices);
     }
     --inclusionLevel;
-    assert(inclusionLevel == 0);
+    jassert(inclusionLevel == 0);
     DecoratorPolicy::policyLeave();
   }
   

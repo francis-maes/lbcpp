@@ -25,7 +25,7 @@ public:
   virtual VariablePtr policyChoose(ChoosePtr choose)
   {
     double T = temperature->compute(numChooses);
-    assert(T);
+    jassert(T);
     ++numChooses;
 
     std::vector<double> actionValues;

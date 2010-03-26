@@ -34,7 +34,7 @@ inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor) const
     const std::pair<size_t, SparseVectorPtr>& subVector = subVectors[i];
     if (visitor.featureEnter(dictionary, subVector.first))
     {
-      //assert(subVector.second);
+      //jassert(subVector.second);
       if (subVector.second)
         subVector.second->staticFeatureGenerator(visitor);
       visitor.featureLeave();

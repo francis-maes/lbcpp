@@ -75,20 +75,20 @@ public:
   **
   ** @param inputDictionary
   */
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {assert(false);}
+  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {jassert(false);}
 
   /*!
   **
   **
   ** @param example
   */
-  virtual void trainStochasticExample(ObjectPtr example) {assert(false);}
+  virtual void trainStochasticExample(ObjectPtr example) {jassert(false);}
 
   /*!
   **
   **
   */
-  virtual void trainStochasticEnd() {assert(false);}
+  virtual void trainStochasticEnd() {jassert(false);}
 
   /*
   ** Batch training
@@ -102,7 +102,7 @@ public:
   ** @return
   */
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {assert(false); return false;}
+    {jassert(false); return false;}
   /*!
   **
   **
@@ -207,7 +207,7 @@ public:
   ** @return
   */
   size_t getNumLabels() const
-    {assert(labels); return labels->getNumElements();}
+    {jassert(labels); return labels->getNumElements();}
 
   /*!
   **
@@ -216,7 +216,7 @@ public:
   ** @return
   */
   StringDictionaryPtr getLabels() const
-    {assert(labels); return labels;}
+    {jassert(labels); return labels;}
 
   /*!
   **

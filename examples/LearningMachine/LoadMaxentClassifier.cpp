@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
   ** Load a Classifier from file "classifier.model"
   */
   ClassifierPtr classifier = loadClassifier(File::getCurrentWorkingDirectory().getChildFile("classifier.model"));
-  assert(classifier);
+  jassert(classifier);
 
   File dataDirectory = File::getCurrentWorkingDirectory().getChildFile("../Data/Classification");
 

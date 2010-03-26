@@ -47,7 +47,7 @@ void PathBasedFeatureVisitor::featureSense(FeatureDictionaryPtr dictionary, size
 
 void PathBasedFeatureVisitor::featureLeave()
 {
-  assert(currentPath.size() > 0);
+  jassert(currentPath.size() > 0);
   currentPath.pop_back();
   currentName.pop_back();
 }

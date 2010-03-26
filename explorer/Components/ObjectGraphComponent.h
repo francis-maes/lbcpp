@@ -68,7 +68,7 @@ public:
   size_t getSuccessor(size_t node, size_t index) const
   {
     std::map<ObjectPtr, size_t>::const_iterator it = inverseTable.find(graph->getSuccessor(getNode(node), index));
-    assert(it != inverseTable.end());
+    jassert(it != inverseTable.end());
     return it->second;
   }
   

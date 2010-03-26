@@ -51,7 +51,7 @@ public:
 
   virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    assert(columns.size());
+    jassert(columns.size());
     String label = columns[0];
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))

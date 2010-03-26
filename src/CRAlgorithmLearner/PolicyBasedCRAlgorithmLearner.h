@@ -38,7 +38,7 @@ public:
   virtual void trainStochasticExample(ObjectPtr example)
   {
     CRAlgorithmPtr crAlgorithm = example.dynamicCast<CRAlgorithm>();
-    assert(crAlgorithm);
+    jassert(crAlgorithm);
     crAlgorithm->run(learnerPolicy);
   }
   
@@ -50,7 +50,7 @@ public:
     if (progress)
       progress->progressStart("PolicyBasedCRAlgorithmLearner::trainBatch");
     initialize();
-    assert(stoppingCriterion);
+    jassert(stoppingCriterion);
     stoppingCriterion->reset();
     size_t iteration = 0;
     while (true)
@@ -118,7 +118,7 @@ protected:
       return randomPolicy();
 
     default:
-      assert(false);
+      jassert(false);
       return PolicyPtr();
     }
   }

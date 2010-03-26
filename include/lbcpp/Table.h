@@ -46,10 +46,10 @@ public:
     {return columns.size();}
 
   String getColumnName(size_t index) const
-    {assert(index < columns.size()); return columns[index].first;}
+    {jassert(index < columns.size()); return columns[index].first;}
 
   Type getColumnType(size_t index) const
-    {assert(index < columns.size()); return columns[index].second;}
+    {jassert(index < columns.size()); return columns[index].second;}
 
   void addColumn(const String& name, const Type& type)
     {columns.push_back(std::make_pair(name, type));}
@@ -66,11 +66,11 @@ public:
   size_t getNumColumns() const;
 
   virtual int getInteger(size_t rowNumber, size_t columnNumber) const
-    {assert(false); return 0;}
+    {jassert(false); return 0;}
   virtual double getDouble(size_t rowNumber, size_t columnNumber) const
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
   virtual String getString(size_t rowNumber, size_t columnNumber) const
-    {assert(false); return "";}
+    {jassert(false); return "";}
 
   String toString(size_t rowNumber, size_t columnNumber) const;
 };

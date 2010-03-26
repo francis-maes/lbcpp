@@ -25,7 +25,7 @@ public:
 
   virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
-    assert(end > begin);
+    jassert(end > begin);
     if (!res)
       res = new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
     
@@ -63,7 +63,7 @@ public:
       for (size_t j = 0; j < labelCounts.size(); ++j)
         if (labelCounts[j] > max)
           max = labelCounts[j], label = j;
-      assert(label != (size_t)-1);
+      jassert(label != (size_t)-1);
       res->setLabel(i, label);
     }
     

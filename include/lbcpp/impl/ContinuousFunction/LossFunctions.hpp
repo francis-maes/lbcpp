@@ -124,7 +124,7 @@ struct RankingLossFunction : public ScalarVectorFunction<ExactType>
     {this->costs = &costs;}
   
   const std::vector<double>& getCosts() const
-    {assert(costs); return *costs;}
+    {jassert(costs); return *costs;}
   
   static void sortScores(const std::vector<double>& scores, std::vector<size_t>& res)
   {
@@ -160,7 +160,7 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
   // override this:
   void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs,
                double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
-    {assert(false);}
+    {jassert(false);}
                               
   void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
@@ -175,9 +175,9 @@ struct AdditiveRankingLossFunction : public RankingLossFunction<ExactType>
     if (!scores || !scores->getNumValues())
     {
       std::cerr << "Error: no scores, input class = " << input->getClassName() << ", input = " << std::endl << input->toString() << std::endl;
-      assert(false);
+      jassert(false);
     }
-    assert(scores && scores->getNumValues() == costs.size());
+    jassert(scores && scores->getNumValues() == costs.size());
     std::vector<double> g;
     DenseVectorPtr gradientDirectionDense;
     const std::vector<double>* gdir = NULL;
@@ -199,7 +199,7 @@ protected:
   void addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative,
             double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
   {
-    assert(deltaCost > 0);
+    jassert(deltaCost > 0);
     // deltaScore = scores[positiveAlternative] - scores[negativeAlternative]
     // deltaScore should be positive
     

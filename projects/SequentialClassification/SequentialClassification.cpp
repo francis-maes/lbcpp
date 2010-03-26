@@ -23,7 +23,7 @@ public:
   virtual ObjectPtr function(ObjectPtr object) const
   {
     ClassificationExamplePtr example = object.dynamicCast<ClassificationExample>();
-    assert(example);
+    jassert(example);
     return sequentialClassification(example->getInput(), featureCosts, numClasses, example->getOutput());
   }
   
@@ -62,7 +62,7 @@ double evaluatePolicy(PolicyPtr policy, ObjectContainerPtr classificationExample
   for (size_t i = 0; i < classificationExamples->size(); ++i)
   {
     ClassificationExamplePtr example = classificationExamples->getAndCast<ClassificationExample>(i);
-    assert(example);
+    jassert(example);
     size_t predicted = sequentialClassification(policy, example->getInput(), featureCosts, numClasses, example->getOutput());
     if (predicted == example->getOutput())
       ++correct;
@@ -208,11 +208,11 @@ public:
    }
    else
    {
-     assert(step == 2);
+     jassert(step == 2);
      size_t goodFeatures = generator.branchGenerator->getClass(currentRepresentation[0]);
 //     size_t goodFeaturesIndex = generator.branchGenerator->getClass(currentRepresentation[0]);
      SparseVectorPtr features = currentRepresentation[1];
-//     assert(goodFeatures);
+//     jassert(goodFeatures);
      return Variable::create(std::pair<bool, size_t>(true, generator.foldGenerators[goodFeatures]->getClass(features)));
    }
  }

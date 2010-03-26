@@ -311,7 +311,7 @@ public:
   ** @return an object pointer.
   */
   virtual ObjectPtr get(size_t index) const
-    {assert(index < objects.size()); return objects[index];}
+    {jassert(index < objects.size()); return objects[index];}
 
   /**
   ** Returns a reference on itself.

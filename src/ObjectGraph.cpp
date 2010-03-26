@@ -53,8 +53,8 @@ void ObjectGraph::save(std::ostream& ostr) const
     for (size_t j = 0; j < n; ++j)
     {
       std::map<ObjectPtr, size_t>::iterator it = inverseTable.find(getSuccessor(node, j));
-      assert(it != inverseTable.end());
-      assert(it->second < nodes.size());
+      jassert(it != inverseTable.end());
+      jassert(it->second < nodes.size());
       write(ostr, it->second);
     }
   }
@@ -67,8 +67,8 @@ void ObjectGraph::save(std::ostream& ostr) const
   for (size_t i = 0; i < n; ++i)
   {
     std::map<ObjectPtr, size_t>::iterator it = inverseTable.find(getRoot(i));
-    assert(it != inverseTable.end());
-    assert(it->second < nodes.size());
+    jassert(it != inverseTable.end());
+    jassert(it->second < nodes.size());
     write(ostr, it->second);    
   }
 }
@@ -99,7 +99,7 @@ bool ObjectGraph::load(std::istream& istr)
     std::vector<ObjectPtr> succObjects(succ.size());
     for (size_t j = 0; j < succ.size(); ++j)
     {
-      assert(succ[j] < numNodes);
+      jassert(succ[j] < numNodes);
       succObjects[j] = nodes[succ[j]];
     }
     setSuccessors(nodes[i], succObjects);
@@ -111,7 +111,7 @@ bool ObjectGraph::load(std::istream& istr)
   std::vector<ObjectPtr> rootObjects(roots.size());
   for (size_t i = 0; i < roots.size(); ++i)
   {
-    assert(roots[i] < numNodes);
+    jassert(roots[i] < numNodes);
     rootObjects[i] = nodes[roots[i]];
   }
   setRoots(rootObjects);

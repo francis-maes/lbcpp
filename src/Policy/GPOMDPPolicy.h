@@ -94,7 +94,7 @@ private:
     VariableIteratorPtr iterator = choose->newIterator();
     for (size_t i = 0; i < probabilities->getNumValues(); ++i, iterator->next())
     {
-      assert(iterator->exists());
+      jassert(iterator->exists());
       double p = probabilities->get(i);
       if (r < p)
       {
@@ -104,7 +104,7 @@ private:
       }
       r -= p;
     }
-    assert(false);
+    jassert(false);
     return VariablePtr();
   }
 
@@ -112,7 +112,7 @@ private:
   {
     actionsFeatures = choose->computeActionsFeatures(true);
     actionProbabilities = classifier->predictProbabilities(actionsFeatures);
-    assert(actionProbabilities->getNumValues());
+    jassert(actionProbabilities->getNumValues());
     if (explorationPolicy)
     {
       VariablePtr res = explorationPolicy->policyChoose(choose);
@@ -125,7 +125,7 @@ private:
           selectedAction = i;
           break;
         }
-      assert(selectedAction != (size_t)-1);
+      jassert(selectedAction != (size_t)-1);
       return res;
     }
     if (exploration == 1.0)

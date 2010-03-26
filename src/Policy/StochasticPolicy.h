@@ -28,7 +28,7 @@ public:
     double sum = 0.0;
     for (size_t i = 0; i < probabilities.size(); ++i)
       sum += probabilities[i];
-    assert(fabs(sum - 1.0) < 0.000001);
+    jassert(fabs(sum - 1.0) < 0.000001);
 #endif
     return choose->sampleChoiceWithProbabilities(probabilities, 1.0);
   }

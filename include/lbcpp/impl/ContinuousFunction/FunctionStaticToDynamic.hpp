@@ -29,7 +29,7 @@ STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ScalarFunction_, Object)
   virtual double computeDerivative(double input) const
   {
     static const double zero = 0.0;
-    assert(ImplementationType::isDerivable);
+    jassert(ImplementationType::isDerivable);
     double res;
     BaseClass::impl.compute(input, NULL, &zero, &res);
     return res;
@@ -66,11 +66,11 @@ STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ScalarVectorFunction_, Object)
     {return ImplementationType::isDerivable;}
 
   virtual double compute(const FeatureGeneratorPtr input) const
-    {assert(input); double res; BaseClass::impl.compute(input, &res, FeatureGeneratorPtr(), NULL); return res;}
+    {jassert(input); double res; BaseClass::impl.compute(input, &res, FeatureGeneratorPtr(), NULL); return res;}
     
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input) const
   {
-    assert(input);
+    jassert(input);
     FeatureGeneratorPtr res;
     BaseClass::impl.compute(input, NULL, FeatureGeneratorPtr(), &res);
     return res;
@@ -78,24 +78,24 @@ STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ScalarVectorFunction_, Object)
   
   virtual FeatureGeneratorPtr computeGradient(const FeatureGeneratorPtr input, const FeatureGeneratorPtr gradientDirection) const
   {
-    assert(input);
+    jassert(input);
     FeatureGeneratorPtr res;
     BaseClass::impl.compute(input, NULL, gradientDirection, &res);
-    assert(res->getDictionary() == input->getDictionary());
+    jassert(res->getDictionary() == input->getDictionary());
     return res;
   }
 
   virtual void compute(const FeatureGeneratorPtr input, double* output, FeatureGeneratorPtr* gradient) const
   {
-    assert(input);
+    jassert(input);
     BaseClass::impl.compute(input, output, FeatureGeneratorPtr(), gradient);
-    assert(!gradient || (*gradient)->getDictionary() == input->getDictionary());
+    jassert(!gradient || (*gradient)->getDictionary() == input->getDictionary());
   }
 
   virtual void compute(const FeatureGeneratorPtr input, double* output,
                        const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
-    assert(input);
+    jassert(input);
     BaseClass::impl.compute(input, output, gradientDirection, gradient);
     if (gradient)
       (*gradient)->checkDictionaryEquals(input->getDictionary());
@@ -128,15 +128,15 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
       FeatureGeneratorPtr* gradientWrtParameters,
       FeatureGeneratorPtr* gradientWrtInput) const
   {
-    assert(parameters && input);
+    jassert(parameters && input);
     BaseClass::impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
-    assert(!gradientWrtParameters || (*gradientWrtParameters)->getDictionary() == parameters->getDictionary());
-    assert(!gradientWrtInput || (*gradientWrtInput)->getDictionary() == input->getDictionary());
+    jassert(!gradientWrtParameters || (*gradientWrtParameters)->getDictionary() == parameters->getDictionary());
+    jassert(!gradientWrtInput || (*gradientWrtInput)->getDictionary() == input->getDictionary());
   }
   
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const
   {
-    assert(parameters && input);
+    jassert(parameters && input);
     double res;
     BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
     return res;
@@ -161,15 +161,15 @@ STATIC_TO_DYNAMIC_CLASS(VectorArchitecture, Object)
                 FeatureGeneratorPtr* gradientWrtParameters,
                 FeatureGeneratorPtr* gradientWrtInput) const
   {
-    assert(parameters && input);
+    jassert(parameters && input);
     BaseClass::impl.compute(parameters, input, outputNumber, output, gradientWrtParameters, gradientWrtInput);
-    assert(!gradientWrtParameters || (*gradientWrtParameters)->getDictionary() == parameters->getDictionary());
-    assert(!gradientWrtInput || (*gradientWrtInput)->getDictionary() == input->getDictionary());
+    jassert(!gradientWrtParameters || (*gradientWrtParameters)->getDictionary() == parameters->getDictionary());
+    jassert(!gradientWrtInput || (*gradientWrtInput)->getDictionary() == input->getDictionary());
   }
 
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber) const
   {
-    assert(parameters && input);
+    jassert(parameters && input);
     double res;
     BaseClass::impl.compute(parameters, input, outputNumber, &res, NULL, NULL);
     return res;
@@ -180,14 +180,14 @@ STATIC_TO_DYNAMIC_CLASS(VectorArchitecture, Object)
                         FeatureGeneratorPtr* gradientWrtParameters,
                         FeatureGeneratorPtr* gradientWrtInput) const
   {
-    assert(parameters && input);
+    jassert(parameters && input);
     BaseClass::impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
     // todo: check dictionary
   }
 
   virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const
   {
-    assert(parameters && input);
+    jassert(parameters && input);
     FeatureGeneratorPtr res;
     BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
     return res;

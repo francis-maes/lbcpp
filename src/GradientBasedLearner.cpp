@@ -30,7 +30,7 @@ GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, size_t
     StoppingCriterionPtr c = averageImprovementStoppingCriterion(tolerance);
     stoppingCriterion = stoppingCriterion ? logicalOr(stoppingCriterion, c) : c;
   }
-  assert(stoppingCriterion);
+  jassert(stoppingCriterion);
   return batchLearner(optimizer, stoppingCriterion);
 }
 

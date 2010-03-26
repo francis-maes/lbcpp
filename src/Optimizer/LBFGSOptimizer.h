@@ -46,12 +46,12 @@ public:
 
   virtual OptimizerState step()
   {
-    assert(isNumberValid(gradient->l2norm()));
+    jassert(isNumberValid(gradient->l2norm()));
     DenseVectorPtr direction = new DenseVector(parameters->getDictionary());
     direction->addWeighted(gradient, -1.0);
-    assert(isNumberValid(direction->l2norm()));
+    jassert(isNumberValid(direction->l2norm()));
     memory.mapDirectionByInverseHessian(direction);
-    assert(isNumberValid(direction->l2norm()));
+    jassert(isNumberValid(direction->l2norm()));
     FeatureGeneratorPtr newParameters, newGradient;
     if (!lineSearch->search(function, parameters, gradient, direction, value, iteration == 0, newParameters, newGradient))
       return optimizerError;

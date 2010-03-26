@@ -15,15 +15,15 @@ namespace lceb
 
 inline bool isMultipleOf(size_t a, size_t b)
 {
-  assert(b);
+  jassert(b);
   return (a % b) == 0;
 }
 
 featureGenerator numberLogFeaturesBase(const String& nameMin, const String& nameMax, double valMin, double valMax, double value)
 {
-  assert(value >= valMin && value <= valMax);
+  jassert(value >= valMin && value <= valMax);
   double delta = valMax - valMin;
-  assert(delta > 0);
+  jassert(delta > 0);
   featureSense (nameMin, 1 - ((value - valMin) / delta));
   featureSense (nameMax, 1 - ((valMax - value) / delta));
 }
@@ -57,7 +57,7 @@ featureGenerator numberFeatures(double value)
 
 featureGenerator valueWRTTargetFeatures(int value, int target)
 {
-  assert(value > 0 && target > 0);
+  jassert(value > 0 && target > 0);
   
   featureCall("diff") inline numberFeatures((double)(value - target));
     
@@ -109,10 +109,10 @@ struct Operation
     switch (operation)
     {
       case plus: return leftValue + rightValue;
-      case minus: assert(leftValue > rightValue); return leftValue - rightValue;
+      case minus: jassert(leftValue > rightValue); return leftValue - rightValue;
       case times: return leftValue * rightValue;
-      case divide: assert(isMultipleOf(leftValue, rightValue)); return leftValue / rightValue;
-      default: assert(false); return 0;
+      case divide: jassert(isMultipleOf(leftValue, rightValue)); return leftValue / rightValue;
+      default: jassert(false); return 0;
     }
   }
   
@@ -142,7 +142,7 @@ public:
     {this->value = value;}
   
   void setNonLeaf(int operation, Expression* left, Expression* right)
-    {assert(left && right); this->operation = operation; this->left = left; this->right = right;}
+    {jassert(left && right); this->operation = operation; this->left = left; this->right = right;}
 
   int getValue() const
     {return value;}
@@ -156,7 +156,7 @@ public:
       return ostr << expr.value;
     else
     {
-      assert(expr.left && expr.right);
+      jassert(expr.left && expr.right);
       return ostr << "(" << *expr.left << " " << Operation::getChar(expr.operation) << " " << *expr.right << ")";
     }
   }
@@ -232,7 +232,7 @@ public:
   
   int compute(const Operation& op) const
   {
-    assert(op.leftIndex < v.size() && op.rightIndex < v.size() && op.leftIndex != op.rightIndex);
+    jassert(op.leftIndex < v.size() && op.rightIndex < v.size() && op.leftIndex != op.rightIndex);
     return Operation::compute(op.operation, getValue(op.leftIndex), getValue(op.rightIndex));
   }
   
@@ -252,7 +252,7 @@ public:
   }
 
   const Expression& getExpression(size_t index) const
-    {assert(index < v.size()); return *v[index];}
+    {jassert(index < v.size()); return *v[index];}
     
   friend std::ostream& operator <<(std::ostream& ostr, const ExpressionSet& expressions)
     {return ostr << (const char* )lbcpp::toString(expressions.v);}
@@ -348,7 +348,7 @@ lbcpp::CRAlgorithmPtr sampleInstance(size_t numNumbers,
                           int minTarget = 100, int maxTarget = 999,
                           size_t chanceInfTen = 2, size_t chanceSpecial = 1)
 {
-  assert(maxTarget > minTarget);
+  jassert(maxTarget > minTarget);
   lbcpp::RandomGenerator& random = lbcpp::RandomGenerator::getInstance();
   
   std::vector<int> remaining;
@@ -382,7 +382,7 @@ lbcpp::CRAlgorithmPtr sampleInstance(size_t numNumbers,
 */
 CRAlgorithmPtr backTrackingDepthFirstSearchRec(ChoosePtr choose)
 {
-  assert(choose);
+  jassert(choose);
   for (VariableIteratorPtr it = choose->newIterator(); it->exists(); it->next())
   {
     CRAlgorithmPtr nextState = choose->getCRAlgorithm()->cloneAndCast<CRAlgorithm>();
@@ -407,7 +407,7 @@ CRAlgorithmPtr backTrackingDepthFirstSearch(CRAlgorithmPtr initialState)
 {
   CRAlgorithmPtr state = initialState->cloneAndCast<CRAlgorithm>();
   ChoosePtr choose = state->runUntilFirstChoose();
-  assert(choose);
+  jassert(choose);
   return backTrackingDepthFirstSearchRec(choose);
 }
 

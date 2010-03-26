@@ -203,7 +203,7 @@ public:
   ** the clone() operation is undefined for this object.
   */
   virtual ObjectPtr clone() const
-    {assert(false); return ObjectPtr();}
+    {jassert(false); return ObjectPtr();}
 
   /**
   ** Clones and cast the current object.

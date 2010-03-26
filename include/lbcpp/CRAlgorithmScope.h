@@ -92,7 +92,7 @@ public:
     if (!v)
     {
       Object::error("CRAlgorithmScope::getVariableReference", "Could not find variable called '" + name + "'");
-      assert(false);
+      jassert(false);
     }
     return v->getConstReference<T>();
   }

@@ -25,7 +25,7 @@ struct ScalarArchitectureToParametersFunction
   : public ScalarVectorFunction< ScalarArchitectureToParametersFunction<ArchitectureType> >
 {
   ScalarArchitectureToParametersFunction(const ArchitectureType& architecture, const FeatureGeneratorPtr input, double weight = 1.0)
-    : architecture(architecture), input(input), weight(weight) {assert(input);}
+    : architecture(architecture), input(input), weight(weight) {jassert(input);}
 
   ArchitectureType architecture;
   const FeatureGeneratorPtr input;
@@ -36,7 +36,7 @@ struct ScalarArchitectureToParametersFunction
   void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
   {
     DenseVectorPtr denseParameters = parameters.dynamicCast<DenseVector>();
-    assert(denseParameters);
+    jassert(denseParameters);
     // FIXME: use gradientDirection
     architecture.compute(denseParameters, input, output, gradient, NULL);
     if (output)

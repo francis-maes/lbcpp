@@ -149,7 +149,7 @@ protected:
     this->parameters = parameters;
     gradient = FeatureGeneratorPtr();
     function->compute(parameters, &value, gradientDirection, &gradient);
-    assert(gradient->getDictionary() == parameters->getDictionary());
+    jassert(gradient->getDictionary() == parameters->getDictionary());
   }
 
   /*!

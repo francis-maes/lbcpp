@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 bool VectorOptimizer::optimize(ScalarVectorFunctionPtr function, FeatureGeneratorPtr& params, StoppingCriterionPtr stoppingCriterion, ProgressCallbackPtr progress)
 {
-  assert(params);
+  jassert(params);
   this->function = function;
   setParameters(params);
   if (!initialize())

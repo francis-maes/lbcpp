@@ -75,7 +75,7 @@ void RandomGenerator::setSeed(int seed1, int seed2)
 
 size_t RandomGenerator::sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum)
 {
-  assert(probabilities.size());
+  jassert(probabilities.size());
   if (!probabilitiesSum)
     for (size_t i = 0; i < probabilities.size(); ++i)
       probabilitiesSum += probabilities[i];
@@ -87,7 +87,7 @@ size_t RandomGenerator::sampleWithProbabilities(const std::vector<double>& proba
       return i;
     number -= prob;
   }
-  assert(false);
+  jassert(false);
   return 0;
 }
 

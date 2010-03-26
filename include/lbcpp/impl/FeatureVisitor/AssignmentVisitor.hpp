@@ -18,7 +18,7 @@ namespace impl {
 struct AssignmentVectorOperation
 {
   void process(double& lValue, double rValue)
-    {assert(false);}
+    {jassert(false);}
 };
 
 struct AddVectorOperation : public AssignmentVectorOperation
@@ -80,7 +80,7 @@ public:
   
   void featureLeave()
   {
-    assert(currentVectorStack.size() > 0);
+    jassert(currentVectorStack.size() > 0);
     currentVector = currentVectorStack.back();
     currentVectorStack.pop_back();    
   }

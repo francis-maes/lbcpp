@@ -36,7 +36,7 @@ size_t StringDictionary::add(const String& str)
     size_t res = indexToString.size();
     indexToString.push_back(str);
     stringToIndex[str] = res;
-    assert(stringToIndex.find(str) != stringToIndex.end());
+    jassert(stringToIndex.find(str) != stringToIndex.end());
     return res;
   }
   else
@@ -102,10 +102,10 @@ public:
     {return dictionary->getNumElements();}
 
   virtual int getInteger(size_t rowNumber, size_t columnNumber) const
-    {assert(columnNumber == 0); return (int)rowNumber;}
+    {jassert(columnNumber == 0); return (int)rowNumber;}
   
   virtual String getString(size_t rowNumber, size_t columnNumber) const
-    {assert(columnNumber == 1); return dictionary->getString(rowNumber);}
+    {jassert(columnNumber == 1); return dictionary->getString(rowNumber);}
   
 private:
   StringDictionaryPtr dictionary;
@@ -169,7 +169,7 @@ bool FeatureDictionary::checkEquals(FeatureDictionaryPtr otherDictionary) const
     Object::error("FeatureGenerator::checkDictionaryEquals", 
                   "Dictionary mismatch. This dictionary = '" + dictionary->getName() + "', " + 
                   "required dictionary = '" + otherDictionary->getName() + "'");
-    assert(false);
+    jassert(false);
     return false;
   }
   return true;
@@ -224,7 +224,7 @@ public:
     {return roots.size();}
     
   virtual ObjectPtr getRoot(size_t index) const
-    {assert(index < roots.size()); return roots[index];}
+    {jassert(index < roots.size()); return roots[index];}
 
   virtual void setRoots(const std::vector<ObjectPtr>& successors)
     {roots = *(const std::vector<FeatureDictionaryPtr>* )(&successors);}
@@ -232,28 +232,28 @@ public:
   virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors)
   {
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
-    assert(dictionary);
+    jassert(dictionary);
     dictionary->setSubDictionaries(*(const std::vector<FeatureDictionaryPtr>* )(&successors));
   }
   
   virtual size_t getNumSuccessors(ObjectPtr node) const
   {
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
-    assert(dictionary);
+    jassert(dictionary);
     return dictionary->getNumSubDictionaries();
   }
   
   virtual ObjectPtr getSuccessor(ObjectPtr node, size_t index) const
   {
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
-    assert(dictionary);
+    jassert(dictionary);
     return dictionary->getSubDictionary(index);
   }
 
   virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const
   {
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
-    assert(dictionary);
+    jassert(dictionary);
     write(ostr, dictionary->getName());
     write(ostr, dictionary->getFeatures());
     write(ostr, dictionary->getScopes());    
@@ -348,7 +348,7 @@ public:
 
   virtual String getString(size_t rowNumber, size_t columnNumber) const
   {
-    assert(columnNumber <= 1);
+    jassert(columnNumber <= 1);
     return columnNumber ? features[rowNumber].second : features[rowNumber].first;
   }
   
@@ -372,7 +372,7 @@ private:
     StringDictionaryPtr s = dictionary->getScopes();
     for (size_t i = 0; i < dictionary->getNumSubDictionaries(); ++i)
     {
-      assert(s);
+      jassert(s);
       enumerateFeaturesRec(dictionary->getSubDictionary(i),
         concatString(indexPrefix, lbcpp::toString(i)), concatString(namePrefix, s->getString(i)));
     }

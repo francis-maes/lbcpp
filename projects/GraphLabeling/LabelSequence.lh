@@ -49,7 +49,7 @@ public:
   }
   
   void set(size_t index, size_t label)
-    {assert(index < v.size()); v[index] = label;}
+    {jassert(index < v.size()); v[index] = label;}
     
   void append(size_t label)
     {v.push_back(label);}
@@ -58,10 +58,10 @@ public:
     {v.reserve(v.size() + numbersAdditional);}
   
   size_t& operator [](size_t index) 
-    {assert(index < v.size()); return v[index];}
+    {jassert(index < v.size()); return v[index];}
 
   size_t operator [](size_t index) const
-    {assert(index < v.size()); return v[index];}
+    {jassert(index < v.size()); return v[index];}
   
   size_t get(size_t index) const
     {return (*this)[index];}
@@ -89,8 +89,8 @@ public:
   
   size_t numberOfLabelsInCommonWith(const LabelSequencePtr otherSequence, size_t begin, size_t end) const
   {
-    assert(v.size() == otherSequence->v.size());
-    assert(begin < end && end <= v.size());
+    jassert(v.size() == otherSequence->v.size());
+    jassert(begin < end && end <= v.size());
     size_t res = 0;
     for (size_t i = begin; i < end; ++i)
       if (v[i] == otherSequence->v[i])

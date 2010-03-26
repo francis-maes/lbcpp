@@ -31,7 +31,7 @@ struct AbsoluteScalarFunction : public ScalarFunction<AbsoluteScalarFunction>
         *derivative = -1;
       else
       {
-        assert(derivativeDirection);
+        jassert(derivativeDirection);
         if (*derivativeDirection > 0)
           *derivative = 1;
         else if (*derivativeDirection < 0)

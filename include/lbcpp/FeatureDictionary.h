@@ -236,7 +236,7 @@ public:
   ** @return index of the new feature.
   */
   size_t addFeature(const String& identifier)
-    {assert(featuresDictionary); return featuresDictionary->add(identifier);}
+    {jassert(featuresDictionary); return featuresDictionary->add(identifier);}
 
   /*
   ** Scopes
@@ -301,7 +301,7 @@ public:
   ** @return the corresponding subdictionary or throw an error.
   */
   const FeatureDictionaryPtr getSubDictionary(size_t index) const
-    {assert(index < subDictionaries.size()); return subDictionaries[index];}
+    {jassert(index < subDictionaries.size()); return subDictionaries[index];}
 
   /**
   ** Subdictionary getter by index.
@@ -319,7 +319,7 @@ public:
   ** @return the corresponding subdictionary or throw an error.
   */
   FeatureDictionaryPtr getSubDictionary(const String& name)
-    {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
+    {jassert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
 
   /**
   ** Ensures that you don't try to override a subdictionary.

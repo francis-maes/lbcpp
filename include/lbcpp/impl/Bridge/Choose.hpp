@@ -84,7 +84,7 @@ public:
   
   virtual VariablePtr sampleBestChoice(ActionValueFunctionPtr valueFunction) const
   {
-    assert(valueFunction);
+    jassert(valueFunction);
     if (!ContainerTraits::size(container))
       return VariablePtr();
     valueFunction->setChoose(getReferenceCountedPointer());
@@ -95,7 +95,7 @@ public:
 
   virtual VariablePtr sampleChoiceWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0) const
   {
-    assert(probabilities.size() == ContainerTraits::size(container));
+    jassert(probabilities.size() == ContainerTraits::size(container));
     if (!probabilitiesSum)
       for (size_t i = 0; i < probabilities.size(); ++i)
         probabilitiesSum += probabilities[i];
@@ -103,13 +103,13 @@ public:
     typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
     for (size_t i = 0; i < probabilities.size(); ++i, ++it)
     {
-      assert(it != ContainerTraits::end(container));
+      jassert(it != ContainerTraits::end(container));
       double prob = probabilities[i];
       if (number <= prob)
         return Variable::create(ContainerTraits::value(it));
       number -= prob;
     }
-    assert(false);
+    jassert(false);
     return VariablePtr();
   }
 
@@ -150,7 +150,7 @@ public:
   virtual FeatureGeneratorPtr computeActionsFeatures(bool transformIntoSparseVectors) const
   {
     ActionFeaturesFunctionPtr f = choose.getActionFeaturesFunction();
-    assert(f); // todo: error message
+    jassert(f); // todo: error message
     f->setChoose(getReferenceCountedPointer());
     size_t numChoices = ContainerTraits::size(container);
 

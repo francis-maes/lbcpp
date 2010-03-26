@@ -141,7 +141,7 @@ public:
   ** @return feature value at the index @a index.
   */
   const double& get(size_t index) const
-    {assert(index < values.size()); return values[index];}
+    {jassert(index < values.size()); return values[index];}
 
   /**
   ** Returns the value at the index @a index.
@@ -358,13 +358,13 @@ public:
   ** @see FeatureGenerator::getSubGenerator
   */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
-    {assert(num < subVectors.size()); return subVectors[num];}
+    {jassert(num < subVectors.size()); return subVectors[num];}
 
   /**
   ** @see FeatureGenerator::getSubGeneratorIndex
   */
   virtual size_t getSubGeneratorIndex(size_t num) const
-    {assert(num < subVectors.size()); return num;}
+    {jassert(num < subVectors.size()); return num;}
 
   /**
   ** @see FeatureGenerator::getSubGeneratorWithIndex

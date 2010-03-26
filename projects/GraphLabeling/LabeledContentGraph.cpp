@@ -147,7 +147,7 @@ LabeledContentGraphPtr LabeledContentGraph::randomizeOrder() const
 void LabeledContentGraph::makeFolds(size_t numFolds, bool removeTrainTestLinks, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs)
 {
   size_t numNodes = getNumNodes();
-  assert(numFolds > 1 && numNodes);
+  jassert(numFolds > 1 && numNodes);
   trainGraphs.reserve(trainGraphs.size() + numFolds);
   testGraphs.reserve(testGraphs.size() + numFolds);
   double foldMeanSize = numNodes / (double)numFolds;
@@ -166,7 +166,7 @@ void LabeledContentGraph::makeFolds(size_t numFolds, bool removeTrainTestLinks, 
 std::pair<LabeledContentGraphPtr, LabeledContentGraph::LabelsFold> LabeledContentGraph::makeFold(size_t testBegin, size_t testEnd, bool removeTrainTestLinks)
 {
   size_t numNodes = getNumNodes();
-  assert(numNodes && testBegin < testEnd && testEnd <= numNodes);    
+  jassert(numNodes && testBegin < testEnd && testEnd <= numNodes);    
   std::pair<LabeledContentGraphPtr, LabelsFold> res;
 
   /*

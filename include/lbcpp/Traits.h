@@ -37,14 +37,7 @@
 #ifndef LBCPP_TRAITS_H_
 # define LBCPP_TRAITS_H_
 
-# include "../juce/juce_amalgamated.h"
-# include <string>
-# include <sstream>
-# include <vector>
-# include <set>
-# include <typeinfo>
-# include <cmath>
-# include <assert.h>
+# include "common.h"
 
 namespace lbcpp
 {
@@ -79,7 +72,7 @@ public:
   ** @param value
   */
   static inline void write(std::ostream& ostr, const T& value)
-    {assert(false);}
+    {jassert(false);}
 
   /*!
   **
@@ -90,7 +83,7 @@ public:
   ** @return
   */
   static inline bool read(std::istream& istr, T& result)
-    {assert(false); return false;}
+    {jassert(false); return false;}
 };
 
 /*
@@ -383,7 +376,7 @@ public:
   ** @param value
   */
   static inline void write(std::ostream& ostr, const T& value)
-    {assert(false);}
+    {jassert(false);}
 
   /*!
   **
@@ -394,7 +387,7 @@ public:
   ** @return
   */
   static inline bool read(std::istream& istr, T& result)
-    {assert(false); return false;}
+    {jassert(false); return false;}
 };
 
 template<>
@@ -447,7 +440,7 @@ struct Traits<std::type_info>
     {Traits<String>::write(ostr, toString(value));}
 
   static inline bool read(std::istream& istr, std::type_info& res)
-    {assert(false); return false;}
+    {jassert(false); return false;}
 
   static inline bool read(std::istream& istr, String& res)
     {return Traits<String>::read(istr, res);}

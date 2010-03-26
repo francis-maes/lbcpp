@@ -29,7 +29,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   }
     
   size_t getNumOutputs() const
-    {assert(outputs && outputs->getNumElements()); return outputs->getNumElements();}
+    {jassert(outputs && outputs->getNumElements()); return outputs->getNumElements();}
   
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
   {
@@ -54,7 +54,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
                 FeatureGeneratorPtr* gradientWrtParameters,
                 FeatureGeneratorPtr* gradientWrtInput) const
   {
-    assert(outputNumber < getNumOutputs());
+    jassert(outputNumber < getNumOutputs());
     DenseVectorPtr classParameters = getClassParameters(parameters, outputNumber, input->getDictionary());
     if (output)
       *output = classParameters->dotProduct(input);
@@ -78,7 +78,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
         DenseVectorPtr classParameters = getClassParameters(parameters, i, input->getDictionary());
         res->set(i, classParameters->dotProduct(input));
       }
-      assert(res->getNumValues() == numOutputs);
+      jassert(res->getNumValues() == numOutputs);
       *output = res;
     }
     if (gradientsWrtParameters)

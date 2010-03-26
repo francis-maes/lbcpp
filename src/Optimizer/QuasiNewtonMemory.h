@@ -37,15 +37,15 @@ public:
     std::vector<double> alphas(count);
     for (int i = count - 1; i >= 0; i--)
     {
-      assert(dotProducts[i]);
+      jassert(dotProducts[i]);
       alphas[i] = -(parametersDeltas[i]->dotProduct(dir)) / dotProducts[i];
-      assert(isNumberValid(alphas[i]));
+      jassert(isNumberValid(alphas[i]));
       dir->addWeighted(gradientDeltas[i], alphas[i]);
     }
     
     const FeatureGeneratorPtr lastGradientDelta = gradientDeltas.back();
     double lastGradientDeltaNorm = lastGradientDelta->l2norm();
-    assert(lastGradientDeltaNorm);
+    jassert(lastGradientDeltaNorm);
     dir->multiplyByScalar(dotProducts[count - 1] / (lastGradientDeltaNorm * lastGradientDeltaNorm));
 
     for (int i = 0; i < count; i++)
@@ -69,7 +69,7 @@ public:
     parametersDeltas.push_back(parametersDelta);
     gradientDeltas.push_back(gradientDelta);
     double dotProduct = parametersDelta->dotProduct(gradientDelta);
-    assert(dotProduct);
+    jassert(dotProduct);
     dotProducts.push_back(dotProduct);
     currentParameters = newParameters;
     currentGradient = newGradient;    
