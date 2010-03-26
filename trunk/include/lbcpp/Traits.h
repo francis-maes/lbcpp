@@ -431,7 +431,7 @@ struct Traits<std::type_info>
     std::string res = info.name();
   #ifdef WIN32
     size_t n = res.find("::");
-    return res.substr(n == std::string::npos ? strlen("class ") : n + 2);
+    return res.substr(n == std::string::npos ? strlen("class ") : n + 2).c_str();
   #else // linux or macos x
     bool hasNamespace = res[0] == 'N';
     if (hasNamespace)
