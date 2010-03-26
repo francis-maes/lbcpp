@@ -23,7 +23,7 @@ public:
     : epoch(other.epoch), learningRate(other.learningRate), normalizeLearningRate(other.normalizeLearningRate) {}
   StochasticGradientDescentLearner() : epoch(0), normalizeLearningRate(false) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "StochasticGradientDescentLearner(" + lbcpp::toString(learningRate) + ")";}
 
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)

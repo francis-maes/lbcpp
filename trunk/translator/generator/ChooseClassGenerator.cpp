@@ -90,7 +90,7 @@ ChooseClassGenerator::ChooseClassGenerator(CRAlgorithmChoose& choose, SymbolLook
   body.add(atom("typedef " + choose.getContainerType() + " ContainerType;\n"));
   body.add(atom("static " + className + "& getInstance() {static " + 
     className + " instance; return instance;}\n"));
-  body.add(atom("static std::string getChoiceType() {return " + quote(chooseType) + ";}\n"));
+  body.add(atom("static String getChoiceType() {return T(" + quote(chooseType) + ");}\n"));
 
   body.addNewLine();
   body.add(atom("enum {chooseNumber = " + size2str(choose.getChooseNumber()) + "};\n"));

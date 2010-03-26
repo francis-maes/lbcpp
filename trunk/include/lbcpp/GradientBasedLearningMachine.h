@@ -427,8 +427,8 @@ public:
 **
 ** @return
 */
-inline GradientBasedRegressorPtr loadGradientBasedRegressor(const std::string& filename)
-  {return Object::loadFromFileAndCast<GradientBasedRegressor>(filename);}
+inline GradientBasedRegressorPtr loadGradientBasedRegressor(const File& file)
+  {return Object::loadFromFileAndCast<GradientBasedRegressor>(file);}
 
 /*!
 **
@@ -498,8 +498,8 @@ public:
 **
 ** @return
 */
-inline GradientBasedClassifierPtr loadGradientBasedClassifier(const std::string& filename)
-  {return Object::loadFromFileAndCast<GradientBasedClassifier>(filename);}
+inline GradientBasedClassifierPtr loadGradientBasedClassifier(const File& file)
+  {return Object::loadFromFileAndCast<GradientBasedClassifier>(file);}
 
 /*!
 **
@@ -556,8 +556,8 @@ public:
 **
 ** @return
 */
-inline GradientBasedBinaryClassifierPtr loadGradientBasedBinaryClassifier(const std::string& filename)
-  {return Object::loadFromFileAndCast<GradientBasedBinaryClassifier>(filename);}
+inline GradientBasedBinaryClassifierPtr loadGradientBasedBinaryClassifier(const File& file)
+  {return Object::loadFromFileAndCast<GradientBasedBinaryClassifier>(file);}
 
 /*!
 **
@@ -671,8 +671,8 @@ public:
 **
 ** @return
 */
-inline GradientBasedRankerPtr loadGradientBasedRanker(const std::string& filename)
-  {return Object::loadFromFileAndCast<GradientBasedRanker>(filename);}
+inline GradientBasedRankerPtr loadGradientBasedRanker(const File& file)
+  {return Object::loadFromFileAndCast<GradientBasedRanker>(file);}
 
 /*!
 **

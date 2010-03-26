@@ -21,7 +21,7 @@ public:
     : policy(policy), discount(discount), horizon(horizon) {}
   SimulationStateValueFunction() : discount(0), horizon(0) {}  
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "simulationStateValues(" + policy->toString() + ", " +
       lbcpp::toString(discount) + ", " + lbcpp::toString(horizon) + ")";}
   

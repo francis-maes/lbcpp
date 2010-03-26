@@ -25,15 +25,11 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelCompon
 class ExplorerErrorHandler : public ErrorHandler
 {
 public:
-  virtual void errorMessage(const std::string& where, const std::string& what)
-  {
-    AlertWindow::showMessageBox(AlertWindow::WarningIcon, ("Error in '" + where + "'").c_str(), what.c_str());
-  }
+  virtual void errorMessage(const String& where, const String& what)
+    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Error in '") + where + T("'"), what);}
   
-  virtual void warningMessage(const std::string& where, const std::string& what)
-  {
-    AlertWindow::showMessageBox(AlertWindow::WarningIcon, ("Warning in '" + where + "'").c_str(), what.c_str());
-  }
+  virtual void warningMessage(const String& where, const String& what)
+    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Warning in '") + where + T("'"), what);}
 
   juce_UseDebuggingNewOperator
 };
@@ -111,7 +107,7 @@ public:
 
       if (chooser.browseForFileToOpen())
       {
-        ObjectPtr object = loadObject((const char* )chooser.getResult().getFullPathName());
+        ObjectPtr object = loadObject(chooser.getResult());
         if (object)
           content->setObject(object, true);
       }

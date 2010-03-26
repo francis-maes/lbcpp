@@ -38,7 +38,7 @@ struct CompositeStateValueFunction : public StateValueFunction<CompositeStateVal
   double compute() const
     {return stateValue ? stateValue->compute() : 0.0;}
 
-  std::string getName() const
+  String getName() const
     {return stateValue ? stateValue->getName() : "emptyStateValue";}
       
 private:
@@ -64,7 +64,7 @@ struct CompositeActionValueFunction : public ActionValueFunction<CompositeAction
   double computeDynamicType(VariablePtr choice) const
     {return actionValue ? actionValue->compute(choice) : 0.0;}
 
-  std::string getName() const
+  String getName() const
     {return actionValue ? actionValue->getName() : "emptyActionValue";}
       
 private:
@@ -87,16 +87,16 @@ struct CompositeChooseFunction : public BaseClass
       functions[i]->setChoose(choose);
   }
   
-  std::string getName() const
+  String getName() const
   {
-    std::string res;
+    String res;
     for (size_t i = 0; i < functions.size(); ++i)
     {
       res += functions[i]->getName();
       if (i < functions.size() - 1)
-        res += "\n";
+        res += T("\n");
     }
-    return res.size() ? res : "empty";
+    return res.isEmpty() ? T("<empty>") : res;
   }
 };
 
@@ -143,9 +143,9 @@ struct CompositeActionFeaturesFunction : public CompositeChooseFunction<
 TEMPLATE_INHERIT_BEGIN_3(CompositeStateDescriptionFunction, CompositeChooseFunction, 
   CompositeStateDescriptionFunction, StateDescriptionFunction<CompositeStateDescriptionFunction>, lbcpp::StateDescriptionFunction)
 
-  std::string compute() const
+  String compute() const
   {
-    std::string res;
+    String res;
     for (size_t i = 0; i < BaseClass::functions.size(); ++i)
     {
       res += BaseClass::functions[i]->compute();
@@ -167,9 +167,9 @@ struct CompositeActionDescriptionFunction : public CompositeChooseFunction<
       ActionDescriptionFunction< CompositeActionDescriptionFunction<ChoiceType>, ChoiceType >,
       lbcpp::ActionDescriptionFunction > BaseClass;
 
-  std::string compute(const ChoiceType& choice) const
+  String compute(const ChoiceType& choice) const
   {
-    std::string res;
+    String res;
     for (size_t i = 0; i < BaseClass::functions.size(); ++i)
     {
       res += BaseClass::functions[i]->compute(choice);

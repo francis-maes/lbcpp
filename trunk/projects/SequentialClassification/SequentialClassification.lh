@@ -10,7 +10,7 @@ using namespace lbcpp;
 
 namespace lbcpp
 {
-  std::string toString(std::set<size_t>::const_iterator it)
+  String toString(std::set<size_t>::const_iterator it)
     {return "iterator";}
 };
 
@@ -29,7 +29,7 @@ crAlgorithm size_t sequentialClassification(FeatureGeneratorPtr compositeFeature
   for (size_t i = 0; i < compositeFeatureGenerator->getNumSubGenerators(); ++i)
     unusedFeatureGenerators.insert(i);
   std::vector< std::pair<size_t, SparseVectorPtr> > usedFeatureGenerators;
-  std::string currentStateString;
+  String currentStateString;
   
   for (size_t step = 0; true; ++step)
   {

@@ -40,7 +40,7 @@ public:
     return choose->sampleChoiceWithProbabilities(actionValues, sum);
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "gibbsGreedyPolicy(" + actionValue->toString() + ", " + temperature->toString() + ")";}
   
   virtual void save(std::ostream& ostr) const

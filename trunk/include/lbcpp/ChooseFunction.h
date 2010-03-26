@@ -332,7 +332,7 @@ public:
   **
   ** @return the String description of the current state.
   */
-  virtual std::string compute() const = 0;
+  virtual String compute() const = 0;
 };
 
 /*!
@@ -350,7 +350,7 @@ public:
   **
   ** @return the String description of choices at the @a choice node.
   */
-  virtual std::string compute(VariablePtr choice) const = 0;
+  virtual String compute(VariablePtr choice) const = 0;
 };
 
 }; /* namespace lbcpp */

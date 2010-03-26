@@ -44,7 +44,7 @@ public:
     for (size_t i = 0; i < numGibbsSamples; ++i)
     {
       std::vector<size_t> order;
-      Random::getInstance().sampleOrder(begin, end, order);
+      RandomGenerator::getInstance().sampleOrder(begin, end, order);
       for (size_t j = 0; j < order.size(); ++j)
       {
         size_t nodeIndex = order[j];

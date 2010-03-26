@@ -37,7 +37,7 @@
 #ifndef LBCPP_TRAITS_H_
 # define LBCPP_TRAITS_H_
 
-
+# include "../juce/juce_amalgamated.h"
 # include <string>
 # include <sstream>
 # include <vector>
@@ -69,8 +69,8 @@ public:
   **
   ** @return
   */
-  static inline std::string toString(const T& value)
-    {std::ostringstream ostr; ostr << value; return ostr.str();}
+  static inline String toString(const T& value)
+    {std::ostringstream ostr; ostr << value; return ostr.str().c_str();}
 
   /*!
   **
@@ -93,46 +93,26 @@ public:
     {assert(false); return false;}
 };
 
-
-/*!
-**
-**
-** @param value
-**
-** @return
+/*
+** Power guru functions
 */
 template<class T>
-inline std::string toString(const T& value)
+inline String toString(const T& value)
   {return Traits<T>::toString(value);}
 
-/*!
-**
-**
-** @param ostr
-** @param value
-*/
 template<class T>
 inline void write(std::ostream& ostr, const T& value)
   {Traits<T>::write(ostr, value);}
 
-/*!
-**
-**
-** @param istr
-** @param result
-**
-** @return
-*/
 template<class T>
 inline bool read(std::istream& istr, T& result)
   {return Traits<T>::read(istr, result);}
 
+inline std::ostream& operator <<(std::ostream& ostr, const String& value)
+  {return ostr << (const char* )value;}
+
 /*
-** Builtin-type traits
-*/
-/*!
-** @struct BuiltinTypeTraits
-** @brief
+** Traits for builtin types
 */
 template<class T>
 struct BuiltinTypeTraits
@@ -146,9 +126,9 @@ struct BuiltinTypeTraits
   **
   ** @return
   */
-  static inline std::string toString(const T& value)
+  static inline String toString(const T& value)
 // if this fails, you need to declare a "friend std::ostream& operator << (std::ostream& ostr, const T& value)" operator
-    {std::ostringstream ostr; ostr << value; return ostr.str();}
+    {std::ostringstream ostr; ostr << value; return ostr.str().c_str();}
 
   /*!
   **
@@ -219,8 +199,8 @@ struct Traits<bool>
 {
   typedef bool Type;
 
-  static inline std::string toString(bool value)
-    {return value ? "true" : "false";}
+  static inline String toString(bool value)
+    {return value ? T("true") : T("false");}
 
   static inline void write(std::ostream& ostr, bool value)
     {ostr.put((char)(value ? 1 : 0));}
@@ -242,8 +222,8 @@ struct Traits<char>
 {
   typedef char Type;
 
-  static inline std::string toString(char value)
-    {return std::string("'") + value + "'";} // todo: improve
+  static inline String toString(char value)
+    {String res; res += value; return res.quoted();}
 
   static inline void write(std::ostream& ostr, char value)
     {ostr.put(value);}
@@ -257,8 +237,8 @@ struct Traits<std::string>
 {
   typedef std::string Type;
 
-  static inline std::string toString(const std::string& value)
-    {return "\"" + value + "\"";} // todo: improve
+  static inline String toString(const std::string& value)
+    {return String(value.c_str()).quoted();}
 
   static inline void write(std::ostream& ostr, const std::string& string)
     {ostr.write(string.c_str(), string.size() + 1);}
@@ -278,6 +258,41 @@ struct Traits<std::string>
   }
 };
 
+
+template<>
+struct Traits<String>
+{
+  typedef String Type;
+
+  static inline String toString(const String& value)
+    {return value.quoted();}
+
+  static inline void write(std::ostream& ostr, const String& string)
+  {
+    for (int i = 0; i < string.length(); ++i)
+      Traits<juce::tchar>::write(ostr, string[i]);
+    Traits<juce::tchar>::write(ostr, 0);
+  }
+
+  static inline bool read(std::istream& istr, String& res)
+  {
+    res = "";
+    juce::tchar c;
+    if (!Traits<juce::tchar>::read(istr, c))
+      return false;
+    while (true)
+    {
+      if (!c)
+        return true;
+      res += c;
+      if (!Traits<juce::tchar>::read(istr, c))
+        break;
+    }
+    return false; // stream failed before we read the terminal '0'
+  }
+};
+
+
 /*
 ** Pointer Traits
 */
@@ -286,8 +301,8 @@ struct Traits<const TargetType*>
 {
   typedef const TargetType* Type;
 
-  static inline std::string toString(const TargetType* value)
-    {return value ? "&" + Traits<TargetType>::toString(*value) : "null";}
+  static inline String toString(const TargetType* value)
+    {return value ? T("&") + Traits<TargetType>::toString(*value) : T("null");}
 
   static inline void write(std::ostream& ostr, const TargetType* value)
   {
@@ -316,8 +331,8 @@ struct Traits<TargetType*>
 {
   typedef TargetType* Type;
 
-  static inline std::string toString(const TargetType* value)
-    {return value ? "&" + Traits<TargetType>::toString(*value) : "null";}
+  static inline String toString(const TargetType* value)
+    {return value ? T("&") + Traits<TargetType>::toString(*value) : T("null");}
 
   static inline void write(std::ostream& ostr, const TargetType* value)
   {
@@ -358,8 +373,8 @@ public:
   **
   ** @return
   */
-  static inline std::string toString(const T& value)
-    {return "&" + lbcpp::toString(*value);}
+  static inline String toString(const T& value)
+    {return T("&") + lbcpp::toString(*value);}
 
   /*!
   **
@@ -411,7 +426,7 @@ struct Traits<std::type_info>
 {
   typedef std::type_info Type;
 
-  static inline std::string toString(const std::type_info& info)
+  static inline String toString(const std::type_info& info)
   {
     std::string res = info.name();
   #ifdef WIN32
@@ -424,18 +439,18 @@ struct Traits<std::type_info>
     res = trimDigitsLeft(res);
     if (hasNamespace)
       res = res.substr(0, res.length() - 1);
-    return res;
+    return res.c_str();
   #endif
   }
 
   static inline void write(std::ostream& ostr, const std::type_info& value)
-    {Traits<std::string>::write(ostr, toString(value));}
+    {Traits<String>::write(ostr, toString(value));}
 
   static inline bool read(std::istream& istr, std::type_info& res)
     {assert(false); return false;}
 
-  static inline bool read(std::istream& istr, std::string& res)
-    {return Traits<std::string>::read(istr, res);}
+  static inline bool read(std::istream& istr, String& res)
+    {return Traits<String>::read(istr, res);}
 
 private:
   static std::string trimDigitsLeft(const std::string& str, size_t i = 0)

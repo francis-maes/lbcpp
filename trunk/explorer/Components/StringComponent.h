@@ -19,7 +19,7 @@ class StringComponent : public Component
 public:
   StringComponent(ObjectPtr object)
   {
-    addAndMakeVisible(label = new Label("toto", object->toString().c_str()));
+    addAndMakeVisible(label = new Label("toto", object->toString()));
     label->setJustificationType(Justification::topLeft);
   }
     

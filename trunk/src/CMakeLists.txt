@@ -5,7 +5,7 @@ SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/lbcpp.h
   ../include/lbcpp/Traits.h
-  ../include/lbcpp/Random.h
+  ../include/lbcpp/RandomGenerator.h
   ../include/lbcpp/ContainerTraits.h
   ../include/lbcpp/ReferenceCountedObject.h
   ../include/lbcpp/Utilities.h

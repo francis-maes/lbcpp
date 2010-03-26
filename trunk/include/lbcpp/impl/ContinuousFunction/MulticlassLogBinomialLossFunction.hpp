@@ -29,7 +29,9 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
     DenseVectorPtr scores = input->toDenseVector();
     if (!scores || !scores->getNumValues())
     {
-      std::cerr << "No Scores, input = " << input->getClassName() << " inputDictionary = " << input->getDictionary()->getName() << "inputToString = " << input->toString() << std::endl;
+      std::cerr << "No Scores, input = " << input->getClassName()
+                << " inputDictionary = " << input->getDictionary()->getName()
+                << "inputToString = " << input->toString() << std::endl;
       assert(false);
     }
     assert(scores && scores->getNumValues());

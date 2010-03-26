@@ -14,12 +14,12 @@ namespace lbcpp
 class AminoAcidSequence : public LabelSequence
 {
 public:
-  virtual std::string toString() const // FASTA format
+  virtual String toString() const // FASTA format
   {
-    std::string res = "> " + name + "\n";
+    String res = T("> ") + name + T("\n");
     for (size_t i = 0; i < sequence.size(); ++i)
-      res += sequence[i];
-    res += "\n";
+      res += getAminoAcid(i).getOneLetterCode();
+    res += T("\n");
     return res;
   }
     
@@ -46,7 +46,7 @@ protected:
   }
 
 private:
-  std::string name;
+  String name;
   std::vector<char> sequence;
 };
 

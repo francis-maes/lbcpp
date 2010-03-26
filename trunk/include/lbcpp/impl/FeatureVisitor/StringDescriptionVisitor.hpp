@@ -31,9 +31,9 @@ public:
 
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
   {
-    if (currentFeatures.size())
-      currentFeatures += ", ";
-    currentFeatures += dictionary->getFeatures()->getString(number) + " = " + lbcpp::toString(value);
+    if (currentFeatures.isNotEmpty())
+      currentFeatures += T(", ");
+    currentFeatures += dictionary->getFeatures()->getString(number) + T(" = ") + lbcpp::toString(value);
   }
   
   void featureLeave()
@@ -44,32 +44,32 @@ public:
 
   void flushCurrentFeatures()
   {
-    if (currentFeatures.size())
+    if (currentFeatures.isNotEmpty())
     {
       addIndent(indent);
-      res += currentFeatures + "\n";
-      currentFeatures = "";
+      res += currentFeatures + T("\n");
+      currentFeatures = String::empty;
     }
   }
 
-  std::string getResult() const
+  String getResult() const
   {
-    if (currentFeatures.size() && !res.size())
-      return "{" + currentFeatures + "}";
-    if (res.size() && !currentFeatures.size())
-      return res;
-    if (!res.size() && !currentFeatures.size())
-      return "<empty>";
-    return res + "\n" + currentFeatures;
+    if (currentFeatures.isNotEmpty() && res.isEmpty())
+      return T("{") + currentFeatures + T("}");
+      
+    if (currentFeatures.isEmpty())
+      return res.isEmpty() ? T("<empty>") : res;
+    
+    return res + T("\n") + currentFeatures;
   }
 
 private:
-  std::string currentFeatures;
-  std::string res;
+  String currentFeatures;
+  String res;
   int indent;
 
   inline void addIndent(int indent)
-    {for (int i = 0; i < indent; ++i) res += "  ";}
+    {for (int i = 0; i < indent; ++i) res += T("  ");}
 };
 
 }; /* namespace impl */

@@ -197,8 +197,8 @@ void CRAlgorithmScopeGenerator::addIntrospectionMembers()
     CRAlgorithmScopeIntrospectionFunction getVariableType;
     for (size_t i = 0; i < parametersAndVariables.size(); ++i)
       getVariableType.addCase(returnStatement(atom(quote(parametersAndVariables[i].getTypeString()))), parametersAndVariables[i].getIdentifier());
-    getVariableType.setDefault(returnStatement(atom(quote(""))));
-    getVariableType.prepare("std::string", "getVariableType");
+    getVariableType.setDefault(returnStatement(atom("String::empty")));
+    getVariableType.prepare("String", "getVariableType");
     body.add(getVariableType.createDeclaration());
   }
 
@@ -207,8 +207,8 @@ void CRAlgorithmScopeGenerator::addIntrospectionMembers()
     CRAlgorithmScopeIntrospectionFunction getVariableName;
     for (size_t i = 0; i < parametersAndVariables.size(); ++i)
       getVariableName.addCase(returnStatement(atom(quote(parametersAndVariables[i].getIdentifierString()))), parametersAndVariables[i].getIdentifier());
-    getVariableName.setDefault(returnStatement(atom(quote(""))));
-    getVariableName.prepare("std::string", "getVariableName");
+    getVariableName.setDefault(returnStatement(atom("String::empty")));
+    getVariableName.prepare("String", "getVariableName");
     body.add(getVariableName.createDeclaration());
   }
 
@@ -220,8 +220,8 @@ void CRAlgorithmScopeGenerator::addIntrospectionMembers()
       ParameterPTreeAnalyser& v = parametersAndVariables[i];
       getVariableValue.addCase(returnStatement(funcallExpr(atom("lbcpp::toString"), v.getIdentifier())), v.getIdentifier());
     }
-    getVariableValue.setDefault(returnStatement(atom(quote(""))));
-    getVariableValue.prepare("std::string", "getVariableValue");
+    getVariableValue.setDefault(returnStatement(atom("String::empty")));
+    getVariableValue.prepare("String", "getVariableValue");
     body.add(getVariableValue.createDeclaration());
   }
 

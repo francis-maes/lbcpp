@@ -25,8 +25,8 @@ int main(int argc, char* argv[])
     double sum = 0.0;
     for (int j = 0; j < 10; ++j)
     {
-      double value = Random::getInstance().sampleDoubleFromGaussian();
-      features->set("feat" + toString(Random::getInstance().sampleInt(1000)), value);
+      double value = RandomGenerator::getInstance().sampleDoubleFromGaussian();
+      features->set("feat" + toString(RandomGenerator::getInstance().sampleInt(1000)), value);
       sum += value;
     }
     examples->append(new RegressionExample(features, sum));

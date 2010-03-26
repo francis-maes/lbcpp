@@ -26,7 +26,7 @@ public:
 
   StaticToDynamicCRAlgorithm(T_impl* newImpl) : BaseClassType(newImpl) {}
 
-  virtual std::string getName() const
+  virtual String getName() const
     {return BaseClassType::getImplementation().getName();}
 
   virtual bool hasReturn() const

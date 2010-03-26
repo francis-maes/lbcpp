@@ -68,7 +68,7 @@ public:
   **
   ** @return the choice type.
   */
-  virtual std::string getChoiceType() const = 0;
+  virtual String getChoiceType() const = 0;
 
   /**
   ** Returns the number of available choices.
@@ -107,7 +107,7 @@ public:
   ** @param probabilitiesSum : sum of the @a probabilites.
   **
   ** @return a choice given a discrete probability distribution.
-  ** @see Random::sampleWithProbabilities
+  ** @see RandomGenerator::sampleWithProbabilities
   */
   virtual VariablePtr sampleChoiceWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum = 0) const = 0;
 
@@ -136,7 +136,7 @@ public:
   ** @return getStateDescriptionFunction()->compute() result.
   ** @see StateDescriptionFunction::compute. 
   */
-  std::string computeStateDescription() const;
+  String computeStateDescription() const;
 
   /**
   ** Syntaxic sugar for "getActionDescriptionFunction()->compute(@a choice)".
@@ -146,7 +146,7 @@ public:
   ** @return getActionDescriptionFunction()->compute(@a choice) result.
   ** @see ActionDescriptionFunction::compute 
   */
-  std::string computeActionDescription(VariablePtr choice) const;
+  String computeActionDescription(VariablePtr choice) const;
 
   /**
   ** Syntaxic sugar for "getStateValueFunction()->compute()".
@@ -370,7 +370,7 @@ public:
   **
   ** @return the conversion of choices to a string.
   */
-  virtual std::string toString() const;
+  virtual String toString() const;
 
 protected:
   Choose(CRAlgorithmPtr crAlgorithm = CRAlgorithmPtr())

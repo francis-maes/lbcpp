@@ -13,7 +13,7 @@ size_t Table::getNumColumns() const
   return getHeader()->getNumColumns();
 }
 
-std::string Table::toString(size_t rowNumber, size_t columnNumber) const
+String Table::toString(size_t rowNumber, size_t columnNumber) const
 {
   TableHeader::Type t = getHeader()->getColumnType(columnNumber);
   switch (t)

@@ -8,6 +8,7 @@
 
 #include <lbcpp/ObjectContainer.h>
 #include <lbcpp/ObjectStream.h>
+#include <lbcpp/RandomGenerator.h>
 using namespace lbcpp;
 
 VectorObjectContainerPtr ObjectContainer::toVector() const
@@ -25,7 +26,7 @@ public:
   ObjectContainerStream(ObjectContainerPtr container)
     : container(container), position(0) {}
     
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return container->getContentClassName();}
 
   virtual ObjectPtr next()
@@ -48,7 +49,7 @@ public:
     : DecoratorObjectContainer(target), function(function)
     {}
     
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return function->getOutputClassName(target->getContentClassName());}
 
   virtual ObjectPtr get(size_t index) const
@@ -79,7 +80,7 @@ class RandomizedObjectContainer : public DecoratorObjectContainer
 public:
   RandomizedObjectContainer(ObjectContainerPtr target)
     : DecoratorObjectContainer(target)
-    {Random::getInstance().sampleOrder(target->size(), order);}
+    {lbcpp::RandomGenerator::getInstance().sampleOrder(target->size(), order);}
     
   virtual ObjectPtr get(size_t index) const
   {
@@ -206,7 +207,7 @@ public:
   BinaryAppendObjectContainer(ObjectContainerPtr left, ObjectContainerPtr right)
     : left(left), right(right) {}
     
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {assert(left->getContentClassName() == right->getContentClassName()); return left->getContentClassName();}
   
   virtual size_t size() const

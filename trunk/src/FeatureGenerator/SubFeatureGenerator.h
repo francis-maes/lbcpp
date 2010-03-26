@@ -83,9 +83,9 @@ public:
     return res;
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res = "subFeatureGenerator";
+    String res = "subFeatureGenerator";
     if (exists())
       res += "(" + getDictionary()->getFeatures()->getString(0) + ", " + featureGenerator->toString() + ")";
     return res;

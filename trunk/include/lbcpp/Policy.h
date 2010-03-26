@@ -181,7 +181,7 @@ public:
   **
   ** @return
   */
-  virtual ObjectPtr getResultWithName(const std::string& name) const;
+  virtual ObjectPtr getResultWithName(const String& name) const;
 };
 
 /**

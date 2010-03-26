@@ -11,11 +11,13 @@ using namespace lbcpp;
 
 int main(int argc, char* argv[])
 {
+  File dataDirectory = File::getCurrentWorkingDirectory().getChildFile("../Data/Regression");
+
   /*
   ** Create Feature dictionary and Examples parser
   */
   FeatureDictionaryPtr features = new FeatureDictionary("regression-features");
-  ObjectStreamPtr parser = regressionExamplesParser("../Data/Regression/pyrim.data", features);
+  ObjectStreamPtr parser = regressionExamplesParser(dataDirectory.getChildFile("pyrim.data"), features);
   if (!parser)
     return 1;
   

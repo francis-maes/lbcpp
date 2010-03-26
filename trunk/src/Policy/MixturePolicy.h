@@ -31,7 +31,7 @@ public:
   {
     VariablePtr choice1 = policy1->policyChoose(choose);
     VariablePtr choice2 = policy2->policyChoose(choose);
-    return Random::getInstance().sampleBool(mixtureCoefficient) ? choice2 : choice1;
+    return RandomGenerator::getInstance().sampleBool(mixtureCoefficient) ? choice2 : choice1;
   }
   
   virtual void policyReward(double reward)
@@ -46,7 +46,7 @@ public:
     policy2->policyLeave();
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "mixturePolicy(" + policy1->toString() + ", " + policy2->toString() + ", " + lbcpp::toString(mixtureCoefficient) + ")";}
   
   virtual bool load(std::istream& istr)

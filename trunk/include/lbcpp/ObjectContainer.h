@@ -29,7 +29,7 @@
 **@author Francis MAES
 **@date   Fri Jun 12 19:11:19 2009
 **
-**@brief  Random acces object container base class.
+**@brief  RandomGenerator acces object container base class.
 **
 */
 
@@ -57,9 +57,9 @@ public:
   ** functions returns the highest base-class that is common between
   ** these classes.
   **
-  ** @return content class name (std::string).
+  ** @return content class name (String).
   */
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return "Object";}
 
   /**
@@ -274,7 +274,7 @@ public:
   ** @param objects : object vector.
   ** @param contentClassName : content class name.
   */
-  VectorObjectContainer(const std::vector<ObjectPtr>& objects, const std::string& contentClassName = "Object")
+  VectorObjectContainer(const std::vector<ObjectPtr>& objects, const String& contentClassName = "Object")
     : objects(objects), contentClassName(contentClassName) {}
 
   /**
@@ -284,7 +284,7 @@ public:
   **
   ** @return a VectorObjectContainer.
   */
-  VectorObjectContainer(const std::string& contentClassName = "Object")
+  VectorObjectContainer(const String& contentClassName = "Object")
     : contentClassName(contentClassName) {}
 
   /**
@@ -292,7 +292,7 @@ public:
   **
   ** @return content class name.
   */
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return contentClassName;}
 
   /**
@@ -356,7 +356,7 @@ public:
 
 protected:
   std::vector<ObjectPtr> objects; /*!< Object list.*/
-  std::string contentClassName; /*!< Content class name. */
+  String contentClassName; /*!< Content class name. */
 };
 
 
@@ -384,7 +384,7 @@ public:
   **
   ** @return content class name.
   */
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return target->getContentClassName();}
 
   /**

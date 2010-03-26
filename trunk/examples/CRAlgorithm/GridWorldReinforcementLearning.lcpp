@@ -111,13 +111,13 @@ class MyGridWorldInstancesStream : public ObjectStream
 public:
   MyGridWorldInstancesStream() : environment(10, 10, 3, 4) {}
 
-  virtual std::string getContentClassName() const
-    {return "CRAlgorithm";}
+  virtual String getContentClassName() const
+    {return T("CRAlgorithm");}
 
   virtual ObjectPtr next()
   {
-    int x = Random::getInstance().sampleInt(environment.getWidth());
-    int y = Random::getInstance().sampleInt(environment.getHeight());
+    int x = RandomGenerator::getInstance().sampleInt(environment.getWidth());
+    int y = RandomGenerator::getInstance().sampleInt(environment.getHeight());
     return gridWorld(environment, x, y);
   }
 
@@ -150,6 +150,7 @@ int main(int argc, char* argv[])
   /*
   ** Save the resulting policy
   */
-  learner->getPolicy()->saveToFile("gridworld.policy");
+  File policyFile = File::getCurrentWorkingDirectory().getChildFile("gridworld.policy");
+  learner->getPolicy()->saveToFile(policyFile);
   return 0;
 }

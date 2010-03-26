@@ -28,7 +28,7 @@ public:
   /*
   ** Object
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
     return "monteCarloControlPolicy(" + decorated->toString() + ", " + 
       regressor->toString() + ", " + lbcpp::toString(discount) + ")";

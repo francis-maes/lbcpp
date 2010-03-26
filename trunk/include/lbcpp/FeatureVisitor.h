@@ -96,7 +96,7 @@ public:
 class PathBasedFeatureVisitor : public FeatureVisitor
 {
 public:
-  virtual void featureSense(const std::vector<size_t>& path, const std::string& name, double value) = 0;
+  virtual void featureSense(const std::vector<size_t>& path, const String& name, double value) = 0;
 
   virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index);  
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value);
@@ -104,9 +104,9 @@ public:
 
 private:
   std::vector<size_t> currentPath;
-  std::vector<std::string> currentName;
+  std::vector<String> currentName;
 
-  static std::string appendName(const std::string& path, const std::string& name);
+  static String appendName(const String& path, const String& name);
 };
 
 }; /* namespace lbcpp */

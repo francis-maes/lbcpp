@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
   /*
   ** Load classification data
   */
-  ObjectContainerPtr data = classificationExamplesParser("../Data/BinaryClassification/a1a.train", features, labels)->load(500);
+  ObjectContainerPtr data = classificationExamplesParser(File::getCurrentWorkingDirectory().getChildFile("../Data/BinaryClassification/a1a.train"), features, labels)->load(500);
   if (data->empty())
     return 1;
   data = data->randomize();

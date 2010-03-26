@@ -74,7 +74,7 @@ protected:
     {
       // label each node in a randomly sampled order
       std::vector<size_t> order;
-      Random::getInstance().sampleOrder(begin, end, order);
+      RandomGenerator::getInstance().sampleOrder(begin, end, order);
       for (size_t j = 0; j < order.size(); ++j)
       {
         size_t nodeIndex = order[j];

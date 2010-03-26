@@ -27,7 +27,7 @@ public:
   
   SarsaLearner() : discount(0.0) {}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "sarsaLearner(" + regressor->toString() + ", " + lbcpp::toString(discount) + ", .. FIXME)";}
     
   virtual void save(std::ostream& ostr)

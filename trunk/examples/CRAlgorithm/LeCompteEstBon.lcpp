@@ -19,7 +19,7 @@ inline bool isMultipleOf(size_t a, size_t b)
   return (a % b) == 0;
 }
 
-featureGenerator numberLogFeaturesBase(const std::string& nameMin, const std::string& nameMax, double valMin, double valMax, double value)
+featureGenerator numberLogFeaturesBase(const String& nameMin, const String& nameMax, double valMin, double valMax, double value)
 {
   assert(value >= valMin && value <= valMax);
   double delta = valMax - valMin;
@@ -101,8 +101,8 @@ struct Operation
     numOperations,
   };
   
-  static inline char getChar(int op)
-    {static const char* symbols = "+-x/ "; return symbols[op];}
+  static inline juce::tchar getChar(int op)
+    {static const juce::tchar* symbols = T("+-x/ "); return symbols[op];}
     
   static inline int compute(int operation, int leftValue, int rightValue)
   {
@@ -255,7 +255,7 @@ public:
     {assert(index < v.size()); return *v[index];}
     
   friend std::ostream& operator <<(std::ostream& ostr, const ExpressionSet& expressions)
-    {return ostr << lbcpp::toString(expressions.v);}
+    {return ostr << (const char* )lbcpp::toString(expressions.v);}
   
 private:
   std::vector<Expression* > v;
@@ -331,9 +331,9 @@ crAlgorithm bool searchSpace(std::vector<int> numbers, int target, int featureVe
       }
     }
     
-    chooseFunction std::string operationToString(const Operation& op) {
-      return lbcpp::toString(expressions.getExpression(op.leftIndex)) + " " + 
-        Operation::getChar(op.operation) + " " + 
+    chooseFunction String operationToString(const Operation& op) {
+      return lbcpp::toString(expressions.getExpression(op.leftIndex)) + T(" ") + 
+        Operation::getChar(op.operation) + T(" ") + 
         lbcpp::toString(expressions.getExpression(op.rightIndex));
     }
     
@@ -349,7 +349,7 @@ lbcpp::CRAlgorithmPtr sampleInstance(size_t numNumbers,
                           size_t chanceInfTen = 2, size_t chanceSpecial = 1)
 {
   assert(maxTarget > minTarget);
-  lbcpp::Random& random = lbcpp::Random::getInstance();
+  lbcpp::RandomGenerator& random = lbcpp::RandomGenerator::getInstance();
   
   std::vector<int> remaining;
   remaining.reserve(10 * chanceInfTen + 4 * chanceSpecial);

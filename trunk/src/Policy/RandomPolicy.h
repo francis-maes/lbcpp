@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RandomPolicy.h                 | Random Policy                   |
+| Filename: RandomPolicy.h                 | RandomGenerator Policy                   |
 | Author  : Francis Maes                   |                                 |
 | Started : 11/06/2009 21:38               |                                 |
 `------------------------------------------/                                 |
@@ -17,7 +17,7 @@ namespace lbcpp
 class RandomPolicy : public Policy
 {
 public:
-  virtual std::string toString() const
+  virtual String toString() const
     {return "randomPolicy()";}
 
   virtual VariablePtr policyChoose(ChoosePtr choose)

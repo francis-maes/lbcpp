@@ -21,7 +21,7 @@ public:
   RankerStateValueFunction(RankerPtr ranker = RankerPtr())
     : ranker(ranker) {}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "predictedStateValues(" + ranker->toString() + ")";}
     
   virtual void setChoose(ChoosePtr choose)
@@ -47,7 +47,7 @@ public:
   RankerActionValueFunction(RankerPtr ranker = RankerPtr())
     : ranker(ranker) {}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "predictedActionValues(" + ranker->toString() + ")";}
     
   virtual void setChoose(ChoosePtr choose)

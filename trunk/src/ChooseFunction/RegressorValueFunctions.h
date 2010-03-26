@@ -21,7 +21,7 @@ public:
   RegressorStateValueFunction(RegressorPtr regressor = RegressorPtr())
     : regressor(regressor) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "predictedStateValues(" + regressor->toString() + ")";}
   
   virtual void setChoose(ChoosePtr choose)
@@ -47,7 +47,7 @@ public:
   RegressorActionValueFunction(RegressorPtr regressor = RegressorPtr())
     : regressor(regressor) {}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "predictedActionValues(" + regressor->toString() + ")";}
 
   virtual void setChoose(ChoosePtr choose)

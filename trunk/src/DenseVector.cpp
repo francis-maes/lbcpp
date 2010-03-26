@@ -59,7 +59,7 @@ size_t DenseVector::size() const
 
 void DenseVector::initializeRandomly(double mean, double standardDeviation)
 {
-  Random& random = Random::getInstance();
+  RandomGenerator& random = RandomGenerator::getInstance();
   
   assert(dictionary);
   values.resize(dictionary->getNumFeatures());

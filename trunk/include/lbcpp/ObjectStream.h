@@ -52,7 +52,7 @@ public:
   ** @param inputClassName : the input's class name.
   ** @return the class name of the function's output.
   */
-  virtual std::string getOutputClassName(const std::string& inputClassName) const = 0;
+  virtual String getOutputClassName(const String& inputClassName) const = 0;
 
   /**
   ** Applies object function to an object.
@@ -91,9 +91,9 @@ public:
   ** functions returns the highest base-class that is common between
   ** these classes.
   **
-  ** @return content class name (std::string).
+  ** @return content class name (String).
   */
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return "Object";}
 
   /**
@@ -134,7 +134,7 @@ public:
   ** @see ObjectStream::getContentClassName
   ** @see Object::error
   */
-  bool checkContentClassName(const std::string& expectedClassName) const;
+  bool checkContentClassName(const String& expectedClassName) const;
 
   /**
   ** Calls next() up to @a maximumCount times and ignores the loaded
@@ -240,7 +240,7 @@ public:
 **
 ** @return a new ObjectStream containing classification examples.
 */
-extern ObjectStreamPtr classificationExamplesParser(const std::string& filename,
+extern ObjectStreamPtr classificationExamplesParser(const File& file,
                                 FeatureDictionaryPtr features, StringDictionaryPtr labels);
 
 /**
@@ -304,7 +304,7 @@ extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatur
 **  @see classificationExamplesParser
 **
 */
-extern ObjectStreamPtr regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features);
+extern ObjectStreamPtr regressionExamplesParser(const File& file, FeatureDictionaryPtr features);
 
 
 /**
@@ -323,7 +323,7 @@ public:
   **
   ** @return a TextObjectParser.
   */
-  TextObjectParser(const std::string& filename);
+  TextObjectParser(const File& file);
 
   /**
   ** Constructor.
@@ -369,7 +369,7 @@ public:
   **  to the ErrorManager.
   ** @see setResult
   */
-  virtual bool parseLine(const std::string& line) = 0;
+  virtual bool parseLine(const String& line) = 0;
 
   /**
   ** This function is called at the end of the parsing.
@@ -417,11 +417,11 @@ protected:
   **
   ** @param line : example text line.
   ** @param columns : item container.
-  ** @param separators : item text separators ("\t" by default).
+  ** @param separators : item text separators (" " and "\t" by default).
   */
-  static void tokenize(const std::string& line,
-                       std::vector< std::string >& columns,
-                       const char* separators = " \t");
+  static void tokenize(const String& line,
+                       std::vector< String >& columns,
+                       const juce::tchar* separators = T(" \t"));
 
   /**
   ** Generic parser from a C++ input stream.
@@ -444,8 +444,8 @@ protected:
   ** @return True if OK, False otherwise.
   */
   template<class T>
-  static bool parse(const std::string& str, T& res)
-    {std::istringstream istr(str); return parse(istr, res);}
+  static bool parse(const String& str, T& res)
+    {std::istringstream istr((const char* )str); return parse(istr, res);}
 
 private:
   ObjectPtr currentObject;      /*!< A pointer to the current Object. */
@@ -471,8 +471,8 @@ public:
   **
   ** @return a @a LearningDataObjectParser.
   */
-  LearningDataObjectParser(const std::string& filename, FeatureDictionaryPtr features = FeatureDictionaryPtr())
-    : TextObjectParser(filename), features(features) {}
+  LearningDataObjectParser(const File& file, FeatureDictionaryPtr features = FeatureDictionaryPtr())
+    : TextObjectParser(file), features(features) {}
 
   /**
   ** Constructor
@@ -505,7 +505,7 @@ public:
   **  inherited class are responsible for throwing an error
   **  to the ErrorManager.
   */
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
     {return false;}
 
   /**
@@ -517,7 +517,7 @@ public:
   **  inherited class are responsible for throwing an error
   **  to the ErrorManager.
   */
-  virtual bool parseCommentLine(const std::string& comment)
+  virtual bool parseCommentLine(const String& comment)
     {return true;}
 
   /**
@@ -547,7 +547,7 @@ public:
   ** @see LearningDataObjectParser::parseCommentLine
   ** @see LearningDataObjectParser::parseDataLine
   */
-  virtual bool parseLine(const std::string& line);
+  virtual bool parseLine(const String& line);
 
 protected:
   FeatureDictionaryPtr features; /*!< A pointer to features dictionary.*/
@@ -564,7 +564,7 @@ protected:
   **
   ** @return False if any error occurs.
   */
-  bool parseFeatureList(const std::vector<std::string>& columns,
+  bool parseFeatureList(const std::vector<String>& columns,
                         size_t firstColumn, SparseVectorPtr& res);
 
   /**
@@ -579,7 +579,7 @@ protected:
   **
   ** @return False if any error occurs.
   */
-  static bool parseFeature(const std::string& str, std::string& featureId, double& featureValue);
+  static bool parseFeature(const String& str, String& featureId, double& featureValue);
 
   /**
   ** Parses a feature identifier
@@ -592,7 +592,7 @@ protected:
   **
   ** @return True.
   */
-  static bool parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path);
+  static bool parseFeatureIdentifier(const String& identifier, std::vector<String>& path);
 };
 
 }; /* namespace lbcpp */

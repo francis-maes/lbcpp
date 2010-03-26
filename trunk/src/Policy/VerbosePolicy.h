@@ -36,7 +36,7 @@ public:
   /*
   ** Object
   */
-  virtual std::string toString() const
+  virtual String toString() const
     {return decorated->toString() + "->verbose(" + lbcpp::toString(verbosity) + ")";}
 
   virtual bool load(std::istream& istr)

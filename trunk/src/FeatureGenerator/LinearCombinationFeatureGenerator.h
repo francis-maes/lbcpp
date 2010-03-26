@@ -80,9 +80,9 @@ public:
   virtual bool isDense() const
     {return compositeFeatureGenerator->isDense() || weights->size() > 20;}
 
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res = "LinearCombination:\n";
+    String res = "LinearCombination:\n";
     size_t n = compositeFeatureGenerator->getNumSubGenerators();
     for (size_t i = 0; i < n; ++i)
     {

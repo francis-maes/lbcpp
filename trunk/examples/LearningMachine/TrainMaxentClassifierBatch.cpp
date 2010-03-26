@@ -11,6 +11,8 @@ using namespace lbcpp;
 
 int main(int argc, char* argv[])
 {
+  File dataDirectory = File::getCurrentWorkingDirectory().getChildFile("../Data/Classification");
+  
   /*
   ** Create Feature dictionary and Labels dictionary
   */
@@ -20,7 +22,7 @@ int main(int argc, char* argv[])
   /*
   ** Load training classification data
   */
-  ObjectStreamPtr parser = classificationExamplesParser("../Data/Classification/small.train", features, labels);
+  ObjectStreamPtr parser = classificationExamplesParser(dataDirectory.getChildFile("small.train"), features, labels);
   if (!parser->isValid())
     return 1;
   ObjectContainerPtr trainingData = parser->load();
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
   /*
   ** Parse test data and evaluate testing accuracy in one pass
   */
-  parser = classificationExamplesParser("../Data/Classification/small.test", features, labels);
+  parser = classificationExamplesParser(dataDirectory.getChildFile("small.test"), features, labels);
   if (!parser->isValid())
     return 1;
   std::cout << "Testing Accuracy: " << classifier->evaluateAccuracy(parser) * 100 << "%." << std::endl;
@@ -56,8 +58,9 @@ int main(int argc, char* argv[])
   /*
   ** Save the classifier
   */
-  classifier->saveToFile("classifier.model"); 
-  classifier->getParameters()->saveToFile("parameters.vector");
-  features->saveToFile("features.dic");
+  File directory = File::getCurrentWorkingDirectory();
+  classifier->saveToFile(directory.getChildFile("classifier.model"));
+  classifier->getParameters()->saveToFile(directory.getChildFile("parameters.vector"));
+  features->saveToFile(directory.getChildFile("features.dic"));
   return 0;
 }

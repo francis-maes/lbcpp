@@ -23,7 +23,7 @@ public:
   virtual VariablePtr policyChoose(ChoosePtr choose)
     {return choose->sampleBestChoice(actionValue);}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "greedyPolicy(" + actionValue->toString() + ")";}
     
   virtual void save(std::ostream& ostr) const

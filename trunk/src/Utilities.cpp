@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Utilities.h>
-#include <lbcpp/Random.h>
+#include <lbcpp/RandomGenerator.h>
 #include <lbcpp/IterationFunction.h>
 #include <iostream>
 #include <fstream>
@@ -19,13 +19,13 @@ using namespace lbcpp;
 class ConsoleProgressCallback : public ProgressCallback
 {
 public:
-  virtual void progressStart(const std::string& description)
-    {std::cout << "=============== " << description << " ===============" << std::endl;}
+  virtual void progressStart(const String& description)
+    {std::cout << "=============== " << (const char* )description << " ===============" << std::endl;}
     
   // return false to stop the task
-  virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
+  virtual bool progressStep(const String& description, double iteration, double totalIterations = 0)
   {
-    std::cout << "Step '" << description << "' iteration = " << iteration;
+    std::cout << "Step '" << (const char* )description << "' iteration = " << iteration;
     if (totalIterations)
       std::cout << " / " << totalIterations;
     std::cout << std::endl;
@@ -48,10 +48,11 @@ ProgressCallbackPtr lbcpp::consoleProgressCallback()
 class DefaultErrorHandler : public ErrorHandler
 {
 public:
-  virtual void errorMessage(const std::string& where, const std::string& what)
-    {std::cerr << "Error in '" << where << "': " << what << "." << std::endl;}  
-  virtual void warningMessage(const std::string& where, const std::string& what)
-    {std::cerr << "Warning in '" << where << "': " << what << "." << std::endl;}  
+  virtual void errorMessage(const String& where, const String& what)
+    {std::cerr << "Error in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}  
+    
+  virtual void warningMessage(const String& where, const String& what)
+    {std::cerr << "Warning in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}  
 };
 
 static DefaultErrorHandler defaultErrorHandler;
@@ -64,15 +65,15 @@ void ErrorHandler::setInstance(ErrorHandler& handler)
 }
 
 /*
-** Random
+** RandomGenerator
 */
-void Random::setSeed(int seed1, int seed2)
+void RandomGenerator::setSeed(int seed1, int seed2)
 {
   this->seed = ((long long)(seed1) * 2654435769UL + (long long)(seed2) * 3373259426UL) >> 5;
   sampleInt();
 }
 
-size_t Random::sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum)
+size_t RandomGenerator::sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum)
 {
   assert(probabilities.size());
   if (!probabilitiesSum)
@@ -90,13 +91,13 @@ size_t Random::sampleWithProbabilities(const std::vector<double>& probabilities,
   return 0;
 }
 
-int Random::sampleInt()
+int RandomGenerator::sampleInt()
 {
   seed = (seed * 0x5deece66dLL + 11) & 0xffffffffffffLL;
   return (int)(seed >> 16);
 }
 
-double Random::sampleDoubleFromGaussian()
+double RandomGenerator::sampleDoubleFromGaussian()
 {
   // from http://www.taygeta.com/random/gaussian.html
   double x1, x2, w;

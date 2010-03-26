@@ -67,7 +67,7 @@ public:
     DecoratorPolicy::policyLeave();
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "computeStatisticsPolicy(" + decorated->toString() + ")";}
 
 private:

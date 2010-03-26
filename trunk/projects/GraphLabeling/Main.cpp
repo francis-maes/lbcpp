@@ -74,7 +74,7 @@ public:
 };
 
 static std::ostream* resultsOutputFile = NULL;
-static std::string allResults;
+static String allResults;
 
 #ifdef WIN32
 inline double getTimeInSeconds() {return 0;} // FIXME
@@ -90,7 +90,7 @@ inline double getTimeInSeconds()
 }
 #endif
 
-double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
+double testAlgorithm(GraphLabelingAlgorithm& algorithm, const String& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraph, bool profile)
 {
   std::cout << "Testing Algorithm " << name << std::endl;
@@ -118,7 +118,9 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
       algorithm.setL2Regularizer(regularizer);
       algorithm.crossValidate(trainGraph, testGraph, trainAccuracy, testAccuracy);
       double score = testAccuracy->getMean();
-      std::string results = name + " reg = " + lbcpp::toString(regularizer) + " => Train Accuracy: " + lbcpp::toString(trainAccuracy->getMean() * 100) + " Test Accuracy: " + lbcpp::toString(score * 100);
+      String results = name + T(" reg = ") + lbcpp::toString(regularizer) +
+          T(" => Train Accuracy: ") + lbcpp::toString(trainAccuracy->getMean() * 100) +
+          T(" Test Accuracy: ") + lbcpp::toString(score * 100);
       if (score > bestTestAccuracy)
       {
         iterationsWithoutImprovement = 0;
@@ -131,7 +133,7 @@ double testAlgorithm(GraphLabelingAlgorithm& algorithm, const std::string& name,
           break;
       }
       std::cout << results << std::endl;
-      allResults += results + "\n";
+      allResults += results + T("\n");
       (*resultsOutputFile) << "+" << results << std::endl;
     }
     (*resultsOutputFile) << "==> " << name << " " << bestTestAccuracy << std::endl;
@@ -210,7 +212,7 @@ void displayGraphInfo(std::ostream& ostr, LabeledContentGraphPtr graph, FeatureD
 class HierarchicalToFlatFeatureMap : public Object
 {
 public:
-  HierarchicalToFlatFeatureMap(const std::string& name = "HierarchicalToFlatFeatureMap")
+  HierarchicalToFlatFeatureMap(const String& name = "HierarchicalToFlatFeatureMap")
     {dictionary = new FeatureDictionary(name, new StringDictionary(), StringDictionaryPtr());}
   
   int getIndex(const std::vector<size_t>& path) const
@@ -219,7 +221,7 @@ public:
     return it == m.end() ? -1 : (int)it->second;
   }
   
-  size_t add(const std::vector<size_t>& path, const std::string& flatName)
+  size_t add(const std::vector<size_t>& path, const String& flatName)
   {
     FeatureMap::const_iterator it = m.find(path);
     if (it == m.end())
@@ -233,7 +235,7 @@ public:
 
   SparseVectorPtr toFlatVector(FeatureGeneratorPtr featureGenerator)
   {
-    ReferenceCountedObjectPtr<ConversionVisitor> visitor = new ConversionVisitor(*this);
+    lbcpp::ReferenceCountedObjectPtr<ConversionVisitor> visitor = new ConversionVisitor(*this);
     visitor->res = new SparseVector(dictionary);
     featureGenerator->accept(visitor);
     return visitor->res;
@@ -246,8 +248,8 @@ public:
     
     HierarchicalToFlatFeatureMap& map;
     
-    virtual std::string getOutputClassName(const std::string& inputClassName) const
-      {return "SparseVector";}
+    virtual String getOutputClassName(const String& inputClassName) const
+      {return T("SparseVector");}
 
     virtual ObjectPtr function(ObjectPtr object) const
     {
@@ -273,7 +275,7 @@ private:
     HierarchicalToFlatFeatureMap& map;
     SparseVectorPtr res;
 
-    virtual void featureSense(const std::vector<size_t>& path, const std::string& name, double value)
+    virtual void featureSense(const std::vector<size_t>& path, const String& name, double value)
       {res->set(map.add(path, lbcpp::toString(map.m.size()) /* name */), value);}
   };
 };
@@ -314,8 +316,8 @@ public:
 class SequenceExamplesParser : public LearningDataObjectParser
 {
 public:
-  SequenceExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
-    : LearningDataObjectParser(filename, features), labels(labels) {}
+  SequenceExamplesParser(const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+    : LearningDataObjectParser(file, features), labels(labels) {}
     
   StringDictionaryPtr labels;
 
@@ -325,12 +327,10 @@ public:
     currentLabels.clear();
   }
 
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
   {
     assert(columns.size());
-    std::string label;
-    if (!TextObjectParser::parse(columns[0], label))
-      return false;
+    String label = columns[0];
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))
       return false;
@@ -363,15 +363,15 @@ LabeledContentGraphPtr convertSequencesToGraph(ObjectContainerPtr sequences, Str
   return res;
 }
 
-void sequencesToClassificationDataSet(ObjectContainerPtr sequences, StringDictionaryPtr labels, size_t inputHalfWindowSize, const std::string& outputFileName)
+void sequencesToClassificationDataSet(ObjectContainerPtr sequences, StringDictionaryPtr labels, size_t inputHalfWindowSize, const File& outputFile)
 {
   static HierarchicalToFlatFeatureMap hierarchicalToFlatMap;
   
-  ObjectConsumerPtr printer = classificationExamplesPrinter(outputFileName, labels);
+  ObjectConsumerPtr printer = classificationExamplesPrinter(outputFile, labels);
 
   for (size_t i = 0; i < sequences->size(); ++i)
   {
-    ReferenceCountedObjectPtr<SequenceExample> example = sequences->getAndCast<SequenceExample>(i);
+    lbcpp::ReferenceCountedObjectPtr<SequenceExample> example = sequences->getAndCast<SequenceExample>(i);
     for (size_t j = 0; j < example->getLength(); ++j)
       printer->consume(new ClassificationExample(
         hierarchicalToFlatMap.toFlatVector(sparseVectorWindowFeatures(example->content, j, inputHalfWindowSize)),
@@ -386,7 +386,7 @@ int crossValidateAllOnSequences(int argc, char* argv[])
     std::cerr << "Usage: " << argv[0] << " sequences.data numFolds resultsFile.txt" << std::endl;
     return 1;
   }
-  std::string dataFile = argv[1];
+  String dataFileName = String(argv[1]);
   int numFolds = atoi(argv[2]);
   std::ofstream resultsFile(argv[3]);
   if (!resultsFile.is_open())
@@ -401,7 +401,7 @@ int crossValidateAllOnSequences(int argc, char* argv[])
 
   // loading sequences
   std::cout << "Loading sequences..." << std::endl;
-  ObjectStreamPtr sequencesParser = new SequenceExamplesParser(dataFile, features, labels);
+  ObjectStreamPtr sequencesParser = new SequenceExamplesParser(File::getCurrentWorkingDirectory().getChildFile(dataFileName), features, labels);
   ObjectContainerPtr allSequences = sequencesParser->load();
   
   size_t numElements = 0;
@@ -417,8 +417,10 @@ int crossValidateAllOnSequences(int argc, char* argv[])
     ObjectContainerPtr testSequences = allSequences->fold(0, 7);
     for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 10; ++inputHalfWindowSize)
     {
-      sequencesToClassificationDataSet(trainSequences, labels, inputHalfWindowSize, dataFile + ".train" + lbcpp::toString(inputHalfWindowSize) + ".classif");
-      sequencesToClassificationDataSet(testSequences, labels, inputHalfWindowSize, dataFile + ".test" + lbcpp::toString(inputHalfWindowSize) + ".classif");
+      sequencesToClassificationDataSet(trainSequences, labels, inputHalfWindowSize,
+        File::getCurrentWorkingDirectory().getChildFile(dataFileName + T(".train") + lbcpp::toString(inputHalfWindowSize) + T(".classif")));
+      sequencesToClassificationDataSet(testSequences, labels, inputHalfWindowSize,
+        File::getCurrentWorkingDirectory().getChildFile(dataFileName + T(".test") + lbcpp::toString(inputHalfWindowSize) + T(".classif")));
     }
   }
   return 0;
@@ -469,10 +471,10 @@ int crossValidateAll(int argc, char* argv[])
     std::cerr << "Usage: " << argv[0] << " data.content data.links numFolds removeTrainTestLinks resultsFile.txt" << std::endl;
     return 1;
   }
-  std::string contentFile = argv[1];
-  std::string linkFile = argv[2];
+  File contentFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
+  File linkFile = File::getCurrentWorkingDirectory().getChildFile(argv[2]);
   int numFolds = atoi(argv[3]);
-  bool removeTrainTestLinks = argv[4] == std::string("true");
+  bool removeTrainTestLinks = String(argv[4]) == T("true");
   std::ofstream resultsFile(argv[5]);
   if (!resultsFile.is_open())
   {
@@ -513,15 +515,15 @@ int trainTestFixedTrainSize(int argc, char* argv[], bool profile)
     std::cerr << "Usage: " << argv[0] << " data.content data.links trainPercentage removeTrainTestLinks resultsFile.txt" << std::endl;
     return 1;
   }
-  std::string contentFile = argv[1];
-  std::string linkFile = argv[2];
+  File contentFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
+  File linkFile = File::getCurrentWorkingDirectory().getChildFile(argv[2]);
   int trainPercentage = atoi(argv[3]);
   if (trainPercentage <= 0 || trainPercentage >= 100)
   {
     std::cerr << "Train percentage must be in interval ]0, 100[" << std::endl;
     return 1;
   }
-  bool removeTrainTestLinks = argv[4] == std::string("true");
+  bool removeTrainTestLinks = String(argv[4]) == T("true");
   std::ofstream resultsFile(argv[5]);
   if (!resultsFile.is_open())
   {
@@ -567,11 +569,11 @@ int testUniformNoise(int argc, char* argv[])
     std::cerr << "Usage: " << argv[0] << " data.content data.links trainPercentage removeTrainTestLinks resultsFile.txt" << std::endl;
     return 1;
   }
-  std::string contentFile = argv[1];
-  std::string linkFile = argv[2];
+  File contentFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
+  File linkFile = File::getCurrentWorkingDirectory().getChildFile(argv[2]);
   //int numFolds = atoi(argv[3]);
   int trainPercentage = atoi(argv[3]);
-  bool removeTrainTestLinks = argv[4] == std::string("true");
+  bool removeTrainTestLinks = String(argv[4]) == T("true");
   std::ofstream resultsFile(argv[5]);
   if (!resultsFile.is_open())
   {

@@ -22,7 +22,7 @@ public:
     : stepSize(stepSize) {}
   GradientDescentOptimizer() {}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return "GradientDescentOptimizer(" + lbcpp::toString(stepSize) + ")";}
   
   virtual OptimizerState step()

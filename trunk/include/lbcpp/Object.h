@@ -84,7 +84,7 @@ public:
   ** @param constructor : class constructor.
   ** @see Object::create
   */
-  static void declare(const std::string& className, Constructor constructor);
+  static void declare(const String& className, Constructor constructor);
 
   /** Creates dynamically an object of class @a className.
   **
@@ -96,7 +96,7 @@ public:
   ** @return an instance of @a className object.
   ** @see Object::declare
   */
-  static Object* create(const std::string& className);
+  static Object* create(const String& className);
 
   /**
   ** Loads an object from a C++ stream.
@@ -118,7 +118,7 @@ public:
   ** occurs.
   ** @see saveToFile
   */
-  static ObjectPtr loadFromFile(const std::string& fileName);
+  static ObjectPtr loadFromFile(const File& file);
 
   /**
   ** Loads an object from a stream and cast it.
@@ -129,7 +129,7 @@ public:
   */
   template<class T>
   static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
-    {return checkCast<T>("Object::loadFromStreamAndCast", loadFromStream(istr));}
+    {return checkCast<T>(T("Object::loadFromStreamAndCast"), loadFromStream(istr));}
 
   /**
   ** Loads an object from a file and cast it.
@@ -139,15 +139,15 @@ public:
   ** @return a pointer on the loaded object or a null pointer if the cast fails.
   */
   template<class T>
-  static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const std::string& fileName)
-    {return checkCast<T>("Object::loadFromFileAndCast", loadFromFile(fileName));}
+  static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const File& file)
+    {return checkCast<T>(T("Object::loadFromFileAndCast"), loadFromFile(file));}
 
   /**
   ** Class name getter.
   **
   ** @return class name.
   */
-  std::string getClassName() const;
+  String getClassName() const;
 
   /**
   ** Name getter.
@@ -159,16 +159,16 @@ public:
   **
   ** @return object name.
   */
-  virtual std::string getName() const
-    {return getClassName() + "::getName() unimplemented";}
+  virtual String getName() const
+    {return getClassName() + T("::getName() unimplemented");}
 
   /**
   ** Converts the current object to a string.
   **
   ** @return the current object (string form).
   */
-  virtual std::string toString() const
-    {return getClassName() + "::toString() unimplemented";}
+  virtual String toString() const
+    {return getClassName() + T("::toString() unimplemented");}
 
   /**
   ** Converts the current object to a graph.
@@ -212,7 +212,7 @@ public:
   */
   template<class T>
   ReferenceCountedObjectPtr<T> cloneAndCast() const
-    {return checkCast<T>("Object::cloneAndCast", clone());}
+    {return checkCast<T>(T("Object::cloneAndCast"), clone());}
 
   /**
   ** Saves the current object to the file @a filename.
@@ -222,7 +222,7 @@ public:
   ** @return False if any error occurs.
   ** @see loadFromFile
   */
-  bool saveToFile(const std::string& fileName) const;
+  bool saveToFile(const File& file) const;
 
   /**
   ** Saves the current object to a C++ stream.
@@ -239,7 +239,7 @@ public:
   ** @param what : what's going wrong.
   ** @see ErrorHandler (in Utilities.h)
   */
-  static void error(const std::string& where, const std::string& what)
+  static void error(const String& where, const String& what)
     {ErrorHandler::error(where, what);}
 
   /**
@@ -249,7 +249,7 @@ public:
   ** @param what : what's going wrong.
   ** @see ErrorHandler (in Utilities.h)
   */
-  static void warning(const std::string& where, const std::string& what)
+  static void warning(const String& where, const String& what)
     {ErrorHandler::warning(where, what);}
 
 protected:
@@ -265,14 +265,14 @@ protected:
   ** load() is responsible for declaring an error to the ErrorManager.
   */
   template<class T>
-  static ReferenceCountedObjectPtr<T> checkCast(const std::string& where, ObjectPtr object)
+  static ReferenceCountedObjectPtr<T> checkCast(const String& where, ObjectPtr object)
   {
     ReferenceCountedObjectPtr<T> res;
     if (object)
     {
       res = object.dynamicCast<T>();
       if (!res)
-        error(where, "Could not cast object into '" + lbcpp::toString(typeid(*res)) + "'");
+        error(where, T("Could not cast object into '") + lbcpp::toString(typeid(*res)) + T("'"));
     }
     return res;
   }
@@ -284,14 +284,16 @@ protected:
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the ErrorManager.
   */
-  virtual bool load(std::istream& istr) {return true;}
+  virtual bool load(std::istream& istr)
+    {return true;}
 
   /**
   ** Override this function to save the object to a C++ stream.
   **
   ** @param ostr : a C++ output stream.
   */
-  virtual void save(std::ostream& ostr) const {}
+  virtual void save(std::ostream& ostr) const
+    {}
 };
 
 /**
@@ -303,8 +305,8 @@ protected:
 **
 ** @return an object pointer.
 */
-inline ObjectPtr loadObject(const std::string& filename)
-  {return Object::loadFromFile(filename);}
+inline ObjectPtr loadObject(const File& file)
+  {return Object::loadFromFile(file);}
 
 template<class Type>
 struct ClassDeclarator
@@ -319,15 +321,17 @@ template<class T>
 struct ObjectPtrTraits
 {
 public:
-  static inline std::string toString(const ReferenceCountedObjectPtr<T> value)
-    {return value ? value->toString() : "null";}
+  static inline String toString(const ReferenceCountedObjectPtr<T> value)
+    {return value ? value->toString() : T("null");}
+    
   static inline void write(std::ostream& ostr, const ReferenceCountedObjectPtr<T> value)
   {
     if (value)
       value->saveToStream(ostr);
     else
-      lbcpp::write(ostr, std::string("__null__"));
+      lbcpp::write(ostr, T("__null__"));
   }
+  
   static inline bool read(std::istream& istr, ReferenceCountedObjectPtr<T>& result)
   {
     result = Object::loadFromStreamAndCast<T>(istr);
@@ -339,10 +343,12 @@ template<class T>
 struct ObjectTraits
 {
 public:
-  static inline std::string toString(const T& value)
+  static inline String toString(const T& value)
     {return value.toString();}
+    
   static inline void write(std::ostream& ostr, const T& value)
     {value.save(ostr);}
+    
   static inline bool read(std::istream& istr, T& result)
     {return result.load(istr);}
 };

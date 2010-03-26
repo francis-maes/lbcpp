@@ -35,7 +35,7 @@ public:
     {
       g.setFont(10);
       g.setColour(Colours::black);
-      g.drawFittedText(table->toString(row, column - 100).c_str(),
+      g.drawFittedText(table->toString(row, column - 100),
         0, 0, width, height, Justification::centred, 1);
     }
   }
@@ -78,14 +78,14 @@ protected:
     TableHeaderPtr header = table->getHeader();
     for (size_t j = 0; j < header->getNumColumns(); ++j)
     {
-      std::string value = header->getColumnName(j);
-      autoSizeWidths.push_back(font.getStringWidth(value.c_str()));
+      String value = header->getColumnName(j);
+      autoSizeWidths.push_back(font.getStringWidth(value));
     }
 
     for (size_t i = 0; i < table->getNumRows(); ++i)
       for (size_t j = 0; j < header->getNumColumns(); ++j)
       {
-        int w = font.getStringWidth(table->toString(i, j).c_str());
+        int w = font.getStringWidth(table->toString(i, j));
         if (w > autoSizeWidths[j])
           autoSizeWidths[j] = w;
       }
@@ -101,7 +101,7 @@ public:
     TableHeaderPtr header = table->getHeader();
     TableHeaderComponent* hdr = getHeader();
     for (size_t i = 0; i < header->getNumColumns(); ++i)
-      hdr->addColumn(header->getColumnName(i).c_str(), i + 100, 100);
+      hdr->addColumn(header->getColumnName(i), i + 100, 100);
     setModel(new TableFrameListBoxModel(table));
 //    autoSizeAllColumns();
     setAutoSizeMenuOptionShown(true);

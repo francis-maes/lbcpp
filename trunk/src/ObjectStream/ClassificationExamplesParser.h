@@ -17,17 +17,15 @@ namespace lbcpp
 class ClassificationExamplesParser : public LearningDataObjectParser
 {
 public:
-  ClassificationExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
-    : LearningDataObjectParser(filename, features), labels(labels) {}
+  ClassificationExamplesParser(const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+    : LearningDataObjectParser(file, features), labels(labels) {}
 
-  virtual std::string getContentClassName() const
-    {return "ClassificationExample";}
+  virtual String getContentClassName() const
+    {return T("ClassificationExample");}
 
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    std::string label;
-    if (!TextObjectParser::parse(columns[0], label))
-      return false;
+    String label = columns[0];
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;

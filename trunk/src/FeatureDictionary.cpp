@@ -19,7 +19,7 @@ bool StringDictionary::exists(size_t index) const
   return index < indexToString.size();
 }
 
-int StringDictionary::getIndex(const std::string& str) const
+int StringDictionary::getIndex(const String& str) const
 {
   StringToIndexMap::const_iterator it = stringToIndex.find(str);
   if (it == stringToIndex.end())
@@ -28,7 +28,7 @@ int StringDictionary::getIndex(const std::string& str) const
     return (size_t)it->second;
 }
 
-size_t StringDictionary::add(const std::string& str)
+size_t StringDictionary::add(const String& str)
 {
   StringToIndexMap::iterator it = stringToIndex.find(str);
   if (it == stringToIndex.end())
@@ -43,9 +43,9 @@ size_t StringDictionary::add(const std::string& str)
     return it->second;
 }
 
-std::string StringDictionary::getString(size_t index) const
+String StringDictionary::getString(size_t index) const
 {
-  if (index >= indexToString.size() || indexToString[index] == "")
+  if (index >= indexToString.size() || indexToString[index] == T(""))
     return lbcpp::toString(index);
   else
     return indexToString[index];
@@ -75,7 +75,7 @@ namespace lbcpp
     ostr << "[";
     for (size_t i = 0; i < strings.indexToString.size(); ++i)
     {
-      ostr << strings.indexToString[i]; // << " [" << i << "]";
+      ostr << (const char* )strings.indexToString[i]; // << " [" << i << "]";
       if (i < strings.indexToString.size() - 1)
         ostr << ", ";
     }
@@ -104,7 +104,7 @@ public:
   virtual int getInteger(size_t rowNumber, size_t columnNumber) const
     {assert(columnNumber == 0); return (int)rowNumber;}
   
-  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+  virtual String getString(size_t rowNumber, size_t columnNumber) const
     {assert(columnNumber == 1); return dictionary->getString(rowNumber);}
   
 private:
@@ -120,13 +120,13 @@ TablePtr StringDictionary::toTable() const
 /*
 ** FeatureDictionary
 */
-FeatureDictionary::FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes)
+FeatureDictionary::FeatureDictionary(const String& name, StringDictionaryPtr features, StringDictionaryPtr scopes)
   : name(name), featuresDictionary(features), scopesDictionary(scopes)
 {
 //  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
-FeatureDictionary::FeatureDictionary(const std::string& name)
+FeatureDictionary::FeatureDictionary(const String& name)
   : name(name), featuresDictionary(new StringDictionary()), scopesDictionary(new StringDictionary())
 {
 //  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
@@ -175,15 +175,15 @@ bool FeatureDictionary::checkEquals(FeatureDictionaryPtr otherDictionary) const
   return true;
 }
 
-inline std::string indentSpaces(size_t indent)
+inline String indentSpaces(size_t indent)
 {
-  std::string res;
+  String res;
   for (size_t i = 0; i < indent; ++i)
     res += "  ";
   return res;
 }
 
-void FeatureDictionary::toStringRec(size_t indent, std::string& res) const
+void FeatureDictionary::toStringRec(size_t indent, String& res) const
 {
   if (featuresDictionary)
     res += indentSpaces(indent) + "Features: " + lbcpp::toString(featuresDictionary) + "\n";
@@ -203,9 +203,9 @@ void FeatureDictionary::toStringRec(size_t indent, std::string& res) const
   }
 }
 
-std::string FeatureDictionary::toString() const
+String FeatureDictionary::toString() const
 {
-  std::string res;
+  String res;
   toStringRec(0, res);
   return res;
 }
@@ -261,7 +261,7 @@ public:
   
   virtual ObjectPtr loadNode(std::istream& istr) const
   {
-    std::string name;
+    String name;
     StringDictionaryPtr features, scopes;
     if (!read(istr, name) || !read(istr, features) || !read(istr, scopes))
       return ObjectPtr();
@@ -346,7 +346,7 @@ public:
   virtual size_t getNumRows() const
     {return features.size();}
 
-  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+  virtual String getString(size_t rowNumber, size_t columnNumber) const
   {
     assert(columnNumber <= 1);
     return columnNumber ? features[rowNumber].second : features[rowNumber].first;
@@ -354,12 +354,12 @@ public:
   
 private:
   TableHeaderPtr header;
-  std::vector< std::pair<std::string, std::string> > features;
+  std::vector< std::pair<String, String> > features;
   
- static std::string concatString(const std::string& str1, const std::string& str2)
-    {return str1.empty() ? str2 : str1 + "." + str2;}
+ static String concatString(const String& str1, const String& str2)
+    {return str1.isEmpty() ? str2 : str1 + "." + str2;}
   
-  void enumerateFeaturesRec(FeatureDictionaryPtr dictionary, const std::string& indexPrefix = "", const std::string& namePrefix = "")
+  void enumerateFeaturesRec(FeatureDictionaryPtr dictionary, const String& indexPrefix = "", const String& namePrefix = "")
   {
     StringDictionaryPtr f = dictionary->getFeatures();
     if (f)

@@ -17,13 +17,13 @@ namespace lbcpp
 class RegressionExamplesParser : public LearningDataObjectParser
 {
 public:
-  RegressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
-    : LearningDataObjectParser(filename, features) {}
+  RegressionExamplesParser(const File& file, FeatureDictionaryPtr features)
+    : LearningDataObjectParser(file, features) {}
 
-  virtual std::string getContentClassName() const
-    {return "RegressionExample";}
+  virtual String getContentClassName() const
+    {return T("RegressionExample");}
 
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
   {
     double y;
     if (!TextObjectParser::parse(columns[0], y))

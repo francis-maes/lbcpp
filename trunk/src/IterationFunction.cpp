@@ -23,7 +23,7 @@ public:
   virtual bool load(std::istream& istr)
     {return read(istr, value);}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return "ConstantIterationFunction(" + lbcpp::toString(value) + ")";}
     
 private:
@@ -48,7 +48,7 @@ public:
   virtual bool load(std::istream& istr)
     {return read(istr, initialValue) && read(istr, numberIterationsToReachHalfInitialValue);}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return "InvLinearIterationFunction(" + lbcpp::toString(initialValue) + 
        ", " + lbcpp::toString(numberIterationsToReachHalfInitialValue) + ")";}
 

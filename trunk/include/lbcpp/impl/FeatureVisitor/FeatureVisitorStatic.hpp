@@ -38,7 +38,7 @@ struct FeatureVisitor : public Object<ExactType>
   }
 
   // conversion functions
-  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const std::string& scopeName)
+  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const String& scopeName)
     {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName));}
     
   bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const char* scopeName)
@@ -47,7 +47,7 @@ struct FeatureVisitor : public Object<ExactType>
   bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
     {return _this().featureEnter(dictionary, number);}
   
-  void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, const std::string& featureName, double value = 1.0)
+  void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, const String& featureName, double value = 1.0)
     {_this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
     
   void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, const char* featureName, double value = 1.0)

@@ -17,7 +17,7 @@ namespace lbcpp
 class RPropOptimizer : public VectorOptimizer
 {
 public:
-  virtual std::string toString() const
+  virtual String toString() const
     {return "RPropOptimizer";}
 
   virtual bool initialize()

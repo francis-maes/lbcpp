@@ -16,12 +16,12 @@ extern void declareLBCppCoreClasses();
 class ObjectFactory
 {
 public:
-  void declare(const std::string& className, Object::Constructor constructor)
+  void declare(const String& className, Object::Constructor constructor)
   {
-    if (className.empty())
-      Object::error("Object::declare", "Empty class name");
+    if (className.isEmpty())
+      Object::error(T("Object::declare"), T("Empty class name"));
     else if (constructors.find(className) != constructors.end())
-      Object::error("Object::declare", "Class '" + className + "' is already declared.");
+      Object::error(T("Object::declare"), T("Class '") + className + T("' is already declared."));
     else
     {
       //std::cout << "Object::declare " << className << std::endl;
@@ -29,19 +29,19 @@ public:
     }
   }
 
-  Object* create(const std::string& className)
+  Object* create(const String& className)
   {
     if (!constructors.size())
       declareLBCppCoreClasses();
-    if (className.empty())
+    if (className.isEmpty())
     {
-      Object::error("Object::create", "Empty class name");
+      Object::error(T("Object::create"), T("Empty class name"));
       return NULL;
     }
     ObjectConstructorMap::const_iterator it = constructors.find(className);
     if (it == constructors.end())
     {
-      Object::error("Object::create", "Could not find class '" + className + "'");
+      Object::error(T("Object::create"), T("Could not find class '") + className + T("'"));
       return NULL;
     }
     Object* res = it->second();
@@ -50,7 +50,7 @@ public:
   }
 
 private:
-  typedef std::map<std::string, Object::Constructor> ObjectConstructorMap;
+  typedef std::map<String, Object::Constructor> ObjectConstructorMap;
 
   ObjectConstructorMap constructors;
 };
@@ -61,40 +61,40 @@ inline ObjectFactory& getObjectFactoryInstance()
   return instance;
 }
 
-void Object::declare(const std::string& className, Constructor constructor)
+void Object::declare(const String& className, Constructor constructor)
   {getObjectFactoryInstance().declare(className, constructor);}
 
-Object* Object::create(const std::string& className)
+Object* Object::create(const String& className)
   {return getObjectFactoryInstance().create(className);}
 
 ObjectPtr Object::loadFromStream(std::istream& istr)
 {
-  std::string className;
+  String className;
   if (!read(istr, className))
   {
-    error("Object::create", "Could not read class name");
+    error(T("Object::create"), T("Could not read class name"));
     return ObjectPtr();
   }
-  if (className == "__null__")
+  if (className == T("__null__"))
     return ObjectPtr();
   ObjectPtr res(create(className));
   if (res && !res->load(istr))
-    error("Object::create", "Could not load object of class '" + className + "'");
+    error(T("Object::create"), T("Could not load object of class ") + className);
   return res;
 }
 
-ObjectPtr Object::loadFromFile(const std::string& fileName)
+ObjectPtr Object::loadFromFile(const File& file)
 {
-  std::ifstream istr(fileName.c_str(), std::ios::binary);
+  std::ifstream istr((const char* )file.getFullPathName(), std::ios::binary);
   if (!istr.is_open())
   {
-    error("Object::createFromFile", "Could not open file '" + fileName + "'");
+    error(T("Object::createFromFile"), T("Could not open file ") + file.getFullPathName());
     return ObjectPtr();
   }
   return loadFromStream(istr);
 }
 
-std::string Object::getClassName() const
+String Object::getClassName() const
 {
   return lbcpp::toString(typeid(*this));
 }
@@ -105,12 +105,12 @@ void Object::saveToStream(std::ostream& ostr) const
   save(ostr);
 }
 
-bool Object::saveToFile(const std::string& fileName) const
+bool Object::saveToFile(const File& file) const
 {
-  std::ofstream ostr(fileName.c_str());
+  std::ofstream ostr((const char* )file.getFullPathName());
   if (!ostr.is_open())
   {
-    error("Object::saveToFile", "Could not open file '" + fileName + "'");
+    error(T("Object::saveToFile"), T("Could not open file ") + file.getFullPathName());
     return false;
   }
   saveToStream(ostr);

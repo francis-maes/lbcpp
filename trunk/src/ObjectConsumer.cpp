@@ -41,20 +41,20 @@ void ObjectConsumer::consume(ObjectContainerPtr container)
 TextObjectPrinter::TextObjectPrinter(std::ostream* newOutputStream)
   : ostr(newOutputStream) {}
     
-TextObjectPrinter::TextObjectPrinter(const std::string& filename)
+TextObjectPrinter::TextObjectPrinter(const File& file)
   : ostr(NULL)
 {
-  if (filename.empty())
+  if (file == File::nonexistent)
   {
-    Object::error("TextObjectPrinter::TextObjectPrinter", "No filename specified");
+    Object::error(T("TextObjectPrinter::TextObjectPrinter"), T("No filename specified"));
     return;
   }
-  std::ofstream* ostr = new std::ofstream(filename.c_str());
+  std::ofstream* ostr = new std::ofstream((const char* )file.getFullPathName());
   if (ostr->is_open())
     this->ostr = ostr;
   else
   {
-    Object::error("TextObjectPrinter::TextObjectPrinter", "Could not open file '" + filename + "'");
+    Object::error(T("TextObjectPrinter::TextObjectPrinter"), T("Could not open file ") + file.getFullPathName());
     delete ostr;
   }
 }
@@ -69,14 +69,14 @@ struct WriteFeatureListVisitor : public PathBasedFeatureVisitor
   std::ostream& ostr;
   bool isFirst;
   
-  virtual void featureSense(const std::vector<size_t>& path, const std::string& name, double value)
+  virtual void featureSense(const std::vector<size_t>& path, const String& name, double value)
   {
     if (isFirst)
       isFirst = false;
     else
       ostr << " ";
     if (value)
-      ostr << name << ":" << value;
+      ostr << (const char* )name << ":" << value;
   }
 };
 
@@ -89,8 +89,8 @@ void LearningDataObjectPrinter::printFeatureList(FeatureGeneratorPtr features)
 class ClassificationExamplesPrinter : public LearningDataObjectPrinter
 {
 public:
-  ClassificationExamplesPrinter(const std::string& filename, StringDictionaryPtr labels)
-    : LearningDataObjectPrinter(filename), labels(labels) {}
+  ClassificationExamplesPrinter(const File& file, StringDictionaryPtr labels)
+    : LearningDataObjectPrinter(file), labels(labels) {}
   
   virtual void consume(ObjectPtr object)
   {
@@ -105,8 +105,8 @@ private:
   StringDictionaryPtr labels;
 };
 
-ObjectConsumerPtr lbcpp::classificationExamplesPrinter(const std::string& filename, StringDictionaryPtr labels)
+ObjectConsumerPtr lbcpp::classificationExamplesPrinter(const File& file, StringDictionaryPtr labels)
 {
   assert(labels);
-  return new ClassificationExamplesPrinter(filename, labels);
+  return new ClassificationExamplesPrinter(file, labels);
 }

@@ -44,7 +44,7 @@ class TextObjectPrinter : public ObjectConsumer
 {
 public:
   TextObjectPrinter(std::ostream* newOutputStream);
-  TextObjectPrinter(const std::string& filename);
+  TextObjectPrinter(const File& file);
 
   virtual ~TextObjectPrinter()
     {if (ostr) delete ostr;}
@@ -55,15 +55,15 @@ protected:
   void printNewLine()
     {if (ostr) (*ostr) << "\n";}
     
-  void print(const std::string& str)
-    {if (ostr) (*ostr) << str;}    
+  void print(const String& str)
+    {if (ostr) (*ostr) << (const char* )str;}    
 };
 
 class LearningDataObjectPrinter : public TextObjectPrinter
 {
 protected:
-  LearningDataObjectPrinter(const std::string& filename)
-    : TextObjectPrinter(filename) {}
+  LearningDataObjectPrinter(const File& file)
+    : TextObjectPrinter(file) {}
 
   LearningDataObjectPrinter(std::ostream* newOutputStream)
     : TextObjectPrinter(newOutputStream) {}
@@ -71,7 +71,7 @@ protected:
   void printFeatureList(FeatureGeneratorPtr features);
 };
 
-extern ObjectConsumerPtr classificationExamplesPrinter(const std::string& filename, StringDictionaryPtr labels);
+extern ObjectConsumerPtr classificationExamplesPrinter(const File& file, StringDictionaryPtr labels);
 
 }; /* namespace lbcpp */
 

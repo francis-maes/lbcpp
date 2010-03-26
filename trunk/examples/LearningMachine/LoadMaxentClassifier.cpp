@@ -14,21 +14,23 @@ int main(int argc, char* argv[])
   /*
   ** Load a Classifier from file "classifier.model"
   */
-  ClassifierPtr classifier = loadClassifier("classifier.model");
+  ClassifierPtr classifier = loadClassifier(File::getCurrentWorkingDirectory().getChildFile("classifier.model"));
   assert(classifier);
+
+  File dataDirectory = File::getCurrentWorkingDirectory().getChildFile("../Data/Classification");
 
   /*
   ** Evaluate training accuracy
   */
   double accuracy = classifier->evaluateAccuracy(
-    classificationExamplesParser("../Data/Classification/small.train", classifier->getInputDictionary(), classifier->getLabels()));
+    classificationExamplesParser(dataDirectory.getChildFile("small.train"), classifier->getInputDictionary(), classifier->getLabels()));
   std::cout << "Training Accuracy: " << accuracy * 100 << "%." << std::endl;
 
   /*
   ** Evaluate testing accuracy
   */
   accuracy = classifier->evaluateAccuracy(
-    classificationExamplesParser("../Data/Classification/small.test", classifier->getInputDictionary(), classifier->getLabels()));
+    classificationExamplesParser(dataDirectory.getChildFile("small.test"), classifier->getInputDictionary(), classifier->getLabels()));
   std::cout << "Testing Accuracy: " << accuracy * 100 << "%." << std::endl;
   return 0;
 }

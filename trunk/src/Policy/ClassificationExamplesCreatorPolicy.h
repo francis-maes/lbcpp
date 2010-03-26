@@ -25,9 +25,9 @@ public:
   /*
   ** Object
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res = "classificationExamplesCreatorPolicy(" + decorated->toString() + ", " + classifier->toString();
+    String res = "classificationExamplesCreatorPolicy(" + decorated->toString() + ", " + classifier->toString();
     if (supervisor)
       res += ", " + supervisor->toString();
     return res + ")";
@@ -64,7 +64,7 @@ public:
   virtual VariablePtr policyChoose(ChoosePtr choose)
   {
     // this policy can only be used with size_t choices
-    if (choose->getChoiceType() == "size_t")
+    if (choose->getChoiceType() == T("size_t"))
     {
       FeatureGeneratorPtr stateFeatures = choose->computeStateFeatures();
       assert(stateFeatures);

@@ -50,7 +50,7 @@ bool ObjectStream::iterate(size_t maximumCount)
   return true;
 }
 
-bool ObjectStream::checkContentClassName(const std::string& expectedClassName) const
+bool ObjectStream::checkContentClassName(const String& expectedClassName) const
 {
   if (getContentClassName() != expectedClassName)
   {
@@ -67,7 +67,7 @@ public:
   ApplyFunctionObjectStream(ObjectStreamPtr stream, ObjectFunctionPtr function)
     : stream(stream), function(function) {}
     
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return function->getOutputClassName(stream->getContentClassName());}
 
   virtual bool isValid() const
@@ -95,20 +95,20 @@ ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
 TextObjectParser::TextObjectParser(std::istream* newInputStream)
   : istr(newInputStream) {}
     
-TextObjectParser::TextObjectParser(const std::string& filename)
+TextObjectParser::TextObjectParser(const File& file)
   : istr(NULL)
 {
-  if (filename.empty())
+  if (file == File::nonexistent)
   {
-    Object::error("TextObjectParser::parseFile", "No filename specified");
+    Object::error(T("TextObjectParser::parseFile"), T("No filename specified"));
     return;
   }
-  std::ifstream* istr = new std::ifstream(filename.c_str());
+  std::ifstream* istr = new std::ifstream((const char* )file.getFullPathName());
   if (istr->is_open())
     this->istr = istr;
   else
   {
-    Object::error("TextObjectParser::parseFile", "Could not open file '" + filename + "'");
+    Object::error(T("TextObjectParser::parseFile"), T("Could not open file ") + file.getFullPathName());
     delete istr;
   }
 }
@@ -119,17 +119,25 @@ TextObjectParser::~TextObjectParser()
     delete istr;
 }
  
-void TextObjectParser::tokenize(const std::string& line, std::vector< std::string >& columns, const char* separators)
+inline int indexOfAnyNotOf(const String& str, const String& characters, int startPosition = 0)
 {
-  size_t b = line.find_first_not_of(separators);
-  while (b != std::string::npos)
+  for (int i = startPosition; i < str.length(); ++i)
+    if (characters.indexOfChar(str[i]) < 0)
+      return i;
+  return -1;
+}
+ 
+void TextObjectParser::tokenize(const String& line, std::vector<String>& columns, const juce::tchar* separators)
+{
+  int b = indexOfAnyNotOf(line, separators);
+  while (b >= 0)
   {
-    size_t e = line.find_first_of(separators, b);
-    if (e == std::string::npos)
-      columns.push_back(line.substr(b));
+    int e = line.indexOfAnyOf(separators, b);
+    if (e < 0)
+      columns.push_back(line.substring(b));
     else
-      columns.push_back(line.substr(b, e - b));
-    b = line.find_first_not_of(separators, e);
+      columns.push_back(line.substring(b, e));
+    b = indexOfAnyNotOf(line, separators, e);
   }
 }
 
@@ -146,14 +154,15 @@ ObjectPtr TextObjectParser::next()
   
   while (!istr->eof()/* && !parsingBreaked*/)
   {
-    std::string line;
-    std::getline(*istr, line);
-    size_t n = line.find_last_not_of("\r\n");
+    std::string l;
+    std::getline(*istr, l);
+    size_t n = l.find_last_not_of("\r\n");
     if (n != std::string::npos)
-      line = line.substr(0, n + 1);
+      l = l.substr(0, n + 1);
+    String line = l.c_str();
     if (!parseLine(line))
     {
-      Object::error("TextParserObjectStream::parse", "Could not parse line '" + line + "'");
+      Object::error(T("TextParserObjectStream::parse"), T("Could not parse line '") + line + T("'"));
       delete istr;
       istr = NULL;
       return ObjectPtr();
@@ -163,7 +172,7 @@ ObjectPtr TextObjectParser::next()
   }
   
   if (!parseEnd())
-    Object::error("TextObjectParser::next", "Error in parse end");
+    Object::error(T("TextObjectParser::next"), T("Error in parse end"));
   delete istr;
   istr = NULL;
   return ObjectPtr();
@@ -172,30 +181,30 @@ ObjectPtr TextObjectParser::next()
 /*
 ** LearningDataObjectParser
 */
-bool LearningDataObjectParser::parseLine(const std::string& line)
+bool LearningDataObjectParser::parseLine(const String& line)
 {
-  size_t begin = line.find_first_not_of(" \t");
-  bool isEmpty = begin == std::string::npos;
+  int begin = indexOfAnyNotOf(line, T(" \t"));
+  bool isEmpty = begin < 0;
   if (isEmpty)
     return parseEmptyLine();
   if (line[begin] == '#')
-    return parseCommentLine(line.substr(begin + 1));
-  std::vector<std::string> columns;
+    return parseCommentLine(line.substring(begin + 1));
+  std::vector<String> columns;
   tokenize(line, columns);
   return parseDataLine(columns);
 }
 
-bool LearningDataObjectParser::parseFeatureList(const std::vector<std::string>& columns, size_t firstColumn, SparseVectorPtr& res)
+bool LearningDataObjectParser::parseFeatureList(const std::vector<String>& columns, size_t firstColumn, SparseVectorPtr& res)
 {
   assert(features);
   res = new SparseVector(features);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
-    std::string identifier;
+    String identifier;
     double value;
     if (!parseFeature(columns[i], identifier, value))
       return false;
-    std::vector<std::string> path;
+    std::vector<String> path;
     if (!parseFeatureIdentifier(identifier, path))
       return false;
     res->set(path, value);
@@ -203,10 +212,10 @@ bool LearningDataObjectParser::parseFeatureList(const std::vector<std::string>& 
   return true;
 }
 
-bool LearningDataObjectParser::parseFeature(const std::string& str, std::string& featureId, double& featureValue)
+bool LearningDataObjectParser::parseFeature(const String& str, String& featureId, double& featureValue)
 {
-  size_t n = str.find(':');
-  if (n == std::string::npos)
+  int n = str.indexOfChar(':');
+  if (n < 0)
   {
     featureId = str;
     featureValue = 1.0;
@@ -214,30 +223,30 @@ bool LearningDataObjectParser::parseFeature(const std::string& str, std::string&
   }
   else
   {
-    featureId = str.substr(0, n);
-    std::string featureStringValue = str.substr(n + 1);
+    featureId = str.substring(0, n);
+    String featureStringValue = str.substring(n + 1);
     return TextObjectParser::parse(featureStringValue, featureValue);
   }
 }
 
-bool LearningDataObjectParser::parseFeatureIdentifier(const std::string& identifier, std::vector<std::string>& path)
+bool LearningDataObjectParser::parseFeatureIdentifier(const String& identifier, std::vector<String>& path)
 {
-  tokenize(identifier, path, ".");
+  tokenize(identifier, path, T("."));
   return true;
 }
 
 
 ObjectStreamPtr lbcpp::classificationExamplesParser(
-          const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+          const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
 {
   assert(features && labels);
-  return new ClassificationExamplesParser(filename, features, labels);
+  return new ClassificationExamplesParser(file, features, labels);
 }
 
-ObjectStreamPtr lbcpp::regressionExamplesParser(const std::string& filename, FeatureDictionaryPtr features)
+ObjectStreamPtr lbcpp::regressionExamplesParser(const File& file, FeatureDictionaryPtr features)
 {
   assert(features);
-  return new RegressionExamplesParser(filename, features);
+  return new RegressionExamplesParser(file, features);
 }
 
 ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses)

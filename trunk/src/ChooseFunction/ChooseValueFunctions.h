@@ -17,7 +17,7 @@ namespace lbcpp
 class ChooseStateValueFunction : public StateValueFunction
 {
 public:
-  virtual std::string toString() const
+  virtual String toString() const
     {return "chooseStateValues()";}
     
   virtual void setChoose(ChoosePtr choose)
@@ -33,7 +33,7 @@ private:
 class ChooseActionValueFunction : public ActionValueFunction
 {
 public:
-  virtual std::string toString() const
+  virtual String toString() const
     {return "chooseActionValues()";}
     
   virtual void setChoose(ChoosePtr choose)

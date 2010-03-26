@@ -76,7 +76,7 @@ bool Policy::run(ObjectContainerPtr crAlgorithms, PolicyStatisticsPtr statistics
   return true;
 }
 
-ObjectPtr Policy::getResultWithName(const std::string& name) const
+ObjectPtr Policy::getResultWithName(const String& name) const
 {
   for (size_t i = 0; i < getNumResults(); ++i)
   {
@@ -191,7 +191,7 @@ PolicyStatistics::PolicyStatistics()
 {
 }
 
-std::string PolicyStatistics::toString() const
+String PolicyStatistics::toString() const
 {
   return "reward/choose:   " + rewardPerChoose->toString() + "\n" +
          "choices/choose:  " + choicesPerChoose->toString() + "\n" +

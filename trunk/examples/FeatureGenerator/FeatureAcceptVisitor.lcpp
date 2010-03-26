@@ -10,7 +10,7 @@ using namespace lbcpp;
 featureGenerator nRandomFeatures(size_t n)
 {
   for (size_t i = 0; i < n; ++i)
-    featureSense(i, Random::getInstance().sampleDouble());
+    featureSense(i, RandomGenerator::getInstance().sampleDouble());
 }
 
 featureGenerator myFeatureGenerator()

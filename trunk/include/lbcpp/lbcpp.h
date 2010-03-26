@@ -27,7 +27,7 @@
 #ifndef LBCPP_LBCPP_H_
 # define LBCPP_LBCPP_H_
 
-# include "Random.h"
+# include "RandomGenerator.h"
 
 # include "Traits.h"
 # include "ContainerTraits.h"

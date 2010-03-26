@@ -62,7 +62,7 @@ crAlgorithm LabelSequencePtr crIterativeClassification(LabeledContentGraphPtr gr
   {
     // label each node in a randomly sampled order
     std::vector<size_t> order;
-    Random::getInstance().sampleOrder(foldBegin, foldEnd, order);
+    RandomGenerator::getInstance().sampleOrder(foldBegin, foldEnd, order);
     for (size_t j = 0; j < order.size(); ++j)
     {
       currentNode = order[j];
