@@ -302,7 +302,7 @@ public:
   virtual void mouseWheelMove(const MouseEvent& e, float wheelIncrementX, float wheelIncrementY)
   {
     if (wheelIncrementY)
-      pixelsPerUnit *= jlimit(0.00001f, 10000.f, pow(2, wheelIncrementY));
+      pixelsPerUnit *= jlimit(0.00001f, 10000.f, powf(2.f, wheelIncrementY));
   }
   
 protected:
