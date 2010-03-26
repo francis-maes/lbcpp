@@ -8,7 +8,7 @@
 namespace lbcpp
 {
 
-class AminoAcid : public Object
+class AminoAcid
 {
 public:
   enum Type
@@ -44,31 +44,54 @@ public:
     unknown
   };
 
+  enum
+  {
+    numAminoAcids = 20,
+    numAmbiguousAminoAcids = 4
+  };
+
+  /*
+  ** Constructors
+  */
   AminoAcid(const AminoAcid& aa)
     : type(aa.type) {}
     
+  AminoAcid(const String& code);
   AminoAcid(const Type& type = unknown)
     : type(type) {}
   
+  /*
+  ** Type
+  */
   Type getType() const
     {return type;}
-    
-  juce::tchar getOneLetterCode() const
-  {
-    static const String codes = T("ARNDCEQGHILKMFPSTWYVBZJX");
-    jassert(type >= 0 && type <= unknown);
-    jassert(codes.length() == (int)unknown + 1);
-    return codes[type];
-  }
-    
-  // TODO: properties: one-letter code, three-letter code, hydrophoby, polarity, side chain, ....
-  
+
+  bool isAmbiguous() const
+    {return type >= asparagineOrAsparticAcid;}
+
+  bool isNonAmbiguous() const
+    {return !isAmbiguous();}
+
+  /*
+  ** One letter code
+  */
+  static const String oneLetterCodes;
+  static Type getTypeFromOneLetterCode(juce::tchar c);
+
+  juce::tchar getOneLetterCode() const;
+     
+  /*
+  ** Comparison operators
+  */
   bool operator ==(const AminoAcid& aa) const
     {return type == aa.type;}
     
   bool operator !=(const AminoAcid& aa) const
     {return type != aa.type;}
     
+  operator Type() const
+    {return type;}
+
 private:
   Type type;
 };

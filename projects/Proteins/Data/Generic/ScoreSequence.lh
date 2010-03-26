@@ -1,17 +1,49 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LabelSequence.lh               | Label Sequence                  |
+| Filename: ScoreSequence.lh               | Score Sequence                  |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/03/2010 12:32               |                                 |
+| Started : 26/03/2010 18:51               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef DATA_GENERIC_LABEL_SEQUENCE_H_
-# define DATA_GENERIC_LABEL_SEQUENCE_H_
+#include "Sequence.lh"
 
 namespace lbcpp
 {
 
-}; /* namespace lbcpp */
+class ScoreSequence : public Sequence
+{
+public:
+  /*
+  ** Sequence
+  */
+  virtual size_t getLength() const
+    {return sequence.size();}
 
-#endif // !DATA_GENERIC_LABEL_SEQUENCE_H_
+  virtual void setLength(size_t newLength, bool clearPreviousContent = true)
+    {sequence.resize(newLength, 0.0);}
+
+  virtual String elementToString(size_t position) const
+    {return String(getScore(position));}
+
+  /*
+  ** ScoreSequence
+  */
+  double getScore(size_t position) const
+    {jassert(position < sequence.size()); return sequence[position];}
+  
+  void setScore(size_t position, double value)
+    {jassert(position < sequence.size()); sequence[position] = value;}
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequence);}
+  
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, sequence);}
+
+private:
+  std::vector<double> sequence;
+};
+
+}; /* namespace lbcpp */

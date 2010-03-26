@@ -14,14 +14,8 @@ namespace lbcpp
 class AminoAcidSequence : public LabelSequence
 {
 public:
-  virtual String toString() const // FASTA format
-  {
-    String res = T("> ") + name + T("\n");
-    for (size_t i = 0; i < sequence.size(); ++i)
-      res += getAminoAcid(i).getOneLetterCode();
-    res += T("\n");
-    return res;
-  }
+  virtual String elementToString(size_t position) const
+    {String res; res += getAminoAcid(position).getOneLetterCode(); return res;}
     
   AminoAcid getAminoAcid(size_t position) const
   {
@@ -31,23 +25,8 @@ public:
     
   void setAminoAcid(size_t position, const AminoAcid& aa)
     {setLabel(position, (int)aa.getType());}
-
-protected:
-  virtual bool load(InputStream& istr)
-  {
-    return lbcpp::read(istr, name) && 
-           lbcpp::read(istr, sequence);
-  }
-  
-  virtual void save(OutputStream& ostr) const
-  {
-    lbcpp::write(ostr, name);
-    lbcpp::write(ostr, sequence);
-  }
-
-private:
-  String name;
-  std::vector<char> sequence;
 };
+
+typedef ReferenceCountedObjectPtr<AminoAcidSequence> AminoAcidSequencePtr;
 
 }; /* namespace lbcpp */

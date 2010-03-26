@@ -1,0 +1,71 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ScoreVectorSequence.lh         | Score Vector Sequence           |
+| Author  : Francis Maes                   |                                 |
+| Started : 26/03/2010 18:04               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "Sequence.lh"
+
+namespace lbcpp
+{
+
+class ScoreVectorSequence : public Sequence
+{
+public:
+  ScoreVectorSequence() : length(0) {}
+
+  virtual size_t getNumScores() const = 0;
+
+  virtual size_t getLength() const
+    {return length;}
+
+  virtual void setLength(size_t newLength, bool clearPreviousContent = true)
+  {
+    if (clearPreviousContent)
+    {
+      matrix.clear();
+      length = newLength;
+      numScores = getNumScores();
+      if (length && numScores)
+        matrix.resize(length * numScores, 0.0);
+    }
+    else
+    {
+      // not implemented yet
+      jassert(false);
+    }
+  }
+
+  virtual String elementToString(size_t position) const
+  {
+    String res;
+    for (size_t i = 0; i < numScores; ++i)
+    {
+      if (res.isNotEmpty())
+        res += T(", ");
+      res += String(getScore(position, i));
+    }
+    return res + T("\n");
+  }
+
+protected:
+  size_t length, numScores;
+  std::vector<double> matrix;
+
+  size_t getIndex(size_t position, size_t scoreIndex) const
+  {
+    jassert(position < length);
+    jassert(scoreIndex < numScores);
+    return scoreIndex + position * numScores;
+  }
+
+  double getScore(size_t position, size_t scoreIndex) const
+    {return matrix[getIndex(position, scoreIndex)];}
+
+  double& getScore(size_t position, size_t scoreIndex)
+    {return matrix[getIndex(position, scoreIndex)];}
+};
+
+}; /* namespace lbcpp */

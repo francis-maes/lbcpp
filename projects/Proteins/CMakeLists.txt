@@ -4,13 +4,15 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(PROTEINS_DATA_GENERIC
+  Data/Generic/Sequence.lh
   Data/Generic/LabelSequence.lh
   Data/Generic/ScoreSequence.lh
-  Data/Generic/VectorSequence.lh
+  Data/Generic/ScoreVectorSequence.lh
 )
 
 SET(PROTEINS_DATA_BIO
   Data/Bio/AminoAcid.lh
+  Data/Bio/AminoAcid.lcpp
   Data/Bio/AminoAcidSequence.lh
   Data/Bio/PositionSpecificScoringMatrix.lh
   Data/Bio/SecondaryStructureSequence.lh
