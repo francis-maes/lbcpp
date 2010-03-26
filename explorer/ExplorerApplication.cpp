@@ -26,10 +26,10 @@ class ExplorerErrorHandler : public ErrorHandler
 {
 public:
   virtual void errorMessage(const String& where, const String& what)
-    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Error in '") + where + T("'"), what);}
+    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, JUCE_T("Error in '") + where + JUCE_T("'"), what);}
   
   virtual void warningMessage(const String& where, const String& what)
-    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Warning in '") + where + T("'"), what);}
+    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, JUCE_T("Warning in '") + where + JUCE_T("'"), what);}
 
   juce_UseDebuggingNewOperator
 };

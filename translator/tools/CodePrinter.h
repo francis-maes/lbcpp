@@ -46,6 +46,9 @@ public:
       try
       {
         unsigned long line = inputBuffer->origin(ptr, this->sourceFilename);
+        for (size_t i = 0; i < sourceFilename.size(); ++i)
+          if (sourceFilename[i] == '\\')
+            sourceFilename[i] = '/';
         // we enter here as soon as we find the origin of ptr 
         
         // update chunks
