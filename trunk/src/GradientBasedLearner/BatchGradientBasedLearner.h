@@ -29,24 +29,24 @@ public:
   virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
   {
     Object::error("Batch::trainStochasticBegin", "This is not a stochastic learner");
-    assert(false);
+    jassert(false);
   }
 
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
     Object::error("Batch::trainStochasticExample", "This is not a stochastic learner");
-    assert(false);
+    jassert(false);
   }
   
   virtual void trainStochasticEnd()
   {
     Object::error("Batch::trainStochasticEnd", "This is not a stochastic learner");
-    assert(false);
+    jassert(false);
   }
 
   virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
   {
-    assert(parameters);
+    jassert(parameters);
     if (progress)
       progress->progressStart("BatchLearner::trainBatch");
     FeatureGeneratorPtr params = parameters;

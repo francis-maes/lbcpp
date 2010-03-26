@@ -72,7 +72,7 @@ FeatureGeneratorPtr Choose::computeStateFeatures() const
   
 FeatureGeneratorPtr Choose::computeActionFeatures(VariablePtr choice) const
 {
-  assert(choice);
+  jassert(choice);
   ActionFeaturesFunctionPtr f = getActionFeaturesFunction();
   if (f)
     return f->compute(choice);

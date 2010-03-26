@@ -20,7 +20,7 @@ template<class ExactType>
 struct ChooseFunction : public Object<ExactType>
 {
   void setChoose(ChoosePtr choose)
-    {assert(false);}
+    {jassert(false);}
 };
 
 /*
@@ -30,7 +30,7 @@ template<class ExactType>
 struct StateValueFunction : public ChooseFunction<ExactType>
 {
   double compute() const
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
 };
 
 template<class ExactType>
@@ -41,7 +41,7 @@ struct ActionValueFunction : public ChooseFunction<ExactType>
     {return ((const ExactType* )this)->computeDynamicType(Variable::create(choice));}
 
   double computeDynamicType(lbcpp::VariablePtr variable) const
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
 };
 
 template<class ExactType, class ChoiceType_>
@@ -50,7 +50,7 @@ struct TypedActionValueFunction : public ActionValueFunction<ExactType>
   typedef ChoiceType_ ChoiceType;
 
   double compute(const ChoiceType& choice) const
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
 
   double computeDynamicType(lbcpp::VariablePtr variable) const
     {return ((const ExactType* )this)->compute(variable->getConstReference<ChoiceType>());}
@@ -63,7 +63,7 @@ template<class ExactType>
 struct StateFeaturesFunction : public ChooseFunction<ExactType>
 {
   FeatureGeneratorPtr compute() const
-    {assert(false); return FeatureGeneratorPtr();}
+    {jassert(false); return FeatureGeneratorPtr();}
 };
 
 template<class ExactType, class ChoiceType_>
@@ -72,7 +72,7 @@ struct ActionFeaturesFunction : public ChooseFunction<ExactType>
   typedef ChoiceType_ ChoiceType;
 
   FeatureGeneratorPtr compute(const ChoiceType& choice) const
-    {assert(false); return FeatureGeneratorPtr();}
+    {jassert(false); return FeatureGeneratorPtr();}
 };
 
 /*
@@ -82,7 +82,7 @@ template<class ExactType>
 struct StateDescriptionFunction : public ChooseFunction<ExactType>
 {
   String compute() const
-    {assert(false); return "";}
+    {jassert(false); return "";}
 };
 
 template<class ExactType, class ChoiceType_>
@@ -91,7 +91,7 @@ struct ActionDescriptionFunction : public ChooseFunction<ExactType>
   typedef ChoiceType_ ChoiceType;
 
   String compute(const ChoiceType& choice) const
-    {assert(false); return "";}
+    {jassert(false); return "";}
 };
 
 
@@ -101,7 +101,7 @@ struct ActionDescriptionFunction : public ChooseFunction<ExactType>
 STATIC_TO_DYNAMIC_ABSTRACT_CLASS(ChooseFunction_, Object)
   virtual void setChoose(ChoosePtr choose)
   {
-    assert(choose);
+    jassert(choose);
     BaseClass::impl.setChoose(choose);
   }
 };
@@ -136,7 +136,7 @@ STATIC_TO_DYNAMIC_CLASS(ActionFeaturesFunction, ChooseFunction_)
     {typedef typename ImplementationType::FeatureGenerator FG; return FG::getDictionary();}
 
   virtual FeatureGeneratorPtr compute(VariablePtr choice) const
-    {assert(choice); return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
+    {jassert(choice); return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
 STATIC_TO_DYNAMIC_ENDCLASS_1(ActionFeaturesFunction);
 
 

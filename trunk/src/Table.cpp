@@ -28,7 +28,7 @@ String Table::toString(size_t rowNumber, size_t columnNumber) const
     return getString(rowNumber, columnNumber);
 
   default:
-    assert(false);
+    jassert(false);
     return "";
   };
 }

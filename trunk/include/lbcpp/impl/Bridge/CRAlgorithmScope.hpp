@@ -108,14 +108,14 @@ private:
   static const T_exact* cast(const CRAlgorithmScope& c)
   {
     const T_exact* res = dynamic_cast<const T_exact* >(&c);
-    assert(res); // todo: error message
+    jassert(res); // todo: error message
     return res;
   }
 
   static T_exact* cast(CRAlgorithmScope& c)
   {
     T_exact* res = dynamic_cast<T_exact* >(&c);
-    assert(res); // todo: error message
+    jassert(res); // todo: error message
     return res;
   }
 };
@@ -133,7 +133,7 @@ public:
 
 template<class T_impl>
 inline CRAlgorithmScopePtr staticToDynamicCRAlgorithmScope(T_impl* impl)
-  {assert(impl); return CRAlgorithmScopePtr(new StaticToDynamicCRAlgorithmScope<T_impl>(new T_impl(*impl)));}
+  {jassert(impl); return CRAlgorithmScopePtr(new StaticToDynamicCRAlgorithmScope<T_impl>(new T_impl(*impl)));}
 
 }; /* namespace lbcpp */
 

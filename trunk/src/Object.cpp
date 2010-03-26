@@ -45,7 +45,7 @@ public:
       return NULL;
     }
     Object* res = it->second();
-    assert(res);
+    jassert(res);
     return res;
   }
 

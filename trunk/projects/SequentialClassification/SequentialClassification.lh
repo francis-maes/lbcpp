@@ -92,7 +92,7 @@ crAlgorithm size_t sequentialClassification(FeatureGeneratorPtr compositeFeature
     {
       SparseVectorPtr newFeatures;
 
-      assert(unusedFeatureGenerators.find(c.second) != unusedFeatureGenerators.end());
+      jassert(unusedFeatureGenerators.find(c.second) != unusedFeatureGenerators.end());
 
       unusedFeatureGenerators.erase(c.second);
 

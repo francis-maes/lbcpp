@@ -172,25 +172,25 @@ void testAllAlgorithms( const std::vector<LabeledContentGraphPtr>& trainGraphs,
 
   StackedGraphLabelingAlgorithm stacked2(&contentOnly);
   testAlgorithm(stacked2, "STACK2", trainGraphs, testGraphs, profile);
-  assert(&stacked2.getBaseAlgorithm() == &contentOnly);
+  jassert(&stacked2.getBaseAlgorithm() == &contentOnly);
 
   StackedGraphLabelingAlgorithm stacked3(&stacked2);
-  assert(&stacked3.getBaseAlgorithm() == &stacked2);
+  jassert(&stacked3.getBaseAlgorithm() == &stacked2);
   testAlgorithm(stacked3, "STACK3", trainGraphs, testGraphs, profile);
 
 /*  StackedGraphLabelingAlgorithm stacked4(&stacked3);
-  assert(&stacked4.getBaseAlgorithm() == &stacked3);
+  jassert(&stacked4.getBaseAlgorithm() == &stacked3);
   testAlgorithm(stacked4, "STACK4", trainGraphs, testGraphs, profile);
 
   StackedGraphLabelingAlgorithm stacked5(&stacked4);
-  assert(&stacked5.getBaseAlgorithm() == &stacked4);
+  jassert(&stacked5.getBaseAlgorithm() == &stacked4);
   testAlgorithm(stacked5, "STACK5", trainGraphs, testGraphs, profile);*/
 }
 
 void displayFolds(const std::vector<LabeledContentGraphPtr>& trainGraphs,
                   const std::vector<LabeledContentGraph::LabelsFold>& testGraphs)
 {
-  assert(trainGraphs.size() == testGraphs.size());
+  jassert(trainGraphs.size() == testGraphs.size());
   for (size_t i = 0; i < trainGraphs.size(); ++i)
   {
     std::cout << "Fold " << i << ": "
@@ -226,7 +226,7 @@ public:
     FeatureMap::const_iterator it = m.find(path);
     if (it == m.end())
     {
-      assert(dictionary->getFeatures()->getIndex(flatName) < 0);
+      jassert(dictionary->getFeatures()->getIndex(flatName) < 0);
       return (m[path] = dictionary->getFeatures()->add(flatName));
     }
     else
@@ -254,7 +254,7 @@ public:
     virtual ObjectPtr function(ObjectPtr object) const
     {
       FeatureGeneratorPtr featureGenerator = object.dynamicCast<FeatureGenerator>();
-      assert(featureGenerator);
+      jassert(featureGenerator);
       return map.toFlatVector(featureGenerator);
     }
   };
@@ -292,7 +292,7 @@ public:
   
   void addToGraph(LabeledContentGraphPtr graph, size_t inputHalfWindowSize = 0, int markovOrder = 1)
   {
-    assert(content.size() == labels.size());
+    jassert(content.size() == labels.size());
     ContentGraphPtr contentGraph = graph->getContentGraph();
     LabelSequencePtr graphLabels = graph->getLabels();
     size_t startNodeIndex = contentGraph->getNumNodes();
@@ -329,7 +329,7 @@ public:
 
   virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    assert(columns.size());
+    jassert(columns.size());
     String label = columns[0];
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))

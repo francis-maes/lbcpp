@@ -36,7 +36,7 @@ struct ScalarToVectorArchitecture
                 FeatureGeneratorPtr* gradientWrtParameters,
                 FeatureGeneratorPtr* gradientWrtInput) const
   {
-    assert(outputNumber < input->getNumSubGenerators());
+    jassert(outputNumber < input->getNumSubGenerators());
     scalarArchitecture.compute(parameters, input->getSubGeneratorWithIndex(outputNumber),
       output, gradientWrtParameters, gradientWrtInput);
   }

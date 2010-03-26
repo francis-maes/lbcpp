@@ -61,12 +61,12 @@ public:
   
   virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
-    assert(end > begin);
+    jassert(end > begin);
     CRAlgorithmPtr crAlgorithm = createCRAlgorithm(graph, begin, end);
     crAlgorithm->run(learnedPolicy);
-    assert(crAlgorithm->hasReturn());
+    jassert(crAlgorithm->hasReturn());
     LabelSequencePtr predictedLabels = crAlgorithm->getReturn()->getConstReference<LabelSequencePtr>();
-    assert(predictedLabels);
+    jassert(predictedLabels);
     if (res)
       res->setLabels(predictedLabels);
     return predictedLabels->numberOfLabelsInCommonWith(graph->getLabels(), begin, end) / (double)(end - begin);

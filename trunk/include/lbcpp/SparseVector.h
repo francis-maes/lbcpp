@@ -277,7 +277,7 @@ public:
   ** @return subgenerator.
   */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
-    {assert(num < subVectors.size()); return subVectors[num].second;}
+    {jassert(num < subVectors.size()); return subVectors[num].second;}
 
   /**
   ** Subgenerator index getter.
@@ -287,7 +287,7 @@ public:
   ** @return subgenerator index.
   */
   virtual size_t getSubGeneratorIndex(size_t num) const
-    {assert(num < subVectors.size()); return subVectors[num].first;}
+    {jassert(num < subVectors.size()); return subVectors[num].first;}
 
   /**
   ** Returns the subgenerator at the index @a index.

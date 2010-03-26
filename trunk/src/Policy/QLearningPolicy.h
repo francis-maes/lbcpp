@@ -55,7 +55,7 @@ public:
   
   virtual VariablePtr policyStep(double reward, ChoosePtr choose)
   {
-    assert(lastActionDescription);
+    jassert(lastActionDescription);
     VariablePtr res = EpisodicDecoratorPolicy::policyStep(reward, choose);
     
     VariablePtr nextAction;

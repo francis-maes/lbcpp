@@ -31,15 +31,15 @@ public:
   
   int getLabel(size_t position) const
   {
-    assert(position < sequence.size());
+    jassert(position < sequence.size());
     Label label = sequence[position];
     return label == 255 ? -1 : (int)label;
   }
   
   void setLabel(size_t position, int value)
   {
-    assert(value >= -1);
-    assert(position < sequence.size());
+    jassert(value >= -1);
+    jassert(position < sequence.size());
     sequence[position] = value >= 0 ? (Label)value : (Label)255;
   }
 

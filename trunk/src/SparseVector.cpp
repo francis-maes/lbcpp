@@ -70,13 +70,13 @@ void SparseVector::set(size_t index, double value)
 
 void SparseVector::set(const String& name, double value)
 {
-  assert(dictionary);
+  jassert(dictionary);
   set(dictionary->getFeatures()->add(name), value);
 }
 
 void SparseVector::set(const std::vector<String>& path, double value)
 {
-  assert(dictionary);
+  jassert(dictionary);
   SparseVectorPtr ptr(this);
   FeatureDictionaryPtr dictionary = this->dictionary;
   for (size_t i = 0; i < path.size() - 1; ++i)
@@ -157,7 +157,7 @@ void SparseVector::save(std::ostream& ostr) const
   {
     const std::pair<size_t, SparseVectorPtr>& e = subVectors[i];
     write(ostr, e.first);
-    assert(e.second);
+    jassert(e.second);
     e.second->save(ostr);
   }
 }

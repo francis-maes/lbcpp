@@ -37,10 +37,7 @@
 #ifndef LBCPP_UTILITIES_H_
 # define LBCPP_UTILITIES_H_
 
-# include "../juce/juce_amalgamated.h"
-# include <cassert>
-# include <sstream>
-# include <vector>
+# include "common.h"
 # include "ReferenceCountedObject.h"
 
 namespace lbcpp
@@ -93,7 +90,7 @@ public:
   **
   ** @return the ErrorHandler instance.
   */
-  static ErrorHandler& getInstance() {assert(instance); return *instance;}
+  static ErrorHandler& getInstance() {jassert(instance); return *instance;}
 
   /**
   ** Displays an error message using the ErrorManager singleton.

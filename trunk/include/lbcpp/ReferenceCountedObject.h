@@ -75,7 +75,7 @@ public:
   virtual ~ReferenceCountedObject()
   {
     // it's dangerous to delete an object that's still referenced by something else!
-    assert(refCount == 0);
+    jassert(refCount == 0);
   }
 
   /** Returns the object's current reference count. */
@@ -101,7 +101,7 @@ public:
   /** Decrements the object's reference count.  */
   inline void decrementReferenceCounter()
   {
-    assert(refCount > 0);
+    jassert(refCount > 0);
     --refCount;
     if (refCount == 0)
       delete this;
@@ -225,7 +225,7 @@ public:
 
   /** Returns a reference to the object that this pointer references. */
   T& operator * () const
-    {assert(ptr); return *ptr;}
+    {jassert(ptr); return *ptr;}
 
   /** Dynamic cast the object that this pointer references.
 
@@ -252,7 +252,7 @@ public:
   {
     if (ptr)
     {
-      assert(dynamic_cast<O* >(ptr));
+      jassert(dynamic_cast<O* >(ptr));
       return ReferenceCountedObjectPtr<O>(static_cast<O* >(ptr));
     }
     return ReferenceCountedObjectPtr<O>();

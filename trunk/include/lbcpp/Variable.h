@@ -165,7 +165,7 @@ public:
   ** @return
   */
   virtual bool equals(const VariablePtr otherVariable) const
-    {assert(false); return false;}
+    {jassert(false); return false;}
 
   /*!
   **

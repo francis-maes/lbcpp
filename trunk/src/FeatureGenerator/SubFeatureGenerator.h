@@ -130,7 +130,7 @@ private:
 
   DenseVectorPtr getSubVector(DenseVectorPtr vector) const
   {
-    assert(exists());
+    jassert(exists());
     DenseVectorPtr& res = vector->getSubVector(index);
     if (!res)
       res = new DenseVector(featureGenerator->getDictionary());
@@ -139,7 +139,7 @@ private:
   
   SparseVectorPtr getSubVector(SparseVectorPtr vector) const
   {
-    assert(exists());
+    jassert(exists());
     SparseVectorPtr& res = vector->getSubVector(index);
     if (!res)
       res = new SparseVector(featureGenerator->getDictionary());

@@ -27,7 +27,7 @@ public:
   
   virtual OptimizerState step()
   {
-    assert(stepSize);
+    jassert(stepSize);
     DenseVectorPtr denseParameters = parameters->toDenseVector();
     denseParameters->addWeighted(gradient, -(stepSize->compute(iteration)));
     setParameters(denseParameters);

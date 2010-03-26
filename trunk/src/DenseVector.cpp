@@ -61,7 +61,7 @@ void DenseVector::initializeRandomly(double mean, double standardDeviation)
 {
   RandomGenerator& random = RandomGenerator::getInstance();
   
-  assert(dictionary);
+  jassert(dictionary);
   values.resize(dictionary->getNumFeatures());
   for (size_t i = 0; i < values.size(); ++i)
     values[i] = random.sampleDoubleFromGaussian(mean, standardDeviation);
@@ -169,7 +169,7 @@ void DenseVector::multiplyByScalar(double scalar)
 
 double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const
 {
-  assert(otherVector);
+  jassert(otherVector);
   
   const std::vector<double>& otherFeatures = otherVector->values;
   double res = 0.0;
@@ -191,7 +191,7 @@ double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const
 
 double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 {
-  assert(featureGenerator);
+  jassert(featureGenerator);
   const DenseVectorPtr otherVector = featureGenerator.dynamicCast<DenseVector>();
   if (otherVector)
     return denseDotProduct(otherVector);
@@ -201,7 +201,7 @@ double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 
 bool DenseVector::load(std::istream& istr)
 {
-  assert(dictionary);
+  jassert(dictionary);
   size_t numSubVectors;
   if (!read(istr, values) || !read(istr, numSubVectors))
     return false;

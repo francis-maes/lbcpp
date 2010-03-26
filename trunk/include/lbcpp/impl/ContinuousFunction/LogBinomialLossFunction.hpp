@@ -42,7 +42,7 @@ struct LogBinomialLossFunction : public ScalarFunction<LogBinomialLossFunction>
     }
     
     double res = log(1 + exp(-input));
-    assert(isNumberValid(res));
+    jassert(isNumberValid(res));
     if (isNumberNearlyNull(res))
     {
       if (output)
@@ -57,7 +57,7 @@ struct LogBinomialLossFunction : public ScalarFunction<LogBinomialLossFunction>
     if (derivative)
     {
       *derivative = -1 / (1 + exp(input));
-      assert(isNumberValid(*derivative));
+      jassert(isNumberValid(*derivative));
     }
   }
 };

@@ -15,11 +15,11 @@ namespace impl {
 struct BinaryScalarOperation
 {
   static double compute(double left, double right)
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
   static double computeDerivativeWrtLeft(double left, double right)
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
   static double computeDerivativeWrtRight(double left, double right)
-    {assert(false); return 0.0;}
+    {jassert(false); return 0.0;}
 };
 
 struct AdditionBinaryScalarOperation : public BinaryScalarOperation

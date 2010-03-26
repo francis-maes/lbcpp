@@ -234,13 +234,13 @@ double Classifier::evaluateWeightedAccuracy(ObjectStreamPtr examples) const
     if (predict(example->getInput()) == example->getOutput())
       correctWeight += example->getWeight();
   }
-  assert(totalWeight);
+  jassert(totalWeight);
   return correctWeight / totalWeight;
 }
 
 void Classifier::save(std::ostream& ostr) const
 {
-  assert(labels);
+  jassert(labels);
   write(ostr, labels);
 }
 
@@ -305,7 +305,7 @@ size_t GeneralizedClassifier::predict(const GeneralizedClassificationExample& ex
     if (score > bestScore)
       bestScore = score, res = i;
   }
-  assert(res != (size_t)-1);
+  jassert(res != (size_t)-1);
   return res;
 }
 
@@ -340,7 +340,7 @@ size_t GeneralizedClassifier::sample(const FeatureGeneratorPtr compositeInput) c
 */
 size_t Ranker::predict(const FeatureGeneratorPtr compositeInput) const
 {
-  assert(compositeInput && compositeInput->getNumSubGenerators());
+  jassert(compositeInput && compositeInput->getNumSubGenerators());
   double bestScore = -DBL_MAX;
   size_t res = (size_t)-1;
   for (size_t i = 0; i < compositeInput->getNumSubGenerators(); ++i)
@@ -349,7 +349,7 @@ size_t Ranker::predict(const FeatureGeneratorPtr compositeInput) const
     if (score > bestScore)
       bestScore = score, res = compositeInput->getSubGeneratorIndex(i);
   }
-  assert(res != (size_t)-1);
+  jassert(res != (size_t)-1);
   return res;
 }
 

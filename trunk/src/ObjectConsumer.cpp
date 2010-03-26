@@ -95,7 +95,7 @@ public:
   virtual void consume(ObjectPtr object)
   {
     ClassificationExamplePtr example = object.dynamicCast<ClassificationExample>();
-    assert(example);
+    jassert(example);
     print(/*labels->getString*/lbcpp::toString(example->getOutput()) + " ");
     printFeatureList(example->getInput());
     printNewLine();
@@ -107,6 +107,6 @@ private:
 
 ObjectConsumerPtr lbcpp::classificationExamplesPrinter(const File& file, StringDictionaryPtr labels)
 {
-  assert(labels);
+  jassert(labels);
   return new ClassificationExamplesPrinter(file, labels);
 }

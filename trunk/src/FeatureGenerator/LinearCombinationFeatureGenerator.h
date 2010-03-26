@@ -22,7 +22,7 @@ public:
   LinearCombinationFeatureGenerator(FeatureGeneratorPtr compositeFeatureGenerator, DenseVectorPtr weights)
     : compositeFeatureGenerator(compositeFeatureGenerator), weights(weights)
   {
-    assert(compositeFeatureGenerator && compositeFeatureGenerator->getNumSubGenerators() && compositeFeatureGenerator->getSubGenerator(0));
+    jassert(compositeFeatureGenerator && compositeFeatureGenerator->getNumSubGenerators() && compositeFeatureGenerator->getSubGenerator(0));
 # ifdef NDEBUG
     setDictionary(compositeFeatureGenerator->getSubGenerator(0)->getDictionary());
 # else
@@ -30,7 +30,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       FeatureGeneratorPtr sub = compositeFeatureGenerator->getSubGenerator(i);
-      assert(sub);
+      jassert(sub);
       ensureDictionary(sub->getDictionary());
     }
 # endif

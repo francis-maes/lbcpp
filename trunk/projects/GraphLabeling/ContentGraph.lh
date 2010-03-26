@@ -26,23 +26,23 @@ public:
     {return numLinks;}
     
   FeatureGeneratorPtr getNode(size_t index) const
-    {assert(index < n.size()); return n[index].content;}
+    {jassert(index < n.size()); return n[index].content;}
 
   size_t getNumSuccessors(size_t nodeIndex) const
-    {assert(nodeIndex < n.size()); return n[nodeIndex].successors.size();}
+    {jassert(nodeIndex < n.size()); return n[nodeIndex].successors.size();}
     
   size_t getSuccessor(size_t nodeIndex, size_t successorIndex) const
   {
-    assert(nodeIndex < n.size() && successorIndex < n[nodeIndex].successors.size());
+    jassert(nodeIndex < n.size() && successorIndex < n[nodeIndex].successors.size());
     return n[nodeIndex].successors[successorIndex];
   }
 
   size_t getNumPredecessors(size_t nodeIndex) const
-    {assert(nodeIndex < n.size()); return n[nodeIndex].predecessors.size();}
+    {jassert(nodeIndex < n.size()); return n[nodeIndex].predecessors.size();}
   
   size_t getPredecessor(size_t nodeIndex, size_t predecessorIndex) const
   {
-    assert(nodeIndex < n.size() && predecessorIndex < n[nodeIndex].predecessors.size());
+    jassert(nodeIndex < n.size() && predecessorIndex < n[nodeIndex].predecessors.size());
     return n[nodeIndex].predecessors[predecessorIndex];
   }
 
@@ -51,7 +51,7 @@ public:
   */
   featureGenerator contentFeatures(size_t index) const
   {
-    assert(index < n.size());
+    jassert(index < n.size());
     featureCall("content") n[index].content;
   }
   
@@ -67,7 +67,7 @@ public:
   void addLink(size_t source, size_t target)
   {
     // /!\ does not check edge unicity
-    assert(source < n.size() && target < n.size());
+    jassert(source < n.size() && target < n.size());
     n[target].predecessors.push_back(source);
     n[source].successors.push_back(target);
     ++numLinks;

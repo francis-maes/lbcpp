@@ -80,11 +80,11 @@ crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPt
         ++it;
       }
     }
-    assert(choices.size());
+    jassert(choices.size());
     
     PositionAndLabel positionAndLabel = choose<PositionAndLabel>(choices, actionValueFunction, contentAndStructureActionFeatures);
     //std::cout << lbcpp::toString(positionAndLabel) << " | " << std::flush;
-    assert(positionAndLabel.first >= foldBegin && positionAndLabel.second < foldEnd);
+    jassert(positionAndLabel.first >= foldBegin && positionAndLabel.second < foldEnd);
     if (positionAndLabel.second == graph->getLabel(positionAndLabel.first))
       reward (1.0);
     predictedGraph->setLabel(positionAndLabel.first, positionAndLabel.second);
@@ -92,7 +92,7 @@ crAlgorithm LabelSequencePtr onePassOrderFreeGraphLabeling(LabeledContentGraphPt
     unlabeledNodes.erase(positionAndLabel.first);
   }
   //std::cout << std::endl;
-  assert(unlabeledNodes.size() == 0);
+  jassert(unlabeledNodes.size() == 0);
   return prediction;
 }
 

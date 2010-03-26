@@ -49,7 +49,7 @@ public:
 #endif // JUCE_MAC
 
 /*    FeatureDictionaryPtr dictionary = loadFeatureDictionary("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/features.dic");
-    assert(dictionary);
+    jassert(dictionary);
     dictionary->addScope("coucou", new FeatureDictionary());
     dictionary->addScope("pouet", new FeatureDictionary());
    // setContentComponent(new ObjectGraphAndContent(dictionary->toGraph()));      
@@ -59,7 +59,7 @@ public:
     
   /*  GradientBasedClassifierPtr classifier = loadGradientBasedClassifier("/Users/francis/Projets/LBC++/trunk/examples/LearningMachine/classifier.model");
     DenseVectorPtr params = classifier->getParameters();
-    assert(params);
+    jassert(params);
     new ObjectGraphAndContentComponent(params->toGraph())*/
     
     setContentComponent(content = new ObjectComponentContainer());

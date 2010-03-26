@@ -45,13 +45,13 @@ public:
     std::vector<LabeledContentGraphPtr> trainGraphs;
     std::vector<LabeledContentGraph::LabelsFold> testGraphs;
     graph->makeFolds(numFolds, false, trainGraphs, testGraphs);
-    assert(trainGraphs.size() == numFolds && testGraphs.size() == numFolds);
+    jassert(trainGraphs.size() == numFolds && testGraphs.size() == numFolds);
 
     LabelSequencePtr intermediaryLabels = new LabelSequence(graph->getLabelDictionary(), graph->getNumNodes());
     LabeledContentGraphPtr intermediaryGraph = new LabeledContentGraph(graph->getContentGraph(), intermediaryLabels);
     for (size_t i = 0; i < numFolds; ++i)
     {
-      assert(testGraphs[i].graph == graph);
+      jassert(testGraphs[i].graph == graph);
       size_t foldBegin = testGraphs[i].foldBegin;
       size_t foldEnd = testGraphs[i].foldEnd;
       
@@ -81,7 +81,7 @@ public:
   }
 
   GraphLabelingAlgorithm& getBaseAlgorithm()
-    {assert(baseAlgorithm); return *baseAlgorithm;}
+    {jassert(baseAlgorithm); return *baseAlgorithm;}
 
 private:
   GraphLabelingAlgorithm* baseAlgorithm;

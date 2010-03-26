@@ -37,9 +37,7 @@
 #ifndef LBCPP_RANDOM_H_
 # define LBCPP_RANDOM_H_
 
-# include <cmath>
-# include <vector>
-# include <cassert>
+# include "common.h"
 
 namespace lbcpp
 {
@@ -180,7 +178,7 @@ public:
   ** @return an interger value in range [0, @a maxValue[
   */
   int sampleInt(int maxValue)
-    {assert(maxValue > 0); return (sampleInt() & 0x7fffffff) % maxValue;}
+    {jassert(maxValue > 0); return (sampleInt() & 0x7fffffff) % maxValue;}
 
   /** Samples an integer value in range [@a minValue, @a maxValue[.
   **
@@ -190,7 +188,7 @@ public:
   ** @return an integer value in range [@a minValue, @a maxValue[
   */
   int sampleInt(int minValue, int maxValue)
-    {assert(maxValue > minValue); return (sampleInt() & 0x7fffffff) % (maxValue - minValue) + minValue;}
+    {jassert(maxValue > minValue); return (sampleInt() & 0x7fffffff) % (maxValue - minValue) + minValue;}
 
   /** Samples an unsigned integer value in range [0, @a maxSize[.
   **
@@ -211,7 +209,7 @@ public:
   ** @return an size_t type (unsigned) value in range [@a minSize, @a maxSize[
   */
   size_t sampleSize(size_t minSize, size_t maxSize)
-    {assert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
+    {jassert(maxSize > minSize); return (size_t)sampleInt((int)minSize, (int)maxSize);}
 
   /** Samples a float value uniformly from range [0, 1[.
   **
@@ -304,7 +302,7 @@ public:
   */
   inline void sampleOrder(size_t begin, size_t end, std::vector<size_t>& res)
   {
-    assert(end > begin);
+    jassert(end > begin);
     res.resize(end - begin);
     for (size_t i = 0; i < res.size(); ++i)
       res[i] = begin + i;

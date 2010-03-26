@@ -161,7 +161,7 @@ public:
   void createParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly)
   {
     ensureInputDictionary(inputDictionary);
-    assert(!parameters);
+    jassert(!parameters);
     parameters = createInitialParameters(inputDictionary, initializeRandomly);
   }
 
@@ -179,7 +179,7 @@ public:
   */
   void setInitializeParametersRandomly()
   {
-    assert(!parameters); // This function should be called before parameters creation.
+    jassert(!parameters); // This function should be called before parameters creation.
     initializeParametersRandomly = true;
   }
 
@@ -241,7 +241,7 @@ public:
   ** @return
   */
   double computeRegularizer() const
-    {assert(parameters); return regularizer ? regularizer->compute(parameters) : 0.0;}
+    {jassert(parameters); return regularizer ? regularizer->compute(parameters) : 0.0;}
 
   /*!
   **
@@ -251,7 +251,7 @@ public:
   ** @return
   */
   double computeEmpiricalRisk(ObjectContainerPtr examples) const
-    {assert(parameters); return getEmpiricalRisk(examples)->compute(parameters);}
+    {jassert(parameters); return getEmpiricalRisk(examples)->compute(parameters);}
 
   /*!
   **
@@ -261,7 +261,7 @@ public:
   ** @return
   */
   double computeRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
-    {assert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
+    {jassert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
 
 protected:
   FeatureDictionaryPtr inputDictionary; /*!< */

@@ -392,7 +392,7 @@ struct VectorArchitectureScalarVectorFunctionPair : public ContinuousFunctionPai
       
       FeatureGeneratorPtr rightGradient;
       const static FeatureGeneratorPtr zero = FeatureGeneratorPtr(); // FIXME : derivative direction
-      assert(leftOutput->toDenseVector()->getNumValues());
+      jassert(leftOutput->toDenseVector()->getNumValues());
       right.compute(leftOutput, output, zero, gradientWrtParameters || gradientWrtInput ? &rightGradient : NULL);
       
       DenseVectorPtr rightGradientDense;

@@ -48,7 +48,7 @@ private:
   
   void updateRecursive(DenseVectorPtr gradient, DenseVectorPtr& previousGradient, DenseVectorPtr& derivativeSpeed, DenseVectorPtr& parameters)
   {
-    assert(gradient);
+    jassert(gradient);
     if (!previousGradient)
       previousGradient = new DenseVector(gradient->getDictionary());
     if (!derivativeSpeed)

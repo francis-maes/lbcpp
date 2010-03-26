@@ -28,7 +28,7 @@ public:
   virtual double compute(VariablePtr vchoice) const
   {
     size_t choice = vchoice->getConstReference<size_t>();
-    assert(scores && choice < scores->getNumValues());
+    jassert(scores && choice < scores->getNumValues());
     return scores->get(choice);
   }
   
@@ -111,7 +111,7 @@ public:
 
   virtual double compute(VariablePtr variable) const
   {
-    assert(probs.find(variable->toString()) != probs.end());
+    jassert(probs.find(variable->toString()) != probs.end());
     return probs.find(variable->toString())->second;
   }
   

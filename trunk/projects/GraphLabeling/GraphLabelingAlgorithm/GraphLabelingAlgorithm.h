@@ -36,7 +36,7 @@ public:
                      ScalarVariableStatisticsPtr trainAccuracy,
                      ScalarVariableStatisticsPtr testAccuracy)
   {
-    assert(trainGraphs.size() == testGraphs.size());
+    jassert(trainGraphs.size() == testGraphs.size());
     for (size_t i = 0; i < trainGraphs.size(); ++i)
     {
       std::cout << "CROSS-VALIDATION FOLD " << (i+1) << " / " << trainGraphs.size() << std::endl;

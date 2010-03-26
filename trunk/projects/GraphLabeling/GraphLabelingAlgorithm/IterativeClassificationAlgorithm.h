@@ -43,7 +43,7 @@ public:
 
   virtual double evaluate(LabeledContentGraphPtr graph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
-    assert(end > begin);
+    jassert(end > begin);
     if (!res)
       res = new LabeledContentGraph(graph->getContentGraph(), new LabelSequence(*graph->getLabels()));
     makeInitialPredictions(res, begin, end);
@@ -62,7 +62,7 @@ protected:
   
   double computeAccuracy(LabelSequencePtr correctLabels, LabeledContentGraphPtr predictedGraph, size_t begin, size_t end)
   {
-    assert(end > begin);
+    jassert(end > begin);
     return predictedGraph->getLabels()->numberOfLabelsInCommonWith(correctLabels, begin, end) / (double)(end - begin);
   }
   

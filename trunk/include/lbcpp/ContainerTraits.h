@@ -91,14 +91,14 @@ struct SampleRandomImplementation
     typedef Traits<ContainerType> ContainerTraits;
 
     // not tested
-    assert(ContainerTraits::size(container));
+    jassert(ContainerTraits::size(container));
     int r = RandomGenerator::getInstance().sampleSize(ContainerTraits::size(container));
     int i = 0;
     typename ContainerTraits::ConstIterator it;
     for (it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it, ++i)
       if (i == r)
         return ContainerTraits::value(it);
-    assert(false);
+    jassert(false);
     return *(const typename Traits<ContainerType>::ValueType* )0;
   }
 };
@@ -111,12 +111,12 @@ struct SampleRandomImplementation<size_t>
   {
     static size_t result;
     typedef Traits<ContainerType> ContainerTraits;
-    assert(ContainerTraits::size(container));
+    jassert(ContainerTraits::size(container));
 
     // not tested
     size_t b = ContainerTraits::begin(container);
     size_t e = ContainerTraits::end(container);
-    assert(e > b);
+    jassert(e > b);
     result = RandomGenerator::getInstance().sampleSize(b, e);
     return result;
   }
@@ -193,7 +193,7 @@ struct DefaultContainerTraits
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
     {
       double score = scoringFunction.compute(ContainerTraits::value(it));
-      assert(isNumberValid(score));
+      jassert(isNumberValid(score));
       if (score > bestsScore)
       {
         bests.clear();
@@ -210,7 +210,7 @@ struct DefaultContainerTraits
       for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
         std::cerr << scoringFunction.compute(ContainerTraits::value(it)) << ", ";
       std::cerr << std::endl;
-      assert(false);
+      jassert(false);
     }
 
 //    std::cout << "Num bests: " << bests.size();
@@ -282,7 +282,7 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
   static inline const typename ContainerType::value_type& sampleRandom(const ContainerType& container)
   {
     // not tested
-    assert(container.size());
+    jassert(container.size());
     int r = RandomGenerator::getInstance().sampleSize(container.size());
     int i = 0;
     //if (r < (int)container.size() / 2)
@@ -300,7 +300,7 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
         if (i == r)
           return *it;
     }*/
-    assert(false);
+    jassert(false);
     return *(typename ContainerType::value_type* )0;
   }
 };
@@ -355,7 +355,7 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
   */
   static const T& sampleRandom(const std::vector<T>& vector)
   {
-    assert(vector.size());
+    jassert(vector.size());
     return vector[RandomGenerator::getInstance().sampleSize(vector.size())];
   }
 };

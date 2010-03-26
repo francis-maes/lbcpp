@@ -82,7 +82,7 @@ struct AllPairsLossFunction
       {
         std::vector<double> gradient(n, 0.0);
         computeAllPairsFewDifferentCostsLargeMargin(scores, costs, discriminantLossMargin, order, alternativesPerCost, NULL, NULL, &gradient);
-        assert(gradient == refGradient);
+        jassert(gradient == refGradient);
       }
         
       // test "bipartite"
@@ -90,7 +90,7 @@ struct AllPairsLossFunction
       {
         std::vector<double> gradient(n, 0.0);
         computeAllPairsBipartiteLargeMargin(scores, costs, discriminantLossMargin, NULL, NULL, &gradient);
-        assert(gradient == refGradient);
+        jassert(gradient == refGradient);
       }
     }
   }
@@ -122,7 +122,7 @@ protected:
   void computeAllPairsBipartiteLargeMargin(const std::vector<double>& scores, const std::vector<double>& costs, double margin, 
                                 double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
   {
-    assert(!output); // value computation not implemented yet
+    jassert(!output); // value computation not implemented yet
 
     std::vector<size_t> order;
     BaseClass::sortScores(scores, order);
@@ -180,7 +180,7 @@ protected:
                                 double margin, const std::vector<size_t>& order, const std::map<double, std::vector<size_t> >& alternativesPerCost,
                                 double* output, const std::vector<double>* gradientDirection, std::vector<double>* gradient) const
   {
-    assert(!output); // value computation not implemented yet
+    jassert(!output); // value computation not implemented yet
     size_t n = scores.size();
     
     // for each possible cost

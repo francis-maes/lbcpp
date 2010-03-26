@@ -38,7 +38,7 @@ struct CreateVectorVisitor : public FeatureVisitor< ExactType >
 
   void featureLeave()
   {
-    assert(currentVectorStack.size() > 0);
+    jassert(currentVectorStack.size() > 0);
     currentVector = currentVectorStack.back();
     currentVectorStack.pop_back();
   }

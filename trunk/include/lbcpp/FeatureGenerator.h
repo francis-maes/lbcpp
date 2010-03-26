@@ -551,7 +551,7 @@ public:
   ** @return a FeatureGenerator instance.
   */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
-    {assert(false); return FeatureGeneratorPtr();}
+    {jassert(false); return FeatureGeneratorPtr();}
 
   /**
   ** Returns the index of the subgenerator number @a num.
@@ -561,7 +561,7 @@ public:
   ** @return the index of the subgenerator number @a num.
   */
   virtual size_t getSubGeneratorIndex(size_t num) const
-    {assert(false); return (size_t)-1;}
+    {jassert(false); return (size_t)-1;}
 
   /**
   ** Returns the subgenerator corresponding to the index @a index.
@@ -571,7 +571,7 @@ public:
   ** @return a FeatureGenerator instance.
   */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
-    {assert(false); return FeatureGeneratorPtr();}
+    {jassert(false); return FeatureGeneratorPtr();}
 };
 
 }; /* namespace lbcpp */

@@ -28,7 +28,7 @@ public:
 
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
   {
-    assert(parameters);
+    jassert(parameters);
     if (normalizeLearningRate)
       inputSize.push((double)(gradient->l0norm()));
     

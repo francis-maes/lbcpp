@@ -51,7 +51,7 @@ crAlgorithm void nQueensSearchSpace(int n)
 */
 CRAlgorithmPtr backTrackingDepthFirstSearchRec(ChoosePtr choose)
 {
-  assert(choose);
+  jassert(choose);
   for (VariableIteratorPtr it = choose->newIterator(); it->exists(); it->next())
   {
     CRAlgorithmPtr nextState = choose->getCRAlgorithm()->cloneAndCast<CRAlgorithm>();
@@ -76,7 +76,7 @@ CRAlgorithmPtr backTrackingDepthFirstSearch(CRAlgorithmPtr initialState)
 {
   CRAlgorithmPtr state = initialState->cloneAndCast<CRAlgorithm>();
   ChoosePtr choose = state->runUntilFirstChoose();
-  assert(choose);
+  jassert(choose);
   return backTrackingDepthFirstSearchRec(choose);
 }
 

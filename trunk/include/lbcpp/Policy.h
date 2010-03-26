@@ -172,7 +172,7 @@ public:
   ** @return
   */
   virtual ObjectPtr getResult(size_t i) const
-    {assert(false); return ObjectPtr();}
+    {jassert(false); return ObjectPtr();}
 
   /**
   ** #FIXME

@@ -48,7 +48,7 @@ public:
     if (impl.__state__ < 0)
     {
       lbcpp::Object::error("CRAlgorithm::run(policy, choice)", "This is not an initial state, in order to run a policy from the initial state, use run(policy).");
-      assert(false);
+      jassert(false);
     }
     PolicyToStaticCallback staticCallback(policy, CRAlgorithmPtr(this), choice);
     while (!stepImpl(staticCallback, staticCallback.getLastChoice()));      
@@ -57,7 +57,7 @@ public:
   virtual bool run(PolicyPtr policy)
   {
     // todo: inlined version
-    assert(BaseClassType::getImplementation().__state__ == -1); // in order to run a policy from a non-initial state, use run(policy, choice)
+    jassert(BaseClassType::getImplementation().__state__ == -1); // in order to run a policy from a non-initial state, use run(policy, choice)
     PolicyToStaticCallback staticCallback(policy, CRAlgorithmPtr(this));
     if (stepImpl(staticCallback, VariablePtr()))
       return true;
@@ -86,10 +86,10 @@ public:
     if (impl.__state__ >= 0)
     {
       lbcpp::Object::error("CRAlgorithm::runUntilFirstChoose", "This is not an initial state, use the runUntilNextChoose() function.");
-      assert(false);
+      jassert(false);
       return ChoosePtr();
     }
-    assert(impl.__state__ == -1);
+    jassert(impl.__state__ == -1);
     return runUntilNextChoose(NULL, reward);
   }
   
@@ -118,7 +118,7 @@ inline CRAlgorithmType& dynamicToStaticCRAlgorithm(CRAlgorithmPtr crAlgorithm)
   typedef StaticToDynamicCRAlgorithm<CRAlgorithmType> CRAlgorithmWrapperType;
   
   CRAlgorithmWrapperType* lbcpp = dynamic_cast<CRAlgorithmWrapperType* >(crAlgorithm.get());
-  assert(lbcpp); // todo: error message
+  jassert(lbcpp); // todo: error message
   return lbcpp->getImplementation();
 }
 

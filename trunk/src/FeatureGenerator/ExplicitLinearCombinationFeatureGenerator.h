@@ -26,13 +26,13 @@ public:
   ExplicitLinearCombinationFeatureGenerator(LinearCombinationVector* newTerms)
     : terms(newTerms)
   {
-    assert(terms && terms->size());
+    jassert(terms && terms->size());
 # ifdef NDEBUG
     setDictionary((*terms)[0].first->getDictionary());
 # else
     for (size_t i = 0; i < terms->size(); ++i)
     {
-      assert((*terms)[i].first);
+      jassert((*terms)[i].first);
       ensureDictionary((*terms)[i].first->getDictionary());
     }
 # endif
@@ -48,10 +48,10 @@ public:
     {return terms->size();}
     
   FeatureGeneratorPtr getFeatureGenerator(size_t i) const
-    {assert(i < terms->size()); return (*terms)[i].first;}
+    {jassert(i < terms->size()); return (*terms)[i].first;}
 
   double getWeight(size_t i) const
-    {assert(i < terms->size()); return (*terms)[i].second;}
+    {jassert(i < terms->size()); return (*terms)[i].second;}
 
   /*
   ** EditableFeatureGenerator

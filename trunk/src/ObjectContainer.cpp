@@ -84,7 +84,7 @@ public:
     
   virtual ObjectPtr get(size_t index) const
   {
-    assert(order.size() == target->size() && index < order.size());
+    jassert(order.size() == target->size() && index < order.size());
     return target->get(order[index]);
   }
   
@@ -109,7 +109,7 @@ public:
     
   virtual ObjectPtr get(size_t index) const
   {
-    assert(index < target->size() * count);
+    jassert(index < target->size() * count);
     return target->get(index % target->size());
   }
 
@@ -127,7 +127,7 @@ class RangeObjectContainer : public DecoratorObjectContainer
 {
 public:
   RangeObjectContainer(ObjectContainerPtr target, size_t begin, size_t end)
-    : DecoratorObjectContainer(target), begin(begin), end(end) {assert(end >= begin);}
+    : DecoratorObjectContainer(target), begin(begin), end(end) {jassert(end >= begin);}
   
   virtual size_t size() const
     {return end - begin;}
@@ -135,7 +135,7 @@ public:
   virtual ObjectPtr get(size_t index) const
   {
     index += begin;
-    assert(index < end);
+    jassert(index < end);
     return target->get(index);
   }
   
@@ -153,14 +153,14 @@ class ExcludeRangeObjectContainer : public DecoratorObjectContainer
 {
 public:
   ExcludeRangeObjectContainer(ObjectContainerPtr target, size_t begin, size_t end)
-    : DecoratorObjectContainer(target), begin(begin), end(end) {assert(end >= begin);}
+    : DecoratorObjectContainer(target), begin(begin), end(end) {jassert(end >= begin);}
   
   virtual size_t size() const
     {return target->size() - (end - begin);}
     
   virtual ObjectPtr get(size_t index) const
   {
-    assert(index < size());
+    jassert(index < size());
     if (index < begin)
       return target->get(index);
     else
@@ -180,7 +180,7 @@ ObjectContainerPtr ObjectContainer::invRange(size_t begin, size_t end)
 // Selects a fold.
 ObjectContainerPtr ObjectContainer::fold(size_t fold, size_t numFolds)
 {
-  assert(numFolds);
+  jassert(numFolds);
   if (!numFolds)
     return ObjectContainerPtr();
   double meanFoldSize = size() / (double)numFolds;
@@ -192,7 +192,7 @@ ObjectContainerPtr ObjectContainer::fold(size_t fold, size_t numFolds)
 // Excludes a fold.
 ObjectContainerPtr ObjectContainer::invFold(size_t fold, size_t numFolds)
 {
-  assert(numFolds);
+  jassert(numFolds);
   if (!numFolds)
     return ObjectContainerPtr();
   double meanFoldSize = size() / (double)numFolds;
@@ -208,7 +208,7 @@ public:
     : left(left), right(right) {}
     
   virtual String getContentClassName() const
-    {assert(left->getContentClassName() == right->getContentClassName()); return left->getContentClassName();}
+    {jassert(left->getContentClassName() == right->getContentClassName()); return left->getContentClassName();}
   
   virtual size_t size() const
     {return left->size() + right->size();}

@@ -219,7 +219,7 @@ public:
   ** @return
   */
   double getCost(size_t alternativeIndex) const
-    {assert(alternativeIndex < costs.size()); return costs[alternativeIndex];}
+    {jassert(alternativeIndex < costs.size()); return costs[alternativeIndex];}
 
 private:
   FeatureGeneratorPtr alternatives; /*!< */

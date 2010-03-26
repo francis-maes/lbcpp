@@ -48,7 +48,7 @@ protected:
   
   void train(LabeledContentGraphPtr predictedGraph, LabeledContentGraphPtr correctGraph)
   {
-    assert(predictedGraph->getNumNodes() == correctGraph->getNumNodes());
+    jassert(predictedGraph->getNumNodes() == correctGraph->getNumNodes());
     VectorObjectContainerPtr examples = new VectorObjectContainer("ClassificationExample");
     
     examples->reserve(predictedGraph->getNumNodes());
@@ -92,7 +92,7 @@ protected:
   
   double evaluateClassifier(LabeledContentGraphPtr featuresGraphs, LabeledContentGraphPtr correctGraph, size_t begin, size_t end, LabeledContentGraphPtr res = LabeledContentGraphPtr())
   {
-    assert(end > begin);
+    jassert(end > begin);
     size_t correct = 0;
     for (size_t i = begin; i < end; ++i)
     {

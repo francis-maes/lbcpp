@@ -24,7 +24,7 @@ public:
     {iterations = 0;}
 
   bool shouldStop()
-    {assert(maxIterations); ++iterations; return iterations >= maxIterations;}
+    {jassert(maxIterations); ++iterations; return iterations >= maxIterations;}
 
   virtual bool shouldOptimizerStop(double)
     {return shouldStop();}
@@ -85,7 +85,7 @@ public:
 
   virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr policy, ObjectContainerPtr examples)
   {
-    assert(false); // not implemented
+    jassert(false); // not implemented
     return false;
   }
 

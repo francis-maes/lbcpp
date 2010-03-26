@@ -67,11 +67,11 @@ public:
     if (choose->getChoiceType() == T("size_t"))
     {
       FeatureGeneratorPtr stateFeatures = choose->computeStateFeatures();
-      assert(stateFeatures);
+      jassert(stateFeatures);
 //      std::cout << "State Features: " << stateFeatures->toString() << std::endl;
       VariablePtr bestChoice = choose->sampleBestChoice(supervisor ? supervisor : choose->getActionValueFunction());
 //      std::cout << "Best Choice: " << bestChoice->getReference<size_t>() << std::endl;
-      assert(bestChoice);
+      jassert(bestChoice);
       if (!isTraining)
       {
         classifier->trainStochasticBegin(stateFeatures->getDictionary());
