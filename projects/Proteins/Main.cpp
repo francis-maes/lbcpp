@@ -26,6 +26,13 @@ public:
     }
   }
 
+protected:
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, objects);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, objects);}
+
 private:
   typedef std::map<String, ObjectPtr> ObjectsMap;
   ObjectsMap objects;
@@ -41,6 +48,9 @@ public:
   virtual String toString() const
     {return T("Protein ") + name + T(":\n") + StringToObjectMap::toString();}
 
+  virtual String getName() const
+    {return name;}
+
   void setAminoAcidSequence(AminoAcidSequencePtr sequence)
     {setObject(T("AminoAcidSequence"), sequence);}
 
@@ -49,6 +59,13 @@ public:
 
   void setSolventAccessibilitySequence(SolventAccessibilitySequencePtr solventAccessibility)
     {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, name) && StringToObjectMap::load(istr);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, name); StringToObjectMap::save(ostr);}
 
 private:
   String name;
@@ -245,6 +262,7 @@ bool formDaFuckingCB513base()
   pssmDirectory.findChildFiles(pssmFiles, File::findFiles, false, T("*.data"));
   std::cout << pssmFiles.size() << " pssm files found." << std::endl;
 
+  int proteinNumber = 1;
   FeatureDictionaryPtr features = new FeatureDictionary("pssmFeatures");
   for (int i = 0; i < pssmFiles.size(); ++i)
   {
@@ -253,12 +271,12 @@ bool formDaFuckingCB513base()
     while (parser->isValid())
     {
       ProteinPtr protein = parser->nextAndCast<Protein>();
-      if (protein)
-        std::cout << protein->toString() << std::endl;
-      return true;
+      if (!protein)
+        break;
+      std::cout << "Protein " << proteinNumber++ << ": " << protein->getName() << std::endl;
+      protein->saveToFile(outputDirectory.getChildFile(protein->getName() + T(".protein")));
     }
   }
-
   return true;
 }
 

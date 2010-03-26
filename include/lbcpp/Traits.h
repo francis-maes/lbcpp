@@ -161,6 +161,27 @@ struct Traits<char>
   }
 };
 
+
+template<>
+struct Traits<unsigned char>
+{
+  typedef unsigned char Type;
+
+  static inline String toString(unsigned char value)
+    {String res((int)value); return res;}
+
+  static inline void write(OutputStream& ostr, unsigned char value)
+    {ostr.writeByte((char)value);}
+
+  static inline bool read(InputStream& istr, unsigned char& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = (unsigned char)istr.readByte();
+    return true;
+  }
+};
+
 template<>
 struct Traits<String>
 {
