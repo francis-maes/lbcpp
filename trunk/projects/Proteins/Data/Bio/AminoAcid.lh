@@ -1,0 +1,68 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: AminoAcid.lh                   | Amino Acid                      |
+| Author  : Francis Maes                   |                                 |
+| Started : 26/03/2010 13:39               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+namespace lbcpp
+{
+
+class AminoAcid : public Object
+{
+public:
+  enum Type
+  {
+    // 20 amino acids
+    alanine = 0,
+    arginine,
+    asparagine,
+    asparticAcid,
+    cysteine,
+    glutamicAcid,
+    glutamine,
+    glycine,
+    histidine,
+    isoleucine,
+    leucine,
+    lysine,
+    methionine,
+    phenylalanine,
+    proline,
+    serine,
+    threonine,
+    tryptophan,
+    tyrosine,
+    valine,
+    
+    // 3 ambiguous amino acids
+    asparagineOrAsparticAcid,
+    glutamineOrGlutamicAcid,
+    lecineOrIsoleucine,
+
+    // unspecified or unknown amino acid
+    unknown
+  };
+
+  AminoAcid(const AminoAcid& aa)
+    : type(aa.type) {}
+    
+  AminoAcid(const Type& type = unknown)
+    : type(type) {}
+  
+  Type getType() const
+    {return type;}
+    
+  // TODO: properties: one-letter code, three-letter code, hydrophoby, polarity, side chain, ....
+  
+  bool operator ==(const AminoAcid& aa) const
+    {return type == aa.type;}
+    
+  bool operator !=(const AminoAcid& aa) const
+    {return type != aa.type;}
+    
+private:
+  Type type;
+};
+
+}; /* namespace lbcpp */

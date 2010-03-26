@@ -1,0 +1,53 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: AminoAcidSequence.lh           | Amino Acid Sequence             |
+| Author  : Francis Maes                   |                                 |
+| Started : 26/03/2010 13:40               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+#include "AminoAcid.lh"
+#include "../Generic/LabelSequence.lh"
+
+namespace lbcpp
+{
+
+class AminoAcidSequence : public LabelSequence
+{
+public:
+  virtual std::string toString() const // FASTA format
+  {
+    std::string res = "> " + name + "\n";
+    for (size_t i = 0; i < sequence.size(); ++i)
+      res += sequence[i];
+    res += "\n";
+    return res;
+  }
+    
+  AminoAcid getAminoAcid(size_t position) const
+  {
+    int label = getLabel(position);
+    return AminoAcid(label >= 0 ? (AminoAcid::Type)label : AminoAcid::unknown);
+  }
+    
+  void setAminoAcid(size_t position, const AminoAcid& aa)
+    {setLabel(position, (int)aa.getType());}
+
+protected:
+  virtual bool load(std::istream& istr)
+  {
+    return lbcpp::read(istr, name) && 
+           lbcpp::read(istr, sequence);
+  }
+  
+  virtual void save(std::ostream& ostr) const
+  {
+    lbcpp::write(ostr, name);
+    lbcpp::write(ostr, sequence);
+  }
+
+private:
+  std::string name;
+  std::vector<char> sequence;
+};
+
+}; /* namespace lbcpp */
