@@ -1,0 +1,48 @@
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+IF(APPLE)
+  SET(JUCE_SOURCES
+    juce_amalgamated.h
+    juce_amalgamated.mm
+  )
+ELSE(APPLE)
+  SET(JUCE_SOURCES
+    juce_amalgamated.h
+    juce_amalgamated.cpp
+  )
+ENDIF(APPLE)
+
+IF   (WIN32)
+  SET(JUCE_PLATFORM_SPECIFIC_LIBRARIES
+    kernel32.lib
+    user32.lib
+    shell32.lib
+    gdi32.lib
+    vfw32.lib
+    comdlg32.lib
+    winmm.lib
+    wininet.lib
+    rpcrt4.lib
+    ole32.lib
+    advapi32.lib
+    ws2_32.lib
+    OpenGL32.Lib
+    GlU32.Lib
+  )
+ELSE (WIN32)
+  IF   (UNIX)
+    IF   (APPLE)
+      SET(JUCE_PLATFORM_SPECIFIC_LIBRARIES "-framework Carbon -framework Cocoa -framework CoreFoundation -framework CoreAudio -framework CoreMidi -framework IOKit -framework AGL -lobjc")
+    ELSE (APPLE)
+      FIND_PACKAGE(X11 REQUIRED)
+      INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR})
+      INCLUDE_DIRECTORIES(/usr/include/freetype2)
+      ADD_DEFINITIONS(-DLINUX)
+      SET(JUCE_PLATFORM_SPECIFIC_LIBRARIES ${X11_LIBRARIES} freetype pthread) # asound Xinerama)
+    ENDIF(APPLE)
+  ENDIF(UNIX)
+ENDIF(WIN32)
+
+ADD_LIBRARY(juce ${JUCE_SOURCES})
+TARGET_LINK_LIBRARIES(juce ${JUCE_PLATFORM_SPECIFIC_LIBRARIES})
+
