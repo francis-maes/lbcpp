@@ -1,0 +1,70 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: LabelSequence.lh               | Label Sequence                  |
+| Author  : Francis Maes                   |                                 |
+| Started : 26/03/2010 12:32               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace lbcpp
+{
+
+class Sequence : public Object
+{
+public:
+  virtual size_t getLength() const = 0;
+  //virtual featureGenerator computeFeatures(size_t position) const = 0;
+};
+
+class LabelSequence : public Sequence
+{
+public:
+  /*virtual featureGenerator computeFeatures(size_t position) const
+  {
+  }*/
+
+  virtual std::string getName() const
+    {return name;}
+
+  virtual size_t getLength() const
+    {return sequence.size();}
+  
+  int getLabel(size_t position) const
+  {
+    assert(position < sequence.size());
+    Label label = sequence[position];
+    return label == 255 ? -1 : (int)label;
+  }
+  
+  void setLabel(size_t position, int value)
+  {
+    assert(value >= -1);
+    assert(position < sequence.size());
+    sequence[position] = value >= 0 ? (Label)value : (Label)255;
+  }
+
+protected:
+  virtual bool load(std::istream& istr)
+  {
+    return lbcpp::read(istr, name) && 
+           lbcpp::read(istr, sequence);
+  }
+  
+  virtual void save(std::ostream& ostr) const
+  {
+    lbcpp::write(ostr, name);
+    lbcpp::write(ostr, sequence);
+  }
+
+private:
+  // Note: most sequence labeling tasks involve less than 255 labels,
+  //  so we use a single byte per element in order to spare memory
+  // Labels: 0..254
+  // Special value for unlabeled elements: 255
+  typedef unsigned char Label;
+
+  std::string name;
+  std::vector<Label> sequence;
+};
+
+}; /* namespace lbcpp */

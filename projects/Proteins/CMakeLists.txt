@@ -3,30 +3,40 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-#SET(PROTEINS_LHEADERS
-#  ContentGraph.lh
-#  LabelSequence.lh
-#)
-#ADD_CRALGORITHM_SOURCES(${PROTEINS_LHEADERS})
+SET(PROTEINS_DATA_GENERIC
+  Data/Generic/LabelSequence.lh
+  Data/Generic/ScoreSequence.lh
+  Data/Generic/VectorSequence.lh
+)
 
-SET(PROTEINS_GROUP_SOURCES
-#  GraphLabelingAlgorithm/GraphLabelingAlgorithm.h
-#  GraphLabelingAlgorithm/ClassifierBasedGraphLabelingAlgorithm.h
-#  GraphLabelingAlgorithm/IterativeClassificationAlgorithm.h
-#  GraphLabelingAlgorithm/GibbsSamplingAlgorithm.h
-#  GraphLabelingAlgorithm/StackedGraphLabelingAlgorithm.h
-#  GraphLabelingAlgorithm/CRAlgorithmGraphLabelingAlgorithm.h
-#  LabeledContentGraph.cpp
+SET(PROTEINS_DATA_BIO
+  Data/Bio/AminoAcid.lh
+  Data/Bio/AminoAcidSequence.lh
+  Data/Bio/PositionSpecificScoringMatrix.lh
+  Data/Bio/SecondaryStructureSequence.lh
+  Data/Bio/SolventAccesibilitySequence.lh
+)
+
+SET(PROTEINS_LBCPP_SOURCES
+  ${PROTEINS_DATA_GENERIC}
+  ${PROTEINS_DATA_BIO}
+)
+
+ADD_CRALGORITHM_SOURCES(${PROTEINS_LBCPP_SOURCES})
+
+SET(PROTEINS_MAIN_SOURCES
   Main.cpp
 )
 
 SET(PROTEINS_SOURCES
-#  ${CRALGORITHMS_OUTPUT_FILES}
-  ${PROTEINS_GROUP_SOURCES}
+  ${CRALGORITHMS_OUTPUT_FILES}
+  ${PROTEINS_MAIN_SOURCES}
 )
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
-SOURCE_GROUP(ProteinsGroup FILES ${PROTEINS_GROUP_SOURCES})
+SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
+SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
+SOURCE_GROUP(Main FILES ${PROTEINS_MAIN_SOURCES})
 
 ADD_EXECUTABLE(Proteins ${PROTEINS_SOURCES})
 
