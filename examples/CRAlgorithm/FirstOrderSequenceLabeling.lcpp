@@ -38,8 +38,8 @@ crAlgorithm std::vector<size_t> firstOrderSequenceLabeling(std::vector<FeatureGe
 class SequenceExamplesParser : public LearningDataObjectParser
 {
 public:
-  SequenceExamplesParser(const std::string& filename, FeatureDictionaryPtr features, StringDictionaryPtr labels)
-    : LearningDataObjectParser(filename, features), labels(labels) {}
+  SequenceExamplesParser(const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+    : LearningDataObjectParser(file, features), labels(labels) {}
     
   StringDictionaryPtr labels;
 
@@ -49,12 +49,10 @@ public:
     currentLabels.clear();
   }
 
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
   {
     assert(columns.size());
-    std::string label;
-    if (!TextObjectParser::parse(columns[0], label))
-      return false;
+    String label = columns[0];
     SparseVectorPtr features;
     if (!parseFeatureList(columns, 1, features))
       return false;
@@ -81,10 +79,11 @@ private:
 
 int main(int argc, char* argv[])
 {
-  FeatureDictionaryPtr features = new FeatureDictionary("myFeatures");
+  FeatureDictionaryPtr features = new FeatureDictionary(T("myFeatures"));
   StringDictionaryPtr labels = new StringDictionary();
 
-  ObjectStreamPtr crAlgorithmParser = new SequenceExamplesParser("../Data/SequenceLabeling/handwritten.train", features, labels);
+  File trainFile = File::getCurrentWorkingDirectory().getChildFile(T("../Data/SequenceLabeling/handwritten.train"));
+  ObjectStreamPtr crAlgorithmParser = new SequenceExamplesParser(trainFile, features, labels);
   ObjectContainerPtr crAlgorithms = crAlgorithmParser->load(1000);
   
   std::cout << crAlgorithms->size() << " sequences, "
@@ -97,8 +96,10 @@ int main(int argc, char* argv[])
   learner->trainBatch(crAlgorithms, consoleProgressCallback());
   PolicyPtr policy = learner->getPolicy();
 
+  File testFile = File::getCurrentWorkingDirectory().getChildFile(T("../Data/SequenceLabeling/handwritten.test"));
+
   std::cout << "TRAINING STATISTICS:\n" << policy->computeStatistics(crAlgorithms)->toString() << std::endl;  
-  ObjectStreamPtr testingCRAlgorithms = new SequenceExamplesParser("../Data/SequenceLabeling/handwritten.train", features, labels);
+  ObjectStreamPtr testingCRAlgorithms = new SequenceExamplesParser(testFile, features, labels);
   std::cout << "TESTING STATISTICS:\n" << policy->computeStatistics(testingCRAlgorithms)->toString() << std::endl;  
   return 0;
 }

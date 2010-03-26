@@ -17,7 +17,7 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: Random.h                       | Random generator                |
+| Filename: RandomGenerator.h              | RandomGenerator generator       |
 | Author  : Francis Maes                   |                                 |
 | Started : 10/03/2009 20:45               |                                 |
 `------------------------------------------/                                 |
@@ -25,11 +25,11 @@
                                `--------------------------------------------*/
 
 /*!
-**@file   Random.h
+**@file   RandomGenerator.h
 **@author Francis MAES
 **@date   Mon Jun 15 23:39:13 2009
 **
-**@brief  Random numbers generator.
+**@brief  RandomGenerator numbers generator.
 **
 **
 */
@@ -45,31 +45,31 @@ namespace lbcpp
 {
 
 /*!
-** @class Random
-** @brief Random generator singleton.
+** @class RandomGenerator
+** @brief RandomGenerator generator singleton.
 */
-class Random
+class RandomGenerator
 {
 public:
   /** Singleton instance getter.
   **
-  ** @return a reference on the Random singleton.
+  ** @return a reference on the RandomGenerator singleton.
   */
-  static Random& getInstance()
-    {static Random instance(1664518616645186LL); return instance;}
+  static RandomGenerator& getInstance()
+    {static RandomGenerator instance(1664518616645186LL); return instance;}
 
   /** Constructor.
   **
   ** @param seedValue : seed for the random numbers generator.
   */
-  Random(long long seedValue = 0)
+  RandomGenerator(long long seedValue = 0)
     : seed(seedValue) {}
 
   /** Constructor.
   **
   ** @param seedValue : seed for the random numbers generator.  
   */
-  Random(int seedValue)
+  RandomGenerator(int seedValue)
     {setSeed(seedValue);}
 
   /** Seed setter.
@@ -133,7 +133,7 @@ public:
   *     probs.push_back(0.5);
   *     probs.push_back(0.2);
   *     probs.push_back(0.3);
-  *     return Random::sampleWithProbabilities(probs, 1.0);
+  *     return RandomGenerator::sampleWithProbabilities(probs, 1.0);
   *     @endcode
   *
   *    This examples returns:
@@ -313,7 +313,7 @@ public:
   }
 
 private:
-  long long seed;               /*!< Random seed. */
+  long long seed;               /*!< RandomGenerator seed. */
 
   /**
   ** Swaps @a a and @a b content.

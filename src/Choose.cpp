@@ -10,7 +10,7 @@
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
-std::string Choose::computeStateDescription() const
+String Choose::computeStateDescription() const
 {
   StateDescriptionFunctionPtr f = getStateDescriptionFunction();
   if (f)
@@ -22,7 +22,7 @@ std::string Choose::computeStateDescription() const
   }
 }
 
-std::string Choose::computeActionDescription(VariablePtr choice) const
+String Choose::computeActionDescription(VariablePtr choice) const
 {
   ActionDescriptionFunctionPtr f = getActionDescriptionFunction();
   if (f)
@@ -86,9 +86,9 @@ FeatureGeneratorPtr Choose::computeActionFeatures(VariablePtr choice) const
 /*
 ** toString
 */
-std::string Choose::toString() const
+String Choose::toString() const
 {
-  std::string res = crAlgorithm->toString();
+  String res = crAlgorithm->toString();
   res += "\n";
   std::vector<ActionValueFunctionPtr> actionValues(getNumActionValues());
   for (size_t i = 0; i < actionValues.size(); ++i)

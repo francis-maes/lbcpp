@@ -24,8 +24,8 @@ public:
       foldGenerators[i] = classificationExamplesSyntheticGenerator(numFeaturesPerFold, numClasses);
   }
 
-  virtual std::string getContentClassName() const
-    {return "ClassificationExample";}
+  virtual String getContentClassName() const
+    {return T("ClassificationExample");}
 
   virtual ObjectPtr next()
   {

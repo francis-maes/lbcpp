@@ -22,7 +22,7 @@ public:
   ClassifierBasedActionValueFunction(ClassifierPtr classifier)
     : classifier(classifier) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "predictedActionValues(" + classifier->toString() + ")";}
     
   virtual double compute(VariablePtr vchoice) const
@@ -59,7 +59,7 @@ public:
   ClassifierProbabilitiesActionValue(ClassifierPtr classifier = ClassifierPtr())
     : ClassifierBasedActionValueFunction(classifier) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "probabilitiesActionValues(" + classifier->toString() + ")";}
 
   virtual void setChoose(ChoosePtr choose)
@@ -72,7 +72,7 @@ public:
   GeneralizedClassifierScoresActionValue(GeneralizedClassifierPtr classifier = GeneralizedClassifierPtr())
     : classifier(classifier) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "predictedActionValues(" + classifier->toString() + ")";}
 
   virtual void setChoose(ChoosePtr choose)
@@ -98,7 +98,7 @@ public:
   GeneralizedClassifierProbabilitiesActionValue(GeneralizedClassifierPtr classifier = GeneralizedClassifierPtr())
     : classifier(classifier) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "probabilitiesActionValues(" + classifier->toString() + ")";}
 
   virtual void setChoose(ChoosePtr choose)
@@ -123,7 +123,7 @@ public:
 
 protected:
   GeneralizedClassifierPtr classifier;
-  std::map<std::string, double> probs;
+  std::map<String, double> probs;
 };
 
 }; /* namespace lbcpp */

@@ -21,7 +21,7 @@ public:
     : stateValues(stateValues), discount(discount) {}
   StateValueBasedActionValueFunction() : discount(0.0) {}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "stateValueBasedActionValues(" + stateValues->toString() + ", " + lbcpp::toString(discount) + ")";}
   
   virtual void setChoose(ChoosePtr choose)

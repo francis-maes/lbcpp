@@ -37,7 +37,7 @@ namespace lbcpp {
   template<>
   struct Traits<MyClass>
   {
-    static inline std::string toString(const MyClass& c)
+    static inline String toString(const MyClass& c)
       {return "value = " + lbcpp::toString(c.getValue());}
 
     static inline void write(std::ostream& ostr, const MyClass& c)

@@ -76,7 +76,7 @@ public:
   **
   ** @return the variable @a name.
   */
-  virtual VariablePtr getVariable(const std::string& name) const = 0;
+  virtual VariablePtr getVariable(const String& name) const = 0;
 
   /**
   ** Returns a reference on the variable @a name.
@@ -86,7 +86,7 @@ public:
   ** @return a reference on the variable @a name.
   */
   template<class T>
-  const T& getVariableReference(const std::string& name) const
+  const T& getVariableReference(const String& name) const
   {
     VariablePtr v = getVariable(name);
     if (!v)
@@ -104,7 +104,7 @@ public:
   **
   ** @return the type of the variable number @a num.
   */
-  virtual std::string getVariableType(size_t num) const = 0;
+  virtual String getVariableType(size_t num) const = 0;
 
   /**
   ** Returns the name of the variable number @a num.
@@ -113,7 +113,7 @@ public:
   **
   ** @return the name of the variable number @a num.
   */
-  virtual std::string getVariableName(size_t num) const = 0;
+  virtual String getVariableName(size_t num) const = 0;
 
   /**
   ** Returns the value of the variable number @a num.
@@ -122,7 +122,7 @@ public:
   **
   ** @return the value of the variable number @a num.
   */
-  virtual std::string getVariableValue(size_t num) const = 0;
+  virtual String getVariableValue(size_t num) const = 0;
 
   /*
   ** Clone / assignment / swap
@@ -180,9 +180,9 @@ public:
   **
   ** @return the state of all the variables ("variable name = variable value\n...").
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res;
+    String res;
     for (size_t i = 0; i < getNumVariables(); ++i)
       res += getVariableName(i) + " = " + getVariableValue(i) + "\n";
     return res;

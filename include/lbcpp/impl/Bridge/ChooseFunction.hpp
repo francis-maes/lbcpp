@@ -81,7 +81,7 @@ struct ActionFeaturesFunction : public ChooseFunction<ExactType>
 template<class ExactType>
 struct StateDescriptionFunction : public ChooseFunction<ExactType>
 {
-  std::string compute() const
+  String compute() const
     {assert(false); return "";}
 };
 
@@ -90,7 +90,7 @@ struct ActionDescriptionFunction : public ChooseFunction<ExactType>
 {
   typedef ChoiceType_ ChoiceType;
 
-  std::string compute(const ChoiceType& choice) const
+  String compute(const ChoiceType& choice) const
     {assert(false); return "";}
 };
 
@@ -144,12 +144,12 @@ STATIC_TO_DYNAMIC_ENDCLASS_1(ActionFeaturesFunction);
 ** String Descriptions
 */
 STATIC_TO_DYNAMIC_CLASS(StateDescriptionFunction, ChooseFunction_)
-  virtual std::string compute() const
+  virtual String compute() const
     {return BaseClass::impl.compute();}
 STATIC_TO_DYNAMIC_ENDCLASS(StateDescriptionFunction);
 
 STATIC_TO_DYNAMIC_CLASS(ActionDescriptionFunction, ChooseFunction_)
-  virtual std::string compute(VariablePtr choice) const
+  virtual String compute(VariablePtr choice) const
     {return BaseClass::impl.compute(choice->getConstReference<typename ImplementationType::ChoiceType>());}
 STATIC_TO_DYNAMIC_ENDCLASS_1(ActionDescriptionFunction);
 

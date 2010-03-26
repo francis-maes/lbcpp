@@ -79,7 +79,7 @@ public:
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
     {return exists() ? multiplyByScalar(featureGenerator->getSubGeneratorWithIndex(index), weight) : emptyFeatureGenerator();}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return lbcpp::toString(weight) + " * " + featureGenerator->toString();}
     
   virtual size_t l0norm() const

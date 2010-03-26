@@ -17,8 +17,8 @@ public:
   ClassificationExampleToCRAlgorithm(double featureCosts, size_t numClasses)
     : featureCosts(featureCosts), numClasses(numClasses) {}
     
-  virtual std::string getOutputClassName(const std::string& inputClassName) const
-    {return "CRAlgorithm";}
+  virtual String getOutputClassName(const String& inputClassName) const
+    {return T("CRAlgorithm");}
 
   virtual ObjectPtr function(ObjectPtr object) const
   {
@@ -117,7 +117,7 @@ void trainAndTest(ObjectContainerPtr train, ObjectContainerPtr test, size_t numC
     PolicyPtr policy = learnerPolicy;//->verbose(4);
     for (size_t i = 0; i < train->size(); ++i)
     {
-      ClassificationExample ex = *train->getAndCast<ClassificationExample>(Random::getInstance().sampleSize(train->size()));
+      ClassificationExample ex = *train->getAndCast<ClassificationExample>(RandomGenerator::getInstance().sampleSize(train->size()));
   //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
       SparseVectorPtr input = ex.getInput()->toSparseVector();
       
@@ -241,7 +241,7 @@ private:
 void runPolicy(const std::vector<CRAlgorithmPtr>& crAlgorithms, PolicyPtr policy)
 {
   for (size_t i = 0; i < crAlgorithms.size(); ++i)
-    crAlgorithms[Random::getInstance().sampleSize(crAlgorithms.size())]->cloneAndCast<CRAlgorithm>()->run(policy);
+    crAlgorithms[RandomGenerator::getInstance().sampleSize(crAlgorithms.size())]->cloneAndCast<CRAlgorithm>()->run(policy);
 //  std::cout << policy->toString() << std::endl;
 }
 
@@ -251,7 +251,7 @@ void convertExamplesToCRAlgorithms(ObjectContainerPtr examples, size_t numClasse
   res.resize(examples->size());
   for (size_t i = 0; i < examples->size(); ++i)
   {
-    ClassificationExamplePtr ex = examples->getAndCast<ClassificationExample>(Random::getInstance().sampleSize(examples->size()));
+    ClassificationExamplePtr ex = examples->getAndCast<ClassificationExample>(RandomGenerator::getInstance().sampleSize(examples->size()));
 //    std::cout << "SAMPLE " << i << ": " << std::endl << ex << std::endl;
     std::vector<FeatureGeneratorPtr> x;
 //      x.push_back(input);

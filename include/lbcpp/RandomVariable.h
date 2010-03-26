@@ -17,7 +17,7 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: RandomVariable.h               | Random variable statistics      |
+| Filename: RandomVariable.h               | RandomGenerator variable statistics      |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/03/2009 16:18               |                                 |
 `------------------------------------------/                                 |
@@ -58,7 +58,7 @@ public:
   **
   ** @return
   */
-  ScalarVariableMean(const std::string& name = "")
+  ScalarVariableMean(const String& name = "")
     : name(name), value(0), cnt(0) {}
 
   /*!
@@ -111,7 +111,7 @@ public:
   **
   ** @return
   */
-  virtual std::string getName() const
+  virtual String getName() const
     {return name;}
 
   /*!
@@ -120,7 +120,7 @@ public:
   **
   ** @return
   */
-  virtual std::string toString() const
+  virtual String toString() const
     {return lbcpp::toString(getMean());}
 
   /*!
@@ -146,7 +146,7 @@ public:
     {return read(istr, name) && read(istr, value) && read(istr, cnt);}
 
 protected:
-  std::string name;             /*!< */
+  String name;             /*!< */
   double value;                 /*!< */
   double cnt;                   /*!< */
 };
@@ -166,7 +166,7 @@ public:
   **
   ** @return
   */
-  ScalarVariableMeanAndVariance(const std::string& name = "")
+  ScalarVariableMeanAndVariance(const String& name = "")
     : ScalarVariableMean(name) {}
 
   /*!
@@ -210,7 +210,7 @@ public:
   **
   ** @return
   */
-  virtual std::string toString() const
+  virtual String toString() const
     {return ScalarVariableMean::toString() + " +/- " + lbcpp::toString(getStandardDeviation());}
 
   /*!
@@ -262,7 +262,7 @@ class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
   **
   ** @return
   */
-  ScalarVariableStatistics(const std::string& name = "")
+  ScalarVariableStatistics(const String& name = "")
     : ScalarVariableMeanAndVariance(name), min(DBL_MAX), max(-DBL_MAX) {}
 
   /*!
@@ -327,7 +327,7 @@ class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
   **
   ** @return
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
     return ScalarVariableMeanAndVariance::toString() + " [" +
       lbcpp::toString(min) + " - " + lbcpp::toString(max) + "]";
@@ -394,7 +394,7 @@ public:
     {return rewardPerEpisode->getStandardDeviation();}
 
   // Object
-  virtual std::string toString() const;
+  virtual String toString() const;
 
 private:
   ScalarVariableStatisticsPtr rewardPerChoose;

@@ -44,7 +44,7 @@ FEATURE_GENERATOR_DEFAULT_IMPL(DenseVectorPtr) toDenseVector() const
   return staticVisitor.getResult();
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(std::string) toString() const
+FEATURE_GENERATOR_DEFAULT_IMPL(String) toString() const
 {
   impl::StringDescriptionVisitor staticVisitor;
   _this().staticFeatureGenerator(staticVisitor);

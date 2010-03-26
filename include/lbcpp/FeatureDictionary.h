@@ -82,7 +82,7 @@ public:
   ** @return the string associated to @a index if any, or convert
   ** @a index to string.
   */
-  std::string getString(size_t index) const;
+  String getString(size_t index) const;
 
   /**
   ** Returns the index associated to @a str.
@@ -90,7 +90,7 @@ public:
   ** @param str : string value used as key.
   ** @return -1 if not found, the corresponding index otherwise.
   */
-  int getIndex(const std::string& str) const;
+  int getIndex(const String& str) const;
 
   /**
   ** Adds a string value to the dictionary if it not already exists
@@ -98,7 +98,7 @@ public:
   ** @param str : string value.
   ** @return the corresponding index value.
   */
-  size_t add(const std::string& str);
+  size_t add(const String& str);
 
   /**
   ** Converts a string dictionary to a stream.
@@ -123,8 +123,8 @@ public:
   **
   ** @return string value.
   */
-  virtual std::string toString() const
-    {std::ostringstream ostr; ostr << *this; return ostr.str();}
+  virtual String toString() const
+    {std::ostringstream ostr; ostr << *this; return ostr.str().c_str();}
 
   /**
   ** Converts a string dictionary to a Table.
@@ -149,8 +149,8 @@ public:
   virtual bool load(std::istream& istr);
 
 protected:
-  typedef std::map<std::string, size_t> StringToIndexMap;
-  typedef std::vector<std::string> StringVector;
+  typedef std::map<String, size_t> StringToIndexMap;
+  typedef std::vector<String> StringVector;
 
   StringToIndexMap stringToIndex; /**< String to index correspondance. */
   StringVector indexToString;   /**< Index to string correspondance. */
@@ -184,7 +184,7 @@ public:
   ** @param scopes : scope string dictionary.
   ** @return a FeatureDictionary instance.
   */
-  FeatureDictionary(const std::string& name, StringDictionaryPtr features, StringDictionaryPtr scopes);
+  FeatureDictionary(const String& name, StringDictionaryPtr features, StringDictionaryPtr scopes);
 
   /**
   ** Constructor.
@@ -192,7 +192,7 @@ public:
   ** @param name : dictionary name.
   ** @return a FeatureDicitonary instance.
   */
-  FeatureDictionary(const std::string& name = "unnamed");
+  FeatureDictionary(const String& name = "unnamed");
 
   /**
   ** Checks if the dictionary is empty or not.
@@ -235,7 +235,7 @@ public:
   ** @param identifier : feature identifier.
   ** @return index of the new feature.
   */
-  size_t addFeature(const std::string& identifier)
+  size_t addFeature(const String& identifier)
     {assert(featuresDictionary); return featuresDictionary->add(identifier);}
 
   /*
@@ -263,7 +263,7 @@ public:
   ** @param name : scope name.
   ** @param subDictionary : subdictionary.
   */
-  void addScope(const std::string& name, FeatureDictionaryPtr subDictionary)
+  void addScope(const String& name, FeatureDictionaryPtr subDictionary)
     {ensureSubDictionary(getScopes()->add(name), subDictionary);}
 
   /*
@@ -318,7 +318,7 @@ public:
   ** @param name : subdictionary name.
   ** @return the corresponding subdictionary or throw an error.
   */
-  FeatureDictionaryPtr getSubDictionary(const std::string& name)
+  FeatureDictionaryPtr getSubDictionary(const String& name)
     {assert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
 
   /**
@@ -350,7 +350,7 @@ public:
   **
   ** @return dictionary name.
   */
-  virtual std::string getName() const
+  virtual String getName() const
     {return name;}
 
   /**
@@ -358,7 +358,7 @@ public:
   **
   ** @return a string corresponding to the dictionary.
   */
-  virtual std::string toString() const;
+  virtual String toString() const;
 
   /**
   ** Converts to an ObjectGraph
@@ -417,13 +417,13 @@ public:
   static void save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
 
 private:
-  std::string name;             /*!< Dictionary name. */
+  String name;             /*!< Dictionary name. */
   StringDictionaryPtr featuresDictionary; /*!< Feature dictionary. */
   StringDictionaryPtr scopesDictionary; /*!< Scope dictionary. */
   std::vector<FeatureDictionaryPtr> subDictionaries; /*!< Subdictionaries. */
   FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
 
-  void toStringRec(size_t indent, std::string& res) const;
+  void toStringRec(size_t indent, String& res) const;
 };
 
 /**
@@ -432,8 +432,8 @@ private:
 ** @param filename : file name.
 ** @return a feature dictionary pointer.
 */
-inline FeatureDictionaryPtr loadFeatureDictionary(const std::string& filename)
-  {return Object::loadFromFileAndCast<FeatureDictionary>(filename);}
+inline FeatureDictionaryPtr loadFeatureDictionary(const File& file)
+  {return Object::loadFromFileAndCast<FeatureDictionary>(file);}
 
 
 }; /* namespace lbcpp */

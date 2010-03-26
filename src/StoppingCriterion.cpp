@@ -17,7 +17,7 @@ public:
   MaxIterationsStoppingCriterion(size_t maxIterations = 0)
     : maxIterations(maxIterations) {}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return "MaxIterations(" + lbcpp::toString(maxIterations) + ")";}
 
   virtual void reset()
@@ -51,7 +51,7 @@ public:
   AverageImprovementStoppingCriterion(double tolerance = 0.001, bool relativeImprovment = false)
     : tolerance(tolerance), relativeImprovment(relativeImprovment) {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "AvgImprovment(" + lbcpp::toString(tolerance) + ")";}
 
   virtual void reset()
@@ -111,7 +111,7 @@ public:
     : criterion1(criterion1), criterion2(criterion2) {}
   LogicalOrStoppingCriterion() {}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return criterion1->toString() + " || " + criterion2->toString();}
 
   virtual void reset()

@@ -68,10 +68,10 @@ public:
   virtual void save(std::ostream& ostr) const
     {impl.save(ostr);}
 
-  virtual std::string toString() const
+  virtual String toString() const
     {return impl.toString();}
   
-  virtual std::string getName() const
+  virtual String getName() const
     {return impl.getName();}
     
 protected:

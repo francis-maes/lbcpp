@@ -46,7 +46,7 @@ public:
     {return Variable::createFromPointer(const_cast<void* >(impl->getVariablePointer(num)),
         impl->getVariableType(num), impl->getVariableName(num));}
 
-  virtual VariablePtr getVariable(const std::string& name) const
+  virtual VariablePtr getVariable(const String& name) const
   {
     size_t n = impl->getNumVariables();
     for (size_t i = 0; i < n; ++i)
@@ -55,13 +55,13 @@ public:
     return VariablePtr();
   }
   
-  virtual std::string getVariableType(size_t num) const
+  virtual String getVariableType(size_t num) const
     {return impl->getVariableType(num);}
     
-  virtual std::string getVariableName(size_t num) const
+  virtual String getVariableName(size_t num) const
     {return impl->getVariableName(num);}
 
-  virtual std::string getVariableValue(size_t num) const
+  virtual String getVariableValue(size_t num) const
     {return impl->getVariableValue(num);}
 
   virtual int getState() const

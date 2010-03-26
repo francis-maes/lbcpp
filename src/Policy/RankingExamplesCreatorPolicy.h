@@ -26,9 +26,9 @@ public:
   /*
   ** Object
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res = "rankingExamplesCreatorPolicy(" + decorated->toString() + ", " + ranker->toString();
+    String res = "rankingExamplesCreatorPolicy(" + decorated->toString() + ", " + ranker->toString();
     if (supervisor)
       res += ", " + supervisor->toString();
     return res + ")";

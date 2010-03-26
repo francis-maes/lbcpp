@@ -18,16 +18,16 @@ namespace impl {
 template<class ExactType>
 struct Object
 {
-  std::string toString() const {return "";}
-  std::string getName() const {return "";}
+  String toString() const {return "";}
+  String getName() const {return "";}
   
   void save(std::ostream& ostr) const {}
   bool load(std::istream& istr) {return true;}
 
-  static void error(const std::string& where, const std::string& what)
+  static void error(const String& where, const String& what)
     {ErrorHandler::error(where, what);}
     
-  static void warning(const std::string& where, const std::string& what)
+  static void warning(const String& where, const String& what)
     {ErrorHandler::warning(where, what);}
 
 protected:

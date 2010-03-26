@@ -45,17 +45,17 @@ public:
   size_t getNumColumns() const
     {return columns.size();}
 
-  std::string getColumnName(size_t index) const
+  String getColumnName(size_t index) const
     {assert(index < columns.size()); return columns[index].first;}
 
   Type getColumnType(size_t index) const
     {assert(index < columns.size()); return columns[index].second;}
 
-  void addColumn(const std::string& name, const Type& type)
+  void addColumn(const String& name, const Type& type)
     {columns.push_back(std::make_pair(name, type));}
 
 private:
-  std::vector<std::pair<std::string, Type> > columns;
+  std::vector<std::pair<String, Type> > columns;
 };
 
 class Table : public Object
@@ -69,10 +69,10 @@ public:
     {assert(false); return 0;}
   virtual double getDouble(size_t rowNumber, size_t columnNumber) const
     {assert(false); return 0.0;}
-  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+  virtual String getString(size_t rowNumber, size_t columnNumber) const
     {assert(false); return "";}
 
-  std::string toString(size_t rowNumber, size_t columnNumber) const;
+  String toString(size_t rowNumber, size_t columnNumber) const;
 };
 
 }; /* namespace lbcpp */

@@ -170,7 +170,7 @@ public:
   /*
   ** High-level utilities
   */
-  static LabeledContentGraphPtr parseGetoorGraph(const std::string& contentFile, const std::string& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes = 0);
+  static LabeledContentGraphPtr parseGetoorGraph(const File& contentFile, const File& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes = 0);
 
   struct LabelsFold
   {

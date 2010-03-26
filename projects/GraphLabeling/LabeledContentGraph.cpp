@@ -17,14 +17,14 @@ LabeledContentGraph::~LabeledContentGraph()
 class ContentFileParser : public LearningDataObjectParser
 {
 public:
-  ContentFileParser(const std::string& filename, LabeledContentGraphPtr graph, FeatureDictionaryPtr features, std::map<std::string, size_t>& nodeIdentifiers)
-    : LearningDataObjectParser(filename, features), graph(graph), nodeIdentifiers(nodeIdentifiers) {}
+  ContentFileParser(const File& file, LabeledContentGraphPtr graph, FeatureDictionaryPtr features, std::map<String, size_t>& nodeIdentifiers)
+    : LearningDataObjectParser(file, features), graph(graph), nodeIdentifiers(nodeIdentifiers) {}
     
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
   {
     if (columns.size() < 2)
     {
-      Object::error("ContentFileParser::parseDataLine", "Invalid number of columns");
+      Object::error(T("ContentFileParser::parseDataLine"), T("Invalid number of columns"));
       return false;
     }
     SparseVectorPtr content = new SparseVector(features);
@@ -32,15 +32,15 @@ public:
     {
       size_t index = i - 1;
       if (features->getNumFeatures() <= index)
-        features->addFeature("word " + lbcpp::toString(index));
+        features->addFeature(T("word ") + lbcpp::toString(index));
       
-      std::string featureName;
+      String featureName;
       double featureValue;
-      size_t semiColonPos = columns[i].find(':');
-      if (semiColonPos != std::string::npos)
+      int semiColonPos = columns[i].indexOfChar(':');
+      if (semiColonPos >= 0)
       {
-        featureName = columns[i].substr(0, semiColonPos);
-        if (!parse(columns[i].substr(semiColonPos + 1), featureValue))
+        featureName = columns[i].substring(0, semiColonPos);
+        if (!parse(columns[i].substring(semiColonPos + 1), featureValue))
           return false;
       }
       else
@@ -52,7 +52,7 @@ public:
       if (featureValue != 0.0)
         content->set(features->addFeature(featureName), featureValue);
     }
-    content->set(features->addFeature("__unit__"), 1.0); // unit feature
+    content->set(features->addFeature(T("__unit__")), 1.0); // unit feature
     nodeIdentifiers[columns[0]] = graph->addNode(content, graph->getLabelDictionary()->add(columns.back()));
     setResult(content);
     return true;
@@ -61,24 +61,24 @@ public:
 private:
   LabeledContentGraphPtr graph;
   FeatureDictionaryPtr features;
-  std::map<std::string, size_t>& nodeIdentifiers;
+  std::map<String, size_t>& nodeIdentifiers;
   size_t maxNodes;
 };
 
 class LinkFileParser : public LearningDataObjectParser
 {
 public:
-  LinkFileParser(const std::string& filename, LabeledContentGraphPtr graph, std::map<std::string, size_t>& nodeIdentifiers)
-    : LearningDataObjectParser(filename), graph(graph), nodeIdentifiers(nodeIdentifiers) {}
+  LinkFileParser(const File& file, LabeledContentGraphPtr graph, std::map<String, size_t>& nodeIdentifiers)
+    : LearningDataObjectParser(file), graph(graph), nodeIdentifiers(nodeIdentifiers) {}
 
-  virtual bool parseDataLine(const std::vector<std::string>& columns)
+  virtual bool parseDataLine(const std::vector<String>& columns)
   {
     if (columns.size() != 2)
     {
-      Object::error("LinkFileParser::parseDataLine", "Invalid number of columns");
+      Object::error(T("LinkFileParser::parseDataLine"), T("Invalid number of columns"));
       return false;
     }
-    std::map<std::string, size_t>::iterator it1, it2;
+    std::map<String, size_t>::iterator it1, it2;
     it1 = nodeIdentifiers.find(columns[1]);
     it2 = nodeIdentifiers.find(columns[0]);
     if (it1 == nodeIdentifiers.end())
@@ -94,21 +94,21 @@ public:
   virtual bool parseEnd()
   {
     if (invalidIdentifiers.size())
-      Object::warning("LinkFileParser::parseEnd", lbcpp::toString(invalidIdentifiers.size()) + " invalid identifiers in link file");
+      Object::warning(T("LinkFileParser::parseEnd"), lbcpp::toString(invalidIdentifiers.size()) + T(" invalid identifiers in link file"));
     invalidIdentifiers.clear();
     return true;
   }
   
 private:
   LabeledContentGraphPtr graph;
-  std::map<std::string, size_t>& nodeIdentifiers;
-  std::set<std::string> invalidIdentifiers;
+  std::map<String, size_t>& nodeIdentifiers;
+  std::set<String> invalidIdentifiers;
 };
 
-LabeledContentGraphPtr LabeledContentGraph::parseGetoorGraph(const std::string& contentFile, const std::string& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes)
+LabeledContentGraphPtr LabeledContentGraph::parseGetoorGraph(const File& contentFile, const File& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes)
 {
   LabeledContentGraphPtr res = new LabeledContentGraph(labels);
-  std::map<std::string, size_t> nodeIdentifiers;
+  std::map<String, size_t> nodeIdentifiers;
   if (!(new ContentFileParser(contentFile, res, features, nodeIdentifiers))->iterate(maxNodes) ||
       !(new LinkFileParser(linkFile, res, nodeIdentifiers))->iterate())
     return LabeledContentGraphPtr();
@@ -118,7 +118,7 @@ LabeledContentGraphPtr LabeledContentGraph::parseGetoorGraph(const std::string& 
 LabeledContentGraphPtr LabeledContentGraph::randomizeOrder() const
 {
   std::vector<size_t> order;
-  Random::getInstance().sampleOrder(getNumNodes(), order);
+  RandomGenerator::getInstance().sampleOrder(getNumNodes(), order);
   std::vector<size_t> invOrder(order.size());
   for (size_t i = 0; i < order.size(); ++i)
     invOrder[order[i]] = i;

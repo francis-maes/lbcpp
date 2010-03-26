@@ -50,7 +50,7 @@ public:
 
     // ctor, getName(), setChoose()
     body.add(atom("__" + identifier + "Function__() : __crAlgorithm__(NULL) {}\n"));
-    body.add(atom("inline std::string getName() const {return " + quote(identifier) + ";}\n"));
+    body.add(atom("inline String getName() const {return T(" + quote(identifier) + ");}\n"));
     body.add(atom("inline void setChoose(lbcpp::ChoosePtr choose) {\n"
         "__crAlgorithm__ = &lbcpp::dynamicToStaticCRAlgorithm<" + translator.getCRAlgorithmClassName() + ">(choose->getCRAlgorithm()); }\n"));
     body.add(atom(translator.getCRAlgorithmClassName() + "* __crAlgorithm__;\n"));

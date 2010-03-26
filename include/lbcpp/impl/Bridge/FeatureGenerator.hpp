@@ -27,7 +27,7 @@ public:
   StaticToDynamicFeatureGenerator(const ImplementationType& impl)
     : impl(impl) {}
     
-  virtual std::string getName() const
+  virtual String getName() const
     {return ImplementationType::getName();}
 
   virtual FeatureDictionaryPtr getDictionary() const

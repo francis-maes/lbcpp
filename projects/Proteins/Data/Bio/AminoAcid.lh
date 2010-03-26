@@ -53,6 +53,14 @@ public:
   Type getType() const
     {return type;}
     
+  juce::tchar getOneLetterCode() const
+  {
+    static const String codes = T("ARNDCEQGHILKMFPSTWYVBZJX");
+    jassert(type >= 0 && type <= unknown);
+    jassert(codes.length() == (int)unknown + 1);
+    return codes[type];
+  }
+    
   // TODO: properties: one-letter code, three-letter code, hydrophoby, polarity, side chain, ....
   
   bool operator ==(const AminoAcid& aa) const

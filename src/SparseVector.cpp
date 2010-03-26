@@ -68,13 +68,13 @@ void SparseVector::set(size_t index, double value)
     SortedFeatureArrayHelper::remove(values, index);
 }
 
-void SparseVector::set(const std::string& name, double value)
+void SparseVector::set(const String& name, double value)
 {
   assert(dictionary);
   set(dictionary->getFeatures()->add(name), value);
 }
 
-void SparseVector::set(const std::vector<std::string>& path, double value)
+void SparseVector::set(const std::vector<String>& path, double value)
 {
   assert(dictionary);
   SparseVectorPtr ptr(this);

@@ -34,7 +34,7 @@ public:
     std::vector<ObjectPtr> nodeObjects;
     graph->enumerateNodes(nodeObjects, inverseTable);
     nodes.resize(nodeObjects.size());
-    Random& random = Random::getInstance();
+    RandomGenerator& random = RandomGenerator::getInstance();
     for (size_t i = 0; i < nodes.size(); ++i)
     {
       Node& n = nodes[i];
@@ -339,11 +339,11 @@ protected:
     return layouter.getNearestNode(p, maxDistanceInPixels / pixelsPerUnit);
   }
   
-  std::map< std::string, size_t > nodeClassNumbers;
+  std::map<String, size_t> nodeClassNumbers;
 
-  size_t getNodeClassNumber(const std::string& className)
+  size_t getNodeClassNumber(const String& className)
   {
-    std::map< std::string, size_t >::iterator it = nodeClassNumbers.find(className);
+    std::map<String, size_t >::iterator it = nodeClassNumbers.find(className);
     if (it == nodeClassNumbers.end())
     {
       size_t numClasses = nodeClassNumbers.size();

@@ -21,7 +21,7 @@ class StaticToDynamicVariable : public Variable
 public:
   typedef StaticToDynamicVariable<Type> ThisClass;
   
-  StaticToDynamicVariable(const Type& value, const std::string& typeName = "", const std::string& name = "")
+  StaticToDynamicVariable(const Type& value, const String& typeName = "", const String& name = "")
     : Variable(new Type(value), typeName, name) {}
   StaticToDynamicVariable()
     : Variable(NULL) {}
@@ -29,7 +29,7 @@ public:
   virtual ~StaticToDynamicVariable()
     {if (ptr) delete &cast(ptr);}
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return lbcpp::toString(cast(ptr));}
 
   virtual bool equals(const VariablePtr otherVariable) const
@@ -47,7 +47,7 @@ private:
 };
 
 template<class T>
-inline VariablePtr Variable::create(const T& value, const std::string& typeName, const std::string& name)
+inline VariablePtr Variable::create(const T& value, const String& typeName, const String& name)
   {return VariablePtr(new StaticToDynamicVariable<T>(value, typeName, name));}
 
 template<class ContainerType>

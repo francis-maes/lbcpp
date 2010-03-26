@@ -23,7 +23,7 @@ public:
   {
   }*/
 
-  virtual std::string getName() const
+  virtual String getName() const
     {return name;}
 
   virtual size_t getLength() const
@@ -63,7 +63,7 @@ private:
   // Special value for unlabeled elements: 255
   typedef unsigned char Label;
 
-  std::string name;
+  String name;
   std::vector<Label> sequence;
 };
 

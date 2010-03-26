@@ -242,7 +242,7 @@ public:
     return columnNumber == 1 || value >= 0 ? value : -value;
   }
   
-  virtual std::string getString(size_t rowNumber, size_t columnNumber) const
+  virtual String getString(size_t rowNumber, size_t columnNumber) const
   {
     assert(columnNumber == 0);
     return features[rowNumber].first;
@@ -250,16 +250,16 @@ public:
 
 private:
   TableHeaderPtr header;
-  std::vector< std::pair<std::string, double> > features;
+  std::vector< std::pair<String, double> > features;
   
   struct EnumerateFeatures : public PathBasedFeatureVisitor
   {
-    EnumerateFeatures(std::vector< std::pair<std::string, double> >& features)
+    EnumerateFeatures(std::vector< std::pair<String, double> >& features)
       : features(features) {}
       
-    std::vector< std::pair<std::string, double> >& features;
+    std::vector< std::pair<String, double> >& features;
     
-    virtual void featureSense(const std::vector<size_t>& path, const std::string& name, double value)
+    virtual void featureSense(const std::vector<size_t>& path, const String& name, double value)
       {features.push_back(std::make_pair(name, value));}
   };
 };

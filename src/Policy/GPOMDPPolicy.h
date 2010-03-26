@@ -33,9 +33,9 @@ public:
   /*
   ** Object
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res = "gpomdpPolicy(" + classifier->toString() + ", " + lbcpp::toString(beta);
+    String res = "gpomdpPolicy(" + classifier->toString() + ", " + lbcpp::toString(beta);
     if (explorationPolicy)
       res += ", " + explorationPolicy->toString();
     else
@@ -88,7 +88,7 @@ private:
 
   VariablePtr sampleChoice(ChoosePtr choose, DenseVectorPtr probabilities, double probabilitiesSum = 1.0)
   {
-    double r = Random::getInstance().sampleDouble(probabilitiesSum);
+    double r = RandomGenerator::getInstance().sampleDouble(probabilitiesSum);
    //std::cout << "Probabilities: " << probabilities->toString() << " r = " << r << std::endl;
   
     VariableIteratorPtr iterator = choose->newIterator();

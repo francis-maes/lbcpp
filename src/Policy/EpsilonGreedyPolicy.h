@@ -26,12 +26,12 @@ public:
     double eps = epsilon->compute(numChooses);
     ++numChooses;
     VariablePtr choice = DecoratorPolicy::policyChoose(choose);
-    return Random::getInstance().sampleBool(eps)
+    return RandomGenerator::getInstance().sampleBool(eps)
       ? choose->sampleRandomChoice()
       : choice;
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "epsilonGreedyPolicy(" + decorated->toString() + ", " + epsilon->toString() + ")";}
   
   virtual void save(std::ostream& ostr) const

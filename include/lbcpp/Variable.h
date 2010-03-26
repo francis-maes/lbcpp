@@ -59,7 +59,7 @@ public:
   **
   ** @return
   */
-  Variable(void* ptr, const std::string& typeName = "", const std::string& name = "")
+  Variable(void* ptr, const String& typeName = "", const String& name = "")
     : ptr(ptr), typeName(typeName), name(name) {}
 
   /*!
@@ -120,7 +120,7 @@ public:
   ** @return
   */
   template<class T>
-  static VariablePtr create(const T& value, const std::string& typeName = "", const std::string& name = "");
+  static VariablePtr create(const T& value, const String& typeName = "", const String& name = "");
 
   /*!
   **
@@ -131,7 +131,7 @@ public:
   **
   ** @return
   */
-  static VariablePtr createFromPointer(void* value, const std::string& typeName = "", const std::string& name = "")
+  static VariablePtr createFromPointer(void* value, const String& typeName = "", const String& name = "")
     {return VariablePtr(new Variable(value, typeName, name));}
 
   /*!
@@ -144,7 +144,7 @@ public:
   ** @return
   */
   template<class T>
-  static VariablePtr createFromPointer(T* value, const std::string& typeName = "", const std::string& name = "")
+  static VariablePtr createFromPointer(T* value, const String& typeName = "", const String& name = "")
     {return create(*value, typeName, name);}
 
   // Object
@@ -154,7 +154,7 @@ public:
   **
   ** @return
   */
-  virtual std::string getName() const
+  virtual String getName() const
     {return name;}
 
   /*!
@@ -173,7 +173,7 @@ public:
   **
   ** @return
   */
-  std::string getTypeName() const
+  String getTypeName() const
     {return typeName;}
 
   /*!
@@ -182,13 +182,13 @@ public:
   **
   ** @return
   */
-  virtual std::string toString() const
+  virtual String toString() const
     {return "Variable " + getTypeName() + " " + getName();}
 
 protected:
   void* ptr;                    /*!< */
-  std::string typeName;         /*!< */
-  std::string name;             /*!< */
+  String typeName;         /*!< */
+  String name;             /*!< */
 };
 
 
@@ -237,7 +237,7 @@ public:
   **
   ** @return
   */
-  std::string toString() const
+  String toString() const
     {return exists() ? get()->toString() : "<null>";}
 };
 

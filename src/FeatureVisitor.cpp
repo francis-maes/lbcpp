@@ -31,15 +31,15 @@ void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, FeatureGenerat
 bool PathBasedFeatureVisitor::featureEnter(FeatureDictionaryPtr dictionary, size_t index)
 {
   currentPath.push_back(index);
-  std::string scopeName = dictionary->getScopes()->getString(index);
+  String scopeName = dictionary->getScopes()->getString(index);
   currentName.push_back(appendName(currentName.size() ? currentName.back() : "", scopeName));
   return true;
 }
 
 void PathBasedFeatureVisitor::featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
 {
-  std::string featureName = dictionary->getFeatures()->getString(index);
-  std::string fullName = appendName(currentName.size() ? currentName.back() : "", featureName);
+  String featureName = dictionary->getFeatures()->getString(index);
+  String fullName = appendName(currentName.size() ? currentName.back() : "", featureName);
   currentPath.push_back(index);
   featureSense(currentPath, fullName, value);
   currentPath.pop_back();
@@ -52,5 +52,5 @@ void PathBasedFeatureVisitor::featureLeave()
   currentName.pop_back();
 }
 
-std::string PathBasedFeatureVisitor::appendName(const std::string& path, const std::string& name)
-  {return path.size() ? path + "." + name : name;}    
+String PathBasedFeatureVisitor::appendName(const String& path, const String& name)
+  {return path.isNotEmpty() ? path + "." + name : name;}    

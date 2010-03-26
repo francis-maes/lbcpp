@@ -37,7 +37,7 @@
 #ifndef LBCPP_UTILITIES_H_
 # define LBCPP_UTILITIES_H_
 
-# include <string>
+# include "../juce/juce_amalgamated.h"
 # include <cassert>
 # include <sstream>
 # include <vector>
@@ -71,7 +71,7 @@ public:
   ** @param where : where the error occurs.
   ** @param what : what's going wrong.
   */
-  virtual void errorMessage(const std::string& where, const std::string& what) = 0;
+  virtual void errorMessage(const String& where, const String& what) = 0;
 
   /**
   ** Displays a warning message.
@@ -79,7 +79,7 @@ public:
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
   */
-  virtual void warningMessage(const std::string& where, const std::string& what) = 0;
+  virtual void warningMessage(const String& where, const String& what) = 0;
 
   /**
   ** ErrorHandler instance setter.
@@ -102,7 +102,7 @@ public:
   ** @param what : what's going wrong.
   ** @see Object::error
   */
-  static void error(const std::string& where, const std::string& what)
+  static void error(const String& where, const String& what)
     {getInstance().errorMessage(where, what);}
 
   /**
@@ -112,7 +112,7 @@ public:
   ** @param what : what's going wrong.
   ** @see Object::warning
   */
-  static void warning(const std::string& where, const std::string& what)
+  static void warning(const String& where, const String& what)
     {getInstance().warningMessage(where, what);}
 
 private:
@@ -140,7 +140,7 @@ public:
   **
   ** @param description : a string that describes the task which begins.
   */
-  virtual void progressStart(const std::string& description)
+  virtual void progressStart(const String& description)
     {}
 
   /** This function is called each time the task progresses.
@@ -158,7 +158,7 @@ public:
   **
   ** @return false to cancel the task or true to continue the task.
   */
-  virtual bool progressStep(const std::string& description, double iteration, double totalIterations = 0)
+  virtual bool progressStep(const String& description, double iteration, double totalIterations = 0)
     {return true;}
 
   /** This function is called at the end of the task. */

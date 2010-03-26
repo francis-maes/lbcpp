@@ -32,7 +32,7 @@ public:
       this->lineSearch = new BackTrackingLineSearch();
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "LBFGSOptimizer";}
 
   virtual ~LBFGSOptimizer()

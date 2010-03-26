@@ -33,7 +33,7 @@ public:
     return choose->sampleChoiceWithProbabilities(probabilities, 1.0);
   }
   
-  virtual std::string toString() const
+  virtual String toString() const
     {return "stochasticPolicy(" + actionProbabilities->toString() + ")";}
     
   virtual void save(std::ostream& ostr) const

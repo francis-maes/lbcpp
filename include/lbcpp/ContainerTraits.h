@@ -38,7 +38,7 @@
 # define LBCPP_CONTAINER_TRAITS_H_
 
 # include "Traits.h"
-# include "Random.h"
+# include "RandomGenerator.h"
 # include <vector>
 # include <set>
 # include <map>
@@ -50,7 +50,7 @@ namespace lbcpp
 {
 /*
 Traits:
-  static std::string toString(const T& container)
+  static String toString(const T& container)
   static void write(std::ostream& ostr, const T& container)
   static bool read(std::istream& istr, T& container)
 
@@ -92,7 +92,7 @@ struct SampleRandomImplementation
 
     // not tested
     assert(ContainerTraits::size(container));
-    int r = Random::getInstance().sampleSize(ContainerTraits::size(container));
+    int r = RandomGenerator::getInstance().sampleSize(ContainerTraits::size(container));
     int i = 0;
     typename ContainerTraits::ConstIterator it;
     for (it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it, ++i)
@@ -117,7 +117,7 @@ struct SampleRandomImplementation<size_t>
     size_t b = ContainerTraits::begin(container);
     size_t e = ContainerTraits::end(container);
     assert(e > b);
-    result = Random::getInstance().sampleSize(b, e);
+    result = RandomGenerator::getInstance().sampleSize(b, e);
     return result;
   }
 };
@@ -142,13 +142,13 @@ struct DefaultContainerTraits
   **
   ** @return
   */
-  static inline std::string toString(const ContainerType& container)
+  static inline String toString(const ContainerType& container)
   {
-    std::string res;
+    String res;
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
     {
       if (res.length() > 0)
-        res += ", ";
+        res += T(", ");
       res += lbcpp::toString(ContainerTraits::value(it));
     }
     return res;
@@ -283,7 +283,7 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
   {
     // not tested
     assert(container.size());
-    int r = Random::getInstance().sampleSize(container.size());
+    int r = RandomGenerator::getInstance().sampleSize(container.size());
     int i = 0;
     //if (r < (int)container.size() / 2)
     {
@@ -323,8 +323,8 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
   **
   ** @return
   */
-  static inline std::string toString(const std::vector<T>& vector)
-    {return "[" + BuiltinContainerTraits< std::vector<T> >::toString(vector) + "]";}
+  static inline String toString(const std::vector<T>& vector)
+    {return T("[") + BuiltinContainerTraits< std::vector<T> >::toString(vector) + T("]");}
 
   /*!
   **
@@ -356,7 +356,7 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
   static const T& sampleRandom(const std::vector<T>& vector)
   {
     assert(vector.size());
-    return vector[Random::getInstance().sampleSize(vector.size())];
+    return vector[RandomGenerator::getInstance().sampleSize(vector.size())];
   }
 };
 
@@ -373,8 +373,8 @@ struct Traits< std::set<T> > : public BuiltinContainerTraits< std::set<T> >
   **
   ** @return
   */
-  static inline std::string toString(const std::set<T>& container)
-    {return "{" + BuiltinContainerTraits< std::set<T> >::toString(container) + "}";}
+  static inline String toString(const std::set<T>& container)
+    {return T("{") + BuiltinContainerTraits< std::set<T> >::toString(container) + T("}");}
 };
 
 /*
@@ -399,8 +399,9 @@ struct Traits< std::multimap<KeyType, ValueType> >
 template<class T1, class T2>
 struct Traits< std::pair<T1, T2> > : public BuiltinTypeTraits< std::pair<T1, T2> >
 {
-  static inline std::string toString(const std::pair<T1, T2>& value)
-    {return "(" + Traits<T1>::toString(value.first) + ", " + Traits<T2>::toString(value.second) + ")";}
+  static inline String toString(const std::pair<T1, T2>& value)
+    {return T("(") + Traits<T1>::toString(value.first) + T(", ") + Traits<T2>::toString(value.second) + T(")");}
+    
   static inline void write(std::ostream& ostr, const std::pair<T1, T2>& value)
   {
     Traits<T1>::write(ostr, value.first);
@@ -464,8 +465,8 @@ struct Traits< SizeRange >
   static const size_t& value(const size_t& iterator)
     {return iterator;}
 
-  static std::string toString(const SizeRange& range)
-    {return "[" + lbcpp::toString(range.begin) + ", " + lbcpp::toString(range.end) + "[";}
+  static String toString(const SizeRange& range)
+    {return T("[") + lbcpp::toString(range.begin) + T(", ") + lbcpp::toString(range.end) + T("[");}
 
   static void write(std::ostream& ostr, const SizeRange& range)
     {lbcpp::write(ostr, range.begin); lbcpp::write(ostr, range.end);}

@@ -57,7 +57,7 @@ public:
   /*
   ** Object
   */
-  virtual std::string getName() const
+  virtual String getName() const
     {return crAlgorithm->getName() + "::choose" + lbcpp::toString((size_t)chooseNumber);}
 
   virtual ObjectPtr clone() const
@@ -66,7 +66,7 @@ public:
   /*
   ** Choices
   */
-  virtual std::string getChoiceType() const
+  virtual String getChoiceType() const
     {return ChooseType::getChoiceType();}
 
   virtual size_t getNumChoices() const
@@ -99,7 +99,7 @@ public:
     if (!probabilitiesSum)
       for (size_t i = 0; i < probabilities.size(); ++i)
         probabilitiesSum += probabilities[i];
-    double number = Random::getInstance().sampleDouble(probabilitiesSum);
+    double number = RandomGenerator::getInstance().sampleDouble(probabilitiesSum);
     typename ContainerTraits::ConstIterator it = ContainerTraits::begin(container);
     for (size_t i = 0; i < probabilities.size(); ++i, ++it)
     {

@@ -23,7 +23,7 @@ public:
     : optimizer(other.optimizer), stoppingCriterion(other.stoppingCriterion) {}
   BatchGradientBasedLearner() {}
     
-  virtual std::string toString() const
+  virtual String toString() const
     {return "BatchGradientBasedLearner(" + lbcpp::toString(optimizer) + ", " + lbcpp::toString(stoppingCriterion) + ")";}
 
   virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)

@@ -28,9 +28,9 @@ public:
   /*
   ** Object
   */
-  virtual std::string toString() const
+  virtual String toString() const
   {
-    std::string res = useSarsaRule ? "sarsaZeroPolicy" : "qLearningPolicy";
+    String res = useSarsaRule ? "sarsaZeroPolicy" : "qLearningPolicy";
     return res + "(" + decorated->toString() + ", " + 
       regressor->toString() + ", " + lbcpp::toString(discount) + ")";
   }

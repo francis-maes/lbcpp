@@ -198,7 +198,7 @@ DenseVectorPtr Classifier::predictProbabilities(const FeatureGeneratorPtr input)
 size_t Classifier::sample(const FeatureGeneratorPtr input) const
 {
   DenseVectorPtr probs = predictProbabilities(input);
-  return Random::getInstance().sampleWithNormalizedProbabilities(probs->getValues());
+  return RandomGenerator::getInstance().sampleWithNormalizedProbabilities(probs->getValues());
 }
 
 double Classifier::evaluateAccuracy(ObjectStreamPtr examples) const
@@ -289,7 +289,7 @@ DenseVectorPtr BinaryClassifier::predictProbabilities(const FeatureGeneratorPtr 
 size_t BinaryClassifier::sample(const FeatureGeneratorPtr input) const
 {
   double prob1 = scoreToProbability(predictScoreOfPositiveClass(input));
-  return Random::getInstance().sampleBool(prob1) ? 1 : 0;
+  return RandomGenerator::getInstance().sampleBool(prob1) ? 1 : 0;
 }
 
 /*
@@ -332,7 +332,7 @@ DenseVectorPtr GeneralizedClassifier::predictProbabilities(const FeatureGenerato
 size_t GeneralizedClassifier::sample(const FeatureGeneratorPtr compositeInput) const
 {
   DenseVectorPtr probs = predictProbabilities(compositeInput);
-  return Random::getInstance().sampleWithNormalizedProbabilities(probs->getValues());  
+  return RandomGenerator::getInstance().sampleWithNormalizedProbabilities(probs->getValues());  
 }
 
 /*

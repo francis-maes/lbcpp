@@ -455,7 +455,7 @@ public:
   /**
   ** @see FeatureGenerator::toString
   */
-  virtual std::string toString() const;
+  virtual String toString() const;
 
   /**
   ** @see FeatureGenerator::l0norm

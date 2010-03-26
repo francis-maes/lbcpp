@@ -9,7 +9,7 @@
 #ifndef EXPLORER_COMPONENTS_COMMON_H_
 # define EXPLORER_COMPONENTS_COMMON_H_
 
-# include "../Juce/juce_amalgamated.h"
+# include "../../juce/juce_amalgamated.h"
 # include <lbcpp/lbcpp.h>
 
 namespace lbcpp

@@ -25,7 +25,7 @@ public:
       parameters[i] = sampleVectorGaussian(numFeatures);
   }
   
-  virtual std::string getContentClassName() const
+  virtual String getContentClassName() const
     {return "ClassificationExample";}
 
   virtual ObjectPtr next()
@@ -61,7 +61,7 @@ private:
   {
     DenseVectorPtr res = new DenseVector(getDictionary(), numFeatures);
     for (size_t i = 0; i < numFeatures; ++i)
-      res->set(i, Random::getInstance().sampleDoubleFromGaussian());
+      res->set(i, RandomGenerator::getInstance().sampleDoubleFromGaussian());
     return res;
   }
 };

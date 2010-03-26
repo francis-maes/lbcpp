@@ -126,7 +126,7 @@ public:
   ** @param name : name.
   ** @param value : value.
   */
-  void set(const std::string& name, double value);
+  void set(const String& name, double value);
 
   /**
   ** Path setter.
@@ -134,7 +134,7 @@ public:
   ** @param path : path.
   ** @param value : value.
   */
-  void set(const std::vector<std::string>& path, double value);
+  void set(const std::vector<String>& path, double value);
 
   /**
   ** Returns the value at the index @a index.
@@ -341,8 +341,8 @@ private:
   **
   ** @return a sparse vector pointer.
   */
-inline SparseVectorPtr loadSparseVector(const std::string& filename)
-  {return Object::loadFromFileAndCast<SparseVector>(filename);}
+inline SparseVectorPtr loadSparseVector(const File& file)
+  {return Object::loadFromFileAndCast<SparseVector>(file);}
 
 }; /* namespace lbcpp */
 

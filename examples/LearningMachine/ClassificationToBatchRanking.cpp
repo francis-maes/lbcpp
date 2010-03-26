@@ -27,10 +27,11 @@ int main(int argc, char* argv[])
   /*
   ** Create parser and apply the classification example -> ranking example function.
   */
+  File dataDirectory = File::getCurrentWorkingDirectory().getChildFile("../Data/Classification/");
   ObjectFunctionPtr conversionFunction = transformClassificationExampleIntoRankingExample(labels);
-  ObjectStreamPtr trainingParser = classificationExamplesParser("../Data/Classification/small.train", features, labels);
+  ObjectStreamPtr trainingParser = classificationExamplesParser(dataDirectory.getChildFile("small.train"), features, labels);
   ObjectContainerPtr trainingData = trainingParser->apply(conversionFunction)->load();
-  ObjectStreamPtr testingParser = classificationExamplesParser("../Data/Classification/small.test", features, labels);
+  ObjectStreamPtr testingParser = classificationExamplesParser(dataDirectory.getChildFile("small.test"), features, labels);
   ObjectContainerPtr testingData = testingParser->apply(conversionFunction)->load();
   if (trainingData->empty() || testingData->empty())
     return 1;
@@ -38,24 +39,24 @@ int main(int argc, char* argv[])
   /*
   ** Create ranking machines
   */
-  std::vector<std::pair<std::string, RankerPtr> > rankers;
+  std::vector<std::pair<String, RankerPtr> > rankers;
   
   GradientBasedLearnerPtr gradientDescentLearner =
     batchLearner(gradientDescentOptimizer(constantIterationFunction(1.0)));
   GradientBasedLearnerPtr rpropLearner = batchLearner(rpropOptimizer());
   
-  rankers.push_back(std::make_pair("AllPairs, Gradient Descent",
+  rankers.push_back(std::make_pair(T("AllPairs, Gradient Descent"),
     largeMarginAllPairsLinearRanker(gradientDescentLearner)));
-  rankers.push_back(std::make_pair("MostViolatedPair, Gradient Descent",
+  rankers.push_back(std::make_pair(T("MostViolatedPair, Gradient Descent"),
     largeMarginMostViolatedPairLinearRanker(gradientDescentLearner)));
-  rankers.push_back(std::make_pair("BestAgainstAll, Gradient Descent",
+  rankers.push_back(std::make_pair(T("BestAgainstAll, Gradient Descent"),
     largeMarginBestAgainstAllLinearRanker(gradientDescentLearner)));
     
-  rankers.push_back(std::make_pair("AllPairs, RProp",
+  rankers.push_back(std::make_pair(T("AllPairs, RProp"),
     largeMarginAllPairsLinearRanker(rpropLearner)));
-  rankers.push_back(std::make_pair("MostViolatedPair, RProp",
+  rankers.push_back(std::make_pair(T("MostViolatedPair, RProp"),
     largeMarginMostViolatedPairLinearRanker(rpropLearner)));
-  rankers.push_back(std::make_pair("BestAgainstAll, RProp",
+  rankers.push_back(std::make_pair(T("BestAgainstAll, RProp"),
     largeMarginBestAgainstAllLinearRanker(rpropLearner)));
   
   /*
