@@ -165,6 +165,15 @@ public:
 
 protected:
   int numStates;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, numStates) && LabelSequence::load(istr);}
+  
+  virtual void save(OutputStream& ostr) const
+  {
+    lbcpp::write(ostr, numStates);
+    LabelSequence::save(ostr);
+  }
 };
 
 typedef ReferenceCountedObjectPtr<SecondaryStructureSequence> SecondaryStructureSequencePtr;
