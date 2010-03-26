@@ -32,10 +32,10 @@ public:
     return scores->get(choice);
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, classifier);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, classifier);}
   
 protected:
@@ -81,10 +81,10 @@ public:
   virtual double compute(VariablePtr variable) const
     {return classifier->predictScore(choose->computeActionFeatures(variable));}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, classifier);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, classifier);}
 
 protected:
@@ -115,10 +115,10 @@ public:
     return probs.find(variable->toString())->second;
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, classifier);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, classifier);}
 
 protected:

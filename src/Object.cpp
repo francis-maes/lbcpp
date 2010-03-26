@@ -67,7 +67,7 @@ void Object::declare(const String& className, Constructor constructor)
 Object* Object::create(const String& className)
   {return getObjectFactoryInstance().create(className);}
 
-ObjectPtr Object::loadFromStream(std::istream& istr)
+ObjectPtr Object::loadFromStream(InputStream& istr)
 {
   String className;
   if (!read(istr, className))
@@ -85,13 +85,15 @@ ObjectPtr Object::loadFromStream(std::istream& istr)
 
 ObjectPtr Object::loadFromFile(const File& file)
 {
-  std::ifstream istr((const char* )file.getFullPathName(), std::ios::binary);
-  if (!istr.is_open())
+  InputStream* inputStream = file.createInputStream();
+  if (!inputStream)
   {
     error(T("Object::createFromFile"), T("Could not open file ") + file.getFullPathName());
     return ObjectPtr();
   }
-  return loadFromStream(istr);
+  ObjectPtr res = loadFromStream(*inputStream);
+  delete inputStream;
+  return res;
 }
 
 String Object::getClassName() const
@@ -99,21 +101,22 @@ String Object::getClassName() const
   return lbcpp::toString(typeid(*this));
 }
 
-void Object::saveToStream(std::ostream& ostr) const
+void Object::saveToStream(OutputStream& ostr) const
 {
-  write(ostr, getClassName());
+  ostr.writeString(getClassName());
   save(ostr);
 }
 
 bool Object::saveToFile(const File& file) const
 {
-  std::ofstream ostr((const char* )file.getFullPathName());
-  if (!ostr.is_open())
+  OutputStream* outputStream = file.createOutputStream();
+  if (!outputStream)
   {
     error(T("Object::saveToFile"), T("Could not open file ") + file.getFullPathName());
     return false;
   }
-  saveToStream(ostr);
-  ostr.flush();
+  saveToStream(*outputStream);
+  outputStream->flush();
+  delete outputStream;
   return true;
 }

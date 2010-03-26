@@ -40,14 +40,12 @@ public:
       if (semiColonPos >= 0)
       {
         featureName = columns[i].substring(0, semiColonPos);
-        if (!parse(columns[i].substring(semiColonPos + 1), featureValue))
-          return false;
+        featureValue = columns[i].substring(semiColonPos + 1).getDoubleValue();
       }
       else
       {
         featureName = lbcpp::toString(index);
-        if (!parse(columns[i], featureValue))
-          return false;
+        featureValue = columns[i].getDoubleValue();
       }
       if (featureValue != 0.0)
         content->set(features->addFeature(featureName), featureValue);

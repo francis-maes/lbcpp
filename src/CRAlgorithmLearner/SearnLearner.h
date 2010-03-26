@@ -70,10 +70,10 @@ public:
     return true;
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, initialRanker) && read(istr, optimalActionValues) && read(istr, beta) && read(istr, stoppingCriterion);}
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, initialRanker); write(ostr, optimalActionValues); write(ostr, beta); write(ostr, stoppingCriterion);}
 
 protected:

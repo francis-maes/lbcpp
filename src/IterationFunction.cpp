@@ -17,10 +17,10 @@ public:
   virtual double compute(size_t iteration) const
     {return value;}
     
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, value);}
     
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, value);}
 
   virtual String toString() const
@@ -42,10 +42,10 @@ public:
   virtual double compute(size_t iteration) const
     {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
 
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, initialValue); write(ostr, numberIterationsToReachHalfInitialValue);}
     
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, initialValue) && read(istr, numberIterationsToReachHalfInitialValue);}
 
   virtual String toString() const

@@ -130,7 +130,7 @@ void SparseVector::multiplyByScalar(double scalar)
     subVectors[i].second->multiplyByScalar(scalar);
 }
 
-bool SparseVector::load(std::istream& istr)
+bool SparseVector::load(InputStream& istr)
 {
   size_t numSubVectors;
   if (!read(istr, values) || !read(istr, numSubVectors))
@@ -149,7 +149,7 @@ bool SparseVector::load(std::istream& istr)
   return true;
 }
 
-void SparseVector::save(std::ostream& ostr) const
+void SparseVector::save(OutputStream& ostr) const
 {
   write(ostr, values);
   write(ostr, subVectors.size());

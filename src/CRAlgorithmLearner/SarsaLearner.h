@@ -30,10 +30,10 @@ public:
   virtual String toString() const
     {return "sarsaLearner(" + regressor->toString() + ", " + lbcpp::toString(discount) + ", .. FIXME)";}
     
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, regressor); write(ostr, discount); PolicyBasedCRAlgorithmLearner::save(ostr);}
     
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, regressor) && read(istr, discount) && PolicyBasedCRAlgorithmLearner::load(istr);}
   
 protected:

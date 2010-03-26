@@ -34,10 +34,10 @@ public:
   virtual String toString() const
     {return "epsilonGreedyPolicy(" + decorated->toString() + ", " + epsilon->toString() + ")";}
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {DecoratorPolicy::save(ostr); write(ostr, numChooses); write(ostr, epsilon);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return DecoratorPolicy::load(istr) && read(istr, numChooses) && read(istr, epsilon);}
   
 private:

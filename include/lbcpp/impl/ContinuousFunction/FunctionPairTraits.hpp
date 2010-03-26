@@ -193,9 +193,9 @@ struct ScalarVectorFunctionScalarConstantPair
     
     String toString() const
       {return "(" + left.toString() + " * " + lbcpp::toString(right) + ")";}
-    void save(std::ostream& ostr) const
+    void save(OutputStream& ostr) const
       {write(ostr, right);}
-    bool load(std::istream& istr)
+    bool load(InputStream& istr)
       {return read(istr, right);}
   };
 };

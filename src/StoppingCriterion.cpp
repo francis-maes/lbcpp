@@ -32,10 +32,10 @@ public:
   virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr, ObjectContainerPtr)
     {return shouldStop();}
 
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, maxIterations);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, maxIterations);}
 
 private:
@@ -89,10 +89,10 @@ public:
     return false;
   }
 
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, tolerance);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, tolerance);}
 
 private:
@@ -131,10 +131,10 @@ public:
     return t1 || t2;
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, criterion1); write(ostr, criterion2);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, criterion1) && read(istr, criterion2);}
 
 private:

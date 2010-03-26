@@ -63,7 +63,7 @@ public:
   ** @return
   */
   static inline String toString(const T& value)
-    {std::ostringstream ostr; ostr << value; return ostr.str().c_str();}
+    {jassert(false); return T("<toString not implemented>");}
 
   /*!
   **
@@ -71,7 +71,7 @@ public:
   ** @param ostr
   ** @param value
   */
-  static inline void write(std::ostream& ostr, const T& value)
+  static inline void write(OutputStream& ostr, const T& value)
     {jassert(false);}
 
   /*!
@@ -82,7 +82,7 @@ public:
   **
   ** @return
   */
-  static inline bool read(std::istream& istr, T& result)
+  static inline bool read(InputStream& istr, T& result)
     {jassert(false); return false;}
 };
 
@@ -94,94 +94,28 @@ inline String toString(const T& value)
   {return Traits<T>::toString(value);}
 
 template<class T>
-inline void write(std::ostream& ostr, const T& value)
+inline void write(OutputStream& ostr, const T& value)
   {Traits<T>::write(ostr, value);}
 
 template<class T>
-inline bool read(std::istream& istr, T& result)
+inline bool read(InputStream& istr, T& result)
   {return Traits<T>::read(istr, result);}
 
 inline std::ostream& operator <<(std::ostream& ostr, const String& value)
   {return ostr << (const char* )value;}
 
-/*
-** Traits for builtin types
-*/
-template<class T>
-struct BuiltinTypeTraits
-{
-  typedef T Type;
 
-  /*!
-  **
-  **
-  ** @param value
-  **
-  ** @return
-  */
-  static inline String toString(const T& value)
-// if this fails, you need to declare a "friend std::ostream& operator << (std::ostream& ostr, const T& value)" operator
-    {std::ostringstream ostr; ostr << value; return ostr.str().c_str();}
-
-  /*!
-  **
-  **
-  ** @param ostr
-  ** @param value
-  */
-  static inline void write(std::ostream& ostr, const T& value)
-    {ostr.write((const char* )&value, sizeof (T));}
-
-  /*!
-  **
-  **
-  ** @param istr
-  ** @param result
-  **
-  ** @return
-  */
-  static inline bool read(std::istream& istr, T& result)
-    {istr.read((char* )&result, sizeof (T)); return istr.good();}
-};
-
-
-template<>
-struct Traits<size_t> : public BuiltinTypeTraits<size_t> {};
-template<>
-struct Traits<int> : public BuiltinTypeTraits<int> {};
-template<>
-struct Traits<float> : public BuiltinTypeTraits<float> {};
-template<>
-struct Traits<double> : public BuiltinTypeTraits<double> {};
-
-/*!
-**
-**
-** @param number
-**
-** @return
-*/
 inline bool isNumberValid(double number)
 {
-#ifdef WIN32
+#ifdef JUCE_WIN32
     return number == number;
 #else
     return !std::isnan(number) && !std::isinf(number);
 #endif
 }
 
-/*!
-**
-**
-** @param value
-**
-** @return
-*/
-inline bool isNumberNearlyNull(double value)
-{
-  static const double epsilon = 0.00001;
-  return fabs(value) < epsilon;
-}
+inline bool isNumberNearlyNull(double value, double epsilon = 0.00001)
+  {return fabs(value) < epsilon;}
 
 
 /*
@@ -195,18 +129,15 @@ struct Traits<bool>
   static inline String toString(bool value)
     {return value ? T("true") : T("false");}
 
-  static inline void write(std::ostream& ostr, bool value)
-    {ostr.put((char)(value ? 1 : 0));}
+  static inline void write(OutputStream& ostr, bool value)
+    {ostr.writeBool(value);}
 
-  static inline bool read(std::istream& istr, bool& res)
+  static inline bool read(InputStream& istr, bool& res)
   {
-    char c = istr.get();
-    if (istr.good() && (c == 0 || c <= 1))
-    {
-      res = c != 0;
-      return true;
-    }
-    return false;
+    if (istr.isExhausted())
+      return false;
+    res = istr.readBool();
+    return true;
   }
 };
 
@@ -218,39 +149,17 @@ struct Traits<char>
   static inline String toString(char value)
     {String res; res += value; return res.quoted();}
 
-  static inline void write(std::ostream& ostr, char value)
-    {ostr.put(value);}
+  static inline void write(OutputStream& ostr, char value)
+    {ostr.writeByte(value);}
 
-  static inline bool read(std::istream& istr, char& res)
-    {res = istr.get(); return istr.good();}
-};
-
-template<>
-struct Traits<std::string>
-{
-  typedef std::string Type;
-
-  static inline String toString(const std::string& value)
-    {return String(value.c_str()).quoted();}
-
-  static inline void write(std::ostream& ostr, const std::string& string)
-    {ostr.write(string.c_str(), string.size() + 1);}
-
-  static inline bool read(std::istream& istr, std::string& res)
+  static inline bool read(InputStream& istr, char& res)
   {
-    res = "";
-    char c = istr.get();
-    while (istr.good())
-    {
-      if (!c)
-        return true;
-      res += c;
-      c = istr.get();
-    }
-    return false; // stream failed before we read the terminal '0'
+    if (istr.isExhausted())
+      return false;
+    res = istr.readByte();
+    return true;
   }
 };
-
 
 template<>
 struct Traits<String>
@@ -260,30 +169,98 @@ struct Traits<String>
   static inline String toString(const String& value)
     {return value.quoted();}
 
-  static inline void write(std::ostream& ostr, const String& string)
-  {
-    for (int i = 0; i < string.length(); ++i)
-      Traits<juce::tchar>::write(ostr, string[i]);
-    Traits<juce::tchar>::write(ostr, 0);
-  }
+  static inline void write(OutputStream& ostr, const String& string)
+    {ostr.writeString(string);}
 
-  static inline bool read(std::istream& istr, String& res)
+  static inline bool read(InputStream& istr, String& res)
   {
-    res = "";
-    juce::tchar c;
-    if (!Traits<juce::tchar>::read(istr, c))
+    if (istr.isExhausted())
       return false;
-    while (true)
-    {
-      if (!c)
-        return true;
-      res += c;
-      if (!Traits<juce::tchar>::read(istr, c))
-        break;
-    }
-    return false; // stream failed before we read the terminal '0'
+    res = istr.readString();
+    return true;
   }
 };
+
+template<>
+struct Traits<size_t>
+{
+  typedef size_t Type;
+  
+  static inline String toString(const Type& value)
+    {return String((juce::int64)value);}
+
+  static inline void write(OutputStream& ostr, const Type& value)
+    {ostr.writeInt64BigEndian((juce::int64)value);}
+
+  static inline bool read(InputStream& istr, Type& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = (size_t)istr.readInt64BigEndian();
+    return true;
+  }
+};
+
+template<>
+struct Traits<int>
+{
+  typedef int Type;
+  
+  static inline String toString(const Type& value)
+    {return String(value);}
+
+  static inline void write(OutputStream& ostr, const Type& value)
+    {ostr.writeIntBigEndian(value);}
+
+  static inline bool read(InputStream& istr, Type& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = istr.readIntBigEndian();
+    return true;
+  }  
+};
+
+template<>
+struct Traits<float>
+{
+  typedef float Type;
+  
+  static inline String toString(const Type& value)
+    {return String(value);}
+
+  static inline void write(OutputStream& ostr, const Type& value)
+    {ostr.writeFloatBigEndian(value);}
+
+  static inline bool read(InputStream& istr, Type& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = istr.readFloatBigEndian();
+    return true;
+  }
+};
+
+template<>
+struct Traits<double>
+{
+  typedef double Type;
+  
+  static inline String toString(const Type& value)
+    {return String(value);}
+
+  static inline void write(OutputStream& ostr, const Type& value)
+    {ostr.writeDoubleBigEndian(value);}
+
+  static inline bool read(InputStream& istr, Type& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = istr.readDoubleBigEndian();
+    return true;
+  }
+};
+
 
 
 /*
@@ -297,19 +274,16 @@ struct Traits<const TargetType*>
   static inline String toString(const TargetType* value)
     {return value ? T("&") + Traits<TargetType>::toString(*value) : T("null");}
 
-  static inline void write(std::ostream& ostr, const TargetType* value)
+  static inline void write(OutputStream& ostr, const TargetType* value)
   {
-    Traits<bool>::write(ostr, value != NULL);
+    ostr.writeBool(value != NULL);
     if (value)
       Traits<TargetType>::write(ostr, *value);
   }
 
-  static inline bool read(std::istream& istr, TargetType*& result)
+  static inline bool read(InputStream& istr, TargetType*& result)
   {
-    bool exists;
-    if (!Traits<bool>::read(istr, exists))
-      return false;
-    if (exists)
+    if (istr.readBool())
     {
       result = new TargetType();
       return Traits<TargetType>::read(istr, *result);
@@ -327,19 +301,16 @@ struct Traits<TargetType*>
   static inline String toString(const TargetType* value)
     {return value ? T("&") + Traits<TargetType>::toString(*value) : T("null");}
 
-  static inline void write(std::ostream& ostr, const TargetType* value)
+  static inline void write(OutputStream& ostr, const TargetType* value)
   {
-    Traits<bool>::write(ostr, value != NULL);
+    ostr.writeBool(value != NULL);
     if (value)
       Traits<TargetType>::write(ostr, *value);
   }
 
-  static inline bool read(std::istream& istr, TargetType*& result)
+  static inline bool read(InputStream& istr, TargetType*& result)
   {
-    bool exists;
-    if (!Traits<bool>::read(istr, exists))
-      return false;
-    if (exists)
+    if (istr.readBool())
     {
       result = new TargetType();
       return Traits<TargetType>::read(istr, *result);
@@ -375,7 +346,7 @@ public:
   ** @param ostr
   ** @param value
   */
-  static inline void write(std::ostream& ostr, const T& value)
+  static inline void write(OutputStream& ostr, const T& value)
     {jassert(false);}
 
   /*!
@@ -386,7 +357,7 @@ public:
   **
   ** @return
   */
-  static inline bool read(std::istream& istr, T& result)
+  static inline bool read(InputStream& istr, T& result)
     {jassert(false); return false;}
 };
 
@@ -422,7 +393,7 @@ struct Traits<std::type_info>
   static inline String toString(const std::type_info& info)
   {
     std::string res = info.name();
-  #ifdef WIN32
+  #ifdef JUCE_WIN32
     size_t n = res.find("::");
     return res.substr(n == std::string::npos ? strlen("class ") : n + 2).c_str();
   #else // linux or macos x
@@ -436,13 +407,13 @@ struct Traits<std::type_info>
   #endif
   }
 
-  static inline void write(std::ostream& ostr, const std::type_info& value)
-    {Traits<String>::write(ostr, toString(value));}
+  static inline void write(OutputStream& ostr, const std::type_info& value)
+    {ostr.writeString(toString(value));}
 
-  static inline bool read(std::istream& istr, std::type_info& res)
+  static inline bool read(InputStream& istr, std::type_info& res)
     {jassert(false); return false;}
 
-  static inline bool read(std::istream& istr, String& res)
+  static inline bool read(InputStream& istr, String& res)
     {return Traits<String>::read(istr, res);}
 
 private:

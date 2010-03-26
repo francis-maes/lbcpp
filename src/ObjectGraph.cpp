@@ -29,7 +29,7 @@ void ObjectGraph::enumerateNodesRec(ObjectPtr node, std::vector<ObjectPtr>& node
     enumerateNodesRec(getSuccessor(node, i), nodes, inverseTable);
 }
 
-void ObjectGraph::save(std::ostream& ostr) const
+void ObjectGraph::save(OutputStream& ostr) const
 {
   /*
   ** Enumerate nodes
@@ -73,7 +73,7 @@ void ObjectGraph::save(std::ostream& ostr) const
   }
 }
 
-bool ObjectGraph::load(std::istream& istr)
+bool ObjectGraph::load(InputStream& istr)
 {
   size_t numNodes;
   if (!read(istr, numNodes))

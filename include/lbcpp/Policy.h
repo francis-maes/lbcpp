@@ -334,10 +334,10 @@ public:
   virtual void policyLeave()
     {decorated->policyLeave();}
 
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, decorated);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, decorated);}
 
 protected:
@@ -390,10 +390,10 @@ public:
     decorated->policyLeave();
   }
 
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, decorated);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, decorated);}
 
 protected:

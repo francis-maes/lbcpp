@@ -273,7 +273,7 @@ public:
   **
   ** @param ostr
   */
-  virtual void save(std::ostream& ostr) const;
+  virtual void save(OutputStream& ostr) const;
   /*!
   **
   **
@@ -281,7 +281,7 @@ public:
   **
   ** @return
   */
-  virtual bool load(std::istream& istr);
+  virtual bool load(InputStream& istr);
 
 protected:
   StringDictionaryPtr labels;   /*!< */

@@ -128,7 +128,7 @@ public:
   **
   ** @param ostr
   */
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
   {
     write(ostr, name);
     write(ostr, value);
@@ -142,7 +142,7 @@ public:
   **
   ** @return
   */
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, name) && read(istr, value) && read(istr, cnt);}
 
 protected:
@@ -218,7 +218,7 @@ public:
   **
   ** @param ostr
   */
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
   {
     ScalarVariableMean::save(ostr);
     meansqr.save(ostr);
@@ -231,7 +231,7 @@ public:
   **
   ** @return
   */
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return ScalarVariableMean::load(istr) && meansqr.load(istr);}
 
 private:
@@ -338,7 +338,7 @@ class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
   **
   ** @param ostr
   */
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
   {
     ScalarVariableMeanAndVariance::save(ostr);
     write(ostr, min);
@@ -352,7 +352,7 @@ class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
   **
   ** @return
   */
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return ScalarVariableMeanAndVariance::load(istr) && read(istr, min) && read(istr, max);}
 
 private:

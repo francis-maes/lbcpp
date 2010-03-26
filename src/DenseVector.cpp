@@ -199,7 +199,7 @@ double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
     return featureGenerator->dotProduct(DenseVectorPtr(const_cast<DenseVector* >(this)));
 }
 
-bool DenseVector::load(std::istream& istr)
+bool DenseVector::load(InputStream& istr)
 {
   jassert(dictionary);
   size_t numSubVectors;
@@ -224,7 +224,7 @@ bool DenseVector::load(std::istream& istr)
   return true;
 }
 
-void DenseVector::save(std::ostream& ostr) const
+void DenseVector::save(OutputStream& ostr) const
 {
   write(ostr, values);
   write(ostr, subVectors.size());

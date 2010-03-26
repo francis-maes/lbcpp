@@ -16,7 +16,7 @@ using namespace lbcpp;
 /*
 ** Gradient Based Learning Machine
 */
-void GradientBasedLearningMachine::saveImpl(std::ostream& ostr) const
+void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 {
   FeatureDictionary::save(ostr, inputDictionary, parameters->getDictionary());
   parameters->save(ostr);
@@ -25,7 +25,7 @@ void GradientBasedLearningMachine::saveImpl(std::ostream& ostr) const
   write(ostr, initializeParametersRandomly);
 }
 
-bool GradientBasedLearningMachine::loadImpl(std::istream& istr)
+bool GradientBasedLearningMachine::loadImpl(InputStream& istr)
 {
   FeatureDictionaryPtr paramsDictionary;
   if (!FeatureDictionary::load(istr, inputDictionary, paramsDictionary))

@@ -117,7 +117,7 @@ protected:
   **
   ** @return an Object pointer.
   */
-  virtual ObjectPtr loadNode(std::istream& istr) const = 0;
+  virtual ObjectPtr loadNode(InputStream& istr) const = 0;
 
   /**
   ** Saves the content of a node to a C++ output stream.
@@ -125,7 +125,7 @@ protected:
   ** @param ostr : output stream.
   ** @param node : node to save.
   */
-  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const = 0;
+  virtual void saveNode(OutputStream& ostr, const ObjectPtr node) const = 0;
 
 public:
   /**
@@ -134,7 +134,7 @@ public:
   ** @param ostr : output stream.
   ** @see saveNode
   */
-  virtual void save(std::ostream& ostr) const;
+  virtual void save(OutputStream& ostr) const;
 
   /**
   ** Loads a directed graph from a C++ input stream.
@@ -145,7 +145,7 @@ public:
   ** @see setRoots
   ** @see setSuccessors
   */
-  virtual bool load(std::istream& istr);
+  virtual bool load(InputStream& istr);
 
   /**
   ** Enumerate the nodes contained in this graph.

@@ -51,12 +51,12 @@ String StringDictionary::getString(size_t index) const
     return indexToString[index];
 }
 
-void StringDictionary::save(std::ostream& ostr) const
+void StringDictionary::save(OutputStream& ostr) const
 {
   write(ostr, indexToString);
 }
 
-bool StringDictionary::load(std::istream& istr)
+bool StringDictionary::load(InputStream& istr)
 {
   clear();
   if (!read(istr, indexToString))
@@ -250,7 +250,7 @@ public:
     return dictionary->getSubDictionary(index);
   }
 
-  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const
+  virtual void saveNode(OutputStream& ostr, const ObjectPtr node) const
   {
     FeatureDictionaryPtr dictionary = node.dynamicCast<FeatureDictionary>();
     jassert(dictionary);
@@ -259,7 +259,7 @@ public:
     write(ostr, dictionary->getScopes());    
   }
   
-  virtual ObjectPtr loadNode(std::istream& istr) const
+  virtual ObjectPtr loadNode(InputStream& istr) const
   {
     String name;
     StringDictionaryPtr features, scopes;
@@ -277,13 +277,13 @@ ObjectGraphPtr FeatureDictionary::toGraph() const
   return new FeatureDictionaryGraph(const_cast<FeatureDictionary* >(this));
 }
 
-void FeatureDictionary::save(std::ostream& ostr) const
+void FeatureDictionary::save(OutputStream& ostr) const
 {
   FeatureDictionaryGraph graph(const_cast<FeatureDictionary* >(this));
   graph.save(ostr);
 }
 
-bool FeatureDictionary::load(std::istream& istr)
+bool FeatureDictionary::load(InputStream& istr)
 {
   FeatureDictionaryGraph graph;
   if (!graph.load(istr))
@@ -301,7 +301,7 @@ bool FeatureDictionary::load(std::istream& istr)
   return true;
 }
 
-void FeatureDictionary::save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2)
+void FeatureDictionary::save(OutputStream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2)
 {
   FeatureDictionaryGraph graph;
   graph.addDictionary(dictionary1);
@@ -309,7 +309,7 @@ void FeatureDictionary::save(std::ostream& ostr, const FeatureDictionaryPtr dict
   graph.save(ostr);
 }
 
-bool FeatureDictionary::load(std::istream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2)
+bool FeatureDictionary::load(InputStream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2)
 {
   FeatureDictionaryGraph graph;
   if (!graph.load(istr))

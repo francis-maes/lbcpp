@@ -58,13 +58,13 @@ public:
     return true;
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
   {
     write(ostr, optimizer);
     write(ostr, stoppingCriterion);
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, optimizer) && read(istr, stoppingCriterion);}
 
   virtual ObjectPtr clone() const
