@@ -21,7 +21,7 @@ public:
     {
       String res = String((int)objects.size()) + T(" objects:\n");
       for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
-        res += T("Object ") + it->first + T(":\n\t") + it->second->toString() + T("\n");
+        res += T("Object ") + it->first + T(":\n\t") + lbcpp::toString(it->second) + T("\n");
       return res;
     }
   }
@@ -88,6 +88,8 @@ typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 
 void declareProteinClasses()
 {
+  LBCPP_DECLARE_CLASS(Protein);
+
   LBCPP_DECLARE_CLASS(AminoAcidSequence);
   LBCPP_DECLARE_CLASS(PositionSpecificScoringMatrix);
   LBCPP_DECLARE_CLASS(SecondaryStructureSequence);
@@ -267,6 +269,7 @@ bool formDaFuckingCB513base()
   for (int i = 0; i < pssmFiles.size(); ++i)
   {
     File pssmFile = *pssmFiles[i];
+    std::cout << "File: " << pssmFile.getFullPathName() << std::endl;
     ObjectStreamPtr parser = new DaFuckingDataParser(pssmFile, sourceDirectory, features);
     while (parser->isValid())
     {
@@ -274,7 +277,12 @@ bool formDaFuckingCB513base()
       if (!protein)
         break;
       std::cout << "Protein " << proteinNumber++ << ": " << protein->getName() << std::endl;
-      protein->saveToFile(outputDirectory.getChildFile(protein->getName() + T(".protein")));
+      File outputFile = outputDirectory.getChildFile(protein->getName() + T(".protein"));
+      protein->saveToFile(outputFile);
+/*
+      std::cout << "PROT: " << protein->toString() << std::endl;
+      ProteinPtr protein2 = Object::loadFromFileAndCast<Protein>(outputFile);
+      std::cout << "PROT2: " << protein2->toString() << std::endl;*/
     }
   }
   return true;

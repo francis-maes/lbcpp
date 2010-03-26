@@ -50,9 +50,20 @@ public:
     return res + T("\n");
   }
 
+
 protected:
   size_t length, numScores;
   std::vector<double> matrix;
+
+  virtual bool load(InputStream& istr)
+  {return lbcpp::read(istr, length) && lbcpp::read(istr, numScores) && lbcpp::read(istr, matrix);}
+
+  virtual void save(OutputStream& ostr) const
+  {
+    lbcpp::write(ostr, length);
+    lbcpp::write(ostr, numScores);
+    lbcpp::write(ostr, matrix);
+  }
 
   size_t getIndex(size_t position, size_t scoreIndex) const
   {
