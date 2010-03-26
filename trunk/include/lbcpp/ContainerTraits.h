@@ -380,15 +380,43 @@ struct Traits< std::set<T> > : public BuiltinContainerTraits< std::set<T> >
 /*
 ** Map
 */
-template<class KeyType, class ValueType>
-struct Traits< std::map<KeyType, ValueType> >
-  : public BuiltinContainerTraits< std::map<KeyType, ValueType> >
+template<class KeyType, class MapValueType>
+struct Traits< std::map<KeyType, MapValueType> >
+  : public BuiltinContainerTraits< std::map<KeyType, MapValueType> >
 {
+  typedef std::map<KeyType, MapValueType> ContainerType;
+
+  static inline void write(OutputStream& ostr, const ContainerType& container)
+  {
+    size_t size = container.size();
+    lbcpp::write(ostr, size);
+    for (ConstIterator it = container.begin(); it != container.end(); ++it)
+    {
+      lbcpp::write(ostr, it->first);
+      lbcpp::write(ostr, it->second);
+    }
+  }
+
+  static inline bool read(InputStream& istr, ContainerType& res)
+  {
+    size_t count;
+    if (!lbcpp::read(istr, count))
+      return false;
+    for (size_t i = 0; i < count; ++i)
+    {
+      KeyType key;
+      MapValueType value;
+      if (!lbcpp::read(istr, key) || !lbcpp::read(istr, value))
+        return false;
+      res[key] = value;
+    }
+    return true;
+  }
 };
 
-template<class KeyType, class ValueType>
-struct Traits< std::multimap<KeyType, ValueType> >
-  : public BuiltinContainerTraits< std::multimap<KeyType, ValueType> >
+template<class KeyType, class MapValueType>
+struct Traits< std::multimap<KeyType, MapValueType> >
+  : public BuiltinContainerTraits< std::multimap<KeyType, MapValueType> >
 {
 };
 
