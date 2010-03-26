@@ -118,6 +118,13 @@ SparseVectorPtr SparseVector::getSubVector(size_t index) const
   return res ? *res : SparseVectorPtr();
 }
 
+SparseVectorPtr SparseVector::getSubVector(const String& name) const
+{
+  jassert(dictionary);
+  int index = dictionary->getScopes()->getIndex(name);
+  return index >= 0 ? getSubVector((size_t)index) : SparseVectorPtr();
+}
+
 void SparseVector::multiplyByScalar(double scalar)
 {
   if (scalar == 0)
@@ -160,4 +167,16 @@ void SparseVector::save(OutputStream& ostr) const
     jassert(e.second);
     e.second->save(ostr);
   }
+}
+
+double SparseVector::getValueByPosition(size_t position) const
+{
+  jassert(position < values.size());
+  return values[position].second;
+}
+
+String SparseVector::getValueNameByPosition(size_t position) const
+{
+  jassert(position < values.size() && dictionary);
+  return dictionary->getFeatures()->getString(values[position].first);
 }

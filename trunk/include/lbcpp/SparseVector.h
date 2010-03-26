@@ -181,6 +181,7 @@ public:
   ** @return a subvector pointer.
   */
   SparseVectorPtr getSubVector(size_t index) const;
+  SparseVectorPtr getSubVector(const String& name) const;
 
   /**
   ** Subvector getter (reference).
@@ -326,10 +327,22 @@ public:
   virtual ObjectPtr clone() const
     {return new SparseVector(*this);}
 
-private:
+  /**
+  **  Low level access
+  */
   typedef std::vector<std::pair<size_t, double> > FeatureVector;
   typedef std::vector<std::pair<size_t, SparseVectorPtr> > SubVectorVector;
+  
+  FeatureVector& getValues()
+    {return values;}
 
+  SubVectorVector& getSubVectors()
+    {return subVectors;}
+
+  double getValueByPosition(size_t position) const;
+  String getValueNameByPosition(size_t position) const;
+
+private:
   FeatureVector   values;       /**< Sparse vector values. */
   SubVectorVector subVectors;   /**< Sparse vector subvectors. */
 };

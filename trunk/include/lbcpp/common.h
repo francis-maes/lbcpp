@@ -23,6 +23,7 @@
 # define DONT_SET_USING_JUCE_NAMESPACE
 # include "../juce/juce_amalgamated.h"
 using juce::String;
+using juce::StringArray;
 using juce::File;
 using juce::InputStream;
 using juce::OutputStream;

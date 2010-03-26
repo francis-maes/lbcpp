@@ -134,7 +134,10 @@ void TextObjectParser::tokenize(const String& line, std::vector<String>& columns
   {
     int e = line.indexOfAnyOf(separators, b);
     if (e < 0)
+    {
       columns.push_back(line.substring(b));
+      break;
+    }
     else
       columns.push_back(line.substring(b, e));
     b = indexOfAnyNotOf(line, separators, e);
@@ -183,7 +186,7 @@ bool LearningDataObjectParser::parseLine(const String& line)
   if (isEmpty)
     return parseEmptyLine();
   if (line[begin] == '#')
-    return parseCommentLine(line.substring(begin + 1));
+    return parseCommentLine(line.substring(begin + 1).trim());
   std::vector<String> columns;
   tokenize(line, columns);
   return parseDataLine(columns);

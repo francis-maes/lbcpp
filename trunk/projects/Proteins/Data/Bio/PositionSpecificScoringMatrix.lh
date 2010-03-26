@@ -1,17 +1,30 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LabelSequence.lh               | Label Sequence                  |
+| Filename: PositionSpecificScoringMatrix.lh| PSSM                           |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/03/2010 12:32               |                                 |
+| Started : 26/03/2010 18:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef DATA_GENERIC_LABEL_SEQUENCE_H_
-# define DATA_GENERIC_LABEL_SEQUENCE_H_
+#include "../Generic/ScoreVectorSequence.lh"
+#include "AminoAcid.lh"
 
 namespace lbcpp
 {
 
-}; /* namespace lbcpp */
+class PositionSpecificScoringMatrix : public ScoreVectorSequence
+{
+public:
+  virtual size_t getNumScores() const
+    {return AminoAcid::numAminoAcids;}
 
-#endif // !DATA_GENERIC_LABEL_SEQUENCE_H_
+  void setScore(size_t position, AminoAcid aminoAcid, double value)
+  {
+    jassert(aminoAcid.isNonAmbiguous());
+    ScoreVectorSequence::getScore(position, (size_t)aminoAcid.getType()) = value;
+  }
+};
+
+typedef ReferenceCountedObjectPtr<PositionSpecificScoringMatrix> PositionSpecificScoringMatrixPtr;
+
+}; /* namespace lbcpp */

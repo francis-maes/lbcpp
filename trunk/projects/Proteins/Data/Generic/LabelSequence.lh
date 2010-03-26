@@ -6,29 +6,29 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include "Sequence.lh"
+
 namespace lbcpp
 {
-
-class Sequence : public Object
-{
-public:
-  virtual size_t getLength() const = 0;
-  //virtual featureGenerator computeFeatures(size_t position) const = 0;
-};
 
 class LabelSequence : public Sequence
 {
 public:
-  /*virtual featureGenerator computeFeatures(size_t position) const
-  {
-  }*/
-
-  virtual String getName() const
-    {return name;}
-
+  /*
+  ** Sequence
+  */
   virtual size_t getLength() const
     {return sequence.size();}
-  
+
+  virtual void setLength(size_t newLength, bool clearPreviousContent = true)
+    {sequence.resize(newLength, (Label)255);}
+
+  virtual String elementToString(size_t position) const
+    {return String(getLabel(position));}
+
+  /*
+  ** LabelSequence
+  */
   int getLabel(size_t position) const
   {
     jassert(position < sequence.size());
@@ -45,16 +45,10 @@ public:
 
 protected:
   virtual bool load(InputStream& istr)
-  {
-    return lbcpp::read(istr, name) && 
-           lbcpp::read(istr, sequence);
-  }
+    {return lbcpp::read(istr, sequence);}
   
   virtual void save(OutputStream& ostr) const
-  {
-    lbcpp::write(ostr, name);
-    lbcpp::write(ostr, sequence);
-  }
+    {lbcpp::write(ostr, sequence);}
 
 private:
   // Note: most sequence labeling tasks involve less than 255 labels,
@@ -63,7 +57,6 @@ private:
   // Special value for unlabeled elements: 255
   typedef unsigned char Label;
 
-  String name;
   std::vector<Label> sequence;
 };
 
