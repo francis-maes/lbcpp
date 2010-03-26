@@ -33,10 +33,10 @@ public:
     return res + ")";
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {DecoratorPolicy::save(ostr); write(ostr, classifier); write(ostr, supervisor);}
     
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return DecoratorPolicy::load(istr) && read(istr, classifier) && read(istr, supervisor);}
   
   /*

@@ -107,7 +107,7 @@ public:
   ** occurs.
   ** @see saveToStream
   */
-  static ObjectPtr loadFromStream(std::istream& istr);
+  static ObjectPtr loadFromStream(InputStream& istr);
 
   /**
   ** Loads an object from a file.
@@ -128,7 +128,7 @@ public:
   ** @return a pointer on the loaded object or a null pointer if the cast fails.
   */
   template<class T>
-  static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(std::istream& istr)
+  static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(InputStream& istr)
     {return checkCast<T>(T("Object::loadFromStreamAndCast"), loadFromStream(istr));}
 
   /**
@@ -230,7 +230,7 @@ public:
   ** @param ostr : output stream.
   ** @see loadFromStream
   */
-  void saveToStream(std::ostream& ostr) const;
+  void saveToStream(OutputStream& ostr) const;
 
   /**
   ** Error manager.
@@ -284,7 +284,7 @@ protected:
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the ErrorManager.
   */
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return true;}
 
   /**
@@ -292,7 +292,7 @@ protected:
   **
   ** @param ostr : a C++ output stream.
   */
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {}
 };
 
@@ -324,7 +324,7 @@ public:
   static inline String toString(const ReferenceCountedObjectPtr<T> value)
     {return value ? value->toString() : T("null");}
     
-  static inline void write(std::ostream& ostr, const ReferenceCountedObjectPtr<T> value)
+  static inline void write(OutputStream& ostr, const ReferenceCountedObjectPtr<T> value)
   {
     if (value)
       value->saveToStream(ostr);
@@ -332,7 +332,7 @@ public:
       lbcpp::write(ostr, T("__null__"));
   }
   
-  static inline bool read(std::istream& istr, ReferenceCountedObjectPtr<T>& result)
+  static inline bool read(InputStream& istr, ReferenceCountedObjectPtr<T>& result)
   {
     result = Object::loadFromStreamAndCast<T>(istr);
     return true;
@@ -346,10 +346,10 @@ public:
   static inline String toString(const T& value)
     {return value.toString();}
     
-  static inline void write(std::ostream& ostr, const T& value)
+  static inline void write(OutputStream& ostr, const T& value)
     {value.save(ostr);}
     
-  static inline bool read(std::istream& istr, T& result)
+  static inline bool read(InputStream& istr, T& result)
     {return result.load(istr);}
 };
 

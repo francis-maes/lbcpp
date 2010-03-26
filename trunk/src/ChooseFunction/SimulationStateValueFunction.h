@@ -47,10 +47,10 @@ public:
     return res;
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, policy) && read(istr, discount) && read(istr, horizon);}
 
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, policy); write(ostr, discount); write(ostr, horizon);}
   
 private:

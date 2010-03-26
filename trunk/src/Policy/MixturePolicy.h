@@ -49,10 +49,10 @@ public:
   virtual String toString() const
     {return "mixturePolicy(" + policy1->toString() + ", " + policy2->toString() + ", " + lbcpp::toString(mixtureCoefficient) + ")";}
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, policy1) && read(istr, policy2) && read(istr, mixtureCoefficient);}
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, policy1); write(ostr, policy2); write(ostr, mixtureCoefficient);}
   
 private:

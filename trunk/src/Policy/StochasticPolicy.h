@@ -36,10 +36,10 @@ public:
   virtual String toString() const
     {return "stochasticPolicy(" + actionProbabilities->toString() + ")";}
     
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, actionProbabilities);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, actionProbabilities);}
 
 private:

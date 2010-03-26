@@ -278,7 +278,7 @@ protected:
   **
   ** @param ostr
   */
-  void saveImpl(std::ostream& ostr) const;
+  void saveImpl(OutputStream& ostr) const;
   /*!
   **
   **
@@ -286,7 +286,7 @@ protected:
   **
   ** @return
   */
-  bool loadImpl(std::istream& istr);
+  bool loadImpl(InputStream& istr);
   /*!
   **
   **
@@ -367,10 +367,10 @@ public:
   /*
   ** Serialization
   */
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {BaseClass::save(ostr); saveImpl(ostr);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return BaseClass::load(istr) && loadImpl(istr);}
 
   void cloneImpl(GradientBasedLearningMachine_<BaseClass, ExampleType>& target) const

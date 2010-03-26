@@ -43,10 +43,10 @@ public:
     return res + ")";
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, classifier); write(ostr, beta); write(ostr, exploration); write(ostr, explorationPolicy);}
     
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, classifier) && read(istr, beta) && read(istr, exploration) && read(istr, explorationPolicy);}
   
   /*

@@ -62,10 +62,10 @@ public:
   StaticToDynamicObject(const ImplementationType& impl)
     : impl(impl) {}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return impl.load(istr);}
     
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {impl.save(ostr);}
 
   virtual String toString() const

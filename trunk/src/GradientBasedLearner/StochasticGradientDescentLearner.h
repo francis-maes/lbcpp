@@ -46,7 +46,7 @@ public:
       parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
   {
     write(ostr, epoch);
     write(ostr, learningRate);
@@ -54,7 +54,7 @@ public:
     inputSize.save(ostr);
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
   {
     return read(istr, epoch) && read(istr, learningRate) &&
       read(istr, normalizeLearningRate) && inputSize.load(istr);

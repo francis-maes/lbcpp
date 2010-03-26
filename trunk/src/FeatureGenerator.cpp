@@ -314,9 +314,9 @@ public:
   }
 
   // serialisation is not implemented
-  virtual void saveNode(std::ostream& ostr, const ObjectPtr node) const
+  virtual void saveNode(OutputStream& ostr, const ObjectPtr node) const
     {jassert(false);}
-  virtual ObjectPtr loadNode(std::istream& istr) const
+  virtual ObjectPtr loadNode(InputStream& istr) const
     {jassert(false); return ObjectPtr();}
     
 protected:

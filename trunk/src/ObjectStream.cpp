@@ -92,7 +92,7 @@ ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
 /*
 ** TextObjectParser
 */
-TextObjectParser::TextObjectParser(std::istream* newInputStream)
+TextObjectParser::TextObjectParser(InputStream* newInputStream)
   : istr(newInputStream) {}
     
 TextObjectParser::TextObjectParser(const File& file)
@@ -103,14 +103,14 @@ TextObjectParser::TextObjectParser(const File& file)
     Object::error(T("TextObjectParser::parseFile"), T("No filename specified"));
     return;
   }
-  std::ifstream* istr = new std::ifstream((const char* )file.getFullPathName());
-  if (istr->is_open())
-    this->istr = istr;
-  else
+  InputStream* inputStream = file.createInputStream();
+  if (!inputStream)
   {
     Object::error(T("TextObjectParser::parseFile"), T("Could not open file ") + file.getFullPathName());
-    delete istr;
+    return;
   }
+
+  this->istr = inputStream;
 }
 
 TextObjectParser::~TextObjectParser()
@@ -152,14 +152,9 @@ ObjectPtr TextObjectParser::next()
   }
   currentObject = ObjectPtr();
   
-  while (!istr->eof()/* && !parsingBreaked*/)
+  while (!istr->isExhausted()/* && !parsingBreaked*/)
   {
-    std::string l;
-    std::getline(*istr, l);
-    size_t n = l.find_last_not_of("\r\n");
-    if (n != std::string::npos)
-      l = l.substr(0, n + 1);
-    String line = l.c_str();
+    String line = istr->readNextLine().trim();
     if (!parseLine(line))
     {
       Object::error(T("TextParserObjectStream::parse"), T("Could not parse line '") + line + T("'"));
@@ -219,14 +214,13 @@ bool LearningDataObjectParser::parseFeature(const String& str, String& featureId
   {
     featureId = str;
     featureValue = 1.0;
-    return true;
   }
   else
   {
     featureId = str.substring(0, n);
-    String featureStringValue = str.substring(n + 1);
-    return TextObjectParser::parse(featureStringValue, featureValue);
+    featureValue = str.substring(n + 1).getDoubleValue();
   }
+  return true;
 }
 
 bool LearningDataObjectParser::parseFeatureIdentifier(const String& identifier, std::vector<String>& path)

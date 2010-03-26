@@ -36,10 +36,10 @@ public:
     return optimizerContinue;
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return true;}
 
 private:

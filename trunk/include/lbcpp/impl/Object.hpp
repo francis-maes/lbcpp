@@ -21,8 +21,8 @@ struct Object
   String toString() const {return "";}
   String getName() const {return "";}
   
-  void save(std::ostream& ostr) const {}
-  bool load(std::istream& istr) {return true;}
+  void save(OutputStream& ostr) const {}
+  bool load(InputStream& istr) {return true;}
 
   static void error(const String& where, const String& what)
     {ErrorHandler::error(where, what);}

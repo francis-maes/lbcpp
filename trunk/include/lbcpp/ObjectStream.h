@@ -334,7 +334,7 @@ public:
   **
   ** @return a TextObjectParser.
   */
-  TextObjectParser(std::istream* newInputStream);
+  TextObjectParser(InputStream* newInputStream);
 
   /**
   ** Destructor.
@@ -423,33 +423,9 @@ protected:
                        std::vector< String >& columns,
                        const juce::tchar* separators = T(" \t"));
 
-  /**
-  ** Generic parser from a C++ input stream.
-  **
-  ** @param istr : input stream.
-  ** @param res : result container.
-  **
-  ** @return True if OK, False otherwise.
-  */
-  template<class T>
-  static bool parse(std::istream& istr, T& res)
-    {return !(istr >> res).fail();}
-
-  /**
-  ** Generic parser from a C++ string.
-  **
-  ** @param str : text to parse.
-  ** @param res : result container.
-  **
-  ** @return True if OK, False otherwise.
-  */
-  template<class T>
-  static bool parse(const String& str, T& res)
-    {std::istringstream istr((const char* )str); return parse(istr, res);}
-
 private:
   ObjectPtr currentObject;      /*!< A pointer to the current Object. */
-  std::istream* istr;           /*!< A pointer to the current stream. */
+  InputStream* istr;           /*!< A pointer to the current stream. */
 };
 
 
@@ -483,7 +459,7 @@ public:
   **
   ** @return a @a LearningDataObjectParser.
   */
-  LearningDataObjectParser(std::istream* newInputStream, FeatureDictionaryPtr features = FeatureDictionaryPtr())
+  LearningDataObjectParser(InputStream* newInputStream, FeatureDictionaryPtr features = FeatureDictionaryPtr())
     : TextObjectParser(newInputStream), features(features) {}
 
   /**

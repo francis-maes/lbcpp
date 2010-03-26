@@ -51,8 +51,8 @@ namespace lbcpp
 /*
 Traits:
   static String toString(const T& container)
-  static void write(std::ostream& ostr, const T& container)
-  static bool read(std::istream& istr, T& container)
+  static void write(OutputStream& ostr, const T& container)
+  static bool read(InputStream& istr, T& container)
 
 ContainerTraits:
   Traits
@@ -160,7 +160,7 @@ struct DefaultContainerTraits
   ** @param ostr
   ** @param container
   */
-  static inline void write(std::ostream& ostr, const ContainerType& container)
+  static inline void write(OutputStream& ostr, const ContainerType& container)
   {
     Traits<size_t>::write(ostr, ContainerTraits::size(container));
     for (ConstIterator it = ContainerTraits::begin(container); it != ContainerTraits::end(container); ++it)
@@ -334,7 +334,7 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
   **
   ** @return
   */
-  static inline bool read(std::istream& istr, std::vector<T>& res)
+  static inline bool read(InputStream& istr, std::vector<T>& res)
   {
     size_t size;
     if (!Traits<size_t>::read(istr, size))
@@ -397,17 +397,18 @@ struct Traits< std::multimap<KeyType, ValueType> >
 ** Pairs
 */
 template<class T1, class T2>
-struct Traits< std::pair<T1, T2> > : public BuiltinTypeTraits< std::pair<T1, T2> >
+struct Traits< std::pair<T1, T2> >
 {
   static inline String toString(const std::pair<T1, T2>& value)
     {return T("(") + Traits<T1>::toString(value.first) + T(", ") + Traits<T2>::toString(value.second) + T(")");}
     
-  static inline void write(std::ostream& ostr, const std::pair<T1, T2>& value)
+  static inline void write(OutputStream& ostr, const std::pair<T1, T2>& value)
   {
     Traits<T1>::write(ostr, value.first);
     Traits<T2>::write(ostr, value.second);
   }
-  static inline bool read(std::istream& istr, std::pair<T1, T2>& result)
+  
+  static inline bool read(InputStream& istr, std::pair<T1, T2>& result)
   {
     return Traits<T1>::read(istr, result.first) &&
       Traits<T2>::read(istr, result.second);
@@ -468,10 +469,10 @@ struct Traits< SizeRange >
   static String toString(const SizeRange& range)
     {return T("[") + lbcpp::toString(range.begin) + T(", ") + lbcpp::toString(range.end) + T("[");}
 
-  static void write(std::ostream& ostr, const SizeRange& range)
+  static void write(OutputStream& ostr, const SizeRange& range)
     {lbcpp::write(ostr, range.begin); lbcpp::write(ostr, range.end);}
 
-  static bool read(std::istream& istr, const SizeRange& range)
+  static bool read(InputStream& istr, const SizeRange& range)
     {return lbcpp::read(istr, range.begin) && lbcpp::read(istr, range.end);}
 };
 

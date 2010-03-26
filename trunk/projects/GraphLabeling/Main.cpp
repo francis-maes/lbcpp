@@ -76,7 +76,7 @@ public:
 static std::ostream* resultsOutputFile = NULL;
 static String allResults;
 
-#ifdef WIN32
+#ifdef JUCE_WIN32
 inline double getTimeInSeconds() {return 0;} // FIXME
 #else
 #include <sys/time.h>

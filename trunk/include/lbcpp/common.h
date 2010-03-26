@@ -24,6 +24,8 @@
 # include "../juce/juce_amalgamated.h"
 using juce::String;
 using juce::File;
+using juce::InputStream;
+using juce::OutputStream;
 
 #endif // !LBCPP_COMMON_H_
 

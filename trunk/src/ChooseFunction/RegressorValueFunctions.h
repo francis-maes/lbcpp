@@ -30,10 +30,10 @@ public:
   virtual double compute() const
     {return regressor->predict(stateFeatures);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, regressor);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, regressor);}
 
 private:
@@ -56,10 +56,10 @@ public:
   virtual double compute(VariablePtr choice) const
     {return regressor->predict(actionFeatures->compute(choice));}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, regressor);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, regressor);}
 
 private:

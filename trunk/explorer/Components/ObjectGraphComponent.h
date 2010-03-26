@@ -11,7 +11,7 @@
 
 # include "common.h"
 
-# ifdef WIN32
+# ifdef JUCE_WIN32
 # undef T
 # undef Rectangle
 #  include <windows.h>

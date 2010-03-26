@@ -36,10 +36,10 @@ public:
     return reward + discount * stateValues->compute();
   }
   
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, stateValues) && read(istr, discount);}
     
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, stateValues); write(ostr, discount);}
   
 private:

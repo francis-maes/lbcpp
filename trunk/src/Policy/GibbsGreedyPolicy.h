@@ -43,10 +43,10 @@ public:
   virtual String toString() const
     {return "gibbsGreedyPolicy(" + actionValue->toString() + ", " + temperature->toString() + ")";}
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {write(ostr, actionValue);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, actionValue);}
     
 private:

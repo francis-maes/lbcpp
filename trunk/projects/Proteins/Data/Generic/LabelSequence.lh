@@ -44,13 +44,13 @@ public:
   }
 
 protected:
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
   {
     return lbcpp::read(istr, name) && 
            lbcpp::read(istr, sequence);
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
   {
     lbcpp::write(ostr, name);
     lbcpp::write(ostr, sequence);

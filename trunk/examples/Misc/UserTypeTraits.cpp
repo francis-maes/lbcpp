@@ -40,10 +40,10 @@ namespace lbcpp {
     static inline String toString(const MyClass& c)
       {return "value = " + lbcpp::toString(c.getValue());}
 
-    static inline void write(std::ostream& ostr, const MyClass& c)
+    static inline void write(OutputStream& ostr, const MyClass& c)
       {lbcpp::write(ostr, c.getValue());}
       
-    static inline bool read(std::istream& istr, MyClass& result)
+    static inline bool read(InputStream& istr, MyClass& result)
     {
       int val;
       if (lbcpp::read(istr, val))
@@ -89,15 +89,23 @@ int main(int argc, char* argv[])
   /*
   ** Illustrates serialization
   */
+  File file = File::getCurrentWorkingDirectory().getChildFile("tmpfile");
+  
+  // save
+  OutputStream* ostr = file.createOutputStream();
+  if (ostr)
   {
-    std::ofstream ostr("tmpfile");
-    lbcpp::write(ostr, toto1);
+    lbcpp::write(*ostr, toto1);
+    delete ostr;
   }
   
+  // reload
+  InputStream* istr = file.createInputStream();
+  if (istr)
   {
-    std::ifstream istr("tmpfile");
-    lbcpp::read(istr, toto2);
+    lbcpp::read(*istr, toto2);
     std::cout << lbcpp::toString(toto2) << std::endl;
+    delete istr;
   }
   return 0;
 }

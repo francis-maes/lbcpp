@@ -382,14 +382,14 @@ public:
   **
   ** @return False if any error occurs.
   */
-  virtual bool load(std::istream& istr);
+  virtual bool load(InputStream& istr);
 
   /**
   ** Saves dense vector to a stream.
   **
   ** @param ostr : output stream.
   */
-  virtual void save(std::ostream& ostr) const;
+  virtual void save(OutputStream& ostr) const;
 
   /**
   ** Clones dense vector.

@@ -25,9 +25,7 @@ public:
 
   virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    double y;
-    if (!TextObjectParser::parse(columns[0], y))
-      return false;
+    double y = columns[0].getDoubleValue();
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;

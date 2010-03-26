@@ -35,10 +35,10 @@ public:
       regressor->toString() + ", " + lbcpp::toString(discount) + ")";
   }
   
-  virtual void save(std::ostream& ostr) const
+  virtual void save(OutputStream& ostr) const
     {EpisodicDecoratorPolicy::save(ostr); write(ostr, regressor); write(ostr, discount); write(ostr, useSarsaRule);}
     
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return EpisodicDecoratorPolicy::load(istr) && read(istr, regressor) && read(istr, discount) && read(istr, useSarsaRule);}
 
   /*

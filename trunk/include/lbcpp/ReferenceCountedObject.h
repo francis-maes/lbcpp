@@ -90,7 +90,7 @@ protected:
 
   size_t refCount;              /*!< The object's reference count */
 
-#ifdef WIN32 // msvc compiler bug: the template friend class ReferenceCountedObjectPtr does not work
+#ifdef JUCE_WIN32 // msvc compiler bug: the template friend class ReferenceCountedObjectPtr does not work
 public:
 #endif
 

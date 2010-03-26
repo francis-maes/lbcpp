@@ -30,10 +30,10 @@ public:
   virtual double compute() const
     {return ranker->predictScore(stateFeatures);}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, ranker);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, ranker);}
 
 protected:
@@ -56,10 +56,10 @@ public:
   virtual double compute(VariablePtr variable) const
     {return ranker->predictScore(actionFeatures->compute(variable));}
 
-  virtual bool load(std::istream& istr)
+  virtual bool load(InputStream& istr)
     {return read(istr, ranker);}
 
-  virtual void save(std::ostream& ostr)
+  virtual void save(OutputStream& ostr)
     {write(ostr, ranker);}
 
 protected:

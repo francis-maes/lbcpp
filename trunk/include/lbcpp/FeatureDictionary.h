@@ -138,7 +138,7 @@ public:
   **
   ** @param ostr : output stream.
   */
-  virtual void save(std::ostream& ostr) const;
+  virtual void save(OutputStream& ostr) const;
 
   /**
   ** Loads a string dictionary from an input stream.
@@ -146,7 +146,7 @@ public:
   ** @param istr : input stream.
   ** @return False if any error occurs.
   */
-  virtual bool load(std::istream& istr);
+  virtual bool load(InputStream& istr);
 
 protected:
   typedef std::map<String, size_t> StringToIndexMap;
@@ -382,14 +382,14 @@ public:
   ** @param istr : input stream.
   ** @return False if any error occurs.
   */
-  virtual bool load(std::istream& istr);
+  virtual bool load(InputStream& istr);
 
   /**
   ** Saves to an output stream.
   **
   ** @param ostr : output stream.
   */
-  virtual void save(std::ostream& ostr) const;
+  virtual void save(OutputStream& ostr) const;
 
   /**
   ** Loads a FeatureDictionary graph with exactly two roots into two
@@ -403,7 +403,7 @@ public:
   ** @return False if any error occurs.
   ** @see ObjectGraph
   */
-  static bool load(std::istream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2);
+  static bool load(InputStream& istr, FeatureDictionaryPtr& dictionary1, FeatureDictionaryPtr& dictionary2);
 
   /**
   ** Saves @a dictionary1 and @a dictionary2 to @a ostr stream (as
@@ -414,7 +414,7 @@ public:
   ** @param dictionary2 : second dictionary.
   ** @see ObjectGraph
   */
-  static void save(std::ostream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
+  static void save(OutputStream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
 
 private:
   String name;             /*!< Dictionary name. */

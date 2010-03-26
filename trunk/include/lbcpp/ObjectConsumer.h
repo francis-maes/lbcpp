@@ -43,14 +43,14 @@ public:
 class TextObjectPrinter : public ObjectConsumer
 {
 public:
-  TextObjectPrinter(std::ostream* newOutputStream);
+  TextObjectPrinter(OutputStream* newOutputStream);
   TextObjectPrinter(const File& file);
 
   virtual ~TextObjectPrinter()
     {if (ostr) delete ostr;}
     
 protected:
-  std::ostream* ostr;   
+  OutputStream* ostr;   
 
   void printNewLine()
     {if (ostr) (*ostr) << "\n";}
@@ -65,7 +65,7 @@ protected:
   LearningDataObjectPrinter(const File& file)
     : TextObjectPrinter(file) {}
 
-  LearningDataObjectPrinter(std::ostream* newOutputStream)
+  LearningDataObjectPrinter(OutputStream* newOutputStream)
     : TextObjectPrinter(newOutputStream) {}
 
   void printFeatureList(FeatureGeneratorPtr features);

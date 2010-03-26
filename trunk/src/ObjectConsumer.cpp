@@ -38,7 +38,7 @@ void ObjectConsumer::consume(ObjectContainerPtr container)
 /*
 ** TextObjectPrinter
 */
-TextObjectPrinter::TextObjectPrinter(std::ostream* newOutputStream)
+TextObjectPrinter::TextObjectPrinter(OutputStream* newOutputStream)
   : ostr(newOutputStream) {}
     
 TextObjectPrinter::TextObjectPrinter(const File& file)
@@ -49,14 +49,13 @@ TextObjectPrinter::TextObjectPrinter(const File& file)
     Object::error(T("TextObjectPrinter::TextObjectPrinter"), T("No filename specified"));
     return;
   }
-  std::ofstream* ostr = new std::ofstream((const char* )file.getFullPathName());
-  if (ostr->is_open())
-    this->ostr = ostr;
-  else
+  OutputStream* outputStream = file.createOutputStream();
+  if (!outputStream)
   {
     Object::error(T("TextObjectPrinter::TextObjectPrinter"), T("Could not open file ") + file.getFullPathName());
-    delete ostr;
+    return;
   }
+  this->ostr = outputStream;
 }
 
 /*
@@ -64,9 +63,9 @@ TextObjectPrinter::TextObjectPrinter(const File& file)
 */
 struct WriteFeatureListVisitor : public PathBasedFeatureVisitor
 {
-  WriteFeatureListVisitor(std::ostream& ostr) : ostr(ostr), isFirst(true) {}
+  WriteFeatureListVisitor(OutputStream& ostr) : ostr(ostr), isFirst(true) {}
   
-  std::ostream& ostr;
+  OutputStream& ostr;
   bool isFirst;
   
   virtual void featureSense(const std::vector<size_t>& path, const String& name, double value)
