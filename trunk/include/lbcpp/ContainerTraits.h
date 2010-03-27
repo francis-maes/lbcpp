@@ -385,6 +385,7 @@ struct Traits< std::map<KeyType, MapValueType> >
   : public BuiltinContainerTraits< std::map<KeyType, MapValueType> >
 {
   typedef std::map<KeyType, MapValueType> ContainerType;
+  typedef typename ContainerType::const_iterator ConstIterator;
 
   static inline void write(OutputStream& ostr, const ContainerType& container)
   {
