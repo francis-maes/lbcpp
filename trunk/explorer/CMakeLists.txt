@@ -14,6 +14,7 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/TableComponent.h
   Components/ObjectGraphComponent.h
   Components/ObjectGraphAndContentComponent.h
+  Components/StringToObjectMapTabbedComponent.h
 )
 
 SET(EXPLORER_APPLICATION_SOURCES

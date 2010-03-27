@@ -7,12 +7,16 @@
                                `--------------------------------------------*/
 
 #include "Components/ObjectGraphAndContentComponent.h"
+#include "Components/StringToObjectMapTabbedComponent.h"
 using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
 
 Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
 {
+  if (object.dynamicCast<StringToObjectMap>())
+    return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
+
   ObjectGraphPtr graph = object->toGraph();
   if (topLevelComponent && graph)
     return new ObjectGraphAndContentComponent(graph);
