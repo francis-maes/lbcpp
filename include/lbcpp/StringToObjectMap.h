@@ -52,18 +52,23 @@ public:
       return res;
     }
   }
+  
+  typedef std::map<String, ObjectPtr> ObjectsMap;
+  
+  ObjectsMap getObjects() const
+    {return objects;}
 
 protected:
+  ObjectsMap objects;
+
   virtual bool load(InputStream& istr)
     {return lbcpp::read(istr, objects);}
 
   virtual void save(OutputStream& ostr) const
     {lbcpp::write(ostr, objects);}
-
-private:
-  typedef std::map<String, ObjectPtr> ObjectsMap;
-  ObjectsMap objects;
 };
+
+typedef ReferenceCountedObjectPtr<StringToObjectMap> StringToObjectMapPtr;
 
 }; /* namespace lbcpp */
 
