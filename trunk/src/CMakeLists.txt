@@ -16,6 +16,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/ObjectConsumer.h
   ../include/lbcpp/ObjectGraph.h
   ../include/lbcpp/Table.h
+  ../include/lbcpp/StringToObjectMap.h
   ../include/lbcpp/RandomVariable.h
   ../include/lbcpp/FeatureDictionary.h
   ../include/lbcpp/FeatureGenerator.h

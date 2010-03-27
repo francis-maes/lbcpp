@@ -46,4 +46,4 @@ ELSE(APPLE)
   ADD_EXECUTABLE(lbcpp-explorer ${LBCPP_EXPLORER_SOURCES})
 ENDIF(APPLE)
 
-TARGET_LINK_LIBRARIES(lbcpp-explorer ${OPENGL_LIBRARIES} lbcpp-core)
+TARGET_LINK_LIBRARIES(lbcpp-explorer proteins lbcpp-core)

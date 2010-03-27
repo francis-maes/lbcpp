@@ -38,6 +38,7 @@
 
 # include "ObjectGraph.h"
 # include "Table.h"
+# include "StringToObjectMap.h"
 
 # include "RandomVariable.h"
 # include "FeatureGenerator.h"

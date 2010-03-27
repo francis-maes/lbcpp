@@ -168,8 +168,33 @@ private:
   std::vector<String> currentLabels;
 };
 
-bool formDaFuckingCB513base()
+extern void declareProteinsClasses();
+
+int main()
 {
+  declareProteinsClasses();
+
+ /* File file = File::createTempFile(T("toto"));
+
+  OutputStream* outputStream = file.createOutputStream();
+  String youpi = T("youpi houla");
+  lbcpp::write(*outputStream, youpi);
+  int i = 51;
+  lbcpp::write(*outputStream, i);
+  delete outputStream;
+
+  InputStream* inputStream = file.createInputStream();
+  youpi = String::empty;
+  lbcpp::read(*inputStream, youpi);
+  jassert(youpi == T("youpi houla"));
+  i = 0;
+  lbcpp::read(*inputStream, i);
+  jassert(i == 51);
+  delete inputStream;
+
+  file.deleteFile();
+  return 0;*/
+
   File sourceDirectory("C:\\Projets\\Proteins\\data\\CB513");
   File pssmDirectory("C:\\Projets\\Proteins\\scripts");
   File outputDirectory("C:\\Projets\\Proteins\\data\\CB513cool");
@@ -193,19 +218,11 @@ bool formDaFuckingCB513base()
       std::cout << "Protein " << proteinNumber++ << ": " << protein->getName() << std::endl;
       File outputFile = outputDirectory.getChildFile(protein->getName() + T(".protein"));
       protein->saveToFile(outputFile);
-/*
-      std::cout << "PROT: " << protein->toString() << std::endl;
-      ProteinPtr protein2 = Object::loadFromFileAndCast<Protein>(outputFile);
-      std::cout << "PROT2: " << protein2->toString() << std::endl;*/
+      //std::cout << "PROT: " << protein->toString() << std::endl;
+      //ProteinPtr protein2 = Object::loadFromFileAndCast<Protein>(outputFile);
+      //std::cout << "PROT2: " << protein2->toString() << std::endl;
+      //return 0;
     }
   }
-  return true;
-}
-
-extern void declareProteinsClasses();
-
-int main()
-{
-  declareProteinClasses();
-  return 0;//formDaFuckingCB513base() ? 0 : 1;
+  return 0;
 }

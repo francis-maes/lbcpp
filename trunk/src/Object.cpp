@@ -16,6 +16,9 @@ extern void declareLBCppCoreClasses();
 class ObjectFactory
 {
 public:
+  ObjectFactory()
+    {declareLBCppCoreClasses();}
+
   void declare(const String& className, Object::Constructor constructor)
   {
     if (className.isEmpty())
@@ -31,8 +34,6 @@ public:
 
   Object* create(const String& className)
   {
-    if (!constructors.size())
-      declareLBCppCoreClasses();
     if (className.isEmpty())
     {
       Object::error(T("Object::create"), T("Empty class name"));
@@ -109,6 +110,8 @@ void Object::saveToStream(OutputStream& ostr) const
 
 bool Object::saveToFile(const File& file) const
 {
+  if (file.existsAsFile())
+    file.deleteFile();
   OutputStream* outputStream = file.createOutputStream();
   if (!outputStream)
   {
