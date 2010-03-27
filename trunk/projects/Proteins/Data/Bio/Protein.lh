@@ -1,0 +1,52 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Protein.lh                     | Protein                         |
+| Author  : Francis Maes                   |                                 |
+| Started : 27/03/2010 12:23               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "AminoAcidSequence.lh"
+#include "PositionSpecificScoringMatrix.lh"
+#include "SecondaryStructureSequence.lh"
+#include "SolventAccesibilitySequence.lh"
+
+namespace lbcpp
+{
+
+class Protein : public StringToObjectMap
+{
+public:
+  Protein(const String& name)
+    : name(name) {}
+  Protein() {}
+
+  virtual String toString() const
+    {return T("Protein ") + name + T(":\n") + StringToObjectMap::toString();}
+
+  virtual String getName() const
+    {return name;}
+
+  void setAminoAcidSequence(AminoAcidSequencePtr sequence)
+    {setObject(T("AminoAcidSequence"), sequence);}
+
+  void setPositionSpecificScoringMatrix(PositionSpecificScoringMatrixPtr pssm)
+    {setObject(T("PositionSpecificScoringMatrix"), pssm);}
+
+  void setSolventAccessibilitySequence(SolventAccessibilitySequencePtr solventAccessibility)
+    {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, name) && StringToObjectMap::load(istr);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, name); StringToObjectMap::save(ostr);}
+
+private:
+  String name;
+};
+
+typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
+
+}; /* namespace lbcpp */

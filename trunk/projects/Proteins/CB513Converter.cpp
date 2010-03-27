@@ -1,100 +1,14 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Main.cpp                       | Main Test File                  |
+| Author  : Francis Maes                   |                                 |
+| Started : 27/03/2010 12:24               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 #include <lbcpp/lbcpp.h>
-#include "GeneratedCode/Data/Bio/AminoAcidSequence.lh"
-#include "GeneratedCode/Data/Bio/PositionSpecificScoringMatrix.lh"
-#include "GeneratedCode/Data/Bio/SecondaryStructureSequence.lh"
-#include "GeneratedCode/Data/Bio/SolventAccesibilitySequence.lh"
+#include "GeneratedCode/Data/Bio/Protein.lh"
 using namespace lbcpp;
-
-class StringToObjectMap : public Object
-{
-public:
-  void setObject(const String& key, ObjectPtr object)
-    {objects[key] = object;}
-  
-  virtual String toString() const
-  {
-    if (objects.empty())
-      return T("No objects");
-    else if (objects.size() == 1)
-      return T("Object ") + objects.begin()->first + T(":\n\t") + objects.begin()->second->toString();
-    else
-    {
-      String res = String((int)objects.size()) + T(" objects:\n");
-      for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
-        res += T("Object ") + it->first + T(":\n\t") + lbcpp::toString(it->second) + T("\n");
-      return res;
-    }
-  }
-
-protected:
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, objects);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, objects);}
-
-private:
-  typedef std::map<String, ObjectPtr> ObjectsMap;
-  ObjectsMap objects;
-};
-
-class Protein : public StringToObjectMap
-{
-public:
-  Protein(const String& name)
-    : name(name) {}
-  Protein() {}
-
-  virtual String toString() const
-    {return T("Protein ") + name + T(":\n") + StringToObjectMap::toString();}
-
-  virtual String getName() const
-    {return name;}
-
-  void setAminoAcidSequence(AminoAcidSequencePtr sequence)
-    {setObject(T("AminoAcidSequence"), sequence);}
-
-  void setPositionSpecificScoringMatrix(PositionSpecificScoringMatrixPtr pssm)
-    {setObject(T("PositionSpecificScoringMatrix"), pssm);}
-
-  void setSolventAccessibilitySequence(SolventAccessibilitySequencePtr solventAccessibility)
-    {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
-
-protected:
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, name) && StringToObjectMap::load(istr);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, name); StringToObjectMap::save(ostr);}
-
-private:
-  String name;
-};
-
-typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
-
-// Data: 
-
-// AminoAcid,
-// LabelSequence: AminoAcidSequence
-// VectorSequence: PositionSpecificScoringMatrix
-// LabelSequence: 3 state and 8 state SecondaryStructureSequence
-// LabelSequence: 2 state SolventAccesibilitySequence
-// ScoreSequence: regression SolventAccesibilitySequence
-// ScalarMatrix: 2 state ResidueContactMap
-// ScalarMatrix: regression ResidueDistanceMap
-// VectorSequence: BackboneSequence
-// Object: ThirdaryStructure
-
-void declareProteinClasses()
-{
-  LBCPP_DECLARE_CLASS(Protein);
-
-  LBCPP_DECLARE_CLASS(AminoAcidSequence);
-  LBCPP_DECLARE_CLASS(PositionSpecificScoringMatrix);
-  LBCPP_DECLARE_CLASS(SecondaryStructureSequence);
-  LBCPP_DECLARE_CLASS(SolventAccessibilitySequence);
-}
 
 class DaFuckingDataParser : public LearningDataObjectParser
 {
@@ -288,8 +202,10 @@ bool formDaFuckingCB513base()
   return true;
 }
 
+extern void declareProteinsClasses();
+
 int main()
 {
   declareProteinClasses();
-  return formDaFuckingCB513base() ? 0 : 1;
+  return 0;//formDaFuckingCB513base() ? 0 : 1;
 }

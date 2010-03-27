@@ -17,6 +17,7 @@ SET(PROTEINS_DATA_BIO
   Data/Bio/PositionSpecificScoringMatrix.lh
   Data/Bio/SecondaryStructureSequence.lh
   Data/Bio/SolventAccesibilitySequence.lh
+  Data/Bio/Protein.lh
 )
 
 SET(PROTEINS_LBCPP_SOURCES
@@ -27,6 +28,7 @@ SET(PROTEINS_LBCPP_SOURCES
 ADD_CRALGORITHM_SOURCES(${PROTEINS_LBCPP_SOURCES})
 
 SET(PROTEINS_MAIN_SOURCES
+  classes.cpp
   Main.cpp
 )
 
