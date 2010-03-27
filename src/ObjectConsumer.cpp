@@ -49,6 +49,8 @@ TextObjectPrinter::TextObjectPrinter(const File& file)
     Object::error(T("TextObjectPrinter::TextObjectPrinter"), T("No filename specified"));
     return;
   }
+  if (file.existsAsFile())
+    file.deleteFile();
   OutputStream* outputStream = file.createOutputStream();
   if (!outputStream)
   {

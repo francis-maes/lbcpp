@@ -26,6 +26,11 @@ void declareRandomVariableStatistics()
   LBCPP_DECLARE_CLASS(ScalarVariableStatistics);
 }
 
+void declareObjectRelatedClasses()
+{
+  LBCPP_DECLARE_CLASS(StringToObjectMap);
+}
+
 void declareFeatureGenerators()
 {
   LBCPP_DECLARE_CLASS(StringDictionary);
@@ -39,6 +44,7 @@ void declareLBCppCoreClasses()
 {
   declareRandomVariableStatistics();
   declareFeatureGenerators();
+  declareObjectRelatedClasses();
   
   declareContinuousFunctions();
   declareIterationFunctions();

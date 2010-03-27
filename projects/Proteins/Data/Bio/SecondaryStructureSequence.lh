@@ -167,10 +167,16 @@ protected:
   int numStates;
 
   virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, numStates) && LabelSequence::load(istr);}
+  {
+    if (!lbcpp::read(istr, numStates))
+      return false;
+    jassert(numStates == 3 || numStates == 8);
+    return LabelSequence::load(istr);
+  }
   
   virtual void save(OutputStream& ostr) const
   {
+    jassert(numStates == 3 || numStates == 8);
     lbcpp::write(ostr, numStates);
     LabelSequence::save(ostr);
   }

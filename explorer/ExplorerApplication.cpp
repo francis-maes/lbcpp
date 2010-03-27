@@ -109,12 +109,16 @@ public:
       {
         ObjectPtr object = loadObject(chooser.getResult());
         if (object)
+        {
           content->setObject(object, true);
+          setName(JUCE_T("LBC++ Explorer - ") + object->getClassName() + JUCE_T(" ") + object->getName());
+        }
       }
     }
     else if (menuItemID == 2)
     {
       content->setObject(ObjectPtr());
+      setName(JUCE_T("LBC++ Explorer"));
     }
     else if (menuItemID == 3)
     {
@@ -140,6 +144,8 @@ private:
   }
 };
 
+extern void declareProteinsClasses();
+
 class ExplorerApplication : public JUCEApplication
 {
 public:
@@ -148,9 +154,10 @@ public:
   virtual void initialise(const String& commandLine)
   {    
     ErrorHandler::setInstance(explorerErrorHandler);
+    declareProteinsClasses();
 
     theCommandManager = new ApplicationCommandManager();
-    
+
     mainWindow = new ExplorerMainWindow();
     mainWindow->setVisible(true);
 
