@@ -36,6 +36,26 @@ GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, size_t
 
 GradientBasedLearnerPtr lbcpp::dummyLearner()
   {return new NonLearnerGradientBasedLearner();}
+/*
+class StochasticToBatchGradientLearner : public GradientBasedLearner
+{
+public:
+
+};
+
+GradientBasedLearnerPtr GradientBasedLearner::stochasticToBatchLearner(StoppingCriterionPtr stoppingCriterion, bool randomizeExamples)
+{
+  return GradientBasedLearnerPtr();
+}
+
+GradientBasedLearnerPtr GradientBasedLearner::stochasticToBatchLearner(size_t maxIterationsWithoutImprovement, size_t maxIterations, bool randomizeExamples)
+{
+  StoppingCriterionPtr criterion = logicalOr(
+    maxIterationsWithoutImprovementStoppingCriterion(maxIterationsWithoutImprovement),
+    maxIterationsStoppingCriterion(maxIterations));
+  return stochasticToBatchLearner(criterion, randomizeExamples);
+}
+*/
 
 /*
 ** Serializable classes declaration
