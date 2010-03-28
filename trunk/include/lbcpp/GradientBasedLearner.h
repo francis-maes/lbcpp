@@ -66,100 +66,33 @@ public:
   DenseVectorPtr getParameters() const
     {return parameters;}
 
-  /*!
-  ** #FIXME
-  **
-  ** @param regularizer
-  */
   void setRegularizer(ScalarVectorFunctionPtr regularizer)
     {this->regularizer = regularizer;}
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  */
   virtual void trainStochasticBegin() {}
-
-  /*!
-  **
-  **
-  ** @param gradient
-  ** @param weight
-  */
   virtual void trainStochasticExample(FeatureGeneratorPtr gradient, double weight) = 0;
-
-  /*!
-  **
-  **
-  ** @param example
-  ** @param exampleLoss
-  */
   virtual void trainStochasticExample(ObjectPtr example, ScalarVectorFunctionPtr exampleLoss)
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}
-
-  /*!
-  **
-  **
-  */
   virtual void trainStochasticEnd() {}
 
-  /*!
-  **
-  **
-  ** @param objective
-  ** @param numExamples
-  ** @param progress
-  **
-  ** @return
-  */
   virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
   {
     error("GradientBasedLearner::trainBatch", "This is a non-batch learner");
     return false;
   }
 
+  //GradientBasedLearnerPtr stochasticToBatchLearner(StoppingCriterionPtr stoppingCriterion, bool randomizeExamples = true);
+  //GradientBasedLearnerPtr stochasticToBatchLearner(size_t maxIterationsWithoutImprovement = 3, size_t maxIterations = 500, bool randomizeExamples = true);
+
 protected:
-  DenseVectorPtr parameters;    /*!< */
-  ScalarVectorFunctionPtr regularizer; /*!< */
+  DenseVectorPtr parameters;
+  ScalarVectorFunctionPtr regularizer;
 };
 
-/*!
-**
-**
-** @param normalizeLearningRate
-**
-** @return
-*/
 extern GradientBasedLearnerPtr stochasticDescentLearner(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
-
-/*!
-**
-**
-** @param optimizer
-** @param termination
-**
-** @return
-*/
 extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr termination);
-
-/*!
-**
-**
-** @param optimizer
-** @param maxIterations
-** @param tolerance
-**
-** @return
-*/
 extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
 
-/*!
-**
-**
-**
-** @return
-*/
 extern GradientBasedLearnerPtr dummyLearner();
 
 }; /* namespace lbcpp */

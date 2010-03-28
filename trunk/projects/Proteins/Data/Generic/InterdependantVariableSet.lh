@@ -46,6 +46,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<InterdependantVariableSet> InterdependantVariableSetPtr;
 
+//////// Features ///////////
+
 class VariableFeatureFunction : public Object
 {
 public:
@@ -148,5 +150,37 @@ protected:
   size_t numPrevious, numNexts;
   bool includeCurrent;
 };
+
+/////////// LearningExample /////////////
+
+class InterdependantVariableSetExample : public LearningExample
+{
+public:
+  InterdependantVariableSetExample(VariableFeatureFunctionPtr inputFeatures, InterdependantVariableSetPtr targetVariables)
+    : inputFeatures(inputFeatures), targetVariables(targetVariables) {}
+
+  void createClassificationExamples(ObjectConsumerPtr target)
+  {
+    jassert(inputFeatures->getNumVariables() == targetVariables->getNumVariables());
+    jassert(targetVariables->getVariablesType() == InterdependantVariableSet::discreteVariable);
+
+    size_t n = targetVariables->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t value;
+      if (targetVariables->getVariable(i, value))
+        target->consume(new ClassificationExample(inputFeatures->computeFeatures(i)->toSparseVector(), value));
+    }
+  }
+
+  InterdependantVariableSetPtr getTargetVariables() const
+    {return targetVariables;}
+
+private:
+  VariableFeatureFunctionPtr inputFeatures;
+  InterdependantVariableSetPtr targetVariables;
+};
+
+typedef ReferenceCountedObjectPtr<InterdependantVariableSetExample> InterdependantVariableSetExamplePtr;
 
 }; /* namespace lbcpp */

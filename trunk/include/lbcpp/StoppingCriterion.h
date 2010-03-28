@@ -63,36 +63,13 @@ public:
   **
   ** @return
   */
-  virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr policy, ObjectContainerPtr examples) = 0;
+  virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr policy, ObjectContainerPtr examples)
+    {return false;}
 };
 
-/*!
-**
-**
-** @param maxIterations
-**
-** @return
-*/
 extern StoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);
-
-/*!
-**
-**
-** @param tolerance
-** @param relativeImprovement
-**
-** @return
-*/
+extern StoppingCriterionPtr maxIterationsWithoutImprovementStoppingCriterion(size_t maxIterationsWithoutImprovement);
 extern StoppingCriterionPtr averageImprovementStoppingCriterion(double tolerance, bool relativeImprovment = false);
-
-/*!
-**
-**
-** @param criterion1
-** @param criterion2
-**
-** @return
-*/
 extern StoppingCriterionPtr logicalOr(StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2);
 
 }; /* namespace lbcpp */

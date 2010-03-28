@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   LearningMachine.h
-**@author Francis MAESS
-**@date   Mon Jun 15 23:48:37 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_LEARNING_MACHINE_H_
 # define LBCPP_LEARNING_MACHINE_H_
 

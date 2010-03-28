@@ -45,6 +45,50 @@ private:
 StoppingCriterionPtr lbcpp::maxIterationsStoppingCriterion(size_t maxIterations)
   {return new MaxIterationsStoppingCriterion(maxIterations);}
 
+class MaxIterationsWithoutImprovementStoppingCriterion : public StoppingCriterion
+{
+public:
+  MaxIterationsWithoutImprovementStoppingCriterion(size_t maxIterationsWithoutImprovement = 5)
+    : maxIterationsWithoutImprovement(maxIterationsWithoutImprovement)
+    {reset();}
+
+  virtual String toString() const
+    {return "MaxIterationsWithoutImprovement(" + lbcpp::toString(maxIterationsWithoutImprovement) + ")";}
+
+  virtual void reset()
+    {numIterationsWithoutImprovement = 0; bestValue = -DBL_MAX;}
+
+  virtual bool shouldOptimizerStop(double value)
+  {
+    if (value > bestValue)
+    {
+      bestValue = value;
+      numIterationsWithoutImprovement = 0;
+    }
+    else
+    {
+      ++numIterationsWithoutImprovement;
+      if (numIterationsWithoutImprovement >= maxIterationsWithoutImprovement)
+        return true;
+    }
+    return false;
+  }
+
+  virtual void save(OutputStream& ostr) const
+    {write(ostr, maxIterationsWithoutImprovement);}
+
+  virtual bool load(InputStream& istr)
+    {return read(istr, maxIterationsWithoutImprovement);}
+
+private:
+  size_t maxIterationsWithoutImprovement;
+  size_t numIterationsWithoutImprovement;
+  double bestValue;
+};
+
+StoppingCriterionPtr lbcpp::maxIterationsWithoutImprovementStoppingCriterion(size_t maxIterationsWithoutImprovement)
+  {return new MaxIterationsWithoutImprovementStoppingCriterion(maxIterationsWithoutImprovement);}
+
 class AverageImprovementStoppingCriterion : public StoppingCriterion
 {
 public:
@@ -151,6 +195,7 @@ StoppingCriterionPtr lbcpp::logicalOr(StoppingCriterionPtr criterion1, StoppingC
 void declareStoppingCriterions()
 {
   LBCPP_DECLARE_CLASS(MaxIterationsStoppingCriterion);
+  LBCPP_DECLARE_CLASS(MaxIterationsWithoutImprovementStoppingCriterion);
   LBCPP_DECLARE_CLASS(AverageImprovementStoppingCriterion);
   LBCPP_DECLARE_CLASS(LogicalOrStoppingCriterion);
 }
