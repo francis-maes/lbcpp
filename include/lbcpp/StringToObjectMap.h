@@ -35,9 +35,6 @@ namespace lbcpp
 class StringToObjectMap : public Object
 {
 public:
-  void setObject(const String& key, ObjectPtr object)
-    {objects[key] = object;}
-  
   virtual String toString() const
   {
     if (objects.empty())
@@ -53,6 +50,15 @@ public:
     }
   }
   
+  void setObject(const String& key, ObjectPtr object)
+    {objects[key] = object;}
+
+  ObjectPtr getObject(const String& key) const
+  {
+    ObjectsMap::const_iterator it = objects.find(key);
+    return it == objects.end() ? ObjectPtr() : it->second;
+  }
+
   typedef std::map<String, ObjectPtr> ObjectsMap;
   
   ObjectsMap getObjects() const

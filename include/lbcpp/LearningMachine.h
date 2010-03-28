@@ -148,31 +148,19 @@ public:
   virtual size_t sample(const FeatureGeneratorPtr input) const;
 
   /*
-  ** Labels
+  ** Input dictionary
   */
-  /*!
-  **
-  **
-  **
-  ** @return
+  virtual FeatureDictionaryPtr getInputDictionary() const = 0;
+
+  /*
+  ** Labels
   */
   size_t getNumLabels() const
     {jassert(labels); return labels->getNumElements();}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   StringDictionaryPtr getLabels() const
     {jassert(labels); return labels;}
 
-  /*!
-  **
-  **
-  ** @param labels
-  */
   virtual void setLabels(StringDictionaryPtr labels)
     {this->labels = labels;}
 

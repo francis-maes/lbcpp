@@ -36,6 +36,25 @@ void ObjectConsumer::consume(ObjectContainerPtr container)
 }
 
 /*
+** VectorObjectContainerFiller
+*/
+class VectorObjectContainerFiller : public ObjectConsumer
+{
+public:
+  VectorObjectContainerFiller(VectorObjectContainerPtr container)
+    : container(container) {}
+
+  virtual void consume(ObjectPtr object)
+    {container->append(object);}
+
+private:
+  VectorObjectContainerPtr container;
+};
+
+ObjectConsumerPtr lbcpp::vectorObjectContainerFiller(VectorObjectContainerPtr container)
+  {return new VectorObjectContainerFiller(container);}
+
+/*
 ** TextObjectPrinter
 */
 TextObjectPrinter::TextObjectPrinter(OutputStream* newOutputStream)

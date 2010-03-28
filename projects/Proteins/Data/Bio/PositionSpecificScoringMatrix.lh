@@ -21,7 +21,7 @@ public:
   void setScore(size_t position, AminoAcid aminoAcid, double value)
   {
     jassert(aminoAcid.isNonAmbiguous());
-    ScoreVectorSequence::getScore(position, (size_t)aminoAcid.getType()) = value;
+    ScoreVectorSequence::setScore(position, (size_t)aminoAcid.getType(), value);
   }
 };
 

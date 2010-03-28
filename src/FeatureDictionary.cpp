@@ -14,10 +14,20 @@ using namespace lbcpp;
 /*
 ** StringDictionary
 */
-bool StringDictionary::exists(size_t index) const
+StringDictionary::StringDictionary(const StringDictionary& otherDictionary)
+  : stringToIndex(otherDictionary.stringToIndex), indexToString(otherDictionary.indexToString)
 {
-  return index < indexToString.size();
 }
+
+StringDictionary::StringDictionary(const juce::tchar* strings[])
+{
+  int i = 0;
+  for (int i = 0; strings[i]; ++i)
+    add(strings[i]);
+}
+
+bool StringDictionary::exists(size_t index) const
+  {return index < indexToString.size();}
 
 int StringDictionary::getIndex(const String& str) const
 {

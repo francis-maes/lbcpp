@@ -1,4 +1,7 @@
 
+* 1>:0: error: Undefined symbol : AminoAcid
+=====
+
 Gros:
   * SWIG, Doxygen, Tests
 

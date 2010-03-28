@@ -6,36 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include "InterdependantVariableSet.lh"
+
 namespace lbcpp
 {
-
-class InterdependantVariableSet : public Object
-{
-public:
-  enum VariableType
-  {
-    discreteVariable,
-    numericVariable
-  };
-
-  virtual VariableType getVariablesType() const = 0;
-
-  virtual size_t getNumVariables() const = 0;
-
-  virtual bool getVariable(size_t index, size_t& result) const
-    {jassert(false); return false;}
-
-  virtual bool getVariable(size_t index, double& result) const
-    {jassert(false); return false;}
-
-  virtual void setVariable(size_t index, size_t value) const
-    {jassert(false);}
-
-  virtual void setVariable(size_t index, double value) const
-    {jassert(false);}
-};
-
-typedef ReferenceCountedObjectPtr<InterdependantVariableSet> InterdependantVariableSetPtr;
 
 class Sequence : public InterdependantVariableSet
 {
@@ -47,8 +21,7 @@ public:
   virtual void setLength(size_t newLength, bool clearPreviousContent = true) = 0;
   
   virtual String elementToString(size_t position) const = 0;
-
-  //virtual featureGenerator computeFeatures(size_t position) const = 0;
+  virtual FeatureGeneratorPtr computeElementFeatures(size_t position) const = 0;
 
   /*
   ** Object
@@ -61,6 +34,24 @@ public:
       res += elementToString(i);
     return res;
   }
+};
+
+typedef ReferenceCountedObjectPtr<Sequence> SequencePtr;
+
+class SequenceElementFeatureFunction : public VariableFeatureFunction
+{
+public:
+  SequenceElementFeatureFunction(SequencePtr sequence)
+    : sequence(sequence) {}
+
+  virtual size_t getNumVariables() const
+    {return sequence->getLength();}
+
+  virtual FeatureGeneratorPtr computeFeatures(size_t variableIndex) const
+    {return sequence->computeElementFeatures(variableIndex);}
+
+protected:
+  SequencePtr sequence;
 };
 
 }; /* namespace lbcpp */

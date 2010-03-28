@@ -35,6 +35,9 @@ public:
   virtual void setVariable(size_t index, size_t value)
     {setLabel(index, (int)value);}
 
+  virtual featureGenerator computeVariableFeatures(size_t index) const
+    {featureSense((size_t)getLabel(index) + 1);}
+
   /*
   ** Sequence
   */
@@ -46,6 +49,9 @@ public:
 
   virtual String elementToString(size_t position) const
     {return String(getLabel(position));}
+
+  virtual FeatureGeneratorPtr computeElementFeatures(size_t position) const
+    {return computeVariableFeatures(position);}
 
   /*
   ** LabelSequence

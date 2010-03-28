@@ -61,6 +61,9 @@ bool ObjectStream::checkContentClassName(const String& expectedClassName) const
   return true;
 }
 
+/*
+** ApplyFunctionObjectStream
+*/
 class ApplyFunctionObjectStream : public ObjectStream
 {
 public:
@@ -70,8 +73,11 @@ public:
   virtual String getContentClassName() const
     {return function->getOutputClassName(stream->getContentClassName());}
 
-  virtual bool isValid() const
-    {return stream->isValid();}
+  virtual bool rewind()
+    {return stream->rewind();}
+
+  virtual bool isExhausted() const
+    {return stream->isExhausted();}
     
   virtual ObjectPtr next()
   {
@@ -251,3 +257,33 @@ ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatur
   jassert(numClasses >= 2);
   return new ClassificationExamplesSyntheticGenerator(numFeatures, numClasses);
 }
+
+/*
+** DirectoryObjectStream
+*/
+DirectoryObjectStream::DirectoryObjectStream(const File& directory, const String& wildCardPattern, bool searchFilesRecursively)
+  : nextFilePosition(0)
+{
+  directory.findChildFiles(files, File::findFiles, searchFilesRecursively, wildCardPattern);
+}
+
+bool DirectoryObjectStream::isExhausted() const
+  {return nextFilePosition >= files.size();}
+
+bool DirectoryObjectStream::rewind()
+{
+  nextFilePosition = 0;
+  return true;
+}
+
+ObjectPtr DirectoryObjectStream::next()
+{
+  if (isExhausted())
+    return ObjectPtr();
+  File file = *files[nextFilePosition];
+  ++nextFilePosition;
+  return parseFile(file);
+}
+
+ObjectPtr DirectoryObjectStream::parseFile(const File& file)
+  {return Object::loadFromFile(file);}

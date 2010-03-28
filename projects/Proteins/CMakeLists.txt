@@ -4,15 +4,15 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(PROTEINS_DATA_GENERIC
+  Data/Generic/InterdependantVariableSet.lh
   Data/Generic/Sequence.lh
   Data/Generic/LabelSequence.lh
   Data/Generic/ScoreSequence.lh
   Data/Generic/ScoreVectorSequence.lh
 )
 
-SET(PROTEINS_DATA_BIO
+SET(PROTEINS_DATA_BIO_LBCPP
   Data/Bio/AminoAcid.lh
-  Data/Bio/AminoAcid.lcpp
   Data/Bio/AminoAcidSequence.lh
   Data/Bio/PositionSpecificScoringMatrix.lh
   Data/Bio/SecondaryStructureSequence.lh
@@ -20,26 +20,35 @@ SET(PROTEINS_DATA_BIO
   Data/Bio/Protein.lh
 )
 
+SET(PROTEINS_DATA_BIO_CPP
+  Data/Bio/AminoAcid.cpp
+)
+
+SET(PROTEINS_DATA_BIO
+  ${PROTEINS_DATA_BIO_LBCPP}
+  ${PROTEINS_DATA_BIO_CPP}
+)
+
 SET(PROTEINS_LBCPP_SOURCES
   ${PROTEINS_DATA_GENERIC}
-  ${PROTEINS_DATA_BIO}
+  ${PROTEINS_DATA_BIO_LBCPP}
 )
 
 ADD_CRALGORITHM_SOURCES(${PROTEINS_LBCPP_SOURCES})
 
-SET(PROTEINS_MAIN_SOURCES
+SET(PROTEINS_CPP_SOURCES
+  ${PROTEINS_DATA_BIO_CPP}
   classes.cpp
 )
 
 SET(PROTEINS_SOURCES
   ${CRALGORITHMS_OUTPUT_FILES}
-  ${PROTEINS_MAIN_SOURCES}
+  ${PROTEINS_CPP_SOURCES}
 )
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
 SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
-SOURCE_GROUP(Main FILES ${PROTEINS_MAIN_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

@@ -297,7 +297,10 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   FunctionPTreeGenerator staticToDynamicFunction;
   if (isStatic)
     staticToDynamicFunction.addModifier(staticKeyword());
-  staticToDynamicFunction.addModifier(inlineKeyword());
+  if (input.getModifiers().contains("virtual"))
+    staticToDynamicFunction.addModifier(virtualKeyword());
+  else
+    staticToDynamicFunction.addModifier(inlineKeyword());
   staticToDynamicFunction.setReturnType(atom("lbcpp::FeatureGeneratorPtr"));
   staticToDynamicFunction.setName(input.getIdentifierString());
   staticToDynamicFunction.setConst(input.isConst());
@@ -335,6 +338,7 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   if (isStatic)
     featureCallFunction.addModifier(staticKeyword());
   featureCallFunction.addModifier(inlineKeyword());
+  
   featureCallFunction.setReturnType(voidKeyword());
   featureCallFunction.setName(input.getIdentifierString() + "InlineCall");
   featureCallFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
