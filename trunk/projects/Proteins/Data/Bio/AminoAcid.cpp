@@ -1,11 +1,11 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AminoAcid.lcpp                 | Amino Acid                      |
+| Filename: AminoAcid.cpp                  | Amino Acid                      |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/03/2010 17:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "AminoAcid.lh"
+#include "GeneratedCode/Data/Bio/AminoAcid.lh"
 using namespace lbcpp;
 
 AminoAcid::AminoAcid(const String& code)
@@ -34,4 +34,28 @@ AminoAcid::Type AminoAcid::getTypeFromOneLetterCode(juce::tchar c)
   int i = oneLetterCodes.indexOfChar(c);
   jassert(i >= 0);
   return i >= 0 ? (Type)i : unknown;
+}
+
+StringDictionaryPtr AminoAcid::getThreeLettersCodes()
+{
+  static const juce::tchar* threeLettersCodes[] = {
+    T("Ala"), T("Arg"), T("Asn"), T("Asp"), T("Cys"),
+    T("Glu"), T("Gln"), T("Gly"), T("His"), T("Ile"),
+    T("Leu"), T("Lys"), T("Met"), T("Phe"), T("Pro"),
+    T("Ser"), T("Thr"), T("Trp"), T("Tyr"), T("Val"),
+
+    T("Asx"), T("Glx"), T("Xle"), T("Xaa"),
+
+    NULL
+  };
+
+  static StringDictionaryPtr dictionary = new StringDictionary(threeLettersCodes);
+  return dictionary;
+}
+
+String AminoAcid::getThreeLettersCode() const
+{
+  StringDictionaryPtr dictionary = getThreeLettersCodes();
+  jassert(dictionary->exists((size_t)type));
+  return dictionary->getString((size_t)type);
 }

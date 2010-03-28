@@ -14,7 +14,7 @@ namespace lbcpp
 class SecondaryStructureElement
 {
 public:
-  enum HeightStateType
+  enum EightStateType
   {
     // eight states:
     threeTurnHelix = 0,        // G
@@ -34,7 +34,7 @@ public:
     other, // I, T, S or C
   };
 
-  SecondaryStructureElement(HeightStateType type)
+  SecondaryStructureElement(EightStateType type)
     : type((int)type), eightStates(true) {}
 
   SecondaryStructureElement(ThreeStateType type)
@@ -66,10 +66,10 @@ public:
     return SecondaryStructureElement(getType());
   }
 
-  HeightStateType getExtendedType() const
+  EightStateType getExtendedType() const
   {
     if (eightStates)
-      return (HeightStateType)type;
+      return (EightStateType)type;
     else
       return (type == helix ? alphaHelix : (type == sheet ? extendedStrandInSheet : coil));
   }
@@ -85,27 +85,38 @@ public:
       return (ThreeStateType)type;
   }
 
-  juce::tchar getOneLetterCode() const
+  static StringDictionaryPtr getOneLetterCodes(bool eightStates)
   {
     if (eightStates)
     {
-      static String codes = T("GHITEBS_");
-      jassert(type >= 0 && type < codes.length());
-      return codes[type];
+      static const juce::tchar* codes[] =
+        {T("G"), T("H"), T("I"), T("T"), T("E"), T("B"), T("S"), T("_"), NULL};
+      static StringDictionaryPtr dictionary = new StringDictionary(codes);
+      return dictionary;
     }
     else
     {
-      static String codes = T("HEC");
-      jassert(type >= 0 && type < codes.length());
-      return codes[type];
+      static const juce::tchar* codes[] =
+        {T("H"), T("E"), T("C"), NULL};
+      static StringDictionaryPtr dictionary = new StringDictionary(codes);
+      return dictionary;
     }
+  }
+  
+  juce::tchar getOneLetterCode() const
+  {
+    StringDictionaryPtr dictionary = getOneLetterCodes(eightStates);
+    jassert(dictionary->exists((size_t)type));
+    String res = dictionary->getString((size_t)type);
+    jassert(res.length() == 1);
+    return res[0];
   }
 
   String toString() const
   {
     if (eightStates)
     {
-      static juce::tchar* names[] = {
+      static const juce::tchar* names[] = {
         T("Three Turn Helix"),
         T("Alpha Helix"),
         T("Pi Helix"),
@@ -140,24 +151,27 @@ public:
   SecondaryStructureSequence(bool useHeightStates = false)
     : numStates(useHeightStates ? 8 : 3) {}
 
+  virtual StringDictionaryPtr getVariablesDictionary() const
+    {return SecondaryStructureElement::getOneLetterCodes(hasEightStates());}
+
   virtual String elementToString(size_t position) const
     {String res; res += getElement(position).getOneLetterCode(); return res;}
 
   SecondaryStructureElement getElement(size_t position) const
   {
     int label = getLabel(position);
-    return hasHeightStates()
-      ? SecondaryStructureElement((SecondaryStructureElement::HeightStateType)label)
+    return hasEightStates()
+      ? SecondaryStructureElement((SecondaryStructureElement::EightStateType)label)
       : SecondaryStructureElement((SecondaryStructureElement::ThreeStateType)label);
   }
 
   void setElement(size_t position, const SecondaryStructureElement& element)
   {
-    jassert(element.isEightStates() == hasHeightStates());
+    jassert(element.isEightStates() == hasEightStates());
     setLabel(position, element.getTypeIndex());
   }
 
-  bool hasHeightStates() const
+  bool hasEightStates() const
     {return numStates == 8;}
 
   bool hasThreeStates() const

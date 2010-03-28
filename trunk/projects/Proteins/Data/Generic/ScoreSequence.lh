@@ -32,6 +32,9 @@ public:
   virtual void setVariable(size_t index, double value)
     {setScore(index, value);}
 
+  virtual featureGenerator computeVariableFeatures(size_t index) const
+    {featureSense ("score", getScore(index));}
+
   /*
   ** Sequence
   */
@@ -43,6 +46,9 @@ public:
 
   virtual String elementToString(size_t position) const
     {return String(getScore(position));}
+
+  virtual FeatureGeneratorPtr computeElementFeatures(size_t position) const
+    {return computeVariableFeatures(position);}
 
   /*
   ** ScoreSequence

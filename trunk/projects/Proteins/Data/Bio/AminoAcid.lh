@@ -79,6 +79,12 @@ public:
   static Type getTypeFromOneLetterCode(juce::tchar c);
 
   juce::tchar getOneLetterCode() const;
+
+  /*
+  ** Three letter code
+  */
+  static StringDictionaryPtr getThreeLettersCodes();
+  String getThreeLettersCode() const;
      
   /*
   ** Comparison operators

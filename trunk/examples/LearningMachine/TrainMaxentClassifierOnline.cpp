@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
   ** Create classification data parser and perform online training
   */
   ObjectStreamPtr parser = classificationExamplesParser(dataDirectory.getChildFile("small.train"), features, labels);
-  if (!parser->isValid())
+  if (parser->isExhausted())
     return 1;
   classifier->trainStochastic(parser);
   
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
   ** Evaluate testing accuracy
   */
   parser = classificationExamplesParser(dataDirectory.getChildFile("small.test"), features, labels);
-  if (!parser->isValid())
+  if (parser->isExhausted())
     return 1;
   std::cout << "Testing Accuracy: " << classifier->evaluateAccuracy(parser) * 100 << "%." << std::endl;
 

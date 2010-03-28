@@ -99,12 +99,12 @@ public:
     // three state secondary structure
     SecondaryStructureSequencePtr threeStateSecondary = new SecondaryStructureSequence(false);
     threeStateSecondary->setLength(currentContent.size());
-    res->setObject("Three State Secondary Structure", threeStateSecondary);
+    res->setSecondaryStructureSequence(threeStateSecondary);
 
     // eight state secondary structure
     SecondaryStructureSequencePtr eightStateSecondary = new SecondaryStructureSequence(true);
     eightStateSecondary->setLength(currentContent.size());
-    res->setObject("Eight State Secondary Structure", eightStateSecondary);
+    res->setSecondaryStructureSequence(eightStateSecondary);
 
     // solvent accesibility
     SolventAccessibilitySequencePtr solventAccessibility = new SolventAccessibilitySequence();
@@ -189,7 +189,7 @@ int main()
     File pssmFile = *pssmFiles[i];
     std::cout << "File: " << pssmFile.getFullPathName() << std::endl;
     ObjectStreamPtr parser = new DaFuckingDataParser(pssmFile, sourceDirectory, features);
-    while (parser->isValid())
+    while (!parser->isExhausted())
     {
       ProteinPtr protein = parser->nextAndCast<Protein>();
       if (!protein)

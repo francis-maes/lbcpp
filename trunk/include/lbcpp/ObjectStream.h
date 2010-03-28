@@ -97,12 +97,19 @@ public:
     {return "Object";}
 
   /**
-  ** Checks if the stream is OK or not.
+  ** Rewind the stream.
   **
-  ** @return True, if the stream is valid. Returns False if any
-  ** stream problem occurs.
+  ** @return false if rewind is not supported on this stream
   */
-  virtual bool isValid() const
+  virtual bool rewind()
+    {return false;}
+
+  /**
+  ** Checks if the stream is exhausted.
+  **
+  ** @return true if the stream is exhausted.
+  */
+  virtual bool isExhausted() const
     {return true;}
 
   /**
@@ -341,14 +348,11 @@ public:
   */
   virtual ~TextObjectParser();
 
-  /**
-  ** Checks if the stream is OK or not.
-  **
-  ** @return True, if the stream is valid. Returns False if any
-  ** stream problem occurs.
-  */
-  virtual bool isValid() const
-    {return istr != NULL;}
+  virtual bool rewind()
+    {return istr->setPosition(0);}
+
+  virtual bool isExhausted() const
+    {return istr == NULL;}
 
   /**
   ** This function is called at the begging of parsing.
@@ -570,6 +574,26 @@ protected:
   */
   static bool parseFeatureIdentifier(const String& identifier, std::vector<String>& path);
 };
+
+class DirectoryObjectStream : public ObjectStream
+{
+public:
+  DirectoryObjectStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+
+  virtual bool rewind();
+  virtual bool isExhausted() const;
+  virtual ObjectPtr next();
+
+protected:
+  virtual ObjectPtr parseFile(const File& file);
+
+private:
+  juce::OwnedArray<File> files;
+  int nextFilePosition;
+};
+
+inline ObjectStreamPtr directoryObjectStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
+  {return new DirectoryObjectStream(directory, wildCardPattern, searchFilesRecursively);}
 
 }; /* namespace lbcpp */
 

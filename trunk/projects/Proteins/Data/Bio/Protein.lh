@@ -30,11 +30,23 @@ public:
   void setAminoAcidSequence(AminoAcidSequencePtr sequence)
     {setObject(T("AminoAcidSequence"), sequence);}
 
+  AminoAcidSequencePtr getAminoAcidSequence() const
+    {return getObject(T("AminoAcidSequence"));}
+
   void setPositionSpecificScoringMatrix(PositionSpecificScoringMatrixPtr pssm)
     {setObject(T("PositionSpecificScoringMatrix"), pssm);}
 
+  PositionSpecificScoringMatrixPtr getPositionSpecificScoringMatrix() const
+    {return getObject(T("PositionSpecificScoringMatrix"));}
+
   void setSolventAccessibilitySequence(SolventAccessibilitySequencePtr solventAccessibility)
     {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
+
+  void setSecondaryStructureSequence(SecondaryStructureSequencePtr sequence)
+    {setObject(sequence->hasEightStates() ? T("EightStateSecondaryStructure") : T("ThreeStateSecondaryStructure"), sequence);}
+
+  SecondaryStructureSequencePtr getSecondaryStructureSequence(bool heightState = false) const
+    {return getObject(heightState ? T("EightStateSecondaryStructure") : T("ThreeStateSecondaryStructure"));}
 
 protected:
   virtual bool load(InputStream& istr)

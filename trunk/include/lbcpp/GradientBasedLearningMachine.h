@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   GradientBasedLearningMachine.h
-**@author Francis MAES
-**@date   Mon Jun 15 19:21:11 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_GRADIENT_BASED_LEARNING_MACHINE_H_
 # define LBCPP_GRADIENT_BASED_LEARNING_MACHINE_H_
 
@@ -45,10 +35,6 @@
 namespace lbcpp
 {
 
-/*!
-** @class GradientBasedLearningMachine
-** @brief
-*/
 class GradientBasedLearningMachine
 {
 public:
@@ -130,23 +116,9 @@ public:
   double computeRegularizer() const
     {jassert(parameters); return regularizer ? regularizer->compute(parameters) : 0.0;}
 
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double computeEmpiricalRisk(ObjectContainerPtr examples) const
     {jassert(parameters); return getEmpiricalRisk(examples)->compute(parameters);}
 
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double computeRegularizedEmpiricalRisk(ObjectContainerPtr examples) const
     {jassert(parameters); return getRegularizedEmpiricalRisk(examples)->compute(parameters);}
 
@@ -160,62 +132,18 @@ protected:
   /*
   ** Serialization
   */
-  /*!
-  **
-  **
-  ** @param ostr
-  */
   void saveImpl(OutputStream& ostr) const;
-  /*!
-  **
-  **
-  ** @param istr
-  **
-  ** @return
-  */
   bool loadImpl(InputStream& istr);
-  /*!
-  **
-  **
-  ** @param target
-  */
   void cloneImpl(GradientBasedLearningMachine& target) const;
 
   /*
   ** Training
   */
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  */
   void trainStochasticBeginImpl();
-  /*!
-  **
-  **
-  ** @param gradient
-  ** @param weight
-  */
   void trainStochasticExampleImpl(FeatureGeneratorPtr gradient, double weight);
-  /*!
-  **
-  **
-  ** @param example
-  */
   void trainStochasticExampleImpl(ObjectPtr example);
-  /*!
-  **
-  **
-  */
   void trainStochasticEndImpl();
-  /*!
-  **
-  **
-  ** @param examples
-  ** @param progress
-  **
-  ** @return
-  */
+
   bool trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress);
 };
 
@@ -273,135 +201,48 @@ public:
 /*
 ** Regression
 */
-/*!
-** @class GradientBasedRegressor
-** @brief
-*/
 class GradientBasedRegressor : public GradientBasedLearningMachine_<Regressor, RegressionExample>
 {
 public:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predict(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline GradientBasedRegressorPtr loadGradientBasedRegressor(const File& file)
   {return Object::loadFromFileAndCast<GradientBasedRegressor>(file);}
 
-/*!
-**
-**
-** @param learner
-** @param l2Regularizer
-**
-** @return
-*/
 extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer = 0.0);
 
 /*
 ** Classification
 */
-/*!
-** @class GradientBasedClassifier
-** @brief
-*/
 class GradientBasedClassifier : public GradientBasedLearningMachine_<Classifier, ClassificationExample>
 {
 public:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual VectorArchitecturePtr getPredictionArchitecture() const = 0;
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input)->toDenseVector();}
 
-  /*!
-  **
-  **
-  ** @param input
-  ** @param output
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const
     {return getPredictionArchitecture()->compute(parameters, input, output);}
+
+  virtual FeatureDictionaryPtr getInputDictionary() const
+    {return GradientBasedLearningMachine::getInputDictionary();}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline GradientBasedClassifierPtr loadGradientBasedClassifier(const File& file)
   {return Object::loadFromFileAndCast<GradientBasedClassifier>(file);}
 
-/*!
-**
-**
-** @param learner
-** @param labels
-** @param l2regularizer
-**
-** @return
-*/
 extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
-
 
 /*
 ** Binary Classification
@@ -409,104 +250,36 @@ extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerP
 class GradientBasedBinaryClassifier : public GradientBasedLearningMachine_<BinaryClassifier, ClassificationExample>
 {
 public:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
+
+  virtual FeatureDictionaryPtr getInputDictionary() const
+    {return GradientBasedLearningMachine::getInputDictionary();}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline GradientBasedBinaryClassifierPtr loadGradientBasedBinaryClassifier(const File& file)
   {return Object::loadFromFileAndCast<GradientBasedBinaryClassifier>(file);}
 
-/*!
-**
-**
-** @param learner
-** @param labels
-**
-** @return
-*/
 extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
-
-/*!
-**
-**
-** @param learner
-** @param labels
-** @param l2regularizer
-**
-** @return
-*/
 extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
 ** Generalized Classification
 */
-/*!
-** @class GradientBasedGeneralizedClassifier
-**
-*/
 class GradientBasedGeneralizedClassifier
   : public GradientBasedLearningMachine_<GeneralizedClassifier, GeneralizedClassificationExample>
 {
 public:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input) const
     {return parameters ? getPredictionArchitecture()->compute(parameters, input) : 0.0;}
 };
@@ -516,88 +289,25 @@ extern GradientBasedGeneralizedClassifierPtr linearGeneralizedClassifier(Gradien
 /*
 ** Ranker
 */
-/*!
-** @class GradientBasedRanker
-** @brief
-*/
 class GradientBasedRanker
   : public GradientBasedLearningMachine_<Ranker, RankingExample>
 {
 public:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual ScalarArchitecturePtr getPredictionArchitecture() const = 0;
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary->getSubDictionary(0), initializeRandomly);}
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input) const
     {return getPredictionArchitecture()->compute(parameters, input);}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline GradientBasedRankerPtr loadGradientBasedRanker(const File& file)
   {return Object::loadFromFileAndCast<GradientBasedRanker>(file);}
 
-/*!
-**
-**
-** @param learner
-**
-** @return
-*/
 extern GradientBasedRankerPtr largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner);
-
-/*!
-**
-**
-** @param learner
-**
-** @return
-*/
 extern GradientBasedRankerPtr largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner);
-
-/*!
-**
-**
-** @param learner
-**
-** @return
-*/
 extern GradientBasedRankerPtr largeMarginBestAgainstAllLinearRanker(GradientBasedLearnerPtr learner);
-
-/*!
-**
-**
-** @param learner
-**
-** @return
-*/
 extern GradientBasedRankerPtr logBinomialAllPairsLinearRanker(GradientBasedLearnerPtr learner);
 
 }; /* namespace lbcpp */

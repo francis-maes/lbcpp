@@ -38,6 +38,12 @@ public:
     matrix[index] = value;
   }
 
+  virtual featureGenerator computeVariableFeatures(size_t index) const
+  {
+    jassert(index < matrix.size());
+    featureSense("score", matrix[index]);
+  }
+
   /*
   ** ScoreVectorSequence
   */
@@ -75,6 +81,11 @@ public:
     return res + T("\n");
   }
 
+  virtual featureGenerator computeElementFeatures(size_t position) const
+  {
+    for (size_t i = 0; i < numScores; ++i)
+      featureSense (i, getScore(position, i));
+  }
 
 protected:
   size_t length, numScores;
@@ -100,8 +111,8 @@ protected:
   double getScore(size_t position, size_t scoreIndex) const
     {return matrix[getIndex(position, scoreIndex)];}
 
-  double& getScore(size_t position, size_t scoreIndex)
-    {return matrix[getIndex(position, scoreIndex)];}
+  void setScore(size_t position, size_t scoreIndex, double value)
+    {matrix[getIndex(position, scoreIndex)] = value;}
 };
 
 }; /* namespace lbcpp */

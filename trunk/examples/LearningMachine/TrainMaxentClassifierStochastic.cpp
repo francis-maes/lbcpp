@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
   ** Load training classification data
   */
   ObjectStreamPtr parser = classificationExamplesParser(dataDirectory.getChildFile("small.train"), features, labels);
-  if (!parser->isValid())
+  if (parser->isExhausted())
     return 1;
   ObjectContainerPtr trainingData = parser->load();
   
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
   ** Parse test data and evaluate testing accuracy in one pass
   */
   parser = classificationExamplesParser(dataDirectory.getChildFile("small.test"), features, labels);
-  if (!parser->isValid())
+  if (parser->isExhausted())
     return 1;
   std::cout << "Testing Accuracy: " << classifier->evaluateAccuracy(parser) * 100 << "%." << std::endl;
 

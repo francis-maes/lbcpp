@@ -51,6 +51,10 @@ namespace lbcpp
 class StringDictionary : public Object
 {
 public:
+  StringDictionary(const StringDictionary& otherDictionary);
+  StringDictionary(const juce::tchar* strings[]);
+  StringDictionary() {}
+
   /**
   ** Clears dictionary. Removes all pairs <index, string>.
   **
