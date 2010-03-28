@@ -29,7 +29,7 @@ public:
   virtual PolicyPtr getPolicy() const
     {return learnedPolicy;}
 
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+  virtual void trainStochasticBegin()
   {
     if (!learnedPolicy)
       initialize();

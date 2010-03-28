@@ -47,14 +47,12 @@ void GradientBasedLearningMachine::cloneImpl(GradientBasedLearningMachine& targe
 }
 
 
-void GradientBasedLearningMachine::trainStochasticBeginImpl(FeatureDictionaryPtr inputDictionary)
+void GradientBasedLearningMachine::trainStochasticBeginImpl()
 {
   jassert(learner);
-  if (!parameters && inputDictionary)
-    createParameters(inputDictionary, initializeParametersRandomly);
   learner->setParameters(parameters);
   learner->setRegularizer(getRegularizer());
-  learner->trainStochasticBegin(inputDictionary);
+  learner->trainStochasticBegin();
 }
   
 void GradientBasedLearningMachine::trainStochasticExampleImpl(FeatureGeneratorPtr gradient, double weight)

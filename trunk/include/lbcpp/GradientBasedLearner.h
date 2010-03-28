@@ -79,7 +79,7 @@ public:
   **
   ** @param inputDictionary
   */
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {}
+  virtual void trainStochasticBegin() {}
 
   /*!
   **

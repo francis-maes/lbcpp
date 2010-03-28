@@ -174,27 +174,6 @@ int main()
 {
   declareProteinsClasses();
 
- /* File file = File::createTempFile(T("toto"));
-
-  OutputStream* outputStream = file.createOutputStream();
-  String youpi = T("youpi houla");
-  lbcpp::write(*outputStream, youpi);
-  int i = 51;
-  lbcpp::write(*outputStream, i);
-  delete outputStream;
-
-  InputStream* inputStream = file.createInputStream();
-  youpi = String::empty;
-  lbcpp::read(*inputStream, youpi);
-  jassert(youpi == T("youpi houla"));
-  i = 0;
-  lbcpp::read(*inputStream, i);
-  jassert(i == 51);
-  delete inputStream;
-
-  file.deleteFile();
-  return 0;*/
-
   File sourceDirectory("C:\\Projets\\Proteins\\data\\CB513");
   File pssmDirectory("C:\\Projets\\Proteins\\scripts");
   File outputDirectory("C:\\Projets\\Proteins\\data\\CB513cool");

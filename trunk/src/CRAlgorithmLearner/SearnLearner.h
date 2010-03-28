@@ -86,7 +86,7 @@ protected:
     
     virtual double predictScore(const FeatureGeneratorPtr input) const
       {return 0.0;}
-    virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+    virtual void trainStochasticBegin()
       {}
     virtual void trainStochasticExample(ObjectPtr example)
       {examples->append(example);}
@@ -94,8 +94,6 @@ protected:
       {}
     virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
       {jassert(false); return false;}
-    virtual FeatureDictionaryPtr getInputDictionary() const
-      {return FeatureDictionaryPtr();}
       
     VectorObjectContainerPtr examples;
   };

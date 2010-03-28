@@ -52,84 +52,34 @@ class LearningMachine : public Object
 {
 public:
   /*
-  ** Stochastic training
-  */
-  /*!
-  **
-  **
-  ** @param examples
-  ** @param progress
+  ** Stochastic training high-level
   */
   virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
-
-  /*!
-  **
-  **
-  ** @param examples
-  ** @param progress
-  */
   virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
+  /*
+  ** Stochastic training low-level
   */
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary) {jassert(false);}
+  virtual void trainStochasticBegin()
+    {jassert(false);}
 
-  /*!
-  **
-  **
-  ** @param example
-  */
-  virtual void trainStochasticExample(ObjectPtr example) {jassert(false);}
+  virtual void trainStochasticExample(ObjectPtr example)
+    {jassert(false);}
 
-  /*!
-  **
-  **
-  */
-  virtual void trainStochasticEnd() {jassert(false);}
+  virtual void trainStochasticEnd()
+    {jassert(false);}
 
   /*
   ** Batch training
   */
-  /*!
-  **
-  **
-  ** @param examples
-  ** @param progress
-  **
-  ** @return
-  */
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {jassert(false); return false;}
-  /*!
-  **
-  **
-  ** @param examples
-  ** @param progress
-  **
-  ** @return
-  */
   virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
-
-  /*
-  ** Input dictionary
-  */
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
-  virtual FeatureDictionaryPtr getInputDictionary() const
-    {return FeatureDictionaryPtr();}
-
-  //LearningMachinePtr batchToStochasticMachine() const;
 
 protected:
   void cloneImpl(LearningMachine& target) const {}
 };
+
 typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 
 

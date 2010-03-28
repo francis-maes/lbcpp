@@ -74,7 +74,7 @@ public:
       jassert(bestChoice);
       if (!isTraining)
       {
-        classifier->trainStochasticBegin(stateFeatures->getDictionary());
+        classifier->trainStochasticBegin();
         isTraining = true;
       }
       classifier->trainStochasticExample(new ClassificationExample(stateFeatures, bestChoice->getReference<size_t>()));

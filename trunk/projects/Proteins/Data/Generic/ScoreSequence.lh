@@ -15,6 +15,24 @@ class ScoreSequence : public Sequence
 {
 public:
   /*
+  ** InterdependantVariableSet
+  */
+  virtual VariableType getVariablesType() const
+    {return numericVariable;}
+
+  virtual size_t getNumVariables() const
+    {return getLength();}
+
+  virtual bool getVariable(size_t index, double& result) const
+  {
+    result = getScore(index);
+    return true;
+  }
+
+  virtual void setVariable(size_t index, double value)
+    {setScore(index, value);}
+
+  /*
   ** Sequence
   */
   virtual size_t getLength() const

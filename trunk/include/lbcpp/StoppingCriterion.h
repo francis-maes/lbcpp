@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   StoppingCriterion.h
-**@author Francis MAES
-**@date   Fri Jun 12 19:16:47 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_STOPPING_CRITERION_H_
 # define LBCPP_STOPPING_CRITERION_H_
 

@@ -66,7 +66,7 @@ public:
     EpisodicDecoratorPolicy::policyEnd(reward);
     jassert(rewards.size() == actionFeatures.size());
     
-    regressor->trainStochasticBegin(actionFeatures[0]->getDictionary());
+    regressor->trainStochasticBegin();
     double R = 0.0;
     for (int i = rewards.size() - 1; i >= 0; --i)
     {

@@ -84,7 +84,7 @@ public:
     //std::cout << "ALTERNATIVES ===> " << std::endl << alternatives->toString() << std::endl;
     if (!isTraining)
     {
-      ranker->trainStochasticBegin(alternatives->getDictionary());
+      ranker->trainStochasticBegin();
       isTraining = true;
     }
     ranker->trainStochasticExample(new RankingExample(alternatives, costs));

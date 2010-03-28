@@ -15,6 +15,27 @@ class LabelSequence : public Sequence
 {
 public:
   /*
+  ** InterdependantVariableSet
+  */
+  virtual VariableType getVariablesType() const
+    {return discreteVariable;}
+
+  virtual size_t getNumVariables() const
+    {return getLength();}
+
+  virtual bool getVariable(size_t index, size_t& result) const
+  {
+    int label = getLabel(index);
+    if (label < 0)
+      return false;
+    result = (size_t)label;
+    return true;
+  }
+
+  virtual void setVariable(size_t index, size_t value)
+    {setLabel(index, (int)value);}
+
+  /*
   ** Sequence
   */
   virtual size_t getLength() const
@@ -38,7 +59,7 @@ public:
   
   void setLabel(size_t position, int value)
   {
-    jassert(value >= -1);
+    jassert(value >= -1 && value < 255);
     jassert(position < sequence.size());
     sequence[position] = value >= 0 ? (Label)value : (Label)255;
   }
