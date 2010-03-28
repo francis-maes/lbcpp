@@ -57,7 +57,7 @@ public:
     if (explorationPolicy)
       explorationPolicy->policyEnter(choose->getCRAlgorithm());
     trace = DenseVectorPtr();
-    classifier->trainStochasticBegin(choose->getActionFeaturesFunction()->getDictionary());
+    classifier->trainStochasticBegin();
     return processChoose(choose);
   }
   

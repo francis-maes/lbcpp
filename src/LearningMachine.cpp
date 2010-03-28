@@ -17,7 +17,7 @@ using namespace lbcpp;
 */
 void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress)
 {
-  trainStochasticBegin(FeatureDictionaryPtr());
+  trainStochasticBegin();
   if (progress)
     progress->progressStart("LearningMachine::trainStochastic");
   size_t count = 0;
@@ -41,7 +41,7 @@ void LearningMachine::trainStochastic(ObjectStreamPtr examples, ProgressCallback
   
 void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress)
 {
-  trainStochasticBegin(FeatureDictionaryPtr());
+  trainStochasticBegin();
   if (progress)
     progress->progressStart("LearningMachine::trainStochastic");
   for (size_t i = 0; i < examples->size(); ++i)
@@ -73,7 +73,7 @@ public:
   virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {target->trainBatch(examples, progress);}
 
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+  virtual void trainStochasticBegin()
     {examples = new VectorObjectContainer();}
   virtual void trainStochasticExample(ObjectPtr example)
     {examples->append(example);}
@@ -86,9 +86,6 @@ public:
   virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {return target->trainBatch(examples, progress);}
 
-  virtual FeatureDictionaryPtr getInputDictionary() const
-    {return target->getInputDictionary();}
-  
 private:
   LearningMachinePtr target;
   VectorObjectContainerPtr examples;
@@ -108,9 +105,6 @@ class VerboseLearningMachine : public BaseClass
 public:
   VerboseLearningMachine(std::ostream& ostr) : ostr(ostr) {}
   
-  virtual FeatureDictionaryPtr getInputDictionary() const
-    {return FeatureDictionaryPtr();}
-
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     ostr << "trainBatch() with " << examples->size() << " examples:" << std::endl;
@@ -119,7 +113,7 @@ public:
     return true;
   }
 
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+  virtual void trainStochasticBegin()
     {ostr << "trainStochasticBegin()" << std::endl;}
     
   virtual void trainStochasticExample(ObjectPtr example)

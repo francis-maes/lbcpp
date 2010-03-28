@@ -47,7 +47,7 @@ public:
   virtual VariablePtr policyStart(ChoosePtr choose)
   {
     lastActionDescription = SparseVectorPtr();
-    regressor->trainStochasticBegin(choose->getActionFeaturesFunction()->getDictionary());
+    regressor->trainStochasticBegin();
     VariablePtr res = EpisodicDecoratorPolicy::policyStart(choose);
     lastActionDescription = choose->computeActionFeatures(res)->toSparseVector();
     return res;

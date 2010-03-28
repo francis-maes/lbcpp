@@ -44,5 +44,8 @@ SOURCE_GROUP(Main FILES ${PROTEINS_MAIN_SOURCES})
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
 
-ADD_EXECUTABLE(CB513Converter Programs/CB513Converter.cpp)
-TARGET_LINK_LIBRARIES(CB513Converter proteins)
+ADD_EXECUTABLE(ProteinsCB513Converter Programs/CB513Converter.cpp)
+TARGET_LINK_LIBRARIES(ProteinsCB513Converter proteins)
+
+ADD_EXECUTABLE(ProteinsTestLearning Programs/TestLearning.cpp)
+TARGET_LINK_LIBRARIES(ProteinsTestLearning proteins)

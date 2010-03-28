@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   Optimizer.h
-**@author Francis MAES
-**@date   Fri Jun 12 19:16:47 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_OPTIMIZER_H_
 # define LBCPP_OPTIMIZER_H_
 

@@ -154,117 +154,34 @@ public:
   virtual double compute(VariablePtr choice) const = 0;
 };
 
-/**
-** #FIXME
-**
-**
-** @return
-*/
 extern ActionValueFunctionPtr chooseActionValues();
 
 extern ActionValueFunctionPtr stateValueBasedActionValues(StateValueFunctionPtr stateValues, double discount = 1.0);
 
-/**
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 extern ActionValueFunctionPtr predictedActionValues(ClassifierPtr classifier);
 
-/**
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedClassifierPtr classifier)
   {return predictedActionValues(ClassifierPtr(classifier));}
 
-/**
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 extern ActionValueFunctionPtr predictedActionValues(GeneralizedClassifierPtr classifier);
 
-/**
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedGeneralizedClassifierPtr classifier)
   {return predictedActionValues(GeneralizedClassifierPtr(classifier));}
 
-/**
-** #FIXME
-**
-** @param ranker
-**
-** @return
-*/
 extern ActionValueFunctionPtr predictedActionValues(RankerPtr ranker);
 
-/**
-** #FIXME
-**
-** @param ranker
-**
-** @return
-*/
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedRankerPtr ranker)
   {return predictedActionValues(RankerPtr(ranker));}
 
-/**
-** #FIXME
-**
-** @param regressor
-**
-** @return
-*/
 extern ActionValueFunctionPtr predictedActionValues(RegressorPtr regressor);
 
-/**
-** #FIXME
-**
-** @param regressor
-**
-** @return
-*/
 inline ActionValueFunctionPtr predictedActionValues(GradientBasedRegressorPtr regressor)
   {return predictedActionValues(RegressorPtr(regressor));}
 
-/** 
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 extern ActionValueFunctionPtr probabilitiesActionValues(ClassifierPtr classifier);
 
-/**
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 extern ActionValueFunctionPtr probabilitiesActionValues(GeneralizedClassifierPtr classifier);
 
-/**
-** #FIXME
-**
-** @param classifier
-**
-** @return
-*/
 inline ActionValueFunctionPtr probabilitiesActionValues(GradientBasedClassifierPtr classifier)
   {return probabilitiesActionValues(ClassifierPtr(classifier));}
 

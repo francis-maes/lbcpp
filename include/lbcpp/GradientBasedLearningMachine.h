@@ -52,86 +52,27 @@ namespace lbcpp
 class GradientBasedLearningMachine
 {
 public:
-
-  /*!
-  **
-  **
-  */
   GradientBasedLearningMachine() : initializeParametersRandomly(false)
     {}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual ~GradientBasedLearningMachine() {}
 
   /*
   ** Abstract
   */
-  /*!
-  **
-  **
-  ** @param example
-  **
-  ** @return
-  */
   virtual FeatureDictionaryPtr getInputDictionaryFromExample(ObjectPtr example) = 0;
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
+
   virtual DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const = 0;
-  /*!
-  **
-  **
-  ** @param example
-  **
-  ** @return
-  */
   virtual ScalarVectorFunctionPtr getLoss(ObjectPtr example) const = 0;
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   virtual ScalarVectorFunctionPtr getEmpiricalRisk(ObjectContainerPtr examples) const = 0;
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   virtual ScalarVectorFunctionPtr getRegularizedEmpiricalRisk(ObjectContainerPtr examples) const = 0;
 
   /*
   ** Input Dictionary
   */
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   FeatureDictionaryPtr getInputDictionary() const
     {return inputDictionary;}
 
-  /*!
-  **
-  **
-  ** @param dictionary
-  **
-  ** @return
-  */
   bool ensureInputDictionary(FeatureDictionaryPtr dictionary)
   {
     if (inputDictionary)
@@ -143,21 +84,9 @@ public:
   /*
   ** Parameters
   */
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   DenseVectorPtr getParameters() const
     {return parameters;}
 
-  /*!
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  */
   void createParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly)
   {
     ensureInputDictionary(inputDictionary);
@@ -165,18 +94,9 @@ public:
     parameters = createInitialParameters(inputDictionary, initializeRandomly);
   }
 
-  /*!
-  **
-  **
-  ** @param parameters
-  */
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters;}
 
-  /*!
-  **
-  **
-  */
   void setInitializeParametersRandomly()
   {
     jassert(!parameters); // This function should be called before parameters creation.
@@ -186,59 +106,26 @@ public:
   /*
   ** Regularizer
   */
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   ScalarVectorFunctionPtr getRegularizer() const
     {return regularizer;}
 
-  /*!
-  **
-  **
-  ** @param regularizer
-  */
   void setRegularizer(ScalarVectorFunctionPtr regularizer)
     {this->regularizer = regularizer;}
 
-  /*!
-  **
-  **
-  ** @param weight
-  */
   void setL2Regularizer(double weight)
     {regularizer = sumOfSquaresFunction(weight);}
 
   /*
   ** Learner
   */
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   GradientBasedLearnerPtr getLearner() const
     {return learner;}
 
-  /*!
-  **
-  **
-  ** @param learner
-  */
   void setLearner(GradientBasedLearnerPtr learner)
     {this->learner = learner;}
 
   /*
   ** Shortcuts for functions computation
-  */
-  /*!
-  **
-  **
-  **
-  ** @return
   */
   double computeRegularizer() const
     {jassert(parameters); return regularizer ? regularizer->compute(parameters) : 0.0;}
@@ -302,7 +189,7 @@ protected:
   **
   ** @param inputDictionary
   */
-  void trainStochasticBeginImpl(FeatureDictionaryPtr inputDictionary);
+  void trainStochasticBeginImpl();
   /*!
   **
   **
@@ -343,20 +230,23 @@ public:
   virtual FeatureDictionaryPtr getInputDictionaryFromExample(ObjectPtr example)
     {return example.staticCast<ExampleType>()->getInput()->getDictionary();}
 
-  virtual FeatureDictionaryPtr getInputDictionary() const
-    {return GradientBasedLearningMachine::getInputDictionary();}
-
   /*
   ** LearningMachine
   */
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
-    {trainStochasticBeginImpl(inputDictionary);}
+  virtual void trainStochasticBegin()
+    {trainStochasticBeginImpl();}
 
   void trainStochasticExample(FeatureGeneratorPtr gradient, double weight)
     {trainStochasticExampleImpl(gradient, weight);}
 
   virtual void trainStochasticExample(ObjectPtr example)
-    {trainStochasticExampleImpl(example);}
+  {
+    if (!inputDictionary)
+      inputDictionary = getInputDictionaryFromExample(example);
+    if (!parameters && inputDictionary)
+      createParameters(inputDictionary, initializeParametersRandomly);
+    trainStochasticExampleImpl(example);
+  }
 
   virtual void trainStochasticEnd()
     {trainStochasticEndImpl();}

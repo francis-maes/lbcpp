@@ -26,7 +26,7 @@ public:
   virtual String toString() const
     {return "BatchGradientBasedLearner(" + lbcpp::toString(optimizer) + ", " + lbcpp::toString(stoppingCriterion) + ")";}
 
-  virtual void trainStochasticBegin(FeatureDictionaryPtr inputDictionary)
+  virtual void trainStochasticBegin()
   {
     Object::error("Batch::trainStochasticBegin", "This is not a stochastic learner");
     jassert(false);

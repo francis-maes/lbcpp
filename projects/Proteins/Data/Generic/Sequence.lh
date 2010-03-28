@@ -9,7 +9,35 @@
 namespace lbcpp
 {
 
-class Sequence : public Object
+class InterdependantVariableSet : public Object
+{
+public:
+  enum VariableType
+  {
+    discreteVariable,
+    numericVariable
+  };
+
+  virtual VariableType getVariablesType() const = 0;
+
+  virtual size_t getNumVariables() const = 0;
+
+  virtual bool getVariable(size_t index, size_t& result) const
+    {jassert(false); return false;}
+
+  virtual bool getVariable(size_t index, double& result) const
+    {jassert(false); return false;}
+
+  virtual void setVariable(size_t index, size_t value) const
+    {jassert(false);}
+
+  virtual void setVariable(size_t index, double value) const
+    {jassert(false);}
+};
+
+typedef ReferenceCountedObjectPtr<InterdependantVariableSet> InterdependantVariableSetPtr;
+
+class Sequence : public InterdependantVariableSet
 {
 public:
   /*

@@ -89,7 +89,7 @@ public:
   {
     if (eightStates)
     {
-      static String codes = T("GHITEBSC");
+      static String codes = T("GHITEBS_");
       jassert(type >= 0 && type < codes.length());
       return codes[type];
     }
