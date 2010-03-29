@@ -39,16 +39,19 @@ public:
   virtual bool trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
   {
     if (progress)
-      progress->progressStart("StochasticToBatchGradientLearner::trainBatch");
+      progress->progressStart(T("Batch training with ") + lbcpp::toString(examples->size()) + T(" examples"));
     
     ScalarVectorFunctionPtr objective = learningMachine.getRegularizedEmpiricalRisk(examples);
     
     stochasticLearner->setParameters(parameters);
     stochasticLearner->setRegularizer(regularizer);
 
-    while (true)
+    stoppingCriterion->reset();
+    for (size_t iteration = 0; true; ++iteration)
     {
-      std::cout << "BATCH TRAINING ITERATION..." << std::endl;
+      if (progress && !progress->progressStep(T("Batch training"), (double)iteration))
+        return false;
+
       stochasticLearner->trainStochasticBegin();
       ObjectContainerPtr ex = randomizeExamples ? examples->randomize() : examples;
       for (size_t i = 0; i < ex->size(); ++i)

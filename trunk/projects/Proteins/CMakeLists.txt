@@ -4,7 +4,7 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(PROTEINS_DATA_GENERIC
-  Data/Generic/InterdependantVariableSet.lh
+  Data/Generic/VariableSet.lh
   Data/Generic/Sequence.lh
   Data/Generic/LabelSequence.lh
   Data/Generic/ScoreSequence.lh
@@ -36,8 +36,17 @@ SET(PROTEINS_LBCPP_SOURCES
 
 ADD_CRALGORITHM_SOURCES(${PROTEINS_LBCPP_SOURCES})
 
+SET(VARIABLE_SET_MODEL_SOURCES
+  VariableSetModel/IndependantClassificationVariableSetModel.h
+  VariableSetModel/IterativeClassificationVariableSetModel.h
+  VariableSetModel/StackedClassificationVariableSetModel.h
+)
+
 SET(PROTEINS_CPP_SOURCES
   ${PROTEINS_DATA_BIO_CPP}
+  ${VARIABLE_SET_MODEL_SOURCES}
+  VariableSetModel.h
+  VariableSetModel.cpp
   classes.cpp
 )
 
@@ -49,6 +58,7 @@ SET(PROTEINS_SOURCES
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
 SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
+SOURCE_GROUP(VariableSetModel FILES ${VARIABLE_SET_MODEL_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

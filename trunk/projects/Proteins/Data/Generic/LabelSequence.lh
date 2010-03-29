@@ -50,7 +50,7 @@ public:
   virtual String elementToString(size_t position) const
     {return String(getLabel(position));}
 
-  virtual FeatureGeneratorPtr computeElementFeatures(size_t position) const
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const
     {return computeVariableFeatures(position);}
 
   /*
@@ -70,7 +70,16 @@ public:
     sequence[position] = value >= 0 ? (Label)value : (Label)255;
   }
 
-protected:
+  /*
+  ** Serialization
+  */
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<LabelSequence> res = new LabelSequence();
+    res->sequence = sequence;
+    return res;
+  }
+
   virtual bool load(InputStream& istr)
     {return lbcpp::read(istr, sequence);}
   
@@ -86,5 +95,7 @@ private:
 
   std::vector<Label> sequence;
 };
+
+typedef ReferenceCountedObjectPtr<LabelSequence> LabelSequencePtr;
 
 }; /* namespace lbcpp */

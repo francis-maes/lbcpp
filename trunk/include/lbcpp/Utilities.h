@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   Utilities.h
-**@author Francis MAES
-**@date   Sat Jun 13 18:03:22 2009
-**
-**@brief Utilities, especially the ErrorHandler.
-**
-**
-*/
-
 #ifndef LBCPP_UTILITIES_H_
 # define LBCPP_UTILITIES_H_
 

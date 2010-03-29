@@ -61,4 +61,34 @@ private:
 
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 
+class SecondaryStructureVariableSetExample : public VariableSetExample
+{
+public:
+  SecondaryStructureVariableSetExample(ProteinPtr protein)
+    : aminoAcidSequence(protein->getAminoAcidSequence()),
+      positionSpecificScores(protein->getPositionSpecificScoringMatrix()),
+      secondaryStructure(protein->getSecondaryStructureSequence(false))
+    {}
+  
+  virtual VariableSetPtr getTargetVariables() const
+    {return secondaryStructure;}
+    
+  virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
+  {
+    featureCall("aminoAcidWindow") aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("pssmWindow") positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
+    if (prediction)
+    {
+      LabelSequencePtr predictedSecondaryStructure = prediction.dynamicCast<LabelSequence>();
+      jassert(predictedSecondaryStructure);
+      featureCall("prediction") predictedSecondaryStructure->windowFeatures(variableIndex, 2, 2, false);
+    }
+  }
+    
+private:
+  LabelSequencePtr aminoAcidSequence;
+  ScoreVectorSequencePtr positionSpecificScores;
+  LabelSequencePtr secondaryStructure;
+};
+  
 }; /* namespace lbcpp */

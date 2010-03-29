@@ -1,0 +1,73 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: VariableSet.lh                 | Set of interdependant varibles  |
+| Author  : Francis Maes                   |                                 |
+| Started : 28/03/2010 15:02               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+namespace lbcpp
+{
+
+class VariableSet : public Object
+{
+public:
+  enum VariableType
+  {
+    discreteVariable,
+    numericVariable
+  };
+
+  virtual VariableType getVariablesType() const = 0;
+  virtual size_t getNumVariables() const = 0;
+  virtual FeatureGeneratorPtr computeVariableFeatures(size_t index) const = 0;
+
+  /*
+  ** Discrete variables
+  */
+  virtual bool getVariable(size_t index, size_t& result) const
+    {jassert(false); return false;}
+
+  virtual void setVariable(size_t index, size_t value)
+    {jassert(false);}
+
+  virtual StringDictionaryPtr getVariablesDictionary() const
+    {jassert(false); return StringDictionaryPtr();}
+    
+  bool getVariables(std::vector<size_t>& res) const
+  {
+    res.resize(getNumVariables());
+    for (size_t i = 0; i < res.size(); ++i)
+      if (!getVariable(i, res[i]))
+        return false;
+    return true;
+  }
+
+  /*
+  ** Numeric variables
+  */
+  virtual bool getVariable(size_t index, double& result) const
+    {jassert(false); return false;}
+
+  virtual void setVariable(size_t index, double value)
+    {jassert(false);}
+};
+
+typedef ReferenceCountedObjectPtr<VariableSet> VariableSetPtr;
+
+class VariableSetExample : public LearningExample
+{
+public:
+  // input
+  virtual FeatureGeneratorPtr getVariableFeatures(size_t variableIndex, VariableSetPtr prediction = VariableSetPtr()) const = 0;
+
+  // output
+  virtual VariableSetPtr getTargetVariables() const = 0; // the variables here may be unitiliased in case of unsupervised examples.
+  
+  size_t getNumVariables() const
+    {return getTargetVariables()->getNumVariables();}
+};
+
+typedef ReferenceCountedObjectPtr<VariableSetExample> VariableSetExamplePtr;
+
+}; /* namespace lbcpp */
