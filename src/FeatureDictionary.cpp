@@ -21,7 +21,6 @@ StringDictionary::StringDictionary(const StringDictionary& otherDictionary)
 
 StringDictionary::StringDictionary(const juce::tchar* strings[])
 {
-  int i = 0;
   for (int i = 0; strings[i]; ++i)
     add(strings[i]);
 }

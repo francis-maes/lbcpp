@@ -47,7 +47,7 @@ public:
   virtual String elementToString(size_t position) const
     {return String(getScore(position));}
 
-  virtual FeatureGeneratorPtr computeElementFeatures(size_t position) const
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const
     {return computeVariableFeatures(position);}
 
   /*
@@ -69,5 +69,7 @@ protected:
 private:
   std::vector<double> sequence;
 };
+
+typedef ReferenceCountedObjectPtr<ScoreSequence> ScoreSequencePtr;
 
 }; /* namespace lbcpp */

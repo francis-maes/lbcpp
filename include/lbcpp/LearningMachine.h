@@ -62,6 +62,7 @@ public:
   /*
   ** Batch training
   */
+  // return false if learning is canceled by the ProgressCallback
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
     {jassert(false); return false;}
   virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());

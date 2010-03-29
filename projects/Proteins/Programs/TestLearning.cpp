@@ -8,179 +8,73 @@
 
 #include <lbcpp/lbcpp.h>
 #include "GeneratedCode/Data/Bio/Protein.lh"
+#include "../VariableSetModel.h"
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
+extern void declareInterdependantVariableSetClasses();
 
-class InterdependantVariableSetScoreFunction : public Object
-{
-public:
-  virtual void reset() = 0;
-  virtual void addPrediction(InterdependantVariableSetPtr prediction, InterdependantVariableSetPtr correct) = 0;
-  virtual double compute() const = 0;
-};
-
-class LabelAccuracyVariableSetScoreFunction : public InterdependantVariableSetScoreFunction
-{
-public:
-  LabelAccuracyVariableSetScoreFunction()
-    {reset();}
-
-  virtual void reset()
-    {numCorrect = numVariables = 0;}
-
-  virtual void addPrediction(InterdependantVariableSetPtr prediction, InterdependantVariableSetPtr correct)
-  {
-    size_t n = prediction->getNumVariables();
-    jassert(n == correct->getNumVariables());
-    for (size_t i = 0; i < n; ++i)
-    {
-      size_t correctLabel;
-      if (correct->getVariable(i, correctLabel))
-      {
-        ++numVariables;
-        size_t predictedLabel;
-        if (prediction->getVariable(i, predictedLabel) && predictedLabel == correctLabel)
-          ++numCorrect;
-      }
-    }
-  }
-  
-  virtual double compute() const
-    {return numVariables ? numCorrect / (double)numVariables : 0.0;}
-
-private:
-  size_t numCorrect;
-  size_t numVariables;
-};
-
-class InterdependantVariableSetModel : public LearningMachine
-{
-public:
-  virtual void predict(VariableFeatureFunctionPtr inputFeatures, InterdependantVariableSetPtr prediction) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<InterdependantVariableSetModel> InterdependantVariableSetModelPtr;
-
-class ClassifierBasedInterdependantVariableSetModel : public InterdependantVariableSetModel
-{
-public:
-  ClassifierBasedInterdependantVariableSetModel(ClassifierPtr classifier = ClassifierPtr())
-    : classifier(classifier) {}
-
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-  {
-    VectorObjectContainerPtr classificationExamples = new VectorObjectContainer("ClassificationExample");
-    for (size_t i = 0; i < examples->size(); ++i)
-    {
-      InterdependantVariableSetExamplePtr example = examples->getAndCast<InterdependantVariableSetExample>(i);
-      jassert(example);
-      example->createClassificationExamples(lbcpp::vectorObjectContainerFiller(classificationExamples));
-      std::cout << "Num examples: " << classificationExamples->size() << std::endl;
-    }
-    return classifier->trainBatch((ObjectContainerPtr)classificationExamples, progress);
-  }
-
-  virtual void predict(VariableFeatureFunctionPtr inputFeatures, InterdependantVariableSetPtr prediction)
-  {
-    for (size_t i = 0; i < prediction->getNumVariables(); ++i)
-      prediction->setVariable(i, classifier->predict(inputFeatures->computeFeatures(i)));
-  }
-
-protected:
-  ClassifierPtr classifier;
-};
-
-void declareInterdependantVariableSetClasses()
-{
-  LBCPP_DECLARE_CLASS(ClassifierBasedInterdependantVariableSetModel);
-}
-
-class ProteinToInterdependantVariableSetExample : public ObjectFunction
+class ProteinToVariableSetExample : public ObjectFunction
 {
 public:
   virtual String getOutputClassName(const String& inputClassName) const
-    {return T("InterdependantVariableSetExample");}
+    {return T("VariableSetExample");}
 
   virtual ObjectPtr function(ObjectPtr object) const
   {
     ProteinPtr protein = object.dynamicCast<Protein>();
     jassert(protein);
-    
-    SequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    SequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
-    SequencePtr secondaryStructure3 = protein->getSecondaryStructureSequence(false);
-    SequencePtr secondaryStructure8 = protein->getSecondaryStructureSequence(true);
-
-    VariableFeatureFunctionPtr aminoAcid = new SequenceElementFeatureFunction(aminoAcidSequence);
-    VariableFeatureFunctionPtr aminoAcidWindow = new WindowVariableFeatureFunction(aminoAcid, 15, 15, true);
-
-    VariableFeatureFunctionPtr pssmColumn = new SequenceElementFeatureFunction(positionSpecificScores);
-    VariableFeatureFunctionPtr pssmWindow = new WindowVariableFeatureFunction(pssmColumn, 15, 15, true);
-
-    VariableFeatureFunctionPtr secondaryStructureCorrectWindow
-        = new WindowVariableFeatureFunction(new ContentOnlyVariableFeatureFunction(secondaryStructure8), 10, 10, false);
-
-    VariableFeatureFunctionPtr inputFeatures
-      = new UnionVariableFeatureFunction(aminoAcidWindow, pssmWindow, secondaryStructureCorrectWindow);
-    
-    return new InterdependantVariableSetExample(inputFeatures, secondaryStructure3);
+    return new SecondaryStructureVariableSetExample(protein);
   }
 };
+
+ClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
+{
+  IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
+  GradientBasedLearnerPtr learner = stochasticToBatchLearner(stochasticDescentLearner(learningRate), 2, 2);
+  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
+  classifier->setL2Regularizer(0.001);
+  return classifier;
+}
 
 int main()
 {
   declareProteinsClasses();
   ObjectStreamPtr proteinsStream = directoryObjectStream(File(T("/Users/francis/Projets/Proteins/Data/CB513")), T("*.protein"));
-  ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToInterdependantVariableSetExample());
+  ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
-  StringDictionaryPtr variablesDictionary = examples->getAndCast<InterdependantVariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
   size_t numFolds = 7;
+  double cvResult = 0.0;
   for (size_t i = 0; i < numFolds; ++i)
   {
-    IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-    GradientBasedLearnerPtr learner = stochasticToBatchLearner(stochasticDescentLearner(learningRate), 3, 20);
-    GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, variablesDictionary);
-    classifier->setL2Regularizer(0.001);
-    InterdependantVariableSetModelPtr model = new ClassifierBasedInterdependantVariableSetModel(classifier);
+    VariableSetModelPtr model =
+      //new IndependantClassificationVariableSetModel(createMaxentClassifier(labels));
+      iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
 
+    std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
     model->trainBatch(examples->invFold(i, numFolds), consoleProgressCallback());
-    //model->evaluate(examples->fold(i, numFolds));
+    double trainAccuracy = model->evaluate(examples->invFold(i, numFolds));
+    double testAccuracy = model->evaluate(examples->fold(i, numFolds));
+    std::cout << "Train Score: " << trainAccuracy << std::endl;
+    std::cout << "Test Score: " << testAccuracy << std::endl;
+    cvResult += testAccuracy;
   }
-  /*
-  // create classification dataset
-  StringDictionaryPtr outputLabels;
-  VectorObjectContainerPtr classificationExamples = new VectorObjectContainer("ClassificationExample");
-  while (!examplesStream->isExhausted())
-  {
-    InterdependantVariableSetExamplePtr example = examplesStream->nextAndCast<InterdependantVariableSetExample>();
-    jassert(example);
-    outputLabels = example->getTargetVariables()->getVariablesDictionary();
-    example->createClassificationExamples(lbcpp::vectorObjectContainerFiller(classificationExamples));
-    std::cout << "Num examples: " << classificationExamples->size() << std::endl;
-  }
-
-  // create learning machine
-  IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
-  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, outputLabels);
-  classifier->setL2Regularizer(0.001);
-
-  // stochastic training
-  std::cout << "Training ..." << std::endl;
-  for (size_t i = 0; i < 5; ++i)
-  {
-    classifier->trainStochastic(classificationExamples->randomize());
-    std::cout << "Iteration " << (i+1)
-              << " Training Accuracy: " << classifier->evaluateAccuracy((ObjectContainerPtr)classificationExamples) * 100 << "%."
-              << std::endl;
-  }*/
-
-  // OBJECTIF1: LANCER CO et OPT sur PSSM->SS3 avec differentes tailles de fenetres en entrÈe et en sortie
-  // OBJECTIF2: LANCER SICA sur PSSM->SS3 
-  // OBJECTIF3: LANCER CO et OPT sur AA->PSSM
-
+  
+  std::cout << std::endl << std::endl << "Cross Validation Result: " << (cvResult / numFolds) << std::endl;
+ 
+  // Results: Prediction of SS3 / 7 folds CV
+  
+  // ---CO---
+  //
+  // AA(7)+PSSM(7) with 1/1 train iter => 71.30
+  // AA(7)+PSSM(7) with 2/2 train iter => 72.01
+  // AA(7)+PSSM(7) with 2/10 train iter => 72.29
+  
+  // ---ICA---
+  // AA(7)+PSSM(7) with 2/2 train iter => 71.67
+  
   // Results: Predition of SS3:
   // AA(15) => 62.2
   // PSSM(15) => 72.1
