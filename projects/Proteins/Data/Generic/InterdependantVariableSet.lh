@@ -169,7 +169,7 @@ public:
     {
       size_t value;
       if (targetVariables->getVariable(i, value))
-        target->consume(new ClassificationExample(inputFeatures->computeFeatures(i)->toSparseVector(), value));
+        target->consume(new ClassificationExample(inputFeatures->computeFeatures(i), value));
     }
   }
 

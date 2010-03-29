@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   ContinuousFunction.h
-**@author Francis MAES
-**@date   Fri Jun 12 17:13:40 2009
-**
-**@brief  Continuous functions.
-**
-**
-*/
-
 #ifndef LBCPP_CONTINUOUS_FUNCTION_H_
 # define LBCPP_CONTINUOUS_FUNCTION_H_
 

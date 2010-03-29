@@ -47,6 +47,7 @@ namespace lbcpp
 ** @class GradientBasedLearner
 ** @brief Gradient-based learner.
 */
+class GradientBasedLearningMachine;
 class GradientBasedLearner : public Object
 {
 public:
@@ -75,14 +76,11 @@ public:
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}
   virtual void trainStochasticEnd() {}
 
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
+  virtual bool trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
   {
     error("GradientBasedLearner::trainBatch", "This is a non-batch learner");
     return false;
   }
-
-  //GradientBasedLearnerPtr stochasticToBatchLearner(StoppingCriterionPtr stoppingCriterion, bool randomizeExamples = true);
-  //GradientBasedLearnerPtr stochasticToBatchLearner(size_t maxIterationsWithoutImprovement = 3, size_t maxIterations = 500, bool randomizeExamples = true);
 
 protected:
   DenseVectorPtr parameters;
@@ -92,6 +90,8 @@ protected:
 extern GradientBasedLearnerPtr stochasticDescentLearner(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
 extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr termination);
 extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
+extern GradientBasedLearnerPtr stochasticToBatchLearner(GradientBasedLearnerPtr stochasticLearner, StoppingCriterionPtr stoppingCriterion, bool randomizeExamples = true);
+extern GradientBasedLearnerPtr stochasticToBatchLearner(GradientBasedLearnerPtr stochasticLearner, size_t maxIterationsWithoutImprovement = 3, size_t maxIterations = 500, bool randomizeExamples = true);
 
 extern GradientBasedLearnerPtr dummyLearner();
 

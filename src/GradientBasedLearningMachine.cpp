@@ -86,7 +86,7 @@ bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, P
   // delegate to learner
   learner->setParameters(parameters);
   learner->setRegularizer(getRegularizer());
-  if (!learner->trainBatch(getRegularizedEmpiricalRisk(examples), examples->size(), progress))
+  if (!learner->trainBatch(*this, examples, progress))
     return false;
   parameters = learner->getParameters();
   return true;

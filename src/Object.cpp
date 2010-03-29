@@ -16,9 +16,6 @@ extern void declareLBCppCoreClasses();
 class ObjectFactory
 {
 public:
-  ObjectFactory()
-    {declareLBCppCoreClasses();}
-
   void declare(const String& className, Object::Constructor constructor)
   {
     if (className.isEmpty())
@@ -34,6 +31,10 @@ public:
 
   Object* create(const String& className)
   {
+    // check that lbc++ core classes have been declared
+    if (constructors.find(T("SparseVector")) == constructors.end())
+      declareLBCppCoreClasses();
+      
     if (className.isEmpty())
     {
       Object::error(T("Object::create"), T("Empty class name"));

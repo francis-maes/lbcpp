@@ -44,8 +44,9 @@ public:
     jassert(false);
   }
 
-  virtual bool trainBatch(ScalarVectorFunctionPtr objective, size_t numExamples, ProgressCallbackPtr progress)
+  virtual bool trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
   {
+    ScalarVectorFunctionPtr objective = learningMachine.getRegularizedEmpiricalRisk(examples);
     jassert(parameters);
     if (progress)
       progress->progressStart("BatchLearner::trainBatch");
