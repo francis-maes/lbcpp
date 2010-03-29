@@ -82,9 +82,9 @@ public:
     String aminoAcidsSequence, dsspSequence, solventAccesibilitySequence;
     bool ok = parseSourceFile(sourceFile, aminoAcidsSequence, dsspSequence, solventAccesibilitySequence);
     jassert(ok);
-    jassert(aminoAcidsSequence.length() == currentContent.size());
-    jassert(dsspSequence.length() == currentContent.size());
-    jassert(solventAccesibilitySequence.length() == currentContent.size());
+    jassert(aminoAcidsSequence.length() == (int)currentContent.size());
+    jassert(dsspSequence.length() == (int)currentContent.size());
+    jassert(solventAccesibilitySequence.length() == (int)currentContent.size());
 
     // amino acids
     AminoAcidSequencePtr aminoAcids = new AminoAcidSequence();

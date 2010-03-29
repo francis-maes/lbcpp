@@ -12,6 +12,7 @@
 #include "GradientBasedLearner/BatchGradientBasedLearner.h"
 #include "GradientBasedLearner/NonLearnerGradientBasedLearner.h"
 #include "GradientBasedLearner/StochasticGradientDescentLearner.h"
+#include "GradientBasedLearner/StochasticToBatchGradientLearner.h"
 using namespace lbcpp;
 
 GradientBasedLearnerPtr lbcpp::stochasticDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
@@ -36,26 +37,17 @@ GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, size_t
 
 GradientBasedLearnerPtr lbcpp::dummyLearner()
   {return new NonLearnerGradientBasedLearner();}
-/*
-class StochasticToBatchGradientLearner : public GradientBasedLearner
-{
-public:
 
-};
+GradientBasedLearnerPtr lbcpp::stochasticToBatchLearner(GradientBasedLearnerPtr stochasticLearner, StoppingCriterionPtr stoppingCriterion, bool randomizeExamples)
+  {return GradientBasedLearnerPtr(new StochasticToBatchGradientLearner(stochasticLearner, stoppingCriterion, randomizeExamples));}
 
-GradientBasedLearnerPtr GradientBasedLearner::stochasticToBatchLearner(StoppingCriterionPtr stoppingCriterion, bool randomizeExamples)
-{
-  return GradientBasedLearnerPtr();
-}
-
-GradientBasedLearnerPtr GradientBasedLearner::stochasticToBatchLearner(size_t maxIterationsWithoutImprovement, size_t maxIterations, bool randomizeExamples)
+GradientBasedLearnerPtr lbcpp::stochasticToBatchLearner(GradientBasedLearnerPtr stochasticLearner, size_t maxIterationsWithoutImprovement, size_t maxIterations, bool randomizeExamples)
 {
   StoppingCriterionPtr criterion = logicalOr(
     maxIterationsWithoutImprovementStoppingCriterion(maxIterationsWithoutImprovement),
     maxIterationsStoppingCriterion(maxIterations));
-  return stochasticToBatchLearner(criterion, randomizeExamples);
+  return stochasticToBatchLearner(stochasticLearner, criterion, randomizeExamples);
 }
-*/
 
 /*
 ** Serializable classes declaration
@@ -65,4 +57,5 @@ void declareGradientBasedLearners()
   LBCPP_DECLARE_CLASS(StochasticGradientDescentLearner);
   LBCPP_DECLARE_CLASS(BatchGradientBasedLearner);
   LBCPP_DECLARE_CLASS(NonLearnerGradientBasedLearner);
+  LBCPP_DECLARE_CLASS(StochasticToBatchGradientLearner);
 }

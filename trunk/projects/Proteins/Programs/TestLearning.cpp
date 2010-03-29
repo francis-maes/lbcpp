@@ -131,7 +131,7 @@ public:
 int main()
 {
   declareProteinsClasses();
-  ObjectStreamPtr proteinsStream = directoryObjectStream(File(T("C:/Projets/Proteins/data/CB513cool")), T("*.protein"));
+  ObjectStreamPtr proteinsStream = directoryObjectStream(File(T("/Users/francis/Projets/Proteins/Data/CB513")), T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToInterdependantVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
   StringDictionaryPtr variablesDictionary = examples->getAndCast<InterdependantVariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
@@ -140,7 +140,7 @@ int main()
   for (size_t i = 0; i < numFolds; ++i)
   {
     IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);//->stochasticToBatchLearner();
+    GradientBasedLearnerPtr learner = stochasticToBatchLearner(stochasticDescentLearner(learningRate), 3, 20);
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, variablesDictionary);
     classifier->setL2Regularizer(0.001);
     InterdependantVariableSetModelPtr model = new ClassifierBasedInterdependantVariableSetModel(classifier);
@@ -177,7 +177,7 @@ int main()
               << std::endl;
   }*/
 
-  // OBJECTIF1: LANCER CO et OPT sur PSSM->SS3 avec differentes tailles de fenetres en entrée et en sortie
+  // OBJECTIF1: LANCER CO et OPT sur PSSM->SS3 avec differentes tailles de fenetres en entrÃˆe et en sortie
   // OBJECTIF2: LANCER SICA sur PSSM->SS3 
   // OBJECTIF3: LANCER CO et OPT sur AA->PSSM
 

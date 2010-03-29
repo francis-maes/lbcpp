@@ -126,13 +126,13 @@ public:
         T("Bend"),
         T("Coil")
       };
-      jassert(type >= 0 && type < sizeof (names) / sizeof (juce::tchar* ));
+      jassert(type >= 0 && type < (int)(sizeof (names) / sizeof (juce::tchar* )));
       return names[type];
     }
     else
     {
       static juce::tchar* names[] = {T("Helix"), T("Sheet"), T("Other")};
-      jassert(type >= 0 && type < sizeof (names) / sizeof (juce::tchar* ));
+      jassert(type >= 0 && type < (int)(sizeof (names) / sizeof (juce::tchar* )));
       return names[type];
     }
   }
