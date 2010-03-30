@@ -40,6 +40,7 @@ SET(VARIABLE_SET_MODEL_SOURCES
   VariableSetModel/IndependantClassificationVariableSetModel.h
   VariableSetModel/IterativeClassificationVariableSetModel.h
   VariableSetModel/StackedClassificationVariableSetModel.h
+  VariableSetModel/SimulatedIterativeClassificationVariableSetModel.h
 )
 
 SET(PROTEINS_CPP_SOURCES

@@ -9,7 +9,8 @@
 #include "VariableSetModel.h"
 #include "VariableSetModel/IndependantClassificationVariableSetModel.h"
 #include "VariableSetModel/IterativeClassificationVariableSetModel.h"
-#include "VariableSetModel/StackedClassificationVariableSetModel.h"
+#include "VariableSetModel/SimulatedIterativeClassificationVariableSetModel.h"
+//#include "VariableSetModel/StackedClassificationVariableSetModel.h"
 using namespace lbcpp;
 
 class VariableSetScoreFunction : public Object
@@ -61,7 +62,7 @@ double VariableSetModel::evaluate(ObjectContainerPtr examples) const
   {
     VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
     jassert(example);
-    VariableSetPtr prediction = example->getTargetVariables()->clone();
+    VariableSetPtr prediction = example->createInitialPrediction();
     predict(example, prediction);
     scoreFunction.addPrediction(prediction, example->getTargetVariables());
   }
@@ -74,8 +75,12 @@ VariableSetModelPtr lbcpp::independantClassificationVariableSetModel(ClassifierP
 VariableSetModelPtr lbcpp::iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier)
   {return new IterativeClassificationVariableSetModel(initialClassifier, iterativeClassifier);}
 
+VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier, StoppingCriterionPtr stoppingCriterion)
+  {return new SimulatedIterativeClassificationVariableSetModel(stochasticClassifier, stoppingCriterion);}
+
 void declareInterdependantVariableSetClasses()
 {
   LBCPP_DECLARE_CLASS(IndependantClassificationVariableSetModel);
   LBCPP_DECLARE_CLASS(IterativeClassificationVariableSetModel);
+  LBCPP_DECLARE_CLASS(SimulatedIterativeClassificationVariableSetModel);
 }

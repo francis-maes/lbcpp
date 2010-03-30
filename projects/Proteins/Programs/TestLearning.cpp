@@ -28,12 +28,20 @@ public:
   }
 };
 
-ClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
+StoppingCriterionPtr createLearningStoppingCriterion()
+{
+  return logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(2));
+}
+
+ClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, bool batchLearner = true)
 {
   IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-  GradientBasedLearnerPtr learner = stochasticToBatchLearner(stochasticDescentLearner(learningRate), 2, 2);
+  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
+  if (batchLearner)
+    learner = stochasticToBatchLearner(learner, createLearningStoppingCriterion());
+  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
-  classifier->setL2Regularizer(0.001);
+  classifier->setL2Regularizer(0.0001);
   return classifier;
 }
 
@@ -51,7 +59,8 @@ int main()
   {
     VariableSetModelPtr model =
       //new IndependantClassificationVariableSetModel(createMaxentClassifier(labels));
-      iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
+      //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
+      simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, false), createLearningStoppingCriterion());
 
     std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
     model->trainBatch(examples->invFold(i, numFolds), consoleProgressCallback());
@@ -73,7 +82,13 @@ int main()
   // AA(7)+PSSM(7) with 2/10 train iter => 72.29
   
   // ---ICA---
-  // AA(7)+PSSM(7) with 2/2 train iter => 71.67
+  // AA(7)+PSSM(7) + PR(1) with 2/2 train iter => 70.96
+  // AA(7)+PSSM(7) + PR(2) with 2/2 train iter => 71.67
+  // AA(7)+PSSM(7) + PR(5) with 2/2 train iter => 71.63
+  
+  // ---SICA---
+  // AA(7)+PSSM(7) + PR(2) with 2/2 train iter, reg 0, maxpass 5 => 70.61
+  // AA(7)+PSSM(7) + PR(2) with 2/10 train iter, reg 0.0001, maxpass 10
   
   // Results: Predition of SS3:
   // AA(15) => 62.2
@@ -88,3 +103,26 @@ int main()
   // OPT(10) => 84.7
   return 0;
 }
+
+
+#if 0
+int main()
+{
+  declareProteinsClasses();
+  ObjectStreamPtr proteinsStream = directoryObjectStream(File(T("/Users/francis/Projets/Proteins/Data/CB513")), T("*.protein"));
+  ObjectStreamPtr variableSetExamplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
+
+  ObjectContainerPtr variableSetExamples = variableSetExamplesStream->load()->randomize();  
+
+  size_t numFolds = 10;  
+  for (size_t i = 0; i < numFolds; ++i)
+  {
+    ObjectContainerPtr testExamples = variableSetExamples->fold(i, numFolds);
+    ObjectContainerPtr trainExamples = variableSetExamples->invFold(i, numFolds);
+    
+    std::cout << "Fold " << i << " " << testExamples->size() << " test examples, " << trainExamples->size() << " train examples" << std::endl;
+  }
+  
+  return 0;
+}
+#endif // 0

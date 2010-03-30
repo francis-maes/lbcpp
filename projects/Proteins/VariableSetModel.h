@@ -27,6 +27,7 @@ typedef ReferenceCountedObjectPtr<VariableSetModel> VariableSetModelPtr;
 
 extern VariableSetModelPtr independantClassificationVariableSetModel(ClassifierPtr classifier);
 extern VariableSetModelPtr iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier);
+extern VariableSetModelPtr simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier, StoppingCriterionPtr stoppingCriterion);
 
 }; /* namespace lbcpp */
 

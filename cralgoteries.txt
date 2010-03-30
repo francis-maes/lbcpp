@@ -1,5 +1,6 @@
 
-* 1>:0: error: Undefined symbol : AminoAcid
+* BUG: lbcpp::toString(*protein) affiche "toString not implemented"
+
 =====
 
 Gros:

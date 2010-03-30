@@ -44,8 +44,8 @@ protected:
     for (size_t i = 0; i < examples->size(); ++i)
     {
       VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
-      VariableSetPtr targetVariables = example->getTargetVariables();
       jassert(example);
+      VariableSetPtr targetVariables = example->getTargetVariables();
       size_t n = example->getNumVariables();
       for (size_t j = 0; j < n; ++j)
       {
