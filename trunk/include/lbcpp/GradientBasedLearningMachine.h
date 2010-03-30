@@ -230,7 +230,12 @@ public:
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input)->toDenseVector();}
+  {
+    if (parameters)
+      return getPredictionArchitecture()->compute(parameters, input)->toDenseVector();
+    else
+      return new DenseVector(new FeatureDictionary(T("classes"), getLabels(), StringDictionaryPtr()), getNumLabels());
+  }
 
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const
     {return getPredictionArchitecture()->compute(parameters, input, output);}

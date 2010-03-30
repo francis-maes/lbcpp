@@ -62,7 +62,8 @@ public:
   virtual FeatureGeneratorPtr getVariableFeatures(size_t variableIndex, VariableSetPtr prediction = VariableSetPtr()) const = 0;
 
   // output
-  virtual VariableSetPtr getTargetVariables() const = 0; // the variables here may be unitiliased in case of unsupervised examples.
+  virtual VariableSetPtr createInitialPrediction() const = 0;
+  virtual VariableSetPtr getTargetVariables() const = 0; // this may be null in case of unsupervised examples.
   
   size_t getNumVariables() const
     {return getTargetVariables()->getNumVariables();}

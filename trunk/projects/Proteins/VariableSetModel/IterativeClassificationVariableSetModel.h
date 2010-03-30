@@ -56,16 +56,18 @@ public:
       prediction->getVariables(labels);
       jassert(labels.size() == previousLabels.size());
       size_t numCommon = 0;
-      for (size_t j = 0; i < labels.size(); ++j)
+      for (size_t j = 0; j < labels.size(); ++j)
         if (labels[j] == previousLabels[j])
           ++numCommon;
        
       double changeRatio = 1.0 - numCommon / (double)labels.size();
-      std::cout << "ITERATION " << i << " NumCommon = " << numCommon << " changeRatio = " << changeRatio << std::endl;
+      std::cout << "." << std::flush;
+      //std::cout << "ITERATION " << i << " NumCommon = " << numCommon << " changeRatio = " << changeRatio << std::endl;
       if (changeRatio < 0.0001)
         break;
       previousLabels = labels;
     }
+    std::cout << std::endl;
   }
   
 protected:

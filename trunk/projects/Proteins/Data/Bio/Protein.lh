@@ -72,6 +72,13 @@ public:
   
   virtual VariableSetPtr getTargetVariables() const
     {return secondaryStructure;}
+
+  virtual VariableSetPtr createInitialPrediction() const
+  {
+    LabelSequencePtr res = new SecondaryStructureSequence(false);
+    res->setLength(secondaryStructure->getLength());
+    return res;
+  }
     
   virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
   {
