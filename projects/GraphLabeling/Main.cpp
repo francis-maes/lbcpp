@@ -412,20 +412,7 @@ int crossValidateAllOnSequences(int argc, char* argv[])
   std::cout << "Labels: " << labels->toString() << std::endl;
   std::cout << "Features: " << features->toString() << std::endl;
 
-  {
-    ObjectContainerPtr trainSequences = allSequences->invFold(0, 7);
-    ObjectContainerPtr testSequences = allSequences->fold(0, 7);
-    for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 10; ++inputHalfWindowSize)
-    {
-      sequencesToClassificationDataSet(trainSequences, labels, inputHalfWindowSize,
-        File::getCurrentWorkingDirectory().getChildFile(dataFileName + T(".train") + lbcpp::toString(inputHalfWindowSize) + T(".classif")));
-      sequencesToClassificationDataSet(testSequences, labels, inputHalfWindowSize,
-        File::getCurrentWorkingDirectory().getChildFile(dataFileName + T(".test") + lbcpp::toString(inputHalfWindowSize) + T(".classif")));
-    }
-  }
-  return 0;
-
-  for (size_t inputHalfWindowSize = 0; inputHalfWindowSize < 10; ++inputHalfWindowSize)
+  for (size_t inputHalfWindowSize = 7; inputHalfWindowSize < 8; ++inputHalfWindowSize)
   {
     // make folds and convert to graphs
     std::vector<LabeledContentGraphPtr> trainGraphs;
@@ -450,11 +437,11 @@ int crossValidateAllOnSequences(int argc, char* argv[])
     displayFolds(trainGraphs, testGraphs);
     
     // test content only
-    ContentOnlyGraphLabelingAlgorithm contentOnly;
-    testAlgorithm(contentOnly, "CO ihws = " + lbcpp::toString(inputHalfWindowSize), trainGraphs, testGraphs, false);
+    //ContentOnlyGraphLabelingAlgorithm contentOnly;
+    //testAlgorithm(contentOnly, "CO ihws = " + lbcpp::toString(inputHalfWindowSize), trainGraphs, testGraphs, false);
 
     // run all algorithms
-    //testAllAlgorithms(trainGraphs, testGraphs, false);
+    testAllAlgorithms(trainGraphs, testGraphs, false);
   }
   
   std::cout << std::endl << std::endl << std::endl;

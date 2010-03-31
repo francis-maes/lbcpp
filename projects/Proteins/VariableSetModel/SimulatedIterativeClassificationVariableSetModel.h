@@ -64,7 +64,7 @@ protected:
     if (isTraining && example->getTargetVariables()->getVariable(index, correctOutput))
     {
       // training
-      size_t res = classifier->predict /*sample */(features);
+      size_t res = classifier->sample(features);
       classifier->trainStochasticExample(new ClassificationExample(features, correctOutput));
       return res;
     }
@@ -100,7 +100,7 @@ public:
       dictionary(new FeatureDictionary(T("SICA"), StringDictionaryPtr(), new StringDictionary())) {}
   SimulatedIterativeClassificationVariableSetModel() {}
 
-  enum {maxInferencePasses = 10};
+  enum {maxInferencePasses = 5};
     
 protected:
   FeatureDictionaryPtr dictionary;
@@ -146,12 +146,12 @@ protected:
         break;
       previousLabels = labels;
     }
-    
-    {
+/*    {
       std::vector<size_t> target;
       example->getTargetVariables()->getVariables(target);
       std::cout << numPasses << " => " << numCommonVariables(target, previousLabels) << " / " << target.size() << "\t\t\t" << std::flush;
-    }
+    }*/
+    std::cout << "." << std::flush;
   }
   
 private:

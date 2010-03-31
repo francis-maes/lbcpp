@@ -67,5 +67,8 @@ TARGET_LINK_LIBRARIES(proteins lbcpp-core)
 ADD_EXECUTABLE(ProteinsCB513Converter Programs/CB513Converter.cpp)
 TARGET_LINK_LIBRARIES(ProteinsCB513Converter proteins)
 
+ADD_EXECUTABLE(VariableSetToSequenceData Programs/VariableSetToSequenceData.cpp)
+TARGET_LINK_LIBRARIES(VariableSetToSequenceData proteins)
+
 ADD_EXECUTABLE(ProteinsTestLearning Programs/TestLearning.cpp)
 TARGET_LINK_LIBRARIES(ProteinsTestLearning proteins)

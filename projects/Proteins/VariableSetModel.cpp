@@ -72,6 +72,9 @@ double VariableSetModel::evaluate(ObjectContainerPtr examples) const
 VariableSetModelPtr lbcpp::independantClassificationVariableSetModel(ClassifierPtr classifier)
   {return new IndependantClassificationVariableSetModel(classifier);}
 
+VariableSetModelPtr lbcpp::optimisticClassificationVariableSetModel(ClassifierPtr classifier)
+  {return new OptimisticClassificationVariableSetModel(classifier);}
+
 VariableSetModelPtr lbcpp::iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier)
   {return new IterativeClassificationVariableSetModel(initialClassifier, iterativeClassifier);}
 
@@ -81,6 +84,7 @@ VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(Clas
 void declareInterdependantVariableSetClasses()
 {
   LBCPP_DECLARE_CLASS(IndependantClassificationVariableSetModel);
+  LBCPP_DECLARE_CLASS(OptimisticClassificationVariableSetModel);
   LBCPP_DECLARE_CLASS(IterativeClassificationVariableSetModel);
   LBCPP_DECLARE_CLASS(SimulatedIterativeClassificationVariableSetModel);
 }

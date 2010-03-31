@@ -1,3 +1,10 @@
+* Test avec graphlabeling
+* Multithread CV puis test de quelques ensembles de features
+    - input: rapport à la longueur, la position courante
+    - output: conjonctions input/output et resumé long terme
+  * ContentOnly/ICA/SICA{prob|det}/Optimistic
+
+* Tester la compilation sur la grille (compile linux)
 
 * BUG: lbcpp::toString(*protein) affiche "toString not implemented"
 

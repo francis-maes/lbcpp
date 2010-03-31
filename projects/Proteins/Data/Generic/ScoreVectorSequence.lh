@@ -84,8 +84,18 @@ public:
   virtual featureGenerator elementFeatures(size_t position) const
   {
     for (size_t i = 0; i < numScores; ++i)
-      featureSense (i, getScore(position, i));
+    {
+      double score = getScore(position, i);
+      if (score)
+        featureSense(i, score);
+    }
   }
+
+  double getScore(size_t position, size_t scoreIndex) const
+    {return matrix[getIndex(position, scoreIndex)];}
+
+  void setScore(size_t position, size_t scoreIndex, double value)
+    {matrix[getIndex(position, scoreIndex)] = value;}
 
 protected:
   size_t length, numScores;
@@ -107,12 +117,6 @@ protected:
     jassert(scoreIndex < numScores);
     return scoreIndex + position * numScores;
   }
-
-  double getScore(size_t position, size_t scoreIndex) const
-    {return matrix[getIndex(position, scoreIndex)];}
-
-  void setScore(size_t position, size_t scoreIndex, double value)
-    {matrix[getIndex(position, scoreIndex)] = value;}
 };
 
 typedef ReferenceCountedObjectPtr<ScoreVectorSequence> ScoreVectorSequencePtr;
