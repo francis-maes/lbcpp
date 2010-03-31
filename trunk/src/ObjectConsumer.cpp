@@ -91,12 +91,14 @@ struct WriteFeatureListVisitor : public PathBasedFeatureVisitor
   
   virtual void featureSense(const std::vector<size_t>& path, const String& name, double value)
   {
-    if (isFirst)
-      isFirst = false;
-    else
-      ostr << " ";
     if (value)
+    {
+      if (isFirst)
+        isFirst = false;
+      else
+        ostr << " ";
       ostr << (const char* )name << ":" << value;
+    }
   }
 };
 

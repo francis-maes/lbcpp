@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: TestLearning.cpp               | Test Learning                   |
-| Author  : Francis Maes                   |                                 |
-| Started : 28/03/2010 12:31               |                                 |
+| Filename: VariableSetToSequenceData.cpp  | Convert variable sets to a      |
+| Author  : Francis Maes                   |  old school sequence datafile   |
+| Started : 30/03/2010 19:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -28,42 +28,50 @@ public:
   }
 };
 
-StoppingCriterionPtr createLearningStoppingCriterion()
+class SequenceExamplesPrinter : public LearningDataObjectPrinter
 {
-  return logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(2));
-}
-
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, bool batchLearner = true)
-{
-  IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
-  if (batchLearner)
-    learner = stochasticToBatchLearner(learner, createLearningStoppingCriterion());
+public:
+  SequenceExamplesPrinter(const File& file)
+    : LearningDataObjectPrinter(file), sequenceNumber(0) {}
   
-  GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
-  classifier->setL2Regularizer(0.0001);
-  return classifier;
-}
-
-  ObjectContainerPtr makeClassificationExamples(ObjectContainerPtr examples)
+  virtual void consume(ObjectPtr object)
   {
-    VectorObjectContainerPtr res = new VectorObjectContainer("ClassificationExample");
-    for (size_t i = 0; i < examples->size(); ++i)
-    {
-      VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
-      jassert(example);
-      VariableSetPtr targetVariables = example->getTargetVariables();
-      size_t n = example->getNumVariables();
-      for (size_t j = 0; j < n; ++j)
-      {
-        size_t value;
-        if (targetVariables->getVariable(j, value))
-          res->append(new ClassificationExample(example->getVariableFeatures(j), value));
-      }
-    }
-    return res;
-  }  
+    VariableSetExamplePtr example = object.dynamicCast<VariableSetExample>();
+    jassert(example);
+    VariableSetPtr variables = example->getTargetVariables();
 
+    print("# Sequence " + lbcpp::toString(++sequenceNumber) + "\n");
+    for (size_t i = 0; i < variables->getNumVariables(); ++i)
+    {
+      size_t label;
+      variables->getVariable(i, label);
+
+      print(variables->getVariablesDictionary()->getString(label) + T(" "));
+      printFeatureList(example->getVariableFeatures(i));
+      printNewLine();
+    }
+    printNewLine();
+  }
+
+  size_t sequenceNumber;
+};
+
+int main()
+{
+  File cb513Directory = 
+    File(T("C:/Projets/Proteins/data/CB513cool"));
+
+  File outputFile(T("C:/Projets/Proteins/data/cb513SecondaryStructure3.sequences"));
+  outputFile.deleteFile();
+
+  declareProteinsClasses();
+  ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
+  ObjectConsumerPtr printer = new SequenceExamplesPrinter(outputFile);
+  printer->consume(proteinsStream->apply(new ProteinToVariableSetExample()));
+  return 0;
+};
+
+#if 0
 int main()
 {
   File cb513Directory = 
@@ -76,15 +84,12 @@ int main()
   ObjectContainerPtr examples = examplesStream->load()->randomize();
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
-
   size_t numFolds = 7;
-  double cvTrainResult = 0.0, cvTestResult = 0.0;
-  for (size_t i = 0; i < 1; ++i)
+  double cvResult = 0.0;
+  for (size_t i = 0; i < numFolds; ++i)
   {
     VariableSetModelPtr model =
-      //independantClassificationVariableSetModel(createMaxentClassifier(labels));
-      //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
-
+      //new IndependantClassificationVariableSetModel(createMaxentClassifier(labels));
       //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
       simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, false), createLearningStoppingCriterion());
 
@@ -94,12 +99,10 @@ int main()
     double testAccuracy = model->evaluate(examples->fold(i, numFolds));
     std::cout << "Train Score: " << trainAccuracy << std::endl;
     std::cout << "Test Score: " << testAccuracy << std::endl;
-    cvTrainResult += trainAccuracy;
-    cvTestResult += testAccuracy;
+    cvResult += testAccuracy;
   }
   
-  //std::cout << "Average Train Accuracy = " << cvTrainResult / numFolds << std::endl;
-  //std::cout << "Average Test Accuracy = " << cvTestResult / numFolds << std::endl;
+  std::cout << std::endl << std::endl << "Cross Validation Result: " << (cvResult / numFolds) << std::endl;
  
   // Results: Prediction of SS3 / 7 folds CV
   
@@ -108,7 +111,6 @@ int main()
   // AA(7)+PSSM(7) with 1/1 train iter => 71.30
   // AA(7)+PSSM(7) with 2/2 train iter => 72.01
   // AA(7)+PSSM(7) with 2/10 train iter => 72.29
- 
   
   // ---ICA---
   // AA(7)+PSSM(7) + PR(1) with 2/2 train iter => 70.96
@@ -119,14 +121,7 @@ int main()
   // AA(7)+PSSM(7) + PR(2) with 2/2 train iter, reg 0, maxpass 5 => 70.61
   // AA(7)+PSSM(7) + PR(2) with 2/10 train iter, reg 0.0001, maxpass 10
   
-  // ---CO Results with only 1 folds over the seven, 10 training iteration, best test score---
-  // AA(7)+PSSM(7) => 74.02
-  // AA(7)+PSSM(7)+POS/LEN => 74.16
-  // AA(7)+PSSM(7)+POS/LEN/CONJ(AA) => 74.19
-  // AA(7)+PSSM(7)+POS%/LEN/CONJ(AA) => 74.07
-  // AA(7)+PSSM(7)+POS/LEN/CONJ(AA)/CONJ(PSSM) => 74.00
-
-  // ---Test Results on the whole dataset (Predition of SS3)---
+  // Results: Predition of SS3:
   // AA(15) => 62.2
   // PSSM(15) => 72.1
   // AA(15)+PSSM(15) => 73.9
@@ -139,3 +134,4 @@ int main()
   // OPT(10) => 84.7
   return 0;
 }
+#endif // 0

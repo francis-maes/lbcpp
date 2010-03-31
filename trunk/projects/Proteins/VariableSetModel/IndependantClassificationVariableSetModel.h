@@ -19,9 +19,10 @@ class IndependantClassificationVariableSetModel : public VariableSetModel
 public:
   IndependantClassificationVariableSetModel(ClassifierPtr classifier = ClassifierPtr())
     : classifier(classifier) {}
-
-  enum {maxInferencePasses = 100};
   
+  virtual FeatureGeneratorPtr getFeatures(VariableSetExamplePtr example, size_t index) const
+    {return example->getVariableFeatures(index);}
+
   virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     ObjectContainerPtr classificationExamples = makeClassificationExamples(examples);
@@ -32,7 +33,7 @@ public:
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const
   {
     for (size_t i = 0; i < prediction->getNumVariables(); ++i)
-      prediction->setVariable(i, classifier->predict(example->getVariableFeatures(i)));
+      prediction->setVariable(i, classifier->predict(getFeatures(example, i)));
   }
 
 protected:
@@ -51,11 +52,21 @@ protected:
       {
         size_t value;
         if (targetVariables->getVariable(j, value))
-          res->append(new ClassificationExample(example->getVariableFeatures(j), value));
+          res->append(new ClassificationExample(getFeatures(example, j), value));
       }
     }
     return res;
   }  
+};
+
+class OptimisticClassificationVariableSetModel : public IndependantClassificationVariableSetModel
+{
+public:
+  OptimisticClassificationVariableSetModel(ClassifierPtr classifier = ClassifierPtr())
+    : IndependantClassificationVariableSetModel(classifier) {}
+
+  virtual FeatureGeneratorPtr getFeatures(VariableSetExamplePtr example, size_t index) const
+    {return example->getVariableFeatures(index, example->getTargetVariables());}
 };
 
 }; /* namespace lbcpp */
