@@ -30,7 +30,7 @@ public:
 
 StoppingCriterionPtr createLearningStoppingCriterion()
 {
-  return logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(2));
+  return logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(5));
 }
 
 GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, bool batchLearner = true)
@@ -79,7 +79,7 @@ int main()
 
   size_t numFolds = 7;
   double cvTrainResult = 0.0, cvTestResult = 0.0;
-  for (size_t i = 0; i < 1; ++i)
+  for (size_t i = 0; i < numFolds; ++i)
   {
     VariableSetModelPtr model =
       //independantClassificationVariableSetModel(createMaxentClassifier(labels));
