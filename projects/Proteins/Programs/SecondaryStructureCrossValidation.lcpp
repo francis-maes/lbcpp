@@ -196,23 +196,31 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
   return classifier;
 }
 
-int main()
-{
-  File cb513Directory = 
-    File(T("/Users/francis/Projets/Proteins/Data/CB513"));
-    //File(T("C:/Projets/Proteins/data/CB513cool"));
-   //File(T("/Users/jbecker/Documents/University of Liège/Doctorat/CASP9/CB513"));
+void usage(char* command) {
+  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE FOLD_NUM" << std::endl;
+}
 
-  File resultsFile
-    //(T("/Users/jbecker/Documents/TestResults.txt"));
-    (T("/Users/francis/TestResults.txt"));
-    
+int main(int argc, char** argv)
+{
+  if (argc != 4) {
+    usage(argv[0]);
+    return 0;
+  }
+  
+  std::cout << "Protein Directory: " << argv[1] << std::endl;
+  std::cout << "Result File: " << argv[2] << std::endl;
+  std::cout << "Fold: " << argv[3] << std::endl;
+  
+  File cb513Directory = File(String(argv[1]));
+  File resultsFile = File(String(argv[2]));
+  int targetFold = atoi(argv[3]);
+  
   resultsFile.deleteFile();
   OutputStream* resultsFileStream = resultsFile.createOutputStream();
   if (!resultsFileStream)
   {
     std::cerr << "Beeeruh" << std::endl;
-    return 1;
+    return 2;
   }
   
   
@@ -223,29 +231,25 @@ int main()
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
   size_t numFolds = 7;
-  double cvTrainResult = 0.0, cvTestResult = 0.0;
-  for (size_t i = 0; i < 1 /*numFolds*/; ++i)
-  {
-    VariableSetModelPtr model =
+
+  VariableSetModelPtr model =
       independantClassificationVariableSetModel(createMaxentClassifier(labels));
       //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
       //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
       //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
 
-    std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
+  std::cout << std::endl << std::endl << "FOLD " << targetFold << " / " << numFolds << " ..." << std::endl;
     
-    ObjectContainerPtr trainingData = examples->invFold(i, numFolds);
-    ObjectContainerPtr testingData = examples->fold(i, numFolds);
-    
-    ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
-      = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData, *resultsFileStream);
-    model->trainBatch(trainingData, callback);
-    cvTrainResult += callback->trainAccuracy;
-    cvTestResult += callback->testAccuracy;
-  }
+  ObjectContainerPtr trainingData = examples->invFold(targetFold, numFolds);
+  ObjectContainerPtr testingData = examples->fold(targetFold, numFolds);
+
+  ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
+    = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData, *resultsFileStream);
+  model->trainBatch(trainingData, callback);
+
   
-  std::cout << "Average Train Accuracy = " << cvTrainResult / numFolds << std::endl;
-  std::cout << "Average Test Accuracy = " << cvTestResult / numFolds << std::endl;
+  std::cout << "Train Accuracy = " << callback->trainAccuracy << std::endl;
+  std::cout << "Test Accuracy = " << callback->testAccuracy << std::endl;
   
   delete resultsFileStream;
  
