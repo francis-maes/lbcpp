@@ -34,7 +34,10 @@ extern VariableSetModelPtr independantClassificationVariableSetModel(ClassifierP
 extern VariableSetModelPtr optimisticClassificationVariableSetModel(ClassifierPtr classifier);
 
 extern VariableSetModelPtr iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier);
-extern VariableSetModelPtr simulatedIterativeClassificationVariableSetModel(ClassifierPtr classifier);
+extern VariableSetModelPtr simulatedIterativeClassificationVariableSetModel(ClassifierPtr classifier,
+                                                                            size_t maxInferencePasses = 5,
+                                                                            bool randomOrderInference = true,
+                                                                            bool deterministicLearning = false);
 
 }; /* namespace lbcpp */
 

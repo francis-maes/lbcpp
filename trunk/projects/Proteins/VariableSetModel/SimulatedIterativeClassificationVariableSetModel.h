@@ -17,9 +17,9 @@ namespace lbcpp
 class SimulatedVariableSetModel : public VariableSetModel
 {
 public:
-  SimulatedVariableSetModel(ClassifierPtr stochasticClassifier)
-    : classifier(stochasticClassifier) {}
-  SimulatedVariableSetModel() {}
+  SimulatedVariableSetModel(ClassifierPtr stochasticClassifier, bool deterministicLearning)
+    : classifier(stochasticClassifier), deterministicLearning(deterministicLearning) {}
+  SimulatedVariableSetModel() : deterministicLearning(false) {}
   
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const
     {const_cast<SimulatedVariableSetModel* >(this)->inferenceFunction(example, prediction, false);}
@@ -27,6 +27,7 @@ public:
 protected:
   ClassifierPtr classifier;
   StoppingCriterionPtr stoppingCriterion;
+  bool deterministicLearning;
   
   virtual void inferenceFunction(VariableSetExamplePtr example, VariableSetPtr prediction, bool isTraining) = 0;
   
@@ -36,7 +37,7 @@ protected:
     if (isTraining && example->getTargetVariables()->getVariable(index, correctOutput))
     {
       // training
-      size_t res = classifier->sample(features);
+      size_t res = deterministicLearning ? classifier->predict(features) : classifier->sample(features);
       classifier->trainStochasticExample(new ClassificationExample(features, correctOutput));
       return res;
     }
@@ -70,15 +71,18 @@ private:
 class SimulatedIterativeClassificationVariableSetModel : public SimulatedVariableSetModel
 {
 public:
-  SimulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier)
-    : SimulatedVariableSetModel(stochasticClassifier),
-      dictionary(new FeatureDictionary(T("SICA"), StringDictionaryPtr(), new StringDictionary())) {}
-  SimulatedIterativeClassificationVariableSetModel() {}
+  SimulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier = ClassifierPtr(),
+                                                   size_t maxInferencePasses = 5,
+                                                   bool randomOrderInference = true,
+                                                   bool deterministicLearning = false)
+    : SimulatedVariableSetModel(stochasticClassifier, deterministicLearning),
+      dictionary(new FeatureDictionary(T("SICA"), StringDictionaryPtr(), new StringDictionary())),
+      maxInferencePasses(maxInferencePasses), randomOrderInference(randomOrderInference) {}
 
-  enum {maxInferencePasses = 5};
-    
 protected:
   FeatureDictionaryPtr dictionary;
+  size_t maxInferencePasses;
+  bool randomOrderInference;
 
   virtual void inferenceFunction(VariableSetExamplePtr example, VariableSetPtr prediction, bool isTraining)
   {
@@ -95,13 +99,19 @@ protected:
     jassert(previousLabels.size());
     
     size_t numPasses = 0;
+    std::vector<size_t> order(example->getNumVariables());
+    if (!randomOrderInference)  // left to right order
+      for (size_t i = 0; i < order.size(); ++i)
+        order[i] = i;
+
     for (size_t i = 0; i < maxInferencePasses; ++i)
     {
       ++numPasses;
       
-      // label each node in a randomly sampled order
-      std::vector<size_t> order;
-      RandomGenerator::getInstance().sampleOrder(0, example->getNumVariables(), order);
+      if (randomOrderInference)
+        RandomGenerator::getInstance().sampleOrder(0, example->getNumVariables(), order);
+
+      // label each node
       for (size_t j = 0; j < order.size(); ++j)
       {
         size_t index = order[j];

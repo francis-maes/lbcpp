@@ -95,8 +95,9 @@ VariableSetModelPtr lbcpp::optimisticClassificationVariableSetModel(ClassifierPt
 VariableSetModelPtr lbcpp::iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier)
   {return new IterativeClassificationVariableSetModel(initialClassifier, iterativeClassifier);}
 
-VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier)
-  {return new SimulatedIterativeClassificationVariableSetModel(stochasticClassifier);}
+VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier, size_t maxInferencePasses,
+                                                   bool randomOrderInference, bool deterministicLearning)
+  {return new SimulatedIterativeClassificationVariableSetModel(stochasticClassifier, maxInferencePasses, randomOrderInference, deterministicLearning);}
 
 void declareInterdependantVariableSetClasses()
 {
