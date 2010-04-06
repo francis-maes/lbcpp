@@ -17,39 +17,12 @@ namespace lbcpp
 class SimulatedVariableSetModel : public VariableSetModel
 {
 public:
-  SimulatedVariableSetModel(ClassifierPtr stochasticClassifier, StoppingCriterionPtr stoppingCriterion)
-    : classifier(stochasticClassifier), stoppingCriterion(stoppingCriterion) {}
+  SimulatedVariableSetModel(ClassifierPtr stochasticClassifier)
+    : classifier(stochasticClassifier) {}
   SimulatedVariableSetModel() {}
-  
-  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-  {
-    if (progress)
-      progress->progressStart(T("Batch training with ") + lbcpp::toString(examples->size()) + T(" examples"));
-    
-    stoppingCriterion->reset();
-    for (size_t iteration = 0; true; ++iteration)
-    {
-      std::cout << "Training..." << std::endl;
-      performInferenceOnExamples(examples->randomize(), true);
-      std::cout << std::endl;
-      
-      std::cout << "Evaluating..." << std::endl;
-      double value = evaluate(examples);
-      std::cout << std::endl;
-      
-      if (progress && !progress->progressStep(T("Batch training, accuracy = ") + lbcpp::toString(value), (double)(iteration + 1)))
-        return;
-      if (stoppingCriterion->shouldOptimizerStop(value))
-        break;
-    }
-    
-    if (progress)
-      progress->progressEnd();
-  }
   
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const
     {const_cast<SimulatedVariableSetModel* >(this)->inferenceFunction(example, prediction, false);}
-
 
 protected:
   ClassifierPtr classifier;
@@ -74,6 +47,9 @@ protected:
     }
   }
   
+  virtual void trainBatchIteration(ObjectContainerPtr examples)
+    {performInferenceOnExamples(examples, true);}
+  
 private:
   void performInferenceOnExamples(ObjectContainerPtr examples, bool isTraining)
   {
@@ -94,8 +70,8 @@ private:
 class SimulatedIterativeClassificationVariableSetModel : public SimulatedVariableSetModel
 {
 public:
-  SimulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier, StoppingCriterionPtr stoppingCriterion)
-    : SimulatedVariableSetModel(stochasticClassifier, stoppingCriterion),
+  SimulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier)
+    : SimulatedVariableSetModel(stochasticClassifier),
       dictionary(new FeatureDictionary(T("SICA"), StringDictionaryPtr(), new StringDictionary())) {}
   SimulatedIterativeClassificationVariableSetModel() {}
 

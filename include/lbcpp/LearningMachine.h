@@ -40,6 +40,8 @@ public:
   virtual bool trainingProgressStep(LearningMachinePtr model, ObjectContainerPtr examples) = 0;
 };
 
+typedef ReferenceCountedObjectPtr<TrainingProgressCallback> TrainingProgressCallbackPtr;
+
 /*!
 ** @class LearningMachine
 ** @brief Base class for learning machines

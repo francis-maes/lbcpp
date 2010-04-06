@@ -25,9 +25,9 @@ public:
 
   virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
-    ObjectContainerPtr classificationExamples = makeClassificationExamples(examples);
-    jassert(classifier);
-    classifier->trainBatch(classificationExamples, progress);
+    classificationExamples = makeClassificationExamples(examples);
+    VariableSetModel::trainBatch(examples, progress);
+    classificationExamples = ObjectContainerPtr();
   }
 
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const
@@ -37,7 +37,14 @@ public:
   }
 
 protected:
+  ObjectContainerPtr classificationExamples;
   ClassifierPtr classifier;
+
+  virtual void trainBatchIteration(ObjectContainerPtr examples)
+  {
+    jassert(classifier);
+    classifier->trainStochastic(classificationExamples);
+  }
   
   ObjectContainerPtr makeClassificationExamples(ObjectContainerPtr examples)
   {

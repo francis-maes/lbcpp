@@ -69,6 +69,23 @@ double VariableSetModel::evaluate(ObjectContainerPtr examples) const
   return scoreFunction.compute();
 }
 
+void VariableSetModel::trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress)
+{
+  TrainingProgressCallbackPtr callback = progress.dynamicCast<TrainingProgressCallback>();
+  jassert(callback); // training without a TrainingProgressCallback is not supported
+  
+  callback->progressStart(T("Batch training with ") + lbcpp::toString(examples->size()) + T(" examples"));
+  for (size_t iteration = 0; true; ++iteration)
+  {
+    trainBatchIteration(examples->randomize());
+    if (!callback->progressStep(T("Batch training"), (double)(iteration + 1)))
+      return; // canceled
+    if (!callback->trainingProgressStep(LearningMachinePtr(this), examples))
+      break; // stopping criterion fired
+  }
+  callback->progressEnd();
+}
+
 VariableSetModelPtr lbcpp::independantClassificationVariableSetModel(ClassifierPtr classifier)
   {return new IndependantClassificationVariableSetModel(classifier);}
 
@@ -78,8 +95,8 @@ VariableSetModelPtr lbcpp::optimisticClassificationVariableSetModel(ClassifierPt
 VariableSetModelPtr lbcpp::iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier)
   {return new IterativeClassificationVariableSetModel(initialClassifier, iterativeClassifier);}
 
-VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier, StoppingCriterionPtr stoppingCriterion)
-  {return new SimulatedIterativeClassificationVariableSetModel(stochasticClassifier, stoppingCriterion);}
+VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier)
+  {return new SimulatedIterativeClassificationVariableSetModel(stochasticClassifier);}
 
 void declareInterdependantVariableSetClasses()
 {
