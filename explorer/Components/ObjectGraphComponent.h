@@ -18,8 +18,13 @@
 #  include <gl/gl.h>
 #  include <gl/glu.h>
 # else
-#  include <GL/gl.h>
-#  include <GL/glu.h>
+#  ifdef JUCE_LINUX
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+#  else
+#   include <opengl/gl.h>
+#   include <opengl/glu.h>
+#  endif
 # endif
 
 namespace lbcpp
