@@ -33,17 +33,23 @@ StoppingCriterionPtr createLearningStoppingCriterion()
   return maxIterationsStoppingCriterion(100);
 }
 
+using juce::Time;
+
 class TestTrainingProgressCallback : public TrainingProgressCallback
 {
 public:
-  TestTrainingProgressCallback(StoppingCriterionPtr stoppingCriterion, ObjectContainerPtr validationData)
-    : trainAccuracy(0.0), testAccuracy(0.0), stoppingCriterion(stoppingCriterion), validationData(validationData) {}
+  TestTrainingProgressCallback(StoppingCriterionPtr stoppingCriterion, ObjectContainerPtr validationData, OutputStream& results)
+    : trainAccuracy(0.0), testAccuracy(0.0), stoppingCriterion(stoppingCriterion), validationData(validationData), results(results) {}
   
   double trainAccuracy;
   double testAccuracy;
+  int iterationNumber;
+  double startTime;
   
   virtual void progressStart(const String& description)
   {
+    startTime = Time::getMillisecondCounter() / 1000.0;
+    iterationNumber = 0;
     std::cout << description << std::endl;
     stoppingCriterion->reset();
   }
@@ -61,6 +67,11 @@ public:
     testAccuracy = model->evaluate(validationData);
     std::cout << " => " << testAccuracy << std::endl;
     
+    double time = Time::getMillisecondCounter() / 1000.0;
+    results << iterationNumber << " " << trainAccuracy << " " << testAccuracy << " " << (time - startTime) << "\n";
+    results.flush();
+    ++iterationNumber;
+    
     return !stoppingCriterion->shouldOptimizerStop(trainAccuracy);
   }
 
@@ -70,6 +81,7 @@ public:
 private:
   StoppingCriterionPtr stoppingCriterion;
   ObjectContainerPtr validationData;
+  OutputStream& results;
 };
 
 GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
@@ -84,18 +96,29 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
 int main()
 {
   File cb513Directory = 
-    File(T("/Users/francis/Projets/Proteins/Data/CB513"));
+    //File(T("/Users/francis/Projets/Proteins/Data/CB513"));
     //File(T("C:/Projets/Proteins/data/CB513cool"));
+   File(T("/Users/jbecker/Documents/University of Liège/Doctorat/CASP9/CB513"));
 
+  File resultsFile(T("/Users/jbecker/Documents/TestResults.txt"));
+  resultsFile.deleteFile();
+  OutputStream* resultsFileStream = resultsFile.createOutputStream();
+  if (!resultsFileStream)
+  {
+    std::cerr << "Beeeruh" << std::endl;
+    return 1;
+  }
+  
+  
   declareProteinsClasses();
   ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
-  ObjectContainerPtr examples = examplesStream->load()->randomize()->fold(0, 30);
+  ObjectContainerPtr examples = examplesStream->load()->randomize();
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
   size_t numFolds = 7;
   double cvTrainResult = 0.0, cvTestResult = 0.0;
-  for (size_t i = 0; i < numFolds; ++i)
+  for (size_t i = 0; i < 1 /*numFolds*/; ++i)
   {
     VariableSetModelPtr model =
       independantClassificationVariableSetModel(createMaxentClassifier(labels));
@@ -109,7 +132,7 @@ int main()
     ObjectContainerPtr testingData = examples->fold(i, numFolds);
     
     ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
-      = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData);
+      = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData, *resultsFileStream);
     model->trainBatch(trainingData, callback);
     cvTrainResult += callback->trainAccuracy;
     cvTestResult += callback->testAccuracy;
@@ -117,6 +140,8 @@ int main()
   
   std::cout << "Average Train Accuracy = " << cvTrainResult / numFolds << std::endl;
   std::cout << "Average Test Accuracy = " << cvTestResult / numFolds << std::endl;
+  
+  delete resultsFileStream;
  
   // Results: Prediction of SS3 / 7 folds CV
   
