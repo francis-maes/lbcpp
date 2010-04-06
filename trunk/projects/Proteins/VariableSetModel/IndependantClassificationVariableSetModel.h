@@ -43,7 +43,7 @@ protected:
   virtual void trainBatchIteration(ObjectContainerPtr examples)
   {
     jassert(classifier);
-    classifier->trainStochastic(classificationExamples);
+    classifier->trainStochastic(classificationExamples->randomize());
   }
   
   ObjectContainerPtr makeClassificationExamples(ObjectContainerPtr examples)

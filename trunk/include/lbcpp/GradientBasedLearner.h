@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   GradientBasedLearner.h
-**@author Francis MAES
-**@date   Fri Jun 12 18:06:36 2009
-**
-**@brief  Gradient-based learner.
-**
-**
-*/
-
 #ifndef LBCPP_GRADIENT_BASED_LEARNER_H_
 # define LBCPP_GRADIENT_BASED_LEARNER_H_
 
