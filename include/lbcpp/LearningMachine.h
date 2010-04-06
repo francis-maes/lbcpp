@@ -29,15 +29,21 @@
 
 # include "ContinuousFunction.h"
 # include "ObjectContainer.h"
+# include "Utilities.h"
 
 namespace lbcpp
 {
 
+class TrainingProgressCallback : public ProgressCallback
+{
+public:
+  virtual bool trainingProgressStep(LearningMachinePtr model, ObjectContainerPtr examples) = 0;
+};
+
 /*!
 ** @class LearningMachine
-** @brief
+** @brief Base class for learning machines
 */
-
 class LearningMachine : public Object
 {
 public:
@@ -63,9 +69,9 @@ public:
   ** Batch training
   */
   // return false if learning is canceled by the ProgressCallback
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {jassert(false); return false;}
-  virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {jassert(false);}
+  virtual void trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
 
 protected:
   void cloneImpl(LearningMachine& target) const {}

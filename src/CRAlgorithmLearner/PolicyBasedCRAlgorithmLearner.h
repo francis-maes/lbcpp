@@ -45,7 +45,7 @@ public:
   virtual void trainStochasticEnd()
     {}
 
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     if (progress)
       progress->progressStart("PolicyBasedCRAlgorithmLearner::trainBatch");
@@ -56,7 +56,7 @@ public:
     while (true)
     {
       if (progress && !progress->progressStep("PolicyBasedCRAlgorithmLearner::trainBatch", iteration))
-        return false;
+        return;
       PolicyStatisticsPtr statistics = new PolicyStatistics();
       learnerPolicy->run(examples, statistics);
       std::cout << statistics->toString() << std::endl;
@@ -66,7 +66,6 @@ public:
     }
     if (progress)
       progress->progressEnd();
-    return true;
   }
 
 protected:

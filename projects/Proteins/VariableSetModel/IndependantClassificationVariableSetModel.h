@@ -23,11 +23,11 @@ public:
   virtual FeatureGeneratorPtr getFeatures(VariableSetExamplePtr example, size_t index) const
     {return example->getVariableFeatures(index);}
 
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     ObjectContainerPtr classificationExamples = makeClassificationExamples(examples);
     jassert(classifier);
-    return classifier->trainBatch(classificationExamples, progress);
+    classifier->trainBatch(classificationExamples, progress);
   }
 
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const

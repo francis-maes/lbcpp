@@ -36,7 +36,7 @@ public:
   virtual void trainStochasticEnd()
     {Object::error("trainStochasticEnd", "This is not a stochastic learner"); jassert(false);}
   
-  virtual bool trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
+  virtual void trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
   {
     if (progress)
       progress->progressStart(T("Batch training with ") + lbcpp::toString(examples->size()) + T(" examples"));
@@ -50,7 +50,7 @@ public:
     for (size_t iteration = 0; true; ++iteration)
     {
       if (progress && !progress->progressStep(T("Batch training"), (double)iteration))
-        return false;
+        return;
 
       stochasticLearner->trainStochasticBegin();
       ObjectContainerPtr ex = randomizeExamples ? examples->randomize() : examples;
@@ -69,7 +69,6 @@ public:
 
     if (progress)
       progress->progressEnd();
-    return true;
   }
   
   virtual void save(OutputStream& ostr) const

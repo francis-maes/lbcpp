@@ -130,8 +130,8 @@ class VectorOptimizer;
 typedef ReferenceCountedObjectPtr<VectorOptimizer> VectorOptimizerPtr;
 
 // learning machines
-class GradientBasedLearner;
-typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;
+class LearningMachine;
+typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 class Classifier;
 typedef ReferenceCountedObjectPtr<Classifier> ClassifierPtr;
 class BinaryClassifier;
@@ -144,6 +144,8 @@ class Ranker;
 typedef ReferenceCountedObjectPtr<Ranker> RankerPtr;
 
 // gradient based learning machines
+class GradientBasedLearner;
+typedef ReferenceCountedObjectPtr<GradientBasedLearner> GradientBasedLearnerPtr;
 class GradientBasedRegressor;
 typedef ReferenceCountedObjectPtr<GradientBasedRegressor> GradientBasedRegressorPtr;
 class GradientBasedBinaryClassifier;

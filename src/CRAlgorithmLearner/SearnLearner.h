@@ -35,7 +35,7 @@ public:
   virtual PolicyPtr getPolicy() const
     {return learnedPolicy;}
   
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     if (progress)
       progress->progressStart("SearnLearner::trainBatch");
@@ -49,7 +49,7 @@ public:
       double rewardPerEpisode;
       ObjectContainerPtr classificationExamples = createCostSensitiveClassificationExamples(examples, currentPolicy, rewardPerEpisode);
       if (progress && !progress->progressStep("SearnLearner::trainBatch, reward/episode = " + lbcpp::toString(rewardPerEpisode), (double)iteration))
-        return false;
+        return;
 //      std::cout << "ITERATION " << iteration << "currentPolicy = " << currentPolicy->toString();
 //      if (learnedPolicy)
 //        std::cout << " learnedPolicy = " << learnedPolicy->toString();
@@ -67,7 +67,6 @@ public:
 
     if (progress)
       progress->progressEnd();
-    return true;
   }
   
   virtual bool load(InputStream& istr)
@@ -92,8 +91,8 @@ protected:
       {examples->append(example);}
     virtual void trainStochasticEnd()
       {}
-    virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-      {jassert(false); return false;}
+    virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+      {jassert(false);}
       
     VectorObjectContainerPtr examples;
   };

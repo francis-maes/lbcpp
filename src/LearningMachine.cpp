@@ -56,45 +56,10 @@ void LearningMachine::trainStochastic(ObjectContainerPtr examples, ProgressCallb
   trainStochasticEnd();
 }
 
-bool LearningMachine::trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress)
+void LearningMachine::trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress)
 {
-  return trainBatch(examples->load(), progress);
+  trainBatch(examples->load(), progress);
 }
-/*
-class BatchToStochasticLearningMachine : public LearningMachine
-{
-public:
-  BatchToStochasticLearningMachine(LearningMachinePtr target)
-    : target(target) {}
-  
-  virtual void trainStochastic(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {target->trainBatch(examples, progress);}
-    
-  virtual void trainStochastic(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {target->trainBatch(examples, progress);}
-
-  virtual void trainStochasticBegin()
-    {examples = new VectorObjectContainer();}
-  virtual void trainStochasticExample(ObjectPtr example)
-    {examples->append(example);}
-  virtual void trainStochasticEnd()
-    {target->trainBatch(examples);}
-  
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {return target->trainBatch(examples, progress);}
-  
-  virtual bool trainBatch(ObjectStreamPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {return target->trainBatch(examples, progress);}
-
-private:
-  LearningMachinePtr target;
-  VectorObjectContainerPtr examples;
-};
-
-LearningMachinePtr LearningMachine::batchToStochasticMachine() const
-{
-  return new BatchToStochasticLearningMachine(this);
-}*/
 
 /*
 ** VerboseLearningMachine
@@ -105,12 +70,11 @@ class VerboseLearningMachine : public BaseClass
 public:
   VerboseLearningMachine(std::ostream& ostr) : ostr(ostr) {}
   
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     ostr << "trainBatch() with " << examples->size() << " examples:" << std::endl;
     for (size_t i = 0; i < examples->size(); ++i)
       ostr << "  " << i << ": " << (String)examples->get(i)->toString() << std::endl;
-    return true;
   }
 
   virtual void trainStochasticBegin()

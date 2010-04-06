@@ -21,12 +21,12 @@ public:
     : initialClassifier(initialClassifier), iterativeClassifier(iterativeClassifier) {}
   IterativeClassificationVariableSetModel() {}
   
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     std::pair<ObjectContainerPtr, ObjectContainerPtr> classificationExamples = makeClassificationExamples(examples);
     jassert(initialClassifier && iterativeClassifier);
-    return initialClassifier->trainBatch(classificationExamples.first, progress) &&
-           iterativeClassifier->trainBatch(classificationExamples.second, progress);
+    initialClassifier->trainBatch(classificationExamples.first, progress);
+    iterativeClassifier->trainBatch(classificationExamples.second, progress);
   }
 
   enum {maxInferencePasses = 100};
