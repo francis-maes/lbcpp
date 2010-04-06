@@ -1,10 +1,13 @@
-* Test avec graphlabeling
-* Multithread CV puis test de quelques ensembles de features
-    - input: rapport à la longueur, la position courante
-    - output: conjonctions input/output et resumé long terme
-  * ContentOnly/ICA/SICA{prob|det}/Optimistic
+* Frequence des updates:
 
-* Tester la compilation sur la grille (compile linux)
+    1) per example (natural order), 1 regularizer / pass
+    2) per example (random order), 1 regularizer / pass
+    3) per example (natural order), 1 regularizer / episode
+    4) per example (random order), 1 regularizer / episode
+    5) minibatch per episode, no regularization
+    6) minibatch 10, no regularization
+
+
 
 * BUG: lbcpp::toString(*protein) affiche "toString not implemented"
 

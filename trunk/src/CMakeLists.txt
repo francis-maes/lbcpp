@@ -164,6 +164,7 @@ SET(LBCPP_CORE_OPTIMIZER_SOURCES
 SET(LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES
   GradientBasedLearner/NonLearnerGradientBasedLearner.h
   GradientBasedLearner/StochasticGradientDescentLearner.h
+  GradientBasedLearner/MiniBatchGradientDescentLearner.h
   GradientBasedLearner/BatchGradientBasedLearner.h
   GradientBasedLearner/StochasticToBatchGradientLearner.h
 )
