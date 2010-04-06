@@ -32,8 +32,6 @@ private:
   size_t numClasses;
 };
 
-
-
 void testBaselineClassifier(ObjectContainerPtr train, ObjectContainerPtr test, size_t numClasses)
 {
   std::cout << "TESTING BASELINE LINEAR CLASSIFIER" << std::endl;
