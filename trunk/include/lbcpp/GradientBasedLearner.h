@@ -76,10 +76,10 @@ public:
     {trainStochasticExample(exampleLoss->computeGradient(parameters), 1.0);}
   virtual void trainStochasticEnd() {}
 
-  virtual bool trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
+  virtual void trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
   {
     error("GradientBasedLearner::trainBatch", "This is a non-batch learner");
-    return false;
+    jassert(false);
   }
 
 protected:

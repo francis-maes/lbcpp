@@ -21,7 +21,7 @@ public:
     : classifier(stochasticClassifier), stoppingCriterion(stoppingCriterion) {}
   SimulatedVariableSetModel() {}
   
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
     if (progress)
       progress->progressStart(T("Batch training with ") + lbcpp::toString(examples->size()) + T(" examples"));
@@ -38,14 +38,13 @@ public:
       std::cout << std::endl;
       
       if (progress && !progress->progressStep(T("Batch training, accuracy = ") + lbcpp::toString(value), (double)(iteration + 1)))
-        return false;
+        return;
       if (stoppingCriterion->shouldOptimizerStop(value))
         break;
     }
     
     if (progress)
       progress->progressEnd();
-    return true;
   }
   
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const

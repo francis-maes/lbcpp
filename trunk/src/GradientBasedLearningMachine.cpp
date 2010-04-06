@@ -77,7 +77,7 @@ void GradientBasedLearningMachine::trainStochasticEndImpl()
   learner->trainStochasticEnd();
 }
 
-bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress)
+void GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress)
 {
   jassert(learner && examples->size());
   if (!parameters)
@@ -86,10 +86,8 @@ bool GradientBasedLearningMachine::trainBatchImpl(ObjectContainerPtr examples, P
   // delegate to learner
   learner->setParameters(parameters);
   learner->setRegularizer(getRegularizer());
-  if (!learner->trainBatch(*this, examples, progress))
-    return false;
+  learner->trainBatch(*this, examples, progress);
   parameters = learner->getParameters();
-  return true;
 }
 
 /*

@@ -44,7 +44,7 @@ public:
     jassert(false);
   }
 
-  virtual bool trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
+  virtual void trainBatch(GradientBasedLearningMachine& learningMachine, ObjectContainerPtr examples, ProgressCallbackPtr progress)
   {
     ScalarVectorFunctionPtr objective = learningMachine.getRegularizedEmpiricalRisk(examples);
     jassert(parameters);
@@ -52,11 +52,10 @@ public:
       progress->progressStart("BatchLearner::trainBatch");
     FeatureGeneratorPtr params = parameters;
     if (!optimizer->optimize(objective, params, stoppingCriterion, progress))
-      return false;
+      return;
     parameters = params;
     if (progress)
       progress->progressEnd();
-    return true;
   }
   
   virtual void save(OutputStream& ostr) const

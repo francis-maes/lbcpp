@@ -144,7 +144,7 @@ protected:
   void trainStochasticExampleImpl(ObjectPtr example);
   void trainStochasticEndImpl();
 
-  bool trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress);
+  void trainBatchImpl(ObjectContainerPtr examples, ProgressCallbackPtr progress);
 };
 
 
@@ -179,8 +179,8 @@ public:
   virtual void trainStochasticEnd()
     {trainStochasticEndImpl();}
 
-  virtual bool trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
-    {return trainBatchImpl(examples, progress);}
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
+    {trainBatchImpl(examples, progress);}
 
   /*
   ** Serialization
