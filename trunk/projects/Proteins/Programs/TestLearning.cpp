@@ -33,73 +33,90 @@ StoppingCriterionPtr createLearningStoppingCriterion()
   return maxIterationsStoppingCriterion(100);
 }
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, bool batchLearner = true)
+class TestTrainingProgressCallback : public TrainingProgressCallback
+{
+public:
+  TestTrainingProgressCallback(StoppingCriterionPtr stoppingCriterion, ObjectContainerPtr validationData)
+    : trainAccuracy(0.0), testAccuracy(0.0), stoppingCriterion(stoppingCriterion), validationData(validationData) {}
+  
+  double trainAccuracy;
+  double testAccuracy;
+  
+  virtual void progressStart(const String& description)
+  {
+    std::cout << description << std::endl;
+    stoppingCriterion->reset();
+  }
+  
+  virtual bool trainingProgressStep(LearningMachinePtr m, ObjectContainerPtr trainingData)
+  {
+    VariableSetModelPtr model = m.dynamicCast<VariableSetModel>();
+    jassert(model);
+    
+    std::cout << "Evaluating on training data..." << std::flush;
+    trainAccuracy = model->evaluate(trainingData);
+    std::cout << " => " << trainAccuracy << std::endl;
+
+    std::cout << "Evaluating on testing data..." << std::flush;
+    testAccuracy = model->evaluate(validationData);
+    std::cout << " => " << testAccuracy << std::endl;
+    
+    return !stoppingCriterion->shouldOptimizerStop(trainAccuracy);
+  }
+
+  virtual void progressEnd()
+    {std::cout << "Training finished." << std::endl;}
+    
+private:
+  StoppingCriterionPtr stoppingCriterion;
+  ObjectContainerPtr validationData;
+};
+
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
-  if (batchLearner)
-    learner = stochasticToBatchLearner(learner, createLearningStoppingCriterion());
-  
+  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
   classifier->setL2Regularizer(0.0001);
   return classifier;
 }
 
-  ObjectContainerPtr makeClassificationExamples(ObjectContainerPtr examples)
-  {
-    VectorObjectContainerPtr res = new VectorObjectContainer("ClassificationExample");
-    for (size_t i = 0; i < examples->size(); ++i)
-    {
-      VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
-      jassert(example);
-      VariableSetPtr targetVariables = example->getTargetVariables();
-      size_t n = example->getNumVariables();
-      for (size_t j = 0; j < n; ++j)
-      {
-        size_t value;
-        if (targetVariables->getVariable(j, value))
-          res->append(new ClassificationExample(example->getVariableFeatures(j), value));
-      }
-    }
-    return res;
-  }  
-
 int main()
 {
   File cb513Directory = 
-    File(T("/u/jbecker/CASP9/CB513"));
+    File(T("/Users/francis/Projets/Proteins/Data/CB513"));
     //File(T("C:/Projets/Proteins/data/CB513cool"));
 
   declareProteinsClasses();
   ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
-  ObjectContainerPtr examples = examplesStream->load()->randomize();
+  ObjectContainerPtr examples = examplesStream->load()->randomize()->fold(0, 30);
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
-
-  size_t numFolds = 1;
+  size_t numFolds = 7;
   double cvTrainResult = 0.0, cvTestResult = 0.0;
   for (size_t i = 0; i < numFolds; ++i)
   {
     VariableSetModelPtr model =
-      independantClassificationVariableSetModel(createMaxentClassifier(labels, false));
+      independantClassificationVariableSetModel(createMaxentClassifier(labels));
       //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
-
       //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
-      //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, false), createLearningStoppingCriterion());
+      //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
 
-    //std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
-    model->trainBatch(examples->invFold(i, numFolds), consoleProgressCallback());
-    double trainAccuracy = model->evaluate(examples->invFold(i, numFolds));
-    double testAccuracy = model->evaluate(examples->fold(i, numFolds));
-    //std::cout << "Train Score: " << trainAccuracy << std::endl;
-    //std::cout << "Test Score: " << testAccuracy << std::endl;
-    cvTrainResult += trainAccuracy;
-    cvTestResult += testAccuracy;
+    std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
+    
+    ObjectContainerPtr trainingData = examples->invFold(i, numFolds);
+    ObjectContainerPtr testingData = examples->fold(i, numFolds);
+    
+    ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
+      = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData);
+    model->trainBatch(trainingData, callback);
+    cvTrainResult += callback->trainAccuracy;
+    cvTestResult += callback->testAccuracy;
   }
   
-  //std::cout << "Average Train Accuracy = " << cvTrainResult / numFolds << std::endl;
-  //std::cout << "Average Test Accuracy = " << cvTestResult / numFolds << std::endl;
+  std::cout << "Average Train Accuracy = " << cvTrainResult / numFolds << std::endl;
+  std::cout << "Average Test Accuracy = " << cvTestResult / numFolds << std::endl;
  
   // Results: Prediction of SS3 / 7 folds CV
   

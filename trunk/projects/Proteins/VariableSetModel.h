@@ -19,8 +19,13 @@ class VariableSetModel : public LearningMachine
 public:
   virtual void predict(VariableSetExamplePtr example, VariableSetPtr prediction) const = 0;
   
-    // evaluate the accuracy for the moment
+  // evaluate the accuracy for the moment
   double evaluate(ObjectContainerPtr examples) const;
+  
+  virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr());
+    
+protected:
+  virtual void trainBatchIteration(ObjectContainerPtr examples) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<VariableSetModel> VariableSetModelPtr;
@@ -29,7 +34,7 @@ extern VariableSetModelPtr independantClassificationVariableSetModel(ClassifierP
 extern VariableSetModelPtr optimisticClassificationVariableSetModel(ClassifierPtr classifier);
 
 extern VariableSetModelPtr iterativeClassificationVariableSetModel(ClassifierPtr initialClassifier, ClassifierPtr iterativeClassifier);
-extern VariableSetModelPtr simulatedIterativeClassificationVariableSetModel(ClassifierPtr stochasticClassifier, StoppingCriterionPtr stoppingCriterion);
+extern VariableSetModelPtr simulatedIterativeClassificationVariableSetModel(ClassifierPtr classifier);
 
 }; /* namespace lbcpp */
 

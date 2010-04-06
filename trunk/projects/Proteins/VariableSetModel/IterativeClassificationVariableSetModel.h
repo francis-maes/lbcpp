@@ -23,10 +23,9 @@ public:
   
   virtual void trainBatch(ObjectContainerPtr examples, ProgressCallbackPtr progress = ProgressCallbackPtr())
   {
-    std::pair<ObjectContainerPtr, ObjectContainerPtr> classificationExamples = makeClassificationExamples(examples);
-    jassert(initialClassifier && iterativeClassifier);
-    initialClassifier->trainBatch(classificationExamples.first, progress);
-    iterativeClassifier->trainBatch(classificationExamples.second, progress);
+    classificationExamples = makeClassificationExamples(examples);
+    VariableSetModel::trainBatch(examples, progress);
+    classificationExamples = std::pair<ObjectContainerPtr, ObjectContainerPtr>();
   }
 
   enum {maxInferencePasses = 100};
@@ -71,6 +70,8 @@ public:
   }
   
 protected:
+  std::pair<ObjectContainerPtr, ObjectContainerPtr> classificationExamples;
+  
   ClassifierPtr initialClassifier;
   ClassifierPtr iterativeClassifier;
   
@@ -97,6 +98,13 @@ protected:
     }
 
     return std::make_pair(withoutContext, withContext);
+  }
+  
+  virtual void trainBatchIteration(ObjectContainerPtr examples)
+  {
+    jassert(initialClassifier && iterativeClassifier);
+    initialClassifier->trainStochastic(classificationExamples.first);
+    iterativeClassifier->trainStochastic(classificationExamples.second);
   }  
 };
 
