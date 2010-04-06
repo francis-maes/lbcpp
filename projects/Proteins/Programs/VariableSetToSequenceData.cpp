@@ -24,7 +24,7 @@ public:
   {
     ProteinPtr protein = object.dynamicCast<Protein>();
     jassert(protein);
-    return new SecondaryStructureVariableSetExample(protein);
+    return ObjectPtr(); // FIXME new SecondaryStructureVariableSetExample(protein);
   }
 };
 

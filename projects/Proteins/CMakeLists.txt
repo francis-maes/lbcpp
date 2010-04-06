@@ -72,3 +72,9 @@ TARGET_LINK_LIBRARIES(VariableSetToSequenceData proteins)
 
 ADD_EXECUTABLE(ProteinsTestLearning Programs/TestLearning.cpp)
 TARGET_LINK_LIBRARIES(ProteinsTestLearning proteins)
+
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+ADD_CREXECUTABLE(SecondaryStructureCrossValidation Programs/SecondaryStructureCrossValidation.lcpp)
+TARGET_LINK_LIBRARIES(SecondaryStructureCrossValidation proteins)
+
