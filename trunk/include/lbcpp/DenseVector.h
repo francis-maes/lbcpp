@@ -405,8 +405,8 @@ protected:
   {
     if (vector.size() < minimumSize)
     {
-      if (vector.size() && minimumSize > 100000 * vector.size())
-        std::cerr << "Warning: really big feature index " << minimumSize - 1
+      if (vector.size() && (minimumSize > (100 * vector.size())))
+        std::cerr << "Warning: really big feature index " << minimumSize - 1 << " actual size is " << vector.size()
                   << "! Use SparseVectors or change your feature indices." << std::endl;
       vector.resize(minimumSize, defaultValue);
     }

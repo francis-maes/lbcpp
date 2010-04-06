@@ -42,7 +42,7 @@ public:
   virtual void trainStochasticEnd()
   {
     // apply regularizer
-    if (regularizer)
+    if (parameters && regularizer)
       parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
   }
   

@@ -102,6 +102,23 @@ public:
     }*/
     
     featureCall("a") aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
+    
+    // conjunctions of AA of variable sizes, centred around the current position
+    /*for (size_t i = 1; i < 4; ++i)
+    {
+      int p1 = (int)variableIndex - (int)i;
+      int p2 = (int)variableIndex + (int)i;
+      String featureName;
+      for (int j = p1; j <= p2; ++j)
+      {
+        if (j < 0 || j >= (int)aminoAcidSequence->getLength())
+          featureName += "_";
+        else
+          featureName += String(aminoAcidSequence->getLabel(j));
+      }
+      featureSense(featureName);
+    }*/
+
     featureCall("p") positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
     if (prediction)
     {
@@ -162,6 +179,8 @@ public:
     VariableSetModelPtr model = m.dynamicCast<VariableSetModel>();
     jassert(model);
     
+    std::cout << std::endl << "Iteration " << iterationNumber << " Time since begin: " << (Time::getMillisecondCounter() / 1000.0 - startTime) << std::endl;
+
     std::cout << "Evaluating on training data..." << std::flush;
     trainAccuracy = model->evaluate(trainingData);
     std::cout << " => " << trainAccuracy << std::endl;
@@ -235,10 +254,10 @@ int main(int argc, char** argv)
   size_t numFolds = 7;
 
   VariableSetModelPtr model =
-      independantClassificationVariableSetModel(createMaxentClassifier(labels));
+      //independantClassificationVariableSetModel(createMaxentClassifier(labels));
       //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
       //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
-      //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
+      simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
 
   std::cout << std::endl << std::endl << "FOLD " << targetFold << " / " << numFolds << " ..." << std::endl;
     
@@ -248,7 +267,6 @@ int main(int argc, char** argv)
   ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
     = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData, *resultsFileStream);
   model->trainBatch(trainingData, callback);
-
   
   std::cout << "Train Accuracy = " << callback->trainAccuracy << std::endl;
   std::cout << "Test Accuracy = " << callback->testAccuracy << std::endl;
