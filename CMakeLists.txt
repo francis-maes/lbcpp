@@ -3,6 +3,13 @@ cmake_minimum_required(VERSION 2.6)
 
 ADD_SUBDIRECTORY(translator)
 
+IF(UNIX)
+  IF(APPLE)
+  ELSE(APPLE)
+    ADD_DEFINITIONS(-DLINUX)
+  ENDIF(APPLE)
+ENDIF(UNIX)
+
 ###
 ### CR-compilator CMake support
 ###
