@@ -266,7 +266,7 @@ protected:
       for (size_t i = 0; i < chooses.size(); ++i)
         addCase(literal(numLocalScopes + i), gotoStatement(atom(chooses[i].getLabelName())));
 
-      setDefault(exprStatement(atom("assert(false)")));
+      setDefault(exprStatement(atom("jassert(false)")));
     }
   };
 
@@ -347,7 +347,7 @@ protected:
     block.add(labelStatement(atom(choose.getLabelName())));
 
     // assert that a choice has been performed
-    block.add(exprStatement(atom("assert(__choice__)")));  
+    block.add(exprStatement(atom("jassert(__choice__)")));  
   }
 
   void createReturnCode(PTree::Node* returnArgument, BlockPTreeGenerator& block)

@@ -30,7 +30,7 @@ public:
 
 StoppingCriterionPtr createLearningStoppingCriterion()
 {
-  return logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(5));
+  return maxIterationsStoppingCriterion(100);
 }
 
 GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, bool batchLearner = true)
@@ -67,8 +67,8 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, bo
 int main()
 {
   File cb513Directory = 
-    //File(T("/Users/francis/Projets/Proteins/Data/CB513"));
-    File(T("C:/Projets/Proteins/data/CB513cool"));
+    File(T("/u/jbecker/CASP9/CB513"));
+    //File(T("C:/Projets/Proteins/data/CB513cool"));
 
   declareProteinsClasses();
   ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
@@ -77,23 +77,23 @@ int main()
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
 
-  size_t numFolds = 7;
+  size_t numFolds = 1;
   double cvTrainResult = 0.0, cvTestResult = 0.0;
   for (size_t i = 0; i < numFolds; ++i)
   {
     VariableSetModelPtr model =
-      //independantClassificationVariableSetModel(createMaxentClassifier(labels));
+      independantClassificationVariableSetModel(createMaxentClassifier(labels, false));
       //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
 
       //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
-      simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, false), createLearningStoppingCriterion());
+      //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, false), createLearningStoppingCriterion());
 
-    std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
+    //std::cout << std::endl << std::endl << "FOLD " << (i+1) << " / " << numFolds << "...." << std::endl;
     model->trainBatch(examples->invFold(i, numFolds), consoleProgressCallback());
     double trainAccuracy = model->evaluate(examples->invFold(i, numFolds));
     double testAccuracy = model->evaluate(examples->fold(i, numFolds));
-    std::cout << "Train Score: " << trainAccuracy << std::endl;
-    std::cout << "Test Score: " << testAccuracy << std::endl;
+    //std::cout << "Train Score: " << trainAccuracy << std::endl;
+    //std::cout << "Test Score: " << testAccuracy << std::endl;
     cvTrainResult += trainAccuracy;
     cvTestResult += testAccuracy;
   }
