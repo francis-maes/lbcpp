@@ -12,11 +12,15 @@
 #include "GradientBasedLearner/BatchGradientBasedLearner.h"
 #include "GradientBasedLearner/NonLearnerGradientBasedLearner.h"
 #include "GradientBasedLearner/StochasticGradientDescentLearner.h"
+#include "GradientBasedLearner/MiniBatchGradientDescentLearner.h"
 #include "GradientBasedLearner/StochasticToBatchGradientLearner.h"
 using namespace lbcpp;
 
 GradientBasedLearnerPtr lbcpp::stochasticDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate)
   {return new StochasticGradientDescentLearner(learningRate, normalizeLearningRate);}
+
+GradientBasedLearnerPtr lbcpp::miniBatchDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate, size_t batchSize)
+  {return new MiniBatchGradientDescentLearner(learningRate, normalizeLearningRate, batchSize);}
 
 GradientBasedLearnerPtr lbcpp::batchLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr stoppingCriterion)
   {return new BatchGradientBasedLearner(optimizer, stoppingCriterion);}
@@ -55,7 +59,9 @@ GradientBasedLearnerPtr lbcpp::stochasticToBatchLearner(GradientBasedLearnerPtr 
 void declareGradientBasedLearners()
 {
   LBCPP_DECLARE_CLASS(StochasticGradientDescentLearner);
+  LBCPP_DECLARE_CLASS(MiniBatchGradientDescentLearner);
   LBCPP_DECLARE_CLASS(BatchGradientBasedLearner);
   LBCPP_DECLARE_CLASS(NonLearnerGradientBasedLearner);
   LBCPP_DECLARE_CLASS(StochasticToBatchGradientLearner);
+  
 }

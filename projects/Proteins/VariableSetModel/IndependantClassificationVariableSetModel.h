@@ -43,24 +43,39 @@ protected:
   virtual void trainBatchIteration(ObjectContainerPtr examples)
   {
     jassert(classifier);
+    // per-pass
     classifier->trainStochastic(classificationExamples->randomize());
+    
+    // per-episode
+/*    for (size_t i = 0; i < examples->size(); ++i)
+    {
+      VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
+      VectorObjectContainerPtr res = new VectorObjectContainer("ClassificationExample");
+      makeClassificationExamples(example, res);
+      classifier->trainStochastic(res->randomize());
+    }*/
   }
   
+  void makeClassificationExamples(VariableSetExamplePtr example, VectorObjectContainerPtr res)
+  {
+    jassert(example);
+    VariableSetPtr variables = example->getTargetVariables();
+    size_t n = variables->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      size_t value;
+      if (variables->getVariable(i, value))
+        res->append(new ClassificationExample(getFeatures(example, i), value));
+    }
+  }
+
   ObjectContainerPtr makeClassificationExamples(ObjectContainerPtr examples)
   {
     VectorObjectContainerPtr res = new VectorObjectContainer("ClassificationExample");
     for (size_t i = 0; i < examples->size(); ++i)
     {
       VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
-      jassert(example);
-      VariableSetPtr targetVariables = example->getTargetVariables();
-      size_t n = example->getNumVariables();
-      for (size_t j = 0; j < n; ++j)
-      {
-        size_t value;
-        if (targetVariables->getVariable(j, value))
-          res->append(new ClassificationExample(getFeatures(example, j), value));
-      }
+      makeClassificationExamples(example, res);
     }
     return res;
   }  

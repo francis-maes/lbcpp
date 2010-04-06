@@ -78,6 +78,7 @@ protected:
 };
 
 extern GradientBasedLearnerPtr stochasticDescentLearner(IterationFunctionPtr learningRate = IterationFunctionPtr(), bool normalizeLearningRate = true);
+extern GradientBasedLearnerPtr miniBatchDescentLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true, size_t batchSize = 0);
 extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, StoppingCriterionPtr termination);
 extern GradientBasedLearnerPtr batchLearner(VectorOptimizerPtr optimizer, size_t maxIterations = 100, double tolerance = 0.0001);
 extern GradientBasedLearnerPtr stochasticToBatchLearner(GradientBasedLearnerPtr stochasticLearner, StoppingCriterionPtr stoppingCriterion, bool randomizeExamples = true);

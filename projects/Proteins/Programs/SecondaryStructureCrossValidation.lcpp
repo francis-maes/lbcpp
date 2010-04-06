@@ -190,7 +190,8 @@ private:
 GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
 {
   IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
-  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
+  GradientBasedLearnerPtr learner = 
+    stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
   classifier->setL2Regularizer(0.0001);
   return classifier;
@@ -211,8 +212,9 @@ int main(int argc, char** argv)
   std::cout << "Result File: " << argv[2] << std::endl;
   std::cout << "Fold: " << argv[3] << std::endl;
   
-  File cb513Directory = File(String(argv[1]));
-  File resultsFile = File(String(argv[2]));
+  File cwd = File::getCurrentWorkingDirectory();
+  File cb513Directory = cwd.getChildFile(String(argv[1]));
+  File resultsFile = cwd.getChildFile(String(argv[2]));
   int targetFold = atoi(argv[3]);
   
   resultsFile.deleteFile();

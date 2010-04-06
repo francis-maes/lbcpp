@@ -149,7 +149,6 @@ private:
         ++res;
     return res;
   }
-  
 };
 
 }; /* namespace lbcpp */
