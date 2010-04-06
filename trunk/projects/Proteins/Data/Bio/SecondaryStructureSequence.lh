@@ -131,7 +131,7 @@ public:
     }
     else
     {
-      static juce::tchar* names[] = {T("Helix"), T("Sheet"), T("Other")};
+      static const juce::tchar* names[] = {T("Helix"), T("Sheet"), T("Other")};
       jassert(type >= 0 && type < (int)(sizeof (names) / sizeof (juce::tchar* )));
       return names[type];
     }
