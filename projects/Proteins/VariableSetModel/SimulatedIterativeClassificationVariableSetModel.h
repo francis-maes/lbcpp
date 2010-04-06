@@ -31,6 +31,8 @@ protected:
   
   virtual void inferenceFunction(VariableSetExamplePtr example, VariableSetPtr prediction, bool isTraining) = 0;
   
+  VectorObjectContainerPtr classificationExamples;
+
   size_t classify(FeatureGeneratorPtr features, VariableSetExamplePtr example, size_t index, bool isTraining)
   {
     size_t correctOutput;
@@ -38,7 +40,8 @@ protected:
     {
       // training
       size_t res = deterministicLearning ? classifier->predict(features) : classifier->sample(features);
-      classifier->trainStochasticExample(new ClassificationExample(features, correctOutput));
+      classificationExamples->append(new ClassificationExample(features, correctOutput));
+      //classifier->trainStochasticExample(new ClassificationExample(features, correctOutput));
       return res;
     }
     else
@@ -49,21 +52,31 @@ protected:
   }
   
   virtual void trainBatchIteration(ObjectContainerPtr examples)
-    {performInferenceOnExamples(examples, true);}
+  {
+    classificationExamples = new VectorObjectContainer("ClassificationExample");
+    performInferenceOnExamples(examples, true);
+    std::cout << std::endl << classificationExamples->size() << " classification examples." << std::endl;
+    classifier->trainStochastic(classificationExamples->randomize());
+   
+    GradientBasedClassifierPtr gbc = classifier.dynamicCast<GradientBasedClassifier>();
+    if (gbc)
+      std::cout << "Parameters: L0 = " << gbc->getParameters()->l0norm() << " L1 = " << gbc->getParameters()->l1norm() << std::endl;
+   
+  }
   
 private:
   void performInferenceOnExamples(ObjectContainerPtr examples, bool isTraining)
   {
     for (size_t i = 0; i < examples->size(); ++i)
     {
-      if (isTraining)
-        classifier->trainStochasticBegin();
+      //if (isTraining)
+      //  classifier->trainStochasticBegin();
       VariableSetExamplePtr example = examples->getAndCast<VariableSetExample>(i);
       jassert(example);
       VariableSetPtr prediction = example->createInitialPrediction();
       inferenceFunction(example, prediction, isTraining);
-      if (isTraining)
-        classifier->trainStochasticEnd();
+      //if (isTraining)
+      //  classifier->trainStochasticEnd();
     }
   }
 };

@@ -46,6 +46,10 @@ protected:
     // per-pass
     classifier->trainStochastic(classificationExamples->randomize());
     
+    GradientBasedClassifierPtr gbc = classifier.dynamicCast<GradientBasedClassifier>();
+    if (gbc)
+      std::cout << "Parameters: L0 = " << gbc->getParameters()->l0norm() << " L1 = " << gbc->getParameters()->l1norm() << std::endl;
+    
     // per-episode
 /*    for (size_t i = 0; i < examples->size(); ++i)
     {

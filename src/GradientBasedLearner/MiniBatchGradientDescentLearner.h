@@ -60,10 +60,6 @@ public:
       parameters->addWeighted((FeatureGeneratorPtr)sumOfGradients, -computeAlpha());
     //std::cout << " => " << parameters->toString() << std::endl;
 
-    // apply regularizer
-    if (regularizer)
-      parameters->addWeighted(regularizer->computeGradient(parameters), -computeAlpha());
-
     //std::cout << "Parameters: L0 : " << parameters->l0norm() << " L1: " << parameters->l1norm() << std::endl;
     sumOfGradients = SparseVectorPtr();
     sumOfWeights = 0.0;
