@@ -11,6 +11,7 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
+
 class ClassificationExampleToCRAlgorithm : public ObjectFunction
 {
 public:
