@@ -29,7 +29,7 @@ public:
     PTree::Identifier* id = identifier("__index__");
     addParameter(identifier("size_t"), id);
     switchGenerator.setCondition(id);
-    body.add(atom("assert(__index__ < " + size2str(switchGenerator.getNumCases()) + ");"));
+    body.add(atom("jassert(__index__ < " + size2str(switchGenerator.getNumCases()) + ");"));
     body.add(switchGenerator.createStatement());
     setConst(isConst);
   }

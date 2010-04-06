@@ -18,8 +18,8 @@
 #  include <gl/gl.h>
 #  include <gl/glu.h>
 # else
-#  include <opengl/gl.h>
-#  include <opengl/glu.h>
+#  include <GL/gl.h>
+#  include <GL/glu.h>
 # endif
 
 namespace lbcpp

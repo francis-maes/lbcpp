@@ -18,7 +18,7 @@ public:
     setReturnType(atom("void"));
     setName("run");
     addParameter(atom("__Policy__"), atom("&__policy__"));
-    body.add(atom("assert(__state__ == -1);\n"));
+    body.add(atom("jassert(__state__ == -1);\n"));
     body.add(atom("/*"));
     body.add(rewrite(block));
     body.add(atom("*/"));

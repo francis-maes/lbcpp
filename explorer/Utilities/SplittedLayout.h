@@ -9,8 +9,6 @@
 #ifndef EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
 # define EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
 
-# include "../Juce/juce_amalgamated.h"
-
 class SplittedLayout : public Component
 {
 public:

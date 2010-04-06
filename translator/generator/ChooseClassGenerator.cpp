@@ -167,7 +167,7 @@ PTree::Node* ChooseClassGenerator::createStateFunctionGetter(const std::string& 
   for (size_t i = 0; i < stateFunctions.size(); ++i)
     if (stateFunctions[i].kind == stateFunctionKind)
       switchOutput.addCase(literal(index++), returnStatement(atom(stateFunctions[i].identifier)));
-  switchOutput.setDefault(atom("assert(false); return " + returnType + "();\n"));
+  switchOutput.setDefault(atom("jassert(false); return " + returnType + "();\n"));
   output.body.add(switchOutput.createStatement());
   
   return output.createDeclaration();
