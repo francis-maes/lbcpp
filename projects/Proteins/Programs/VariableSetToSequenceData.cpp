@@ -12,7 +12,7 @@
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
-extern void declareInterdependantVariableSetClasses();
+extern void declareVariableSetClasses();
 
 class ProteinToVariableSetExample : public ObjectFunction
 {

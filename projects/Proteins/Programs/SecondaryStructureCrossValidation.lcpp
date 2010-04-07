@@ -12,7 +12,7 @@
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
-extern void declareInterdependantVariableSetClasses();
+extern void declareVariableSetClasses();
 
 class SecondaryStructureVariableSetExample : public VariableSetExample
 {
@@ -160,8 +160,8 @@ using juce::Time;
 class TestTrainingProgressCallback : public TrainingProgressCallback
 {
 public:
-  TestTrainingProgressCallback(StoppingCriterionPtr stoppingCriterion, ObjectContainerPtr validationData)
-    : trainAccuracy(0.0), testAccuracy(0.0), stoppingCriterion(stoppingCriterion), validationData(validationData) {}
+  TestTrainingProgressCallback(StoppingCriterionPtr stoppingCriterion, ObjectContainerPtr validationData, OutputStream& results)
+    : trainAccuracy(0.0), testAccuracy(0.0), stoppingCriterion(stoppingCriterion), validationData(validationData), results(results) {}
   
   double trainAccuracy;
   double testAccuracy;
@@ -190,7 +190,10 @@ public:
     std::cout << "Evaluating on testing data..." << std::flush;
     testAccuracy = model->evaluate(validationData);
     std::cout << " => " << testAccuracy << std::endl;
-
+    
+    double time = Time::getMillisecondCounter() / 1000.0;
+    results << iterationNumber << " " << trainAccuracy << " " << testAccuracy << " " << (time - startTime) << "\n";
+    results.flush();
     ++iterationNumber;
     
     return !stoppingCriterion->shouldOptimizerStop(trainAccuracy);
@@ -202,36 +205,169 @@ public:
 private:
   StoppingCriterionPtr stoppingCriterion;
   ObjectContainerPtr validationData;
+  OutputStream& results;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 0.0001)
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, IterationFunctionPtr learningRate, double regularizer)
 {
-  IterationFunctionPtr learningRate = invLinearIterationFunction(2.0, 150000);
-  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
+  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
   classifier->setL2Regularizer(regularizer);
   return classifier;
 }
 
+void usage(char* command) {
+  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE NB_FOLD FOLD_ID NB_ITER REGULARIZER ('Inv' INIT ITER | 'Lin' CONST) ('CO' | 'SICA' NB_PASSES RANDOM DETERMINISTIC)" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
-  File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
+  if (argc < 8)
+  {
+    usage(argv[0]);
+    return -1;
+  }
+  
+  size_t nextArgument = 1;
+  
+  File cwd = File::getCurrentWorkingDirectory();
+  File cb513Directory = cwd.getChildFile(String(argv[nextArgument++]));
+  File resultsFile = cwd.getChildFile(String(argv[nextArgument++]));
+  size_t nbFolds = atoi(argv[nextArgument++]);
+  size_t targetFold = atoi(argv[nextArgument++]);
+  size_t nbIteration = atoi(argv[nextArgument++]);
+  double regularizer = atof(argv[nextArgument++]);
+  
+  std::cout << "Protein Directory: " << cb513Directory.getFullPathName() << std::endl;
+  std::cout << "Result File: " << resultsFile.getFullPathName() << std::endl;
+  std::cout << "Fold: " << (targetFold+1) << "/" << nbFolds << std::endl;
+  std::cout << "Stopping criterion: " << nbIteration << " iterations" << std::endl;
+  std::cout << "L2 Regularizer value: " << regularizer << std::endl;
+    
 
+  resultsFile.deleteFile();
+  OutputStream* resultsFileStream = resultsFile.createOutputStream();
+  if (!resultsFileStream)
+  {
+    std::cerr << "Beeeruh" << std::endl;
+    return 2;
+  }
+  
+  
+  std::cout << "Learning Rate: ";
+  IterationFunctionPtr learningRate = NULL;
+  String argumentValue = String(argv[nextArgument++]);
+  if (argumentValue == String("Inv"))
+  {
+    double initialValue = atof(argv[nextArgument++]);
+    size_t decreaseIteration = atoi(argv[nextArgument++]);
+    learningRate = invLinearIterationFunction(initialValue, decreaseIteration);
+    std::cout << "invLinear(" << initialValue << ", " << decreaseIteration  << ")" << std::endl;
+  }
+  else if (argumentValue == String("Lin"))
+  {
+    double constant = atof(argv[nextArgument++]);
+    learningRate = constantIterationFunction(constant);
+    std::cout << "constant(" << constant << ")" << std::endl;
+  }
+  else
+  {
+    std::cout << "unknown value '" << argumentValue << "'" << std::endl;
+    usage(argv[0]);
+    return -2;
+  }
+
+  //------
   declareProteinsClasses();
-
-  ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
+  ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
-  StringDictionaryPtr labels = examples->getAndCast < VariableSetExample >(0)->getTargetVariables()->getVariablesDictionary();
+  StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  //------
 
-  VariableSetModelPtr model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
-  ObjectContainerPtr trainingData = examples->invFold(0, 7);
-  ObjectContainerPtr testingData = examples->fold(0, 7);
+  std::cout << "Model: ";
+  VariableSetModelPtr model = NULL;
+  argumentValue = String(argv[nextArgument++]);
+  if (argumentValue == String("CO"))
+  {
+    model = independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate, regularizer));
+    std::cout << "Content Only" << std::endl;
+  }
+  else if(argumentValue == String("SICA"))
+  {
+    size_t nbPasses = atoi(argv[nextArgument++]);
+    bool randomOrder = atoi(argv[nextArgument++]) == 1;
+    bool deterministic = atoi(argv[nextArgument++]) == 1;
+    
+    model = simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate, regularizer), nbPasses, randomOrder, deterministic);
+    std::cout << "Simlated Iterative Classification Algorithm" << std::endl;
+    std::cout << "    > Maximun passes: " << nbPasses << std::endl;
+    std::cout << "    > Random order: " << randomOrder << std::endl;
+    std::cout << "    > Deterministic: " << deterministic << std::endl;
+  }
+  else
+  {
+    std::cout << "unkonwn value '" << argumentValue << "'" << std::endl;
+    usage(argv[0]);
+    return -3;
+  }
+  
 
-  ReferenceCountedObjectPtr < TestTrainingProgressCallback > callback = new TestTrainingProgressCallback(createLearningStoppingCriterion(1), testingData);
+  //VariableSetModelPtr model =
+      //independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
+      //optimisticClassificationVariableSetModel(createMaxentClassifier(labels, learningRate))
+      //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels, learningRate));
+  //    simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
+
+    
+  ObjectContainerPtr trainingData = examples->invFold(targetFold, nbFolds);
+  ObjectContainerPtr testingData = examples->fold(targetFold, nbFolds);
+
+  ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
+    = new TestTrainingProgressCallback(createLearningStoppingCriterion(nbIteration), testingData, *resultsFileStream);
   model->trainBatch(trainingData, callback);
-
+  
   std::cout << "Train Accuracy = " << callback->trainAccuracy << std::endl;
   std::cout << "Test Accuracy = " << callback->testAccuracy << std::endl;
-  model->saveToFile(File(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_co.model")));
+  
+  delete resultsFileStream;
+ 
+  // Results: Prediction of SS3 / 7 folds CV
+  
+  // ---CO---
+  //
+  // AA(7)+PSSM(7) with 1/1 train iter => 71.30
+  // AA(7)+PSSM(7) with 2/2 train iter => 72.01
+  // AA(7)+PSSM(7) with 2/10 train iter => 72.29
+ 
+  
+  
+  // ---ICA---
+  // AA(7)+PSSM(7) + PR(1) with 2/2 train iter => 70.96
+  // AA(7)+PSSM(7) + PR(2) with 2/2 train iter => 71.67
+  // AA(7)+PSSM(7) + PR(5) with 2/2 train iter => 71.63
+  
+  // ---SICA---
+  // AA(7)+PSSM(7) + PR(2) with 2/2 train iter, reg 0, maxpass 5 => 70.61
+  // AA(7)+PSSM(7) + PR(2) with 2/10 train iter, reg 0.0001, maxpass 10
+  
+  // ---CO Results with only 1 folds over the seven, 10 training iteration, best test score---
+  // AA(7)+PSSM(7) => 74.02
+  // AA(7)+PSSM(7)+POS/LEN => 74.16
+  // AA(7)+PSSM(7)+POS/LEN/CONJ(AA) => 74.19
+  // AA(7)+PSSM(7)+POS%/LEN/CONJ(AA) => 74.07
+  // AA(7)+PSSM(7)+POS/LEN/CONJ(AA)/CONJ(PSSM) => 74.00
+
+  // ---Test Results on the whole dataset (Predition of SS3)---
+  // AA(15) => 62.2
+  // PSSM(15) => 72.1
+  // AA(15)+PSSM(15) => 73.9
+  // AA(15)+PSSM(15)+OPT(1) => 88.3
+  // AA(15)+PSSM(15)+OPT(10) => 89.1
+  // AA(15)+PSSM(15)+OPT_8(10) => 90.5
+  // PSSM(15)+OPT(1) => 87.8
+  // AA(15)+OPT(1) => 87.6
+  // OPT(1) => 82.8
+  // OPT(10) => 84.7
+  return 0;
 }

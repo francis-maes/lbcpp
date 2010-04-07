@@ -319,7 +319,10 @@ public:
     if (value)
       value->saveToStream(ostr);
     else
-      lbcpp::write(ostr, T("__null__"));
+    {
+      static const String nullString(T("__null__"));
+      lbcpp::write(ostr, nullString);
+    }
   }
   
   static inline bool read(InputStream& istr, ReferenceCountedObjectPtr<T>& result)

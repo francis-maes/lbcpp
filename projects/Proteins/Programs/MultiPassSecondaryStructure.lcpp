@@ -12,7 +12,7 @@
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
-extern void declareInterdependantVariableSetClasses();
+extern void declareVariableSetClasses();
 
 class SecondaryStructureVariableSetExample : public VariableSetExample
 {
@@ -219,10 +219,11 @@ int main(int argc, char** argv)
   File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
 
   declareProteinsClasses();
+  declareVariableSetClasses();
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
-  ObjectContainerPtr examples = examplesStream->load()->randomize();
+  ObjectContainerPtr examples = examplesStream->load(21)->randomize();
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
   VariableSetModelPtr model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
