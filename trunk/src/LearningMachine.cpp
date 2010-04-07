@@ -270,7 +270,8 @@ size_t GeneralizedClassifier::predict(const GeneralizedClassificationExample& ex
 DenseVectorPtr GeneralizedClassifier::predictScores(const FeatureGeneratorPtr compositeInput) const
 {
   size_t n = compositeInput->getNumSubGenerators();
-  DenseVectorPtr res = new DenseVector(compositeInput->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
+  FeatureDictionaryPtr scoresDictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(compositeInput->getDictionary()->getScopes());
+  DenseVectorPtr res = new DenseVector(scoresDictionary, n);
   for (size_t i = 0; i < n; ++i)
     res->set(compositeInput->getSubGeneratorIndex(i), predictScore(compositeInput->getSubGenerator(i)));
   return res;
@@ -314,7 +315,8 @@ size_t Ranker::predict(const FeatureGeneratorPtr compositeInput) const
 DenseVectorPtr Ranker::predictScores(const FeatureGeneratorPtr compositeInput) const
 {
   size_t n = compositeInput->getNumSubGenerators();
-  DenseVectorPtr res = new DenseVector(compositeInput->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
+  FeatureDictionaryPtr scoresDictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(compositeInput->getDictionary()->getScopes());
+  DenseVectorPtr res = new DenseVector(scoresDictionary, n);
   for (size_t i = 0; i < n; ++i)
     res->set(compositeInput->getSubGeneratorIndex(i), predictScore(compositeInput->getSubGenerator(i)));
   return res;  

@@ -194,7 +194,7 @@ private:
     {
       FuncallPTreeGenerator funcall;
       funcall.setName("__featureVisitor__.featureCall");
-      funcall.addArgument(dictionaryStack.back());
+      //funcall.addArgument(dictionaryStack.back());
       funcall.addArgument(rewrite(expression));
       return exprStatement(funcall.createExpression());
     }
@@ -210,26 +210,27 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   classScope = const_cast<SymbolLookup::Class* >(dynamic_cast<const SymbolLookup::Class* >(scope->outer_scope()));
   isStatic = /*classScope && */input.getModifiers().contains("static"); // just ignore the "static" keyword if we are not in a class
   bool addThisParameter = (classScope != NULL) && !isStatic;
+  std::string inputClassIdentifier = classScope ? classScope->name() : "";
   if (addThisParameter)
   {
-    PTree::Identifier* classIdentifier = identifier(classScope->name());
+    PTree::Identifier* classId = identifier(inputClassIdentifier);
     PTree::Node* type;
     if (input.isConst())
-      type = list(constKeyword(), classIdentifier);
+      type = list(constKeyword(), classId);
     else
-      type = classIdentifier;
+      type = classId;
     parameters.pushFront(parameterDeclaration(type, list(atom("*"), identifier("__this__"))));
   }
 
    
   // struct <name>FeatureGenerator 
-  std::string classIdentifier = input.getIdentifierString() + "FeatureGenerator";
+  std::string generatedClassIdentifier = input.getIdentifierString() + "FeatureGenerator";
   setKeyword(structKeyword());
-  setName(classIdentifier);
+  setName(generatedClassIdentifier);
   
   // constructor
   ConstructorPTreeGenerator ctor;
-  ctor.setName(classIdentifier);
+  ctor.setName(generatedClassIdentifier);
   for (size_t i = 0; i < parameters.size(); ++i)
   {
     ctor.addParameter(parameters[i].getPTree());
@@ -246,9 +247,13 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
     body.add(atom(";\n"));
   }
   
-  body.add(atom("static const char* getName() {return " + quote(input.getIdentifierString()) + ";}\n"));
+  std::string featureGeneratorName = input.getIdentifierString();
+  if (inputClassIdentifier.size())
+    featureGeneratorName = inputClassIdentifier + "::" + featureGeneratorName;
+
+  body.add(atom("static const char* getName() {return " + quote(featureGeneratorName) + ";}\n"));
   body.add(atom("static lbcpp::FeatureDictionaryPtr getDictionary()\n"
-                "  {static lbcpp::FeatureDictionaryPtr dictionary = new lbcpp::FeatureDictionary(" + quote(input.getIdentifierString()) + "); return dictionary;}\n"));
+      "  {static lbcpp::FeatureDictionaryPtr dictionary = lbcpp::FeatureDictionaryManager::get(" + quote(featureGeneratorName) + "); return dictionary;}\n"));
   
   // static feature generator
   FunctionPTreeGenerator staticFunction;

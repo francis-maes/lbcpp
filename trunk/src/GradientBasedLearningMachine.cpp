@@ -18,7 +18,12 @@ using namespace lbcpp;
 */
 void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 {
-  FeatureDictionary::save(ostr, inputDictionary, parameters->getDictionary());
+  FeatureDictionaryPtr paramsDictionary = parameters->getDictionary();
+  jassert(paramsDictionary && inputDictionary);
+  write(ostr, inputDictionary->getName());
+  write(ostr, paramsDictionary->getName());
+  std::cout << "Input Dictionary: " << inputDictionary->getName() << std::endl;
+  std::cout << "Params Dictionary: " << paramsDictionary->getName() << std::endl;
   parameters->save(ostr);
   write(ostr, regularizer);
   write(ostr, learner);
@@ -27,9 +32,15 @@ void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 
 bool GradientBasedLearningMachine::loadImpl(InputStream& istr)
 {
-  FeatureDictionaryPtr paramsDictionary;
-  if (!FeatureDictionary::load(istr, inputDictionary, paramsDictionary))
+  String paramsDictionaryName, inputsDictionaryName;
+  if (!lbcpp::read(istr, inputsDictionaryName) || !lbcpp::read(istr, paramsDictionaryName))
     return false;
+
+  inputDictionary = FeatureDictionaryManager::get(inputsDictionaryName);
+  FeatureDictionaryPtr paramsDictionary = FeatureDictionaryManager::get(paramsDictionaryName);
+  if (!paramsDictionary)
+    return false;
+
   parameters = new DenseVector(paramsDictionary);
   return parameters->load(istr) &&
             read(istr, regularizer) &&

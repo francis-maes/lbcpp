@@ -18,6 +18,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/Table.h
   ../include/lbcpp/StringToObjectMap.h
   ../include/lbcpp/RandomVariable.h
+  ../include/lbcpp/StringDictionary.h
   ../include/lbcpp/FeatureDictionary.h
   ../include/lbcpp/FeatureGenerator.h
   ../include/lbcpp/FeatureVisitor.h
@@ -118,6 +119,7 @@ SET(LBCPP_CORE_SOURCES
   ObjectGraph.cpp
   Table.cpp
   Utilities.cpp
+  StringDictionary.cpp
   FeatureDictionary.cpp
   FeatureGenerator.cpp
   FeatureVisitor.cpp

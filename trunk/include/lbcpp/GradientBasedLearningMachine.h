@@ -231,10 +231,15 @@ public:
 
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const
   {
+    FeatureDictionaryPtr dictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(getLabels());
     if (parameters)
-      return getPredictionArchitecture()->compute(parameters, input)->toDenseVector();
+    {
+      DenseVectorPtr res = getPredictionArchitecture()->compute(parameters, input)->toDenseVector();
+      dictionary->checkEquals(res->getDictionary());
+      return res;
+    }
     else
-      return new DenseVector(new FeatureDictionary(T("classes"), getLabels(), StringDictionaryPtr()), getNumLabels());
+      return new DenseVector(dictionary, getNumLabels());
   }
 
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const

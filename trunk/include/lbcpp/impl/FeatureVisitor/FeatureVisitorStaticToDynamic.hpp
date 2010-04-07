@@ -48,11 +48,11 @@ public:
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {impl.featureSense(dictionary, index, value);}
 
+  virtual void featureCall(FeatureGeneratorPtr featureGenerator)
+    {impl.featureCall(featureGenerator);}
+
   virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
     {impl.featureCall(dictionary, scopeIndex, featureGenerator);}
-
-  virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
-    {impl.featureCall(dictionary, featureGenerator);}
 
   virtual void featureLeave()
     {impl.featureLeave();}
@@ -65,7 +65,7 @@ inline FeatureVisitorPtr staticToDynamic(impl::FeatureVisitor<ExactType>& implem
   {return FeatureVisitorPtr(new StaticToDynamicFeatureVisitorRef<ExactType>(static_cast<ExactType& >(implementation)));}
 
 template<class ExactType>
-inline void FeatureVisitor<ExactType>::featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator)
+inline void FeatureVisitor<ExactType>::featureCall(lbcpp::FeatureGeneratorPtr featureGenerator)
 {
   EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
   if (editable)

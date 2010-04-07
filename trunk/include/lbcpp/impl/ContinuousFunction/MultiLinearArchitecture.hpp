@@ -25,19 +25,14 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   void setOutputs(StringDictionaryPtr outputs)
   {
     this->outputs = outputs;
-    outputsDictionary = new FeatureDictionary("MultiLinearArchitecture outputs", outputs, StringDictionaryPtr());
+    outputsDictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(outputs);
   }
     
   size_t getNumOutputs() const
     {jassert(outputs && outputs->getNumElements()); return outputs->getNumElements();}
   
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
-  {
-    FeatureDictionaryPtr res = new FeatureDictionary("MultiLinearArchitecture parameters", StringDictionaryPtr(), outputs);
-    for (size_t i = 0; i < outputs->getNumElements(); ++i)
-      res->setSubDictionary(i, inputDictionary);
-    return res;
-  }
+    {return FeatureDictionaryManager::getInstance().getCollectionDictionary(outputs, inputDictionary);}
   
   DenseVectorPtr getClassParameters(DenseVectorPtr parameters, size_t outputNumber, FeatureDictionaryPtr inputDictionary) const
   {
@@ -88,9 +83,8 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       // 0.0.input
       // 1.1.input
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
-      
-      // parameters->getDictionary()->getParentDictionary(outputsDictionary->getFeatures())
-      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(new FeatureDictionary("parameters per output", StringDictionaryPtr(), outputsDictionary->getFeatures()), numOutputs);
+      FeatureDictionaryPtr collectionOfGradientsDictionary = FeatureDictionaryManager::getInstance().getCollectionDictionary(outputs, parameters->getDictionary());
+      CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(collectionOfGradientsDictionary, numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
         g->setSubGenerator(i, subFeatureGenerator(parameters->getDictionary(), i, input));
       *gradientsWrtParameters = g;
