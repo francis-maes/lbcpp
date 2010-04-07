@@ -255,10 +255,12 @@ int main(int argc, char** argv)
   size_t numFolds = 7;
 
   VariableSetModelPtr model =
-      //independantClassificationVariableSetModel(createMaxentClassifier(labels));
+      independantClassificationVariableSetModel(createMaxentClassifier(labels));
       //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
       //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
-      simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
+      //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
+  std::cout << "Model: CO" << std::endl;
+
 
   std::cout << std::endl << std::endl << "FOLD " << targetFold << " / " << numFolds << " ..." << std::endl;
     
