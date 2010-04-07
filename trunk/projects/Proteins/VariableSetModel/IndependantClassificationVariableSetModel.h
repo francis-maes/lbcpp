@@ -20,6 +20,9 @@ public:
   IndependantClassificationVariableSetModel(ClassifierPtr classifier = ClassifierPtr())
     : classifier(classifier) {}
   
+  virtual String toString() const
+    {return T("IndependantClassificationVariableSetModel(") + classifier->toString() + T(")");}
+
   virtual FeatureGeneratorPtr getFeatures(VariableSetExamplePtr example, size_t index) const
     {return example->getVariableFeatures(index);}
 
@@ -39,6 +42,12 @@ public:
 protected:
   ObjectContainerPtr classificationExamples;
   ClassifierPtr classifier;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, classifier);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, classifier);}
 
   virtual void trainBatchIteration(ObjectContainerPtr examples)
   {
