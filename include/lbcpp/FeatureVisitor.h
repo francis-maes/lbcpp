@@ -45,10 +45,11 @@ public:
   **
   ** @param dictionary : feature dictionary of the current FeatureGenerator.
   ** @param index : current scope index.
+  ** @param subDictionary : the feature dictionary of the child FeatureGenerator
   **
   ** @return a boolean.
   */
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index) = 0;
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary) = 0;
 
   /**
   ** Adds a new feature. A pair <@em name, @a value> where @em name is
@@ -65,20 +66,11 @@ public:
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value) = 0;
 
   /**
-  ** Calls another FeatureGenerator and puts its result into a sub-scope
-  **
-  ** @param dictionary : feature dictionary of the current FeatureGenerator.
-  ** @param scopeIndex : scope index.
-  ** @param featureGenerator : feature generator to call.
-  */
-  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator);
-
-  /**
   ** Calls another FeatureGenerator.
   **
   ** @param featureGenerator : feature generator to call.
   */
-  virtual void featureCall(FeatureGeneratorPtr featureGenerator);
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);
 
   /**
   ** This function is executed each time the visitor leaves a scope.
@@ -91,7 +83,7 @@ class PathBasedFeatureVisitor : public FeatureVisitor
 public:
   virtual void featureSense(const std::vector<size_t>& path, const String& name, double value) = 0;
 
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index);  
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary);  
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value);
   virtual void featureLeave();
 

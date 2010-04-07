@@ -25,9 +25,10 @@ featureGenerator myFeatureGenerator()
 class MyFeatureVisitor : public FeatureVisitor
 {
 public:
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
   {
-    std::cout << "featureEnter, scope = " << dictionary->getScopes()->getString(index) << std::endl;
+    std::cout << "featureEnter, scope = " << dictionary->getScopes()->getString(index)
+      << ", sub-dictionary = " << subDictionary->getName() << std::endl;
     return true;
   }
 

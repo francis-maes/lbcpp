@@ -65,7 +65,7 @@ public:
 
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor) const
-    {if (exists()) visitor.featureCall(dictionary, index, featureGenerator);}
+    {if (exists()) visitor.featureCall_(dictionary, index, featureGenerator);}
 
   virtual SparseVectorPtr toSparseVector() const
   {

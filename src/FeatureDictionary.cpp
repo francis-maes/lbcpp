@@ -17,13 +17,13 @@ using namespace lbcpp;
 FeatureDictionary::FeatureDictionary(const String& name, StringDictionaryPtr features, StringDictionaryPtr scopes)
   : NameableObject(name), featuresDictionary(features), scopesDictionary(scopes)
 {
-  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
+  //std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
 FeatureDictionary::FeatureDictionary(const String& name)
-  : NameableObject(name), featuresDictionary(new StringDictionary()), scopesDictionary(new StringDictionary())
+  : NameableObject(name), featuresDictionary(new StringDictionary(name + T(" features"))), scopesDictionary(new StringDictionary(name + T(" scopes")))
 {
-  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
+  //std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
 void FeatureDictionary::ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary)
@@ -36,6 +36,9 @@ void FeatureDictionary::ensureSubDictionary(size_t index, FeatureDictionaryPtr s
   else
     res = subDictionary;
 }
+
+FeatureDictionaryPtr FeatureDictionary::getSubDictionary(const String& name)
+  {return getSubDictionary(scopesDictionary->add(name));}
 
 FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index)
 {
@@ -280,13 +283,25 @@ FeatureDictionaryManager& FeatureDictionaryManager::getInstance()
   return manager;
 }
 
-FeatureDictionaryPtr FeatureDictionaryManager::getDictionary(const String& name) const
+FeatureDictionaryPtr FeatureDictionaryManager::getRootDictionary(const String& name) const
 {
   DictionariesMap::const_iterator it = dictionaries.find(name);
   return it == dictionaries.end() ? FeatureDictionaryPtr() : it->second;
 }
 
 FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateDictionary(const String& name)
+{
+  int i = name.lastIndexOfChar('.');
+  if (i >= 0)
+  {
+    FeatureDictionaryPtr parent = getOrCreateDictionary(name.substring(0, i));
+    return parent->getSubDictionary(name.substring(i + 1));
+  }
+  else
+    return getOrCreateRootDictionary(name);
+}
+
+FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateRootDictionary(const String& name)
 {
   DictionariesMap::const_iterator it = dictionaries.find(name);
   if (it == dictionaries.end())
@@ -301,7 +316,7 @@ FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateDictionary(const Strin
 
 FeatureDictionaryPtr FeatureDictionaryManager::getCollectionDictionary(StringDictionaryPtr indices, FeatureDictionaryPtr elementsDictionary)
 {
-  FeatureDictionaryPtr res = getOrCreateDictionary(T("Collection(") + indices->getName() + T(", ") + elementsDictionary->getName() + T(")"));
+  FeatureDictionaryPtr res = getOrCreateRootDictionary(T("Collection(") + indices->getName() + T(", ") + elementsDictionary->getName() + T(")"));
   jassert(res);
   if (res->getNumScopes() == 0)
     for (size_t i = 0; i < indices->getNumElements(); ++i)
@@ -310,4 +325,4 @@ FeatureDictionaryPtr FeatureDictionaryManager::getCollectionDictionary(StringDic
 }
 
 FeatureDictionaryPtr FeatureDictionaryManager::getFlatVectorDictionary(StringDictionaryPtr indices)
-  {return getOrCreateDictionary(T("FlatVector(") + indices->getName() + T(")"));}
+  {return getOrCreateRootDictionary(T("FlatVector(") + indices->getName() + T(")"));}

@@ -38,11 +38,11 @@ featureGenerator numberLogFeatures(double positiveNumber)
   double base = pow(10.0, fl);
 
   if (frac < clog2)
-    featureCall inline numberLogFeaturesBase(lbcpp::toString(base), lbcpp::toString(2 * base), 0, clog2, frac);
+    featureCall(0) inline numberLogFeaturesBase(lbcpp::toString(base), lbcpp::toString(2 * base), 0, clog2, frac);
   else if (frac < clog5)
-    featureCall inline numberLogFeaturesBase(lbcpp::toString(2 * base), lbcpp::toString(5 * base), clog2, clog5, frac);
+    featureCall(1) inline numberLogFeaturesBase(lbcpp::toString(2 * base), lbcpp::toString(5 * base), clog2, clog5, frac);
   else
-    featureCall inline numberLogFeaturesBase(lbcpp::toString(5 * base), lbcpp::toString(10 * base), clog5, 1.0, frac);
+    featureCall(2) inline numberLogFeaturesBase(lbcpp::toString(5 * base), lbcpp::toString(10 * base), clog5, 1.0, frac);
 }
 
 featureGenerator numberFeatures(double value)

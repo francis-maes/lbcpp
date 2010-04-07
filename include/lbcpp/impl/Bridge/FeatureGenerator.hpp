@@ -35,7 +35,7 @@ public:
 
   template<class VisitorType>
   void staticFeatureGenerator(VisitorType& visitor) const
-    {const_cast<ImplementationType& >(impl).featureGenerator(visitor, getDictionary());}
+    {const_cast<ImplementationType& >(impl).featureGenerator(visitor);}
 
   virtual SparseVectorPtr toSparseVector() const
   {

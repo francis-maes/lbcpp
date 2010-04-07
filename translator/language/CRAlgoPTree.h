@@ -74,18 +74,21 @@ public:
 class FeatureGeneratorCallStatement : public PTree::UserStatement
 {
 public:
-  FeatureGeneratorCallStatement(PTree::Node* featureCallKeyword, PTree::Node* expr, PTree::Node* semiColon, PTree::Node* inlineKeyword = NULL)
-    : PTree::UserStatement(featureCallKeyword, PTree::list(expr, semiColon, inlineKeyword)) {}
+  FeatureGeneratorCallStatement(PTree::Node* featureCallKeyword, PTree::Node* identifier, PTree::Node* expr, PTree::Node* semiColon, PTree::Node* inlineKeyword = NULL)
+    : PTree::UserStatement(featureCallKeyword, PTree::list(identifier, expr, semiColon, inlineKeyword)) {}
   FeatureGeneratorCallStatement(Node* p, Node* q) : PTree::UserStatement(p, q) {}
   
-  PTree::Node* getExpression()
+  PTree::Node* getIdentifier()
     {return PTree::second(this);}
+
+  PTree::Node* getExpression()
+    {return PTree::third(this);}
   
   bool isFunctionCall()
     {return dynamic_cast<PTree::FuncallExpr* >(getExpression()) != NULL;}
     
   bool isInlineCall()
-    {PTree::Node* inlineKeyword = PTree::nth(this, 3); return inlineKeyword && *inlineKeyword == "inline";}
+    {PTree::Node* inlineKeyword = PTree::nth(this, 4); return inlineKeyword && *inlineKeyword == "inline";}
 };
 
 extern bool isCRAlgorithm(PTree::FunctionDefinition* node);

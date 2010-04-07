@@ -19,7 +19,7 @@ class StringDescriptionVisitor : public FeatureVisitor<StringDescriptionVisitor>
 public: 
   StringDescriptionVisitor() : indent(0) {}
 
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
   {
    //res += "DICO = " + dictionary->getName() + " (" + lbcpp::toString((int)dictionary.get()) + ")\n";
     flushCurrentFeatures();

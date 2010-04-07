@@ -89,7 +89,7 @@ public:
 
   virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
   {
-    featureCall inline posAndLengthFeatures(variableIndex, 1.0);
+    featureCall("poslen") inline posAndLengthFeatures(variableIndex, 1.0);
 
     // conjunctions with current amino acid
     featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) inline posAndLengthFeatures(variableIndex, 1.0);

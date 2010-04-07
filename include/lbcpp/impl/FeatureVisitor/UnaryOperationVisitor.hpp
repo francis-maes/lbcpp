@@ -49,7 +49,7 @@ public:
   UnaryOperationVisitor(OperationType& operation)
     : operation(operation) {}
   
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
     {return true;}
 
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)

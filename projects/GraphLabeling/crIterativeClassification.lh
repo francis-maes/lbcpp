@@ -25,9 +25,9 @@ crAlgorithm LabelSequencePtr crIterativeClassification(LabeledContentGraphPtr gr
       featureScope(includePassInFeatures ? passNumber : (passNumber > 0 ? 1 : 0))
       {
         if (passNumber == 0)
-          featureCall graph->getNode(currentNode); // initial prediction, only depend on the content
+          featureCall("node") graph->getNode(currentNode); // initial prediction, only depend on the content
         else
-          featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
+          featureCall("node") inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
       }
   }
   
@@ -36,9 +36,9 @@ crAlgorithm LabelSequencePtr crIterativeClassification(LabeledContentGraphPtr gr
     featureScope(includePassInFeatures ? passNumber : (passNumber > 0 ? 1 : 0))
     {
       if (passNumber == 0)
-        featureCall graph->getNode(currentNode); // initial prediction, only depend on the content
+        featureCall("node") graph->getNode(currentNode); // initial prediction, only depend on the content
       else
-        featureCall inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
+        featureCall("node") inline predictedGraph->nodeAndNeighborhoodLabelsFrequencyFeatures(currentNode);
     }
   }
   
