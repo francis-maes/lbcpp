@@ -19,18 +19,30 @@ struct AssignmentVectorOperation
 {
   void process(double& lValue, double rValue)
     {jassert(false);}
+  
+  template<class VectorPtr>
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
+    {jassert(false);}
 };
 
 struct AddVectorOperation : public AssignmentVectorOperation
 {
   void process(double& lValue, const double rValue)
     {lValue += rValue;}
+  
+  template<class VectorPtr>
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
+    {featureGenerator->addTo(vector);}
 };
 
 struct SubstractVectorOperation : public AssignmentVectorOperation
 {
   void process(double& lValue, const double rValue)
     {lValue += rValue;}
+
+  template<class VectorPtr>
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
+    {featureGenerator->substractFrom(vector);}
 };
 
 struct AddWeightedVectorOperation : public AssignmentVectorOperation
@@ -42,6 +54,10 @@ struct AddWeightedVectorOperation : public AssignmentVectorOperation
   
   void process(double& lValue, const double rValue)
     {lValue += rValue * weight;}
+
+  template<class VectorPtr>
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
+    {featureGenerator->addWeightedTo(vector, weight);}
 };
 
 struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
@@ -53,6 +69,10 @@ struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
   
   inline void process(double& lvalue, const double rvalue)
     {lvalue += rvalue > 0 ? weight : (rvalue < 0 ? -weight : 0);}
+
+  template<class VectorPtr>
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
+    {featureGenerator->addWeightedSignsTo(vector, weight);}
 };
 
 template<class ExactType, class VectorType, class OperationType>
@@ -68,10 +88,7 @@ public:
   bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
   {
     currentVectorStack.push_back(currentVector);
-    VectorPtr& subVector = currentVector->getSubVector(number);
-    if (!subVector)
-      subVector = VectorPtr(new VectorType(dictionary->getSubDictionary(number)));
-    currentVector = subVector;
+    currentVector = getCurrentSubVector(dictionary, number);
     return true;
   }
   
@@ -85,10 +102,27 @@ public:
     currentVectorStack.pop_back();    
   }
   
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t index, lbcpp::FeatureGeneratorPtr featureGenerator)
+  {
+    VectorPtr subVector = getCurrentSubVector(dictionary, index);
+    operation.call(subVector, featureGenerator);
+  }
+
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator)
+    {operation.call(currentVector, featureGenerator);}
+
 private:
   OperationType& operation;
   std::vector<VectorPtr> currentVectorStack;
   VectorPtr currentVector;
+
+  VectorPtr getCurrentSubVector(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  {
+    VectorPtr& subVector = currentVector->getSubVector(number);
+    if (!subVector)
+      subVector = VectorPtr(new VectorType(/*dictionary->getSubDictionary(number)*/));
+    return subVector;
+  }
 };
 
 template<class OperationType>

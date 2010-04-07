@@ -27,7 +27,7 @@ struct FeatureVisitor : public Object<ExactType>
   void featureLeave()
     {}
     
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator);  
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator);
   void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureGeneratorPtr featureGenerator)
   {
     if (_this().featureEnter(dictionary, number))

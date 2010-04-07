@@ -83,9 +83,10 @@ public:
 
   virtual featureGenerator elementFeatures(size_t position) const
   {
+    size_t startIndex = position * numScores;
     for (size_t i = 0; i < numScores; ++i)
     {
-      double score = getScore(position, i);
+      double score = matrix[startIndex + i];
       if (score)
         featureSense(i, score);
     }

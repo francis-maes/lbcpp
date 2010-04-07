@@ -109,12 +109,18 @@ public:
   {
     if (!weight)
       return;
-    size_t n = compositeFeatureGenerator->getNumSubGenerators();
-    for (size_t i = 0; i < n; ++i)
+    if (result)
+      result->addWeightedTo(target, weight);
+    else
     {
-      double w = weight * (weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)));
-      if (w)
-        compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
+      // y += k * (sum w_i x_i) <==> for each i, y += w_i x_i
+      size_t n = compositeFeatureGenerator->getNumSubGenerators();
+      for (size_t i = 0; i < n; ++i)
+      {
+        double w = weight * (weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i)));
+        if (w)
+          compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
+      }
     }
   }
   
@@ -122,26 +128,38 @@ public:
   {
     if (!weight)
       return;
-    size_t n = compositeFeatureGenerator->getNumSubGenerators();
-    for (size_t i = 0; i < n; ++i)
+    if (result)
+      result->addWeightedTo(target, weight);
+    else
     {
-      double w = weight * weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
-      if (w)
-        compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
+      // y += k * (sum w_i x_i) <==> for each i, y += w_i x_i
+      size_t n = compositeFeatureGenerator->getNumSubGenerators();
+      for (size_t i = 0; i < n; ++i)
+      {
+        double w = weight * weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
+        if (w)
+          compositeFeatureGenerator->getSubGenerator(i)->addWeightedTo(target, w);
+      }
     }
   }
   
-  virtual double dotProduct(const DenseVectorPtr vector) const
+  virtual double dotProduct(const DenseVectorPtr otherVector) const
   {
-    double res = 0.0;
-    size_t n = compositeFeatureGenerator->getNumSubGenerators();
-    for (size_t i = 0; i < n; ++i)
-    {
-      double weight = weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
-      if (weight)
-        res += compositeFeatureGenerator->getSubGenerator(i)->dotProduct(vector) * weight;
+    if (result)
+      return result->dotProduct(otherVector);
+    else
+    { 
+      // < sum w_i x_i , y > = sum w_i <x_i, y>
+      double res = 0.0;
+      size_t n = compositeFeatureGenerator->getNumSubGenerators();
+      for (size_t i = 0; i < n; ++i)
+      {
+        double weight = weights->get(compositeFeatureGenerator->getSubGeneratorIndex(i));
+        if (weight)
+          res += compositeFeatureGenerator->getSubGenerator(i)->dotProduct(otherVector) * weight;
+      }
+      return res;
     }
-    return res;
   }  
     
 private:
