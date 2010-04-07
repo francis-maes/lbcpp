@@ -24,11 +24,12 @@ public:
   DotProductVectorVisitor(VectorPtr vector)
     : currentVector(vector), res(0.0) {}
   
-  bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
+  bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
   {
     VectorPtr subVector = getCurrentVector().getSubVector(index);
     if (!subVector)
       return false;
+    jassert(subVector->getDictionary() == subDictionary);
     currentVectorStack.push_back(currentVector);
     currentVector = subVector;
     return true;
@@ -44,15 +45,12 @@ public:
     currentVectorStack.pop_back();    
   }
 
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t index, lbcpp::FeatureGeneratorPtr featureGenerator)
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
   {
-   VectorPtr subVector = getCurrentVector().getSubVector(index);
+    VectorPtr subVector = getCurrentVector().getSubVector(scopeNumber);
     if (subVector)
       res += featureGenerator->dotProduct(subVector);
   }
-
-  void featureCall(lbcpp::FeatureGeneratorPtr featureGenerator)
-    {res += featureGenerator->dotProduct(currentVector);}
 
   double getResult() const
     {return res;}

@@ -85,15 +85,18 @@ public:
   AssignmentToVectorVisitor(VectorPtr target, OperationType& operation)
     : operation(operation), currentVector(target) {}
   
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
   {
     currentVectorStack.push_back(currentVector);
-    currentVector = getCurrentSubVector(dictionary, number);
+    currentVector = getCurrentSubVector(number, subDictionary);
     return true;
   }
   
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
-    {operation.process(currentVector->get(number), value);}
+  {
+    jassert(currentVector->getDictionary() == dictionary);
+    operation.process(currentVector->get(number), value);
+  }
   
   void featureLeave()
   {
@@ -102,25 +105,22 @@ public:
     currentVectorStack.pop_back();    
   }
   
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t index, lbcpp::FeatureGeneratorPtr featureGenerator)
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
   {
-    VectorPtr subVector = getCurrentSubVector(dictionary, index);
+    VectorPtr subVector = getCurrentSubVector(scopeNumber, featureGenerator->getDictionary());
     operation.call(subVector, featureGenerator);
   }
-
-  void featureCall(lbcpp::FeatureGeneratorPtr featureGenerator)
-    {operation.call(currentVector, featureGenerator);}
-
+  
 private:
   OperationType& operation;
   std::vector<VectorPtr> currentVectorStack;
   VectorPtr currentVector;
 
-  VectorPtr getCurrentSubVector(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  VectorPtr getCurrentSubVector(size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
   {
     VectorPtr& subVector = currentVector->getSubVector(number);
     if (!subVector)
-      subVector = VectorPtr(new VectorType(/*dictionary->getSubDictionary(number)*/));
+      subVector = VectorPtr(new VectorType(subDictionary));
     return subVector;
   }
 };

@@ -23,18 +23,21 @@ struct CreateVectorVisitor : public FeatureVisitor< ExactType >
   CreateVectorVisitor(FeatureDictionaryPtr dictionary) 
     : vector(new VectorType(dictionary)) {currentVector = vector;}
   
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
   {
     currentVectorStack.push_back(currentVector);
     VectorTypePtr& v = currentVector->getSubVector(number);
     if (!v)
-      v = new VectorType(dictionary->getSubDictionary(number));
+      v = new VectorType(subDictionary);
     currentVector = v;
     return true;
   }
 
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
-    {currentVector->set(number, value);}
+  {
+    jassert(currentVector->getDictionary() == dictionary);
+    currentVector->set(number, value);
+  }
 
   void featureLeave()
   {

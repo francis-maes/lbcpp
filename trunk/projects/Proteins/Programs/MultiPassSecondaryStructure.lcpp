@@ -65,9 +65,9 @@ public:
   static featureGenerator numberFeatures(double value, double weight)
   {
     if (value > 0)
-      featureCall("positive") numberLogFeatures(value, weight);
+      featureCall("positive") inline numberLogFeatures(value, weight);
     else if (value < 0)
-      featureCall("negative") numberLogFeatures(-value, weight);
+      featureCall("negative") inline numberLogFeatures(-value, weight);
     else
       featureSense("nullValue", weight);
   }
@@ -83,16 +83,16 @@ public:
   featureGenerator posAndLengthFeatures(size_t variableIndex, double weight) const
   {
     double length = (double)aminoAcidSequence->getNumVariables();
-    featureCall("length") numberFeatures(length, weight);
-    featureCall("position") numberFeatures((double)variableIndex / length, weight);
+    featureCall("length") inline numberFeatures(length, weight);
+    featureCall("position") inline numberFeatures((double)variableIndex / length, weight);
   }
 
   virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
   {
-    featureCall("poslen") posAndLengthFeatures(variableIndex, 1.0);
+    featureCall("poslen") inline posAndLengthFeatures(variableIndex, 1.0);
 
     // conjunctions with current amino acid
-    featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) posAndLengthFeatures(variableIndex, 1.0);
+    featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) inline posAndLengthFeatures(variableIndex, 1.0);
 
     /* conjunctions with current pssm entries
     size_t n = positionSpecificScores->getNumScores();
@@ -100,10 +100,10 @@ public:
     {
       double score = positionSpecificScores->getScore(variableIndex, i);
       if (score)
-        featureCall(T("SS") + String((int)i)) posAndLengthFeatures(variableIndex, score);
+        featureCall(T("SS") + String((int)i)) inline posAndLengthFeatures(variableIndex, score);
     }*/
     
-    featureCall("a") aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
     
     // conjunctions of AA of variable sizes, centred around the current position
     /*for (size_t i = 1; i < 4; ++i)
@@ -121,12 +121,12 @@ public:
       featureSense(featureName);
     }*/
 
-    featureCall("p") positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
     if (prediction)
     {
       LabelSequencePtr predictedSecondaryStructure = prediction.dynamicCast<LabelSequence>();
       jassert(predictedSecondaryStructure);
-      featureCall("pr") predictedSecondaryStructure->windowFeatures(variableIndex, 7, 7, false);
+      featureCall("pr") inline predictedSecondaryStructure->windowFeatures(variableIndex, 7, 7, false);
     }
   }
     

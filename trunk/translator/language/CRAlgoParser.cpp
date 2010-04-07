@@ -241,9 +241,7 @@ bool CRAlgoParser::chooseFunction(PTree::Node*& st)
 }
 
 
-// featureCall [funcall-expr] or
-// featureCall(identifier) [funcall-expr] which is syntaxic sugar for 
-//      featureScope(identifier) featureCall [funcall-expr] 
+// featureCall(identifier) [funcall-expr]
 bool CRAlgoParser::featureCall(PTree::Node*& st)
 {
   Trace trace("CRAlgoParser::featureCall", Trace::PARSING);
@@ -254,37 +252,22 @@ bool CRAlgoParser::featureCall(PTree::Node*& st)
   if (my_lexer.get_token(tk1) != CRAlgoToken::FEATURE_GENERATOR_CALL) return false;
   
   my_lexer.look_ahead(0, tk2);
-  if (tk2 == '(')
-  {
-    if (my_lexer.get_token(tk2) != '(') return false;
-    if (!expression(identifier)) return false;
-    if (my_lexer.get_token(tk3) != ')') return false;
-    
-    bool isInline = false; 
-    Token inlineToken;
-    if (my_lexer.look_ahead(0) == Token::INLINE)
-      isInline = true, my_lexer.get_token(inlineToken);
-    
-    if (!postfix_expr(n)) return false;
-    if (my_lexer.get_token(tk4) != ';') return false;
-    PTree::Node* body = new CRAlgo::FeatureGeneratorCallStatement(new PTree::UserKeyword(tk1), n, new PTree::Atom(tk4),
-      isInline ? new PTree::KeywordT<Token::INLINE>(inlineToken) : NULL);
-      
-    static Token featureScopeToken(CRAlgoToken::featureScope, strlen(CRAlgoToken::featureScope), CRAlgoToken::FEATURE_SCOPE);
-    st = new CRAlgo::FeatureScopeStatement(new PTree::UserKeyword(featureScopeToken), new PTree::Atom(tk2), identifier, new PTree::Atom(tk3), body);
-  }
-  else
-  {
-    bool isInline = false; 
-    Token inlineToken;
-    if (my_lexer.look_ahead(0) == Token::INLINE)
-      isInline = true, my_lexer.get_token(inlineToken);
+  if (!(tk2 == '('))
+    return false;
 
-    if (!postfix_expr(n)) return false;
-    if (my_lexer.get_token(tk2) != ';') return false;
-    st = new CRAlgo::FeatureGeneratorCallStatement(new PTree::UserKeyword(tk1), n, new PTree::Atom(tk2),
-            isInline ? new PTree::KeywordT<Token::INLINE>(inlineToken) : NULL);
-  }
+  if (my_lexer.get_token(tk2) != '(') return false;
+  if (!expression(identifier)) return false;
+  if (my_lexer.get_token(tk3) != ')') return false;
+  
+  bool isInline = false; 
+  Token inlineToken;
+  if (my_lexer.look_ahead(0) == Token::INLINE)
+    isInline = true, my_lexer.get_token(inlineToken);
+  
+  if (!postfix_expr(n)) return false;
+  if (my_lexer.get_token(tk4) != ';') return false;
+  st = new CRAlgo::FeatureGeneratorCallStatement(new PTree::UserKeyword(tk1), identifier, n, new PTree::Atom(tk4),
+    isInline ? new PTree::KeywordT<Token::INLINE>(inlineToken) : NULL);
   return true;
 }
 

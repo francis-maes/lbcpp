@@ -102,6 +102,9 @@ public:
   size_t getNumFeatures() const
     {return featuresDictionary ? featuresDictionary->getNumElements() : 0;}
 
+  String getFeature(size_t index) const
+    {return featuresDictionary ? featuresDictionary->getString(index) : String::empty;}
+
   /**
   ** Adds a new feature.
   **
@@ -129,6 +132,9 @@ public:
   */
   size_t getNumScopes() const
     {return scopesDictionary ? scopesDictionary->getNumElements() : 0;}
+
+  String getScope(size_t index) const
+    {return scopesDictionary ? scopesDictionary->getString(index) : String::empty;}
 
   /**
   ** Adds a new scope.
@@ -191,8 +197,7 @@ public:
   ** @param name : subdictionary name.
   ** @return the corresponding subdictionary or throw an error.
   */
-  FeatureDictionaryPtr getSubDictionary(const String& name)
-    {jassert(scopesDictionary); return getSubDictionary(scopesDictionary->getIndex(name));}
+  FeatureDictionaryPtr getSubDictionary(const String& name);
 
   /**
   ** Ensures that you don't try to override a subdictionary.
@@ -296,10 +301,11 @@ public:
   static FeatureDictionaryPtr get(const String& name)
     {return getInstance().getOrCreateDictionary(name);}
 
-  bool hasDictionary(const String& name) const
-    {return getDictionary(name) != FeatureDictionaryPtr();}
+  bool hasRootDictionary(const String& name) const
+    {return getRootDictionary(name) != FeatureDictionaryPtr();}
 
-  FeatureDictionaryPtr getDictionary(const String& name) const;
+  FeatureDictionaryPtr getRootDictionary(const String& name) const;
+  FeatureDictionaryPtr getOrCreateRootDictionary(const String& name);
   FeatureDictionaryPtr getOrCreateDictionary(const String& name);
 
   FeatureDictionaryPtr getFlatVectorDictionary(StringDictionaryPtr indices);

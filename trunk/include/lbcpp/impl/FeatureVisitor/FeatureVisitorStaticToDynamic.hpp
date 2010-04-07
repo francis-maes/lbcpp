@@ -18,17 +18,14 @@ namespace impl {
 
 STATIC_TO_DYNAMIC_CLASS(FeatureVisitor, Object)
   
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
-    {return BaseClass::impl.featureEnter(dictionary, index);}
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
+    {return BaseClass::impl.featureEnter(dictionary, index, subDictionary);}
     
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {BaseClass::impl.featureSense(dictionary, index, value);}
 
-  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
-    {BaseClass::impl.featureCall(dictionary, scopeIndex, featureGenerator);}
-
-  virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
-    {BaseClass::impl.featureCall(dictionary, featureGenerator);}
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
+    {BaseClass::impl.featureCall(dictionary, scopeNumber, featureGenerator);}
 
   virtual void featureLeave()
     {BaseClass::impl.featureLeave();}
@@ -42,17 +39,14 @@ public:
   StaticToDynamicFeatureVisitorRef(ImplementationType& impl)
     : impl(impl)  {}
 
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
-    {return impl.featureEnter(dictionary, index);}
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
+    {return impl.featureEnter(dictionary, index, subDictionary);}
     
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {impl.featureSense(dictionary, index, value);}
 
-  virtual void featureCall(FeatureGeneratorPtr featureGenerator)
-    {impl.featureCall(featureGenerator);}
-
-  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
-    {impl.featureCall(dictionary, scopeIndex, featureGenerator);}
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator)
+    {impl.featureCall(dictionary, index, featureGenerator);}
 
   virtual void featureLeave()
     {impl.featureLeave();}
@@ -65,16 +59,20 @@ inline FeatureVisitorPtr staticToDynamic(impl::FeatureVisitor<ExactType>& implem
   {return FeatureVisitorPtr(new StaticToDynamicFeatureVisitorRef<ExactType>(static_cast<ExactType& >(implementation)));}
 
 template<class ExactType>
-inline void FeatureVisitor<ExactType>::featureCall(lbcpp::FeatureGeneratorPtr featureGenerator)
+inline void FeatureVisitor<ExactType>::featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
 {
-  EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
-  if (editable)
-    editable->staticFeatureGenerator(_this());
-  else
+  if (_this().featureEnter(dictionary, scopeNumber, featureGenerator->getDictionary()))
   {
-    StaticToDynamicFeatureVisitorRef<ExactType> dynamicVisitor(_this());
-    StaticallyAllocatedReferenceCountedObjectPtr<lbcpp::FeatureVisitor> dynamicVisitorPtr(dynamicVisitor);
-    featureGenerator->accept(dynamicVisitorPtr);
+    EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();
+    if (editable)
+      editable->staticFeatureGenerator(_this());
+    else
+    {
+      StaticToDynamicFeatureVisitorRef<ExactType> dynamicVisitor(_this());
+      StaticallyAllocatedReferenceCountedObjectPtr<lbcpp::FeatureVisitor> dynamicVisitorPtr(dynamicVisitor);
+      featureGenerator->accept(dynamicVisitorPtr);
+    }
+    _this().featureLeave();
   }
 }
 

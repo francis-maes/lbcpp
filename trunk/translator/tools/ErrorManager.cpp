@@ -32,7 +32,13 @@ struct LocalizedError : public Error
   {
     ostr << filename;
     if (lineNumber != (size_t)-1)
+    {
+#ifdef WIN32
+      ostr << '(' << lineNumber << ") ";
+#else
       ostr << ':' << lineNumber;
+#endif
+    }
     ostr << ": " << (isWarning ? "warning" : "error") << ": " << errorMessage;
   }
 };

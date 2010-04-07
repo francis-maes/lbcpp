@@ -148,36 +148,47 @@ private:
   {
     PTree::Node* rewritedScopeArgument = rewriteScopeOrFeatureIdentifier(scopeArguments);
 
+    BlockPTreeGenerator scopeBlock;
+    static size_t uniqueId = 0;
+    // lbcpp::FeatureDictionaryPtr __currentFeatureDictionaryXX__ = previousDictionary->getSubDictionary(...);
+    PTree::Identifier* newDictionaryIdentifier = identifier("__currentFeatureDictionary" + size2str(++uniqueId) + "__");
+    scopeBlock.addVariableDeclaration(atom("lbcpp::FeatureDictionaryPtr"), newDictionaryIdentifier, 
+      list(dictionaryStack.back(), atom("->getSubDictionary("), rewritedScopeArgument, atom(")")));
+
     // __featureVisitor__.featureEnter(dictionary, [argument])
     FuncallPTreeGenerator featureEnterCall;
     featureEnterCall.setName("__featureVisitor__.featureEnter_");
     featureEnterCall.addArgument(dictionaryStack.back());
     featureEnterCall.addArgument(rewritedScopeArgument);
+    featureEnterCall.addArgument(newDictionaryIdentifier);
     PTree::Node* condition = featureEnterCall.createExpression();
   
-    // [body]; __feature_visitor__.featureLeave();
     BlockPTreeGenerator block;
-    PTree::Identifier* newDictionaryIdentifier = identifier("__currentFeatureDictionary" + size2str(dictionaryStack.size()) + "__");
-    block.addVariableDeclaration(atom("lbcpp::FeatureDictionaryPtr"), newDictionaryIdentifier, 
-      list(dictionaryStack.back(), atom("->getSubDictionary("), rewritedScopeArgument, atom(")")));
-    
+
+    // [body];
     dictionaryStack.push_back(newDictionaryIdentifier);
     block.add(BlockPTreeAnalyser(rewrite(scopeBody)).getContent());
     dictionaryStack.pop_back();
     
+    // __feature_visitor__.featureLeave();
     block.addExpressionStatement(funcallExpr(atom(" __featureVisitor__.featureLeave_")));
         
     // if (...) {[body] ...}
     BlockPTreeGenerator ifblock;
     ifblock.add(ifStatement(condition, block.createBlock()));
-    return ifblock.createBlock();
+
+    scopeBlock.add(ifblock.createBlock());
+    return scopeBlock.createBlock();
   }
   
   PTree::Node* createFeatureCallCode(CRAlgo::FeatureGeneratorCallStatement* featureGeneratorCall)
   {
+    PTree::Node* rewritedIdentifier = rewriteScopeOrFeatureIdentifier(featureGeneratorCall->getIdentifier());
+
     PTree::Node* expression = featureGeneratorCall->getExpression();
 
-    if (featureGeneratorCall->isInlineCall())
+    // FIXME: inline calls are not supported anymore, since new featureCall(expr) syntax 
+   /* if (featureGeneratorCall->isInlineCall())
     {
       PTree::Node* id = PTree::first(expression);
       PTree::Node* args = PTree::third(expression);
@@ -190,11 +201,12 @@ private:
       funcall.addArguments(rewrite(args));
       return exprStatement(funcall.createExpression());
     }
-    else
+    else*/
     {
       FuncallPTreeGenerator funcall;
-      funcall.setName("__featureVisitor__.featureCall");
-      //funcall.addArgument(dictionaryStack.back());
+      funcall.setName("__featureVisitor__.featureCall_");
+      funcall.addArgument(dictionaryStack.back());
+      funcall.addArgument(rewritedIdentifier);
       funcall.addArgument(rewrite(expression));
       return exprStatement(funcall.createExpression());
     }
@@ -262,10 +274,9 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   staticFunction.setReturnType(voidKeyword());
   staticFunction.setIdentifier(atom("staticFeatureGenerator"));
   staticFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
-  staticFunction.addParameter(atom("lbcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
-  
   for (size_t i = 0; i < parameters.size(); ++i)
     staticFunction.addParameter(parameters[i].getPTree());
+  staticFunction.body.add(atom("lbcpp::FeatureDictionaryPtr __featureDictionary__ = getDictionary();\n"));
   staticFunction.body.add(FeatureGeneratorRewriteVisitor(addThisParameter ? classScope : NULL, scope, identifier("__featureDictionary__")).rewrite(input.getBody().getPTree()));
   body.add(staticFunction.createDeclaration());
       
@@ -275,11 +286,9 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   normalizedFunction.setReturnType(voidKeyword());
   normalizedFunction.setIdentifier(atom("featureGenerator"));
   normalizedFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
-  normalizedFunction.addParameter(atom("lbcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
   FuncallPTreeGenerator funcall;
   funcall.setName("staticFeatureGenerator");
   funcall.addArgument(identifier("__featureVisitor__"));
-  funcall.addArgument(identifier("__featureDictionary__"));
   for (size_t i = 0; i < parameters.size(); ++i)
     funcall.addArgument(parameters[i].getIdentifier());
   normalizedFunction.body.addExpressionStatement(funcall.createExpression());

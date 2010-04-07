@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   SparseVector.h
-**@author Francis MAES
-**@date   Mon Jun 15 23:41:50 2009
-**
-**@brief  Sparse composite vector declarations.
-**
-**
-*/
-
 #ifndef LBCPP_SPARSE_VECTOR_H_
 # define LBCPP_SPARSE_VECTOR_H_
 
@@ -199,11 +189,7 @@ public:
   ** @param subVector : subvector value.
   */
   void setSubVector(size_t index, SparseVectorPtr subVector)
-  {
-    getSubVector(index) = subVector;
-    if (dictionary)
-      dictionary->ensureSubDictionary(index, subVector->dictionary);
-  }
+    {getSubVector(index) = subVector;}
 
   /*
   ** Operations

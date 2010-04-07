@@ -11,24 +11,19 @@ using namespace lbcpp;
 /*
 ** FeatureVisitor
 */
-void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator)
+void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, size_t scopeNumber, FeatureGeneratorPtr featureGenerator)
 {
-  if (featureEnter(dictionary, scopeIndex))
+  if (featureEnter(dictionary, scopeNumber, featureGenerator->getDictionary()))
   {
     featureGenerator->accept(FeatureVisitorPtr(this));
     featureLeave();
   }
 }
 
-void FeatureVisitor::featureCall(FeatureGeneratorPtr featureGenerator)
-{
-  featureGenerator->accept(FeatureVisitorPtr(this));
-}
-
 /*
 ** PathBasedFeatureVisitor
 */
-bool PathBasedFeatureVisitor::featureEnter(FeatureDictionaryPtr dictionary, size_t index)
+bool PathBasedFeatureVisitor::featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
 {
   currentPath.push_back(index);
   String scopeName = dictionary->getScopes()->getString(index);

@@ -201,42 +201,61 @@ double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 
 bool DenseVector::load(InputStream& istr)
 {
-  jassert(dictionary);
-  size_t numSubVectors;
-  if (!read(istr, values) || !read(istr, numSubVectors))
+  String dictionaryName;
+  if (!read(istr, dictionaryName))
     return false;
-  subVectors.resize(numSubVectors);
+
+  dictionary = FeatureDictionaryManager::getInstance().getOrCreateDictionary(dictionaryName);
+  jassert(dictionary);
+
+  size_t numValues;
+  if (!read(istr, numValues))
+    return false;
+
+  values.clear();
+  values.reserve(numValues);
+  for (size_t i = 0; i < numValues; ++i)
+  {
+    String featureName;
+    double featureValue;
+    if (!read(istr, featureName) || !read(istr, featureValue))
+      return false;
+    set(featureName, featureValue);
+  }
+
+  size_t numSubVectors;
+  if (!read(istr, numSubVectors))
+    return false;
+
+  subVectors.clear();
+  subVectors.reserve(numSubVectors);
   for (size_t i = 0; i < numSubVectors; ++i)
   {
-    bool exists;
-    if (!read(istr, exists))
+    String scopeName;
+    DenseVectorPtr subVector;
+    if (!read(istr, scopeName) || !read(istr, subVector))
       return false;
-    if (exists)
-    {
-      DenseVectorPtr subVector(new DenseVector(dictionary->getSubDictionary(i)));
-      if (!subVector->load(istr))
-        return false;
-      subVectors[i] = subVector;
-    }
-    else
-      subVectors[i] = DenseVectorPtr();
+    setSubVector(scopeName, subVector);
   }
   return true;
 }
 
 void DenseVector::save(OutputStream& ostr) const
 {
-  write(ostr, values);
+  jassert(dictionary);
+  write(ostr, dictionary->getName());
+
+  write(ostr, values.size());
+  for (size_t i = 0; i < values.size(); ++i)
+  {
+    write(ostr, dictionary->getFeature(i));
+    write(ostr, values[i]);
+  }
+
   write(ostr, subVectors.size());
   for (size_t i = 0; i < subVectors.size(); ++i)
   {
-    DenseVectorPtr subVector = subVectors[i];
-    if (subVector)
-    {
-      write(ostr, true);
-      subVector->save(ostr);
-    }
-    else
-      write(ostr, false);
+    write(ostr, dictionary->getScope(i));
+    write(ostr, subVectors[i]);
   }
 }

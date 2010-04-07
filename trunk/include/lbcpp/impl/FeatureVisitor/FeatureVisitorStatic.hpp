@@ -20,32 +20,26 @@ template<class ExactType>
 struct FeatureVisitor : public Object<ExactType>
 {
   // override these functions:
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
     {return false;}
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
     {}
   void featureLeave()
     {}
-    
-  void featureCall(lbcpp::FeatureGeneratorPtr featureGenerator);
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureGeneratorPtr featureGenerator)
-  {
-    if (_this().featureEnter(dictionary, number))
-    {
-      _this().featureCall(featureGenerator);
-      _this().featureLeave();
-    }
-  }
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator);
 
-  // conversion functions
-  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const String& scopeName)
-    {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName));}
+  /*
+  ** Conversion functions
+  ** These are the functions called by the generated code
+  */
+  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const String& scopeName, lbcpp::FeatureDictionaryPtr subDictionary)
+    {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName), subDictionary);}
     
-  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const char* scopeName)
-    {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName));}
+  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, const char* scopeName, lbcpp::FeatureDictionaryPtr subDictionary)
+    {return _this().featureEnter(dictionary, dictionary->getScopes()->add(scopeName), subDictionary);}
     
-  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, size_t number)
-    {return _this().featureEnter(dictionary, number);}
+  bool featureEnter_(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
+    {return _this().featureEnter(dictionary, number, subDictionary);}
   
   void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, const String& featureName, double value = 1.0)
     {_this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
@@ -58,6 +52,15 @@ struct FeatureVisitor : public Object<ExactType>
   
   void featureLeave_()
     {_this().featureLeave();}
+
+  void featureCall_(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeIndex, lbcpp::FeatureGeneratorPtr featureGenerator)
+    {return _this().featureCall(dictionary, scopeIndex, featureGenerator);}
+
+  void featureCall_(lbcpp::FeatureDictionaryPtr dictionary, const String& scopeName, lbcpp::FeatureGeneratorPtr featureGenerator)
+    {return _this().featureCall(dictionary, dictionary->getScopes()->add(scopeName), featureGenerator);}
+    
+  void featureCall_(lbcpp::FeatureDictionaryPtr dictionary, const char* scopeName, lbcpp::FeatureGeneratorPtr featureGenerator)
+    {return _this().featureCall(dictionary, dictionary->getScopes()->add(scopeName), featureGenerator);}
   
 protected:
   ExactType& _this() {return *static_cast<ExactType* >(this);}

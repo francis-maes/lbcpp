@@ -32,8 +32,8 @@ public:
         int index = (int)position - (int)i - 1;
         if (index >= 0)
           featureCall(i) elementFeatures((size_t)index);
-        else
-          featureScope(i) featureSense("N/A");
+        //else
+        //  featureScope(i) featureSense("N/A");
       }
     }
     if (includeCurrent)
@@ -45,8 +45,8 @@ public:
         size_t index = position + i + 1;
         if (index < this->getLength())
           featureCall(i) elementFeatures(index);
-        else
-          featureScope(i) featureSense("N/A");
+        //else
+        //  featureScope(i) featureSense("N/A");
       }
     }
   }

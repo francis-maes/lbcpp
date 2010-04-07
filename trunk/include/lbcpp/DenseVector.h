@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   DenseVector.h
-**@author Francis MAES
-**@date   Tue Jun 16 08:30:42 2009
-**
-**@brief  Composite dense vector declarations.
-**
-**
-*/
-
 #ifndef LBCPP_DENSE_VECTOR_H_
 # define LBCPP_DENSE_VECTOR_H_
 
@@ -133,6 +123,9 @@ public:
   void set(size_t index, double value)
     {ensureSize(values, index + 1, 0.0); values[index] = value;}
 
+  void set(const String& name, double value)
+    {jassert(dictionary); set(dictionary->addFeature(name), value);}
+
   /**
   ** Feature value getter.
   **
@@ -217,9 +210,10 @@ public:
   {
     ensureSize(subVectors, index + 1, DenseVectorPtr());
     subVectors[index] = subVector;
-    if (dictionary)
-      dictionary->ensureSubDictionary(index, subVector->dictionary);
   }
+
+  void setSubVector(const String& name, DenseVectorPtr subVector)
+    {jassert(dictionary); setSubVector(dictionary->getScopes()->add(name), subVector);}
 
   /*
   ** Operations
