@@ -51,7 +51,7 @@ public:
       res += featureGenerator->dotProduct(subVector);
   }
 
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator)
+  void featureCall(lbcpp::FeatureGeneratorPtr featureGenerator)
     {res += featureGenerator->dotProduct(currentVector);}
 
   double getResult() const

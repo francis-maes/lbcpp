@@ -50,7 +50,10 @@ struct ScalarToVectorArchitecture
     
     DenseVectorPtr res;
     if (output)
-      res = new DenseVector(input->getDictionary()->getDictionaryWithSubScopesAsFeatures(), n);
+    {
+      FeatureDictionaryPtr outputDictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(input->getDictionary()->getScopes());
+      res = new DenseVector(outputDictionary, n);
+    }
     
     CompositeFeatureGeneratorPtr gParam, gInput;
     if (gradientsWrtParameters)

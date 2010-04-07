@@ -65,10 +65,7 @@ public:
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value) = 0;
 
   /**
-  ** Calls another FeatureGenerator. A FeatureGenerator is a composite
-  ** structure that could be composed by several FeatureGenerators,
-  ** and also pointers to FeatureGenerators. So, the featureCall()
-  ** function allows to explore them.
+  ** Calls another FeatureGenerator and puts its result into a sub-scope
   **
   ** @param dictionary : feature dictionary of the current FeatureGenerator.
   ** @param scopeIndex : scope index.
@@ -77,15 +74,11 @@ public:
   virtual void featureCall(FeatureDictionaryPtr dictionary, size_t scopeIndex, FeatureGeneratorPtr featureGenerator);
 
   /**
-  ** Calls another FeatureGenerator. A FeatureGenerator is a composite
-  ** structure that could be composed by several FeatureGenerators,
-  ** and also pointers to FeatureGenerators. So, the featureCall()
-  ** function allows to explore them.
+  ** Calls another FeatureGenerator.
   **
-  ** @param dictionary : feature dictionary of the current FeatureGenerator.
   ** @param featureGenerator : feature generator to call.
   */
-  virtual void featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator);
+  virtual void featureCall(FeatureGeneratorPtr featureGenerator);
 
   /**
   ** This function is executed each time the visitor leaves a scope.

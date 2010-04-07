@@ -12,133 +12,18 @@
 using namespace lbcpp;
 
 /*
-** StringDictionary
-*/
-StringDictionary::StringDictionary(const StringDictionary& otherDictionary)
-  : stringToIndex(otherDictionary.stringToIndex), indexToString(otherDictionary.indexToString)
-{
-}
-
-StringDictionary::StringDictionary(const juce::tchar* strings[])
-{
-  for (int i = 0; strings[i]; ++i)
-    add(strings[i]);
-}
-
-bool StringDictionary::exists(size_t index) const
-  {return index < indexToString.size();}
-
-int StringDictionary::getIndex(const String& str) const
-{
-  StringToIndexMap::const_iterator it = stringToIndex.find(str);
-  if (it == stringToIndex.end())
-    return -1;
-  else
-    return (size_t)it->second;
-}
-
-size_t StringDictionary::add(const String& str)
-{
-  StringToIndexMap::iterator it = stringToIndex.find(str);
-  if (it == stringToIndex.end())
-  {
-    size_t res = indexToString.size();
-    indexToString.push_back(str);
-    stringToIndex[str] = res;
-    jassert(stringToIndex.find(str) != stringToIndex.end());
-    return res;
-  }
-  else
-    return it->second;
-}
-
-String StringDictionary::getString(size_t index) const
-{
-  if (index >= indexToString.size() || indexToString[index] == T(""))
-    return lbcpp::toString(index);
-  else
-    return indexToString[index];
-}
-
-void StringDictionary::save(OutputStream& ostr) const
-{
-  write(ostr, indexToString);
-}
-
-bool StringDictionary::load(InputStream& istr)
-{
-  clear();
-  if (!read(istr, indexToString))
-    return false;
-  for (size_t i = 0; i < indexToString.size(); ++i)
-    stringToIndex[indexToString[i]] = i;
-  return true;
-}
-
-
-namespace lbcpp
-{
-
-  std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings)
-  {
-    ostr << "[";
-    for (size_t i = 0; i < strings.indexToString.size(); ++i)
-    {
-      ostr << (const char* )strings.indexToString[i]; // << " [" << i << "]";
-      if (i < strings.indexToString.size() - 1)
-        ostr << ", ";
-    }
-    ostr << "]";
-    return ostr;
-  }
-
-}; /* namespace lbcpp */
-
-class StringDictionaryTable : public Table
-{
-public:
-  StringDictionaryTable(StringDictionaryPtr dictionary)
-    : dictionary(dictionary), header(new TableHeader())
-  {
-    header->addColumn("index", TableHeader::integerType);
-    header->addColumn("string", TableHeader::stringType);
-  }
-    
-  virtual TableHeaderPtr getHeader() const
-    {return header;}
-    
-  virtual size_t getNumRows() const
-    {return dictionary->getNumElements();}
-
-  virtual int getInteger(size_t rowNumber, size_t columnNumber) const
-    {jassert(columnNumber == 0); return (int)rowNumber;}
-  
-  virtual String getString(size_t rowNumber, size_t columnNumber) const
-    {jassert(columnNumber == 1); return dictionary->getString(rowNumber);}
-  
-private:
-  StringDictionaryPtr dictionary;
-  TableHeaderPtr header;
-};
-
-TablePtr StringDictionary::toTable() const
-{
-  return new StringDictionaryTable(const_cast<StringDictionary* >(this));
-}
-
-/*
 ** FeatureDictionary
 */
 FeatureDictionary::FeatureDictionary(const String& name, StringDictionaryPtr features, StringDictionaryPtr scopes)
-  : name(name), featuresDictionary(features), scopesDictionary(scopes)
+  : NameableObject(name), featuresDictionary(features), scopesDictionary(scopes)
 {
-//  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
+  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
 FeatureDictionary::FeatureDictionary(const String& name)
-  : name(name), featuresDictionary(new StringDictionary()), scopesDictionary(new StringDictionary())
+  : NameableObject(name), featuresDictionary(new StringDictionary()), scopesDictionary(new StringDictionary())
 {
-//  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
+  std::cout << "New FeatureDictionary '" << name << "'" << std::endl;
 }
 
 void FeatureDictionary::ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary)
@@ -161,13 +46,6 @@ FeatureDictionaryPtr FeatureDictionary::getSubDictionary(size_t index)
     res = new FeatureDictionary(name + "." + 
       (scopesDictionary->exists(index) ? scopesDictionary->getString(index) : lbcpp::toString(index)));
   return res;
-}
-
-FeatureDictionaryPtr FeatureDictionary::getDictionaryWithSubScopesAsFeatures()
-{
-  if (!dictionaryWithSubScopesAsFeatures)
-    dictionaryWithSubScopesAsFeatures = new FeatureDictionary(name, scopesDictionary, StringDictionaryPtr());
-  return dictionaryWithSubScopesAsFeatures;
 }
 
 bool FeatureDictionary::checkEquals(FeatureDictionaryPtr otherDictionary) const
@@ -392,3 +270,44 @@ TablePtr FeatureDictionary::toTable() const
 {
   return new FeatureDictionaryTable(const_cast<FeatureDictionary* >(this));
 }
+
+/*
+** FeatureDictionaryManager
+*/
+FeatureDictionaryManager& FeatureDictionaryManager::getInstance()
+{
+  static FeatureDictionaryManager manager;
+  return manager;
+}
+
+FeatureDictionaryPtr FeatureDictionaryManager::getDictionary(const String& name) const
+{
+  DictionariesMap::const_iterator it = dictionaries.find(name);
+  return it == dictionaries.end() ? FeatureDictionaryPtr() : it->second;
+}
+
+FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateDictionary(const String& name)
+{
+  DictionariesMap::const_iterator it = dictionaries.find(name);
+  if (it == dictionaries.end())
+  {
+    FeatureDictionaryPtr res = new FeatureDictionary(name);
+    dictionaries[name] = res;
+    return res;
+  }
+  else
+    return it->second;
+}
+
+FeatureDictionaryPtr FeatureDictionaryManager::getCollectionDictionary(StringDictionaryPtr indices, FeatureDictionaryPtr elementsDictionary)
+{
+  FeatureDictionaryPtr res = getOrCreateDictionary(T("Collection(") + indices->getName() + T(", ") + elementsDictionary->getName() + T(")"));
+  jassert(res);
+  if (res->getNumScopes() == 0)
+    for (size_t i = 0; i < indices->getNumElements(); ++i)
+      res->setSubDictionary(i, elementsDictionary);
+  return res;
+}
+
+FeatureDictionaryPtr FeatureDictionaryManager::getFlatVectorDictionary(StringDictionaryPtr indices)
+  {return getOrCreateDictionary(T("FlatVector(") + indices->getName() + T(")"));}

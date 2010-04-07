@@ -65,9 +65,9 @@ public:
   static featureGenerator numberFeatures(double value, double weight)
   {
     if (value > 0)
-      featureCall("positive") inline numberLogFeatures(value, weight);
+      featureCall("positive") numberLogFeatures(value, weight);
     else if (value < 0)
-      featureCall("negative") inline numberLogFeatures(-value, weight);
+      featureCall("negative") numberLogFeatures(-value, weight);
     else
       featureSense("nullValue", weight);
   }
@@ -83,16 +83,16 @@ public:
   featureGenerator posAndLengthFeatures(size_t variableIndex, double weight) const
   {
     double length = (double)aminoAcidSequence->getNumVariables();
-    featureCall("length") inline numberFeatures(length, weight);
-    featureCall("position") inline numberFeatures((double)variableIndex / length, weight);
+    featureCall("length") numberFeatures(length, weight);
+    featureCall("position") numberFeatures((double)variableIndex / length, weight);
   }
 
   virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
   {
-    featureCall inline posAndLengthFeatures(variableIndex, 1.0);
+    featureCall("poslen") posAndLengthFeatures(variableIndex, 1.0);
 
     // conjunctions with current amino acid
-    featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) inline posAndLengthFeatures(variableIndex, 1.0);
+    featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) posAndLengthFeatures(variableIndex, 1.0);
 
     /* conjunctions with current pssm entries
     size_t n = positionSpecificScores->getNumScores();
@@ -100,10 +100,10 @@ public:
     {
       double score = positionSpecificScores->getScore(variableIndex, i);
       if (score)
-        featureCall(T("SS") + String((int)i)) inline posAndLengthFeatures(variableIndex, score);
+        featureCall(T("SS") + String((int)i)) posAndLengthFeatures(variableIndex, score);
     }*/
     
-    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("a") aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
     
     // conjunctions of AA of variable sizes, centred around the current position
     /*for (size_t i = 1; i < 4; ++i)
@@ -121,12 +121,12 @@ public:
       featureSense(featureName);
     }*/
 
-    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("p") positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
     if (prediction)
     {
       LabelSequencePtr predictedSecondaryStructure = prediction.dynamicCast<LabelSequence>();
       jassert(predictedSecondaryStructure);
-      featureCall("pr") inline predictedSecondaryStructure->windowFeatures(variableIndex, 7, 7, false);
+      featureCall("pr") predictedSecondaryStructure->windowFeatures(variableIndex, 7, 7, false);
     }
   }
     
@@ -205,9 +205,9 @@ private:
   ObjectContainerPtr validationData;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 0.0001)
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 10.0)
 {
-  IterationFunctionPtr learningRate = invLinearIterationFunction(2.0, 150000);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(2.0, 250000);
   GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
   classifier->setL2Regularizer(regularizer);
@@ -217,26 +217,26 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, do
 int main(int argc, char** argv)
 {
   File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
+  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_co.model"));
 
   declareProteinsClasses();
   declareVariableSetClasses();
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
-  ObjectContainerPtr examples = examplesStream->load(21)->randomize();
+  ObjectContainerPtr examples = examplesStream->load()->randomize();
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
-  VariableSetModelPtr model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
   ObjectContainerPtr trainingData = examples->invFold(0, 7);
   ObjectContainerPtr testingData = examples->fold(0, 7);
 
+  VariableSetModelPtr model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
   ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
-    = new TestTrainingProgressCallback(createLearningStoppingCriterion(1), testingData);
+    = new TestTrainingProgressCallback(createLearningStoppingCriterion(10), testingData);
   model->trainBatch(trainingData, callback);
   
   std::cout << "Train Accuracy = " << callback->trainAccuracy << std::endl;
   std::cout << "Test Accuracy = " << callback->testAccuracy << std::endl;
-  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_co.model"));
   model->saveToFile(modelFile);
 
   std::cout << model->toString() << std::endl;

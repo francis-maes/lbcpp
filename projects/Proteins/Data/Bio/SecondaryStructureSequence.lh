@@ -91,14 +91,14 @@ public:
     {
       static const juce::tchar* codes[] =
         {T("G"), T("H"), T("I"), T("T"), T("E"), T("B"), T("S"), T("_"), NULL};
-      static StringDictionaryPtr dictionary = new StringDictionary(codes);
+      static StringDictionaryPtr dictionary = new StringDictionary(T("SecondaryStructureDSSPOneLetterCode"), codes);
       return dictionary;
     }
     else
     {
       static const juce::tchar* codes[] =
         {T("H"), T("E"), T("C"), NULL};
-      static StringDictionaryPtr dictionary = new StringDictionary(codes);
+      static StringDictionaryPtr dictionary = new StringDictionary(T("SecondaryStructureOneLetterCode"), codes);
       return dictionary;
     }
   }

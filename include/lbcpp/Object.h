@@ -286,6 +286,31 @@ protected:
     {}
 };
 
+class NameableObject : public Object
+{
+public:
+  NameableObject(const String& name = T("Unnamed"))
+    : name(name) {}
+
+  virtual String getName() const
+    {return name;}
+
+  virtual String toString() const
+    {return getClassName() + T(" ") + name;}
+
+  void setName(const String& name)
+    {this->name = name;}
+
+protected:
+  String name;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, name);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, name);}
+};
+
 /**
 ** Loads an object from the file @a filename.
 **

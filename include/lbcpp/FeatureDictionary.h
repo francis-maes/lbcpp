@@ -24,144 +24,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   FeatureDictionary.h
-**@author Francis MAES
-**@date   Tue Jun 16 08:27:18 2009
-**
-**@brief  Dictionaries of features declarations.
-**
-**
-*/
-
 #ifndef LBCPP_FEATURE_DICTIONARY_H_
 # define LBCPP_FEATURE_DICTIONARY_H_
 
-# include "ObjectPredeclarations.h"
-# include <map>
+# include "StringDictionary.h"
 
 namespace lbcpp
 {
-
-/*!
-** @class StringDictionary
-** @brief String dictionary.
-*/
-
-class StringDictionary : public Object
-{
-public:
-  StringDictionary(const StringDictionary& otherDictionary);
-  StringDictionary(const juce::tchar* strings[]);
-  StringDictionary() {}
-
-  /**
-  ** Clears dictionary. Removes all pairs <index, string>.
-  **
-  */
-  void clear()
-    {stringToIndex.clear(); indexToString.clear();}
-
-  /**
-  ** Returns the number of elements (number of pairs <index,
-  ** string>).
-  **
-  ** @return the number of elements.
-  */
-  size_t getNumElements() const
-    {return (unsigned)indexToString.size();}
-
-  /**
-  ** Checks if it exists an association for the index @a index.
-  **
-  ** @param index : index to check.
-  ** @return False if there is no association with @a index.
-  */
-  bool exists(size_t index) const;
-
-  /**
-  ** Returns the string associated to @a index.
-  **
-  ** @param index : key.
-  ** @return the string associated to @a index if any, or convert
-  ** @a index to string.
-  */
-  String getString(size_t index) const;
-
-  /**
-  ** Returns the index associated to @a str.
-  **
-  ** @param str : string value used as key.
-  ** @return -1 if not found, the corresponding index otherwise.
-  */
-  int getIndex(const String& str) const;
-
-  /**
-  ** Adds a string value to the dictionary if it not already exists
-  **
-  ** @param str : string value.
-  ** @return the corresponding index value.
-  */
-  size_t add(const String& str);
-
-  /**
-  ** Converts a string dictionary to a stream.
-  **
-  ** Puts a string dictionary to an output stream following this form:
-  ** [indexToString[0], ..., indexToString[indexToString.size()-1]]
-  **
-  ** @param ostr : output stream.
-  ** @param strings : string dictionary.
-  ** @return a stream instance.
-  */
-  friend std::ostream& operator <<(std::ostream& ostr, const StringDictionary& strings);
-
-  /*
-  ** Object
-  */
-  /**
-  ** Converts a string dictionary to a string.
-  **
-  ** Puts a string dictionary to a string following this form:
-  ** [indexToString[0], ..., indexToString[indexToString.size()-1]]
-  **
-  ** @return string value.
-  */
-  virtual String toString() const
-    {std::ostringstream ostr; ostr << *this; return ostr.str().c_str();}
-
-  /**
-  ** Converts a string dictionary to a Table.
-  ** @return a table pointer.
-  ** @see Table
-  */
-  virtual TablePtr toTable() const;
-
-  /**
-  ** Saves a string dictionary to an output stream.
-  **
-  ** @param ostr : output stream.
-  */
-  virtual void save(OutputStream& ostr) const;
-
-  /**
-  ** Loads a string dictionary from an input stream.
-  **
-  ** @param istr : input stream.
-  ** @return False if any error occurs.
-  */
-  virtual bool load(InputStream& istr);
-
-protected:
-  typedef std::map<String, size_t> StringToIndexMap;
-  typedef std::vector<String> StringVector;
-
-  StringToIndexMap stringToIndex; /**< String to index correspondance. */
-  StringVector indexToString;   /**< Index to string correspondance. */
-};
-
-typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
-
 
 /**
 ** @class FeatureDictionary
@@ -177,7 +46,7 @@ typedef ReferenceCountedObjectPtr<StringDictionary> StringDictionaryPtr;
 *
 ** @see FeatureGenerator
 */
-class FeatureDictionary : public Object
+class FeatureDictionary : public NameableObject
 {
 public:
   /**
@@ -340,24 +209,6 @@ public:
   void ensureSubDictionary(size_t index, FeatureDictionaryPtr subDictionary);
 
   /**
-  ** Returns a FeatureDictionary with subscopes as features.
-  **
-  ** @return a FeatureDictionary with subscopes as features.
-  */
-  FeatureDictionaryPtr getDictionaryWithSubScopesAsFeatures();
-
-  /*
-  ** Object
-  */
-  /**
-  ** Dictionary name getter.
-  **
-  ** @return dictionary name.
-  */
-  virtual String getName() const
-    {return name;}
-
-  /**
   ** Converts to a string.
   **
   ** @return a string corresponding to the dictionary.
@@ -421,11 +272,9 @@ public:
   static void save(OutputStream& ostr, const FeatureDictionaryPtr dictionary1, const FeatureDictionaryPtr dictionary2);
 
 private:
-  String name;             /*!< Dictionary name. */
   StringDictionaryPtr featuresDictionary; /*!< Feature dictionary. */
   StringDictionaryPtr scopesDictionary; /*!< Scope dictionary. */
   std::vector<FeatureDictionaryPtr> subDictionaries; /*!< Subdictionaries. */
-  FeatureDictionaryPtr dictionaryWithSubScopesAsFeatures;
 
   void toStringRec(size_t indent, String& res) const;
 };
@@ -439,6 +288,27 @@ private:
 inline FeatureDictionaryPtr loadFeatureDictionary(const File& file)
   {return Object::loadFromFileAndCast<FeatureDictionary>(file);}
 
+class FeatureDictionaryManager
+{
+public:
+  static FeatureDictionaryManager& getInstance();
+
+  static FeatureDictionaryPtr get(const String& name)
+    {return getInstance().getOrCreateDictionary(name);}
+
+  bool hasDictionary(const String& name) const
+    {return getDictionary(name) != FeatureDictionaryPtr();}
+
+  FeatureDictionaryPtr getDictionary(const String& name) const;
+  FeatureDictionaryPtr getOrCreateDictionary(const String& name);
+
+  FeatureDictionaryPtr getFlatVectorDictionary(StringDictionaryPtr indices);
+  FeatureDictionaryPtr getCollectionDictionary(StringDictionaryPtr indices, FeatureDictionaryPtr elementsDictionary);
+
+private:
+  typedef std::map<String, FeatureDictionaryPtr> DictionariesMap;
+  DictionariesMap dictionaries;
+};
 
 }; /* namespace lbcpp */
 

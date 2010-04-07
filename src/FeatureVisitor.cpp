@@ -20,7 +20,7 @@ void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, size_t scopeIn
   }
 }
 
-void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, FeatureGeneratorPtr featureGenerator)
+void FeatureVisitor::featureCall(FeatureGeneratorPtr featureGenerator)
 {
   featureGenerator->accept(FeatureVisitorPtr(this));
 }

@@ -49,7 +49,7 @@ StringDictionaryPtr AminoAcid::getThreeLettersCodes()
     NULL
   };
 
-  static StringDictionaryPtr dictionary = new StringDictionary(threeLettersCodes);
+  static StringDictionaryPtr dictionary = new StringDictionary(T("AminoAcidThreeLetterCode"), threeLettersCodes);
   return dictionary;
 }
 

@@ -108,7 +108,7 @@ public:
     operation.call(subVector, featureGenerator);
   }
 
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator)
+  void featureCall(lbcpp::FeatureGeneratorPtr featureGenerator)
     {operation.call(currentVector, featureGenerator);}
 
 private:
