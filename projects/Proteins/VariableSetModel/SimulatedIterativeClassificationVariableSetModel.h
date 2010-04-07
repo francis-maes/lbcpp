@@ -26,9 +26,20 @@ public:
 
 protected:
   ClassifierPtr classifier;
-  StoppingCriterionPtr stoppingCriterion;
   bool deterministicLearning;
-  
+
+  virtual bool load(InputStream& istr)
+  {
+    return lbcpp::read(istr, classifier) &&
+      lbcpp::read(istr, deterministicLearning);
+  }
+
+  virtual void save(OutputStream& ostr) const
+  {
+    lbcpp::write(ostr, classifier);
+    lbcpp::write(ostr, deterministicLearning);
+  }
+
   virtual void inferenceFunction(VariableSetExamplePtr example, VariableSetPtr prediction, bool isTraining) = 0;
   
   //VectorObjectContainerPtr classificationExamples;
@@ -92,10 +103,32 @@ public:
       dictionary(new FeatureDictionary(T("SICA"), StringDictionaryPtr(), new StringDictionary())),
       maxInferencePasses(maxInferencePasses), randomOrderInference(randomOrderInference) {}
 
+  virtual String toString() const
+  {
+    return T("SimulatedIterativeClassificationVariableSetModel(") + classifier->toString()
+        + T(",") + lbcpp::toString(maxInferencePasses)
+        + T(",") + lbcpp::toString(randomOrderInference)
+        + T(",") + lbcpp::toString(deterministicLearning) + T(")");
+  }
+
 protected:
   FeatureDictionaryPtr dictionary;
   size_t maxInferencePasses;
   bool randomOrderInference;
+
+  virtual bool load(InputStream& istr)
+  {
+    return SimulatedVariableSetModel::load(istr) &&
+      lbcpp::read(istr, maxInferencePasses) &&
+      lbcpp::read(istr, randomOrderInference);
+  }
+
+  virtual void save(OutputStream& ostr) const
+  {
+    SimulatedVariableSetModel::save(ostr);
+    lbcpp::write(ostr, maxInferencePasses);
+    lbcpp::write(ostr, randomOrderInference);
+  }
 
   virtual void inferenceFunction(VariableSetExamplePtr example, VariableSetPtr prediction, bool isTraining)
   {

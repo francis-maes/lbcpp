@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   Object.h
-**@author Francis MAES
-**@date   Mon Jun 15 23:43:59 2009
-**
-**@brief  A base class for serializable objects.
-**
-**
-*/
-
 #ifndef LBCPP_OBJECT_H_
 # define LBCPP_OBJECT_H_
 
