@@ -208,37 +208,42 @@ private:
   OutputStream& results;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, IterationFunctionPtr learningRate)
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, IterationFunctionPtr learningRate, double regularizer)
 {
-  GradientBasedLearnerPtr learner = 
-    stochasticDescentLearner(learningRate);  
+  GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
-  classifier->setL2Regularizer(0.0001);
+  classifier->setL2Regularizer(regularizer);
   return classifier;
 }
 
 void usage(char* command) {
-  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE NB_FOLD FOLD_ID NB_ITER ('Inv' INIT ITER | 'Lin' CONST) ('CO' | 'SICA' NB_PASSES RANDOM DETERMINISTIC)" << std::endl;
+  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE NB_FOLD FOLD_ID NB_ITER REGULARIZER ('Inv' INIT ITER | 'Lin' CONST) ('CO' | 'SICA' NB_PASSES RANDOM DETERMINISTIC)" << std::endl;
 }
 
 int main(int argc, char** argv)
 {
-  if (argc < 8) {
+  if (argc < 8)
+  {
     usage(argv[0]);
     return -1;
   }
   
+  size_t nextArgument = 1;
+  
   File cwd = File::getCurrentWorkingDirectory();
-  File cb513Directory = cwd.getChildFile(String(argv[1]));
-  File resultsFile = cwd.getChildFile(String(argv[2]));
-  size_t nbFolds = atoi(argv[3]);
-  size_t targetFold = atoi(argv[4]);
-  size_t nbIteration = atoi(argv[5]);
+  File cb513Directory = cwd.getChildFile(String(argv[nextArgument++]));
+  File resultsFile = cwd.getChildFile(String(argv[nextArgument++]));
+  size_t nbFolds = atoi(argv[nextArgument++]);
+  size_t targetFold = atoi(argv[nextArgument++]);
+  size_t nbIteration = atoi(argv[nextArgument++]);
+  double regularizer = atof(argv[nextArgument++]);
   
   std::cout << "Protein Directory: " << cb513Directory.getFullPathName() << std::endl;
   std::cout << "Result File: " << resultsFile.getFullPathName() << std::endl;
   std::cout << "Fold: " << (targetFold+1) << "/" << nbFolds << std::endl;
   std::cout << "Stopping criterion: " << nbIteration << " iterations" << std::endl;
+  std::cout << "L2 Regularizer value: " << regularizer << std::endl;
+    
 
   resultsFile.deleteFile();
   OutputStream* resultsFileStream = resultsFile.createOutputStream();
@@ -248,22 +253,26 @@ int main(int argc, char** argv)
     return 2;
   }
   
-  size_t next_i = 6;
+  
   std::cout << "Learning Rate: ";
   IterationFunctionPtr learningRate = NULL;
-  if (String(argv[6]) == String("Inv")) {
-    double initialValue = atof(argv[7]);
-    size_t decreaseIteration = atoi(argv[8]);
+  String argumentValue = String(argv[nextArgument++]);
+  if (argumentValue == String("Inv"))
+  {
+    double initialValue = atof(argv[nextArgument++]);
+    size_t decreaseIteration = atoi(argv[nextArgument++]);
     learningRate = invLinearIterationFunction(initialValue, decreaseIteration);
     std::cout << "invLinear(" << initialValue << ", " << decreaseIteration  << ")" << std::endl;
-    next_i = 9;
-  } else if (String(argv[6]) == String("Lin")) {
-    double constant = atof(argv[7]);
+  }
+  else if (argumentValue == String("Lin"))
+  {
+    double constant = atof(argv[nextArgument++]);
     learningRate = constantIterationFunction(constant);
     std::cout << "constant(" << constant << ")" << std::endl;
-    next_i = 8;
-  } else {
-    std::cout << "unknown value '" << argv[6] << "'" << std::endl;
+  }
+  else
+  {
+    std::cout << "unknown value '" << argumentValue << "'" << std::endl;
     usage(argv[0]);
     return -2;
   }
@@ -278,21 +287,27 @@ int main(int argc, char** argv)
 
   std::cout << "Model: ";
   VariableSetModelPtr model = NULL;
-  if (String(argv[next_i]) == String("CO")) {
-    model = independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
+  argumentValue = String(argv[nextArgument++]);
+  if (argumentValue == String("CO"))
+  {
+    model = independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate, regularizer));
     std::cout << "Content Only" << std::endl;
-  } else if(String(argv[next_i]) == String("SICA")) {
-    size_t nbPasses = atoi(argv[next_i + 1]);
-    bool randomOrder = atoi(argv[next_i + 2]) == 1;
-    bool deterministic = atoi(argv[next_i + 3]) == 1;
+  }
+  else if(argumentValue == String("SICA"))
+  {
+    size_t nbPasses = atoi(argv[nextArgument++]);
+    bool randomOrder = atoi(argv[nextArgument++]) == 1;
+    bool deterministic = atoi(argv[nextArgument++]) == 1;
     
-    model = simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate), nbPasses, randomOrder, deterministic);
+    model = simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate, regularizer), nbPasses, randomOrder, deterministic);
     std::cout << "Simlated Iterative Classification Algorithm" << std::endl;
     std::cout << "    > Maximun passes: " << nbPasses << std::endl;
     std::cout << "    > Random order: " << randomOrder << std::endl;
     std::cout << "    > Deterministic: " << deterministic << std::endl;
-  } else {
-    std::cout << "unkonwn value '" << argv[next_i] << "'" << std::endl;
+  }
+  else
+  {
+    std::cout << "unkonwn value '" << argumentValue << "'" << std::endl;
     usage(argv[0]);
     return -3;
   }
