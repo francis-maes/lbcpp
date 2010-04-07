@@ -208,7 +208,8 @@ private:
 
 GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
 {
-  IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
+  //IterationFunctionPtr learningRate = constantIterationFunction(1.0);
+  IterationFunctionPtr learningRate = invLinearIterationFunction(2.0, 250000);
   GradientBasedLearnerPtr learner = 
     stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
