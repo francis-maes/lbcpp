@@ -99,7 +99,7 @@ VariableSetModelPtr lbcpp::simulatedIterativeClassificationVariableSetModel(Clas
                                                    bool randomOrderInference, bool deterministicLearning)
   {return new SimulatedIterativeClassificationVariableSetModel(stochasticClassifier, maxInferencePasses, randomOrderInference, deterministicLearning);}
 
-void declareInterdependantVariableSetClasses()
+void declareVariableSetClasses()
 {
   LBCPP_DECLARE_CLASS(IndependantClassificationVariableSetModel);
   LBCPP_DECLARE_CLASS(OptimisticClassificationVariableSetModel);
