@@ -148,9 +148,9 @@ public:
   }
 };
 
-StoppingCriterionPtr createLearningStoppingCriterion()
+StoppingCriterionPtr createLearningStoppingCriterion(size_t nbIteration)
 {
-  return maxIterationsStoppingCriterion(100);
+  return maxIterationsStoppingCriterion(nbIteration);
 }
 
 using juce::Time;
@@ -206,10 +206,8 @@ private:
   OutputStream& results;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, IterationFunctionPtr learningRate)
 {
-  //IterationFunctionPtr learningRate = constantIterationFunction(1.0);
-  IterationFunctionPtr learningRate = invLinearIterationFunction(2.0, 250000);
   GradientBasedLearnerPtr learner = 
     stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
@@ -218,25 +216,28 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels)
 }
 
 void usage(char* command) {
-  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE FOLD_NUM" << std::endl;
+  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE NB_FOLD FOLD_ID NB_ITER ('Inv' INIT ITER | 'Lin' CONST) ('CO' | 'SICA' NB_PASSES RANDOM DETERMINISTIC)" << std::endl;
 }
 
 int main(int argc, char** argv)
 {
-  if (argc != 4) {
+  if (argc < 8) {
     usage(argv[0]);
-    return 0;
+    return -1;
   }
-  
-  std::cout << "Protein Directory: " << argv[1] << std::endl;
-  std::cout << "Result File: " << argv[2] << std::endl;
-  std::cout << "Fold: " << argv[3] << std::endl;
   
   File cwd = File::getCurrentWorkingDirectory();
   File cb513Directory = cwd.getChildFile(String(argv[1]));
   File resultsFile = cwd.getChildFile(String(argv[2]));
-  int targetFold = atoi(argv[3]);
+  size_t nbFolds = atoi(argv[3]);
+  size_t targetFold = atoi(argv[4]);
+  size_t nbIteration = atoi(argv[5]);
   
+  std::cout << "Protein Directory: " << cb513Directory.getFullPathName() << std::endl;
+  std::cout << "Result File: " << resultsFile.getFullPathName() << std::endl;
+  std::cout << "Fold: " << (targetFold+1) << "/" << nbFolds << std::endl;
+  std::cout << "Stopping criterion: " << nbIteration << " iterations" << std::endl;
+
   resultsFile.deleteFile();
   OutputStream* resultsFileStream = resultsFile.createOutputStream();
   if (!resultsFileStream)
@@ -245,30 +246,69 @@ int main(int argc, char** argv)
     return 2;
   }
   
-  
+  size_t next_i = 6;
+  std::cout << "Learning Rate: ";
+  IterationFunctionPtr learningRate = NULL;
+  if (String(argv[6]) == String("Inv")) {
+    double initialValue = atof(argv[7]);
+    double decreaseIteration = atof(argv[8]);
+    learningRate = invLinearIterationFunction(initialValue, decreaseIteration);
+    std::cout << "invLinear(" << initialValue << ", " << decreaseIteration  << ")" << std::endl;
+    next_i = 9;
+  } else if (String(argv[6]) == String("Lin")) {
+    double constant = atof(argv[7]);
+    learningRate = constantIterationFunction(constant);
+    std::cout << "constant(" << constant << ")" << std::endl;
+    next_i = 8;
+  } else {
+    std::cout << "unknown value '" << argv[6] << "'" << std::endl;
+    usage(argv[0]);
+    return -2;
+  }
+
+  //------
   declareProteinsClasses();
   ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  //------
 
-  size_t numFolds = 7;
-
-  VariableSetModelPtr model =
-      independantClassificationVariableSetModel(createMaxentClassifier(labels));
-      //optimisticClassificationVariableSetModel(createMaxentClassifier(labels))
-      //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels));
-      //simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels));
-  std::cout << "Model: CO" << std::endl;
-
-
-  std::cout << std::endl << std::endl << "FOLD " << targetFold << " / " << numFolds << " ..." << std::endl;
+  std::cout << "Model: ";
+  VariableSetModelPtr model = NULL;
+  if (String(argv[next_i]) == String("CO")) {
+    model = independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
+    std::cout << "Content Only" << std::endl;
+  } else if(String(argv[next_i]) == String("SICA")) {
+    size_t nbPasses = atoi(argv[next_i + 1]);
+    bool randomOrder = atoi(argv[next_i + 2]) == 1;
+    bool deterministic = atoi(argv[next_i + 3]) == 1;
     
-  ObjectContainerPtr trainingData = examples->invFold(targetFold, numFolds);
-  ObjectContainerPtr testingData = examples->fold(targetFold, numFolds);
+    model = simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate), nbPasses, randomOrder, deterministic);
+    std::cout << "Simlated Iterative Classification Algorithm" << std::endl;
+    std::cout << "    > Maximun passes: " << nbPasses << std::endl;
+    std::cout << "    > Random order: " << randomOrder << std::endl;
+    std::cout << "    > Deterministic: " << deterministic << std::endl;
+  } else {
+    std::cout << "unkonwn value '" << argv[next_i] << "'" << std::endl;
+    usage(argv[0]);
+    return -3;
+  }
+  
+
+
+  //VariableSetModelPtr model =
+      //independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
+      //optimisticClassificationVariableSetModel(createMaxentClassifier(labels, learningRate))
+      //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels, learningRate));
+  //    simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
+
+    
+  ObjectContainerPtr trainingData = examples->invFold(targetFold, nbFolds);
+  ObjectContainerPtr testingData = examples->fold(targetFold, nbFolds);
 
   ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
-    = new TestTrainingProgressCallback(createLearningStoppingCriterion(), testingData, *resultsFileStream);
+    = new TestTrainingProgressCallback(createLearningStoppingCriterion(nbIteration), testingData, *resultsFileStream);
   model->trainBatch(trainingData, callback);
   
   std::cout << "Train Accuracy = " << callback->trainAccuracy << std::endl;
