@@ -26,7 +26,7 @@ public:
   
   bool featureEnter(FeatureDictionaryPtr dictionary, size_t index)
   {
-    VectorPtr& subVector = currentVector->getSubVector(index);
+    VectorPtr subVector = getCurrentVector().getSubVector(index);
     if (!subVector)
       return false;
     currentVectorStack.push_back(currentVector);
@@ -35,7 +35,7 @@ public:
   }
   
   void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
-    {res += currentVector->get(index) * value;}
+    {res += getCurrentVector().get(index) * value;}
   
   void featureLeave()
   {
@@ -43,7 +43,17 @@ public:
     currentVector = currentVectorStack.back();
     currentVectorStack.pop_back();    
   }
-  
+
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t index, lbcpp::FeatureGeneratorPtr featureGenerator)
+  {
+   VectorPtr subVector = getCurrentVector().getSubVector(index);
+    if (subVector)
+      res += featureGenerator->dotProduct(subVector);
+  }
+
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, lbcpp::FeatureGeneratorPtr featureGenerator)
+    {res += featureGenerator->dotProduct(currentVector);}
+
   double getResult() const
     {return res;}
   
@@ -51,6 +61,9 @@ private:
   std::vector<VectorPtr> currentVectorStack;
   VectorPtr currentVector;
   double res;
+
+  const VectorType& getCurrentVector() const
+    {jassert(currentVector); return const_cast<const VectorType& >(*currentVector.get());}
 };
 
 class DotProductDenseVectorVisitor 

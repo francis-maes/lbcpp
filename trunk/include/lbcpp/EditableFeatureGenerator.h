@@ -156,79 +156,23 @@ public:
 class LazyFeatureVector : public EditableFeatureGenerator
 {
 public:
-  /*!
-  **
-  **
-  ** @param dictionary
-  **
-  ** @return
-  */
   LazyFeatureVector(FeatureDictionaryPtr dictionary = FeatureDictionaryPtr())
     : EditableFeatureGenerator(dictionary) {}
 
-  /*!
-  **
-  **
-  ** @param visitor
-  */
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor) const
     {getResult()->staticFeatureGenerator(visitor);}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual size_t getNumSubGenerators() const;
-
-  /*!
-  **
-  **
-  ** @param num
-  **
-  ** @return
-  */
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const;
-
-  /*!
-  **
-  **
-  ** @param num
-  **
-  ** @return
-  */
   virtual size_t getSubGeneratorIndex(size_t num) const;
-
-  /*!
-  **
-  **
-  ** @param index
-  **
-  ** @return
-  */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const;
 
 protected:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual FeatureVectorPtr computeVector() const = 0;
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   FeatureVectorPtr getResult() const;
-
-private:
-  FeatureVectorPtr result;      /*!< */
+  FeatureVectorPtr result;
 };
 
 /*

@@ -30,7 +30,13 @@ public:
   {
     jassert(parameters);
     if (normalizeLearningRate)
+    {
+      // computing the l0norm() may be long, so we make more and more sparse sampling of this quantity
+      if (inputSize.getCount() < 10 ||                         // every time until having 10 samples
+          (inputSize.getCount() < 100 && (epoch % 10 == 0)) || // every 10 epochs until having 100 samples
+          (epoch % 100 == 0))                                  // every 100 epochs after that
       inputSize.push((double)(gradient->l0norm()));
+    }
     
 //    std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
 //    std::cout << "Params.addWeighted(" << gradient->toString() << " , " << (-weight * computeAlpha()) << ")" << std::endl;

@@ -140,8 +140,8 @@ public:
   **
   ** @return feature value at the index @a index.
   */
-  const double& get(size_t index) const
-    {jassert(index < values.size()); return values[index];}
+  double get(size_t index) const
+    {return index < values.size() ? values[index] : 0.0;}
 
   /**
   ** Returns the value at the index @a index.
@@ -203,6 +203,9 @@ public:
   */
   DenseVectorPtr& getSubVector(size_t index)
     {ensureSize(subVectors, index + 1, DenseVectorPtr()); return subVectors[index];}
+
+  DenseVectorPtr getSubVector(size_t index) const
+    {return index < subVectors.size() ? subVectors[index] : DenseVectorPtr();}
 
   /**
   ** Subvector setter.
