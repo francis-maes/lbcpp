@@ -251,7 +251,7 @@ int main(int argc, char** argv)
   IterationFunctionPtr learningRate = NULL;
   if (String(argv[6]) == String("Inv")) {
     double initialValue = atof(argv[7]);
-    double decreaseIteration = atof(argv[8]);
+    size_t decreaseIteration = atoi(argv[8]);
     learningRate = invLinearIterationFunction(initialValue, decreaseIteration);
     std::cout << "invLinear(" << initialValue << ", " << decreaseIteration  << ")" << std::endl;
     next_i = 9;
