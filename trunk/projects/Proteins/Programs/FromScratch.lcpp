@@ -9,18 +9,53 @@
 #include <lbcpp/lbcpp.h>
 #include "GeneratedCode/Data/Bio/Protein.lh"
 #include "VariableSetModel.h"
-#include "PredictionProblem/ProteinPredictionProblem.h"
-#include "PredictionProblem/CompositePredictionProblem.h"
+#include "InferenceStep/ProteinInferenceStep.h"
+#include "InferenceStep/CompositeInferenceStep.h"
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
 extern void declareVariableSetClasses();
 
-PredictionProblemPtr createMainProblem()
+// the aim is to learn a "incomplete Protein => complete Protein" function
+
+// Training Data: Proteins
+// Inference: Protein -> Protein
+
+class DecoratorInferenceStep : public InferenceStep
 {
-  ChainPredictionProblemPtr res = new ChainPredictionProblem(T("SS3 Prediction"));
-  PredictionProblemPtr pass1;
-  PredictionProblemPtr pass2;
+public:
+  DecoratorInferenceStep(InferenceStepPtr decoratedProblem,
+      ObjectFunctionPtr trainingDataPreprocessor = ObjectFunctionPtr(),
+      ObjectFunctionPtr functionPreprocessor = ObjectFunctionPtr(),
+      ObjectFunctionPtr functionPostprocessor = ObjectFunctionPtr());
+
+};
+
+class MainInferenceStep : public ChainInferenceStep
+{
+public:
+  MainInferenceStep() : ChainInferenceStep(T("Main"))
+  {
+    append(new DecoratorInferenceStep(new SS3InferenceStep(),
+      ObjectFunctionPtr(), ObjectFunctionPtr(), postprocessSS3Prediction)); 
+  }
+
+  void postprocessSS3Prediction(ObjectPtr currentInput, ObjectPtr ss3Output)
+  {
+    ProteinPtr protein = currentInput.dynamicCast<Protein>();
+    jassert(protein);
+    protein->setSecondaryStructureSequence(ss3Output.dynamicCast<SecondaryStructureSequence>());
+  }
+};
+
+typedef ReferenceCountedObjectPtr<ProteinInferenceStep> ProteinInferenceStepPtr;
+
+
+InferenceStepPtr createMainProblem()
+{
+  ChainInferenceStepPtr res = new ChainInferenceStep(T("SS3 Prediction"));
+  InferenceStepPtr pass1;
+  InferenceStepPtr pass2;
   res->append(pass1);
   res->append(pass2);
   return res;
@@ -35,7 +70,7 @@ int main(int argc, char** argv)
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
   ObjectContainerPtr testingData = proteins->fold(0, 7);
 
-  PredictionProblemPtr topLevelProblem = createMainProblem();
+  InferenceStepPtr topLevelProblem = new MainInferenceStep();
   Time lastDataTime = proteinsDirectory.getLastModificationTime();
   ObjectFunctionPtr topLevelPredictor = topLevelProblem->trainPredictor(modelFile, trainingData, lastDataTime);
 
