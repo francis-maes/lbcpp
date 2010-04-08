@@ -32,53 +32,67 @@ public:
     res->setLength(secondaryStructure->getLength());
     return res;
   }
+    
+protected:
+  LabelSequencePtr aminoAcidSequence;
+  ScoreVectorSequencePtr positionSpecificScores;
+  LabelSequencePtr secondaryStructure;
+};
 
-  static featureGenerator numberLogFeatures(double positiveNumber, double weight)
+
+class SecondaryStructurePass1VariableSetExample : public SecondaryStructureVariableSetExample
+{
+public:
+  SecondaryStructurePass1VariableSetExample(ProteinPtr protein)
+    : SecondaryStructureVariableSetExample(protein) {}
+
+static featureGenerator numberLogFeatures(double positiveNumber, double weight)
+{
+  static const double clog2 = log10(2.0);
+  static const double clog5 = log10(5.0);
+  double l = log10(positiveNumber);
+  double fl = floor(l);
+
+  static const double minLog10 = -4.0;
+  if (fl < minLog10)
+    featureSense (0, weight); // very small number
+  else
   {
-    static const double clog2 = log10(2.0);
-    static const double clog5 = log10(5.0);
-    double l = log10(positiveNumber);
-    double fl = floor(l);
-
-    static const double minLog10 = -4.0;
-    if (fl < minLog10)
-      featureSense (0, weight); // very small number
+    double frac = l - fl;
+    double base = pow(10.0, fl);
+    int fracCase;
+    double valMin, valMax;
+    if (frac < clog2)
+      fracCase = 0, valMin = 0.0, valMax = clog2;
+    else if (frac < clog5)
+      fracCase = 1, valMin = clog2, valMax = clog5;
     else
-    {
-      double frac = l - fl;
-      double base = pow(10.0, fl);
-      int fracCase;
-      double valMin, valMax;
-      if (frac < clog2)
-        fracCase = 0, valMin = 0.0, valMax = clog2;
-      else if (frac < clog5)
-        fracCase = 1, valMin = clog2, valMax = clog5;
-      else
-        fracCase = 2, valMin = clog5, valMax = 1.0;
+      fracCase = 2, valMin = clog5, valMax = 1.0;
 
-      int featureNumber = 1 + (int)(fl - minLog10) * fracCase;
-      jassert(featureNumber > 0);
-      featureSense ((size_t)featureNumber, (frac - valMin) / (valMax - valMin) * weight);
-    }
+    int featureNumber = 1 + (int)(fl - minLog10) * fracCase;
+    jassert(featureNumber > 0);
+    featureSense ((size_t)featureNumber, (frac - valMin) / (valMax - valMin) * weight);
   }
+}
 
-  static featureGenerator numberFeatures(double value, double weight)
-  {
-    if (value > 0)
-      featureCall("positive") inline numberLogFeatures(value, weight);
-    else if (value < 0)
-      featureCall("negative") inline numberLogFeatures(-value, weight);
-    else
-      featureSense("nullValue", weight);
-  }
+static featureGenerator numberFeatures(double value, double weight)
+{
+  if (value > 0)
+    featureCall("positive") inline numberLogFeatures(value, weight);
+  else if (value < 0)
+    featureCall("negative") inline numberLogFeatures(-value, weight);
+  else
+    featureSense("nullValue", weight);
+}
 
-  static featureGenerator percentFeatures(double percent, double weight)
-  {
-    jassert(percent >= 0.0 && percent <= 1.0);
-    enum {valueCount = 10};
-    double p = percent * valueCount;
-    featureSense((size_t)p, (p - (int)p) * weight);
-  }
+static featureGenerator percentFeatures(double percent, double weight)
+{
+  jassert(percent >= 0.0 && percent <= 1.0);
+  enum {valueCount = 10};
+  double p = percent * valueCount;
+  featureSense((size_t)p, (p - (int)p) * weight);
+}
+
 
   featureGenerator posAndLengthFeatures(size_t variableIndex, double weight) const
   {
@@ -103,7 +117,7 @@ public:
         featureCall(T("SS") + String((int)i)) inline posAndLengthFeatures(variableIndex, score);
     }*/
     
-    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, 8, 8, true);
     
     // conjunctions of AA of variable sizes, centred around the current position
     /*for (size_t i = 1; i < 4; ++i)
@@ -121,7 +135,7 @@ public:
       featureSense(featureName);
     }*/
 
-    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, 8, 8, true);
     if (prediction)
     {
       LabelSequencePtr predictedSecondaryStructure = prediction.dynamicCast<LabelSequence>();
@@ -129,14 +143,126 @@ public:
       featureCall("pr") inline predictedSecondaryStructure->windowFeatures(variableIndex, 7, 7, false);
     }
   }
-    
-private:
-  LabelSequencePtr aminoAcidSequence;
-  ScoreVectorSequencePtr positionSpecificScores;
-  LabelSequencePtr secondaryStructure;
 };
 
-class ProteinToVariableSetExample : public ObjectFunction
+class SecondaryStructurePass2VariableSetExample : public SecondaryStructureVariableSetExample
+{
+public:
+  SecondaryStructurePass2VariableSetExample(ProteinPtr protein, VariableSetModelPtr contentOnlyModel)
+    : SecondaryStructureVariableSetExample(protein)
+  {
+    VariableSetExamplePtr pass1example = 
+      new SecondaryStructurePass1VariableSetExample(protein);
+    pass1Prediction = createInitialPrediction().dynamicCast<SecondaryStructureSequence>();
+    contentOnlyModel->predict(pass1example, pass1Prediction);
+
+    StringDictionaryPtr labels = pass1Prediction->getVariablesDictionary();
+
+    cumulativePass1Predictions.resize(pass1Prediction->getLength());
+    cumulativePass1Predictions[0].resize(labels->getNumElements() + 2, 0);
+    cumulativePass1Predictions[0][pass1Prediction->getLabel(0)] = 1;
+
+    for (size_t i = 1; i < cumulativePass1Predictions.size(); ++i)
+    {
+      cumulativePass1Predictions[i] = cumulativePass1Predictions[i - 1];
+      cumulativePass1Predictions[i][pass1Prediction->getLabel(i)]++;
+    }
+
+    /*size_t n = 70;
+    if (pass1Prediction->getNumVariables() < n)
+      n = pass1Prediction->getNumVariables();
+    StringDictionaryPtr labels = secondaryStructure->getVariablesDictionary();
+    std::cout << "pred: ";
+    for (size_t i = 0; i < n; ++i)
+      std::cout << labels->getString(pass1Prediction->getLabel(i));
+    std::cout << std::endl << "corr: ";
+    for (size_t i = 0; i < n; ++i)
+      std::cout << labels->getString(secondaryStructure->getLabel(i));
+    std::cout << std::endl << "-" << std::endl;*/
+    
+    //std::cout << "getVariableFeatures(0):" << getVariableFeatures(0, VariableSetPtr())->toSparseVector()->toString() << std::endl;
+    //std::cout << "getVariableFeatures(69):" << getVariableFeatures(69, VariableSetPtr())->toSparseVector()->toString() << std::endl;
+    
+  }
+
+  std::vector<int> getCumulativePass1Predictions(int index) const
+  {
+    size_t numLabels = cumulativePass1Predictions[0].size();
+    if (index < 0)
+    {
+      std::vector<int> res(numLabels, 0);
+      res[numLabels - 2] = index; // special label for "before"
+      return res;
+    }
+    else if (index < (int)cumulativePass1Predictions.size())
+      return cumulativePass1Predictions[index];
+    else
+    {
+      int tooMuch = index - cumulativePass1Predictions.size() + 1;
+      std::vector<int> res = cumulativePass1Predictions.back();
+      res[numLabels - 1] = tooMuch; // special label for "after"
+      return res;
+    }
+  }
+
+  featureGenerator frequencyFeatures(int first, int last) const
+  {
+    int end = last + 1;
+    if (first == end)
+      return;
+    jassert(end > first);
+    std::vector<int> c1 = getCumulativePass1Predictions(first);
+    std::vector<int> c2 = getCumulativePass1Predictions(end);
+    jassert(c1.size() == c2.size());
+    int count = end - first;
+    double invCount = 1.0 / (double)count;
+
+    for (size_t i = 0; i < c1.size(); ++i)
+    {
+      double p = (double)(c2[i] - c1[i]) * invCount;
+      jassert(p >= 0 && p <= 1);
+      featureSense(i, p);
+    }
+  }
+
+  featureGenerator symetricFrequencyFeatures(size_t position, size_t size, bool includeCurrent) const
+  {
+    int first = (int)position - (int)size;
+    int last = (int)position;
+    if (!includeCurrent)
+      --last;
+    featureCall("before") frequencyFeatures(first, last);
+    first = (int)position;
+    if (!includeCurrent)
+      ++first;
+    last = (int)(position + size + 1);
+    featureCall("after") frequencyFeatures(first, last);
+  }
+
+  virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
+  {
+    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, 8, 8, true);
+    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, 8, 8, true);
+
+    featureCall("c") pass1Prediction->elementFeatures(variableIndex);
+    featureCall("w") pass1Prediction->windowFeatures(variableIndex, 5, 5, false);
+
+    featureCall("f2") symetricFrequencyFeatures(variableIndex, 2, false);
+    featureCall("f5") symetricFrequencyFeatures(variableIndex, 5, false);
+    featureCall("f10") symetricFrequencyFeatures(variableIndex, 10, false);
+
+    featureCall("f20") symetricFrequencyFeatures(variableIndex, 20, false);
+    featureCall("f50") symetricFrequencyFeatures(variableIndex, 50, false);
+    featureCall("f100") symetricFrequencyFeatures(variableIndex, 100, false);
+    //featureSense(pass1Prediction->getLabel(variableIndex));
+  }
+
+protected:
+  SecondaryStructureSequencePtr pass1Prediction;
+  std::vector< std::vector<int> > cumulativePass1Predictions;
+};
+
+class ProteinToPass1VariableSetExample : public ObjectFunction
 {
 public:
   virtual String getOutputClassName(const String& inputClassName) const
@@ -146,7 +272,26 @@ public:
   {
     ProteinPtr protein = object.dynamicCast<Protein>();
     jassert(protein);
-    return new SecondaryStructureVariableSetExample(protein);
+    return new SecondaryStructurePass1VariableSetExample(protein);
+  }
+};
+
+class ProteinToPass2VariableSetExample : public ObjectFunction
+{
+public:
+  ProteinToPass2VariableSetExample(VariableSetModelPtr contentOnlyModel)
+    : contentOnlyModel(contentOnlyModel) {}
+
+  VariableSetModelPtr contentOnlyModel;
+
+  virtual String getOutputClassName(const String& inputClassName) const
+    {return T("VariableSetExample");}
+
+  virtual ObjectPtr function(ObjectPtr object) const
+  {
+    ProteinPtr protein = object.dynamicCast<Protein>();
+    jassert(protein);
+    return new SecondaryStructurePass2VariableSetExample(protein, contentOnlyModel);
   }
 };
 
@@ -205,9 +350,9 @@ private:
   ObjectContainerPtr validationData;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 10.0)
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 10.0, bool useConstantLearningRate = false)
 {
-  IterationFunctionPtr learningRate = invLinearIterationFunction(2.0, 250000);
+  IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
   GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
   classifier->setL2Regularizer(regularizer);
@@ -217,35 +362,41 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, do
 int main(int argc, char** argv)
 {
   File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
-  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_co.model"));
+  File pass1ModelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_pass1.model"));
+  File pass2ModelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_pass2.model"));
 
   declareProteinsClasses();
   declareVariableSetClasses();
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
-  ObjectContainerPtr examples = examplesStream->load()->randomize();
-  StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr trainingData = proteins->invFold(0, 7)->apply(new ProteinToPass1VariableSetExample(), false);
+  ObjectContainerPtr testingData = proteins->fold(0, 7)->apply(new ProteinToPass1VariableSetExample(), false);
 
-  ObjectContainerPtr trainingData = examples->invFold(0, 7);
-  ObjectContainerPtr testingData = examples->fold(0, 7);
+  StringDictionaryPtr labels = trainingData->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback;
 
-  VariableSetModelPtr model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
-  ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback
-    = new TestTrainingProgressCallback(createLearningStoppingCriterion(10), testingData);
-  model->trainBatch(trainingData, callback);
+  /*VariableSetModelPtr pass1Model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
+  callback = new TestTrainingProgressCallback(createLearningStoppingCriterion(10), testingData);
+  pass1Model->trainBatch(trainingData, callback);
+  pass1Model->saveToFile(pass1ModelFile);*/
+
+  VariableSetModelPtr pass1Model = Object::loadFromFileAndCast<VariableSetModel>(pass1ModelFile);
+  /*std::cout << "Content Only model: " << pass1Model->toString() << std::endl;
+  std::cout << "Content Only Train Accuracy = " << std::flush << pass1Model->evaluate(trainingData) << std::endl;
+  std::cout << "Content Only Test Accuracy = " << std::flush << pass1Model->evaluate(testingData) << std::endl;*/
   
-  std::cout << "Train Accuracy = " << callback->trainAccuracy << std::endl;
-  std::cout << "Test Accuracy = " << callback->testAccuracy << std::endl;
-  model->saveToFile(modelFile);
-
-  std::cout << model->toString() << std::endl;
   std::cout << "======================" << std::endl;
+  trainingData = proteins->invFold(0, 7)->apply(new ProteinToPass2VariableSetExample(pass1Model), false);
+  testingData = proteins->fold(0, 7)->apply(new ProteinToPass2VariableSetExample(pass1Model), false);
 
-  VariableSetModelPtr model2 = Object::loadFromFileAndCast<VariableSetModel>(modelFile);
-  std::cout << model2->toString() << std::endl;
-  std::cout << "Train Accuracy = " << std::flush << model2->evaluate(trainingData) << std::endl;
-  std::cout << "Test Accuracy = " << std::flush << model2->evaluate(testingData) << std::endl;
-   
+  VariableSetModelPtr pass2Model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
+  callback = new TestTrainingProgressCallback(createLearningStoppingCriterion(20), testingData);
+  pass2Model->trainBatch(trainingData, callback);
+  
+  std::cout << "Pass 2 Train Accuracy = " << callback->trainAccuracy << std::endl;
+  std::cout << "Pass 2 Test Accuracy = " << callback->testAccuracy << std::endl;
+  pass2Model->saveToFile(pass2ModelFile);
+
   return 0;
 }

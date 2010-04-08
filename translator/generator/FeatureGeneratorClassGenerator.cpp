@@ -16,7 +16,7 @@ class FeatureGeneratorRewriteVisitor : public ScopeBasedRewriteVisitor, public P
 {
 public:
   FeatureGeneratorRewriteVisitor(SymbolLookup::Class* classScope, SymbolLookup::Scope* scope, PTree::Identifier* dictionaryVariable)
-    : ScopeBasedRewriteVisitor(scope), classScope(classScope), enabled(true) {dictionaryStack.push_back(dictionaryVariable);}
+    : ScopeBasedRewriteVisitor(scope), classScope(classScope), functionScope(scope), enabled(true) {dictionaryStack.push_back(dictionaryVariable);}
   
   // featureScope, featureCall
   virtual void visit(PTree::UserStatement* node)
@@ -71,20 +71,43 @@ public:
                     rewriteWithoutTranslation(PTree::third(expr)))));
   }
   
+  virtual void visit(PTree::Declaration* decl)
+  {
+    setResult(new PTree::Declaration(PTree::first(decl), PTree::list(
+      PTree::second(decl), rewrite(PTree::third(decl)), PTree::nth(decl, 3))));
+  }
+
+  virtual void visit(PTree::CastExpr* expr)
+  {
+    setResult(new PTree::CastExpr(PTree::first(expr), PTree::list(
+      PTree::second(expr), PTree::third(expr), rewrite(PTree::nth(expr, 3)))));
+  }
+
+  bool shouldAddThisAccess(PTree::Identifier* node)
+  {
+    if (!enabled || !classScope)
+      return false;
+
+    const SymbolLookup::Symbol* symbol = simpleSymbolLookup(getCurrentScope(), node);
+
+    if (!symbol)
+      return false;
+
+    bool isVariable = dynamic_cast<const SymbolLookup::VariableName* >(symbol) != NULL;
+    bool isFunction = dynamic_cast<const SymbolLookup::FunctionName* >(symbol) != NULL;
+    if (!isVariable && !isFunction)
+      return false;
+
+    SymbolLookup::Class* symbolClass = dynamic_cast<SymbolLookup::Class* >(symbol->scope());
+    return symbolClass && isBaseClass(symbolClass, classScope);
+  }
+
   virtual void visit(PTree::Identifier* node)
   {
-    if (enabled && classScope)
-    {
-      const SymbolLookup::Symbol* symbol = simpleSymbolLookup(getCurrentScope(), node);
-      bool isVariable = dynamic_cast<const SymbolLookup::VariableName* >(symbol) != NULL;
-      bool isFunction = dynamic_cast<const SymbolLookup::FunctionName* >(symbol) != NULL;
-      if (symbol && (isVariable || isFunction) && symbol->scope() == classScope)
-      {
-        setResult(arrowMemberExpr(identifier("__this__"), node));
-        return;
-      }
-    }
-    setResult(node);
+    if (shouldAddThisAccess(node))
+      setResult(arrowMemberExpr(identifier("__this__"), node));
+    else
+      setResult(node);
   }
 
   virtual void visit(PTree::Kwd::This* node)
@@ -110,6 +133,7 @@ protected:
   
 private:
   SymbolLookup::Class* classScope;
+  SymbolLookup::Scope* functionScope;
   bool enabled;
   std::vector<PTree::Identifier* > dictionaryStack;
 

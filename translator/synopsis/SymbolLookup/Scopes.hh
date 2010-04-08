@@ -159,6 +159,9 @@ public:
   // FIXME: what is 'name' ? (template parameters...)
   std::string name() const;
 
+  const Bases& getBases() const
+    {return my_bases;}
+
   virtual void accept(ScopeVisitor *v) { v->visit(this);}
 
 protected:

@@ -11,7 +11,7 @@
 
 # include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
 # include "../FeatureVisitor/FeatureVisitorDynamicToStatic.hpp"
-# include "../FeatureVisitor/CreateSparseVectorVisitor.hpp"
+# include "../FeatureVisitor/CreateVectorVisitor.hpp"
 # include "../FeatureVisitor/UnaryOperationVisitor.hpp"
 # include "../FeatureVisitor/AssignmentVisitor.hpp"
 # include "../FeatureVisitor/DotProductVisitor.hpp"

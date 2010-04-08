@@ -56,7 +56,7 @@ SET(LBCPP_CORE_IMPL_FEATURE_VISITOR
   ${LBCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStatic.hpp
   ${LBCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorStaticToDynamic.hpp
   ${LBCPP_CORE_IMPL}/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
-  ${LBCPP_CORE_IMPL}/FeatureVisitor/CreateSparseVectorVisitor.hpp
+  ${LBCPP_CORE_IMPL}/FeatureVisitor/CreateVectorVisitor.hpp
   ${LBCPP_CORE_IMPL}/FeatureVisitor/UnaryOperationVisitor.hpp
   ${LBCPP_CORE_IMPL}/FeatureVisitor/AssignmentVisitor.hpp
   ${LBCPP_CORE_IMPL}/FeatureVisitor/DotProductVisitor.hpp

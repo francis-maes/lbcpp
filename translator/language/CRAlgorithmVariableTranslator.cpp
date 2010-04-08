@@ -63,18 +63,6 @@ PTree::Node* CRAlgorithmVariableTranslator::translate(PTree::Identifier* id, Sym
   }
 }
 
-bool CRAlgorithmVariableTranslator::isSubScope(const SymbolLookup::Scope* parentScope, const SymbolLookup::Scope* childrenScope)
-{
-  while (childrenScope)
-  {
-    if (childrenScope == parentScope)
-      return true;
-    childrenScope = childrenScope->outer_scope();
-  }
-  return false;
-}
-
-
 /*
 ** CRAlgorithmVariableTranslatorVisitor
 */

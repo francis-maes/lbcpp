@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: CreateSparseVectorVisitor.hpp  | Create a sparse vector          |
+| Filename: CreateVectorVisitor.hpp        | Create a vector                 |
 | Author  : Francis Maes                   |                                 |
 | Started : 27/02/2009 18:54               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
                                
-#ifndef LBCPP_STATIC_FEATURE_VISITOR_CREATE_SPARSE_VECTOR_HPP_
-# define LBCPP_STATIC_FEATURE_VISITOR_CREATE_SPARSE_VECTOR_HPP_
+#ifndef LBCPP_STATIC_FEATURE_VISITOR_CREATE_VECTOR_HPP_
+# define LBCPP_STATIC_FEATURE_VISITOR_CREATE_VECTOR_HPP_
 
 # include "FeatureVisitorStatic.hpp"
 # include "../../SparseVector.h"
@@ -36,7 +36,7 @@ struct CreateVectorVisitor : public FeatureVisitor< ExactType >
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
   {
     jassert(currentVector->getDictionary() == dictionary);
-    currentVector->set(number, value);
+    currentVector->get(number) += value;
   }
 
   void featureLeave()
@@ -70,4 +70,4 @@ struct CreateDenseVectorVisitor : public CreateVectorVisitor<CreateDenseVectorVi
 }; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_STATIC_FEATURE_VISITOR_CREATE_SPARSE_VECTOR_HPP_
+#endif // !LBCPP_STATIC_FEATURE_VISITOR_CREATE_VECTOR_HPP_
