@@ -87,6 +87,10 @@ public:
   ** @see Object::declare
   */
   static Object* create(const String& className);
+  
+  template<class T>
+  static ReferenceCountedObjectPtr<T> createAndCast(const String& className)
+    {return checkCast<T>(T("Object::createAndCast"), create(className));}
 
   /**
   ** Loads an object from a C++ stream.
