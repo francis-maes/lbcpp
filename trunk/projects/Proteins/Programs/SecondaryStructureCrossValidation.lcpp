@@ -89,7 +89,10 @@ public:
 
   virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
   {
-    featureCall("poslen") inline posAndLengthFeatures(variableIndex, 1.0);
+    size_t nbAALeft = SecondaryStructureVariableSetExample::nbAALeft;
+    size_t nbAARight = SecondaryStructureVariableSetExample::nbAARight;
+    
+    featureCall inline posAndLengthFeatures(variableIndex, 1.0);
 
     // conjunctions with current amino acid
     featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) inline posAndLengthFeatures(variableIndex, 1.0);
@@ -103,7 +106,7 @@ public:
         featureCall(T("SS") + String((int)i)) inline posAndLengthFeatures(variableIndex, score);
     }*/
     
-    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("a") inline aminoAcidSequence->windowFeatures(variableIndex, nbAALeft, nbAARight, true);
     
     // conjunctions of AA of variable sizes, centred around the current position
     /*for (size_t i = 1; i < 4; ++i)
@@ -121,20 +124,40 @@ public:
       featureSense(featureName);
     }*/
 
-    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, 7, 7, true);
+    featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, nbAALeft, nbAARight, true);
     if (prediction)
     {
       LabelSequencePtr predictedSecondaryStructure = prediction.dynamicCast<LabelSequence>();
       jassert(predictedSecondaryStructure);
-      featureCall("pr") inline predictedSecondaryStructure->windowFeatures(variableIndex, 7, 7, false);
+      featureCall("pr") inline predictedSecondaryStructure->windowFeatures(variableIndex, nbAALeft, nbAARight, false);
     }
   }
-    
+  
+  static void setWindowLength(size_t nbAALeft, size_t nbAARight)
+  {
+    SecondaryStructureVariableSetExample::nbAALeft = nbAALeft;
+    SecondaryStructureVariableSetExample::nbAARight = nbAARight;
+  }
+  
+  static String toStaticString()
+  {
+    return String("Feature: ")
+    + String("\n    > AA at left: ") + String((int) nbAALeft)
+    + String("\n    > AA at right: ") + String((int) nbAARight);
+  }
+      
+  
 private:
   LabelSequencePtr aminoAcidSequence;
   ScoreVectorSequencePtr positionSpecificScores;
   LabelSequencePtr secondaryStructure;
+
+  static size_t nbAALeft;
+  static size_t nbAARight;
 };
+
+size_t SecondaryStructureVariableSetExample::nbAALeft = 7;
+size_t SecondaryStructureVariableSetExample::nbAARight = 7;
 
 class ProteinToVariableSetExample : public ObjectFunction
 {
@@ -217,7 +240,7 @@ GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, It
 }
 
 void usage(char* command) {
-  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE NB_FOLD FOLD_ID NB_ITER REGULARIZER ('Inv' INIT ITER | 'Lin' CONST) ('CO' | 'SICA' NB_PASSES RANDOM DETERMINISTIC)" << std::endl;
+  std::cout << "Usage: " << command << " PROTEIN_DIR RESULT_FILE NB_FOLD FOLD_ID NB_ITER REGULARIZER ('Inv' INIT ITER | 'Lin' CONST) NB_AA_LEFT NB_AA_RIGHT ('CO' | 'SICA' NB_PASSES RANDOM DETERMINISTIC)" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -280,17 +303,30 @@ int main(int argc, char** argv)
   //------
   declareProteinsClasses();
   ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
+  
+  
+    
+  size_t nbAALeft = atoi(argv[nextArgument++]);
+  size_t nbAARight = atoi(argv[nextArgument++]);
+  
+  SecondaryStructureVariableSetExample::setWindowLength(nbAALeft, nbAARight);
+  std::cout << SecondaryStructureVariableSetExample::toStaticString() << std::endl;
+
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
   StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
   //------
+
+
+
+  GradientBasedClassifierPtr classifier = createMaxentClassifier(labels, learningRate, regularizer);
 
   std::cout << "Model: ";
   VariableSetModelPtr model = NULL;
   argumentValue = String(argv[nextArgument++]);
   if (argumentValue == String("CO"))
   {
-    model = independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate, regularizer));
+    model = independantClassificationVariableSetModel(classifier);
     std::cout << "Content Only" << std::endl;
   }
   else if(argumentValue == String("SICA"))
@@ -299,7 +335,7 @@ int main(int argc, char** argv)
     bool randomOrder = atoi(argv[nextArgument++]) == 1;
     bool deterministic = atoi(argv[nextArgument++]) == 1;
     
-    model = simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate, regularizer), nbPasses, randomOrder, deterministic);
+    model = simulatedIterativeClassificationVariableSetModel(classifier, nbPasses, randomOrder, deterministic);
     std::cout << "Simlated Iterative Classification Algorithm" << std::endl;
     std::cout << "    > Maximun passes: " << nbPasses << std::endl;
     std::cout << "    > Random order: " << randomOrder << std::endl;
@@ -311,7 +347,7 @@ int main(int argc, char** argv)
     usage(argv[0]);
     return -3;
   }
-  
+  std::cout << model->toString() << std::endl;
 
   //VariableSetModelPtr model =
       //independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
