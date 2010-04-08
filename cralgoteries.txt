@@ -1,12 +1,13 @@
+InferenceStep:
+ 1) Passer le StringDictionaryPtr de Classifier en FeatureDictionaryPtr
+ 2) Faire marcher des tests simples d'apprentissages globale
+ 3a) Cassage des structures de données: Faire sauter VariableSet (on utilise ObjectContainer à la place), utiliser Label
+ 3b) Decomposer l'apprentissage en steps puis "make deterministic" et "make stochastic"
+
 Explorer:
   * dispatcher le code des juce::Component 
   * explorer devient minimaliste
   * Widgets pour VariableSetModel / Classifier / FeatureGenerator
-
-Sequential Learning:
- * Structure de graphe pour décrire l'inférence et les problèmes d'apprentissage interdépendants
- 
-
 
 =
 
@@ -40,8 +41,6 @@ Policy:
 
 LearningMachine:
   * dans le StochasticDescentLearner, options pour la frequence de l'application du regularizer
-
-* Dictionary: peut mieux faire (creer le dictionaire ˆ la creation de la classe ou getParentDictionary) dans ScalarToVectorArchitecture::compute et dans MultiLinearArchitecture::compute
 
 * CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
 

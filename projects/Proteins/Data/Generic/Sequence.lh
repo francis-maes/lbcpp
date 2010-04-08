@@ -15,6 +15,13 @@ class Sequence : public VariableSet
 {
 public:
   /*
+  ** ObjectContainer
+  */
+  virtual void resize(size_t newSize)
+    {setLength(newSize, true);}
+
+
+  /*
   ** Sequence
   */
   virtual size_t getLength() const = 0;

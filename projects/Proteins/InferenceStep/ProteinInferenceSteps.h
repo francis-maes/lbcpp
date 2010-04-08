@@ -36,7 +36,8 @@ public:
     SecondaryStructureSequencePtr secondaryStructure = output.dynamicCast<SecondaryStructureSequence>();
     if (!secondaryStructure)
       return ObjectPtr();
-    return new Label(FeatureDictionaryPtr(), secondaryStructure->getLabel(index));
+    FeatureDictionaryPtr dictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(secondaryStructure->getVariablesDictionary());
+    return new Label(dictionary, secondaryStructure->getLabel(index));
   }
 
 protected:

@@ -15,6 +15,22 @@ class LabelSequence : public Sequence
 {
 public:
   /*
+  ** ObjectContainer
+  */
+  virtual void set(size_t index, ObjectPtr object)
+  {
+    LabelPtr label = object.dynamicCast<lbcpp::Label>();
+    jassert(label);
+    if (label->getDictionary()->getFeatures() != getVariablesDictionary())
+    {
+      StringDictionaryPtr labelDictionary = label->getDictionary()->getFeatures();
+      StringDictionaryPtr thisDictionary = getVariablesDictionary();
+      jassert(false);
+    }
+    setVariable(index, label->getIndex());
+  }
+
+  /*
   ** InterdependantVariableSet
   */
   virtual VariableType getVariablesType() const

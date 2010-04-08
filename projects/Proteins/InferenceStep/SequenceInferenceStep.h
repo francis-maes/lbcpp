@@ -72,6 +72,16 @@ public:
     return subStepsContainer->toGraph();
   }
 
+  virtual void accept(InferenceVisitorPtr visitor)
+  {
+
+  }
+  size_t getNumSubSteps() const
+    {return subSteps.size();}
+
+  InferenceStepPtr getSubStep(size_t index) const
+    {jassert(index < subSteps.size()); return subSteps[index];}
+
   void appendSubStep(InferenceStepPtr subStep)
     {subSteps.push_back(subStep);}
 

@@ -16,12 +16,16 @@ namespace lbcpp
 
 class InferencePolicy;
 typedef ReferenceCountedObjectPtr<InferencePolicy> InferencePolicyPtr;
+class InferenceVisitor;
+typedef ReferenceCountedObjectPtr<InferenceVisitor> InferenceVisitorPtr;
 
 class InferenceStep : public NameableObject
 {
 public:
   InferenceStep(const String& name = T("Unnamed"))
     : NameableObject(name), loadedModificationTime(0) {}
+
+  virtual void accept(InferenceVisitorPtr visitor);
 
   enum ResultCode
   {
@@ -32,6 +36,7 @@ public:
 
   virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output) = 0;
 
+  ResultCode runOnSelfSupervisedExamples(InferencePolicyPtr policy, ObjectContainerPtr examples);
   ResultCode runOnSupervisedExamples(InferencePolicyPtr policy, ObjectContainerPtr examples);
 
 /*
@@ -87,6 +92,24 @@ public:
     {}*/
 };
 
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+
+class SequenceInferenceStep;
+typedef ReferenceCountedObjectPtr<SequenceInferenceStep> SequenceInferenceStepPtr;
+
+class InferenceVisitor
+{
+public:
+  virtual ~InferenceVisitor() {}
+
+  virtual void visit(InferenceStepPtr inference) = 0;
+  virtual void visit(SequenceInferenceStepPtr inference) = 0;
+};
+
+//////////////////////////////////////////////
+//////////////////////////////////////////////
 //////////////////////////////////////////////
 
 class InferencePolicy : public NameableObject
