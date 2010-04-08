@@ -22,8 +22,28 @@ public:
   ClassificationInferenceStep(const String& name)
     : InferenceStep(name) {}
 
+  GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
+  {
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
+    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
+    GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
+    classifier->setL2Regularizer(regularizer);
+    return classifier;
+  }
+
   virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output) 
-    {return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), *(FeatureGeneratorPtr* )&output);}
+  {
+    if (!classifier)
+    {
+      if (!output)
+        return errorReturnCode;
+
+      FeatureGeneratorPtr correctOutput = output.dynamicCast<FeatureGenerator>();
+      jassert(correctOutput);
+      classifier = createMaxentClassifier(correctOutput->getDictionary()->getFeatures());
+    }
+    return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), *(FeatureGeneratorPtr* )&output);
+  }
 
 protected:
   ClassifierPtr classifier;
@@ -44,8 +64,13 @@ public:
     std::vector< std::pair<InferenceStepPtr, ObjectPtr> > subInferences(inputContainer->size());
     for (size_t i = 0; i < subInferences.size(); ++i)
       subInferences[i] = std::make_pair(subInference, inputContainer->get(i));
+
     ObjectContainerPtr outputContainer = Object::createAndCast<ObjectContainer>(outputClassName);
     outputContainer->resize(inputContainer->size());
+    ObjectContainerPtr correctOutputContainer = output.dynamicCast<ObjectContainer>();
+    if (correctOutputContainer)
+      for (size_t i = 0; i < subInferences.size(); ++i)
+        outputContainer->set(i, correctOutputContainer->get(i));
     return policy->doParallelSteps(subInferences, outputContainer);
   }
 

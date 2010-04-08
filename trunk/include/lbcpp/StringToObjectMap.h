@@ -32,6 +32,9 @@
 namespace lbcpp
 {
 
+class StringToObjectMap;
+typedef ReferenceCountedObjectPtr<StringToObjectMap> StringToObjectMapPtr;
+
 class StringToObjectMap : public Object
 {
 public:
@@ -73,8 +76,6 @@ protected:
   virtual void save(OutputStream& ostr) const
     {lbcpp::write(ostr, objects);}
 };
-
-typedef ReferenceCountedObjectPtr<StringToObjectMap> StringToObjectMapPtr;
 
 }; /* namespace lbcpp */
 

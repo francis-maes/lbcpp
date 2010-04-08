@@ -14,6 +14,9 @@
 namespace lbcpp
 {
 
+class Protein;
+typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
+
 class Protein : public StringToObjectMap
 {
 public:
@@ -51,6 +54,13 @@ public:
   SecondaryStructureSequencePtr getSecondaryStructureSequence(bool heightState = false) const
     {return getObject(heightState ? T("EightStateSecondaryStructure") : T("ThreeStateSecondaryStructure"));}
 
+  virtual ObjectPtr clone() const
+  {
+    ProteinPtr res = new Protein(name);
+    res->objects = objects;
+    return res;
+  }
+
 protected:
   virtual bool load(InputStream& istr)
     {return lbcpp::read(istr, name) && StringToObjectMap::load(istr);}
@@ -61,7 +71,5 @@ protected:
 private:
   String name;
 };
-
-typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 
 }; /* namespace lbcpp */

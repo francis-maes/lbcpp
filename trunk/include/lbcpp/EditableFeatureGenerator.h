@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   EditableFeatureGenerator.h
-**@author Francis MAES
-**@date   Fri Jun 12 17:36:43 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_DOUBLE_VECTOR_H_
 # define LBCPP_DOUBLE_VECTOR_H_
 

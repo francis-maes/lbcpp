@@ -9,9 +9,17 @@
 namespace lbcpp
 {
 
-class VariableSet : public Object
+class VariableSet : public ObjectContainer
 {
 public:
+  // ObjectContainer
+  virtual size_t size() const
+    {return getNumVariables();}
+
+  virtual ObjectPtr get(size_t index) const
+    {return ObjectPtr(); /* FIXME */}
+
+  // VariableSet
   enum VariableType
   {
     discreteVariable,
