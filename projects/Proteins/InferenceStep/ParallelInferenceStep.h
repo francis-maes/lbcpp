@@ -23,7 +23,7 @@ public:
     : InferenceStep(name) {}
 
   virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output) 
-    {return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), *(FeatureVectorPtr* )&output);}
+    {return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), *(FeatureGeneratorPtr* )&output);}
 
 protected:
   ClassifierPtr classifier;

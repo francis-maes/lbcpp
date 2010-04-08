@@ -16,6 +16,62 @@ using juce::Time;
 namespace lbcpp
 {
 
+class ObjectPair : public Object
+{
+public:
+  ObjectPair(ObjectPtr first, ObjectPtr second)
+    : first(first), second(second) {}
+  ObjectPair() {}
+
+  ObjectPtr getFirst() const
+    {return first;}
+
+  ObjectPtr getSecond() const
+    {return second;}
+
+protected:
+  ObjectPtr first;
+  ObjectPtr second;
+};
+
+typedef ReferenceCountedObjectPtr<ObjectPair> ObjectPairPtr;
+
+class ObjectPairContainer : public ObjectContainer
+{
+public:
+  virtual String getFirstClassName() const
+    {return T("Object");}
+
+  virtual String getSecondClassName() const
+    {return T("Object");}
+
+  virtual std::pair<ObjectPtr, ObjectPtr> getPair(size_t index) const = 0;
+
+  // ObjectContainer
+  virtual String getContentClassName() const
+    {return T("ObjectPair");}
+
+  virtual ObjectPtr get(size_t index) const
+  {
+    std::pair<ObjectPtr, ObjectPtr> p = getPair(index);
+    return new ObjectPair(p.first, p.second);
+  }
+};
+typedef ReferenceCountedObjectPtr<ObjectPairContainer> ObjectPairContainerPtr;
+
+class ObjectToObjectPairFunction : public ObjectFunction
+{
+public:
+  virtual String getInputClassName() const
+    {return T("Object");}
+  
+  virtual String getOutputClassName(const String& ) const
+    {return T("ObjectPair");}
+
+  virtual ObjectPtr function(ObjectPtr object) const
+    {return new ObjectPair(object, object);}
+};
+
 class Chain2ObjectFunction : public ObjectFunction
 {
 public:

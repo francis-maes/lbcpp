@@ -23,17 +23,6 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
-/*!
-**@file   ObjectGraph.h
-**@author Francis MAES
-**@date   Mon Jun 15 19:58:26 2009
-**
-**@brief  Base class for directed graph representation declaration.
-**
-**
-*/
-
 #ifndef LBCPP_OBJECT_GRAPH_H_
 # define LBCPP_OBJECT_GRAPH_H_
 
@@ -97,7 +86,8 @@ protected:
   ** @param roots : the vector of root nodes.
   ** @see load
   */
-  virtual void setRoots(const std::vector<ObjectPtr>& roots) = 0;
+  virtual void setRoots(const std::vector<ObjectPtr>& roots)
+    {jassert(false);}
 
   /**
   ** Successors setter.
@@ -108,7 +98,8 @@ protected:
   ** @param successors : node successor list.
   ** @see load
   */
-  virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors) = 0;
+  virtual void setSuccessors(ObjectPtr node, const std::vector<ObjectPtr>& successors)
+    {jassert(false);}
 
   /**
   ** Loads the content of a node from a C++ input stream.
@@ -117,7 +108,8 @@ protected:
   **
   ** @return an Object pointer.
   */
-  virtual ObjectPtr loadNode(InputStream& istr) const = 0;
+  virtual ObjectPtr loadNode(InputStream& istr) const
+    {jassert(false); return ObjectPtr();} 
 
   /**
   ** Saves the content of a node to a C++ output stream.
@@ -125,7 +117,8 @@ protected:
   ** @param ostr : output stream.
   ** @param node : node to save.
   */
-  virtual void saveNode(OutputStream& ostr, const ObjectPtr node) const = 0;
+  virtual void saveNode(OutputStream& ostr, const ObjectPtr node) const
+    {jassert(false);}
 
 public:
   /**

@@ -14,14 +14,17 @@
 namespace lbcpp
 {
 
+
 class CompositeInferenceStep : public InferenceStep
 {
 public:
   CompositeInferenceStep(const String& name) : InferenceStep(name) {}
-/*
-  virtual size_t getNumSubProblems() const = 0;
-  virtual InferenceStepPtr getSubProblem(size_t index) const = 0;
+  CompositeInferenceStep() {}
 
+  // returns a graph of interdependant InferenceSteps
+  virtual ObjectGraphPtr getDependencyGraph() const = 0;
+
+/*
 protected:
   virtual bool isModelUpToDate(const File& model, const Time& lastDataModificationTime) const
     {return model.exists() && model.isDirectory() && model.getLastModificationTime() >= lastDataModificationTime;}
@@ -55,6 +58,19 @@ protected:
   {
     return ObjectFunctionPtr();
   }*/
+};
+
+class SequenceInferenceStep : public CompositeInferenceStep
+{
+public:
+  SequenceInferenceStep(const String& name) : CompositeInferenceStep(name) {}
+  SequenceInferenceStep() {}
+
+  virtual ObjectGraphPtr getDependencyGraph() const
+  {
+    ObjectContainerPtr subStepsContainer = new VectorObjectContainer(*(std::vector<ObjectPtr>* )&subSteps, T("InferenceStep"));
+    return subStepsContainer->toGraph();
+  }
 
   void appendSubStep(InferenceStepPtr subStep)
     {subSteps.push_back(subStep);}

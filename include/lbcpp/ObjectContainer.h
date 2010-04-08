@@ -118,6 +118,14 @@ public:
   virtual ObjectStreamPtr toStream() const;
 
   /**
+  ** Creates a graph sequential representation of the current container.
+  **
+  ** @return an graph of objects.
+  ** @see ObjectGraph
+  */
+  virtual ObjectGraphPtr toGraph() const;
+
+  /**
   ** Applies a @a function to all item contained into the object container.
   **
   ** @param function : function to apply to the current object container.
@@ -257,7 +265,6 @@ public:
 ** of @a left followed by all the elements of @a right.
 */
 extern ObjectContainerPtr append(ObjectContainerPtr left, ObjectContainerPtr right);
-
 
 /**
 ** @class VectorObjectContainer
