@@ -69,6 +69,13 @@ public:
   */
   virtual ObjectPtr get(size_t index) const = 0;
 
+  // only for read/write containers:
+  virtual void resize(size_t newSize)
+    {jassert(false);}
+
+  virtual void set(size_t index, ObjectPtr object)
+    {jassert(false);}
+
   /**
   ** Checks if the container is empty or not.
   **
@@ -303,6 +310,14 @@ public:
   */
   virtual ObjectPtr get(size_t index) const
     {jassert(index < objects.size()); return objects[index];}
+
+  // resize
+  virtual void resize(size_t newSize)
+    {objects.resize(newSize);}
+
+  // set
+  virtual void set(size_t index, ObjectPtr object)
+    {jassert(index < objects.size()); objects[index] = object;}
 
   /**
   ** Returns a reference on itself.
