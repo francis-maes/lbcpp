@@ -212,7 +212,7 @@ public:
   ** @return False if any error occurs.
   ** @see loadFromFile
   */
-  bool saveToFile(const File& file) const;
+  virtual bool saveToFile(const File& file) const;
 
   /**
   ** Saves the current object to a C++ stream.
@@ -220,7 +220,7 @@ public:
   ** @param ostr : output stream.
   ** @see loadFromStream
   */
-  void saveToStream(OutputStream& ostr) const;
+  virtual void saveToStream(OutputStream& ostr) const;
 
   /**
   ** Error manager.
@@ -241,6 +241,10 @@ public:
   */
   static void warning(const String& where, const String& what)
     {ErrorHandler::warning(where, what);}
+
+  // user interface
+  virtual juce::Component* createComponent() const
+    {return NULL;}
 
 protected:
   template<class T>

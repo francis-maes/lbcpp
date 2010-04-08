@@ -350,7 +350,7 @@ private:
   ObjectContainerPtr validationData;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 10.0, bool useConstantLearningRate = false)
+GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
 {
   IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
   GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  

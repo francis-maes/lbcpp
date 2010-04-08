@@ -1,0 +1,51 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: FromScratch.lcpp               | Test Learning                   |
+| Author  : Francis Maes                   |                                 |
+| Started : 08/04/2010 16:27               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include <lbcpp/lbcpp.h>
+#include "GeneratedCode/Data/Bio/Protein.lh"
+#include "VariableSetModel.h"
+#include "PredictionProblem/ProteinPredictionProblem.h"
+#include "PredictionProblem/CompositePredictionProblem.h"
+using namespace lbcpp;
+
+extern void declareProteinsClasses();
+extern void declareVariableSetClasses();
+
+PredictionProblemPtr createMainProblem()
+{
+  ChainPredictionProblemPtr res = new ChainPredictionProblem(T("SS3 Prediction"));
+  PredictionProblemPtr pass1;
+  PredictionProblemPtr pass2;
+  res->append(pass1);
+  res->append(pass2);
+  return res;
+}
+
+int main(int argc, char** argv)
+{
+  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
+  File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
+  ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr trainingData = proteins->invFold(0, 7);
+  ObjectContainerPtr testingData = proteins->fold(0, 7);
+
+  PredictionProblemPtr topLevelProblem = createMainProblem();
+  Time lastDataTime = proteinsDirectory.getLastModificationTime();
+  ObjectFunctionPtr topLevelPredictor = topLevelProblem->trainPredictor(modelFile, trainingData, lastDataTime);
+
+  for (size_t i = 0; i < testingData->size(); ++i)
+  {
+    ProteinPtr inputProtein = testingData->getAndCast<Protein>(i);
+    jassert(inputProtein);
+    ProteinPtr predictedProtein = topLevelPredictor->function(inputProtein).dynamicCast<Protein>();
+    jassert(predictedProtein);
+  }
+
+  return 0;
+}

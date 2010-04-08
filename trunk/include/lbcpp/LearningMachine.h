@@ -100,50 +100,10 @@ public:
   /*
   ** Abstract
   */
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const = 0;
-
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual size_t predict(const FeatureGeneratorPtr input) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  ** @param output
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual size_t sample(const FeatureGeneratorPtr input) const;
 
   /*
