@@ -43,21 +43,21 @@ SET(VARIABLE_SET_MODEL_SOURCES
   VariableSetModel/SimulatedIterativeClassificationVariableSetModel.h
 )
 
-SET(PREDICTION_PROBLEM_MODEL_SOURCES
-  PredictionProblem/CommonObjectFunctions.h
-  PredictionProblem/CommonObjectFunctions.cpp
-  PredictionProblem/PredictionProblem.h
-  PredictionProblem/PredictionProblem.cpp
-  PredictionProblem/ReductionPredictionProblem.h
-  PredictionProblem/CompositePredictionProblem.h
-  PredictionProblem/ProteinPredictionProblem.h
+SET(LBCPP_INFERENCE_STEP_SOURCES
+  InferenceStep/CommonObjectFunctions.h
+  InferenceStep/CommonObjectFunctions.cpp
+  InferenceStep/InferenceStep.h
+  InferenceStep/InferenceStep.cpp
+  InferenceStep/ParallelInferenceStep.h
+  InferenceStep/SequenceInferenceStep.h
+  InferenceStep/ProteinInferenceSteps.h
 )
  
 
 SET(PROTEINS_CPP_SOURCES
   ${PROTEINS_DATA_BIO_CPP}
   ${VARIABLE_SET_MODEL_SOURCES}
-  ${PREDICTION_PROBLEM_MODEL_SOURCES}
+  ${LBCPP_INFERENCE_STEP_SOURCES}
   VariableSetModel.h
   VariableSetModel.cpp
   classes.cpp
@@ -72,7 +72,7 @@ SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
 SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
 SOURCE_GROUP(VariableSetModel FILES ${VARIABLE_SET_MODEL_SOURCES})
-SOURCE_GROUP(PredictionProblem FILES ${PREDICTION_PROBLEM_MODEL_SOURCES})
+SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

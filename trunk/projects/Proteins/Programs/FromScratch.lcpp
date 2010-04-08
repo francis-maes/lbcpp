@@ -9,8 +9,8 @@
 #include <lbcpp/lbcpp.h>
 #include "GeneratedCode/Data/Bio/Protein.lh"
 #include "VariableSetModel.h"
-#include "InferenceStep/ProteinInferenceStep.h"
-#include "InferenceStep/CompositeInferenceStep.h"
+#include "InferenceStep/ProteinInferenceSteps.h"
+#include "InferenceStep/SequenceInferenceStep.h"
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
@@ -18,48 +18,74 @@ extern void declareVariableSetClasses();
 
 // the aim is to learn a "incomplete Protein => complete Protein" function
 
-// Training Data: Proteins
-// Inference: Protein -> Protein
-
-class DecoratorInferenceStep : public InferenceStep
+// Input: Protein
+// Output: SecondaryStructureSequence
+class SS3ContentOnlyInferenceStep : public SecondaryStructureInferenceStep
 {
 public:
-  DecoratorInferenceStep(InferenceStepPtr decoratedProblem,
-      ObjectFunctionPtr trainingDataPreprocessor = ObjectFunctionPtr(),
-      ObjectFunctionPtr functionPreprocessor = ObjectFunctionPtr(),
-      ObjectFunctionPtr functionPostprocessor = ObjectFunctionPtr());
+  SS3ContentOnlyInferenceStep() : SecondaryStructureInferenceStep(T("SS3ContentOnly")) {}
 
+  virtual featureGenerator getInputFeatures(ProteinPtr protein, size_t index) const
+  {
+    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
+
+    featureCall("a") inline aminoAcidSequence->windowFeatures(index, 8, 8, true);
+    featureCall("p") inline positionSpecificScores->windowFeatures(index, 8, 8, true);
+  }
 };
 
-class MainInferenceStep : public ChainInferenceStep
+class SS3ContentAndStructureInferenceStep : public SecondaryStructureInferenceStep
 {
 public:
-  MainInferenceStep() : ChainInferenceStep(T("Main"))
+  SS3ContentAndStructureInferenceStep(size_t passNumber)
+    : SecondaryStructureInferenceStep(T("SS3ContentAndStructure") + lbcpp::toString(passNumber)) {}
+
+  virtual featureGenerator getInputFeatures(ProteinPtr protein, size_t index) const
   {
-    append(new DecoratorInferenceStep(new SS3InferenceStep(),
-      ObjectFunctionPtr(), ObjectFunctionPtr(), postprocessSS3Prediction)); 
+    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
+    SecondaryStructureSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
+
+    featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
+    featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
+    featureCall("w") secondaryStructure->windowFeatures(index, 5, 5, true);
+  }
+};
+
+class MainInferenceStep : public CompositeInferenceStep
+{
+public:
+  MainInferenceStep() : CompositeInferenceStep(T("Main"))
+  {
+    appendSubStep(new SS3ContentOnlyInferenceStep());
+    appendSubStep(new SS3ContentAndStructureInferenceStep(1));
+    appendSubStep(new SS3ContentAndStructureInferenceStep(2));
+    appendSubStep(new SS3ContentAndStructureInferenceStep(3));
   }
 
-  void postprocessSS3Prediction(ObjectPtr currentInput, ObjectPtr ss3Output)
+  virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output)
   {
-    ProteinPtr protein = currentInput.dynamicCast<Protein>();
+    ProteinPtr protein = input->cloneAndCast<Protein>();
     jassert(protein);
-    protein->setSecondaryStructureSequence(ss3Output.dynamicCast<SecondaryStructureSequence>());
+    ProteinPtr correctProtein = output ? output->cloneAndCast<Protein>() : ProteinPtr();
+    output = protein;
+    
+    SecondaryStructureSequencePtr correctSecondaryStructure;
+    if (correctProtein)
+      correctSecondaryStructure = correctProtein->getSecondaryStructureSequence();
+
+    for (size_t i = 0; i < subSteps.size(); ++i)
+    {
+      ObjectPtr subStepOutput = correctSecondaryStructure;
+      ResultCode code = policy->doSubStep(subSteps[i], protein, subStepOutput);
+      if (code != finishedReturnCode)
+        return code;
+      protein->setSecondaryStructureSequence(subStepOutput.dynamicCast<SecondaryStructureSequence>());
+    }
+    return finishedReturnCode;
   }
 };
-
-typedef ReferenceCountedObjectPtr<ProteinInferenceStep> ProteinInferenceStepPtr;
-
-
-InferenceStepPtr createMainProblem()
-{
-  ChainInferenceStepPtr res = new ChainInferenceStep(T("SS3 Prediction"));
-  InferenceStepPtr pass1;
-  InferenceStepPtr pass2;
-  res->append(pass1);
-  res->append(pass2);
-  return res;
-}
 
 int main(int argc, char** argv)
 {
@@ -70,8 +96,9 @@ int main(int argc, char** argv)
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
   ObjectContainerPtr testingData = proteins->fold(0, 7);
 
-  InferenceStepPtr topLevelProblem = new MainInferenceStep();
+  InferenceStepPtr mainInferenceStep = new MainInferenceStep();
   Time lastDataTime = proteinsDirectory.getLastModificationTime();
+  /*
   ObjectFunctionPtr topLevelPredictor = topLevelProblem->trainPredictor(modelFile, trainingData, lastDataTime);
 
   for (size_t i = 0; i < testingData->size(); ++i)
@@ -80,7 +107,7 @@ int main(int argc, char** argv)
     jassert(inputProtein);
     ProteinPtr predictedProtein = topLevelPredictor->function(inputProtein).dynamicCast<Protein>();
     jassert(predictedProtein);
-  }
+  }*/
 
   return 0;
 }
