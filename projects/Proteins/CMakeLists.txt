@@ -43,9 +43,21 @@ SET(VARIABLE_SET_MODEL_SOURCES
   VariableSetModel/SimulatedIterativeClassificationVariableSetModel.h
 )
 
+SET(PREDICTION_PROBLEM_MODEL_SOURCES
+  PredictionProblem/CommonObjectFunctions.h
+  PredictionProblem/CommonObjectFunctions.cpp
+  PredictionProblem/PredictionProblem.h
+  PredictionProblem/PredictionProblem.cpp
+  PredictionProblem/ReductionPredictionProblem.h
+  PredictionProblem/CompositePredictionProblem.h
+  PredictionProblem/ProteinPredictionProblem.h
+)
+ 
+
 SET(PROTEINS_CPP_SOURCES
   ${PROTEINS_DATA_BIO_CPP}
   ${VARIABLE_SET_MODEL_SOURCES}
+  ${PREDICTION_PROBLEM_MODEL_SOURCES}
   VariableSetModel.h
   VariableSetModel.cpp
   classes.cpp
@@ -60,6 +72,7 @@ SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
 SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
 SOURCE_GROUP(VariableSetModel FILES ${VARIABLE_SET_MODEL_SOURCES})
+SOURCE_GROUP(PredictionProblem FILES ${PREDICTION_PROBLEM_MODEL_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
@@ -81,3 +94,6 @@ TARGET_LINK_LIBRARIES(SecondaryStructureCrossValidation proteins)
 
 ADD_CREXECUTABLE(MultiPassSecondaryStructure Programs/MultiPassSecondaryStructure.lcpp)
 TARGET_LINK_LIBRARIES(MultiPassSecondaryStructure proteins)
+
+ADD_CREXECUTABLE(FromScratch Programs/FromScratch.lcpp)
+TARGET_LINK_LIBRARIES(FromScratch proteins)

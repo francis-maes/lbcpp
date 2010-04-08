@@ -1,13 +1,14 @@
-* Frequence des updates:
+Explorer:
+  * dispatcher le code des juce::Component 
+  * explorer devient minimaliste
+  * Widgets pour VariableSetModel / Classifier / FeatureGenerator
 
-    1) per example (natural order), 1 regularizer / pass
-    2) per example (random order), 1 regularizer / pass
-    3) per example (natural order), 1 regularizer / episode
-    4) per example (random order), 1 regularizer / episode
-    5) minibatch per episode, no regularization
-    6) minibatch 10, no regularization
+Sequential Learning:
+ * Structure de graphe pour décrire l'inférence et les problèmes d'apprentissage interdépendants
+ 
 
 
+=
 
 * BUG: lbcpp::toString(*protein) affiche "toString not implemented"
 

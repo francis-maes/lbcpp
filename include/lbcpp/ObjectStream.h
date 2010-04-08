@@ -43,9 +43,15 @@ namespace lbcpp
 **
 ** @see ObjectStream, ObjectContainer
 */
-class ObjectFunction : public Object
+class ObjectFunction : public NameableObject
 {
 public:
+  ObjectFunction(const String& name) : NameableObject(name) {}
+  ObjectFunction() : NameableObject() {}
+
+  virtual String getInputClassName() const
+    {return T("Object");}
+
   /**
   ** Returns the class name of the function's output.
   **

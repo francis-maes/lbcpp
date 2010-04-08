@@ -24,15 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   ObjectContainer.h
-**@author Francis MAES
-**@date   Fri Jun 12 19:11:19 2009
-**
-**@brief  RandomGenerator acces object container base class.
-**
-*/
-
 #ifndef LBCPP_OBJECT_CONTAINER_H_
 # define LBCPP_OBJECT_CONTAINER_H_
 

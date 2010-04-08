@@ -14,6 +14,10 @@ ApplicationCommandManager* theCommandManager = NULL;
 
 Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
 {
+  Component* res = object->createComponent();
+  if (res)
+    return res;
+
   if (object.dynamicCast<StringToObjectMap>())
     return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
 
@@ -150,6 +154,7 @@ private:
 
 extern void declareLBCppCoreClasses();
 extern void declareProteinsClasses();
+extern void declareVariableSetClasses();
 
 class ExplorerApplication : public JUCEApplication
 {
@@ -161,6 +166,7 @@ public:
     ErrorHandler::setInstance(explorerErrorHandler);
     declareLBCppCoreClasses();
     declareProteinsClasses();
+    declareVariableSetClasses();
 
     theCommandManager = new ApplicationCommandManager();
 
