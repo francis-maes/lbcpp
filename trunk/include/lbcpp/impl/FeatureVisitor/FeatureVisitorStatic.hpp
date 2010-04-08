@@ -42,13 +42,13 @@ struct FeatureVisitor : public Object<ExactType>
     {return _this().featureEnter(dictionary, number, subDictionary);}
   
   void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, const String& featureName, double value = 1.0)
-    {_this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
+    {jassert(isNumberValid(value)); _this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
     
   void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, const char* featureName, double value = 1.0)
-    {_this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
+    {jassert(isNumberValid(value)); _this().featureSense(dictionary, dictionary->getFeatures()->add(featureName), value);}
     
   void featureSense_(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
-    {_this().featureSense(dictionary, number, value);}
+    {jassert(isNumberValid(value)); _this().featureSense(dictionary, number, value);}
   
   void featureLeave_()
     {_this().featureLeave();}

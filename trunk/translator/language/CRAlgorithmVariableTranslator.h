@@ -33,9 +33,7 @@ public:
   
   void addLocalScopeVariable(const SymbolLookup::Scope* scope, const std::string& variableName)
     {scopeVariables[scope] = variableName;}    
-
-  static bool isSubScope(const SymbolLookup::Scope* parentScope, const SymbolLookup::Scope* childrenScope);
-  
+ 
 private:
   SymbolLookup::FunctionScope* crAlgorithmScope;
   std::string className;

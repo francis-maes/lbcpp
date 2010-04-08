@@ -45,7 +45,11 @@ public:
   //. begin and begin + length
   void replace(const char *from, const char *to,
 	       const char *begin, unsigned long length);
-         
+
+
+  bool has_origin(const char* ptr) const
+    {return ptr >= my_buffer.data() && ptr < my_buffer.data() + my_buffer.size();}
+
   //. Return the origin of the given pointer (filename and line number)
   unsigned long origin(const char *, std::string &) const;
   //. Write the buffer into the given output stream

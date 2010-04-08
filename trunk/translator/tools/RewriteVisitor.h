@@ -178,4 +178,28 @@ private:
   PTree::Node* result;
 };
 
+inline bool isSubScope(const SymbolLookup::Scope* parentScope, const SymbolLookup::Scope* childrenScope)
+{
+  while (childrenScope)
+  {
+    if (childrenScope == parentScope)
+      return true;
+    childrenScope = childrenScope->outer_scope();
+  }
+  return false;
+}
+
+inline bool isBaseClass(const SymbolLookup::Class* baseClass, const SymbolLookup::Class* inheritedClass)
+{
+  if (inheritedClass == baseClass)
+    return true;
+
+  std::vector<SymbolLookup::Class const *> bases = inheritedClass->getBases();
+  for (size_t i = 0; i < bases.size(); ++i)
+    if (isBaseClass(baseClass, bases[i]))
+      return true;
+
+  return false;
+}
+
 #endif // !LBCPP_TOOLS_REWRITE_VISITOR_H_

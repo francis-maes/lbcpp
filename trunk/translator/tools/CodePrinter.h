@@ -41,26 +41,22 @@ public:
   
   void write(const char* ptr, size_t len, int offset = 0)
   {
-    if (inputBuffer && lineNumberHasChanged)
+    if (inputBuffer && lineNumberHasChanged && inputBuffer->has_origin(ptr))
     {
-      try
-      {
-        unsigned long line = inputBuffer->origin(ptr, this->sourceFilename);
-        for (size_t i = 0; i < sourceFilename.size(); ++i)
-          if (sourceFilename[i] == '\\')
-            sourceFilename[i] = '/';
-        // we enter here as soon as we find the origin of ptr 
-        
-        // update chunks
-        flushChunks((size_t)line);
+      unsigned long line = inputBuffer->origin(ptr, this->sourceFilename);
+      for (size_t i = 0; i < sourceFilename.size(); ++i)
+        if (sourceFilename[i] == '\\')
+          sourceFilename[i] = '/';
+      // we enter here as soon as we find the origin of ptr 
+      
+      // update chunks
+      flushChunks((size_t)line);
 
-        // put a #line 
-        if (printSourceLineNumbers)
-          currentLine = createSourceLineCommand(line) + currentLine;
-        
-        lineNumberHasChanged = false;
-      }
-      catch (std::exception&) {}
+      // put a #line 
+      if (printSourceLineNumbers)
+        currentLine = createSourceLineCommand(line) + currentLine;
+      
+      lineNumberHasChanged = false;
     }
       
     if (offset < 0)
