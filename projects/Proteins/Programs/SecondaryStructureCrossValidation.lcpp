@@ -21,7 +21,41 @@ public:
     : aminoAcidSequence(protein->getAminoAcidSequence()),
       positionSpecificScores(protein->getPositionSpecificScoringMatrix()),
       secondaryStructure(protein->getSecondaryStructureSequence(false))
-    {}
+  {
+    initializeAminoAcidComposition();
+  }
+  
+  void initializeAminoAcidComposition() {
+    size_t word[1];
+    
+    // Init
+    for (size_t i = 0; i < wordLength; i++)
+    {
+      word[i] = aminoAcidSequence->getLabel(i);
+    }
+
+    aminoAcidCompositions[arrayToString(word, wordLength, 0)] = 1;
+    // Body
+    int index = 0;
+    for (size_t i = wordLength; i < aminoAcidSequence->getNumVariables(); i++)
+    {
+      word[index++] = aminoAcidSequence->getLabel(i);
+      index %= wordLength;
+      
+      aminoAcidCompositions[arrayToString(word, wordLength, index)]++;
+    }
+  }
+  
+  static String arrayToString(size_t array[], size_t length, size_t startIndex)
+  {
+    String toReturn;
+    for (size_t i = 0; i < length; i++)
+    {
+      toReturn += String('A' + (int) array[startIndex++]);
+      startIndex %= length;
+    }
+    return toReturn;
+  }
   
   virtual VariableSetPtr getTargetVariables() const
     {return secondaryStructure;}
@@ -46,7 +80,7 @@ public:
     else
     {
       double frac = l - fl;
-      double base = pow(10.0, fl);
+      //double base = pow(10.0, fl);
       int fracCase;
       double valMin, valMax;
       if (frac < clog2)
@@ -86,13 +120,21 @@ public:
     featureCall("length") inline numberFeatures(length, weight);
     featureCall("position") inline numberFeatures((double)variableIndex / length, weight);
   }
+  
+  featureGenerator aminoAcidCompositionFeatures() const
+  {
+    size_t length = aminoAcidSequence->getNumVariables();
+    for (std::map<String, size_t>::const_iterator iter = aminoAcidCompositions.begin(); iter != aminoAcidCompositions.end(); iter++) {
+      featureSense(iter->first, (double) iter->second / length);
+    }
+  }
 
   virtual featureGenerator getVariableFeatures(size_t variableIndex, VariableSetPtr prediction) const
   {
     size_t nbAALeft = SecondaryStructureVariableSetExample::nbAALeft;
     size_t nbAARight = SecondaryStructureVariableSetExample::nbAARight;
     
-    featureCall inline posAndLengthFeatures(variableIndex, 1.0);
+    featureCall("_") inline posAndLengthFeatures(variableIndex, 1.0);
 
     // conjunctions with current amino acid
     featureCall(T("A") + String((int)aminoAcidSequence->getLabel(variableIndex))) inline posAndLengthFeatures(variableIndex, 1.0);
@@ -123,6 +165,8 @@ public:
       }
       featureSense(featureName);
     }*/
+    
+    featureCall("comp") inline aminoAcidCompositionFeatures();
 
     featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, nbAALeft, nbAARight, true);
     if (prediction)
@@ -143,7 +187,8 @@ public:
   {
     return String("Feature: ")
     + String("\n    > AA at left: ") + String((int) nbAALeft)
-    + String("\n    > AA at right: ") + String((int) nbAARight);
+    + String("\n    > AA at right: ") + String((int) nbAARight)
+    + String("\n    > Word length of composition: ") + String((int) wordLength);
   }
       
   
@@ -151,13 +196,17 @@ private:
   LabelSequencePtr aminoAcidSequence;
   ScoreVectorSequencePtr positionSpecificScores;
   LabelSequencePtr secondaryStructure;
+  
+  std::map<String, size_t> aminoAcidCompositions;
 
   static size_t nbAALeft;
   static size_t nbAARight;
+  static size_t wordLength;
 };
 
 size_t SecondaryStructureVariableSetExample::nbAALeft = 7;
 size_t SecondaryStructureVariableSetExample::nbAARight = 7;
+size_t SecondaryStructureVariableSetExample::wordLength = 1;
 
 class ProteinToVariableSetExample : public ObjectFunction
 {
