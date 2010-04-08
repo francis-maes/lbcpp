@@ -8,6 +8,7 @@
 
 #include <lbcpp/ObjectContainer.h>
 #include <lbcpp/ObjectStream.h>
+#include <lbcpp/ObjectGraph.h>
 #include <lbcpp/RandomGenerator.h>
 using namespace lbcpp;
 
@@ -41,6 +42,42 @@ ObjectStreamPtr ObjectContainer::toStream() const
 {
   return new ObjectContainerStream(const_cast<ObjectContainer* >(this));
 }
+
+class ObjectContainerSequenceGraph : public ObjectGraph
+{
+public:
+  ObjectContainerSequenceGraph(ObjectContainerPtr container)
+  {
+    if (container->size() >= 1)
+    {
+      root = container->get(0);
+      for (int i = 0; i < (int)container->size() - 1; ++i)
+        successors[container->get(i)] = container->get(i + 1);
+    }
+  }
+
+  virtual size_t getNumRoots() const
+    {return root ? 1 : 0;}
+
+  virtual ObjectPtr getRoot(size_t index) const
+    {jassert(index < getNumRoots()); return root;}
+
+  virtual size_t getNumSuccessors(ObjectPtr node) const
+    {return successors.find(node) != successors.end() ? 1 : 0;}
+
+  virtual ObjectPtr getSuccessor(ObjectPtr node, size_t index) const
+  {
+    std::map<ObjectPtr, ObjectPtr>::const_iterator it = successors.find(node);
+    return it == successors.end() ? ObjectPtr() : it->second;
+  }
+
+private:
+  ObjectPtr root;
+  std::map<ObjectPtr, ObjectPtr> successors;
+};
+
+ObjectGraphPtr ObjectContainer::toGraph() const
+  {return new ObjectContainerSequenceGraph(const_cast<ObjectContainer* >(this));}
 
 class ApplyFunctionObjectContainer : public DecoratorObjectContainer
 {

@@ -14,55 +14,14 @@
 namespace lbcpp
 {
 
-class ObjectPair : public Object
-{
-public:
-  ObjectPair(ObjectPtr first, ObjectPtr second)
-    : first(first), second(second) {}
-  ObjectPair() {}
-
-  ObjectPtr getFirst() const
-    {return first;}
-
-  ObjectPtr getSecond() const
-    {return second;}
-
-protected:
-  ObjectPtr first;
-  ObjectPtr second;
-};
-
-class ObjectPairContainer : public ObjectContainer
-{
-public:
-  virtual String getFirstClassName() const
-    {return T("Object");}
-
-  virtual String getSecondClassName() const
-    {return T("Object");}
-
-  virtual std::pair<ObjectPtr, ObjectPtr> getPair(size_t index) const = 0;
-
-  // ObjectContainer
-  virtual String getContentClassName() const
-    {return T("ObjectPair");}
-
-  virtual ObjectPtr get(size_t index) const
-  {
-    std::pair<ObjectPtr, ObjectPtr> p = getPair(index);
-    return new ObjectPair(p.first, p.second);
-  }
-};
-typedef ReferenceCountedObjectPtr<ObjectPairContainer> ObjectPairContainerPtr;
-
-
 class InferencePolicy;
 typedef ReferenceCountedObjectPtr<InferencePolicy> InferencePolicyPtr;
 
 class InferenceStep : public NameableObject
 {
 public:
-  InferenceStep(const String& name) : NameableObject(name), loadedModificationTime(0) {}
+  InferenceStep(const String& name = T("Unnamed"))
+    : NameableObject(name), loadedModificationTime(0) {}
 
   enum ResultCode
   {
@@ -72,6 +31,9 @@ public:
   };
 
   virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output) = 0;
+
+  ResultCode runOnSupervisedExamples(InferencePolicyPtr policy, ObjectContainerPtr examples);
+
 /*
   virtual void updateModel(const File& model, ObjectContainerPtr examples, const Time& lastDataModificationTime)
   {
@@ -132,10 +94,11 @@ class InferencePolicy : public NameableObject
 public:
   typedef InferenceStep::ResultCode ResultCode;
 
-  virtual ResultCode doSubStep(InferenceStepPtr step,  ObjectPtr input, ObjectPtr& output) = 0;
+  virtual ResultCode doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr& output) = 0;
+
   virtual ResultCode doParallelSteps(const std::vector< std::pair<InferenceStepPtr, ObjectPtr> >& subInferences, ObjectContainerPtr output) = 0;
 
-  virtual ResultCode doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureVectorPtr& result) = 0;
+  virtual ResultCode doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr& result) = 0;
 };
 
 class DefaultInferencePolicy : public InferencePolicy
@@ -158,16 +121,13 @@ public:
     return InferenceStep::finishedReturnCode;
   }
 
-  virtual ResultCode doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureVectorPtr& result)
+  virtual ResultCode doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr& result)
   {
-    FeatureDictionaryPtr dictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(classifier->getLabels());
-    jassert(dictionary);
-    SparseVectorPtr res = new SparseVector(dictionary);
-    res->set(classifier->predict(input), 1.0);
-    result = res;
+    result = new Label(classifier->getLabels(), classifier->predict(input));
     return InferenceStep::finishedReturnCode;
   }
 };
+
 
 }; /* namespace lbcpp */
 

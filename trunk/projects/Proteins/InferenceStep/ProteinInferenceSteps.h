@@ -15,54 +15,6 @@
 namespace lbcpp
 {
 
-class Label : public FeatureGeneratorDefaultImplementations<Label, FeatureVector>
-{
-public:
-  Label(FeatureDictionaryPtr featureDictionary, size_t index)
-    : value(index + 1)
-    {setDictionary(featureDictionary);}
-
-  Label(FeatureDictionaryPtr featureDictionary)
-    : value(0)
-    {setDictionary(featureDictionary);}
-
-  Label(StringDictionaryPtr stringDictionary)
-    : value(0)
-    {setDictionary(FeatureDictionaryManager::getInstance().getFlatVectorDictionary(stringDictionary));}
-
-  virtual String toString() const
-    {return isDecided() ? getDictionary()->getFeature(getIndex()) : T("?");}
-
-  virtual void clear()
-    {value = 0;}
-
-  template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor) const
-    {visitor.featureSense(getDictionary(), value, 1.0);}
-
-  bool isDecided() const
-    {return value > 0;}
-
-  size_t getIndex() const
-    {jassert(isDecided()); return (size_t)(value - 1);}
-
-protected:
-  // FeatureGenerator
-  virtual size_t getNumSubGenerators() const
-    {return 0;}
-  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
-    {jassert(false); return FeatureGeneratorPtr();}
-  virtual size_t getSubGeneratorIndex(size_t num) const
-    {jassert(false); return (size_t)-1;}
-  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
-    {jassert(false); return FeatureGeneratorPtr();}
-
-private:
-  int value;
-};
-
-typedef ReferenceCountedObjectPtr<Label> LabelPtr;
-
 // Input: Protein
 // Output: SecondaryStructureSequence
 class SecondaryStructureInferenceStep : public SharedParallelInferenceStep

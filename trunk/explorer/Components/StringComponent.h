@@ -19,7 +19,7 @@ class StringComponent : public Component
 public:
   StringComponent(ObjectPtr object)
   {
-    addAndMakeVisible(label = new Label("toto", object->toString()));
+    addAndMakeVisible(label = new juce::Label("toto", object->toString()));
     label->setJustificationType(Justification::topLeft);
   }
     
@@ -32,7 +32,7 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  Label* label;
+  juce::Label* label;
 };
 
 }; /* namespace lbcpp */

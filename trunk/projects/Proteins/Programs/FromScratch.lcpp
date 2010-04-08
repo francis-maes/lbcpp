@@ -17,7 +17,15 @@ extern void declareProteinsClasses();
 extern void declareVariableSetClasses();
 
 // the aim is to learn a "incomplete Protein => complete Protein" function
+class SupervisedTrainingCallback
+{
+public:
+  virtual ~SupervisedTrainingCallback() {}
+};
 
+class MySupervisedTrainingCallback : public SupervisedTrainingCallback
+{
+};
 // Input: Protein
 // Output: SecondaryStructureSequence
 class SS3ContentOnlyInferenceStep : public SecondaryStructureInferenceStep
@@ -53,10 +61,10 @@ public:
   }
 };
 
-class MainInferenceStep : public CompositeInferenceStep
+class MainInferenceStep : public SequenceInferenceStep
 {
 public:
-  MainInferenceStep() : CompositeInferenceStep(T("Main"))
+  MainInferenceStep() : SequenceInferenceStep(T("Main"))
   {
     appendSubStep(new SS3ContentOnlyInferenceStep());
     appendSubStep(new SS3ContentAndStructureInferenceStep(1));
@@ -85,7 +93,97 @@ public:
     }
     return finishedReturnCode;
   }
+/*
+  void train(ObjectContainerPtr proteins)
+  {
+    proteins = proteins->apply(new ObjectToObjectPairFunction());
+    runOnSupervisedExamples(policy, proteins);
+  }*/
 };
+
+////////////////////////////////
+/*class InferencePolicy : public NameableObject
+{
+public:
+  typedef InferenceStep::ResultCode ResultCode;
+
+  virtual ResultCode doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr& output) = 0;
+  virtual ResultCode doParallelSteps(const std::vector< std::pair<InferenceStepPtr, ObjectPtr> >& subInferences, ObjectContainerPtr output) = 0;
+
+  virtual ResultCode doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr& result) = 0;
+};*/
+
+
+class ClassificationExamplesCreatorInferencePolicy : public DefaultInferencePolicy
+{
+public:
+  ClassificationExamplesCreatorInferencePolicy(VectorObjectContainerPtr classificationExamples, bool stochasticSampling)
+    : classificationExamples(classificationExamples), stochasticSampling(stochasticSampling) {}
+
+  virtual ResultCode doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr& result)
+  {
+    if (result)
+    {
+      LabelPtr label = result.dynamicCast<Label>();
+      jassert(label);
+      classificationExamples->append(new ClassificationExample(input, label->getIndex()));
+    }
+    size_t label = stochasticSampling ? classifier->sample(input) : classifier->predict(input);
+    result = new Label(classifier->getLabels(), label);
+    return InferenceStep::finishedReturnCode;
+  }
+
+protected:
+  VectorObjectContainerPtr classificationExamples;
+  bool stochasticSampling;
+};
+
+class FixedLengthChain2InferencePolicy : public DefaultInferencePolicy
+{
+public:
+  FixedLengthChain2InferencePolicy(InferencePolicyPtr policy1, size_t policy1NumSteps, InferencePolicyPtr policy2, size_t policy2NumSteps)
+    : policy1(policy1), policy1NumSteps(policy1NumSteps), policy2(policy2), policy2NumSteps(policy2NumSteps) {reset();}
+  
+  void reset()
+    {currentPosition = 0;}
+
+  virtual ResultCode doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr& output)
+  {
+    if (currentPosition < policy1NumSteps)
+    {
+      ResultCode res = policy1->doSubStep(step, input, output);
+      ++currentPosition;
+      return res;
+    }
+    else if (currentPosition < policy2NumSteps)
+    {
+      ResultCode res = policy2->doSubStep(step, input, output);
+      ++currentPosition;
+      return res;
+    }
+    else
+      return InferenceStep::canceledReturnCode;
+  }
+
+private:
+  InferencePolicyPtr policy1;
+  size_t policy1NumSteps;
+  InferencePolicyPtr policy2;
+  size_t policy2NumSteps;
+
+  size_t currentPosition;
+};
+
+class LearnNthStepDeterministicInferencePolicy : public FixedLengthChain2InferencePolicy
+{
+public:
+  LearnNthStepDeterministicInferencePolicy(size_t learnedStepNumber, InferencePolicyPtr learningPolicy)
+    : FixedLengthChain2InferencePolicy(new DefaultInferencePolicy(), learnedStepNumber, learningPolicy, 1) {}
+};
+
+/////////////////////////
+
+
 
 int main(int argc, char** argv)
 {
@@ -97,17 +195,12 @@ int main(int argc, char** argv)
   ObjectContainerPtr testingData = proteins->fold(0, 7);
 
   InferenceStepPtr mainInferenceStep = new MainInferenceStep();
-  Time lastDataTime = proteinsDirectory.getLastModificationTime();
-  /*
-  ObjectFunctionPtr topLevelPredictor = topLevelProblem->trainPredictor(modelFile, trainingData, lastDataTime);
 
-  for (size_t i = 0; i < testingData->size(); ++i)
-  {
-    ProteinPtr inputProtein = testingData->getAndCast<Protein>(i);
-    jassert(inputProtein);
-    ProteinPtr predictedProtein = topLevelPredictor->function(inputProtein).dynamicCast<Protein>();
-    jassert(predictedProtein);
-  }*/
+//  ObjectGraphPtr dependencyGraph = mainInferenceStep->getDependencyGraph();
 
+
+//  MySupervisedTrainingCallback callback;
+//  trainSupervised(mainInferenceStep, trainingData, callback);
+  
   return 0;
 }
