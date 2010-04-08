@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: PredictionProblem.h            | Prediction problem base class   |
+| Filename: InferenceStep.h            | Prediction problem base class   |
 | Author  : Francis Maes                   |                                 |
 | Started : 08/04/2010 18:15               |                                 |
 `------------------------------------------/                                 |
@@ -14,10 +14,51 @@
 namespace lbcpp
 {
 
-class PredictionProblem : public NameableObject
+class ObjectPair : public Object
 {
 public:
-  PredictionProblem(const String& name) : NameableObject(name) {}
+  ObjectPair(ObjectPtr first, ObjectPtr second)
+    : first(first), second(second) {}
+  ObjectPair() {}
+
+  ObjectPtr getFirst() const
+    {return first;}
+
+  ObjectPtr getSecond() const
+    {return second;}
+
+protected:
+  ObjectPtr first;
+  ObjectPtr second;
+};
+
+class ObjectPairContainer : public ObjectContainer
+{
+public:
+  virtual String getFirstClassName() const
+    {return T("Object");}
+
+  virtual String getSecondClassName() const
+    {return T("Object");}
+
+  virtual std::pair<ObjectPtr, ObjectPtr> getPair(size_t index) const = 0;
+
+  // ObjectContainer
+  virtual String getContentClassName() const
+    {return T("ObjectPair");}
+
+  virtual ObjectPtr get(size_t index) const
+  {
+    std::pair<ObjectPtr, ObjectPtr> p = getPair(index);
+    return new ObjectPair(p.first, p.second);
+  }
+};
+typedef ReferenceCountedObjectPtr<ObjectPairContainer> ObjectPairContainerPtr;
+
+class InferenceStep : public NameableObject
+{
+public:
+  InferenceStep(const String& name) : NameableObject(name) {}
 
   ObjectFunctionPtr trainPredictor(const File& model, ObjectContainerPtr trainingData, const Time& lastDataModificationTime) const
   {
@@ -32,12 +73,12 @@ public:
   virtual ObjectFunctionPtr updatePredictor(const File& model, ObjectContainerPtr trainingData) const = 0; 
 };
 
-typedef ReferenceCountedObjectPtr<PredictionProblem> PredictionProblemPtr;
+typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
 
-class AtomicPredictionProblem : public PredictionProblem
+class AtomicInferenceStep : public InferenceStep
 {
 public:
-  AtomicPredictionProblem(const String& name) : PredictionProblem(name) {}
+  AtomicInferenceStep(const String& name) : InferenceStep(name) {}
 
   virtual ObjectFunctionPtr trainPredictor(ObjectContainerPtr trainingData) const = 0;
 

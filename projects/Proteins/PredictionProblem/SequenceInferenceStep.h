@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: CompositePredictionProblem.h   | Base class for composite        |
+| Filename: CompositeInferenceStep.h   | Base class for composite        |
 | Author  : Francis Maes                   |   prediction problems           |
 | Started : 08/04/2010 18:19               |                                 |
 `------------------------------------------/                                 |
@@ -9,18 +9,18 @@
 #ifndef LBCPP_COMPOSITE_PREDICTION_PROBLEM_H_
 # define LBCPP_COMPOSITE_PREDICTION_PROBLEM_H_
 
-# include "PredictionProblem.h"
+# include "InferenceStep.h"
 
 namespace lbcpp
 {
 
-class CompositePredictionProblem : public PredictionProblem
+class CompositeInferenceStep : public InferenceStep
 {
 public:
-  CompositePredictionProblem(const String& name) : PredictionProblem(name) {}
+  CompositeInferenceStep(const String& name) : InferenceStep(name) {}
 
   virtual size_t getNumSubProblems() const = 0;
-  virtual PredictionProblemPtr getSubProblem(size_t index) const = 0;
+  virtual InferenceStepPtr getSubProblem(size_t index) const = 0;
 
 protected:
   virtual bool isModelUpToDate(const File& model, const Time& lastDataModificationTime) const
@@ -55,29 +55,27 @@ protected:
   {
     return ObjectFunctionPtr();
   }
-
 };
 
-
-class ChainPredictionProblem : public CompositePredictionProblem
+class ChainInferenceStep : public CompositeInferenceStep
 {
 public:
-  ChainPredictionProblem(const String& name) : CompositePredictionProblem(name) {}
+  ChainInferenceStep(const String& name) : CompositeInferenceStep(name) {}
 
   virtual size_t getNumSubProblems() const
     {return subProblems.size();}
 
-  virtual PredictionProblemPtr getSubProblem(size_t index) const
+  virtual InferenceStepPtr getSubProblem(size_t index) const
     {return subProblems[index];}
 
-  void append(PredictionProblemPtr subProblem)
+  void append(InferenceStepPtr subProblem)
     {subProblems.push_back(subProblem);}
 
 protected:
-  std::vector<PredictionProblemPtr> subProblems;
+  std::vector<InferenceStepPtr> subProblems;
 };
 
-typedef ReferenceCountedObjectPtr<ChainPredictionProblem> ChainPredictionProblemPtr;
+typedef ReferenceCountedObjectPtr<ChainInferenceStep> ChainInferenceStepPtr;
 
 }; /* namespace lbcpp */
 

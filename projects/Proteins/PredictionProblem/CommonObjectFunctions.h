@@ -66,6 +66,30 @@ protected:
   String key;
 };
 
+class StringToObjectMapSetterFunction : public ObjectFunction
+{
+public:
+  StringToObjectMapSetterFunction(StringToObjectMapPtr objects, const String& key)
+    : objects(objects), key(key) {}
+
+  virtual String getInputClassName() const
+    {return T("Object");}
+  
+  virtual String getOutputClassName(const String& ) const
+    {return String::empty;}
+
+  virtual ObjectPtr function(ObjectPtr object) const
+  {
+    objects->setObject(key, object);
+    return ObjectPtr();
+  }
+
+protected:
+  StringToObjectMapPtr objects;
+  String key;
+};
+
+
 class ClassifierFunction : public ObjectFunction
 {
 public:
