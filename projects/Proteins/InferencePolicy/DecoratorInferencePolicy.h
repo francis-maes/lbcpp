@@ -21,14 +21,6 @@ public:
     : targetPolicy(targetPolicy) {}
 
   // commands
-  virtual ObjectPtr doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return targetPolicy ? targetPolicy->doSubStep(step, input, supervision, returnCode)
-                      : DefaultInferencePolicy::doSubStep(step, input, supervision, returnCode);}
-
-  virtual ObjectPtr doParallelStep(ParallelInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return targetPolicy ? targetPolicy->doParallelStep(step, input, supervision, returnCode)
-                       : DefaultInferencePolicy::doParallelStep(step, input, supervision, returnCode);}
-
   virtual FeatureGeneratorPtr doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode)
     {return targetPolicy ? targetPolicy->doClassification(classifier, input, supervision, returnCode)
                        : DefaultInferencePolicy::doClassification(classifier, input, supervision, returnCode);}

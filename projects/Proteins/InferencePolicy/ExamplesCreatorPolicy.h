@@ -1,39 +1,36 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExamplesCreatorPolicy.h        | A policy that creates learning  |
+| Filename: ExamplesCreatorCallback.h      | A callback that creates learning|
 | Author  : Francis Maes                   |  examples                       |
 | Started : 09/04/2010 15:55               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_POLICY_EXAMPLES_CREATOR_H_
-# define LBCPP_INFERENCE_POLICY_EXAMPLES_CREATOR_H_
+#ifndef LBCPP_INFERENCE_CALLBACK_EXAMPLES_CREATOR_H_
+# define LBCPP_INFERENCE_CALLBACK_EXAMPLES_CREATOR_H_
 
 # include "InferencePolicy.h"
 
 namespace lbcpp
 {
 
-class ExamplesCreatorPolicy : public DefaultInferencePolicy
+class ExamplesCreatorCallback : public InferenceCallback
 {
 public:
-  ExamplesCreatorPolicy(InferencePolicyPtr explorationPolicy)
-    : explorationPolicy(explorationPolicy) {}
+  ExamplesCreatorCallback() : enableExamplesCreation(true) {}
 
-  virtual FeatureGeneratorPtr doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input,
-                                                             FeatureGeneratorPtr supervision, ReturnCode& returnCode)
+  virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode)
   {
-    if (supervision)
+    if (supervision && enableExamplesCreation)
     {
       LabelPtr label = supervision.dynamicCast<Label>();
       jassert(label);
       addExample(classifier, new ClassificationExample(input, label->getIndex()));
     }
-    return explorationPolicy->doClassification(classifier, input, supervision, returnCode);
   }
 
 protected:
-  InferencePolicyPtr explorationPolicy;
+  bool enableExamplesCreation;
 
   typedef std::map<LearningMachinePtr, VectorObjectContainerPtr> ExamplesMap;
   ExamplesMap examples;
@@ -45,8 +42,24 @@ protected:
       machineExamples = new VectorObjectContainer();
     machineExamples->append(example);
   }
+
+  void trainAndFlushExamples()
+  {
+    for (ExamplesMap::const_iterator it = examples.begin(); it != examples.end(); ++it)
+    {
+      LearningMachinePtr machine = it->first;
+      ObjectContainerPtr trainingData = it->second->randomize();
+      std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
+      machine->trainStochastic(trainingData);
+      std::cout << "ok." << std::endl;
+      /*ClassifierPtr classifier = machine.dynamicCast<Classifier>();
+      if (classifier)
+        std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << std::endl;*/
+    }
+    examples.clear();
+  }
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_POLICY_EXAMPLES_CREATOR_H_
+#endif // !LBCPP_INFERENCE_CALLBACK_EXAMPLES_CREATOR_H_
