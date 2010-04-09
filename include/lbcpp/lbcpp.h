@@ -35,6 +35,7 @@
 # include "ObjectContainer.h"
 # include "ObjectStream.h"
 # include "ObjectConsumer.h"
+# include "ObjectPair.h"
 
 # include "ObjectGraph.h"
 # include "Table.h"

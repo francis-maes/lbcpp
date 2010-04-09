@@ -84,23 +84,18 @@ public:
 
   virtual ReturnCode runWithSupervisedExamples(InferenceStepPtr inference, ObjectContainerPtr examples)
   {
-    ReturnCode returnCode = InferenceStep::finishedReturnCode;
     callStartInferences(examples->size());
-    if (returnCode)
-      return returnCode;
-
+    
+    ReturnCode returnCode = InferenceStep::finishedReturnCode;
     for (size_t i = 0; i < examples->size(); ++i)
     {
       ObjectPairPtr example = examples->get(i).dynamicCast<ObjectPair>();
       jassert(example);
-
-      returnCode = InferenceStep::finishedReturnCode;
       runInference(inference, example->getFirst(), example->getSecond(), returnCode);
       if (returnCode == InferenceStep::errorReturnCode)
-        return returnCode;
+        break;
+      returnCode = InferenceStep::finishedReturnCode;
     }
-
-    returnCode = InferenceStep::finishedReturnCode;
     callFinishInferences();
     return returnCode;
   }
@@ -110,7 +105,11 @@ public:
     stack->push(inference);
     callPreInference(stack, input, supervision, returnCode);
     if (returnCode)
+    {
+      std::cerr << "Warning: pre-inference failed with code " << returnCode << std::endl;
+      jassert(false);
       return ObjectPtr();
+    }
     ObjectPtr output = InferenceContext::runInference(inference, input, supervision, returnCode);
     callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();

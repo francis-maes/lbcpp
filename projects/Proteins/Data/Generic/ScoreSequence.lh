@@ -50,6 +50,13 @@ public:
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const
     {return computeVariableFeatures(position);}
 
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<ScoreSequence> res = Object::createAndCast<ScoreSequence>(getClassName());
+    res->sequence = sequence;
+    return res;
+  }
+
   /*
   ** ScoreSequence
   */

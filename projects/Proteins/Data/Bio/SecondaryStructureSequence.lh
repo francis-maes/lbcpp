@@ -177,6 +177,14 @@ public:
   bool hasThreeStates() const
     {return numStates == 3;}
 
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<SecondaryStructureSequence> res = new SecondaryStructureSequence();
+    res->sequence = sequence;
+    res->numStates = numStates;
+    return res;
+  }
+
 protected:
   int numStates;
 

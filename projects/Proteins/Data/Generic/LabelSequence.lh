@@ -99,7 +99,7 @@ public:
   */
   virtual ObjectPtr clone() const
   {
-    ReferenceCountedObjectPtr<LabelSequence> res = new LabelSequence();
+    ReferenceCountedObjectPtr<LabelSequence> res = Object::createAndCast<LabelSequence>(getClassName());
     res->sequence = sequence;
     return res;
   }
@@ -110,7 +110,7 @@ public:
   virtual void save(OutputStream& ostr) const
     {lbcpp::write(ostr, sequence);}
 
-private:
+protected:
   // Note: most sequence labeling tasks involve less than 255 labels,
   //  so we use a single byte per element in order to spare memory
   // Labels: 0..254

@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   FeatureGenerator.h
-**@author Francis MAES
-**@date   Mon Jun 15 23:56:06 2009
-**
-**@brief  FeatureGenerator(s) and visitor declarations.
-**
-**
-*/
-
 #ifndef LBCPP_FEATURE_GENERATOR_H_
 # define LBCPP_FEATURE_GENERATOR_H_
 

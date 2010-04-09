@@ -1,7 +1,10 @@
 
-InferenceStep:
- 3a) Cassage des structures de données: Faire sauter VariableSet (on utilise ObjectContainer à la place), utiliser Label
- 3b) Decomposer l'apprentissage en steps puis "make deterministic" et "make stochastic"
+Cassage des structures de données:
+  * Faire sauter VariableSet (on utilise ObjectContainer à la place), utiliser Label
+  * Reecrire LabelSequence, ScoreVectorSequence
+  * Faire sauter les classes "SecondaryStructureSequence", "SolventAccessibilitySequence", "AminoAcidSequence" et "PositionSpecificScoringMatrix" (?)
+
+Load/Save des modèles puis "update"
 
 Explorer:
   * dispatcher le code des juce::Component 

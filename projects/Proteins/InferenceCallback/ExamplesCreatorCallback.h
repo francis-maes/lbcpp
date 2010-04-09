@@ -52,7 +52,7 @@ protected:
       std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
       machine->trainStochastic(trainingData);
       std::cout << "ok." << std::endl;
-      /*ClassifierPtr classifier = machine.dynamicCast<Classifier>();
+    /*  ClassifierPtr classifier = machine.dynamicCast<Classifier>();
       if (classifier)
         std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << std::endl;*/
     }
