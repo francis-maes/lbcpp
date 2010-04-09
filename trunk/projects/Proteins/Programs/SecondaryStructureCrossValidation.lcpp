@@ -23,6 +23,7 @@ public:
       secondaryStructure(protein->getSecondaryStructureSequence(false))
   {
     initializeGlobalAminoAcidComposition();
+    initializeLocalAminoAcidComposition();
   }
   
   void initializeGlobalAminoAcidComposition() {
@@ -55,23 +56,32 @@ public:
     {
       word[i] = aminoAcidSequence->getLabel(i);
     }
-    aminoAcidCompositionCumuls[arrayToString(word, localWordLength, 0)][localWordLength -1] = 1;
-    
+
+    std::vector<size_t> target(aminoAcidSequence->getNumVariables(), 0);
+    target[localWordLength -1] = 1;
+    aminoAcidCompositionCumuls[arrayToString(word, localWordLength, 0)] = target;
+
     // Body
     size_t index = 0;
-    for (size_t i = localWordLength; i < localWordLength; i++)
+    for (size_t i = localWordLength; i < aminoAcidSequence->getNumVariables(); i++)
     {
       // Refresh current composition
-      for (std::map<String, std::vector<size_t> >::const_iterator iter = aminoAcidCompositionCumuls.begin(); iter != aminoAcidCompositionCumuls.end(); iter++)
+      for (std::map<String, std::vector<size_t> >::iterator iter = aminoAcidCompositionCumuls.begin(); iter != aminoAcidCompositionCumuls.end(); iter++)
       {
-        aminoAcidCompositionCumuls[iter->first][i] = iter->second[i-1];
+        aminoAcidCompositionCumuls[iter->first].at(i) = aminoAcidCompositionCumuls[iter->first].at(i - 1);
       }
       
       // Increment new word
       word[index++] = aminoAcidSequence->getLabel(i);
       index %= localWordLength;
 
-      aminoAcidCompositionCumuls[arrayToString(word, localWordLength, index)][i]++;
+      String sWord = arrayToString(word, localWordLength, index);
+      if (!aminoAcidCompositionCumuls.count(sWord))
+      {
+        std::vector<size_t> newVector(aminoAcidSequence->getNumVariables(), 0);
+        aminoAcidCompositionCumuls[sWord] = newVector;
+      }
+      aminoAcidCompositionCumuls[sWord].at(i)++;
     }
   }
   
@@ -161,14 +171,14 @@ public:
   
   featureGenerator localAminoAcidCompositionFeatures(size_t variableIndex, size_t nbLeft, size_t nbRight) const {
     size_t start = (variableIndex < nbLeft) ? 0 : variableIndex - nbLeft;
-    size_t stop = (variableIndex + nbRight >= aminoAcidSequence->getNumVariables()) ? aminoAcidSequence->getNumVariables() : variableIndex + nbRight;
+    size_t stop = (variableIndex + nbRight >= aminoAcidSequence->getNumVariables()) ? aminoAcidSequence->getNumVariables() - 1 : variableIndex + nbRight;
     size_t length = stop - start;
     
     for (std::map<String, std::vector<size_t> >::const_iterator iter = aminoAcidCompositionCumuls.begin(); iter != aminoAcidCompositionCumuls.end(); iter++)
     {
       if (iter->second[start] != iter->second[stop])
       {
-        featureSense(iter->first, (iter->second[stop] - iter->second[start]) / length);
+        featureSense(iter->first, (double) (iter->second[stop] - iter->second[start]) / length);
       }
     }
   }
