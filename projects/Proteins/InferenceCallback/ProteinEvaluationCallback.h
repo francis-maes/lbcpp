@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_PROTEIN_EVALUATION_H_
 # define LBCPP_INFERENCE_CALLBACK_PROTEIN_EVALUATION_H_
 
-# include "InferencePolicy.h"
+# include "InferenceCallback.h"
 
 namespace lbcpp
 {

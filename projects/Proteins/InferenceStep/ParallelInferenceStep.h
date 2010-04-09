@@ -10,7 +10,7 @@
 # define LBCPP_REDUCTION_PREDICTION_PROBLEM_H_
 
 # include "InferenceStep.h"
-# include "../InferencePolicy/InferencePolicy.h"
+# include "../InferenceCallback/InferenceContext.h"
 
 namespace lbcpp
 {
@@ -33,7 +33,7 @@ public:
     return classifier;
   }
 
-  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
 
@@ -47,7 +47,7 @@ public:
       jassert(correctOutput);
       classifier = createMaxentClassifier(correctOutput->getDictionary());
     }
-    return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), correctOutput, returnCode);
+    return context->runClassification(classifier, input.dynamicCast<FeatureGenerator>(), correctOutput, returnCode);
   }
 
 protected:
@@ -62,8 +62,8 @@ public:
   virtual void accept(InferenceVisitorPtr visitor)
     {visitor->visit(ParallelInferenceStepPtr(this));}
   
-  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return policy->doParallelStep(ParallelInferenceStepPtr(this), input, supervision, returnCode);}
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return context->runParallelInferences(ParallelInferenceStepPtr(this), input, supervision, returnCode);}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const = 0;
   virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const = 0;

@@ -14,8 +14,6 @@
 namespace lbcpp
 {
 
-class InferencePolicy;
-typedef ReferenceCountedObjectPtr<InferencePolicy> InferencePolicyPtr;
 class InferenceVisitor;
 typedef ReferenceCountedObjectPtr<InferenceVisitor> InferenceVisitorPtr;
 
@@ -79,7 +77,7 @@ public:
 protected:
   friend class InferenceContext;
 
-  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
 
 private:

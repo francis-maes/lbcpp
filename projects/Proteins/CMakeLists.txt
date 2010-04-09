@@ -54,12 +54,13 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
-  InferenceCallback/InferencePolicy.h
-  InferenceCallback/InferencePolicy.cpp
-  InferenceCallback/DecoratorInferencePolicy.h
-  InferenceCallback/ExamplesCreatorPolicy.h
-  InferenceCallback/GlobalSimulationLearningPolicy.h
-  InferenceCallback/ProteinEvaluationPolicy.h
+  InferenceCallback/InferenceCallback.h
+  InferenceCallback/InferenceContext.h
+  InferenceCallback/InferenceContext.cpp
+  InferenceCallback/ExamplesCreatorCallback.h
+  InferenceCallback/GlobalSimulationLearningCallback.h
+  InferenceCallback/SingleStepSimulationLearningCallback.h
+  InferenceCallback/ProteinEvaluationCallback.h
 )
 
 SET(PROTEINS_CPP_SOURCES
