@@ -17,22 +17,12 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: RandomVariable.h               | RandomGenerator variable statistics      |
+| Filename: RandomVariable.h               | Random variable statistics      |
 | Author  : Francis Maes                   |                                 |
 | Started : 12/03/2009 16:18               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
-/*!
-**@file   RandomVariable.h
-**@author Francis MAES
-**@date   Fri Jun 12 19:25:23 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
 
 #ifndef LBCPP_RANDOM_VARIABLE_H_
 # define LBCPP_RANDOM_VARIABLE_H_
@@ -43,129 +33,50 @@
 namespace lbcpp
 {
 
-/*!
-** @class ScalarVariable
-** @brief
-*/
-
-class ScalarVariableMean : public Object
+class ScalarVariableMean : public NameableObject
 {
 public:
-  /*!
-  **
-  **
-  ** @param name
-  **
-  ** @return
-  */
-  ScalarVariableMean(const String& name = "")
-    : name(name), value(0), cnt(0) {}
+  ScalarVariableMean(const String& name = T("Unnamed"))
+    : NameableObject(name), sum(0.0), cnt(0.0) {}
 
-  /*!
-  **
-  **
-  ** @param val
-  */
   void push(double val)
-    {value = (value * cnt + val) / (cnt + 1); ++cnt;}
+    {sum += val; cnt += 1.0;}
 
-  /*!
-  **
-  **
-  ** @param val
-  ** @param weight
-  */
   void push(double val, double weight)
-    {value = (value * cnt + val) / (cnt + weight); cnt += weight;}
+    {sum += weight * val; cnt += weight;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getMean() const
-    {return value;}
+    {return cnt ? sum / cnt : 0.0;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getCount() const
     {return cnt;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getSum() const
-    {return value * cnt;}
+    {return sum;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
-  virtual String getName() const
-    {return name;}
-
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual String toString() const
-    {return lbcpp::toString(getMean());}
+    {return getName() + T(" = ") + lbcpp::toString(getMean());}
 
-  /*!
-  **
-  **
-  ** @param ostr
-  */
   virtual void save(OutputStream& ostr) const
   {
-    write(ostr, name);
-    write(ostr, value);
+    NameableObject::save(ostr);
+    write(ostr, sum);
     write(ostr, cnt);
   }
 
-  /*!
-  **
-  **
-  ** @param istr
-  **
-  ** @return
-  */
   virtual bool load(InputStream& istr)
-    {return read(istr, name) && read(istr, value) && read(istr, cnt);}
+    {return NameableObject::load(istr) && read(istr, sum) && read(istr, cnt);}
 
 protected:
-  String name;             /*!< */
-  double value;                 /*!< */
-  double cnt;                   /*!< */
+  double sum;
+  double cnt;
 };
 
+typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
 
-/*!
-** @class ScalarVariableMeanAndVariance
-** @brief
-*/
 class ScalarVariableMeanAndVariance : public ScalarVariableMean
 {
 public:
-  /*!
-  **
-  **
-  ** @param name
-  **
-  ** @return
-  */
   ScalarVariableMeanAndVariance(const String& name = "")
     : ScalarVariableMean(name) {}
 
@@ -254,14 +165,7 @@ private:
 */
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
- public:
-  /*!
-  **
-  **
-  ** @param name
-  **
-  ** @return
-  */
+public:
   ScalarVariableStatistics(const String& name = "")
     : ScalarVariableMeanAndVariance(name), min(DBL_MAX), max(-DBL_MAX) {}
 

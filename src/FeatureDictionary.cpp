@@ -301,12 +301,14 @@ FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateDictionary(const Strin
     return getOrCreateRootDictionary(name);
 }
 
-FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateRootDictionary(const String& name)
+FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateRootDictionary(const String& name, bool createEmptyFeatures, bool createEmptyScopes)
 {
   DictionariesMap::const_iterator it = dictionaries.find(name);
   if (it == dictionaries.end())
   {
-    FeatureDictionaryPtr res = new FeatureDictionary(name);
+    FeatureDictionaryPtr res = new FeatureDictionary(name,
+      createEmptyFeatures ? StringDictionaryPtr(new StringDictionary(name + T(" features"))) : StringDictionaryPtr(),
+      createEmptyScopes ? StringDictionaryPtr(new StringDictionary(name + T(" scope"))) : StringDictionaryPtr());
     dictionaries[name] = res;
     return res;
   }
@@ -316,13 +318,22 @@ FeatureDictionaryPtr FeatureDictionaryManager::getOrCreateRootDictionary(const S
 
 FeatureDictionaryPtr FeatureDictionaryManager::getCollectionDictionary(StringDictionaryPtr indices, FeatureDictionaryPtr elementsDictionary)
 {
-  FeatureDictionaryPtr res = getOrCreateRootDictionary(T("Collection(") + indices->getName() + T(", ") + elementsDictionary->getName() + T(")"));
+  FeatureDictionaryPtr res = getOrCreateRootDictionary(T("Collection(") + indices->getName() + T(", ") + elementsDictionary->getName() + T(")"), false, false);
   jassert(res);
-  if (res->getNumScopes() == 0)
+  if (!res->getScopes())
+  {
+    res->setScopes(indices);
     for (size_t i = 0; i < indices->getNumElements(); ++i)
       res->setSubDictionary(i, elementsDictionary);
+  }
   return res;
 }
 
 FeatureDictionaryPtr FeatureDictionaryManager::getFlatVectorDictionary(StringDictionaryPtr indices)
-  {return getOrCreateRootDictionary(T("FlatVector(") + indices->getName() + T(")"));}
+{
+  FeatureDictionaryPtr res = getOrCreateRootDictionary(T("FlatVector(") + indices->getName() + T(")"), false, false);
+  jassert(res);
+  if (!res->getFeatures())
+    res->setFeatures(indices);
+  return res;
+}

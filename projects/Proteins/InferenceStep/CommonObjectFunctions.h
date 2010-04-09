@@ -178,16 +178,13 @@ public:
   DeterministicClassifier(ClassifierPtr classifier = ClassifierPtr())
     : ClassifierFunction(classifier)
   {
-    if (classifier)
-      dictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(classifier->getLabels());
   }
 
   virtual ObjectPtr function(ObjectPtr object) const
   {
     jassert(dictionary);
-    SparseVectorPtr res = new SparseVector(dictionary);
-    res->set(classifier->predict(object.dynamicCast<FeatureGenerator>()), 1.0);
-    return res;
+    jassert(classifier);
+    return classifier->predictLabel(object.dynamicCast<FeatureGenerator>());
   }
 
 private:

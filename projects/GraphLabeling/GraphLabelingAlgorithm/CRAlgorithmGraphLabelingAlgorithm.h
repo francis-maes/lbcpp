@@ -17,10 +17,10 @@ namespace lbcpp
 class CRAlgorithmGraphLabelingAlgorithm : public GraphLabelingAlgorithm
 {
 public:
-  virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(StringDictionaryPtr labels) = 0; // returns a pair (learnerPolicy, learnedPolicy)
+  virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(FeatureDictionaryPtr labels) = 0; // returns a pair (learnerPolicy, learnedPolicy)
   virtual CRAlgorithmPtr createCRAlgorithm(LabeledContentGraphPtr graph, size_t begin, size_t end) = 0;
 
-  virtual void reset(StringDictionaryPtr labels)
+  virtual void reset(FeatureDictionaryPtr labels)
   {
     std::pair<PolicyPtr, PolicyPtr> p = createInitialPolicies(labels);
     learnerPolicy = p.first;

@@ -151,8 +151,8 @@ public:
   SecondaryStructureSequence(bool useHeightStates = false)
     : numStates(useHeightStates ? 8 : 3) {}
 
-  virtual StringDictionaryPtr getVariablesDictionary() const
-    {return SecondaryStructureElement::getOneLetterCodes(hasEightStates());}
+  virtual FeatureDictionaryPtr getVariablesDictionary() const
+    {return FeatureDictionaryManager::getInstance().getFlatVectorDictionary(SecondaryStructureElement::getOneLetterCodes(hasEightStates()));}
 
   virtual String elementToString(size_t position) const
     {String res; res += getElement(position).getOneLetterCode(); return res;}

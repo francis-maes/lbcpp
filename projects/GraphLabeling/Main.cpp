@@ -43,7 +43,7 @@ public:
   
   bool oneClassifierPerPass;
   
-  virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(StringDictionaryPtr labels)
+  virtual std::pair<PolicyPtr, PolicyPtr> createInitialPolicies(FeatureDictionaryPtr labels)
   {
     // Classifier Maxent
     IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
@@ -93,11 +93,12 @@ inline double getTimeInSeconds()
 double testAlgorithm(GraphLabelingAlgorithm& algorithm, const String& name, const std::vector<LabeledContentGraphPtr>& trainGraph,
                      const std::vector<LabeledContentGraph::LabelsFold>& testGraph, bool profile)
 {
+  FeatureDictionaryPtr labels = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(trainGraph[0]->getLabelDictionary());
   std::cout << "Testing Algorithm " << name << std::endl;
   if (profile)
   {
     algorithm.setL2Regularizer(0.0);
-    algorithm.reset(trainGraph[0]->getLabelDictionary());
+    algorithm.reset(labels);
     double t0 = getTimeInSeconds();
     algorithm.train(trainGraph[0]);
     double t1 = getTimeInSeconds();

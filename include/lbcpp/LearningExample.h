@@ -235,7 +235,7 @@ typedef ReferenceCountedObjectPtr<RankingExample> RankingExamplePtr;
 **
 ** @return
 */
-extern ObjectFunctionPtr transformClassificationExampleIntoRankingExample(StringDictionaryPtr labels);
+extern ObjectFunctionPtr transformClassificationExampleIntoRankingExample(FeatureDictionaryPtr labels);
 
 }; /* namespace lbcpp */
 

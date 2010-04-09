@@ -37,9 +37,9 @@ void testBaselineClassifier(ObjectContainerPtr train, ObjectContainerPtr test, s
 {
   std::cout << "TESTING BASELINE LINEAR CLASSIFIER" << std::endl;
   
-  StringDictionaryPtr classes = new StringDictionary();
+  FeatureDictionaryPtr classes = new FeatureDictionary();
   for (size_t i = 0; i < numClasses; ++i)
-    classes->add("class " + lbcpp::toString(i));
+    classes->addFeature("class " + lbcpp::toString(i));
   
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(batchLearner(lbfgsOptimizer()), classes, 0.001);
   classifier->trainBatch(train, consoleProgressCallback());

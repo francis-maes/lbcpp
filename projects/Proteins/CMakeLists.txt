@@ -48,6 +48,8 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/CommonObjectFunctions.cpp
   InferenceStep/InferenceStep.h
   InferenceStep/InferenceStep.cpp
+  InferenceStep/InferencePolicy.h
+  InferenceStep/InferencePolicy.cpp
   InferenceStep/ParallelInferenceStep.h
   InferenceStep/SequenceInferenceStep.h
   InferenceStep/ProteinInferenceSteps.h

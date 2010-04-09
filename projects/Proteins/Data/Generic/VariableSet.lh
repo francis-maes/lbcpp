@@ -17,7 +17,7 @@ public:
     {return getNumVariables();}
 
   virtual ObjectPtr get(size_t index) const
-    {return ObjectPtr(); /* FIXME */}
+    {jassert(false); return ObjectPtr();}
 
   // VariableSet
   enum VariableType
@@ -39,8 +39,8 @@ public:
   virtual void setVariable(size_t index, size_t value)
     {jassert(false);}
 
-  virtual StringDictionaryPtr getVariablesDictionary() const
-    {jassert(false); return StringDictionaryPtr();}
+  virtual FeatureDictionaryPtr getVariablesDictionary() const
+    {jassert(false); return FeatureDictionaryPtr();}
     
   bool getVariables(std::vector<size_t>& res) const
   {

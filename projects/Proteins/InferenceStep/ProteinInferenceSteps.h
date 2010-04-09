@@ -21,24 +21,31 @@ class SecondaryStructureInferenceStep : public SharedParallelInferenceStep
 {
 public:
   SecondaryStructureInferenceStep(const String& name = T("SecondaryStructure"))
-    : SharedParallelInferenceStep(name, InferenceStepPtr(new ClassificationInferenceStep(T("SS3Classification"))), T("SecondaryStructureSequence")) {}
+    : SharedParallelInferenceStep(name, InferenceStepPtr(new ClassificationInferenceStep(T("SS3Classification")))) {}
 
   virtual FeatureGeneratorPtr getInputFeatures(ProteinPtr protein, size_t index) const = 0;
 
-  virtual size_t getNumSubObjects(ObjectPtr input, ObjectPtr output) const
+  virtual size_t getNumSubInferences(ObjectPtr input) const
     {return getProtein(input)->getLength();}
 
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return getInputFeatures(getProtein(input), index);}
 
-  virtual ObjectPtr getSubOutput(ObjectPtr output, size_t index) const
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
   {
-    SecondaryStructureSequencePtr secondaryStructure = output.dynamicCast<SecondaryStructureSequence>();
-    if (!secondaryStructure)
-      return ObjectPtr();
-    FeatureDictionaryPtr dictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(secondaryStructure->getVariablesDictionary());
-    return new Label(dictionary, secondaryStructure->getLabel(index));
+    SecondaryStructureSequencePtr secondaryStructure = supervision.dynamicCast<SecondaryStructureSequence>();
+    return secondaryStructure ? secondaryStructure->get(index) : ObjectPtr();
   }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  {
+    SecondaryStructureSequencePtr res = new SecondaryStructureSequence();
+    res->setLength(getNumSubInferences(input));
+    return res;
+  }
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+    {output.dynamicCast<ObjectContainer>()->set(index, subOutput);}
 
 protected:
   ProteinPtr getProtein(ObjectPtr input) const

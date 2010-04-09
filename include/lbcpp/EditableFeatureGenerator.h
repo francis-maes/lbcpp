@@ -77,33 +77,29 @@ public:
 class Label : public FeatureGeneratorDefaultImplementations<Label, EditableFeatureGenerator>
 {
 public:
-  Label(FeatureDictionaryPtr featureDictionary, size_t index)
-    : value(index + 1)
+  Label(FeatureDictionaryPtr featureDictionary, size_t index = 0)
+    : index(index)
     {setDictionary(featureDictionary);}
 
-  Label(FeatureDictionaryPtr featureDictionary)
-    : value(0)
-    {setDictionary(featureDictionary);}
-
-  Label(StringDictionaryPtr stringDictionary, size_t index)
-    : value(index + 1)
+  Label(StringDictionaryPtr stringDictionary, size_t index = 0)
+    : index(index)
     {setDictionary(FeatureDictionaryManager::getInstance().getFlatVectorDictionary(stringDictionary));}
 
   virtual String toString() const
-    {return isDecided() ? getDictionary()->getFeature(getIndex()) : T("?");}
+    {return getString();}
 
   virtual void clear()
-    {value = 0;}
+    {index = 0;}
 
   template<class FeatureVisitor>
   void staticFeatureGenerator(FeatureVisitor& visitor) const
-    {visitor.featureSense(getDictionary(), value, 1.0);}
-
-  bool isDecided() const
-    {return value > 0;}
+    {visitor.featureSense(getDictionary(), index, 1.0);}
 
   size_t getIndex() const
-    {jassert(isDecided()); return (size_t)(value - 1);}
+    {return index;}
+
+  String getString() const
+    {return getDictionary()->getFeature(index);}
 
 protected:
   // FeatureGenerator
@@ -117,7 +113,7 @@ protected:
     {jassert(false); return FeatureGeneratorPtr();}
 
 private:
-  int value;
+  size_t index;
 };
 
 typedef ReferenceCountedObjectPtr<Label> LabelPtr;

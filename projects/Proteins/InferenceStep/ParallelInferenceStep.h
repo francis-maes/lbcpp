@@ -10,19 +10,21 @@
 # define LBCPP_REDUCTION_PREDICTION_PROBLEM_H_
 
 # include "InferenceStep.h"
+# include "InferencePolicy.h"
 
 namespace lbcpp
 {
 
 // Input: FeatureGenerator
 // Output: FeatureVector
+// Supervision: Label
 class ClassificationInferenceStep : public InferenceStep
 {
 public:
   ClassificationInferenceStep(const String& name)
     : InferenceStep(name) {}
 
-  GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
+  GradientBasedClassifierPtr createMaxentClassifier(FeatureDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
   {
     IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
@@ -31,104 +33,58 @@ public:
     return classifier;
   }
 
-  virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output) 
+  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
+    FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
+
     if (!classifier)
     {
-      if (!output)
-        return errorReturnCode;
-
-      FeatureGeneratorPtr correctOutput = output.dynamicCast<FeatureGenerator>();
+      if (!supervision)
+      {
+        returnCode = errorReturnCode;
+        return ObjectPtr();
+      }
       jassert(correctOutput);
-      classifier = createMaxentClassifier(correctOutput->getDictionary()->getFeatures());
+      classifier = createMaxentClassifier(correctOutput->getDictionary());
     }
-    return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), *(FeatureGeneratorPtr* )&output);
+    return policy->doClassification(classifier, input.dynamicCast<FeatureGenerator>(), correctOutput, returnCode);
   }
 
 protected:
   ClassifierPtr classifier;
 };
 
-
-// Input: ObjectContainer
-// Output: inherited from ObjectContainer
-class SharedParallelInferenceStepBase : public InferenceStep
+class ParallelInferenceStep : public InferenceStep
 {
 public:
-  SharedParallelInferenceStepBase(const String& name, InferenceStepPtr subInference, const String& outputClassName)
-    : InferenceStep(name), subInference(subInference), outputClassName(outputClassName) {}
+  ParallelInferenceStep(const String& name) : InferenceStep(name) {}
 
-  virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output)
-  {
-    ObjectContainerPtr inputContainer = input.dynamicCast<ObjectContainer>();
-    std::vector< std::pair<InferenceStepPtr, ObjectPtr> > subInferences(inputContainer->size());
-    for (size_t i = 0; i < subInferences.size(); ++i)
-      subInferences[i] = std::make_pair(subInference, inputContainer->get(i));
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(ParallelInferenceStepPtr(this));}
+  
+  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return policy->doParallelStep(ParallelInferenceStepPtr(this), input, supervision, returnCode);}
 
-    ObjectContainerPtr outputContainer = Object::createAndCast<ObjectContainer>(outputClassName);
-    outputContainer->resize(inputContainer->size());
-    ObjectContainerPtr correctOutputContainer = output.dynamicCast<ObjectContainer>();
-    if (correctOutputContainer)
-      for (size_t i = 0; i < subInferences.size(); ++i)
-        outputContainer->set(i, correctOutputContainer->get(i));
-    return policy->doParallelSteps(subInferences, outputContainer);
-  }
+  virtual size_t getNumSubInferences(ObjectPtr input) const = 0;
+  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const = 0;
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const = 0;
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const = 0;
 
-protected:
-  String outputClassName;
-  InferenceStepPtr subInference;
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const = 0;
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
 };
 
-class SharedParallelInferenceStep : public SharedParallelInferenceStepBase
+class SharedParallelInferenceStep : public ParallelInferenceStep
 {
 public:
-  SharedParallelInferenceStep(const String& name, InferenceStepPtr subInference, const String& outputClassName)
-    : SharedParallelInferenceStepBase(name, subInference, outputClassName) {}
+  SharedParallelInferenceStep(const String& name, InferenceStepPtr subInference)
+    : ParallelInferenceStep(name), subInference(subInference) {}
 
-  virtual size_t getNumSubObjects(ObjectPtr input, ObjectPtr output) const = 0;
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const = 0;
-  virtual ObjectPtr getSubOutput(ObjectPtr output, size_t index) const = 0;
+  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
+    {return subInference;}
 
-  struct InputContainer : public ObjectContainer
-  {
-    InputContainer(ObjectPtr input, size_t numSubInputs, SharedParallelInferenceStep* pthis)
-      : input(input), numSubInputs(numSubInputs), pthis(pthis) {}
-
-    ObjectPtr input;
-    size_t numSubInputs;
-    SharedParallelInferenceStep* pthis;
-
-    virtual size_t size() const
-      {return numSubInputs;}
-
-    virtual ObjectPtr get(size_t index) const
-      {return pthis->getSubInput(input, index);}
-  };
-
-  struct OutputContainer : public ObjectContainer
-  {
-    OutputContainer(ObjectPtr output, size_t numSubOutput, SharedParallelInferenceStep* pthis)
-      : output(output), numSubOutput(numSubOutput), pthis(pthis) {}
-
-    ObjectPtr output;
-    size_t numSubOutput;
-    SharedParallelInferenceStep* pthis;
-
-    virtual size_t size() const
-      {return output;}
-
-    virtual ObjectPtr get(size_t index) const
-      {return pthis->getSubOutput(output, index);}
-  };
-
-  virtual ResultCode run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr& output)
-  {
-    size_t numObjects = getNumSubObjects(input, output);
-    if (output)
-      output = new OutputContainer(output, numObjects, this);
-    input = new InputContainer(input, numObjects, this);
-    return SharedParallelInferenceStepBase::run(policy, input, output);
-  }
+protected:
+  InferenceStepPtr subInference;
 };
 
 }; /* namespace lbcpp */

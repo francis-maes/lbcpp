@@ -24,7 +24,7 @@ public:
   virtual void setL2Regularizer(double reg)
     {l2regularizer = reg;}
   
-  virtual void reset(StringDictionaryPtr labels) = 0;
+  virtual void reset(FeatureDictionaryPtr labels) = 0;
   virtual void train(LabeledContentGraphPtr graph) = 0;
   
   // predictedGraph must be initialized as a copy of correctGraph
@@ -40,7 +40,8 @@ public:
     for (size_t i = 0; i < trainGraphs.size(); ++i)
     {
       std::cout << "CROSS-VALIDATION FOLD " << (i+1) << " / " << trainGraphs.size() << std::endl;
-      reset(trainGraphs[i]->getLabelDictionary());
+      FeatureDictionaryPtr labels = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(trainGraphs[i]->getLabelDictionary());
+      reset(labels);
       train(trainGraphs[i]);
       trainAccuracy->push(evaluate(trainGraphs[i], 0, trainGraphs[i]->getNumNodes()));
       testAccuracy->push(evaluate(testGraphs[i].graph, testGraphs[i].foldBegin, testGraphs[i].foldEnd));

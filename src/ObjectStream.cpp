@@ -50,17 +50,6 @@ bool ObjectStream::iterate(size_t maximumCount)
   return true;
 }
 
-bool ObjectStream::checkContentClassName(const String& expectedClassName) const
-{
-  if (getContentClassName() != expectedClassName)
-  {
-    Object::error("ObjectStream::checkContentClassName",
-        "Expected objects of class '" + expectedClassName + "', found objects of class '" + getContentClassName() + "'");
-    return false;
-  }
-  return true;
-}
-
 /*
 ** ApplyFunctionObjectStream
 */
@@ -240,7 +229,7 @@ bool LearningDataObjectParser::parseFeatureIdentifier(const String& identifier, 
 
 
 ObjectStreamPtr lbcpp::classificationExamplesParser(
-          const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+          const File& file, FeatureDictionaryPtr features, FeatureDictionaryPtr labels)
 {
   jassert(features && labels);
   return new ClassificationExamplesParser(file, features, labels);

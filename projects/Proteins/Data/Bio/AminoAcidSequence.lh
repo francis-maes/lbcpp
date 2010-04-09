@@ -14,8 +14,8 @@ namespace lbcpp
 class AminoAcidSequence : public LabelSequence
 {
 public:
-  virtual StringDictionaryPtr getVariablesDictionary() const
-    {return AminoAcid::getThreeLettersCodes();}
+  virtual FeatureDictionaryPtr getVariablesDictionary() const
+    {return FeatureDictionaryManager::getInstance().getFlatVectorDictionary(AminoAcid::getThreeLettersCodes());}
 
   virtual String elementToString(size_t position) const
     {String res; res += getAminoAcid(position).getOneLetterCode(); return res;}

@@ -34,8 +34,9 @@ public:
   virtual FeatureGeneratorPtr getNodeFeatures(LabeledContentGraphPtr graph, size_t nodeIndex)
     {return graph->nodeAndNeighborhoodLabelsFrequencyFeatures(nodeIndex);}
   
-  virtual void reset(StringDictionaryPtr labels)
+  virtual void reset(FeatureDictionaryPtr labels)
   {
+    this->labels = labels;
     baseAlgorithm->reset(labels);
     ClassifierBasedGraphLabelingAlgorithm::reset(labels);
   }
@@ -55,7 +56,7 @@ public:
       size_t foldBegin = testGraphs[i].foldBegin;
       size_t foldEnd = testGraphs[i].foldEnd;
       
-      baseAlgorithm->reset(graph->getLabelDictionary());
+      baseAlgorithm->reset(labels);
       std::cout << "FOLD " << (i+1) << " / " << numFolds << std::endl;
       baseAlgorithm->train(trainGraphs[i]);
       std::cout << "FOLD " << (i+1) << " / " << numFolds << " OK." << std::endl;
@@ -67,7 +68,7 @@ public:
         intermediaryLabels->set(j, tmpGraph->getLabel(j));
     }
     
-    baseAlgorithm->reset(graph->getLabelDictionary());
+    baseAlgorithm->reset(labels);
     baseAlgorithm->train(graph);
     ClassifierBasedGraphLabelingAlgorithm::train(intermediaryGraph, graph);
   }
@@ -85,6 +86,7 @@ public:
 
 private:
   GraphLabelingAlgorithm* baseAlgorithm;
+  FeatureDictionaryPtr labels;
 };
 
 }; /* namespace lbcpp */

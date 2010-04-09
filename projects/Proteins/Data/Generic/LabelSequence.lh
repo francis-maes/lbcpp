@@ -21,13 +21,21 @@ public:
   {
     LabelPtr label = object.dynamicCast<lbcpp::Label>();
     jassert(label);
-    if (label->getDictionary()->getFeatures() != getVariablesDictionary())
+    if (label->getDictionary() != getVariablesDictionary())
     {
-      StringDictionaryPtr labelDictionary = label->getDictionary()->getFeatures();
-      StringDictionaryPtr thisDictionary = getVariablesDictionary();
+      FeatureDictionaryPtr labelDictionary = label->getDictionary();
+      FeatureDictionaryPtr thisDictionary = getVariablesDictionary();
       jassert(false);
     }
     setVariable(index, label->getIndex());
+  }
+
+  virtual ObjectPtr get(size_t index) const
+  {
+    int l = getLabel(index);
+    if (l < 0)
+      return ObjectPtr();
+    return LabelPtr(new lbcpp::Label(getVariablesDictionary(), (size_t)l));
   }
 
   /*

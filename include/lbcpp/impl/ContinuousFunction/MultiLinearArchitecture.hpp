@@ -16,23 +16,20 @@ namespace impl {
 
 struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitecture >
 {
-  MultiLinearArchitecture(StringDictionaryPtr outputs = StringDictionaryPtr())
+  MultiLinearArchitecture(FeatureDictionaryPtr outputs = FeatureDictionaryPtr())
   {
     if (outputs)
       setOutputs(outputs);
   }
   
-  void setOutputs(StringDictionaryPtr outputs)
-  {
-    this->outputs = outputs;
-    outputsDictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(outputs);
-  }
+  void setOutputs(FeatureDictionaryPtr outputs)
+    {outputsDictionary = outputs;}
     
   size_t getNumOutputs() const
-    {jassert(outputs && outputs->getNumElements()); return outputs->getNumElements();}
+    {jassert(outputsDictionary); return outputsDictionary->getNumFeatures();}
   
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
-    {return FeatureDictionaryManager::getInstance().getCollectionDictionary(outputs, inputDictionary);}
+    {return FeatureDictionaryManager::getInstance().getCollectionDictionary(outputsDictionary->getFeatures(), inputDictionary);}
   
   DenseVectorPtr getClassParameters(DenseVectorPtr parameters, size_t outputNumber, FeatureDictionaryPtr inputDictionary) const
   {
@@ -83,7 +80,7 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
       // 0.0.input
       // 1.1.input
       // 2.2.input (la sortie 2 ne dépend que du sous-vecteurs de paramètres 2 linéairement en fonction de l'entrée)
-      FeatureDictionaryPtr collectionOfGradientsDictionary = FeatureDictionaryManager::getInstance().getCollectionDictionary(outputs, parameters->getDictionary());
+      FeatureDictionaryPtr collectionOfGradientsDictionary = FeatureDictionaryManager::getInstance().getCollectionDictionary(outputsDictionary->getFeatures(), parameters->getDictionary());
       CompositeFeatureGeneratorPtr g = new CompositeFeatureGenerator(collectionOfGradientsDictionary, numOutputs);
       for (size_t i = 0; i < numOutputs; ++i)
         g->setSubGenerator(i, subFeatureGenerator(parameters->getDictionary(), i, input));
@@ -94,11 +91,10 @@ struct MultiLinearArchitecture : public VectorArchitecture< MultiLinearArchitect
   }
   
 private:
-  StringDictionaryPtr outputs;
   FeatureDictionaryPtr outputsDictionary;
 };
 
-inline MultiLinearArchitecture multiLinearArchitecture(StringDictionaryPtr outputs)
+inline MultiLinearArchitecture multiLinearArchitecture(FeatureDictionaryPtr outputs)
   {return MultiLinearArchitecture(outputs);}
 
 }; /* namespace impl */

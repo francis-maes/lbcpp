@@ -20,7 +20,7 @@ public:
   virtual FeatureGeneratorPtr getNodeFeatures(LabeledContentGraphPtr graph, size_t nodeIndex)
     {return graph->nodeAndNeighborhoodLabelsFrequencyFeatures(nodeIndex);}
 
-  virtual void reset(StringDictionaryPtr labels)
+  virtual void reset(FeatureDictionaryPtr labels)
     {initialClassifier = createClassifier(labels); classifier = createClassifier(labels);}
 
   virtual void train(LabeledContentGraphPtr graph)

@@ -18,7 +18,7 @@ class MaximumEntropyClassifier
   : public StaticToDynamicGradientBasedLearningMachine<MaximumEntropyClassifier, GradientBasedClassifier>
 {
 public:
-  virtual void setLabels(StringDictionaryPtr labels)
+  virtual void setLabels(FeatureDictionaryPtr labels)
     {architecture_.setOutputs(labels); GradientBasedClassifier::setLabels(labels);}
   
   virtual VectorArchitecturePtr getPredictionArchitecture() const
