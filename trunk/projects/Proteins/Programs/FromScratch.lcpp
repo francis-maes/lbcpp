@@ -11,8 +11,9 @@
 #include "VariableSetModel.h"
 #include "InferenceStep/ProteinInferenceSteps.h"
 #include "InferenceStep/SequenceInferenceStep.h"
-#include "InferencePolicy/ProteinEvaluationPolicy.h"
-#include "InferencePolicy/GlobalSimulationLearningPolicy.h"
+#include "InferenceCallback/ProteinEvaluationCallback.h"
+#include "InferenceCallback/SingleStepSimulationLearningCallback.h"
+#include "InferenceCallback/GlobalSimulationLearningCallback.h"
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
@@ -69,7 +70,7 @@ public:
     appendSubStep(new SS3ContentAndStructureInferenceStep(3));*/
   }
 
-  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     // input and working proteins
     ProteinPtr inputProtein = input.dynamicCast<Protein>();
@@ -85,7 +86,7 @@ public:
     // main inference loop
     for (size_t i = 0; i < subSteps.size(); ++i)
     {
-      SecondaryStructureSequencePtr predictedSS = policy->doSubStep(subSteps[i], workingProtein, correctSecondaryStructure, returnCode);
+      SecondaryStructureSequencePtr predictedSS = context->runInference(subSteps[i], workingProtein, correctSecondaryStructure, returnCode);
       if (returnCode != finishedReturnCode)
         return ObjectPtr();
       workingProtein->setSecondaryStructureSequence(predictedSS);
@@ -100,27 +101,34 @@ public:
 /////////MAIN///////////////////
 ////////////////////////////////
 
-void learn(InferencePolicyPtr learningPolicy, InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+void learn(InferenceCallbackPtr learningCallback, InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
 {
+  ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
+
+  InferenceContextPtr trainingContext = singleThreadedInferenceContext();
+  trainingContext->appendCallback(evaluation);
+  trainingContext->appendCallback(learningCallback);
+
+  InferenceContextPtr evaluationContext = singleThreadedInferenceContext();
+  evaluationContext->appendCallback(evaluation);
+
   for (size_t i = 0; i < 10; ++i)
   {
     std::cout << std::endl << " ================== ITERATION " << i << " ================== " << std::endl;
-    ProteinEvaluationPolicyPtr onlineEvaluation = new ProteinEvaluationPolicy(learningPolicy);
-    onlineEvaluation->runOnSupervisedExampleSet(inference, trainingData);
-    std::cout << "Online evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
 
-    /*onlineEvaluation = new ProteinEvaluationPolicy(new DefaultInferencePolicy());
-    onlineEvaluation->runOnSupervisedExampleSet(inference, trainingData);
-    std::cout << "Train evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;*/
+    trainingContext->runWithSelfSupervisedExamples(inference, trainingData);
+    std::cout << "Online evaluation:" << std::endl << evaluation->toString() << std::endl;
 
-    onlineEvaluation->runOnSupervisedExampleSet(inference, testingData);
-    std::cout << "Test evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
+    evaluationContext->runWithSelfSupervisedExamples(inference, trainingData);
+    std::cout << "Train evaluation:" << std::endl << evaluation->toString() << std::endl;
+
+    evaluationContext->runWithSelfSupervisedExamples(inference, testingData);
+    std::cout << "Test evaluation:" << std::endl << evaluation->toString() << std::endl;
   }
 }
 
 void learnWithGlobalSimulation(InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
-  {learn(new GlobalSimulationLearningPolicy(new DefaultInferencePolicy()), inference, trainingData, testingData);}
-
+  {learn(new GlobalSimulationLearningCallback(), inference, trainingData, testingData);}
 
 void learnStepByStep(SequenceInferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
 {
@@ -131,7 +139,7 @@ void learnStepByStep(SequenceInferenceStepPtr inference, ObjectContainerPtr trai
     std::cout << "============== LEARNING PASS " << stepNumber << " ======================" << std::endl;
     std::cout << "=====================================================" << std::endl;
     InferenceStepPtr step = inference->getSubStep(stepNumber);
-    learn(new StepSimulationLearningPolicy(new DefaultInferencePolicy(), stepNumber), inference, trainingData, testingData);
+    learn(new SingleStepSimulationLearningCallback(inference->getSubStep(stepNumber)), inference, trainingData, testingData);
   }
 }
 
@@ -145,8 +153,8 @@ int main(int argc, char** argv)
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 
-  ObjectContainerPtr trainingData = proteins->invFold(0, 7)->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = proteins->fold(0, 7)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr trainingData = proteins->invFold(0, 7);
+  ObjectContainerPtr testingData = proteins->fold(0, 7);
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
 

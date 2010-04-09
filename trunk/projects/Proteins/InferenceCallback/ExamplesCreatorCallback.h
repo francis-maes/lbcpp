@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_EXAMPLES_CREATOR_H_
 # define LBCPP_INFERENCE_CALLBACK_EXAMPLES_CREATOR_H_
 
-# include "InferencePolicy.h"
+# include "InferenceCallback.h"
 
 namespace lbcpp
 {

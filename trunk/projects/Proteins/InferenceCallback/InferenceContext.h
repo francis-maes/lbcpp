@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: InferencePolicy.h              | Inference policy base classes   |
+| Filename: InferenceContext.h             | Inference Context               |
 | Author  : Francis Maes                   |                                 |
 | Started : 09/04/2010 12:58               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_POLICY_H_
-# define LBCPP_INFERENCE_POLICY_H_
+#ifndef LBCPP_INFERENCE_CONTEXT_H_
+# define LBCPP_INFERENCE_CONTEXT_H_
 
 # include "../InferenceStep/InferenceStep.h"
 
@@ -65,27 +65,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<InferenceStack> InferenceStackPtr;
 
-class InferenceCallback : public Object
-{
-public:
-  typedef InferenceStep::ReturnCode ReturnCode;
-
-  virtual void startInferencesCallback(size_t count)
-    {}
-
-  virtual void finishInferencesCallback()
-    {}
-
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
-    {}
-
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
-    {}
-
-  virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode)
-    {}
-};
-
+class InferenceCallback;
 typedef ReferenceCountedObjectPtr<InferenceCallback> InferenceCallbackPtr;
 
 class InferenceContext : public Object
@@ -125,45 +105,8 @@ private:
   std::vector<InferenceCallbackPtr> callbacks;
 };
 
-InferenceContextPtr singleThreadedInferenceContext();
-
-class InferencePolicy : public NameableObject
-{
-public:
-  typedef InferenceStep::ReturnCode ReturnCode;
-
-  ReturnCode runOnSelfSupervisedExampleSet(InferenceStepPtr inference, ObjectContainerPtr examples);
-  ReturnCode runOnSupervisedExampleSet(InferenceStepPtr inference, ObjectContainerPtr examples);
-  ObjectPtr runOnSupervisedExample(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-
-  virtual ObjectPtr doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
-  virtual ObjectPtr doParallelStep(ParallelInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
-
-  virtual FeatureGeneratorPtr doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode) = 0;
-
-public:
-  virtual ObjectContainerPtr supervisedExampleSetPreCallback(InferenceStepPtr inference, ObjectContainerPtr examples, ReturnCode& returnCode)
-    {return examples;}
-
-  virtual void supervisedExampleSetPostCallback(InferenceStepPtr inference, ObjectContainerPtr examples, ReturnCode& returnCode)
-    {}
-
-  virtual ObjectPtr supervisedExamplePreCallback(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return input;}
-
-  virtual ObjectPtr supervisedExamplePostCallback(InferenceStepPtr inference, ObjectPtr input, ObjectPtr output, ObjectPtr supervision, ReturnCode& returnCode)
-    {return output;}
-};
-
-class DefaultInferencePolicy : public InferencePolicy
-{
-public:
-  virtual ObjectPtr doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  virtual ObjectPtr doParallelStep(ParallelInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-
-  virtual FeatureGeneratorPtr doClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode);
-};
+extern InferenceContextPtr singleThreadedInferenceContext();
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_INFERENCE_POLICY_H_
+#endif //!LBCPP_INFERENCE_CONTEXT_H_

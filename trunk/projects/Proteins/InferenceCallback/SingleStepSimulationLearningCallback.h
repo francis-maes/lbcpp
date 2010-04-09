@@ -1,28 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GlobalSimulationLearningPolicy.h| A callback that performs global|
-| Author  : Francis Maes                   |  simulation to learn a policy   |
-| Started : 09/04/2010 15:56               |                                 |
+| Filename: SingleStepSimulationLearnin...h| A callback that performs        |
+| Author  : Francis Maes                   |  learning on a single pass      |
+| Started : 09/04/2010 19:48               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_CALLBACK_GLOBAL_SIMULATION_LEARNING_H_
-# define LBCPP_INFERENCE_CALLBACK_GLOBAL_SIMULATION_LEARNING_H_
+#ifndef LBCPP_INFERENCE_CALLBACK_SINGLE_PASS_SIMULATION_LEARNING_H_
+# define LBCPP_INFERENCE_CALLBACK_SINGLE_PASS_SIMULATION_LEARNING_H_
 
-# include "ExamplesCreatorPolicy.h"
+# include "ExamplesCreatorCallback.h"
 
 namespace lbcpp
 {
-
-class GlobalSimulationLearningCallback : public ExamplesCreatorCallback
-{
-public:
-  virtual void startInferencesCallback(size_t count)
-    {std::cout << "Creating training examples with " << count << " episodes..." << std::endl;}
-
-  virtual void finishInferencesCallback()
-    {trainAndFlushExamples();}
-};
 
 class SingleStepSimulationLearningCallback : public ExamplesCreatorCallback
 {
@@ -57,4 +47,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_CALLBACK_GLOBAL_SIMULATION_LEARNING_H_
+#endif // !LBCPP_INFERENCE_CALLBACK_SINGLE_PASS_SIMULATION_LEARNING_H_
