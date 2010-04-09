@@ -53,20 +53,20 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/ProteinInferenceSteps.h
 )
 
-SET(LBCPP_INFERENCE_POLICY_SOURCES
-  InferencePolicy/InferencePolicy.h
-  InferencePolicy/InferencePolicy.cpp
-  InferencePolicy/DecoratorInferencePolicy.h
-  InferencePolicy/ExamplesCreatorPolicy.h
-  InferencePolicy/GlobalSimulationLearningPolicy.h
-  InferencePolicy/ProteinEvaluationPolicy.h
+SET(LBCPP_INFERENCE_CALLBACK_SOURCES
+  InferenceCallback/InferencePolicy.h
+  InferenceCallback/InferencePolicy.cpp
+  InferenceCallback/DecoratorInferencePolicy.h
+  InferenceCallback/ExamplesCreatorPolicy.h
+  InferenceCallback/GlobalSimulationLearningPolicy.h
+  InferenceCallback/ProteinEvaluationPolicy.h
 )
 
 SET(PROTEINS_CPP_SOURCES
   ${PROTEINS_DATA_BIO_CPP}
   ${VARIABLE_SET_MODEL_SOURCES}
   ${LBCPP_INFERENCE_STEP_SOURCES}
-  ${LBCPP_INFERENCE_POLICY_SOURCES}
+  ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   VariableSetModel.h
   VariableSetModel.cpp
   classes.cpp
@@ -82,7 +82,7 @@ SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
 SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
 SOURCE_GROUP(VariableSetModel FILES ${VARIABLE_SET_MODEL_SOURCES})
 SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
-SOURCE_GROUP(InferencePolicy FILES ${LBCPP_INFERENCE_POLICY_SOURCES})
+SOURCE_GROUP(InferenceCallback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
