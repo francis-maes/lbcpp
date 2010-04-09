@@ -10,7 +10,7 @@
 # define LBCPP_REDUCTION_PREDICTION_PROBLEM_H_
 
 # include "InferenceStep.h"
-# include "InferencePolicy.h"
+# include "../InferencePolicy/InferencePolicy.h"
 
 namespace lbcpp
 {

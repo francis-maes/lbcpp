@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "InferencePolicy.h"
-#include "ParallelInferenceStep.h"
-#include "SequenceInferenceStep.h"
+#include "../InferenceStep/ParallelInferenceStep.h"
+#include "../InferenceStep/SequenceInferenceStep.h"
 using namespace lbcpp;
 
 /*
