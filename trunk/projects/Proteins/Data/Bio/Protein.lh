@@ -57,7 +57,13 @@ public:
   virtual ObjectPtr clone() const
   {
     ProteinPtr res = new Protein(name);
-    res->objects = objects;
+    for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
+    {
+      if (it->first == T("AminoAcidSequence") || it->first == T("PositionSpecificScoringMatrix"))
+        res->objects[it->first] = it->second; // AA and PSSM are shared objects
+      else
+        res->objects[it->first] = it->second->clone();
+    }
     return res;
   }
 

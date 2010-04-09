@@ -13,6 +13,7 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/ObjectPredeclarations.h
   ../include/lbcpp/ObjectStream.h
   ../include/lbcpp/ObjectContainer.h
+  ../include/lbcpp/ObjectPair.h
   ../include/lbcpp/ObjectConsumer.h
   ../include/lbcpp/ObjectGraph.h
   ../include/lbcpp/Table.h

@@ -36,9 +36,6 @@ public:
   void pop()
     {jassert(stack.size()); stack.pop_back();}
 
-  bool isTopLevelInferenceCurrent() const
-    {return stack.size() == 1;}
-
   size_t getDepth() const // 0 = not running, 1 = top level
     {return stack.size();}
 

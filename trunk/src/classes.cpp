@@ -36,6 +36,7 @@ void declareFeatureGenerators()
   LBCPP_DECLARE_CLASS(StringDictionary);
   LBCPP_DECLARE_CLASS(FeatureDictionary);
 
+  LBCPP_DECLARE_CLASS(Label);
   LBCPP_DECLARE_CLASS(SparseVector);
   LBCPP_DECLARE_CLASS(DenseVector);
 }

@@ -85,6 +85,8 @@ public:
     : index(index)
     {setDictionary(FeatureDictionaryManager::getInstance().getFlatVectorDictionary(stringDictionary));}
 
+  Label() : index(0) {}
+
   virtual String toString() const
     {return getString();}
 

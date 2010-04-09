@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_STEP_H_
 # define LBCPP_INFERENCE_STEP_H_
 
-# include "CommonObjectFunctions.h"
+# include <lbcpp/lbcpp.h>
 
 namespace lbcpp
 {
@@ -81,7 +81,7 @@ protected:
 
 
 private:
-  Time loadedModificationTime;
+  juce::Time loadedModificationTime;
 };
 
 class InferenceStep;

@@ -44,12 +44,11 @@ SET(VARIABLE_SET_MODEL_SOURCES
 )
 
 SET(LBCPP_INFERENCE_STEP_SOURCES
-  InferenceStep/CommonObjectFunctions.h
-  InferenceStep/CommonObjectFunctions.cpp
   InferenceStep/InferenceStep.h
   InferenceStep/InferenceStep.cpp
-  InferenceStep/ParallelInferenceStep.h
   InferenceStep/SequenceInferenceStep.h
+  InferenceStep/ParallelInferenceStep.h
+  InferenceStep/ClassificationInferenceStep.h
   InferenceStep/ProteinInferenceSteps.h
 )
 

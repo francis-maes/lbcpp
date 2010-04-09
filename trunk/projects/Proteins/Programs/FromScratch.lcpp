@@ -26,13 +26,16 @@ extern void declareVariableSetClasses();
 // the aim is to learn a "incomplete Protein => complete Protein" function
 // Input: Protein
 // Output: SecondaryStructureSequence
-class SS3ContentOnlyInferenceStep : public SecondaryStructureInferenceStep
+class SSContentOnlyInferenceStep : public SecondaryStructureInferenceStep
 {
 public:
-  SS3ContentOnlyInferenceStep() : SecondaryStructureInferenceStep(T("SS3ContentOnly")) {}
+  SSContentOnlyInferenceStep(const String& name, bool useDSSPElements)
+    : SecondaryStructureInferenceStep(name, useDSSPElements) {}
 
-  virtual featureGenerator getInputFeatures(ProteinPtr protein, size_t index) const
+  virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
   {
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
 
@@ -41,21 +44,25 @@ public:
   }
 };
 
-class SS3ContentAndStructureInferenceStep : public SecondaryStructureInferenceStep
+class SSContentAndStructureInferenceStep : public SecondaryStructureInferenceStep
 {
 public:
-  SS3ContentAndStructureInferenceStep(size_t passNumber)
-    : SecondaryStructureInferenceStep(T("SS3ContentAndStructure") + lbcpp::toString(passNumber)) {}
+  SSContentAndStructureInferenceStep(const String& name, bool useDSSPElements)
+    : SecondaryStructureInferenceStep(name, useDSSPElements) {}
 
-  virtual featureGenerator getInputFeatures(ProteinPtr protein, size_t index) const
+  virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
   {
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
     SecondaryStructureSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
+    SecondaryStructureSequencePtr dsspSecondaryStructure = protein->getSecondaryStructureSequence(true);
 
     featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
     featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
-    featureCall("w") secondaryStructure->windowFeatures(index, 5, 5, true);
+    featureCall("w3") secondaryStructure->windowFeatures(index, 5, 5, true);
+    featureCall("w8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);
   }
 };
 
@@ -64,10 +71,13 @@ class MainInferenceStep : public SequenceInferenceStep
 public:
   MainInferenceStep() : SequenceInferenceStep(T("Main"))
   {
-    appendSubStep(new SS3ContentOnlyInferenceStep());
-    /*appendSubStep(new SS3ContentAndStructureInferenceStep(1));
-    appendSubStep(new SS3ContentAndStructureInferenceStep(2));
-    appendSubStep(new SS3ContentAndStructureInferenceStep(3));*/
+    appendSubStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S3"), false));
+    appendSubStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S8"), true));
+    for (size_t i = 0; i < 5; ++i)
+    {
+      appendSubStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + lbcpp::toString(i) + T(")"), false));
+      appendSubStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + lbcpp::toString(i) + T(")"), true));
+    }
   }
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
@@ -75,21 +85,29 @@ public:
     // input and working proteins
     ProteinPtr inputProtein = input.dynamicCast<Protein>();
     jassert(inputProtein);
-    ProteinPtr workingProtein = inputProtein->cloneAndCast<Protein>();
+    ProteinPtr workingProtein = new Protein(inputProtein->getName());
+    workingProtein->setAminoAcidSequence(inputProtein->getAminoAcidSequence());
+    workingProtein->setPositionSpecificScoringMatrix(inputProtein->getPositionSpecificScoringMatrix());
     
     // supervision
-    SecondaryStructureSequencePtr correctSecondaryStructure;
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
-    if (correctProtein)
-      correctSecondaryStructure = correctProtein->getSecondaryStructureSequence();
 
     // main inference loop
     for (size_t i = 0; i < subSteps.size(); ++i)
     {
-      SecondaryStructureSequencePtr predictedSS = context->runInference(subSteps[i], workingProtein, correctSecondaryStructure, returnCode);
-      if (returnCode != finishedReturnCode)
-        return ObjectPtr();
+      SecondaryStructureInferenceStepPtr subStep = subSteps[i].dynamicCast<SecondaryStructureInferenceStep>();
+      jassert(subStep);
+
+      ObjectPtr supervision;
+      if (correctProtein)
+        supervision = correctProtein->getSecondaryStructureSequence(subStep->useDSSPElements);
+
+      SecondaryStructureSequencePtr predictedSS = context->runInference(subStep, workingProtein, supervision, returnCode);
+      jassert(predictedSS);
+
       workingProtein->setSecondaryStructureSequence(predictedSS);
+      if (returnCode != finishedReturnCode)
+        break;
     }
 
     // return the last version of the working protein
@@ -101,7 +119,7 @@ public:
 /////////MAIN///////////////////
 ////////////////////////////////
 
-void learn(InferenceCallbackPtr learningCallback, InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+void learn(InferenceCallbackPtr learningCallback, InferenceCallbackPtr customEvaluationCallback, InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
 {
   ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
 
@@ -111,35 +129,40 @@ void learn(InferenceCallbackPtr learningCallback, InferenceStepPtr inference, Ob
 
   InferenceContextPtr evaluationContext = singleThreadedInferenceContext();
   evaluationContext->appendCallback(evaluation);
+  if (customEvaluationCallback)
+    evaluationContext->appendCallback(customEvaluationCallback);
 
-  for (size_t i = 0; i < 10; ++i)
+  for (size_t i = 0; i < 5; ++i)
   {
     std::cout << std::endl << " ================== ITERATION " << i << " ================== " << std::endl;
 
-    trainingContext->runWithSelfSupervisedExamples(inference, trainingData);
-    std::cout << "Online evaluation:" << std::endl << evaluation->toString() << std::endl;
+    trainingContext->runWithSelfSupervisedExamples(inference, trainingData->randomize());
+    std::cout << "Online evaluation: " << evaluation->toString() << std::endl;
 
-    evaluationContext->runWithSelfSupervisedExamples(inference, trainingData);
-    std::cout << "Train evaluation:" << std::endl << evaluation->toString() << std::endl;
+    //evaluationContext->runWithSelfSupervisedExamples(inference, trainingData);
+    //std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
 
     evaluationContext->runWithSelfSupervisedExamples(inference, testingData);
-    std::cout << "Test evaluation:" << std::endl << evaluation->toString() << std::endl;
+    std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
   }
 }
 
 void learnWithGlobalSimulation(InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
-  {learn(new GlobalSimulationLearningCallback(), inference, trainingData, testingData);}
+  {learn(new GlobalSimulationLearningCallback(), InferenceCallbackPtr(), inference, trainingData, testingData);}
 
 void learnStepByStep(SequenceInferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
 {
   size_t numSteps = inference->getNumSubSteps();
   for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
   {
-    std::cout << std::endl << "=====================================================" << std::endl;
-    std::cout << "============== LEARNING PASS " << stepNumber << " ======================" << std::endl;
-    std::cout << "=====================================================" << std::endl;
     InferenceStepPtr step = inference->getSubStep(stepNumber);
-    learn(new SingleStepSimulationLearningCallback(inference->getSubStep(stepNumber)), inference, trainingData, testingData);
+    std::cout << std::endl << "=====================================================" << std::endl;
+    std::cout << "======= LEARNING PASS " << step->getName() << " ==========" << std::endl;
+    std::cout << "=====================================================" << std::endl;
+    InferenceCallbackPtr customEvaluationCallback;
+    if (stepNumber < numSteps - 1)
+      customEvaluationCallback = new CancelAfterStepCallback(step);
+    learn(new SingleStepSimulationLearningCallback(step), customEvaluationCallback, inference, trainingData, testingData);
   }
 }
 
@@ -160,5 +183,6 @@ int main(int argc, char** argv)
 
   InferenceStepPtr mainInferenceStep = new MainInferenceStep();
   learnStepByStep(mainInferenceStep, trainingData, testingData);
+  //learnWithGlobalSimulation(mainInferenceStep, trainingData, testingData);
   return 0;
 }
