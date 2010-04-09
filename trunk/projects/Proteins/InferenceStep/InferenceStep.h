@@ -19,6 +19,10 @@ typedef ReferenceCountedObjectPtr<InferencePolicy> InferencePolicyPtr;
 class InferenceVisitor;
 typedef ReferenceCountedObjectPtr<InferenceVisitor> InferenceVisitorPtr;
 
+class InferenceContext;
+typedef ReferenceCountedObjectPtr<InferenceContext> InferenceContextPtr;
+
+
 class InferenceStep;
 typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
 class SequenceInferenceStep;
@@ -40,8 +44,6 @@ public:
     canceledReturnCode,
     errorReturnCode,
   };
-
-  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
 /*
   virtual void updateModel(const File& model, ObjectContainerPtr examples, const Time& lastDataModificationTime)
@@ -74,6 +76,12 @@ public:
   virtual void saveModel(const File& model)
     {jassert(false);}*/
 
+protected:
+  friend class InferenceContext;
+
+  virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+
+
 private:
   Time loadedModificationTime;
 };
@@ -100,7 +108,6 @@ public:
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 
-
 class InferenceVisitor
 {
 public:
@@ -110,6 +117,16 @@ public:
   virtual void visit(SequenceInferenceStepPtr inference) = 0;
   virtual void visit(ParallelInferenceStepPtr inference) = 0;
 };
+/*
+class DefaultInferenceVisitor : public InferenceVisitor
+{
+public:
+  virtual void visit(SequenceInferenceStepPtr inference)
+  {
+    for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
+      inference->getSubStep(i)->accept(InferenceVisitorPtr(this));
+  }
+};*/
 
 }; /* namespace lbcpp */
 

@@ -19,76 +19,6 @@ extern void declareProteinsClasses();
 extern void declareVariableSetClasses();
 
 ////////////////////////////////
-///////Inference Visitor////////
-////////////////////////////////
-
-class DefaultInferenceVisitor : public InferenceVisitor
-{
-public:
-  virtual void visit(SequenceInferenceStepPtr inference)
-  {
-    for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
-      inference->getSubStep(i)->accept(InferenceVisitorPtr(this));
-  }
-};
-
-class InferenceBuilder : public DefaultInferenceVisitor
-{
-public:
-  
-};
-
-
-////////////////////////////////
-//////InferencePolicy///////////
-////////////////////////////////
-
-/*
-class FixedLengthChain2InferencePolicy : public DefaultInferencePolicy
-{
-public:
-  FixedLengthChain2InferencePolicy(InferencePolicyPtr policy1, size_t policy1NumSteps, InferencePolicyPtr policy2, size_t policy2NumSteps)
-    : policy1(policy1), policy1NumSteps(policy1NumSteps), policy2(policy2), policy2NumSteps(policy2NumSteps) {reset();}
-  
-  void reset()
-    {currentPosition = 0;}
-
-  virtual ReturnCode doSubStep(InferenceStepPtr step, ObjectPtr input, ObjectPtr& output)
-  {
-    if (currentPosition < policy1NumSteps)
-    {
-      ReturnCode res = policy1->doSubStep(step, input, output);
-      ++currentPosition;
-      return res;
-    }
-    else if (currentPosition < policy2NumSteps)
-    {
-      ReturnCode res = policy2->doSubStep(step, input, output);
-      ++currentPosition;
-      return res;
-    }
-    else
-      return InferenceStep::canceledReturnCode;
-  }
-
-private:
-  InferencePolicyPtr policy1;
-  size_t policy1NumSteps;
-  InferencePolicyPtr policy2;
-  size_t policy2NumSteps;
-
-  size_t currentPosition;
-};
-
-class LearnNthStepDeterministicInferencePolicy : public FixedLengthChain2InferencePolicy
-{
-public:
-  LearnNthStepDeterministicInferencePolicy(size_t learnedStepNumber, InferencePolicyPtr learningPolicy)
-    : FixedLengthChain2InferencePolicy(new DefaultInferencePolicy(), learnedStepNumber, learningPolicy, 1) {}
-};
-*/
-
-////////////////////////////////
 //////Custom SS3 Problem////////
 ////////////////////////////////
 
@@ -134,9 +64,9 @@ public:
   MainInferenceStep() : SequenceInferenceStep(T("Main"))
   {
     appendSubStep(new SS3ContentOnlyInferenceStep());
-    appendSubStep(new SS3ContentAndStructureInferenceStep(1));
+    /*appendSubStep(new SS3ContentAndStructureInferenceStep(1));
     appendSubStep(new SS3ContentAndStructureInferenceStep(2));
-    appendSubStep(new SS3ContentAndStructureInferenceStep(3));
+    appendSubStep(new SS3ContentAndStructureInferenceStep(3));*/
   }
 
   virtual ObjectPtr run(InferencePolicyPtr policy, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
@@ -170,6 +100,40 @@ public:
 /////////MAIN///////////////////
 ////////////////////////////////
 
+void learn(InferencePolicyPtr learningPolicy, InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+{
+  for (size_t i = 0; i < 10; ++i)
+  {
+    std::cout << std::endl << " ================== ITERATION " << i << " ================== " << std::endl;
+    ProteinEvaluationPolicyPtr onlineEvaluation = new ProteinEvaluationPolicy(learningPolicy);
+    onlineEvaluation->runOnSupervisedExampleSet(inference, trainingData);
+    std::cout << "Online evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
+
+    /*onlineEvaluation = new ProteinEvaluationPolicy(new DefaultInferencePolicy());
+    onlineEvaluation->runOnSupervisedExampleSet(inference, trainingData);
+    std::cout << "Train evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;*/
+
+    onlineEvaluation->runOnSupervisedExampleSet(inference, testingData);
+    std::cout << "Test evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
+  }
+}
+
+void learnWithGlobalSimulation(InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+  {learn(new GlobalSimulationLearningPolicy(new DefaultInferencePolicy()), inference, trainingData, testingData);}
+
+
+void learnStepByStep(SequenceInferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+{
+  size_t numSteps = inference->getNumSubSteps();
+  for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
+  {
+    std::cout << std::endl << "=====================================================" << std::endl;
+    std::cout << "============== LEARNING PASS " << stepNumber << " ======================" << std::endl;
+    std::cout << "=====================================================" << std::endl;
+    InferenceStepPtr step = inference->getSubStep(stepNumber);
+    learn(new StepSimulationLearningPolicy(new DefaultInferencePolicy(), stepNumber), inference, trainingData, testingData);
+  }
+}
 
 int main(int argc, char** argv)
 {
@@ -181,26 +145,12 @@ int main(int argc, char** argv)
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 
-  ObjectContainerPtr trainingData = proteins->invFold(0, 7);
-  ObjectContainerPtr testingData = proteins->fold(0, 7);
+  ObjectContainerPtr trainingData = proteins->invFold(0, 7)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = proteins->fold(0, 7)->apply(new ObjectToObjectPairFunction());
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
 
   InferenceStepPtr mainInferenceStep = new MainInferenceStep();
-  InferencePolicyPtr inferencePolicy = new GlobalSimulationLearningPolicy();
-  for (size_t i = 0; i < 100; ++i)
-  {
-    std::cout << std::endl << " ================== ITERATION " << i << " ================== " << std::endl;
-    ProteinEvaluationPolicyPtr onlineEvaluation = new ProteinEvaluationPolicy(inferencePolicy);
-    onlineEvaluation->runOnSelfSupervisedExampleSet(mainInferenceStep, trainingData);
-    std::cout << "Online evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
-
-    onlineEvaluation = new ProteinEvaluationPolicy(new DefaultInferencePolicy());
-    onlineEvaluation->runOnSelfSupervisedExampleSet(mainInferenceStep, trainingData);
-    std::cout << "Train evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
-
-    onlineEvaluation->runOnSelfSupervisedExampleSet(mainInferenceStep, testingData);
-    std::cout << "Test evaluation:" << std::endl << onlineEvaluation->toString() << std::endl;
-  }
+  learnStepByStep(mainInferenceStep, trainingData, testingData);
   return 0;
 }

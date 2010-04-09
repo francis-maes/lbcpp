@@ -62,6 +62,9 @@ typedef ReferenceCountedObjectPtr<ObjectPairContainer> ObjectPairContainerPtr;
 class ObjectToObjectPairFunction : public ObjectFunction
 {
 public:
+  ObjectToObjectPairFunction(bool copyObjectIntoFirst = true, bool copyObjectIntoSecond = true)
+    : copyObjectIntoFirst(copyObjectIntoFirst), copyObjectIntoSecond(copyObjectIntoSecond) {}
+
   virtual String getInputClassName() const
     {return T("Object");}
   
@@ -69,7 +72,11 @@ public:
     {return T("ObjectPair");}
 
   virtual ObjectPtr function(ObjectPtr object) const
-    {return new ObjectPair(object, object);}
+    {return new ObjectPair(copyObjectIntoFirst ? object : ObjectPtr(), copyObjectIntoSecond ? object : ObjectPtr());}
+
+private:
+  bool copyObjectIntoFirst;
+  bool copyObjectIntoSecond;
 };
 
 class Chain2ObjectFunction : public ObjectFunction
