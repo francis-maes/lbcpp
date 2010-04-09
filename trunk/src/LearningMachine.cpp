@@ -95,8 +95,6 @@ protected:
 */
 double Regressor::evaluateMeanAbsoluteError(ObjectStreamPtr examples) const
 {
-  if (!examples->checkContentClassName("RegressionExample"))
-    return 0.0;
   double res = 0;
   size_t count = 0;
   while (true)
@@ -133,14 +131,16 @@ RegressorPtr lbcpp::verboseRegressor(std::ostream& ostr)
 ** Classifier
 */
 size_t Classifier::predict(const FeatureGeneratorPtr input) const
-{
-  return predictScores(input)->findIndexOfMaximumValue();
-}
+  {return predictScores(input)->findIndexOfMaximumValue();}
+
+LabelPtr Classifier::predictLabel(const FeatureGeneratorPtr input) const
+  {return new Label(getLabels(), predict(input));}
+
+LabelPtr Classifier::sampleLabel(const FeatureGeneratorPtr input) const
+  {return new Label(getLabels(), sample(input));}
 
 double Classifier::predictScore(const FeatureGeneratorPtr input, size_t output) const
-{
-  return predictScores(input)->get(output);
-}
+  {return predictScores(input)->get(output);}
 
 DenseVectorPtr Classifier::predictProbabilities(const FeatureGeneratorPtr input) const
 {
@@ -161,9 +161,6 @@ size_t Classifier::sample(const FeatureGeneratorPtr input) const
 
 double Classifier::evaluateAccuracy(ObjectStreamPtr examples) const
 {
-  if (!examples->checkContentClassName("ClassificationExample"))
-    return 0.0;
-
   size_t correct = 0;
   size_t count = 0;
   while (true)
@@ -180,8 +177,6 @@ double Classifier::evaluateAccuracy(ObjectStreamPtr examples) const
 
 double Classifier::evaluateWeightedAccuracy(ObjectStreamPtr examples) const
 {
-  if (!examples->checkContentClassName("ClassificationExample"))
-    return 0.0;
   double correctWeight = 0.0, totalWeight = 0.0;
   while (true)
   {
@@ -204,7 +199,7 @@ void Classifier::save(OutputStream& ostr) const
 
 bool Classifier::load(InputStream& istr)
 {
-  StringDictionaryPtr labels;
+  FeatureDictionaryPtr labels;
   if (!read(istr, labels))
     return false;
   setLabels(labels);
@@ -228,7 +223,7 @@ double BinaryClassifier::predictScore(const FeatureGeneratorPtr input, size_t ou
 DenseVectorPtr BinaryClassifier::predictScores(const FeatureGeneratorPtr input) const
 {
   double score = predictScoreOfPositiveClass(input);
-  DenseVectorPtr res = new DenseVector(outputsDictionary);
+  DenseVectorPtr res = new DenseVector(labels);
   res->set(0, -score);
   res->set(1, score);
   return res;
@@ -238,7 +233,7 @@ DenseVectorPtr BinaryClassifier::predictProbabilities(const FeatureGeneratorPtr 
 {
   double prob1 = scoreToProbability(predictScoreOfPositiveClass(input));
   double prob0 = 1 - prob1;
-  DenseVectorPtr res = new DenseVector(outputsDictionary);
+  DenseVectorPtr res = new DenseVector(labels);
   res->set(0, prob0);
   res->set(1, prob1);
   return res;    

@@ -73,9 +73,8 @@ public:
   }
 
   virtual void accept(InferenceVisitorPtr visitor)
-  {
+    {visitor->visit(SequenceInferenceStepPtr(this));}
 
-  }
   size_t getNumSubSteps() const
     {return subSteps.size();}
 

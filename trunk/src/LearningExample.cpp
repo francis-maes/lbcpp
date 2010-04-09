@@ -14,14 +14,9 @@ using namespace lbcpp;
 class TransformClassificationExampleIntoRankingExample : public ObjectFunction
 {
 public:
-  TransformClassificationExampleIntoRankingExample(StringDictionaryPtr labels) 
-    : labels(labels), dictionary(new FeatureDictionary("alternatives", StringDictionaryPtr(), labels)),
-      dictionary2(new FeatureDictionary("alternative", StringDictionaryPtr(), labels)) {}
+  TransformClassificationExampleIntoRankingExample(FeatureDictionaryPtr labels) 
+    : labels(labels) {}
   
-  StringDictionaryPtr labels;
-  FeatureDictionaryPtr dictionary;
-  FeatureDictionaryPtr dictionary2;
-
   virtual String getOutputClassName(const String& inputClassName) const
     {return "RankingExample";}
     
@@ -31,7 +26,10 @@ public:
     FeatureGeneratorPtr input = classificationExample->getInput();
     size_t output = classificationExample->getOutput();
     
-    size_t numLabels = labels->getNumElements();
+    FeatureDictionaryPtr dictionary2 = FeatureDictionaryManager::getInstance().getCollectionDictionary(labels->getFeatures(), input->getDictionary());
+    FeatureDictionaryPtr dictionary = FeatureDictionaryManager::getInstance().getCollectionDictionary(labels->getFeatures(), dictionary2);
+
+    size_t numLabels = labels->getNumFeatures();
     CompositeFeatureGeneratorPtr alternatives = new CompositeFeatureGenerator(dictionary, numLabels);
     std::vector<double> costs(numLabels);
     for (size_t i = 0; i < numLabels; ++i)
@@ -41,9 +39,12 @@ public:
     }
     return new RankingExample(alternatives, costs);
   }
+
+private:
+  FeatureDictionaryPtr labels;
 };
 
-ObjectFunctionPtr lbcpp::transformClassificationExampleIntoRankingExample(StringDictionaryPtr labels)
+ObjectFunctionPtr lbcpp::transformClassificationExampleIntoRankingExample(FeatureDictionaryPtr labels)
 {
   return new TransformClassificationExampleIntoRankingExample(labels);
 }

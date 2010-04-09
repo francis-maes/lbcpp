@@ -46,7 +46,7 @@ public:
       size_t label;
       variables->getVariable(i, label);
 
-      print(variables->getVariablesDictionary()->getString(label) + T(" "));
+      print(variables->getVariablesDictionary()->getFeature(label) + T(" "));
       printFeatureList(example->getVariableFeatures(i));
       printNewLine();
     }
@@ -82,7 +82,7 @@ int main()
   ObjectStreamPtr proteinsStream = directoryObjectStream(cb513Directory, T("*.protein"));
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
-  StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  FeatureDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
 
   size_t numFolds = 7;
   double cvResult = 0.0;

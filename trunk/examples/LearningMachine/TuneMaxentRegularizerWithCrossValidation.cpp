@@ -12,7 +12,7 @@ using namespace lbcpp;
 /*
 ** Computes 5-fold Cross Validation accuracy
 */
-double computeCVAccuracy(ObjectContainerPtr data, StringDictionaryPtr labels, double regularizer, size_t numFolds = 5)
+double computeCVAccuracy(ObjectContainerPtr data, FeatureDictionaryPtr labels, double regularizer, size_t numFolds = 5)
 {
   double accuracy = 0.0;
   for (size_t i = 0; i < numFolds; ++i)
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
   ** Create Feature dictionary and Labels dictionary
   */
   FeatureDictionaryPtr features = new FeatureDictionary("features");
-  StringDictionaryPtr labels = new StringDictionary();
+  FeatureDictionaryPtr labels = new FeatureDictionary("label");
 
   /*
   ** Load classification data

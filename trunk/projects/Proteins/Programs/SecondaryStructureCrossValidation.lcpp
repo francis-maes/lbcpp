@@ -337,7 +337,7 @@ private:
   OutputStream& results;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, IterationFunctionPtr learningRate, double regularizer)
+GradientBasedClassifierPtr createMaxentClassifier(FeatureDictionaryPtr labels, IterationFunctionPtr learningRate, double regularizer)
 {
   GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
   GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
@@ -420,7 +420,7 @@ int main(int argc, char** argv)
 
   ObjectStreamPtr examplesStream = proteinsStream->apply(new ProteinToVariableSetExample());
   ObjectContainerPtr examples = examplesStream->load()->randomize();
-  StringDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  FeatureDictionaryPtr labels = examples->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
   //------
 
 

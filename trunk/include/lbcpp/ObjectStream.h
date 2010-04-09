@@ -138,18 +138,6 @@ public:
   }
 
   /**
-  ** Checks if getContentClassName() == @a expectedClassName.
-  **
-  ** @param expectedClassName : expected class name.
-  **
-  ** @return True if (ContentClassName == expectClassName), False
-  ** otherwise and throw an error to the ErrorManager.
-  ** @see ObjectStream::getContentClassName
-  ** @see Object::error
-  */
-  bool checkContentClassName(const String& expectedClassName) const;
-
-  /**
   ** Calls next() up to @a maximumCount times and ignores the loaded
   ** objects.
   **
@@ -254,7 +242,7 @@ public:
 ** @return a new ObjectStream containing classification examples.
 */
 extern ObjectStreamPtr classificationExamplesParser(const File& file,
-                                FeatureDictionaryPtr features, StringDictionaryPtr labels);
+                                FeatureDictionaryPtr features, FeatureDictionaryPtr labels);
 
 /**
 ** Creates a synthetic generator of linearly separable classification

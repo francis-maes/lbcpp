@@ -31,7 +31,7 @@ struct MultiClassLogBinomialLossFunction : public ScalarVectorFunction< MultiCla
     {
       std::cerr << "No Scores, input = " << input->getClassName()
                 << " inputDictionary = " << input->getDictionary()->getName()
-                << "inputToString = " << input->toString() << std::endl;
+                << " inputToString = " << input->toString() << std::endl;
       jassert(false);
     }
     jassert(scores && scores->getNumValues());

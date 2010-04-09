@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
   ** Create Feature dictionary and Labels dictionary
   */
   FeatureDictionaryPtr features = new FeatureDictionary("features");
-  StringDictionaryPtr labels = new StringDictionary();
+  FeatureDictionaryPtr labels = new FeatureDictionary("labels");
 
   /*
   ** Create a maximum-entropy classifier with stochastic gradient descent, with a (normalized) learning rate of 10.0

@@ -19,7 +19,7 @@ class ClassifierBasedGraphLabelingAlgorithm : public GraphLabelingAlgorithm
 public:  
   virtual FeatureGeneratorPtr getNodeFeatures(LabeledContentGraphPtr graph, size_t nodeIndex) = 0;
 
-  virtual ClassifierPtr createClassifier(StringDictionaryPtr labels)
+  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels)
   {
     IterationFunctionPtr learningRate = constantIterationFunction(1.0);//InvLinear(26, 10000);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);
@@ -28,7 +28,7 @@ public:
     return res;
   }
 
-  virtual void reset(StringDictionaryPtr labels)
+  virtual void reset(FeatureDictionaryPtr labels)
     {classifier = createClassifier(labels);}
 
   virtual void train(LabeledContentGraphPtr graph)

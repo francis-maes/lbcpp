@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
   ** Create Feature dictionary and Labels dictionary
   */
   FeatureDictionaryPtr features = new FeatureDictionary("features");
-  StringDictionaryPtr labels = new StringDictionary();
+  FeatureDictionaryPtr labels = new FeatureDictionary("labels");
 
   /*
   ** Load training classification data

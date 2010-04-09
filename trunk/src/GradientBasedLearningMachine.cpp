@@ -111,7 +111,7 @@ GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearne
 /*
 ** Classifier
 */
-GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
+GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer)
 {
   GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
   res->setLearner(learner);
@@ -124,7 +124,7 @@ GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerP
 /*
 ** BinaryClassifier
 */
-GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer)
+GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer)
 {
   GradientBasedBinaryClassifierPtr res = new LogisticRegressionClassifier();
   res->setLearner(learner);
@@ -134,7 +134,7 @@ GradientBasedBinaryClassifierPtr lbcpp::logisticRegressionBinaryClassifier(Gradi
   return res;
 }
 
-GradientBasedBinaryClassifierPtr lbcpp::linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels)
+GradientBasedBinaryClassifierPtr lbcpp::linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels)
 {
   GradientBasedBinaryClassifierPtr res = new LinearSupportVectorMachine();
   res->setLearner(learner);

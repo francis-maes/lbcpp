@@ -89,12 +89,6 @@ typedef ReferenceCountedObjectPtr<LearningMachine> LearningMachinePtr;
 class Classifier : public LearningMachine
 {
 public:
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   Classifier() : labels(NULL) {}
 
   /*
@@ -106,6 +100,11 @@ public:
   virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
   virtual size_t sample(const FeatureGeneratorPtr input) const;
 
+  // new:
+  virtual LabelPtr predictLabel(const FeatureGeneratorPtr input) const;
+  virtual LabelPtr sampleLabel(const FeatureGeneratorPtr input) const;
+
+
   /*
   ** Input dictionary
   */
@@ -115,79 +114,34 @@ public:
   ** Labels
   */
   size_t getNumLabels() const
-    {jassert(labels); return labels->getNumElements();}
+    {jassert(labels); return labels->getNumFeatures();}
 
-  StringDictionaryPtr getLabels() const
+  FeatureDictionaryPtr getLabels() const
     {jassert(labels); return labels;}
 
-  virtual void setLabels(StringDictionaryPtr labels)
+  virtual void setLabels(FeatureDictionaryPtr labels)
     {this->labels = labels;}
 
   /*
   ** Evaluation
   */
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateAccuracy(ObjectStreamPtr examples) const;
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateAccuracy(ObjectContainerPtr examples) const
     {return evaluateAccuracy(examples->toStream());}
 
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateWeightedAccuracy(ObjectStreamPtr examples) const;
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateWeightedAccuracy(ObjectContainerPtr examples) const
     {return evaluateWeightedAccuracy(examples->toStream());}
 
   /*
   ** Serialization
   */
-  /*!
-  **
-  **
-  ** @param ostr
-  */
   virtual void save(OutputStream& ostr) const;
-  /*!
-  **
-  **
-  ** @param istr
-  **
-  ** @return
-  */
   virtual bool load(InputStream& istr);
 
 protected:
-  StringDictionaryPtr labels;   /*!< */
+  FeatureDictionaryPtr labels;
 
-  /*!
-  **
-  **
-  ** @param target
-  */
   void cloneImpl(Classifier& target) const
     {target.labels = labels;}
 };
@@ -210,81 +164,16 @@ inline ClassifierPtr loadClassifier(const File& file)
 class BinaryClassifier : public Classifier
 {
 public:
-  /*!
-  **
-  **
-  ** @param labels
-  */
-  virtual void setLabels(StringDictionaryPtr labels)
-    {this->labels = labels; outputsDictionary = new FeatureDictionary("BinaryClassifier outputs", labels, StringDictionaryPtr());}
+   virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const = 0;
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
-  virtual double predictScoreOfPositiveClass(const FeatureGeneratorPtr input) const = 0;
-
-  /*!
-  **
-  **
-  ** @param score
-  **
-  ** @return
-  */
   virtual double scoreToProbability(double score) const
     {return 1.0 / (1.0 + exp(-score));} // default: apply a sigmoid
 
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual size_t predict(const FeatureGeneratorPtr input) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  ** @param output
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input, size_t output) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr input) const;
-
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual size_t sample(const FeatureGeneratorPtr input) const;
-
-private:
-  FeatureDictionaryPtr outputsDictionary; /*!< */
 };
 
 /*!

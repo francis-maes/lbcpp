@@ -17,7 +17,7 @@ namespace lbcpp
 class ClassificationExamplesParser : public LearningDataObjectParser
 {
 public:
-  ClassificationExamplesParser(const File& file, FeatureDictionaryPtr features, StringDictionaryPtr labels)
+  ClassificationExamplesParser(const File& file, FeatureDictionaryPtr features, FeatureDictionaryPtr labels)
     : LearningDataObjectParser(file, features), labels(labels) {}
 
   virtual String getContentClassName() const
@@ -29,12 +29,12 @@ public:
     SparseVectorPtr x;
     if (!parseFeatureList(columns, 1, x))
       return false;
-    setResult(new ClassificationExample(x, labels->add(label)));
+    setResult(new ClassificationExample(x, labels->addFeature(label)));
     return true;
   }
   
 private:
-  StringDictionaryPtr labels;
+  FeatureDictionaryPtr labels;
 };
 
 }; /* namespace lbcpp */

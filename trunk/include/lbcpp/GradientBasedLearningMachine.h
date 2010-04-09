@@ -231,7 +231,7 @@ public:
 
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr input) const
   {
-    FeatureDictionaryPtr dictionary = FeatureDictionaryManager::getInstance().getFlatVectorDictionary(getLabels());
+    FeatureDictionaryPtr dictionary = getLabels();
     if (parameters)
     {
       DenseVectorPtr res = getPredictionArchitecture()->compute(parameters, input)->toDenseVector();
@@ -252,7 +252,7 @@ public:
 inline GradientBasedClassifierPtr loadGradientBasedClassifier(const File& file)
   {return Object::loadFromFileAndCast<GradientBasedClassifier>(file);}
 
-extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
+extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
 ** Binary Classification
@@ -275,8 +275,8 @@ public:
 inline GradientBasedBinaryClassifierPtr loadGradientBasedBinaryClassifier(const File& file)
   {return Object::loadFromFileAndCast<GradientBasedBinaryClassifier>(file);}
 
-extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels);
-extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, StringDictionaryPtr labels, double l2regularizer = 0.0);
+extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels);
+extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
 ** Generalized Classification

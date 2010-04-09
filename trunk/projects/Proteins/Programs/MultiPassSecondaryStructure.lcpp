@@ -156,10 +156,10 @@ public:
     pass1Prediction = createInitialPrediction().dynamicCast<SecondaryStructureSequence>();
     contentOnlyModel->predict(pass1example, pass1Prediction);
 
-    StringDictionaryPtr labels = pass1Prediction->getVariablesDictionary();
+    FeatureDictionaryPtr labels = pass1Prediction->getVariablesDictionary();
 
     cumulativePass1Predictions.resize(pass1Prediction->getLength());
-    cumulativePass1Predictions[0].resize(labels->getNumElements() + 2, 0);
+    cumulativePass1Predictions[0].resize(labels->getNumFeatures() + 2, 0);
     cumulativePass1Predictions[0][pass1Prediction->getLabel(0)] = 1;
 
     for (size_t i = 1; i < cumulativePass1Predictions.size(); ++i)
@@ -171,13 +171,13 @@ public:
     /*size_t n = 70;
     if (pass1Prediction->getNumVariables() < n)
       n = pass1Prediction->getNumVariables();
-    StringDictionaryPtr labels = secondaryStructure->getVariablesDictionary();
+    FeatureDictionaryPtr labels = secondaryStructure->getVariablesDictionary();
     std::cout << "pred: ";
     for (size_t i = 0; i < n; ++i)
-      std::cout << labels->getString(pass1Prediction->getLabel(i));
+      std::cout << labels->getFeature(pass1Prediction->getLabel(i));
     std::cout << std::endl << "corr: ";
     for (size_t i = 0; i < n; ++i)
-      std::cout << labels->getString(secondaryStructure->getLabel(i));
+      std::cout << labels->getFeature(secondaryStructure->getLabel(i));
     std::cout << std::endl << "-" << std::endl;*/
     
     //std::cout << "getVariableFeatures(0):" << getVariableFeatures(0, VariableSetPtr())->toSparseVector()->toString() << std::endl;
@@ -350,7 +350,7 @@ private:
   ObjectContainerPtr validationData;
 };
 
-GradientBasedClassifierPtr createMaxentClassifier(StringDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
+GradientBasedClassifierPtr createMaxentClassifier(FeatureDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
 {
   IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
   GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
@@ -369,19 +369,19 @@ int main(int argc, char** argv)
   declareVariableSetClasses();
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load(21)->randomize();
   ObjectContainerPtr trainingData = proteins->invFold(0, 7)->apply(new ProteinToPass1VariableSetExample(), false);
   ObjectContainerPtr testingData = proteins->fold(0, 7)->apply(new ProteinToPass1VariableSetExample(), false);
 
-  StringDictionaryPtr labels = trainingData->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
+  FeatureDictionaryPtr labels = trainingData->getAndCast<VariableSetExample>(0)->getTargetVariables()->getVariablesDictionary();
   ReferenceCountedObjectPtr<TestTrainingProgressCallback> callback;
 
-  /*VariableSetModelPtr pass1Model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
+  VariableSetModelPtr pass1Model = independantClassificationVariableSetModel(createMaxentClassifier(labels));
   callback = new TestTrainingProgressCallback(createLearningStoppingCriterion(10), testingData);
   pass1Model->trainBatch(trainingData, callback);
-  pass1Model->saveToFile(pass1ModelFile);*/
+  pass1Model->saveToFile(pass1ModelFile);
 
-  VariableSetModelPtr pass1Model = Object::loadFromFileAndCast<VariableSetModel>(pass1ModelFile);
+  //VariableSetModelPtr pass1Model = Object::loadFromFileAndCast<VariableSetModel>(pass1ModelFile);
   /*std::cout << "Content Only model: " << pass1Model->toString() << std::endl;
   std::cout << "Content Only Train Accuracy = " << std::flush << pass1Model->evaluate(trainingData) << std::endl;
   std::cout << "Content Only Test Accuracy = " << std::flush << pass1Model->evaluate(testingData) << std::endl;*/

@@ -94,6 +94,9 @@ public:
   StringDictionaryPtr getFeatures()
     {return featuresDictionary;}
 
+  void setFeatures(StringDictionaryPtr features)
+    {featuresDictionary = features;}
+
   /**
   ** Returns the number of features.
   **
@@ -124,6 +127,9 @@ public:
   */
   StringDictionaryPtr getScopes()
     {return scopesDictionary;}
+
+  void setScopes(StringDictionaryPtr scopes)
+    {scopesDictionary = scopes;}
 
   /**
   ** Returns the number of scopes.
@@ -305,7 +311,7 @@ public:
     {return getRootDictionary(name) != FeatureDictionaryPtr();}
 
   FeatureDictionaryPtr getRootDictionary(const String& name) const;
-  FeatureDictionaryPtr getOrCreateRootDictionary(const String& name);
+  FeatureDictionaryPtr getOrCreateRootDictionary(const String& name, bool createEmptyFeatures = true, bool createEmptyScopes = true);
   FeatureDictionaryPtr getOrCreateDictionary(const String& name);
 
   FeatureDictionaryPtr getFlatVectorDictionary(StringDictionaryPtr indices);
