@@ -1,28 +1,24 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: CompositeInferenceStep.h   | Base class for composite        |
-| Author  : Francis Maes                   |   prediction problems           |
+| Filename: SequentialInferenceStep.h      | Base class for sequential       |
+| Author  : Francis Maes                   |   inference                     |
 | Started : 08/04/2010 18:19               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_COMPOSITE_PREDICTION_PROBLEM_H_
-# define LBCPP_COMPOSITE_PREDICTION_PROBLEM_H_
+#ifndef LBCPP_INFERENCE_STEP_SEQUENTIAL_H_
+# define LBCPP_INFERENCE_STEP_SEQUENTIAL_H_
 
 # include "InferenceStep.h"
 
 namespace lbcpp
 {
 
-
 class CompositeInferenceStep : public InferenceStep
 {
 public:
   CompositeInferenceStep(const String& name) : InferenceStep(name) {}
   CompositeInferenceStep() {}
-
-  // returns a graph of interdependant InferenceSteps
-  virtual ObjectGraphPtr getDependencyGraph() const = 0;
 
 /*
 protected:
@@ -60,34 +56,19 @@ protected:
   }*/
 };
 
-class SequenceInferenceStep : public CompositeInferenceStep
+class SequentialInferenceStep : public CompositeInferenceStep
 {
 public:
-  SequenceInferenceStep(const String& name) : CompositeInferenceStep(name) {}
-  SequenceInferenceStep() {}
-
-  virtual ObjectGraphPtr getDependencyGraph() const
-  {
-    ObjectContainerPtr subStepsContainer = new VectorObjectContainer(*(std::vector<ObjectPtr>* )&subSteps, T("InferenceStep"));
-    return subStepsContainer->toGraph();
-  }
+  SequentialInferenceStep(const String& name) : CompositeInferenceStep(name) {}
+  SequentialInferenceStep() {}
 
   virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(SequenceInferenceStepPtr(this));}
+    {visitor->visit(SequentialInferenceStepPtr(this));}
 
-  size_t getNumSubSteps() const
-    {return subSteps.size();}
-
-  InferenceStepPtr getSubStep(size_t index) const
-    {jassert(index < subSteps.size()); return subSteps[index];}
-
-  void appendSubStep(InferenceStepPtr subStep)
-    {subSteps.push_back(subStep);}
-
-protected:
-  std::vector<InferenceStepPtr> subSteps;
+  virtual size_t getNumSubSteps() const = 0;
+  virtual InferenceStepPtr getSubStep(size_t index) const = 0;
 };
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_COMPOSITE_PREDICTION_PROBLEM_H_
+#endif //!LBCPP_INFERENCE_STEP_SEQUENTIAL_H_

@@ -9,11 +9,12 @@
 #include <lbcpp/lbcpp.h>
 #include "GeneratedCode/Data/Bio/Protein.lh"
 #include "VariableSetModel.h"
-#include "InferenceStep/ProteinInferenceSteps.h"
-#include "InferenceStep/SequenceInferenceStep.h"
-#include "InferenceCallback/ProteinEvaluationCallback.h"
+#include "InferenceStep/SequentialInferenceStep.h"
 #include "InferenceCallback/SingleStepSimulationLearningCallback.h"
 #include "InferenceCallback/GlobalSimulationLearningCallback.h"
+
+#include "ProteinInference/ProteinEvaluationCallback.h"
+#include "ProteinInference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
@@ -66,55 +67,6 @@ public:
   }
 };
 
-class MainInferenceStep : public SequenceInferenceStep
-{
-public:
-  MainInferenceStep() : SequenceInferenceStep(T("Main"))
-  {
-    appendSubStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S3"), false));
-    appendSubStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S8"), true));
-    for (size_t i = 0; i < 5; ++i)
-    {
-      appendSubStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + lbcpp::toString(i) + T(")"), false));
-      appendSubStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + lbcpp::toString(i) + T(")"), true));
-    }
-  }
-
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    // input and working proteins
-    ProteinPtr inputProtein = input.dynamicCast<Protein>();
-    jassert(inputProtein);
-    ProteinPtr workingProtein = new Protein(inputProtein->getName());
-    workingProtein->setAminoAcidSequence(inputProtein->getAminoAcidSequence());
-    workingProtein->setPositionSpecificScoringMatrix(inputProtein->getPositionSpecificScoringMatrix());
-    
-    // supervision
-    ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
-
-    // main inference loop
-    for (size_t i = 0; i < subSteps.size(); ++i)
-    {
-      SecondaryStructureInferenceStepPtr subStep = subSteps[i].dynamicCast<SecondaryStructureInferenceStep>();
-      jassert(subStep);
-
-      ObjectPtr supervision;
-      if (correctProtein)
-        supervision = correctProtein->getSecondaryStructureSequence(subStep->useDSSPElements);
-
-      SecondaryStructureSequencePtr predictedSS = context->runInference(subStep, workingProtein, supervision, returnCode);
-      jassert(predictedSS);
-
-      workingProtein->setSecondaryStructureSequence(predictedSS);
-      if (returnCode != finishedReturnCode)
-        break;
-    }
-
-    // return the last version of the working protein
-    return workingProtein;
-  }
-};
-
 ////////////////////////////////
 /////////MAIN///////////////////
 ////////////////////////////////
@@ -150,7 +102,7 @@ void learn(InferenceCallbackPtr learningCallback, InferenceCallbackPtr customEva
 void learnWithGlobalSimulation(InferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
   {learn(new GlobalSimulationLearningCallback(), InferenceCallbackPtr(), inference, trainingData, testingData);}
 
-void learnStepByStep(SequenceInferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+void learnStepByStep(SequentialInferenceStepPtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
 {
   size_t numSteps = inference->getNumSubSteps();
   for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
@@ -174,15 +126,23 @@ int main(int argc, char** argv)
   File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
   File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
 
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
   ObjectContainerPtr testingData = proteins->fold(0, 7);
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
 
-  InferenceStepPtr mainInferenceStep = new MainInferenceStep();
-  learnStepByStep(mainInferenceStep, trainingData, testingData);
+  ProteinInferencePtr proteinInference = new ProteinInference();
+  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S3"), false), T("ThreeStateSecondaryStructure"));
+  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S8"), true), T("EightStateSecondaryStructure"));
+  for (size_t i = 0; i < 5; ++i)
+  {
+    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + lbcpp::toString(i) + T(")"), false), T("ThreeStateSecondaryStructure"));
+    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + lbcpp::toString(i) + T(")"), true), T("EightStateSecondaryStructure"));
+  }
+  
+  learnStepByStep(proteinInference, trainingData, testingData);
   //learnWithGlobalSimulation(mainInferenceStep, trainingData, testingData);
   return 0;
 }

@@ -9,7 +9,7 @@
 #include "InferenceContext.h"
 #include "InferenceCallback.h"
 #include "../InferenceStep/ParallelInferenceStep.h"
-#include "../InferenceStep/SequenceInferenceStep.h"
+#include "../InferenceStep/SequentialInferenceStep.h"
 using namespace lbcpp;
 
 /*

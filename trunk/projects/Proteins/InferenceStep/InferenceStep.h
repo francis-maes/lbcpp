@@ -23,8 +23,8 @@ typedef ReferenceCountedObjectPtr<InferenceContext> InferenceContextPtr;
 
 class InferenceStep;
 typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
-class SequenceInferenceStep;
-typedef ReferenceCountedObjectPtr<SequenceInferenceStep> SequenceInferenceStepPtr;
+class SequentialInferenceStep;
+typedef ReferenceCountedObjectPtr<SequentialInferenceStep> SequentialInferenceStepPtr;
 class ParallelInferenceStep;
 typedef ReferenceCountedObjectPtr<ParallelInferenceStep> ParallelInferenceStepPtr;
 
@@ -112,14 +112,14 @@ public:
   virtual ~InferenceVisitor() {}
 
   virtual void visit(InferenceStepPtr inference) = 0;
-  virtual void visit(SequenceInferenceStepPtr inference) = 0;
+  virtual void visit(SequentialInferenceStepPtr inference) = 0;
   virtual void visit(ParallelInferenceStepPtr inference) = 0;
 };
 /*
 class DefaultInferenceVisitor : public InferenceVisitor
 {
 public:
-  virtual void visit(SequenceInferenceStepPtr inference)
+  virtual void visit(SequentialInferenceStepPtr inference)
   {
     for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
       inference->getSubStep(i)->accept(InferenceVisitorPtr(this));

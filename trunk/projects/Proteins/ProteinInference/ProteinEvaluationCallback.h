@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_CALLBACK_PROTEIN_EVALUATION_H_
-# define LBCPP_INFERENCE_CALLBACK_PROTEIN_EVALUATION_H_
+#ifndef LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
+# define LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 
-# include "InferenceCallback.h"
+# include "../InferenceCallback/InferenceCallback.h"
 
 namespace lbcpp
 {
@@ -95,4 +95,4 @@ typedef ReferenceCountedObjectPtr<ProteinEvaluationCallback> ProteinEvaluationCa
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_CALLBACK_PROTEIN_EVALUATION_H_
+#endif // !LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
