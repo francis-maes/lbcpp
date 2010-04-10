@@ -20,6 +20,43 @@ public:
   ScoreVectorSequence(FeatureDictionaryPtr dictionary, size_t length)
     : dictionary(dictionary), length(length), numScores(dictionary->getNumFeatures()), matrix(length * dictionary->getNumFeatures(), 0.0) {}
   ScoreVectorSequence() {}
+
+  /*
+  ** ObjectContainer
+  */
+  virtual size_t size() const
+    {return length;}
+  
+  virtual void resize(size_t newSize)
+  {
+    length = newSize;
+    matrix.clear();
+    matrix.resize(length * numScores, 0.0);
+  }
+
+  virtual ObjectPtr get(size_t position) const
+  {
+    jassert(position < length);
+    DenseVectorPtr res = new DenseVector(dictionary, numScores);
+    size_t startIndex = position * numScores;
+    for (size_t i = 0; i < numScores; ++i)
+      res->set(i, matrix[startIndex + i]);
+    return res;
+  }
+
+  virtual void set(size_t position, ObjectPtr object)
+  {
+    jassert(position < length);
+    DenseVectorPtr vector = object.dynamicCast<DenseVector>();
+    jassert(vector);
+    jassert(vector->getDictionary() == dictionary);
+    size_t startIndex = position * numScores;
+    for (size_t i = 0; i < numScores; ++i)
+      matrix[startIndex + i] = vector->get(i);
+  }
+
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
+
 #if 0
   /*
   ** InterdependantVariableSet
@@ -86,16 +123,7 @@ public:
     return res + T("\n");
   }
 
-  virtual featureGenerator elementFeatures(size_t position) const
-  {
-    size_t startIndex = position * numScores;
-    for (size_t i = 0; i < numScores; ++i)
-    {
-      double score = matrix[startIndex + i];
-      if (score)
-        featureSense(i, score);
-    }
-  }
+
 
   double getScore(size_t position, size_t scoreIndex) const
     {return matrix[getIndex(position, scoreIndex)];}

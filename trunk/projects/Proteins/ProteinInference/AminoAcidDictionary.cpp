@@ -9,6 +9,29 @@
 #include "AminoAcidDictionary.h"
 using namespace lbcpp;
 
+AminoAcidDictionaryPtr AminoAcidDictionary::getInstance()
+{
+  static AminoAcidDictionaryPtr instance;
+  if (!instance)
+    FeatureDictionaryManager::getInstance().addDictionary(instance = new AminoAcidDictionary());
+  return instance;
+}
+
+const String AminoAcidDictionary::oneLetterCodes
+  = T("ARNDCEQGHILKMFPSTWYVBZJX");
+
+AminoAcidDictionary::AminoAcidDictionary()
+  : FeatureDictionary(T("AminoAcid"), new StringDictionary(T("AminoAcid features")), StringDictionaryPtr())
+{
+  for (int i = 0; i < oneLetterCodes.length(); ++i)
+  {
+    String oneLetterCode;
+    oneLetterCode += oneLetterCodes[i];
+    addFeature(oneLetterCode);
+  }
+}
+
+#if 0
 AminoAcidDictionary::AminoAcidDictionary(const String& code)
 {
   if (code.length() == 1)
@@ -19,9 +42,6 @@ AminoAcidDictionary::AminoAcidDictionary(const String& code)
     jassert(false); // todo: three-letter code
   }
 }
-
-const String AminoAcidDictionary::oneLetterCodes
-  = T("ARNDCEQGHILKMFPSTWYVBZJX");
 
 juce::tchar AminoAcidDictionary::getOneLetterCode() const
 {
@@ -60,3 +80,5 @@ String AminoAcidDictionary::getThreeLettersCode() const
   jassert(dictionary->exists((size_t)type));
   return dictionary->getString((size_t)type);
 }
+
+#endif

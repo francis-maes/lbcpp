@@ -35,22 +35,26 @@ namespace lbcpp
 class StringToObjectMap;
 typedef ReferenceCountedObjectPtr<StringToObjectMap> StringToObjectMapPtr;
 
-class StringToObjectMap : public Object
+class StringToObjectMap : public NameableObject
 {
 public:
+  StringToObjectMap(const String& name = T("Unnamed"))
+    : NameableObject(name) {}
+
   virtual String toString() const
   {
+    String res = getClassName() + T(" ") + name + T(":\n");
     if (objects.empty())
-      return T("No objects");
+      res += T("No objects");
     else if (objects.size() == 1)
-      return T("Object ") + objects.begin()->first + T(":\n\t") + objects.begin()->second->toString();
+      res += T("Object ") + objects.begin()->first + T(":\n\t") + objects.begin()->second->toString();
     else
     {
-      String res = String((int)objects.size()) + T(" objects:\n");
+      res += String((int)objects.size()) + T(" objects:\n");
       for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
         res += T("Object ") + it->first + T(":\n\t") + lbcpp::toString(it->second) + T("\n");
-      return res;
     }
+    return res;
   }
   
   void setObject(const String& key, ObjectPtr object)
@@ -67,14 +71,22 @@ public:
   ObjectsMap getObjects() const
     {return objects;}
 
+  virtual ObjectPtr clone() const
+  {
+    StringToObjectMapPtr res = Object::createAndCast<StringToObjectMap>(getClassName());
+    res->name = name;
+    res->objects = objects;
+    return res;
+  }
+
 protected:
   ObjectsMap objects;
 
   virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, objects);}
+    {return NameableObject::load(istr) && lbcpp::read(istr, objects);}
 
   virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, objects);}
+    {NameableObject::save(ostr); lbcpp::write(ostr, objects);}
 };
 
 }; /* namespace lbcpp */

@@ -14,10 +14,28 @@
 namespace lbcpp
 {
 
-class SecondaryStructureElement
+class SecondaryStructureDictionary : public FeatureDictionary
 {
 public:
-  enum EightStateType
+  static FeatureDictionaryPtr getInstance();
+
+  enum Type
+  {
+    helix = 0, // G (threeTurnHelix) or H (alphaHelix)
+    sheet, // B (residueInIsolatedBridge) or E (extendedStrandInSheet )
+    other  // I, T, S or C
+  };
+
+private:
+  SecondaryStructureDictionary();
+};
+
+class DSSPSecondaryStructureDictionary : public FeatureDictionary
+{
+public:
+  static FeatureDictionaryPtr getInstance();
+
+  enum Type
   {
     // eight states:
     threeTurnHelix = 0,        // G
@@ -27,15 +45,34 @@ public:
     extendedStrandInSheet,     // E
     residueInIsolatedBridge,   // B
     bend,                      // S
-    coil,                      // C -
+    coil                       // C -
   };
 
-  enum ThreeStateType
+  static const String oneLetterCodes;
+
+private:
+  DSSPSecondaryStructureDictionary();
+};
+
+class SolventAccesibility2StateDictionary : public FeatureDictionary
+{
+public:
+  static FeatureDictionaryPtr getInstance();
+
+  enum Type
   {
-    helix = 0, // G (threeTurnHelix) or H (alphaHelix)
-    sheet, // B (residueInIsolatedBridge) or E (extendedStrandInSheet )
-    other, // I, T, S or C
+    exposed = 0,
+    burried
   };
+
+private:
+  SolventAccesibility2StateDictionary();
+};
+
+#if 0
+class SecondaryStructureElement
+{
+public:
 
   SecondaryStructureElement(EightStateType type)
     : type((int)type), eightStates(true) {}
@@ -147,6 +184,7 @@ private:
   int type;
   bool eightStates;
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 

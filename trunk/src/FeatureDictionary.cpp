@@ -337,3 +337,10 @@ FeatureDictionaryPtr FeatureDictionaryManager::getFlatVectorDictionary(StringDic
     res->setFeatures(indices);
   return res;
 }
+
+void FeatureDictionaryManager::addDictionary(FeatureDictionaryPtr dictionary)
+{
+  String name = dictionary->getName();
+  jassert(dictionaries.find(name) == dictionaries.end());
+  dictionaries[name] = dictionary;
+}

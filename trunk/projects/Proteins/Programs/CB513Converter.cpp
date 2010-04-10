@@ -7,7 +7,9 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "GeneratedCode/Data/Bio/Protein.lh"
+#include "../ProteinInference/Protein.h"
+#include "../ProteinInference/AminoAcidDictionary.h"
+#include "../ProteinInference/SecondaryStructureDictionary.h"
 using namespace lbcpp;
 
 class DaFuckingDataParser : public LearningDataObjectParser
@@ -87,29 +89,24 @@ public:
     jassert(solventAccesibilitySequence.length() == (int)currentContent.size());
 
     // amino acids
-    AminoAcidSequencePtr aminoAcids = new AminoAcidSequence();
-    aminoAcids->setLength(currentContent.size());
+    LabelSequencePtr aminoAcids = new LabelSequence(AminoAcidDictionary::getInstance(), currentContent.size());
     res->setAminoAcidSequence(aminoAcids);
     
     // pssm
-    PositionSpecificScoringMatrixPtr pssm = new PositionSpecificScoringMatrix();
-    pssm->setLength(currentContent.size());
+    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(AminoAcidDictionary::getInstance(), currentContent.size());
     res->setPositionSpecificScoringMatrix(pssm);
 
-    // three state secondary structure
-    SecondaryStructureSequencePtr threeStateSecondary = new SecondaryStructureSequence(false);
-    threeStateSecondary->setLength(currentContent.size());
-    res->setSecondaryStructureSequence(threeStateSecondary);
+    // secondary structure (three states)
+    LabelSequencePtr secondaryStructure = new LabelSequence(SecondaryStructureDictionary::getInstance(), currentContent.size());
+    res->setSecondaryStructureSequence(secondaryStructure);
 
-    // eight state secondary structure
-    SecondaryStructureSequencePtr eightStateSecondary = new SecondaryStructureSequence(true);
-    eightStateSecondary->setLength(currentContent.size());
-    res->setSecondaryStructureSequence(eightStateSecondary);
+    // DSSP secondary structure (height states)
+    LabelSequencePtr dsspSecondaryStructure = new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), currentContent.size());
+    res->setDSSPSecondaryStructureSequence(dsspSecondaryStructure);
 
     // solvent accesibility
-    SolventAccessibilitySequencePtr solventAccessibility = new SolventAccessibilitySequence();
-    solventAccessibility->setLength(currentContent.size());
-    res->setSolventAccessibilitySequence(solventAccessibility);
+    LabelSequencePtr solventAccesibility = new LabelSequence(SolventAccesibility2StateDictionary::getInstance(), currentContent.size());
+    res->setSolventAccessibilitySequence(solventAccesibility);
 
     for (size_t i = 0; i < currentContent.size(); ++i)
     {
@@ -122,8 +119,10 @@ public:
       String oneLetterCode = aminoAcid->getDictionary()->getFeatures()->getString(aminoAcid->getValues()[0].first);
       jassert(oneLetterCode.length() == 1);
       jassert(aminoAcidsSequence[i] == oneLetterCode[0]);
-      aminoAcids->setAminoAcid(i, oneLetterCode);
-
+      int index = AminoAcidDictionary::getInstance()->getIndexFromOneLetterCode(oneLetterCode);
+      jassert(index >= 0);
+      aminoAcids->setIndex(i, (size_t)index);
+#if 0
       // pssm
       SparseVectorPtr pssmVector = vector->getSubVector(T("pssm"));
       jassert(pssmVector && pssmVector->hasValues());
@@ -138,13 +137,14 @@ public:
       // dssp
       juce::tchar dssp = dsspSequence[i];
       SecondaryStructureElement dsspElement(dssp, true);
-      threeStateSecondary->setElement(i, dsspElement.toThreeState());
-      eightStateSecondary->setElement(i, dsspElement);
+      secondaryStructure->setElement(i, dsspElement.toThreeState());
+      dsspSecondaryStructure->setElement(i, dsspElement);
 
       // secondary structure
       String checkLabel = currentLabels[i];
       jassert(checkLabel == T("C") || checkLabel == T("H") || checkLabel == T("E"));
       jassert(checkLabel[0] == dsspElement.toThreeState().getOneLetterCode());
+#endif // 0
     }
 
     return res;
@@ -176,7 +176,7 @@ int main()
 
   File sourceDirectory("C:\\Projets\\Proteins\\data\\CB513");
   File pssmDirectory("C:\\Projets\\Proteins\\scripts");
-  File outputDirectory("C:\\Projets\\Proteins\\data\\CB513cool");
+  File outputDirectory("C:\\Projets\\Proteins\\data\\CB513new");
   
   juce::OwnedArray<File> pssmFiles;
   pssmDirectory.findChildFiles(pssmFiles, File::findFiles, false, T("*.data"));
