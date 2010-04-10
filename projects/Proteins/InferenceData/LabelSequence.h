@@ -26,6 +26,12 @@ public:
   /*
   ** ObjectContainer
   */
+  virtual size_t size() const
+    {return sequence.size();}
+
+  virtual void resize(size_t newSize)
+    {sequence.resize(newSize, 255);}
+
   virtual void set(size_t position, ObjectPtr object)
   {
     LabelPtr label = object.dynamicCast<lbcpp::Label>();
@@ -53,7 +59,7 @@ public:
   ** Sequence
   */
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const
-    {return getObject(position).dynamicCast<Label>();}
+    {return get(position).dynamicCast<Label>();}
 
   /*
   ** Serialization

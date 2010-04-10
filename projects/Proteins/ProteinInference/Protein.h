@@ -6,11 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#ifndef LBCPP_PROTEIN_INFERENCE_PROTEIN_H_
+# define LBCPP_PROTEIN_INFERENCE_PROTEIN_H_
 
-#include "AminoAcidSequence.lh"
-#include "PositionSpecificScoringMatrix.lh"
-#include "SecondaryStructureSequence.lh"
-#include "SolventAccesibilitySequence.lh"
+# include "../InferenceData/LabelSequence.h"
+# include "../InferenceData/ScoreVectorSequence.h"
 
 namespace lbcpp
 {
@@ -22,61 +22,52 @@ class Protein : public StringToObjectMap
 {
 public:
   Protein(const String& name)
-    : name(name) {}
+    : StringToObjectMap(name) {}
   Protein() {}
 
-  virtual String toString() const
-    {return T("Protein ") + name + T(":\n") + StringToObjectMap::toString();}
-
-  virtual String getName() const
-    {return name;}
-
   size_t getLength() const
-    {return getAminoAcidSequence()->getLength();}
+    {return getAminoAcidSequence()->size();}
 
-  void setAminoAcidSequence(AminoAcidSequencePtr sequence)
+  /*
+  ** Primary Structure and Position Specific Scoring Matrix
+  */
+  void setAminoAcidSequence(LabelSequencePtr sequence)
     {setObject(T("AminoAcidSequence"), sequence);}
 
-  AminoAcidSequencePtr getAminoAcidSequence() const
+  LabelSequencePtr getAminoAcidSequence() const
     {return getObject(T("AminoAcidSequence"));}
 
-  void setPositionSpecificScoringMatrix(PositionSpecificScoringMatrixPtr pssm)
+  void setPositionSpecificScoringMatrix(ScoreVectorSequencePtr pssm)
     {setObject(T("PositionSpecificScoringMatrix"), pssm);}
 
-  PositionSpecificScoringMatrixPtr getPositionSpecificScoringMatrix() const
+  ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const
     {return getObject(T("PositionSpecificScoringMatrix"));}
 
-  void setSolventAccessibilitySequence(SolventAccessibilitySequencePtr solventAccessibility)
+  /*
+  ** Secondary Structure
+  */
+  void setSecondaryStructureSequence(LabelSequencePtr sequence)
+    {setObject(T("SecondaryStructureSequence"), sequence);}
+
+  LabelSequencePtr getSecondaryStructureSequence() const
+    {return getObject(T("SecondaryStructureSequence"));}
+
+  void setDSSPSecondaryStructureSequence(LabelSequencePtr sequence)
+    {setObject(T("DSSPSecondaryStructureSequence"), sequence);}
+
+  LabelSequencePtr getDSSPSecondaryStructureSequence() const
+    {return getObject(T("DSSPSecondaryStructureSequence"));}
+
+  /*
+  ** Solvent Accesibility
+  */
+  void setSolventAccessibilitySequence(LabelSequencePtr solventAccessibility)
     {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
 
-  void setSecondaryStructureSequence(SecondaryStructureSequencePtr sequence)
-    {setObject(sequence->hasEightStates() ? T("EightStateSecondaryStructure") : T("ThreeStateSecondaryStructure"), sequence);}
-
-  SecondaryStructureSequencePtr getSecondaryStructureSequence(bool heightState = false) const
-    {return getObject(heightState ? T("EightStateSecondaryStructure") : T("ThreeStateSecondaryStructure"));}
-
-  virtual ObjectPtr clone() const
-  {
-    ProteinPtr res = new Protein(name);
-    for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
-    {
-      if (it->first == T("AminoAcidSequence") || it->first == T("PositionSpecificScoringMatrix"))
-        res->objects[it->first] = it->second; // AA and PSSM are shared objects
-      else
-        res->objects[it->first] = it->second->clone();
-    }
-    return res;
-  }
-
-protected:
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, name) && StringToObjectMap::load(istr);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, name); StringToObjectMap::save(ostr);}
-
-private:
-  String name;
+  LabelSequencePtr getSolventAccesibilitySequence() const
+    {return getObject(T("SolventAccesibilitySequence"));}
 };
 
 }; /* namespace lbcpp */
+
+#endif // !LBCPP_PROTEIN_INFERENCE_PROTEIN_H_

@@ -14,9 +14,14 @@
 namespace lbcpp
 {
 
-class AminoAcidDictionary
+class AminoAcidDictionary;
+typedef ReferenceCountedObjectPtr<AminoAcidDictionary> AminoAcidDictionaryPtr;
+
+class AminoAcidDictionary : public FeatureDictionary
 {
 public:
+  static AminoAcidDictionaryPtr getInstance();
+
   enum Type
   {
     // 20 amino acids
@@ -56,6 +61,14 @@ public:
     numAmbiguousAminoAcids = 4
   };
 
+  static const String oneLetterCodes;
+
+  AminoAcidDictionary();
+
+  int getIndexFromOneLetterCode(const String& oneLetterCode) const
+    {jassert(oneLetterCode.size() == 1); return oneLetterCodes.indexOfChar(oneLetterCode[0]);}
+
+#if 0
   /*
   ** Constructors
   */
@@ -81,7 +94,6 @@ public:
   /*
   ** One letter code
   */
-  static const String oneLetterCodes;
   static Type getTypeFromOneLetterCode(juce::tchar c);
 
   juce::tchar getOneLetterCode() const;
@@ -106,6 +118,7 @@ public:
 
 private:
   Type type;
+#endif // 0
 };
 
 }; /* namespace lbcpp */

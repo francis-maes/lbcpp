@@ -307,6 +307,8 @@ public:
   static FeatureDictionaryPtr get(const String& name)
     {return getInstance().getOrCreateDictionary(name);}
 
+  void addDictionary(FeatureDictionaryPtr dictionary);
+
   bool hasRootDictionary(const String& name) const
     {return getRootDictionary(name) != FeatureDictionaryPtr();}
 
