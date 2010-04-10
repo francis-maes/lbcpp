@@ -24,7 +24,6 @@ extern void declareVariableSetClasses();
 //////Custom SS3 Problem////////
 ////////////////////////////////
 
-// the aim is to learn a "incomplete Protein => complete Protein" function
 // Input: Protein
 // Output: SecondaryStructureSequence
 class SSContentOnlyInferenceStep : public SecondaryStructureInferenceStep

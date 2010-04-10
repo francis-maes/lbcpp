@@ -67,6 +67,11 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
+  ProteinInference/Protein.h
+  ProteinInference/AminoAcidDictionary.h
+  ProteinInference/AminoAcidDictionary.cpp
+  ProteinInference/SecondaryStructureDictionary.h
+  ProteinInference/SecondaryStructureDictionary.cpp
   ProteinInference/ProteinInference.h
   ProteinInference/ProteinEvaluationCallback.h
 )
