@@ -132,7 +132,7 @@ void learn(InferenceCallbackPtr learningCallback, InferenceCallbackPtr customEva
   if (customEvaluationCallback)
     evaluationContext->appendCallback(customEvaluationCallback);
 
-  for (size_t i = 0; i < 5; ++i)
+  for (size_t i = 0; i < 15; ++i)
   {
     std::cout << std::endl << " ================== ITERATION " << i << " ================== " << std::endl;
 
