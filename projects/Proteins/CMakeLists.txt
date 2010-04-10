@@ -43,13 +43,18 @@ SET(VARIABLE_SET_MODEL_SOURCES
   VariableSetModel/SimulatedIterativeClassificationVariableSetModel.h
 )
 
+SET(LBCPP_INFERENCE_DATA_SOURCES
+  InferenceData/Sequence.h
+  InferenceData/LabelSequence.h
+  InferenceData/ScoreVectorSequence.h
+)
+
 SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/InferenceStep.h
   InferenceStep/InferenceStep.cpp
-  InferenceStep/SequenceInferenceStep.h
+  InferenceStep/SequentialInferenceStep.h
   InferenceStep/ParallelInferenceStep.h
   InferenceStep/ClassificationInferenceStep.h
-  InferenceStep/ProteinInferenceSteps.h
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
@@ -59,16 +64,26 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   InferenceCallback/ExamplesCreatorCallback.h
   InferenceCallback/GlobalSimulationLearningCallback.h
   InferenceCallback/SingleStepSimulationLearningCallback.h
-  InferenceCallback/ProteinEvaluationCallback.h
+)
+
+SET(LBCPP_PROTEIN_INFERENCE_SOURCES
+  ProteinInference/ProteinInference.h
+  ProteinInference/ProteinEvaluationCallback.h
 )
 
 SET(PROTEINS_CPP_SOURCES
+  
+  # old
   ${PROTEINS_DATA_BIO_CPP}
   ${VARIABLE_SET_MODEL_SOURCES}
-  ${LBCPP_INFERENCE_STEP_SOURCES}
-  ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   VariableSetModel.h
   VariableSetModel.cpp
+  
+  # new
+  ${LBCPP_INFERENCE_DATA_SOURCES}
+  ${LBCPP_INFERENCE_STEP_SOURCES}
+  ${LBCPP_INFERENCE_CALLBACK_SOURCES}
+  ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   classes.cpp
 )
 
@@ -81,8 +96,10 @@ SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_SUB_GROUP(Data Generic FILES ${PROTEINS_DATA_GENERIC})
 SOURCE_SUB_GROUP(Data Bio FILES ${PROTEINS_DATA_BIO})
 SOURCE_GROUP(VariableSetModel FILES ${VARIABLE_SET_MODEL_SOURCES})
+SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES})
 SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 SOURCE_GROUP(InferenceCallback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
+SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
@@ -95,7 +112,6 @@ TARGET_LINK_LIBRARIES(VariableSetToSequenceData proteins)
 
 ADD_EXECUTABLE(ProteinsTestLearning Programs/TestLearning.cpp)
 TARGET_LINK_LIBRARIES(ProteinsTestLearning proteins)
-
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
