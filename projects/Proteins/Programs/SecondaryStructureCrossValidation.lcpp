@@ -24,6 +24,7 @@ public:
   {
     initializeGlobalAminoAcidComposition();
     initializeLocalAminoAcidComposition();
+    initializePSSMCumul();
   }
   
   void initializeGlobalAminoAcidComposition() {
@@ -82,6 +83,30 @@ public:
         aminoAcidCompositionCumuls[sWord] = newVector;
       }
       aminoAcidCompositionCumuls[sWord].at(i)++;
+    }
+  }
+  
+  void initializePSSMCumul()
+  {
+    size_t numScore = positionSpecificScores->getNumScores();
+    size_t numVariables = aminoAcidSequence->getNumVariables();
+    
+    pssmCumuls.resize(numScore);
+    
+    for (size_t i = 0; i < numScore; i++)
+    {
+      std::vector<double> newVector;
+      newVector.resize(numVariables);
+      newVector.at(0) = positionSpecificScores->getScore(0, i);
+      pssmCumuls.at(i) = newVector;
+    }
+    
+    for (size_t i = 1; i < numVariables; ++i)
+    {
+      for (size_t j = 0; j < numScore; ++j)
+      {
+        pssmCumuls.at(j).at(i) = pssmCumuls.at(j).at(i - 1) + positionSpecificScores->getScore(i, j);
+      }
     }
   }
   
@@ -169,7 +194,8 @@ public:
     }
   }
   
-  featureGenerator localAminoAcidCompositionFeatures(size_t variableIndex, size_t nbLeft, size_t nbRight) const {
+  featureGenerator localAminoAcidCompositionFeatures(size_t variableIndex, size_t nbLeft, size_t nbRight) const
+  {
     size_t start = (variableIndex < nbLeft) ? 0 : variableIndex - nbLeft;
     size_t stop = (variableIndex + nbRight >= aminoAcidSequence->getNumVariables()) ? aminoAcidSequence->getNumVariables() - 1 : variableIndex + nbRight;
     size_t length = stop - start;
@@ -179,6 +205,19 @@ public:
       if (iter->second[start] != iter->second[stop])
       {
         featureSense(iter->first, (double) (iter->second[stop] - iter->second[start]) / length);
+      }
+    }
+  }
+  
+  featureGenerator cumulativePSSMScoreFeatures(size_t variableIndex, size_t nbLeft, size_t nbRight) const
+  {
+    size_t start = (variableIndex < nbLeft) ? 0 : variableIndex - nbLeft;
+    size_t stop = (variableIndex + nbRight >= aminoAcidSequence->getNumVariables()) ? aminoAcidSequence->getNumVariables() - 1 : variableIndex + nbRight;
+    size_t length = stop - start;
+    
+    for (size_t i = 0; i < pssmCumuls.size(); ++i) {
+      if (pssmCumuls.at(i).at(stop) != pssmCumuls.at(i).at(start)) {
+        featureSense(String((int) i), (pssmCumuls.at(i).at(stop) - pssmCumuls.at(i).at(start)) / length);
       }
     }
   }
@@ -219,7 +258,9 @@ public:
     
     //featureCall("comp") inline aminoAcidCompositionFeatures();
 
-    featureCall("lc") inline localAminoAcidCompositionFeatures(variableIndex, nbAALeft, nbAARight);
+    //featureCall("lc") inline localAminoAcidCompositionFeatures(variableIndex, nbAALeft, nbAARight);
+    
+    featureCall("pc") inline cumulativePSSMScoreFeatures(variableIndex, nbAALeft, nbAARight);
 
     featureCall("p") inline positionSpecificScores->windowFeatures(variableIndex, nbAALeft, nbAARight, true);
     if (prediction)
@@ -242,7 +283,8 @@ public:
     + String("\n    > AA at left: ") + String((int) nbAALeft)
     + String("\n    > AA at right: ") + String((int) nbAARight)
     //+ String("\n    > Global word length: ") + String((int) globalWordLength)
-    + String("\n    > Local word length: ") + String((int) localWordLength);
+    //+ String("\n    > Local word length: ") + String((int) localWordLength)
+    + String("\n    > Cumulative PSSM Score: ") + String("Yes");
   }
       
   
@@ -253,6 +295,7 @@ private:
   
   std::map<String, size_t> aminoAcidCompositions;
   std::map<String, std::vector<size_t> > aminoAcidCompositionCumuls;
+  std::vector< std::vector<double> > pssmCumuls;
 
   static size_t nbAALeft;
   static size_t nbAARight;
