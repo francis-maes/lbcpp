@@ -82,7 +82,7 @@ public:
   */
   virtual ObjectPtr runInference(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
   virtual ObjectPtr runParallelInferences(ParallelInferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
-  virtual FeatureGeneratorPtr runClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode) = 0;
+  virtual ObjectPtr runClassification(ClassificationInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
   /*
   ** Inference Callbacks
@@ -96,13 +96,20 @@ protected:
   void callFinishInferences();
   void callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
   void callPostInference(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
-  void callClassification(InferenceStackPtr stack, ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode);
+  void callClassification(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
     
 private:
   std::vector<InferenceCallbackPtr> callbacks;
 };
 
-extern InferenceContextPtr singleThreadedInferenceContext();
+class InferenceFactory : public Object
+{
+public:
+  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels) = 0;
+};
+typedef ReferenceCountedObjectPtr<InferenceFactory> InferenceFactoryPtr;
+
+extern InferenceContextPtr singleThreadedInferenceContext(InferenceFactoryPtr factory);
 
 }; /* namespace lbcpp */
 

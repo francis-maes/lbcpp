@@ -23,6 +23,8 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   InferenceCallback/InferenceCallback.h
   InferenceCallback/InferenceContext.h
   InferenceCallback/InferenceContext.cpp
+  InferenceCallback/InferenceLearner.h
+  InferenceCallback/InferenceLearner.cpp
   InferenceCallback/ExamplesCreatorCallback.h
   InferenceCallback/GlobalSimulationLearningCallback.h
   InferenceCallback/SingleStepSimulationLearningCallback.h

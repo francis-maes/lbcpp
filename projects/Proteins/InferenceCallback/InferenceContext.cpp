@@ -10,6 +10,7 @@
 #include "InferenceCallback.h"
 #include "../InferenceStep/ParallelInferenceStep.h"
 #include "../InferenceStep/SequentialInferenceStep.h"
+#include "../InferenceStep/ClassificationInferenceStep.h"
 using namespace lbcpp;
 
 /*
@@ -42,10 +43,10 @@ void InferenceContext::callPostInference(InferenceStackPtr stack, ObjectPtr inpu
     callbacks[i]->postInferenceCallback(stack, input, supervision, output, returnCode);
 }
 
-void InferenceContext::callClassification(InferenceStackPtr stack, ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode)
+void InferenceContext::callClassification(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->classificationCallback(stack, classifier, input, supervision, returnCode);
+    callbacks[i]->classificationCallback(stack, input, supervision, returnCode);
 }
 
 void InferenceContext::appendCallback(InferenceCallbackPtr callback)
@@ -64,14 +65,11 @@ void InferenceContext::removeCallback(InferenceCallbackPtr callback)
 void InferenceContext::clearCallbacks()
   {callbacks.clear();}
 
-/*
-** SingleThreadedInferenceContext
-*/
-class SingleThreadedInferenceContext : public InferenceContext
+class DefaultInferenceContext : public InferenceContext
 {
 public:
-  SingleThreadedInferenceContext() : stack(new InferenceStack())
-    {}
+  DefaultInferenceContext(InferenceFactoryPtr factory)
+    : factory(factory) {}
 
   virtual String getName() const
     {return getClassName();}
@@ -81,6 +79,19 @@ public:
 
   virtual ReturnCode runWithUnsupervisedExamples(InferenceStepPtr inference, ObjectContainerPtr examples)
     {return runWithSupervisedExamples(inference, examples->apply(new ObjectToObjectPairFunction(true, false)));}
+
+protected:
+  InferenceFactoryPtr factory;
+};
+
+/*
+** SingleThreadedInferenceContext
+*/
+class SingleThreadedInferenceContext : public DefaultInferenceContext
+{
+public:
+  SingleThreadedInferenceContext(InferenceFactoryPtr factory)
+    : DefaultInferenceContext(factory), stack(new InferenceStack()) {}
 
   virtual ReturnCode runWithSupervisedExamples(InferenceStepPtr inference, ObjectContainerPtr examples)
   {
@@ -137,15 +148,28 @@ public:
     return res;
   }
 
-  virtual FeatureGeneratorPtr runClassification(ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr runClassification(ClassificationInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    callClassification(stack, classifier, input, supervision, returnCode);
-    return classifier->predictLabel(input);
+    ClassifierPtr classifier = step->getClassifier();
+    if (!classifier)
+    {
+      if (!supervision)
+      {
+        returnCode = InferenceStep::errorReturnCode;
+        return ObjectPtr();
+      }
+      FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
+      jassert(correctOutput);
+      step->setClassifier(classifier = factory->createClassifier(correctOutput->getDictionary()));
+    }
+    callClassification(stack, input, supervision, returnCode);
+    FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
+    return classifier->predictLabel(inputFeatures);
   }
 
 private:
   InferenceStackPtr stack;
 };
 
-InferenceContextPtr lbcpp::singleThreadedInferenceContext()
-  {return new SingleThreadedInferenceContext();}
+InferenceContextPtr lbcpp::singleThreadedInferenceContext(InferenceFactoryPtr factory)
+  {return new SingleThreadedInferenceContext(factory);}

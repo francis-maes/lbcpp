@@ -23,10 +23,15 @@ typedef ReferenceCountedObjectPtr<InferenceContext> InferenceContextPtr;
 
 class InferenceStep;
 typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
+
 class SequentialInferenceStep;
 typedef ReferenceCountedObjectPtr<SequentialInferenceStep> SequentialInferenceStepPtr;
+
 class ParallelInferenceStep;
 typedef ReferenceCountedObjectPtr<ParallelInferenceStep> ParallelInferenceStepPtr;
+
+class ClassificationInferenceStep;
+typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInferenceStepPtr;
 
 class InferenceStep : public NameableObject
 {
