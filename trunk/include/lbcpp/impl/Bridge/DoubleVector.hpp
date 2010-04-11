@@ -18,6 +18,18 @@ namespace lbcpp
 {
 
 /*
+** Label
+*/
+template<class FeatureVisitor>
+inline void Label::staticFeatureGenerator(FeatureVisitor& visitor) const
+  {visitor.featureSense(getDictionary(), index, 1.0);}
+
+template<>
+struct Traits<LabelPtr> : public ObjectPtrTraits<Label> {};
+template<>
+struct Traits<Label> : public ObjectTraits<Label> {};
+
+/*
 ** Sparse Vector
 */
 template<class FeatureVisitor>

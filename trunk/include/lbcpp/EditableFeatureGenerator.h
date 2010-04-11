@@ -94,8 +94,7 @@ public:
     {index = 0;}
 
   template<class FeatureVisitor>
-  void staticFeatureGenerator(FeatureVisitor& visitor) const
-    {visitor.featureSense(getDictionary(), index, 1.0);}
+  void staticFeatureGenerator(FeatureVisitor& visitor) const;
 
   size_t getIndex() const
     {return index;}
