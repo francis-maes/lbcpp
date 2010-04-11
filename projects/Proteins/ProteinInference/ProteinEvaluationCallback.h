@@ -9,6 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 # define LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 
+# include "Protein.h"
 # include "../InferenceCallback/InferenceCallback.h"
 
 namespace lbcpp
@@ -19,7 +20,7 @@ class ProteinEvaluationCallback : public InferenceCallback
 public:
   virtual void startInferencesCallback(size_t count)
   {
-    numProteins = numUnpredictedProteins = 0;
+    numProteins = 0;
     secondaryStructureAccuracy = new ScalarVariableMean(T("Q3"));
     dsspSecondaryStructureAccuracy = new ScalarVariableMean(T("Q8"));
   }
@@ -40,8 +41,6 @@ public:
   {
     String res;
     res += lbcpp::toString(numProteins) + T(" proteins");
-    if (numUnpredictedProteins)
-      res += T(" (") + lbcpp::toString(numUnpredictedProteins) + T(" unpredicted proteins)");
     res += "\n";
     if (numProteins)
     {
@@ -61,32 +60,28 @@ public:
   {
     ++numProteins;
     addLabelSequence(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence(), secondaryStructureAccuracy);
-    addLabelSequence(predicted->getSecondaryStructureSequence(true), correct->getSecondaryStructureSequence(true), dsspSecondaryStructureAccuracy);
+    addLabelSequence(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureAccuracy);
   }
 
   void addLabelSequence(LabelSequencePtr predicted, LabelSequencePtr correct, ScalarVariableMeanPtr statistics)
   {
-    if (!correct)
+    if (!correct || !predicted)
       return;
-    if (!predicted)
-    {
-      ++numUnpredictedProteins;
-      return;
-    }
-    size_t n = predicted->getLength();
-    jassert(correct->getLength() == n);
+    jassert(correct->getDictionary() == predicted->getDictionary());
+
+    size_t n = predicted->size();
+    jassert(correct->size() == n);
     for (size_t i = 0; i < n; ++i)
     {
-      size_t correctLabel;
-      size_t predictedLabel;
-      if (correct->getVariable(i, correctLabel))
-        statistics->push((predicted->getVariable(i, predictedLabel) && predictedLabel == correctLabel) ? 1.0 : 0.0);
+      LabelPtr correctLabel = correct->get(i);
+      LabelPtr predictedLabel = predicted->get(i);
+      if (correctLabel)
+        statistics->push(predictedLabel && correctLabel->getIndex() == predictedLabel->getIndex() ? 1.0 : 0.0);
     }
   }
 
 protected:
   size_t numProteins;
-  size_t numUnpredictedProteins;
   ScalarVariableMeanPtr secondaryStructureAccuracy;
   ScalarVariableMeanPtr dsspSecondaryStructureAccuracy;
 };

@@ -128,7 +128,10 @@ public:
                 supervision ? inference->getSubSupervision(supervision, i) : ObjectPtr(),
                 returnCode);
       if (returnCode != InferenceStep::finishedReturnCode)
+      {
+        Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
         return ObjectPtr(); 
+      }
       inference->setSubOutput(res, i, subOutput);
     }
     return res;

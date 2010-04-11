@@ -14,9 +14,7 @@ using namespace lbcpp;
 */
 FeatureDictionaryPtr SecondaryStructureDictionary::getInstance()
 {
-  static FeatureDictionaryPtr instance;
-  if (!instance)
-    FeatureDictionaryManager::getInstance().addDictionary(instance = new SecondaryStructureDictionary());
+  static FeatureDictionaryPtr instance = new SecondaryStructureDictionary();
   return instance;
 }
 
@@ -28,19 +26,29 @@ SecondaryStructureDictionary::SecondaryStructureDictionary()
   addFeature(T("C"));
 }
 
+SecondaryStructureDictionary::Type SecondaryStructureDictionary::getIndexFromDSSPElement(const String& dsspElement)
+{
+  int dsspIndex = DSSPSecondaryStructureDictionary::getInstance()->getFeatures()->getIndex(dsspElement);
+  jassert(dsspIndex >= 0);
+  DSSPSecondaryStructureDictionary::Type type = (DSSPSecondaryStructureDictionary::Type)dsspIndex;
+  if (type == DSSPSecondaryStructureDictionary::threeTurnHelix || type == DSSPSecondaryStructureDictionary::alphaHelix)
+    return helix;
+  if (type == DSSPSecondaryStructureDictionary::residueInIsolatedBridge || type == DSSPSecondaryStructureDictionary::extendedStrandInSheet)
+    return sheet;
+  return other;
+}
+
 /*
 ** DSSPSecondaryStructure
 */
 FeatureDictionaryPtr DSSPSecondaryStructureDictionary::getInstance()
 {
-  static FeatureDictionaryPtr instance;
-  if (!instance)
-    FeatureDictionaryManager::getInstance().addDictionary(instance = new DSSPSecondaryStructureDictionary());
+  static FeatureDictionaryPtr instance = new DSSPSecondaryStructureDictionary();
   return instance;
 }
 
 const String DSSPSecondaryStructureDictionary::oneLetterCodes
-  = T("GHITEBS");
+  = T("GHITEBS_");
 
 DSSPSecondaryStructureDictionary::DSSPSecondaryStructureDictionary()
   : FeatureDictionary(T("DSSPSecondaryStructure"), new StringDictionary(T("DSSPSecondaryStructure features")), StringDictionaryPtr())
@@ -58,15 +66,13 @@ DSSPSecondaryStructureDictionary::DSSPSecondaryStructureDictionary()
 */
 FeatureDictionaryPtr SolventAccesibility2StateDictionary::getInstance()
 {
-  static FeatureDictionaryPtr instance;
-  if (!instance)
-    FeatureDictionaryManager::getInstance().addDictionary(instance = new SolventAccesibility2StateDictionary());
+  static FeatureDictionaryPtr instance = new SolventAccesibility2StateDictionary();
   return instance;
 }
 
 SolventAccesibility2StateDictionary::SolventAccesibility2StateDictionary()
   : FeatureDictionary(T("SolventAccesibility2State"), new StringDictionary(T("SolventAccesibility2State features")), StringDictionaryPtr())
 {
-  addFeature(T("E"));
   addFeature(T("B"));
+  addFeature(T("E"));
 }

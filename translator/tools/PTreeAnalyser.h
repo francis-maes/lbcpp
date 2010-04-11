@@ -162,11 +162,28 @@ public:
 
   PTree::Node* getIdentifier() const
     {return identifier;}
+
   std::string getIdentifierString() const
     {return PTree::reify(identifier);}
 
+  bool isPartOfClassImplementation(std::string& classIdentifier, std::string& functionIdentifier) const
+  {
+    bool res = PTree::length(identifier) == 3
+      && dynamic_cast<PTree::Identifier* >(PTree::first(identifier))
+      && dynamic_cast<PTree::Atom* >(PTree::second(identifier)) && (*PTree::second(identifier) == "::")
+      && dynamic_cast<PTree::Identifier* >(PTree::third(identifier));
+    if (!res)
+      return false;
+    classIdentifier = PTree::reify(PTree::first(identifier));
+    functionIdentifier = PTree::reify(PTree::third(identifier));
+    return true;
+  }
+
   ParameterListPTreeAnalyser getParameters() const
     {return parameters ? ParameterListPTreeAnalyser(parameters) : ParameterListPTreeAnalyser();}
+
+  bool hasBody() const
+    {return body != NULL;}
 
   BlockPTreeAnalyser getBody() const
     {return BlockPTreeAnalyser(body);}

@@ -11,9 +11,7 @@ using namespace lbcpp;
 
 AminoAcidDictionaryPtr AminoAcidDictionary::getInstance()
 {
-  static AminoAcidDictionaryPtr instance;
-  if (!instance)
-    FeatureDictionaryManager::getInstance().addDictionary(instance = new AminoAcidDictionary());
+  static AminoAcidDictionaryPtr instance = new AminoAcidDictionary();
   return instance;
 }
 

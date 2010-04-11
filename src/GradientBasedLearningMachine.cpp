@@ -20,8 +20,6 @@ void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 {
   jassert(inputDictionary);
   write(ostr, inputDictionary->getName());
-  std::cout << "Input Dictionary: " << inputDictionary->getName() << std::endl;
-  std::cout << "Params Dictionary: " << parameters->getDictionary()->getName() << std::endl;
   write(ostr, parameters);
   write(ostr, regularizer);
   write(ostr, learner);
@@ -30,14 +28,8 @@ void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 
 bool GradientBasedLearningMachine::loadImpl(InputStream& istr)
 {
-  String paramsDictionaryName, inputsDictionaryName;
-  if (!lbcpp::read(istr, inputsDictionaryName))
-    return false;
-  inputDictionary = FeatureDictionaryManager::get(inputsDictionaryName);
-  if (!inputDictionary)
-    return false;
-
-  return read(istr, parameters) &&
+  inputDictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+  return inputDictionary && read(istr, parameters) &&
             read(istr, regularizer) &&
             read(istr, learner) &&
             read(istr, initializeParametersRandomly);
@@ -51,7 +43,6 @@ void GradientBasedLearningMachine::cloneImpl(GradientBasedLearningMachine& targe
   target.learner = learner->cloneAndCast<GradientBasedLearner>();
   target.initializeParametersRandomly = initializeParametersRandomly;
 }
-
 
 void GradientBasedLearningMachine::trainStochasticBeginImpl()
 {

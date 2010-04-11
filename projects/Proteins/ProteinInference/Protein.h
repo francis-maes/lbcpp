@@ -66,6 +66,27 @@ public:
 
   LabelSequencePtr getSolventAccesibilitySequence() const
     {return getObject(T("SolventAccesibilitySequence"));}
+
+protected:
+  virtual bool load(InputStream& istr)
+  {
+    int versionNumber;
+    if (!lbcpp::read(istr, versionNumber))
+      return false;
+    if (versionNumber != 100)
+    {
+      Object::error(T("Protein::load"), T("Unrecognized version number"));
+      return false;
+    }
+    return StringToObjectMap::load(istr);
+  }
+
+  virtual void save(OutputStream& ostr) const
+  {
+    int versionNumber = 100;
+    lbcpp::write(ostr, versionNumber);
+    StringToObjectMap::save(ostr);
+  }
 };
 
 }; /* namespace lbcpp */

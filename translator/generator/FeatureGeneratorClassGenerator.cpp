@@ -15,8 +15,8 @@
 class FeatureGeneratorRewriteVisitor : public ScopeBasedRewriteVisitor, public PTreeGenerator
 {
 public:
-  FeatureGeneratorRewriteVisitor(SymbolLookup::Class* classScope, SymbolLookup::Scope* scope, PTree::Identifier* dictionaryVariable)
-    : ScopeBasedRewriteVisitor(scope), classScope(classScope), functionScope(scope), enabled(true) {dictionaryStack.push_back(dictionaryVariable);}
+  FeatureGeneratorRewriteVisitor(FeatureGeneratorClassGenerator::Location location, SymbolLookup::Class* classScope, SymbolLookup::Scope* scope, PTree::Identifier* dictionaryVariable)
+    : ScopeBasedRewriteVisitor(scope), location(location), classScope(classScope), functionScope(scope), enabled(true) {dictionaryStack.push_back(dictionaryVariable);}
   
   // featureScope, featureCall
   virtual void visit(PTree::UserStatement* node)
@@ -112,7 +112,9 @@ public:
 
   virtual void visit(PTree::Kwd::This* node)
   {
-    if (classScope)
+    if (location == FeatureGeneratorClassGenerator::inClassDefinition ||
+        location == FeatureGeneratorClassGenerator::inClassDefinitionStatic ||
+        location == FeatureGeneratorClassGenerator::inClassImplementation)
       setResult(identifier("__this__"));
     else
     {
@@ -132,6 +134,8 @@ protected:
   }
   
 private:
+  FeatureGeneratorClassGenerator::Location location;
+
   SymbolLookup::Class* classScope;
   SymbolLookup::Scope* functionScope;
   bool enabled;
@@ -241,12 +245,34 @@ private:
 ** FeatureGeneratorClassGenerator
 */
 FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDefinition* node, SymbolLookup::Scope* scope, bool isInCRAlgorithm)
-  : input(node), parameters(input.getParameters()), isInCRAlgorithm(isInCRAlgorithm), isStatic(false)
+  : input(node), parameters(input.getParameters()), isInCRAlgorithm(isInCRAlgorithm)
 {
   classScope = const_cast<SymbolLookup::Class* >(dynamic_cast<const SymbolLookup::Class* >(scope->outer_scope()));
-  isStatic = /*classScope && */input.getModifiers().contains("static"); // just ignore the "static" keyword if we are not in a class
-  bool addThisParameter = (classScope != NULL) && !isStatic;
-  std::string inputClassIdentifier = classScope ? classScope->name() : "";
+
+  inputFunctionIdentifier = input.getIdentifierString();
+
+  if (input.hasBody())
+  {
+    if (classScope)
+    {
+      inputClassIdentifier = classScope->name();
+      location = input.getModifiers().contains("static") ? inClassDefinitionStatic : inClassDefinition;
+    }
+    else
+    {
+      if (input.isPartOfClassImplementation(inputClassIdentifier, inputFunctionIdentifier))
+        location = inClassImplementation;
+      else
+        location = input.getModifiers().contains("static") ? outOfClassStatic : outOfClass;
+    }
+  }
+  else
+    location = prototypeOnly;
+
+  //static const char* strings[] = {"prototypeOnly", "outOfClass", "outOfClassStatic", "inClassDefinition", "inClassDefinitionStatic", "inClassImplementation"};
+  //std::cout << "Name: " << input.getIdentifierString() << " location = " << strings[location] << " classId = " << inputClassIdentifier << " functionId = " << inputFunctionIdentifier << std::endl;
+
+  bool addThisParameter = (location == inClassDefinition || location == inClassImplementation);
   if (addThisParameter)
   {
     PTree::Identifier* classId = identifier(inputClassIdentifier);
@@ -260,7 +286,9 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
 
    
   // struct <name>FeatureGenerator 
-  std::string generatedClassIdentifier = input.getIdentifierString() + "FeatureGenerator";
+  generatedClassIdentifier = inputFunctionIdentifier + "FeatureGenerator";
+  if (inputClassIdentifier.size())
+    generatedClassIdentifier = inputClassIdentifier + "__" + generatedClassIdentifier;
   setKeyword(structKeyword());
   setName(generatedClassIdentifier);
   
@@ -283,7 +311,7 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
     body.add(atom(";\n"));
   }
   
-  std::string featureGeneratorName = input.getIdentifierString();
+  std::string featureGeneratorName = inputFunctionIdentifier;
   if (inputClassIdentifier.size())
     featureGeneratorName = inputClassIdentifier + "::" + featureGeneratorName;
 
@@ -301,7 +329,7 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   for (size_t i = 0; i < parameters.size(); ++i)
     staticFunction.addParameter(parameters[i].getPTree());
   staticFunction.body.add(atom("lbcpp::FeatureDictionaryPtr __featureDictionary__ = getDictionary();\n"));
-  staticFunction.body.add(FeatureGeneratorRewriteVisitor(addThisParameter ? classScope : NULL, scope, identifier("__featureDictionary__")).rewrite(input.getBody().getPTree()));
+  staticFunction.body.add(FeatureGeneratorRewriteVisitor(location, addThisParameter ? classScope : NULL, scope, identifier("__featureDictionary__")).rewrite(input.getBody().getPTree()));
   body.add(staticFunction.createDeclaration());
       
   // virtualisable feature generator
@@ -324,7 +352,7 @@ FeatureGeneratorClassGenerator::FeatureGeneratorClassGenerator(PTree::FunctionDe
   
 PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinition** staticToDynamicFunctionDefinition)
 {
-  bool addThisParameter = (classScope != NULL) && !isStatic;
+  bool addThisParameter = (location == inClassDefinition || location == inClassImplementation);
 
   BlockPTreeGenerator block;
 
@@ -333,18 +361,19 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   **   -> necessary to support recursive featureGenerator that use a non-inlined featureCall
   */
   FunctionPTreeGenerator staticToDynamicFunction;
-  if (isStatic)
+  if (input.getModifiers().contains("static"))
     staticToDynamicFunction.addModifier(staticKeyword());
   if (input.getModifiers().contains("virtual"))
     staticToDynamicFunction.addModifier(virtualKeyword());
-  else
+  else if (location != inClassImplementation)
     staticToDynamicFunction.addModifier(inlineKeyword());
   staticToDynamicFunction.setReturnType(atom("lbcpp::FeatureGeneratorPtr"));
   staticToDynamicFunction.setName(input.getIdentifierString());
   staticToDynamicFunction.setConst(input.isConst());
   for (size_t i = 0; i < parameters.size(); ++i)
     staticToDynamicFunction.addParameter(parameters[i].getPTree());
-  if (!classScope && !isInCRAlgorithm)
+
+  if (!isInCRAlgorithm && (location == outOfClass || location == outOfClassStatic))
     block.add(staticToDynamicFunction.createDeclaration());
   
   /*
@@ -357,7 +386,7 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   ** Static to dynamic function implementation
   */
   FuncallPTreeGenerator newCall;
-  newCall.setName(input.getIdentifierString() + "FeatureGenerator");
+  newCall.setName(generatedClassIdentifier);
   if (addThisParameter)
     newCall.addArgument(thisKeyword());
   for (size_t i = 0; i < parameters.size(); ++i)
@@ -371,32 +400,35 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
   /*
   ** inline 'featureCall' function
   */
-  FunctionPTreeGenerator featureCallFunction;
-  featureCallFunction.addModifier(atom("template<class __FeatureVisitor__>"));
-  if (isStatic)
-    featureCallFunction.addModifier(staticKeyword());
-  featureCallFunction.addModifier(inlineKeyword());
-  
-  featureCallFunction.setReturnType(voidKeyword());
-  featureCallFunction.setName(input.getIdentifierString() + "InlineCall");
-  featureCallFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
-  featureCallFunction.addParameter(atom("lbcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
-
-  featureCallFunction.setConst(input.isConst());
-  for (size_t i = 0; i < parameters.size(); ++i)
-    featureCallFunction.addParameter(parameters[i].getPTree());
-  
-    FuncallPTreeGenerator funcall;
-    funcall.setName(input.getIdentifierString() + "FeatureGenerator::staticFeatureGenerator");
-    funcall.addArgument(atom("__featureVisitor__"));
-    funcall.addArgument(atom("__featureDictionary__"));
-    if (addThisParameter)
-      funcall.addArgument(thisKeyword());
-    for (size_t i = 0; i < parameters.size(); ++i)
-      funcall.addArgument(parameters[i].getIdentifier());
+  if (location == outOfClass || location == outOfClassStatic || location == inClassDefinition || location == inClassDefinitionStatic)
+  {
+    FunctionPTreeGenerator featureCallFunction;
+    featureCallFunction.addModifier(atom("template<class __FeatureVisitor__>"));
+    if (input.getModifiers().contains("static"))
+      featureCallFunction.addModifier(staticKeyword());
+    featureCallFunction.addModifier(inlineKeyword());
     
-    featureCallFunction.body.addExpressionStatement(funcall.createExpression());
-  block.add(featureCallFunction.createDeclaration());
+    featureCallFunction.setReturnType(voidKeyword());
+    featureCallFunction.setName(input.getIdentifierString() + "InlineCall");
+    featureCallFunction.addParameter(atom("__FeatureVisitor__"), atom("&__featureVisitor__"));
+    featureCallFunction.addParameter(atom("lbcpp::FeatureDictionaryPtr"), atom("__featureDictionary__"));
+
+    featureCallFunction.setConst(input.isConst());
+    for (size_t i = 0; i < parameters.size(); ++i)
+      featureCallFunction.addParameter(parameters[i].getPTree());
+    
+      FuncallPTreeGenerator funcall;
+      funcall.setName(input.getIdentifierString() + "FeatureGenerator::staticFeatureGenerator");
+      funcall.addArgument(atom("__featureVisitor__"));
+      funcall.addArgument(atom("__featureDictionary__"));
+      if (addThisParameter)
+        funcall.addArgument(thisKeyword());
+      for (size_t i = 0; i < parameters.size(); ++i)
+        funcall.addArgument(parameters[i].getIdentifier());
+      
+      featureCallFunction.body.addExpressionStatement(funcall.createExpression());
+    block.add(featureCallFunction.createDeclaration());
+  }
 
   return block.createContent();
 }

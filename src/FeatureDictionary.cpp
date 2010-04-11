@@ -283,6 +283,19 @@ FeatureDictionaryManager& FeatureDictionaryManager::getInstance()
   return manager;
 }
 
+FeatureDictionaryPtr FeatureDictionaryManager::readDictionaryNameAndGet(InputStream& istr)
+{
+  String name;
+  if (!lbcpp::read(istr, name))
+  {
+    Object::error("FeatureDictionaryManager::readDictionaryNameAndGet", "Could not read dictionary name");
+    return FeatureDictionaryPtr();
+  }
+  FeatureDictionaryPtr res = getOrCreateDictionary(name);
+  jassert(res);
+  return res;
+}
+
 FeatureDictionaryPtr FeatureDictionaryManager::getRootDictionary(const String& name) const
 {
   DictionariesMap::const_iterator it = dictionaries.find(name);

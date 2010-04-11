@@ -76,7 +76,8 @@ public:
 
   ProteinPtr makeProtein() const
   {
-    jassert(currentContent.size() == currentLabels.size() && currentContent.size());
+    size_t length = currentContent.size();
+    jassert(length == currentLabels.size() && length);
     ProteinPtr res = new Protein(comment);
 
     // parse source file
@@ -84,31 +85,33 @@ public:
     String aminoAcidsSequence, dsspSequence, solventAccesibilitySequence;
     bool ok = parseSourceFile(sourceFile, aminoAcidsSequence, dsspSequence, solventAccesibilitySequence);
     jassert(ok);
-    jassert(aminoAcidsSequence.length() == (int)currentContent.size());
-    jassert(dsspSequence.length() == (int)currentContent.size());
-    jassert(solventAccesibilitySequence.length() == (int)currentContent.size());
+    jassert(aminoAcidsSequence.length() == (int)length);
+    jassert(dsspSequence.length() == (int)length);
+    jassert(solventAccesibilitySequence.length() == (int)length);
+
+    FeatureDictionaryPtr aminoAcidDictionary = AminoAcidDictionary::getInstance();
 
     // amino acids
-    LabelSequencePtr aminoAcids = new LabelSequence(AminoAcidDictionary::getInstance(), currentContent.size());
+    LabelSequencePtr aminoAcids = new LabelSequence(aminoAcidDictionary, length);
     res->setAminoAcidSequence(aminoAcids);
     
     // pssm
-    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(AminoAcidDictionary::getInstance(), currentContent.size());
+    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(aminoAcidDictionary, length);
     res->setPositionSpecificScoringMatrix(pssm);
 
     // secondary structure (three states)
-    LabelSequencePtr secondaryStructure = new LabelSequence(SecondaryStructureDictionary::getInstance(), currentContent.size());
+    LabelSequencePtr secondaryStructure = new LabelSequence(SecondaryStructureDictionary::getInstance(), length);
     res->setSecondaryStructureSequence(secondaryStructure);
 
     // DSSP secondary structure (height states)
-    LabelSequencePtr dsspSecondaryStructure = new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), currentContent.size());
+    LabelSequencePtr dsspSecondaryStructure = new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), length);
     res->setDSSPSecondaryStructureSequence(dsspSecondaryStructure);
 
     // solvent accesibility
-    LabelSequencePtr solventAccesibility = new LabelSequence(SolventAccesibility2StateDictionary::getInstance(), currentContent.size());
-    res->setSolventAccessibilitySequence(solventAccesibility);
+    LabelSequencePtr solventAccessibility = new LabelSequence(SolventAccesibility2StateDictionary::getInstance(), length);
+    res->setSolventAccessibilitySequence(solventAccessibility);
 
-    for (size_t i = 0; i < currentContent.size(); ++i)
+    for (size_t i = 0; i < length; ++i)
     {
       SparseVectorPtr vector = currentContent[i].dynamicCast<SparseVector>();
       jassert(vector);
@@ -119,34 +122,32 @@ public:
       String oneLetterCode = aminoAcid->getDictionary()->getFeatures()->getString(aminoAcid->getValues()[0].first);
       jassert(oneLetterCode.length() == 1);
       jassert(aminoAcidsSequence[i] == oneLetterCode[0]);
-      int index = AminoAcidDictionary::getInstance()->getIndexFromOneLetterCode(oneLetterCode);
-      jassert(index >= 0);
-      aminoAcids->setIndex(i, (size_t)index);
-#if 0
+      aminoAcids->setString(i, oneLetterCode);
+
       // pssm
       SparseVectorPtr pssmVector = vector->getSubVector(T("pssm"));
       jassert(pssmVector && pssmVector->hasValues());
       for (size_t j = 0; j < pssmVector->getNumValues(); ++j)
-        pssm->setScore(i, AminoAcid(pssmVector->getValueNameByPosition(j)), pssmVector->getValueByPosition(j));
+        pssm->setScore(i, pssmVector->getValueNameByPosition(j), pssmVector->getValueByPosition(j));
 
       // solvent accesibility
       juce::tchar sa = solventAccesibilitySequence[i];
       jassert(sa == 'e' || sa == 'b');
-      solventAccessibility->setExposedProbability(i, sa == 'e' ? 1.0 : 0.0);
+      solventAccessibility->setString(i, sa == 'e' ? T("E") : T("B"));
 
       // dssp
       juce::tchar dssp = dsspSequence[i];
-      SecondaryStructureElement dsspElement(dssp, true);
-      secondaryStructure->setElement(i, dsspElement.toThreeState());
-      dsspSecondaryStructure->setElement(i, dsspElement);
+      String dsspElement; dsspElement += dsspSequence[i];
+      dsspSecondaryStructure->setString(i, dsspElement);
+      
+      SecondaryStructureDictionary::Type threeStatesType = SecondaryStructureDictionary::getIndexFromDSSPElement(dsspElement);
+      secondaryStructure->setIndex(i, threeStatesType);
 
       // secondary structure
       String checkLabel = currentLabels[i];
       jassert(checkLabel == T("C") || checkLabel == T("H") || checkLabel == T("E"));
-      jassert(checkLabel[0] == dsspElement.toThreeState().getOneLetterCode());
-#endif // 0
+      jassert(checkLabel == SecondaryStructureDictionary::getInstance()->getFeature(threeStatesType));
     }
-
     return res;
   }
 
@@ -168,11 +169,11 @@ private:
   std::vector<String> currentLabels;
 };
 
-extern void declareProteinsClasses();
+extern void declareProteinClasses();
 
 int main()
 {
-  declareProteinsClasses();
+  declareProteinClasses();
 
   File sourceDirectory("C:\\Projets\\Proteins\\data\\CB513");
   File pssmDirectory("C:\\Projets\\Proteins\\scripts");
@@ -197,10 +198,10 @@ int main()
       std::cout << "Protein " << proteinNumber++ << ": " << protein->getName() << std::endl;
       File outputFile = outputDirectory.getChildFile(protein->getName() + T(".protein"));
       protein->saveToFile(outputFile);
-      //std::cout << "PROT: " << protein->toString() << std::endl;
-      //ProteinPtr protein2 = Object::loadFromFileAndCast<Protein>(outputFile);
-      //std::cout << "PROT2: " << protein2->toString() << std::endl;
-      //return 0;
+      /*std::cout << "PROT: " << protein->toString() << std::endl;
+      ProteinPtr protein2 = Object::loadFromFileAndCast<Protein>(outputFile);
+      std::cout << "PROT2: " << protein2->toString() << std::endl;
+      return 0;*/
     }
   }
   return 0;
