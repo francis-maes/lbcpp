@@ -82,7 +82,7 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, InferenceContextPtr validationContext, InferenceCallbackPtr evaluation, size_t iterationNumber)
   {
-    std::cout << "Online evaluation: " << evaluation->toString() << " (at previous iteration)" << std::endl;
+    std::cout << "Online evaluation: " << evaluation->toString() << std::endl;
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Validation evaluation: " << evaluation->toString() << std::endl;
     return iterationNumber < 100;
