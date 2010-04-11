@@ -67,11 +67,8 @@ TARGET_LINK_LIBRARIES(ProteinsCB513Converter proteins)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-ADD_CREXECUTABLE(SecondaryStructureCrossValidation Programs/SecondaryStructureCrossValidation.lcpp)
-TARGET_LINK_LIBRARIES(SecondaryStructureCrossValidation proteins)
+ADD_CREXECUTABLE(SandBox Programs/SandBox.lcpp)
+TARGET_LINK_LIBRARIES(SandBox proteins)
 
-ADD_CREXECUTABLE(MultiPassSecondaryStructure Programs/MultiPassSecondaryStructure.lcpp)
-TARGET_LINK_LIBRARIES(MultiPassSecondaryStructure proteins)
-
-ADD_CREXECUTABLE(FromScratch Programs/FromScratch.lcpp)
-TARGET_LINK_LIBRARIES(FromScratch proteins)
+ADD_CREXECUTABLE(TrainStepByStepSS Programs/TrainStepByStepSS.lcpp)
+TARGET_LINK_LIBRARIES(TrainStepByStepSS proteins)
