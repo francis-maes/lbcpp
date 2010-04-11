@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_EXAMPLES_CREATOR_H_
 
 # include "InferenceCallback.h"
+# include "../InferenceStep/ClassificationInferenceStep.h"
 
 namespace lbcpp
 {
@@ -19,12 +20,14 @@ class ExamplesCreatorCallback : public InferenceCallback
 public:
   ExamplesCreatorCallback() : enableExamplesCreation(true) {}
 
-  virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr classifier, FeatureGeneratorPtr input, FeatureGeneratorPtr supervision, ReturnCode& returnCode)
+  virtual void classificationCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {
     if (supervision && enableExamplesCreation)
     {
       LabelPtr label = supervision.dynamicCast<Label>();
       jassert(label);
+      ClassifierPtr classifier = stack->getCurrentInference().dynamicCast<ClassificationInferenceStep>()->getClassifier();
+      jassert(classifier);
       addExample(classifier, new ClassificationExample(input, label->getIndex()));
     }
   }

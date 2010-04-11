@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_H_
 
 # include "../InferenceStep/ParallelInferenceStep.h"
+# include "../InferenceStep/SequentialInferenceStep.h"
 # include "../InferenceStep/ClassificationInferenceStep.h"
 # include "SecondaryStructureDictionary.h"
 

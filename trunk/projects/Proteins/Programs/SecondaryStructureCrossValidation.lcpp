@@ -7,12 +7,13 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "GeneratedCode/Data/Bio/Protein.lh"
-#include "VariableSetModel.h"
+#include "InferenceCallback/SingleStepSimulationLearningCallback.h"
+#include "InferenceCallback/GlobalSimulationLearningCallback.h"
+#include "ProteinInference/ProteinEvaluationCallback.h"
+#include "ProteinInference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinsClasses();
-extern void declareVariableSetClasses();
 
 class SecondaryStructureVariableSetExample : public VariableSetExample
 {
@@ -497,13 +498,6 @@ int main(int argc, char** argv)
     return -3;
   }
   std::cout << model->toString() << std::endl;
-
-  //VariableSetModelPtr model =
-      //independantClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
-      //optimisticClassificationVariableSetModel(createMaxentClassifier(labels, learningRate))
-      //iterativeClassificationVariableSetModel(createMaxentClassifier(labels), createMaxentClassifier(labels, learningRate));
-  //    simulatedIterativeClassificationVariableSetModel(createMaxentClassifier(labels, learningRate));
-
     
   ObjectContainerPtr trainingData = examples->invFold(targetFold, nbFolds);
   ObjectContainerPtr testingData = examples->fold(targetFold, nbFolds);
@@ -517,42 +511,5 @@ int main(int argc, char** argv)
   
   delete resultsFileStream;
  
-  // Results: Prediction of SS3 / 7 folds CV
-  
-  // ---CO---
-  //
-  // AA(7)+PSSM(7) with 1/1 train iter => 71.30
-  // AA(7)+PSSM(7) with 2/2 train iter => 72.01
-  // AA(7)+PSSM(7) with 2/10 train iter => 72.29
- 
-  
-  
-  // ---ICA---
-  // AA(7)+PSSM(7) + PR(1) with 2/2 train iter => 70.96
-  // AA(7)+PSSM(7) + PR(2) with 2/2 train iter => 71.67
-  // AA(7)+PSSM(7) + PR(5) with 2/2 train iter => 71.63
-  
-  // ---SICA---
-  // AA(7)+PSSM(7) + PR(2) with 2/2 train iter, reg 0, maxpass 5 => 70.61
-  // AA(7)+PSSM(7) + PR(2) with 2/10 train iter, reg 0.0001, maxpass 10
-  
-  // ---CO Results with only 1 folds over the seven, 10 training iteration, best test score---
-  // AA(7)+PSSM(7) => 74.02
-  // AA(7)+PSSM(7)+POS/LEN => 74.16
-  // AA(7)+PSSM(7)+POS/LEN/CONJ(AA) => 74.19
-  // AA(7)+PSSM(7)+POS%/LEN/CONJ(AA) => 74.07
-  // AA(7)+PSSM(7)+POS/LEN/CONJ(AA)/CONJ(PSSM) => 74.00
-
-  // ---Test Results on the whole dataset (Predition of SS3)---
-  // AA(15) => 62.2
-  // PSSM(15) => 72.1
-  // AA(15)+PSSM(15) => 73.9
-  // AA(15)+PSSM(15)+OPT(1) => 88.3
-  // AA(15)+PSSM(15)+OPT(10) => 89.1
-  // AA(15)+PSSM(15)+OPT_8(10) => 90.5
-  // PSSM(15)+OPT(1) => 87.8
-  // AA(15)+OPT(1) => 87.6
-  // OPT(1) => 82.8
-  // OPT(10) => 84.7
   return 0;
 }

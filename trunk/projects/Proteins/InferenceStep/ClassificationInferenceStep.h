@@ -23,32 +23,15 @@ class ClassificationInferenceStep : public InferenceStep
 public:
   ClassificationInferenceStep(const String& name)
     : InferenceStep(name) {}
-
-  GradientBasedClassifierPtr createMaxentClassifier(FeatureDictionaryPtr labels, double regularizer = 20.0, bool useConstantLearningRate = false)
-  {
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
-    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
-    classifier->setL2Regularizer(regularizer);
-    return classifier;
-  }
-
+ 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
+    {return context->runClassification(ClassificationInferenceStepPtr(this), input, supervision, returnCode);}
 
-    if (!classifier)
-    {
-      if (!supervision)
-      {
-        returnCode = errorReturnCode;
-        return ObjectPtr();
-      }
-      jassert(correctOutput);
-      classifier = createMaxentClassifier(correctOutput->getDictionary());
-    }
-    return context->runClassification(classifier, input.dynamicCast<FeatureGenerator>(), correctOutput, returnCode);
-  }
+  ClassifierPtr getClassifier() const
+    {return classifier;}
+
+  void setClassifier(ClassifierPtr classifier)
+    {this->classifier = classifier;}
 
 protected:
   ClassifierPtr classifier;
