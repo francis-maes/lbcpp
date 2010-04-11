@@ -79,7 +79,6 @@ protected:
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
-
 private:
   juce::Time loadedModificationTime;
 };

@@ -1,0 +1,82 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Sequence.lcpp                  | Sequence base class             |
+| Author  : Francis Maes                   |                                 |
+| Started : 11/04/2010 12:32               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "InferenceData/Sequence.h"
+using namespace lbcpp;
+
+String Sequence::toString() const
+{
+  size_t l = size();
+  String res;
+  for (size_t i = 0; i < l; ++i)
+    res += elementToString(i);
+  return res;
+}
+
+featureGenerator Sequence::frequencyFeatures(int startPosition, int endPosition) const
+{
+  jassert(startPosition <= endPosition);
+  if (startPosition == endPosition)
+    return;
+  //int count = endPosition - startPosition;
+  //double invCount = 1.0 / (double)count;
+  for (int i = startPosition; i <= endPosition; ++i)
+    featureCall(0)
+      this->possiblyOutOfBoundsElementFeatures(i);
+}
+
+featureGenerator Sequence::symetricFrequencyFeatures(size_t position, size_t size, bool includeCurrent) const
+{
+  int start = (int)position - (int)size;
+  int end = (int)position;
+  if (includeCurrent)
+    ++end;
+  featureCall("before") this->frequencyFeatures(start, end);
+  start = (int)position;
+  if (!includeCurrent)
+    ++start;
+  end = (int)(position + size + 1);
+  featureCall("after") this->frequencyFeatures(start, end);
+}
+
+featureGenerator Sequence::possiblyOutOfBoundsElementFeatures(int position) const
+{
+  if (position < 0)
+    featureSense("before");
+  else if (position < (int)this->size())
+  {
+    FeatureGeneratorPtr fg = this->elementFeatures((size_t)position);
+    if (fg)
+      featureCall("in") fg;
+    else
+      featureSense("undefined");
+  }
+  else
+    featureSense("after");
+}
+
+featureGenerator Sequence::windowFeatures(size_t position, size_t numPrevs, size_t numNexts, bool includeCurrent) const
+{
+  featureScope("previous")
+  {
+    for (size_t i = 0; i < numPrevs; ++i)
+      featureCall(i)
+        this->possiblyOutOfBoundsElementFeatures((int)position - (int)i - 1);
+  }
+
+  if (includeCurrent)
+    featureCall("current")
+      this->elementFeatures(position);
+
+  featureScope("nexts")
+  {
+    for (size_t i = 0; i < numNexts; ++i)
+      featureCall(i)
+        this->possiblyOutOfBoundsElementFeatures((int)(position + i + 1));
+  }
+}

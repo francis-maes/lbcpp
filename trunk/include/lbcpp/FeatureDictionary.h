@@ -312,6 +312,8 @@ public:
   bool hasRootDictionary(const String& name) const
     {return getRootDictionary(name) != FeatureDictionaryPtr();}
 
+  FeatureDictionaryPtr readDictionaryNameAndGet(InputStream& istr);
+
   FeatureDictionaryPtr getRootDictionary(const String& name) const;
   FeatureDictionaryPtr getOrCreateRootDictionary(const String& name, bool createEmptyFeatures = true, bool createEmptyScopes = true);
   FeatureDictionaryPtr getOrCreateDictionary(const String& name);

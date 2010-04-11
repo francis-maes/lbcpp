@@ -201,12 +201,9 @@ double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
 
 bool DenseVector::load(InputStream& istr)
 {
-  String dictionaryName;
-  if (!read(istr, dictionaryName))
+  dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+  if (!dictionary)
     return false;
-
-  dictionary = FeatureDictionaryManager::getInstance().getOrCreateDictionary(dictionaryName);
-  jassert(dictionary);
 
   size_t numValues;
   if (!read(istr, numValues))

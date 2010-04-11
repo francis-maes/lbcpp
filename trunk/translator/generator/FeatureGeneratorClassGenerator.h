@@ -21,12 +21,26 @@ public:
   
   PTree::Node* createCode(PTree::FunctionDefinition** staticToDynamicFunctionDefinition = NULL);
   
+  enum Location
+  {
+    prototypeOnly,
+    outOfClass,
+    outOfClassStatic,
+    inClassDefinition,
+    inClassDefinitionStatic,
+    inClassImplementation,
+  };
+
 private:
   FunctionPTreeAnalyser input;
   ParameterListPTreeAnalyser parameters;
   SymbolLookup::Class* classScope;
   bool isInCRAlgorithm;
-  bool isStatic;
+
+  Location location;
+  std::string inputClassIdentifier;
+  std::string inputFunctionIdentifier;
+  std::string generatedClassIdentifier;
 };
 
 #endif // !CRALGORITHM_GENERATOR_FEATURE_GENERATOR_GENERATOR_H_

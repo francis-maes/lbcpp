@@ -11,7 +11,7 @@
 #include "VariableSetModel.h"
 using namespace lbcpp;
 
-extern void declareProteinsClasses();
+extern void declareProteinClasses();
 extern void declareVariableSetClasses();
 
 class SecondaryStructureVariableSetExample : public VariableSetExample
@@ -365,7 +365,7 @@ int main(int argc, char** argv)
   File pass1ModelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_pass1.model"));
   File pass2ModelFile(T("C:\\Projets\\Proteins\\data\\models\\CB513_fold0_pass2.model"));
 
-  declareProteinsClasses();
+  declareProteinClasses();
   declareVariableSetClasses();
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));

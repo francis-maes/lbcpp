@@ -194,13 +194,13 @@ double Classifier::evaluateWeightedAccuracy(ObjectStreamPtr examples) const
 void Classifier::save(OutputStream& ostr) const
 {
   jassert(labels);
-  write(ostr, labels);
+  write(ostr, labels->getName());
 }
 
 bool Classifier::load(InputStream& istr)
 {
-  FeatureDictionaryPtr labels;
-  if (!read(istr, labels))
+  FeatureDictionaryPtr labels = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+  if (!labels)
     return false;
   setLabels(labels);
   return true;
@@ -210,9 +210,7 @@ bool Classifier::load(InputStream& istr)
 ** BinaryClassifier
 */
 size_t BinaryClassifier::predict(const FeatureGeneratorPtr input) const
-{
-  return predictScoreOfPositiveClass(input) > 0 ? 1 : 0;
-}
+  {return predictScoreOfPositiveClass(input) > 0 ? 1 : 0;}
 
 double BinaryClassifier::predictScore(const FeatureGeneratorPtr input, size_t output) const
 {

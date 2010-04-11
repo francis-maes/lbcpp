@@ -11,6 +11,7 @@
 
 # include "../InferenceStep/ParallelInferenceStep.h"
 # include "../InferenceStep/ClassificationInferenceStep.h"
+# include "SecondaryStructureDictionary.h"
 
 namespace lbcpp
 {
@@ -63,9 +64,8 @@ public:
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
   {
-    SecondaryStructureSequencePtr res = new SecondaryStructureSequence(useDSSPElements);
-    res->setLength(getNumSubInferences(input));
-    return res;
+    return new LabelSequence(useDSSPElements ? DSSPSecondaryStructureDictionary::getInstance()
+      : SecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
   }
 
   bool useDSSPElements;
@@ -103,7 +103,10 @@ public:
 
       ObjectPtr supervision;
       if (correctProtein)
+      {
         supervision = correctProtein->getObject(objectName);
+        jassert(supervision);
+      }
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, supervision, returnCode);
       jassert(inferenceOutput);

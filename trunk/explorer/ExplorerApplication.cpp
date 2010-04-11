@@ -153,8 +153,7 @@ private:
 };
 
 extern void declareLBCppCoreClasses();
-extern void declareProteinsClasses();
-extern void declareVariableSetClasses();
+extern void declareProteinClasses();
 
 class ExplorerApplication : public JUCEApplication
 {
@@ -165,8 +164,7 @@ public:
   {    
     ErrorHandler::setInstance(explorerErrorHandler);
     declareLBCppCoreClasses();
-    declareProteinsClasses();
-    declareVariableSetClasses();
+    declareProteinClasses();
 
     theCommandManager = new ApplicationCommandManager();
 

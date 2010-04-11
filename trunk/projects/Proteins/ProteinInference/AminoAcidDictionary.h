@@ -65,9 +65,6 @@ public:
 
   AminoAcidDictionary();
 
-  int getIndexFromOneLetterCode(const String& oneLetterCode) const
-    {jassert(oneLetterCode.size() == 1); return oneLetterCodes.indexOfChar(oneLetterCode[0]);}
-
 #if 0
   /*
   ** Constructors

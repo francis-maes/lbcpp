@@ -139,6 +139,7 @@ void SparseVector::multiplyByScalar(double scalar)
 
 bool SparseVector::load(InputStream& istr)
 {
+  jassert(false); // this code needs to be rewrited with Strings
   size_t numSubVectors;
   if (!read(istr, values) || !read(istr, numSubVectors))
     return false;
@@ -158,6 +159,7 @@ bool SparseVector::load(InputStream& istr)
 
 void SparseVector::save(OutputStream& ostr) const
 {
+  jassert(false); // this code needs to be rewrited with Strings
   write(ostr, values);
   write(ostr, subVectors.size());
   for (size_t i = 0; i < subVectors.size(); ++i)

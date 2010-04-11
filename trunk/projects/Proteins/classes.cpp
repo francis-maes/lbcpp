@@ -7,15 +7,23 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "GeneratedCode/Data/Bio/Protein.lh"
+#include "ProteinInference/Protein.h"
+#include "ProteinInference/AminoAcidDictionary.h"
+#include "ProteinInference/SecondaryStructureDictionary.h"
+#include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
-void declareProteinsClasses()
+#define LBCPP_DECLARE_DICTIONARY(ClassName) \
+  lbcpp::FeatureDictionaryManager::getInstance().addDictionary(ClassName::getInstance())
+
+void declareProteinClasses()
 {
   LBCPP_DECLARE_CLASS(Protein);
+  LBCPP_DECLARE_CLASS(LabelSequence);
+  LBCPP_DECLARE_CLASS(ScoreVectorSequence);
 
-  LBCPP_DECLARE_CLASS(AminoAcidSequence);
-  LBCPP_DECLARE_CLASS(PositionSpecificScoringMatrix);
-  LBCPP_DECLARE_CLASS(SecondaryStructureSequence);
-  LBCPP_DECLARE_CLASS(SolventAccessibilitySequence);
+  LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
+  LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);
+  LBCPP_DECLARE_DICTIONARY(DSSPSecondaryStructureDictionary);
+  LBCPP_DECLARE_DICTIONARY(SolventAccesibility2StateDictionary);
 }

@@ -51,6 +51,14 @@ public:
   void setIndex(size_t position, size_t index)
     {jassert(position < sequence.size() && index <= 255); sequence[position] = (unsigned char)index;}
 
+  void setString(size_t position, const String& string)
+  {
+    int index = dictionary->getFeatures()->getIndex(string);
+    jassert(index >= 0);
+    if (index >= 0)
+      setIndex(position, (size_t)index);
+  }
+
   void clear(size_t position)
     {setIndex(position, 255);}
 
@@ -59,7 +67,7 @@ public:
   ** Sequence
   */
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const
-    {return get(position).dynamicCast<Label>();}
+    {return get(position).dynamicCast<FeatureGenerator>();}
 
   /*
   ** Serialization
@@ -72,22 +80,8 @@ public:
     return res;
   }
 
-  virtual bool load(InputStream& istr)
-  {
-    String dictionaryName;
-    if (!lbcpp::read(istr, dictionaryName))
-      return false;
-    dictionary = FeatureDictionaryManager::getInstance().get(dictionaryName);
-    if (!dictionary)
-      return false;
-    return lbcpp::read(istr, sequence);
-  }
-  
-  virtual void save(OutputStream& ostr) const
-  {
-    lbcpp::write(ostr, dictionary->getName());
-    lbcpp::write(ostr, sequence);
-  }
+  FeatureDictionaryPtr getDictionary() const
+    {return dictionary;}
 
 protected:
   FeatureDictionaryPtr dictionary;
@@ -97,6 +91,18 @@ protected:
   // Labels: 0..254
   // Special value for unlabeled elements: 255
   std::vector<unsigned char> sequence;
+
+  virtual bool load(InputStream& istr)
+  {
+    dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+    return dictionary && lbcpp::read(istr, sequence);
+  }
+  
+  virtual void save(OutputStream& ostr) const
+  {
+    lbcpp::write(ostr, dictionary->getName());
+    lbcpp::write(ostr, sequence);
+  }
 };
 
 typedef ReferenceCountedObjectPtr<LabelSequence> LabelSequencePtr;

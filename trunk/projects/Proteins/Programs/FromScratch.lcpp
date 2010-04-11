@@ -7,8 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "GeneratedCode/Data/Bio/Protein.lh"
-#include "VariableSetModel.h"
 #include "InferenceStep/SequentialInferenceStep.h"
 #include "InferenceCallback/SingleStepSimulationLearningCallback.h"
 #include "InferenceCallback/GlobalSimulationLearningCallback.h"
@@ -17,8 +15,7 @@
 #include "ProteinInference/ProteinInference.h"
 using namespace lbcpp;
 
-extern void declareProteinsClasses();
-extern void declareVariableSetClasses();
+extern void declareProteinClasses();
 
 ////////////////////////////////
 //////Custom SS3 Problem////////
@@ -56,8 +53,8 @@ public:
     jassert(protein);
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
-    SecondaryStructureSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
-    SecondaryStructureSequencePtr dsspSecondaryStructure = protein->getSecondaryStructureSequence(true);
+    LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
+    LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
 
     featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
     featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
@@ -83,7 +80,7 @@ void learn(InferenceCallbackPtr learningCallback, InferenceCallbackPtr customEva
   if (customEvaluationCallback)
     evaluationContext->appendCallback(customEvaluationCallback);
 
-  for (size_t i = 0; i < 15; ++i)
+  for (size_t i = 0; i < 3; ++i)
   {
     std::cout << std::endl << " ================== ITERATION " << i << " ================== " << std::endl;
 
@@ -119,13 +116,12 @@ void learnStepByStep(SequentialInferenceStepPtr inference, ObjectContainerPtr tr
 
 int main(int argc, char** argv)
 {
-  declareProteinsClasses();
-  declareVariableSetClasses();
+  declareProteinClasses();
 
   File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
-  File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513cool"));
+  File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513new"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
   ObjectContainerPtr testingData = proteins->fold(0, 7);
@@ -133,12 +129,12 @@ int main(int argc, char** argv)
             << testingData->size() << " Testing Proteins" << std::endl;
 
   ProteinInferencePtr proteinInference = new ProteinInference();
-  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S3"), false), T("ThreeStateSecondaryStructure"));
-  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S8"), true), T("EightStateSecondaryStructure"));
+  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S3"), false), T("SecondaryStructureSequence"));
+  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S8"), true), T("DSSPSecondaryStructureSequence"));
   for (size_t i = 0; i < 5; ++i)
   {
-    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + lbcpp::toString(i) + T(")"), false), T("ThreeStateSecondaryStructure"));
-    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + lbcpp::toString(i) + T(")"), true), T("EightStateSecondaryStructure"));
+    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + lbcpp::toString(i) + T(")"), false), T("SecondaryStructureSequence"));
+    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + lbcpp::toString(i) + T(")"), true), T("DSSPSecondaryStructureSequence"));
   }
   
   learnStepByStep(proteinInference, trainingData, testingData);

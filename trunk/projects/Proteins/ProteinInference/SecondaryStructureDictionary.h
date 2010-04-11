@@ -26,6 +26,8 @@ public:
     other  // I, T, S or C
   };
 
+  static SecondaryStructureDictionary::Type getIndexFromDSSPElement(const String& dsspElement);
+
 private:
   SecondaryStructureDictionary();
 };
@@ -61,8 +63,8 @@ public:
 
   enum Type
   {
-    exposed = 0,
-    burried
+    burried = 0,
+    exposed,
   };
 
 private:
