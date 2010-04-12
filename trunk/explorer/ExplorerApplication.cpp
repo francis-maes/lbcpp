@@ -14,9 +14,9 @@ ApplicationCommandManager* theCommandManager = NULL;
 
 Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
 {
-  Component* res = object->createComponent();
+/*  Component* res = object->createComponent();
   if (res)
-    return res;
+    return res;*/
 
   if (object.dynamicCast<StringToObjectMap>())
     return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());

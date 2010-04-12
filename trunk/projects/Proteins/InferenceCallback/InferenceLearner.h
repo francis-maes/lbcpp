@@ -44,8 +44,7 @@ public:
 protected:
   InferenceLearnerCallbackPtr callback;
 
-  void trainWithCallbacks(InferenceStepPtr inference, ObjectContainerPtr trainingData,
-                          InferenceCallbackPtr learningCallback, InferenceCallbackPtr validationCallback);
+  void trainWithCallbacks(InferenceStepPtr inference, ObjectContainerPtr trainingData, InferenceCallbackPtr learningCallback);
 };
 
 typedef ReferenceCountedObjectPtr<InferenceLearner> InferenceLearnerPtr;

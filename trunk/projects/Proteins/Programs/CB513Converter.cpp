@@ -136,7 +136,6 @@ public:
       solventAccessibility->setString(i, sa == 'e' ? T("E") : T("B"));
 
       // dssp
-      juce::tchar dssp = dsspSequence[i];
       String dsspElement; dsspElement += dsspSequence[i];
       dsspSecondaryStructure->setString(i, dsspElement);
       
