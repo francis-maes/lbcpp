@@ -418,7 +418,7 @@ PTree::Node* FeatureGeneratorClassGenerator::createCode(PTree::FunctionDefinitio
       featureCallFunction.addParameter(parameters[i].getPTree());
     
       FuncallPTreeGenerator funcall;
-      funcall.setName(input.getIdentifierString() + "FeatureGenerator::staticFeatureGenerator");
+      funcall.setName(generatedClassIdentifier + "::staticFeatureGenerator");
       funcall.addArgument(atom("__featureVisitor__"));
       funcall.addArgument(atom("__featureDictionary__"));
       if (addThisParameter)
