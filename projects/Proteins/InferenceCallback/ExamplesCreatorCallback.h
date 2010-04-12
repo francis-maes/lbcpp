@@ -31,6 +31,21 @@ public:
       addExample(classifier, new ClassificationExample(input, label->getIndex()));
     }
   }
+  
+  void trainStochasticIteration()
+  {
+    for (ExamplesMap::const_iterator it = examples.begin(); it != examples.end(); ++it)
+    {
+      LearningMachinePtr machine = it->first;
+      ObjectContainerPtr trainingData = it->second->randomize();
+      std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
+      machine->trainStochastic(trainingData);
+      std::cout << "ok." << std::endl;
+    /*  ClassifierPtr classifier = machine.dynamicCast<Classifier>();
+      if (classifier)
+        std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << std::endl;*/
+    }
+  }
 
 protected:
   bool enableExamplesCreation;
@@ -48,20 +63,12 @@ protected:
 
   void trainAndFlushExamples()
   {
-    for (ExamplesMap::const_iterator it = examples.begin(); it != examples.end(); ++it)
-    {
-      LearningMachinePtr machine = it->first;
-      ObjectContainerPtr trainingData = it->second->randomize();
-      std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
-      machine->trainStochastic(trainingData);
-      std::cout << "ok." << std::endl;
-    /*  ClassifierPtr classifier = machine.dynamicCast<Classifier>();
-      if (classifier)
-        std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << std::endl;*/
-    }
+    trainStochasticIteration();
     examples.clear();
   }
 };
+
+typedef ReferenceCountedObjectPtr<ExamplesCreatorCallback> ExamplesCreatorCallbackPtr;
 
 }; /* namespace lbcpp */
 

@@ -24,7 +24,7 @@ public:
     {enableExamplesCreation = false;}
 
   virtual void finishInferencesCallback()
-    {trainAndFlushExamples();}
+    {/*trainAndFlushExamples();*/}
 
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {

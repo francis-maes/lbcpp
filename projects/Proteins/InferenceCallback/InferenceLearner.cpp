@@ -14,7 +14,7 @@ using namespace lbcpp;
 /*
 ** InferenceLearner
 */
-void InferenceLearner::trainWithCallbacks(InferenceStepPtr inference, ObjectContainerPtr trainingData, InferenceCallbackPtr learningCallback, InferenceCallbackPtr validationCallback)
+void InferenceLearner::trainWithCallbacks(InferenceStepPtr inference, ObjectContainerPtr trainingData, InferenceCallbackPtr learningCallback)
 {
   InferenceCallbackPtr evaluation = callback->createEvaluationCallback();
 
@@ -24,8 +24,6 @@ void InferenceLearner::trainWithCallbacks(InferenceStepPtr inference, ObjectCont
 
   InferenceContextPtr validationContext = callback->createContext();
   validationContext->appendCallback(evaluation);
-  if (validationCallback)
-    validationContext->appendCallback(validationCallback);
 
   for (size_t i = 0; true; ++i)
   {
@@ -46,7 +44,7 @@ public:
     : InferenceLearner(callback) {}
 
   virtual void train(InferenceStepPtr inference, ObjectContainerPtr trainingData)
-    {trainWithCallbacks(inference, trainingData, new GlobalSimulationLearningCallback(), InferenceCallbackPtr());}
+    {trainWithCallbacks(inference, trainingData, new GlobalSimulationLearningCallback());}
 };
 
 InferenceLearnerPtr lbcpp::globalSimulationInferenceLearner(InferenceLearnerCallbackPtr callback)
@@ -73,8 +71,35 @@ public:
       InferenceCallbackPtr customEvaluationCallback;
       if (stepNumber < numSteps - 1)
         customEvaluationCallback = new CancelAfterStepCallback(step);
-      trainWithCallbacks(inference, trainingData, new SingleStepSimulationLearningCallback(step), customEvaluationCallback);
+      trainPass(inference, trainingData, step, customEvaluationCallback);
       callback->postLearningPassCallback();
+    }
+  }
+  
+private:
+  void trainPass(InferenceStepPtr inference, ObjectContainerPtr trainingData, InferenceStepPtr step, InferenceCallbackPtr customEvaluationCallback)
+  {
+    ExamplesCreatorCallbackPtr learningCallback = new SingleStepSimulationLearningCallback(step);
+  
+    InferenceCallbackPtr evaluation = callback->createEvaluationCallback();
+
+    InferenceContextPtr trainingContext = callback->createContext();
+    trainingContext->appendCallback(evaluation);
+    trainingContext->appendCallback(learningCallback);
+
+    InferenceContextPtr validationContext = callback->createContext();
+    validationContext->appendCallback(evaluation);
+    if (customEvaluationCallback)
+      validationContext->appendCallback(customEvaluationCallback);
+
+    for (size_t i = 0; true; ++i)
+    {
+      callback->preLearningIterationCallback(i);
+      if (i == 0) // at the first iteration, we perform episodes to create the training examples
+        trainingContext->runWithSupervisedExamples(inference, trainingData);
+      learningCallback->trainStochasticIteration(); // then, at each iteration we do a pass of "trainStochastic()"
+      if (!callback->postLearningIterationCallback(inference, validationContext, evaluation, i))
+        break;
     }
   }
 };
