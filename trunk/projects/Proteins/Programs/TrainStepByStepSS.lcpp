@@ -27,8 +27,8 @@ public:
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
 
-    featureCall("a") inline aminoAcidSequence->windowFeatures(index, 8, 8, true);
-    featureCall("p") inline positionSpecificScores->windowFeatures(index, 8, 8, true);
+    featureCall("a") inline aminoAcidSequence->windowFeatures(index, 10, 10, true);
+    featureCall("p") inline positionSpecificScores->windowFeatures(index, 10, 10, true);
   }
 };
 
@@ -47,10 +47,10 @@ public:
     LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
     LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
 
-    featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
-    featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
-    featureCall("w3") secondaryStructure->windowFeatures(index, 5, 5, true);
-    featureCall("w8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);
+    featureCall("a") aminoAcidSequence->windowFeatures(index, 10, 10, true);
+    featureCall("p") positionSpecificScores->windowFeatures(index, 10, 10, true);
+    featureCall("w3") secondaryStructure->windowFeatures(index, 10, 10, true);
+    featureCall("w8") dsspSecondaryStructure->windowFeatures(index, 10, 10, true);
   }
 };
 
@@ -59,10 +59,10 @@ class MyInferenceFactory : public InferenceFactory
 public:
   virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels)
   {
-    static const double regularizer = 10.0;
+    static const double regularizer = 20.0;
     static const bool useConstantLearningRate = false;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(1.0);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
@@ -105,12 +105,59 @@ private:
   ObjectContainerPtr testingData;
 };
 
+#if 0
+class ArgumentParser
+{
+  public:
+  enum ArgumentType {UNKNOWN, INTEGER, FLOAT, BOOLEAN, STRING};
+  
+  void append(String& name, ArgumentType type, void* destination, String& description)
+  {
+    std::vector<Argument> vec = arguments[name];
+    if (!vec.size()) {
+      vec.resize(10);
+      arguments[name] = vec;
+    }
+    
+    Argument new_argument = {type, destination, description};
+    vec[vec.size()] = new_argument;
+  }
+  
+  String toString()
+  {
+    String toReturn("");
+    for (std::map<String, std::vector<Argument> >::const_iterator iter = arguments.begin(); iter != arguments.end(); ++iter) {
+      toString += String(" '") + iter->first + String("'");
+      for (size_t i = 0; i < iter->second.size(); ++i) {
+        toString += String(" ") + iter->second[i].description;
+      }
+    }
+  }
+  
+  private:
+  struct Argument {
+    ArgumentType type;
+    void* destination;
+    String description;
+  };
+
+  std::map<String, std::vector<Argument> > arguments;
+};
+#endif // 0
+
 int main(int argc, char** argv)
 {
   declareProteinClasses();
+  
+  size_t nextArgument = 1;
+  String sourceDir(argv[nextArgument++]);
+  
+  
+  
 
-  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
-  File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513new"));
+//  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
+
+  File proteinsDirectory(sourceDir);
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
 
