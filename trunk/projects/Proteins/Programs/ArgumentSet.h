@@ -135,6 +135,38 @@ private:
   String* destination;
 };
 
+class DoubleArgument : public Argument
+{
+public:
+  DoubleArgument(String name, double* destination): Argument(name), destination(destination)
+  {
+  }
+  
+  virtual String toString()
+  {
+    return name + " (double)";
+  }
+  
+  virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
+  {
+    if (stopIndex - startIndex < 1)
+      return 0;
+    
+    *destination = (double) strtod(str[++startIndex], (char**) NULL);
+    
+    return 2;
+  }
+  
+  virtual String getStringValue()
+  {
+    return String("") << (*destination);
+  }
+  
+private:
+  double* destination;
+};
+
+
 class ArgumentSet
 {
 public:

@@ -156,28 +156,40 @@ public:
 class MyInferenceFactory : public InferenceFactory
 {
 public:
+  MyInferenceFactory(double regularizer) : regularizer(regularizer)
+  {
+  }
+
   virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels)
   {
-    static const double regularizer = 20.0;
     static const bool useConstantLearningRate = false;
 
     IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(1.0);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
+    classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
     return classifier;
   }
+  
+  GradientBasedClassifierPtr getClassifier()
+  {
+    return classifier;
+  }
+  
+  private:
+  GradientBasedClassifierPtr classifier;
+  double regularizer;
 };
 
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  MyInferenceLearnerCallback(ObjectContainerPtr testingData, String& prefix, size_t maxIteration)
+  MyInferenceLearnerCallback(ObjectContainerPtr testingData, String& prefix, size_t maxIteration, double regularizer)
     : testingData(testingData), startTimeIteration(0.0)
     , prefixFilename(prefix), oIteration(NULL), oPass(NULL)
     , currentPass(0), lastTrainQ3(0.), lastTrainQ8(0.)
     , lastTestQ3(0.), lastTestQ8(0.), lastIterationNumber(0)
-    , maxIteration(maxIteration)
+    , maxIteration(maxIteration), regularizer(regularizer)
   {
     startTimePass = juce::Time::getMillisecondCounter();
     File cwd = File::getCurrentWorkingDirectory();
@@ -251,7 +263,7 @@ public:
 
   virtual InferenceContextPtr createContext()
   {
-    return singleThreadedInferenceContext(new MyInferenceFactory());
+    return singleThreadedInferenceContext(new MyInferenceFactory(regularizer));
   }
 
   virtual InferenceCallbackPtr createEvaluationCallback()
@@ -275,6 +287,7 @@ private:
   
   size_t lastIterationNumber;
   size_t maxIteration;
+  double regularizer;
 };
 
 
@@ -289,7 +302,7 @@ int main(int argc, char** argv)
   String proteinsDirectory;
   String prefixResults;
   int currentFold = 0;
-  String inferenceModel("CO");
+  //String inferenceModel("CO");
   String predictionTarget("SS3");
   int maxIteration = 22;
   int maxPass = 5;
@@ -297,12 +310,13 @@ int main(int argc, char** argv)
   int wPSSM = 10;
   int wSS3 = 10;
   int wSS8 = 10;
+  double regularizer = 20.0;
   
   ArgumentSet arguments;
   arguments.insert(new StringArgument(T("ProteinsDirectory"), &proteinsDirectory));
   arguments.insert(new StringArgument(T("PrefixResults"), &prefixResults));
   arguments.insert(new IntegerArgument(T("CurrentFold"), &currentFold));
-  arguments.insert(new StringArgument(T("InferenceModel"), &inferenceModel));
+  //arguments.insert(new StringArgument(T("InferenceModel"), &inferenceModel));
   arguments.insert(new StringArgument(T("PredictionTarget"), &predictionTarget));
   arguments.insert(new IntegerArgument(T("MaximumIteration"), &maxIteration));
   arguments.insert(new IntegerArgument(T("MaximumPass"), &maxPass));
@@ -310,6 +324,8 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("PSSMWindow"), &wPSSM));
   arguments.insert(new IntegerArgument(T("SS3Window"), &wSS3));
   arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
+  arguments.insert(new DoubleArgument(T("Regularizer"), &regularizer));
+  
   
   
   if (!arguments.parse(argv, 1, argc-1)) {
@@ -341,36 +357,27 @@ int main(int argc, char** argv)
   if (predictionTarget == T("SS3"))
   {
     proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S3"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-    if (inferenceModel == T("SICA"))
+    for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      for (size_t i = 0; i < (size_t) maxPass; ++i)
-      {
-        proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3 -> S3 (") + toString(i) + T(")"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-      }
+      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3 -> S3 (") + toString(i) + T(")"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
     }
   } 
   else if (predictionTarget == T("SS8"))
   {
     proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S8"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-    if (inferenceModel == T("SICA"))
+    for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      for (size_t i = 0; i < (size_t) maxPass; ++i)
-      {
-        proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-      }
+      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
     }
   }
   else if (predictionTarget == T("SS3-SS8"))
   {
     proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S3"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
     proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S8"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-    if (inferenceModel == T("SICA"))
+    for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      for (size_t i = 0; i < (size_t) maxPass; ++i)
-      {
-        proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + toString(i) + T(")"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-        proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-      }
+      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + toString(i) + T(")"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
+      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
     }
   }
   
@@ -431,7 +438,7 @@ int main(int argc, char** argv)
   }
 #endif // 0
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData, prefixResults, maxIteration);
+  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData, prefixResults, maxIteration, regularizer);
   InferenceLearnerPtr learner = stepByStepSimulationInferenceLearner(callback);
   learner->train(proteinInference, trainingData);
   return 0;
