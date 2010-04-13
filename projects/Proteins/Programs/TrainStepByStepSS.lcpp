@@ -75,11 +75,12 @@ public:
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  MyInferenceLearnerCallback(ObjectContainerPtr testingData, String& prefix)
+  MyInferenceLearnerCallback(ObjectContainerPtr testingData, String& prefix, size_t maxIteration)
     : testingData(testingData), startTimeIteration(0.0)
     , prefixFilename(prefix), oIteration(NULL), oPass(NULL)
     , currentPass(0), lastTrainQ3(0.), lastTrainQ8(0.)
     , lastTestQ3(0.), lastTestQ8(0.), lastIterationNumber(0)
+    , maxIteration(maxIteration)
   {
     startTimePass = juce::Time::getMillisecondCounter();
     File cwd = File::getCurrentWorkingDirectory();
@@ -121,7 +122,7 @@ public:
                << (int) currentPass << '\n';
     oIteration->flush();
 
-    return iterationNumber < 2;
+    return iterationNumber < maxIteration;
   }
 
   virtual void preLearningPassCallback(const String& passName)
@@ -176,6 +177,7 @@ private:
   double lastTestQ8;
   
   size_t lastIterationNumber;
+  size_t maxIteration;
 };
 
 
@@ -192,6 +194,7 @@ int main(int argc, char** argv)
   int currentFold = 0;
   String inferenceModel("CO");
   String predictionTarget("SS3");
+  int maxIteration = 22;
   
   ArgumentSet arguments;
   arguments.insert(new StringArgument(T("ProteinsDirectory"), &proteinsDirectory));
@@ -199,6 +202,7 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("CurrentFold"), &currentFold));
   arguments.insert(new StringArgument(T("InferenceModel"), &inferenceModel));
   arguments.insert(new StringArgument(T("PredictionTarget"), &predictionTarget));
+  arguments.insert(new IntegerArgument(T("MaximumIteration"), &maxIteration));
   
   if (!arguments.parse(argv, 1, argc-1)) {
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
@@ -242,7 +246,7 @@ int main(int argc, char** argv)
     }
   }
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData, prefixResults);
+  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData, prefixResults, maxIteration);
   InferenceLearnerPtr learner = stepByStepSimulationInferenceLearner(callback);
   learner->train(proteinInference, trainingData);
   return 0;
