@@ -364,79 +364,23 @@ int main(int argc, char** argv)
   } 
   else if (predictionTarget == T("SS8"))
   {
-    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S8"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
+    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S8"), true, wAA, wPSSM, wSS3, wSS8), T("DSSPSecondaryStructureSequence"));
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
+      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("DSSPSecondaryStructureSequence"));
     }
   }
   else if (predictionTarget == T("SS3-SS8"))
   {
     proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S3"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S8"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
+    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM -> S8"), true, wAA, wPSSM, wSS3, wSS8), T("DSSPSecondaryStructureSequence"));
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
       proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + toString(i) + T(")"), false, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
-      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("SecondaryStructureSequence"));
+      proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"), true, wAA, wPSSM, wSS3, wSS8), T("DSSPSecondaryStructureSequence"));
     }
   }
   
-#if 0
-  if (predictionTarget == T("SS3"))
-  {
-    SS3Content is_SS3(T("AA+PSSM -> S3"));
-    is_SS3.setWindows(wAA, wPSSM, 0, 0);
-    proteinInference->appendStep(&is_SS3, T("SecondaryStructureSequence"));
-    if (inferenceModel == T("SICA"))
-    {
-      for (size_t i = 0; i < (size_t) maxPass; ++i)
-      {
-        SS3Content is_SS3_Struct(T("AA+PSSM+S3 -> S3 (") + toString(i) + T(")"));
-        is_SS3_Struct.setWindows(wAA, wPSSM, wSS3, 0);
-        proteinInference->appendStep(&is_SS3_Struct, T("SecondaryStructureSequence"));
-      }
-    }
-  } 
-  else if (predictionTarget == T("SS8"))
-  {
-    SS8Content is_SS8(T("AA+PSSM -> S8"));
-    is_SS8.setWindows(wAA, wPSSM, 0, 0);
-    proteinInference->appendStep(&is_SS8, T("SecondaryStructureSequence"));
-    if (inferenceModel == T("SICA"))
-    {
-      for (size_t i = 0; i < (size_t) maxPass; ++i)
-      {
-        SS8Content is_SS8_Struct(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"));
-        is_SS8_Struct.setWindows(wAA, wPSSM, 0, wSS8);
-        proteinInference->appendStep(&is_SS8_Struct, T("SecondaryStructureSequence"));
-      }
-    }
-  }
-  else if (predictionTarget == T("SS3-SS8"))
-  {
-    SS3Content is_SS3(T("AA+PSSM -> S3"));
-    is_SS3.setWindows(wAA, wPSSM, 0, 0);
-    proteinInference->appendStep(&is_SS3, T("SecondaryStructureSequence"));
-    
-    SS8Content is_SS8(T("AA+PSSM -> S8"));
-    is_SS8.setWindows(wAA, wPSSM, 0, 0);
-    proteinInference->appendStep(&is_SS8, T("SecondaryStructureSequence"));
-    
-    if (inferenceModel == T("SICA"))
-    {
-      for (size_t i = 0; i < (size_t) maxPass; ++i)
-      {
-        SS3Content is_SS3_Struct(T("AA+PSSM+S3+S8 -> S3 (") + toString(i) + T(")"));
-        is_SS3_Struct.setWindows(wAA, wPSSM, wSS3, wSS3);
-        proteinInference->appendStep(&is_SS3_Struct, T("SecondaryStructureSequence"));
-        
-        SS8Content is_SS8_Struct(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"));
-        is_SS8_Struct.setWindows(wAA, wPSSM, wSS3, wSS8);
-        proteinInference->appendStep(&is_SS8_Struct, T("SecondaryStructureSequence"));
-      }
-    }
-  }
-#endif // 0
 
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData, prefixResults, maxIteration, regularizer);
   InferenceLearnerPtr learner = stepByStepSimulationInferenceLearner(callback);
