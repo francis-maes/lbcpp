@@ -227,7 +227,7 @@ std::ostream& operator<<(std::ostream& o, ArgumentSet args)
 {
   for (size_t i = 0; i < args.arguments.size(); ++i)
   {
-    o << "    > " << args.arguments[i]->name.toUTF8();
+    o << "|> " << args.arguments[i]->name.toUTF8();
     o << ": " << args.arguments[i]->getStringValue().toUTF8() << std::endl;
   }
   
