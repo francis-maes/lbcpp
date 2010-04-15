@@ -16,122 +16,43 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-class SSContentOnlyInferenceStep : public SecondaryStructureInferenceStep
-{
-public:
-  SSContentOnlyInferenceStep(const String& name, bool useDSSPElements)
-    : SecondaryStructureInferenceStep(name, useDSSPElements) {}
-
-  virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
-  {
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
-
-    featureCall("a") inline aminoAcidSequence->windowFeatures(index, 10, 10, true);
-    featureCall("p") inline positionSpecificScores->windowFeatures(index, 10, 10, true);
-  }
-};
-
-class SSContentAndStructureInferenceStep : public SecondaryStructureInferenceStep
-{
-public:
-  size_t wAA;
-  size_t wPSSM;
-  size_t wSS3;
-  size_t wSS8;
-
-  SSContentAndStructureInferenceStep(const String& name, bool useDSSPElements, size_t wAA, size_t wPSSM, size_t wSS3, size_t wSS8)
-    : SecondaryStructureInferenceStep(name, useDSSPElements), wAA(wAA), wPSSM(wPSSM), wSS3(wSS3), wSS8(wSS8) {}
-
-  virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
-  {
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
-    LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
-    LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
-
-    featureCall("a") aminoAcidSequence->windowFeatures(index, wAA, wAA, true);
-    featureCall("p") positionSpecificScores->windowFeatures(index, wPSSM, wPSSM, true);
-    
-    if (secondaryStructure)
-      featureCall("w3") secondaryStructure->windowFeatures(index, wSS3, wSS3, true);
-    
-    if (dsspSecondaryStructure)
-      featureCall("w8") dsspSecondaryStructure->windowFeatures(index, wSS8, wSS8, true);
-  }
-};
-
 class CustomableSecondaryStructureContent : public FeaturesToContainerElementsSharedParallelInferenceStep
 {
 public:
   enum Target {SS3, SS8};
 
-  size_t wAA;
-  size_t wPSSM;
-  size_t wSS3;
-  size_t wSS8;
-  Target target;
-
-  CustomableSecondaryStructureContent(const String& name)
+  CustomableSecondaryStructureContent(const String& name = String::empty)
     : FeaturesToContainerElementsSharedParallelInferenceStep(name
     , InferenceStepPtr(new ClassificationInferenceStep(T("SSClassification"))))
-  {
-    wAA = 0;
-    wPSSM = 0;
-    wSS3 = 0;
-    wSS8 = 0;
-    target = SS3;
-  }
+    , wAA(0), wPSSM(0), wSS3(0), wSS8(0), target(SS3)
+    {}
   
   void setTarget(Target newTarget)
-  {
-    target = newTarget;
-  }
+    {target = newTarget;}
   
   void enableAminoAcidFeatures(size_t windowLength)
-  {
-    wAA = windowLength;
-  }
+    {wAA = windowLength;}
   
   void enablePositionSpecificScoreFeatures(size_t windowLength)
-  {
-    wPSSM = windowLength;
-  }
+    {wPSSM = windowLength;}
   
   void enableSecondaryStructure3StatesFeatures(size_t windowLength)
-  {
-    wSS3 = windowLength;
-  }
+    {wSS3 = windowLength;}
   
   void enableSecondaryStructure8StatesFeatures(size_t windowLength)
-  {
-    wSS8 = windowLength;
-  }
+    {wSS8 = windowLength;}
   
   void disableAminoAcidFeatures()
-  {
-    wAA = 0;
-  }
+    {wAA = 0;}
   
   void disablePositionSpecificScoreFeatures()
-  {
-    wPSSM = 0;
-  }
+    {wPSSM = 0;}
   
   void disableSecondaryStructure3StatesFeatures()
-  {
-    wSS3 = 0;
-  }
+    {wSS3 = 0;}
   
   void disableSecondaryStructure8StatesFeatures()
-  {
-    wSS8 = 0;
-  }
-
+    {wSS8 = 0;}
   
   virtual size_t getNumSubInferences(ObjectPtr input) const
   {
@@ -145,12 +66,14 @@ public:
     ProteinPtr protein = input.dynamicCast<Protein>();
     jassert(protein);
     
-    if (wAA) {
+    if (wAA)
+    {
       LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
       featureCall("AA") aminoAcidSequence->windowFeatures(index, wAA, wAA, true);
     }
     
-    if (wPSSM) {
+    if (wPSSM)
+    {
       ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
       featureCall("PSSM") positionSpecificScores->windowFeatures(index, wPSSM, wPSSM, true);
     }
@@ -159,42 +82,46 @@ public:
     LabelSequencePtr dsspSecondaryStructure;
     
     if (wSS3)
+    {
       secondaryStructure = protein->getSecondaryStructureSequence();
-    
-    if (wSS8)
-      dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
-    
-    if (wSS3)
       featureCall("wSS3") secondaryStructure->windowFeatures(index, wSS3, wSS3, true);
+    }
     
     if (wSS8)
+    {
+      dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
       featureCall("wSS8") dsspSecondaryStructure->windowFeatures(index, wSS8, wSS8, true);
-
+    }
   }
   
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
   {
-    switch (target) {
-      case SS3:
-        return new LabelSequence(SecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
-      case SS8:
-        return new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
-      default:
-        break;
+    switch (target)
+    {
+    case SS3:
+      return new LabelSequence(SecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
+    
+    case SS8:
+      return new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
+    
+    default:
+      break;
     }
-    jassert(true);
+    jassert(false);
     return ObjectPtr();
   }
   
-  String getTargetName()
+  String getTargetName() const
   {
     switch (target) {
-      case SS3:
-        return T("SecondaryStructureSequence");
-        case SS8:
-        return T("DSSPSecondaryStructureSequence");
-      default:
-        break;
+    case SS3:
+      return T("SecondaryStructureSequence");
+    
+    case SS8:
+      return T("DSSPSecondaryStructureSequence");
+    
+    default:
+      break;
     }
     
     return T("");
@@ -207,6 +134,13 @@ public:
     wSS3  = newSS3;
     wSS8  = newSS8;
   }
+
+private:
+  size_t wAA;
+  size_t wPSSM;
+  size_t wSS3;
+  size_t wSS8;
+  Target target;
 };
 
 class MyInferenceFactory : public InferenceFactory
@@ -381,14 +315,12 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("SS3Window"), &wSS3));
   arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
   arguments.insert(new DoubleArgument(T("Regularizer"), &regularizer));
- 
-  
-  
-  if (!arguments.parse(argv, 1, argc-1)) {
+
+  if (!arguments.parse(argv, 1, argc-1))
+  {
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
     return -1;
   }
-
 
   File proteinsDirectoryFile = File::getCurrentWorkingDirectory().getChildFile(proteinsDirectory);
   
@@ -420,10 +352,12 @@ int main(int argc, char** argv)
     
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      CustomableSecondaryStructureContent* nextStep = new CustomableSecondaryStructureContent(*step);
-      nextStep->setName(T("AA+PSSM+S3 -> S3 (") + toString(i) + T(")"));
-      nextStep->enableSecondaryStructure3StatesFeatures(wSS3);
-      proteinInference->appendStep(nextStep, nextStep->getTargetName());
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+S3 -> S3 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS3);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure3StatesFeatures(wSS3);
+      proteinInference->appendStep(step, step->getTargetName());
     }
   }
   else if (predictionTarget == T("SS8"))
@@ -436,10 +370,12 @@ int main(int argc, char** argv)
     
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      CustomableSecondaryStructureContent* nextStep = new CustomableSecondaryStructureContent(*step);
-      nextStep->setName(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"));
-      nextStep->enableSecondaryStructure8StatesFeatures(wSS8);
-      proteinInference->appendStep(nextStep, nextStep->getTargetName());
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+S8 -> S8 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS8);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      proteinInference->appendStep(step, step->getTargetName());
     }
   }
   else if (predictionTarget == T("SS3-SS8"))
@@ -452,28 +388,27 @@ int main(int argc, char** argv)
     
     step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S8"));
     step->setTarget(CustomableSecondaryStructureContent::SS8);
-    step->setName(T("AA+PSSM -> S8"));
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
     proteinInference->appendStep(step, step->getTargetName());
     
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
-      CustomableSecondaryStructureContent* nextStep = new CustomableSecondaryStructureContent(T("AA+PSSM+S3+S8 -> S3 (") + toString(i) + T(")"));
-      nextStep->setTarget(CustomableSecondaryStructureContent::SS3);
-      nextStep->enableAminoAcidFeatures(wAA);
-      nextStep->enablePositionSpecificScoreFeatures(wPSSM);
-      nextStep->enableSecondaryStructure3StatesFeatures(wSS3);
-      nextStep->enableSecondaryStructure8StatesFeatures(wSS8);
-      proteinInference->appendStep(nextStep, nextStep->getTargetName());
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+S3+S8 -> S3 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS3);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure3StatesFeatures(wSS3);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      proteinInference->appendStep(step, step->getTargetName());
       
-      nextStep = new CustomableSecondaryStructureContent(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"));
-      nextStep->setTarget(CustomableSecondaryStructureContent::SS8);
-      nextStep->enableAminoAcidFeatures(wAA);
-      nextStep->enablePositionSpecificScoreFeatures(wPSSM);
-      nextStep->enableSecondaryStructure3StatesFeatures(wSS3);
-      nextStep->enableSecondaryStructure8StatesFeatures(wSS8);
-      proteinInference->appendStep(nextStep, nextStep->getTargetName());
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS8);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure3StatesFeatures(wSS3);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      proteinInference->appendStep(step, step->getTargetName());
     }
   }
 
