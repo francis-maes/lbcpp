@@ -2,62 +2,58 @@
 #include <iostream>
 #include <map>
 #include <vector>
+using namespace lbcpp;
 
 class Argument
 {
 public:
-  String& name;
-  
-  Argument(String& name): name(name)
-  {
-  }
-  
-  virtual String toString()
-  {
-    return name;
-  }
-  
-  virtual String getName()
-  {
-    return name;
-  }
+  Argument(const String& name) : name(name)
+    {}
 
-  virtual size_t parse(char** str, size_t startIndex, size_t stopIndex) 
+  virtual ~Argument()
+    {}
+  
+  virtual String toString() const
+    {return name;}
+  
+  String getName() const
+    {return name;}
+
+  virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
-    std::cout << T("Parse method not yet implemented ! (")  << name.toUTF8() << T(")") << std::endl;
+    std::cout << "Parse method not yet implemented ! (";
+    std::cout << name;
+    std::cout << ")" << std::endl;
     return 0;
   }
   
-  virtual String getStringValue() {
-    return "Method not yet implemented !";
-  }
+  virtual String getStringValue() const = 0;
+  
+protected:
+  String name;
 };
 
 class IntegerArgument : public Argument
 {
 public:
-  IntegerArgument(String name, int* destination): Argument(name), destination(destination)
-  {
-  }
+  IntegerArgument(const String& name, int* destination)
+    : Argument(name), destination(destination) {}
   
-  virtual String toString()
-  {
-    return name + " (int)";
-  }
+  virtual String toString() const
+    {return name + T(" (int)");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
     if (stopIndex - startIndex < 1)
       return 0;
-    
     *destination = (int) strtol(str[++startIndex], (char**) NULL, 10);
-    
     return 2;
   }
   
-  virtual String getStringValue()
+  virtual String getStringValue() const
   {
-    return String("") << (*destination);
+    jassert(destination);
+    return String(*destination);
   }
   
 private:
@@ -67,15 +63,12 @@ private:
 class BooleanArgument : public Argument
 {
 public:
-  BooleanArgument(String name, bool* destination): Argument(name), destination(destination)
-  {
-    *destination = false;
-  }
+  BooleanArgument(const String& name, bool* destination)
+    : Argument(name), destination(destination)
+    {*destination = false;}
   
-  virtual String toString()
-  {
-    return name + " (bool)";
-  }
+  virtual String toString() const
+    {return name + " (bool)";}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -94,10 +87,8 @@ public:
     return 1;
   }
   
-  String getStringValue()
-  {
-    return (*destination) ? T("True") : T("False");
-  }
+  String getStringValue() const
+    {return (*destination) ? T("True") : T("False");}
    
 private:
   bool* destination;
@@ -106,14 +97,11 @@ private:
 class StringArgument : public Argument
 {
 public:
-  StringArgument(String name, String* destination): Argument(name), destination(destination)
-  {
-  }
+  StringArgument(const String& name, String* destination)
+    : Argument(name), destination(destination) {}
   
-  virtual String toString()
-  {
-    return name + " (string)";
-  }
+  virtual String toString() const
+    {return name + T(" (string)");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -121,15 +109,12 @@ public:
       return 0;
     
     startIndex++;
-    *destination = String(str[startIndex]);
-    
+    *destination = str[startIndex];
     return 2;
   }
   
-  String getStringValue()
-  {
-    return *destination;
-  }
+  String getStringValue() const
+    {return *destination;}
 
 private:
   String* destination;
@@ -138,45 +123,44 @@ private:
 class DoubleArgument : public Argument
 {
 public:
-  DoubleArgument(String name, double* destination): Argument(name), destination(destination)
-  {
-  }
+  DoubleArgument(String name, double* destination)
+    : Argument(name), destination(destination)  {}
   
-  virtual String toString()
-  {
-    return name + " (double)";
-  }
+  virtual String toString() const
+    {return name + " (double)";}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
     if (stopIndex - startIndex < 1)
       return 0;
-    
+
     *destination = (double) strtod(str[++startIndex], (char**) NULL);
-    
     return 2;
   }
   
-  virtual String getStringValue()
-  {
-    return String("") << (*destination);
-  }
+  virtual String getStringValue() const
+    {return String(*destination);}
   
 private:
   double* destination;
 };
 
-
 class ArgumentSet
 {
 public:
-  bool insert(Argument* arg)
+  ~ArgumentSet()
   {
-    if (nameToArgument[arg->getName()])
+    for (size_t i = 0; i < arguments.size(); ++i)
+      delete arguments[i];
+  }
+  
+  bool insert(Argument* newArgument)
+  {
+    if (nameToArgument[newArgument->getName()])
       return false;
     
-    nameToArgument[arg->getName()] = arg;
-    arguments.push_back(arg);
+    nameToArgument[newArgument->getName()] = newArgument;
+    arguments.push_back(newArgument);
     return true;
   }
   
@@ -204,32 +188,28 @@ public:
     return true;
   }
   
-  String toString()
+  String toString() const
   {
-    String toReturn;
+    String res;
     for (size_t i = 0; i < arguments.size(); ++i)
-    {
-      toReturn += arguments[i]->toString() + T(" ");
-    }
-    
-    return toReturn;
+      res += arguments[i]->toString() + T(" ");
+    return res;
   }
   
-  friend std::ostream& operator<<(std::ostream& o, ArgumentSet a);
+  friend std::ostream& operator<<(std::ostream& o, const ArgumentSet& a);
   
 private:
-  std::map<String, Argument*> nameToArgument;
-  std::vector<Argument*> arguments;
+  std::map<String, Argument* > nameToArgument;
+  std::vector<Argument* > arguments;
 };
 
 
-std::ostream& operator<<(std::ostream& o, ArgumentSet args)
+std::ostream& operator<<(std::ostream& o, const ArgumentSet& args)
 {
   for (size_t i = 0; i < args.arguments.size(); ++i)
   {
-    o << "|> " << args.arguments[i]->getName().toUTF8();
-    o << ": " << args.arguments[i]->getStringValue().toUTF8() << std::endl;
+    o << "|> " << args.arguments[i]->getName();
+    o << ": " << args.arguments[i]->getStringValue() << std::endl;
   }
-  
   return o;
 }

@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   Traits.h
-**@author Francis MAES
-**@date   Sat Jun 13 17:59:46 2009
-**
-**@brief  Type traits
-**
-**
-*/
-
 #ifndef LBCPP_TRAITS_H_
 # define LBCPP_TRAITS_H_
 
@@ -55,33 +45,12 @@ struct Traits
 public:
   typedef T Type;
 
-  /*!
-  **
-  **
-  ** @param value
-  **
-  ** @return
-  */
   static inline String toString(const T& value)
     {jassert(false); return T("<toString not implemented>");}
 
-  /*!
-  **
-  **
-  ** @param ostr
-  ** @param value
-  */
   static inline void write(OutputStream& ostr, const T& value)
     {jassert(false);}
 
-  /*!
-  **
-  **
-  ** @param istr
-  ** @param result
-  **
-  ** @return
-  */
   static inline bool read(InputStream& istr, T& result)
     {jassert(false); return false;}
 };
@@ -103,7 +72,6 @@ inline bool read(InputStream& istr, T& result)
 
 inline std::ostream& operator <<(std::ostream& ostr, const String& value)
   {return ostr << (const char* )value;}
-
 
 inline bool isNumberValid(double number)
 {
@@ -351,33 +319,12 @@ struct IteratorTraits
 public:
   typedef T Type;
 
-  /*!
-  **
-  **
-  ** @param value
-  **
-  ** @return
-  */
   static inline String toString(const T& value)
     {return T("&") + lbcpp::toString(*value);}
 
-  /*!
-  **
-  **
-  ** @param ostr
-  ** @param value
-  */
   static inline void write(OutputStream& ostr, const T& value)
     {jassert(false);}
 
-  /*!
-  **
-  **
-  ** @param istr
-  ** @param result
-  **
-  ** @return
-  */
   static inline bool read(InputStream& istr, T& result)
     {jassert(false); return false;}
 };
