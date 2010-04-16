@@ -14,13 +14,17 @@
 namespace lbcpp {
 namespace impl {
 
-class StringDescriptionVisitor : public FeatureVisitor<StringDescriptionVisitor>
+class StringDescriptionVisitor : public WeightStackBasedFeatureVisitor<StringDescriptionVisitor>
 {
 public: 
   StringDescriptionVisitor() : indent(0) {}
 
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
+  typedef WeightStackBasedFeatureVisitor<StringDescriptionVisitor> BaseClass;
+
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary, double weight)
   {
+    if (!BaseClass::featureEnter(dictionary, number, subDictionary, weight))
+      return false;
    //res += "DICO = " + dictionary->getName() + " (" + lbcpp::toString((int)dictionary.get()) + ")\n";
     flushCurrentFeatures();
     addIndent(indent);
@@ -29,15 +33,20 @@ public:
     return true;
   }
 
-  void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
+  void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value)
   {
-    if (currentFeatures.isNotEmpty())
-      currentFeatures += T(", ");
-    currentFeatures += dictionary->getFeatures()->getString(number) + T(" = ") + lbcpp::toString(value);
+    value *= BaseClass::currentWeight;
+    if (value)
+    {
+      if (currentFeatures.isNotEmpty())
+        currentFeatures += T(", ");
+      currentFeatures += dictionary->getFeatures()->getString(number) + T(" = ") + lbcpp::toString(value);
+    }
   }
   
   void featureLeave()
   {
+    BaseClass::featureLeave();
     flushCurrentFeatures();
     --indent;
   }

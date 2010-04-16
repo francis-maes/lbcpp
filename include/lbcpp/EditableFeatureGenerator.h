@@ -174,7 +174,7 @@ public:
   void staticFeatureGenerator(VisitorType& visitor) const
   {
     for (size_t i = 0; i < featureGenerators.size(); ++i)
-      visitor.featureCall_(getDictionary(), i, featureGenerators[i]);
+      visitor.featureCall_(featureGenerators[i], getDictionary(), i);
   }
 
   virtual size_t getNumSubGenerators() const;

@@ -27,8 +27,9 @@ public:
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
 
-    featureCall("a") inline aminoAcidSequence->windowFeatures(index, 8, 8, true);
-    featureCall("p") inline positionSpecificScores->windowFeatures(index, 8, 8, true);
+    featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
+    featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
+    featureCall("af") aminoAcidSequence->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
   }
 };
 
@@ -51,6 +52,7 @@ public:
     featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
     featureCall("w3") secondaryStructure->windowFeatures(index, 5, 5, true);
     featureCall("w8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);
+//    featureCall("w8f") dsspSecondaryStructure->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
   }
 };
 
@@ -109,8 +111,8 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
-  File proteinsDirectory(T("C:\\Projets\\Proteins\\data\\CB513new"));
+//  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
+  File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\data\\CB513new"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
 

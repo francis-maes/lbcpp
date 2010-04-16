@@ -95,9 +95,10 @@ private:
     for (size_t i = 0; true; ++i)
     {
       callback->preLearningIterationCallback(i);
-      if (i == 0) // at the first iteration, we perform episodes to create the training examples
+      //if (i == 0) // at the first iteration, we perform episodes to create the training examples
         trainingContext->runWithSupervisedExamples(inference, trainingData);
-      learningCallback->trainStochasticIteration(); // then, at each iteration we do a pass of "trainStochastic()"
+      learningCallback->trainAndFlushExamples(); // then, at each iteration we do a pass of "trainStochastic()"
+      
       if (!callback->postLearningIterationCallback(inference, validationContext, evaluation, i))
         break;
     }

@@ -21,7 +21,7 @@ struct AssignmentVectorOperation
     {jassert(false);}
   
   template<class VectorPtr>
-  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double weight)
     {jassert(false);}
 };
 
@@ -31,8 +31,8 @@ struct AddVectorOperation : public AssignmentVectorOperation
     {lValue += rValue;}
   
   template<class VectorPtr>
-  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
-    {featureGenerator->addTo(vector);}
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double weight)
+    {weight == 1.0 ? featureGenerator->addTo(vector) : featureGenerator->addWeightedTo(vector, weight);}
 };
 
 struct SubstractVectorOperation : public AssignmentVectorOperation
@@ -41,8 +41,8 @@ struct SubstractVectorOperation : public AssignmentVectorOperation
     {lValue += rValue;}
 
   template<class VectorPtr>
-  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
-    {featureGenerator->substractFrom(vector);}
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double weight)
+    {weight == 1.0 ? featureGenerator->substractFrom(vector) : featureGenerator->addWeightedTo(vector, -weight);}
 };
 
 struct AddWeightedVectorOperation : public AssignmentVectorOperation
@@ -56,8 +56,8 @@ struct AddWeightedVectorOperation : public AssignmentVectorOperation
     {lValue += rValue * weight;}
 
   template<class VectorPtr>
-  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
-    {featureGenerator->addWeightedTo(vector, weight);}
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double subWeight)
+    {featureGenerator->addWeightedTo(vector, weight * subWeight);}
 };
 
 struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
@@ -71,58 +71,38 @@ struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
     {lvalue += rvalue > 0 ? weight : (rvalue < 0 ? -weight : 0);}
 
   template<class VectorPtr>
-  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator)
-    {featureGenerator->addWeightedSignsTo(vector, weight);}
+  void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double subWeight)
+    {featureGenerator->addWeightedSignsTo(vector, weight * subWeight);}
 };
 
 template<class ExactType, class VectorType, class OperationType>
 class AssignmentToVectorVisitor
-  : public FeatureVisitor< ExactType >
+  : public VectorStackBasedFeatureVisitor< ExactType, VectorType >
 {
 public:
-  typedef ReferenceCountedObjectPtr<VectorType> VectorPtr;
+  typedef VectorStackBasedFeatureVisitor< ExactType, VectorType > BaseClass;
   
   AssignmentToVectorVisitor(VectorPtr target, OperationType& operation)
-    : operation(operation), currentVector(target) {}
+    : BaseClass(target), operation(operation) {}
   
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
+  void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value)
   {
-    currentVectorStack.push_back(currentVector);
-    currentVector = getCurrentSubVector(number, subDictionary);
-    return true;
+    jassert(BaseClass::currentVector->getDictionary() == dictionary);
+    value *= BaseClass::currentWeight;
+    if (value)
+      operation.process(currentVector->get(number), value);
   }
-  
-  void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
+    
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
   {
-    jassert(currentVector->getDictionary() == dictionary);
-    operation.process(currentVector->get(number), value);
-  }
-  
-  void featureLeave()
-  {
-    jassert(currentVectorStack.size() > 0);
-    currentVector = currentVectorStack.back();
-    currentVectorStack.pop_back();    
-  }
-  
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
-  {
-    VectorPtr subVector = getCurrentSubVector(scopeNumber, featureGenerator->getDictionary());
-    operation.call(subVector, featureGenerator);
+    VectorPtr subVector = BaseClass::getCurrentSubVector(scopeNumber, featureGenerator->getDictionary());
+    weight *= BaseClass::currentWeight;
+    if (weight)
+      operation.call(subVector, featureGenerator, weight);
   }
   
 private:
   OperationType& operation;
-  std::vector<VectorPtr> currentVectorStack;
-  VectorPtr currentVector;
-
-  VectorPtr getCurrentSubVector(size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
-  {
-    VectorPtr& subVector = currentVector->getSubVector(number);
-    if (!subVector)
-      subVector = VectorPtr(new VectorType(subDictionary));
-    return subVector;
-  }
 };
 
 template<class OperationType>

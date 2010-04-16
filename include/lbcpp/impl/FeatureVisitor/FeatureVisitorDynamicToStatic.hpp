@@ -19,14 +19,14 @@ struct DynamicToStaticFeatureVisitor : public FeatureVisitor<DynamicToStaticFeat
   DynamicToStaticFeatureVisitor(FeatureVisitorPtr target)
     : target(target) {}
   
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
-    {return target->featureEnter(dictionary, number, subDictionary);}
+  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary, double weight)
+    {return target->featureEnter(dictionary, number, subDictionary, weight);}
 
-  void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
+  void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value)
     {target->featureSense(dictionary, number, value);}
   
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
-    {target->featureCall(dictionary, scopeNumber, featureGenerator);}
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
+    {target->featureCall(dictionary, scopeNumber, featureGenerator, weight);}
 
   void featureLeave()
     {target->featureLeave();}

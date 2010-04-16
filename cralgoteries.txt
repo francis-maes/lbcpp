@@ -1,24 +1,29 @@
+* Accumulateurs dans LabelSequence et ScoreVectorSequence et nouveaux features generators
 
-Cassage des structures de données:
-  * Faire sauter VariableSet (on utilise ObjectContainer à la place), utiliser Label
-  * Reecrire LabelSequence, ScoreVectorSequence
-  * Faire sauter les classes "SecondaryStructureSequence", "SolventAccessibilitySequence", "AminoAcidSequence" et "PositionSpecificScoringMatrix" (?)
+    - featureCall(id, weight) 
+    - Spliter le FeatureVisitor static en FeatureVisitor et FeatureVisitorAdaptator 
+    - Nouvelle classe ScoreAccumulatorSequence qui derive de ScoreVectorSequence
+    
 
-Load/Save des modèles puis "update"
+* Simplifier les classes de bases pour la prediction de Sequence
+* Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
+* Load/Save des modèles
+* SICA-det: cache
+* SICA-prob: sampling
+
+Prediction de RRCM:
+ * chopper données 
+
+Prediction de PSSM:
+ * RegressionInferenceStep
+ * Renforcement de la PSSM?
 
 Explorer:
   * dispatcher le code des juce::Component 
-  * explorer devient minimaliste
-  * Widgets pour VariableSetModel / Classifier / FeatureGenerator
-
-=
-
-* BUG: lbcpp::toString(*protein) affiche "toString not implemented"
+  * Render l'explorer minimaliste (1 fichier)
+  * Widgets pour Classifier / FeatureGenerator
 
 =====
-
-Gros:
-  * SWIG, Doxygen, Tests
 
 FeatureGenerator:
   * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar
@@ -40,9 +45,6 @@ Policy:
  * CRankPost
  * TableLogger
  * policyRun inline
-
-LearningMachine:
-  * dans le StochasticDescentLearner, options pour la frequence de l'application du regularizer
 
 * CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
 
