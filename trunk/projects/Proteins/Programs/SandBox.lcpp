@@ -17,12 +17,11 @@ extern void declareProteinClasses();
 class MyProteinSequenceLabelingInferenceStep : public ProteinSequenceLabelingInferenceStep
 {
 public:
-  MyProteinSequenceLabelingInferenceStep(const String& name, const String& target, FeatureDictionaryPtr targetDictionary, bool useStructureFeatures)
-    : ProteinSequenceLabelingInferenceStep(name), target(target), targetDictionary(targetDictionary), useStructureFeatures(useStructureFeatures) {}
+  MyProteinSequenceLabelingInferenceStep(const String& name, const String& target, FeatureDictionaryPtr targetDictionary)
+    : ProteinSequenceLabelingInferenceStep(name), target(target), targetDictionary(targetDictionary) {}
 
   String target;
   FeatureDictionaryPtr targetDictionary;
-  bool useStructureFeatures;
 
   virtual String getTargetName() const
     {return target;}
@@ -36,20 +35,23 @@ public:
     jassert(protein);
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
-    LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
-    LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
-    LabelSequencePtr solventAccesibility = protein->getSolventAccessibilitySequence();
 
     featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
     featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
 
-    if (useStructureFeatures)
-    {
-      featureCall("s3") secondaryStructure->windowFeatures(index, 5, 5, true);
-      featureCall("s8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);
-      featureCall("sa") solventAccesibility->windowFeatures(index, 5, 5, true);
-    }
-//    featureCall("w8f") dsspSecondaryStructure->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
+    LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
+    if (secondaryStructure)
+      {featureCall("s3") secondaryStructure->windowFeatures(index, 5, 5, true);}
+
+    LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
+    if (dsspSecondaryStructure)
+      {featureCall("s8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);}
+
+    LabelSequencePtr solventAccesibility = protein->getSolventAccessibilitySequence();
+    if (solventAccesibility)
+      {featureCall("sa") solventAccesibility->windowFeatures(index, 5, 5, true);}
+
+    //    featureCall("w8f") dsspSecondaryStructure->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
   }
 };
 
@@ -133,12 +135,11 @@ int main(int argc, char** argv)
 
   for (size_t i = 0; i < 5; ++i)
   {
-    bool useStructureFeatures = i > 0;
-    step = new MyProteinSequenceLabelingInferenceStep(T("SA") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance(), useStructureFeatures);
+    step = new MyProteinSequenceLabelingInferenceStep(T("SA ") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance());
     proteinInference->appendStep(step, step->getTargetName());
-    step = new MyProteinSequenceLabelingInferenceStep(T("S3") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance(), useStructureFeatures);
+    step = new MyProteinSequenceLabelingInferenceStep(T("SS3 ") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step, step->getTargetName());
-    step = new MyProteinSequenceLabelingInferenceStep(T("S8") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance(), useStructureFeatures);
+    step = new MyProteinSequenceLabelingInferenceStep(T("SS8 ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step, step->getTargetName());
   }
 
