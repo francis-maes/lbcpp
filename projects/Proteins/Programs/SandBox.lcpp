@@ -29,7 +29,7 @@ public:
 
     featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
     featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
-    featureCall("af") aminoAcidSequence->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
+    featureCall("pf") positionSpecificScores->multiScaleSymetricFrequencyFeatures(index, 2, 2, 6, false); // 2, 4, 8, ..., 128
   }
 };
 
@@ -114,8 +114,17 @@ int main(int argc, char** argv)
 //  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
   File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\data\\CB513new"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 
+  /*
+  ProteinPtr protein = proteins->getAndCast<Protein>(0);
+  std::cout << "Amino Acid Sequence: " << protein->getAminoAcidSequence()->toString() << std::endl;
+  SecondaryStructureInferenceStepPtr step = new SSContentOnlyInferenceStep("SS3CO", false);
+  std::cout << "Input Features at position 2: " << step->getInputFeatures(protein, 2)->toSparseVector()->toString() << std::endl;
+  return 0;*/
+
+
+  proteins = proteins->apply(new ObjectToObjectPairFunction());
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
   ObjectContainerPtr testingData = proteins->fold(0, 7);
   std::cout << trainingData->size() << " Training Proteins "
