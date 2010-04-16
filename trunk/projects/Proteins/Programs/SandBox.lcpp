@@ -7,10 +7,10 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "InferenceCallback/InferenceLearner.h"
+#include "InferenceLearner/InferenceLearner.h"
+#include "InferenceLearner/InferenceLearnerCallback.h"
 #include "ProteinInference/ProteinEvaluationCallback.h"
 #include "ProteinInference/ProteinInference.h"
-#include "InferenceCallback/ExamplesCreatorCallback.h" // tmp, for InferenceLearnerCallback
 using namespace lbcpp;
 
 extern void declareProteinClasses();
