@@ -17,6 +17,7 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/InferenceStep.cpp
   InferenceStep/SequentialInferenceStep.h
   InferenceStep/ParallelInferenceStep.h
+  InferenceStep/ParallelSequenceLabelingInferenceStep.h
   InferenceStep/ClassificationInferenceStep.h
 )
 

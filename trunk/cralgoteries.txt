@@ -1,15 +1,11 @@
-* Accumulateurs dans LabelSequence et ScoreVectorSequence et nouveaux features generators
-
-    - featureCall(id, weight) 
-    - Spliter le FeatureVisitor static en FeatureVisitor et FeatureVisitorAdaptator 
-    - Nouvelle classe ScoreAccumulatorSequence qui derive de ScoreVectorSequence
-    
-
 * Simplifier les classes de bases pour la prediction de Sequence
-* Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
-* Load/Save des modèles
+   - tester la prediction du SA
 * SICA-det: cache
+
+* Load/Save des modèles
+* Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
 * SICA-prob: sampling
+* numberFeatures
 
 Prediction de RRCM:
  * chopper données 

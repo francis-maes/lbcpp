@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SharedParallelInferenceStep.h  | Reduction from a problem        |
-| Author  : Francis Maes                   |   to a simpler problem          |
+| Filename: ParallelInferenceStep.h        | Base class for parallel         |
+| Author  : Francis Maes                   |   inference                     |
 | Started : 08/04/2010 18:18               |                                 |
 `------------------------------------------/                                 |
                                |                                             |

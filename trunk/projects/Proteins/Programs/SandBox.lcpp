@@ -14,30 +14,21 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-class SSContentOnlyInferenceStep : public SecondaryStructureInferenceStep
+class MyProteinSequenceLabelingInferenceStep : public ProteinSequenceLabelingInferenceStep
 {
 public:
-  SSContentOnlyInferenceStep(const String& name, bool useDSSPElements)
-    : SecondaryStructureInferenceStep(name, useDSSPElements) {}
+  MyProteinSequenceLabelingInferenceStep(const String& name, const String& target, FeatureDictionaryPtr targetDictionary, bool useStructureFeatures)
+    : ProteinSequenceLabelingInferenceStep(name), target(target), targetDictionary(targetDictionary), useStructureFeatures(useStructureFeatures) {}
 
-  virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
-  {
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
+  String target;
+  FeatureDictionaryPtr targetDictionary;
+  bool useStructureFeatures;
 
-    featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
-    featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
-    featureCall("pf") positionSpecificScores->multiScaleSymetricFrequencyFeatures(index, 2, 2, 6, false); // 2, 4, 8, ..., 128
-  }
-};
+  virtual String getTargetName() const
+    {return target;}
 
-class SSContentAndStructureInferenceStep : public SecondaryStructureInferenceStep
-{
-public:
-  SSContentAndStructureInferenceStep(const String& name, bool useDSSPElements)
-    : SecondaryStructureInferenceStep(name, useDSSPElements) {}
+  virtual FeatureDictionaryPtr getTargetDictionary() const
+    {return targetDictionary;}
 
   virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
   {
@@ -47,11 +38,17 @@ public:
     ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
     LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
     LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
+    LabelSequencePtr solventAccesibility = protein->getSolventAccessibilitySequence();
 
     featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
     featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
-    featureCall("w3") secondaryStructure->windowFeatures(index, 5, 5, true);
-    featureCall("w8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);
+
+    if (useStructureFeatures)
+    {
+      featureCall("s3") secondaryStructure->windowFeatures(index, 5, 5, true);
+      featureCall("s8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);
+      featureCall("sa") solventAccesibility->windowFeatures(index, 5, 5, true);
+    }
 //    featureCall("w8f") dsspSecondaryStructure->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
   }
 };
@@ -87,7 +84,7 @@ public:
     std::cout << "Online evaluation: " << evaluation->toString() << std::endl;
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Validation evaluation: " << evaluation->toString() << std::endl;
-    return iterationNumber < 100;
+    return iterationNumber < 3;
   }
 
   virtual void preLearningPassCallback(const String& passName)
@@ -131,12 +128,18 @@ int main(int argc, char** argv)
             << testingData->size() << " Testing Proteins" << std::endl;
 
   ProteinInferencePtr proteinInference = new ProteinInference();
-  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S3"), false), T("SecondaryStructureSequence"));
-  proteinInference->appendStep(new SSContentOnlyInferenceStep(T("AA+PSSM -> S8"), true), T("DSSPSecondaryStructureSequence"));
+  
+  ProteinSequenceLabelingInferenceStepPtr step;
+
   for (size_t i = 0; i < 5; ++i)
   {
-    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S3 (") + lbcpp::toString(i) + T(")"), false), T("SecondaryStructureSequence"));
-    proteinInference->appendStep(new SSContentAndStructureInferenceStep(T("AA+PSSM+S3+S8 -> S8 (") + lbcpp::toString(i) + T(")"), true), T("DSSPSecondaryStructureSequence"));
+    bool useStructureFeatures = i > 0;
+    step = new MyProteinSequenceLabelingInferenceStep(T("SA") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance(), useStructureFeatures);
+    proteinInference->appendStep(step, step->getTargetName());
+    step = new MyProteinSequenceLabelingInferenceStep(T("S3") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance(), useStructureFeatures);
+    proteinInference->appendStep(step, step->getTargetName());
+    step = new MyProteinSequenceLabelingInferenceStep(T("S8") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance(), useStructureFeatures);
+    proteinInference->appendStep(step, step->getTargetName());
   }
 
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData);

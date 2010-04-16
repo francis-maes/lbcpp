@@ -9,52 +9,24 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_H_
 
-# include "../InferenceStep/ParallelInferenceStep.h"
+# include "../InferenceStep/ParallelSequenceLabelingInferenceStep.h"
 # include "../InferenceStep/SequentialInferenceStep.h"
-# include "../InferenceStep/ClassificationInferenceStep.h"
 # include "SecondaryStructureDictionary.h"
 
 namespace lbcpp
 {
 
-class FeaturesToContainerElementsSharedParallelInferenceStep : public SharedParallelInferenceStep
+class ProteinSequenceLabelingInferenceStep : public ParallelSequenceLabelingInferenceStep
 {
 public:
-  FeaturesToContainerElementsSharedParallelInferenceStep(const String& name, InferenceStepPtr subInference)
-    : SharedParallelInferenceStep(name, subInference) {}
+  ProteinSequenceLabelingInferenceStep(const String& name)
+    : ParallelSequenceLabelingInferenceStep(name) {}
 
-  virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
+  virtual String getTargetName() const = 0;
+  virtual FeatureDictionaryPtr getTargetDictionary() const = 0;
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-  {
-    ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
-    jassert(container);
-    return container->size();
-  }
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return getInputFeatures(input, index);}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-  {
-    if (!supervision)
-      return ObjectPtr();
-    ObjectContainerPtr s = supervision.dynamicCast<ObjectContainer>();
-    jassert(s);
-    return s->get(index);
-  }
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-    {output.dynamicCast<ObjectContainer>()->set(index, subOutput);}
-};
-
-// Input: Protein
-// Output: SecondaryStructureSequence
-class SecondaryStructureInferenceStep : public FeaturesToContainerElementsSharedParallelInferenceStep
-{
-public:
-  SecondaryStructureInferenceStep(const String& name, bool useDSSPElements)
-    : FeaturesToContainerElementsSharedParallelInferenceStep(name, InferenceStepPtr(new ClassificationInferenceStep(T("SSClassification")))), useDSSPElements(useDSSPElements) {}
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return new LabelSequence(getTargetDictionary(), getNumSubInferences(input));}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
   {
@@ -62,17 +34,9 @@ public:
     jassert(protein);
     return protein->getLength();
   }
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-  {
-    return new LabelSequence(useDSSPElements ? DSSPSecondaryStructureDictionary::getInstance()
-      : SecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
-  }
-
-  bool useDSSPElements;
 };
 
-typedef ReferenceCountedObjectPtr<SecondaryStructureInferenceStep> SecondaryStructureInferenceStepPtr;
+typedef ReferenceCountedObjectPtr<ProteinSequenceLabelingInferenceStep> ProteinSequenceLabelingInferenceStepPtr;
 
 class ProteinInference : public SequentialInferenceStep
 {

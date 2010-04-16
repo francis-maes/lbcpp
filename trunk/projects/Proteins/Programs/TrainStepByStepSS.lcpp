@@ -16,15 +16,13 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-class CustomableSecondaryStructureContent : public FeaturesToContainerElementsSharedParallelInferenceStep
+class CustomableSecondaryStructureContent : public ProteinSequenceLabelingInferenceStep
 {
 public:
-  enum Target {SS3, SS8, SA};
+  enum Target {SS3 = 0, SS8, SA};
 
   CustomableSecondaryStructureContent(const String& name = String::empty)
-    : FeaturesToContainerElementsSharedParallelInferenceStep(name
-    , InferenceStepPtr(new ClassificationInferenceStep(T("SSClassification"))))
-    , wAA(0), wPSSM(0), wSS3(0), wSS8(0), target(SS3)
+    : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), target(SS3)
     {}
   
   void setTarget(Target newTarget)
@@ -59,13 +57,6 @@ public:
   
   void disableSolventAccesibility2StatesFeatures(size_t windowLength)
     {wSA = 0;}
-  
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-  {
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    return protein->getLength();
-  }
 
   virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
   {
@@ -96,53 +87,32 @@ public:
       featureCall("wSS8") dsspSecondaryStructure->windowFeatures(index, wSS8, wSS8, true);
     }
     
-    if (wSA) {
-      LabelSequencePtr solventAccesibilityStructure = protein->getSolventAccesibilitySequence();
+    if (wSA)
+    {
+      LabelSequencePtr solventAccesibilityStructure = protein->getSolventAccessibilitySequence();
       featureCall("wSA") solventAccesibilityStructure->windowFeatures(index, wSA, wSA, true);
     }
   }
   
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-  {
-    switch (target)
-    {
-    case SS3:
-      return new LabelSequence(SecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
-    
-    case SS8:
-      return new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
-    
-    case SA:
-      return new LabelSequence(SolventAccesibility2StateDictionary::getInstance(), getNumSubInferences(input));
-    
-    default:
-      break;
-    }
 
-    jassert(false);
-    return ObjectPtr();
-  }
-  
-  String getTargetName() const
+  virtual String getTargetName() const
   {
-    switch (target) {
-    case SS3:
-      return T("SecondaryStructureSequence");
-    
-    case SS8:
-      return T("DSSPSecondaryStructureSequence");
-    
-    case SA:
-      return T("SolventAccessibilitySequence");
-    
-    default:
-      break;
-    }
-    
-    jassert(false);
-    return T("");
+    static const juce::tchar* targetNames[] = {
+      T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence"), T("SolventAccessibilitySequence")
+    };
+    jassert(target < sizeof (targetNames) / sizeof (const juce::tchar* ));
+    return targetNames[target];
   }
-  
+
+  virtual FeatureDictionaryPtr getTargetDictionary() const
+  {
+    static const FeatureDictionaryPtr targetDictionaries[] = {
+      SecondaryStructureDictionary::getInstance(), DSSPSecondaryStructureDictionary::getInstance(), SolventAccesibility2StateDictionary::getInstance()
+    };
+    jassert(target < sizeof (targetDictionaries) / sizeof (FeatureDictionaryPtr));
+    return targetDictionaries[target];
+  }
+
   void setWindows(size_t newAA, size_t newPSSM, size_t newSS3, size_t newSS8, size_t newSA)
   {
     wAA   = newAA;
@@ -160,6 +130,8 @@ private:
   size_t wSA;
   Target target;
 };
+
+typedef ReferenceCountedObjectPtr<CustomableSecondaryStructureContent> CustomableSecondaryStructureContentPtr;
 
 class MyInferenceFactory : public InferenceFactory
 {
@@ -373,7 +345,7 @@ int main(int argc, char** argv)
   
   if (predictionTarget == T("SS3"))
   {
-    CustomableSecondaryStructureContent* step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S3"));
+    CustomableSecondaryStructureContentPtr step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S3"));
     step->setTarget(CustomableSecondaryStructureContent::SS3);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
@@ -391,7 +363,7 @@ int main(int argc, char** argv)
   }
   else if (predictionTarget == T("SS8"))
   {
-    CustomableSecondaryStructureContent* step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S8"));
+    CustomableSecondaryStructureContentPtr step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S8"));
     step->setTarget(CustomableSecondaryStructureContent::SS8);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
@@ -408,7 +380,7 @@ int main(int argc, char** argv)
     }
   } else if (predictionTarget == T("SA"))
   {
-    CustomableSecondaryStructureContent* step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SA"));
+    CustomableSecondaryStructureContentPtr step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SA"));
     step->setTarget(CustomableSecondaryStructureContent::SA);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
@@ -426,7 +398,7 @@ int main(int argc, char** argv)
   }
   else if (predictionTarget == T("SS3-SS8"))
   {
-    CustomableSecondaryStructureContent* step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S3"));
+    CustomableSecondaryStructureContentPtr step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S3"));
     step->setTarget(CustomableSecondaryStructureContent::SS3);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);

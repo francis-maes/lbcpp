@@ -21,8 +21,9 @@ public:
   virtual void startInferencesCallback(size_t count)
   {
     numProteins = 0;
-    secondaryStructureAccuracy = new ScalarVariableMean(T("Q3"));
-    dsspSecondaryStructureAccuracy = new ScalarVariableMean(T("Q8"));
+    secondaryStructureAccuracy = new ScalarVariableMean(T("SS3"));
+    dsspSecondaryStructureAccuracy = new ScalarVariableMean(T("SS8"));
+    solventAccesibility2StateAccuracy = new ScalarVariableMean(T("SA2"));
   }
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -44,10 +45,21 @@ public:
     res += "\n";
     if (numProteins)
     {
-      res += T("Q3: ") + String(getQ3Score() * 100.0, 2) + T("\n");
-      res += T("Q8: ") + String(getQ8Score() * 100.0, 2) + T("\n");
+      res += scoreToString(secondaryStructureAccuracy);
+      res += scoreToString(dsspSecondaryStructureAccuracy);
+      res += scoreToString(solventAccesibility2StateAccuracy);
     }
     return res;
+  }
+
+  static String scoreToString(ScalarVariableMeanPtr score)
+  {
+    String name = score->getName();
+    double count = score->getCount();
+    if (count)
+      return name + T(": ") + String(score->getMean() * 100.0, 2) + T(" (") + lbcpp::toString(count) + T(" elements)\n");
+    else
+      return name + T(": N/A\n");
   }
 
   double getQ3Score() const
@@ -56,11 +68,15 @@ public:
   double getQ8Score() const
     {return dsspSecondaryStructureAccuracy->getMean();}
 
+  double getSA2Score() const
+    {return solventAccesibility2StateAccuracy->getMean();}
+
   void addProtein(ProteinPtr predicted, ProteinPtr correct)
   {
     ++numProteins;
     addLabelSequence(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence(), secondaryStructureAccuracy);
     addLabelSequence(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureAccuracy);
+    addLabelSequence(predicted->getSolventAccessibilitySequence(), correct->getSolventAccessibilitySequence(), solventAccesibility2StateAccuracy);
   }
 
   void addLabelSequence(LabelSequencePtr predicted, LabelSequencePtr correct, ScalarVariableMeanPtr statistics)
@@ -84,6 +100,7 @@ protected:
   size_t numProteins;
   ScalarVariableMeanPtr secondaryStructureAccuracy;
   ScalarVariableMeanPtr dsspSecondaryStructureAccuracy;
+  ScalarVariableMeanPtr solventAccesibility2StateAccuracy;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinEvaluationCallback> ProteinEvaluationCallbackPtr;

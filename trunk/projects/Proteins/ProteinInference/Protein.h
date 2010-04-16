@@ -64,7 +64,7 @@ public:
   void setSolventAccessibilitySequence(LabelSequencePtr solventAccessibility)
     {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
 
-  LabelSequencePtr getSolventAccesibilitySequence() const
+  LabelSequencePtr getSolventAccessibilitySequence() const
     {return getObject(T("SolventAccessibilitySequence"));}
 
 protected:
