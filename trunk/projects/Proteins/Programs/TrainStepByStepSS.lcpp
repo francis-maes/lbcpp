@@ -71,7 +71,7 @@ public:
   {
     ProteinPtr protein = input.dynamicCast<Protein>();
     jassert(protein);
-    
+
     if (wAA)
     {
       LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
@@ -353,6 +353,15 @@ int main(int argc, char** argv)
   
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
+  
+#if 0
+  ObjectContainerPtr prots = proteinsStream->load(7)->randomize();
+  for (size_t i = 0; i < prots->size(); ++i)
+  {
+    ProteinPtr protein = (ProteinPtr) prots->get(i);
+    std::cout << protein->toString() << std::endl;
+  }
+#endif // 0
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
