@@ -15,18 +15,49 @@
 namespace lbcpp
 {
 
+// todo: file
+class InferenceLearnerCallback : public Object
+{
+public:
+  virtual InferenceContextPtr createContext() = 0;
+  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels) = 0;
+
+  virtual void preLearningIterationCallback(size_t iterationNumber)
+    {}
+
+  // returns false if learning should stop
+  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+    {return iterationNumber < 100;}
+
+  virtual void preLearningPassCallback(const String& passName) {}
+  virtual void postLearningPassCallback() {}
+};
+
+typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;
+
 class ExamplesCreatorCallback : public InferenceCallback
 {
 public:
-  ExamplesCreatorCallback() : enableExamplesCreation(true) {}
+  ExamplesCreatorCallback(InferenceLearnerCallbackPtr learnerCallback)
+    : learnerCallback(learnerCallback), enableExamplesCreation(true) {}
 
-  virtual void classificationCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
+  virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {
     if (supervision && enableExamplesCreation)
     {
       LabelPtr label = supervision.dynamicCast<Label>();
       jassert(label);
-      ClassifierPtr classifier = stack->getCurrentInference().dynamicCast<ClassificationInferenceStep>()->getClassifier();
+      if (!classifier)
+      {
+        if (!supervision)
+        {
+          returnCode = InferenceStep::errorReturnCode;
+          return;
+        }
+        FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
+        jassert(correctOutput);
+        classifier = learnerCallback->createClassifier(correctOutput->getDictionary());
+      }
       jassert(classifier);
       addExample(classifier, new ClassificationExample(input, label->getIndex()));
     }
@@ -41,9 +72,11 @@ public:
       std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
       machine->trainStochastic(trainingData);
       std::cout << "ok." << std::endl;
-    /*  ClassifierPtr classifier = machine.dynamicCast<Classifier>();
+      /*GradientBasedClassifierPtr classifier = machine.dynamicCast<GradientBasedClassifier>();
       if (classifier)
-        std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << std::endl;*/
+      {
+        std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << " Num params = " << classifier->getParameters()->l0norm() << " Norm = " << classifier->getParameters()->l2norm() << std::endl;
+      }*/
     }
   }
 
@@ -52,7 +85,9 @@ public:
     trainStochasticIteration();
     examples.clear();
   }
+
 protected:
+  InferenceLearnerCallbackPtr learnerCallback;
   bool enableExamplesCreation;
 
   typedef std::map<LearningMachinePtr, VectorObjectContainerPtr> ExamplesMap;

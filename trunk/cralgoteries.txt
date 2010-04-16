@@ -1,6 +1,6 @@
-* Simplifier les classes de bases pour la prediction de Sequence
-   - tester la prediction du SA
-* SICA-det: cache
+* SICA-det:
+   - creer les exemples de classification une fois pour toute
+   - CacheInferenceCallback
 
 * Load/Save des modèles
 * Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
