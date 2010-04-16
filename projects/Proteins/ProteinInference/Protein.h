@@ -65,7 +65,7 @@ public:
     {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
 
   LabelSequencePtr getSolventAccesibilitySequence() const
-    {return getObject(T("SolventAccesibilitySequence"));}
+    {return getObject(T("SolventAccessibilitySequence"));}
 
 protected:
   virtual bool load(InputStream& istr)
