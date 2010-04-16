@@ -27,8 +27,11 @@ public:
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
     {return iterationNumber < 100;}
 
-  virtual void preLearningPassCallback(const String& passName) {}
-  virtual void postLearningPassCallback() {}
+  virtual void preLearningStepCallback(InferenceStepPtr step)
+    {}
+
+  virtual void postLearningStepCallback(InferenceStepPtr step)
+    {}
 };
 
 typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;
