@@ -143,7 +143,7 @@ int main(int argc, char** argv)
   LBCPP_DECLARE_CLASS(MyProteinSequenceLabelingInferenceStep);
 
 //  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
-  File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513"));
+  File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 
@@ -153,7 +153,6 @@ int main(int argc, char** argv)
   SecondaryStructureInferenceStepPtr step = new SSContentOnlyInferenceStep("SS3CO", false);
   std::cout << "Input Features at position 2: " << step->getInputFeatures(protein, 2)->toSparseVector()->toString() << std::endl;
   return 0;*/
-
 
   proteins = proteins->apply(new ObjectToObjectPairFunction());
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
@@ -168,11 +167,11 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < 5; ++i)
   {
     step = new MyProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance());
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
     step = new MyProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance());
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
     step = new MyProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
   }
 
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);

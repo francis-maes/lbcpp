@@ -12,6 +12,9 @@
 #include "../ProteinInference/SecondaryStructureDictionary.h"
 using namespace lbcpp;
 
+extern void declareProteinClasses();
+
+#if 0
 class DaFuckingDataParser : public LearningDataObjectParser
 {
 public:
@@ -90,7 +93,6 @@ public:
     jassert(solventAccesibilitySequence.length() == (int)length);
 
     FeatureDictionaryPtr aminoAcidDictionary = AminoAcidDictionary::getInstance();
-#if 0
     // amino acids
     LabelSequencePtr aminoAcids = new LabelSequence(aminoAcidDictionary, length);
     res->setAminoAcidSequence(aminoAcids);
@@ -147,7 +149,6 @@ public:
       jassert(checkLabel == T("C") || checkLabel == T("H") || checkLabel == T("E"));
       jassert(checkLabel == SecondaryStructureDictionary::getInstance()->getFeature(threeStatesType));
     }
-#endif // 0
     return res;
   }
 
@@ -168,8 +169,6 @@ private:
   std::vector<FeatureGeneratorPtr> currentContent;
   std::vector<String> currentLabels;
 };
-
-extern void declareProteinClasses();
 
 int main()
 {
@@ -204,5 +203,20 @@ int main()
       return 0;*/
     }
   }
+  return 0;
+}
+#endif // 0
+
+
+int main()
+{
+  declareProteinClasses();
+
+  File inputDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513"));
+  File outputDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
+  if (!outputDirectory.exists())
+    outputDirectory.createDirectory();
+  ObjectStreamPtr proteinsStream = directoryObjectStream(inputDirectory, T("*.protein"));
+  objectSaveToFileConsumer(outputDirectory, T("protein"))->consume(proteinsStream);
   return 0;
 }

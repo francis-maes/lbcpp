@@ -339,7 +339,7 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SS3);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
     
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
@@ -348,7 +348,7 @@ int main(int argc, char** argv)
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
       step->enableSecondaryStructure3StatesFeatures(wSS3);
-      proteinInference->appendStep(step, step->getTargetName());
+      proteinInference->appendStep(step);
     }
   }
   else if (predictionTarget == T("SS8"))
@@ -357,7 +357,7 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SS8);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
     
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
@@ -366,7 +366,7 @@ int main(int argc, char** argv)
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
       step->enableSecondaryStructure8StatesFeatures(wSS8);
-      proteinInference->appendStep(step, step->getTargetName());
+      proteinInference->appendStep(step);
     }
   } else if (predictionTarget == T("SA"))
   {
@@ -374,7 +374,7 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SA);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
 
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
@@ -383,7 +383,7 @@ int main(int argc, char** argv)
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
       step->enableSolventAccesibility2StatesFeatures(wSA);
-      proteinInference->appendStep(step, step->getTargetName());
+      proteinInference->appendStep(step);
     }
   }
   else if (predictionTarget == T("SS3-SS8"))
@@ -392,13 +392,13 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SS3);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
     
     step = new CustomableSecondaryStructureContent(T("AA+PSSM -> S8"));
     step->setTarget(CustomableSecondaryStructureContent::SS8);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
-    proteinInference->appendStep(step, step->getTargetName());
+    proteinInference->appendStep(step);
     
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
@@ -408,7 +408,7 @@ int main(int argc, char** argv)
       step->enablePositionSpecificScoreFeatures(wPSSM);
       step->enableSecondaryStructure3StatesFeatures(wSS3);
       step->enableSecondaryStructure8StatesFeatures(wSS8);
-      proteinInference->appendStep(step, step->getTargetName());
+      proteinInference->appendStep(step);
       
       step = new CustomableSecondaryStructureContent(T("AA+PSSM+S3+S8 -> S8 (") + toString(i) + T(")"));
       step->setTarget(CustomableSecondaryStructureContent::SS8);
@@ -416,7 +416,7 @@ int main(int argc, char** argv)
       step->enablePositionSpecificScoreFeatures(wPSSM);
       step->enableSecondaryStructure3StatesFeatures(wSS3);
       step->enableSecondaryStructure8StatesFeatures(wSS8);
-      proteinInference->appendStep(step, step->getTargetName());
+      proteinInference->appendStep(step);
     }
   }
 

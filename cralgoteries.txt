@@ -1,7 +1,5 @@
 
 * Load/Save des modèles
-   - Rajouter le champ "name" dans LabelSequence et ScoreVectorSequence -> necessite une réecriture de CB513
-   - Donner un name a tous les objets de la proteine, simplifier l'ajout d'objets
    - Faire une classe VectorSequentialInferenceStep
    - Faire deriver ProteinInference de VectorSequentialInferenceStep
    - Serialisation dans VectorSequentialInferenceStep

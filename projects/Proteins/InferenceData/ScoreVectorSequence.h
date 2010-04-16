@@ -106,6 +106,8 @@ protected:
 
   virtual bool load(InputStream& istr)
   {
+    if (!Sequence::load(istr))
+      return false;
     dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
     if (!dictionary || !lbcpp::read(istr, length) || !lbcpp::read(istr, numScores) || !lbcpp::read(istr, matrix))
       return false;
@@ -115,6 +117,7 @@ protected:
 
   virtual void save(OutputStream& ostr) const
   {
+    Sequence::save(ostr);
     lbcpp::write(ostr, dictionary->getName());
     lbcpp::write(ostr, length);
     lbcpp::write(ostr, numScores);

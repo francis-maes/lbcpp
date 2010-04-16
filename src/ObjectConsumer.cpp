@@ -132,3 +132,23 @@ ObjectConsumerPtr lbcpp::classificationExamplesPrinter(const File& file, StringD
   jassert(labels);
   return new ClassificationExamplesPrinter(file, labels);
 }
+
+/*
+** ObjectSaveToFileConsumer
+*/
+class ObjectSaveToFileConsumer : public ObjectConsumer
+{
+public:
+  ObjectSaveToFileConsumer(const File& directory, const String& extension)
+    : directory(directory), extension(extension) {}
+  
+  virtual void consume(ObjectPtr object)
+    {object->saveToFile(directory.getChildFile(object->getName() + T(".") + extension));}
+
+private:
+  File directory;
+  String extension;
+};
+  
+ObjectConsumerPtr lbcpp::objectSaveToFileConsumer(const File& directory, const String& extension)
+  {return new ObjectSaveToFileConsumer(directory, extension);}

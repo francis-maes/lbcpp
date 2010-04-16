@@ -71,6 +71,7 @@ protected:
   void printFeatureList(FeatureGeneratorPtr features);
 };
 
+extern ObjectConsumerPtr objectSaveToFileConsumer(const File& directory, const String& extension);
 extern ObjectConsumerPtr vectorObjectContainerFiller(VectorObjectContainerPtr container);
 extern ObjectConsumerPtr classificationExamplesPrinter(const File& file, StringDictionaryPtr labels);
 
