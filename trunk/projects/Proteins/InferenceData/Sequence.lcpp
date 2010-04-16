@@ -7,8 +7,14 @@
                                `--------------------------------------------*/
 
 #include "InferenceData/Sequence.h"
+#include "InferenceData/LabelSequence.h"
+#include "InferenceData/ScoreVectorSequence.h"
+#include "InferenceData/AccumulatedScoresMatrix.h"
 using namespace lbcpp;
 
+/*
+** Sequence
+*/
 String Sequence::toString() const
 {
   size_t l = size();
@@ -16,32 +22,6 @@ String Sequence::toString() const
   for (size_t i = 0; i < l; ++i)
     res += elementToString(i);
   return res;
-}
-
-featureGenerator Sequence::frequencyFeatures(int startPosition, int endPosition) const
-{
-  jassert(startPosition <= endPosition);
-  if (startPosition == endPosition)
-    return;
-  //int count = endPosition - startPosition;
-  //double invCount = 1.0 / (double)count;
-  for (int i = startPosition; i <= endPosition; ++i)
-    featureCall(0)
-      this->possiblyOutOfBoundsElementFeatures(i);
-}
-
-featureGenerator Sequence::symetricFrequencyFeatures(size_t position, size_t size, bool includeCurrent) const
-{
-  int start = (int)position - (int)size;
-  int end = (int)position;
-  if (includeCurrent)
-    ++end;
-  featureCall("before") this->frequencyFeatures(start, end);
-  start = (int)position;
-  if (!includeCurrent)
-    ++start;
-  end = (int)(position + size + 1);
-  featureCall("after") this->frequencyFeatures(start, end);
 }
 
 featureGenerator Sequence::possiblyOutOfBoundsElementFeatures(int position) const
@@ -78,5 +58,127 @@ featureGenerator Sequence::windowFeatures(size_t position, size_t numPrevs, size
     for (size_t i = 0; i < numNexts; ++i)
       featureCall(i)
         this->possiblyOutOfBoundsElementFeatures((int)(position + i + 1));
+  }
+}
+
+featureGenerator Sequence::possiblyOutOfBoundsFrequencyFeatures(int begin, int end) const
+{
+  jassert(begin <= end);
+  int totalCount = end - begin;
+  if (!totalCount)
+    return;
+
+  int length = this->size();
+  int beforeCount = juce::jlimit(0, totalCount, -begin);
+  int afterCount = juce::jlimit(0, totalCount, end - length);
+  size_t insideBegin = (size_t)juce::jlimit(0, length, begin);
+  size_t insideEnd = (size_t)juce::jlimit(0, length, end);
+  jassert(insideEnd >= insideBegin);
+  double invCount = 1.0 / (double)totalCount;
+
+  if (beforeCount)
+    featureSense("before", beforeCount * invCount);
+  if (insideEnd > insideBegin)
+    featureCall("inside", invCount) this->sumFeatures(insideBegin, insideEnd);
+  if (afterCount)
+    featureSense("after", afterCount * invCount);
+}
+
+featureGenerator Sequence::symetricFrequencyFeatures(size_t position, size_t size, bool includeCurrent) const
+{
+  int begin = (int)position - (int)size;
+  int end = (int)position;
+  if (includeCurrent)
+    ++end;
+  featureCall("before") this->possiblyOutOfBoundsFrequencyFeatures(begin, end);
+  begin = (int)position;
+  if (!includeCurrent)
+    ++begin;
+  end = (int)(position + size + 1);
+  featureCall("after") this->possiblyOutOfBoundsFrequencyFeatures(begin, end);
+}
+
+featureGenerator Sequence::multiScaleSymetricFrequencyFeatures(size_t position, size_t smallestSize, size_t sizeFactor, size_t numScales, bool includeCurrent) const
+{
+  size_t currentSize = smallestSize;
+  for (size_t i = 0; i < numScales; ++i)
+  {
+    featureCall(i) this->symetricFrequencyFeatures(position, currentSize, includeCurrent);
+    currentSize *= sizeFactor;
+  }
+}
+
+/*
+** LabelSequence
+*/
+void LabelSequence::ensureAccumulatorsAreComputed()
+{
+  if (!accumulators)
+  {
+    accumulators = new AccumulatedScoresMatrix(dictionary, size());
+    for (size_t i = 0; i < size(); ++i)
+    {
+      std::vector<double>& scores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        scores = accumulators->getAccumulatedScores(i - 1);
+      size_t accumulatorNumber = (size_t)(sequence[i] == 255 ? 0 : sequence[i] + 1);
+      if (scores.size() <= accumulatorNumber)
+        scores.resize(accumulatorNumber + 1, 0.0);
+      scores[accumulatorNumber] += 1.0;
+    }
+  }
+}
+
+/*
+** ScoreVectorSequence
+*/
+void ScoreVectorSequence::ensureAccumulatorsAreComputed()
+{
+  if (!accumulators)
+  {
+    accumulators = new AccumulatedScoresMatrix(dictionary, size());
+    for (size_t i = 0; i < size(); ++i)
+    {
+      std::vector<double>& accumulatedScores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        accumulatedScores = accumulators->getAccumulatedScores(i - 1);
+      if (accumulatedScores.size() < numScores)
+        accumulatedScores.resize(numScores, 0.0);
+      for (size_t scoreIndex = 0; scoreIndex < numScores; ++scoreIndex)
+        accumulatedScores[scoreIndex] += getScore(i, scoreIndex);
+    }
+  }
+}
+
+/*
+** AccumulatedScoresMatrix
+*/
+featureGenerator AccumulatedScoresMatrix::sumFeatures(size_t begin, size_t end) const
+{
+  size_t length = this->getLength();
+  jassert(begin <= length && end <= length && begin <= end);
+  if (begin == end || !end)
+    return;
+  std::vector<double> accumulatorsBegin;
+  if (begin > 0)
+    accumulatorsBegin = this->getAccumulatedScores(begin - 1);
+  jassert(end > 0);
+  const std::vector<double>& accumulatorsEnd = this->getAccumulatedScores(end - 1);
+  
+  for (size_t i = 0; i < accumulatorsEnd.size(); ++i)
+  {
+    double beginSum = i < accumulatorsBegin.size() ? accumulatorsBegin[i] : 0;
+    double endSum = accumulatorsEnd[i];
+    if (endSum != beginSum)
+    {
+      double weight = endSum - beginSum;
+      if (i == 0)
+        featureSense(T("N/A"), weight);
+      else
+      {
+        LabelPtr label = new Label(this->getDictionary(), i - 1);
+        featureCall(T("A"), weight) label;
+      }
+    }
   }
 }

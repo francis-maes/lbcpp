@@ -601,7 +601,8 @@ struct Parser::ScopeGuard
       if (e.ptree)
 	line = parser.my_lexer.origin(e.ptree->begin(), filename);
 
-      parser.my_errors.push_back(new UndefinedSymbol(e.name, filename, line));
+      std::cout << "Warning: undefined symbol " << e.name << std::endl;
+      //parser.my_errors.push_back(new UndefinedSymbol(e.name, filename, line));
       parser.my_scope_is_valid = false;
       noop = true;
     }

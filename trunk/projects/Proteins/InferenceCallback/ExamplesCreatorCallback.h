@@ -47,6 +47,11 @@ public:
     }
   }
 
+  void trainAndFlushExamples()
+  {
+    trainStochasticIteration();
+    examples.clear();
+  }
 protected:
   bool enableExamplesCreation;
 
@@ -59,12 +64,6 @@ protected:
     if (!machineExamples)
       machineExamples = new VectorObjectContainer();
     machineExamples->append(example);
-  }
-
-  void trainAndFlushExamples()
-  {
-    trainStochasticIteration();
-    examples.clear();
   }
 };
 

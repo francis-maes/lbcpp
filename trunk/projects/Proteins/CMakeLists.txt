@@ -6,6 +6,7 @@ INCLUDE_DIRECTORIES(
 ADD_CRALGORITHM_SOURCES(InferenceData/Sequence.lcpp)
 
 SET(LBCPP_INFERENCE_DATA_SOURCES
+  InferenceData/AccumulatedScoresMatrix.h
   InferenceData/Sequence.h
   InferenceData/LabelSequence.h
   InferenceData/ScoreVectorSequence.h

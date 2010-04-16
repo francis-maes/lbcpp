@@ -49,7 +49,7 @@ public:
   **
   ** @return a boolean.
   */
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary) = 0;
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary, double weight) = 0;
 
   /**
   ** Adds a new feature. A pair <@em name, @a value> where @em name is
@@ -70,7 +70,7 @@ public:
   **
   ** @param featureGenerator : feature generator to call.
   */
-  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator);
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator, double weight);
 
   /**
   ** This function is executed each time the visitor leaves a scope.
@@ -83,13 +83,17 @@ class PathBasedFeatureVisitor : public FeatureVisitor
 public:
   virtual void featureSense(const std::vector<size_t>& path, const String& name, double value) = 0;
 
-  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary);  
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary, double weight);
   virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value);
   virtual void featureLeave();
 
 private:
   std::vector<size_t> currentPath;
   std::vector<String> currentName;
+  std::vector<double> currentWeight;
+
+  double getCurrentWeight() const
+    {return currentWeight.size() ? currentWeight.back() : 1.0;}
 
   static String appendName(const String& path, const String& name);
 };

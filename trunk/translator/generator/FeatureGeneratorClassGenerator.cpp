@@ -233,9 +233,9 @@ private:
     {
       FuncallPTreeGenerator funcall;
       funcall.setName("__featureVisitor__.featureCall_");
+      funcall.addArgument(rewrite(expression));
       funcall.addArgument(dictionaryStack.back());
       funcall.addArgument(rewritedIdentifier);
-      funcall.addArgument(rewrite(expression));
       return exprStatement(funcall.createExpression());
     }
   }

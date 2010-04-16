@@ -16,43 +16,26 @@ namespace lbcpp {
 namespace impl {
 
 template<class ExactType, class VectorType>
-struct CreateVectorVisitor : public FeatureVisitor< ExactType >
+struct CreateVectorVisitor : public VectorStackBasedFeatureVisitor< ExactType, VectorType >
 {
-  typedef ReferenceCountedObjectPtr<VectorType> VectorTypePtr;
+  typedef VectorStackBasedFeatureVisitor< ExactType, VectorType > BaseClass;
   
   CreateVectorVisitor(FeatureDictionaryPtr dictionary) 
-    : vector(new VectorType(dictionary)) {currentVector = vector;}
+    : BaseClass(new VectorType(dictionary)) {result = currentVector;}
   
-  bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
-  {
-    currentVectorStack.push_back(currentVector);
-    VectorTypePtr& v = currentVector->getSubVector(number);
-    if (!v)
-      v = new VectorType(subDictionary);
-    currentVector = v;
-    return true;
-  }
-
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
   {
-    jassert(currentVector->getDictionary() == dictionary);
-    currentVector->get(number) += value;
+    jassert(BaseClass::currentVector->getDictionary() == dictionary);
+    value *= BaseClass::currentWeight;
+    if (value)
+      currentVector->get(number) += value;
   }
 
-  void featureLeave()
-  {
-    jassert(currentVectorStack.size() > 0);
-    currentVector = currentVectorStack.back();
-    currentVectorStack.pop_back();
-  }
-  
-  VectorTypePtr getResult() const
-    {return vector;}
+  BaseClass::VectorPtr getResult() const
+    {return result;}
   
 private:
-  VectorTypePtr vector;
-  std::vector<VectorTypePtr> currentVectorStack;
-  VectorTypePtr currentVector;
+  BaseClass::VectorPtr result;
 };
 
 struct CreateSparseVectorVisitor : public CreateVectorVisitor<CreateSparseVectorVisitor, SparseVector>

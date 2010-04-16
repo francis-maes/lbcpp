@@ -11,9 +11,9 @@ using namespace lbcpp;
 /*
 ** FeatureVisitor
 */
-void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, size_t scopeNumber, FeatureGeneratorPtr featureGenerator)
+void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, size_t scopeNumber, FeatureGeneratorPtr featureGenerator, double weight)
 {
-  if (featureEnter(dictionary, scopeNumber, featureGenerator->getDictionary()))
+  if (featureEnter(dictionary, scopeNumber, featureGenerator->getDictionary(), weight))
   {
     featureGenerator->accept(FeatureVisitorPtr(this));
     featureLeave();
@@ -23,8 +23,12 @@ void FeatureVisitor::featureCall(FeatureDictionaryPtr dictionary, size_t scopeNu
 /*
 ** PathBasedFeatureVisitor
 */
-bool PathBasedFeatureVisitor::featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
+bool PathBasedFeatureVisitor::featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary, double weight)
 {
+  double w = getCurrentWeight() * weight;
+  if (!w)
+    return false;
+  currentWeight.push_back(w);
   currentPath.push_back(index);
   String scopeName = dictionary->getScopes()->getString(index);
   currentName.push_back(appendName(currentName.size() ? currentName.back() : "", scopeName));
@@ -33,6 +37,9 @@ bool PathBasedFeatureVisitor::featureEnter(FeatureDictionaryPtr dictionary, size
 
 void PathBasedFeatureVisitor::featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
 {
+  value *= getCurrentWeight();
+  if (!value)
+    return;
   String featureName = dictionary->getFeatures()->getString(index);
   String fullName = appendName(currentName.size() ? currentName.back() : "", featureName);
   currentPath.push_back(index);
@@ -45,6 +52,7 @@ void PathBasedFeatureVisitor::featureLeave()
   jassert(currentPath.size() > 0);
   currentPath.pop_back();
   currentName.pop_back();
+  currentWeight.pop_back();
 }
 
 String PathBasedFeatureVisitor::appendName(const String& path, const String& name)

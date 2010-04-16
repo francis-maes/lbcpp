@@ -16,52 +16,44 @@ namespace lbcpp {
 namespace impl {
 
 template<class ExactType, class VectorType>
-class DotProductVectorVisitor : public FeatureVisitor<ExactType>
+class DotProductVectorVisitor : public VectorStackBasedFeatureVisitor<ExactType, VectorType>
 {
 public:
-  typedef ReferenceCountedObjectPtr<VectorType> VectorPtr;
+  typedef VectorStackBasedFeatureVisitor<ExactType, VectorType> BaseClass;
   
   DotProductVectorVisitor(VectorPtr vector)
-    : currentVector(vector), res(0.0) {}
-  
-  bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary)
-  {
-    VectorPtr subVector = getCurrentVector().getSubVector(index);
-    if (!subVector)
-      return false;
-    jassert(subVector->getDictionary() == subDictionary);
-    currentVectorStack.push_back(currentVector);
-    currentVector = subVector;
-    return true;
-  }
-  
+    : BaseClass(vector), res(0.0) {jassert(BaseClass::currentVector);}
+    
   void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
-    {res += getCurrentVector().get(index) * value;}
+    {res += getCurrentVector().get(index) * value * currentWeight;}
   
-  void featureLeave()
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
   {
-    jassert(currentVectorStack.size() > 0);
-    currentVector = currentVectorStack.back();
-    currentVectorStack.pop_back();    
-  }
-
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator)
-  {
-    VectorPtr subVector = getCurrentVector().getSubVector(scopeNumber);
+    jassert(currentVector);
+    VectorPtr subVector = getCurrentSubVector(scopeNumber, featureGenerator->getDictionary());
     if (subVector)
-      res += featureGenerator->dotProduct(subVector);
+    {
+      weight *= currentWeight;
+      if (weight)
+        res += featureGenerator->dotProduct(subVector) * weight;
+    }
   }
 
   double getResult() const
     {return res;}
   
-private:
-  std::vector<VectorPtr> currentVectorStack;
-  VectorPtr currentVector;
-  double res;
-
+  VectorPtr getCurrentSubVector(size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
+  {
+    VectorPtr res = getCurrentVector().getSubVector(number);
+    jassert(!res || res->getDictionary() == subDictionary);
+    return res;
+  }
+  
   const VectorType& getCurrentVector() const
-    {jassert(currentVector); return const_cast<const VectorType& >(*currentVector.get());}
+    {jassert(BaseClass::currentVector); return const_cast<const VectorType& >(*BaseClass::currentVector.get());}
+
+private:
+  double res;
 };
 
 class DotProductDenseVectorVisitor 

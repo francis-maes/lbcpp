@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_DATA_LABEL_SEQUENCE_H_
 
 # include "Sequence.h"
+# include "AccumulatedScoresMatrix.h"
 
 namespace lbcpp
 {
@@ -30,7 +31,7 @@ public:
     {return sequence.size();}
 
   virtual void resize(size_t newSize)
-    {sequence.resize(newSize, 255);}
+    {sequence.resize(newSize, 255); validateModification();}
 
   virtual void set(size_t position, ObjectPtr object)
   {
@@ -38,6 +39,7 @@ public:
     jassert(label && label->getDictionary() == dictionary);
     jassert(position < sequence.size());
     sequence[position] = (unsigned char)label->getIndex();
+    validateModification();
   }
 
   virtual ObjectPtr get(size_t index) const
@@ -49,7 +51,11 @@ public:
   }
 
   void setIndex(size_t position, size_t index)
-    {jassert(position < sequence.size() && index <= 255); sequence[position] = (unsigned char)index;}
+  {
+    jassert(position < sequence.size() && index <= 255);
+    sequence[position] = (unsigned char)index;
+    validateModification();
+  }
 
   void setString(size_t position, const String& string)
   {
@@ -60,7 +66,7 @@ public:
   }
 
   void clear(size_t position)
-    {setIndex(position, 255);}
+    {setIndex(position, 255); validateModification();}
 
 
   /*
@@ -68,6 +74,9 @@ public:
   */
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const
     {return get(position).dynamicCast<FeatureGenerator>();}
+
+  virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
+    {const_cast<LabelSequence* >(this)->ensureAccumulatorsAreComputed(); return accumulators->sumFeatures(begin, end);}
 
   /*
   ** Serialization
@@ -84,18 +93,13 @@ public:
     {return dictionary;}
 
 protected:
-  FeatureDictionaryPtr dictionary;
-
-  // Note: most sequence labeling tasks involve less than 255 labels,
-  //  so we use a single byte per element in order to spare memory
-  // Labels: 0..254
-  // Special value for unlabeled elements: 255
-  std::vector<unsigned char> sequence;
-
   virtual bool load(InputStream& istr)
   {
     dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
-    return dictionary && lbcpp::read(istr, sequence);
+    if (!dictionary || !lbcpp::read(istr, sequence))
+      return false;
+    validateModification();
+    return true;
   }
   
   virtual void save(OutputStream& ostr) const
@@ -103,9 +107,26 @@ protected:
     lbcpp::write(ostr, dictionary->getName());
     lbcpp::write(ostr, sequence);
   }
+
+protected:
+  FeatureDictionaryPtr dictionary;
+  
+  // Note: most sequence labeling tasks involve less than 255 labels,
+  //  so we use a single byte per element in order to spare memory
+  // Labels: 0..254
+  // Special value for unlabeled elements: 255
+  std::vector<unsigned char> sequence;
+
+  AccumulatedScoresMatrixPtr accumulators;
+
+  void validateModification()
+    {accumulators = AccumulatedScoresMatrixPtr();}
+
+  void ensureAccumulatorsAreComputed();
 };
 
 typedef ReferenceCountedObjectPtr<LabelSequence> LabelSequencePtr;
+
 
 }; /* namespace lbcpp */
 
