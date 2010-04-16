@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 class CustomableSecondaryStructureContent : public FeaturesToContainerElementsSharedParallelInferenceStep
 {
 public:
-  enum Target {SS3, SS8};
+  enum Target {SS3, SS8, SA};
 
   CustomableSecondaryStructureContent(const String& name = String::empty)
     : FeaturesToContainerElementsSharedParallelInferenceStep(name
@@ -42,6 +42,9 @@ public:
   void enableSecondaryStructure8StatesFeatures(size_t windowLength)
     {wSS8 = windowLength;}
   
+  void enableSolventAccesibility2StatesFeatures(size_t windowLength)
+    {wSA = windowLength;}
+  
   void disableAminoAcidFeatures()
     {wAA = 0;}
   
@@ -53,6 +56,9 @@ public:
   
   void disableSecondaryStructure8StatesFeatures()
     {wSS8 = 0;}
+  
+  void disableSolventAccesibility2StatesFeatures(size_t windowLength)
+    {wSA = 0;}
   
   virtual size_t getNumSubInferences(ObjectPtr input) const
   {
@@ -78,18 +84,15 @@ public:
       featureCall("PSSM") positionSpecificScores->windowFeatures(index, wPSSM, wPSSM, true);
     }
     
-    LabelSequencePtr secondaryStructure;
-    LabelSequencePtr dsspSecondaryStructure;
-    
     if (wSS3)
     {
-      secondaryStructure = protein->getSecondaryStructureSequence();
+      LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
       featureCall("wSS3") secondaryStructure->windowFeatures(index, wSS3, wSS3, true);
     }
     
     if (wSS8)
     {
-      dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
+      LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
       featureCall("wSS8") dsspSecondaryStructure->windowFeatures(index, wSS8, wSS8, true);
     }
   }
@@ -104,9 +107,13 @@ public:
     case SS8:
       return new LabelSequence(DSSPSecondaryStructureDictionary::getInstance(), getNumSubInferences(input));
     
+    case SA:
+      return new LabelSequence(SolventAccesibility2StateDictionary::getInstance(), getNumSubInferences(input));
+    
     default:
       break;
     }
+
     jassert(false);
     return ObjectPtr();
   }
@@ -120,19 +127,24 @@ public:
     case SS8:
       return T("DSSPSecondaryStructureSequence");
     
+    case SA:
+      return T("SolventAccessibilitySequence");
+    
     default:
       break;
     }
     
+    jassert(false);
     return T("");
   }
   
-  void setWindows(size_t newAA, size_t newPSSM, size_t newSS3, size_t newSS8)
+  void setWindows(size_t newAA, size_t newPSSM, size_t newSS3, size_t newSS8, size_t newSA)
   {
     wAA   = newAA;
     wPSSM = newPSSM;
     wSS3  = newSS3;
     wSS8  = newSS8;
+    wSA   = newSA;
   }
 
 private:
@@ -140,6 +152,7 @@ private:
   size_t wPSSM;
   size_t wSS3;
   size_t wSS8;
+  size_t wSA;
   Target target;
 };
 
@@ -300,6 +313,7 @@ int main(int argc, char** argv)
   int wPSSM = 10;
   int wSS3 = 10;
   int wSS8 = 10;
+  int wSA = 10;
   double regularizer = 20.0;
   
   ArgumentSet arguments;
@@ -314,6 +328,7 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("PSSMWindow"), &wPSSM));
   arguments.insert(new IntegerArgument(T("SS3Window"), &wSS3));
   arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
+  arguments.insert(new IntegerArgument(T("SAWindow"), &wSA));
   arguments.insert(new DoubleArgument(T("Regularizer"), &regularizer));
 
   if (!arguments.parse(argv, 1, argc-1))
@@ -375,6 +390,23 @@ int main(int argc, char** argv)
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
       step->enableSecondaryStructure8StatesFeatures(wSS8);
+      proteinInference->appendStep(step, step->getTargetName());
+    }
+  } else if (predictionTarget == T("SA"))
+  {
+    CustomableSecondaryStructureContent* step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SA"));
+    step->setTarget(CustomableSecondaryStructureContent::SA);
+    step->enableAminoAcidFeatures(wAA);
+    step->enablePositionSpecificScoreFeatures(wPSSM);
+    proteinInference->appendStep(step, step->getTargetName());
+    
+    for (size_t i = 0; i < (size_t) maxPass; ++i)
+    {
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+SA -> SA (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SA);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
       proteinInference->appendStep(step, step->getTargetName());
     }
   }
