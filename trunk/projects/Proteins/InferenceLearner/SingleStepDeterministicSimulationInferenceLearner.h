@@ -56,7 +56,7 @@ public:
     for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
     {
       InferenceStepPtr step = inference->getSubStep(stepNumber);
-      InferenceStepPtr decoratedInference = stepNumber < numSteps - 1 ? addBreakToInference(inference, step) : inference;
+      InferenceStepPtr decoratedInference = stepNumber < numSteps - 1 ? addBreakToInference(inference, step) : inf;
 
       callback->preLearningPassCallback(step->getName());
       trainPass(decoratedInference, step, trainingData);
