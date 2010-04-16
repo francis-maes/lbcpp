@@ -14,23 +14,7 @@
 namespace lbcpp
 {
 
-class InferenceLearnerCallback : public Object
-{
-public:
-  virtual void preLearningIterationCallback(size_t iterationNumber)
-    {}
-
-  // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, InferenceContextPtr validationContext, InferenceCallbackPtr onlineEvaluationCallback, size_t iterationNumber)
-    {return iterationNumber < 100;}
-
-  virtual void preLearningPassCallback(const String& passName) {}
-  virtual void postLearningPassCallback() {}
-
-  virtual InferenceContextPtr createContext() = 0;
-  virtual InferenceCallbackPtr createEvaluationCallback() = 0;
-};
-
+class InferenceLearnerCallback;
 typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;
 
 class InferenceLearner : public Object
@@ -43,8 +27,6 @@ public:
 
 protected:
   InferenceLearnerCallbackPtr callback;
-
-  void trainWithCallbacks(InferenceStepPtr inference, ObjectContainerPtr trainingData, InferenceCallbackPtr learningCallback);
 };
 
 typedef ReferenceCountedObjectPtr<InferenceLearner> InferenceLearnerPtr;

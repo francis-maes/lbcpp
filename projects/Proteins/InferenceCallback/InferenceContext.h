@@ -96,20 +96,13 @@ protected:
   void callFinishInferences();
   void callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
   void callPostInference(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
-  void callClassification(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
+  void callClassification(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
     
 private:
   std::vector<InferenceCallbackPtr> callbacks;
 };
 
-class InferenceFactory : public Object
-{
-public:
-  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels) = 0;
-};
-typedef ReferenceCountedObjectPtr<InferenceFactory> InferenceFactoryPtr;
-
-extern InferenceContextPtr singleThreadedInferenceContext(InferenceFactoryPtr factory);
+extern InferenceContextPtr singleThreadedInferenceContext();
 
 }; /* namespace lbcpp */
 

@@ -10,6 +10,7 @@
 #include "InferenceCallback/InferenceLearner.h"
 #include "ProteinInference/ProteinEvaluationCallback.h"
 #include "ProteinInference/ProteinInference.h"
+#include "InferenceCallback/ExamplesCreatorCallback.h" // tmp, for InferenceLearnerCallback
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -55,9 +56,16 @@ public:
   }
 };
 
-class MyInferenceFactory : public InferenceFactory
+class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
+  MyInferenceLearnerCallback(ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+    : trainingData(trainingData), testingData(testingData), startingTime(Time::getMillisecondCounter())
+    {}
+
+  virtual InferenceContextPtr createContext()
+    {return singleThreadedInferenceContext();}
+  
   virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels)
   {
     static const double regularizer = 10.0;
@@ -69,41 +77,42 @@ public:
     classifier->setL2Regularizer(regularizer);
     return classifier;
   }
-};
-
-class MyInferenceLearnerCallback : public InferenceLearnerCallback
-{
-public:
-  MyInferenceLearnerCallback(ObjectContainerPtr testingData)
-    : testingData(testingData) {}
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
-    {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << std::endl;}
+    {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;}
 
   // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, InferenceContextPtr validationContext, InferenceCallbackPtr evaluation, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    std::cout << "Online evaluation: " << evaluation->toString() << std::endl;
+    InferenceContextPtr validationContext = createContext();
+    InferenceCallbackPtr evaluation = new ProteinEvaluationCallback();
+    validationContext->appendCallback(evaluation);
+
+   // validationContext->runWithSupervisedExamples(inference, trainingData);
+   // std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
+    
     validationContext->runWithSupervisedExamples(inference, testingData);
-    std::cout << "Validation evaluation: " << evaluation->toString() << std::endl;
+    std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
+
+    // stopping criterion
     return iterationNumber < 3;
   }
 
   virtual void preLearningPassCallback(const String& passName)
   {
     std::cout << std::endl << "=====================================================" << std::endl;
-    std::cout << "======= LEARNING PASS " << passName << " ==========" << std::endl;
+    std::cout << "======= LEARNING PASS " << passName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
     std::cout << "=====================================================" << std::endl;
   }
 
-  virtual InferenceContextPtr createContext()
-    {return singleThreadedInferenceContext(new MyInferenceFactory());}
+  virtual void postLearningPassCallback()
+    {std::cout << "Pass finished, Time: " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;}
 
-  virtual InferenceCallbackPtr createEvaluationCallback()
-    {return new ProteinEvaluationCallback();}
 
 private:
+  ObjectContainerPtr trainingData;
   ObjectContainerPtr testingData;
+  juce::uint32 startingTime;
 };
 
 int main(int argc, char** argv)
@@ -113,7 +122,7 @@ int main(int argc, char** argv)
 //  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
   File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\data\\CB513new"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load(50)->randomize();
 
   /*
   ProteinPtr protein = proteins->getAndCast<Protein>(0);
@@ -135,15 +144,15 @@ int main(int argc, char** argv)
 
   for (size_t i = 0; i < 5; ++i)
   {
-    step = new MyProteinSequenceLabelingInferenceStep(T("SA ") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance());
+    step = new MyProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step, step->getTargetName());
-    step = new MyProteinSequenceLabelingInferenceStep(T("SS3 ") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance());
+    step = new MyProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance());
     proteinInference->appendStep(step, step->getTargetName());
-    step = new MyProteinSequenceLabelingInferenceStep(T("SS8 ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
+    step = new MyProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step, step->getTargetName());
   }
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(testingData);
+  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData);
   InferenceLearnerPtr learner = stepByStepSimulationInferenceLearner(callback);
   learner->train(proteinInference, trainingData);
   return 0;

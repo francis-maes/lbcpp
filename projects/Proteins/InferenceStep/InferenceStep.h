@@ -20,7 +20,6 @@ typedef ReferenceCountedObjectPtr<InferenceVisitor> InferenceVisitorPtr;
 class InferenceContext;
 typedef ReferenceCountedObjectPtr<InferenceContext> InferenceContextPtr;
 
-
 class InferenceStep;
 typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
 
@@ -79,10 +78,10 @@ public:
   virtual void saveModel(const File& model)
     {jassert(false);}*/
 
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+
 protected:
   friend class InferenceContext;
-
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
 private:
   juce::Time loadedModificationTime;
