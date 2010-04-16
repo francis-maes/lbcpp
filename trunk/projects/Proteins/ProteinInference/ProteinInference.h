@@ -47,16 +47,13 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinSequenceLabelingInferenceStep> ProteinSequenceLabelingInferenceStepPtr;
 
-class ProteinInference : public SequentialInferenceStep
+class ProteinInference : public VectorSequentialInferenceStep
 {
 public:
-  ProteinInference() : SequentialInferenceStep(T("Protein")) {}
+  ProteinInference() : VectorSequentialInferenceStep(T("Protein")) {}
 
   // child inference are all of the form
   // Protein -> Protein sub object
-  void appendStep(InferenceStepPtr inference)
-    {inferenceSteps.push_back(inference);}
-
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     // input and working proteins
@@ -85,55 +82,6 @@ public:
     // return the last version of the working protein
     return workingProtein;
   }
-
-  virtual size_t getNumSubSteps() const
-    {return inferenceSteps.size();}
-
-  virtual InferenceStepPtr getSubStep(size_t index) const
-    {jassert(index < inferenceSteps.size()); return inferenceSteps[index];}
-/*
-  virtual bool saveToFile(const File& file) const
-  {
-    if (!saveToDirectory(file))
-      return false;
-    for (size_t i = 0; i < getNumSubSteps(); ++i)
-    {
-      InferenceStepPtr step = getSubStep(i);
-      step->saveToFile(file.getChildFile(step->getName() + T(".inference")));
-    }
-    return true;
-  }
-
-  virtual bool loadFromFile(const File& file)
-  {
-    if (!loadFromDirectory(file))
-      return false;
-    for (size_t i = 0; i < getNumSubSteps(); ++i)
-    {
-      InferenceStepPtr step = getSubStep(i);
-      jassert(step);
-      if (!step->loadFromFile(file.getChildFile(step->getName() + T(".inference"))))
-        return false;
-    }
-    return true;
-  }*/
-
-protected:
-  std::vector<InferenceStepPtr> inferenceSteps;
-/*
-  virtual bool load(InputStream& istr)
-  {
-    size_t size;
-    if (!lbcpp::read(istr, size))
-      return false;
-    inferenceSteps.resize(size);
-    for (size_t i = 0; i < inferenceSteps.size(); ++i)
-      if (!lbcpp::read(istr, inferenceSteps[i].second))
-        return false;
-    return true;
-  }
-  virtual void save(OutputStream& ostr) const
-    {}*/
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInference> ProteinInferencePtr;
