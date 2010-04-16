@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_STEP_CLASSIFICATION_H_
 
 # include "InferenceStep.h"
-# include "../InferenceCallback/InferenceContext.h"
+# include "../InferenceContext/InferenceContext.h"
 
 namespace lbcpp
 {

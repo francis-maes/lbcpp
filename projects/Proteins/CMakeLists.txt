@@ -19,17 +19,23 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/ParallelInferenceStep.h
   InferenceStep/ParallelSequenceLabelingInferenceStep.h
   InferenceStep/ClassificationInferenceStep.h
+  InferenceStep/DecoratorInferenceStep.h
 )
 
-SET(LBCPP_INFERENCE_CALLBACK_SOURCES
-  InferenceCallback/InferenceCallback.h
-  InferenceCallback/InferenceContext.h
-  InferenceCallback/InferenceContext.cpp
-  InferenceCallback/InferenceLearner.h
-  InferenceCallback/InferenceLearner.cpp
-  InferenceCallback/ExamplesCreatorCallback.h
-  InferenceCallback/GlobalSimulationLearningCallback.h
-  InferenceCallback/SingleStepSimulationLearningCallback.h
+SET(LBCPP_INFERENCE_CONTEXT_SOURCES
+  InferenceContext/InferenceStack.h
+  InferenceContext/InferenceContext.h
+  InferenceContext/InferenceContext.cpp
+  InferenceContext/InferenceCallback.h
+  InferenceContext/ExamplesCreatorCallback.h
+)
+
+SET(LBCPP_INFERENCE_LEARNER_SOURCES
+  InferenceLearner/InferenceLearnerCallback.h
+  InferenceLearner/InferenceLearner.h
+  InferenceLearner/InferenceLearner.cpp
+  InferenceLearner/GlobalSimulationInferenceLearner.h
+  InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
@@ -45,7 +51,8 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_DATA_SOURCES}
   ${LBCPP_INFERENCE_STEP_SOURCES}
-  ${LBCPP_INFERENCE_CALLBACK_SOURCES}
+  ${LBCPP_INFERENCE_CONTEXT_SOURCES}
+  ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   classes.cpp
 )
@@ -58,7 +65,8 @@ SET(PROTEINS_SOURCES
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/Sequence.lcpp)
 SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
-SOURCE_GROUP(InferenceCallback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
+SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
+SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
