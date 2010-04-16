@@ -297,7 +297,7 @@ private:
 ** @return a feature dictionary pointer.
 */
 inline FeatureDictionaryPtr loadFeatureDictionary(const File& file)
-  {return Object::loadFromFileAndCast<FeatureDictionary>(file);}
+  {return Object::createFromFileAndCast<FeatureDictionary>(file);}
 
 class FeatureDictionaryManager
 {

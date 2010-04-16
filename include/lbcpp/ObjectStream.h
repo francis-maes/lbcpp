@@ -87,9 +87,13 @@ public:
 ** of an ObjectStream  into memory, to have a random access on
 ** its elements.
 */
-class ObjectStream : public Object
+class ObjectStream : public NameableObject
 {
 public:
+  ObjectStream(const String& name)
+    : NameableObject(name) {}
+  ObjectStream() {}
+
   /**
   ** Returns the class name of the objects contained by this stream.
   **

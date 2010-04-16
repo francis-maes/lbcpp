@@ -83,7 +83,7 @@ class ApplyFunctionObjectContainer : public DecoratorObjectContainer
 {
 public:
   ApplyFunctionObjectContainer(ObjectContainerPtr target, ObjectFunctionPtr function)
-    : DecoratorObjectContainer(target), function(function)
+    : DecoratorObjectContainer(function->getName() + T("(") + target->getName() + T(")"), target), function(function)
     {}
     
   virtual String getContentClassName() const
@@ -116,7 +116,7 @@ class RandomizedObjectContainer : public DecoratorObjectContainer
 {
 public:
   RandomizedObjectContainer(ObjectContainerPtr target)
-    : DecoratorObjectContainer(target)
+    : DecoratorObjectContainer(T("randomize(") + target->getName() + T(")"), target)
     {lbcpp::RandomGenerator::getInstance().sampleOrder(target->size(), order);}
     
   virtual ObjectPtr get(size_t index) const
@@ -131,15 +131,13 @@ private:
 
 // Creates a randomized version of a dataset.
 ObjectContainerPtr ObjectContainer::randomize()
-{
-  return new RandomizedObjectContainer(this);
-}
+  {return new RandomizedObjectContainer(this);}
 
 class DuplicatedObjectContainer : public DecoratorObjectContainer
 {
 public:
   DuplicatedObjectContainer(ObjectContainerPtr target, size_t count)
-    : DecoratorObjectContainer(target), count(count) {}
+    : DecoratorObjectContainer(T("duplicate(") + target->getName() + T(", ") + lbcpp::toString(count) + T(")"), target), count(count) {}
   
   virtual size_t size() const
     {return count * target->size();}
@@ -156,15 +154,14 @@ private:
 
 // Creates a set where each instance is duplicated multiple times.
 ObjectContainerPtr ObjectContainer::duplicate(size_t count)
-{
-  return new DuplicatedObjectContainer(this, count);
-}
+  {return new DuplicatedObjectContainer(this, count);}
 
 class RangeObjectContainer : public DecoratorObjectContainer
 {
 public:
   RangeObjectContainer(ObjectContainerPtr target, size_t begin, size_t end)
-    : DecoratorObjectContainer(target), begin(begin), end(end) {jassert(end >= begin);}
+    : DecoratorObjectContainer(target->getName() + T(" [") + lbcpp::toString(begin) + T(", ") + lbcpp::toString(end) + T("["), target),
+    begin(begin), end(end) {jassert(end >= begin);}
   
   virtual size_t size() const
     {return end - begin;}
@@ -182,15 +179,14 @@ private:
 
 // Selects a range.
 ObjectContainerPtr ObjectContainer::range(size_t begin, size_t end)
-{
-  return new RangeObjectContainer(this, begin, end);
-}
+  {return new RangeObjectContainer(this, begin, end);}
 
 class ExcludeRangeObjectContainer : public DecoratorObjectContainer
 {
 public:
   ExcludeRangeObjectContainer(ObjectContainerPtr target, size_t begin, size_t end)
-    : DecoratorObjectContainer(target), begin(begin), end(end) {jassert(end >= begin);}
+    : DecoratorObjectContainer(target->getName() + T(" /[") + lbcpp::toString(begin) + T(", ") + lbcpp::toString(end) + T("["), target),
+    begin(begin), end(end) {jassert(end >= begin);}
   
   virtual size_t size() const
     {return target->size() - (end - begin);}
@@ -210,9 +206,7 @@ private:
 
 // Excludes a range.
 ObjectContainerPtr ObjectContainer::invRange(size_t begin, size_t end)
-{
-  return new ExcludeRangeObjectContainer(this, begin, end);
-}
+  {return new ExcludeRangeObjectContainer(this, begin, end);}
 
 // Selects a fold.
 ObjectContainerPtr ObjectContainer::fold(size_t fold, size_t numFolds)
@@ -242,7 +236,7 @@ class BinaryAppendObjectContainer : public ObjectContainer
 {
 public:
   BinaryAppendObjectContainer(ObjectContainerPtr left, ObjectContainerPtr right)
-    : left(left), right(right) {}
+    : ObjectContainer(left->getName() + T(" U ") + right->getName()), left(left), right(right) {}
     
   virtual String getContentClassName() const
     {jassert(left->getContentClassName() == right->getContentClassName()); return left->getContentClassName();}
@@ -260,6 +254,4 @@ private:
 
 // Append two object containers.
 ObjectContainerPtr lbcpp::append(ObjectContainerPtr left, ObjectContainerPtr right)
-{
-  return new BinaryAppendObjectContainer(left, right);
-}
+  {return new BinaryAppendObjectContainer(left, right);}

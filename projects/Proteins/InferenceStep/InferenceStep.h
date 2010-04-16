@@ -36,7 +36,7 @@ class InferenceStep : public NameableObject
 {
 public:
   InferenceStep(const String& name = T("Unnamed"))
-    : NameableObject(name), loadedModificationTime(0) {}
+    : NameableObject(name) {}
 
   virtual void accept(InferenceVisitorPtr visitor);
 
@@ -47,63 +47,14 @@ public:
     errorReturnCode,
   };
 
-/*
-  virtual void updateModel(const File& model, ObjectContainerPtr examples, const Time& lastDataModificationTime)
-  {
-    if (loadedModificationTime != 0 && loadedModificationTime >= lastDataModificationTime)
-      return; // the loaded model is up to date
-
-    // try to load the model from file
-    if (model.exists() && model.getLastModificationTime() >= lastDataModificationTime)
-    {
-      resetModel();
-      loadModel(model);
-      return;
-    }
-    
-    // train model
-    trainModel(examples);
-    saveModel(model);
-  }
-
-  virtual void resetModel()
-    {}
-
-  virtual void trainModel(ObjectContainerPtr examples)
-    {jassert(false);}
-                        
-  virtual void loadModel(const File& model)
-    {jassert(false);}
-
-  virtual void saveModel(const File& model)
-    {jassert(false);}*/
-
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
 protected:
   friend class InferenceContext;
-
-private:
-  juce::Time loadedModificationTime;
 };
 
 class InferenceStep;
 typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
-
-class ModelFreeInferenceStep : public InferenceStep
-{
-public:
-  ModelFreeInferenceStep(const String& name) : InferenceStep(name) {}
-  /*
-  virtual void updateModel(const File& model, ObjectContainerPtr examples, const Time& lastDataModificationTime)
-    {}
-
-  virtual void loadModel(const File& model)
-    {}
-
-  virtual void saveModel(const File& model)
-    {}*/
-};
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////

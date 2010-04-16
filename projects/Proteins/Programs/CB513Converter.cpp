@@ -90,13 +90,13 @@ public:
     jassert(solventAccesibilitySequence.length() == (int)length);
 
     FeatureDictionaryPtr aminoAcidDictionary = AminoAcidDictionary::getInstance();
-
+#if 0
     // amino acids
     LabelSequencePtr aminoAcids = new LabelSequence(aminoAcidDictionary, length);
     res->setAminoAcidSequence(aminoAcids);
     
     // pssm
-    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(aminoAcidDictionary, length);
+    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), aminoAcidDictionary, length);
     res->setPositionSpecificScoringMatrix(pssm);
 
     // secondary structure (three states)
@@ -147,6 +147,7 @@ public:
       jassert(checkLabel == T("C") || checkLabel == T("H") || checkLabel == T("E"));
       jassert(checkLabel == SecondaryStructureDictionary::getInstance()->getFeature(threeStatesType));
     }
+#endif // 0
     return res;
   }
 
@@ -198,7 +199,7 @@ int main()
       File outputFile = outputDirectory.getChildFile(protein->getName() + T(".protein"));
       protein->saveToFile(outputFile);
       /*std::cout << "PROT: " << protein->toString() << std::endl;
-      ProteinPtr protein2 = Object::loadFromFileAndCast<Protein>(outputFile);
+      ProteinPtr protein2 = Object::createFromFileAndCast<Protein>(outputFile);
       std::cout << "PROT2: " << protein2->toString() << std::endl;
       return 0;*/
     }

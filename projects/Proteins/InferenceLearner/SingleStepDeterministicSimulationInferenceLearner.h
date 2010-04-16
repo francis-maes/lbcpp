@@ -88,7 +88,7 @@ private:
   InferenceResultCachePtr cache;
 
   InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
-    {return new CallbackBasedDecoratorInferenceStep(inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
+    {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
 
   void trainPass(InferenceStepPtr inference, InferenceStepPtr step, ObjectContainerPtr trainingData)
   {

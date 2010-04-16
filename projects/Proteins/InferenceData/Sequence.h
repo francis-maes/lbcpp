@@ -17,6 +17,9 @@ namespace lbcpp
 class Sequence : public ObjectContainer
 {
 public:
+  Sequence(const String& name) : ObjectContainer(name) {}
+  Sequence() {}
+
   virtual String elementToString(size_t position) const
   {
     ObjectPtr object = get(position);

@@ -424,7 +424,7 @@ private:
 ** @return a new DenseVector instance.
 */
 inline DenseVectorPtr loadDenseVector(const File& file)
-  {return Object::loadFromFileAndCast<DenseVector>(file);}
+  {return Object::createFromFileAndCast<DenseVector>(file);}
 
 }; /* namespace lbcpp */
 

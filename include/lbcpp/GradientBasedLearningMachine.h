@@ -214,7 +214,7 @@ public:
 };
 
 inline GradientBasedRegressorPtr loadGradientBasedRegressor(const File& file)
-  {return Object::loadFromFileAndCast<GradientBasedRegressor>(file);}
+  {return Object::createFromFileAndCast<GradientBasedRegressor>(file);}
 
 extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer = 0.0);
 
@@ -250,7 +250,7 @@ public:
 };
 
 inline GradientBasedClassifierPtr loadGradientBasedClassifier(const File& file)
-  {return Object::loadFromFileAndCast<GradientBasedClassifier>(file);}
+  {return Object::createFromFileAndCast<GradientBasedClassifier>(file);}
 
 extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer = 0.0);
 
@@ -273,7 +273,7 @@ public:
 };
 
 inline GradientBasedBinaryClassifierPtr loadGradientBasedBinaryClassifier(const File& file)
-  {return Object::loadFromFileAndCast<GradientBasedBinaryClassifier>(file);}
+  {return Object::createFromFileAndCast<GradientBasedBinaryClassifier>(file);}
 
 extern GradientBasedBinaryClassifierPtr linearSVMBinaryClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels);
 extern GradientBasedBinaryClassifierPtr logisticRegressionBinaryClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer = 0.0);
@@ -313,7 +313,7 @@ public:
 };
 
 inline GradientBasedRankerPtr loadGradientBasedRanker(const File& file)
-  {return Object::loadFromFileAndCast<GradientBasedRanker>(file);}
+  {return Object::createFromFileAndCast<GradientBasedRanker>(file);}
 
 extern GradientBasedRankerPtr largeMarginAllPairsLinearRanker(GradientBasedLearnerPtr learner);
 extern GradientBasedRankerPtr largeMarginMostViolatedPairLinearRanker(GradientBasedLearnerPtr learner);

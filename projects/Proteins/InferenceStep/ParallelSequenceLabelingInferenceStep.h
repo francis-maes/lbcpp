@@ -20,6 +20,8 @@ class ParallelSequenceLabelingInferenceStep : public SharedParallelInferenceStep
 public:
   ParallelSequenceLabelingInferenceStep(const String& name)
     : SharedParallelInferenceStep(name, new ClassificationInferenceStep(name + T("Classification"))) {}
+  ParallelSequenceLabelingInferenceStep()
+    {}
 
   virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
 

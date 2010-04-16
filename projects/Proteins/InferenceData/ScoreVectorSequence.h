@@ -18,8 +18,8 @@ namespace lbcpp
 class ScoreVectorSequence : public Sequence
 {
 public:
-  ScoreVectorSequence(FeatureDictionaryPtr dictionary, size_t length)
-    : dictionary(dictionary), length(length), numScores(dictionary->getNumFeatures()), matrix(length * dictionary->getNumFeatures(), 0.0) {}
+  ScoreVectorSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length)
+    : Sequence(name), dictionary(dictionary), length(length), numScores(dictionary->getNumFeatures()), matrix(length * dictionary->getNumFeatures(), 0.0) {}
   ScoreVectorSequence() {}
 
   /*
