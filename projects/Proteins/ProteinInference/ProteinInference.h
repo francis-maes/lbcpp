@@ -75,6 +75,7 @@ public:
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, supervision, returnCode);
       jassert(inferenceOutput);
+      workingProtein = workingProtein->clone();
       workingProtein->setObject(objectName, inferenceOutput);
       if (returnCode != finishedReturnCode)
         break;
