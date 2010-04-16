@@ -81,6 +81,7 @@ class AssignmentToVectorVisitor
 {
 public:
   typedef VectorStackBasedFeatureVisitor< ExactType, VectorType > BaseClass;
+  typedef typename BaseClass::VectorPtr VectorPtr;
   
   AssignmentToVectorVisitor(VectorPtr target, OperationType& operation)
     : BaseClass(target), operation(operation) {}
@@ -90,7 +91,7 @@ public:
     jassert(BaseClass::currentVector->getDictionary() == dictionary);
     value *= BaseClass::currentWeight;
     if (value)
-      operation.process(currentVector->get(number), value);
+      operation.process(BaseClass::currentVector->get(number), value);
   }
     
   void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)

@@ -19,23 +19,24 @@ template<class ExactType, class VectorType>
 struct CreateVectorVisitor : public VectorStackBasedFeatureVisitor< ExactType, VectorType >
 {
   typedef VectorStackBasedFeatureVisitor< ExactType, VectorType > BaseClass;
+  typedef typename BaseClass::VectorPtr VectorPtr;
   
   CreateVectorVisitor(FeatureDictionaryPtr dictionary) 
-    : BaseClass(new VectorType(dictionary)) {result = currentVector;}
+    : BaseClass(new VectorType(dictionary)) {result = BaseClass::currentVector;}
   
   void featureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value = 1.0)
   {
     jassert(BaseClass::currentVector->getDictionary() == dictionary);
     value *= BaseClass::currentWeight;
     if (value)
-      currentVector->get(number) += value;
+      BaseClass::currentVector->get(number) += value;
   }
 
-  BaseClass::VectorPtr getResult() const
+  VectorPtr getResult() const
     {return result;}
   
 private:
-  BaseClass::VectorPtr result;
+  VectorPtr result;
 };
 
 struct CreateSparseVectorVisitor : public CreateVectorVisitor<CreateSparseVectorVisitor, SparseVector>
