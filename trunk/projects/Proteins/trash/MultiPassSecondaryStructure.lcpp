@@ -381,7 +381,7 @@ int main(int argc, char** argv)
   pass1Model->trainBatch(trainingData, callback);
   pass1Model->saveToFile(pass1ModelFile);
 
-  //VariableSetModelPtr pass1Model = Object::loadFromFileAndCast<VariableSetModel>(pass1ModelFile);
+  //VariableSetModelPtr pass1Model = Object::createFromFileAndCast<VariableSetModel>(pass1ModelFile);
   /*std::cout << "Content Only model: " << pass1Model->toString() << std::endl;
   std::cout << "Content Only Train Accuracy = " << std::flush << pass1Model->evaluate(trainingData) << std::endl;
   std::cout << "Content Only Test Accuracy = " << std::flush << pass1Model->evaluate(testingData) << std::endl;*/

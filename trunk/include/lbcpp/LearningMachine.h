@@ -154,7 +154,7 @@ protected:
 ** @return
 */
 inline ClassifierPtr loadClassifier(const File& file)
-  {return Object::loadFromFileAndCast<Classifier>(file);}
+  {return Object::createFromFileAndCast<Classifier>(file);}
 
 
 /*!
@@ -184,7 +184,7 @@ public:
 ** @return
 */
 inline BinaryClassifierPtr loadBinaryClassifier(const File& file)
-  {return Object::loadFromFileAndCast<BinaryClassifier>(file);}
+  {return Object::createFromFileAndCast<BinaryClassifier>(file);}
 
 
 /*!
@@ -285,7 +285,7 @@ public:
 ** @return
 */
 inline RegressorPtr loadRegressor(const File& file)
-  {return Object::loadFromFileAndCast<Regressor>(file);}
+  {return Object::createFromFileAndCast<Regressor>(file);}
 
 /*!
 **
@@ -359,7 +359,7 @@ public:
 ** @return
 */
 inline RankerPtr loadRanker(const File& file)
-  {return Object::loadFromFileAndCast<Ranker>(file);}
+  {return Object::createFromFileAndCast<Ranker>(file);}
 
 }; /* namespace lbcpp */
 

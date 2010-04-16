@@ -19,6 +19,7 @@ class ParallelInferenceStep : public InferenceStep
 {
 public:
   ParallelInferenceStep(const String& name) : InferenceStep(name) {}
+  ParallelInferenceStep() {}
 
   virtual void accept(InferenceVisitorPtr visitor)
     {visitor->visit(ParallelInferenceStepPtr(this));}
@@ -40,9 +41,21 @@ class SharedParallelInferenceStep : public ParallelInferenceStep
 public:
   SharedParallelInferenceStep(const String& name, InferenceStepPtr subInference)
     : ParallelInferenceStep(name), subInference(subInference) {}
+  SharedParallelInferenceStep() {}
 
   virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
     {return subInference;}
+
+  virtual bool loadFromFile(const File& file)
+  {
+    if (!loadFromDirectory(file))
+      return false;
+    subInference = createFromFileAndCast<InferenceStep>(file.getChildFile(T("shared.inference")));
+    return subInference != InferenceStepPtr();
+  }
+
+  virtual bool saveToFile(const File& file) const
+    {return saveToDirectory(file) && subInference->saveToFile(file.getChildFile(T("shared.inference")));}
 
 protected:
   InferenceStepPtr subInference;

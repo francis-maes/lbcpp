@@ -23,6 +23,8 @@ class ClassificationInferenceStep : public InferenceStep
 public:
   ClassificationInferenceStep(const String& name)
     : InferenceStep(name) {}
+
+  ClassificationInferenceStep() {}
  
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runClassification(ClassificationInferenceStepPtr(this), input, supervision, returnCode);}
@@ -35,6 +37,12 @@ public:
 
 protected:
   ClassifierPtr classifier;
+
+  virtual bool load(InputStream& istr)
+    {return InferenceStep::load(istr) && lbcpp::read(istr, classifier);}
+
+  virtual void save(OutputStream& ostr) const
+    {InferenceStep::save(ostr); lbcpp::write(ostr, classifier);}
 };
 
 }; /* namespace lbcpp */

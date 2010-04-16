@@ -32,15 +32,17 @@
 namespace lbcpp
 {
 
-
 /*!
 ** @class ObjectContainer
 ** @brief Base class for object containers with random access.
 ** @see ObjectStream
 */
-class ObjectContainer : public Object
+class ObjectContainer : public NameableObject
 {
 public:
+  ObjectContainer(const String& name = T("Unnamed"))
+    : NameableObject(name) {}
+
   /**
   ** Returns the class name of the objects contained by this stream.
   **
@@ -389,8 +391,8 @@ public:
   **
   ** @param target : the decorated ObjectContainer.
   */
-  DecoratorObjectContainer(ObjectContainerPtr target)
-    : target(target) {}
+  DecoratorObjectContainer(const String& name, ObjectContainerPtr target)
+    : ObjectContainer(name), target(target) {}
 
   /**
   ** Content class name getter.

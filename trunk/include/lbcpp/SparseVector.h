@@ -341,7 +341,7 @@ private:
   ** @return a sparse vector pointer.
   */
 inline SparseVectorPtr loadSparseVector(const File& file)
-  {return Object::loadFromFileAndCast<SparseVector>(file);}
+  {return Object::createFromFileAndCast<SparseVector>(file);}
 
 }; /* namespace lbcpp */
 

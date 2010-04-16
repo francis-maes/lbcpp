@@ -21,9 +21,7 @@ class MyProteinSequenceLabelingInferenceStep : public ProteinSequenceLabelingInf
 public:
   MyProteinSequenceLabelingInferenceStep(const String& name, const String& target, FeatureDictionaryPtr targetDictionary)
     : ProteinSequenceLabelingInferenceStep(name), target(target), targetDictionary(targetDictionary) {}
-
-  String target;
-  FeatureDictionaryPtr targetDictionary;
+  MyProteinSequenceLabelingInferenceStep() {}
 
   virtual String getTargetName() const
     {return target;}
@@ -54,6 +52,24 @@ public:
       {featureCall("sa") solventAccesibility->windowFeatures(index, 5, 5, true);}
 
     //    featureCall("w8f") dsspSecondaryStructure->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
+  }
+
+protected:
+  String target;
+  FeatureDictionaryPtr targetDictionary;
+
+  virtual bool load(InputStream& istr)
+  {
+    return ProteinSequenceLabelingInferenceStep::load(istr)
+      && lbcpp::read(istr, target)
+      && FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+  }
+
+  virtual void save(OutputStream& ostr) const
+  {
+    ProteinSequenceLabelingInferenceStep::save(ostr);
+    lbcpp::write(ostr, target);
+    lbcpp::write(ostr, targetDictionary->getName());
   }
 };
 
@@ -88,6 +104,8 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
+   // inference->saveToFile(File("C:\\Projets\\LBC++\\projects\\Proteins\\Models\\yo.inference"));
+
     InferenceContextPtr validationContext = createContext();
     InferenceCallbackPtr evaluation = new ProteinEvaluationCallback();
     validationContext->appendCallback(evaluation);
@@ -101,7 +119,7 @@ public:
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
 
     // stopping criterion
-    return iterationNumber < 3;
+    return iterationNumber < 5;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -122,11 +140,12 @@ private:
 int main(int argc, char** argv)
 {
   declareProteinClasses();
+  LBCPP_DECLARE_CLASS(MyProteinSequenceLabelingInferenceStep);
 
 //  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
   File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load(50)->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 
   /*
   ProteinPtr protein = proteins->getAndCast<Protein>(0);

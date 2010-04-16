@@ -101,7 +101,7 @@ public:
   ** occurs.
   ** @see saveToStream
   */
-  static ObjectPtr loadFromStream(InputStream& istr);
+  static ObjectPtr createFromStream(InputStream& istr, bool doLoading = true);
 
   /**
   ** Loads an object from a file.
@@ -112,7 +112,7 @@ public:
   ** occurs.
   ** @see saveToFile
   */
-  static ObjectPtr loadFromFile(const File& file);
+  static ObjectPtr createFromFile(const File& file);
 
   /**
   ** Loads an object from a stream and cast it.
@@ -122,8 +122,8 @@ public:
   ** @return a pointer on the loaded object or a null pointer if the cast fails.
   */
   template<class T>
-  static ReferenceCountedObjectPtr<T> loadFromStreamAndCast(InputStream& istr)
-    {return checkCast<T>(T("Object::loadFromStreamAndCast"), loadFromStream(istr));}
+  static ReferenceCountedObjectPtr<T> createFromStreamAndCast(InputStream& istr)
+    {return checkCast<T>(T("Object::createFromStreamAndCast"), createFromStream(istr));}
 
   /**
   ** Loads an object from a file and cast it.
@@ -133,8 +133,8 @@ public:
   ** @return a pointer on the loaded object or a null pointer if the cast fails.
   */
   template<class T>
-  static ReferenceCountedObjectPtr<T> loadFromFileAndCast(const File& file)
-    {return checkCast<T>(T("Object::loadFromFileAndCast"), loadFromFile(file));}
+  static ReferenceCountedObjectPtr<T> createFromFileAndCast(const File& file)
+    {return checkCast<T>(T("Object::createFromFileAndCast"), createFromFile(file));}
 
   /**
   ** Class name getter.
@@ -208,13 +208,15 @@ public:
   ReferenceCountedObjectPtr<T> cloneAndCast() const
     {return checkCast<T>(T("Object::cloneAndCast"), clone());}
 
+  virtual bool loadFromFile(const File& file);
+
   /**
   ** Saves the current object to the file @a filename.
   **
   ** @param fileName : output file name.
   **
   ** @return False if any error occurs.
-  ** @see loadFromFile
+  ** @see createFromFile
   */
   virtual bool saveToFile(const File& file) const;
 
@@ -222,7 +224,7 @@ public:
   ** Saves the current object to a C++ stream.
   **
   ** @param ostr : output stream.
-  ** @see loadFromStream
+  ** @see createFromStream
   */
   virtual void saveToStream(OutputStream& ostr) const;
 
@@ -251,6 +253,9 @@ public:
   //  {return NULL;}
 
 protected:
+  bool loadFromDirectory(const File& directory);
+  bool saveToDirectory(const File& directory) const;
+
   template<class T>
   friend struct ObjectTraits;
 
@@ -329,7 +334,7 @@ protected:
 ** @return an object pointer.
 */
 inline ObjectPtr loadObject(const File& file)
-  {return Object::loadFromFile(file);}
+  {return Object::createFromFile(file);}
 
 template<class Type>
 struct ClassDeclarator
@@ -360,7 +365,7 @@ public:
   
   static inline bool read(InputStream& istr, ReferenceCountedObjectPtr<T>& result)
   {
-    result = Object::loadFromStreamAndCast<T>(istr);
+    result = Object::createFromStreamAndCast<T>(istr);
     return true;
   }
 };

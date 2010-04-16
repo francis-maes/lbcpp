@@ -7,20 +7,43 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "ProteinInference/Protein.h"
-#include "ProteinInference/AminoAcidDictionary.h"
-#include "ProteinInference/SecondaryStructureDictionary.h"
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
 #define LBCPP_DECLARE_DICTIONARY(ClassName) \
   lbcpp::FeatureDictionaryManager::getInstance().addDictionary(ClassName::getInstance())
 
-void declareProteinClasses()
+
+
+#include "InferenceData/LabelSequence.h"
+#include "InferenceData/ScoreVectorSequence.h"
+#include "InferenceStep/ClassificationInferenceStep.h"
+#include "InferenceStep/DecoratorInferenceStep.h"
+#include "InferenceStep/ParallelSequenceLabelingInferenceStep.h"
+
+void declareInferenceClasses()
 {
-  LBCPP_DECLARE_CLASS(Protein);
+  // Data
   LBCPP_DECLARE_CLASS(LabelSequence);
   LBCPP_DECLARE_CLASS(ScoreVectorSequence);
+
+  // InferenceStep
+  LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
+  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInferenceStep);
+}
+
+
+#include "ProteinInference/Protein.h"
+#include "ProteinInference/ProteinInference.h"
+#include "ProteinInference/AminoAcidDictionary.h"
+#include "ProteinInference/SecondaryStructureDictionary.h"
+
+void declareProteinClasses()
+{
+  declareInferenceClasses();
+
+  LBCPP_DECLARE_CLASS(Protein);
+  LBCPP_DECLARE_CLASS(ProteinInference);
 
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);

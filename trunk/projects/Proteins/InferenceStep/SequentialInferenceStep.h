@@ -67,6 +67,32 @@ public:
 
   virtual size_t getNumSubSteps() const = 0;
   virtual InferenceStepPtr getSubStep(size_t index) const = 0;
+/*
+  virtual bool saveToFile(const File& file) const
+  {
+    if (!saveToDirectory(file))
+      return false;
+    for (size_t i = 0; i < getNumSubSteps(); ++i)
+    {
+      InferenceStepPtr step = getSubStep(i);
+      step->saveToFile(file.getChildFile(step->getName() + T(".inference")));
+    }
+    return true;
+  }
+
+  virtual bool loadFromFile(const File& file)
+  {
+    if (!loadFromDirectory(file))
+      return false;
+    for (size_t i = 0; i < getNumSubSteps(); ++i)
+    {
+      InferenceStepPtr step = getSubStep(i);
+      jassert(step);
+      if (!step->loadFromFile(file.getChildFile(step->getName() + T(".inference"))))
+        return false;
+    }
+    return true;
+  }*/
 };
 
 }; /* namespace lbcpp */

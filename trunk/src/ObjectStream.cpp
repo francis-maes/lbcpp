@@ -25,6 +25,7 @@ using namespace lbcpp;
 ObjectContainerPtr ObjectStream::load(size_t maximumCount)
 {
   VectorObjectContainerPtr res = new VectorObjectContainer(getContentClassName());
+  res->setName(getName());
   while (maximumCount == 0 || res->size() < maximumCount)
   {
     ObjectPtr object = next();
@@ -57,7 +58,7 @@ class ApplyFunctionObjectStream : public ObjectStream
 {
 public:
   ApplyFunctionObjectStream(ObjectStreamPtr stream, ObjectFunctionPtr function)
-    : stream(stream), function(function) {}
+    : ObjectStream(function->getName() + T("(") + stream->getName() + T(")")), stream(stream), function(function) {}
     
   virtual String getContentClassName() const
     {return function->getOutputClassName(stream->getContentClassName());}
@@ -88,10 +89,10 @@ ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
 ** TextObjectParser
 */
 TextObjectParser::TextObjectParser(InputStream* newInputStream)
-  : istr(newInputStream) {}
+  : ObjectStream(T("stream")), istr(newInputStream) {}
     
 TextObjectParser::TextObjectParser(const File& file)
-  : istr(NULL)
+  : ObjectStream(file.getFullPathName()), istr(NULL)
 {
   if (file == File::nonexistent)
   {
@@ -251,7 +252,7 @@ ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatur
 ** DirectoryObjectStream
 */
 DirectoryObjectStream::DirectoryObjectStream(const File& directory, const String& wildCardPattern, bool searchFilesRecursively)
-  : nextFilePosition(0)
+  : ObjectStream(directory.getFullPathName() + T("/") + wildCardPattern + (searchFilesRecursively ? T(" rec") : T(""))), nextFilePosition(0)
 {
   directory.findChildFiles(files, File::findFiles, searchFilesRecursively, wildCardPattern);
 }
@@ -275,4 +276,4 @@ ObjectPtr DirectoryObjectStream::next()
 }
 
 ObjectPtr DirectoryObjectStream::parseFile(const File& file)
-  {return Object::loadFromFile(file);}
+  {return Object::createFromFile(file);}

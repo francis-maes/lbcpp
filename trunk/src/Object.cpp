@@ -69,7 +69,7 @@ void Object::declare(const String& className, Constructor constructor)
 Object* Object::create(const String& className)
   {return getObjectFactoryInstance().create(className);}
 
-ObjectPtr Object::loadFromStream(InputStream& istr)
+ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
 {
   String className;
   if (!read(istr, className))
@@ -80,22 +80,74 @@ ObjectPtr Object::loadFromStream(InputStream& istr)
   if (className == T("__null__"))
     return ObjectPtr();
   ObjectPtr res(create(className));
-  if (res && !res->load(istr))
+  if (res && doLoading && !res->load(istr))
     error(T("Object::create"), T("Could not load object of class ") + className);
   return res;
 }
 
-ObjectPtr Object::loadFromFile(const File& file)
+ObjectPtr Object::createFromFile(const File& file)
 {
+  File f = file.isDirectory() ? file.getChildFile(T(".classFile")) : file;
   InputStream* inputStream = file.createInputStream();
   if (!inputStream)
   {
     error(T("Object::createFromFile"), T("Could not open file ") + file.getFullPathName());
     return ObjectPtr();
   }
-  ObjectPtr res = loadFromStream(*inputStream);
-  delete inputStream;
+  ObjectPtr res = createFromStream(*inputStream, false);
+  if (file.isDirectory())
+  {
+    delete inputStream;
+    res->loadFromFile(file);
+  }
+  else
+  {
+    if (!res->load(*inputStream))
+      error(T("Object::create"), T("Could not load object from file ") + file.getFullPathName());
+    delete inputStream;
+  }
   return res;
+}
+
+bool Object::loadFromFile(const File& file)
+{
+  InputStream* inputStream = file.createInputStream();
+  if (!inputStream)
+  {
+    error(T("Object::loadFromFile"), T("Could not open file ") + file.getFullPathName());
+    return false;
+  }
+  String className;
+  if (!read(*inputStream, className))
+  {
+    error(T("Object::loadFromFile"), T("Could not read class name"));
+    delete inputStream;
+    return false;
+  }
+  if (className != getClassName())
+  {
+    error(T("Object::loadFromFile"), T("Class name mismatch"));
+    delete inputStream;
+    return false;
+  }
+  if (!load(*inputStream))
+  {
+    error(T("Object::loadFromFile"), T("Could not load object of class ") + className);
+    delete inputStream;
+    return false;
+  }
+  delete inputStream;
+  return true;
+}
+
+bool Object::loadFromDirectory(const File& directory)
+{
+  if (!directory.exists() || !directory.isDirectory())
+  {
+    error(T("Object::loadFromDirectory"), directory.getFullPathName() + T(" is not a directory"));
+    return false;
+  }
+  return loadFromFile(directory.getChildFile(T(".classFile")));
 }
 
 String Object::getClassName() const
@@ -123,4 +175,16 @@ bool Object::saveToFile(const File& file) const
   outputStream->flush();
   delete outputStream;
   return true;
+}
+
+bool Object::saveToDirectory(const File& directory) const
+{
+  if (directory.exists())
+    directory.deleteRecursively();
+  if (!directory.createDirectory())
+  {
+    error(T("Object::saveToFile"), T("Could not create directory ") + directory.getFullPathName());
+    return false;
+  }
+  return Object::saveToFile(directory.getChildFile(T(".classFile")));
 }
