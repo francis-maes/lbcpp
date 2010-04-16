@@ -10,8 +10,8 @@
 #include "SingleStepDeterministicSimulationInferenceLearner.h"
 using namespace lbcpp;
 
-InferenceLearnerPtr lbcpp::globalSimulationInferenceLearner(InferenceLearnerCallbackPtr callback)
+InferenceLearnerPtr lbcpp::globalSimulationLearner(InferenceLearnerCallbackPtr callback)
   {return new GlobalSimulationInferenceLearner(callback);}
 
-InferenceLearnerPtr lbcpp::stepByStepSimulationInferenceLearner(InferenceLearnerCallbackPtr callback)
-  {return new StepByStepSimulationInferenceLearner(callback);}
+InferenceLearnerPtr lbcpp::stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData)
+  {return new StepByStepDeterministicSimulationLearner(callback, useCacheOnTrainingData);}

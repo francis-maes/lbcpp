@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_
 
 # include "InferenceLearner.h"
+# include "../InferenceContext/CacheInferenceCallback.h"
 # include "../InferenceContext/ExamplesCreatorCallback.h"
 # include "../InferenceStep/SequentialInferenceStep.h"
 # include "../InferenceStep/DecoratorInferenceStep.h"
@@ -26,7 +27,7 @@ public:
   virtual void startInferencesCallback(size_t count)
     {enableExamplesCreation = false;}
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference() == inference)
       enableExamplesCreation = true;
@@ -42,11 +43,15 @@ private:
   InferenceStepPtr inference;
 };
 
-class StepByStepSimulationInferenceLearner : public InferenceLearner
+class StepByStepDeterministicSimulationLearner : public InferenceLearner
 {
 public:
-  StepByStepSimulationInferenceLearner(InferenceLearnerCallbackPtr callback)
-    : InferenceLearner(callback) {}
+  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData)
+    : InferenceLearner(callback)
+  {
+    if (useCacheOnTrainingData)
+      cache = new InferenceResultCache();
+  }
 
   virtual void train(InferenceStepPtr inf, ObjectContainerPtr trainingData)
   {
@@ -56,15 +61,32 @@ public:
     for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
     {
       InferenceStepPtr step = inference->getSubStep(stepNumber);
-      InferenceStepPtr decoratedInference = stepNumber < numSteps - 1 ? addBreakToInference(inference, step) : inf;
 
-      callback->preLearningPassCallback(step->getName());
+      // decorate inference to add "break"
+      bool isLastIteration = (stepNumber == numSteps - 1);
+      InferenceStepPtr decoratedInference = isLastIteration ? inf : addBreakToInference(inference, step);
+
+      // train current inference step
+      callback->preLearningStepCallback(step);
       trainPass(decoratedInference, step, trainingData);
-      callback->postLearningPassCallback();
+      callback->postLearningStepCallback(step);
+      
+      // build cache for current inference step
+      /*if (cache)
+      {
+        InferenceContextPtr cacheContext = callback->createContext();
+        InferenceStepResultCachePtr stepCache = new InferenceStepResultCache(step);
+        cacheContext->appendCallback(new UseCacheInferenceCallback(cache));
+        cacheContext->appendCallback(new MakeCacheInferenceCallback(stepCache));
+        cacheContext->runWithSupervisedExamples(decoratedInference, trainingData);
+        cache->addStepCache(stepCache);
+      }*/
     }
   }
   
 private:
+  InferenceResultCachePtr cache;
+
   InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
     {return new CallbackBasedDecoratorInferenceStep(inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
 
@@ -74,9 +96,11 @@ private:
     ExamplesCreatorCallbackPtr learningCallback = new SingleStepSimulationLearningCallback(step, callback);
     InferenceContextPtr trainingContext = callback->createContext();
     trainingContext->appendCallback(learningCallback);
-
-    // make examples once and learn
+    if (cache)
+      trainingContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
     trainingContext->runWithSupervisedExamples(inference, trainingData);
+
+    // learn
     for (size_t i = 0; true; ++i)
     {
       callback->preLearningIterationCallback(i);
@@ -85,7 +109,7 @@ private:
         break;
     }
 /*
-    // make examples each time and learn 
+    // make examples at each learning iteration
     for (size_t i = 0; true; ++i)
     {
       callback->preLearningIterationCallback(i);

@@ -302,7 +302,7 @@ public:
   */
   inline void sampleOrder(size_t begin, size_t end, std::vector<size_t>& res)
   {
-    jassert(end > begin);
+    jassert(end >= begin);
     res.resize(end - begin);
     for (size_t i = 0; i < res.size(); ++i)
       res[i] = begin + i;

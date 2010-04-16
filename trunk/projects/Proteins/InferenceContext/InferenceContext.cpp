@@ -31,10 +31,10 @@ void InferenceContext::callFinishInferences()
     callbacks[i]->finishInferencesCallback();
 }
 
-void InferenceContext::callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
+void InferenceContext::callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->preInferenceCallback(stack, input, supervision, returnCode);
+    callbacks[i]->preInferenceCallback(stack, input, supervision, output, returnCode);
 }
 
 void InferenceContext::callPostInference(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -108,14 +108,16 @@ public:
   virtual ObjectPtr runInference(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     stack->push(inference);
-    callPreInference(stack, input, supervision, returnCode);
+    ObjectPtr output;
+    callPreInference(stack, input, supervision, output, returnCode);
     if (returnCode)
     {
       std::cerr << "Warning: pre-inference failed with code " << returnCode << std::endl;
       jassert(false);
       return ObjectPtr();
     }
-    ObjectPtr output = InferenceContext::runInference(inference, input, supervision, returnCode);
+    if (!output)
+      output = InferenceContext::runInference(inference, input, supervision, returnCode);
     callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();
     return output;

@@ -29,7 +29,10 @@ public:
   virtual void finishInferencesCallback()
     {}
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
+  // this function may modify the input or the supervision
+  // it may also set an output, which causes the current inference step to be skipped
+  // the function may also set a returnCode != InferenceStep::finishedReturnCode to skip the inference step
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
     {}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)

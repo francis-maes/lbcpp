@@ -31,8 +31,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<InferenceLearner> InferenceLearnerPtr;
 
-InferenceLearnerPtr globalSimulationInferenceLearner(InferenceLearnerCallbackPtr callback);
-InferenceLearnerPtr stepByStepSimulationInferenceLearner(InferenceLearnerCallbackPtr callback);
+InferenceLearnerPtr globalSimulationLearner(InferenceLearnerCallbackPtr callback);
+InferenceLearnerPtr stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData = true);
 
 }; /* namespace lbcpp */
 
