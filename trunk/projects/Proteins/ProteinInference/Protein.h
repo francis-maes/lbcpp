@@ -31,14 +31,8 @@ public:
   /*
   ** Primary Structure and Position Specific Scoring Matrix
   */
-  void setAminoAcidSequence(LabelSequencePtr sequence)
-    {setObject(T("AminoAcidSequence"), sequence);}
-
   LabelSequencePtr getAminoAcidSequence() const
     {return getObject(T("AminoAcidSequence"));}
-
-  void setPositionSpecificScoringMatrix(ScoreVectorSequencePtr pssm)
-    {setObject(T("PositionSpecificScoringMatrix"), pssm);}
 
   ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const
     {return getObject(T("PositionSpecificScoringMatrix"));}
@@ -46,14 +40,8 @@ public:
   /*
   ** Secondary Structure
   */
-  void setSecondaryStructureSequence(LabelSequencePtr sequence)
-    {setObject(T("SecondaryStructureSequence"), sequence);}
-
   LabelSequencePtr getSecondaryStructureSequence() const
     {return getObject(T("SecondaryStructureSequence"));}
-
-  void setDSSPSecondaryStructureSequence(LabelSequencePtr sequence)
-    {setObject(T("DSSPSecondaryStructureSequence"), sequence);}
 
   LabelSequencePtr getDSSPSecondaryStructureSequence() const
     {return getObject(T("DSSPSecondaryStructureSequence"));}
@@ -61,9 +49,6 @@ public:
   /*
   ** Solvent Accesibility
   */
-  void setSolventAccessibilitySequence(LabelSequencePtr solventAccessibility)
-    {setObject(T("SolventAccessibilitySequence"), solventAccessibility);}
-
   LabelSequencePtr getSolventAccessibilitySequence() const
     {return getObject(T("SolventAccessibilitySequence"));}
 
@@ -73,7 +58,7 @@ protected:
     int versionNumber;
     if (!lbcpp::read(istr, versionNumber))
       return false;
-    if (versionNumber != 100)
+    if (versionNumber != 101)
     {
       Object::error(T("Protein::load"), T("Unrecognized version number"));
       return false;
@@ -83,7 +68,7 @@ protected:
 
   virtual void save(OutputStream& ostr) const
   {
-    int versionNumber = 100;
+    int versionNumber = 101;
     lbcpp::write(ostr, versionNumber);
     StringToObjectMap::save(ostr);
   }

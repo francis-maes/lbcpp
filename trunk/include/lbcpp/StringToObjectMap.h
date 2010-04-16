@@ -58,7 +58,13 @@ public:
   }
   
   void setObject(const String& key, ObjectPtr object)
-    {objects[key] = object;}
+  {
+    objects[key] = object;
+    jassert(key == object->getName());
+  }
+
+  void setObject(ObjectPtr object)
+    {objects[object->getName()] = object;}
 
   ObjectPtr getObject(const String& key) const
   {
@@ -83,7 +89,19 @@ protected:
   ObjectsMap objects;
 
   virtual bool load(InputStream& istr)
-    {return NameableObject::load(istr) && lbcpp::read(istr, objects);}
+  {
+    if (!NameableObject::load(istr) || !lbcpp::read(istr, objects))
+      return false;
+
+/*    // temp
+    for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
+    {
+      NameableObjectPtr nameableObject = it->second.dynamicCast<NameableObject>();
+      if (nameableObject)
+        nameableObject->setName(it->first);
+    }*/
+    return true;
+  }
 
   virtual void save(OutputStream& ostr) const
     {NameableObject::save(ostr); lbcpp::write(ostr, objects);}

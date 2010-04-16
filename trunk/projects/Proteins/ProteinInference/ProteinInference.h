@@ -26,6 +26,14 @@ public:
   virtual String getTargetName() const = 0;
   virtual FeatureDictionaryPtr getTargetDictionary() const = 0;
 
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  {
+    ProteinPtr protein = supervision.dynamicCast<Protein>();
+    jassert(protein);
+    ObjectPtr proteinObject = protein->getObject(getTargetName());
+    return ParallelSequenceLabelingInferenceStep::getSubSupervision(proteinObject, index);
+  }
+
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
     {return new LabelSequence(getTargetName(), getTargetDictionary(), getNumSubInferences(input));}
 
@@ -46,8 +54,8 @@ public:
 
   // child inference are all of the form
   // Protein -> Protein sub object
-  void appendStep(InferenceStepPtr inference, const String& targetName)
-    {inferenceSteps.push_back(std::make_pair(inference, targetName));}
+  void appendStep(InferenceStepPtr inference)
+    {inferenceSteps.push_back(inference);}
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
@@ -55,8 +63,8 @@ public:
     ProteinPtr inputProtein = input.dynamicCast<Protein>();
     jassert(inputProtein);
     ProteinPtr workingProtein = new Protein(inputProtein->getName());
-    workingProtein->setAminoAcidSequence(inputProtein->getAminoAcidSequence());
-    workingProtein->setPositionSpecificScoringMatrix(inputProtein->getPositionSpecificScoringMatrix());
+    workingProtein->setObject(inputProtein->getAminoAcidSequence());
+    workingProtein->setObject(inputProtein->getPositionSpecificScoringMatrix());
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
@@ -64,20 +72,12 @@ public:
     // main inference loop
     for (size_t i = 0; i < inferenceSteps.size(); ++i)
     {
-      InferenceStepPtr inferenceStep = inferenceSteps[i].first;
-      String objectName = inferenceSteps[i].second;
+      InferenceStepPtr inferenceStep = inferenceSteps[i];
 
-      ObjectPtr supervision;
-      if (correctProtein)
-      {
-        supervision = correctProtein->getObject(objectName);
-        jassert(supervision);
-      }
-
-      ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, supervision, returnCode);
+      ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
       jassert(inferenceOutput);
       workingProtein = workingProtein->clone();
-      workingProtein->setObject(objectName, inferenceOutput);
+      workingProtein->setObject(inferenceOutput);
       if (returnCode != finishedReturnCode)
         break;
     }
@@ -90,7 +90,7 @@ public:
     {return inferenceSteps.size();}
 
   virtual InferenceStepPtr getSubStep(size_t index) const
-    {jassert(index < inferenceSteps.size()); return inferenceSteps[index].first;}
+    {jassert(index < inferenceSteps.size()); return inferenceSteps[index];}
 /*
   virtual bool saveToFile(const File& file) const
   {
@@ -119,7 +119,7 @@ public:
   }*/
 
 protected:
-  std::vector< std::pair<InferenceStepPtr, String> > inferenceSteps;
+  std::vector<InferenceStepPtr> inferenceSteps;
 /*
   virtual bool load(InputStream& istr)
   {

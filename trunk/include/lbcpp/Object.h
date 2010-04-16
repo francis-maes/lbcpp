@@ -324,6 +324,8 @@ protected:
     {lbcpp::write(ostr, name);}
 };
 
+typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
+
 /**
 ** Loads an object from the file @a filename.
 **

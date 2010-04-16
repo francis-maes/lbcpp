@@ -95,6 +95,8 @@ public:
 protected:
   virtual bool load(InputStream& istr)
   {
+    if (!Sequence::load(istr))
+      return false;
     dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
     if (!dictionary || !lbcpp::read(istr, sequence))
       return false;
@@ -104,6 +106,7 @@ protected:
   
   virtual void save(OutputStream& ostr) const
   {
+    Sequence::save(ostr);
     lbcpp::write(ostr, dictionary->getName());
     lbcpp::write(ostr, sequence);
   }
