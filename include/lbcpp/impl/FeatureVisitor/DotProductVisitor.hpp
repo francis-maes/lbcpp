@@ -20,20 +20,21 @@ class DotProductVectorVisitor : public VectorStackBasedFeatureVisitor<ExactType,
 {
 public:
   typedef VectorStackBasedFeatureVisitor<ExactType, VectorType> BaseClass;
+  typedef typename BaseClass::VectorPtr VectorPtr;
   
   DotProductVectorVisitor(VectorPtr vector)
     : BaseClass(vector), res(0.0) {jassert(BaseClass::currentVector);}
     
   void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
-    {res += getCurrentVector().get(index) * value * currentWeight;}
+    {res += getCurrentVector().get(index) * value * BaseClass::currentWeight;}
   
   void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
   {
-    jassert(currentVector);
+    jassert(BaseClass::currentVector);
     VectorPtr subVector = getCurrentSubVector(scopeNumber, featureGenerator->getDictionary());
     if (subVector)
     {
-      weight *= currentWeight;
+      weight *= BaseClass::currentWeight;
       if (weight)
         res += featureGenerator->dotProduct(subVector) * weight;
     }
