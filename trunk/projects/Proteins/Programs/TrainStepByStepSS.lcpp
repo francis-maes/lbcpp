@@ -95,6 +95,11 @@ public:
       LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
       featureCall("wSS8") dsspSecondaryStructure->windowFeatures(index, wSS8, wSS8, true);
     }
+    
+    if (wSA) {
+      LabelSequencePtr solventAccesibilityStructure = protein->getSolventAccesibilitySequence();
+      featureCall("wSA") solventAccesibilityStructure->windowFeatures(index, wSA, wSA, true);
+    }
   }
   
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
@@ -347,7 +352,7 @@ int main(int argc, char** argv)
 
   
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
@@ -399,7 +404,7 @@ int main(int argc, char** argv)
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
     proteinInference->appendStep(step, step->getTargetName());
-    
+
     for (size_t i = 0; i < (size_t) maxPass; ++i)
     {
       step = new CustomableSecondaryStructureContent(T("AA+PSSM+SA -> SA (") + toString(i) + T(")"));
