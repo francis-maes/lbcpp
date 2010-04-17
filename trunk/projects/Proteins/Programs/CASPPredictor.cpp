@@ -99,7 +99,59 @@ public:
     {return T("TS");}
 
   virtual void printPredictionData(ProteinPtr protein)
-    {/* FIXME */}
+  {
+    ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+    jassert(tertiaryStructure);
+    size_t atomNumber = 1;
+    for (size_t i = 0; i < tertiaryStructure->size(); ++i)
+    {
+      ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+      for (size_t j = 0; j < residue->getNumAtoms(); ++j)
+        printAtom(residue, residue->getAtom(j), j + 1, atomNumber++);
+    }
+  }
+
+  void printAtom(ProteinResiduePtr residue, ProteinAtomPtr atom, size_t residueNumber, size_t atomNumber)
+  {
+    String line = T("ATOM  ");
+    line += toFixedLengthString(atomNumber, 5);
+    line += T(" ");
+    line += toFixedLengthString(atom->getName(), 4);
+    line += T(" "); // alternate location indicator
+    line += toFixedLengthString(residue->getName(), 3);
+    line += T(" ");
+    line += T("A"); // chain ID
+    line += toFixedLengthString(residueNumber, 4);
+    line += T(" "); // code for insertion of residues
+    line += toFixedLengthString(String(atom->getX(), 3), 8);
+    line += toFixedLengthString(String(atom->getY(), 3), 8);
+    line += toFixedLengthString(String(atom->getZ(), 3), 8);
+    line += toFixedLengthString(String(atom->getOccupancy(), 2), 6);
+    line += toFixedLengthString(String(atom->getTemperatureFactor(), 2), 6);
+    line += toFixedLengthString(atom->getElementSymbol(), 2);
+    line += T("  "); // charge on the atom
+    jassert(line.length() == 80);
+    print(line, true);
+  }
+
+  static String toFixedLengthString(size_t i, int length)
+    {return toFixedLengthString(String((int)i), length);}
+
+  static String toFixedLengthString(const String& str, int length)
+  {
+    jassert(str.length() <= length);
+    String res = str;
+    int i = 0;
+    while (res.length() < length)
+    {
+      if (i % 2)
+        res = T(" ") + res;
+      else
+        res = res + T(" ");
+      ++i;
+    }
+    return res;
+  }
 };
 
 class ResidueResidueDistanceCASPFileGenerator : public CASPFileGenerator
@@ -185,6 +237,9 @@ void addDefaultPredictions(ProteinPtr protein)
 {
   size_t n = protein->getLength();
 
+  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+  jassert(aminoAcidSequence);
+
   /*
   ** Order-disorder region
   */
@@ -203,6 +258,21 @@ void addDefaultPredictions(ProteinPtr protein)
   ScoreSymmetricMatrixPtr rrContactMatrix = 
     new ScoreSymmetricMatrix(T("ResidueResidueContactProbabilityMatrix"), n, 0.5);
   protein->setObject(rrContactMatrix);
+
+  /*
+  ** Tertiary structure
+  */
+  ProteinTertiaryStructurePtr tertiaryStructure = new ProteinTertiaryStructure(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)0);//aminoAcidSequence->getIndex(i));
+    
+    ProteinAtomPtr atom = new ProteinAtom(T("CA"), T("C"));
+    residue->addAtom(atom);
+
+    tertiaryStructure->setResidue(i, residue);
+  }
+  protein->setObject(tertiaryStructure);
 }
 
 int main(int argc, char* argv[])
