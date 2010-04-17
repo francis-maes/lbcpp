@@ -57,6 +57,12 @@ ScoreVectorSequencePtr Protein::getOrderDisorderScoreSequence() const
 ScoreSymmetricMatrixPtr Protein::getResidueResidueContactProbabilityMatrix() const
   {return getObject(T("ResidueResidueContactProbabilityMatrix"));}
 
+ProteinCAlphaTracePtr Protein::getCAlphaTrace() const
+  {return getObject(T("CAlphaTrace"));}
+
+ProteinTertiaryStructurePtr Protein::getTertiaryStructure() const
+  {return getObject(T("TertiaryStructure"));}
+
 bool Protein::load(InputStream& istr)
 {
   int versionNumber;
