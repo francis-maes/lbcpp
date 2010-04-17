@@ -217,6 +217,6 @@ int main()
   if (!outputDirectory.exists())
     outputDirectory.createDirectory();
   ObjectStreamPtr proteinsStream = directoryObjectStream(inputDirectory, T("*.protein"));
-  objectSaveToFileConsumer(outputDirectory, T("protein"))->consume(proteinsStream);
+  objectSaveToFileConsumer(outputDirectory, T("protein"))->consumeStream(proteinsStream);
   return 0;
 }

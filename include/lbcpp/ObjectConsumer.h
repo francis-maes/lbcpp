@@ -36,8 +36,8 @@ class ObjectConsumer : public Object
 public:
   virtual void consume(ObjectPtr object) = 0;
   
-  void consume(ObjectStreamPtr stream, size_t maximumCount = 0);
-  void consume(ObjectContainerPtr container);
+  void consumeStream(ObjectStreamPtr stream, size_t maximumCount = 0);
+  void consumeContainer(ObjectContainerPtr container);
 };
 
 class TextObjectPrinter : public ObjectConsumer
@@ -55,8 +55,15 @@ protected:
   void printNewLine()
     {if (ostr) (*ostr) << "\n";}
     
-  void print(const String& str)
-    {if (ostr) (*ostr) << (const char* )str;}    
+  void print(const String& str, bool addNewLine = false)
+  {
+    if (ostr)
+    {
+      (*ostr) << (const char* )str;
+      if (addNewLine)
+        (*ostr) << "\n";
+    }
+  }
 };
 
 class LearningDataObjectPrinter : public TextObjectPrinter
