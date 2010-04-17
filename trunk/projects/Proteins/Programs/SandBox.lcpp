@@ -27,7 +27,10 @@ public:
     {return target;}
 
   virtual FeatureDictionaryPtr getTargetDictionary() const
-    {return targetDictionary;}
+  {
+    jassert(targetDictionary);
+    return targetDictionary;
+  }
 
   virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
   {
@@ -60,9 +63,11 @@ protected:
 
   virtual bool load(InputStream& istr)
   {
-    return ProteinSequenceLabelingInferenceStep::load(istr)
-      && lbcpp::read(istr, target)
-      && FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+    if (!ProteinSequenceLabelingInferenceStep::load(istr) ||
+        !lbcpp::read(istr, target))
+      return false;
+    targetDictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+    return targetDictionary != FeatureDictionaryPtr();
   }
 
   virtual void save(OutputStream& ostr) const
@@ -104,8 +109,6 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-   // inference->saveToFile(File("C:\\Projets\\LBC++\\projects\\Proteins\\Models\\yo.inference"));
-
     InferenceContextPtr validationContext = createContext();
     InferenceCallbackPtr evaluation = new ProteinEvaluationCallback();
     validationContext->appendCallback(evaluation);
@@ -118,8 +121,16 @@ public:
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
 
+    
+    File modelFile("C:\\Projets\\LBC++\\projects\\Proteins\\Models\\yo.inference");
+    inference->saveToFile(modelFile);
+    InferenceStepPtr inference2 = Object::createFromFileAndCast<InferenceStep>(modelFile);
+    validationContext->runWithSupervisedExamples(inference2, testingData);
+    std::cout << "Serialisation Test evaluation: " << evaluation->toString() << std::endl;
+
+
     // stopping criterion
-    return iterationNumber < 5;
+    return iterationNumber < 3;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -145,7 +156,7 @@ int main(int argc, char** argv)
 //  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
   File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load(50)->randomize();
 
   /*
   ProteinPtr protein = proteins->getAndCast<Protein>(0);
@@ -173,7 +184,7 @@ int main(int argc, char** argv)
     step = new MyProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step);
   }
-
+ 
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
   learner->train(proteinInference, trainingData);

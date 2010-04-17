@@ -12,6 +12,7 @@
 # include "InferenceLearner.h"
 # include "../InferenceContext/CacheInferenceCallback.h"
 # include "../InferenceContext/ExamplesCreatorCallback.h"
+# include "../InferenceContext/CancelAfterStepCallback.h"
 # include "../InferenceStep/SequentialInferenceStep.h"
 # include "../InferenceStep/DecoratorInferenceStep.h"
 
