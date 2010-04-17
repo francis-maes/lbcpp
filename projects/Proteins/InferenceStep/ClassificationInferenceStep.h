@@ -23,9 +23,17 @@ class ClassificationInferenceStep : public InferenceStep
 public:
   ClassificationInferenceStep(const String& name)
     : InferenceStep(name) {}
-
   ClassificationInferenceStep() {}
  
+  virtual String toString() const
+  {
+    String res = getClassName();
+    FeatureDictionaryPtr labels = classifier ? classifier->getLabels() : FeatureDictionaryPtr();
+    if (labels)
+      res += T("(") + labels->getName() + T(")");
+    return res;
+  }
+
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runClassification(ClassificationInferenceStepPtr(this), input, supervision, returnCode);}
 

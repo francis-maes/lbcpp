@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_CALLBACK_H_
 
 # include "../InferenceStep/InferenceStep.h"
-# include "InferenceContext.h"
 
 namespace lbcpp
 {
@@ -43,22 +42,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<InferenceCallback> InferenceCallbackPtr;
-
-class CancelAfterStepCallback : public InferenceCallback
-{
-public:
-  CancelAfterStepCallback(InferenceStepPtr step)
-    : step(step) {}
-
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
-  {
-    if (stack->getCurrentInference() == step)
-      returnCode = InferenceStep::canceledReturnCode;
-  }
-
-private:
-  InferenceStepPtr step;
-};
 
 }; /* namespace lbcpp */
 

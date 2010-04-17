@@ -50,7 +50,7 @@ void InferenceContext::callClassification(InferenceStackPtr stack, ClassifierPtr
 }
 
 void InferenceContext::appendCallback(InferenceCallbackPtr callback)
-  {callbacks.push_back(callback);}
+  {jassert(callback); callbacks.push_back(callback);}
 
 void InferenceContext::removeCallback(InferenceCallbackPtr callback)
 {

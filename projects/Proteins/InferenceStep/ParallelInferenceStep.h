@@ -46,6 +46,9 @@ public:
   virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
     {return subInference;}
 
+  virtual String toString() const
+    {jassert(subInference); return getClassName() + T("(") + subInference->toString() + T(")");}
+
   virtual bool loadFromFile(const File& file)
   {
     if (!loadFromDirectory(file))

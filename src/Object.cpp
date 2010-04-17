@@ -63,9 +63,15 @@ inline ObjectFactory& getObjectFactoryInstance()
   return instance;
 }
 
+String Object::getClassName() const
+  {return lbcpp::toString(typeid(*this));}
+
 void Object::declare(const String& className, Constructor constructor)
   {getObjectFactoryInstance().declare(className, constructor);}
 
+/*
+** Create and load
+*/
 Object* Object::create(const String& className)
   {return getObjectFactoryInstance().create(className);}
 
@@ -88,20 +94,23 @@ ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
 ObjectPtr Object::createFromFile(const File& file)
 {
   File f = file.isDirectory() ? file.getChildFile(T(".classFile")) : file;
-  InputStream* inputStream = file.createInputStream();
+  InputStream* inputStream = f.createInputStream();
   if (!inputStream)
   {
-    error(T("Object::createFromFile"), T("Could not open file ") + file.getFullPathName());
+    error(T("Object::createFromFile"), T("Could not open file ") + f.getFullPathName());
     return ObjectPtr();
   }
   ObjectPtr res = createFromStream(*inputStream, false);
   if (file.isDirectory())
   {
+    // loading of a directory: once we have the classname, we close the input stream and let the Object do want it wants
+    // most of the time, this may include re-opening the file to read data beyond the classname
     delete inputStream;
     res->loadFromFile(file);
   }
   else
   {
+    // loading of a file: now that we have the classname, we just continue reading from the input stream
     if (!res->load(*inputStream))
       error(T("Object::create"), T("Could not load object from file ") + file.getFullPathName());
     delete inputStream;
@@ -109,6 +118,9 @@ ObjectPtr Object::createFromFile(const File& file)
   return res;
 }
 
+/*
+** Load
+*/
 bool Object::loadFromFile(const File& file)
 {
   InputStream* inputStream = file.createInputStream();
@@ -147,14 +159,12 @@ bool Object::loadFromDirectory(const File& directory)
     error(T("Object::loadFromDirectory"), directory.getFullPathName() + T(" is not a directory"));
     return false;
   }
-  return loadFromFile(directory.getChildFile(T(".classFile")));
+  return Object::loadFromFile(directory.getChildFile(T(".classFile")));
 }
 
-String Object::getClassName() const
-{
-  return lbcpp::toString(typeid(*this));
-}
-
+/*
+** Save
+*/
 void Object::saveToStream(OutputStream& ostr) const
 {
   ostr.writeString(getClassName());

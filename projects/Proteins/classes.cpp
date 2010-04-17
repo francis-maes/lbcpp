@@ -17,9 +17,12 @@ using namespace lbcpp;
 
 #include "InferenceData/LabelSequence.h"
 #include "InferenceData/ScoreVectorSequence.h"
+
 #include "InferenceStep/ClassificationInferenceStep.h"
 #include "InferenceStep/DecoratorInferenceStep.h"
 #include "InferenceStep/ParallelSequenceLabelingInferenceStep.h"
+
+#include "InferenceContext/CancelAfterStepCallback.h"
 
 void declareInferenceClasses()
 {
@@ -30,8 +33,10 @@ void declareInferenceClasses()
   // InferenceStep
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInferenceStep);
-}
 
+  // InferenceCallback
+  LBCPP_DECLARE_CLASS(CancelAfterStepCallback);
+}
 
 #include "ProteinInference/Protein.h"
 #include "ProteinInference/ProteinInference.h"

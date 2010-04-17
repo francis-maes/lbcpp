@@ -20,7 +20,7 @@ class LabelSequence : public Sequence
 public:
   LabelSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length)
     : Sequence(name), dictionary(dictionary), sequence(length, 255)
-    {jassert(dictionary->getNumFeatures() < 255);}
+    {jassert(dictionary && dictionary->getNumFeatures() < 255);}
 
   LabelSequence() {}
 
