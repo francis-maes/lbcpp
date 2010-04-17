@@ -17,7 +17,7 @@ using namespace lbcpp;
 /*
 ** ObjectConsumer
 */
-void ObjectConsumer::consume(ObjectStreamPtr stream, size_t maximumCount)
+void ObjectConsumer::consumeStream(ObjectStreamPtr stream, size_t maximumCount)
 {
   for (size_t i = 0; !maximumCount || i < maximumCount; ++i)
   {
@@ -28,7 +28,7 @@ void ObjectConsumer::consume(ObjectStreamPtr stream, size_t maximumCount)
   }
 }
 
-void ObjectConsumer::consume(ObjectContainerPtr container)
+void ObjectConsumer::consumeContainer(ObjectContainerPtr container)
 {
   size_t s = container->size();
   for (size_t i = 0; i < s; ++i)

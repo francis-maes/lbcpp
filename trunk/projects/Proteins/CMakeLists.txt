@@ -10,6 +10,7 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/Sequence.h
   InferenceData/LabelSequence.h
   InferenceData/ScoreVectorSequence.h
+  InferenceData/ScoreSymmetricMatrix.h
 )
 
 SET(LBCPP_INFERENCE_STEP_SOURCES
@@ -42,11 +43,12 @@ SET(LBCPP_INFERENCE_LEARNER_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
-  ProteinInference/Protein.h
   ProteinInference/AminoAcidDictionary.h
   ProteinInference/AminoAcidDictionary.cpp
   ProteinInference/SecondaryStructureDictionary.h
   ProteinInference/SecondaryStructureDictionary.cpp
+  ProteinInference/Protein.h
+  ProteinInference/Protein.cpp
   ProteinInference/ProteinInference.h
   ProteinInference/ProteinEvaluationCallback.h
 )
@@ -77,6 +79,9 @@ TARGET_LINK_LIBRARIES(proteins lbcpp-core)
 
 ADD_EXECUTABLE(ProteinsCB513Converter Programs/CB513Converter.cpp)
 TARGET_LINK_LIBRARIES(ProteinsCB513Converter proteins)
+
+ADD_EXECUTABLE(CASPPredictor Programs/CASPPredictor.cpp)
+TARGET_LINK_LIBRARIES(CASPPredictor proteins)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 

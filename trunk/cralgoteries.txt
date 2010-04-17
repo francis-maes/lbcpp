@@ -1,10 +1,4 @@
-
-* Load/Save des modèles
-   - Faire une classe VectorSequentialInferenceStep
-   - Faire deriver ProteinInference de VectorSequentialInferenceStep
-   - Serialisation dans VectorSequentialInferenceStep
-   - Serialisation dans le reste
-
+Various:
 * Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
 * SICA-prob: sampling
 * numberFeatures

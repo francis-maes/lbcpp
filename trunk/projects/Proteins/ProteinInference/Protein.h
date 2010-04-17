@@ -11,6 +11,7 @@
 
 # include "../InferenceData/LabelSequence.h"
 # include "../InferenceData/ScoreVectorSequence.h"
+# include "../InferenceData/ScoreSymmetricMatrix.h"
 
 namespace lbcpp
 {
@@ -25,53 +26,40 @@ public:
     : StringToObjectMap(name) {}
   Protein() {}
 
-  size_t getLength() const
-    {return getAminoAcidSequence()->size();}
+  static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
 
   /*
   ** Primary Structure and Position Specific Scoring Matrix
   */
-  LabelSequencePtr getAminoAcidSequence() const
-    {return getObject(T("AminoAcidSequence"));}
-
-  ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const
-    {return getObject(T("PositionSpecificScoringMatrix"));}
+  size_t getLength() const;
+  LabelSequencePtr getAminoAcidSequence() const;
+  ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const;
 
   /*
   ** Secondary Structure
   */
-  LabelSequencePtr getSecondaryStructureSequence() const
-    {return getObject(T("SecondaryStructureSequence"));}
-
-  LabelSequencePtr getDSSPSecondaryStructureSequence() const
-    {return getObject(T("DSSPSecondaryStructureSequence"));}
+  LabelSequencePtr getSecondaryStructureSequence() const;
+  LabelSequencePtr getDSSPSecondaryStructureSequence() const;
 
   /*
   ** Solvent Accesibility
   */
-  LabelSequencePtr getSolventAccessibilitySequence() const
-    {return getObject(T("SolventAccessibilitySequence"));}
+  LabelSequencePtr getSolventAccessibilitySequence() const;
+
+  /*
+  ** Order/Disorder
+  */
+  LabelSequencePtr getOrderDisorderSequence() const;
+  ScoreVectorSequencePtr getOrderDisorderScoreSequence() const;
+
+  /*
+  ** Residue-residue distance
+  */
+  ScoreSymmetricMatrixPtr getResidueResidueContactProbabilityMatrix() const; // contact at 8 angstrom
 
 protected:
-  virtual bool load(InputStream& istr)
-  {
-    int versionNumber;
-    if (!lbcpp::read(istr, versionNumber))
-      return false;
-    if (versionNumber != 101)
-    {
-      Object::error(T("Protein::load"), T("Unrecognized version number"));
-      return false;
-    }
-    return StringToObjectMap::load(istr);
-  }
-
-  virtual void save(OutputStream& ostr) const
-  {
-    int versionNumber = 101;
-    lbcpp::write(ostr, versionNumber);
-    StringToObjectMap::save(ostr);
-  }
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
 };
 
 }; /* namespace lbcpp */

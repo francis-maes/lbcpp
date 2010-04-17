@@ -50,6 +50,12 @@ public:
     return new Label(dictionary, (size_t)sequence[index]);
   }
 
+  String getString(size_t index) const
+  {
+    jassert(index < sequence.size());
+    return sequence[index] == 255 ? T("?") : dictionary->getFeature(sequence[index]);
+  }
+
   void setIndex(size_t position, size_t index)
   {
     jassert(position < sequence.size() && index <= 255);
@@ -86,6 +92,7 @@ public:
     ReferenceCountedObjectPtr<LabelSequence> res = Object::createAndCast<LabelSequence>(getClassName());
     res->dictionary = dictionary;
     res->sequence = sequence;
+    res->name = name;
     return res;
   }
 

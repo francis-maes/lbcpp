@@ -99,6 +99,8 @@ public:
     return res + T("\n");
   }
 
+  // todo: clone
+
 protected:
   FeatureDictionaryPtr dictionary;
   size_t length, numScores;

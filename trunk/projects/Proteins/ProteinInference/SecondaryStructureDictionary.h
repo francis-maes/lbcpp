@@ -71,122 +71,20 @@ private:
   SolventAccesibility2StateDictionary();
 };
 
-#if 0
-class SecondaryStructureElement
+class OrderDisorderDictionary : public FeatureDictionary
 {
 public:
+  static FeatureDictionaryPtr getInstance();
 
-  SecondaryStructureElement(EightStateType type)
-    : type((int)type), eightStates(true) {}
-
-  SecondaryStructureElement(ThreeStateType type)
-    : type((int)type), eightStates(false) {}
-
-  SecondaryStructureElement(juce::tchar code, bool eightStates)
-    : eightStates(eightStates)
+  enum Type
   {
-    if (eightStates)
-    {
-      static const String codes = T("GHITEBS");
-      type = codes.indexOfChar(code);
-      if (type < 0)
-        type = coil;
-    }
-    else
-    {
-      jassert(code == 'H' || code == 'E' || code == 'C');
-      type = (code == 'H' ? helix : (code == 'E' ? sheet : other));
-    }
-  }
-
-  bool isEightStates() const
-    {return eightStates;}
-
-  SecondaryStructureElement toThreeState() const
-  {
-    jassert(eightStates);
-    return SecondaryStructureElement(getType());
-  }
-
-  EightStateType getExtendedType() const
-  {
-    if (eightStates)
-      return (EightStateType)type;
-    else
-      return (type == helix ? alphaHelix : (type == sheet ? extendedStrandInSheet : coil));
-  }
-
-  ThreeStateType getType() const
-  {
-    if (eightStates)
-    {
-      return (type == threeTurnHelix || type == alphaHelix
-                ? helix : (type == residueInIsolatedBridge || type == extendedStrandInSheet ? sheet : other));
-    }
-    else
-      return (ThreeStateType)type;
-  }
-
-  static StringDictionaryPtr getOneLetterCodes(bool eightStates)
-  {
-    if (eightStates)
-    {
-      static const juce::tchar* codes[] =
-        {T("G"), T("H"), T("I"), T("T"), T("E"), T("B"), T("S"), T("_"), NULL};
-      static StringDictionaryPtr dictionary = new StringDictionary(T("SecondaryStructureDSSPOneLetterCode"), codes);
-      return dictionary;
-    }
-    else
-    {
-      static const juce::tchar* codes[] =
-        {T("H"), T("E"), T("C"), NULL};
-      static StringDictionaryPtr dictionary = new StringDictionary(T("SecondaryStructureOneLetterCode"), codes);
-      return dictionary;
-    }
-  }
-  
-  juce::tchar getOneLetterCode() const
-  {
-    StringDictionaryPtr dictionary = getOneLetterCodes(eightStates);
-    jassert(dictionary->exists((size_t)type));
-    String res = dictionary->getString((size_t)type);
-    jassert(res.length() == 1);
-    return res[0];
-  }
-
-  String toString() const
-  {
-    if (eightStates)
-    {
-      static const juce::tchar* names[] = {
-        T("Three Turn Helix"),
-        T("Alpha Helix"),
-        T("Pi Helix"),
-        T("Hydrogen Bonded Turn"),
-        T("Extended Strand in Sheet"),
-        T("Residue in Isolated Bridge"),
-        T("Bend"),
-        T("Coil")
-      };
-      jassert(type >= 0 && type < (int)(sizeof (names) / sizeof (juce::tchar* )));
-      return names[type];
-    }
-    else
-    {
-      static const juce::tchar* names[] = {T("Helix"), T("Sheet"), T("Other")};
-      jassert(type >= 0 && type < (int)(sizeof (names) / sizeof (juce::tchar* )));
-      return names[type];
-    }
-  }
-
-  int getTypeIndex() const
-    {return type;}
+    order = 0,
+    disorder,
+  };
 
 private:
-  int type;
-  bool eightStates;
+  OrderDisorderDictionary();
 };
-#endif // 0
 
 }; /* namespace lbcpp */
 

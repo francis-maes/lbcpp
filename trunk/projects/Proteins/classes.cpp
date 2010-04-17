@@ -17,6 +17,7 @@ using namespace lbcpp;
 
 #include "InferenceData/LabelSequence.h"
 #include "InferenceData/ScoreVectorSequence.h"
+#include "InferenceData/ScoreSymmetricMatrix.h"
 
 #include "InferenceStep/ClassificationInferenceStep.h"
 #include "InferenceStep/DecoratorInferenceStep.h"
@@ -29,6 +30,7 @@ void declareInferenceClasses()
   // Data
   LBCPP_DECLARE_CLASS(LabelSequence);
   LBCPP_DECLARE_CLASS(ScoreVectorSequence);
+  LBCPP_DECLARE_CLASS(ScoreSymmetricMatrix);
 
   // InferenceStep
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
@@ -54,4 +56,5 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);
   LBCPP_DECLARE_DICTIONARY(DSSPSecondaryStructureDictionary);
   LBCPP_DECLARE_DICTIONARY(SolventAccesibility2StateDictionary);
+  LBCPP_DECLARE_DICTIONARY(OrderDisorderDictionary);
 }
