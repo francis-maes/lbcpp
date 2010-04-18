@@ -34,7 +34,7 @@ void PDBFileGenerator::consume(ObjectPtr object)
   /*
   ** Primary Structure
   */
-  std::vector<String> residueNames;
+  std::vector<String> residueNames(n);
   for (size_t i = 0; i < n; ++i)
     residueNames[i] = AminoAcidDictionary::getThreeLettersCode((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i)).toUpperCase();
   size_t firstResidueIndex = 0;

@@ -57,6 +57,8 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   ProteinInference/Protein.cpp
   ProteinInference/ProteinInference.h
   ProteinInference/ProteinEvaluationCallback.h
+  ProteinInference/PDBFileParser.h
+  ProteinInference/PDBFileParser.cpp
   ProteinInference/PDBFileGenerator.h
   ProteinInference/PDBFileGenerator.cpp
   ProteinInference/CASPFileGenerator.h

@@ -7,7 +7,15 @@
                                `--------------------------------------------*/
 #include "Protein.h"
 #include "AminoAcidDictionary.h"
+#include "PDBFileParser.h"
+#include "PDBFileGenerator.h"
 using namespace lbcpp;
+
+ProteinPtr Protein::createFromPDB(const File& pdbFile)
+{
+  ObjectStreamPtr parser(new PDBFileParser(pdbFile));
+  return parser->nextAndCast<Protein>();
+}
 
 ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)
 {
@@ -28,6 +36,11 @@ ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String
   }
   res->setObject(aminoAcidSequence);
   return res;
+}
+
+void Protein::saveToPDBFile(const File& pdbFile)
+{
+  ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));
 }
 
 size_t Protein::getLength() const
