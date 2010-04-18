@@ -210,7 +210,7 @@ public:
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
   virtual double predict(const FeatureGeneratorPtr input) const
-    {return getPredictionArchitecture()->compute(parameters, input);}
+    {return parameters ? getPredictionArchitecture()->compute(parameters, input) : 0.0;}
 };
 
 inline GradientBasedRegressorPtr loadGradientBasedRegressor(const File& file)

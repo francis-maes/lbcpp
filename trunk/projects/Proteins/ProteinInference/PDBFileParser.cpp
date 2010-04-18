@@ -130,7 +130,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
     return false;
   }
   
-  String atomName = getSubString(line, 13, 16);
+  String atomName = getSubString(line, 13, 16).trim();
   String residueName = getSubString(line, 18, 20);
 
   int residueSequenceNumber;

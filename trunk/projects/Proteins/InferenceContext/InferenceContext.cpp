@@ -12,6 +12,8 @@
 #include "../InferenceStep/ParallelInferenceStep.h"
 #include "../InferenceStep/SequentialInferenceStep.h"
 #include "../InferenceStep/ClassificationInferenceStep.h"
+#include "../InferenceStep/RegressionInferenceStep.h"
+#include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
 /*
@@ -48,6 +50,12 @@ void InferenceContext::callClassification(InferenceStackPtr stack, ClassifierPtr
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->classificationCallback(stack, classifier, input, supervision, returnCode);
+}
+
+void InferenceContext::callRegression(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->regressionCallback(stack, regressor, input, supervision, returnCode);
 }
 
 void InferenceContext::appendCallback(InferenceCallbackPtr callback)
@@ -158,6 +166,21 @@ public:
     step->setClassifier(classifier);
     FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
     return classifier->predictLabel(inputFeatures);
+  }
+
+  virtual ObjectPtr runRegression(RegressionInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    RegressorPtr regressor = step->getRegressor();
+    callRegression(stack, regressor, input, supervision, returnCode);
+    if (returnCode != InferenceStep::finishedReturnCode)
+    {
+      Object::error("InferenceContext::runRegression", "Could not regress");
+      return ObjectPtr(); 
+    }
+    jassert(regressor);
+    step->setRegressor(regressor);
+    FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
+    return new Scalar(regressor->predict(inputFeatures));
   }
 
 private:

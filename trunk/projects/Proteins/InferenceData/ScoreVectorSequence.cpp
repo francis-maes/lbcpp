@@ -9,10 +9,12 @@
 #include "ScoreVectorSequence.h"
 using namespace lbcpp;
 
-ScoreVectorSequence::ScoreVectorSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length)
-  : Sequence(name), dictionary(dictionary), length(length),
-    numScores(dictionary->getNumFeatures()), matrix(length * dictionary->getNumFeatures(), 0.0)
+ScoreVectorSequence::ScoreVectorSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length, size_t numScores)
+  : Sequence(name), dictionary(dictionary), length(length), numScores(numScores)
 {
+  if (!numScores)
+    this->numScores = dictionary->getNumFeatures();
+  matrix.resize(length * this->numScores, 0.0);
 }
 
 void ScoreVectorSequence::resize(size_t newSize)

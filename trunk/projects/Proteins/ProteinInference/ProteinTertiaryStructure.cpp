@@ -10,6 +10,42 @@
 using namespace lbcpp;
 
 /*
+** ProteinCarbonTrace
+*/
+ProteinCarbonTracePtr ProteinCarbonTrace::createCAlphaTrace(ProteinTertiaryStructurePtr tertiaryStructure)
+{
+  size_t n = tertiaryStructure->size();
+  ProteinCarbonTracePtr res = new ProteinCarbonTrace(T("CAlphaTrace"), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+    ProteinAtomPtr atom = residue->getCAlphaAtom();
+    jassert(atom);
+    res->setPosition(i, atom->getPosition());
+  }
+  return res;
+}
+
+ProteinCarbonTracePtr ProteinCarbonTrace::createCBetaTrace(ProteinTertiaryStructurePtr tertiaryStructure)
+{
+  size_t n = tertiaryStructure->size();
+  ProteinCarbonTracePtr res = new ProteinCarbonTrace(T("CAlphaTrace"), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+    ProteinAtomPtr atom = residue->getCBetaAtom();
+    if (!atom)
+    {
+      jassert(residue->getAminoAcid() == AminoAcidDictionary::glycine);
+      atom = residue->getCAlphaAtom();
+    }
+    jassert(atom);
+    res->setPosition(i, atom->getPosition());
+  }
+  return res;
+}
+
+/*
 ** ProteinAtom
 */
 String ProteinAtom::toString() const
@@ -33,6 +69,14 @@ String ProteinResidue::toString() const
   else
     res += T(" no atoms.\n");
   return res;
+}
+
+ProteinAtomPtr ProteinResidue::findAtomByName(const String& name) const
+{
+  for (size_t i = 0; i < atoms.size(); ++i)
+    if (atoms[i]->getName() == name)
+      return atoms[i];
+  return ProteinAtomPtr();
 }
 
 /*

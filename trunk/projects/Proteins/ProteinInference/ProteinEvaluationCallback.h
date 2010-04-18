@@ -21,6 +21,8 @@ public:
   virtual void startInferencesCallback(size_t count)
   {
     numProteins = 0;
+    pssmAbsoluteError = new ScalarVariableMean(T("PSSM"));
+    pssmSquaredError = new ScalarVariableMean(T("PSSM^2"));
     secondaryStructureAccuracy = new ScalarVariableMean(T("SS3"));
     dsspSecondaryStructureAccuracy = new ScalarVariableMean(T("SS8"));
     solventAccesibility2StateAccuracy = new ScalarVariableMean(T("SA2"));
@@ -45,6 +47,12 @@ public:
     res += "\n";
     if (numProteins)
     {
+      if (pssmSquaredError->getMean())
+      {
+        std::cout << "Evaluated on " << pssmSquaredError->getCount() << " examples." << std::endl;
+        res += T("PSSM: mean abs. error = ") + String(pssmAbsoluteError->getMean()) +
+               T(" rmse = ") + String(sqrt(pssmSquaredError->getMean())) + T("\n");
+      }
       res += scoreToString(secondaryStructureAccuracy);
       res += scoreToString(dsspSecondaryStructureAccuracy);
       res += scoreToString(solventAccesibility2StateAccuracy);
@@ -71,9 +79,13 @@ public:
   double getSA2Score() const
     {return solventAccesibility2StateAccuracy->getMean();}
 
+  double getPSSMRootMeanSquareError() const
+    {return sqrt(pssmSquaredError->getMean());}
+
   void addProtein(ProteinPtr predicted, ProteinPtr correct)
   {
     ++numProteins;
+    addScoreVectorSequence(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix(), pssmAbsoluteError, pssmSquaredError);
     addLabelSequence(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence(), secondaryStructureAccuracy);
     addLabelSequence(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureAccuracy);
     addLabelSequence(predicted->getSolventAccessibilitySequence(), correct->getSolventAccessibilitySequence(), solventAccesibility2StateAccuracy);
@@ -96,8 +108,32 @@ public:
     }
   }
 
+  void addScoreVectorSequence(ScoreVectorSequencePtr predicted, ScoreVectorSequencePtr correct, ScalarVariableMeanPtr absoluteError, ScalarVariableMeanPtr squaredError)
+  {
+    if (!correct || !predicted)
+      return;
+
+    jassert(correct->getNumScores() >= predicted->getNumScores());
+    jassert(correct->getDictionary() == predicted->getDictionary());
+
+    size_t n = predicted->size();
+    size_t s = predicted->getNumScores();
+    jassert(correct->size() == n);
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = 0; j < s; ++j)
+      {
+        double delta = predicted->getScore(i, j) - correct->getScore(i, j);
+        //std::cout << "Predicted = " << predicted->getScore(i, j) << " Correct = " << correct->getScore(i, j) << " Delta = " << delta << std::endl;
+        absoluteError->push(fabs(delta));
+        squaredError->push(delta * delta);
+      }
+  }
+
 protected:
   size_t numProteins;
+  ScalarVariableMeanPtr pssmAbsoluteError;
+  ScalarVariableMeanPtr pssmSquaredError;
+
   ScalarVariableMeanPtr secondaryStructureAccuracy;
   ScalarVariableMeanPtr dsspSecondaryStructureAccuracy;
   ScalarVariableMeanPtr solventAccesibility2StateAccuracy;

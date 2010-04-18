@@ -18,7 +18,9 @@ class InferenceLearnerCallback : public Object
 {
 public:
   virtual InferenceContextPtr createContext() = 0;
-  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels) = 0;
+
+  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step) = 0;
+  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels) = 0;
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
     {}

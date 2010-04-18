@@ -32,6 +32,9 @@ typedef ReferenceCountedObjectPtr<SharedParallelInferenceStep> SharedParallelInf
 class ClassificationInferenceStep;
 typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInferenceStepPtr;
 
+class RegressionInferenceStep;
+typedef ReferenceCountedObjectPtr<RegressionInferenceStep> RegressionInferenceStepPtr;
+
 /*
 ** InferenceVisitor
 */

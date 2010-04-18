@@ -146,21 +146,10 @@ protected:
     {target.labels = labels;}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline ClassifierPtr loadClassifier(const File& file)
   {return Object::createFromFileAndCast<Classifier>(file);}
 
 
-/*!
-** @class BinaryClassifier
-** @brief
-*/
 class BinaryClassifier : public Classifier
 {
 public:
@@ -176,188 +165,49 @@ public:
   virtual size_t sample(const FeatureGeneratorPtr input) const;
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline BinaryClassifierPtr loadBinaryClassifier(const File& file)
   {return Object::createFromFileAndCast<BinaryClassifier>(file);}
 
 
-/*!
-** @class GeneralizedClassifier
-** @brief
-*/
 class GeneralizedClassifier : public LearningMachine
 {
 public:
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
-
-  /*!
-  **
-  **
-  ** @param example
-  **
-  ** @return
-  */
   virtual size_t predict(const GeneralizedClassificationExample& example) const;
-
-  /*!
-  **
-  **
-  ** @param compositeInput
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr compositeInput) const;
-
-  /*!
-  **
-  **
-  ** @param compositeInput
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictProbabilities(const FeatureGeneratorPtr compositeInput) const;
-
-  /*!
-  **
-  **
-  ** @param compositeInput
-  **
-  ** @return
-  */
   virtual size_t sample(const FeatureGeneratorPtr compositeInput) const;
 };
 
 
-/*!
-** @class Regressor
-** @brief
-*/
 class Regressor : public LearningMachine
 {
 public:
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
 
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateMeanAbsoluteError(ObjectStreamPtr examples) const;
-
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateMeanAbsoluteError(ObjectContainerPtr examples) const
     {return evaluateMeanAbsoluteError(examples->toStream());}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline RegressorPtr loadRegressor(const File& file)
   {return Object::createFromFileAndCast<Regressor>(file);}
 
-/*!
-**
-**
-** @param ostr
-**
-** @return
-*/
 extern RegressorPtr verboseRegressor(std::ostream& ostr);
 
-
-/*!
-** @class Ranker
-** @brief
-*/
 class Ranker : public LearningMachine
 {
 public:
-  /*!
-  **
-  **
-  ** @param input
-  **
-  ** @return
-  */
   virtual double predictScore(const FeatureGeneratorPtr input) const = 0;
-
-  /*!
-  **
-  **
-  ** @param compositeInput
-  **
-  ** @return
-  */
   virtual size_t predict(const FeatureGeneratorPtr compositeInput) const;
 
-  /*!
-  **
-  **
-  ** @param compositeInput
-  **
-  ** @return
-  */
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr compositeInput) const;
 
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateMeanTopRankCost(ObjectStreamPtr examples) const;
-
-  /*!
-  **
-  **
-  ** @param examples
-  **
-  ** @return
-  */
   double evaluateMeanTopRankCost(ObjectContainerPtr examples) const
     {return evaluateMeanTopRankCost(examples->toStream());}
 };
 
-/*!
-**
-**
-** @param filename
-**
-** @return
-*/
 inline RankerPtr loadRanker(const File& file)
   {return Object::createFromFileAndCast<Ranker>(file);}
 

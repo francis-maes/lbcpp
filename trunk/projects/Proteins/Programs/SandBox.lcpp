@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
+#include "InferenceStep/RegressionInferenceStep.h"
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"
@@ -15,6 +16,220 @@
 using namespace lbcpp;
 
 extern void declareProteinClasses();
+
+// Input: an ObjectContainer
+// Output/Supervision: a DenseVector
+class ParallelSharedMultiRegressionInferenceStep : public SharedParallelInferenceStep
+{
+public:
+  ParallelSharedMultiRegressionInferenceStep(const String& name, FeatureDictionaryPtr outputDictionary)
+    : SharedParallelInferenceStep(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
+
+  virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+  {
+    ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
+    jassert(container);
+    return container->size();
+  }
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return getInputFeatures(input, index);}
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  {
+    if (!supervision)
+      return ObjectPtr();
+    DenseVectorPtr vector = supervision.dynamicCast<DenseVector>();
+    jassert(vector);
+    return new Scalar(vector->get(index));
+  }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return new DenseVector(outputDictionary, getNumSubInferences(input));}
+  
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    DenseVectorPtr vector = output.dynamicCast<DenseVector>();
+    jassert(vector);
+    ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
+    jassert(scalar);
+    vector->set(index, scalar->getValue());
+  }
+
+protected:
+  FeatureDictionaryPtr outputDictionary;
+};
+
+// Input: a sequence of features
+// Output/Supervision: a ScoreVectorSequence
+// SubInference: FeaturesContainer -> DenseVector
+class ParallelSequenceMultiRegressionInferenceStep : public SharedParallelInferenceStep
+{
+public:
+  ParallelSequenceMultiRegressionInferenceStep(const String& name, InferenceStepPtr subInference)
+    : SharedParallelInferenceStep(name, subInference) {}
+  ParallelSequenceMultiRegressionInferenceStep()
+    {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+  {
+    ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
+    jassert(container);
+    return container->size();
+  }
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  {
+    if (!supervision)
+      return ObjectPtr();
+    ScoreVectorSequencePtr sequence = supervision.dynamicCast<ScoreVectorSequence>();
+    jassert(sequence);
+    return sequence->get(index);
+  }
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    ScoreVectorSequencePtr sequence = output.dynamicCast<ScoreVectorSequence>();
+    jassert(sequence);
+    DenseVectorPtr vector = subOutput.dynamicCast<DenseVector>();
+    jassert(vector);
+    sequence->set(index, vector); 
+  }
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+class PSSMRowPredictionInput : public Object
+{
+public:
+  PSSMRowPredictionInput(ProteinPtr protein, size_t position)
+    : protein(protein), position(position) {}
+
+  ProteinPtr getProtein() const
+    {return protein;}
+
+  size_t getPosition() const
+    {return position;}
+
+  featureGenerator getCommonFeaturesImpl() const
+  {
+    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    jassert(aminoAcidSequence);
+    jassert(position < aminoAcidSequence->size());
+    //featureCall(0) aminoAcidSequence->elementFeatures(position);
+    featureCall(0) aminoAcidSequence->windowFeatures(position, 7, 7, true);
+    featureCall(1) sequenceMultiScaleCenteredConjunctionFeatures(aminoAcidSequence, position, 2, 3);
+  }
+
+
+  featureGenerator sequenceMultiScaleCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t minConjunctionSize, size_t maxConjunctionSize) const
+  {
+    jassert(maxConjunctionSize >= minConjunctionSize);
+    for (size_t i = minConjunctionSize; i <= maxConjunctionSize; ++i)
+      featureCall(i - minConjunctionSize) sequenceCenteredConjunctionFeatures(sequence, position, i);
+  }
+
+  featureGenerator sequenceCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t conjunctionSize) const
+  {
+    int p = (int)position - (conjunctionSize - 1);
+    for (size_t i = 0; i < conjunctionSize; ++i)
+      featureCall(i) sequenceConjunctionFeatures(sequence, p + (int)i, conjunctionSize);
+  }
+  
+  featureGenerator sequenceConjunctionFeatures(SequencePtr sequence, int firstPosition, size_t conjunctionSize) const
+  {
+    String str;
+    for (size_t i = 0; i < conjunctionSize; ++i)
+    {
+      if (str.isNotEmpty())
+        str += T("^");
+      str += sequenceElementString(sequence, firstPosition + (int)i);
+    }
+    featureSense(str);
+  }
+
+  String sequenceElementString(SequencePtr sequence, int position) const
+  {
+    if (position < 0)
+      return T("<");
+    else if (position >= (int)sequence->size())
+      return T(">");
+    else
+      return sequence->elementToString((size_t)position);
+  }
+
+  FeatureGeneratorPtr getCommonFeatures() const
+  {
+    if (!commonFeatures)
+    {
+      const_cast<PSSMRowPredictionInput* >(this)->commonFeatures = getCommonFeaturesImpl()->toSparseVector();
+      //std::cout << commonFeatures->toString() << std::endl;
+    }
+    return commonFeatures;
+  }
+  
+private:
+  SparseVectorPtr commonFeatures;
+  ProteinPtr protein;
+  size_t position;
+};
+
+typedef ReferenceCountedObjectPtr<PSSMRowPredictionInput> PSSMRowPredictionInputPtr;
+
+class PSSMRowPredictionInferenceStep : public ParallelSharedMultiRegressionInferenceStep
+{
+public:
+  PSSMRowPredictionInferenceStep()
+    : ParallelSharedMultiRegressionInferenceStep(T("PSSMRow"), AminoAcidDictionary::getInstance()) {}
+
+  virtual size_t getNumSubInferences(ObjectPtr) const
+    {return AminoAcidDictionary::numAminoAcids;}
+ 
+  featureGenerator getInputFeatures(ObjectPtr input_, size_t scoreIndex) const
+  {
+    PSSMRowPredictionInputPtr input = input_.dynamicCast<PSSMRowPredictionInput>();
+    jassert(input);
+    featureSense(scoreIndex);
+    featureCall(scoreIndex) input->getCommonFeatures();
+  }
+};
+
+class PSSMPredictionInferenceStep : public ParallelSequenceMultiRegressionInferenceStep
+{
+public:
+  PSSMPredictionInferenceStep()
+    : ParallelSequenceMultiRegressionInferenceStep(T("PSSM"), new PSSMRowPredictionInferenceStep()) {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return getProtein(input)->getLength();}
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return new PSSMRowPredictionInput(getProtein(input), index);}
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  {
+    if (!supervision)
+      return ObjectPtr();
+    ScoreVectorSequencePtr pssm = getProtein(supervision)->getPositionSpecificScoringMatrix();
+    return ParallelSequenceMultiRegressionInferenceStep::getSubSupervision(pssm, index);
+  }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), AminoAcidDictionary::getInstance(), getProtein(input)->getLength(), AminoAcidDictionary::numAminoAcids);}
+
+private:
+  ProteinPtr getProtein(ObjectPtr object) const
+  {
+    ProteinPtr protein = object.dynamicCast<Protein>();
+    jassert(protein);
+    return protein;
+  }
+};
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
 
 class MyProteinSequenceLabelingInferenceStep : public ProteinSequenceLabelingInferenceStep
 {
@@ -77,7 +292,7 @@ protected:
     lbcpp::write(ostr, targetDictionary->getName());
   }
 };
-
+/*
 class PrintClassifiersSummaryVisitor : public DefaultInferenceVisitor
 {
 public:
@@ -111,7 +326,7 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<PrintClassifiersSummaryVisitor> PrintClassifiersSummaryVisitorPtr;
-
+*/
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
@@ -125,7 +340,7 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
-  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels)
+  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
   {
     static const double regularizer = 10.0;
     static const bool useConstantLearningRate = false;
@@ -135,6 +350,15 @@ public:
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
     return classifier;
+  }
+
+  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
+  {
+    static const bool useConstantLearningRate = true;
+
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.2, 150000) : constantIterationFunction(0.1);
+    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
+    return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
   }
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
@@ -149,61 +373,22 @@ public:
     if (cache)
       validationContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
 
-   // validationContext->runWithSupervisedExamples(inference, trainingData);
-   // std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
+    validationContext->runWithSupervisedExamples(inference, trainingData);
+    std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
+    double trainRmse = evaluation->getPSSMRootMeanSquareError();
     
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
-    std::vector<double> scores1;
-    scores1.push_back(evaluation->getQ3Score());
-    scores1.push_back(evaluation->getQ8Score());
-    scores1.push_back(evaluation->getSA2Score());
-    
-    File modelFile("C:\\Projets\\LBC++\\projects\\Proteins\\Models\\yo.inference");
-    inference->saveToFile(modelFile);
-    InferenceStepPtr inference2 = Object::createFromFileAndCast<InferenceStep>(modelFile);
-    validationContext->runWithSupervisedExamples(inference2, testingData);
-    std::vector<double> scores2;
-    scores2.push_back(evaluation->getQ3Score());
-    scores2.push_back(evaluation->getQ8Score());
-    scores2.push_back(evaluation->getSA2Score());
-    std::cout << "Serialisation Test evaluation: " << evaluation->toString() << std::endl;
+    double testRmse = evaluation->getPSSMRootMeanSquareError();
 
-    if (scores1 != scores2)
+    if (trainRmse < bestTrainRmse)
     {
-      std::cout << "DIFFERENT SCORES !!!!" << std::endl;
-      std::cout << "INFERENCE 1 = " << std::endl << inference->toString() << std::endl;
-      std::cout << std::endl << "INFERENCE 2 = " << std::endl << inference2->toString() << std::endl;
-
-
-      validationContext = createContext();
-      validationContext->appendCallback(evaluation);
-      validationContext->runWithSupervisedExamples(inference, testingData);
-      std::cout << "Test evaluation 1 without cache: " << evaluation->toString() << std::endl;
-      validationContext->runWithSupervisedExamples(inference2, testingData);
-      std::cout << "Test evaluation 2 without cache: " << evaluation->toString() << std::endl;
-
-      std::cout << "INFERENCE 1 Classifiers = " << std::endl;
-      PrintClassifiersSummaryVisitorPtr v = new PrintClassifiersSummaryVisitor();
-      inference->accept(v);
-      std::vector<DenseVectorPtr> parameters1 = v->parameters;
-      std::cout << std::endl << "INFERENCE 2 Classifiers = " << std::endl;
-      v = new PrintClassifiersSummaryVisitor();
-      inference2->accept(v);
-      std::vector<DenseVectorPtr> parameters2 = v->parameters;
-      std::cout << std::endl;
-      jassert(parameters1.size() == parameters2.size());
-      for (size_t i = 0; i < parameters1.size(); ++i)
-      {
-        DenseVectorPtr v = parameters1[i]->clone();
-        parameters2[i]->substractFrom(v);
-        std::cout << "Classifier " << (i+1) << " Difference norm = " << v->l2norm() << std::endl;
-      }
-      jassert(false);
+      bestTrainRmse = trainRmse;
+      bestTestRmse = testRmse;
     }
 
     // stopping criterion
-    return iterationNumber < 3;
+    return iterationNumber < 5;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -212,6 +397,13 @@ public:
     std::cout << std::endl << "=====================================================" << std::endl;
     std::cout << "======= LEARNING PASS " << passName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
     std::cout << "=====================================================" << std::endl;
+    bestTrainRmse = bestTestRmse = DBL_MAX;
+  }
+
+  virtual void postLearningStepCallback(InferenceStepPtr step)
+  {
+    std::cout << "Best Train RMSE: " << bestTrainRmse << std::endl;
+    std::cout << "Best Test RMSE: " << bestTestRmse << std::endl;
   }
 
 private:
@@ -219,6 +411,8 @@ private:
   ObjectContainerPtr testingData;
   InferenceResultCachePtr cache;
   juce::uint32 startingTime;
+
+  double bestTrainRmse, bestTestRmse;
 };
 
 int main(int argc, char** argv)
@@ -229,14 +423,11 @@ int main(int argc, char** argv)
 //  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
   File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
+#ifdef JUCE_DEBUG
   ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
-
-  /*
-  ProteinPtr protein = proteins->getAndCast<Protein>(0);
-  std::cout << "Amino Acid Sequence: " << protein->getAminoAcidSequence()->toString() << std::endl;
-  SecondaryStructureInferenceStepPtr step = new SSContentOnlyInferenceStep("SS3CO", false);
-  std::cout << "Input Features at position 2: " << step->getInputFeatures(protein, 2)->toSparseVector()->toString() << std::endl;
-  return 0;*/
+#else
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+#endif // JUCE_DEBUG
 
   proteins = proteins->apply(new ObjectToObjectPairFunction());
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
@@ -245,7 +436,7 @@ int main(int argc, char** argv)
             << testingData->size() << " Testing Proteins" << std::endl;
 
   ProteinInferencePtr proteinInference = new ProteinInference();
-  
+  /*
   ProteinSequenceLabelingInferenceStepPtr step;
 
   for (size_t i = 0; i < 2; ++i)
@@ -256,7 +447,8 @@ int main(int argc, char** argv)
     proteinInference->appendStep(step);
     step = new MyProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step);
-  }
+  }*/
+  proteinInference->appendStep(new PSSMPredictionInferenceStep());
  
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);

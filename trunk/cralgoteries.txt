@@ -1,15 +1,15 @@
+Prediction de PSSM:
+ * RegressionInferenceStep
+ * Renforcement de la PSSM?
+
+
 Various:
-* Serialisation does not work correctly
 * Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
 * SICA-prob: sampling
 * numberFeatures
 
 Prediction de RRCM:
  * chopper données 
-
-Prediction de PSSM:
- * RegressionInferenceStep
- * Renforcement de la PSSM?
 
 Explorer:
   * dispatcher le code des juce::Component 
