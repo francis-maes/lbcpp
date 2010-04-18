@@ -13,7 +13,7 @@
 #include "ProteinInference/ProteinEvaluationCallback.h"
 #include "ProteinInference/ProteinInference.h"
 #include "Programs/ArgumentSet.h"
-//#include "Programs/PSSMParser.h"
+#include "Programs/PSSMParser.h"
 
 using namespace lbcpp;
 
@@ -162,6 +162,11 @@ public:
       cache = new InferenceResultCache();
   }
 
+  virtual ~MyInferenceLearnerCallback()
+  {
+    delete oPass;
+  }
+
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
 
@@ -205,18 +210,22 @@ public:
 
     lastTrainQ3 = evaluation->getQ3Score();
     lastTrainQ8 = evaluation->getQ8Score();
+    lastTrainSA2 = evaluation->getSA2Score();
     
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
     
     lastTestQ3 = evaluation->getQ3Score();
     lastTestQ8 = evaluation->getQ8Score();
+    lastTestSA2 = evaluation->getSA2Score();
 
     *oIteration << (int) lastIterationNumber << '\t'
                << lastTrainQ3 << '\t'
                << lastTestQ3  << '\t'
                << lastTrainQ8 << '\t'
                << lastTestQ8  << '\t'
+               << lastTrainSA2 << '\t'
+               << lastTestSA2  << '\t'
                << (juce::Time::getMillisecondCounter() - startTimeIteration) / 1000. << '\t'
                << (int) currentPass << '\n';
     oIteration->flush();
@@ -241,11 +250,15 @@ public:
   
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
+    delete oIteration;
+    
     *oPass << (int) currentPass << '\t'
           << lastTrainQ3 << '\t'
           << lastTestQ3  << '\t'
           << lastTrainQ8 << '\t'
           << lastTestQ8  << '\t'
+          << lastTrainSA2 << '\t'
+          << lastTestSA2  << '\t'
           << (juce::Time::getMillisecondCounter() - startTimePass) / 1000. << '\n';
     oPass->flush();
     
@@ -269,6 +282,8 @@ private:
   double lastTrainQ8;
   double lastTestQ3;
   double lastTestQ8;
+  double lastTrainSA2;
+  double lastTestSA2;
   
   size_t lastIterationNumber;
   size_t maxIteration;
@@ -329,7 +344,7 @@ int main(int argc, char** argv)
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
 
-#if 1
+#if 0
   while (!proteinsStream->isExhausted()) {
     ProteinPtr myProtein = proteinsStream->nextAndCast<Protein>();
     std::cout << myProtein->getName();
