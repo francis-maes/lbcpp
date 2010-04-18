@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-#if 0
+#if 1
 class DaFuckingDataParser : public LearningDataObjectParser
 {
 public:
@@ -207,7 +207,7 @@ int main()
 }
 #endif // 0
 
-
+#if 0
 int main()
 {
   declareProteinClasses();
@@ -220,3 +220,4 @@ int main()
   objectSaveToFileConsumer(outputDirectory, T("protein"))->consumeStream(proteinsStream);
   return 0;
 }
+#endif
