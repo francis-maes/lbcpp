@@ -61,7 +61,7 @@ public:
   /*
   ** Tertiary structure
   */
-  ProteinCAlphaTracePtr getCAlphaTrace() const;
+  ProteinCarbonTracePtr getCAlphaTrace() const;
   ProteinTertiaryStructurePtr getTertiaryStructure() const;
 
 protected:

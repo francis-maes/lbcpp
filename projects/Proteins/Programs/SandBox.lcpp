@@ -97,19 +97,20 @@ public:
       {
         DenseVectorPtr parameters = gbc->getParameters();
         std::cout << parameters->l0norm() << " parameters, norm = " << parameters->l2norm() << std::endl;
-        if (hop == 2)
-        {
-          std::cout << parameters->toString() << std::endl;
-        }
+        this->parameters.push_back(parameters);
       }
       else
         std::cout << "<unknown classifier>" << std::endl;
     }
   }
 
+  std::vector<DenseVectorPtr> parameters;
+
 private:
   size_t hop;
 };
+
+typedef ReferenceCountedObjectPtr<PrintClassifiersSummaryVisitor> PrintClassifiersSummaryVisitorPtr;
 
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
@@ -173,14 +174,31 @@ public:
       std::cout << "DIFFERENT SCORES !!!!" << std::endl;
       std::cout << "INFERENCE 1 = " << std::endl << inference->toString() << std::endl;
       std::cout << std::endl << "INFERENCE 2 = " << std::endl << inference2->toString() << std::endl;
+
+
+      validationContext = createContext();
+      validationContext->appendCallback(evaluation);
+      validationContext->runWithSupervisedExamples(inference, testingData);
+      std::cout << "Test evaluation 1 without cache: " << evaluation->toString() << std::endl;
       validationContext->runWithSupervisedExamples(inference2, testingData);
-      std::cout << "Double check Serialisation Test evaluation: " << evaluation->toString() << std::endl;
+      std::cout << "Test evaluation 2 without cache: " << evaluation->toString() << std::endl;
 
       std::cout << "INFERENCE 1 Classifiers = " << std::endl;
-      inference->accept(InferenceVisitorPtr(new PrintClassifiersSummaryVisitor()));
+      PrintClassifiersSummaryVisitorPtr v = new PrintClassifiersSummaryVisitor();
+      inference->accept(v);
+      std::vector<DenseVectorPtr> parameters1 = v->parameters;
       std::cout << std::endl << "INFERENCE 2 Classifiers = " << std::endl;
-      inference2->accept(InferenceVisitorPtr(new PrintClassifiersSummaryVisitor()));
+      v = new PrintClassifiersSummaryVisitor();
+      inference2->accept(v);
+      std::vector<DenseVectorPtr> parameters2 = v->parameters;
       std::cout << std::endl;
+      jassert(parameters1.size() == parameters2.size());
+      for (size_t i = 0; i < parameters1.size(); ++i)
+      {
+        DenseVectorPtr v = parameters1[i]->clone();
+        parameters2[i]->substractFrom(v);
+        std::cout << "Classifier " << (i+1) << " Difference norm = " << v->l2norm() << std::endl;
+      }
       jassert(false);
     }
 

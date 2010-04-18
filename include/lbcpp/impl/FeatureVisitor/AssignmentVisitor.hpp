@@ -38,7 +38,7 @@ struct AddVectorOperation : public AssignmentVectorOperation
 struct SubstractVectorOperation : public AssignmentVectorOperation
 {
   void process(double& lValue, const double rValue)
-    {lValue += rValue;}
+    {lValue -= rValue;}
 
   template<class VectorPtr>
   void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double weight)

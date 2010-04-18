@@ -64,24 +64,12 @@ public:
       InferenceStepPtr step = inference->getSubStep(stepNumber);
 
       // decorate inference to add "break"
-      bool isLastIteration = (stepNumber == numSteps - 1);
-      InferenceStepPtr decoratedInference = isLastIteration ? inf : addBreakToInference(inference, step);
+      InferenceStepPtr decoratedInference = addBreakToInference(inference, step);
 
       // train current inference step
       callback->preLearningStepCallback(step);
       trainPass(decoratedInference, step, trainingData);
       callback->postLearningStepCallback(step);
-      
-      // build cache for current inference step
-      /*if (cache)
-      {
-        InferenceContextPtr cacheContext = callback->createContext();
-        InferenceStepResultCachePtr stepCache = new InferenceStepResultCache(step);
-        cacheContext->appendCallback(new UseCacheInferenceCallback(cache));
-        cacheContext->appendCallback(new MakeCacheInferenceCallback(stepCache));
-        cacheContext->runWithSupervisedExamples(decoratedInference, trainingData);
-        cache->addStepCache(stepCache);
-      }*/
     }
   }
   
