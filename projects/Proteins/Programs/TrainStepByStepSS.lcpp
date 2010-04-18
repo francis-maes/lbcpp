@@ -329,14 +329,31 @@ int main(int argc, char** argv)
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
 
-#if 0
-  File file("/Users/jbecker/Documents/Workspace/LBC++/projects/Proteins/test.pssm");
+#if 1
+  while (!proteinsStream->isExhausted()) {
+    ProteinPtr myProtein = proteinsStream->nextAndCast<Protein>();
+    std::cout << myProtein->getName();
+    
+    File pssmFile("/scratch/jbecker/CB513_PSSM/" + myProtein->getName() + T(".pssm"));
+    if (!pssmFile.exists()) {
+      std::cout << " No pssm file found !" << std::endl;
+      continue;
+    }
+    
+    PSSMParser pssmParser(pssmFile, myProtein->getLength());
+    ObjectPtr newPSSM = pssmParser.next();
+    
+    jassert(newPSSM);
+    
+    myProtein->setObject(T("PositionSpecificScoringMatrix"), newPSSM);
+    
+    File outputFile("/scratch/jbecker/CB513_New/" + myProtein->getName() + T(".protein"));
+    myProtein->saveToFile(outputFile);
+    
+    std::cout << " OK" << std::endl;
+  }
 
-  PSSMParser parser(file);
-  ObjectPtr obj = parser.next();
-
-  std::cout << obj->toString();
-
+  return 0;
 #endif // 0
 #if 0
   ObjectContainerPtr prots = proteinsStream->load(7)->randomize();
