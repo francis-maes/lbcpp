@@ -63,9 +63,7 @@ public:
     : NameableObject(name), elementSymbol(elementSymbol), occupancy(0.0), temperatureFactor(0.0) {}
   ProteinAtom() {}
 
-  virtual String toString() const
-    {return getName() + T(" ") + position.toString() + T(" ")
-      + lbcpp::toString(occupancy) + T(" ") + lbcpp::toString(temperatureFactor);}
+  virtual String toString() const;
 
   String getElementSymbol() const
     {return elementSymbol;}
@@ -85,8 +83,14 @@ public:
   double getZ() const
     {return position.z;}
 
+  void setOccupancy(double occupancy)
+    {this->occupancy = occupancy;}
+
   double getOccupancy() const
     {return occupancy;}
+
+  void setTemperatureFactor(double temperatureFactor)
+    {this->temperatureFactor = temperatureFactor;}
 
   double getTemperatureFactor() const
     {return temperatureFactor;}
@@ -100,11 +104,13 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ProteinAtom> ProteinAtomPtr;
 
-class ProteinResidue : public NameableObject
+class ProteinResidue : public Object
 {
 public:
   ProteinResidue(AminoAcidDictionary::Type aminoAcid)
     : aminoAcid(aminoAcid) {}
+
+  virtual String toString() const;
 
   virtual String getName() const
     {return AminoAcidDictionary::getThreeLettersCode(aminoAcid);}

@@ -27,7 +27,10 @@ public:
     : StringToObjectMap(name) {}
   Protein() {}
 
+  static ProteinPtr createFromPDB(const File& pdbFile);
   static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
+
+  void saveToPDBFile(const File& pdbFile);
 
   /*
   ** Primary Structure and Position Specific Scoring Matrix

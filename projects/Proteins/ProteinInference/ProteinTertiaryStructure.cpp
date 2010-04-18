@@ -10,6 +10,32 @@
 using namespace lbcpp;
 
 /*
+** ProteinAtom
+*/
+String ProteinAtom::toString() const
+{
+  return getName() + T(" ") + position.toString() + T(" ")
+    + lbcpp::toString(occupancy) + T(" ") + lbcpp::toString(temperatureFactor);
+}
+
+/*
+** ProteinResidue
+*/
+String ProteinResidue::toString() const
+{
+  String res = T("Residue ") + AminoAcidDictionary::getThreeLettersCode(aminoAcid) + T(":");
+  if (atoms.size())
+  {
+    res += T("\n");
+    for (size_t i = 0; i < atoms.size(); ++i)
+      res += T("  ") + atoms[i]->toString() + T("\n");
+  }
+  else
+    res += T(" no atoms.\n");
+  return res;
+}
+
+/*
 ** ProteinTertiaryStructure
 */
 ProteinTertiaryStructure::ProteinTertiaryStructure(size_t numResidues)

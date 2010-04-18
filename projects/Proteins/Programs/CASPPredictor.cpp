@@ -11,6 +11,7 @@
 #include "../ProteinInference/AminoAcidDictionary.h"
 #include "../ProteinInference/SecondaryStructureDictionary.h"
 #include "../ProteinInference/CASPFileGenerator.h"
+#include "../ProteinInference/PDBFileGenerator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -47,7 +48,7 @@ void addDefaultPredictions(ProteinPtr protein)
   ProteinCarbonTracePtr trace = new ProteinCarbonTrace(T("CAlphaTrace"), n);
   for (size_t i = 0; i < n; ++i)
   {
-    static const double constantLength = 4.32;
+    static const double constantLength = 2.0;
     trace->setPosition(i, Vector3(i * constantLength, 0.0, 0.0));
   }
   protein->setObject(trace);
@@ -73,17 +74,23 @@ int main(int argc, char* argv[])
   String outputBaseName = argv[4];
   std::cout << "Output Base Name: " << outputBaseName << std::endl;
 
-  ProteinPtr protein = Protein::createFromAminoAcidSequence(targetName, aminoAcidSequence);
+  //ProteinPtr protein = Protein::createFromAminoAcidSequence(targetName, aminoAcidSequence);
+  ProteinPtr protein = Protein::createFromPDB(File(T("C:\\Users\\Francis\\Downloads\\1crn.pdb")));
   if (!protein)
     return 2;
 
+  protein->saveToPDBFile(cwd.getChildFile(outputBaseName + T(".pdb")));
+  return 0;
+
   addDefaultPredictions(protein);
-  std::cout << "===========================" << std::endl << protein->toString() << std::endl;
+  //std::cout << "===========================" << std::endl << protein->toString() << std::endl;
   
   String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
 
   caspTertiaryStructureFileGenerator     (cwd.getChildFile(outputBaseName + T(".TS")), method)->consume(protein);
   caspResidueResidueDistanceFileGenerator(cwd.getChildFile(outputBaseName + T(".RR")), method)->consume(protein);
   caspOrderDisorderRegionFileGenerator   (cwd.getChildFile(outputBaseName + T(".DR")), method)->consume(protein);
+
+  protein->saveToPDBFile(cwd.getChildFile(outputBaseName + T(".PDB")));
   return 0;
 }

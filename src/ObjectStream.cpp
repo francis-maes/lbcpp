@@ -169,7 +169,7 @@ ObjectPtr TextObjectParser::next()
     Object::error(T("TextObjectParser::next"), T("Error in parse end"));
   delete istr;
   istr = NULL;
-  return ObjectPtr();
+  return currentObject;
 }
 
 /*
