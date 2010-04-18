@@ -97,6 +97,10 @@ public:
       {
         DenseVectorPtr parameters = gbc->getParameters();
         std::cout << parameters->l0norm() << " parameters, norm = " << parameters->l2norm() << std::endl;
+        if (hop == 2)
+        {
+          std::cout << parameters->toString() << std::endl;
+        }
       }
       else
         std::cout << "<unknown classifier>" << std::endl;

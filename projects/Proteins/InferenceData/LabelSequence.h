@@ -18,11 +18,17 @@ namespace lbcpp
 class LabelSequence : public Sequence
 {
 public:
-  LabelSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length)
-    : Sequence(name), dictionary(dictionary), sequence(length, 255)
-    {jassert(dictionary && dictionary->getNumFeatures() < 255);}
-
+  LabelSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length);
   LabelSequence() {}
+
+  FeatureDictionaryPtr getDictionary() const
+    {return dictionary;}
+
+  String getString(size_t position) const;
+  int getIndex(size_t position) const;
+
+  void setIndex(size_t position, size_t index);
+  void setString(size_t position, const String& string);
 
   /*
   ** ObjectContainer
@@ -30,96 +36,25 @@ public:
   virtual size_t size() const
     {return sequence.size();}
 
-  virtual void resize(size_t newSize)
-    {sequence.resize(newSize, 255); validateModification();}
-
-  virtual void set(size_t position, ObjectPtr object)
-  {
-    LabelPtr label = object.dynamicCast<lbcpp::Label>();
-    jassert(label && label->getDictionary() == dictionary);
-    jassert(position < sequence.size());
-    sequence[position] = (unsigned char)label->getIndex();
-    validateModification();
-  }
-
-  virtual ObjectPtr get(size_t index) const
-  {
-    jassert(index < sequence.size());
-    if (sequence[index] == 255)
-      return ObjectPtr();
-    return new Label(dictionary, (size_t)sequence[index]);
-  }
-
-  String getString(size_t position) const
-  {
-    jassert(position < sequence.size());
-    return sequence[position] == 255 ? T("?") : dictionary->getFeature(sequence[position]);
-  }
-
-  int getIndex(size_t position) const
-    {jassert(position < sequence.size()); return sequence[position] == 255 ? -1 : (int)sequence[position];}
-
-  void setIndex(size_t position, size_t index)
-  {
-    jassert(position < sequence.size() && index <= 255);
-    sequence[position] = (unsigned char)index;
-    validateModification();
-  }
-
-  void setString(size_t position, const String& string)
-  {
-    int index = dictionary->getFeatures()->getIndex(string);
-    jassert(index >= 0);
-    if (index >= 0)
-      setIndex(position, (size_t)index);
-  }
-
-  void clear(size_t position)
-    {setIndex(position, 255); validateModification();}
-
+  virtual void resize(size_t newSize);
+  virtual void set(size_t position, ObjectPtr object);
+  virtual ObjectPtr get(size_t index) const;
+  void clear(size_t position);
 
   /*
   ** Sequence
   */
-  virtual FeatureGeneratorPtr elementFeatures(size_t position) const
-    {return get(position).dynamicCast<FeatureGenerator>();}
-
-  virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
-    {const_cast<LabelSequence* >(this)->ensureAccumulatorsAreComputed(); return accumulators->sumFeatures(begin, end);}
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
+  virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const;
 
   /*
   ** Serialization
   */
-  virtual ObjectPtr clone() const
-  {
-    ReferenceCountedObjectPtr<LabelSequence> res = Object::createAndCast<LabelSequence>(getClassName());
-    res->dictionary = dictionary;
-    res->sequence = sequence;
-    res->name = name;
-    return res;
-  }
-
-  FeatureDictionaryPtr getDictionary() const
-    {return dictionary;}
+  virtual ObjectPtr clone() const;
 
 protected:
-  virtual bool load(InputStream& istr)
-  {
-    if (!Sequence::load(istr))
-      return false;
-    dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
-    if (!dictionary || !lbcpp::read(istr, sequence))
-      return false;
-    validateModification();
-    return true;
-  }
-  
-  virtual void save(OutputStream& ostr) const
-  {
-    Sequence::save(ostr);
-    lbcpp::write(ostr, dictionary->getName());
-    lbcpp::write(ostr, sequence);
-  }
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
 
 protected:
   FeatureDictionaryPtr dictionary;
