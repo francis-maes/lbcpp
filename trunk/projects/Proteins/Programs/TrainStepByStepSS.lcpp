@@ -24,7 +24,7 @@ public:
   enum Target {SS3 = 0, SS8, SA};
 
   CustomableSecondaryStructureContent(const String& name = String::empty)
-    : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), target(SS3)
+    : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), wSA(0), target(SS3)
     {}
   
   void setTarget(Target newTarget)
@@ -68,30 +68,35 @@ public:
     if (wAA)
     {
       LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+      jassert(aminoAcidSequence);
       featureCall("AA") aminoAcidSequence->windowFeatures(index, wAA, wAA, true);
     }
     
     if (wPSSM)
     {
       ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
+      jassert(positionSpecificScores);
       featureCall("PSSM") positionSpecificScores->windowFeatures(index, wPSSM, wPSSM, true);
     }
     
     if (wSS3)
     {
       LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
+      jassert(secondaryStructure);
       featureCall("wSS3") secondaryStructure->windowFeatures(index, wSS3, wSS3, true);
     }
     
     if (wSS8)
     {
       LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
+      jassert(dsspSecondaryStructure);
       featureCall("wSS8") dsspSecondaryStructure->windowFeatures(index, wSS8, wSS8, true);
     }
     
     if (wSA)
     {
       LabelSequencePtr solventAccesibilityStructure = protein->getSolventAccessibilitySequence();
+      jassert(solventAccesibilityStructure);
       featureCall("wSA") solventAccesibilityStructure->windowFeatures(index, wSA, wSA, true);
     }
   }
@@ -102,7 +107,7 @@ public:
     static const juce::tchar* targetNames[] = {
       T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence"), T("SolventAccessibilitySequence")
     };
-    jassert(target < sizeof (targetNames) / sizeof (const juce::tchar* ));
+    jassert((size_t)target < sizeof (targetNames) / sizeof (const juce::tchar* ));
     return targetNames[target];
   }
 
@@ -111,7 +116,7 @@ public:
     static const FeatureDictionaryPtr targetDictionaries[] = {
       SecondaryStructureDictionary::getInstance(), DSSPSecondaryStructureDictionary::getInstance(), SolventAccesibility2StateDictionary::getInstance()
     };
-    jassert(target < sizeof (targetDictionaries) / sizeof (FeatureDictionaryPtr));
+    jassert((size_t)target < sizeof (targetDictionaries) / sizeof (FeatureDictionaryPtr));
     return targetDictionaries[target];
   }
 
@@ -217,8 +222,8 @@ public:
     std::cout << "=====================================================" << std::endl;
     
     startTimeIteration = juce::Time::getMillisecondCounter();
-    File cwd = File::getCurrentWorkingDirectory();
-    File dst = cwd.getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(currentPass));
+
+    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(currentPass));
     std::cout << "New file: " << dst.getFullPathName() << std::endl;
     dst.deleteFile();
     oIteration = dst.createOutputStream();
@@ -269,8 +274,8 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-  String proteinsDirectory;
-  String prefixResults;
+  String proteinsDirectory("/Users/jbecker/Documents/Workspace/CASP9/CB513");
+  String prefixResults("result");
   int currentFold = 0;
   //String inferenceModel("CO");
   String predictionTarget("SS3");
@@ -312,18 +317,22 @@ int main(int argc, char** argv)
   std::cout << arguments;
   std::cout << "*-----------------------------" << std::endl;
 
-  
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
-  
+
 #if 0
   ObjectContainerPtr prots = proteinsStream->load(7)->randomize();
   for (size_t i = 0; i < prots->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) prots->get(i);
+
     std::cout << protein->toString() << std::endl;
   }
+  
+  
+  return 0;
 #endif // 0
+
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
@@ -420,8 +429,8 @@ int main(int argc, char** argv)
     }
   }
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, prefixResults, maxIteration, regularizer);
-  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback);
+  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, prefixResults, maxIteration, regularizer, true);
+  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
   learner->train(proteinInference, trainingData);
 
   return 0;
