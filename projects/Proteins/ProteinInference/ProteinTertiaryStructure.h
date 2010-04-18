@@ -26,11 +26,21 @@ struct Vector3
     {return T("(") + lbcpp::toString(x) + T(", ") + lbcpp::toString(y) + T(", ") + lbcpp::toString(z) + T(")");}
 };
 
+class ProteinTertiaryStructure;
+typedef ReferenceCountedObjectPtr<ProteinTertiaryStructure> ProteinTertiaryStructurePtr;
+
+class ProteinCarbonTrace;
+typedef ReferenceCountedObjectPtr<ProteinCarbonTrace> ProteinCarbonTracePtr;
+
 class ProteinCarbonTrace : public Sequence
 {
 public:
   ProteinCarbonTrace(const String& name, size_t length)
     : Sequence(name), positions(length) {}
+  ProteinCarbonTrace() {}
+
+  static ProteinCarbonTracePtr createCAlphaTrace(ProteinTertiaryStructurePtr tertiaryStructure);
+  static ProteinCarbonTracePtr createCBetaTrace(ProteinTertiaryStructurePtr tertiaryStructure);
 
   Vector3 getPosition(size_t index) const
     {jassert(index < positions.size()); return positions[index];}
@@ -53,8 +63,6 @@ public:
 private:
   std::vector<Vector3> positions;
 };
-
-typedef ReferenceCountedObjectPtr<ProteinCarbonTrace> ProteinCarbonTracePtr;
 
 class ProteinAtom : public NameableObject
 {
@@ -127,15 +135,20 @@ public:
   void addAtom(ProteinAtomPtr atom)
     {atoms.push_back(atom);}
 
+  ProteinAtomPtr getCAlphaAtom() const
+    {return findAtomByName(T("CA"));}
+
+  ProteinAtomPtr getCBetaAtom() const
+    {return findAtomByName(T("CB"));}
+
+  ProteinAtomPtr findAtomByName(const String& name) const;
+
 protected:
   AminoAcidDictionary::Type aminoAcid;
   std::vector<ProteinAtomPtr> atoms;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinResidue> ProteinResiduePtr;
-
-class ProteinTertiaryStructure;
-typedef ReferenceCountedObjectPtr<ProteinTertiaryStructure> ProteinTertiaryStructurePtr;
 
 class ProteinTertiaryStructure : public Sequence
 {

@@ -18,7 +18,8 @@ namespace lbcpp
 class ScoreVectorSequence : public Sequence
 {
 public:
-  ScoreVectorSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length);
+  // by default the number of scores is the number of features in the dictionary
+  ScoreVectorSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length, size_t numScores = 0);
   ScoreVectorSequence() {}
 
   FeatureDictionaryPtr getDictionary() const

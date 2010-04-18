@@ -18,6 +18,18 @@ namespace lbcpp
 {
 
 /*
+** Scalar
+*/
+template<class FeatureVisitor>
+inline void Scalar::staticFeatureGenerator(FeatureVisitor& visitor) const
+  {visitor.featureSense(getDictionary(), 0, value);}
+
+template<>
+struct Traits<ScalarPtr> : public ObjectPtrTraits<Scalar> {};
+template<>
+struct Traits<Scalar> : public ObjectTraits<Scalar> {};
+
+/*
 ** Label
 */
 template<class FeatureVisitor>

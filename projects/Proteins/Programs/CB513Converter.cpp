@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-#if 1
+#if 0
 class DaFuckingDataParser : public LearningDataObjectParser
 {
 public:
@@ -98,7 +98,7 @@ public:
     res->setAminoAcidSequence(aminoAcids);
     
     // pssm
-    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), aminoAcidDictionary, length);
+    ScoreVectorSequencePtr pssm = new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), aminoAcidDictionary, length, AminoAcidDictionary::numAminoAcids);
     res->setPositionSpecificScoringMatrix(pssm);
 
     // secondary structure (three states)
@@ -207,7 +207,7 @@ int main()
 }
 #endif // 0
 
-#if 0
+#if 1
 int main()
 {
   declareProteinClasses();

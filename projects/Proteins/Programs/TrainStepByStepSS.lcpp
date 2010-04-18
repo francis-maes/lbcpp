@@ -13,7 +13,7 @@
 #include "ProteinInference/ProteinEvaluationCallback.h"
 #include "ProteinInference/ProteinInference.h"
 #include "Programs/ArgumentSet.h"
-#include "Programs/PSSMParser.h"
+//#include "Programs/PSSMParser.h"
 
 using namespace lbcpp;
 
@@ -165,7 +165,7 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
 
-  virtual ClassifierPtr createClassifier(FeatureDictionaryPtr labels)
+  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
   {
     static const bool useConstantLearningRate = false;
 
@@ -174,6 +174,15 @@ public:
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
     return classifier;
+  }
+
+  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
+  {
+    static const bool useConstantLearningRate = true;
+
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(1.0);
+    GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
+    return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
   }
 
   virtual void preLearningIterationCallback(size_t iterationNumber)

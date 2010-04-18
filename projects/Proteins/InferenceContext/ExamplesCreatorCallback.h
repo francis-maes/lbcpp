@@ -10,7 +10,9 @@
 # define LBCPP_INFERENCE_CONTEXT_EXAMPLES_CREATOR_H_
 
 # include "InferenceCallback.h"
+# include "InferenceStack.h"
 # include "../InferenceStep/ClassificationInferenceStep.h"
+# include "../InferenceStep/RegressionInferenceStep.h"
 # include "../InferenceLearner/InferenceLearnerCallback.h"
 
 namespace lbcpp
@@ -37,13 +39,25 @@ public:
         }
         FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
         jassert(correctOutput);
-        classifier = learnerCallback->createClassifier(correctOutput->getDictionary());
+        classifier = learnerCallback->createClassifier(stack->getCurrentInference(), correctOutput->getDictionary());
       }
       jassert(classifier);
       addExample(classifier, new ClassificationExample(input, label->getIndex()));
     }
   }
   
+  virtual void regressionCallback(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
+  {
+    if (supervision && enableExamplesCreation)
+    {
+      ScalarPtr scalar = supervision.dynamicCast<Scalar>();
+      jassert(scalar);
+      if (!regressor)
+        regressor = learnerCallback->createRegressor(stack->getCurrentInference());
+      addExample(regressor, new RegressionExample(input, scalar->getValue()));
+    }    
+  }
+
   void trainStochasticIteration()
   {
     for (ExamplesMap::const_iterator it = examples.begin(); it != examples.end(); ++it)
@@ -53,6 +67,11 @@ public:
       std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
       machine->trainStochastic(trainingData);
       std::cout << "ok." << std::endl;
+      GradientBasedRegressorPtr regressor = machine.dynamicCast<GradientBasedRegressor>();
+      if (regressor)
+      {
+        std::cout << "Regressor Num params = " << regressor->getParameters()->l0norm() << " Norm = " << regressor->getParameters()->l2norm() << std::endl;
+      }
       /*GradientBasedClassifierPtr classifier = machine.dynamicCast<GradientBasedClassifier>();
       if (classifier)
       {

@@ -79,6 +79,10 @@ int main(int argc, char* argv[])
   if (!protein)
     return 2;
 
+  ProteinCarbonTracePtr trace = ProteinCarbonTrace::createCAlphaTrace(protein->getTertiaryStructure());
+  protein->setObject(trace);
+  protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(protein->getAminoAcidSequence(), trace));
+
   protein->saveToPDBFile(cwd.getChildFile(outputBaseName + T(".pdb")));
   return 0;
 

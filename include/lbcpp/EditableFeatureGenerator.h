@@ -74,6 +74,42 @@ public:
   void staticFeatureGenerator(FeatureVisitor& visitor) const;
 };
 
+
+class Scalar : public FeatureGeneratorDefaultImplementations<Scalar, FlatFeatureGenerator>
+{
+public:
+  Scalar(double value = 0.0)
+    : value(value) {}
+
+  static FeatureDictionaryPtr getDictionaryInstance()
+  {
+    static FeatureDictionaryPtr dictionary;
+    if (!dictionary)
+    {
+      dictionary = new FeatureDictionary(T("Scalar"), new StringDictionary(T("Scalar features")), StringDictionaryPtr());
+      dictionary->addFeature(T("value"));
+    }
+    return dictionary;
+  }
+
+  virtual FeatureDictionaryPtr getDictionary() const
+    {return getDictionaryInstance();}
+
+  virtual String toString() const
+    {return String(value);}
+
+  double getValue() const
+    {return value;}
+
+  template<class FeatureVisitor>
+  void staticFeatureGenerator(FeatureVisitor& visitor) const;
+
+private:
+  double value;
+};
+
+typedef ReferenceCountedObjectPtr<Scalar> ScalarPtr;
+
 class Label : public FeatureGeneratorDefaultImplementations<Label, EditableFeatureGenerator>
 {
 public:

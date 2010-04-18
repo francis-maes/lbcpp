@@ -22,7 +22,9 @@ public:
   virtual void visit(SequentialInferenceStepPtr inference) = 0;
   virtual void visit(ParallelInferenceStepPtr inference) = 0;
   virtual void visit(SharedParallelInferenceStepPtr inference) = 0;
-  virtual void visit(ClassificationInferenceStepPtr inference) = 0;
+
+  virtual void visit(ClassificationInferenceStepPtr inference) {}
+  virtual void visit(RegressionInferenceStepPtr inference) {}
 };
 
 class DefaultInferenceVisitor : public InferenceVisitor
@@ -31,7 +33,6 @@ public:
   virtual void visit(SequentialInferenceStepPtr inference);
   virtual void visit(ParallelInferenceStepPtr inference) {}
   virtual void visit(SharedParallelInferenceStepPtr inference);
-  virtual void visit(ClassificationInferenceStepPtr inference) {}
 };
 
 }; /* namespace lbcpp */

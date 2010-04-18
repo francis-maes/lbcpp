@@ -516,12 +516,6 @@ protected:
   const ExactType& _this() const {return *static_cast<const ExactType* >(this);}
 };
 
-
-/**
-** @class FlatFeatureGenerator
-** @brief #FIXME
-*/
-
 class FlatFeatureGenerator : public FeatureGenerator
 {
 public:
