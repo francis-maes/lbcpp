@@ -9,7 +9,9 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/AccumulatedScoresMatrix.h
   InferenceData/Sequence.h
   InferenceData/LabelSequence.h
+  InferenceData/LabelSequence.cpp
   InferenceData/ScoreVectorSequence.h
+  InferenceData/ScoreVectorSequence.cpp
   InferenceData/ScoreSymmetricMatrix.h
 )
 
@@ -49,6 +51,8 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   ProteinInference/AminoAcidDictionary.cpp
   ProteinInference/SecondaryStructureDictionary.h
   ProteinInference/SecondaryStructureDictionary.cpp
+  ProteinInference/ProteinTertiaryStructure.h
+  ProteinInference/ProteinTertiaryStructure.cpp
   ProteinInference/Protein.h
   ProteinInference/Protein.cpp
   ProteinInference/ProteinInference.h
