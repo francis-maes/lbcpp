@@ -35,6 +35,7 @@ SET(LBCPP_INFERENCE_CONTEXT_SOURCES
   InferenceContext/InferenceContext.h
   InferenceContext/InferenceContext.cpp
   InferenceContext/InferenceCallback.h
+  InferenceContext/CancelAfterStepCallback.h
   InferenceContext/CacheInferenceCallback.h
   InferenceContext/ExamplesCreatorCallback.h
 )

@@ -101,6 +101,11 @@ ObjectPtr Object::createFromFile(const File& file)
     return ObjectPtr();
   }
   ObjectPtr res = createFromStream(*inputStream, false);
+  if (!res)
+  {
+    delete inputStream;
+    return ObjectPtr();
+  }
   if (file.isDirectory())
   {
     // loading of a directory: once we have the classname, we close the input stream and let the Object do want it wants

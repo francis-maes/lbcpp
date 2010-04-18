@@ -59,6 +59,25 @@ public:
     SequentialInferenceStepPtr inference = inf.dynamicCast<SequentialInferenceStep>();
     jassert(inference);
     size_t numSteps = inference->getNumSubSteps();
+    
+    /*
+    ** Check unicity of InferenceStep names
+    */
+    std::set<String> names;
+    for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
+    {
+      String name = inference->getSubStep(stepNumber)->getName();
+      if (names.find(name) != names.end())
+      {
+        Object::error(T("StepByStepDeterministicSimulationLearner::train"), T("Duplicated inference step name: ") + name);
+        return;
+      }
+      names.insert(name);
+    }
+
+    /*
+    ** Train step by step
+    */
     for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
     {
       InferenceStepPtr step = inference->getSubStep(stepNumber);
