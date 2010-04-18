@@ -13,6 +13,7 @@
 #include "ProteinInference/ProteinEvaluationCallback.h"
 #include "ProteinInference/ProteinInference.h"
 #include "Programs/ArgumentSet.h"
+#include "Programs/PSSMParser.h"
 
 using namespace lbcpp;
 
@@ -320,6 +321,15 @@ int main(int argc, char** argv)
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
 
 #if 0
+  File file("/Users/jbecker/Documents/Workspace/LBC++/projects/Proteins/test.pssm");
+
+  PSSMParser parser(file);
+  ObjectPtr obj = parser.next();
+
+  std::cout << obj->toString();
+
+#endif // 0
+#if 0
   ObjectContainerPtr prots = proteinsStream->load(7)->randomize();
   for (size_t i = 0; i < prots->size(); ++i)
   {
@@ -332,7 +342,7 @@ int main(int argc, char** argv)
   return 0;
 #endif // 0
 
-  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
