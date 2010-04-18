@@ -1,4 +1,5 @@
 Various:
+* Serialisation does not work correctly
 * Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
 * SICA-prob: sampling
 * numberFeatures

@@ -20,6 +20,7 @@ namespace lbcpp
 
 struct Vector3
 {
+  Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
   Vector3() : x(0.0), y(0.0), z(0.0) {}
 
   double x, y, z;
@@ -69,6 +70,9 @@ public:
   const Vector3& getPosition() const
     {return position;}
 
+  void setPosition(const Vector3& position)
+    {this->position = position;}
+
   double getX() const
     {return position.x;}
 
@@ -93,14 +97,14 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ProteinAtom> ProteinAtomPtr;
 
-class ProteinResidue : public Object
+class ProteinResidue : public NameableObject
 {
 public:
   ProteinResidue(AminoAcidDictionary::Type aminoAcid)
     : aminoAcid(aminoAcid) {}
 
-  //virtual String getName() const
-  //{return AminoAcidDictionary::getThreeLettersCode(aminoAcid);}
+  virtual String getName() const
+    {return AminoAcidDictionary::getThreeLettersCode(aminoAcid);}
 
   AminoAcidDictionary::Type getAminoAcid() const
     {return aminoAcid;}

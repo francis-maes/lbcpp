@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_LEARNER_CALLBACK_H_
 # define LBCPP_INFERENCE_LEARNER_CALLBACK_H_
 
-# include "../InferenceContext/InferenceContext.h"
+# include "../InferencePredeclarations.h"
 
 namespace lbcpp
 {
@@ -33,8 +33,6 @@ public:
   virtual void postLearningStepCallback(InferenceStepPtr step)
     {}
 };
-
-typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;
 
 }; /* namespace lbcpp */
 

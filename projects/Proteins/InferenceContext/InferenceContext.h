@@ -10,13 +10,9 @@
 # define LBCPP_INFERENCE_CONTEXT_H_
 
 # include "../InferenceStep/InferenceStep.h"
-# include "InferenceStack.h"
 
 namespace lbcpp
 {
-
-class InferenceCallback;
-typedef ReferenceCountedObjectPtr<InferenceCallback> InferenceCallbackPtr;
 
 class InferenceContext : public Object
 {

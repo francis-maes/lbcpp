@@ -14,9 +14,6 @@
 namespace lbcpp
 {
 
-class InferenceStack;
-typedef ReferenceCountedObjectPtr<InferenceStack> InferenceStackPtr;
-
 class InferenceCallback : public Object
 {
 public:
@@ -40,8 +37,6 @@ public:
   virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
     {}
 };
-
-typedef ReferenceCountedObjectPtr<InferenceCallback> InferenceCallbackPtr;
 
 }; /* namespace lbcpp */
 

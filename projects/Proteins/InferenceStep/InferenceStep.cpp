@@ -8,6 +8,3 @@
 
 #include "InferenceStep.h"
 using namespace lbcpp;
-
-void InferenceStep::accept(InferenceVisitorPtr visitor)
-  {visitor->visit(InferenceStepPtr(this));}

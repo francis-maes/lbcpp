@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_STEP_PARALLEL_H_
 
 # include "InferenceStep.h"
+# include "../InferenceContext/InferenceVisitor.h"
 # include "../InferenceContext/InferenceContext.h"
 
 namespace lbcpp
@@ -43,6 +44,9 @@ public:
     : ParallelInferenceStep(name), subInference(subInference) {}
   SharedParallelInferenceStep() {}
 
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(SharedParallelInferenceStepPtr(this));}
+  
   virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
     {return subInference;}
 
@@ -59,6 +63,9 @@ public:
 
   virtual bool saveToFile(const File& file) const
     {return saveToDirectory(file) && subInference->saveToFile(file.getChildFile(T("shared.inference")));}
+
+  InferenceStepPtr getSharedInferenceStep() const
+    {return subInference;}
 
 protected:
   InferenceStepPtr subInference;

@@ -89,51 +89,38 @@ protected:
   }
 };
 
-class TertiaryStructureCASPFileGenerator : public CASPFileGenerator
+class PDBFileGenerator : public TextObjectPrinter
 {
 public:
-  TertiaryStructureCASPFileGenerator(const File& file, const String& method)
-    : CASPFileGenerator(file, method) {}
-
-  virtual String getFormatSpecificationCode() const
-    {return T("TS");}
-
-  virtual void printPredictionData(ProteinPtr protein)
+  static String makeAtomLine(size_t atomNumber, const String& atomName, const String& residueName, const String& chainID,
+    size_t residueNumber, double x, double y, double z, double occupancy, double temperatureFactor, const String& segmentIdentifier,
+    const String& elementSymbol, const String& atomCharge)
   {
-    ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-    jassert(tertiaryStructure);
-    size_t atomNumber = 1;
-    for (size_t i = 0; i < tertiaryStructure->size(); ++i)
-    {
-      ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
-      for (size_t j = 0; j < residue->getNumAtoms(); ++j)
-        printAtom(residue, residue->getAtom(j), j + 1, atomNumber++);
-    }
+    String line = T("ATOM  ");                                                    jassert(line.length() == 6);
+    line += toFixedLengthStringRightJustified(String(atomNumber), 5);             jassert(line.length() == 11);
+    line += T(" ");                                                               jassert(line.length() == 12);
+    line += toFixedLengthString(atomName, 4);                                     jassert(line.length() == 16);
+    line += T(" "); /* alternate location indicator */                            jassert(line.length() == 17);
+    line += toFixedLengthString(residueName.toUpperCase(), 3);                    jassert(line.length() == 20);
+    line += T(" ");                                                               jassert(line.length() == 21);
+    line += toFixedLengthString(chainID, 1);                                      jassert(line.length() == 22);
+    line += toFixedLengthStringRightJustified(String(residueNumber), 4);          jassert(line.length() == 26);
+    line += T(" "); /* code for insertion of residues */                          jassert(line.length() == 27);
+    line += T("   ");                                                             jassert(line.length() == 30);
+    line += toFixedLengthStringRightJustified(String(x, 3), 8);                   jassert(line.length() == 38);
+    line += toFixedLengthStringRightJustified(String(y, 3), 8);                   jassert(line.length() == 46);
+    line += toFixedLengthStringRightJustified(String(z, 3), 8);                   jassert(line.length() == 54);
+    line += toFixedLengthStringRightJustified(String(occupancy, 2), 6);           jassert(line.length() == 60);
+    String tempFactor = temperatureFactor >= 0 ? String(temperatureFactor, 2) : String::empty;
+    line += toFixedLengthStringRightJustified(tempFactor, 6);                     jassert(line.length() == 66);
+    line += T("      ");                                                          jassert(line.length() == 72);
+    line += toFixedLengthStringLeftJustified(segmentIdentifier, 4);               jassert(line.length() == 76);
+    line += toFixedLengthStringRightJustified(elementSymbol, 2);                  jassert(line.length() == 78);
+    line += toFixedLengthString(atomCharge, 2);                                   jassert(line.length() == 80);
+    return line;
   }
 
-  void printAtom(ProteinResiduePtr residue, ProteinAtomPtr atom, size_t residueNumber, size_t atomNumber)
-  {
-    String line = T("ATOM  ");
-    line += toFixedLengthString(atomNumber, 5);
-    line += T(" ");
-    line += toFixedLengthString(atom->getName(), 4);
-    line += T(" "); // alternate location indicator
-    line += toFixedLengthString(residue->getName(), 3);
-    line += T(" ");
-    line += T("A"); // chain ID
-    line += toFixedLengthString(residueNumber, 4);
-    line += T(" "); // code for insertion of residues
-    line += toFixedLengthString(String(atom->getX(), 3), 8);
-    line += toFixedLengthString(String(atom->getY(), 3), 8);
-    line += toFixedLengthString(String(atom->getZ(), 3), 8);
-    line += toFixedLengthString(String(atom->getOccupancy(), 2), 6);
-    line += toFixedLengthString(String(atom->getTemperatureFactor(), 2), 6);
-    line += toFixedLengthString(atom->getElementSymbol(), 2);
-    line += T("  "); // charge on the atom
-    jassert(line.length() == 80);
-    print(line, true);
-  }
-
+protected:
   static String toFixedLengthString(size_t i, int length)
     {return toFixedLengthString(String((int)i), length);}
 
@@ -151,6 +138,62 @@ public:
       ++i;
     }
     return res;
+  }
+
+  static String toFixedLengthStringRightJustified(const String& str, int length)
+  {
+    jassert(str.length() <= length);
+    String res = str;
+    int i = 0;
+    while (res.length() < length)
+      res = T(" ") + res;
+    return res;
+  }
+  
+  static String toFixedLengthStringLeftJustified(const String& str, int length)
+  {
+    jassert(str.length() <= length);
+    String res = str;
+    int i = 0;
+    while (res.length() < length)
+      res += T(" ");
+    return res;
+  }
+};
+
+class TertiaryStructureCASPFileGenerator : public CASPFileGenerator
+{
+public:
+  TertiaryStructureCASPFileGenerator(const File& file, const String& method)
+    : CASPFileGenerator(file, method) {}
+
+  virtual String getFormatSpecificationCode() const
+    {return T("TS");}
+
+  virtual void printPredictionData(ProteinPtr protein)
+  {
+    printRecord(T("PARENT"), T("N/A"));
+
+    ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+    jassert(tertiaryStructure);
+    size_t atomNumber = 1;
+    for (size_t i = 0; i < tertiaryStructure->size(); ++i)
+    {
+      ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+      for (size_t j = 0; j < residue->getNumAtoms(); ++j)
+        printAtom(residue, residue->getAtom(j), i + 1, atomNumber++);
+    }
+
+    print(T("TER"), true);
+  }
+
+
+  void printAtom(ProteinResiduePtr residue, ProteinAtomPtr atom, size_t residueNumber, size_t atomNumber)
+  {
+    String line = PDBFileGenerator::makeAtomLine(atomNumber, atom->getName(), residue->getName(),
+                  String::empty, residueNumber, atom->getX(), atom->getY(), atom->getZ(),
+                      1.0, -1.0, String::empty, String::empty, String::empty);
+    print(line, true);
   }
 };
 
@@ -265,9 +308,12 @@ void addDefaultPredictions(ProteinPtr protein)
   ProteinTertiaryStructurePtr tertiaryStructure = new ProteinTertiaryStructure(n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)0);//aminoAcidSequence->getIndex(i));
+    static const double constantLength = 4.32;
+
+    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
     
     ProteinAtomPtr atom = new ProteinAtom(T("CA"), T("C"));
+    atom->setPosition(Vector3(i * constantLength, 0.0, 0.0));
     residue->addAtom(atom);
 
     tertiaryStructure->setResidue(i, residue);

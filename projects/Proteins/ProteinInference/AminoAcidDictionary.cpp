@@ -29,33 +29,7 @@ AminoAcidDictionary::AminoAcidDictionary()
   }
 }
 
-#if 0
-AminoAcidDictionary::AminoAcidDictionary(const String& code)
-{
-  if (code.length() == 1)
-    type = getTypeFromOneLetterCode(code[0]);
-  else
-  {
-    type = unknown;
-    jassert(false); // todo: three-letter code
-  }
-}
-
-juce::tchar AminoAcidDictionary::getOneLetterCode() const
-{
-  jassert(type >= 0 && type <= unknown);
-  jassert(oneLetterCodes.length() == (int)unknown + 1);
-  return oneLetterCodes[type];
-}
-
-AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromOneLetterCode(juce::tchar c)
-{
-  int i = oneLetterCodes.indexOfChar(c);
-  jassert(i >= 0);
-  return i >= 0 ? (Type)i : unknown;
-}
-
-StringDictionaryPtr AminoAcidDictionary::getThreeLettersCodes()
+const String AminoAcidDictionary::getThreeLettersCode(Type aminoAcidType)
 {
   static const juce::tchar* threeLettersCodes[] = {
     T("Ala"), T("Arg"), T("Asn"), T("Asp"), T("Cys"),
@@ -68,15 +42,6 @@ StringDictionaryPtr AminoAcidDictionary::getThreeLettersCodes()
     NULL
   };
 
-  static StringDictionaryPtr dictionary = new StringDictionary(T("AminoAcidThreeLetterCode"), threeLettersCodes);
-  return dictionary;
+  jassert(aminoAcidType < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ));
+  return threeLettersCodes[aminoAcidType];
 }
-
-String AminoAcidDictionary::getThreeLettersCode() const
-{
-  StringDictionaryPtr dictionary = getThreeLettersCodes();
-  jassert(dictionary->exists((size_t)type));
-  return dictionary->getString((size_t)type);
-}
-
-#endif

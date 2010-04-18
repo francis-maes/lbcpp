@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_CANCEL_AFTER_STEP_CALLBACK_H_
 
 # include "InferenceCallback.h"
+# include "InferenceStack.h"
 
 namespace lbcpp
 {

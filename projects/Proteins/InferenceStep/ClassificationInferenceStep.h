@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_STEP_CLASSIFICATION_H_
 
 # include "InferenceStep.h"
+# include "../InferenceContext/InferenceVisitor.h"
 # include "../InferenceContext/InferenceContext.h"
 
 namespace lbcpp
@@ -24,7 +25,7 @@ public:
   ClassificationInferenceStep(const String& name)
     : InferenceStep(name) {}
   ClassificationInferenceStep() {}
- 
+
   virtual String toString() const
   {
     String res = getClassName();
@@ -33,6 +34,9 @@ public:
       res += T("(") + labels->getName() + T(")");
     return res;
   }
+
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(ClassificationInferenceStepPtr(this));}
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runClassification(ClassificationInferenceStepPtr(this), input, supervision, returnCode);}
