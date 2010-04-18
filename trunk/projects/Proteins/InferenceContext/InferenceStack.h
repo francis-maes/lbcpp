@@ -9,11 +9,10 @@
 #ifndef LBCPP_INFERENCE_CONTEXT_STACK_H_
 # define LBCPP_INFERENCE_CONTEXT_STACK_H_
 
+# include "../InferencePredeclarations.h"
+
 namespace lbcpp
 {
-
-class InferenceStep;
-typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
 
 class InferenceStack : public Object
 {
@@ -60,8 +59,6 @@ public:
 private:
   std::vector<InferenceStepPtr> stack;
 };
-
-typedef ReferenceCountedObjectPtr<InferenceStack> InferenceStackPtr;
 
 }; /* namespace lbcpp */
 

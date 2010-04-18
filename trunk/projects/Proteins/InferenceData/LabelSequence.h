@@ -50,11 +50,14 @@ public:
     return new Label(dictionary, (size_t)sequence[index]);
   }
 
-  String getString(size_t index) const
+  String getString(size_t position) const
   {
-    jassert(index < sequence.size());
-    return sequence[index] == 255 ? T("?") : dictionary->getFeature(sequence[index]);
+    jassert(position < sequence.size());
+    return sequence[position] == 255 ? T("?") : dictionary->getFeature(sequence[position]);
   }
+
+  int getIndex(size_t position) const
+    {jassert(position < sequence.size()); return sequence[position] == 255 ? -1 : (int)sequence[position];}
 
   void setIndex(size_t position, size_t index)
   {

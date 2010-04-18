@@ -26,6 +26,8 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
 )
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
+  InferenceContext/InferenceVisitor.h
+  InferenceContext/InferenceVisitor.cpp
   InferenceContext/InferenceStack.h
   InferenceContext/InferenceContext.h
   InferenceContext/InferenceContext.cpp
@@ -60,6 +62,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   classes.cpp
+  InferencePredeclarations.h
 )
 
 SET(PROTEINS_SOURCES

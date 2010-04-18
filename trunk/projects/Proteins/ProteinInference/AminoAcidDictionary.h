@@ -62,60 +62,10 @@ public:
   };
 
   static const String oneLetterCodes;
-
-  AminoAcidDictionary();
-
-#if 0
-  /*
-  ** Constructors
-  */
-  AminoAcidDictionary(const AminoAcidDictionary& aa)
-    : type(aa.type) {}
-    
-  AminoAcidDictionary(const String& code);
-  AminoAcidDictionary(const Type& type = unknown)
-    : type(type) {}
-  
-  /*
-  ** Type
-  */
-  Type getType() const
-    {return type;}
-
-  bool isAmbiguous() const
-    {return type >= asparagineOrAsparticAcid;}
-
-  bool isNonAmbiguous() const
-    {return !isAmbiguous();}
-
-  /*
-  ** One letter code
-  */
-  static Type getTypeFromOneLetterCode(juce::tchar c);
-
-  juce::tchar getOneLetterCode() const;
-
-  /*
-  ** Three letter code
-  */
-  static StringDictionaryPtr getThreeLettersCodes();
-  String getThreeLettersCode() const;
-     
-  /*
-  ** Comparison operators
-  */
-  bool operator ==(const AminoAcidDictionary& aa) const
-    {return type == aa.type;}
-    
-  bool operator !=(const AminoAcidDictionary& aa) const
-    {return type != aa.type;}
-    
-  operator Type() const
-    {return type;}
+  static const String getThreeLettersCode(Type aminoAcidType);
 
 private:
-  Type type;
-#endif // 0
+  AminoAcidDictionary();
 };
 
 }; /* namespace lbcpp */

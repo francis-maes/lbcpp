@@ -8,6 +8,7 @@
 
 #include "InferenceContext.h"
 #include "InferenceCallback.h"
+#include "InferenceStack.h"
 #include "../InferenceStep/ParallelInferenceStep.h"
 #include "../InferenceStep/SequentialInferenceStep.h"
 #include "../InferenceStep/ClassificationInferenceStep.h"

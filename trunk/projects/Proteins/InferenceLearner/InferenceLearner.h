@@ -9,13 +9,10 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_LEARNER_H_
 # define LBCPP_INFERENCE_CALLBACK_LEARNER_H_
 
-# include "../InferenceContext/InferenceContext.h"
+# include "../InferencePredeclarations.h"
 
 namespace lbcpp
 {
-
-class InferenceLearnerCallback;
-typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;
 
 class InferenceLearner : public Object
 {
@@ -28,8 +25,6 @@ public:
 protected:
   InferenceLearnerCallbackPtr callback;
 };
-
-typedef ReferenceCountedObjectPtr<InferenceLearner> InferenceLearnerPtr;
 
 InferenceLearnerPtr globalSimulationLearner(InferenceLearnerCallbackPtr callback);
 InferenceLearnerPtr stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData = true);
