@@ -116,25 +116,32 @@ public:
   featureGenerator getCommonFeaturesImpl() const
   {
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
+
     jassert(aminoAcidSequence);
     jassert(position < aminoAcidSequence->size());
     //featureCall(0) aminoAcidSequence->elementFeatures(position);
     featureCall(0) aminoAcidSequence->windowFeatures(position, 7, 7, true);
-    featureCall(1) sequenceMultiScaleCenteredConjunctionFeatures(aminoAcidSequence, position, 2, 3);
+    //featureCall(1) sequenceMultiScaleCenteredConjunctionFeatures(aminoAcidSequence, position, 1, 3, false);
+    //featureCall(0) aminoAcidSequence->multiScaleSymetricFrequencyFeatures(position, 1, 2, 8, true);
+
+    if (pssm)
+    {
+      featureCall(1) pssm->windowFeatures(position, 5, 5, true);
+    }
   }
 
-
-  featureGenerator sequenceMultiScaleCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t minConjunctionSize, size_t maxConjunctionSize) const
+  featureGenerator sequenceMultiScaleCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t minConjunctionSize, size_t maxConjunctionSize, bool onlyConjunctionsWherePositionAppears) const
   {
     jassert(maxConjunctionSize >= minConjunctionSize);
     for (size_t i = minConjunctionSize; i <= maxConjunctionSize; ++i)
-      featureCall(i - minConjunctionSize) sequenceCenteredConjunctionFeatures(sequence, position, i);
+      featureCall(i - minConjunctionSize) sequenceCenteredConjunctionFeatures(sequence, position, i, onlyConjunctionsWherePositionAppears ? i : maxConjunctionSize);
   }
 
-  featureGenerator sequenceCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t conjunctionSize) const
+  featureGenerator sequenceCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t conjunctionSize, size_t windowSize) const
   {
-    int p = (int)position - (conjunctionSize - 1);
-    for (size_t i = 0; i < conjunctionSize; ++i)
+    int p = (int)position - (windowSize - 1);
+    for (size_t i = 0; i < windowSize; ++i)
       featureCall(i) sequenceConjunctionFeatures(sequence, p + (int)i, conjunctionSize);
   }
   
@@ -199,8 +206,9 @@ public:
 class PSSMPredictionInferenceStep : public ParallelSequenceMultiRegressionInferenceStep
 {
 public:
-  PSSMPredictionInferenceStep()
-    : ParallelSequenceMultiRegressionInferenceStep(T("PSSM"), new PSSMRowPredictionInferenceStep()) {}
+  PSSMPredictionInferenceStep(const String& name)
+    : ParallelSequenceMultiRegressionInferenceStep(name, new PSSMRowPredictionInferenceStep()) {}
+  PSSMPredictionInferenceStep() {}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
     {return getProtein(input)->getLength();}
@@ -354,11 +362,12 @@ public:
 
   virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
   {
+    static const double regularizer = 0.0;
     static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.2, 150000) : constantIterationFunction(0.1);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.8);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
+    return leastSquaresLinearRegressor(learner, regularizer);
   }
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
@@ -388,7 +397,7 @@ public:
     }
 
     // stopping criterion
-    return iterationNumber < 5;
+    return iterationNumber < 1;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -415,12 +424,34 @@ private:
   double bestTrainRmse, bestTestRmse;
 };
 
+class ProteinToInputOutputPair : public ObjectFunction
+{
+public:
+  virtual String getOutputClassName(const String& inputClassName) const
+    {return T("ObjectPair");}
+
+  virtual ObjectPtr function(ObjectPtr input) const
+  {
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
+    ProteinPtr inputProtein = new Protein(protein->getName());
+    inputProtein->setObject(protein->getAminoAcidSequence());
+    return new ObjectPair(inputProtein, protein);
+  }
+};
+
 int main(int argc, char** argv)
 {
   declareProteinClasses();
   LBCPP_DECLARE_CLASS(MyProteinSequenceLabelingInferenceStep);
+  LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
+  LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
 
-//  File modelFile(T("C:\\Projets\\Proteins\\data\\models\\test.model"));
+
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\pssm.inference"));
+
+  File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM.inference"));
+
   File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
 #ifdef JUCE_DEBUG
@@ -429,7 +460,7 @@ int main(int argc, char** argv)
   ObjectContainerPtr proteins = proteinsStream->load()->randomize();
 #endif // JUCE_DEBUG
 
-  proteins = proteins->apply(new ObjectToObjectPairFunction());
+  proteins = proteins->apply(new ProteinToInputOutputPair());
   ObjectContainerPtr trainingData = proteins->invFold(0, 7);
   ObjectContainerPtr testingData = proteins->fold(0, 7);
   std::cout << trainingData->size() << " Training Proteins "
@@ -448,10 +479,17 @@ int main(int argc, char** argv)
     step = new MyProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
     proteinInference->appendStep(step);
   }*/
-  proteinInference->appendStep(new PSSMPredictionInferenceStep());
+
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-0")));
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-1")));
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-2")));
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-3")));
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-4")));
  
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
   learner->train(proteinInference, trainingData);
+
+  proteinInference->saveToFile(modelDirectory);
   return 0;
 }

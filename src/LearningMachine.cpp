@@ -109,7 +109,6 @@ double Regressor::evaluateMeanAbsoluteError(ObjectStreamPtr examples) const
     else
       break;
   }
-  std::cout << "Evaluated on " << count << " examples." << std::endl;
   return count ? res / (double)count : 0.0;
 }
 

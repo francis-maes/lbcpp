@@ -61,7 +61,9 @@ public:
     jassert(inputProtein);
     ProteinPtr workingProtein = new Protein(inputProtein->getName());
     workingProtein->setObject(inputProtein->getAminoAcidSequence());
-    workingProtein->setObject(inputProtein->getPositionSpecificScoringMatrix());
+    ScoreVectorSequencePtr pssm = inputProtein->getPositionSpecificScoringMatrix();
+    if (pssm)
+      workingProtein->setObject(pssm);
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();

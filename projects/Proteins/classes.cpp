@@ -20,6 +20,7 @@ using namespace lbcpp;
 #include "InferenceData/ScoreSymmetricMatrix.h"
 
 #include "InferenceStep/ClassificationInferenceStep.h"
+#include "InferenceStep/RegressionInferenceStep.h"
 #include "InferenceStep/DecoratorInferenceStep.h"
 #include "InferenceStep/ParallelSequenceLabelingInferenceStep.h"
 
@@ -34,6 +35,7 @@ void declareInferenceClasses()
 
   // InferenceStep
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
+  LBCPP_DECLARE_CLASS(RegressionInferenceStep);
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInferenceStep);
 
   // InferenceCallback

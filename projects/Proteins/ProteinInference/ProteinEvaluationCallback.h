@@ -48,11 +48,8 @@ public:
     if (numProteins)
     {
       if (pssmSquaredError->getMean())
-      {
-        std::cout << "Evaluated on " << pssmSquaredError->getCount() << " examples." << std::endl;
         res += T("PSSM: mean abs. error = ") + String(pssmAbsoluteError->getMean()) +
                T(" rmse = ") + String(sqrt(pssmSquaredError->getMean())) + T("\n");
-      }
       res += scoreToString(secondaryStructureAccuracy);
       res += scoreToString(dsspSecondaryStructureAccuracy);
       res += scoreToString(solventAccesibility2StateAccuracy);
