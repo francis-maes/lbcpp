@@ -13,5 +13,5 @@ using namespace lbcpp;
 InferenceLearnerPtr lbcpp::globalSimulationLearner(InferenceLearnerCallbackPtr callback)
   {return new GlobalSimulationInferenceLearner(callback);}
 
-InferenceLearnerPtr lbcpp::stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData)
-  {return new StepByStepDeterministicSimulationLearner(callback, useCacheOnTrainingData);}
+InferenceLearnerPtr lbcpp::stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, size_t firstStepToLearn)
+  {return new StepByStepDeterministicSimulationLearner(callback, useCacheOnTrainingData, firstStepToLearn);}

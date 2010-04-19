@@ -448,11 +448,12 @@ int main(int argc, char** argv)
   LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
 
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\pssm.inference"));
+  File modelDirectory(T("/Users/francis/tmp/pssm.inference"));
 
-  File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM.inference"));
+  File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
-  File proteinsDirectory(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
+  File proteinsDirectory(T("/Users/francis/Projets/Proteins/Data/CB513New"));
+  //(T("C:\\Projets\\LBC++\\projects\\Proteins\\CB513New"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectory, T("*.protein"));
 #ifdef JUCE_DEBUG
   ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
@@ -467,6 +468,7 @@ int main(int argc, char** argv)
             << testingData->size() << " Testing Proteins" << std::endl;
 
   ProteinInferencePtr proteinInference = new ProteinInference();
+  
   /*
   ProteinSequenceLabelingInferenceStepPtr step;
 
@@ -480,16 +482,40 @@ int main(int argc, char** argv)
     proteinInference->appendStep(step);
   }*/
 
-  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-0")));
-  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-1")));
+/*  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-1")));
   proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-2")));
   proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-3")));
-  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-4")));
- 
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-4")));*/
+
+
+#define TRAIN_AND_SAVE
+
+#ifdef TRAIN_AND_SAVE 
+  proteinInference->appendStep(Object::createFromFileAndCast<InferenceStep>(contentOnlyModel));
+  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-1")));
+
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
-  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
+  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true, 1);
   learner->train(proteinInference, trainingData);
 
   proteinInference->saveToFile(modelDirectory);
+#else
+  
+  proteinInference->appendStep(Object::createFromFileAndCast<InferenceStep>(contentOnlyModel));
+  InferenceContextPtr validationContext = singleThreadedInferenceContext();
+  ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
+  validationContext->appendCallback(evaluation);
+
+  validationContext->runWithSupervisedExamples(proteinInference, trainingData);
+  std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
+  double trainRmse = evaluation->getPSSMRootMeanSquareError();
+
+  validationContext->runWithSupervisedExamples(proteinInference, testingData);
+  std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
+  double testRmse = evaluation->getPSSMRootMeanSquareError();
+  
+  std::cout << "Train: " << trainRmse << " Test: " << testRmse << std::endl;
+  
+#endif
   return 0;
 }
