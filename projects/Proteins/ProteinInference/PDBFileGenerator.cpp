@@ -104,14 +104,14 @@ String PDBFileGenerator::makeAtomLine(size_t atomNumber, const String& atomName,
   const String& elementSymbol, const String& atomCharge)
 {
   String line = T("ATOM  ");                                                    jassert(line.length() == 6);
-  line += toFixedLengthStringRightJustified(String(atomNumber), 5);             jassert(line.length() == 11);
+  line += toFixedLengthStringRightJustified(String((int)atomNumber), 5);        jassert(line.length() == 11);
   line += T(" ");                                                               jassert(line.length() == 12);
   line += toFixedLengthString(atomName, 4);                                     jassert(line.length() == 16);
   line += T(" "); /* alternate location indicator */                            jassert(line.length() == 17);
   line += toFixedLengthString(residueName.toUpperCase(), 3);                    jassert(line.length() == 20);
   line += T(" ");                                                               jassert(line.length() == 21);
   line += toFixedLengthString(chainID, 1);                                      jassert(line.length() == 22);
-  line += toFixedLengthStringRightJustified(String(residueNumber), 4);          jassert(line.length() == 26);
+  line += toFixedLengthStringRightJustified(String((int)residueNumber), 4);     jassert(line.length() == 26);
   line += T(" "); /* code for insertion of residues */                          jassert(line.length() == 27);
   line += T("   ");                                                             jassert(line.length() == 30);
   line += toFixedLengthStringRightJustified(String(x, 3), 8);                   jassert(line.length() == 38);
@@ -153,7 +153,6 @@ String PDBFileGenerator::toFixedLengthStringRightJustified(const String& str, in
 {
   jassert(str.length() <= length);
   String res = str;
-  int i = 0;
   while (res.length() < length)
     res = T(" ") + res;
   return res;
@@ -163,7 +162,6 @@ String PDBFileGenerator::toFixedLengthStringLeftJustified(const String& str, int
 {
   jassert(str.length() <= length);
   String res = str;
-  int i = 0;
   while (res.length() < length)
     res += T(" ");
   return res;

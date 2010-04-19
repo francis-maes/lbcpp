@@ -130,6 +130,43 @@ public:
     wSA   = newSA;
   }
 
+protected:
+  virtual bool load(InputStream& istr)
+  {
+    int versionNumber;
+    if (!lbcpp::read(istr, versionNumber))
+      return false;
+    if (versionNumber != 100)
+    {
+      Object::error(T("CustomableSecondaryStructureContent::load"), T("Unrecognized version number"));
+      return false;
+    }
+    if (!ProteinSequenceLabelingInferenceStep::load(istr))
+      return false;
+    if (!lbcpp::read(istr, wAA) || !lbcpp::read(istr, wPSSM) ||
+        !lbcpp::read(istr, wSS3) || !lbcpp::read(istr, wSS8) ||
+        !lbcpp::read(istr, wSA))
+      return false;
+    int targeti;
+    if (!lbcpp::read(istr, targeti))
+      return false;
+    target = (Target)targeti;
+    return true;
+  }
+
+  virtual void save(OutputStream& ostr) const
+  {
+    int versionNumber = 100;
+    lbcpp::write(ostr, versionNumber);
+    ProteinSequenceLabelingInferenceStep::save(ostr);
+    lbcpp::write(ostr, wAA);
+    lbcpp::write(ostr, wPSSM);
+    lbcpp::write(ostr, wSS3);
+    lbcpp::write(ostr, wSS8);
+    lbcpp::write(ostr, wSA);
+    lbcpp::write(ostr, (int)target);
+  }
+
 private:
   size_t wAA;
   size_t wPSSM;
@@ -185,7 +222,7 @@ public:
   {
     static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(1.0);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(0.5);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
   }
@@ -230,6 +267,8 @@ public:
                << (int) currentPass << '\n';
     oIteration->flush();
 
+    //inference->saveToFile(file);
+    // InferenceStepPtr step = Object::createFromFileAndCast<InferenceStep>(file);
     return iterationNumber < maxIteration;
   }
 
@@ -298,6 +337,7 @@ private:
 int main(int argc, char** argv)
 {
   declareProteinClasses();
+  LBCPP_DECLARE_CLASS(CustomableSecondaryStructureContent);
   
   String proteinsDirectory("/Users/jbecker/Documents/Workspace/CASP9/CB513");
   String prefixResults("result");
@@ -355,12 +395,14 @@ int main(int argc, char** argv)
       continue;
     }
     
-    PSSMParser pssmParser(pssmFile, myProtein->getLength());
-    ObjectPtr newPSSM = pssmParser.next();
+    ObjectPtr newPSSM = ObjectStreamPtr(new PSSMParser(pssmFile, myProtein->getLength()))->next();
+    
+    //PSSMParser pssmParser(pssmFile, myProtein->getLength());
+    //ObjectPtr newPSSM = pssmParser.next();
     
     jassert(newPSSM);
     
-    myProtein->setObject(T("PositionSpecificScoringMatrix"), newPSSM);
+    myProtein->setObject(newPSSM);
     
     File outputFile("/scratch/jbecker/CB513_New/" + myProtein->getName() + T(".protein"));
     myProtein->saveToFile(outputFile);
@@ -370,8 +412,8 @@ int main(int argc, char** argv)
 
   return 0;
 #endif // 0
-#if 0
-  ObjectContainerPtr prots = proteinsStream->load(7)->randomize();
+#if 1
+  ObjectContainerPtr prots = proteinsStream->load(1)->randomize();
   for (size_t i = 0; i < prots->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) prots->get(i);
