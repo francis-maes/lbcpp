@@ -1,7 +1,3 @@
-Bug: serialisation des vecteurs, c'est pas encore ca.
- (dans le format, enregistrer soit en string si la string existe, soit en index; mettre un flag qui dit si c'est l'un ou l'autre)
-
-* Step by step: mettre le "first pass number" en argument
 * Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
 
 Various:

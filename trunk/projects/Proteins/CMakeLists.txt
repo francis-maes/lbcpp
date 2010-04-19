@@ -18,14 +18,20 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
 SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/InferenceStep.h
   InferenceStep/InferenceStep.cpp
-  InferenceStep/DecoratorInferenceStep.h
-  InferenceStep/DecoratorInferenceStep.cpp
+
+  InferenceStep/ClassificationInferenceStep.h
+  InferenceStep/RegressionInferenceStep.h
+
   InferenceStep/SequentialInferenceStep.h
   InferenceStep/SequentialInferenceStep.cpp
   InferenceStep/ParallelInferenceStep.h
+
+  InferenceStep/DecoratorInferenceStep.h
+  InferenceStep/DecoratorInferenceStep.cpp
+
   InferenceStep/ParallelSequenceLabelingInferenceStep.h
-  InferenceStep/ClassificationInferenceStep.h
-  InferenceStep/RegressionInferenceStep.h
+  InferenceStep/ParallelSharedMultiRegressionInferenceStep.h
+  InferenceStep/ParallelSequenceMultiRegressionInferenceStep.h
 )
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
