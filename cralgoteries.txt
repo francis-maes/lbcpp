@@ -1,14 +1,13 @@
 Bug: serialisation des vecteurs, c'est pas encore ca.
  (dans le format, enregistrer soit en string si la string existe, soit en index; mettre un flag qui dit si c'est l'un ou l'autre)
 
-Various:
+* Step by step: mettre le "first pass number" en argument
 * Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
+
+Various:
 * SICA-prob: sampling
 * numberFeatures
 * multi layer prediction of the PSSM
-
-Prediction de RRCM:
- * chopper données 
 
 Explorer:
   * dispatcher le code des juce::Component 

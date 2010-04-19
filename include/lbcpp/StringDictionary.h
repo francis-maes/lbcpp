@@ -142,6 +142,9 @@ public:
   */
   virtual bool load(InputStream& istr);
 
+  void writeIdentifier(OutputStream& ostr, size_t index);
+  bool readIdentifier(InputStream& istr, size_t& index);
+
 protected:
   typedef std::map<String, size_t> StringToIndexMap;
   typedef std::vector<String> StringVector;

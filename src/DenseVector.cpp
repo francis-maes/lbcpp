@@ -204,6 +204,8 @@ bool DenseVector::load(InputStream& istr)
   dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
   if (!dictionary)
     return false;
+  StringDictionaryPtr features = dictionary->getFeatures();
+  StringDictionaryPtr scopes = dictionary->getScopes();
 
   size_t numValues;
   if (!read(istr, numValues))
@@ -213,11 +215,11 @@ bool DenseVector::load(InputStream& istr)
   values.reserve(numValues);
   for (size_t i = 0; i < numValues; ++i)
   {
-    String featureName;
+    size_t featureIndex;
     double featureValue;
-    if (!read(istr, featureName) || !read(istr, featureValue))
+    if (!features->readIdentifier(istr, featureIndex) || !lbcpp::read(istr, featureValue))
       return false;
-    set(featureName, featureValue);
+    set(featureIndex, featureValue);
   }
 
   size_t numSubVectors;
@@ -228,11 +230,11 @@ bool DenseVector::load(InputStream& istr)
   subVectors.reserve(numSubVectors);
   for (size_t i = 0; i < numSubVectors; ++i)
   {
-    String scopeName;
+    size_t scopeIndex;
     DenseVectorPtr subVector;
-    if (!read(istr, scopeName) || !read(istr, subVector))
+    if (!scopes->readIdentifier(istr, scopeIndex) || !read(istr, subVector))
       return false;
-    setSubVector(scopeName, subVector);
+    setSubVector(scopeIndex, subVector);
   }
   return true;
 }
@@ -241,18 +243,20 @@ void DenseVector::save(OutputStream& ostr) const
 {
   jassert(dictionary);
   write(ostr, dictionary->getName());
+  StringDictionaryPtr features = dictionary->getFeatures();
+  StringDictionaryPtr scopes = dictionary->getScopes();  
 
   write(ostr, values.size());
   for (size_t i = 0; i < values.size(); ++i)
   {
-    write(ostr, dictionary->getFeature(i));
+    features->writeIdentifier(ostr, i);
     write(ostr, values[i]);
   }
 
   write(ostr, subVectors.size());
   for (size_t i = 0; i < subVectors.size(); ++i)
   {
-    write(ostr, dictionary->getScope(i));
+    scopes->writeIdentifier(ostr, i);
     write(ostr, subVectors[i]);
   }
 }

@@ -47,8 +47,8 @@ private:
 class StepByStepDeterministicSimulationLearner : public InferenceLearner
 {
 public:
-  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData)
-    : InferenceLearner(callback)
+  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, size_t firstStepToLearn)
+    : InferenceLearner(callback), firstStepToLearn(firstStepToLearn)
   {
     if (useCacheOnTrainingData)
       cache = new InferenceResultCache();
@@ -78,7 +78,7 @@ public:
     /*
     ** Train step by step
     */
-    for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
+    for (size_t stepNumber = firstStepToLearn; stepNumber < numSteps; ++stepNumber)
     {
       InferenceStepPtr step = inference->getSubStep(stepNumber);
 
@@ -94,6 +94,7 @@ public:
   
 private:
   InferenceResultCachePtr cache;
+  size_t firstStepToLearn;
 
   InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
     {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}

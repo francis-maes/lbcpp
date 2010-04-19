@@ -75,6 +75,36 @@ bool StringDictionary::load(InputStream& istr)
   return true;
 }
 
+void StringDictionary::writeIdentifier(OutputStream& ostr, size_t index)
+{
+  if (index >= indexToString.size() || indexToString[index].isEmpty())
+  {
+    lbcpp::write(ostr, false);
+    lbcpp::write(ostr, index);
+  }
+  else
+  {
+    lbcpp::write(ostr, true);
+    lbcpp::write(ostr, indexToString[index]);
+  }
+}
+
+bool StringDictionary::readIdentifier(InputStream& istr, size_t& index)
+{
+  bool isEncodedAsString;
+  if (!lbcpp::read(istr, isEncodedAsString))
+    return false;
+  if (isEncodedAsString)
+  {
+    String str;
+    if (!lbcpp::read(istr, str))
+      return false;
+    index = add(str);
+    return true;
+  }
+  else
+    return lbcpp::read(istr, index);
+}
 
 namespace lbcpp
 {
