@@ -554,6 +554,89 @@ int main(int argc, char** argv)
       proteinInference->appendStep(step);
     }
   }
+  else if (predictionTarget == T("SS8-SA"))
+  {
+    CustomableSecondaryStructureContentPtr step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SS8"));
+    step->setTarget(CustomableSecondaryStructureContent::SS8);
+    step->enableAminoAcidFeatures(wAA);
+    step->enablePositionSpecificScoreFeatures(wPSSM);
+    proteinInference->appendStep(step);
+    
+    step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SA"));
+    step->setTarget(CustomableSecondaryStructureContent::SA);
+    step->enableAminoAcidFeatures(wAA);
+    step->enablePositionSpecificScoreFeatures(wPSSM);
+    proteinInference->appendStep(step);
+    
+    for (size_t i = 0; i < (size_t) maxPass; ++i)
+    {
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+SS8+SA -> SS8 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS8);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
+      proteinInference->appendStep(step);
+      
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+SS8+SA -> SA (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SA);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
+      proteinInference->appendStep(step);
+    }
+  }
+  else if (predictionTarget == T("SS3-SS8-SA"))
+  {
+    CustomableSecondaryStructureContentPtr step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SS3"));
+    step->setTarget(CustomableSecondaryStructureContent::SS3);
+    step->enableAminoAcidFeatures(wAA);
+    step->enablePositionSpecificScoreFeatures(wPSSM);
+    proteinInference->appendStep(step);
+
+    step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SS8"));
+    step->setTarget(CustomableSecondaryStructureContent::SS8);
+    step->enableAminoAcidFeatures(wAA);
+    step->enablePositionSpecificScoreFeatures(wPSSM);
+    proteinInference->appendStep(step);
+    
+    step = new CustomableSecondaryStructureContent(T("AA+PSSM -> SA"));
+    step->setTarget(CustomableSecondaryStructureContent::SA);
+    step->enableAminoAcidFeatures(wAA);
+    step->enablePositionSpecificScoreFeatures(wPSSM);
+    proteinInference->appendStep(step);
+    
+    for (size_t i = 0; i < (size_t) maxPass; ++i)
+    {
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+SS3+SS8+SA -> SS3 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS3);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure3StatesFeatures(wSS3);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
+      proteinInference->appendStep(step);
+      
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+SS3+SS8+SA -> SS8 (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SS8);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure3StatesFeatures(wSS3);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
+      proteinInference->appendStep(step);
+      
+      step = new CustomableSecondaryStructureContent(T("AA+PSSM+SS3+SS8+SA -> SA (") + toString(i) + T(")"));
+      step->setTarget(CustomableSecondaryStructureContent::SA);
+      step->enableAminoAcidFeatures(wAA);
+      step->enablePositionSpecificScoreFeatures(wPSSM);
+      step->enableSecondaryStructure3StatesFeatures(wSS3);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
+      proteinInference->appendStep(step);
+    }
+  }
 
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, prefixResults, maxIteration, regularizer, true);
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
