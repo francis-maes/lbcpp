@@ -74,8 +74,8 @@ int main(int argc, char* argv[])
   String outputBaseName = argv[4];
   std::cout << "Output Base Name: " << outputBaseName << std::endl;
 
-  //ProteinPtr protein = Protein::createFromAminoAcidSequence(targetName, aminoAcidSequence);
-  ProteinPtr protein = Protein::createFromPDB(File(T("C:\\Users\\Francis\\Downloads\\1crn.pdb")));
+  ProteinPtr protein = Protein::createFromAminoAcidSequence(targetName, aminoAcidSequence);
+ /* ProteinPtr protein = Protein::createFromPDB(File(T("C:\\Users\\Francis\\Downloads\\1crn.pdb")));
   if (!protein)
     return 2;
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
   protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(protein->getAminoAcidSequence(), trace));
 
   protein->saveToPDBFile(cwd.getChildFile(outputBaseName + T(".pdb")));
-  return 0;
+  return 0;*/
 
   addDefaultPredictions(protein);
   //std::cout << "===========================" << std::endl << protein->toString() << std::endl;
