@@ -43,7 +43,7 @@ const juce::tchar* AminoAcidDictionary::threeLettersCodes[] =
 
 const String AminoAcidDictionary::getThreeLettersCode(Type aminoAcidType)
 {
-  jassert(aminoAcidType < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ));
+  jassert((size_t)aminoAcidType < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ));
   return threeLettersCodes[aminoAcidType];
 }
 

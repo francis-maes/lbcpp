@@ -8,7 +8,8 @@ public:
   PSSMParser(const File& file, size_t sequenceLength) : TextObjectParser(file)
     , pssm(new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), AminoAcidDictionary::getInstance(), sequenceLength))
     , numLineToSkip(0)
-    , currentPosition(0) {}
+    , currentPosition(0)
+    {}
   
   virtual void parseBegin()
   {
