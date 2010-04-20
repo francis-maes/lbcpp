@@ -50,6 +50,7 @@ int LabelSequence::getIndex(size_t position) const
 
 void LabelSequence::setIndex(size_t position, size_t index)
 {
+  jassert(index < 255);
   jassert(position < sequence.size() && index <= 255);
   sequence[position] = (unsigned char)index;
   validateModification();
@@ -61,6 +62,13 @@ void LabelSequence::setString(size_t position, const String& string)
   jassert(index >= 0);
   if (index >= 0)
     setIndex(position, (size_t)index);
+}
+
+void LabelSequence::append(size_t index)
+{
+  jassert(index < 255);
+  sequence.push_back(index);
+  validateModification();
 }
 
 void LabelSequence::clear(size_t position)

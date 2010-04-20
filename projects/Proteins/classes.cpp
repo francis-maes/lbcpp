@@ -42,6 +42,7 @@ void declareInferenceClasses()
   LBCPP_DECLARE_CLASS(CancelAfterStepCallback);
 }
 
+#include "ProteinInference/ProteinTertiaryStructure.h"
 #include "ProteinInference/Protein.h"
 #include "ProteinInference/ProteinInference.h"
 #include "ProteinInference/AminoAcidDictionary.h"
@@ -51,8 +52,15 @@ void declareProteinClasses()
 {
   declareInferenceClasses();
 
+  LBCPP_DECLARE_CLASS(ProteinDihedralAngles);
+  LBCPP_DECLARE_CLASS(ProteinCarbonTrace);
+  LBCPP_DECLARE_CLASS(ProteinAtom);
+  LBCPP_DECLARE_CLASS(ProteinResidue);
+  LBCPP_DECLARE_CLASS(ProteinTertiaryStructure);
+
   LBCPP_DECLARE_CLASS(Protein);
   LBCPP_DECLARE_CLASS(ProteinInference);
+
 
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);

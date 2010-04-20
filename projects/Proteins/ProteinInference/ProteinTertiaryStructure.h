@@ -15,22 +15,171 @@
 namespace lbcpp
 {
 
-struct Vector3
+class Vector3
 {
+public:
   Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
   Vector3() : x(0.0), y(0.0), z(0.0) {}
 
-  double x, y, z;
-
   String toString() const
     {return T("(") + lbcpp::toString(x) + T(", ") + lbcpp::toString(y) + T(", ") + lbcpp::toString(z) + T(")");}
+
+  double getX() const
+    {return x;}
+
+  double getY() const
+    {return y;}
+
+  double getZ() const
+    {return z;}
+
+  void set(double x, double y, double z)
+    {this->x = x; this->y = y; this->z = z;}
+
+  Vector3 operator +(const Vector3& otherVector) const
+    {return Vector3(x + otherVector.x, y + otherVector.y, z + otherVector.z);}
+
+  Vector3 operator -(const Vector3& otherVector) const
+    {return Vector3(x - otherVector.x, y - otherVector.y, z - otherVector.z);}
+
+  Vector3 operator *(const double value) const
+    {return Vector3(x * value, y * value, z * value);}
+
+  Vector3 operator /(const double value) const
+  {
+    jassert(value);
+    double inverseValue = 1.0 / value;
+    return (*this) * inverseValue;
+  }
+
+  double dotProduct(const Vector3& otherVector) const
+    {return x * otherVector.x + y * otherVector.y + z * otherVector.z;}
+
+  double angle(const Vector3& otherVector) const
+  {
+    double n1 = sumOfSquares();
+    double n2 = otherVector.sumOfSquares();
+    if (!n1 || !n2)
+      return 0.0;
+    return acos(dotProduct(otherVector) / sqrt(n1 * n2));
+  }
+
+  Vector3 crossProduct(const Vector3& otherVector) const
+  {
+    return Vector3(y * otherVector.z - otherVector.y * z,
+                    z * otherVector.x - otherVector.z * x,
+                    x * otherVector.y - otherVector.x * y);
+  }
+
+  double sumOfSquares() const
+    {return x * x + y *y + z * z;}
+
+  double l2norm() const
+    {return sqrt(sumOfSquares());}
+
+  Vector3 normalized() const
+  {
+    double s = sumOfSquares();
+    if (s == 1)
+      return *this;
+    else
+    {
+      s = 1.0 / sqrt(s);
+      return (*this) * s;
+    }
+  }
+
+private:
+  double x, y, z;
 };
+
+template<>
+struct Traits<Vector3>
+{
+  typedef bool Type;
+
+  static inline String toString(const Vector3& value)
+    {return value.toString();}
+
+  static inline void write(OutputStream& ostr, const Vector3& value)
+  {
+    lbcpp::write(ostr, value.getX());
+    lbcpp::write(ostr, value.getY());
+    lbcpp::write(ostr, value.getZ());
+  }
+
+  static inline bool read(InputStream& istr, Vector3& res)
+  {
+    double x, y, z;
+    if (!lbcpp::read(istr, x) || !lbcpp::read(istr, y) || !lbcpp::read(istr, z))
+      return false;
+    res.set(x, y, z);
+    return true;
+  }
+};
+
+// predeclarations
+class ProteinCarbonTrace;
+typedef ReferenceCountedObjectPtr<ProteinCarbonTrace> ProteinCarbonTracePtr;
+
+class ProteinDihedralAngles;
+typedef ReferenceCountedObjectPtr<ProteinDihedralAngles> ProteinDihedralAnglesPtr;
+
+class ProteinAtom;
+typedef ReferenceCountedObjectPtr<ProteinAtom> ProteinAtomPtr;
+
+class ProteinResidue;
+typedef ReferenceCountedObjectPtr<ProteinResidue> ProteinResiduePtr;
 
 class ProteinTertiaryStructure;
 typedef ReferenceCountedObjectPtr<ProteinTertiaryStructure> ProteinTertiaryStructurePtr;
 
-class ProteinCarbonTrace;
-typedef ReferenceCountedObjectPtr<ProteinCarbonTrace> ProteinCarbonTracePtr;
+/*
+template<class ElementType>
+class BuiltinVectorBasedSequence : public Sequence
+{
+public:
+  typedef std::vector<ElementType> VectorType;
+
+  virtual size_t size() const
+    {return elements.size();}
+
+protected:
+  VectorType elements;
+};
+*/
+class ProteinDihedralAngles : public Sequence
+{
+public:
+  ProteinDihedralAngles(size_t length) : Sequence(T("DihedralAngles")), angles(length) {}
+  ProteinDihedralAngles() {}
+ 
+  static ProteinDihedralAnglesPtr createDihedralAngles(ProteinTertiaryStructurePtr tertiaryStructure);
+
+  virtual size_t size() const
+    {return angles.size();}
+
+  virtual ObjectPtr get(size_t index) const
+    {jassert(false); return ObjectPtr();}
+
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const
+    {return FeatureGeneratorPtr();}
+
+  virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
+    {return FeatureGeneratorPtr();}
+
+private:
+  struct ResidueInfo
+  {
+    ResidueInfo(ProteinResiduePtr previousResidue, ProteinResiduePtr residue, ProteinResiduePtr nextResidue);
+    ResidueInfo() : phiAngle(0.0), psiAngle(0.0) {}
+
+    double phiAngle;
+    double psiAngle;
+  };
+
+  std::vector<ResidueInfo> angles;
+};
 
 class ProteinCarbonTrace : public Sequence
 {
@@ -60,6 +209,13 @@ public:
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
     {return unitFeatureGenerator();}
 
+protected:
+  virtual bool load(InputStream& istr)
+    {return Sequence::load(istr) && lbcpp::read(istr, positions);}
+
+  virtual void save(OutputStream& ostr) const
+    {Sequence::save(ostr); lbcpp::write(ostr, positions);}
+
 private:
   std::vector<Vector3> positions;
 };
@@ -83,13 +239,13 @@ public:
     {this->position = position;}
 
   double getX() const
-    {return position.x;}
+    {return position.getX();}
 
   double getY() const
-    {return position.y;}
+    {return position.getY();}
 
   double getZ() const
-    {return position.z;}
+    {return position.getZ();}
 
   void setOccupancy(double occupancy)
     {this->occupancy = occupancy;}
@@ -108,15 +264,18 @@ protected:
   Vector3 position;
   double occupancy;
   double temperatureFactor;
-};
 
-typedef ReferenceCountedObjectPtr<ProteinAtom> ProteinAtomPtr;
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+};
 
 class ProteinResidue : public Object
 {
 public:
   ProteinResidue(AminoAcidDictionary::Type aminoAcid)
     : aminoAcid(aminoAcid) {}
+  ProteinResidue()
+    : aminoAcid(AminoAcidDictionary::unknown) {}
 
   virtual String toString() const;
 
@@ -135,25 +294,37 @@ public:
   void addAtom(ProteinAtomPtr atom)
     {atoms.push_back(atom);}
 
+  // central atom (back bone, first atom of the side chain)
   ProteinAtomPtr getCAlphaAtom() const
     {return findAtomByName(T("CA"));}
 
+  // second carbon of the side chain
   ProteinAtomPtr getCBetaAtom() const
     {return findAtomByName(T("CB"));}
+
+  // back bone
+  ProteinAtomPtr getNitrogenAtom() const
+    {return findAtomByName(T("N"));}
+
+  // back bone
+  ProteinAtomPtr getCarbonAtom() const
+    {return findAtomByName(T("C"));}
 
   ProteinAtomPtr findAtomByName(const String& name) const;
 
 protected:
   AminoAcidDictionary::Type aminoAcid;
   std::vector<ProteinAtomPtr> atoms;
-};
 
-typedef ReferenceCountedObjectPtr<ProteinResidue> ProteinResiduePtr;
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+};
 
 class ProteinTertiaryStructure : public Sequence
 {
 public:
   ProteinTertiaryStructure(size_t numResidues);
+  ProteinTertiaryStructure() {}
 
   static ProteinTertiaryStructurePtr createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, ProteinCarbonTracePtr trace);
 
@@ -179,8 +350,17 @@ public:
   void setResidue(size_t index, ProteinResiduePtr residue)
     {jassert(index < residues.size()); residues[index] = residue;}
 
+  void append(ProteinResiduePtr residue)
+    {residues.push_back(residue);}
+
 private:
   std::vector<ProteinResiduePtr> residues;
+
+  virtual bool load(InputStream& istr)
+    {return Sequence::load(istr) && lbcpp::read(istr, residues);}
+
+  virtual void save(OutputStream& ostr) const
+    {Sequence::save(ostr); lbcpp::write(ostr, residues);}
 };
 
 }; /* namespace lbcpp */

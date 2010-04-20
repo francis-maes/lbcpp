@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   ContainerTraits.h
-**@author Francis MAES
-**@date   Fri Jun 12 17:09:14 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_CONTAINER_TRAITS_H_
 # define LBCPP_CONTAINER_TRAITS_H_
 

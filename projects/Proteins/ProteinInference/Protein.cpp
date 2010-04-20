@@ -14,7 +14,16 @@ using namespace lbcpp;
 ProteinPtr Protein::createFromPDB(const File& pdbFile)
 {
   ObjectStreamPtr parser(new PDBFileParser(pdbFile));
-  return parser->nextAndCast<Protein>();
+  ProteinPtr res = parser->nextAndCast<Protein>();
+  if (!res)
+    return ProteinPtr();
+
+  ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
+  jassert(tertiaryStructure);
+  res->setObject(ProteinCarbonTrace::createCAlphaTrace(tertiaryStructure));
+  res->setObject(ProteinCarbonTrace::createCBetaTrace(tertiaryStructure));
+  res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
+  return res;
 }
 
 ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)
