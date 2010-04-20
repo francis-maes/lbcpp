@@ -229,9 +229,10 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(L
 {
   Matrix4 currentReferential = Matrix4::identity();
 
-  jassert(aminoAcidSequence && aminoAcidSequence->size() == dihedralAngles->size());
+  size_t n = dihedralAngles->size();
+  jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
 
-  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(dihedralAngles->size());
+  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
   for (size_t i = 0; i < dihedralAngles->size(); ++i)
   {
     ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
@@ -241,14 +242,15 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(L
     residue->addAtom(new ProteinAtom(T("CA"), T("C"), currentReferential.getTranslation()));
 
     currentReferential.rotateAroundZAxis(1.203);
-    currentReferential.rotateAroundXAxis(dihedralAngles->getPhi(i));
+    if (i > 0)
+      currentReferential.rotateAroundXAxis(dihedralAngles->getPhi(i));
     currentReferential.translate(Vector3(1.53, 0.0, 0.0));
     residue->addAtom(new ProteinAtom(T("C"), T("C"), currentReferential.getTranslation()));
     
     currentReferential.rotateAroundZAxis(1.203);
-    currentReferential.rotateAroundXAxis(dihedralAngles->getPsi(i));
+    if (i < n - 1)
+      currentReferential.rotateAroundXAxis(dihedralAngles->getPsi(i));
     currentReferential.translate(Vector3(1.33, 0.0, 0.0));
-    
     res->setResidue(i, residue);
   }
   return res;
