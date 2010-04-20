@@ -382,6 +382,12 @@ bool PDBFileParser::parseEnd()
       Object::error(T("PDBFileParser::parseEnd"), T("No tertiary structure for chain ") + lbcpp::toString(it->first));
       return false;
     }
+    String failureReason;
+    if (!tertiaryStructure->isConsistent(failureReason))
+    {
+      Object::error(T("PDBFileParser::parseEnd"), T("Tertiary structure is not consistent: ") + failureReason);
+      return false;
+    }
   }
 
   setResult(proteins.begin()->second);
