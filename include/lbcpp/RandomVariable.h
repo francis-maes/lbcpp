@@ -80,100 +80,43 @@ public:
   ScalarVariableMeanAndVariance(const String& name = "")
     : ScalarVariableMean(name) {}
 
-  /*!
-  **
-  **
-  ** @param val
-  */
   void push(double val)
     {ScalarVariableMean::push(val); meansqr.push(sqr(val));}
 
-  /*!
-  **
-  **
-  ** @param val
-  ** @param weight
-  */
   void push(double val, double weight)
     {ScalarVariableMean::push(val, weight); meansqr.push(sqr(val), weight);}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getVariance() const
     {return meansqr.getMean() - sqr(getMean());}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getStandardDeviation() const
     {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual String toString() const
     {return ScalarVariableMean::toString() + " +/- " + lbcpp::toString(getStandardDeviation());}
 
-  /*!
-  **
-  **
-  ** @param ostr
-  */
   virtual void save(OutputStream& ostr) const
   {
     ScalarVariableMean::save(ostr);
     meansqr.save(ostr);
   }
 
-  /*!
-  **
-  **
-  ** @param istr
-  **
-  ** @return
-  */
   virtual bool load(InputStream& istr)
     {return ScalarVariableMean::load(istr) && meansqr.load(istr);}
 
 private:
-  ScalarVariableMean meansqr; /*!< */
+  ScalarVariableMean meansqr;
 
-  /*!
-  **
-  **
-  ** @param x
-  **
-  ** @return
-  */
   static inline double sqr(double x)
     {return x * x;}
 };
 
-/*!
-** @class ScalarVariableStatics
-** @brief
-*/
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
 public:
   ScalarVariableStatistics(const String& name = "")
     : ScalarVariableMeanAndVariance(name), min(DBL_MAX), max(-DBL_MAX) {}
 
-  /*!
-  **
-  **
-  ** @param val
-  */
   void push(double val)
   {
     ScalarVariableMeanAndVariance::push(val);
@@ -183,12 +126,6 @@ public:
 	    max = val;
   }
 
-  /*!
-  **
-  **
-  ** @param val
-  ** @param weight
-  */
   void push(double val, double weight)
   {
     ScalarVariableMeanAndVariance::push(val, weight);
@@ -198,50 +135,21 @@ public:
 	    max = val;
   }
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getMinimum() const
     {return min;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getMaximum() const
     {return max;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   double getRange() const
     {return max - min;}
 
-  /*!
-  **
-  **
-  **
-  ** @return
-  */
   virtual String toString() const
   {
     return ScalarVariableMeanAndVariance::toString() + " [" +
       lbcpp::toString(min) + " - " + lbcpp::toString(max) + "]";
   }
 
-  /*!
-  **
-  **
-  ** @param ostr
-  */
   virtual void save(OutputStream& ostr) const
   {
     ScalarVariableMeanAndVariance::save(ostr);
@@ -249,19 +157,12 @@ public:
     write(ostr, max);
   }
 
-  /*!
-  **
-  **
-  ** @param istr
-  **
-  ** @return
-  */
   virtual bool load(InputStream& istr)
     {return ScalarVariableMeanAndVariance::load(istr) && read(istr, min) && read(istr, max);}
 
 private:
-  double min;                   /*!< */
-  double max;                   /*!< */
+  double min;
+  double max;
 };
 
 class PolicyStatistics : public Object

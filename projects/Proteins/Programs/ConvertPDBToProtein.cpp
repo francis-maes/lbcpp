@@ -16,6 +16,37 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+void testUnPeuLeBazar(ProteinPtr protein)
+{
+  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+  jassert(tertiaryStructure);
+  if (tertiaryStructure->hasOnlyCAlphaAtoms())
+    return;
+
+  static ScalarVariableStatistics nCalphaLength(T("N--CA length"));
+  static ScalarVariableStatistics calphaCLength(T("CA--C length")); 
+  static ScalarVariableStatistics cnLength(T("C--N length")); 
+
+  for (size_t i = 0; i < tertiaryStructure->size(); ++i)
+  {
+    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+    nCalphaLength.push(residue->getDistanceBetweenAtoms(T("N"), T("CA")));
+    calphaCLength.push(residue->getDistanceBetweenAtoms(T("CA"), T("C")));
+    ProteinResiduePtr nextResidue = i < tertiaryStructure->size() - 1 ? tertiaryStructure->getResidue(i + 1) : ProteinResiduePtr();
+    if (nextResidue)
+    {
+      double d = residue->getDistanceBetweenAtoms(T("C"), nextResidue, T("N"));
+      jassert(d < 2.0);
+      cnLength.push(d);
+    }
+  }
+
+  std::cout << nCalphaLength.toString() << std::endl;
+  std::cout << calphaCLength.toString() << std::endl;
+  std::cout << cnLength.toString() << std::endl;
+}
+
+
 bool convert(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
@@ -27,7 +58,9 @@ bool convert(const File& inputFile, const File& outputFile)
   if (output.isDirectory())
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
 
-  protein->saveToFile(output);
+  testUnPeuLeBazar(protein);
+
+  //protein->saveToFile(output);
   return true;
 }
 
@@ -80,7 +113,7 @@ int main(int argc, char* argv[])
 
   if (errors.size())
   {
-    std::cout << "Failed on " << errors.size() << " / " << inputFiles.size() << " files:" << std::endl;
+    std::cout << "Could not parse " << errors.size() << " / " << inputFiles.size() << " files:" << std::endl;
     for (size_t i = 0; i < errors.size(); ++i)
       std::cout << "\t" << errors[i].getFullPathName() << std::endl;
     return 3;

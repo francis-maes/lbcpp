@@ -102,7 +102,19 @@ bool PDBFileParser::parseSeqResLine(const String& line)
   }
   if (aminoAcidCodesLength < 3)
     return true; // skip line
-  
+
+  // parse and check num residues
+  int numResidues;
+  if (!getInteger(line, 14, 17, numResidues))
+    return false;
+  if (numResidues <= 0)
+  {
+    Object::error(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + lbcpp::toString(serialNumber));
+    return false;
+  }
+  if (numResidues < 10)
+    return true; // skip chains of less than 10 residues
+
   LabelSequencePtr aminoAcidSequence;
 
   // create protein if not done yet
@@ -127,15 +139,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     aminoAcidSequence = protein->getAminoAcidSequence();
   }
 
-  // parse and check num residues
-  int numResidues;
-  if (!getInteger(line, 14, 17, numResidues))
-    return false;
-  if (numResidues <= 0)
-  {
-    Object::error(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + lbcpp::toString(serialNumber));
-    return false;
-  }
+ 
 
   // parse amino acids
   for (size_t i = 0; i < numAminoAcidsPerLine; ++i)

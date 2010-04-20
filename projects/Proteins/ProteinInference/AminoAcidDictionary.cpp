@@ -53,7 +53,7 @@ AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromThreeLettersCode(const
   String code = threeLettersCode.toUpperCase();
 
   // ligands
-  if (code == T("MSE"))
+  if (code == T("MSE") || code == T("MHO"))
     return methionine;
   else if (code == T("NEP") || code == T("MHS"))
     return histidine;
@@ -61,7 +61,7 @@ AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromThreeLettersCode(const
     return lysine;
   else if (code == T("AGM"))
     return arginine;
-  else if (code == T("SMC") || code == T("OCS") || code == T("CSD"))
+  else if (code == T("SMC") || code == T("OCS") || code == T("CSD") || code == T("CME"))
     return cysteine;
   else if (code == T("GL3"))
     return glycine;
@@ -73,6 +73,10 @@ AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromThreeLettersCode(const
     return tyrosine;
   else if (code == T("NLN"))
     return leucine;
+  else if (code == T("MEN"))
+    return asparagine;
+  else if (code == T("HYP"))
+    return proline;
 
   for (size_t i = 0; i < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ); ++i)
     if (String(threeLettersCodes[i]).toUpperCase() == code)

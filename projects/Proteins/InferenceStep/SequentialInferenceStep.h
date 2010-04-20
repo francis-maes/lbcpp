@@ -56,6 +56,8 @@ public:
   */
   virtual size_t getNumSubSteps() const;
   virtual InferenceStepPtr getSubStep(size_t index) const;
+  void setSubStep(size_t index, InferenceStepPtr subStep)
+    {jassert(index < inferenceSteps.size()); inferenceSteps[index] = subStep;}
 
   /*
   ** Object
