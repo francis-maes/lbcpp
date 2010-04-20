@@ -227,6 +227,16 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(Labe
   return res;
 }
 
+ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinDihedralAnglesPtr dihedralAngles)
+{
+  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(dihedralAngles->size());
+  for (size_t i = 0; i < dihedralAngles->size(); ++i)
+  {
+    // todo
+  }
+  return res;
+}
+
 bool ProteinTertiaryStructure::hasOnlyCAlphaAtoms() const
 {
   for (size_t i = 0; i < residues.size(); ++i)

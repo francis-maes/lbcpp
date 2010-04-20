@@ -48,7 +48,7 @@ void addDefaultPredictions(ProteinPtr protein)
   ProteinCarbonTracePtr trace = new ProteinCarbonTrace(T("CAlphaTrace"), n);
   for (size_t i = 0; i < n; ++i)
   {
-    static const double constantLength = 2.0;
+    static const double constantLength = 3.8;
     trace->setPosition(i, Vector3(i * constantLength, 0.0, 0.0));
   }
   protein->setObject(trace);

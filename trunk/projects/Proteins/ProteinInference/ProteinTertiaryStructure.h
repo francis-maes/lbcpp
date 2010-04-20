@@ -312,6 +312,20 @@ public:
 
   ProteinAtomPtr findAtomByName(const String& name) const;
 
+  double getDistanceBetweenAtoms(const String& name1, const String& name2) const
+  {
+    ProteinAtomPtr a1 = findAtomByName(name1);
+    ProteinAtomPtr a2 = findAtomByName(name2);
+    return a1 && a2 ? (a1->getPosition() - a2->getPosition()).l2norm() : DBL_MAX;
+  }
+
+  double getDistanceBetweenAtoms(const String& name1, ProteinResiduePtr residue2, const String& name2) const
+  {
+    ProteinAtomPtr a1 = findAtomByName(name1);
+    ProteinAtomPtr a2 = residue2->findAtomByName(name2);
+    return a1 && a2 ? (a1->getPosition() - a2->getPosition()).l2norm() : DBL_MAX;
+  }
+
 protected:
   AminoAcidDictionary::Type aminoAcid;
   std::vector<ProteinAtomPtr> atoms;
@@ -327,6 +341,7 @@ public:
   ProteinTertiaryStructure() {}
 
   static ProteinTertiaryStructurePtr createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, ProteinCarbonTracePtr trace);
+  static ProteinTertiaryStructurePtr createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinDihedralAnglesPtr dihedralAngles);
 
   virtual size_t size() const
     {return residues.size();}
