@@ -54,6 +54,12 @@ SET(LBCPP_INFERENCE_LEARNER_SOURCES
   InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
 )
 
+SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
+  Geometry/DihedralAngle.h
+  Geometry/Vector3.h
+  Geometry/Matrix4.h
+)
+
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   ProteinInference/AminoAcidDictionary.h
   ProteinInference/AminoAcidDictionary.cpp
@@ -78,6 +84,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_STEP_SOURCES}
   ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
+  ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   classes.cpp
   InferencePredeclarations.h
@@ -93,6 +100,7 @@ SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/S
 SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
+SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
@@ -106,6 +114,9 @@ TARGET_LINK_LIBRARIES(CASPPredictor proteins)
 
 ADD_EXECUTABLE(ConvertPDBToProtein Programs/ConvertPDBToProtein.cpp)
 TARGET_LINK_LIBRARIES(ConvertPDBToProtein proteins)
+
+ADD_EXECUTABLE(TertiaryStructureRepresentationTests Programs/TertiaryStructureRepresentationTests.cpp)
+TARGET_LINK_LIBRARIES(TertiaryStructureRepresentationTests proteins)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 

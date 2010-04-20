@@ -20,6 +20,13 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile)
 
   ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
   jassert(tertiaryStructure);
+  
+  // the tertiary structure may not be defined on the whole primary sequence
+  // therefore, in general length(tertiary structure) <= length(primary sequence)
+  // here, we reduce the primary sequence to the portion for which the tertiary structure is defined
+  if (tertiaryStructure->size() < res->getAminoAcidSequence()->size())
+    res->setObject(tertiaryStructure->createAminoAcidSequence()); 
+
   res->setObject(ProteinCarbonTrace::createCAlphaTrace(tertiaryStructure));
   if (!tertiaryStructure->hasOnlyCAlphaAtoms())
   {
@@ -81,6 +88,9 @@ ScoreVectorSequencePtr Protein::getOrderDisorderScoreSequence() const
 
 ScoreSymmetricMatrixPtr Protein::getResidueResidueContactProbabilityMatrix() const
   {return getObject(T("ResidueResidueContactProbabilityMatrix"));}
+
+ProteinDihedralAnglesPtr Protein::getDihedralAngles() const
+  {return getObject(T("DihedralAngles"));}
 
 ProteinCarbonTracePtr Protein::getCAlphaTrace() const
   {return getObject(T("CAlphaTrace"));}

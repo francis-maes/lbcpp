@@ -16,37 +16,6 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-void testUnPeuLeBazar(ProteinPtr protein)
-{
-  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-  jassert(tertiaryStructure);
-  if (tertiaryStructure->hasOnlyCAlphaAtoms())
-    return;
-
-  static ScalarVariableStatistics nCalphaLength(T("N--CA length"));
-  static ScalarVariableStatistics calphaCLength(T("CA--C length")); 
-  static ScalarVariableStatistics cnLength(T("C--N length")); 
-
-  for (size_t i = 0; i < tertiaryStructure->size(); ++i)
-  {
-    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
-    nCalphaLength.push(residue->getDistanceBetweenAtoms(T("N"), T("CA")));
-    calphaCLength.push(residue->getDistanceBetweenAtoms(T("CA"), T("C")));
-    ProteinResiduePtr nextResidue = i < tertiaryStructure->size() - 1 ? tertiaryStructure->getResidue(i + 1) : ProteinResiduePtr();
-    if (nextResidue)
-    {
-      double d = residue->getDistanceBetweenAtoms(T("C"), nextResidue, T("N"));
-      jassert(d < 2.0);
-      cnLength.push(d);
-    }
-  }
-
-  std::cout << nCalphaLength.toString() << std::endl;
-  std::cout << calphaCLength.toString() << std::endl;
-  std::cout << cnLength.toString() << std::endl;
-}
-
-
 bool convert(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
@@ -57,10 +26,7 @@ bool convert(const File& inputFile, const File& outputFile)
   File output = outputFile;
   if (output.isDirectory())
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
-
-  testUnPeuLeBazar(protein);
-
-  //protein->saveToFile(output);
+  protein->saveToFile(output);
   return true;
 }
 

@@ -41,6 +41,41 @@ public:
 
 typedef ReferenceCountedObjectPtr<Sequence> SequencePtr;
 
+template<class ElementType>
+class BuiltinVectorBasedSequence : public Sequence
+{
+public:
+  BuiltinVectorBasedSequence(const String& name, size_t length = 0)
+    : Sequence(name), elements(length) {}
+  BuiltinVectorBasedSequence() {}
+
+  typedef std::vector<ElementType> VectorType;
+
+  virtual size_t size() const
+    {return elements.size();}
+
+  virtual void resize(size_t newSize)
+    {elements.resize(newSize);}
+
+   virtual ObjectPtr get(size_t index) const
+    {return elementFeatures(index);}
+
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const
+    {return unitFeatureGenerator();}
+
+  virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
+    {return unitFeatureGenerator();}
+
+protected:
+  VectorType elements;
+
+  virtual bool load(InputStream& istr)
+    {return Sequence::load(istr) && lbcpp::read(istr, elements);}
+
+  virtual void save(OutputStream& ostr) const
+    {Sequence::save(ostr); lbcpp::write(ostr, elements);}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_DATA_SEQUENCE_H_
