@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
+#include <lbcpp/StoppingCriterion.h>
 #include "InferenceContext/CacheInferenceCallback.h"
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
@@ -178,35 +179,13 @@ private:
 
 typedef ReferenceCountedObjectPtr<CustomableSecondaryStructureContent> CustomableSecondaryStructureContentPtr;
 
-class MyInferenceLearnerCallback : public InferenceLearnerCallback
-{
+class DefaultInferenceLearnerCallback : public InferenceLearnerCallback {
 public:
-  MyInferenceLearnerCallback(ObjectContainerPtr trainingData, ObjectContainerPtr testingData, String& prefix, size_t maxIteration, double regularizer, bool useCache = true)
-    : trainingData(trainingData), testingData(testingData), startTimeIteration(0.0)
-    , prefixFilename(prefix), oIteration(NULL), oPass(NULL)
-    , currentPass(0), lastTrainQ3(0.), lastTrainQ8(0.)
-    , lastTestQ3(0.), lastTestQ8(0.), lastIterationNumber(0)
-    , maxIteration(maxIteration), regularizer(regularizer)
-  {
-    startTimePass = juce::Time::getMillisecondCounter();
-    File cwd = File::getCurrentWorkingDirectory();
-    File dst = cwd.getChildFile(prefixFilename + T(".pass"));
-    std::cout << "New file: " << dst.getFullPathName() << std::endl;
-    dst.deleteFile();
-    oPass = dst.createOutputStream();
-    
-    if (useCache)
-      cache = new InferenceResultCache();
-  }
-
-  virtual ~MyInferenceLearnerCallback()
-  {
-    delete oPass;
-  }
-
+  DefaultInferenceLearnerCallback(double regularizer = 1.0) : regularizer(regularizer) {}
+  
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
-
+  
   virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
   {
     static const bool useConstantLearningRate = false;
@@ -226,113 +205,272 @@ public:
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
   }
+protected:
+  double regularizer;
+};
+
+class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback {
+public:
+  EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback()) : factory(factory) {}
+
+  virtual void setTrainingEvaluation(ProteinEvaluationCallbackPtr trainingEvaluation)
+    {this->trainingEvaluation = trainingEvaluation;}
+  
+  virtual void setTestingEvaluation(ProteinEvaluationCallbackPtr testingEvaluation)
+    {this->testingEvaluation = testingEvaluation;}
+
+  virtual InferenceContextPtr createContext()
+    {jassert(factory); return factory->createContext();}
+  
+  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
+    {jassert(factory); return factory->createClassifier(step, labels);}
+
+  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
+    {jassert(factory); return factory->createRegressor(step);}
+
+  void setFactory(InferenceLearnerCallbackPtr factory)
+    {this->factory = factory;}
+
+protected:
+  ProteinEvaluationCallbackPtr getTrainingEvaluation()
+    {jassert(trainingEvaluation); return trainingEvaluation;}
+  
+  ProteinEvaluationCallbackPtr getTestingEvaluation()
+    {jassert(testingEvaluation); return testingEvaluation;}
+  
+private:
+  ProteinEvaluationCallbackPtr trainingEvaluation;
+  ProteinEvaluationCallbackPtr testingEvaluation;
+  
+  InferenceLearnerCallbackPtr factory;
+};
+
+typedef ReferenceCountedObjectPtr<EvaluationInferenceLearnerCallback> EvaluationInferenceLearnerCallbackPtr;
+
+class MultiInferenceLearnerCallback : public InferenceLearnerCallback {
+public:
+  MultiInferenceLearnerCallback(ObjectContainerPtr trainingData, ObjectContainerPtr testingData, InferenceLearnerCallbackPtr factory)
+    : trainingData(trainingData), testingData(testingData), factory(factory)
+    , regularizer(1.0), cache(new InferenceResultCache()) {}
+
+  virtual ~MultiInferenceLearnerCallback()
+    {}
+  
+  virtual InferenceContextPtr createContext()
+    {return factory->createContext();}
+  
+  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
+    {return factory->createClassifier(step, labels);}
+
+  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
+    {return factory->createRegressor(step);}
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
   {
-    std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << std::endl;
-    lastIterationNumber = iterationNumber;
+    for (size_t i = 0; i < callbacks.size(); ++i)
+    {
+      callbacks[i]->preLearningIterationCallback(iterationNumber);
+    }
   }
 
-  // returns false if learning should stop
+  // returns false if learning should stop (if at least one callback return false)
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
     InferenceContextPtr validationContext = createContext();
-    ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
-    validationContext->appendCallback(evaluation);
+    
     if (cache)
       validationContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
 
+    ProteinEvaluationCallbackPtr trainingEvaluation = new ProteinEvaluationCallback();
+    validationContext->appendCallback(trainingEvaluation);
     validationContext->runWithSupervisedExamples(inference, trainingData);
-    std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
-
-    lastTrainQ3 = evaluation->getQ3Score();
-    lastTrainQ8 = evaluation->getQ8Score();
-    lastTrainSA2 = evaluation->getSA2Score();
+    validationContext->removeCallback(trainingEvaluation);
     
+    ProteinEvaluationCallbackPtr testingEvaluation = new ProteinEvaluationCallback();
+    validationContext->appendCallback(testingEvaluation);
     validationContext->runWithSupervisedExamples(inference, testingData);
-    std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
+
+    bool res = true;
+    for (size_t i = 0; i < callbacks.size(); ++i)
+    {
+      callbacks[i]->setTrainingEvaluation(trainingEvaluation);
+      callbacks[i]->setTestingEvaluation(testingEvaluation);
+      if (!callbacks[i]->postLearningIterationCallback(inference, iterationNumber))
+        res = false;
+    }
     
-    lastTestQ3 = evaluation->getQ3Score();
-    lastTestQ8 = evaluation->getQ8Score();
-    lastTestSA2 = evaluation->getSA2Score();
+    return res;
+  }
+  
+  virtual void preLearningStepCallback(InferenceStepPtr step)
+  {
+    for (size_t i = 0; i < callbacks.size(); ++i)
+    {
+      callbacks[i]->preLearningStepCallback(step);
+    }
+  }
+  
+  virtual void postLearningStepCallback(InferenceStepPtr step)
+  {
+    for (size_t i = 0; i < callbacks.size(); ++i)
+    {
+      callbacks[i]->postLearningStepCallback(step);
+    }
+  }
 
-    *oIteration << (int) lastIterationNumber << '\t'
-               << lastTrainQ3 << '\t'
-               << lastTestQ3  << '\t'
-               << lastTrainQ8 << '\t'
-               << lastTestQ8  << '\t'
-               << lastTrainSA2 << '\t'
-               << lastTestSA2  << '\t'
+  void appendCallback(EvaluationInferenceLearnerCallbackPtr callback)
+  {
+    jassert(callback);
+    callback->setFactory(factory);
+    callbacks.push_back(callback);
+  }
+  
+  void setL2Regularizer(double regularizer)
+    {this->regularizer = regularizer;}
+  
+  void useCache(bool useCache)
+  {
+    if (!useCache)
+      cache = ObjectPtr();
+    else if (!cache)
+      cache = new InferenceResultCache();
+  }
+
+private:
+  std::vector< EvaluationInferenceLearnerCallbackPtr >callbacks;
+
+  ObjectContainerPtr trainingData;
+  ObjectContainerPtr testingData;
+  
+  InferenceLearnerCallbackPtr factory;
+  
+  double regularizer;
+  InferenceResultCachePtr cache;
+};
+
+typedef ReferenceCountedObjectPtr<MultiInferenceLearnerCallback> MultiInferenceLearnerCallbackPtr;
+
+class GnuPlotInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
+public:
+  GnuPlotInferenceLearnerCallback(String& prefix)
+    : prefixFilename(prefix)
+    , startTimeIteration(0.0), startTimePass(0.0)
+    , oIteration(NULL), oPass(NULL)
+    , iterationNumber(0), passNumber(0)
+  {
+    startTimePass = juce::Time::getMillisecondCounter();
+    
+    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".pass"));
+    dst.deleteFile();
+    oPass = dst.createOutputStream();
+  }
+  
+  ~GnuPlotInferenceLearnerCallback()
+    {delete oPass;}
+
+  virtual void preLearningIterationCallback(size_t iterationNumber)
+    {this->iterationNumber = iterationNumber;}
+  
+  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  {
+    *oIteration << (int) iterationNumber << '\t'
+               << getTrainingEvaluation()->getQ3Score() << '\t'
+               << getTestingEvaluation()->getQ3Score()  << '\t'
+               << getTrainingEvaluation()->getQ8Score() << '\t'
+               << getTestingEvaluation()->getQ8Score()  << '\t'
+               << getTrainingEvaluation()->getSA2Score() << '\t'
+               << getTestingEvaluation()->getSA2Score()  << '\t'
                << (juce::Time::getMillisecondCounter() - startTimeIteration) / 1000. << '\t'
-               << (int) currentPass << '\n';
+               << (int) passNumber << '\n';
     oIteration->flush();
-
-    //inference->saveToFile(file);
-    // InferenceStepPtr step = Object::createFromFileAndCast<InferenceStep>(file);
-    return iterationNumber < maxIteration;
+    
+    return true;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
-    String passName = step->getName();
-    std::cout << std::endl << "=====================================================" << std::endl;
-    std::cout << "======= LEARNING PASS " << passName << " ==========" << std::endl;
-    std::cout << "=====================================================" << std::endl;
-    
     startTimeIteration = juce::Time::getMillisecondCounter();
 
-    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(currentPass));
-    std::cout << "New file: " << dst.getFullPathName() << std::endl;
+    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(passNumber));
     dst.deleteFile();
     oIteration = dst.createOutputStream();
   }
   
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
+    jassert(oIteration);
     delete oIteration;
     
-    *oPass << (int) currentPass << '\t'
-          << lastTrainQ3 << '\t'
-          << lastTestQ3  << '\t'
-          << lastTrainQ8 << '\t'
-          << lastTestQ8  << '\t'
-          << lastTrainSA2 << '\t'
-          << lastTestSA2  << '\t'
+    *oPass << (int) passNumber << '\t'
+          << getTrainingEvaluation()->getQ3Score() << '\t'
+          << getTestingEvaluation()->getQ3Score()  << '\t'
+          << getTrainingEvaluation()->getQ8Score() << '\t'
+          << getTestingEvaluation()->getQ8Score()  << '\t'
+          << getTrainingEvaluation()->getSA2Score() << '\t'
+          << getTestingEvaluation()->getSA2Score()  << '\t'
           << (juce::Time::getMillisecondCounter() - startTimePass) / 1000. << '\n';
     oPass->flush();
     
-    currentPass++;
+    passNumber++;
   }
-
 private:
-  ObjectContainerPtr trainingData;
-  ObjectContainerPtr testingData;
-
-  InferenceResultCachePtr cache;
-
+  String prefixFilename;
+  
   double startTimeIteration;
   double startTimePass;
-  String& prefixFilename;
+
   OutputStream* oIteration;
   OutputStream* oPass;
   
-  size_t currentPass;
-  double lastTrainQ3;
-  double lastTrainQ8;
-  double lastTestQ3;
-  double lastTestQ8;
-  double lastTrainSA2;
-  double lastTestSA2;
-  
-  size_t lastIterationNumber;
-  size_t maxIteration;
-  double regularizer;
+  size_t iterationNumber;
+  size_t passNumber;
 };
 
+// TODO: Be more generic
+class StoppingCriterionInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
+public:
+  StoppingCriterionInferenceLearnerCallback(size_t maximumIteration)
+    : stoppingCriterion(maxIterationsStoppingCriterion(maximumIteration))
+    {}
+  virtual void preLearningStepCallback(InferenceStepPtr step)
+  {
+    stoppingCriterion->reset();
+  }
 
-/*                                                *
+  // returns false if learning should stop
+  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  {
+    return !stoppingCriterion->shouldOptimizerStop(getTestingEvaluation()->getQ3Score());
+  }
+
+private:
+  StoppingCriterionPtr stoppingCriterion;
+};
+
+class StandardOutputInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
+  virtual void preLearningIterationCallback(size_t iterationNumber)
+    {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << std::endl;}
+
+  // returns false if learning should stop
+  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  {
+    std::cout << "Train evaluation: " << getTrainingEvaluation()->toString() << std::endl;
+    std::cout << "Test evaluation: " << getTestingEvaluation()->toString() << std::endl;
+    return true;
+  }
+  
+  virtual void preLearningStepCallback(InferenceStepPtr step)
+  {
+    String passName = step->getName();
+    std::cout << std::endl << "=====================================================" << std::endl;
+    std::cout << "======= LEARNING PASS " << passName << " ==========" << std::endl;
+    std::cout << "=====================================================" << std::endl;
+  }
+};
+
+/*                                                  *
                 Under Heavy Development
- *                                                */
+ *                                                  */
 
 int main(int argc, char** argv)
 {
@@ -412,7 +550,7 @@ int main(int argc, char** argv)
 
   return 0;
 #endif // 0
-#if 1
+#if 0
   ObjectContainerPtr prots = proteinsStream->load(1)->randomize();
   for (size_t i = 0; i < prots->size(); ++i)
   {
@@ -425,7 +563,7 @@ int main(int argc, char** argv)
   return 0;
 #endif // 0
 
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
@@ -638,7 +776,14 @@ int main(int argc, char** argv)
     }
   }
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, prefixResults, maxIteration, regularizer, true);
+  InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback(regularizer);
+  MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
+  callback->useCache(true);
+  callback->setL2Regularizer(regularizer);
+  callback->appendCallback(new StoppingCriterionInferenceLearnerCallback(maxIteration));
+  callback->appendCallback(new StandardOutputInferenceLearnerCallback());
+  callback->appendCallback(new GnuPlotInferenceLearnerCallback(prefixResults));
+  
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
   learner->train(proteinInference, trainingData);
 
