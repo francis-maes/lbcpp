@@ -64,7 +64,7 @@ public:
   }
 
   void setObject(ObjectPtr object)
-    {objects[object->getName()] = object;}
+    {if (object) {objects[object->getName()] = object;}}
 
   ObjectPtr getObject(const String& key) const
   {

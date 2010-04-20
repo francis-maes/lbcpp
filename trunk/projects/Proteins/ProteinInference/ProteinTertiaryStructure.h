@@ -347,11 +347,16 @@ public:
   ProteinResiduePtr getResidue(size_t index) const
     {jassert(index < residues.size()); return residues[index];}
 
+  ProteinResiduePtr getLastResidue() const
+    {return residues.size() ? residues.back() : ProteinResiduePtr();}
+
   void setResidue(size_t index, ProteinResiduePtr residue)
     {jassert(index < residues.size()); residues[index] = residue;}
 
   void append(ProteinResiduePtr residue)
     {residues.push_back(residue);}
+
+  bool hasOnlyCAlphaAtoms() const;
 
 private:
   std::vector<ProteinResiduePtr> residues;

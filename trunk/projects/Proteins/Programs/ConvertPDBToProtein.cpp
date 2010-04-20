@@ -18,16 +18,15 @@ extern void declareProteinClasses();
 
 bool convert(const File& inputFile, const File& outputFile)
 {
-  std::cout << "Parsing " << inputFile.getFullPathName() << "..." << std::endl;
+  std::cout << inputFile.getFullPathName() << "..." << std::endl;
   ProteinPtr protein = Protein::createFromPDB(inputFile);
   if (!protein)
     return false;
  
   File output = outputFile;
   if (output.isDirectory())
-    output = output.getChildFile(outputFile.getFileNameWithoutExtension() + T(".protein"));
+    output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
 
-  std::cout << "Saving " << output.getFullPathName() << "..." << std::endl;
   protein->saveToFile(output);
   return true;
 }
@@ -70,9 +69,21 @@ int main(int argc, char* argv[])
   else
     inputFiles.add(new File(input));
 
+  std::vector<File> errors;
   for (int i = 0; i < inputFiles.size(); ++i)
+  {
+    if (inputFiles.size() > 1)
+      std::cout << (i+1) << " / " << inputFiles.size() << ", ";
     if (!convert(*inputFiles[i], output))
-      return 3;
+      errors.push_back(*inputFiles[i]);
+  }
 
+  if (errors.size())
+  {
+    std::cout << "Failed on " << errors.size() << " / " << inputFiles.size() << " files:" << std::endl;
+    for (size_t i = 0; i < errors.size(); ++i)
+      std::cout << "\t" << errors[i].getFullPathName() << std::endl;
+    return 3;
+  }
   return 0;
 }

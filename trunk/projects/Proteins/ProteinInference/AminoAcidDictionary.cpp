@@ -50,9 +50,32 @@ const String AminoAcidDictionary::getThreeLettersCode(Type aminoAcidType)
 AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromThreeLettersCode(const String& threeLettersCode)
 {
   jassert(threeLettersCode.length() == 3);
-  String code = threeLettersCode.toLowerCase();
+  String code = threeLettersCode.toUpperCase();
+
+  // ligands
+  if (code == T("MSE"))
+    return methionine;
+  else if (code == T("NEP") || code == T("MHS"))
+    return histidine;
+  else if (code == T("ALY") || code == T("KCX"))
+    return lysine;
+  else if (code == T("AGM"))
+    return arginine;
+  else if (code == T("SMC") || code == T("OCS") || code == T("CSD"))
+    return cysteine;
+  else if (code == T("GL3"))
+    return glycine;
+  else if (code == T("GLH"))
+    return glutamicAcid;
+  else if (code == T("PCA"))
+    return glutamine;
+  else if (code == T("DBY"))
+    return tyrosine;
+  else if (code == T("NLN"))
+    return leucine;
+
   for (size_t i = 0; i < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ); ++i)
-    if (String(threeLettersCodes[i]).toLowerCase() == code)
+    if (String(threeLettersCodes[i]).toUpperCase() == code)
       return (Type)i;
   return unknown;
 }

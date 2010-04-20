@@ -43,6 +43,7 @@ protected:
   bool parseModelLine(const String& line);
   bool parseAtomLine(const String& line);
   bool parseTerLine(const String& line);
+  bool parseHetAtomLine(const String& line);
 
   static String getSubString(const String& line, int firstColumn, int lastColumn);
   static bool getChar(const String& line, int column, char& result);
@@ -50,6 +51,8 @@ protected:
   static bool getDouble(const String& line, int firstColumn, int lastColumn, double& result);
 
   bool getChainId(const String& line, int column, char& res) const;
+  ProteinPtr getProteinFromChainId(const String& line, int column);
+  bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
 };
 
 }; /* namespace lbcpp */
