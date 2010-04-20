@@ -128,18 +128,10 @@ public:
     return false;
   }
 
-  static const Matrix4& identity()
-  {
-    static const Matrix4 identityMatrix(
-      1.0, 0.0, 0.0, 0.0,
-      0.0, 1.0, 0.0, 0.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0);
-    return identityMatrix;
-  }
+  static const Matrix4 identity;
 
- bool isAffine() const
-  {return m[3][0] == 0 && m[3][1] == 0 && m[3][2] == 0 && m[3][3] == 1;}
+  bool isAffine() const
+    {return m[3][0] == 0 && m[3][1] == 0 && m[3][2] == 0 && m[3][3] == 1;}
   
   Vector3 transformAffine(const Vector3& v) const
   {

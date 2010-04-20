@@ -14,6 +14,8 @@ using namespace lbcpp;
 */
 static void computeDihedralAngles(ProteinResiduePtr previousResidue, ProteinResiduePtr residue, ProteinResiduePtr nextResidue, DihedralAngle& phi, DihedralAngle& psi)
 {
+  jassert(residue);
+
   ProteinAtomPtr previousCarbon = previousResidue ? previousResidue->getCarbonAtom() : ProteinAtomPtr();
   ProteinAtomPtr nitrogen = residue->getNitrogenAtom();
   ProteinAtomPtr calpha = residue->getCAlphaAtom();
@@ -227,7 +229,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(Labe
 
 ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinDihedralAnglesPtr dihedralAngles)
 {
-  Matrix4 currentReferential = Matrix4::identity();
+  Matrix4 currentReferential = Matrix4::identity;
 
   size_t n = dihedralAngles->size();
   jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
@@ -237,20 +239,25 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(L
   {
     ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
     residue->addAtom(new ProteinAtom(T("N"), T("N"), currentReferential.getTranslation()));
+    //std::cout << "N at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
 
     currentReferential.translate(Vector3(1.46, 0.0, 0.0));
-    residue->addAtom(new ProteinAtom(T("CA"), T("C"), currentReferential.getTranslation()));
-
-    currentReferential.rotateAroundZAxis(1.203);
     if (i > 0)
       currentReferential.rotateAroundXAxis(dihedralAngles->getPhi(i));
-    currentReferential.translate(Vector3(1.53, 0.0, 0.0));
-    residue->addAtom(new ProteinAtom(T("C"), T("C"), currentReferential.getTranslation()));
+    currentReferential.rotateAroundZAxis(1.216);
+    residue->addAtom(new ProteinAtom(T("CA"), T("C"), currentReferential.getTranslation()));
+    //std::cout << "CA at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
     
-    currentReferential.rotateAroundZAxis(1.203);
+    currentReferential.translate(Vector3(1.53, 0.0, 0.0));
     if (i < n - 1)
       currentReferential.rotateAroundXAxis(dihedralAngles->getPsi(i));
+    currentReferential.rotateAroundZAxis(1.098);
+    residue->addAtom(new ProteinAtom(T("C"), T("C"), currentReferential.getTranslation()));
+    //std::cout << "C at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
+    
     currentReferential.translate(Vector3(1.33, 0.0, 0.0));
+    currentReferential.rotateAroundXAxis(M_PI); // omega
+    currentReferential.rotateAroundZAxis(1.033);
     res->setResidue(i, residue);
   }
   return res;
