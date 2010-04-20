@@ -21,8 +21,11 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile)
   ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
   jassert(tertiaryStructure);
   res->setObject(ProteinCarbonTrace::createCAlphaTrace(tertiaryStructure));
-  res->setObject(ProteinCarbonTrace::createCBetaTrace(tertiaryStructure));
-  res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
+  if (!tertiaryStructure->hasOnlyCAlphaAtoms())
+  {
+    res->setObject(ProteinCarbonTrace::createCBetaTrace(tertiaryStructure));
+    res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
+  }
   return res;
 }
 
