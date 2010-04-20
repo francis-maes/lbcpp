@@ -1,37 +1,41 @@
 #!/bin/sh
 
 function launch {
+	name="${prefix}_${target}_${nbPass}_${nbIteration}_${wAA}_${wPSSM}_${wSS3}_${wSS8}_${wSA}_${regularizer}"
 
-	name=`echo "$prefix.$nbFolds $nbIter $learningRate $model" | sed 's/ /_/g'`
-
-	for(( targetFold=0; targetFold < $nbFolds; targetFold++ ))
-	do
-		qsub << EOF
-#$ -l h_vmem=16G 
-#$ -l h_rt=24:00:00
+	expected_time=`expr $nbPass + 1`
+	#expected_time=`expr $expected_time '*' 3`
+	
+qsub << EOF
+#$ -l h_vmem=2G 
+#$ -l h_rt=${expected_time}:00:00
 
 #$ -m eas
 #$ -M J.Becker@ULg.ac.be
 
 #$ -cwd
 
-#$ -N $name.${targetFold}
-./SecondaryStructureCrossValidation ~/CASP9/CB513 $name.${targetFold} $nbFolds ${targetFold} $nbIter $regularizer $learningRate $model
+#$ -N ${name}
+./TrainStepByStepSS ProteinsDirectory /scratch/jbecker/CB513 PrefixResults ${name} CurrentFold 0 PredictionTarget ${target} MaximumIteration ${nbIteration} MaximumPass ${nbPass} AminoAcidWindow ${wAA} PSSMWindow ${wPSSM} SS3Window ${wSS3} SS8Window ${wSS8} SAWindow ${wSA} Regularizer ${regularizer}
 EOF
-	done
 
 }
 
+target="SS3"
+nbIteration="15"
+nbPass="3"
 
-nbFolds="7"
-nbIter="100"
-learningRate="Inv 2 250000"
-model="CO"
-prefix="SS"
-regularizer=0.0001
+wAA="9"
+wPSSM="11"
+wSS3="10"
+wSS8="10"
+wSA="10"
 
-for i in 100000 150000 500000
-do
-	learningRate="Inv 2 $i"
+regularizer="10"
+prefix="CHECK"
+
+
+#for target in SS3 SS8 SA SS3-SS8 SS3-SA SS8-SA SS3-SS8-SA
+#do
 	launch
-done
+#done
