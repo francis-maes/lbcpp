@@ -24,17 +24,32 @@ public:
   virtual bool parseEnd();
 
 protected:
-  ProteinPtr protein;
+  String proteinName;
+  typedef std::map<char, ProteinPtr> ProteinMap;
+  ProteinMap proteins; // by chain ID
+
   int currentSeqResSerialNumber;
+  int currentModelSerialNumber;
   int currentAtomSerialNumber;
+  int currentResidueSerialNumber;
+  char currentResidueInsertionCode;
+
+  size_t currentResidueIndex;
 
   bool parseHeaderLine(const String& line);
+
   bool parseSeqResLine(const String& line);
+
+  bool parseModelLine(const String& line);
   bool parseAtomLine(const String& line);
+  bool parseTerLine(const String& line);
 
   static String getSubString(const String& line, int firstColumn, int lastColumn);
+  static bool getChar(const String& line, int column, char& result);
   static bool getInteger(const String& line, int firstColumn, int lastColumn, int& result);
   static bool getDouble(const String& line, int firstColumn, int lastColumn, double& result);
+
+  bool getChainId(const String& line, int column, char& res) const;
 };
 
 }; /* namespace lbcpp */

@@ -14,6 +14,8 @@ ApplicationCommandManager* theCommandManager = NULL;
 
 Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
 {
+  if (!object)
+    return NULL;
 /*  Component* res = object->createComponent();
   if (res)
     return res;*/

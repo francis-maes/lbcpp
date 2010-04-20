@@ -18,7 +18,7 @@ namespace lbcpp
 class LabelSequence : public Sequence
 {
 public:
-  LabelSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length);
+  LabelSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length = 0);
   LabelSequence() {}
 
   FeatureDictionaryPtr getDictionary() const
@@ -29,6 +29,8 @@ public:
 
   void setIndex(size_t position, size_t index);
   void setString(size_t position, const String& string);
+
+  void append(size_t index);
 
   /*
   ** ObjectContainer

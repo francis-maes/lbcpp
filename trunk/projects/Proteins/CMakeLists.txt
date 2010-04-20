@@ -104,6 +104,9 @@ TARGET_LINK_LIBRARIES(ProteinsCB513Converter proteins)
 ADD_EXECUTABLE(CASPPredictor Programs/CASPPredictor.cpp)
 TARGET_LINK_LIBRARIES(CASPPredictor proteins)
 
+ADD_EXECUTABLE(ConvertPDBToProtein Programs/ConvertPDBToProtein.cpp)
+TARGET_LINK_LIBRARIES(ConvertPDBToProtein proteins)
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_CREXECUTABLE(SandBox Programs/SandBox.lcpp)
