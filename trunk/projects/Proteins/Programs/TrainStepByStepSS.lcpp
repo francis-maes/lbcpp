@@ -426,25 +426,56 @@ private:
   size_t passNumber;
 };
 
-// TODO: Be more generic
 class StoppingCriterionInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
 public:
-  StoppingCriterionInferenceLearnerCallback(size_t maximumIteration)
-    : stoppingCriterion(maxIterationsStoppingCriterion(maximumIteration))
-    {}
+  StoppingCriterionInferenceLearnerCallback(size_t maximumIteration, String& prefixFilename)
+    : stoppingCriterion(logicalOr(maxIterationsStoppingCriterion(25), maxIterationsWithoutImprovementStoppingCriterion(maximumIteration)))
+    , previousEvaluation(new ProteinEvaluationCallback())
+    , passNumber(0), bestScore(0.)
+    , prefixFilename(prefixFilename)
+  {   
+      previousEvaluation->startInferencesCallback(0); // initialize a zero score
+      //File::getCurrentWorkingDirectory().getChildFile(prefixFilename).deleteRecursively();
+      File::getCurrentWorkingDirectory().getChildFile(prefixFilename).createDirectory();
+  }
+
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
     stoppingCriterion->reset();
+    bestScore = 0.;
   }
+  
+  virtual void postLearningStepCallback(InferenceStepPtr step)
+    {passNumber++;}
 
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    return !stoppingCriterion->shouldOptimizerStop(getTestingEvaluation()->getQ3Score());
+    ProteinEvaluationCallbackPtr currentEvaluation = getTestingEvaluation();
+    
+    double targetScore = currentEvaluation->getQ3Score();
+
+    if (previousEvaluation->getQ8Score() != currentEvaluation->getQ8Score())
+      targetScore = currentEvaluation->getQ8Score();
+    else if (previousEvaluation->getSA2Score() != currentEvaluation->getSA2Score())
+      targetScore = currentEvaluation->getSA2Score();
+    
+    if (targetScore > bestScore) {
+      File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/pass.") + lbcpp::toString(passNumber) + T(".step"));
+      inference->saveToFile(dst);
+    }
+  
+    return !stoppingCriterion->shouldOptimizerStop(targetScore);
   }
 
 private:
   StoppingCriterionPtr stoppingCriterion;
+  ProteinEvaluationCallbackPtr previousEvaluation;
+
+  size_t passNumber;
+  double bestScore;
+  
+  String prefixFilename;
 };
 
 class StandardOutputInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
@@ -780,7 +811,7 @@ int main(int argc, char** argv)
   MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
   callback->useCache(true);
   callback->setL2Regularizer(regularizer);
-  callback->appendCallback(new StoppingCriterionInferenceLearnerCallback(maxIteration));
+  callback->appendCallback(new StoppingCriterionInferenceLearnerCallback(maxIteration, prefixResults));
   callback->appendCallback(new StandardOutputInferenceLearnerCallback());
   callback->appendCallback(new GnuPlotInferenceLearnerCallback(prefixResults));
   
