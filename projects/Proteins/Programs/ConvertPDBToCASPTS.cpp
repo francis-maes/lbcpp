@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
   }
   
   std::cout << "Target Name: " << protein->getName() << std::endl;
-  File outputFile = pdbFile.getParentDirectory().getChildFile(pdbFile.getFileNameWithoutExtension() + T(".TS"));
+  File outputFile = pdbFile.getParentDirectory().getChildFile(pdbFile.getFileNameWithoutExtension() + T(".ts"));
   std::cout << "Output File: " << outputFile.getFullPathName() << std::endl;
 
   String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
