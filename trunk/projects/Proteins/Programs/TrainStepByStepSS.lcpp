@@ -179,7 +179,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<CustomableSecondaryStructureContent> CustomableSecondaryStructureContentPtr;
 
-class DefaultInferenceLearnerCallback : public InferenceLearnerCallback {
+class DefaultInferenceLearnerCallback : public InferenceLearnerCallback
+{
 public:
   DefaultInferenceLearnerCallback(double regularizer = 1.0) : regularizer(regularizer) {}
   
@@ -209,7 +210,8 @@ protected:
   double regularizer;
 };
 
-class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback {
+class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback
+{
 public:
   EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback()) : factory(factory) {}
 
@@ -247,7 +249,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<EvaluationInferenceLearnerCallback> EvaluationInferenceLearnerCallbackPtr;
 
-class MultiInferenceLearnerCallback : public InferenceLearnerCallback {
+class MultiInferenceLearnerCallback : public InferenceLearnerCallback
+{
 public:
   MultiInferenceLearnerCallback(ObjectContainerPtr trainingData, ObjectContainerPtr testingData, InferenceLearnerCallbackPtr factory)
     : trainingData(trainingData), testingData(testingData), factory(factory)
@@ -350,7 +353,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<MultiInferenceLearnerCallback> MultiInferenceLearnerCallbackPtr;
 
-class GnuPlotInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
+class GnuPlotInferenceLearnerCallback : public EvaluationInferenceLearnerCallback
+{
 public:
   GnuPlotInferenceLearnerCallback(String& prefix)
     : prefixFilename(prefix)
@@ -413,6 +417,7 @@ public:
     
     passNumber++;
   }
+
 private:
   String prefixFilename;
   
@@ -426,17 +431,17 @@ private:
   size_t passNumber;
 };
 
-class StoppingCriterionInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
+class StoppingCriterionInferenceLearnerCallback : public EvaluationInferenceLearnerCallback
+{
 public:
-  StoppingCriterionInferenceLearnerCallback(size_t maximumIteration, String& prefixFilename)
+  StoppingCriterionInferenceLearnerCallback(size_t maximumIteration)
     : stoppingCriterion(logicalOr(maxIterationsStoppingCriterion(25), maxIterationsWithoutImprovementStoppingCriterion(maximumIteration)))
     , previousEvaluation(new ProteinEvaluationCallback())
     , passNumber(0), bestScore(0.)
-    , prefixFilename(prefixFilename)
   {   
       previousEvaluation->startInferencesCallback(0); // initialize a zero score
       //File::getCurrentWorkingDirectory().getChildFile(prefixFilename).deleteRecursively();
-      File::getCurrentWorkingDirectory().getChildFile(prefixFilename).createDirectory();
+      //File::getCurrentWorkingDirectory().getChildFile(prefixFilename).createDirectory();
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -452,17 +457,20 @@ public:
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
     ProteinEvaluationCallbackPtr currentEvaluation = getTrainingEvaluation();
-    
+    /* Identifying the target */
     double targetScore = currentEvaluation->getQ3Score();
 
     if (previousEvaluation->getQ8Score() != currentEvaluation->getQ8Score())
+    {
       targetScore = currentEvaluation->getQ8Score();
+    }
     else if (previousEvaluation->getSA2Score() != currentEvaluation->getSA2Score())
+    {
       targetScore = currentEvaluation->getSA2Score();
-    
-    if (targetScore > bestScore) {
-      File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/pass.") + lbcpp::toString(passNumber) + T(".step"));
-      inference->saveToFile(dst);
+    }
+    else
+    {
+      jassert(targetScore != previousEvaluation->getQ3Score());
     }
   
     return !stoppingCriterion->shouldOptimizerStop(targetScore);
@@ -474,8 +482,79 @@ private:
 
   size_t passNumber;
   double bestScore;
+};
+
+class BestStepKeeperInferenceLearnerCallback : public EvaluationInferenceLearnerCallback
+{
+public:
+  BestStepKeeperInferenceLearnerCallback(ProteinInferencePtr proteinInference, String& prefixFilename, size_t firstStepToLearn = 0)
+    : proteinInference(proteinInference), previousEvaluation(new ProteinEvaluationCallback())
+    , prefixFilename(prefixFilename), stepNumber(firstStepToLearn)
+    , bestScore(0.)
+    {previousEvaluation->startInferencesCallback(0);}
   
+  virtual void preLearningStepCallback(InferenceStepPtr step)
+    {bestScore = 0.;}
+  
+  // returns false if learning should stop
+  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  {
+    ProteinEvaluationCallbackPtr currentEvaluation = getTrainingEvaluation();
+    /* Identifying the target */
+    double targetScore = currentEvaluation->getQ3Score();
+
+    if (previousEvaluation->getQ8Score() != currentEvaluation->getQ8Score())
+    {
+      targetScore = currentEvaluation->getQ8Score();
+    }
+    else if (previousEvaluation->getSA2Score() != currentEvaluation->getSA2Score())
+    {
+      targetScore = currentEvaluation->getSA2Score();
+    }
+    else
+    {
+      jassert(targetScore != previousEvaluation->getQ3Score());
+    }
+
+    inference->setName(lbcpp::toString(iterationNumber));
+    if (targetScore > bestScore)
+    {
+      File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename);
+      inference->saveToFile(dst);
+      std::cout << "Save iteration: " << inference->getName() << std::endl;
+      bestScore = targetScore;
+    }
+
+    return true;
+  }
+  
+  virtual void postLearningStepCallback(InferenceStepPtr step)
+  {
+    /*
+    juce::OwnedArray< File > results;
+    int nbFoundFiles = File::getCurrentWorkingDirectory().getChildFile(prefixFilename).findChildFiles(results, File::findDirectories, true, lbcpp::toString(stepNumber) +  T("_*.inference"));
+    jassert(nbFoundFiles == 1);
+    
+    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(*results.getFirst());
+    */
+    File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/decorated.inference/") + lbcpp::toString(stepNumber) + T("_") + step->getName() + T(".inference"));
+    jassert(toLoad.exists());
+    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
+    jassert(inference);
+    std::cout << "Loaded step: " << inference->getName() << std::endl;
+    
+    proteinInference->setSubStep(stepNumber, inference);
+    ++stepNumber;
+  }
+  
+private:
+  ProteinInferencePtr proteinInference;
+  ProteinEvaluationCallbackPtr previousEvaluation;
+
   String prefixFilename;
+  size_t stepNumber;
+
+  double bestScore;
 };
 
 class StandardOutputInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
@@ -595,7 +674,7 @@ int main(int argc, char** argv)
 # endif
 #endif
 
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize()->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
@@ -685,12 +764,31 @@ int main(int argc, char** argv)
   MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
   callback->useCache(true);
   callback->setL2Regularizer(regularizer);
-  callback->appendCallback(new StoppingCriterionInferenceLearnerCallback(maxIteration, prefixResults));
+  callback->appendCallback(new StoppingCriterionInferenceLearnerCallback(maxIteration));
   callback->appendCallback(new StandardOutputInferenceLearnerCallback());
   callback->appendCallback(new GnuPlotInferenceLearnerCallback(prefixResults));
   
-  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);
-  learner->train(proteinInference, trainingData);
+  
+  /* Load inference step that we already leaned */
+  size_t firstStepToLearn = 0;
+  while (firstStepToLearn < proteinInference->getNumSubSteps())
+  {
+    File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixResults + T("/decorated.inference/") + lbcpp::toString(firstStepToLearn) + T("_") + proteinInference->getSubStep(firstStepToLearn)->getName() + T(".inference"));
+    if (!toLoad.exists())
+      break;
+
+    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
+    jassert(inference);
+    
+    std::cout << "Loaded step: " << inference->getName() << std::endl;
+    
+    proteinInference->setSubStep(firstStepToLearn, inference);
+    
+    ++firstStepToLearn;
+  }
+
+  callback->appendCallback(new BestStepKeeperInferenceLearnerCallback(proteinInference, prefixResults, firstStepToLearn));
+  stepByStepDeterministicSimulationLearner(callback, true, firstStepToLearn)->train(proteinInference, trainingData);
 
   return 0;
 }
