@@ -18,6 +18,43 @@ namespace lbcpp
 # define M_PI       3.14159265358979323846
 #endif // M_PI
 
+class Angle
+{
+public:
+  Angle(Vector3& a, Vector3& b, Vector3& c)
+    : angle((a - b).angle(c - b)) {}
+
+  Angle(double angle = 0.0)
+    : angle(angle) {}
+
+  operator double () const
+    {return angle;}
+
+private:
+  double angle;
+};
+
+template<>
+struct Traits<Angle>
+{
+  typedef Angle Type;
+
+  static inline String toString(const Angle& value)
+    {return String((double)value * 180 / M_PI, 1);}
+
+  static inline void write(OutputStream& ostr, const Angle& value)
+    {lbcpp::write(ostr, (double)value);}
+
+  static inline bool read(InputStream& istr, Angle& res)
+  {
+    double value;
+    if (!lbcpp::read(istr, value))
+      return false;
+    res = value;
+    return true;
+  }
+};
+
 class DihedralAngle
 {
 public:

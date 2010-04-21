@@ -27,10 +27,10 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile)
   if (tertiaryStructure->size() < res->getAminoAcidSequence()->size())
     res->setObject(tertiaryStructure->createAminoAcidSequence()); 
 
-  res->setObject(ProteinCarbonTrace::createCAlphaTrace(tertiaryStructure));
+  res->setObject(tertiaryStructure->createCAlphaTrace());
   if (!tertiaryStructure->hasOnlyCAlphaAtoms())
   {
-    res->setObject(ProteinCarbonTrace::createCBetaTrace(tertiaryStructure));
+    res->setObject(tertiaryStructure->createCBetaTrace());
     res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
   }
   return res;
@@ -92,7 +92,7 @@ ScoreSymmetricMatrixPtr Protein::getResidueResidueContactProbabilityMatrix() con
 ProteinDihedralAnglesPtr Protein::getDihedralAngles() const
   {return getObject(T("DihedralAngles"));}
 
-ProteinCarbonTracePtr Protein::getCAlphaTrace() const
+CartesianCoordinatesSequencePtr Protein::getCAlphaTrace() const
   {return getObject(T("CAlphaTrace"));}
 
 ProteinTertiaryStructurePtr Protein::getTertiaryStructure() const

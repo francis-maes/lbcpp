@@ -60,7 +60,7 @@ void declareProteinClasses()
   declareInferenceClasses();
 
   LBCPP_DECLARE_CLASS(ProteinDihedralAngles);
-  LBCPP_DECLARE_CLASS(ProteinCarbonTrace);
+  LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
   LBCPP_DECLARE_CLASS(ProteinAtom);
   LBCPP_DECLARE_CLASS(ProteinResidue);
   LBCPP_DECLARE_CLASS(ProteinTertiaryStructure);
