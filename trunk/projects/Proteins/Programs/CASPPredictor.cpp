@@ -81,15 +81,24 @@ int main(int argc, char* argv[])
   std::cout << "Target Name: " << protein->getName() << std::endl;
   std::cout << "Amino Acid Sequence: " << protein->getAminoAcidSequence()->toString() << std::endl;
 
+  std::cout << "Making predictions ..." << std::endl;
   addDefaultPredictions(protein);
+  std::cout << std::endl;
   //std::cout << "===========================" << std::endl << protein->toString() << std::endl;
   
   String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
 
 //  caspTertiaryStructureFileGenerator     (cwd.getChildFile(outputBaseName + T(".TS")), method)->consume(protein);
-  caspResidueResidueDistanceFileGenerator(outputDirectory.getChildFile(outputBaseName + T(".rr")), method)->consume(protein);
-  caspOrderDisorderRegionFileGenerator   (outputDirectory.getChildFile(outputBaseName + T(".dr")), method)->consume(protein);
+  File rrFile = outputDirectory.getChildFile(outputBaseName + T(".rr"));
+  std::cout << "Write residue-residue distance file " << rrFile.getFullPathName() << std::endl;
+  caspResidueResidueDistanceFileGenerator(rrFile, method)->consume(protein);
+  
+  File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
+  std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
+  caspOrderDisorderRegionFileGenerator(drFile, method)->consume(protein);
 
-  protein->saveToPDBFile(outputDirectory.getChildFile(outputBaseName + T(".pdbca")));
+  File pdbFile = outputDirectory.getChildFile(outputBaseName + T(".pdbca"));
+  std::cout << "Write C-alpha chain in PDB file " << pdbFile.getFullPathName() << std::endl;
+  protein->saveToPDBFile(pdbFile);
   return 0;
 }
