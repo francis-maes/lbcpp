@@ -101,7 +101,10 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     }
   }
   if (aminoAcidCodesLength < 3)
+  {
+    skippedChains.insert(chainID);
     return true; // skip line
+  }
 
   // parse and check num residues
   int numResidues;
@@ -196,10 +199,17 @@ bool PDBFileParser::parseAtomLine(const String& line)
   String atomName = getSubString(line, 13, 16).trim();
   String residueName = getSubString(line, 18, 20);
 
-  // retrieve protein from chain id
+  // retrieve/create protein from chain id
   ProteinPtr protein = getProteinFromChainId(line, 22);
   if (!protein)
-    return true; // skip this chain
+  {
+    char chainId;
+    if (!getChainId(line, 22, chainId))
+      return false;
+    if (skippedChains.find(chainId) != skippedChains.end())
+      return true; // skip this chain
+    protein = (proteins[chainId] = new Protein(proteinName));
+  }
 
   // parse residue sequence number and insertion code
   int residueSequenceNumber;

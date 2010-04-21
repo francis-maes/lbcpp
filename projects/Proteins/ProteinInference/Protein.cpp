@@ -88,13 +88,14 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile)
   if (!res)
     return ProteinPtr();
 
+  LabelSequencePtr aminoAcidSequence = res->getAminoAcidSequence();
   ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
   jassert(tertiaryStructure);
   
   // the tertiary structure may not be defined on the whole primary sequence
   // therefore, in general length(tertiary structure) <= length(primary sequence)
   // here, we reduce the primary sequence to the portion for which the tertiary structure is defined
-  if (tertiaryStructure->size() < res->getAminoAcidSequence()->size())
+  if (!aminoAcidSequence || tertiaryStructure->size() < aminoAcidSequence->size())
     res->setObject(tertiaryStructure->createAminoAcidSequence()); 
 
   res->setObject(tertiaryStructure->createCAlphaTrace());

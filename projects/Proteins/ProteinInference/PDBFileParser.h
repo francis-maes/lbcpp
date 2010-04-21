@@ -27,6 +27,7 @@ protected:
   String proteinName;
   typedef std::map<char, ProteinPtr> ProteinMap;
   ProteinMap proteins; // by chain ID
+  std::set<char> skippedChains;
 
   int currentSeqResSerialNumber;
   int currentModelSerialNumber;
