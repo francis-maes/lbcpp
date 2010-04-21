@@ -23,7 +23,9 @@ extern void declareProteinClasses();
 class CustomableSecondaryStructureContent : public ProteinSequenceLabelingInferenceStep
 {
 public:
-  enum Target {SS3 = 0, SS8, SA};
+  enum Target {NONE = -1, SS3 = 0, SS8, SA};
+  
+  enum {numberTarget = 3};
 
   CustomableSecondaryStructureContent(const String& name = String::empty)
     : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), wSA(0), target(SS3)
@@ -227,13 +229,33 @@ typedef ReferenceCountedObjectPtr<DefaultInferenceLearnerCallback> DefaultInfere
 class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback()) : factory(factory) {}
+  EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback())
+    : previousTrainingEvaluation(new ProteinEvaluationCallback()), previousTestingEvaluation(new ProteinEvaluationCallback())
+    , trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
+    , factory(factory)
+    , target(CustomableSecondaryStructureContent::NONE), targetTrainingScore(0.), targetTestingScore(0.)
+  {
+    previousTrainingEvaluation->startInferencesCallback(0); // initialize a zero score
+    previousTestingEvaluation->startInferencesCallback(0); // initialize a zero score
+    trainingEvaluation->startInferencesCallback(0);
+    testingEvaluation->startInferencesCallback(0);
+  }
 
   virtual void setTrainingEvaluation(ProteinEvaluationCallbackPtr trainingEvaluation)
-    {this->trainingEvaluation = trainingEvaluation;}
+  {
+    jassert(trainingEvaluation);
+    previousTrainingEvaluation = this->trainingEvaluation;
+    this->trainingEvaluation = trainingEvaluation;
+    target = CustomableSecondaryStructureContent::NONE;
+  }
   
   virtual void setTestingEvaluation(ProteinEvaluationCallbackPtr testingEvaluation)
-    {this->testingEvaluation = testingEvaluation;}
+  {
+    jassert(testingEvaluation);
+    previousTestingEvaluation = this->testingEvaluation; 
+    this->testingEvaluation = testingEvaluation;
+    target = CustomableSecondaryStructureContent::NONE;
+  }
 
   virtual InferenceContextPtr createContext()
     {jassert(factory); return factory->createContext();}
@@ -248,17 +270,68 @@ public:
     {this->factory = factory;}
 
 protected:
+  typedef CustomableSecondaryStructureContent::Target Target;
+
   ProteinEvaluationCallbackPtr getTrainingEvaluation()
     {jassert(trainingEvaluation); return trainingEvaluation;}
   
   ProteinEvaluationCallbackPtr getTestingEvaluation()
     {jassert(testingEvaluation); return testingEvaluation;}
+
+  Target getTarget()
+  {
+    jassert(trainingEvaluation && testingEvaluation);
+
+    if (target != CustomableSecondaryStructureContent::NONE)
+      return target;
+
+    Target res = CustomableSecondaryStructureContent::NONE;
+    if (previousTrainingEvaluation->getQ3Score() != trainingEvaluation->getQ3Score()
+      || previousTestingEvaluation->getQ3Score() != testingEvaluation->getQ3Score())
+    {
+      targetTrainingScore = trainingEvaluation->getQ3Score();
+      targetTestingScore = testingEvaluation->getQ3Score();
+      res = CustomableSecondaryStructureContent::SS3;
+    }
+
+    if (previousTrainingEvaluation->getQ8Score() != trainingEvaluation->getQ8Score()
+      || previousTestingEvaluation->getQ8Score() != testingEvaluation->getQ8Score())
+    {
+      targetTrainingScore = trainingEvaluation->getQ8Score();
+      targetTestingScore = testingEvaluation->getQ8Score();
+      res = CustomableSecondaryStructureContent::SS8;
+    }
+
+    if (previousTrainingEvaluation->getSA2Score() != trainingEvaluation->getSA2Score()
+      || previousTestingEvaluation->getSA2Score() != testingEvaluation->getSA2Score())
+    {
+      targetTrainingScore = trainingEvaluation->getSA2Score();
+      targetTestingScore = testingEvaluation->getSA2Score();
+      res = CustomableSecondaryStructureContent::SA;
+    }
+
+    jassert(res != CustomableSecondaryStructureContent::NONE);
+    return res;
+  }
   
+  double getTargetTrainingScore()
+    {getTarget(); return targetTrainingScore;}
+  
+  double getTargetTestingScore()
+    {getTarget(); return targetTestingScore;}
+
 private:
+  ProteinEvaluationCallbackPtr previousTrainingEvaluation;
+  ProteinEvaluationCallbackPtr previousTestingEvaluation;
+
   ProteinEvaluationCallbackPtr trainingEvaluation;
   ProteinEvaluationCallbackPtr testingEvaluation;
   
   InferenceLearnerCallbackPtr factory;
+  
+  Target target;
+  double targetTrainingScore;
+  double targetTestingScore;
 };
 
 typedef ReferenceCountedObjectPtr<EvaluationInferenceLearnerCallback> EvaluationInferenceLearnerCallbackPtr;
@@ -349,7 +422,7 @@ public:
     else if (!cache)
       cache = new InferenceResultCache();
   }
-
+  
 private:
   std::vector< EvaluationInferenceLearnerCallbackPtr >callbacks;
 
@@ -367,77 +440,104 @@ class GnuPlotInferenceLearnerCallback : public EvaluationInferenceLearnerCallbac
 public:
   GnuPlotInferenceLearnerCallback(String& prefix)
     : prefixFilename(prefix)
-    , startTimeIteration(0.0), startTimePass(0.0)
-    , oIteration(NULL), oPass(NULL)
-    , iterationNumber(0), passNumber(0)
+//    , startTimeIteration(0.0)
+    , startTimePass(juce::Time::getMillisecondCounter())
+//    , oIteration(NULL)
+//    , iterationNumber(0), passNumber(0)
+      , bestTrainingScore(0.), bestTestingScore(0.)
   {
-    startTimePass = juce::Time::getMillisecondCounter();
-    
-    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".pass"));
-    dst.deleteFile();
-    oPass = dst.createOutputStream();
+    for (size_t i = 0; i < CustomableSecondaryStructureContent::numberTarget; ++i) {
+      oTargetPass[i] = NULL;
+      targetIteration[i] = 0;
+    }
   }
   
   ~GnuPlotInferenceLearnerCallback()
-    {delete oPass;}
+  {
+    for (size_t i = 0; i < CustomableSecondaryStructureContent::numberTarget; ++i)
+      delete oTargetPass[i];
+  }
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
-    {this->iterationNumber = iterationNumber;}
+  {
+//  this->iterationNumber = iterationNumber;
+  }
   
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    *oIteration << (int) iterationNumber << '\t'
-               << getTrainingEvaluation()->getQ3Score() << '\t'
-               << getTestingEvaluation()->getQ3Score()  << '\t'
-               << getTrainingEvaluation()->getQ8Score() << '\t'
-               << getTestingEvaluation()->getQ8Score()  << '\t'
-               << getTrainingEvaluation()->getSA2Score() << '\t'
-               << getTestingEvaluation()->getSA2Score()  << '\t'
-               << (juce::Time::getMillisecondCounter() - startTimeIteration) / 1000. << '\t'
-               << (int) passNumber << '\n';
-    oIteration->flush();
+//    *oIteration << (int) iterationNumber << '\t'
+//               << getTrainingEvaluation()->getQ3Score() << '\t'
+//               << getTestingEvaluation()->getQ3Score()  << '\t'
+//               << getTrainingEvaluation()->getQ8Score() << '\t'
+//               << getTestingEvaluation()->getQ8Score()  << '\t'
+//               << getTrainingEvaluation()->getSA2Score() << '\t'
+//               << getTestingEvaluation()->getSA2Score()  << '\t'
+//               << (juce::Time::getMillisecondCounter() - startTimeIteration) / 1000. << '\t'
+//               << (int) passNumber << '\n';
+//    oIteration->flush();
+    
+    if (getTargetTrainingScore() > bestTrainingScore) {
+      bestTrainingScore = getTargetTrainingScore();
+      bestTestingScore = getTargetTestingScore();
+    }
     
     return true;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
-    startTimeIteration = juce::Time::getMillisecondCounter();
-
-    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(passNumber));
-    dst.deleteFile();
-    oIteration = dst.createOutputStream();
+//    startTimeIteration = juce::Time::getMillisecondCounter();
+//
+//    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(passNumber));
+//    dst.deleteFile();
+//    oIteration = dst.createOutputStream();
+    bestTrainingScore = 0.;
+    bestTestingScore = 0.;
   }
   
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
-    jassert(oIteration);
-    delete oIteration;
+//    jassert(oIteration);
+//    delete oIteration;
+    jassert(getTarget() != CustomableSecondaryStructureContent::NONE);
+
+    if (!oTargetPass[getTarget()]) {
+      static const juce::tchar* targetToString[] = {
+        T("SS3"), T("SS8"), T("SA")
+      };
+      
+      File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".") + targetToString[getTarget()]);
+      dst.deleteFile();
+      oTargetPass[getTarget()] = dst.createOutputStream();
+    }
+
+    jassert(oTargetPass[getTarget()]);
     
-    *oPass << (int) passNumber << '\t'
-          << getTrainingEvaluation()->getQ3Score() << '\t'
-          << getTestingEvaluation()->getQ3Score()  << '\t'
-          << getTrainingEvaluation()->getQ8Score() << '\t'
-          << getTestingEvaluation()->getQ8Score()  << '\t'
-          << getTrainingEvaluation()->getSA2Score() << '\t'
-          << getTestingEvaluation()->getSA2Score()  << '\t'
+    *oTargetPass[getTarget()] << (int) targetIteration[getTarget()] << '\t'
+          << bestTrainingScore << '\t'
+          << bestTestingScore  << '\t'
           << (juce::Time::getMillisecondCounter() - startTimePass) / 1000. << '\n';
-    oPass->flush();
+    oTargetPass[getTarget()]->flush();
     
-    passNumber++;
+    targetIteration[getTarget()]++;
+ //   ++passNumber;
   }
 
 private:
   String prefixFilename;
   
-  double startTimeIteration;
+//  double startTimeIteration;
   double startTimePass;
 
-  OutputStream* oIteration;
-  OutputStream* oPass;
+  OutputStream* oTargetPass[CustomableSecondaryStructureContent::numberTarget];
+//  OutputStream* oIteration;
   
-  size_t iterationNumber;
-  size_t passNumber;
+  size_t targetIteration[CustomableSecondaryStructureContent::numberTarget];
+//  size_t iterationNumber;
+//  size_t passNumber;
+
+  double bestTrainingScore;
+  double bestTestingScore;
 };
 
 class StoppingCriterionInferenceLearnerCallback : public EvaluationInferenceLearnerCallback
@@ -445,62 +545,31 @@ class StoppingCriterionInferenceLearnerCallback : public EvaluationInferenceLear
 public:
   StoppingCriterionInferenceLearnerCallback(size_t maximumIteration)
     : stoppingCriterion(logicalOr(maxIterationsStoppingCriterion(25), maxIterationsWithoutImprovementStoppingCriterion(maximumIteration)))
-    , previousEvaluation(new ProteinEvaluationCallback())
-    , passNumber(0), bestScore(0.)
-  {   
-      previousEvaluation->startInferencesCallback(0); // initialize a zero score
-      //File::getCurrentWorkingDirectory().getChildFile(prefixFilename).deleteRecursively();
-      //File::getCurrentWorkingDirectory().getChildFile(prefixFilename).createDirectory();
-  }
+    {}
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
     stoppingCriterion->reset();
-    bestScore = 0.;
   }
-  
-  virtual void postLearningStepCallback(InferenceStepPtr step)
-    {passNumber++;}
 
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    ProteinEvaluationCallbackPtr currentEvaluation = getTrainingEvaluation();
-    /* Identifying the target */
-    double targetScore = currentEvaluation->getQ3Score();
-
-    if (previousEvaluation->getQ8Score() != currentEvaluation->getQ8Score())
-    {
-      targetScore = currentEvaluation->getQ8Score();
-    }
-    else if (previousEvaluation->getSA2Score() != currentEvaluation->getSA2Score())
-    {
-      targetScore = currentEvaluation->getSA2Score();
-    }
-    else
-    {
-      jassert(targetScore != previousEvaluation->getQ3Score());
-    }
-  
-    return !stoppingCriterion->shouldOptimizerStop(targetScore);
+    return !stoppingCriterion->shouldOptimizerStop(getTargetTrainingScore());
   }
 
 private:
   StoppingCriterionPtr stoppingCriterion;
-  ProteinEvaluationCallbackPtr previousEvaluation;
-
-  size_t passNumber;
-  double bestScore;
 };
 
 class BestStepKeeperInferenceLearnerCallback : public EvaluationInferenceLearnerCallback
 {
 public:
   BestStepKeeperInferenceLearnerCallback(ProteinInferencePtr proteinInference, String& prefixFilename, size_t firstStepToLearn = 0)
-    : proteinInference(proteinInference), previousEvaluation(new ProteinEvaluationCallback())
+    : proteinInference(proteinInference)
     , prefixFilename(prefixFilename), stepNumber(firstStepToLearn)
     , bestScore(0.)
-    {previousEvaluation->startInferencesCallback(0);}
+    {}
   
   virtual void preLearningStepCallback(InferenceStepPtr step)
     {bestScore = 0.;}
@@ -508,30 +577,13 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    ProteinEvaluationCallbackPtr currentEvaluation = getTrainingEvaluation();
-    /* Identifying the target */
-    double targetScore = currentEvaluation->getQ3Score();
-
-    if (previousEvaluation->getQ8Score() != currentEvaluation->getQ8Score())
-    {
-      targetScore = currentEvaluation->getQ8Score();
-    }
-    else if (previousEvaluation->getSA2Score() != currentEvaluation->getSA2Score())
-    {
-      targetScore = currentEvaluation->getSA2Score();
-    }
-    else
-    {
-      jassert(targetScore != previousEvaluation->getQ3Score());
-    }
-
-    inference->setName(lbcpp::toString(iterationNumber));
-    if (targetScore > bestScore)
+    if (getTargetTrainingScore() > bestScore)
     {
       File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename);
       inference->saveToFile(dst);
-      std::cout << "Save iteration: " << inference->getName() << std::endl;
-      bestScore = targetScore;
+      std::cout << "Save iteration: " << inference->getName()
+                << " - Iteration: " << iterationNumber << std::endl;
+      bestScore = getTargetTrainingScore();
     }
 
     return true;
@@ -539,13 +591,6 @@ public:
   
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
-    /*
-    juce::OwnedArray< File > results;
-    int nbFoundFiles = File::getCurrentWorkingDirectory().getChildFile(prefixFilename).findChildFiles(results, File::findDirectories, true, lbcpp::toString(stepNumber) +  T("_*.inference"));
-    jassert(nbFoundFiles == 1);
-    
-    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(*results.getFirst());
-    */
     File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/decorated.inference/") + lbcpp::toString(stepNumber) + T("_") + step->getName() + T(".inference"));
     jassert(toLoad.exists());
     InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
@@ -558,7 +603,6 @@ public:
   
 private:
   ProteinInferencePtr proteinInference;
-  ProteinEvaluationCallbackPtr previousEvaluation;
 
   String prefixFilename;
   size_t stepNumber;
@@ -735,7 +779,7 @@ int main(int argc, char** argv)
       step->enableSecondaryStructure3StatesFeatures(wSS3);
       
       if (predictionTarget.contains(T("SS8")))
-        step->enableSecondaryStructure3StatesFeatures(wSS8);
+        step->enableSecondaryStructure8StatesFeatures(wSS8);
       if (predictionTarget.contains(T("SA")))
         step->enableSolventAccesibility2StatesFeatures(wSA);
       
@@ -747,7 +791,7 @@ int main(int argc, char** argv)
       step->setTarget(CustomableSecondaryStructureContent::SS8);
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
-      step->enableSecondaryStructure3StatesFeatures(wSS8);
+      step->enableSecondaryStructure8StatesFeatures(wSS8);
       
       if (predictionTarget.contains(T("SS3")))
         step->enableSecondaryStructure3StatesFeatures(wSS3);
@@ -762,12 +806,12 @@ int main(int argc, char** argv)
       step->setTarget(CustomableSecondaryStructureContent::SA);
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
-      step->enableSecondaryStructure3StatesFeatures(wSA);
+      step->enableSolventAccesibility2StatesFeatures(wSA);
       
       if (predictionTarget.contains(T("SS3")))
         step->enableSecondaryStructure3StatesFeatures(wSS3);
       if (predictionTarget.contains(T("SS8")))
-        step->enableSolventAccesibility2StatesFeatures(wSS8);
+        step->enableSecondaryStructure8StatesFeatures(wSS8);
       
       proteinInference->appendStep(step);
     }
