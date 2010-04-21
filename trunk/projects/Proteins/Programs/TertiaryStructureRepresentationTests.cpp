@@ -18,25 +18,6 @@ extern void declareProteinClasses();
 
 int main()
 {
-  /*Matrix4 m = Matrix4::identity;
-
-  Vector3 a = m.getTranslation();
-  m.translate(Vector3(10, 0, 0));
-  Vector3 b = m.getTranslation();
-  m.rotateAroundZAxis(1.2);
-  m.translate(Vector3(10, 0, 0));
-  Vector3 c = m.getTranslation();
-  m.rotateAroundXAxis(0.5186);
-  m.rotateAroundZAxis(1.2);
-  m.translate(Vector3(10, 0, 0));
-  Vector3 d = m.getTranslation();
-
-  double dihedral = DihedralAngle::compute(a, b, c, d);
-  std::cout << dihedral << std::endl;
-  std::cout << lbcpp::toString(a) << " " << lbcpp::toString(b) << " " << lbcpp::toString(c) << " " << lbcpp::toString(d) << std::endl;
-
-  return 0;*/
-
   declareProteinClasses();
 
   File proteinDatabase(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDBProtein"));
@@ -73,6 +54,19 @@ int main()
       continue;
 
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+
+    CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
+    FloryGeneralizedCoordinatesSequencePtr calphaTraceGC = new FloryGeneralizedCoordinatesSequence(T("Pouet"), calphaTrace);
+    CartesianCoordinatesSequencePtr reconstructedCalphaTrace = calphaTraceGC->createCartesianCoordinates(T("Reconstructed"));
+    FloryGeneralizedCoordinatesSequencePtr calphaTraceGC2 = new FloryGeneralizedCoordinatesSequence(T("Pouet"), reconstructedCalphaTrace);
+
+    for (size_t i = 0; i < 10; ++i)
+    {
+      std::cout << (i+1) << "Correct: " << calphaTraceGC->getCoordinates(i)->toString()
+        << " Reconstructed: " << calphaTraceGC2->getCoordinates(i)->toString() << std::endl;
+    }
+    exit(1);
+    /*
     ProteinDihedralAnglesPtr dihedralAngles = protein->getDihedralAngles();
     ProteinTertiaryStructurePtr reconstructedTertiaryStructure = ProteinTertiaryStructure::createFromDihedralAngles(aminoAcidSequence, dihedralAngles);
 
@@ -84,7 +78,7 @@ int main()
     }
 
     protein->setObject(reconstructedTertiaryStructure);
-    protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));
+    protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));*/
     break;
 
     for (size_t i = 0; i < tertiaryStructure->size(); ++i)
@@ -113,8 +107,8 @@ int main()
       calphaAngle.push((calpha - nitrogen).angle(carbon - calpha));
     }
 
-    for (size_t i = 1; i < dihedralAngles->size() - 1; ++i)
-      (*ramachadranPlot) << lbcpp::toString(dihedralAngles->getPhi(i)) << " " << lbcpp::toString(dihedralAngles->getPsi(i)) << "\n";
+    //for (size_t i = 1; i < dihedralAngles->size() - 1; ++i)
+    //  (*ramachadranPlot) << lbcpp::toString(dihedralAngles->getPhi(i)) << " " << lbcpp::toString(dihedralAngles->getPsi(i)) << "\n";
   }
 
   std::cout << nCalphaLength.toString() << std::endl;

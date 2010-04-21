@@ -76,6 +76,25 @@ protected:
     {Sequence::save(ostr); lbcpp::write(ostr, elements);}
 };
 
+template<class ObjectType>
+class TypedObjectVectorBasedSequence
+  : public BuiltinVectorBasedSequence< ReferenceCountedObjectPtr<ObjectType > >
+{
+public:
+  typedef ReferenceCountedObjectPtr<ObjectType> ElementType;
+  typedef BuiltinVectorBasedSequence<ElementType> BaseClass;
+
+  TypedObjectVectorBasedSequence(const String& name, size_t length = 0)
+    : BaseClass(name, length) {}
+  TypedObjectVectorBasedSequence() {}
+
+  virtual ObjectPtr get(size_t index) const
+    {jassert(index < BaseClass::elements.size()); return BaseClass::elements[index];}
+
+  virtual void set(size_t index, ObjectPtr object)
+    {jassert(index < BaseClass::elements.size()); BaseClass::elements[index] = object;}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_DATA_SEQUENCE_H_

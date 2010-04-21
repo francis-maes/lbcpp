@@ -49,57 +49,6 @@ ProteinDihedralAnglesPtr ProteinDihedralAngles::createDihedralAngles(ProteinTert
   return res;
 }
 
-/*
-** ProteinCarbonTrace
-*/
-ProteinCarbonTracePtr ProteinCarbonTrace::createCAlphaTrace(ProteinTertiaryStructurePtr tertiaryStructure)
-{
-  size_t n = tertiaryStructure->size();
-  ProteinCarbonTracePtr res = new ProteinCarbonTrace(T("CAlphaTrace"), n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
-    ProteinAtomPtr atom = residue->getCAlphaAtom();
-    if (!atom)
-    {
-      Object::error(T("ProteinCarbonTrace::createCBetaTrace"),
-          T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-        return ProteinCarbonTracePtr();
-    }
-    res->setPosition(i, atom->getPosition());
-  }
-  return res;
-}
-
-ProteinCarbonTracePtr ProteinCarbonTrace::createCBetaTrace(ProteinTertiaryStructurePtr tertiaryStructure)
-{
-  size_t n = tertiaryStructure->size();
-  ProteinCarbonTracePtr res = new ProteinCarbonTrace(T("CAlphaTrace"), n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
-    ProteinAtomPtr atom = residue->getCBetaAtom();
-    if (!atom)
-    {
-      if (residue->getAminoAcid() != AminoAcidDictionary::glycine)
-      {
-        Object::error(T("ProteinCarbonTrace::createCBetaTrace"),
-          T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-        return ProteinCarbonTracePtr();
-      }
-      atom = residue->getCAlphaAtom();
-      if (!atom)
-      {
-        Object::error(T("ProteinCarbonTrace::createCBetaTrace"),
-          T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-        return ProteinCarbonTracePtr();
-      }
-    }
-    jassert(atom);
-    res->setPosition(i, atom->getPosition());
-  }
-  return res;
-}
 
 /*
 ** ProteinAtom
@@ -209,7 +158,56 @@ LabelSequencePtr ProteinTertiaryStructure::createAminoAcidSequence() const
   return res;
 }
 
-ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, ProteinCarbonTracePtr trace)
+CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCAlphaTrace() const
+{
+  size_t n = size();
+  CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = getResidue(i);
+    ProteinAtomPtr atom = residue->getCAlphaAtom();
+    if (!atom)
+    {
+      Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
+          T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
+        return CartesianCoordinatesSequencePtr();
+    }
+    res->setPosition(i, atom->getPosition());
+  }
+  return res;
+}
+
+CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCBetaTrace() const
+{
+  size_t n = size();
+  CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = getResidue(i);
+    ProteinAtomPtr atom = residue->getCBetaAtom();
+    if (!atom)
+    {
+      if (residue->getAminoAcid() != AminoAcidDictionary::glycine)
+      {
+        Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
+          T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
+        return CartesianCoordinatesSequencePtr();
+      }
+      atom = residue->getCAlphaAtom();
+      if (!atom)
+      {
+        Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
+          T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
+        return CartesianCoordinatesSequencePtr();
+      }
+    }
+    jassert(atom);
+    res->setPosition(i, atom->getPosition());
+  }
+  return res;
+}
+
+ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, CartesianCoordinatesSequencePtr trace)
 {
   size_t n = trace->size();
   jassert(aminoAcidSequence && aminoAcidSequence->size() == n);

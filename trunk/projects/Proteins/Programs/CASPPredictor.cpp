@@ -45,7 +45,7 @@ void addDefaultPredictions(ProteinPtr protein)
   /*
   ** Tertiary structure
   */
-  ProteinCarbonTracePtr trace = new ProteinCarbonTrace(T("CAlphaTrace"), n);
+  CartesianCoordinatesSequencePtr trace = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
   for (size_t i = 0; i < n; ++i)
   {
     static const double constantLength = 3.8;
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
   if (!protein)
     return 2;
 
-  ProteinCarbonTracePtr trace = ProteinCarbonTrace::createCAlphaTrace(protein->getTertiaryStructure());
+  CartesianCoordinatesSequencePtr trace = CartesianCoordinatesSequence::createCAlphaTrace(protein->getTertiaryStructure());
   protein->setObject(trace);
   protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(protein->getAminoAcidSequence(), trace));
 
