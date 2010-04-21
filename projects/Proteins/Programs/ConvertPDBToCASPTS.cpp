@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     std::cerr << "Could not load pdb file" << std::endl;
     return 1;
   }
-  
+  protein->setName(pdbFile.getFileNameWithoutExtension());
   std::cout << "Target Name: " << protein->getName() << std::endl;
   File outputFile = pdbFile.getParentDirectory().getChildFile(pdbFile.getFileNameWithoutExtension() + T(".ts"));
   std::cout << "Output File: " << outputFile.getFullPathName() << std::endl;

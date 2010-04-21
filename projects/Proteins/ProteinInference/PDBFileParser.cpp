@@ -232,11 +232,11 @@ bool PDBFileParser::parseAtomLine(const String& line)
   if (currentResidueSerialNumber != residueSequenceNumber || currentResidueInsertionCode != residueInsertionCode)
   {
     ++currentResidueIndex;
-    if (currentResidueIndex >= protein->getLength())
+/*    if (currentResidueIndex >= protein->getLength())
     {
       Object::error(T("PDBFileParser::parseAtomLine"), T("Too many residues"));
       return false;
-    }
+    }*/
 
     if (residueSequenceNumber < currentResidueSerialNumber)
     {
