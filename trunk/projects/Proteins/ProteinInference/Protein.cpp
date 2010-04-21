@@ -11,6 +11,76 @@
 #include "PDBFileGenerator.h"
 using namespace lbcpp;
 
+ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)
+{
+  ProteinPtr res = new Protein(name);
+  FeatureDictionaryPtr aminoAcidDictionary = AminoAcidDictionary::getInstance();
+  LabelSequencePtr aminoAcidSequence = new LabelSequence(T("AminoAcidSequence"), aminoAcidDictionary, aminoAcidString.length());
+  for (size_t i = 0; i < aminoAcidSequence->size(); ++i)
+  {
+    String aa;
+    aa += aminoAcidString[i];
+    int index = aminoAcidDictionary->getFeatures()->getIndex(aa);
+    if (index < 0)
+    {
+      Object::error(T("Protein::createFromAminoAcidSequence"), T("Unknown amino acid: ") + aa);
+      return ProteinPtr();
+    }
+    aminoAcidSequence->setIndex(i, (size_t)index);
+  }
+  res->setObject(aminoAcidSequence);
+  return res;
+}
+
+class FASTAFileParser : public TextObjectParser
+{
+public:
+  FASTAFileParser(const File& file)
+    : TextObjectParser(file) {}
+  
+  virtual void parseBegin()
+    {}
+
+  virtual bool parseLine(const String& line)
+  {
+    String str = line.trim();
+    if (str.isEmpty())
+      return true;
+    if (str[0] == '>')
+    {
+      flush();
+      currentName = str.substring(1);
+    }
+    else
+      currentAminoAcidSequence = str;
+    return true;
+  }
+  
+  virtual bool parseEnd()
+  {
+    flush();
+    return true;
+  }
+  
+private:
+  String currentName;
+  String currentAminoAcidSequence;
+  
+  void flush()
+  {
+    if (currentName.isNotEmpty() && currentAminoAcidSequence.isNotEmpty())
+      setResult(Protein::createFromAminoAcidSequence(currentName, currentAminoAcidSequence));
+    currentName = String::empty;
+    currentAminoAcidSequence = String::empty;
+  }
+};
+
+ProteinPtr Protein::createFromFASTA(const File& fastaFile)
+{
+  ObjectStreamPtr parser(new FASTAFileParser(fastaFile));
+  return parser->nextAndCast<Protein>();
+}
+
 ProteinPtr Protein::createFromPDB(const File& pdbFile)
 {
   ObjectStreamPtr parser(new PDBFileParser(pdbFile));
@@ -33,27 +103,6 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile)
     res->setObject(tertiaryStructure->createCBetaTrace());
     res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
   }
-  return res;
-}
-
-ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)
-{
-  ProteinPtr res = new Protein(name);
-  FeatureDictionaryPtr aminoAcidDictionary = AminoAcidDictionary::getInstance();
-  LabelSequencePtr aminoAcidSequence = new LabelSequence(T("AminoAcidSequence"), aminoAcidDictionary, aminoAcidString.length());
-  for (size_t i = 0; i < aminoAcidSequence->size(); ++i)
-  {
-    String aa;
-    aa += aminoAcidString[i];
-    int index = aminoAcidDictionary->getFeatures()->getIndex(aa);
-    if (index < 0)
-    {
-      Object::error(T("Protein::createFromAminoAcidSequence"), T("Unknown amino acid: ") + aa);
-      return ProteinPtr();
-    }
-    aminoAcidSequence->setIndex(i, (size_t)index);
-  }
-  res->setObject(aminoAcidSequence);
   return res;
 }
 

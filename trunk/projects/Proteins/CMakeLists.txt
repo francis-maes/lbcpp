@@ -115,6 +115,9 @@ TARGET_LINK_LIBRARIES(CASPPredictor proteins)
 ADD_EXECUTABLE(ConvertPDBToProtein Programs/ConvertPDBToProtein.cpp)
 TARGET_LINK_LIBRARIES(ConvertPDBToProtein proteins)
 
+ADD_EXECUTABLE(ConvertPDBToCASPTS Programs/ConvertPDBToCASPTS.cpp)
+TARGET_LINK_LIBRARIES(ConvertPDBToCASPTS proteins)
+
 ADD_EXECUTABLE(TertiaryStructureRepresentationTests Programs/TertiaryStructureRepresentationTests.cpp)
 TARGET_LINK_LIBRARIES(TertiaryStructureRepresentationTests proteins)
 
