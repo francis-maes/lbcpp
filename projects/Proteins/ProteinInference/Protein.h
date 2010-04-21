@@ -27,8 +27,9 @@ public:
     : StringToObjectMap(name) {}
   Protein() {}
 
-  static ProteinPtr createFromPDB(const File& pdbFile);
   static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
+  static ProteinPtr createFromFASTA(const File& fastaFile);
+  static ProteinPtr createFromPDB(const File& pdbFile);
 
   void saveToPDBFile(const File& pdbFile);
 

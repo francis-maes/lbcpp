@@ -11,7 +11,6 @@
 #include "../ProteinInference/AminoAcidDictionary.h"
 #include "../ProteinInference/SecondaryStructureDictionary.h"
 #include "../ProteinInference/CASPFileGenerator.h"
-#include "../ProteinInference/PDBFileGenerator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -59,42 +58,38 @@ int main(int argc, char* argv[])
 {
   declareProteinClasses();
 
-  if (argc < 5)
+  if (argc < 3)
   {
-    std::cerr << "Usage: " << argv[0] << " modelDirectory targetName aminoAcidSequence outputBaseName" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " fastaFile pssmFile" << std::endl;
     return 1;
   }
   File cwd = File::getCurrentWorkingDirectory();
-  File modelDirectory = cwd.getChildFile(argv[1]);
-  std::cout << "Model directory: " << modelDirectory.getFullPathName() << std::endl;
-  String targetName = argv[2];
-  std::cout << "Target Name: " << targetName << std::endl;
-  String aminoAcidSequence = argv[3];
-  std::cout << "Amino Acid Sequence: " << aminoAcidSequence << std::endl;
-  String outputBaseName = argv[4];
-  std::cout << "Output Base Name: " << outputBaseName << std::endl;
-
-  ProteinPtr protein = Protein::createFromAminoAcidSequence(targetName, aminoAcidSequence);
- /* ProteinPtr protein = Protein::createFromPDB(File(T("C:\\Users\\Francis\\Downloads\\1crn.pdb")));
+  File fastaFile = cwd.getChildFile(argv[1]);
+  File pssmFile = cwd.getChildFile(argv[1]);
+  
+  File outputDirectory = fastaFile.getParentDirectory();
+  String outputBaseName = fastaFile.getFileNameWithoutExtension();
+  
+  std::cout << "FASTA File: " << fastaFile.getFullPathName() << " PSSM File: " << pssmFile.getFullPathName() << std::endl;
+  ProteinPtr protein = Protein::createFromFASTA(fastaFile);
   if (!protein)
-    return 2;
-
-  CartesianCoordinatesSequencePtr trace = CartesianCoordinatesSequence::createCAlphaTrace(protein->getTertiaryStructure());
-  protein->setObject(trace);
-  protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(protein->getAminoAcidSequence(), trace));
-
-  protein->saveToPDBFile(cwd.getChildFile(outputBaseName + T(".pdb")));
-  return 0;*/
+  {
+    std::cerr << "Could not load FASTA file" << std::endl;
+    return 1;
+  }
+  
+  std::cout << "Target Name: " << protein->getName() << std::endl;
+  std::cout << "Amino Acid Sequence: " << protein->getAminoAcidSequence()->toString() << std::endl;
 
   addDefaultPredictions(protein);
   //std::cout << "===========================" << std::endl << protein->toString() << std::endl;
   
   String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
 
-  caspTertiaryStructureFileGenerator     (cwd.getChildFile(outputBaseName + T(".TS")), method)->consume(protein);
-  caspResidueResidueDistanceFileGenerator(cwd.getChildFile(outputBaseName + T(".RR")), method)->consume(protein);
-  caspOrderDisorderRegionFileGenerator   (cwd.getChildFile(outputBaseName + T(".DR")), method)->consume(protein);
+//  caspTertiaryStructureFileGenerator     (cwd.getChildFile(outputBaseName + T(".TS")), method)->consume(protein);
+  caspResidueResidueDistanceFileGenerator(outputDirectory.getChildFile(outputBaseName + T(".rr")), method)->consume(protein);
+  caspOrderDisorderRegionFileGenerator   (outputDirectory.getChildFile(outputBaseName + T(".dr")), method)->consume(protein);
 
-  protein->saveToPDBFile(cwd.getChildFile(outputBaseName + T(".PDB")));
+  protein->saveToPDBFile(outputDirectory.getChildFile(outputBaseName + T(".pdbca")));
   return 0;
 }
