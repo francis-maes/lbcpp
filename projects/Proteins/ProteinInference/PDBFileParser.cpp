@@ -239,7 +239,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
 
   // check amino acid code
   AminoAcidDictionary::Type aminoAcid = AminoAcidDictionary::getTypeFromThreeLettersCode(residueName);
-  if (aminoAcid > AminoAcidDictionary::numAminoAcids)
+  if ((int)aminoAcid > (int)AminoAcidDictionary::numAminoAcids)
   {
     Object::error(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + lbcpp::toString(residueName));
     return false;
