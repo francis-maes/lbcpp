@@ -182,7 +182,7 @@ typedef ReferenceCountedObjectPtr<CustomableSecondaryStructureContent> Customabl
 class DefaultInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  DefaultInferenceLearnerCallback(double regularizer = 1.0) : regularizer(regularizer) {}
+  DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000) {}
   
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
@@ -191,7 +191,7 @@ public:
   {
     static const bool useConstantLearningRate = false;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(1.0);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(initialLearningRate, numberIterationLearningRate) : constantIterationFunction(1.0);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
@@ -202,13 +202,27 @@ public:
   {
     static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 150000) : constantIterationFunction(0.5);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(initialLearningRate, numberIterationLearningRate) : constantIterationFunction(0.5);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
   }
+
+  void setL2Regularizer(double regularizer)
+    {this->regularizer = regularizer;}
+  
+  void setInitialLearningRate(double value)
+    {this->initialLearningRate = value;}
+    
+  void setNumberInterationLearningRate(size_t value)
+    {this->numberIterationLearningRate = value;}
+
 protected:
   double regularizer;
+  double initialLearningRate;
+  size_t numberIterationLearningRate;
 };
+
+typedef ReferenceCountedObjectPtr<DefaultInferenceLearnerCallback> DefaultInferenceLearnerCallbackPtr;
 
 class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback
 {
@@ -254,7 +268,7 @@ class MultiInferenceLearnerCallback : public InferenceLearnerCallback
 public:
   MultiInferenceLearnerCallback(ObjectContainerPtr trainingData, ObjectContainerPtr testingData, InferenceLearnerCallbackPtr factory)
     : trainingData(trainingData), testingData(testingData), factory(factory)
-    , regularizer(1.0), cache(new InferenceResultCache()) {}
+    , cache(new InferenceResultCache()) {}
 
   virtual ~MultiInferenceLearnerCallback()
     {}
@@ -328,9 +342,6 @@ public:
     callbacks.push_back(callback);
   }
   
-  void setL2Regularizer(double regularizer)
-    {this->regularizer = regularizer;}
-  
   void useCache(bool useCache)
   {
     if (!useCache)
@@ -346,8 +357,6 @@ private:
   ObjectContainerPtr testingData;
   
   InferenceLearnerCallbackPtr factory;
-  
-  double regularizer;
   InferenceResultCachePtr cache;
 };
 
@@ -600,6 +609,8 @@ int main(int argc, char** argv)
   int wSS8 = 10;
   int wSA = 10;
   double regularizer = 20.0;
+  double initialLearningRate = 2.0;
+  int numberIterationLearningRate = 150000;
   
   ArgumentSet arguments;
   arguments.insert(new StringArgument(T("ProteinsDirectory"), &proteinsDirectory));
@@ -615,6 +626,8 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
   arguments.insert(new IntegerArgument(T("SAWindow"), &wSA));
   arguments.insert(new DoubleArgument(T("Regularizer"), &regularizer));
+  arguments.insert(new DoubleArgument(T("InitialLearningRate"), &initialLearningRate));
+  arguments.insert(new IntegerArgument(T("NumberIterationLearningRate"), &numberIterationLearningRate));
 
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -760,15 +773,17 @@ int main(int argc, char** argv)
     }
   }
 
-  InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback(regularizer);
+  DefaultInferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback();
+  factory->setL2Regularizer(regularizer);
+  factory->setInitialLearningRate(initialLearningRate);
+  factory->setNumberInterationLearningRate(numberIterationLearningRate);
+
   MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
   callback->useCache(true);
-  callback->setL2Regularizer(regularizer);
   callback->appendCallback(new StoppingCriterionInferenceLearnerCallback(maxIteration));
   callback->appendCallback(new StandardOutputInferenceLearnerCallback());
   callback->appendCallback(new GnuPlotInferenceLearnerCallback(prefixResults));
-  
-  
+
   /* Load inference step that we already leaned */
   size_t firstStepToLearn = 0;
   while (firstStepToLearn < proteinInference->getNumSubSteps())
