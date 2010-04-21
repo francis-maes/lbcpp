@@ -65,7 +65,6 @@ int main()
       std::cout << (i+1) << "Correct: " << calphaTraceGC->getCoordinates(i)->toString()
         << " Reconstructed: " << calphaTraceGC2->getCoordinates(i)->toString() << std::endl;
     }
-    exit(1);
     /*
     ProteinDihedralAnglesPtr dihedralAngles = protein->getDihedralAngles();
     ProteinTertiaryStructurePtr reconstructedTertiaryStructure = ProteinTertiaryStructure::createFromDihedralAngles(aminoAcidSequence, dihedralAngles);
@@ -76,9 +75,10 @@ int main()
       std::cout << (i+1) << " correct = " << dihedralAngles->getPhi(i) << " " << dihedralAngles->getPsi(i)
         << " reconstructed = " << reconstructedDihedralAngles->getPhi(i) << " " << reconstructedDihedralAngles->getPsi(i) << std::endl;
     }
+*/
 
-    protein->setObject(reconstructedTertiaryStructure);
-    protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));*/
+    protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(aminoAcidSequence, reconstructedCalphaTrace));
+    protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));
     break;
 
     for (size_t i = 0; i < tertiaryStructure->size(); ++i)
