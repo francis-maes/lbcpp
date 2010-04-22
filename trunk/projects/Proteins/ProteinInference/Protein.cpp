@@ -123,8 +123,21 @@ CartesianCoordinatesSequencePtr Protein::getCAlphaTrace() const
 ProteinTertiaryStructurePtr Protein::getTertiaryStructure() const
   {return getObject(T("TertiaryStructure"));}
 
-void Protein::computeProperties()
+void Protein::computePropertiesFrom(const std::vector< ScoreVectorSequencePtr >& aaindex)
 {
+  ScoreVectorSequencePtr properties = new ScoreVectorSequence(T("AminoAcidProperty"), AminoAcidPropertyDictionary::getInstance(), getLength(), aaindex.size());
+  LabelSequencePtr sequence = getAminoAcidSequence();
+  for (size_t i = 0; i < aaindex.size(); ++i)
+  {
+    for (size_t j = 0; j < getLength(); ++j)
+    {
+      properties->setScore(j, i, aaindex[i]->getScore(0, sequence->getIndex(j)));
+    }
+  }
+  
+  setObject(properties);
+  
+  /*
   static const double kiteDoolittle[24] = {0.7, 0, 0.11, 0.11, 0.78, 0.11, 0.11, 0.46, 0.14, 1, 0.92, 0.07, 0.71, 0.81, 0.32, 0.41, 0.42, 0.4, 0.36, 0.97, 0.11, 0.11, 0.96, 0.5};
   static const double hoppWoods[24] = {0.45, 1, 0.56, 1, 0.38, 1, 0.56, 0.53, 0.45, 0.25, 0.25, 1, 0.33, 0.14, 0.53, 0.58, 0.47, 0, 0.17, 0.3, 0.78, 0.78, 0.25, 0.5};
   static const double cornette[24] = {0.38, 0.51, 0.3, 0, 0.82, 0.15, 0.03, 0.35, 0.41, 0.9, 1, 0, 0.83, 0.85, 0.1, 0.3, 0.14, 0.47, 0.72, 0.89, 0.65, 0.09, 0.95, 0.5};
@@ -154,6 +167,7 @@ void Protein::computeProperties()
   }
   
   setObject(properties);
+  */
 }
 
 bool Protein::load(InputStream& istr)

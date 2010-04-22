@@ -83,3 +83,14 @@ AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromThreeLettersCode(const
       return (Type)i;
   return unknown;
 }
+
+AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromOneLetterCode(const juce::juce_wchar oneLetterCode)
+{
+  for (size_t i = 0; i < (size_t) oneLetterCodes.length(); ++i) {
+    if (oneLetterCode == oneLetterCodes[i])
+      return (Type) i;
+  }
+  
+  jassert(false);
+  return unknown;
+}

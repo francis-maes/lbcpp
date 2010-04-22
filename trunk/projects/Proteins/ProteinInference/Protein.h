@@ -79,7 +79,7 @@ public:
   /*
   ** Compute some information
   */
-  void computeProperties();
+  void computePropertiesFrom(const std::vector< ScoreVectorSequencePtr >& aaindex);
 
 protected:
   virtual bool load(InputStream& istr);
