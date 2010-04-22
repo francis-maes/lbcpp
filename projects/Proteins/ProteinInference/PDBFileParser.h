@@ -23,12 +23,20 @@ public:
   virtual bool parseLine(const String& line);
   virtual bool parseEnd();
 
+  std::vector<ProteinPtr> getAllChains() const;
+
 protected:
   bool beTolerant;
 
+  struct Chain
+  {
+    ProteinPtr protein;
+    std::vector< std::vector<ProteinResiduePtr> > tertiaryStructureBlocks;
+  };
+
   String proteinName;
-  typedef std::map<char, ProteinPtr> ProteinMap;
-  ProteinMap proteins; // by chain ID
+  typedef std::map<char, Chain> ChainMap;
+  ChainMap chains; // by chain ID
   std::set<char> skippedChains;
 
   int currentSeqResSerialNumber;
@@ -54,8 +62,10 @@ protected:
   static bool getDouble(const String& line, int firstColumn, int lastColumn, double& result);
 
   bool getChainId(const String& line, int column, char& res) const;
-  ProteinPtr getProteinFromChainId(const String& line, int column);
+  Chain* getChain(const String& line, int column);
   bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
+  ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResiduePtr> >& tertiaryStructureBlocks);
+  bool checkResidueConsistency(ProteinResiduePtr residue);
 };
 
 }; /* namespace lbcpp */

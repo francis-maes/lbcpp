@@ -118,6 +118,9 @@ TARGET_LINK_LIBRARIES(ConvertPDBToProtein proteins)
 ADD_EXECUTABLE(ConvertPDBToCASPTS Programs/ConvertPDBToCASPTS.cpp)
 TARGET_LINK_LIBRARIES(ConvertPDBToCASPTS proteins)
 
+ADD_EXECUTABLE(ComputePSSMs Programs/ComputePSSMs.cpp)
+TARGET_LINK_LIBRARIES(ComputePSSMs proteins)
+
 ADD_EXECUTABLE(TertiaryStructureRepresentationTests Programs/TertiaryStructureRepresentationTests.cpp)
 TARGET_LINK_LIBRARIES(TertiaryStructureRepresentationTests proteins)
 

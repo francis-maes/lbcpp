@@ -85,34 +85,65 @@ ProteinPtr Protein::createFromFASTA(const File& fastaFile)
 
 ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
 {
-  ObjectStreamPtr parser(new PDBFileParser(pdbFile, beTolerant));
-  ProteinPtr res = parser->nextAndCast<Protein>();
-  if (!res)
+  ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant));
+  if (!parser->next())
     return ProteinPtr();
 
-  LabelSequencePtr aminoAcidSequence = res->getAminoAcidSequence();
-  ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
-  jassert(tertiaryStructure);
-  
-  // the tertiary structure may not be defined on the whole primary sequence
-  // therefore, in general length(tertiary structure) <= length(primary sequence)
-  // here, we reduce the primary sequence to the portion for which the tertiary structure is defined
-  if (!aminoAcidSequence || tertiaryStructure->size() < aminoAcidSequence->size())
-    res->setObject(tertiaryStructure->createAminoAcidSequence()); 
+  std::vector<ProteinPtr> proteins = parser->getAllChains();
+  jassert(proteins.size());
+  ProteinPtr res = proteins[0];
+  if (proteins.size() > 1)
+  {
+    size_t chainSize = proteins[0]->getLength();
+    for (size_t i = 1; i < proteins.size(); ++i)
+      if (proteins[i]->getLength() != chainSize)
+      {
+        for (size_t j = 0; j < proteins.size(); ++j)
+          std::cerr << "Chain Size: " << proteins[j]->getLength() << std::endl;
+        Object::error(T("Protein::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
+        return ProteinPtr();
+      }
+  }
 
+  LabelSequencePtr aminoAcidSequence = res->getAminoAcidSequence();
+  jassert(aminoAcidSequence);
+  ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
+  jassert(tertiaryStructure && tertiaryStructure->size() == aminoAcidSequence->size());
+/*
   res->setObject(tertiaryStructure->createCAlphaTrace());
   if (!tertiaryStructure->hasOnlyCAlphaAtoms())
   {
     res->setObject(tertiaryStructure->createCBetaTrace());
     res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
-  }
+  }*/
   return res;
 }
 
 void Protein::saveToPDBFile(const File& pdbFile)
+  {ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));}
+
+class FASTAFileGenerator : public TextObjectPrinter
 {
-  ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));
-}
+public:
+  FASTAFileGenerator(const File& file)
+    : TextObjectPrinter(file) {}
+
+  virtual void consume(ObjectPtr object)
+  {
+    ProteinPtr protein = object.dynamicCast<Protein>();
+    jassert(protein);
+    print(T(">") + protein->getName(), true);
+    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    jassert(aminoAcidSequence);
+    String aa = aminoAcidSequence->toString();
+    jassert(aa.length() == aminoAcidSequence->size());
+    print(aa, true);
+  }
+};
+
+
+void Protein::saveToFASTAFile(const File& fastaFile)
+  {ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinPtr(this));}
 
 size_t Protein::getLength() const
   {return getAminoAcidSequence()->size();}
