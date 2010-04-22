@@ -273,14 +273,15 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
 {
   bool onlyCAlpha = hasOnlyCAlphaAtoms();
 
+  bool res = true;
   for (size_t i = 0; i < residues.size(); ++i)
   {
     String position = T(" at position ") + lbcpp::toString(i + 1);
     ProteinResiduePtr residue = residues[i];
     if (!residue || !residue->getNumAtoms())
     {
-      failureReason = T("Empty residue") + position;
-      return false;
+      failureReason = T("Empty residue") + position + T("\n");
+      res = false;
     }
     ProteinResiduePtr nextResidue = i < residues.size() - 1 ? residues[i + 1] : ProteinResiduePtr();
     
@@ -289,25 +290,25 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
       double d = residue->getDistanceBetweenAtoms(T("N"), T("CA"));
       if (d < 1.0 || d > 2.0)
       {
-        failureReason = T("Suspect N--CA distance: ") + lbcpp::toString(d) + position;
-        return false;
+        failureReason = T("Suspect N--CA distance: ") + lbcpp::toString(d) + position + T("\n");
+        res = false;
       }
       d = residue->getDistanceBetweenAtoms(T("CA"), T("C"));
       if (d < 1.0 || d > 2.0)
       {
-        failureReason = T("Suspect CA--C distance: ") + lbcpp::toString(d) + position;
-        return false;
+        failureReason = T("Suspect CA--C distance: ") + lbcpp::toString(d) + position + T("\n");
+        res = false;
       }
       if (nextResidue)
       {
         double d = residue->getDistanceBetweenAtoms(T("C"), nextResidue, T("N"));
         if (d < 1.0 || d > 2.0)
         {
-          failureReason = T("Suspect C--N distance: ") + lbcpp::toString(d) + position;
-          return false;
+          failureReason = T("Suspect C--N distance: ") + lbcpp::toString(d) + position + T("\n");
+          res = false;
         }
       }
     }
   }
-  return true;
+  return res;
 }

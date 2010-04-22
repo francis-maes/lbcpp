@@ -17,13 +17,15 @@ namespace lbcpp
 class PDBFileParser : public TextObjectParser
 {
 public:
-  PDBFileParser(const File& file);
+  PDBFileParser(const File& file, bool beTolerant);
   
   virtual void parseBegin();
   virtual bool parseLine(const String& line);
   virtual bool parseEnd();
 
 protected:
+  bool beTolerant;
+
   String proteinName;
   typedef std::map<char, ProteinPtr> ProteinMap;
   ProteinMap proteins; // by chain ID

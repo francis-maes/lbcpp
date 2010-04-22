@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 bool convert(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromPDB(inputFile);
+  ProteinPtr protein = Protein::createFromPDB(inputFile, false);
   if (!protein)
     return false;
  

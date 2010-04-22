@@ -8,8 +8,8 @@
 #include "PDBFileParser.h"
 using namespace lbcpp;
 
-PDBFileParser::PDBFileParser(const File& file)
-  : TextObjectParser(file)
+PDBFileParser::PDBFileParser(const File& file, bool beTolerant)
+  : TextObjectParser(file), beTolerant(beTolerant)
 {
 }
 
@@ -203,6 +203,9 @@ bool PDBFileParser::parseAtomLine(const String& line)
   ProteinPtr protein = getProteinFromChainId(line, 22);
   if (!protein)
   {
+    if (!beTolerant)
+      return true; // skip all chains that do not have a corresponding SEQRES section
+
     char chainId;
     if (!getChainId(line, 22, chainId))
       return false;
@@ -395,8 +398,13 @@ bool PDBFileParser::parseEnd()
     String failureReason;
     if (!tertiaryStructure->isConsistent(failureReason))
     {
-      Object::error(T("PDBFileParser::parseEnd"), T("Tertiary structure is not consistent: ") + failureReason);
-      return false;
+      if (beTolerant)
+        Object::warning(T("PDBFileParser::parseEnd"), T("Tertiary structure is not consistent: ") + failureReason);
+      else
+      {
+        Object::error(T("PDBFileParser::parseEnd"), T("Tertiary structure is not consistent: ") + failureReason);
+        return false;
+      }
     }
   }
 
