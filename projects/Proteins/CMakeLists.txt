@@ -73,8 +73,8 @@ SET(LBCPP_PROTEIN_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
-  Protein/InferenceStep/ProteinInference.h
-  Protein/InferenceStep/ProteinSequenceLabelingInferenceStep.h
+  Protein/Inference/ProteinInference.h
+  Protein/Inference/ProteinSequenceLabelingInferenceStep.h
 )
 
 SET(LBCPP_PROTEIN_EVALUATION_SOURCES
