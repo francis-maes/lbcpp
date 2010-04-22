@@ -7,9 +7,9 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../ProteinInference/Protein.h"
-#include "../ProteinInference/AminoAcidDictionary.h"
-#include "../ProteinInference/SecondaryStructureDictionary.h"
+#include "../Protein/Protein.h"
+#include "../Protein/AminoAcidDictionary.h"
+#include "../Protein/SecondaryStructureDictionary.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

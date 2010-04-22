@@ -11,10 +11,10 @@
 #include "InferenceContext/CacheInferenceCallback.h"
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
-#include "ProteinInference/ProteinEvaluationCallback.h"
-#include "ProteinInference/ProteinInference.h"
+#include "Protein/ProteinEvaluationCallback.h"
+#include "Protein/ProteinInference.h"
 #include "Programs/ArgumentSet.h"
-#include "ProteinInference/Formats/PSSMFileParser.h"
+#include "Protein/Formats/PSSMFileParser.h"
 #include "Programs/AAIndexParser.h"
 
 using namespace lbcpp;

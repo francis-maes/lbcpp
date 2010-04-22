@@ -7,9 +7,9 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../ProteinInference/Protein.h"
-#include "../ProteinInference/Formats/PSSMFileParser.h"
-#include "../ProteinInference/Formats/DSSPFileParser.h"
+#include "../Protein/Protein.h"
+#include "../Protein/Formats/PSSMFileParser.h"
+#include "../Protein/Formats/DSSPFileParser.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

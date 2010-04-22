@@ -13,8 +13,8 @@
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"
-#include "ProteinInference/ProteinEvaluationCallback.h"
-#include "ProteinInference/ProteinInference.h"
+#include "Protein/ProteinEvaluationCallback.h"
+#include "Protein/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

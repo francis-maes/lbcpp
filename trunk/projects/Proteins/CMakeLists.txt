@@ -60,34 +60,34 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
-  ProteinInference/AminoAcidDictionary.h
-  ProteinInference/AminoAcidDictionary.cpp
-  ProteinInference/SecondaryStructureDictionary.h
-  ProteinInference/SecondaryStructureDictionary.cpp
-  ProteinInference/ProteinResidue.h
-  ProteinInference/ProteinResidue.cpp
-  ProteinInference/ProteinTertiaryStructure.h
-  ProteinInference/ProteinTertiaryStructure.cpp
-  ProteinInference/Protein.h
-  ProteinInference/Protein.cpp
-  ProteinInference/ProteinInference.h
-  ProteinInference/ProteinEvaluationCallback.h
+  Protein/AminoAcidDictionary.h
+  Protein/AminoAcidDictionary.cpp
+  Protein/SecondaryStructureDictionary.h
+  Protein/SecondaryStructureDictionary.cpp
+  Protein/ProteinResidue.h
+  Protein/ProteinResidue.cpp
+  Protein/ProteinTertiaryStructure.h
+  Protein/ProteinTertiaryStructure.cpp
+  Protein/Protein.h
+  Protein/Protein.cpp
+  Protein/ProteinInference.h
+  Protein/ProteinEvaluationCallback.h
 )
 
 SET(LBCPP_PROTEIN_FORMATS_SOURCES
-  ProteinInference/Formats/FASTAFileParser.h
-  ProteinInference/Formats/FASTAFileGenerator.h
-  ProteinInference/Formats/PDBFileParser.h
-  ProteinInference/Formats/PDBFileParser.cpp
-  ProteinInference/Formats/PDBFileGenerator.h
-  ProteinInference/Formats/PDBFileGenerator.cpp
-  ProteinInference/Formats/CASPFileGenerator.h
-  ProteinInference/Formats/CASPFileGenerator.cpp
-  ProteinInference/Formats/OrderDisorderRegionCASPFileGenerator.h
-  ProteinInference/Formats/ResidueResidueDistanceCASPFileGenerator.h
-  ProteinInference/Formats/TertiaryStructureCASPFileGenerator.h
-  ProteinInference/Formats/PSSMFileParser.h
-  ProteinInference/Formats/DSSPFileParser.h
+  Protein/Formats/FASTAFileParser.h
+  Protein/Formats/FASTAFileGenerator.h
+  Protein/Formats/PDBFileParser.h
+  Protein/Formats/PDBFileParser.cpp
+  Protein/Formats/PDBFileGenerator.h
+  Protein/Formats/PDBFileGenerator.cpp
+  Protein/Formats/CASPFileGenerator.h
+  Protein/Formats/CASPFileGenerator.cpp
+  Protein/Formats/OrderDisorderRegionCASPFileGenerator.h
+  Protein/Formats/ResidueResidueDistanceCASPFileGenerator.h
+  Protein/Formats/TertiaryStructureCASPFileGenerator.h
+  Protein/Formats/PSSMFileParser.h
+  Protein/Formats/DSSPFileParser.h
 )
 
 SET(PROTEINS_CPP_SOURCES
