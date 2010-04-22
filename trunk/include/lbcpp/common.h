@@ -29,5 +29,8 @@ using juce::InputStream;
 using juce::OutputStream;
 using juce::Time;
 
+using juce::CriticalSection;
+using juce::ScopedLock;
+
 #endif // !LBCPP_COMMON_H_
 

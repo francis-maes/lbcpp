@@ -12,23 +12,22 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/LabelSequence.cpp
   InferenceData/ScoreVectorSequence.h
   InferenceData/ScoreVectorSequence.cpp
+  InferenceData/CartesianCoordinatesSequence.h
+  InferenceData/BondCoordinatesSequence.h
+  InferenceData/BondCoordinatesSequence.cpp
   InferenceData/ScoreSymmetricMatrix.h
 )
 
 SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/InferenceStep.h
   InferenceStep/InferenceStep.cpp
-
   InferenceStep/ClassificationInferenceStep.h
   InferenceStep/RegressionInferenceStep.h
-
   InferenceStep/SequentialInferenceStep.h
   InferenceStep/SequentialInferenceStep.cpp
   InferenceStep/ParallelInferenceStep.h
-
   InferenceStep/DecoratorInferenceStep.h
   InferenceStep/DecoratorInferenceStep.cpp
-
   InferenceStep/ParallelSequenceLabelingInferenceStep.h
   InferenceStep/ParallelSharedMultiRegressionInferenceStep.h
   InferenceStep/ParallelSequenceMultiRegressionInferenceStep.h
@@ -65,6 +64,8 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   ProteinInference/AminoAcidDictionary.cpp
   ProteinInference/SecondaryStructureDictionary.h
   ProteinInference/SecondaryStructureDictionary.cpp
+  ProteinInference/ProteinResidue.h
+  ProteinInference/ProteinResidue.cpp
   ProteinInference/ProteinTertiaryStructure.h
   ProteinInference/ProteinTertiaryStructure.cpp
   ProteinInference/Protein.h
@@ -106,23 +107,17 @@ SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
 
-ADD_EXECUTABLE(ProteinsCB513Converter Programs/CB513Converter.cpp)
-TARGET_LINK_LIBRARIES(ProteinsCB513Converter proteins)
+MACRO(ADD_SINGLE_CPP_EXECUTABLE NAME)
+  ADD_EXECUTABLE(${NAME} Programs/${NAME}.cpp)
+  TARGET_LINK_LIBRARIES(${NAME} proteins)
+ENDMACRO(ADD_SINGLE_CPP_EXECUTABLE)
 
-ADD_EXECUTABLE(CASPPredictor Programs/CASPPredictor.cpp)
-TARGET_LINK_LIBRARIES(CASPPredictor proteins)
-
-ADD_EXECUTABLE(ConvertPDBToProtein Programs/ConvertPDBToProtein.cpp)
-TARGET_LINK_LIBRARIES(ConvertPDBToProtein proteins)
-
-ADD_EXECUTABLE(ConvertPDBToCASPTS Programs/ConvertPDBToCASPTS.cpp)
-TARGET_LINK_LIBRARIES(ConvertPDBToCASPTS proteins)
-
-ADD_EXECUTABLE(ComputePSSMs Programs/ComputePSSMs.cpp)
-TARGET_LINK_LIBRARIES(ComputePSSMs proteins)
-
-ADD_EXECUTABLE(TertiaryStructureRepresentationTests Programs/TertiaryStructureRepresentationTests.cpp)
-TARGET_LINK_LIBRARIES(TertiaryStructureRepresentationTests proteins)
+ADD_SINGLE_CPP_EXECUTABLE(CASPPredictor)
+ADD_SINGLE_CPP_EXECUTABLE(ConvertPDBToProtein)
+ADD_SINGLE_CPP_EXECUTABLE(ConvertPDBToCASPTS)
+ADD_SINGLE_CPP_EXECUTABLE(ComputePSSMs)
+ADD_SINGLE_CPP_EXECUTABLE(CompileProteins)
+ADD_SINGLE_CPP_EXECUTABLE(TertiaryStructureRepresentationTests)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 

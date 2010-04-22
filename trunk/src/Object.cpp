@@ -18,6 +18,8 @@ class ObjectFactory
 public:
   void declare(const String& className, Object::Constructor constructor)
   {
+    ScopedLock _(lock);
+
     if (className.isEmpty())
       Object::error(T("Object::declare"), T("Empty class name"));
     else if (constructors.find(className) != constructors.end())
@@ -31,6 +33,8 @@ public:
 
   Object* create(const String& className)
   {
+    ScopedLock _(lock);
+
     // check that lbc++ core classes have been declared
     if (constructors.find(T("SparseVector")) == constructors.end())
       declareLBCppCoreClasses();
@@ -55,6 +59,7 @@ private:
   typedef std::map<String, Object::Constructor> ObjectConstructorMap;
 
   ObjectConstructorMap constructors;
+  CriticalSection lock;
 };
 
 inline ObjectFactory& getObjectFactoryInstance()
