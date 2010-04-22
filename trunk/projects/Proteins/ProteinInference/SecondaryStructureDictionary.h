@@ -85,6 +85,16 @@ public:
 private:
   OrderDisorderDictionary();
 };
+  
+class AminoAcidPropertyDictionary : public FeatureDictionary
+{
+public:
+  static FeatureDictionaryPtr getInstance();
+  
+private:
+  AminoAcidPropertyDictionary();
+};
+
 
 }; /* namespace lbcpp */
 

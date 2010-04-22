@@ -28,7 +28,7 @@ public:
   enum {numberTarget = 3};
 
   CustomableSecondaryStructureContent(const String& name = String::empty)
-    : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), wSA(0), target(SS3)
+    : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), wSA(0), wProp(0), target(SS3)
     {}
   
   void setTarget(Target newTarget)
@@ -39,6 +39,9 @@ public:
   
   void enablePositionSpecificScoreFeatures(size_t windowLength)
     {wPSSM = windowLength;}
+  
+  void enablePropertyFeatures(size_t windowLength)
+    {wProp = windowLength;}
   
   void enableSecondaryStructure3StatesFeatures(size_t windowLength)
     {wSS3 = windowLength;}
@@ -54,6 +57,9 @@ public:
   
   void disablePositionSpecificScoreFeatures()
     {wPSSM = 0;}
+  
+  void disablePropertyFeatures()
+    {wProp = 0;}
   
   void disableSecondaryStructure3StatesFeatures()
     {wSS3 = 0;}
@@ -83,6 +89,13 @@ public:
       featureCall("PSSM") positionSpecificScores->windowFeatures(index, wPSSM, wPSSM, true);
     }
     
+    if (wProp) {
+      ScoreVectorSequencePtr properties = protein->getAminoAcidProperty();
+      jassert(properties);
+      
+      featureCall("Prop") properties->symetricFrequencyFeatures(index, wProp, true);
+    }
+    
     if (wSS3)
     {
       LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
@@ -104,7 +117,21 @@ public:
       featureCall("wSA") solventAccesibilityStructure->windowFeatures(index, wSA, wSA, true);
     }
   }
-  
+
+  static Target getTarget(String& target)
+  {
+    static const juce::tchar* targetNames[] = {
+      T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence"), T("SolventAccessibilitySequence")
+    };
+    
+    for (size_t i = 0; i < numberTarget; ++i)
+    {
+      if (target == targetNames[i])
+        return (Target) i;
+    }
+    
+    return NONE;
+  }
 
   virtual String getTargetName() const
   {
@@ -124,22 +151,13 @@ public:
     return targetDictionaries[target];
   }
 
-  void setWindows(size_t newAA, size_t newPSSM, size_t newSS3, size_t newSS8, size_t newSA)
-  {
-    wAA   = newAA;
-    wPSSM = newPSSM;
-    wSS3  = newSS3;
-    wSS8  = newSS8;
-    wSA   = newSA;
-  }
-
 protected:
   virtual bool load(InputStream& istr)
   {
     int versionNumber;
     if (!lbcpp::read(istr, versionNumber))
       return false;
-    if (versionNumber != 100)
+    if (versionNumber != 101)
     {
       Object::error(T("CustomableSecondaryStructureContent::load"), T("Unrecognized version number"));
       return false;
@@ -148,7 +166,7 @@ protected:
       return false;
     if (!lbcpp::read(istr, wAA) || !lbcpp::read(istr, wPSSM) ||
         !lbcpp::read(istr, wSS3) || !lbcpp::read(istr, wSS8) ||
-        !lbcpp::read(istr, wSA))
+        !lbcpp::read(istr, wSA) || !lbcpp::read(istr, wProp))
       return false;
     int targeti;
     if (!lbcpp::read(istr, targeti))
@@ -159,7 +177,7 @@ protected:
 
   virtual void save(OutputStream& ostr) const
   {
-    int versionNumber = 100;
+    int versionNumber = 101;
     lbcpp::write(ostr, versionNumber);
     ProteinSequenceLabelingInferenceStep::save(ostr);
     lbcpp::write(ostr, wAA);
@@ -167,6 +185,7 @@ protected:
     lbcpp::write(ostr, wSS3);
     lbcpp::write(ostr, wSS8);
     lbcpp::write(ostr, wSA);
+    lbcpp::write(ostr, wProp);
     lbcpp::write(ostr, (int)target);
   }
 
@@ -176,6 +195,7 @@ private:
   size_t wSS3;
   size_t wSS8;
   size_t wSA;
+  size_t wProp;
   Target target;
 };
 
@@ -230,31 +250,57 @@ class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
   EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback())
-    : previousTrainingEvaluation(new ProteinEvaluationCallback()), previousTestingEvaluation(new ProteinEvaluationCallback())
-    , trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
+    : trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
     , factory(factory)
     , target(CustomableSecondaryStructureContent::NONE), targetTrainingScore(0.), targetTestingScore(0.)
   {
-    previousTrainingEvaluation->startInferencesCallback(0); // initialize a zero score
-    previousTestingEvaluation->startInferencesCallback(0); // initialize a zero score
-    trainingEvaluation->startInferencesCallback(0);
+    trainingEvaluation->startInferencesCallback(0); // initialize a zero score
     testingEvaluation->startInferencesCallback(0);
   }
 
   virtual void setTrainingEvaluation(ProteinEvaluationCallbackPtr trainingEvaluation)
   {
     jassert(trainingEvaluation);
-    previousTrainingEvaluation = this->trainingEvaluation;
     this->trainingEvaluation = trainingEvaluation;
-    target = CustomableSecondaryStructureContent::NONE;
+    switch (target) {
+    case CustomableSecondaryStructureContent::SS3:
+        targetTrainingScore = trainingEvaluation->getQ3Score(); break;
+    
+    case CustomableSecondaryStructureContent::SS8:
+        targetTrainingScore = trainingEvaluation->getQ8Score(); break;
+    
+    case CustomableSecondaryStructureContent::SA:
+        targetTrainingScore = trainingEvaluation->getSA2Score(); break;
+
+    default:
+        jassert(false); break;
+    }
   }
   
   virtual void setTestingEvaluation(ProteinEvaluationCallbackPtr testingEvaluation)
   {
     jassert(testingEvaluation);
-    previousTestingEvaluation = this->testingEvaluation; 
     this->testingEvaluation = testingEvaluation;
-    target = CustomableSecondaryStructureContent::NONE;
+    switch (target) {
+    case CustomableSecondaryStructureContent::SS3:
+        targetTestingScore = testingEvaluation->getQ3Score(); break;
+    
+    case CustomableSecondaryStructureContent::SS8:
+        targetTestingScore = testingEvaluation->getQ8Score(); break;
+    
+    case CustomableSecondaryStructureContent::SA:
+        targetTestingScore = testingEvaluation->getSA2Score(); break;
+
+    default:
+        jassert(false); break;
+    }
+
+  }
+  
+  virtual void setTargetName(String& targetName)
+  {
+    target = CustomableSecondaryStructureContent::getTarget(targetName);
+    jassert(target != CustomableSecondaryStructureContent::NONE);
   }
 
   virtual InferenceContextPtr createContext()
@@ -280,50 +326,17 @@ protected:
 
   Target getTarget()
   {
-    jassert(trainingEvaluation && testingEvaluation);
-
-    if (target != CustomableSecondaryStructureContent::NONE)
-      return target;
-
-    Target res = CustomableSecondaryStructureContent::NONE;
-    if (previousTrainingEvaluation->getQ3Score() != trainingEvaluation->getQ3Score()
-      || previousTestingEvaluation->getQ3Score() != testingEvaluation->getQ3Score())
-    {
-      targetTrainingScore = trainingEvaluation->getQ3Score();
-      targetTestingScore = testingEvaluation->getQ3Score();
-      res = CustomableSecondaryStructureContent::SS3;
-    }
-
-    if (previousTrainingEvaluation->getQ8Score() != trainingEvaluation->getQ8Score()
-      || previousTestingEvaluation->getQ8Score() != testingEvaluation->getQ8Score())
-    {
-      targetTrainingScore = trainingEvaluation->getQ8Score();
-      targetTestingScore = testingEvaluation->getQ8Score();
-      res = CustomableSecondaryStructureContent::SS8;
-    }
-
-    if (previousTrainingEvaluation->getSA2Score() != trainingEvaluation->getSA2Score()
-      || previousTestingEvaluation->getSA2Score() != testingEvaluation->getSA2Score())
-    {
-      targetTrainingScore = trainingEvaluation->getSA2Score();
-      targetTestingScore = testingEvaluation->getSA2Score();
-      res = CustomableSecondaryStructureContent::SA;
-    }
-
-    jassert(res != CustomableSecondaryStructureContent::NONE);
-    return res;
+    jassert(target != CustomableSecondaryStructureContent::NONE);
+    return target;
   }
   
   double getTargetTrainingScore()
-    {getTarget(); return targetTrainingScore;}
+    {return targetTrainingScore;}
   
   double getTargetTestingScore()
-    {getTarget(); return targetTestingScore;}
+    {return targetTestingScore;}
 
 private:
-  ProteinEvaluationCallbackPtr previousTrainingEvaluation;
-  ProteinEvaluationCallbackPtr previousTestingEvaluation;
-
   ProteinEvaluationCallbackPtr trainingEvaluation;
   ProteinEvaluationCallbackPtr testingEvaluation;
   
@@ -394,8 +407,11 @@ public:
   
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
+    String target = ((ProteinSequenceLabelingInferenceStepPtr) step)->getTargetName();
+
     for (size_t i = 0; i < callbacks.size(); ++i)
     {
+      callbacks[i]->setTargetName(target);
       callbacks[i]->preLearningStepCallback(step);
     }
   }
@@ -476,7 +492,7 @@ public:
 //               << (int) passNumber << '\n';
 //    oIteration->flush();
     
-    if (iterationNumber && getTargetTrainingScore() > bestTrainingScore) {
+    if (getTargetTrainingScore() > bestTrainingScore) {
       bestTrainingScore = getTargetTrainingScore();
       bestTestingScore = getTargetTestingScore();
     }
@@ -548,18 +564,11 @@ public:
     {}
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
-  {
-    stoppingCriterion->reset();
-  }
+    {stoppingCriterion->reset();}
 
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
-  {
-    if (!iterationNumber)
-      return true;
-
-    return !stoppingCriterion->shouldOptimizerStop(getTargetTrainingScore());
-  }
+    {return !stoppingCriterion->shouldOptimizerStop(getTargetTrainingScore());}
 
 private:
   StoppingCriterionPtr stoppingCriterion;
@@ -580,7 +589,7 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    if (iterationNumber && getTargetTrainingScore() > bestScore)
+    if (getTargetTrainingScore() > bestScore)
     {
       File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename);
       inference->saveToFile(dst);
@@ -655,6 +664,7 @@ int main(int argc, char** argv)
   int wSS3 = 10;
   int wSS8 = 10;
   int wSA = 10;
+  int wProp = 10;
   double regularizer = 20.0;
   double initialLearningRate = 2.0;
   int numberIterationLearningRate = 150000;
@@ -669,6 +679,7 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("MaximumPass"), &maxPass));
   arguments.insert(new IntegerArgument(T("AminoAcidWindow"), &wAA));
   arguments.insert(new IntegerArgument(T("PSSMWindow"), &wPSSM));
+  arguments.insert(new IntegerArgument(T("PropertyWindow"), &wProp));
   arguments.insert(new IntegerArgument(T("SS3Window"), &wSS3));
   arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
   arguments.insert(new IntegerArgument(T("SAWindow"), &wSA));
@@ -691,8 +702,8 @@ int main(int argc, char** argv)
   std::cout << "*-----------------------------" << std::endl;
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
-#ifdef MODE
-# if MODE == PSSM
+//#define VIEW
+#ifdef PSSM
   while (!proteinsStream->isExhausted()) {
     ProteinPtr myProtein = proteinsStream->nextAndCast<Protein>();
     std::cout << myProtein->getName();
@@ -720,21 +731,30 @@ int main(int argc, char** argv)
 
   return 0;
 
-# elif MODE == VIEW
+#endif
+#ifdef VIEW
   ObjectContainerPtr prots = proteinsStream->load(1)->randomize();
   for (size_t i = 0; i < prots->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) prots->get(i);
+    protein->computeProperties();
 
     std::cout << protein->toString() << std::endl;
   }
   
   
   return 0;
-# endif
 #endif
 
-  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize()->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
+  for (size_t i = 0; i < proteins->size(); ++i)
+  {
+    ProteinPtr protein = (ProteinPtr) proteins->get(i);
+    protein->computeProperties();
+    std::cout << protein->getName() << std::endl;
+  }
+
+  proteins = proteins->apply(new ObjectToObjectPairFunction());
 
   ObjectContainerPtr trainingData = proteins->invFold(currentFold, nbFolds);
   ObjectContainerPtr testingData = proteins->fold(currentFold, nbFolds);
@@ -752,6 +772,7 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SS3);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
+    step->enablePropertyFeatures(wProp);
     proteinInference->appendStep(step);
   }
   
@@ -761,6 +782,7 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SS8);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
+    step->enablePropertyFeatures(wProp);
     proteinInference->appendStep(step);
   }
   
@@ -770,6 +792,7 @@ int main(int argc, char** argv)
     step->setTarget(CustomableSecondaryStructureContent::SA);
     step->enableAminoAcidFeatures(wAA);
     step->enablePositionSpecificScoreFeatures(wPSSM);
+    step->enablePropertyFeatures(wProp);
     proteinInference->appendStep(step);
   }
   /* Iterated Steps */
@@ -779,6 +802,7 @@ int main(int argc, char** argv)
       step->setTarget(CustomableSecondaryStructureContent::SS3);
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
+    step->enablePropertyFeatures(wProp);
       step->enableSecondaryStructure3StatesFeatures(wSS3);
       
       if (predictionTarget.contains(T("SS8")))
@@ -794,6 +818,7 @@ int main(int argc, char** argv)
       step->setTarget(CustomableSecondaryStructureContent::SS8);
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
+    step->enablePropertyFeatures(wProp);
       step->enableSecondaryStructure8StatesFeatures(wSS8);
       
       if (predictionTarget.contains(T("SS3")))
@@ -809,6 +834,7 @@ int main(int argc, char** argv)
       step->setTarget(CustomableSecondaryStructureContent::SA);
       step->enableAminoAcidFeatures(wAA);
       step->enablePositionSpecificScoreFeatures(wPSSM);
+    step->enablePropertyFeatures(wProp);
       step->enableSolventAccesibility2StatesFeatures(wSA);
       
       if (predictionTarget.contains(T("SS3")))

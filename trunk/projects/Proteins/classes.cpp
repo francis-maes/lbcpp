@@ -10,10 +10,6 @@
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
-#define LBCPP_DECLARE_DICTIONARY(ClassName) \
-  lbcpp::FeatureDictionaryManager::getInstance().addDictionary(ClassName::getInstance())
-
-
 #include "Geometry/Matrix4.h" // todo: move
 const Matrix4 Matrix4::identity = Matrix4(
       1.0, 0.0, 0.0, 0.0,
@@ -74,4 +70,5 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(DSSPSecondaryStructureDictionary);
   LBCPP_DECLARE_DICTIONARY(SolventAccesibility2StateDictionary);
   LBCPP_DECLARE_DICTIONARY(OrderDisorderDictionary);
+  LBCPP_DECLARE_DICTIONARY(AminoAcidPropertyDictionary);
 }

@@ -34,11 +34,12 @@ public:
   void saveToPDBFile(const File& pdbFile);
 
   /*
-  ** Primary Structure and Position Specific Scoring Matrix
+  ** Primary Structure, Position Specific Scoring Matrix and Properties
   */
   size_t getLength() const;
   LabelSequencePtr getAminoAcidSequence() const;
   ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const;
+  ScoreVectorSequencePtr getAminoAcidProperty() const;
 
   /*
   ** Secondary Structure
@@ -68,6 +69,11 @@ public:
   ProteinDihedralAnglesPtr getDihedralAngles() const;
   CartesianCoordinatesSequencePtr getCAlphaTrace() const;
   ProteinTertiaryStructurePtr getTertiaryStructure() const;
+  
+  /*
+  ** Compute some information
+  */
+  void computeProperties();
 
 protected:
   virtual bool load(InputStream& istr);
