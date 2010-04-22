@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_SECONDARY_STRUCTURE_DICTIONARY_H_
 # define LBCPP_PROTEIN_INFERENCE_SECONDARY_STRUCTURE_DICTIONARY_H_
 
-# include <lbcpp/lbcpp.h>
+# include "../InferenceData/LabelSequence.h"
 
 namespace lbcpp
 {
@@ -27,6 +27,7 @@ public:
   };
 
   static SecondaryStructureDictionary::Type getIndexFromDSSPElement(const String& dsspElement);
+  static LabelSequencePtr createSequenceFromDSSPSequence(const String& name, LabelSequencePtr dsspSequence);
 
 private:
   SecondaryStructureDictionary();

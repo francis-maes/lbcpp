@@ -26,22 +26,21 @@ public:
 
   virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {
+    if (!classifier)
+    {
+      FeatureDictionaryPtr labels = stack->getCurrentInference().dynamicCast<ClassificationInferenceStep>()->getLabels();
+      if (!labels)
+      {
+        returnCode = InferenceStep::errorReturnCode;
+        return;
+      }
+      classifier = learnerCallback->createClassifier(stack->getCurrentInference(), labels);
+    }
+
     if (supervision && enableExamplesCreation)
     {
       LabelPtr label = supervision.dynamicCast<Label>();
-      jassert(label);
-      if (!classifier)
-      {
-        if (!supervision)
-        {
-          returnCode = InferenceStep::errorReturnCode;
-          return;
-        }
-        FeatureGeneratorPtr correctOutput = supervision.dynamicCast<FeatureGenerator>();
-        jassert(correctOutput);
-        classifier = learnerCallback->createClassifier(stack->getCurrentInference(), correctOutput->getDictionary());
-      }
-      jassert(classifier);
+      jassert(classifier && label);
       addExample(classifier, new ClassificationExample(input, label->getIndex()));
     }
   }

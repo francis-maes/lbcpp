@@ -43,6 +43,12 @@ public:
     jassert(protein);
     return protein->getLength();
   }
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    setLabels(getTargetDictionary());
+    return ParallelSequenceLabelingInferenceStep::run(context, input, supervision, returnCode);
+  }
 };
 
 typedef ReferenceCountedObjectPtr<ProteinSequenceLabelingInferenceStep> ProteinSequenceLabelingInferenceStepPtr;

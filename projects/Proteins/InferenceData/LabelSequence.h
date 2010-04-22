@@ -24,6 +24,9 @@ public:
   FeatureDictionaryPtr getDictionary() const
     {return dictionary;}
 
+  bool exists(size_t position) const
+    {jassert(position < sequence.size()); return sequence[position] != 255;}
+
   String getString(size_t position) const;
   int getIndex(size_t position) const;
 
