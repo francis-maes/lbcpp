@@ -15,6 +15,7 @@
 #include "ProteinInference/ProteinInference.h"
 #include "Programs/ArgumentSet.h"
 #include "Programs/PSSMParser.h"
+#include "Programs/AAIndexParser.h"
 
 using namespace lbcpp;
 
@@ -707,6 +708,7 @@ int main(int argc, char** argv)
   std::cout << "*-----------------------------" << std::endl;
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
+
 //#define PSSM
 #ifdef PSSM
   while (!proteinsStream->isExhausted()) {
@@ -749,11 +751,28 @@ int main(int argc, char** argv)
   return 0;
 #endif
 
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  File file("/Users/jbecker/Documents/Workspace/CASP9/aaindex1");
+  ObjectStreamPtr aaindex = ObjectStreamPtr(new AAIndexParser(file));
+
+  std::vector< ScoreVectorSequencePtr > vectorAAIndex;
+
+
+  while (!aaindex->isExhausted()) {
+    ScoreVectorSequencePtr score = (ScoreVectorSequencePtr) aaindex->next();
+    if (!score) {
+      continue;
+    }
+
+    vectorAAIndex.push_back(score);
+  }
+
+
+  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
+
   for (size_t i = 0; i < proteins->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) proteins->get(i);
-    protein->computeProperties();
+    protein->computePropertiesFrom(vectorAAIndex);
   }
 
   proteins = proteins->apply(new ObjectToObjectPairFunction());
