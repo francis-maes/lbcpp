@@ -45,11 +45,11 @@ void declareInferenceClasses()
   LBCPP_DECLARE_CLASS(CancelAfterStepCallback);
 }
 
-#include "ProteinInference/ProteinTertiaryStructure.h"
-#include "ProteinInference/Protein.h"
-#include "ProteinInference/ProteinInference.h"
-#include "ProteinInference/AminoAcidDictionary.h"
-#include "ProteinInference/SecondaryStructureDictionary.h"
+#include "Protein/ProteinTertiaryStructure.h"
+#include "Protein/Protein.h"
+#include "Protein/ProteinInference.h"
+#include "Protein/AminoAcidDictionary.h"
+#include "Protein/SecondaryStructureDictionary.h"
 
 void declareProteinClasses()
 {

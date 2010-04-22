@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../ProteinInference/Protein.h"
-#include "../ProteinInference/Formats/CASPFileGenerator.h"
+#include "../Protein/Protein.h"
+#include "../Protein/Formats/CASPFileGenerator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

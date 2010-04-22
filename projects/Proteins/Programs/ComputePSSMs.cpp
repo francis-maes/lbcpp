@@ -8,7 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../../juce/ConsoleProcess.h"
-#include "../ProteinInference/Protein.h"
+#include "../Protein/Protein.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

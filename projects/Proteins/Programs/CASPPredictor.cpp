@@ -7,10 +7,10 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../ProteinInference/Protein.h"
-#include "../ProteinInference/AminoAcidDictionary.h"
-#include "../ProteinInference/SecondaryStructureDictionary.h"
-#include "../ProteinInference/Formats/CASPFileGenerator.h"
+#include "../Protein/Protein.h"
+#include "../Protein/AminoAcidDictionary.h"
+#include "../Protein/SecondaryStructureDictionary.h"
+#include "../Protein/Formats/CASPFileGenerator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
