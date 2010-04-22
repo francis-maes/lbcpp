@@ -72,12 +72,20 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   ProteinInference/Protein.cpp
   ProteinInference/ProteinInference.h
   ProteinInference/ProteinEvaluationCallback.h
-  ProteinInference/PDBFileParser.h
-  ProteinInference/PDBFileParser.cpp
-  ProteinInference/PDBFileGenerator.h
-  ProteinInference/PDBFileGenerator.cpp
-  ProteinInference/CASPFileGenerator.h
-  ProteinInference/CASPFileGenerator.cpp
+)
+
+SET(LBCPP_PROTEIN_FORMATS_SOURCES
+  ProteinInference/Formats/FASTAFileParser.h
+  ProteinInference/Formats/FASTAFileGenerator.h
+  ProteinInference/Formats/PDBFileParser.h
+  ProteinInference/Formats/PDBFileParser.cpp
+  ProteinInference/Formats/PDBFileGenerator.h
+  ProteinInference/Formats/PDBFileGenerator.cpp
+  ProteinInference/Formats/CASPFileGenerator.h
+  ProteinInference/Formats/CASPFileGenerator.cpp
+  ProteinInference/Formats/OrderDisorderRegionCASPFileGenerator.h
+  ProteinInference/Formats/ResidueResidueDistanceCASPFileGenerator.h
+  ProteinInference/Formats/TertiaryStructureCASPFileGenerator.h
 )
 
 SET(PROTEINS_CPP_SOURCES
@@ -87,6 +95,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
+  ${LBCPP_PROTEIN_FORMATS_SOURCES}
   classes.cpp
   InferencePredeclarations.h
 )
@@ -102,7 +111,8 @@ SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
-SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
+SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(Protein Formats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

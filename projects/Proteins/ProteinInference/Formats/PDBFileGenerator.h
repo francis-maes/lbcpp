@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEIN_PDB_FILE_GENERATOR_H_
-# define LBCPP_PROTEIN_PDB_FILE_GENERATOR_H_
+#ifndef LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
+# define LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
 
-# include "Protein.h"
+# include "../Protein.h"
 
 namespace lbcpp
 {
@@ -45,4 +45,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_PROTEIN_PDB_FILE_GENERATOR_H_
+#endif // !LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
