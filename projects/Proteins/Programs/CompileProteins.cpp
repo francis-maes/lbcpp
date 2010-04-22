@@ -8,6 +8,8 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../ProteinInference/Protein.h"
+#include "../ProteinInference/Formats/PSSMFileParser.h"
+#include "../ProteinInference/Formats/DSSPFileParser.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -35,13 +37,17 @@ File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDi
 
 bool loadPSSMFile(ProteinPtr protein, const File& pssmFile)
 {
+  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+  jassert(aminoAcidSequence);
+  ObjectPtr pssm = ObjectStreamPtr(new PSSMFileParser(pssmFile, aminoAcidSequence))->next(); 
+  if (!pssm)
+    return false;
+  protein->setObject(pssm);
   return true;
 }
 
 bool loadDSSPFile(ProteinPtr protein, const File& dsspFile)
-{
-  return true;
-}
+  {return ObjectStreamPtr(new DSSPFileParser(dsspFile, protein))->next();}
 
 bool loadProteinRelatedFile(ProteinPtr protein, const File& file)
 {
@@ -57,8 +63,10 @@ bool loadProteinRelatedFile(ProteinPtr protein, const File& file)
   }
 }
 
-void compileProtein(const std::vector<File>& inputFiles, const File& outputFile)
+bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile)
 {
+  std::cout << "Compile " << outputFile.getFileNameWithoutExtension() << "..." << std::endl;
+
   int proteinIndex = -1;
   for (size_t i = 0; i < inputFiles.size(); ++i)
     if (inputFiles[i].getFileName().endsWith(T(".protein")))
@@ -67,25 +75,26 @@ void compileProtein(const std::vector<File>& inputFiles, const File& outputFile)
   if (proteinIndex < 0)
   {
     Object::error(T("compileProtein"), T("No input protein"));
-    return;
+    return false;
   }
 
   ProteinPtr protein = Protein::createFromFile(inputFiles[proteinIndex]);
   if (!protein)
   {
     Object::error(T("compileProtein"), T("Could not load protein"));
-    return;
+    return false;
   }
   
   for (size_t i = 0; i < inputFiles.size(); ++i)
     if (i != (size_t)proteinIndex)
       if (!loadProteinRelatedFile(protein, inputFiles[i]))
-        return;
+        return false;
 
   protein->saveToFile(outputFile);
+  return true;
 }
 
-void compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
+bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
 {
   std::vector<File> inputFiles;
   inputFiles.push_back(inputFile);
@@ -93,19 +102,22 @@ void compileProtein(const File& inputFile, const std::vector<File>& otherInputDi
   {
     File f = findMatchingFileInOtherDirectory(inputFile, otherInputDirectories[i]);
     if (!f.exists())
-      return;
+      return false;
     inputFiles.push_back(f);
   }
   File outputFile = outputDirectory.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
-  compileProtein(inputFiles, outputFile);
+  return compileProtein(inputFiles, outputFile);
 }
 
 void compileProteins(const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
 {
   OwnedArray<File> inputs;
   mainInputDirectory.findChildFiles(inputs, File::findFiles, false, T("*.protein"));
+  size_t numSuccess = 0;
   for (int i = 0; i < inputs.size(); ++i)
-    compileProtein(*inputs[i], otherInputDirectories, outputDirectory);
+    if (compileProtein(*inputs[i], otherInputDirectories, outputDirectory))
+      ++numSuccess;
+  std::cout << "Succeed to compile " << numSuccess << " / " << inputs.size() << " proteins." << std::endl;
 }
 
 int main(int argc, char* argv[])

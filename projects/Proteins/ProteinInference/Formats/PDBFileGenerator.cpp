@@ -49,13 +49,14 @@ void PDBFileGenerator::consume(ObjectPtr object)
   for (size_t i = 0; i < n; ++i)
   {
     ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
-    for (size_t j = 0; j < residue->getNumAtoms(); ++j)
-    {
-      ProteinAtomPtr atom = residue->getAtom(j);
-      print(makeAtomLine(atomNumber++, atom->getName(), residue->getName(), String::empty,
-        i + 1, atom->getX(), atom->getY(), atom->getZ(), atom->getOccupancy(), atom->getTemperatureFactor(),
-        String::empty, atom->getElementSymbol(), String::empty), true);
-    }
+    if (residue)
+      for (size_t j = 0; j < residue->getNumAtoms(); ++j)
+      {
+        ProteinAtomPtr atom = residue->getAtom(j);
+        print(makeAtomLine(atomNumber++, atom->getName(), residue->getName(), String::empty,
+          i + 1, atom->getX(), atom->getY(), atom->getZ(), atom->getOccupancy(), atom->getTemperatureFactor(),
+          String::empty, atom->getElementSymbol(), String::empty), true);
+      }
   }
 
   print(makeEndLine(), true);
