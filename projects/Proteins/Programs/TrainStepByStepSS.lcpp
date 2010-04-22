@@ -476,7 +476,7 @@ public:
 //               << (int) passNumber << '\n';
 //    oIteration->flush();
     
-    if (getTargetTrainingScore() > bestTrainingScore) {
+    if (iterationNumber && getTargetTrainingScore() > bestTrainingScore) {
       bestTrainingScore = getTargetTrainingScore();
       bestTestingScore = getTargetTestingScore();
     }
@@ -555,6 +555,9 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
+    if (!iterationNumber)
+      return true;
+
     return !stoppingCriterion->shouldOptimizerStop(getTargetTrainingScore());
   }
 
@@ -577,7 +580,7 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    if (getTargetTrainingScore() > bestScore)
+    if (iterationNumber && getTargetTrainingScore() > bestScore)
     {
       File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename);
       inference->saveToFile(dst);
