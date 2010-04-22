@@ -64,6 +64,9 @@ public:
     ScoreVectorSequencePtr pssm = inputProtein->getPositionSpecificScoringMatrix();
     if (pssm)
       workingProtein->setObject(pssm);
+    workingProtein->setObject(inputProtein->getAminoAcidProperty());
+    
+    
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();

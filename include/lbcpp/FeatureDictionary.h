@@ -326,6 +326,9 @@ private:
   DictionariesMap dictionaries;
 };
 
+#define LBCPP_DECLARE_DICTIONARY(ClassName) \
+  lbcpp::FeatureDictionaryManager::getInstance().addDictionary(ClassName::getInstance())
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_STRING_DICTIONARY_H_

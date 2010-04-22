@@ -92,3 +92,32 @@ OrderDisorderDictionary::OrderDisorderDictionary()
   addFeature(T("O"));
   addFeature(T("D"));
 }
+
+/*
+** AminoAcidPropertyDictionary
+*/
+FeatureDictionaryPtr AminoAcidPropertyDictionary::getInstance()
+{
+  static FeatureDictionaryPtr instance = new AminoAcidPropertyDictionary();
+  return instance;
+}
+
+AminoAcidPropertyDictionary::AminoAcidPropertyDictionary()
+: FeatureDictionary(T("AminoAcidProperty"), new StringDictionary(T("AminoAcidProperty features")), StringDictionaryPtr())
+{
+  // Hydrophobicity
+  addFeature(T("KyteDoolittle"));
+  addFeature(T("HoppWoods"));
+  addFeature(T("Cornette"));
+  addFeature(T("Eisenberg"));
+  addFeature(T("Rose"));
+  addFeature(T("Janin"));
+  addFeature(T("Engelman"));
+  
+  // Sequence complexity
+  //addFeature(T("K2Entropy"));
+  
+  // IUPPropensity
+  addFeature(T("RussellLinding"));
+  addFeature(T("DeleageRoux"));
+}
