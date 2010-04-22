@@ -1,15 +1,24 @@
 FIND_PACKAGE(OpenGL REQUIRED)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
+SET(JUCE_ADDITIONAL_SOURCES
+  ConsoleProcess.h
+  ConsoleProcess.cpp
+  Win32ConsoleProcess.h
+  PosixConsoleProcess.h
+)
+
 IF(APPLE)
   SET(JUCE_SOURCES
     juce_amalgamated.h
     juce_amalgamated.mm
+    ${JUCE_ADDITIONAL_SOURCES}
   )
 ELSE(APPLE)
   SET(JUCE_SOURCES
     juce_amalgamated.h
     juce_amalgamated.cpp
+    ${JUCE_ADDITIONAL_SOURCES}
   )
 ENDIF(APPLE)
 

@@ -11,6 +11,8 @@
 
 # include "../InferenceData/LabelSequence.h"
 # include "../InferenceData/ScoreVectorSequence.h"
+# include "../InferenceData/CartesianCoordinatesSequence.h"
+# include "../InferenceData/BondCoordinatesSequence.h"
 # include "../InferenceData/ScoreSymmetricMatrix.h"
 # include "ProteinTertiaryStructure.h"
 
@@ -30,6 +32,9 @@ public:
   static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
   static ProteinPtr createFromFASTA(const File& fastaFile);
   static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
+  
+  static ProteinPtr createFromFile(const File& proteinFile)
+    {return Object::createFromFileAndCast<Protein>(proteinFile);}
 
   void saveToFASTAFile(const File& fastaFile);
   void saveToPDBFile(const File& pdbFile);

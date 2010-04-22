@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
+#include "../../juce/ConsoleProcess.h"
 #include "../ProteinInference/Protein.h"
 using namespace lbcpp;
 
@@ -18,6 +19,7 @@ using juce::ThreadPoolJob;
 using juce::ThreadPool;
 using juce::OwnedArray;
 using juce::Thread;
+using juce::ConsoleProcess;
 
 class ComputePSSMThreadPoolJob : public ThreadPoolJob
 {
@@ -27,19 +29,44 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinPtr protein = Object::createFromFileAndCast<Protein>(inputFile);
+    ProteinPtr protein = Protein::createFromFile(inputFile);
     if (!protein)
       return jobHasFinished;
     
     File fastaFile = File::createTempFile(T("fasta"));
     protein->saveToFASTAFile(fastaFile);
 
-    String commandArguments = T("-db nr -out_ascii_pssm ") + outputFile.getFullPathName() + T(" -num_iterations 3 -query ") + fastaFile.getFullPathName();
+    if (outputFile.exists())
+      outputFile.deleteFile();
+
+    String commandArguments = T(" -db nr -num_iterations 3 -query ") + fastaFile.getFullPathName().quoted() + T(" -out_ascii_pssm ") + outputFile.getFullPathName().quoted();
     std::cout << "psiblast " << commandArguments << std::endl;
-    psiBlastExecutable.startAsProcess(commandArguments);
-    std::cout << "psiblast " << commandArguments << " => finished" << std::endl;
+    ConsoleProcess* process = ConsoleProcess::create(psiBlastExecutable.getFullPathName(), commandArguments, File::getCurrentWorkingDirectory().getFullPathName());
+    if (!process)
+      return jobHasFinished;
+   
+    int returnCode;
+    while (!shouldExit())
+    {
+      String str;
+      bool nothingToRead = !process->readStandardOutput(str);
+      if (str.isNotEmpty())
+        std::cout << "+" << std::flush;
+
+      if (!process->isRunning(returnCode))
+      {
+        delete process;
+        break;
+      }
+      if (!nothingToRead)
+      {
+        std::cout << "." << std::flush;
+        Thread::sleep(500);
+      }
+    }
+
+    std::cout << "psiblast " << commandArguments << " => finished, return code = " << returnCode << std::endl;
     fastaFile.deleteFile();
-    exit(1);
     return jobHasFinished;
   }
 
@@ -63,7 +90,7 @@ void computePSSMs(const File& inputDirectory, const File& outputDirectory, int n
   while (threadPool.getNumJobs() > 0)
   {
     std::cout << "Num jobs running or queued: " << threadPool.getNumJobs() << std::endl;
-    Thread::sleep(1000);
+    Thread::sleep(5000);
   }
 }
 
@@ -93,8 +120,8 @@ int main(int argc, char* argv[])
     return 1;
   }
  
-  int numCpus = 1;//juce::SystemStats::getNumCpus();
+  int numCpus = juce::SystemStats::getNumCpus();
   std::cout << numCpus << " CPUs" << std::endl;
-  computePSSMs(inputDir, outputDir, numCpus);
+  computePSSMs(inputDir, outputDir, juce::jmax(1, numCpus - 1));
   return 0;
 }

@@ -56,9 +56,9 @@ int main()
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
 
     CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
-    FloryGeneralizedCoordinatesSequencePtr calphaTraceGC = new FloryGeneralizedCoordinatesSequence(T("Pouet"), calphaTrace);
+    BondCoordinatesSequencePtr calphaTraceGC = new BondCoordinatesSequence(T("Pouet"), calphaTrace);
     CartesianCoordinatesSequencePtr reconstructedCalphaTrace = calphaTraceGC->createCartesianCoordinates(T("Reconstructed"));
-    FloryGeneralizedCoordinatesSequencePtr calphaTraceGC2 = new FloryGeneralizedCoordinatesSequence(T("Pouet"), reconstructedCalphaTrace);
+    BondCoordinatesSequencePtr calphaTraceGC2 = new BondCoordinatesSequence(T("Pouet"), reconstructedCalphaTrace);
 
     for (size_t i = 0; i < 10; ++i)
     {
