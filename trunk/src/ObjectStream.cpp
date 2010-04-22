@@ -153,7 +153,7 @@ ObjectPtr TextObjectParser::next()
   
   while (!istr->isExhausted()/* && !parsingBreaked*/)
   {
-    String line = istr->readNextLine().trim();
+    String line = istr->readNextLine();
     if (!parseLine(line))
     {
       Object::error(T("TextParserObjectStream::parse"), T("Could not parse line '") + line + T("'"));

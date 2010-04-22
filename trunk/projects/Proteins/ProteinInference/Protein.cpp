@@ -8,8 +8,10 @@
 #include "Protein.h"
 #include "AminoAcidDictionary.h"
 #include "SecondaryStructureDictionary.h"
-#include "PDBFileParser.h"
-#include "PDBFileGenerator.h"
+#include "Formats/FASTAFileParser.h"
+#include "Formats/FASTAFileGenerator.h"
+#include "Formats/PDBFileParser.h"
+#include "Formats/PDBFileGenerator.h"
 
 using namespace lbcpp;
 
@@ -33,49 +35,6 @@ ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String
   res->setObject(aminoAcidSequence);
   return res;
 }
-
-class FASTAFileParser : public TextObjectParser
-{
-public:
-  FASTAFileParser(const File& file)
-    : TextObjectParser(file) {}
-  
-  virtual void parseBegin()
-    {}
-
-  virtual bool parseLine(const String& line)
-  {
-    String str = line.trim();
-    if (str.isEmpty())
-      return true;
-    if (str[0] == '>')
-    {
-      flush();
-      currentName = str.substring(1);
-    }
-    else
-      currentAminoAcidSequence = str;
-    return true;
-  }
-  
-  virtual bool parseEnd()
-  {
-    flush();
-    return true;
-  }
-  
-private:
-  String currentName;
-  String currentAminoAcidSequence;
-  
-  void flush()
-  {
-    if (currentName.isNotEmpty() && currentAminoAcidSequence.isNotEmpty())
-      setResult(Protein::createFromAminoAcidSequence(currentName, currentAminoAcidSequence));
-    currentName = String::empty;
-    currentAminoAcidSequence = String::empty;
-  }
-};
 
 ProteinPtr Protein::createFromFASTA(const File& fastaFile)
 {
@@ -121,26 +80,6 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
 
 void Protein::saveToPDBFile(const File& pdbFile)
   {ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));}
-
-class FASTAFileGenerator : public TextObjectPrinter
-{
-public:
-  FASTAFileGenerator(const File& file)
-    : TextObjectPrinter(file) {}
-
-  virtual void consume(ObjectPtr object)
-  {
-    ProteinPtr protein = object.dynamicCast<Protein>();
-    jassert(protein);
-    print(T(">") + protein->getName(), true);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    jassert(aminoAcidSequence);
-    String aa = aminoAcidSequence->toString();
-    jassert(aa.length() == aminoAcidSequence->size());
-    print(aa, true);
-  }
-};
-
 
 void Protein::saveToFASTAFile(const File& fastaFile)
   {ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinPtr(this));}

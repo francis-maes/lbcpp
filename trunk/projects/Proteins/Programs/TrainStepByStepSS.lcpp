@@ -14,7 +14,7 @@
 #include "ProteinInference/ProteinEvaluationCallback.h"
 #include "ProteinInference/ProteinInference.h"
 #include "Programs/ArgumentSet.h"
-#include "Programs/PSSMParser.h"
+#include "ProteinInference/Formats/PSSMFileParser.h"
 #include "Programs/AAIndexParser.h"
 
 using namespace lbcpp;
@@ -722,7 +722,7 @@ int main(int argc, char** argv)
       continue;
     }
     
-    ObjectPtr newPSSM = ObjectStreamPtr(new PSSMParser(pssmFile, myProtein->getLength()))->next();
+    ObjectPtr newPSSM = ObjectStreamPtr(new PSSMFileParser(pssmFile, myProtein->getLength()))->next(); 
     jassert(newPSSM);
     myProtein->setObject(newPSSM);
   

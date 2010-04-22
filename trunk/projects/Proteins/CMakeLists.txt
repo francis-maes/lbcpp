@@ -86,6 +86,8 @@ SET(LBCPP_PROTEIN_FORMATS_SOURCES
   ProteinInference/Formats/OrderDisorderRegionCASPFileGenerator.h
   ProteinInference/Formats/ResidueResidueDistanceCASPFileGenerator.h
   ProteinInference/Formats/TertiaryStructureCASPFileGenerator.h
+  ProteinInference/Formats/PSSMFileParser.h
+  ProteinInference/Formats/DSSPFileParser.h
 )
 
 SET(PROTEINS_CPP_SOURCES
