@@ -65,6 +65,7 @@ public:
   static const juce::tchar* threeLettersCodes[];
 
   static Type getTypeFromThreeLettersCode(const String& threeLettersCode);
+  static Type getTypeFromOneLetterCode(const juce::juce_wchar oneLetterCode);
   static const String getThreeLettersCode(Type aminoAcidType);
 
 private:
