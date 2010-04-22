@@ -9,8 +9,8 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 # define LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 
-# include "Protein.h"
-# include "../InferenceContext/InferenceCallback.h"
+# include "../Protein.h"
+# include "../../InferenceContext/InferenceCallback.h"
 
 namespace lbcpp
 {

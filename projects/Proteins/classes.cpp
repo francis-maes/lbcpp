@@ -47,7 +47,7 @@ void declareInferenceClasses()
 
 #include "Protein/ProteinTertiaryStructure.h"
 #include "Protein/Protein.h"
-#include "Protein/ProteinInference.h"
+#include "Protein/InferenceStep/ProteinInference.h"
 #include "Protein/AminoAcidDictionary.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
