@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 # define LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 
-# include "Protein.h"
+# include "../Protein.h"
 
 namespace lbcpp
 {
