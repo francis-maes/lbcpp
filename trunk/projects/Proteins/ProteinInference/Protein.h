@@ -31,6 +31,7 @@ public:
   static ProteinPtr createFromFASTA(const File& fastaFile);
   static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
 
+  void saveToFASTAFile(const File& fastaFile);
   void saveToPDBFile(const File& pdbFile);
 
   /*

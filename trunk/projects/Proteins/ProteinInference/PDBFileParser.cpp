@@ -121,11 +121,12 @@ bool PDBFileParser::parseSeqResLine(const String& line)
   LabelSequencePtr aminoAcidSequence;
 
   // create protein if not done yet
-  ProteinPtr protein = proteins[chainID];
+  Chain& chain = chains[chainID];
+  ProteinPtr protein = chain.protein;
   if (!protein)
   {
     jassert(serialNumber == 1);
-    protein = (proteins[chainID] = new Protein(proteinName));
+    chain.protein = protein = new Protein(proteinName);
     aminoAcidSequence = new LabelSequence(T("AminoAcidSequence"), AminoAcidDictionary::getInstance());
     protein->setObject(aminoAcidSequence);
     currentSeqResSerialNumber = serialNumber;
@@ -141,8 +142,6 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     }
     aminoAcidSequence = protein->getAminoAcidSequence();
   }
-
- 
 
   // parse amino acids
   for (size_t i = 0; i < numAminoAcidsPerLine; ++i)
@@ -200,18 +199,22 @@ bool PDBFileParser::parseAtomLine(const String& line)
   String residueName = getSubString(line, 18, 20);
 
   // retrieve/create protein from chain id
-  ProteinPtr protein = getProteinFromChainId(line, 22);
-  if (!protein)
+  Chain* chain = getChain(line, 22);
+  ProteinPtr protein;
+  if (chain)
+    protein = chain->protein;
+  else
   {
     if (!beTolerant)
       return true; // skip all chains that do not have a corresponding SEQRES section
-
     char chainId;
     if (!getChainId(line, 22, chainId))
       return false;
     if (skippedChains.find(chainId) != skippedChains.end())
       return true; // skip this chain
-    protein = (proteins[chainId] = new Protein(proteinName));
+
+    chain = &chains[chainId]; // create a new chain
+    protein = (chain->protein = new Protein(proteinName));
   }
 
   // parse residue sequence number and insertion code
@@ -220,12 +223,10 @@ bool PDBFileParser::parseAtomLine(const String& line)
   if (!getInteger(line, 23, 26, residueSequenceNumber) || !getChar(line, 27, residueInsertionCode))
     return false;
 
-  // create the tertiary structure if not done yet
-  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-  if (!tertiaryStructure)
+  // create a tertiary structure block if not done yet
+  if (!chain->tertiaryStructureBlocks.size())
   {
-    tertiaryStructure = new ProteinTertiaryStructure(0);
-    protein->setObject(tertiaryStructure);
+    chain->tertiaryStructureBlocks.push_back(std::vector<ProteinResiduePtr>());
     currentResidueIndex = 0;
     currentResidueSerialNumber = residueSequenceNumber;
     currentResidueInsertionCode = residueInsertionCode;
@@ -234,18 +235,21 @@ bool PDBFileParser::parseAtomLine(const String& line)
   // update currentResidueIndex
   if (currentResidueSerialNumber != residueSequenceNumber || currentResidueInsertionCode != residueInsertionCode)
   {
-    ++currentResidueIndex;
-/*    if (currentResidueIndex >= protein->getLength())
-    {
-      Object::error(T("PDBFileParser::parseAtomLine"), T("Too many residues"));
-      return false;
-    }*/
-
     if (residueSequenceNumber < currentResidueSerialNumber)
     {
       Object::error(T("PDBFileParser::parseAtomLine"), T("Residue sequence number are misordered"));
       return false;
     }
+
+    if (residueSequenceNumber > currentResidueSerialNumber + 1)
+    {
+      // non contiguous, start a new tertiaryStructureBlock
+      chain->tertiaryStructureBlocks.push_back(std::vector<ProteinResiduePtr>());
+      currentResidueIndex = 0;
+    }
+    else
+      ++currentResidueIndex; // contiguous, just increment the current residue index
+
     currentResidueSerialNumber = residueSequenceNumber;
     currentResidueInsertionCode = residueInsertionCode;
   }
@@ -260,9 +264,11 @@ bool PDBFileParser::parseAtomLine(const String& line)
 
   // retrieve residue or create a new one
   ProteinResiduePtr residue;
-  if (currentResidueIndex < tertiaryStructure->size())
+  jassert(chain->tertiaryStructureBlocks.size());
+  std::vector<ProteinResiduePtr>& tertiaryStructureBlock = chain->tertiaryStructureBlocks.back();
+  if (currentResidueIndex < tertiaryStructureBlock.size())
   {
-    residue = tertiaryStructure->getResidue(currentResidueIndex);
+    residue = tertiaryStructureBlock[currentResidueIndex];
     if (residue->getAminoAcid() != aminoAcid)
     {
       Object::error(T("PDBFileParser::parseAtomLine"), T("Unconsistent residue name: ") + lbcpp::toString(residueName));
@@ -271,24 +277,10 @@ bool PDBFileParser::parseAtomLine(const String& line)
   }
   else
   {
-    // check previous residue if it exists
-    if (tertiaryStructure->size())
-    {
-      ProteinResiduePtr residue = tertiaryStructure->getLastResidue();
-      if (!residue->getCAlphaAtom())
-      {
-        Object::error(T("PDBFileParser::parseAtomLine"), T("Missing C-alpha atom in residue ") + residue->getName());
-        return false;
-      }
-      bool hasOnlyCAlpha = residue->getNumAtoms() == 1;
-      if (!hasOnlyCAlpha && (!residue->getCarbonAtom() || !residue->getNitrogenAtom()))
-      {
-        Object::error(T("PDBFileParser::parseAtomLine"), T("Missing carbon or nitrogen atom in residue ") + residue->getName());
-        return false;
-      }
-    }
+    if (tertiaryStructureBlock.size() && !checkResidueConsistency(tertiaryStructureBlock.back()))
+      return false;
     residue = new ProteinResidue(aminoAcid);
-    tertiaryStructure->append(residue);
+    tertiaryStructureBlock.push_back(residue);
   }
 
   // create atom
@@ -318,17 +310,19 @@ bool PDBFileParser::parseTerLine(const String& line)
     return false;
 
   // retrieve protein from chain id
-  ProteinPtr protein = getProteinFromChainId(line, 22);
-  if (!protein)
+  Chain* chain = getChain(line, 22);
+  if (!chain)
     return true; // skip this chain
+  ProteinPtr protein = chain->protein;
+  jassert(protein);
 
-  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-  if (!tertiaryStructure || !tertiaryStructure->size())
+  if (!chain->tertiaryStructureBlocks.size())
   {
     Object::error(T("PDBFileParser::parseTerLine"), T("No tertiary structure"));
     return false;
   }
-  
+ 
+/*
   // parse residue sequence number and insertion code
   int residueSequenceNumber;
   char residueInsertionCode;
@@ -338,10 +332,12 @@ bool PDBFileParser::parseTerLine(const String& line)
       currentResidueInsertionCode == residueInsertionCode)
   {
     // remove the last residue if it is not complete
-    ProteinResiduePtr lastResidue = tertiaryStructure->getLastResidue();
-    if (!lastResidue->getCAlphaAtom())
-      tertiaryStructure->resize(tertiaryStructure->size() - 1);
+    std::vector<ProteinResiduePtr>& lastBlock = chain->tertiaryStructureBlocks.back();
+    ProteinResiduePtr lastResidue = lastBlock.size() ? lastBlock.back() : ProteinResiduePtr();
+    if (lastResidue && !lastResidue->getCAlphaAtom())
+      lastBlock.pop_back();
   }
+*/
 
   currentResidueSerialNumber = 0;
   currentResidueInsertionCode = (char)0;
@@ -355,13 +351,13 @@ bool PDBFileParser::parseHetAtomLine(const String& line)
   return true;
 }
 
-ProteinPtr PDBFileParser::getProteinFromChainId(const String& line, int column)
+PDBFileParser::Chain* PDBFileParser::getChain(const String& line, int column)
 {
   char chainId;
   if (!getChainId(line, 22, chainId))
     return false;
-  ProteinMap::const_iterator it = proteins.find(chainId);
-  return it == proteins.end() ? ProteinPtr() : it->second;
+  ChainMap::iterator it = chains.find(chainId);
+  return it == chains.end() ? NULL : &it->second;
 }
 
 bool PDBFileParser::parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn)
@@ -378,38 +374,134 @@ bool PDBFileParser::parseAndCheckAtomSerialNumber(const String& line, int firstC
   return true;
 }
 
+static String tertiaryStructureBlockToAminoAcidString(const std::vector<ProteinResiduePtr>& residues)
+{
+  String res;
+  for (size_t i = 0; i < residues.size(); ++i)
+    res += AminoAcidDictionary::getInstance()->getFeature((size_t)residues[i]->getAminoAcid());
+  jassert(res.length() == residues.size());
+  return res;
+}
+
+bool PDBFileParser::checkResidueConsistency(ProteinResiduePtr residue)
+{
+  if (!residue->getCAlphaAtom())
+  {
+    Object::error(T("PDBFileParser::checkResidueConsistency"), T("Missing C-alpha atom in residue ") + residue->getName());
+    return false;
+  }
+  bool hasOnlyCAlpha = residue->getNumAtoms() == 1;
+  if (!hasOnlyCAlpha && (!residue->getCarbonAtom() || !residue->getNitrogenAtom()))
+  {
+    Object::error(T("PDBFileParser::checkResidueConsistency"), T("Missing carbon or nitrogen atom in residue ") + residue->getName());
+    return false;
+  }
+  return true;
+}
+
+ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResiduePtr> >& tertiaryStructureBlocks)
+{
+  if (!tertiaryStructureBlocks.size())
+  {
+    Object::error(T("PDBFileParser::finalizeChain"), T("No tertiary structure for chain ") + lbcpp::toString(chainId));
+    return ProteinTertiaryStructurePtr();
+  }
+  
+  ProteinTertiaryStructurePtr tertiaryStructure;
+  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+  if (aminoAcidSequence)
+  {
+    size_t n = aminoAcidSequence->size();
+    tertiaryStructure = new ProteinTertiaryStructure(n);
+
+    String primaryAminoAcids = aminoAcidSequence->toString();
+    jassert(primaryAminoAcids.length() == n);
+
+    // align each tertiary structure block with the primary sequence and fill the corresponding part of the tertiary structure
+    int lastIndex = 0;
+    for (size_t i = 0; i < tertiaryStructureBlocks.size(); ++i)
+    {
+      String blockAminoAcids = tertiaryStructureBlockToAminoAcidString(tertiaryStructureBlocks[i]);
+      int index = primaryAminoAcids.indexOf(lastIndex, blockAminoAcids);
+      if (index < 0)
+      {
+        Object::error(T("PDBFileParser::finalizeChain"), T("Could not align tertiary structure block with primary structure"));
+        return ProteinTertiaryStructurePtr();
+      }
+      const std::vector<ProteinResiduePtr>& residues = tertiaryStructureBlocks[i];
+      jassert(index <= (int)(tertiaryStructure->size() - residues.size()));
+      for (size_t j = 0; j < residues.size(); ++j)
+        tertiaryStructure->setResidue((size_t)(index + j), residues[j]);
+      lastIndex = index + blockAminoAcids.length();
+    }
+  }
+  else
+  {
+    // no specified primary sequence => create the primary sequence from the tertiary structure
+    if (tertiaryStructureBlocks.size() > 1)
+    {
+      Object::error(T("PDBFileParser::finalizeChain"), T("Non contiguous tertiary structure blocks without primary structure"));
+      return ProteinTertiaryStructurePtr();
+    }
+    size_t n = tertiaryStructureBlocks[0].size();
+    tertiaryStructure = new ProteinTertiaryStructure(n);
+    for (size_t i = 0; i < n; ++i)
+      tertiaryStructure->setResidue(i, tertiaryStructureBlocks[0][i]);
+    aminoAcidSequence = tertiaryStructure->createAminoAcidSequence();
+    protein->setObject(aminoAcidSequence);
+  }
+  protein->setObject(tertiaryStructure);
+
+  if (!beTolerant)
+    tertiaryStructure->pruneResiduesThatDoNotHaveCompleteBackbone();
+  if (!tertiaryStructure->getNumSpecifiedResidues())
+  {
+    Object::error(T("PDBFileParser::finalizeChain"), T("Not any complete residue in tertiary structure"));
+    return ProteinTertiaryStructurePtr();
+  }
+
+  String failureReason;
+  if (!tertiaryStructure->isConsistent(failureReason))
+  {
+    if (beTolerant)
+      Object::warning(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
+    else
+    {
+      Object::error(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
+      return ProteinTertiaryStructurePtr();
+    }
+  }
+  return tertiaryStructure;
+}
+
 bool PDBFileParser::parseEnd()
 {
-  if (!proteins.size())
+  if (!chains.size())
   {
-    Object::error(T("PDBFileParser::parseEnd"), T("No proteins PDB file"));
+    Object::error(T("PDBFileParser::parseEnd"), T("No chains in PDB file"));
     return false;
   }
 
-  for (ProteinMap::const_iterator it = proteins.begin(); it != proteins.end(); ++it)
+  for (ChainMap::const_iterator it = chains.begin(); it != chains.end(); ++it)
   {
-    ProteinPtr protein = it->second;
-    ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-    if (!tertiaryStructure || !tertiaryStructure->size())
-    {
-      Object::error(T("PDBFileParser::parseEnd"), T("No tertiary structure for chain ") + lbcpp::toString(it->first));
+    ProteinPtr protein = it->second.protein;
+    ProteinTertiaryStructurePtr tertiaryStructure = finalizeChain(it->first, protein, it->second.tertiaryStructureBlocks);
+    if (!tertiaryStructure)
       return false;
-    }
-    String failureReason;
-    if (!tertiaryStructure->isConsistent(failureReason))
-    {
-      if (beTolerant)
-        Object::warning(T("PDBFileParser::parseEnd"), T("Tertiary structure is not consistent: ") + failureReason);
-      else
-      {
-        Object::error(T("PDBFileParser::parseEnd"), T("Tertiary structure is not consistent: ") + failureReason);
-        return false;
-      }
-    }
+    protein->setObject(tertiaryStructure);
   }
 
-  setResult(proteins.begin()->second);
+  setResult(chains.begin()->second.protein);
   return true;
+}
+
+std::vector<ProteinPtr> PDBFileParser::getAllChains() const
+{
+  std::vector<ProteinPtr> res;
+  res.reserve(chains.size());
+  for (ChainMap::const_iterator it = chains.begin(); it != chains.end(); ++it)
+    res.push_back(it->second.protein);
+  return res;
 }
 
 String PDBFileParser::getSubString(const String& line, int firstColumn, int lastColumn)
@@ -471,7 +563,7 @@ bool PDBFileParser::getChainId(const String& line, int column, char& res) const
 {
   if (!getChar(line, column, res))
     return false;
-  if (res == ' ' && proteins.size() > 1)
+  if (res == ' ' && chains.size() > 1)
   {
     Object::error(T("PDBFileParser::getChainId"), T("Empty chain ID"));
     return false;

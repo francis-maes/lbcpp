@@ -263,6 +263,18 @@ public:
   double getDistanceBetweenAtoms(const String& name1, const String& name2) const;
   double getDistanceBetweenAtoms(const String& name1, ProteinResiduePtr residue2, const String& name2) const;
 
+  bool hasCAlphaAtom() const
+    {return getCAlphaAtom();}
+
+  bool hasOnlyCAlphaAtom() const
+    {return atoms.size() && hasCAlphaAtom();}
+
+  bool hasCompleteBackbone() const
+    {return getCAlphaAtom() && getNitrogenAtom() && getCarbonAtom();}
+
+  bool isCBetaAtomMissing() const
+    {return aminoAcid != AminoAcidDictionary::glycine && !getCBetaAtom();}
+
 protected:
   AminoAcidDictionary::Type aminoAcid;
   std::vector<ProteinAtomPtr> atoms;
@@ -314,6 +326,9 @@ public:
 
   bool hasOnlyCAlphaAtoms() const;
   bool isConsistent(String& failureReason) const;
+
+  void pruneResiduesThatDoNotHaveCompleteBackbone();
+  size_t getNumSpecifiedResidues() const;
 
 private:
   std::vector<ProteinResiduePtr> residues;

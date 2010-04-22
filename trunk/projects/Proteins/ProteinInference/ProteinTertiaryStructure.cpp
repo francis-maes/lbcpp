@@ -41,8 +41,11 @@ ProteinDihedralAnglesPtr ProteinDihedralAngles::createDihedralAngles(ProteinTert
   {
     ProteinResiduePtr nextResidue = i < (n - 1) ? tertiaryStructure->getResidue(i + 1) : ProteinResiduePtr();
     DihedralAngle phi, psi;
-    computeDihedralAngles(previousResidue, residue, nextResidue, phi, psi);
-    res->setAnglesPair(i, phi, psi);
+    if (residue)
+    {
+      computeDihedralAngles(previousResidue, residue, nextResidue, phi, psi);
+      res->setAnglesPair(i, phi, psi);
+    }
     previousResidue = residue;
     residue = nextResidue;
   }
@@ -165,6 +168,8 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCAlphaTrace() co
   for (size_t i = 0; i < n; ++i)
   {
     ProteinResiduePtr residue = getResidue(i);
+    if (!residue)
+      continue; // FIXME: CartesianCoordinatesSequencePtr must support NULL values
     ProteinAtomPtr atom = residue->getCAlphaAtom();
     if (!atom)
     {
@@ -184,23 +189,23 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCBetaTrace() con
   for (size_t i = 0; i < n; ++i)
   {
     ProteinResiduePtr residue = getResidue(i);
+    if (!residue)
+      continue; // FIXME: CartesianCoordinatesSequencePtr must support NULL values
+    if (residue->isCBetaAtomMissing())
+    {
+      Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
+        T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
+      return CartesianCoordinatesSequencePtr();
+    }
+    if (!residue->hasCAlphaAtom())
+    {
+      Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
+        T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
+      return CartesianCoordinatesSequencePtr();
+    }
     ProteinAtomPtr atom = residue->getCBetaAtom();
     if (!atom)
-    {
-      if (residue->getAminoAcid() != AminoAcidDictionary::glycine)
-      {
-        Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
-          T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-        return CartesianCoordinatesSequencePtr();
-      }
       atom = residue->getCAlphaAtom();
-      if (!atom)
-      {
-        Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
-          T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-        return CartesianCoordinatesSequencePtr();
-      }
-    }
     jassert(atom);
     res->setPosition(i, atom->getPosition());
   }
@@ -264,8 +269,11 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(L
 bool ProteinTertiaryStructure::hasOnlyCAlphaAtoms() const
 {
   for (size_t i = 0; i < residues.size(); ++i)
-    if (residues[i]->getNumAtoms() > 1 || residues[i]->getAtom(0)->getName() != T("CA"))
+  {
+    ProteinResiduePtr residue = residues[i];
+    if (residue && (residue->getNumAtoms() > 1 || residue->getAtom(0)->getName() != T("CA")))
       return false;
+  }
   return true;
 }
 
@@ -278,9 +286,12 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
   {
     String position = T(" at position ") + lbcpp::toString(i + 1);
     ProteinResiduePtr residue = residues[i];
-    if (!residue || !residue->getNumAtoms())
+    if (!residue)
+      continue;
+
+    if (!residue->getNumAtoms())
     {
-      failureReason = T("Empty residue") + position + T("\n");
+      failureReason += T("Empty residue") + position + T("\n");
       res = false;
     }
     ProteinResiduePtr nextResidue = i < residues.size() - 1 ? residues[i + 1] : ProteinResiduePtr();
@@ -290,13 +301,13 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
       double d = residue->getDistanceBetweenAtoms(T("N"), T("CA"));
       if (d < 1.0 || d > 2.0)
       {
-        failureReason = T("Suspect N--CA distance: ") + lbcpp::toString(d) + position + T("\n");
+        failureReason += T("Suspect N--CA distance: ") + lbcpp::toString(d) + position + T("\n");
         res = false;
       }
       d = residue->getDistanceBetweenAtoms(T("CA"), T("C"));
       if (d < 1.0 || d > 2.0)
       {
-        failureReason = T("Suspect CA--C distance: ") + lbcpp::toString(d) + position + T("\n");
+        failureReason += T("Suspect CA--C distance: ") + lbcpp::toString(d) + position + T("\n");
         res = false;
       }
       if (nextResidue)
@@ -304,11 +315,30 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
         double d = residue->getDistanceBetweenAtoms(T("C"), nextResidue, T("N"));
         if (d < 1.0 || d > 2.0)
         {
-          failureReason = T("Suspect C--N distance: ") + lbcpp::toString(d) + position + T("\n");
+          failureReason += T("Suspect C--N distance: ") + lbcpp::toString(d) + position + T("\n");
           res = false;
         }
       }
     }
   }
+  return res;
+}
+
+void ProteinTertiaryStructure::pruneResiduesThatDoNotHaveCompleteBackbone()
+{
+  for (size_t i = 0; i < residues.size(); ++i)
+    if (residues[i] && (!residues[i]->hasCompleteBackbone() || residues[i]->isCBetaAtomMissing()))
+    {
+      std::cout << "Prune incomplete residue " << i << std::endl;
+      residues[i] = ProteinResiduePtr();
+    }
+}
+
+size_t ProteinTertiaryStructure::getNumSpecifiedResidues() const
+{
+  size_t res = 0;
+  for (size_t i = 0; i < residues.size(); ++i)
+    if (residues[i])
+      ++res;
   return res;
 }
