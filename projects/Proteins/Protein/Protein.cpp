@@ -97,6 +97,35 @@ void Protein::computeMissingFields()
       (T("SecondaryStructureSequence"), dsspSecondaryStructureSequence));
 }
 
+ObjectPtr Protein::createEmptyObject(const String& name) const
+{
+  size_t n = getLength();
+
+  if (name == T("AminoAcidSequence"))
+    return new LabelSequence(name, AminoAcidDictionary::getInstance(), n);
+  else if (name == T("PositionSpecificScoringMatrix"))
+    return new ScoreVectorSequence(name, AminoAcidDictionary::getInstance(), n, AminoAcidDictionary::numAminoAcids);
+  else if (name == T("SecondaryStructureSequence"))
+    return new LabelSequence(name, SecondaryStructureDictionary::getInstance(), n);
+  else if (name == T("DSSPSecondaryStructureSequence"))
+    return new LabelSequence(name, DSSPSecondaryStructureDictionary::getInstance(), n);
+  else if (name == T("SolventAccessibilitySequence"))
+    return new LabelSequence(name, SolventAccesibility2StateDictionary::getInstance(), n);
+  else if (name == T("OrderDisorderSequence"))
+    return new LabelSequence(name, OrderDisorderDictionary::getInstance(), n);
+  else if (name == T("OrderDisorderScoreSequence"))
+    return new ScoreVectorSequence(name, OrderDisorderDictionary::getInstance(), n);
+  else if (name == T("ResidueResidueContactProbabilityMatrix"))
+    return new ScoreSymmetricMatrix(name, n, 0.5);
+  else if (name == T("TertiaryStructure"))
+    return new ProteinTertiaryStructure(n);
+  else
+  {
+    jassert(false);
+    return ObjectPtr();
+  }
+}
+
 size_t Protein::getLength() const
   {return getAminoAcidSequence()->size();}
 

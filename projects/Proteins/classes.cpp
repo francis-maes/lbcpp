@@ -47,13 +47,19 @@ void declareInferenceClasses()
 
 #include "Protein/ProteinTertiaryStructure.h"
 #include "Protein/Protein.h"
-#include "Protein/InferenceStep/ProteinInference.h"
 #include "Protein/AminoAcidDictionary.h"
 #include "Protein/SecondaryStructureDictionary.h"
+
+#include "Protein/Inference/ProteinSequenceLabelingInferenceStep.h"
+#include "Protein/Inference/PositionSpecificScoringMatrixInferenceStep.h"
+#include "Protein/Inference/ProteinInference.h"
+
+extern void declareProteinResidueFeaturesClasses();
 
 void declareProteinClasses()
 {
   declareInferenceClasses();
+  declareProteinResidueFeaturesClasses();
 
   LBCPP_DECLARE_CLASS(ProteinDihedralAngles);
   LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
@@ -62,8 +68,12 @@ void declareProteinClasses()
   LBCPP_DECLARE_CLASS(ProteinTertiaryStructure);
 
   LBCPP_DECLARE_CLASS(Protein);
-  LBCPP_DECLARE_CLASS(ProteinInference);
 
+  LBCPP_DECLARE_CLASS(ProteinSequenceLabelingInferenceStep);
+  LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
+  LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
+
+  LBCPP_DECLARE_CLASS(ProteinInference);
 
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);
