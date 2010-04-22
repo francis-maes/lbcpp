@@ -23,6 +23,9 @@ public:
   ParallelSequenceLabelingInferenceStep()
     {}
 
+  void setLabels(FeatureDictionaryPtr labels)
+    {getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>()->setLabels(labels);}
+
   virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
 
   virtual size_t getNumSubInferences(ObjectPtr input) const

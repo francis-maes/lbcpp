@@ -84,6 +84,19 @@ void Protein::saveToPDBFile(const File& pdbFile)
 void Protein::saveToFASTAFile(const File& fastaFile)
   {ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinPtr(this));}
 
+void Protein::computeMissingFields()
+{
+  LabelSequencePtr aminoAcidSequence = getAminoAcidSequence();
+  if (!aminoAcidSequence)
+    return;
+
+  LabelSequencePtr secondaryStructureSequence = getSecondaryStructureSequence();
+  LabelSequencePtr dsspSecondaryStructureSequence = getDSSPSecondaryStructureSequence();
+  if (dsspSecondaryStructureSequence && !secondaryStructureSequence)
+    setObject(secondaryStructureSequence = SecondaryStructureDictionary::createSequenceFromDSSPSequence
+      (T("SecondaryStructureSequence"), dsspSecondaryStructureSequence));
+}
+
 size_t Protein::getLength() const
   {return getAminoAcidSequence()->size();}
 

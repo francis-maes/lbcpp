@@ -38,6 +38,18 @@ SecondaryStructureDictionary::Type SecondaryStructureDictionary::getIndexFromDSS
   return other;
 }
 
+LabelSequencePtr SecondaryStructureDictionary::createSequenceFromDSSPSequence(const String& name, LabelSequencePtr dsspSequence)
+{
+  jassert(dsspSequence->getDictionary() == DSSPSecondaryStructureDictionary::getInstance());
+  size_t n = dsspSequence->size();
+
+  LabelSequencePtr res = new LabelSequence(name, getInstance(), n);
+  for (size_t i = 0; i < n; ++i)
+    if (dsspSequence->get(i))
+      res->setIndex(i, (size_t)getIndexFromDSSPElement(dsspSequence->getString(i)));
+  return res;
+}
+
 /*
 ** DSSPSecondaryStructure
 */

@@ -39,6 +39,8 @@ public:
   void saveToFASTAFile(const File& fastaFile);
   void saveToPDBFile(const File& pdbFile);
 
+  void computeMissingFields();
+
   /*
   ** Primary Structure, Position Specific Scoring Matrix and Properties
   */

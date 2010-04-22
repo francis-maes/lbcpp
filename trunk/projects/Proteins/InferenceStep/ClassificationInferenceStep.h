@@ -29,7 +29,6 @@ public:
   virtual String toString() const
   {
     String res = getClassName();
-    FeatureDictionaryPtr labels = classifier ? classifier->getLabels() : FeatureDictionaryPtr();
     if (labels)
       res += T("(") + labels->getName() + T(")");
     return res;
@@ -47,7 +46,14 @@ public:
   void setClassifier(ClassifierPtr classifier)
     {this->classifier = classifier;}
 
+  void setLabels(FeatureDictionaryPtr labels)
+    {this->labels = labels;}
+
+  FeatureDictionaryPtr getLabels() const
+    {return labels;}
+
 protected:
+  FeatureDictionaryPtr labels;
   ClassifierPtr classifier;
 
   virtual bool load(InputStream& istr)
