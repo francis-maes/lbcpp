@@ -22,261 +22,9 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-///////////////////////////////////////////////////////////////////////////////////////////
-
-class PSSMRowPredictionInput : public Object
-{
-public:
-  PSSMRowPredictionInput(ProteinPtr protein, size_t position)
-    : protein(protein), position(position) {}
-
-  ProteinPtr getProtein() const
-    {return protein;}
-
-  size_t getPosition() const
-    {return position;}
-
-  featureGenerator getCommonFeaturesImpl() const
-  {
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
-
-    jassert(aminoAcidSequence);
-    jassert(position < aminoAcidSequence->size());
-    //featureCall(0) aminoAcidSequence->elementFeatures(position);
-    featureCall(0) aminoAcidSequence->windowFeatures(position, 7, 7, true);
-    //featureCall(1) sequenceMultiScaleCenteredConjunctionFeatures(aminoAcidSequence, position, 1, 3, false);
-    //featureCall(0) aminoAcidSequence->multiScaleSymetricFrequencyFeatures(position, 1, 2, 8, true);
-
-    if (pssm)
-    {
-      featureCall(1) pssm->windowFeatures(position, 5, 5, true);
-    }
-  }
-
-  featureGenerator sequenceMultiScaleCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t minConjunctionSize, size_t maxConjunctionSize, bool onlyConjunctionsWherePositionAppears) const
-  {
-    jassert(maxConjunctionSize >= minConjunctionSize);
-    for (size_t i = minConjunctionSize; i <= maxConjunctionSize; ++i)
-      featureCall(i - minConjunctionSize) sequenceCenteredConjunctionFeatures(sequence, position, i, onlyConjunctionsWherePositionAppears ? i : maxConjunctionSize);
-  }
-
-  featureGenerator sequenceCenteredConjunctionFeatures(SequencePtr sequence, size_t position, size_t conjunctionSize, size_t windowSize) const
-  {
-    int p = (int)position - (windowSize - 1);
-    for (size_t i = 0; i < windowSize; ++i)
-      featureCall(i) sequenceConjunctionFeatures(sequence, p + (int)i, conjunctionSize);
-  }
-  
-  featureGenerator sequenceConjunctionFeatures(SequencePtr sequence, int firstPosition, size_t conjunctionSize) const
-  {
-    String str;
-    for (size_t i = 0; i < conjunctionSize; ++i)
-    {
-      if (str.isNotEmpty())
-        str += T("^");
-      str += sequenceElementString(sequence, firstPosition + (int)i);
-    }
-    featureSense(str);
-  }
-
-  String sequenceElementString(SequencePtr sequence, int position) const
-  {
-    if (position < 0)
-      return T("<");
-    else if (position >= (int)sequence->size())
-      return T(">");
-    else
-      return sequence->elementToString((size_t)position);
-  }
-
-  FeatureGeneratorPtr getCommonFeatures() const
-  {
-    if (!commonFeatures)
-    {
-      const_cast<PSSMRowPredictionInput* >(this)->commonFeatures = getCommonFeaturesImpl()->toSparseVector();
-      //std::cout << commonFeatures->toString() << std::endl;
-    }
-    return commonFeatures;
-  }
-  
-private:
-  SparseVectorPtr commonFeatures;
-  ProteinPtr protein;
-  size_t position;
-};
-
-typedef ReferenceCountedObjectPtr<PSSMRowPredictionInput> PSSMRowPredictionInputPtr;
-
-class PSSMRowPredictionInferenceStep : public ParallelSharedMultiRegressionInferenceStep
-{
-public:
-  PSSMRowPredictionInferenceStep()
-    : ParallelSharedMultiRegressionInferenceStep(T("PSSMRow"), AminoAcidDictionary::getInstance()) {}
-
-  virtual size_t getNumSubInferences(ObjectPtr) const
-    {return AminoAcidDictionary::numAminoAcids;}
- 
-  featureGenerator getInputFeatures(ObjectPtr input_, size_t scoreIndex) const
-  {
-    PSSMRowPredictionInputPtr input = input_.dynamicCast<PSSMRowPredictionInput>();
-    jassert(input);
-    featureSense(scoreIndex);
-    featureCall(scoreIndex) input->getCommonFeatures();
-  }
-};
-
-class PSSMPredictionInferenceStep : public ParallelSequenceMultiRegressionInferenceStep
-{
-public:
-  PSSMPredictionInferenceStep(const String& name)
-    : ParallelSequenceMultiRegressionInferenceStep(name, new PSSMRowPredictionInferenceStep()) {}
-  PSSMPredictionInferenceStep() {}
-
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return getProtein(input)->getLength();}
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return new PSSMRowPredictionInput(getProtein(input), index);}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-  {
-    if (!supervision)
-      return ObjectPtr();
-    ScoreVectorSequencePtr pssm = getProtein(supervision)->getPositionSpecificScoringMatrix();
-    return ParallelSequenceMultiRegressionInferenceStep::getSubSupervision(pssm, index);
-  }
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), AminoAcidDictionary::getInstance(), getProtein(input)->getLength(), AminoAcidDictionary::numAminoAcids);}
-
-private:
-  ProteinPtr getProtein(ObjectPtr object) const
-  {
-    ProteinPtr protein = object.dynamicCast<Protein>();
-    jassert(protein);
-    return protein;
-  }
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-class ProteinResidueFeatures : public Object
-{
-public:
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<ProteinResidueFeatures> ProteinResidueFeaturesPtr;
-
-class SequenceWindowProteinResidueFeatures : public ProteinResidueFeatures
-{
-public:
-  SequenceWindowProteinResidueFeatures(const String& sequenceName, size_t numPrevs, size_t numNexts, bool includeCurrent)
-    : sequenceName(sequenceName), numPrevs(numPrevs), numNexts(numNexts), includeCurrent(includeCurrent) {}
-
-  virtual String getName() const
-    {return sequenceName + T(" window");}
-
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
-  {
-    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
-    if (!sequence)
-      return FeatureGeneratorPtr();
-    return sequence->windowFeatures(position, numPrevs, numNexts, includeCurrent);
-  }
-
-protected:
-  String sequenceName;
-  size_t numPrevs;
-  size_t numNexts;
-  bool includeCurrent;
-};
-
-class CompositeProteinResidueFeatures : public ProteinResidueFeatures
-{
-public:
-  void addSubFeatures(ProteinResidueFeaturesPtr subFeatures)
-    {subFeatureFunctions.push_back(subFeatures);}
-
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
-  {
-    for (size_t i = 0; i < subFeatureFunctions.size(); ++i)
-    {
-      ProteinResidueFeaturesPtr subFunction = subFeatureFunctions[i];
-      FeatureGeneratorPtr fg = subFunction->compute(protein, position);
-      if (fg)
-        featureCall(subFunction->getName()) fg;
-    }
-  }
-
-private:
-  std::vector<ProteinResidueFeaturesPtr> subFeatureFunctions;
-};
-
-
-class MyProteinSequenceLabelingInferenceStep : public ProteinSequenceLabelingInferenceStep
-{
-public:
-  MyProteinSequenceLabelingInferenceStep(const String& name, const String& target, FeatureDictionaryPtr targetDictionary)
-    : ProteinSequenceLabelingInferenceStep(name), target(target), targetDictionary(targetDictionary) {}
-  MyProteinSequenceLabelingInferenceStep() {}
-
-  virtual String getTargetName() const
-    {return target;}
-
-  virtual FeatureDictionaryPtr getTargetDictionary() const
-  {
-    jassert(targetDictionary);
-    return targetDictionary;
-  }
-
-  virtual featureGenerator getInputFeatures(ObjectPtr input, size_t index) const
-  {
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
-
-    featureCall("a") aminoAcidSequence->windowFeatures(index, 8, 8, true);
-    featureCall("p") positionSpecificScores->windowFeatures(index, 8, 8, true);
-
-    LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
-    if (secondaryStructure)
-      {featureCall("s3") secondaryStructure->windowFeatures(index, 5, 5, true);}
-
-    LabelSequencePtr dsspSecondaryStructure = protein->getDSSPSecondaryStructureSequence();
-    if (dsspSecondaryStructure)
-      {featureCall("s8") dsspSecondaryStructure->windowFeatures(index, 5, 5, true);}
-
-    LabelSequencePtr solventAccesibility = protein->getSolventAccessibilitySequence();
-    if (solventAccesibility)
-      {featureCall("sa") solventAccesibility->windowFeatures(index, 5, 5, true);}
-
-    //    featureCall("w8f") dsspSecondaryStructure->multiScaleSymetricFrequencyFeatures(index, 1, 2, 8, false); // 1, 2, 4, 8, 16, ..., 256
-  }
-
-protected:
-  String target;
-  FeatureDictionaryPtr targetDictionary;
-
-  virtual bool load(InputStream& istr)
-  {
-    if (!ProteinSequenceLabelingInferenceStep::load(istr) ||
-        !lbcpp::read(istr, target))
-      return false;
-    targetDictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
-    return targetDictionary != FeatureDictionaryPtr();
-  }
-
-  virtual void save(OutputStream& ostr) const
-  {
-    ProteinSequenceLabelingInferenceStep::save(ostr);
-    lbcpp::write(ostr, target);
-    lbcpp::write(ostr, targetDictionary->getName());
-  }
-};
 /*
 class PrintClassifiersSummaryVisitor : public DefaultInferenceVisitor
 {
@@ -433,10 +181,6 @@ ObjectContainerPtr loadProteins(const File& directory)
 int main(int argc, char** argv)
 {
   declareProteinClasses();
-  LBCPP_DECLARE_CLASS(MyProteinSequenceLabelingInferenceStep);
-  LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
-  LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
-
 
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
@@ -462,13 +206,20 @@ int main(int argc, char** argv)
   
   ProteinSequenceLabelingInferenceStepPtr step;
 
+  CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccesibilitySequence"), 5, 5, true));
+
   for (size_t i = 0; i < 2; ++i)
   {
-    step = new MyProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), T("SecondaryStructureSequence"), SecondaryStructureDictionary::getInstance());
+    step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
-    step = new MyProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance());
+    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilitySequence"));
     proteinInference->appendStep(step);
-    step = new MyProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance());
+    step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
   }
 

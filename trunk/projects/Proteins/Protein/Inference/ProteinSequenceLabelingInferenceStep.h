@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_LABELING_H_
 
 # include "../../InferenceStep/ParallelSequenceLabelingInferenceStep.h"
+#include "ProteinResidueFeatures.h"
 
 namespace lbcpp
 {
@@ -17,23 +18,42 @@ namespace lbcpp
 class ProteinSequenceLabelingInferenceStep : public ParallelSequenceLabelingInferenceStep
 {
 public:
-  ProteinSequenceLabelingInferenceStep(const String& name)
-    : ParallelSequenceLabelingInferenceStep(name) {}
+  ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName = String::empty)
+    : ParallelSequenceLabelingInferenceStep(name), features(features), targetName(targetName) {}
   ProteinSequenceLabelingInferenceStep() {}
 
-  virtual String getTargetName() const = 0;
-  virtual FeatureDictionaryPtr getTargetDictionary() const = 0;
+  String getTargetName() const
+    {return targetName;}
+
+  void setTargetName(const String& targetName)
+    {this->targetName = targetName;}
+
+  virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const
+  {
+    jassert(features);
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
+    return features->compute(protein, index);
+  }
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
   {
+    jassert(targetName.isNotEmpty());
     ProteinPtr protein = supervision.dynamicCast<Protein>();
     jassert(protein);
-    ObjectPtr proteinObject = protein->getObject(getTargetName());
+    ObjectPtr proteinObject = protein->getObject(targetName);
     return ParallelSequenceLabelingInferenceStep::getSubSupervision(proteinObject, index);
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return new LabelSequence(getTargetName(), getTargetDictionary(), getNumSubInferences(input));}
+  {
+    jassert(targetName.isNotEmpty());
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
+    LabelSequencePtr res = protein->createEmptyObject(targetName).dynamicCast<LabelSequence>();
+    const_cast<ProteinSequenceLabelingInferenceStep* >(this)->setLabels(res->getDictionary());
+    return res;
+  }
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
   {
@@ -42,10 +62,21 @@ public:
     return protein->getLength();
   }
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+protected:
+  String targetName;
+  ProteinResidueFeaturesPtr features;
+
+  virtual bool load(InputStream& istr)
   {
-    setLabels(getTargetDictionary());
-    return ParallelSequenceLabelingInferenceStep::run(context, input, supervision, returnCode);
+    return ParallelSequenceLabelingInferenceStep::load(istr) &&
+      lbcpp::read(istr, targetName) && lbcpp::read(istr, features);
+  }
+
+  virtual void save(OutputStream& ostr) const
+  {
+    ParallelSequenceLabelingInferenceStep::save(ostr);
+    lbcpp::write(ostr, targetName);
+    lbcpp::write(ostr, features);
   }
 };
 

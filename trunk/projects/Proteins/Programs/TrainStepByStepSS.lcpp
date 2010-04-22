@@ -12,8 +12,8 @@
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
-#include "Protein/InferenceStep/ProteinSequenceLabelingInferenceStep.h"
-#include "Protein/InferenceStep/ProteinInference.h"
+#include "Protein/Inference/ProteinSequenceLabelingInferenceStep.h"
+#include "Protein/Inference/ProteinInference.h"
 #include "Protein/SecondaryStructureDictionary.h"
 #include "Programs/ArgumentSet.h"
 #include "Protein/Formats/PSSMFileParser.h"
@@ -31,11 +31,19 @@ public:
   enum {numberTarget = 3};
 
   CustomableSecondaryStructureContent(const String& name = String::empty)
-    : ProteinSequenceLabelingInferenceStep(name), wAA(0), wPSSM(0), wSS3(0), wSS8(0), wSA(0), wProp(0), target(SS3)
+    : ProteinSequenceLabelingInferenceStep(name, ProteinResidueFeaturesPtr()), wAA(0), wPSSM(0), wSS3(0), wSS8(0), wSA(0), wProp(0), target(SS3)
     {}
   
+  // FIXME: merge both mechanisms
   void setTarget(Target newTarget)
-    {target = newTarget;}
+  {
+    target = newTarget;
+    static const juce::tchar* targetNames[] = {
+      T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence"), T("SolventAccessibilitySequence")
+    };
+    jassert((size_t)target < sizeof (targetNames) / sizeof (const juce::tchar* ));
+    ProteinSequenceLabelingInferenceStep::setTargetName(targetNames[target]);
+  }
   
   void enableAminoAcidFeatures(size_t windowLength)
     {wAA = windowLength;}
@@ -139,31 +147,13 @@ public:
     return NONE;
   }
 
-  virtual String getTargetName() const
-  {
-    static const juce::tchar* targetNames[] = {
-      T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence"), T("SolventAccessibilitySequence")
-    };
-    jassert((size_t)target < sizeof (targetNames) / sizeof (const juce::tchar* ));
-    return targetNames[target];
-  }
-
-  virtual FeatureDictionaryPtr getTargetDictionary() const
-  {
-    static const FeatureDictionaryPtr targetDictionaries[] = {
-      SecondaryStructureDictionary::getInstance(), DSSPSecondaryStructureDictionary::getInstance(), SolventAccesibility2StateDictionary::getInstance()
-    };
-    jassert((size_t)target < sizeof (targetDictionaries) / sizeof (FeatureDictionaryPtr));
-    return targetDictionaries[target];
-  }
-
 protected:
   virtual bool load(InputStream& istr)
   {
     int versionNumber;
     if (!lbcpp::read(istr, versionNumber))
       return false;
-    if (versionNumber != 101)
+    if (versionNumber != 102)
     {
       Object::error(T("CustomableSecondaryStructureContent::load"), T("Unrecognized version number"));
       return false;
@@ -183,7 +173,7 @@ protected:
 
   virtual void save(OutputStream& ostr) const
   {
-    int versionNumber = 101;
+    int versionNumber = 102;
     lbcpp::write(ostr, versionNumber);
     ProteinSequenceLabelingInferenceStep::save(ostr);
     lbcpp::write(ostr, wAA);

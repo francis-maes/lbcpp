@@ -41,6 +41,8 @@ public:
 
   void computeMissingFields();
 
+  ObjectPtr createEmptyObject(const String& name) const;
+
   /*
   ** Primary Structure, Position Specific Scoring Matrix and Properties
   */
