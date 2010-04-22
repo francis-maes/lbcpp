@@ -16,8 +16,8 @@
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Evaluation/ProteinStatisticsCalculator.h"
 #include "Protein/SecondaryStructureDictionary.h"
-#include "Protein/InferenceStep/ProteinSequenceLabelingInferenceStep.h"
-#include "Protein/InferenceStep/ProteinInference.h"
+#include "Protein/Inference/ProteinSequenceLabelingInferenceStep.h"
+#include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -161,6 +161,60 @@ private:
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
+
+class ProteinResidueFeatures : public Object
+{
+public:
+  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinResidueFeatures> ProteinResidueFeaturesPtr;
+
+class SequenceWindowProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  SequenceWindowProteinResidueFeatures(const String& sequenceName, size_t numPrevs, size_t numNexts, bool includeCurrent)
+    : sequenceName(sequenceName), numPrevs(numPrevs), numNexts(numNexts), includeCurrent(includeCurrent) {}
+
+  virtual String getName() const
+    {return sequenceName + T(" window");}
+
+  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  {
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    if (!sequence)
+      return FeatureGeneratorPtr();
+    return sequence->windowFeatures(position, numPrevs, numNexts, includeCurrent);
+  }
+
+protected:
+  String sequenceName;
+  size_t numPrevs;
+  size_t numNexts;
+  bool includeCurrent;
+};
+
+class CompositeProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  void addSubFeatures(ProteinResidueFeaturesPtr subFeatures)
+    {subFeatureFunctions.push_back(subFeatures);}
+
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  {
+    for (size_t i = 0; i < subFeatureFunctions.size(); ++i)
+    {
+      ProteinResidueFeaturesPtr subFunction = subFeatureFunctions[i];
+      FeatureGeneratorPtr fg = subFunction->compute(protein, position);
+      if (fg)
+        featureCall(subFunction->getName()) fg;
+    }
+  }
+
+private:
+  std::vector<ProteinResidueFeaturesPtr> subFeatureFunctions;
+};
+
 
 class MyProteinSequenceLabelingInferenceStep : public ProteinSequenceLabelingInferenceStep
 {
