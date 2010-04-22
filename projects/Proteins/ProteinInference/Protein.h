@@ -29,7 +29,7 @@ public:
 
   static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
   static ProteinPtr createFromFASTA(const File& fastaFile);
-  static ProteinPtr createFromPDB(const File& pdbFile);
+  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
 
   void saveToPDBFile(const File& pdbFile);
 

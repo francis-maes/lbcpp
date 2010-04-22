@@ -81,9 +81,9 @@ ProteinPtr Protein::createFromFASTA(const File& fastaFile)
   return parser->nextAndCast<Protein>();
 }
 
-ProteinPtr Protein::createFromPDB(const File& pdbFile)
+ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
 {
-  ObjectStreamPtr parser(new PDBFileParser(pdbFile));
+  ObjectStreamPtr parser(new PDBFileParser(pdbFile, beTolerant));
   ProteinPtr res = parser->nextAndCast<Protein>();
   if (!res)
     return ProteinPtr();
