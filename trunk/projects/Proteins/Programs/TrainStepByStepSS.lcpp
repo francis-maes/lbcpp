@@ -80,6 +80,7 @@ public:
       LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
       jassert(aminoAcidSequence);
       featureCall("AA") aminoAcidSequence->windowFeatures(index, wAA, wAA, true);
+      featureCall("AAFreq") aminoAcidSequence->symetricFrequencyFeatures(index, 50, true);
     }
     
     if (wPSSM)
@@ -87,6 +88,7 @@ public:
       ScoreVectorSequencePtr positionSpecificScores = protein->getPositionSpecificScoringMatrix();
       jassert(positionSpecificScores);
       featureCall("PSSM") positionSpecificScores->windowFeatures(index, wPSSM, wPSSM, true);
+      featureCall("PSSMFreq") positionSpecificScores->symetricFrequencyFeatures(index, 150, true);
     }
     
     if (wProp) {
@@ -101,6 +103,7 @@ public:
       LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
       jassert(secondaryStructure);
       featureCall("wSS3") secondaryStructure->windowFeatures(index, wSS3, wSS3, true);
+      featureCall("wSS3Freq") secondaryStructure->symetricFrequencyFeatures(index, 100, true);
     }
     
     if (wSS8)
@@ -668,6 +671,7 @@ int main(int argc, char** argv)
   double regularizer = 20.0;
   double initialLearningRate = 2.0;
   int numberIterationLearningRate = 150000;
+  bool useSavedModel = false;
   
   ArgumentSet arguments;
   arguments.insert(new StringArgument(T("ProteinsDirectory"), &proteinsDirectory));
@@ -686,6 +690,7 @@ int main(int argc, char** argv)
   arguments.insert(new DoubleArgument(T("Regularizer"), &regularizer));
   arguments.insert(new DoubleArgument(T("InitialLearningRate"), &initialLearningRate));
   arguments.insert(new IntegerArgument(T("NumberIterationLearningRate"), &numberIterationLearningRate));
+  arguments.insert(new BooleanArgument(T("UseSavedModel"), &useSavedModel));
 
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -702,28 +707,26 @@ int main(int argc, char** argv)
   std::cout << "*-----------------------------" << std::endl;
 
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
-//#define VIEW
+//#define PSSM
 #ifdef PSSM
   while (!proteinsStream->isExhausted()) {
     ProteinPtr myProtein = proteinsStream->nextAndCast<Protein>();
     std::cout << myProtein->getName();
-    
-    File pssmFile("/scratch/jbecker/CB513_PSSM/" + myProtein->getName() + T(".pssm"));
+    std::cout.flush();   
+ 
+    File pssmFile("/scratch/jbecker/CB513_PSSM/SOFT_NR_DB/" + myProtein->getName() + T(".pssm"));
     if (!pssmFile.exists()) {
       std::cout << " No pssm file found !" << std::endl;
       continue;
     }
     
     ObjectPtr newPSSM = ObjectStreamPtr(new PSSMParser(pssmFile, myProtein->getLength()))->next();
-    
-    //PSSMParser pssmParser(pssmFile, myProtein->getLength());
-    //ObjectPtr newPSSM = pssmParser.next();
-    
     jassert(newPSSM);
-    
     myProtein->setObject(newPSSM);
-    
-    File outputFile("/scratch/jbecker/CB513_New/" + myProtein->getName() + T(".protein"));
+  
+    myProtein->computeProperties();
+  
+    File outputFile("/scratch/jbecker/CB513_PROTEIN/SOFT/" + myProtein->getName() + T(".protein"));
     myProtein->saveToFile(outputFile);
     
     std::cout << " OK" << std::endl;
@@ -746,12 +749,11 @@ int main(int argc, char** argv)
   return 0;
 #endif
 
-  ObjectContainerPtr proteins = proteinsStream->load(7)->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
   for (size_t i = 0; i < proteins->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) proteins->get(i);
     protein->computeProperties();
-    std::cout << protein->getName() << std::endl;
   }
 
   proteins = proteins->apply(new ObjectToObjectPairFunction());
@@ -858,10 +860,30 @@ int main(int argc, char** argv)
   callback->appendCallback(new GnuPlotInferenceLearnerCallback(prefixResults));
 
   /* Load inference step that we already leaned */
+  /*
   size_t firstStepToLearn = 0;
   while (firstStepToLearn < proteinInference->getNumSubSteps())
   {
     File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixResults + T("/decorated.inference/") + lbcpp::toString(firstStepToLearn) + T("_") + proteinInference->getSubStep(firstStepToLearn)->getName() + T(".inference"));
+    if (!toLoad.exists())
+      break;
+
+    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
+    jassert(inference);
+    
+    std::cout << "Loaded step: " << inference->getName() << std::endl;
+    
+    proteinInference->setSubStep(firstStepToLearn, inference);
+    
+    ++firstStepToLearn;
+  }
+  */
+
+  /* Load saved model */
+  size_t firstStepToLearn = 0;
+  while (useSavedModel && firstStepToLearn < proteinInference->getNumSubSteps())
+  {
+    File toLoad = File::getCurrentWorkingDirectory().getChildFile(T("SAVED_MODEL/") + lbcpp::toString(firstStepToLearn) + T("_") + proteinInference->getSubStep(firstStepToLearn)->getName() + T(".inference"));
     if (!toLoad.exists())
       break;
 
