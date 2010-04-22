@@ -202,10 +202,9 @@ int main(int argc, char** argv)
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
 
-  ProteinInferencePtr proteinInference = new ProteinInference();
-  
-  ProteinSequenceLabelingInferenceStepPtr step;
-
+  /*
+  ** Creation of the feature function
+  */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
@@ -213,8 +212,15 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccesibilitySequence"), 5, 5, true));
 
+  /*
+  ** Creation of the inference 
+  */
+  ProteinInferencePtr proteinInference = new ProteinInference();
   for (size_t i = 0; i < 2; ++i)
   {
+    ProteinSequenceLabelingInferenceStepPtr step;
+
+    // the same feature function is used for CO and for subsequent passes
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilitySequence"));
@@ -223,10 +229,12 @@ int main(int argc, char** argv)
     proteinInference->appendStep(step);
   }
 
+  /*
+  ** Learning
+  */
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true, 0);
   learner->train(proteinInference, trainingData);
-
 
 #if 0 // PSSMs
 
