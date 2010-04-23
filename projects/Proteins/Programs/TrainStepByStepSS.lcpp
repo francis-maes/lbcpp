@@ -44,7 +44,7 @@ int main(int argc, char** argv)
   int wSS3 = 10;
   int wSS8 = 10;
   int wSA = 10;
-  int wProp = 10;
+  int wProp = 50;
   double regularizer = 20.0;
   double initialLearningRate = 2.0;
   int numberIterationLearningRate = 150000;
@@ -159,9 +159,11 @@ int main(int argc, char** argv)
   std::cout << "Number of AAIndex: " << vectorAAIndex.size() << std::endl;
   jassert(vectorAAIndex.size() != 0);
 
-  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
+  ObjectContainerPtr proteins;
   if (isTestVersion)
     proteins = proteinsStream->load(7)->randomize();
+  else
+    proteins = proteinsStream->load()->randomize();
 
   for (size_t i = 0; i < proteins->size(); ++i)
   {
@@ -179,7 +181,6 @@ int main(int argc, char** argv)
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size()  << " Testing Proteins" << std::endl;
-
 
   /*
   ** Creation of features function
