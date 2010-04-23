@@ -9,52 +9,6 @@
 #include "ProteinTertiaryStructure.h"
 using namespace lbcpp;
 
-/*
-** ProteinDihedralAngles
-*/
-static void computeDihedralAngles(ProteinResiduePtr previousResidue, ProteinResiduePtr residue, ProteinResiduePtr nextResidue, DihedralAngle& phi, DihedralAngle& psi)
-{
-  jassert(residue);
-
-  ProteinAtomPtr previousCarbon = previousResidue ? previousResidue->getCarbonAtom() : ProteinAtomPtr();
-  ProteinAtomPtr nitrogen = residue->getNitrogenAtom();
-  ProteinAtomPtr calpha = residue->getCAlphaAtom();
-  ProteinAtomPtr carbon = residue->getCarbonAtom();
-  ProteinAtomPtr nextNitrogen = nextResidue ? nextResidue->getNitrogenAtom() : ProteinAtomPtr();
-  jassert(nitrogen && calpha && carbon && (!previousResidue || previousCarbon) && (!nextResidue || nextNitrogen));
-
-  Vector3 nitrogenPos = nitrogen->getPosition();
-  Vector3 calphaPos = calpha->getPosition();
-  Vector3 carbonPos = carbon->getPosition();
-
-  phi = previousCarbon ? DihedralAngle::compute(previousCarbon->getPosition(), nitrogenPos, calphaPos, carbonPos) : 2 * M_PI;
-  psi = nextNitrogen ? DihedralAngle::compute(nitrogenPos, calphaPos, carbonPos, nextNitrogen->getPosition()) : 2 * M_PI;
-}
-
-ProteinDihedralAnglesPtr ProteinDihedralAngles::createDihedralAngles(ProteinTertiaryStructurePtr tertiaryStructure)
-{
-  size_t n = tertiaryStructure->size();
-  ProteinDihedralAnglesPtr res = new ProteinDihedralAngles(n);
-  ProteinResiduePtr previousResidue;
-  ProteinResiduePtr residue = tertiaryStructure->getResidue(0);
-  for (size_t i = 0; i < n; ++i)
-  {
-    ProteinResiduePtr nextResidue = i < (n - 1) ? tertiaryStructure->getResidue(i + 1) : ProteinResiduePtr();
-    DihedralAngle phi, psi;
-    if (residue)
-    {
-      computeDihedralAngles(previousResidue, residue, nextResidue, phi, psi);
-      res->setAnglesPair(i, phi, psi);
-    }
-    previousResidue = residue;
-    residue = nextResidue;
-  }
-  return res;
-}
-
-/*
-** ProteinTertiaryStructure
-*/
 ProteinTertiaryStructure::ProteinTertiaryStructure(size_t numResidues)
   : Sequence(T("TertiaryStructure")), residues(numResidues) {}
 
@@ -65,6 +19,61 @@ void ProteinTertiaryStructure::set(size_t index, ObjectPtr object)
   jassert(index < residues.size());
   residues[index] = residue;
 }
+
+ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, CartesianCoordinatesSequencePtr trace)
+{
+  size_t n = trace->size();
+  jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
+
+  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    // create a residue with a single Ca atom
+    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
+    ProteinAtomPtr atom = new ProteinAtom(T("CA"), T("C"));
+    atom->setPosition(trace->getPosition(i));
+    residue->addAtom(atom);
+    res->setResidue(i, residue);
+  }
+  return res;
+}
+
+ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr dihedralAngles)
+{
+  Matrix4 currentReferential = Matrix4::identity;
+
+  size_t n = dihedralAngles->size();
+  jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
+
+  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
+/*  for (size_t i = 0; i < dihedralAngles->size(); ++i)
+  {
+    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
+    residue->addAtom(new ProteinAtom(T("N"), T("N"), currentReferential.getTranslation()));
+    //std::cout << "N at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
+
+    currentReferential.translate(Vector3(1.46, 0.0, 0.0));
+    if (i > 0)
+      currentReferential.rotateAroundXAxis(dihedralAngles->getPhi(i));
+    currentReferential.rotateAroundZAxis(1.216);
+    residue->addAtom(new ProteinAtom(T("CA"), T("C"), currentReferential.getTranslation()));
+    //std::cout << "CA at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
+    
+    currentReferential.translate(Vector3(1.53, 0.0, 0.0));
+    if (i < n - 1)
+      currentReferential.rotateAroundXAxis(dihedralAngles->getPsi(i));
+    currentReferential.rotateAroundZAxis(1.098);
+    residue->addAtom(new ProteinAtom(T("C"), T("C"), currentReferential.getTranslation()));
+    //std::cout << "C at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
+    
+    currentReferential.translate(Vector3(1.33, 0.0, 0.0));
+    currentReferential.rotateAroundXAxis(M_PI); // omega
+    currentReferential.rotateAroundZAxis(1.033);
+    res->setResidue(i, residue);
+  }*/
+  return res;
+}
+
 
 LabelSequencePtr ProteinTertiaryStructure::createAminoAcidSequence() const
 {
@@ -127,58 +136,9 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCBetaTrace() con
   return res;
 }
 
-ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, CartesianCoordinatesSequencePtr trace)
+ProteinBackboneBondSequencePtr ProteinTertiaryStructure::createBackbone() const
 {
-  size_t n = trace->size();
-  jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
-
-  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    // create a residue with a single Ca atom
-    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
-    ProteinAtomPtr atom = new ProteinAtom(T("CA"), T("C"));
-    atom->setPosition(trace->getPosition(i));
-    residue->addAtom(atom);
-    res->setResidue(i, residue);
-  }
-  return res;
-}
-
-ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinDihedralAnglesPtr dihedralAngles)
-{
-  Matrix4 currentReferential = Matrix4::identity;
-
-  size_t n = dihedralAngles->size();
-  jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
-
-  ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
-  for (size_t i = 0; i < dihedralAngles->size(); ++i)
-  {
-    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
-    residue->addAtom(new ProteinAtom(T("N"), T("N"), currentReferential.getTranslation()));
-    //std::cout << "N at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
-
-    currentReferential.translate(Vector3(1.46, 0.0, 0.0));
-    if (i > 0)
-      currentReferential.rotateAroundXAxis(dihedralAngles->getPhi(i));
-    currentReferential.rotateAroundZAxis(1.216);
-    residue->addAtom(new ProteinAtom(T("CA"), T("C"), currentReferential.getTranslation()));
-    //std::cout << "CA at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
-    
-    currentReferential.translate(Vector3(1.53, 0.0, 0.0));
-    if (i < n - 1)
-      currentReferential.rotateAroundXAxis(dihedralAngles->getPsi(i));
-    currentReferential.rotateAroundZAxis(1.098);
-    residue->addAtom(new ProteinAtom(T("C"), T("C"), currentReferential.getTranslation()));
-    //std::cout << "C at " << lbcpp::toString(currentReferential.getTranslation()) << std::endl;
-    
-    currentReferential.translate(Vector3(1.33, 0.0, 0.0));
-    currentReferential.rotateAroundXAxis(M_PI); // omega
-    currentReferential.rotateAroundZAxis(1.033);
-    res->setResidue(i, residue);
-  }
-  return res;
+  return ProteinBackboneBondSequencePtr(); // todo
 }
 
 bool ProteinTertiaryStructure::hasOnlyCAlphaAtoms() const

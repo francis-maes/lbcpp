@@ -73,7 +73,7 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
   if (!tertiaryStructure->hasOnlyCAlphaAtoms())
   {
     res->setObject(tertiaryStructure->createCBetaTrace());
-    res->setObject(ProteinDihedralAngles::createDihedralAngles(tertiaryStructure));
+    res->setObject(ProteinBackboneBondSequence::createDihedralAngles(tertiaryStructure));
   }*/
   return res;
 }
@@ -117,6 +117,8 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new ScoreVectorSequence(name, OrderDisorderDictionary::getInstance(), n);
   else if (name == T("ResidueResidueContactProbabilityMatrix"))
     return new ScoreSymmetricMatrix(name, n, 0.5);
+  else if (name == T("BackboneBondSequence"))
+    return new ProteinBackboneBondSequence(n);
   else if (name == T("TertiaryStructure"))
     return new ProteinTertiaryStructure(n);
   else
@@ -156,11 +158,11 @@ ScoreVectorSequencePtr Protein::getOrderDisorderScoreSequence() const
 ScoreSymmetricMatrixPtr Protein::getResidueResidueContactProbabilityMatrix() const
   {return getObject(T("ResidueResidueContactProbabilityMatrix"));}
 
-ProteinDihedralAnglesPtr Protein::getDihedralAngles() const
-  {return getObject(T("DihedralAngles"));}
-
 CartesianCoordinatesSequencePtr Protein::getCAlphaTrace() const
   {return getObject(T("CAlphaTrace"));}
+
+ProteinBackboneBondSequencePtr Protein::getBackboneBondSequence() const
+  {return getObject(T("BackboneBondSequence"));}
 
 ProteinTertiaryStructurePtr Protein::getTertiaryStructure() const
   {return getObject(T("TertiaryStructure"));}

@@ -28,6 +28,12 @@ void LabelSequence::set(size_t position, ObjectPtr object)
   validateModification();
 }
 
+bool LabelSequence::hasObject(size_t index) const
+{
+  jassert(index < sequence.size());
+  return sequence[index] < 255;
+}
+
 ObjectPtr LabelSequence::get(size_t index) const
 {
   jassert(index < sequence.size());

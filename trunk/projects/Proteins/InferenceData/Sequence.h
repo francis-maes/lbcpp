@@ -66,6 +66,12 @@ public:
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
     {return unitFeatureGenerator();}
 
+  void setElement(size_t index, const ElementType& element)
+    {jassert(index < elements.size()); elements[index] = element;}
+
+  const ElementType& getElement(size_t index) const
+  {jassert(index < elements.size()); return elements[index];}
+
 protected:
   VectorType elements;
 
@@ -74,6 +80,42 @@ protected:
 
   virtual void save(OutputStream& ostr) const
     {Sequence::save(ostr); lbcpp::write(ostr, elements);}
+};
+
+template<class ElementType>
+class BuiltinVectorBasedSequenceWithEmptyValues : public BuiltinVectorBasedSequence<ElementType>
+{
+public:
+  typedef BuiltinVectorBasedSequence<ElementType> BaseClass;
+
+  BuiltinVectorBasedSequenceWithEmptyValues(const String& name, size_t length = 0)
+    : BaseClass(name, length), nullElements(length, true) {}
+
+  BuiltinVectorBasedSequenceWithEmptyValues() {}
+
+  virtual void resize(size_t newSize)
+  {
+    elements.resize(newSize);
+    nullElements.resize(newSize, true);
+  }
+
+  void setElement(size_t index, const ElementType& element)
+    {BaseClass::setElement(index, element); nullElements[index] = false;}
+
+  void unsetElement(size_t index)
+    {nullElements[index] = true;}
+
+  virtual bool hasObject(size_t index) const
+    {jassert(index < nullElements.size()); return nullElements[index];}
+
+protected:
+  std::vector<bool> nullElements;
+
+  virtual bool load(InputStream& istr)
+    {return BaseClass::load(istr) && lbcpp::read(istr, nullElements);}
+
+  virtual void save(OutputStream& ostr) const
+    {BaseClass::save(ostr); lbcpp::write(ostr, nullElements);}
 };
 
 template<class ObjectType>
@@ -87,6 +129,9 @@ public:
   TypedObjectVectorBasedSequence(const String& name, size_t length = 0)
     : BaseClass(name, length) {}
   TypedObjectVectorBasedSequence() {}
+
+  virtual bool hasObject(size_t index) const
+    {jassert(index < BaseClass::elements.size()); return BaseClass::elements[index];}
 
   virtual ObjectPtr get(size_t index) const
     {jassert(index < BaseClass::elements.size()); return BaseClass::elements[index];}
