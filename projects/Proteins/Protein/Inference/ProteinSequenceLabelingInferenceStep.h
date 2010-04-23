@@ -19,7 +19,7 @@ class ProteinSequenceLabelingInferenceStep : public ParallelSequenceLabelingInfe
 {
 public:
   ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName = String::empty)
-    : ParallelSequenceLabelingInferenceStep(name), features(features), targetName(targetName) {}
+    : ParallelSequenceLabelingInferenceStep(name), targetName(targetName), features(features) {}
   ProteinSequenceLabelingInferenceStep() {}
 
   String getTargetName() const

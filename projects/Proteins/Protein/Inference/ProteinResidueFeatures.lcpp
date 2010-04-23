@@ -80,6 +80,46 @@ ProteinResidueFeaturesPtr lbcpp::proteinSequenceWindowFeatures(const String& seq
   {return ProteinResidueFeaturesPtr(new SequenceWindowProteinResidueFeatures(sequenceName, numPrevs, numNexts, includeCurrent));}
 
 /*
+** FrequencyWindowProteinResidueFeatures
+*/
+class FrequencyWindowProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  FrequencyWindowProteinResidueFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent)
+    : sequenceName(sequenceName), numPrevsAndNexts(numPrevsAndNexts), includeCurrent(includeCurrent) {}
+  FrequencyWindowProteinResidueFeatures() {}
+
+  virtual String toString() const
+    {return sequenceName + T("[-") + lbcpp::toString(numPrevsAndNexts) + T("]");}
+
+  virtual String getName() const
+    {return sequenceName + T(" frequency window");}
+
+  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  {
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    if (!sequence)
+      return FeatureGeneratorPtr();
+    return sequence->symetricFrequencyFeatures(position, numPrevsAndNexts, includeCurrent);
+  }
+
+protected:
+  String sequenceName;
+  size_t numPrevsAndNexts;
+  bool includeCurrent;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName) && lbcpp::read(istr, numPrevsAndNexts)
+      && lbcpp::read(istr, includeCurrent);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, sequenceName); lbcpp::write(ostr, numPrevsAndNexts); lbcpp::write(ostr, includeCurrent);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinFrequencyWindowFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent)
+  {return ProteinResidueFeaturesPtr(new FrequencyWindowProteinResidueFeatures(sequenceName, numPrevsAndNexts, includeCurrent));}
+
+/*
 ** Misc
 */
 #include "Protein/Inference/PositionSpecificScoringMatrixInferenceStep.h"
