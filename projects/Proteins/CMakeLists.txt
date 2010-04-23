@@ -64,6 +64,8 @@ SET(LBCPP_PROTEIN_SOURCES
   Protein/AminoAcidDictionary.cpp
   Protein/SecondaryStructureDictionary.h
   Protein/SecondaryStructureDictionary.cpp
+  Protein/ProteinBackboneBondSequence.h
+  Protein/ProteinBackboneBondSequence.cpp
   Protein/ProteinResidue.h
   Protein/ProteinResidue.cpp
   Protein/ProteinTertiaryStructure.h
@@ -75,9 +77,10 @@ SET(LBCPP_PROTEIN_SOURCES
 SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
   Protein/Inference/ProteinResidueFeatures.h
   Protein/Inference/ProteinResiduePairFeatures.h
-  Protein/Inference/ProteinInference.h
+  Protein/Inference/ProteinInferenceStepHelper.h
   Protein/Inference/ProteinSequenceLabelingInferenceStep.h
   Protein/Inference/PositionSpecificScoringMatrixInferenceStep.h
+  Protein/Inference/ProteinInference.h
 )
 
 SET(LBCPP_PROTEIN_EVALUATION_SOURCES

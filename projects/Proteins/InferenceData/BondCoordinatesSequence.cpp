@@ -58,7 +58,7 @@ BondCoordinatesSequence::BondCoordinatesSequence(const String& name, CartesianCo
       DihedralAngle phi = i > 1 && i < n - 1
         ? DihedralAngle(cartesianCoordinates->getPosition(i - 2), previousCoordinates, coordinates, nextCoordinates)
         : DihedralAngle(2 * M_PI);
-      setCoordinates(i - 1, new BondCoordinates(length, theta, phi));
+      setCoordinates(i - 1, BondCoordinates(length, theta, phi));
 
       previousCoordinates = coordinates;
       coordinates = nextCoordinates;
@@ -80,14 +80,8 @@ CartesianCoordinatesSequencePtr BondCoordinatesSequence::createCartesianCoordina
   res->setPosition(0, matrix.getTranslation());
   for (size_t i = 1; i < n; ++i)
   {
-    getCoordinates(i - 1)->multiplyMatrix(matrix, i < n - 1, i < n - 2);
+    getCoordinates(i - 1).multiplyMatrix(matrix, i < n - 1, i < n - 2);
     res->setPosition(i, matrix.getTranslation());
   }
   return res;
 }
-
-void BondCoordinatesSequence::setCoordinates(size_t position, BondCoordinatesPtr coordinates)
-  {BaseClass::set(position, coordinates);}
-
-BondCoordinatesPtr BondCoordinatesSequence::getCoordinates(size_t position) const
-  {return BaseClass::get(position).dynamicCast<BondCoordinates>();}

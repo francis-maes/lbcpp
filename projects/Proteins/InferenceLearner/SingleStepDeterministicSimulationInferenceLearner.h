@@ -130,6 +130,7 @@ private:
   }
 };
 
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_

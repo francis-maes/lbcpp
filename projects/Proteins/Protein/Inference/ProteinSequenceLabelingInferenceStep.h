@@ -10,73 +10,45 @@
 # define LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_LABELING_H_
 
 # include "../../InferenceStep/ParallelSequenceLabelingInferenceStep.h"
-#include "ProteinResidueFeatures.h"
+# include "ProteinInferenceStepHelper.h"
 
 namespace lbcpp
 {
 
-class ProteinSequenceLabelingInferenceStep : public ParallelSequenceLabelingInferenceStep
+class ProteinSequenceLabelingInferenceStep : public ParallelSequenceLabelingInferenceStep, public ProteinResidueRelatedInferenceStepHelper
 {
 public:
   ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName = String::empty)
-    : ParallelSequenceLabelingInferenceStep(name), targetName(targetName), features(features) {}
+    : ParallelSequenceLabelingInferenceStep(name), ProteinResidueRelatedInferenceStepHelper(targetName, features) {}
   ProteinSequenceLabelingInferenceStep() {}
 
-  String getTargetName() const
-    {return targetName;}
-
-  void setTargetName(const String& targetName)
-    {this->targetName = targetName;}
-
   virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const
-  {
-    jassert(features);
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    return features->compute(protein, index);
-  }
+    {return features->compute(getProtein(input), index);}
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-  {
-    jassert(targetName.isNotEmpty());
-    ProteinPtr protein = supervision.dynamicCast<Protein>();
-    jassert(protein);
-    ObjectPtr proteinObject = protein->getObject(targetName);
-    return ParallelSequenceLabelingInferenceStep::getSubSupervision(proteinObject, index);
-  }
+    {return ParallelSequenceLabelingInferenceStep::getSubSupervision(getTarget(supervision), index);}
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
   {
-    jassert(targetName.isNotEmpty());
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    LabelSequencePtr res = protein->createEmptyObject(targetName).dynamicCast<LabelSequence>();
+    LabelSequencePtr res = ProteinResidueRelatedInferenceStepHelper::createEmptyOutput(input).dynamicCast<LabelSequence>();
     const_cast<ProteinSequenceLabelingInferenceStep* >(this)->setLabels(res->getDictionary());
     return res;
   }
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
-  {
-    ProteinPtr protein = input.dynamicCast<Protein>();
-    jassert(protein);
-    return protein->getLength();
-  }
-
+    {return getProteinLength(input);}
+    
 protected:
-  String targetName;
-  ProteinResidueFeaturesPtr features;
-
   virtual bool load(InputStream& istr)
   {
     return ParallelSequenceLabelingInferenceStep::load(istr) &&
-      lbcpp::read(istr, targetName) && lbcpp::read(istr, features);
+      ProteinResidueRelatedInferenceStepHelper::load(istr);
   }
 
   virtual void save(OutputStream& ostr) const
   {
     ParallelSequenceLabelingInferenceStep::save(ostr);
-    lbcpp::write(ostr, targetName);
-    lbcpp::write(ostr, features);
+    ProteinResidueRelatedInferenceStepHelper::save(ostr);
   }
 };
 

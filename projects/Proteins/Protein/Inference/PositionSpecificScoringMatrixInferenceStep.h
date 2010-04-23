@@ -11,7 +11,7 @@
 
 # include "../../InferenceStep/ParallelSharedMultiRegressionInferenceStep.h"
 # include "../../InferenceStep/ParallelSequenceMultiRegressionInferenceStep.h"
-#include "ProteinResidueFeatures.h"
+# include "ProteinInferenceStepHelper.h"
 
 namespace lbcpp
 {
@@ -28,15 +28,16 @@ public:
   FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t scoreIndex) const;
 };
 
-class PSSMPredictionInferenceStep : public ParallelSequenceMultiRegressionInferenceStep
+class PSSMPredictionInferenceStep : public ParallelSequenceMultiRegressionInferenceStep, public ProteinResidueRelatedInferenceStepHelper
 {
 public:
   PSSMPredictionInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : ParallelSequenceMultiRegressionInferenceStep(name, new PSSMRowPredictionInferenceStep()), features(features) {}
+    : ParallelSequenceMultiRegressionInferenceStep(name, new PSSMRowPredictionInferenceStep()),
+      ProteinResidueRelatedInferenceStepHelper(T("PositionSpecificScoringMatrix"), features) {}
   PSSMPredictionInferenceStep() {}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return getProtein(input)->getLength();}
+    {return getProteinLength(input);}
 
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return features->compute(getProtein(input), index);}
@@ -45,22 +46,16 @@ public:
   {
     if (!supervision)
       return ObjectPtr();
-    ScoreVectorSequencePtr pssm = getProtein(supervision)->getPositionSpecificScoringMatrix();
+    ScoreVectorSequencePtr pssm = getTarget(supervision).dynamicCast<ScoreVectorSequence>();
     return ParallelSequenceMultiRegressionInferenceStep::getSubSupervision(pssm, index);
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return getProtein(input)->createEmptyObject(T("PositionSpecificScoringMatrix"));}
+    {return ProteinResidueRelatedInferenceStepHelper::createEmptyOutput(input);}
 
 private:
   ProteinResidueFeaturesPtr features;
 
-  ProteinPtr getProtein(ObjectPtr object) const
-  {
-    ProteinPtr protein = object.dynamicCast<Protein>();
-    jassert(protein);
-    return protein;
-  }
 };
 
 }; /* namespace lbcpp */

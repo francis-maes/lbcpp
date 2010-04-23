@@ -14,39 +14,13 @@
 # include "../InferenceData/BondCoordinatesSequence.h"
 # include "AminoAcidDictionary.h"
 # include "ProteinResidue.h"
+# include "ProteinBackboneBondSequence.h"
 
 namespace lbcpp
 {
 
-// predeclarations
-class ProteinDihedralAngles;
-typedef ReferenceCountedObjectPtr<ProteinDihedralAngles> ProteinDihedralAnglesPtr;
-
 class ProteinTertiaryStructure;
 typedef ReferenceCountedObjectPtr<ProteinTertiaryStructure> ProteinTertiaryStructurePtr;
-
-class ProteinDihedralAngles : public BuiltinVectorBasedSequence<DihedralAnglesPair>
-{
-public:
-  typedef BuiltinVectorBasedSequence<DihedralAnglesPair> BaseClass;
-
-  ProteinDihedralAngles(size_t length) : BaseClass(T("DihedralAngles"), length) {}
-  ProteinDihedralAngles() {}
- 
-  static ProteinDihedralAnglesPtr createDihedralAngles(ProteinTertiaryStructurePtr tertiaryStructure);
-
-  DihedralAnglesPair getAnglesPair(size_t index) const
-    {jassert(index < elements.size()); return elements[index];}
-
-  DihedralAngle getPhi(size_t index) const
-    {return getAnglesPair(index).first;}
-
-  DihedralAngle getPsi(size_t index) const
-    {return getAnglesPair(index).second;}
-
-  void setAnglesPair(size_t index, DihedralAngle phi, DihedralAngle psi)
-    {jassert(index < elements.size()); elements[index] = DihedralAnglesPair(phi, psi);}
-};
 
 class ProteinTertiaryStructure : public Sequence
 {
@@ -55,11 +29,12 @@ public:
   ProteinTertiaryStructure() {}
 
   static ProteinTertiaryStructurePtr createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, CartesianCoordinatesSequencePtr trace);
-  static ProteinTertiaryStructurePtr createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinDihedralAnglesPtr dihedralAngles);
+  static ProteinTertiaryStructurePtr createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr dihedralAngles);
 
   LabelSequencePtr createAminoAcidSequence() const;
   CartesianCoordinatesSequencePtr createCAlphaTrace() const;
   CartesianCoordinatesSequencePtr createCBetaTrace() const;
+  ProteinBackboneBondSequencePtr createBackbone() const;
 
   virtual size_t size() const
     {return residues.size();}

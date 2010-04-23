@@ -15,20 +15,26 @@
 namespace lbcpp
 {
 
-class CartesianCoordinatesSequence : public BuiltinVectorBasedSequence<Vector3>
+class CartesianCoordinatesSequence : public BuiltinVectorBasedSequenceWithEmptyValues<Vector3>
 {
 public:
-  typedef BuiltinVectorBasedSequence<Vector3> BaseClass;
+  typedef BuiltinVectorBasedSequenceWithEmptyValues<Vector3> BaseClass;
 
   CartesianCoordinatesSequence(const String& name, size_t length)
     : BaseClass(name, length) {}
   CartesianCoordinatesSequence() {}
 
+  bool hasPosition(size_t index) const
+    {return hasObject(index);}
+
   Vector3 getPosition(size_t index) const
-    {jassert(index < elements.size()); return elements[index];}
+    {return getElement(index);}
 
   void setPosition(size_t index, const Vector3& position)
-    {jassert(index < elements.size()); elements[index] = position;}
+    {setElement(index, position);}
+
+  void clearPosition(size_t index)
+    {unsetElement(index);}
 };
 
 typedef ReferenceCountedObjectPtr<CartesianCoordinatesSequence> CartesianCoordinatesSequencePtr;

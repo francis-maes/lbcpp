@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-class BondCoordinates : public Object
+class BondCoordinates
 {
 public:
   BondCoordinates(double length, Angle theta, DihedralAngle phi);
@@ -24,7 +24,7 @@ public:
 
   void multiplyMatrix(Matrix4& matrix, bool applyAngle, bool applyDihedralAngle);
 
-  virtual String toString() const;
+  String toString() const;
 
 private:
   double length;
@@ -32,12 +32,10 @@ private:
   DihedralAngle phi;
 };
 
-typedef ReferenceCountedObjectPtr<BondCoordinates> BondCoordinatesPtr;
-
-class BondCoordinatesSequence : public TypedObjectVectorBasedSequence<BondCoordinates>
+class BondCoordinatesSequence : public BuiltinVectorBasedSequenceWithEmptyValues<BondCoordinates>
 {
 public:
-  typedef TypedObjectVectorBasedSequence<BondCoordinates> BaseClass;
+  typedef BuiltinVectorBasedSequenceWithEmptyValues<BondCoordinates> BaseClass;
 
   BondCoordinatesSequence(const String& name, CartesianCoordinatesSequencePtr cartesianCoordinates);
   BondCoordinatesSequence(const String& name, size_t length = 0);
@@ -45,8 +43,17 @@ public:
 
   CartesianCoordinatesSequencePtr createCartesianCoordinates(const String& name, const Matrix4& initialMatrix = Matrix4::identity);
 
-  void setCoordinates(size_t position, BondCoordinatesPtr coordinates);
-  BondCoordinatesPtr getCoordinates(size_t position) const;
+  bool hasCoordinates(size_t position) const
+    {return BaseClass::hasObject(position);}
+
+  BondCoordinates getCoordinates(size_t position) const
+    {return BaseClass::getElement(position);}
+
+  void setCoordinates(size_t position, const BondCoordinates& coordinates)
+    {BaseClass::setElement(position, coordinates);}
+
+  void clearCoordinates(size_t position)
+    {BaseClass::unsetElement(position);}
 };
 
 typedef ReferenceCountedObjectPtr<BondCoordinatesSequence> BondCoordinatesSequencePtr;

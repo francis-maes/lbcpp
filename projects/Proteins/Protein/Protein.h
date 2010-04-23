@@ -76,8 +76,8 @@ public:
   /*
   ** Tertiary structure
   */
-  ProteinDihedralAnglesPtr getDihedralAngles() const;
   CartesianCoordinatesSequencePtr getCAlphaTrace() const;
+  ProteinBackboneBondSequencePtr getBackboneBondSequence() const;
   ProteinTertiaryStructurePtr getTertiaryStructure() const;
   
   /*

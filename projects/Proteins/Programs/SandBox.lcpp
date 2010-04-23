@@ -22,6 +22,74 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+// Input: Features
+// Output, Supervision: BackbondBond
+class BackboneBondInferenceStep : public ParallelInferenceStep
+{
+public:
+  BackboneBondInferenceStep(const String& name)
+    : ParallelInferenceStep(name) {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return 0;}
+
+  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
+    {return InferenceStepPtr();}
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return input;}
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+    {return supervision;}
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return ObjectPtr();}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+    {}
+
+  // phi
+  // psi
+  // omega
+  // L1
+  // L2
+  // L3
+};
+
+// Input, Supervision: Protein
+// Output: BackbondBondSequence
+class ProteinBackboneBondSequenceInferenceStep : public SharedParallelInferenceStep, public ProteinResidueRelatedInferenceStepHelper
+{
+public:
+  ProteinBackboneBondSequenceInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
+    : SharedParallelInferenceStep(name, new BackboneBondInferenceStep(name + T("Bond"))),
+      ProteinResidueRelatedInferenceStepHelper(T("BackboneBondSequence"), features) {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return getProteinLength(input);} // FIXME: -1 ?
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return features->compute(getProtein(input), index);}
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  {
+    ProteinBackboneBondSequencePtr backBone = getTarget(supervision).dynamicCast<ProteinBackboneBondSequence>();
+    jassert(backBone);
+    return backBone->getBond(index);
+  }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return ProteinResidueRelatedInferenceStepHelper::createEmptyOutput(input);}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    ProteinBackboneBondSequencePtr backBone = output.dynamicCast<ProteinBackboneBondSequence>();
+    jassert(backBone);
+    ProteinBackboneBondPtr bond = subOutput.dynamicCast<ProteinBackboneBond>();
+    jassert(bond);
+    backBone->setBond(index, bond);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -227,6 +295,8 @@ int main(int argc, char** argv)
     proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
+    // step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction, T("BackboneBondSequence"));
+    // proteinInference->appendStep(step);
   }
 
   /*

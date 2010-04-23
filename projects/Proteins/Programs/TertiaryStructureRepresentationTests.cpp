@@ -59,15 +59,14 @@ int main()
     BondCoordinatesSequencePtr calphaTraceGC2 = new BondCoordinatesSequence(T("Pouet"), reconstructedCalphaTrace);
 
     for (size_t i = 0; i < 10; ++i)
-    {
-      std::cout << (i+1) << "Correct: " << calphaTraceGC->getCoordinates(i)->toString()
-        << " Reconstructed: " << calphaTraceGC2->getCoordinates(i)->toString() << std::endl;
-    }
+      if (calphaTraceGC->hasCoordinates(i))
+        std::cout << (i+1) << "Correct: " << calphaTraceGC->getCoordinates(i).toString()
+          << " Reconstructed: " << calphaTraceGC2->getCoordinates(i).toString() << std::endl;
     /*
-    ProteinDihedralAnglesPtr dihedralAngles = protein->getDihedralAngles();
+    ProteinBackboneBondSequencePtr dihedralAngles = protein->getBackboneBondSequence();
     ProteinTertiaryStructurePtr reconstructedTertiaryStructure = ProteinTertiaryStructure::createFromDihedralAngles(aminoAcidSequence, dihedralAngles);
 
-    ProteinDihedralAnglesPtr reconstructedDihedralAngles = ProteinDihedralAngles::createDihedralAngles(reconstructedTertiaryStructure);
+    ProteinBackboneBondSequencePtr reconstructedDihedralAngles = ProteinBackboneBondSequence::createDihedralAngles(reconstructedTertiaryStructure);
     for (size_t i = 0; i < 10; ++i)
     {
       std::cout << (i+1) << " correct = " << dihedralAngles->getPhi(i) << " " << dihedralAngles->getPsi(i)

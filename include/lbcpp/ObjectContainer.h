@@ -71,6 +71,10 @@ public:
   */
   virtual ObjectPtr get(size_t index) const = 0;
 
+  virtual bool hasObject(size_t index) const
+    {return get(index) != ObjectPtr();}
+
+
   // only for read/write containers:
   virtual void resize(size_t newSize)
     {jassert(false);}

@@ -210,11 +210,6 @@ struct DefaultContainerTraits
   }
 };
 
-/*!
-** @class ContainerTraits
-** @brief #FIXME
-**
-*/
 template<class ContainerType>
 struct BuiltinContainerTraits : public DefaultContainerTraits<
       BuiltinContainerTraits<ContainerType>,
@@ -259,7 +254,7 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
   **
   ** @return
   */
-  static const typename ContainerType::value_type& value(const typename ContainerType::const_iterator& iterator)
+  static typename ContainerType::value_type value(const typename ContainerType::const_iterator& iterator)
     {return *iterator;}
 
   /*!
@@ -298,32 +293,12 @@ struct BuiltinContainerTraits : public DefaultContainerTraits<
 /*
 ** Vectors
 */
-/*!
-** @struct Traits
-** @brief #FIXME
-**
-*/
 template<class T>
 struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> >
 {
-  /*!
-  **
-  **
-  ** @param vector
-  **
-  ** @return
-  */
   static inline String toString(const std::vector<T>& vector)
     {return T("[") + BuiltinContainerTraits< std::vector<T> >::toString(vector) + T("]");}
 
-  /*!
-  **
-  **
-  ** @param istr
-  ** @param res
-  **
-  ** @return
-  */
   static inline bool read(InputStream& istr, std::vector<T>& res)
   {
     size_t size;
@@ -336,14 +311,42 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
     return true;
   }
 
-  /*!
-  **
-  **
-  ** @param vector
-  **
-  ** @return
-  */
   static const T& sampleRandom(const std::vector<T>& vector)
+  {
+    jassert(vector.size());
+    return vector[RandomGenerator::getInstance().sampleSize(vector.size())];
+  }
+};
+
+template<>
+struct Traits< std::vector<bool> > : public BuiltinContainerTraits< std::vector<bool> >
+{
+  static inline String toString(const std::vector<bool>& vector)
+  {
+    String res = T("[");
+    for (size_t i = 0; i < vector.size(); ++i)
+      res += vector[i] ? T("1") : T("0");
+    res += T("]");
+    return res;
+  }
+
+  static inline bool read(InputStream& istr, std::vector<bool>& res)
+  {
+    size_t size;
+    if (!Traits<size_t>::read(istr, size))
+      return false;
+    res.resize(size);
+    for (size_t i = 0; i < size; ++i)
+    {
+      bool value;
+      if (!Traits<bool>::read(istr, value))
+        return false;
+      res[i] = value;
+    }
+    return true;
+  }
+
+  static bool sampleRandom(const std::vector<bool>& vector)
   {
     jassert(vector.size());
     return vector[RandomGenerator::getInstance().sampleSize(vector.size())];
@@ -356,13 +359,6 @@ struct Traits< std::vector<T> > : public BuiltinContainerTraits< std::vector<T> 
 template<class T>
 struct Traits< std::set<T> > : public BuiltinContainerTraits< std::set<T> >
 {
-  /*!
-  **
-  **
-  ** @param container
-  **
-  ** @return
-  */
   static inline String toString(const std::set<T>& container)
     {return T("{") + BuiltinContainerTraits< std::set<T> >::toString(container) + T("}");}
 };

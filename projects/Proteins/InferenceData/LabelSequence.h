@@ -24,9 +24,6 @@ public:
   FeatureDictionaryPtr getDictionary() const
     {return dictionary;}
 
-  bool exists(size_t position) const
-    {jassert(position < sequence.size()); return sequence[position] != 255;}
-
   String getString(size_t position) const;
   int getIndex(size_t position) const;
 
@@ -44,6 +41,7 @@ public:
   virtual void resize(size_t newSize);
   virtual void set(size_t position, ObjectPtr object);
   virtual ObjectPtr get(size_t index) const;
+  virtual bool hasObject(size_t index) const;
   void clear(size_t position);
 
   /*
