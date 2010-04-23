@@ -25,7 +25,6 @@ const Matrix4 Matrix4::identity = Matrix4(
 #include "InferenceStep/ClassificationInferenceStep.h"
 #include "InferenceStep/RegressionInferenceStep.h"
 #include "InferenceStep/DecoratorInferenceStep.h"
-#include "InferenceStep/ParallelSequenceLabelingInferenceStep.h"
 
 #include "InferenceContext/CancelAfterStepCallback.h"
 
@@ -50,8 +49,7 @@ void declareInferenceClasses()
 #include "Protein/AminoAcidDictionary.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
-#include "Protein/Inference/ProteinSequenceLabelingInferenceStep.h"
-#include "Protein/Inference/PositionSpecificScoringMatrixInferenceStep.h"
+#include "Protein/Inference/ProteinSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 
 extern void declareProteinResidueFeaturesClasses();

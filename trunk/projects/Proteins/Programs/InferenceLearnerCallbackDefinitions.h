@@ -194,7 +194,7 @@ public:
   
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
-    String target = ((ProteinSequenceLabelingInferenceStepPtr) step)->getTargetName();
+    String target = step.dynamicCast<ProteinSequenceInferenceStep>()->getTargetName();
     
     for (size_t i = 0; i < callbacks.size(); ++i)
     {
