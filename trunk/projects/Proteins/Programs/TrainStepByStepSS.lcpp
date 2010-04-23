@@ -24,8 +24,6 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-typedef ReferenceCountedObjectPtr<CustomableSecondaryStructureContent> CustomableSecondaryStructureContentPtr;
-
 /*                                                  *
                 Under Heavy Development
  *                                                  */
@@ -94,7 +92,7 @@ int main(int argc, char** argv)
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinsDirectoryFile, T("*.protein"));
 
 /*------------------------------------------------------------------------------
-          /!\   Testing Area - BE CAREFUL - AT OUR OWN RISK   /!\
+          /!\   Testing Area - BE CAREFUL - AT YOUR OWN RISK   /!\
 ------------------------------------------------------------------------------*/
 //#define PSSM
 #ifdef PSSM
@@ -142,7 +140,9 @@ int main(int argc, char** argv)
   /*
   ** Retreive and compute AAIndex for each protein
   */
-  File file("/Users/jbecker/Documents/Workspace/CASP9/aaindex1");
+  File file("/scratch/jbecker/aaindex1");
+  if (isTestVersion)
+    file = T("/Users/jbecker/Documents/Workspace/CASP9/aaindex1");
   ObjectStreamPtr aaindex = ObjectStreamPtr(new AAIndexParser(file));
 
   std::vector< ScoreVectorSequencePtr > vectorAAIndex;
@@ -155,6 +155,9 @@ int main(int argc, char** argv)
 
     vectorAAIndex.push_back(score);
   }
+
+  std::cout << "Number of AAIndex: " << vectorAAIndex.size() << std::endl;
+  jassert(vectorAAIndex.size() != 0);
 
   ObjectContainerPtr proteins = proteinsStream->load()->randomize();
   if (isTestVersion)
@@ -202,7 +205,7 @@ int main(int argc, char** argv)
   ProteinInferencePtr proteinInference = new ProteinInference();
   ProteinSequenceLabelingInferenceStepPtr step;
 
-  for (size_t i = 0; i < maxPass; ++i) {
+  for (size_t i = 0; i < (size_t) maxPass; ++i) {
     if (predictionTarget.contains(T("SS3")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS3_Pass_") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
