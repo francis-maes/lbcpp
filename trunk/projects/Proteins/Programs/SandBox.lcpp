@@ -189,7 +189,7 @@ int main(int argc, char** argv)
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;
 
-  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDBCompiled"));
+  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
   ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
 

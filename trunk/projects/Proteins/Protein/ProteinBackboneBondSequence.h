@@ -21,9 +21,13 @@ typedef ReferenceCountedObjectPtr<ProteinBackboneBondSequence> ProteinBackboneBo
 class ProteinBackboneBond : public Object
 {
 public:
-  BondCoordinates phi;
-  BondCoordinates psi;
-  BondCoordinates omega;
+  ProteinBackboneBond(const BondCoordinates& bond1, const BondCoordinates& bond2, const BondCoordinates& bond3)
+    : bond1(bond1), bond2(bond2), bond3(bond3) {}
+  ProteinBackboneBond() {}
+
+  BondCoordinates bond1; // N--CA
+  BondCoordinates bond2; // CA--C
+  BondCoordinates bond3; // C--N
 };
 
 typedef ReferenceCountedObjectPtr<ProteinBackboneBond> ProteinBackboneBondPtr;
@@ -33,9 +37,9 @@ class ProteinBackboneBondSequence : public TypedObjectVectorBasedSequence<Protei
 public:
   typedef TypedObjectVectorBasedSequence<ProteinBackboneBond> BaseClass;
 
-  ProteinBackboneBondSequence(size_t proteinLength) : BaseClass(T("BackboneBondSequence"), proteinLength) {}
+  ProteinBackboneBondSequence(size_t size) : BaseClass(T("BackboneBondSequence"), size) {}
   ProteinBackboneBondSequence() {}
-
+  
   bool hasBond(size_t position) const
     {return BaseClass::hasObject(position);}
 
@@ -43,10 +47,7 @@ public:
     {return BaseClass::get(position).dynamicCast<ProteinBackboneBond>();}
 
   void setBond(size_t position, ProteinBackboneBondPtr bond)
-    {BaseClass::set(position, bond);}
-
-  void clearBond(size_t position)
-    {BaseClass::set(position, ObjectPtr());}
+    {BaseClass::setElement(position, bond);}
 
 /*
   DihedralAnglesPair getAnglesPair(size_t index) const

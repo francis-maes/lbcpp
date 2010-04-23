@@ -15,14 +15,17 @@
 namespace lbcpp
 {
 
-class CartesianCoordinatesSequence : public BuiltinVectorBasedSequenceWithEmptyValues<Vector3>
+class CartesianCoordinatesSequence : public BuiltinVectorBasedSequence<Vector3>
 {
 public:
-  typedef BuiltinVectorBasedSequenceWithEmptyValues<Vector3> BaseClass;
+  typedef BuiltinVectorBasedSequence<Vector3> BaseClass;
 
   CartesianCoordinatesSequence(const String& name, size_t length)
     : BaseClass(name, length) {}
   CartesianCoordinatesSequence() {}
+
+  virtual bool hasObject(size_t index) const
+    {return getPosition(index).exists();}
 
   bool hasPosition(size_t index) const
     {return hasObject(index);}
@@ -30,11 +33,14 @@ public:
   Vector3 getPosition(size_t index) const
     {return getElement(index);}
 
+  Vector3 getPositionChecked(int index) const
+    {return index >= 0 && index < (int)elements.size() ? elements[index] : Vector3();}
+
   void setPosition(size_t index, const Vector3& position)
     {setElement(index, position);}
 
   void clearPosition(size_t index)
-    {unsetElement(index);}
+    {setElement(index, Vector3());}
 };
 
 typedef ReferenceCountedObjectPtr<CartesianCoordinatesSequence> CartesianCoordinatesSequencePtr;

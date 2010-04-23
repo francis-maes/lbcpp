@@ -15,13 +15,33 @@ using namespace lbcpp;
 BondCoordinates::BondCoordinates(double length, Angle theta, DihedralAngle phi)
   : length(length), theta(theta), phi(phi) {}
 
-void BondCoordinates::multiplyMatrix(Matrix4& matrix, bool applyAngle, bool applyDihedralAngle)
+BondCoordinates::BondCoordinates(const Vector3* a, const Vector3* b, const Vector3* c, const Vector3* d)
+  : length(-1.0), theta(M_2_TIMES_PI), phi(M_2_TIMES_PI)
 {
-  matrix.translate(Vector3(length, 0.0, 0.0));
-  if (applyDihedralAngle)
-    matrix.rotateAroundXAxis(phi);
-  if (applyAngle)
+  if (b && c)
+  {
+    Vector3 cb = (*b - *c);
+    length = cb.l2norm();
+    if (d)
+    {
+      Vector3 cd = (*d - *c);
+      theta = cb.angle(cd);
+      if (a)
+        phi = DihedralAngle(*a, *b, *c, *d);
+    }
+  }
+}
+
+void BondCoordinates::multiplyMatrix(Matrix4& matrix)
+{
+  // avant: length, puis phi (around x), puis theta (around z)
+
+  if (length >= 0.0)
+    matrix.translate(Vector3(length, 0.0, 0.0));
+  if (theta.exists())
     matrix.rotateAroundZAxis(M_PI - theta);
+  if (phi.exists())
+    matrix.rotateAroundXAxis(phi);
 }
 
 String BondCoordinates::toString() const
@@ -39,30 +59,24 @@ BondCoordinatesSequence::BondCoordinatesSequence(const String& name, CartesianCo
 {
   size_t n = cartesianCoordinates->size();
   jassert(n);
-  if (n > 1)
+  if (n == 1)
+    return;
+  
+  resize(n - 1);
+
+  Vector3 A;
+  Vector3 B = cartesianCoordinates->getPositionChecked(0);
+  Vector3 C = cartesianCoordinates->getPositionChecked(1);
+  for (size_t i = 0; i < n - 1; ++i)
   {
-    resize(n - 1);
-    Vector3 previousCoordinates = cartesianCoordinates->getPosition(0);
-    Vector3 coordinates = cartesianCoordinates->getPosition(1);
-    for (size_t i = 1; i < n; ++i)
-    {
-      Vector3 nextCoordinates;
-      if (i < n - 1)
-        nextCoordinates = cartesianCoordinates->getPosition(i + 1);
-
-      Vector3 prev = previousCoordinates - coordinates;
-      Vector3 next = nextCoordinates - coordinates;
-
-      double length = prev.l2norm();
-      Angle theta = i < n - 1 ? prev.angle(next) : 0.0;
-      DihedralAngle phi = i > 1 && i < n - 1
-        ? DihedralAngle(cartesianCoordinates->getPosition(i - 2), previousCoordinates, coordinates, nextCoordinates)
-        : DihedralAngle(2 * M_PI);
-      setCoordinates(i - 1, BondCoordinates(length, theta, phi));
-
-      previousCoordinates = coordinates;
-      coordinates = nextCoordinates;
-    }
+    Vector3 D = cartesianCoordinates->getPositionChecked(i + 2);
+    setCoordinates(i, BondCoordinates(A.exists() ? &A : NULL, 
+                                B.exists() ? &B : NULL, 
+                                C.exists() ? &C : NULL, 
+                                D.exists() ? &D : NULL));
+    A = B;
+    B = C;
+    C = D;
   }
 }
 
@@ -80,7 +94,7 @@ CartesianCoordinatesSequencePtr BondCoordinatesSequence::createCartesianCoordina
   res->setPosition(0, matrix.getTranslation());
   for (size_t i = 1; i < n; ++i)
   {
-    getCoordinates(i - 1).multiplyMatrix(matrix, i < n - 1, i < n - 2);
+    getCoordinates(i - 1).multiplyMatrix(matrix);
     res->setPosition(i, matrix.getTranslation());
   }
   return res;

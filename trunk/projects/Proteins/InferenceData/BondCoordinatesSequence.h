@@ -19,12 +19,25 @@ namespace lbcpp
 class BondCoordinates
 {
 public:
+  BondCoordinates(const Vector3* a, const Vector3* b, const Vector3* c, const Vector3* d);
   BondCoordinates(double length, Angle theta, DihedralAngle phi);
-  BondCoordinates() {}
+  BondCoordinates() : length(-1.0), theta(M_2_TIMES_PI), phi(M_2_TIMES_PI) {}
 
-  void multiplyMatrix(Matrix4& matrix, bool applyAngle, bool applyDihedralAngle);
+  void multiplyMatrix(Matrix4& matrix);
 
   String toString() const;
+
+  bool hasLength() const
+    {return length >= 0.0;}
+
+  bool hasThetaAngle() const
+    {return (double)theta != M_2_TIMES_PI;}
+
+  bool hasPhiDihedralAngle() const
+    {return (double)phi != M_2_TIMES_PI;}
+
+  bool exists() const
+    {return hasLength() || hasThetaAngle() || hasPhiDihedralAngle();}
 
 private:
   double length;
@@ -32,16 +45,19 @@ private:
   DihedralAngle phi;
 };
 
-class BondCoordinatesSequence : public BuiltinVectorBasedSequenceWithEmptyValues<BondCoordinates>
+class BondCoordinatesSequence : public BuiltinVectorBasedSequence<BondCoordinates>
 {
 public:
-  typedef BuiltinVectorBasedSequenceWithEmptyValues<BondCoordinates> BaseClass;
+  typedef BuiltinVectorBasedSequence<BondCoordinates> BaseClass;
 
   BondCoordinatesSequence(const String& name, CartesianCoordinatesSequencePtr cartesianCoordinates);
   BondCoordinatesSequence(const String& name, size_t length = 0);
   BondCoordinatesSequence() {}  
 
   CartesianCoordinatesSequencePtr createCartesianCoordinates(const String& name, const Matrix4& initialMatrix = Matrix4::identity);
+
+  virtual bool hasObject(size_t position) const
+    {return BaseClass::getElement(position).exists();}
 
   bool hasCoordinates(size_t position) const
     {return BaseClass::hasObject(position);}
@@ -53,7 +69,7 @@ public:
     {BaseClass::setElement(position, coordinates);}
 
   void clearCoordinates(size_t position)
-    {BaseClass::unsetElement(position);}
+    {BaseClass::setElement(position, BondCoordinates());}
 };
 
 typedef ReferenceCountedObjectPtr<BondCoordinatesSequence> BondCoordinatesSequencePtr;

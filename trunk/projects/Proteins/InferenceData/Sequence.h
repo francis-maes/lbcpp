@@ -82,42 +82,6 @@ protected:
     {Sequence::save(ostr); lbcpp::write(ostr, elements);}
 };
 
-template<class ElementType>
-class BuiltinVectorBasedSequenceWithEmptyValues : public BuiltinVectorBasedSequence<ElementType>
-{
-public:
-  typedef BuiltinVectorBasedSequence<ElementType> BaseClass;
-
-  BuiltinVectorBasedSequenceWithEmptyValues(const String& name, size_t length = 0)
-    : BaseClass(name, length), nullElements(length, true) {}
-
-  BuiltinVectorBasedSequenceWithEmptyValues() {}
-
-  virtual void resize(size_t newSize)
-  {
-    BaseClass::resize(newSize);
-    nullElements.resize(newSize, true);
-  }
-
-  void setElement(size_t index, const ElementType& element)
-    {BaseClass::setElement(index, element); nullElements[index] = false;}
-
-  void unsetElement(size_t index)
-    {nullElements[index] = true;}
-
-  virtual bool hasObject(size_t index) const
-    {jassert(index < nullElements.size()); return nullElements[index];}
-
-protected:
-  std::vector<bool> nullElements;
-
-  virtual bool load(InputStream& istr)
-    {return BaseClass::load(istr) && lbcpp::read(istr, nullElements);}
-
-  virtual void save(OutputStream& ostr) const
-    {BaseClass::save(ostr); lbcpp::write(ostr, nullElements);}
-};
-
 template<class ObjectType>
 class TypedObjectVectorBasedSequence
   : public BuiltinVectorBasedSequence< ReferenceCountedObjectPtr<ObjectType > >
