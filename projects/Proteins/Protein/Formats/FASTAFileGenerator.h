@@ -28,7 +28,7 @@ public:
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     jassert(aminoAcidSequence);
     String aa = aminoAcidSequence->toString();
-    jassert(aa.length() == aminoAcidSequence->size());
+    jassert((size_t) aa.length() == aminoAcidSequence->size());
     print(aa, true);
   }
 };

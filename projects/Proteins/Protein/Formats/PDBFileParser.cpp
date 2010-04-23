@@ -379,7 +379,7 @@ static String tertiaryStructureBlockToAminoAcidString(const std::vector<ProteinR
   String res;
   for (size_t i = 0; i < residues.size(); ++i)
     res += AminoAcidDictionary::getInstance()->getFeature((size_t)residues[i]->getAminoAcid());
-  jassert(res.length() == residues.size());
+  jassert((size_t) res.length() == residues.size());
   return res;
 }
 
@@ -415,7 +415,7 @@ ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPt
     tertiaryStructure = new ProteinTertiaryStructure(n);
 
     String primaryAminoAcids = aminoAcidSequence->toString();
-    jassert(primaryAminoAcids.length() == n);
+    jassert((size_t) primaryAminoAcids.length() == n);
 
     // align each tertiary structure block with the primary sequence and fill the corresponding part of the tertiary structure
     int lastIndex = 0;
