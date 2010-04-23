@@ -5,7 +5,7 @@ public:
   DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000) {}
   
   virtual InferenceContextPtr createContext()
-  {return singleThreadedInferenceContext();}
+    {return singleThreadedInferenceContext();}
   
   virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
   {
@@ -28,13 +28,13 @@ public:
   }
   
   void setL2Regularizer(double regularizer)
-  {this->regularizer = regularizer;}
+    {this->regularizer = regularizer;}
   
   void setInitialLearningRate(double value)
-  {this->initialLearningRate = value;}
+    {this->initialLearningRate = value;}
   
   void setNumberInterationLearningRate(size_t value)
-  {this->numberIterationLearningRate = value;}
+    {this->numberIterationLearningRate = value;}
   
 protected:
   double regularizer;
@@ -47,10 +47,13 @@ typedef ReferenceCountedObjectPtr<DefaultInferenceLearnerCallback> DefaultInfere
 class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
+  enum TargetType {UNKNOWN = -1, SS3, SS8, SA};
+  enum {numberTarget = 3};
+  
   EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback())
   : trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
   , factory(factory)
-  , target(CustomableSecondaryStructureContent::NONE), targetTrainingScore(0.), targetTestingScore(0.)
+  , target(UNKNOWN), targetTrainingScore(0.), targetTestingScore(0.)
   {
     trainingEvaluation->startInferencesCallback(0); // initialize a zero score
     testingEvaluation->startInferencesCallback(0);
@@ -61,17 +64,17 @@ public:
     jassert(trainingEvaluation);
     this->trainingEvaluation = trainingEvaluation;
     switch (target) {
-      case CustomableSecondaryStructureContent::SS3:
-        targetTrainingScore = trainingEvaluation->getQ3Score(); break;
+    case SS3:
+      targetTrainingScore = trainingEvaluation->getQ3Score(); break;
         
-      case CustomableSecondaryStructureContent::SS8:
-        targetTrainingScore = trainingEvaluation->getQ8Score(); break;
+    case SS8:
+      targetTrainingScore = trainingEvaluation->getQ8Score(); break;
         
-      case CustomableSecondaryStructureContent::SA:
-        targetTrainingScore = trainingEvaluation->getSA2Score(); break;
+    case SA:
+      targetTrainingScore = trainingEvaluation->getSA2Score(); break;
         
-      default:
-        jassert(false); break;
+    default:
+      jassert(false); break;
     }
   }
   
@@ -80,59 +83,67 @@ public:
     jassert(testingEvaluation);
     this->testingEvaluation = testingEvaluation;
     switch (target) {
-      case CustomableSecondaryStructureContent::SS3:
-        targetTestingScore = testingEvaluation->getQ3Score(); break;
+    case SS3:
+      targetTestingScore = testingEvaluation->getQ3Score(); break;
         
-      case CustomableSecondaryStructureContent::SS8:
-        targetTestingScore = testingEvaluation->getQ8Score(); break;
+    case SS8:
+      targetTestingScore = testingEvaluation->getQ8Score(); break;
         
-      case CustomableSecondaryStructureContent::SA:
-        targetTestingScore = testingEvaluation->getSA2Score(); break;
+    case SA:
+      targetTestingScore = testingEvaluation->getSA2Score(); break;
         
-      default:
-        jassert(false); break;
+    default:
+      jassert(false); break;
     }
     
   }
   
   virtual void setTargetName(String& targetName)
   {
-    target = CustomableSecondaryStructureContent::getTarget(targetName);
-    jassert(target != CustomableSecondaryStructureContent::NONE);
+    target = getTypeFromTargetName(targetName);
+    jassert(target != UNKNOWN);
   }
   
   virtual InferenceContextPtr createContext()
-  {jassert(factory); return factory->createContext();}
+    {jassert(factory); return factory->createContext();}
   
   virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
-  {jassert(factory); return factory->createClassifier(step, labels);}
+    {jassert(factory); return factory->createClassifier(step, labels);}
   
   virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
-  {jassert(factory); return factory->createRegressor(step);}
+    {jassert(factory); return factory->createRegressor(step);}
   
   void setFactory(InferenceLearnerCallbackPtr factory)
-  {this->factory = factory;}
+    {this->factory = factory;}
   
-protected:
-  typedef CustomableSecondaryStructureContent::Target Target;
-  
+protected:  
   ProteinEvaluationCallbackPtr getTrainingEvaluation()
-  {jassert(trainingEvaluation); return trainingEvaluation;}
+    {jassert(trainingEvaluation); return trainingEvaluation;}
   
   ProteinEvaluationCallbackPtr getTestingEvaluation()
-  {jassert(testingEvaluation); return testingEvaluation;}
+    {jassert(testingEvaluation); return testingEvaluation;}
   
-  Target getTarget()
+  TargetType getTypeFromTargetName(const String& targetName)
   {
-    jassert(target != CustomableSecondaryStructureContent::NONE);
-    return target;
+    if (targetName == T("SecondaryStructureSequence"))
+      return SS3;
+    if (targetName == T("DSSPSecondaryStructureSequence"))
+      return SS8;
+    if (targetName == T("SolventAccessibilitySequence"))
+      return SA;
+    
+    jassert(false);
+    return UNKNOWN;
   }
   
+  TargetType getTarget()
+    {return target;}
+  
   double getTargetTrainingScore()
-  {return targetTrainingScore;}
+    {return targetTrainingScore;}
   
   double getTargetTestingScore()
-  {return targetTestingScore;}
+    {return targetTestingScore;}
   
 private:
   ProteinEvaluationCallbackPtr trainingEvaluation;
@@ -140,7 +151,7 @@ private:
   
   InferenceLearnerCallbackPtr factory;
   
-  Target target;
+  TargetType target;
   double targetTrainingScore;
   double targetTestingScore;
 };
@@ -260,7 +271,7 @@ public:
   //    , iterationNumber(0), passNumber(0)
   , bestTrainingScore(0.), bestTestingScore(0.)
   {
-    for (size_t i = 0; i < CustomableSecondaryStructureContent::numberTarget; ++i) {
+    for (size_t i = 0; i < numberTarget; ++i) {
       oTargetPass[i] = NULL;
       targetIteration[i] = 0;
     }
@@ -268,7 +279,7 @@ public:
   
   ~GnuPlotInferenceLearnerCallback()
   {
-    for (size_t i = 0; i < CustomableSecondaryStructureContent::numberTarget; ++i)
+    for (size_t i = 0; i < numberTarget; ++i)
       delete oTargetPass[i];
   }
   
@@ -313,7 +324,7 @@ public:
   {
     //    jassert(oIteration);
     //    delete oIteration;
-    jassert(getTarget() != CustomableSecondaryStructureContent::NONE);
+    jassert(getTarget() != UNKNOWN);
     
     if (!oTargetPass[getTarget()]) {
       static const juce::tchar* targetToString[] = {
@@ -343,10 +354,10 @@ private:
   //  double startTimeIteration;
   double startTimePass;
   
-  OutputStream* oTargetPass[CustomableSecondaryStructureContent::numberTarget];
+  OutputStream* oTargetPass[numberTarget];
   //  OutputStream* oIteration;
   
-  size_t targetIteration[CustomableSecondaryStructureContent::numberTarget];
+  size_t targetIteration[numberTarget];
   //  size_t iterationNumber;
   //  size_t passNumber;
   

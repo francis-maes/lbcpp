@@ -138,7 +138,7 @@ ScoreVectorSequencePtr Protein::getPositionSpecificScoringMatrix() const
   {return getObject(T("PositionSpecificScoringMatrix"));}
 
 ScoreVectorSequencePtr Protein::getAminoAcidProperty() const
-{return getObject(T("AminoAcidProperty"));}
+  {return getObject(T("AminoAcidProperty"));}
 
 LabelSequencePtr Protein::getSecondaryStructureSequence() const
   {return getObject(T("SecondaryStructureSequence"));}
