@@ -28,9 +28,7 @@ SET(LBCPP_INFERENCE_STEP_SOURCES
   InferenceStep/ParallelInferenceStep.h
   InferenceStep/DecoratorInferenceStep.h
   InferenceStep/DecoratorInferenceStep.cpp
-  InferenceStep/ParallelSequenceLabelingInferenceStep.h
   InferenceStep/ParallelSharedMultiRegressionInferenceStep.h
-  InferenceStep/ParallelSequenceMultiRegressionInferenceStep.h
 )
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
@@ -78,8 +76,7 @@ SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
   Protein/Inference/ProteinResidueFeatures.h
   Protein/Inference/ProteinResiduePairFeatures.h
   Protein/Inference/ProteinInferenceStepHelper.h
-  Protein/Inference/ProteinSequenceLabelingInferenceStep.h
-  Protein/Inference/PositionSpecificScoringMatrixInferenceStep.h
+  Protein/Inference/ProteinSequenceInferenceStep.h
   Protein/Inference/ProteinInference.h
 )
 

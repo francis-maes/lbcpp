@@ -122,7 +122,7 @@ ProteinResidueFeaturesPtr lbcpp::proteinFrequencyWindowFeatures(const String& se
 /*
 ** Misc
 */
-#include "Protein/Inference/PositionSpecificScoringMatrixInferenceStep.h"
+#include "Protein/Inference/ProteinSequenceInferenceStep.h"
 
 featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr input, size_t scoreIndex) const
 {
