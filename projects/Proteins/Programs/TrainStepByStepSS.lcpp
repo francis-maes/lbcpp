@@ -197,7 +197,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), wSS8, wSS8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilitySequence"), wSA, wSA, true));
   
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), 50, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
   
   /*
   ** Creation of the inference
@@ -259,3 +259,4 @@ int main(int argc, char** argv)
 
   return 0;
 }
+

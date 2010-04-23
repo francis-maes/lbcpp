@@ -133,3 +133,4 @@ AminoAcidPropertyDictionary::AminoAcidPropertyDictionary()
   addFeature(T("RussellLinding"));
   addFeature(T("DeleageRoux"));
 }
+

@@ -53,3 +53,4 @@ ProteinBackboneBondSequencePtr ProteinBackboneBondSequence::createDihedralAngles
   return ProteinBackboneBondSequence();
 }
 #endif // 0
+
