@@ -25,6 +25,24 @@ public:
     : bond1(bond1), bond2(bond2), bond3(bond3) {}
   ProteinBackboneBond() {}
 
+  virtual String toString() const
+    {return T("Bond1: ") + bond1.toString() + T("\n") +
+            T("Bond2: ") + bond2.toString() + T("\n") +
+            T("Bond3: ") + bond3.toString() + T("\n");}
+
+  BondCoordinates getBond1() const
+    {return bond1;}
+
+  BondCoordinates getBond2() const
+    {return bond2;}
+
+  BondCoordinates getBond3() const
+    {return bond3;}
+
+  bool exists() const
+    {return bond1.exists() || bond2.exists() || bond3.exists();}
+
+private:
   BondCoordinates bond1; // N--CA
   BondCoordinates bond2; // CA--C
   BondCoordinates bond3; // C--N

@@ -29,7 +29,7 @@ public:
   ProteinTertiaryStructure() {}
 
   static ProteinTertiaryStructurePtr createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, CartesianCoordinatesSequencePtr trace);
-  static ProteinTertiaryStructurePtr createFromDihedralAngles(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr dihedralAngles);
+  static ProteinTertiaryStructurePtr createFromBackbone(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr backbone);
 
   LabelSequencePtr createAminoAcidSequence() const;
   CartesianCoordinatesSequencePtr createCAlphaTrace() const;
