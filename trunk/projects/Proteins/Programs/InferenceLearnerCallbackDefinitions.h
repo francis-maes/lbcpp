@@ -53,7 +53,8 @@ public:
   EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback())
   : trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
   , factory(factory)
-  , target(UNKNOWN), targetTrainingScore(0.), targetTestingScore(0.)
+  , target(UNKNOWN), targetName(T("NO_TARGET"))
+  , targetTrainingScore(0.), targetTestingScore(0.)
   {
     trainingEvaluation->startInferencesCallback(0); // initialize a zero score
     testingEvaluation->startInferencesCallback(0);
@@ -63,43 +64,19 @@ public:
   {
     jassert(trainingEvaluation);
     this->trainingEvaluation = trainingEvaluation;
-    switch (target) {
-    case SS3:
-      targetTrainingScore = trainingEvaluation->getQ3Score(); break;
-        
-    case SS8:
-      targetTrainingScore = trainingEvaluation->getQ8Score(); break;
-        
-    case SA:
-      targetTrainingScore = trainingEvaluation->getSA2Score(); break;
-        
-    default:
-      jassert(false); break;
-    }
+    targetTrainingScore = trainingEvaluation->getDefaultScoreForTarget(targetName);
   }
   
   virtual void setTestingEvaluation(ProteinEvaluationCallbackPtr testingEvaluation)
   {
     jassert(testingEvaluation);
     this->testingEvaluation = testingEvaluation;
-    switch (target) {
-    case SS3:
-      targetTestingScore = testingEvaluation->getQ3Score(); break;
-        
-    case SS8:
-      targetTestingScore = testingEvaluation->getQ8Score(); break;
-        
-    case SA:
-      targetTestingScore = testingEvaluation->getSA2Score(); break;
-        
-    default:
-      jassert(false); break;
-    }
-    
+    targetTestingScore = testingEvaluation->getDefaultScoreForTarget(targetName);
   }
   
   virtual void setTargetName(String& targetName)
   {
+    this->targetName = targetName;
     target = getTypeFromTargetName(targetName);
     jassert(target != UNKNOWN);
   }
@@ -152,6 +129,7 @@ private:
   InferenceLearnerCallbackPtr factory;
   
   TargetType target;
+  String targetName;
   double targetTrainingScore;
   double targetTestingScore;
 };

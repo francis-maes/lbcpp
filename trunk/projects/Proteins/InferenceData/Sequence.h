@@ -95,7 +95,7 @@ public:
 
   virtual void resize(size_t newSize)
   {
-    //elements.resize(newSize);
+    BaseClass::resize(newSize);
     nullElements.resize(newSize, true);
   }
 

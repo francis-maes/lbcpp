@@ -78,6 +78,19 @@ public:
 
   double getPSSMRootMeanSquareError() const
     {return sqrt(pssmSquaredError->getMean());}
+  
+  double getDefaultScoreForTarget(const String& targetName)
+  {
+    if (targetName == T("SecondaryStructureSequence"))
+      return getQ3Score();
+    if (targetName == T("DSSPSecondaryStructureSequence"))
+      return getQ8Score();
+    if (targetName == T("SolventAccessibilitySequence"))
+      return getSA2Score();
+    
+    jassert(false);
+    return 0.;
+  }
 
   void addProtein(ProteinPtr predicted, ProteinPtr correct)
   {
