@@ -95,7 +95,7 @@ public:
 
   virtual void resize(size_t newSize)
   {
-    elements.resize(newSize);
+    //elements.resize(newSize);
     nullElements.resize(newSize, true);
   }
 

@@ -102,3 +102,4 @@ private:
     currentAAIndex->setScore(0, AminoAcidDictionary::unknown, sum / 20);
   }
 };
+
