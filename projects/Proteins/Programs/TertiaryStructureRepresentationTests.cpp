@@ -18,7 +18,7 @@ int main()
 {
   declareProteinClasses();
 
-  File proteinDatabase(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDBProtein"));
+  File proteinDatabase(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinDatabase, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load(1)->randomize();
   std::cout << proteins->size() << " proteins." << std::endl;
@@ -53,28 +53,17 @@ int main()
 
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
 
-    CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
-    BondCoordinatesSequencePtr calphaTraceGC = new BondCoordinatesSequence(T("Pouet"), calphaTrace);
-    CartesianCoordinatesSequencePtr reconstructedCalphaTrace = calphaTraceGC->createCartesianCoordinates(T("Reconstructed"));
-    BondCoordinatesSequencePtr calphaTraceGC2 = new BondCoordinatesSequence(T("Pouet"), reconstructedCalphaTrace);
-
-    for (size_t i = 0; i < 10; ++i)
-      if (calphaTraceGC->hasCoordinates(i))
-        std::cout << (i+1) << "Correct: " << calphaTraceGC->getCoordinates(i).toString()
-          << " Reconstructed: " << calphaTraceGC2->getCoordinates(i).toString() << std::endl;
-    /*
-    ProteinBackboneBondSequencePtr dihedralAngles = protein->getBackboneBondSequence();
-    ProteinTertiaryStructurePtr reconstructedTertiaryStructure = ProteinTertiaryStructure::createFromDihedralAngles(aminoAcidSequence, dihedralAngles);
-
-    ProteinBackboneBondSequencePtr reconstructedDihedralAngles = ProteinBackboneBondSequence::createDihedralAngles(reconstructedTertiaryStructure);
-    for (size_t i = 0; i < 10; ++i)
+    ProteinBackboneBondSequencePtr backbone = tertiaryStructure->createBackbone();
+    ProteinTertiaryStructurePtr tertiaryStructure2 = ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone);
+    ProteinBackboneBondSequencePtr backbone2 = tertiaryStructure2->createBackbone();
+    
+    for (size_t i = protein->getLength() - 20; i < protein->getLength(); ++i)
     {
-      std::cout << (i+1) << " correct = " << dihedralAngles->getPhi(i) << " " << dihedralAngles->getPsi(i)
-        << " reconstructed = " << reconstructedDihedralAngles->getPhi(i) << " " << reconstructedDihedralAngles->getPsi(i) << std::endl;
+      std::cout << (i+1) << "Correct: " << backbone->getBond(i)->toString() << std::endl
+        << " Reconstructed: " << backbone2->getBond(i)->toString() << std::endl;
     }
-*/
 
-    protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(aminoAcidSequence, reconstructedCalphaTrace));
+    protein->setObject(tertiaryStructure2);
     protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));
     break;
 

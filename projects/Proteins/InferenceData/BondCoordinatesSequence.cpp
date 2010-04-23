@@ -35,13 +35,12 @@ BondCoordinates::BondCoordinates(const Vector3* a, const Vector3* b, const Vecto
 void BondCoordinates::multiplyMatrix(Matrix4& matrix)
 {
   // avant: length, puis phi (around x), puis theta (around z)
-
+  if (phi.exists())
+    matrix.rotateAroundXAxis(phi);
   if (length >= 0.0)
     matrix.translate(Vector3(length, 0.0, 0.0));
   if (theta.exists())
     matrix.rotateAroundZAxis(M_PI - theta);
-  if (phi.exists())
-    matrix.rotateAroundXAxis(phi);
 }
 
 String BondCoordinates::toString() const
