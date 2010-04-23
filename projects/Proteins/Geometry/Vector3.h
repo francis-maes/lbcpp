@@ -18,7 +18,10 @@ class Vector3
 {
 public:
   Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
-  Vector3() : x(0.0), y(0.0), z(0.0) {}
+  Vector3() : x(DBL_MAX), y(DBL_MAX), z(DBL_MAX) {}
+
+  bool exists() const
+    {return x != DBL_MAX || y != DBL_MAX || z != DBL_MAX;}
 
   String toString() const
     {return T("(") + lbcpp::toString(x) + T(", ") + lbcpp::toString(y) + T(", ") + lbcpp::toString(z) + T(")");}

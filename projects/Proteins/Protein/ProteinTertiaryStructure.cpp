@@ -138,7 +138,44 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCBetaTrace() con
 
 ProteinBackboneBondSequencePtr ProteinTertiaryStructure::createBackbone() const
 {
-  return ProteinBackboneBondSequencePtr(); // todo
+  size_t n = residues.size();
+
+  // create backbone in cartesian coordinates
+  CartesianCoordinatesSequencePtr backbone = new CartesianCoordinatesSequence(T("Backbone"), 3 * n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = residues[i];
+    if (residue)
+    {
+      size_t j = i * 3;
+      ProteinAtomPtr atom = residue->getNitrogenAtom();
+      if (atom)
+        backbone->setPosition(j, atom->getPosition());
+      atom = residue->getCAlphaAtom();
+      if (atom)
+        backbone->setPosition(j + 1, atom->getPosition());
+      atom = residue->getNitrogenAtom();
+      if (atom)
+        backbone->setPosition(j + 2, atom->getPosition());
+    }
+  }
+
+  // convert to bond coordinates
+  BondCoordinatesSequencePtr bondCoordinates = new BondCoordinatesSequence(T("Backbone"), backbone);
+  jassert(bondCoordinates->size() == 3 * n - 1);
+
+  // create the protein backbone bond sequence
+  ProteinBackboneBondSequencePtr res = new ProteinBackboneBondSequence(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    size_t j = i * 3;
+    ProteinBackboneBondPtr bond = new ProteinBackboneBond(
+      bondCoordinates->getCoordinates(j),
+      bondCoordinates->getCoordinates(j + 1),
+      j + 2 < bondCoordinates->size() ? bondCoordinates->getCoordinates(j + 2) : BondCoordinates());
+    res->set(i, bond);
+  }
+  return res;
 }
 
 bool ProteinTertiaryStructure::hasOnlyCAlphaAtoms() const

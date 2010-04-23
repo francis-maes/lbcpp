@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_LABELING_H_
-# define LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_LABELING_H_
+#ifndef LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_
+# define LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_
 
 # include "../../InferenceStep/ClassificationInferenceStep.h"
 # include "../../InferenceStep/ParallelInferenceStep.h"
@@ -82,55 +82,6 @@ public:
   }
 };
 
-
-// Input: Features
-// Output, Supervision: BackbondBond
-class BackboneBondInferenceStep : public ParallelInferenceStep
-{
-public:
-  BackboneBondInferenceStep(const String& name)
-    : ParallelInferenceStep(name) {}
-
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return 0;}
-
-  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
-    {return InferenceStepPtr();}
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return input;}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-    {return supervision;}
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return ObjectPtr();}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-    {}
-
-  // phi
-  // psi
-  // omega
-  // L1
-  // L2
-  // L3
-};
-
-
-// Input, Supervision: Protein
-// Output: BackbondBondSequence
-class ProteinBackboneBondSequenceInferenceStep : public ProteinSequenceInferenceStep
-{
-public:
-  ProteinBackboneBondSequenceInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : ProteinSequenceInferenceStep(name, new BackboneBondInferenceStep(name + T("Bond")), features, T("BackboneBondSequence")) {}
-
-  ProteinBackboneBondSequenceInferenceStep()
-    {}
-  // FIXME: virtual size_t getNumSubInferences(ObjectPtr input) const - 1 ?
-};
-
 class PSSMRowPredictionInferenceStep : public ParallelSharedMultiRegressionInferenceStep
 {
 public:
@@ -153,4 +104,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_LABELING_H_
+#endif //!LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_

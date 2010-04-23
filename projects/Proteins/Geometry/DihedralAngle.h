@@ -18,17 +18,22 @@ namespace lbcpp
 # define M_PI       3.14159265358979323846
 #endif // M_PI
 
+#define M_2_TIMES_PI (2.0 * M_PI)
+
 class Angle
 {
 public:
   Angle(Vector3& a, Vector3& b, Vector3& c)
     : angle((a - b).angle(c - b)) {}
 
-  Angle(double angle = 0.0)
+  Angle(double angle = M_2_TIMES_PI)
     : angle(angle) {}
 
   operator double () const
     {return angle;}
+
+  bool exists() const
+    {return angle != M_2_TIMES_PI;}
 
 private:
   double angle;
@@ -60,8 +65,11 @@ class DihedralAngle
 public:
   DihedralAngle(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d)
     : angle(compute(a, b, c, d)) {}
-  DihedralAngle(double angle = 0.0)
+  DihedralAngle(double angle = M_2_TIMES_PI)
     : angle(angle) {}
+
+  bool exists() const
+    {return angle != M_2_TIMES_PI;}
 
   static double compute(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d)
   {    
