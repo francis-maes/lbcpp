@@ -15,6 +15,12 @@ public:
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
+    
+    if (labels == SolventAccesibility2StateDictionary::getInstance()) {
+      classifier->setL2Regularizer(150);
+      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: 150";
+    }
+
     return classifier;
   }
   
