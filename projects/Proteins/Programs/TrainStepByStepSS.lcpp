@@ -140,6 +140,7 @@ int main(int argc, char** argv)
   /*
   ** Retreive and compute AAIndex for each protein
   */
+/*
   File file("/scratch/jbecker/aaindex1");
   if (isTestVersion)
     file = T("/Users/jbecker/Documents/Workspace/CASP9/aaindex1");
@@ -158,19 +159,19 @@ int main(int argc, char** argv)
 
   std::cout << "Number of AAIndex: " << vectorAAIndex.size() << std::endl;
   jassert(vectorAAIndex.size() != 0);
-
+*/
   ObjectContainerPtr proteins;
   if (isTestVersion)
     proteins = proteinsStream->load(7)->randomize();
   else
     proteins = proteinsStream->load()->randomize();
-
+/*
   for (size_t i = 0; i < proteins->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) proteins->get(i);
     protein->computePropertiesFrom(vectorAAIndex);
   }
-
+*/
   proteins = proteins->apply(new ObjectToObjectPairFunction());
 
   /*
