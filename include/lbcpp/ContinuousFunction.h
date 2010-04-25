@@ -126,6 +126,7 @@ extern ScalarFunctionPtr squareFunction();
 inline ScalarFunctionPtr squareFunction(ScalarFunctionPtr input)
   {return input->composeWith(squareFunction());}
 
+
 /**
 ** @class ScalarLossFunction
 ** @brief \f$ f : \text{example}\times R  \to  R  \f$

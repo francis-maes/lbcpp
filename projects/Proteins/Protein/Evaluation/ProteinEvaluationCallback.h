@@ -107,7 +107,7 @@ public:
       addDelta(predicted->getValue() - correct->getValue());
   }
 
-  void addDelta(double delta)
+  virtual void addDelta(double delta)
   {
     absoluteError->push(fabs(delta));
     squaredError->push(delta * delta);
@@ -135,6 +135,15 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<RegressionEvaluator> RegressionEvaluatorPtr;
+
+class DihedralAngleRegressionEvaluator : public RegressionEvaluator
+{
+public:
+  DihedralAngleRegressionEvaluator(const String& name) : RegressionEvaluator(name) {}
+
+  virtual void addDelta(double delta)
+    {RegressionEvaluator::addDelta(DihedralAngle::normalize(delta));}
+};
 
 class ScoreVectorSequenceRegressionEvaluator : public Evaluator
 {
@@ -178,7 +187,7 @@ public:
     : Evaluator(name),
       lengthEvaluator(new RegressionEvaluator(name + T(" length"))),
       angleEvaluator(new RegressionEvaluator(name + T(" angle"))),
-      dihedralAngleEvaluator(new RegressionEvaluator(name + T(" dihedral angle"))) {}
+      dihedralAngleEvaluator(new DihedralAngleRegressionEvaluator(name + T(" dihedral angle"))) {}
 
   virtual String toString() const
   {
