@@ -59,6 +59,8 @@ public:
 class ScalarFunction : public ContinuousFunction
 {
 public:
+  ScalarFunctionPtr composeWith(ScalarFunctionPtr postFunction) const;
+
   /**
   ** Computes function value in @a input. Computes f(input).
   **
@@ -107,6 +109,22 @@ public:
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
 };
 
+// x -> f(x) + constant
+extern ScalarFunctionPtr sum(ScalarFunctionPtr function, double constant);
+
+// x -> f(x) - constant
+inline ScalarFunctionPtr difference(ScalarFunctionPtr function, double constant)
+  {return sum(function, -constant);}
+
+// x -> x + constant
+extern ScalarFunctionPtr addConstantScalarFunction(double constant);
+
+// x -> x^2
+extern ScalarFunctionPtr squareFunction();
+
+// x -> f(x)^2
+inline ScalarFunctionPtr squareFunction(ScalarFunctionPtr input)
+  {return input->composeWith(squareFunction());}
 
 /**
 ** @class ScalarLossFunction
@@ -202,13 +220,8 @@ public:
   ScalarFunctionPtr lineFunction(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction) const;
 };
 
-/**
-**
-**
-** @param weight
-**
-** @return
-*/
+
+extern ScalarVectorFunctionPtr sum(ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2);
 extern ScalarVectorFunctionPtr sumOfSquaresFunction(double weight = 1.0);
 
 /**
@@ -236,7 +249,10 @@ public:
 class ScalarArchitecture : public ContinuousFunction
 {
 public:
-  // todo: non-derivable scalar architectures
+  // The two following functions create functions that take parameters as inputs and compute the loss associated to these parameters
+  ScalarVectorFunctionPtr makeExampleLoss(FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction) const;
+  ScalarVectorFunctionPtr makeEmpiricalRisk(ObjectContainerPtr examples) const;
+
   /**
   **
   **
@@ -286,6 +302,8 @@ public:
       FeatureGeneratorPtr* gradientWrtParameters,
       FeatureGeneratorPtr* gradientWrtInput) const = 0;
 };
+
+extern ScalarArchitecturePtr linearArchitecture();
 
 
 /**

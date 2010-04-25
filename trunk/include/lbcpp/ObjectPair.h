@@ -19,6 +19,8 @@ class ObjectPair : public ObjectContainer
 public:
   ObjectPair(const String& name, ObjectPtr first, ObjectPtr second)
     : ObjectContainer(name), first(first), second(second) {}
+  ObjectPair(ObjectPtr first, ObjectPtr second)
+    : first(first), second(second) {}
   ObjectPair() {}
 
   // todo: toString/read/write/clone

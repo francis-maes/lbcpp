@@ -52,8 +52,14 @@ public:
     if (supervision && enableExamplesCreation)
     {
       ScalarPtr scalar = supervision.dynamicCast<Scalar>();
-      jassert(scalar);
-      addExample(regressor, new RegressionExample(input, scalar->getValue()));
+      if (scalar)
+        addExample(regressor, new RegressionExample(input, scalar->getValue()));
+      else
+      {
+        ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
+        jassert(lossFunction);
+        addExample(regressor, new ObjectPair(input, lossFunction));
+      }
     }    
   }
 

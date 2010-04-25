@@ -217,6 +217,7 @@ inline GradientBasedRegressorPtr loadGradientBasedRegressor(const File& file)
   {return Object::createFromFileAndCast<GradientBasedRegressor>(file);}
 
 extern GradientBasedRegressorPtr leastSquaresLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer = 0.0);
+extern GradientBasedRegressorPtr generalizedLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer = 0.0);
 
 /*
 ** Classification

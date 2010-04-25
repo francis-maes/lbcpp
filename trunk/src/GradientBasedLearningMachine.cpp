@@ -99,6 +99,16 @@ GradientBasedRegressorPtr lbcpp::leastSquaresLinearRegressor(GradientBasedLearne
   return res;
 }
 
+GradientBasedRegressorPtr lbcpp::generalizedLinearRegressor(GradientBasedLearnerPtr learner, double l2Regularizer)
+{
+  GradientBasedRegressorPtr res = new GeneralizedLinearRegressor();
+  res->setLearner(learner);
+  if (l2Regularizer)
+    res->setL2Regularizer(l2Regularizer);
+  return res;
+}
+
+
 /*
 ** Classifier
 */
@@ -180,10 +190,13 @@ GradientBasedRankerPtr lbcpp::logBinomialAllPairsLinearRanker(GradientBasedLearn
 void declareGradientBasedLearningMachines()
 {
   LBCPP_DECLARE_CLASS(LeastSquaresLinearRegressor);
+  LBCPP_DECLARE_CLASS(GeneralizedLinearRegressor);
+
   LBCPP_DECLARE_CLASS(MaximumEntropyClassifier);
   LBCPP_DECLARE_CLASS(LogisticRegressionClassifier);
   LBCPP_DECLARE_CLASS(LinearSupportVectorMachine);
   LBCPP_DECLARE_CLASS(LinearGeneralizedClassifier);
+
   LBCPP_DECLARE_CLASS(LargeMarginAllPairsLinearRanker);
   LBCPP_DECLARE_CLASS(LargeMarginBestAgainstAllLinearRanker);
   LBCPP_DECLARE_CLASS(LargeMarginMostViolatedPairLinearRanker);
