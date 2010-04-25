@@ -90,7 +90,7 @@ public:
     static const double regularizer = 0.0;
     static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.8);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.01);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return generalizedLinearRegressor(learner, regularizer);
   }
@@ -203,7 +203,6 @@ int main(int argc, char** argv)
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
 
-  
 
   /*
   ** Creation of the feature function

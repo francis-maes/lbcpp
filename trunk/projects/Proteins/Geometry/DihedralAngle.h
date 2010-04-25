@@ -14,12 +14,6 @@
 namespace lbcpp
 {
 
-#ifndef M_PI
-# define M_PI       3.14159265358979323846
-#endif // M_PI
-
-#define M_2_TIMES_PI (2.0 * M_PI)
-
 class Angle
 {
 public:
@@ -73,6 +67,17 @@ public:
 
   bool exists() const
     {return angle != M_2_TIMES_PI;}
+
+  static double normalize(double angle)
+  {
+    double res = fmod(angle, M_2_TIMES_PI);
+    if (res < -M_PI)
+      res += M_2_TIMES_PI;
+    else if (res > M_PI)
+      res -= M_2_TIMES_PI;
+    jassert(res >= -M_PI && res < M_PI);
+    return res;
+  }
 
   static double compute(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d)
   {    

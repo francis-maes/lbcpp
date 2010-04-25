@@ -14,6 +14,27 @@
 namespace lbcpp
 {
 
+class AngleDifferenceScalarFunction : public ScalarFunction
+{
+public:
+  AngleDifferenceScalarFunction(double referenceAngle)
+    : referenceAngle(referenceAngle) {}
+
+  virtual bool isDerivable() const
+    {return false;}
+
+  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  {
+    if (output)
+      *output = DihedralAngle::normalize(input - referenceAngle);
+    if (derivative)
+      *derivative = 1.0;
+  }
+
+private:
+  double referenceAngle;
+};
+
 // Input: Features
 // Output, Supervision: BackbondBond
 class ProteinBackboneBondInferenceStep : public VectorParallelInferenceStep
@@ -43,8 +64,19 @@ public:
     ProteinBackboneBondPtr bond = supervision.dynamicCast<ProteinBackboneBond>();
     if (!bond)
       return ObjectPtr();
+    
+    bool targetExists;
+    double target = getTarget(bond, index, targetExists);
+    if (!targetExists)
+      return ObjectPtr();
 
-    double target = getTarget(bond, index);
+    if (index % 3 == 2)
+    {
+      // prediction of a dihedral angle
+      // loss(prediction) = angleDiff(target, prediction)^2
+      return squareFunction(new AngleDifferenceScalarFunction(target));
+    }
+
     // loss(prediction) = (target - prediction)^2
     return squareFunction(addConstantScalarFunction(-target));
   }
@@ -57,26 +89,27 @@ public:
     ProteinBackboneBondPtr bond = output.dynamicCast<ProteinBackboneBond>();
     ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
     jassert(bond && prediction);
-    getTarget(bond, index) = prediction->getValue();
+    bool targetExists;
+    getTarget(bond, index, targetExists) = prediction->getValue();
   }
 
 private:
-  static double& getTarget(ProteinBackboneBondPtr bond, size_t index)
+  static double& getTarget(ProteinBackboneBondPtr bond, size_t index, bool& targetExists)
   {
     jassert(bond);
     switch (index)
     {
-    case 0: return bond->getBond1().getLength();
-    case 1: return bond->getBond1().getThetaAngle();
-    case 2: return bond->getBond1().getPhiDihedralAngle();
+    case 0: targetExists = bond->getBond1().hasLength(); return bond->getBond1().getLength();
+    case 1: targetExists = bond->getBond1().hasThetaAngle(); return bond->getBond1().getThetaAngle();
+    case 2: targetExists = bond->getBond1().hasPhiDihedralAngle(); return bond->getBond1().getPhiDihedralAngle();
 
-    case 3: return bond->getBond2().getLength();
-    case 4: return bond->getBond2().getThetaAngle();
-    case 5: return bond->getBond2().getPhiDihedralAngle();
+    case 3: targetExists = bond->getBond2().hasLength(); return bond->getBond2().getLength();
+    case 4: targetExists = bond->getBond2().hasThetaAngle(); return bond->getBond2().getThetaAngle();
+    case 5: targetExists = bond->getBond2().hasPhiDihedralAngle(); return bond->getBond2().getPhiDihedralAngle();
 
-    case 6: return bond->getBond3().getLength();
-    case 7: return bond->getBond3().getThetaAngle();
-    case 8: return bond->getBond3().getPhiDihedralAngle();
+    case 6: targetExists = bond->getBond3().hasLength(); return bond->getBond3().getLength();
+    case 7: targetExists = bond->getBond3().hasThetaAngle(); return bond->getBond3().getThetaAngle();
+    case 8: targetExists = bond->getBond3().hasPhiDihedralAngle(); return bond->getBond3().getPhiDihedralAngle();
 
     default:
       jassert(false);
