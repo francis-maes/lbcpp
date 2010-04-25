@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_GEOMETRY_MATRIX4_H_
 
 # include "Vector3.h"
+# include "Matrix3.h"
 
 namespace lbcpp
 {
@@ -41,6 +42,19 @@ public:
     m[3][2] = m32;
     m[3][3] = m33;
   }
+
+  Matrix4(const Matrix3& matrix3, const Vector3& translation = Vector3(0.0))
+  {
+    m[0][0] = matrix3[0][0]; m[0][1] = matrix3[0][1]; m[0][2] = matrix3[0][2]; m[0][3] = translation.getX();
+    m[1][0] = matrix3[1][0]; m[1][1] = matrix3[1][1]; m[1][2] = matrix3[1][2]; m[1][3] = translation.getY();
+    m[2][0] = matrix3[2][0]; m[2][1] = matrix3[2][1]; m[2][2] = matrix3[2][2]; m[2][3] = translation.getZ();
+    m[3][0] = m[3][1] = m[3][2] = 0.0; m[3][3] = 1.0;
+  }
+
+  static const Matrix4 zero;
+  static const Matrix4 identity;
+
+  String toString() const;
 
   double* operator [](size_t row)
     {jassert(row < 4); return m[row];}
@@ -128,11 +142,15 @@ public:
     return false;
   }
 
-  static const Matrix4 identity;
-
   bool isAffine() const
     {return m[3][0] == 0 && m[3][1] == 0 && m[3][2] == 0 && m[3][3] == 1;}
   
+  bool isSymmetric() const
+  {
+    return m[0][1] == m[1][0] && m[0][2] == m[2][0] && m[0][3] == m[3][0] &&
+      m[1][2] == m[2][1] && m[1][3] == m[3][1] && m[2][3] == m[3][2];
+  }
+
   Vector3 transformAffine(const Vector3& v) const
   {
     jassert(isAffine());
@@ -147,6 +165,8 @@ private:
     double m[4][4];
     double _m[16];
   };
+
+  friend struct Traits<Matrix4>;
 };
 
 inline Vector3 operator *(const Vector3& v, const Matrix4& mat)
@@ -159,6 +179,29 @@ inline Vector3 operator *(const Vector3& v, const Matrix4& mat)
     res /= w;
   return res;
 }
+
+template<>
+struct Traits<Matrix4>
+{
+  typedef Matrix4 Type;
+
+  static inline String toString(const Matrix4& value)
+    {return value.toString();}
+
+  static inline void write(OutputStream& ostr, const Matrix4& value)
+  {
+    for (size_t i = 0; i < 16; ++i)
+      lbcpp::write(ostr, value._m[i]);
+  }
+
+  static inline bool read(InputStream& istr, Matrix4& res)
+  {
+    for (size_t i = 0; i < 16; ++i)
+    if (!lbcpp::read(istr, res._m[i]))
+      return false;
+    return true;
+  }
+};
 
 }; /* namespace lbcpp */
 

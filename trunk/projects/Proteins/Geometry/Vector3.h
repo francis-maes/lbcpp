@@ -18,6 +18,7 @@ class Vector3
 {
 public:
   Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
+  Vector3(double value) : x(value), y(value), z(value) {}
   Vector3() : x(DBL_MAX), y(DBL_MAX), z(DBL_MAX) {}
 
   bool exists() const
@@ -52,6 +53,22 @@ public:
     jassert(value);
     double inverseValue = 1.0 / value;
     return (*this) * inverseValue;
+  }
+
+  Vector3& operator +=(const Vector3& otherVector)
+  {
+    x += otherVector.x;
+    y += otherVector.y;
+    z += otherVector.z;
+    return *this;
+  }
+
+  Vector3& operator -=(const Vector3& otherVector)
+  {
+    x -= otherVector.x;
+    y -= otherVector.y;
+    z -= otherVector.z;
+    return *this;
   }
 
   Vector3& operator *=(const double value)
@@ -100,6 +117,12 @@ public:
       return (*this) * s;
     }
   }
+
+  bool operator ==(const Vector3& otherVector) const
+    {return x == otherVector.x && y == otherVector.y && z == otherVector.z;}
+
+  bool operator !=(const Vector3& otherVector) const
+    {return x != otherVector.x || y != otherVector.y || z != otherVector.z;}
 
 private:
   double x, y, z;

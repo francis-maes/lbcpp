@@ -111,6 +111,9 @@ public:
     {return findAtomByName(T("C"));}
 
   ProteinAtomPtr findAtomByName(const String& name) const;
+  
+  Vector3 getAtomPosition(const String& name) const
+    {ProteinAtomPtr atom = findAtomByName(name); return atom ? atom->getPosition() : Vector3();}
 
   double getDistanceBetweenAtoms(const String& name1, const String& name2) const;
   double getDistanceBetweenAtoms(const String& name1, ProteinResiduePtr residue2, const String& name2) const;
