@@ -54,7 +54,10 @@ SET(LBCPP_INFERENCE_LEARNER_SOURCES
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/DihedralAngle.h
   Geometry/Vector3.h
+  Geometry/Matrix3.h
+  Geometry/Matrix3.cpp  
   Geometry/Matrix4.h
+  Geometry/Matrix4.cpp
 )
 
 SET(LBCPP_PROTEIN_SOURCES

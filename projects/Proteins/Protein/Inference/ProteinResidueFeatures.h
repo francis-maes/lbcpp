@@ -23,9 +23,7 @@ public:
 typedef ReferenceCountedObjectPtr<ProteinResidueFeatures> ProteinResidueFeaturesPtr;
 
 extern ProteinResidueFeaturesPtr proteinSequenceWindowFeatures(const String& sequenceName, size_t numPrevs, size_t numNexts, bool includeCurrent);
-
 extern ProteinResidueFeaturesPtr proteinFrequencyWindowFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent);
-
   
 class CompositeProteinResidueFeatures : public ProteinResidueFeatures
 {

@@ -10,14 +10,6 @@
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
-#include "Geometry/Matrix4.h" // todo: move
-const Matrix4 Matrix4::identity = Matrix4(
-      1.0, 0.0, 0.0, 0.0,
-      0.0, 1.0, 0.0, 0.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0);
-
-
 #include "InferenceData/LabelSequence.h"
 #include "InferenceData/ScoreVectorSequence.h"
 #include "InferenceData/ScoreSymmetricMatrix.h"
