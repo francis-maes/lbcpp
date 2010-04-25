@@ -87,7 +87,7 @@ public:
   {
     String res = "subFeatureGenerator";
     if (exists())
-      res += "(" + getDictionary()->getFeatures()->getString(0) + ", " + featureGenerator->toString() + ")";
+      res += "(" + getDictionary()->getScopes()->getString(index) + ", " + featureGenerator->toString() + ")";
     return res;
   }
   

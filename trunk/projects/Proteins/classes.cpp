@@ -42,6 +42,7 @@ void declareInferenceClasses()
 #include "Protein/SecondaryStructureDictionary.h"
 
 #include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 
 extern void declareProteinResidueFeaturesClasses();
@@ -62,6 +63,8 @@ void declareProteinClasses()
   LBCPP_DECLARE_CLASS(ProteinSequenceLabelingInferenceStep);
   LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
   LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
+  LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
+  LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
 
   LBCPP_DECLARE_CLASS(ProteinInference);
 

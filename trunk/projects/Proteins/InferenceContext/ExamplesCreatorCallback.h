@@ -47,12 +47,12 @@ public:
   
   virtual void regressionCallback(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {
+    if (!regressor)
+      regressor = learnerCallback->createRegressor(stack->getCurrentInference());
     if (supervision && enableExamplesCreation)
     {
       ScalarPtr scalar = supervision.dynamicCast<Scalar>();
       jassert(scalar);
-      if (!regressor)
-        regressor = learnerCallback->createRegressor(stack->getCurrentInference());
       addExample(regressor, new RegressionExample(input, scalar->getValue()));
     }    
   }

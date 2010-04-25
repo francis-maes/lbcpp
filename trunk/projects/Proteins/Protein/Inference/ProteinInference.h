@@ -39,9 +39,9 @@ public:
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
 
     // main inference loop
-    for (size_t i = 0; i < inferenceSteps.size(); ++i)
+    for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      InferenceStepPtr inferenceStep = inferenceSteps[i];
+      InferenceStepPtr inferenceStep = subInferences[i];
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
       jassert(inferenceOutput);

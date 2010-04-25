@@ -38,12 +38,8 @@ int svd(int m, int n, int withu, int withv, double eps, double tol,
 // M = U x diag(D) x V^T
 bool Matrix3::makeSVDDecomposition(Matrix3& u, Vector3& d, Matrix3& v) const
 {
-  Matrix3 backup(*this);
   int returnCode = svd(3, 3, 1, 1, DBL_EPSILON, 30 * DBL_EPSILON, *this, (double* )&d, u, v);
-  jassert(*this == backup);
-  Matrix3 udvt = u * Matrix3::diagonal(d) * v.transposed();
-  double error = ((*this) - udvt).l2norm();
-  jassert(returnCode || error < 0.00001);
+  jassert(returnCode || ((*this) - (u * Matrix3::diagonal(d) * v.transposed())).l2norm() < 0.00001);
   return returnCode == 0;
 }
 

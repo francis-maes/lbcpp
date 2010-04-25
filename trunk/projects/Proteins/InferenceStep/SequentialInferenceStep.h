@@ -43,30 +43,24 @@ public:
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 };
 
-class VectorSequentialInferenceStep : public SequentialInferenceStep
+class VectorSequentialInferenceStep : public SequentialInferenceStep, public VectorBasedInferenceHelper
 {
 public:
   VectorSequentialInferenceStep(const String& name)
     : SequentialInferenceStep(name) {}
 
-  void appendStep(InferenceStepPtr inference);
+  virtual size_t getNumSubSteps() const
+    {return VectorBasedInferenceHelper::getNumSubSteps();}
 
-  /*
-  ** SequentialInferenceStep
-  */
-  virtual size_t getNumSubSteps() const;
-  virtual InferenceStepPtr getSubStep(size_t index) const;
-  void setSubStep(size_t index, InferenceStepPtr subStep)
-    {jassert(index < inferenceSteps.size()); inferenceSteps[index] = subStep;}
-
-  /*
-  ** Object
-  */
-  virtual bool saveToFile(const File& file) const;
-  virtual bool loadFromFile(const File& file);
-
+  virtual InferenceStepPtr getSubStep(size_t index) const
+    {return VectorBasedInferenceHelper::getSubStep(index);}
+ 
 protected:
-  std::vector<InferenceStepPtr> inferenceSteps;
+  virtual bool saveToFile(const File& file) const
+    {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
+
+  virtual bool loadFromFile(const File& file)
+    {return loadFromDirectory(file) && loadSubInferencesFromDirectory(file);}
 };
 
 }; /* namespace lbcpp */

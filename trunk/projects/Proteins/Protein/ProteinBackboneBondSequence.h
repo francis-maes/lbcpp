@@ -33,10 +33,19 @@ public:
   BondCoordinates getBond1() const
     {return bond1;}
 
+  BondCoordinates& getBond1()
+    {return bond1;}
+
   BondCoordinates getBond2() const
     {return bond2;}
 
+  BondCoordinates& getBond2()
+    {return bond2;}
+
   BondCoordinates getBond3() const
+    {return bond3;}
+
+  BondCoordinates& getBond3()
     {return bond3;}
 
   bool exists() const

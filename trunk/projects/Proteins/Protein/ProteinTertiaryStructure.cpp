@@ -40,7 +40,6 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(Labe
 
 ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromBackbone(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr backbone)
 {
-
   size_t n = backbone->size();
   jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
 
@@ -264,4 +263,100 @@ size_t ProteinTertiaryStructure::getNumSpecifiedResidues() const
     if (residues[i])
       ++res;
   return res;
+}
+
+
+// returns the matrix (rotation + translation) to transform points1 into points2
+static Matrix4 superposeStructures(const std::vector< std::pair<Vector3, Vector3> >& pointPairs)
+{
+  size_t n = pointPairs.size();
+  jassert(n);
+  double invN = 1.0 / (double)n;
+
+  // compute centroids
+  Vector3 centroid1(0.0), centroid2(0.0);
+  for (size_t i = 0; i < n; ++i)
+  {
+    centroid1 += pointPairs[i].first;
+    centroid2 += pointPairs[i].second;
+  }
+  centroid1 *= invN;
+  centroid2 *= invN;
+
+  // compute correlation matrix
+  Matrix3 correlationMatrix = Matrix3::zero;
+  for (size_t i = 0; i < n; ++i)
+    correlationMatrix.addCorrelation(pointPairs[i].first - centroid1, pointPairs[i].second - centroid2);
+
+  // make SVD decomposition
+  Matrix3 u, v;
+  Vector3 diag;
+  bool ok = correlationMatrix.makeSVDDecomposition(u, diag, v);
+  jassert(ok);
+  if (!ok)
+    return Matrix4::zero;
+
+  // compute optimal rotation matrix
+  Matrix3 rotation = v * u.transposed();
+
+  // compute optimal translation
+  Vector3 translation(0.0);
+  for (size_t i = 0; i < n; ++i)
+  {
+    translation += pointPairs[i].second;
+    Vector3 p = rotation.transformAffine(pointPairs[i].first);
+    translation -= p;
+  }
+  translation *= invN;
+
+  return Matrix4(rotation, translation);
+}
+
+Matrix4 ProteinTertiaryStructure::superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const
+{
+  jassert(targetStructure);
+  size_t n = size();
+  jassert(n && targetStructure->size() == n);
+
+  std::vector< std::pair<Vector3, Vector3> > pointPairs;
+  pointPairs.reserve(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue1 = getResidue(i);
+    ProteinResiduePtr residue2 = targetStructure->getResidue(i);
+    if (!residue1 || !residue2)
+      continue;
+    Vector3 position1 = residue1->getAtomPosition(T("CA"));
+    Vector3 position2 = residue2->getAtomPosition(T("CA"));
+    if (!position1.exists() || !position2.exists())
+      continue;
+    
+    pointPairs.push_back(std::make_pair(position1, position2));
+  }
+  return superposeStructures(pointPairs);
+}
+
+double ProteinTertiaryStructure::computeCAlphaAtomsRMSE(ProteinTertiaryStructurePtr targetStructure) const
+{
+  Matrix4 matrix = superposeCAlphaAtoms(targetStructure);
+
+  size_t n = size();
+  size_t count = 0;
+  double error = 0.0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue1 = getResidue(i);
+    ProteinResiduePtr residue2 = targetStructure->getResidue(i);
+    if (!residue1 || !residue2)
+      continue;
+    Vector3 position1 = residue1->getAtomPosition(T("CA"));
+    Vector3 position2 = residue2->getAtomPosition(T("CA"));
+    if (!position1.exists() || !position2.exists())
+      continue;
+    
+    double delta = (matrix.transformAffine(position1) - position2).l2norm();
+    error += delta * delta;
+    ++count;
+  }
+  return count ? sqrt(error / (double)count) : 0.0;
 }

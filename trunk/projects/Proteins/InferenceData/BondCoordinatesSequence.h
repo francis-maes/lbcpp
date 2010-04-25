@@ -23,21 +23,60 @@ public:
   BondCoordinates(double length, Angle theta, DihedralAngle phi);
   BondCoordinates() : length(-1.0), theta(M_2_TIMES_PI), phi(M_2_TIMES_PI) {}
 
-  void multiplyMatrix(Matrix4& matrix);
+  bool exists() const
+    {return hasLength() || hasThetaAngle() || hasPhiDihedralAngle();}
 
   String toString() const;
 
+  /*
+  ** Length
+  */
   bool hasLength() const
     {return length >= 0.0;}
 
+  double getLength() const
+    {return length;}
+
+  double& getLength()
+    {return length;}
+
+  void setLength(double length)
+    {this->length = length;}
+
+  /*
+  ** Theta angle
+  */
   bool hasThetaAngle() const
     {return (double)theta != M_2_TIMES_PI;}
 
+  Angle getThetaAngle() const
+    {return theta;}
+
+  Angle& getThetaAngle()
+    {return theta;}
+
+  void setThetaAngle(Angle angle)
+    {theta = angle;}
+
+  /*
+  ** Phi Dihedral angle
+  */
   bool hasPhiDihedralAngle() const
     {return (double)phi != M_2_TIMES_PI;}
 
-  bool exists() const
-    {return hasLength() || hasThetaAngle() || hasPhiDihedralAngle();}
+  DihedralAngle getPhiDihedralAngle() const
+    {return phi;}
+  
+  DihedralAngle& getPhiDihedralAngle()
+    {return phi;}
+
+  void setPhiDihedralAngle(DihedralAngle angle)
+    {phi = angle;}
+
+  /*
+  ** Utilities
+  */
+  void multiplyMatrix(Matrix4& matrix);
 
 private:
   double length;

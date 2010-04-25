@@ -16,38 +16,69 @@ namespace lbcpp
 
 // Input: Features
 // Output, Supervision: BackbondBond
-class ProteinBackboneBondInferenceStep : public ParallelInferenceStep
+class ProteinBackboneBondInferenceStep : public VectorParallelInferenceStep
 {
 public:
   ProteinBackboneBondInferenceStep(const String& name)
-    : ParallelInferenceStep(name) {}
+    : VectorParallelInferenceStep(name)
+  {
+    for (size_t i = 0; i < 3; ++i)
+    {
+      String namePrefix = T("Bond") + lbcpp::toString(i + 1);
+      for (size_t j = 0; j < 3; ++j)
+      {
+        String namePostfix = (j == 0 ? T("Length") : (j == 1 ? T("Angle") : T("DihedralAngle")));
+        appendStep(new RegressionInferenceStep(namePrefix + T(" ") + namePostfix));
+      }
+    }
+  }
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return 0;}
-
-  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
-    {return InferenceStepPtr();}
+  ProteinBackboneBondInferenceStep() {}
 
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return input;}
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-    {return supervision;}
+  {
+    ProteinBackboneBondPtr bond = supervision.dynamicCast<ProteinBackboneBond>();
+    return bond ? ObjectPtr(new Scalar(getTarget(bond, index))) : ObjectPtr();
+  }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return ObjectPtr();}
+    {return new ProteinBackboneBond();}
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-    {}
+  {
+    ProteinBackboneBondPtr bond = output.dynamicCast<ProteinBackboneBond>();
+    ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
+    jassert(bond && prediction);
+    getTarget(bond, index) = prediction->getValue();
+  }
 
-  // phi
-  // psi
-  // omega
-  // L1
-  // L2
-  // L3
+private:
+  static double& getTarget(ProteinBackboneBondPtr bond, size_t index)
+  {
+    jassert(bond);
+    switch (index)
+    {
+    case 0: return bond->getBond1().getLength();
+    case 1: return bond->getBond1().getThetaAngle();
+    case 2: return bond->getBond1().getPhiDihedralAngle();
+
+    case 3: return bond->getBond2().getLength();
+    case 4: return bond->getBond2().getThetaAngle();
+    case 5: return bond->getBond2().getPhiDihedralAngle();
+
+    case 6: return bond->getBond3().getLength();
+    case 7: return bond->getBond3().getThetaAngle();
+    case 8: return bond->getBond3().getPhiDihedralAngle();
+
+    default:
+      jassert(false);
+      return *(double* )0;
+    };
+  }
 };
-
 
 // Input, Supervision: Protein
 // Output: BackbondBondSequence
@@ -59,7 +90,6 @@ public:
 
   ProteinBackboneBondSequenceInferenceStep()
     {}
-  // FIXME: virtual size_t getNumSubInferences(ObjectPtr input) const - 1 ?
 };
 
 }; /* namespace lbcpp */

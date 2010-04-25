@@ -71,6 +71,27 @@ protected:
   InferenceStepPtr subInference;
 };
 
+class VectorParallelInferenceStep : public ParallelInferenceStep, public VectorBasedInferenceHelper
+{
+public:
+  VectorParallelInferenceStep(const String& name)
+    : ParallelInferenceStep(name) {}
+  VectorParallelInferenceStep() {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return VectorBasedInferenceHelper::getNumSubSteps();}
+
+  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
+    {return VectorBasedInferenceHelper::getSubStep(index);}
+ 
+protected:
+  virtual bool saveToFile(const File& file) const
+    {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
+
+  virtual bool loadFromFile(const File& file)
+    {return loadFromDirectory(file) && loadSubInferencesFromDirectory(file);}
+};
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_STEP_PARALLEL_H_
