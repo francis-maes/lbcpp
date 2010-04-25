@@ -92,7 +92,7 @@ public:
 
     IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.8);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    return leastSquaresLinearRegressor(learner, regularizer);
+    return generalizedLinearRegressor(learner, regularizer);
   }
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
@@ -237,7 +237,6 @@ int main(int argc, char** argv)
     //proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
-
   }
 
   /*

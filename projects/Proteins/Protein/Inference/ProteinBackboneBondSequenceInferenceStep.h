@@ -41,7 +41,12 @@ public:
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
   {
     ProteinBackboneBondPtr bond = supervision.dynamicCast<ProteinBackboneBond>();
-    return bond ? ObjectPtr(new Scalar(getTarget(bond, index))) : ObjectPtr();
+    if (!bond)
+      return ObjectPtr();
+
+    double target = getTarget(bond, index);
+    // loss(prediction) = (target - prediction)^2
+    return squareFunction(addConstantScalarFunction(-target));
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
