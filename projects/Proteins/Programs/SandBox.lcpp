@@ -191,14 +191,13 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 1);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
-  ObjectContainerPtr trainingData = smallPDBProteins->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = trainingData; // smallPDBProteins->apply(new ObjectToObjectPairFunction());
-  std::cout << "Protein: " << trainingData->get(0)->getName() << std::endl;
+  ObjectContainerPtr trainingData = smallPDBProteins->fold(0,2)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = smallPDBProteins->fold(1,2)->apply(new ObjectToObjectPairFunction());
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
