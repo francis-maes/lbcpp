@@ -15,30 +15,268 @@
 namespace lbcpp
 {
 
-class ProteinEvaluationCallback : public InferenceCallback
+class Evaluator : public NameableObject
 {
 public:
-  virtual void startInferencesCallback(size_t count)
+  Evaluator(const String& name) : NameableObject(name) {}
+  Evaluator() {}
+
+  virtual void addPrediction(ObjectPtr predicted, ObjectPtr correct) = 0;
+  virtual double getDefaultScore() const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
+
+class ClassificationEvaluator : public Evaluator
+{
+public:
+  ClassificationEvaluator(const String& name) : Evaluator(name), accuracy(new ScalarVariableMean()) {}
+  ClassificationEvaluator() {}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
-    numProteins = 0;
-    pssmAbsoluteError = new ScalarVariableMean(T("PSSM"));
-    pssmSquaredError = new ScalarVariableMean(T("PSSM^2"));
-    secondaryStructureAccuracy = new ScalarVariableMean(T("SS3"));
-    dsspSecondaryStructureAccuracy = new ScalarVariableMean(T("SS8"));
-    solventAccesibility2StateAccuracy = new ScalarVariableMean(T("SA2"));
-    calphaRMSE = new ScalarVariableMean(T("CAlpha RMSE"));
+    LabelPtr predicted = predictedObject.dynamicCast<Label>();
+    LabelPtr correct = correctObject.dynamicCast<Label>();
+    if (!predicted || !correct)
+      return;
+    jassert(predicted->getDictionary() == correct->getDictionary());
+    accuracy->push(predicted->getIndex() == correct->getIndex() ? 1.0 : 0.0);
+  }
+  
+  virtual String toString() const
+  {
+    double count = accuracy->getCount();
+    if (!count)
+      return String::empty;
+    return getName() + T(": ") + String(accuracy->getMean() * 100.0, 2) + T("% (") + lbcpp::toString(count) + T(" examples)");
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual double getDefaultScore() const
+    {return accuracy->getMean();}
+
+protected:
+  ScalarVariableMeanPtr accuracy;
+};
+
+typedef ReferenceCountedObjectPtr<ClassificationEvaluator> ClassificationEvaluatorPtr;
+
+class SequenceLabelingEvaluator : public Evaluator
+{
+public:
+  SequenceLabelingEvaluator(const String& name)
+    : Evaluator(name), classificationEvaluator(new ClassificationEvaluator(name)) {}
+
+  virtual String toString() const
+    {return classificationEvaluator->toString();}
+
+  virtual double getDefaultScore() const
+    {return classificationEvaluator->getDefaultScore();}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
-    if (stack->getDepth() == 1)
+    LabelSequencePtr predicted = predictedObject.dynamicCast<LabelSequence>();
+    LabelSequencePtr correct = correctObject.dynamicCast<LabelSequence>();
+    if (!predicted || !correct)
+      return;
+    jassert(correct->getDictionary() == predicted->getDictionary());
+
+    size_t n = predicted->size();
+    jassert(correct->size() == n);
+    for (size_t i = 0; i < n; ++i)
+      classificationEvaluator->addPrediction(predicted->get(i), correct->get(i));
+  }
+
+protected:
+  ClassificationEvaluatorPtr classificationEvaluator;
+};
+
+typedef ReferenceCountedObjectPtr<SequenceLabelingEvaluator> SequenceLabelingEvaluatorPtr;
+
+class RegressionEvaluator : public Evaluator
+{
+public:
+  RegressionEvaluator(const String& name) : Evaluator(name),
+    absoluteError(new ScalarVariableMean()), squaredError(new ScalarVariableMean()) {}
+  RegressionEvaluator() {}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
+    ScalarPtr correct = correctObject.dynamicCast<Scalar>();
+    if (predicted && correct)
+      addDelta(predicted->getValue() - correct->getValue());
+  }
+
+  void addDelta(double delta)
+  {
+    absoluteError->push(fabs(delta));
+    squaredError->push(delta * delta);
+  }
+
+  virtual String toString() const
+  {
+    double count = squaredError->getCount();
+    if (!count)
+      return String::empty;
+    return getName() + T(": rmse = ") + String(getRMSE(), 4)
+        + T(" abs = ") + String(absoluteError->getMean(), 4)
+        + T(" (") + lbcpp::toString(count) + T(" examples)");
+  }
+
+  virtual double getDefaultScore() const
+    {return -getRMSE();}
+
+  double getRMSE() const
+    {return sqrt(squaredError->getMean());}
+
+protected:
+  ScalarVariableMeanPtr absoluteError;
+  ScalarVariableMeanPtr squaredError;
+};
+
+typedef ReferenceCountedObjectPtr<RegressionEvaluator> RegressionEvaluatorPtr;
+
+class ScoreVectorSequenceRegressionEvaluator : public Evaluator
+{
+public:
+  ScoreVectorSequenceRegressionEvaluator(const String& name)
+    : Evaluator(name), regressionEvaluator(new RegressionEvaluator(name)) {}
+
+  virtual String toString() const
+    {return regressionEvaluator->toString();}
+
+  virtual double getDefaultScore() const
+    {return regressionEvaluator->getDefaultScore();}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ScoreVectorSequencePtr predicted = predictedObject.dynamicCast<ScoreVectorSequence>();
+    ScoreVectorSequencePtr correct = correctObject.dynamicCast<ScoreVectorSequence>();
+    if (!predicted || !correct)
+      return;
+
+    jassert(correct->getNumScores() >= predicted->getNumScores());
+    jassert(correct->getDictionary() == predicted->getDictionary());
+    size_t n = predicted->size();
+    size_t s = predicted->getNumScores();
+    jassert(correct->size() == n);
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = 0; j < s; ++j)
+        regressionEvaluator->addPrediction(new Scalar(predicted->getScore(i, j)), new Scalar(correct->getScore(i, j)));
+  }
+
+protected:
+  RegressionEvaluatorPtr regressionEvaluator;
+};
+
+typedef ReferenceCountedObjectPtr<ScoreVectorSequenceRegressionEvaluator> ScoreVectorSequenceRegressionEvaluatorPtr;
+
+class ProteinBackboneBondSequenceEvaluator : public Evaluator
+{
+public:
+  ProteinBackboneBondSequenceEvaluator(const String& name)
+    : Evaluator(name),
+      lengthEvaluator(new RegressionEvaluator(name + T(" length"))),
+      angleEvaluator(new RegressionEvaluator(name + T(" angle"))),
+      dihedralAngleEvaluator(new RegressionEvaluator(name + T(" dihedral angle"))) {}
+
+  virtual String toString() const
+  {
+    //if (lengthEvaluator->getRMSE() == 0.0)
+    //  return String::empty;
+    return T("Backbone length: ") + String(lengthEvaluator->getRMSE(), 4)
+      + T(" angle: ") + String(angleEvaluator->getRMSE(), 4)
+      + T(" dihedral angle: ") + String(dihedralAngleEvaluator->getRMSE(), 4);
+  }
+
+  virtual double getDefaultScore() const
+    {return lengthEvaluator->getDefaultScore() + angleEvaluator->getDefaultScore() + dihedralAngleEvaluator->getDefaultScore();}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ProteinBackboneBondSequencePtr predicted = predictedObject.dynamicCast<ProteinBackboneBondSequence>();
+    ProteinBackboneBondSequencePtr correct = correctObject.dynamicCast<ProteinBackboneBondSequence>();
+    if (!predicted || !correct)
+      return;
+
+    size_t n = predicted->size();
+    jassert(n == correct->size());
+    for (size_t i = 0; i < n; ++i)
     {
-      // top-level inference is finished
-      ProteinPtr p1 = output.dynamicCast<Protein>();
-      ProteinPtr p2 = supervision.dynamicCast<Protein>();
-      jassert(p1 && p2);
-      addProtein(p1, p2);
+      ProteinBackboneBondPtr p = predicted->getBond(i);
+      ProteinBackboneBondPtr c = correct->getBond(i);
+      if (p && c)
+      {
+        addBondPrediction(p->getBond1(), c->getBond1());
+        addBondPrediction(p->getBond2(), c->getBond2());
+        addBondPrediction(p->getBond3(), c->getBond3());
+      }
     }
+  }
+
+  void addBondPrediction(const BondCoordinates& predicted, const BondCoordinates& correct)
+  {
+    if (predicted.hasLength() && correct.hasLength())
+      lengthEvaluator->addDelta(predicted.getLength() - correct.getLength());
+    if (predicted.hasThetaAngle() && correct.hasThetaAngle())
+      angleEvaluator->addDelta((double)predicted.getThetaAngle() - (double)correct.getThetaAngle());
+    if (predicted.hasPhiDihedralAngle() && correct.hasPhiDihedralAngle())
+    {
+      double delta = (double)predicted.getPhiDihedralAngle() - (double)correct.getPhiDihedralAngle();
+      dihedralAngleEvaluator->addDelta(delta);
+    }
+  }
+
+private:
+  RegressionEvaluatorPtr lengthEvaluator;
+  RegressionEvaluatorPtr angleEvaluator;
+  RegressionEvaluatorPtr dihedralAngleEvaluator;
+};
+
+class ProteinTertiaryStructureEvaluator : public Evaluator
+{
+public:
+  ProteinTertiaryStructureEvaluator(const String& name) : Evaluator(name), calphaRMSE(new ScalarVariableMean()) {}
+
+  virtual String toString() const
+  {
+    double count = calphaRMSE->getCount();
+    if (!count)
+      return String::empty;
+    return T("C-Alpha RMSE = ") + String(calphaRMSE->getMean(), 4);
+  }
+
+  virtual double getDefaultScore() const
+    {return -calphaRMSE->getMean();}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ProteinTertiaryStructurePtr predicted = predictedObject.dynamicCast<ProteinTertiaryStructure>();
+    ProteinTertiaryStructurePtr correct = correctObject.dynamicCast<ProteinTertiaryStructure>();
+    if (!correct || !predicted)
+      return;
+    jassert(correct->size() == predicted->size());
+    calphaRMSE->push(predicted->computeCAlphaAtomsRMSE(correct));
+  }
+
+protected:
+  ScalarVariableMeanPtr calphaRMSE;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinTertiaryStructureEvaluator> ProteinTertiaryStructureEvaluatorPtr;
+
+class ProteinEvaluator : public Evaluator
+{
+public:
+  ProteinEvaluator() :
+    Evaluator(T("Protein")), numProteins(0),
+    pssmEvaluator(new ScoreVectorSequenceRegressionEvaluator(T("PSSM"))),
+    secondaryStructureEvaluator(new SequenceLabelingEvaluator(T("SS3"))),
+    dsspSecondaryStructureEvaluator(new SequenceLabelingEvaluator(T("SS8"))),
+    solventAccesibility2StateEvaluator(new SequenceLabelingEvaluator(T("SA2"))),
+    backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
+    tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS")))
+  {
   }
 
   virtual String toString() const
@@ -46,71 +284,30 @@ public:
     String res;
     res += lbcpp::toString(numProteins) + T(" proteins");
     res += "\n";
-    if (numProteins)
-    {
-      if (pssmSquaredError->getMean())
-        res += T("PSSM: mean abs. error = ") + String(pssmAbsoluteError->getMean()) +
-               T(" rmse = ") + String(sqrt(pssmSquaredError->getMean())) + T("\n");
-      res += scoreToString(secondaryStructureAccuracy);
-      res += scoreToString(dsspSecondaryStructureAccuracy);
-      res += scoreToString(solventAccesibility2StateAccuracy);
-      res += errorToString(calphaRMSE);
-    }
+    if (pssmEvaluator->getDefaultScore())
+      evaluatorToString(res, pssmEvaluator);
+    evaluatorToString(res, secondaryStructureEvaluator);
+    evaluatorToString(res, dsspSecondaryStructureEvaluator);
+    evaluatorToString(res, solventAccesibility2StateEvaluator);
+    evaluatorToString(res, backboneBondEvaluator);
+    evaluatorToString(res, tertiaryStructureEvaluator);
     return res;
   }
 
-  static String errorToString(ScalarVariableMeanPtr error)
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
-    String name = error->getName();
-    double count = error->getCount();
-    if (count)
-      return name + T(": ") + String(error->getMean(), 4) + T(" (") + lbcpp::toString(count) + T(" elements)\n");
-    else
-      return name + T(": N/A\n");
-  }
+    ProteinPtr predicted = predictedObject.dynamicCast<Protein>();
+    ProteinPtr correct = correctObject.dynamicCast<Protein>();
+    if (!predicted || !correct)
+      return;
 
-  static String scoreToString(ScalarVariableMeanPtr score)
-  {
-    String name = score->getName();
-    double count = score->getCount();
-    if (count)
-      return name + T(": ") + String(score->getMean() * 100.0, 2) + T(" (") + lbcpp::toString(count) + T(" elements)\n");
-    else
-      return name + T(": N/A\n");
-  }
+   ++numProteins;
 
-  double getQ3Score() const
-    {return secondaryStructureAccuracy->getMean();}
-
-  double getQ8Score() const
-    {return dsspSecondaryStructureAccuracy->getMean();}
-
-  double getSA2Score() const
-    {return solventAccesibility2StateAccuracy->getMean();}
-
-  double getPSSMRootMeanSquareError() const
-    {return sqrt(pssmSquaredError->getMean());}
-  
-  double getDefaultScoreForTarget(const String& targetName)
-  {
-    if (targetName == T("SecondaryStructureSequence"))
-      return getQ3Score();
-    if (targetName == T("DSSPSecondaryStructureSequence"))
-      return getQ8Score();
-    if (targetName == T("SolventAccessibilitySequence"))
-      return getSA2Score();
-    
-    jassert(false);
-    return 0.;
-  }
-
-  void addProtein(ProteinPtr predicted, ProteinPtr correct)
-  {
-    ++numProteins;
-    addScoreVectorSequence(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix(), pssmAbsoluteError, pssmSquaredError);
-    addLabelSequence(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence(), secondaryStructureAccuracy);
-    addLabelSequence(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureAccuracy);
-    addLabelSequence(predicted->getSolventAccessibilitySequence(), correct->getSolventAccessibilitySequence(), solventAccesibility2StateAccuracy);
+    pssmEvaluator->addPrediction(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix());
+    secondaryStructureEvaluator->addPrediction(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence());
+    dsspSecondaryStructureEvaluator->addPrediction(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence());
+    solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilitySequence(), correct->getSolventAccessibilitySequence());
+    backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());
 
     ProteinTertiaryStructurePtr tertiaryStructure = predicted->getTertiaryStructure();
     if (!tertiaryStructure)
@@ -119,66 +316,76 @@ public:
       if (backbone)
         tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(predicted->getAminoAcidSequence(), backbone);
     }
-    addTertiaryStructure(tertiaryStructure, correct->getTertiaryStructure());
+    tertiaryStructureEvaluator->addPrediction(tertiaryStructure, correct->getTertiaryStructure());
   }
 
-  void addLabelSequence(LabelSequencePtr predicted, LabelSequencePtr correct, ScalarVariableMeanPtr statistics)
+  EvaluatorPtr getEvaluatorForTarget(const String& targetName)
   {
-    if (!correct || !predicted)
-      return;
-    jassert(correct->getDictionary() == predicted->getDictionary());
-
-    size_t n = predicted->size();
-    jassert(correct->size() == n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      LabelPtr correctLabel = correct->get(i);
-      LabelPtr predictedLabel = predicted->get(i);
-      if (correctLabel)
-        statistics->push(predictedLabel && correctLabel->getIndex() == predictedLabel->getIndex() ? 1.0 : 0.0);
-    }
+    if (targetName == T("PositionSpecificScoringMatrix"))
+      return pssmEvaluator;
+    if (targetName == T("SecondaryStructureSequence"))
+      return secondaryStructureEvaluator;
+    if (targetName == T("DSSPSecondaryStructureSequence"))
+      return dsspSecondaryStructureEvaluator;
+    if (targetName == T("SolventAccessibilitySequence"))
+      return solventAccesibility2StateEvaluator;
+    if (targetName ==  T("BackboneBondSequence"))
+      return backboneBondEvaluator;
+    if (targetName == T("TertiaryStructure"))
+      return tertiaryStructureEvaluator;
+    return EvaluatorPtr();
   }
-
-  void addScoreVectorSequence(ScoreVectorSequencePtr predicted, ScoreVectorSequencePtr correct, ScalarVariableMeanPtr absoluteError, ScalarVariableMeanPtr squaredError)
-  {
-    if (!correct || !predicted)
-      return;
-
-    jassert(correct->getNumScores() >= predicted->getNumScores());
-    jassert(correct->getDictionary() == predicted->getDictionary());
-
-    size_t n = predicted->size();
-    size_t s = predicted->getNumScores();
-    jassert(correct->size() == n);
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = 0; j < s; ++j)
-      {
-        double delta = predicted->getScore(i, j) - correct->getScore(i, j);
-        //std::cout << "Predicted = " << predicted->getScore(i, j) << " Correct = " << correct->getScore(i, j) << " Delta = " << delta << std::endl;
-        absoluteError->push(fabs(delta));
-        squaredError->push(delta * delta);
-      }
-  }
-
-  void addTertiaryStructure(ProteinTertiaryStructurePtr predicted, ProteinTertiaryStructurePtr correct)
-  {
-    if (!correct || !predicted)
-      return;
-    size_t n = predicted->size();
-    jassert(correct->size() == n);
-    calphaRMSE->push(predicted->computeCAlphaAtomsRMSE(correct));
-  }
+  
+  virtual double getDefaultScore() const
+    {return tertiaryStructureEvaluator->getDefaultScore();}
 
 protected:
   size_t numProteins;
-  ScalarVariableMeanPtr pssmAbsoluteError;
-  ScalarVariableMeanPtr pssmSquaredError;
 
-  ScalarVariableMeanPtr secondaryStructureAccuracy;
-  ScalarVariableMeanPtr dsspSecondaryStructureAccuracy;
-  ScalarVariableMeanPtr solventAccesibility2StateAccuracy;
+  ScoreVectorSequenceRegressionEvaluatorPtr pssmEvaluator;
+  SequenceLabelingEvaluatorPtr secondaryStructureEvaluator;
+  SequenceLabelingEvaluatorPtr dsspSecondaryStructureEvaluator;
+  SequenceLabelingEvaluatorPtr solventAccesibility2StateEvaluator;
+  EvaluatorPtr backboneBondEvaluator;
+  ProteinTertiaryStructureEvaluatorPtr tertiaryStructureEvaluator;
 
-  ScalarVariableMeanPtr calphaRMSE;
+  static void evaluatorToString(String& res, EvaluatorPtr evaluator)
+  {
+    String str = evaluator->toString();
+    if (str.isNotEmpty())
+      res += str + T("\n");
+  }
+};
+
+typedef ReferenceCountedObjectPtr<ProteinEvaluator> ProteinEvaluatorPtr;
+
+class ProteinEvaluationCallback : public InferenceCallback
+{
+public:
+  virtual void startInferencesCallback(size_t count)
+    {evaluator = new ProteinEvaluator();}
+
+  virtual String toString() const
+    {return evaluator->toString();}
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 1)
+    {
+      // top-level inference is finished
+      jassert(output.dynamicCast<Protein>() && supervision.dynamicCast<Protein>());
+      evaluator->addPrediction(output, supervision);
+    }
+  }
+
+  double getDefaultScoreForTarget(const String& targetName)
+  {
+    EvaluatorPtr targetEvaluator = evaluator->getEvaluatorForTarget(targetName);
+    return targetEvaluator ? targetEvaluator->getDefaultScore() : 0.0;
+  }
+
+protected:
+  ProteinEvaluatorPtr evaluator;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinEvaluationCallback> ProteinEvaluationCallbackPtr;

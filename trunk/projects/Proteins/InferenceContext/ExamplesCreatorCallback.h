@@ -66,12 +66,12 @@ public:
       std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
       machine->trainStochastic(trainingData);
       std::cout << "ok." << std::endl;
-      GradientBasedRegressorPtr regressor = machine.dynamicCast<GradientBasedRegressor>();
+      /*GradientBasedRegressorPtr regressor = machine.dynamicCast<GradientBasedRegressor>();
       if (regressor)
       {
         std::cout << "Regressor Num params = " << regressor->getParameters()->l0norm() << " Norm = " << regressor->getParameters()->l2norm() << std::endl;
       }
-      /*GradientBasedClassifierPtr classifier = machine.dynamicCast<GradientBasedClassifier>();
+      GradientBasedClassifierPtr classifier = machine.dynamicCast<GradientBasedClassifier>();
       if (classifier)
       {
         std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << " Num params = " << classifier->getParameters()->l0norm() << " Norm = " << classifier->getParameters()->l2norm() << std::endl;
