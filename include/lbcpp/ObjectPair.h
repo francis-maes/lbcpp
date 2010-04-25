@@ -17,8 +17,8 @@ namespace lbcpp
 class ObjectPair : public ObjectContainer
 {
 public:
-  ObjectPair(ObjectPtr first, ObjectPtr second)
-    : first(first), second(second) {}
+  ObjectPair(const String& name, ObjectPtr first, ObjectPtr second)
+    : ObjectContainer(name), first(first), second(second) {}
   ObjectPair() {}
 
   // todo: toString/read/write/clone
@@ -61,7 +61,7 @@ public:
     {return T("ObjectPair");}
 
   virtual ObjectPtr function(ObjectPtr object) const
-    {return new ObjectPair(copyObjectIntoFirst ? object : ObjectPtr(), copyObjectIntoSecond ? object : ObjectPtr());}
+    {return new ObjectPair(object->getName() + T(" pair"), copyObjectIntoFirst ? object : ObjectPtr(), copyObjectIntoSecond ? object : ObjectPtr());}
 
 private:
   bool copyObjectIntoFirst;

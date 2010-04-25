@@ -276,4 +276,6 @@ ObjectPtr DirectoryObjectStream::next()
 }
 
 ObjectPtr DirectoryObjectStream::parseFile(const File& file)
-  {return Object::createFromFile(file);}
+{
+  return Object::createFromFile(file);
+}

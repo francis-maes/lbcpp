@@ -70,6 +70,9 @@ public:
   void pruneResiduesThatDoNotHaveCompleteBackbone();
   size_t getNumSpecifiedResidues() const;
 
+  Matrix4 superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const;
+  double computeCAlphaAtomsRMSE(ProteinTertiaryStructurePtr targetStructure) const;
+
 private:
   std::vector<ProteinResiduePtr> residues;
 

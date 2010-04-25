@@ -92,9 +92,20 @@ void Protein::computeMissingFields()
 
   LabelSequencePtr secondaryStructureSequence = getSecondaryStructureSequence();
   LabelSequencePtr dsspSecondaryStructureSequence = getDSSPSecondaryStructureSequence();
+
+  // 8-state DSSP SS => 3-state SS
   if (dsspSecondaryStructureSequence && !secondaryStructureSequence)
     setObject(secondaryStructureSequence = SecondaryStructureDictionary::createSequenceFromDSSPSequence
       (T("SecondaryStructureSequence"), dsspSecondaryStructureSequence));
+
+  ProteinTertiaryStructurePtr tertiaryStructure = getTertiaryStructure();
+  if (tertiaryStructure)
+  {
+    // Tertiary Structure => Backbone bonds
+    ProteinBackboneBondSequencePtr backbone = getBackboneBondSequence();
+    if (!backbone)
+      setObject(backbone = tertiaryStructure->createBackbone());
+  }
 }
 
 ObjectPtr Protein::createEmptyObject(const String& name) const

@@ -39,6 +39,44 @@ void CompositeProteinResidueFeatures::save(OutputStream& ostr) const
   {lbcpp::write(ostr, subFeatureFunctions);}
 
 /*
+** ProteinUnitResidueFeature
+*/
+class ProteinUnitResidueFeature : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+    {featureSense(0);}
+
+  virtual String toString() const
+    {return T("unit");}
+
+  virtual String getName() const
+    {return T("unit");}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinUnitResidueFeature()
+  {return new ProteinUnitResidueFeature();}
+
+/*
+** ProteinPositionIndexResidueFeature
+*/
+class ProteinPositionIndexResidueFeature : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+    {featureSense(position);}
+
+  virtual String toString() const
+    {return T("positionIndex");}
+
+  virtual String getName() const
+    {return T("positionIndex");}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinPositionIndexResidueFeature()
+  {return new ProteinPositionIndexResidueFeature();}
+
+/*
 ** SequenceWindowProteinResidueFeatures
 */
 class SequenceWindowProteinResidueFeatures : public ProteinResidueFeatures

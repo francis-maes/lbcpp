@@ -32,6 +32,9 @@ public:
   operator double () const
     {return angle;}
 
+  operator double& ()
+    {return angle;}
+
   bool exists() const
     {return angle != M_2_TIMES_PI;}
 
@@ -83,6 +86,9 @@ public:
   }
 
   operator double() const
+    {return angle;}
+
+  operator double& ()
     {return angle;}
 
   DihedralAngle& operator =(double angle)

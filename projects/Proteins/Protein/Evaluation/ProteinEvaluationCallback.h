@@ -26,6 +26,7 @@ public:
     secondaryStructureAccuracy = new ScalarVariableMean(T("SS3"));
     dsspSecondaryStructureAccuracy = new ScalarVariableMean(T("SS8"));
     solventAccesibility2StateAccuracy = new ScalarVariableMean(T("SA2"));
+    calphaRMSE = new ScalarVariableMean(T("CAlpha RMSE"));
   }
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -53,8 +54,19 @@ public:
       res += scoreToString(secondaryStructureAccuracy);
       res += scoreToString(dsspSecondaryStructureAccuracy);
       res += scoreToString(solventAccesibility2StateAccuracy);
+      res += errorToString(calphaRMSE);
     }
     return res;
+  }
+
+  static String errorToString(ScalarVariableMeanPtr error)
+  {
+    String name = error->getName();
+    double count = error->getCount();
+    if (count)
+      return name + T(": ") + String(error->getMean(), 4) + T(" (") + lbcpp::toString(count) + T(" elements)\n");
+    else
+      return name + T(": N/A\n");
   }
 
   static String scoreToString(ScalarVariableMeanPtr score)
@@ -99,6 +111,15 @@ public:
     addLabelSequence(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence(), secondaryStructureAccuracy);
     addLabelSequence(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureAccuracy);
     addLabelSequence(predicted->getSolventAccessibilitySequence(), correct->getSolventAccessibilitySequence(), solventAccesibility2StateAccuracy);
+
+    ProteinTertiaryStructurePtr tertiaryStructure = predicted->getTertiaryStructure();
+    if (!tertiaryStructure)
+    {
+      ProteinBackboneBondSequencePtr backbone = predicted->getBackboneBondSequence();
+      if (backbone)
+        tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(predicted->getAminoAcidSequence(), backbone);
+    }
+    addTertiaryStructure(tertiaryStructure, correct->getTertiaryStructure());
   }
 
   void addLabelSequence(LabelSequencePtr predicted, LabelSequencePtr correct, ScalarVariableMeanPtr statistics)
@@ -139,6 +160,15 @@ public:
       }
   }
 
+  void addTertiaryStructure(ProteinTertiaryStructurePtr predicted, ProteinTertiaryStructurePtr correct)
+  {
+    if (!correct || !predicted)
+      return;
+    size_t n = predicted->size();
+    jassert(correct->size() == n);
+    calphaRMSE->push(predicted->computeCAlphaAtomsRMSE(correct));
+  }
+
 protected:
   size_t numProteins;
   ScalarVariableMeanPtr pssmAbsoluteError;
@@ -147,6 +177,8 @@ protected:
   ScalarVariableMeanPtr secondaryStructureAccuracy;
   ScalarVariableMeanPtr dsspSecondaryStructureAccuracy;
   ScalarVariableMeanPtr solventAccesibility2StateAccuracy;
+
+  ScalarVariableMeanPtr calphaRMSE;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinEvaluationCallback> ProteinEvaluationCallbackPtr;

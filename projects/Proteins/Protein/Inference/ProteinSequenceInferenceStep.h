@@ -41,8 +41,7 @@ public:
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
   {
     SequencePtr sequence = getTarget(supervision).dynamicCast<Sequence>();
-    jassert(sequence);
-    return sequence->get(index);
+    return sequence ? sequence->get(index) : ObjectPtr();
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const

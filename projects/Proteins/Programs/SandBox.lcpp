@@ -16,6 +16,7 @@
 #include "Protein/Evaluation/ProteinStatisticsCalculator.h"
 #include "Protein/SecondaryStructureDictionary.h"
 #include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
 
@@ -74,7 +75,7 @@ public:
   
   virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
   {
-    static const double regularizer = 10.0;
+    static const double regularizer = 0.0;
     static const bool useConstantLearningRate = false;
 
     IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
@@ -108,20 +109,20 @@ public:
 
     validationContext->runWithSupervisedExamples(inference, trainingData);
     std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
-    double trainRmse = evaluation->getPSSMRootMeanSquareError();
+    //double trainRmse = evaluation->getPSSMRootMeanSquareError();
     
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
-    double testRmse = evaluation->getPSSMRootMeanSquareError();
+    /*double testRmse = evaluation->getPSSMRootMeanSquareError();
 
     if (trainRmse < bestTrainRmse)
     {
       bestTrainRmse = trainRmse;
       bestTestRmse = testRmse;
-    }
+    }*/
 
     // stopping criterion
-    return iterationNumber < 1;
+    return iterationNumber < 2;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -130,13 +131,13 @@ public:
     std::cout << std::endl << "=====================================================" << std::endl;
     std::cout << "======= LEARNING PASS " << passName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
     std::cout << "=====================================================" << std::endl;
-    bestTrainRmse = bestTestRmse = DBL_MAX;
+    //bestTrainRmse = bestTestRmse = DBL_MAX;
   }
 
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
-    std::cout << "Best Train RMSE: " << bestTrainRmse << std::endl;
-    std::cout << "Best Test RMSE: " << bestTestRmse << std::endl;
+    //std::cout << "Best Train RMSE: " << bestTrainRmse << std::endl;
+    //std::cout << "Best Test RMSE: " << bestTestRmse << std::endl;
   }
 
 private:
@@ -145,7 +146,7 @@ private:
   InferenceResultCachePtr cache;
   juce::uint32 startingTime;
 
-  double bestTrainRmse, bestTestRmse;
+//  double bestTrainRmse, bestTestRmse;
 };
 /*
 class ProteinToInputOutputPair : public ObjectFunction
@@ -164,13 +165,13 @@ public:
   }
 };*/
 
-ObjectContainerPtr loadProteins(const File& directory)
+ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
   ObjectStreamPtr proteinsStream = directoryObjectStream(directory, T("*.protein"));
 #ifdef JUCE_DEBUG
-  ObjectContainerPtr res = proteinsStream->load(7)->randomize();
+  ObjectContainerPtr res = proteinsStream->load(maxCount ? maxCount : 7)->randomize();
 #else
-  ObjectContainerPtr res = proteinsStream->load()->randomize();
+  ObjectContainerPtr res = proteinsStream->load(maxCount)->randomize();
 #endif
   for (size_t i = 0; i < res->size(); ++i)
     res->getAndCast<Protein>(i)->computeMissingFields();
@@ -184,32 +185,39 @@ int main(int argc, char** argv)
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
-  File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513New"));
+  /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513New"));
   
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
-  std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;
+  std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 1);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
-  ObjectContainerPtr trainingData = cb513Proteins->invFold(0, 7)->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = smallPDBProteins->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr trainingData = smallPDBProteins->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = trainingData; // smallPDBProteins->apply(new ObjectToObjectPairFunction());
+  std::cout << "Protein: " << trainingData->get(0)->getName() << std::endl;
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
+
+  
 
   /*
   ** Creation of the feature function
   */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
+
+//  featureFunction->addSubFeatures(proteinUnitResidueFeature());
+  featureFunction->addSubFeatures(proteinPositionIndexResidueFeature()); // DEBUG !!
+/*
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccesibilitySequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccesibilitySequence"), 5, 5, true));*/
 
   /*
   ** Creation of the inference 
@@ -222,12 +230,12 @@ int main(int argc, char** argv)
     // the same feature function is used for CO and for subsequent passes
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
-    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilitySequence"));
-    proteinInference->appendStep(step);
+    //step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilitySequence"));
+    //proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
-    // step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction, T("BackboneBondSequence"));
-    // proteinInference->appendStep(step);
+    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+    proteinInference->appendStep(step);
   }
 
   /*

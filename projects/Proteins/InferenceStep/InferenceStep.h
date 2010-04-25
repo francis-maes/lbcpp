@@ -34,6 +34,28 @@ protected:
   friend class InferenceContext;
 };
 
+class VectorBasedInferenceHelper
+{
+public:
+  virtual size_t getNumSubSteps() const
+    {return subInferences.size();}
+
+  virtual InferenceStepPtr getSubStep(size_t index) const
+    {jassert(index < subInferences.size()); return subInferences[index];}
+
+  void setSubStep(size_t index, InferenceStepPtr subStep)
+    {jassert(index < subInferences.size()); subInferences[index] = subStep;}
+
+  void appendStep(InferenceStepPtr inference)
+    {subInferences.push_back(inference);}
+
+protected:
+  std::vector<InferenceStepPtr> subInferences;
+
+  bool saveSubInferencesToDirectory(const File& file) const;
+  bool loadSubInferencesFromDirectory(const File& file);
+};
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_STEP_H_
