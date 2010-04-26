@@ -24,6 +24,99 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+void clusterizeAAIndex(const std::vector< ScoreVectorSequencePtr > aaIndex, size_t numberCluster, std::vector< ScalarSequencePtr >& filteredIndex)
+{
+  if (!numberCluster)
+    return;
+  
+  size_t numCluster = 10; //aaIndex.size();
+  std::vector< int > clusters[numCluster];
+  double distance[numCluster][numCluster];
+  
+  /*
+  ** Initialize structure
+  */
+  for (size_t i = 0; i < numCluster; ++i)
+  {
+    clusters[i].push_back(i);
+    for (size_t j = i + 1; j < numCluster; ++j)
+    {
+      for (size_t k = 0; k < 20; ++k)
+      {
+        double val = aaIndex[i]->getScore(0, k) - aaIndex[j]->getScore(0, k);
+        distance[i][j] += val * val;
+      }
+      distance[i][j] = sqrt(distance[i][j]);
+      distance[j][i] = distance[i][j];
+    }
+    distance[i][i] = DBL_MAX / 2;
+  }
+  
+  /*
+  ** Generate clusters
+  */
+  for (; numCluster > numberCluster; --numCluster)
+  {
+    size_t min_i = 0;
+    size_t min_j = 0;
+    double min = DBL_MAX;
+
+    /*
+    ** Find closest cluster
+    */
+    for (size_t i = 0; i < numCluster; ++i)
+    {
+      for (size_t j = i + 1; j < numCluster; ++j)
+      {
+        if (distance[i][j] < min) {
+          min = distance[i][j];
+          min_i = i;
+          min_j = j;
+        }
+      }
+    }
+    
+    /*
+    ** Merge clusters
+    */
+    for (size_t i = 0; i < clusters[min_j].size(); ++i)
+      clusters[min_i].push_back(clusters[min_j][i]);
+
+    /*
+    ** Update distance matrix
+    */
+    for (size_t i = 0; i < numCluster; ++i)
+    {
+      distance[min_i][i] = (distance[min_i][i] + distance[min_j][i]) / 2;
+      distance[i][min_i] = distance[min_i][i];
+    }
+    
+    for (size_t i = 0; i < numCluster; ++i)
+      distance[min_j][i] = distance[numCluster-1][i];
+    
+    for (size_t i = 0; i < numCluster; ++i)
+      distance[i][min_j] = distance[i][numCluster-1];
+    
+    clusters[min_j] = clusters[numCluster-1];
+  }
+  
+  for (size_t i = 0; i < numCluster; ++i)
+  {
+    //std::cout << lbcpp::toString(clusters[i]) << std::endl;
+    ScalarSequencePtr scoreCluster = new ScalarSequence(T("AAIndex"), 24);
+    for (size_t k = 0; k < 24; ++k)
+    {
+      double sum = 0.;
+      for (size_t j = 0; j < clusters[i].size(); j++)
+      {
+        sum += aaIndex[clusters[i][j]]->getScore(0, k);
+      }
+      scoreCluster->setValue(k, sum / clusters[i].size());
+    }
+    filteredIndex.push_back(scoreCluster);
+  }
+}
+
 /*                                                  *
                 Under Heavy Development
  *                                                  */
@@ -45,6 +138,7 @@ int main(int argc, char** argv)
   int wSS8 = 10;
   int wSA = 10;
   int wProp = 50;
+  int numberAAIndex = 25;
   double regularizer = 20.0;
   double initialLearningRate = 2.0;
   int numberIterationLearningRate = 150000;
@@ -63,6 +157,7 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("MaximumPass"), &maxPass));
   arguments.insert(new IntegerArgument(T("AminoAcidWindow"), &wAA));
   arguments.insert(new IntegerArgument(T("PSSMWindow"), &wPSSM));
+  arguments.insert(new IntegerArgument(T("NumberOfAAIndex"), &numberAAIndex));
   arguments.insert(new IntegerArgument(T("PropertyWindow"), &wProp));
   arguments.insert(new IntegerArgument(T("SS3Window"), &wSS3));
   arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
@@ -140,7 +235,6 @@ int main(int argc, char** argv)
   /*
   ** Retreive and compute AAIndex for each protein
   */
-/*
   File file("/scratch/jbecker/aaindex1");
   if (isTestVersion)
     file = T("/Users/jbecker/Documents/Workspace/CASP9/aaindex1");
@@ -157,21 +251,24 @@ int main(int argc, char** argv)
     vectorAAIndex.push_back(score);
   }
 
-  std::cout << "Number of AAIndex: " << vectorAAIndex.size() << std::endl;
+  std::cout << "Total number of AAIndex: " << vectorAAIndex.size() << std::endl;
   jassert(vectorAAIndex.size() != 0);
-*/
+
+  std::vector< ScalarSequencePtr > clusteredAAIndex;
+  clusterizeAAIndex(vectorAAIndex, numberAAIndex, clusteredAAIndex);
+
   ObjectContainerPtr proteins;
   if (isTestVersion)
     proteins = proteinsStream->load(7)->randomize();
   else
     proteins = proteinsStream->load()->randomize();
-/*
+
   for (size_t i = 0; i < proteins->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) proteins->get(i);
-    protein->computePropertiesFrom(vectorAAIndex);
+    protein->computePropertiesFrom(clusteredAAIndex);
   }
-*/
+
   proteins = proteins->apply(new ObjectToObjectPairFunction());
 
   /*
