@@ -12,13 +12,26 @@ using namespace lbcpp;
 /*
 ** VectorBasedInferenceHelper
 */
-bool VectorBasedInferenceHelper::saveSubInferencesToDirectory(const File& file) const
+int VectorBasedInferenceHelper::findStepNumber(InferenceStepPtr step) const
+{
+  for (size_t i = 0; i < subInferences.size(); ++i)
+    if (subInferences[i] == step)
+      return (int)i;
+  return -1;
+}
+
+File VectorBasedInferenceHelper::getSubInferenceFile(size_t index, const File& directory) const
+{
+  jassert(index < subInferences.size());
+  InferenceStepPtr step = subInferences[index];
+  jassert(step);
+  return directory.getChildFile(lbcpp::toString(index) + T("_") + step->getName() + T(".inference"));
+}
+
+bool VectorBasedInferenceHelper::saveSubInferencesToDirectory(const File& directory) const
 {
   for (size_t i = 0; i < getNumSubSteps(); ++i)
-  {
-    InferenceStepPtr step = getSubStep(i);
-    step->saveToFile(file.getChildFile(lbcpp::toString(i) + T("_") + step->getName() + T(".inference")));
-  }
+    getSubStep(i)->saveToFile(getSubInferenceFile(i, directory));
   return true;
 }
 

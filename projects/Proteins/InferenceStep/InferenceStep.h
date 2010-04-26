@@ -49,6 +49,10 @@ public:
   void appendStep(InferenceStepPtr inference)
     {subInferences.push_back(inference);}
 
+  File getSubInferenceFile(size_t index, const File& directory) const;
+
+  int findStepNumber(InferenceStepPtr step) const;
+
 protected:
   std::vector<InferenceStepPtr> subInferences;
 

@@ -239,25 +239,12 @@ int main(int argc, char** argv)
   callback->appendCallback(new GnuPlotInferenceLearnerCallback(prefixResults));
 
   /* Load inference step that we already leaned */
-  size_t firstStepToLearn = 0;
-  while (useSavedModel && firstStepToLearn < proteinInference->getNumSubSteps())
-  {
-    File toLoad = File::getCurrentWorkingDirectory().getChildFile(savedModelDirectory + T("/") + lbcpp::toString(firstStepToLearn) + T("_") + proteinInference->getSubStep(firstStepToLearn)->getName() + T(".inference"));
-    if (!toLoad.exists())
-      break;
+  File modelDirectory;
+  if (useSavedModel)
+    modelDirectory = savedModelDirectory;
 
-    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
-    jassert(inference);
-    
-    std::cout << "Loaded step: " << inference->getName() << std::endl;
-    
-    proteinInference->setSubStep(firstStepToLearn, inference);
-    
-    ++firstStepToLearn;
-  }
-
-  callback->appendCallback(new BestStepKeeperInferenceLearnerCallback(proteinInference, prefixResults, firstStepToLearn));
-  stepByStepDeterministicSimulationLearner(callback, true, firstStepToLearn)->train(proteinInference, trainingData);
+  //callback->appendCallback(new BestStepKeeperInferenceLearnerCallback(proteinInference, prefixResults));
+  stepByStepDeterministicSimulationLearner(callback, true, modelDirectory)->train(proteinInference, trainingData);
 
   return 0;
 }

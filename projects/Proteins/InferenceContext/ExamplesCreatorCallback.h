@@ -65,46 +65,77 @@ public:
 
   void trainStochasticIteration()
   {
-    for (ExamplesMap::const_iterator it = examples.begin(); it != examples.end(); ++it)
+    for (LearningMachineMap::iterator it = learningMachines.begin(); it != learningMachines.end(); ++it)
     {
       LearningMachinePtr machine = it->first;
-      ObjectContainerPtr trainingData = it->second->randomize();
+      ObjectContainerPtr trainingData = it->second.examples->randomize();
       std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
       machine->trainStochastic(trainingData);
-      std::cout << "ok." << std::endl;
-      /*GradientBasedRegressorPtr regressor = machine.dynamicCast<GradientBasedRegressor>();
-      if (regressor)
-      {
-        std::cout << "Regressor Num params = " << regressor->getParameters()->l0norm() << " Norm = " << regressor->getParameters()->l2norm() << std::endl;
-      }
-      GradientBasedClassifierPtr classifier = machine.dynamicCast<GradientBasedClassifier>();
-      if (classifier)
-      {
-        std::cout << "Train accuracy: " << std::flush << classifier->evaluateAccuracy(trainingData) << " Num params = " << classifier->getParameters()->l0norm() << " Norm = " << classifier->getParameters()->l2norm() << std::endl;
-      }*/
+      GradientBasedLearningMachine* gbm = machine.dynamicCast<GradientBasedLearningMachine>().get();
+      jassert(gbm);
+      std::cout << "ok\n ==> empirical risk = " << std::flush;
+      double empiricalRisk = gbm->computeEmpiricalRisk(trainingData);
+      if (it->second.updateEmpiricalRisk(gbm->getParameters(), empiricalRisk))
+        std::cout << "!!" << empiricalRisk << "!!";
+      else
+        std::cout << empiricalRisk;
+      std::cout << ", num. params = " << gbm->getParameters()->l0norm() << " L2 norm = " << gbm->getParameters()->l2norm() << std::endl;
     }
   }
 
-  void trainAndFlushExamples()
+  void clearExamples()
   {
-    trainStochasticIteration();
-    examples.clear();
+    for (LearningMachineMap::iterator it = learningMachines.begin(); it != learningMachines.end(); ++it)
+      it->second.examples = VectorObjectContainerPtr();
+  }
+
+  void trainAndFlushExamples()
+    {trainStochasticIteration(); clearExamples();}
+
+  void restoreBestParameters()
+  {
+    for (LearningMachineMap::const_iterator it = learningMachines.begin(); it != learningMachines.end(); ++it)
+    {
+      GradientBasedLearningMachine* gbm = it->first.dynamicCast<GradientBasedLearningMachine>().get();
+      jassert(gbm);
+      gbm->setParameters(it->second.bestParameters);
+    }
   }
 
 protected:
   InferenceLearnerCallbackPtr learnerCallback;
   bool enableExamplesCreation;
 
-  typedef std::map<LearningMachinePtr, VectorObjectContainerPtr> ExamplesMap;
-  ExamplesMap examples;
+  struct LearningMachineInfo
+  {
+    LearningMachineInfo() : bestEmpiricalRisk(DBL_MAX) {}
+
+    VectorObjectContainerPtr examples;
+    DenseVectorPtr bestParameters;
+    double bestEmpiricalRisk;
+
+    void addExample(ObjectPtr example)
+    {
+      if (!examples)
+        examples = new VectorObjectContainer(T("Learning Examples"));
+      examples->append(example);
+    }
+
+    bool updateEmpiricalRisk(DenseVectorPtr parameters, double empiricalRisk)
+    {
+      if (empiricalRisk >= bestEmpiricalRisk)
+        return false;
+      bestEmpiricalRisk = empiricalRisk;
+      bestParameters = parameters->cloneAndCast<DenseVector>();
+      return true;
+    }
+  };
+
+  typedef std::map<LearningMachinePtr, LearningMachineInfo> LearningMachineMap;
+  LearningMachineMap learningMachines;
 
   void addExample(LearningMachinePtr learningMachine, ObjectPtr example)
-  {
-    VectorObjectContainerPtr& machineExamples = examples[learningMachine];
-    if (!machineExamples)
-      machineExamples = new VectorObjectContainer();
-    machineExamples->append(example);
-  }
+    {learningMachines[learningMachine].addExample(example);}
 };
 
 typedef ReferenceCountedObjectPtr<ExamplesCreatorCallback> ExamplesCreatorCallbackPtr;
