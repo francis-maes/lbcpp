@@ -89,7 +89,6 @@ void Protein::computeMissingFields()
   LabelSequencePtr aminoAcidSequence = getAminoAcidSequence();
   if (!aminoAcidSequence)
     return;
-  size_t n = aminoAcidSequence->size();
 
   LabelSequencePtr secondaryStructureSequence = getSecondaryStructureSequence();
   ScoreVectorSequencePtr secondaryStructureProbabilities = getSecondaryStructureProbabilities();
@@ -220,7 +219,7 @@ ProteinBackboneBondSequencePtr Protein::getBackboneBondSequence() const
 ProteinTertiaryStructurePtr Protein::getTertiaryStructure() const
   {return getObject(T("TertiaryStructure"));}
 
-void Protein::computePropertiesFrom(const std::vector< ScoreVectorSequencePtr >& aaindex)
+void Protein::computePropertiesFrom(const std::vector< ScalarSequencePtr >& aaindex)
 {
   ScoreVectorSequencePtr properties = new ScoreVectorSequence(T("AminoAcidProperty"), AminoAcidPropertyDictionary::getInstance(), getLength(), aaindex.size());
   LabelSequencePtr sequence = getAminoAcidSequence();
@@ -228,7 +227,7 @@ void Protein::computePropertiesFrom(const std::vector< ScoreVectorSequencePtr >&
   {
     for (size_t j = 0; j < getLength(); ++j)
     {
-      properties->setScore(j, i, aaindex[i]->getScore(0, sequence->getIndex(j)));
+      properties->setScore(j, i, aaindex[i]->getValue(sequence->getIndex(j)));
     }
   }
   
