@@ -1,13 +1,13 @@
-1- Learning with file cache
 2- ProbabilisticSequenceLabelingInference
 3- Guzu SS3 structual features
-
+4- CommonFeatureGenerators.h et CommonFeatureGenerators.lcpp
+5- Features for phi/psi angles
+ 
 New Inference Step/Data:
  * TransferRegressionInference (=> Bond length and angles)
  
 Features:
- * CommonFeatureGenerators.h et CommonFeatureGenerators.lcpp
- * Features for phi/psi angles
+ 
 
 Reorganisation du projet
  * Refaire les repertoires

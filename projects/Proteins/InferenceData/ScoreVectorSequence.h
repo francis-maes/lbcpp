@@ -9,8 +9,7 @@
 #ifndef LBCPP_INFERENCE_DATA_SCORE_VECTOR_SEQUENCE_H_
 # define LBCPP_INFERENCE_DATA_SCORE_VECTOR_SEQUENCE_H_
 
-# include "Sequence.h"
-# include "AccumulatedScoresMatrix.h"
+# include "LabelSequence.h"
 
 namespace lbcpp
 {
@@ -21,6 +20,8 @@ public:
   // by default the number of scores is the number of features in the dictionary
   ScoreVectorSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length, size_t numScores = 0);
   ScoreVectorSequence() {}
+
+  LabelSequencePtr makeArgmaxLabelSequence(const String& name) const;
 
   FeatureDictionaryPtr getDictionary() const
     {return dictionary;}

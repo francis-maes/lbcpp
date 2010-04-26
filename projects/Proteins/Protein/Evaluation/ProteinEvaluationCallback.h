@@ -11,6 +11,7 @@
 
 # include "../Protein.h"
 # include "../../InferenceContext/InferenceCallback.h"
+# include "../../InferenceContext/InferenceStack.h"
 
 namespace lbcpp
 {
@@ -311,6 +312,7 @@ public:
       return;
 
    ++numProteins;
+    predicted->computeMissingFields();
 
     pssmEvaluator->addPrediction(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix());
     secondaryStructureEvaluator->addPrediction(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence());

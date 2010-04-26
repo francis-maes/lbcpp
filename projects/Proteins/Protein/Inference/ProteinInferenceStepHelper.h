@@ -18,8 +18,8 @@ namespace lbcpp
 class ProteinInferenceStepHelper
 {
 public:
-  ProteinInferenceStepHelper(const String& targetName)
-    : targetName(targetName) {}
+  ProteinInferenceStepHelper(const String& targetName, const String& supervisionName = String::empty)
+    : targetName(targetName), supervisionName(supervisionName.isEmpty() ? targetName : supervisionName) {}
   ProteinInferenceStepHelper() {}
 
   String getTargetName() const
@@ -31,11 +31,15 @@ public:
   ObjectPtr createEmptyOutput(ObjectPtr input) const
     {jassert(targetName.isNotEmpty()); return getProtein(input)->createEmptyObject(targetName);}
 
-  ObjectPtr getTarget(ObjectPtr object) const
-    {jassert(targetName.isNotEmpty()); return getProtein(object)->getObject(targetName);}
+  //ObjectPtr getSupervision(ObjectPtr object) const
+  //  {jassert(targetName.isNotEmpty()); return getProtein(object)->getObject(targetName);}
+
+  ObjectPtr getSupervision(ObjectPtr object) const
+    {jassert(supervisionName.isNotEmpty()); return getProtein(object)->getObject(supervisionName);}
 
 protected:
   String targetName;
+  String supervisionName;
 
   ProteinPtr getProtein(ObjectPtr object) const
   {
@@ -57,8 +61,8 @@ protected:
 class ProteinResidueRelatedInferenceStepHelper : public ProteinInferenceStepHelper
 {
 public:
-  ProteinResidueRelatedInferenceStepHelper(const String& targetName, ProteinResidueFeaturesPtr features)
-    : ProteinInferenceStepHelper(targetName), features(features) {}
+  ProteinResidueRelatedInferenceStepHelper(const String& targetName, ProteinResidueFeaturesPtr features, const String& supervisionName = String::empty)
+    : ProteinInferenceStepHelper(targetName, supervisionName), features(features) {}
   ProteinResidueRelatedInferenceStepHelper() {}
 
 protected:

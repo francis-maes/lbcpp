@@ -87,7 +87,7 @@ public:
         stepFile = inference->getSubInferenceFile(stepNumber, modelDirectory);
       if (stepFile.exists() && step->loadFromFile(stepFile))
       {
-        std::cout << "Loaded inference step " << stepFile.getFileNameWithoutExtension() << "." << std::endl;
+        std::cout << "Loaded inference step " << stepFile.getFileNameWithoutExtension().quoted() << "." << std::endl;
         continue;
       }
 
@@ -102,13 +102,13 @@ public:
       if (modelDirectory != File::nonexistent)
       {
         step->saveToFile(stepFile);
-        std::cout << "Saved inference step " << stepFile.getFileNameWithoutExtension() << "." << std::endl;
+        std::cout << "Saved inference step " << stepFile.getFileNameWithoutExtension().quoted() << "." << std::endl;
       }
     }
 
     if (modelDirectory != File::nonexistent)
     {
-      std::cout << "Save inference: " << modelDirectory.getFileNameWithoutExtension() << std::endl;
+      std::cout << "Save inference " << modelDirectory.getFileNameWithoutExtension().quoted() << std::endl;
       inference->saveToFile(modelDirectory);
     }
   }

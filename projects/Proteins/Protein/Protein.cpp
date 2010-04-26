@@ -92,16 +92,26 @@ void Protein::computeMissingFields()
   size_t n = aminoAcidSequence->size();
 
   LabelSequencePtr secondaryStructureSequence = getSecondaryStructureSequence();
+  ScoreVectorSequencePtr secondaryStructureProbabilities = getSecondaryStructureProbabilities();
   LabelSequencePtr dsspSecondaryStructureSequence = getDSSPSecondaryStructureSequence();
+  ScoreVectorSequencePtr dsspSecondaryStructureProbabilities = getDSSPSecondaryStructureProbabilities();
   ScalarSequencePtr normalizedSolventAccessibilitySequence = getNormalizedSolventAccessibilitySequence();
 
   /*
   ** Secondary Structure
   */
+  // SS8 probabilities => SS8 LabelSequence
+  if (dsspSecondaryStructureProbabilities && !dsspSecondaryStructureSequence)
+    setObject(dsspSecondaryStructureSequence = dsspSecondaryStructureProbabilities->makeArgmaxLabelSequence(T("DSSPSecondaryStructureSequence")));
+
   // 8-state DSSP SS => 3-state SS
   if (dsspSecondaryStructureSequence && !secondaryStructureSequence)
     setObject(secondaryStructureSequence = SecondaryStructureDictionary::createSequenceFromDSSPSequence
       (T("SecondaryStructureSequence"), dsspSecondaryStructureSequence));
+
+  // SS3 probabilities => SS3 LabelSequence
+  if (secondaryStructureProbabilities && !secondaryStructureSequence)
+    setObject(secondaryStructureSequence = secondaryStructureProbabilities->makeArgmaxLabelSequence(T("SecondaryStructureSequence")));
 
   /*
   ** Solvent Accesiblity
@@ -137,8 +147,12 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new ScoreVectorSequence(name, AminoAcidDictionary::getInstance(), n, AminoAcidDictionary::numAminoAcids);
   else if (name == T("SecondaryStructureSequence"))
     return new LabelSequence(name, SecondaryStructureDictionary::getInstance(), n);
+  else if (name == T("SecondaryStructureProbabilities"))
+    return new ScoreVectorSequence(name, SecondaryStructureDictionary::getInstance(), n);
   else if (name == T("DSSPSecondaryStructureSequence"))
     return new LabelSequence(name, DSSPSecondaryStructureDictionary::getInstance(), n);
+  else if (name == T("DSSPSecondaryStructureProbabilities"))
+    return new ScoreVectorSequence(name, DSSPSecondaryStructureDictionary::getInstance(), n);
   else if (name == T("NormalizedSolventAccessibilitySequence"))
     return new ScalarSequence(name, n);
   else if (name.startsWith(T("SolventAccessibilityThreshold")))
@@ -175,8 +189,14 @@ ScoreVectorSequencePtr Protein::getAminoAcidProperty() const
 LabelSequencePtr Protein::getSecondaryStructureSequence() const
   {return getObject(T("SecondaryStructureSequence"));}
 
+ScoreVectorSequencePtr Protein::getSecondaryStructureProbabilities() const
+  {return getObject(T("SecondaryStructureProbabilities"));}
+
 LabelSequencePtr Protein::getDSSPSecondaryStructureSequence() const
   {return getObject(T("DSSPSecondaryStructureSequence"));}
+
+ScoreVectorSequencePtr Protein::getDSSPSecondaryStructureProbabilities() const
+  {return getObject(T("DSSPSecondaryStructureProbabilities"));}
 
 ScalarSequencePtr Protein::getNormalizedSolventAccessibilitySequence() const
   {return getObject(T("NormalizedSolventAccessibilitySequence"));}

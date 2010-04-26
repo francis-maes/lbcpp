@@ -53,11 +53,11 @@ public:
 
   int findStepNumber(InferenceStepPtr step) const;
 
-protected:
-  std::vector<InferenceStepPtr> subInferences;
-
   bool saveSubInferencesToDirectory(const File& file) const;
   bool loadSubInferencesFromDirectory(const File& file);
+
+protected:
+  std::vector<InferenceStepPtr> subInferences;
 };
 
 }; /* namespace lbcpp */

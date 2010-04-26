@@ -21,10 +21,35 @@ void LabelSequence::resize(size_t newSize)
 
 void LabelSequence::set(size_t position, ObjectPtr object)
 {
+  size_t index;
   LabelPtr label = object.dynamicCast<lbcpp::Label>();
-  jassert(label && label->getDictionary() == dictionary);
-  jassert(position < sequence.size());
-  sequence[position] = (unsigned char)label->getIndex();
+  if (label)
+  {
+    jassert(label->getDictionary() == dictionary);
+    index = (unsigned char)label->getIndex();
+  }
+  else
+  {
+    DenseVectorPtr scores = object.dynamicCast<DenseVector>();
+    if (scores)
+    {
+      jassert(scores->getDictionary() == dictionary);
+      int i = scores->findIndexOfMaximumValue();
+      if (i < 0)
+      {
+        jassert(false);
+        return;
+      }
+      index = (size_t)i;
+    }
+    else
+    {
+      jassert(false);
+      return;
+    }
+  }
+  jassert(position < sequence.size());    
+  sequence[position] = index;
   validateModification();
 }
 

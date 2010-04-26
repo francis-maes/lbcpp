@@ -165,7 +165,7 @@ public:
     jassert(classifier);
     step->setClassifier(classifier);
     FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
-    return classifier->predictLabel(inputFeatures);
+    return classifier->predictProbabilities(inputFeatures);
   }
 
   virtual ObjectPtr runRegression(RegressionInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
