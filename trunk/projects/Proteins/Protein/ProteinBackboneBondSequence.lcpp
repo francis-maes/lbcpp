@@ -10,8 +10,51 @@
 #include "InferenceData/CommonFeatureGenerators.h"
 using namespace lbcpp;
 
+// TODO: conjunctions !!!
+
+class ConjunctionFeatureVisitor : public FeatureVisitor
+{
+public:
+  virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
+  {
+
+  }
+};
+
+featureGenerator recursiveConjunctionFeatures(SparseVectorPtr vector, FeatureGeneratorPtr subFeatures)
+{
+  typedef std::vector<std::pair<size_t, double> > FeatureVector;
+  typedef std::vector<std::pair<size_t, SparseVectorPtr> > SubVectorVector;
+
+  const FeatureVector& vectorFeatures = vector->getValues();
+  if (vectorFeatures.size())
+  {
+    featureScope(0)
+      for (size_t i = 0; i < vectorFeatures.size(); ++i)
+        featureCall(vectorFeatures[i].first, vectorFeatures[i].second) subFeatures;
+  }
+  
+  const SubVectorVector& vectorSubVectors = vector->getSubVectors();
+  if (vectorSubVectors.size())
+  {
+    featureScope(1)
+      for (size_t i = 0; i < vectorSubVectors.size(); ++i)
+      {
+        size_t index = vectorSubVectors[i].first;
+        featureCall(index) recursiveConjunctionFeatures(vectorSubVectors[i].second, subFeatures);
+      }
+  }
+}
+
+FeatureGeneratorPtr conjunction(FeatureGeneratorPtr f1, FeatureGeneratorPtr f2)
+  {return recursiveConjunctionFeatures(f1->toSparseVector(), f2);}
+
 featureGenerator ProteinBackboneBondSequence::elementFeatures(size_t position) const
 {
-  featureCall(0) multiScaleDihedralAngleFeatures(this->getPhi(position));
-  featureCall(0) multiScaleDihedralAngleFeatures(this->getPsi(position));
+  FeatureGeneratorPtr phiFeatures = multiScaleDihedralAngleFeatures(this->getPhi(position), 1, 2, 4);
+  FeatureGeneratorPtr psiFeatures = multiScaleDihedralAngleFeatures(this->getPsi(position), 1, 2, 4);
+  FeatureGeneratorPtr omegaFeatures = multiScaleDihedralAngleFeatures(this->getOmega(position), 1, 2, 4);
+  featureCall(0) phiFeatures;
+  featureCall(1) psiFeatures;
+  featureCall(2) omegaFeatures;
 }

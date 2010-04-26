@@ -56,6 +56,41 @@ protected:
   virtual void save(OutputStream& ostr) const;
 };
 
+class TransferRegressionInferenceStep : public DecoratorInferenceStep
+{
+public:
+  TransferRegressionInferenceStep(const String& name, InferenceStepPtr regressionStep, ScalarFunctionPtr transferFunction)
+    : DecoratorInferenceStep(name, regressionStep), transferFunction(transferFunction) {}
+  TransferRegressionInferenceStep() {}
+  
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    if (supervision)
+    {
+      ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+      jassert(loss);
+      supervision = transferFunction->composeWith(loss);
+    }
+    ObjectPtr result = DecoratorInferenceStep::run(context, input, supervision, returnCode);
+    if (result)
+    {
+      ScalarPtr scalarResult = result.dynamicCast<Scalar>();
+      jassert(scalarResult);
+      result = new Scalar(transferFunction->compute(scalarResult->getValue()));
+    }
+    return result;
+  }
+
+protected:
+  ScalarFunctionPtr transferFunction;
+
+  virtual bool load(InputStream& istr)
+    {return DecoratorInferenceStep::load(istr) && lbcpp::read(istr, transferFunction);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorInferenceStep::save(ostr); lbcpp::write(ostr, transferFunction);}
+};
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_STEP_DECORATOR_H_

@@ -20,20 +20,19 @@ int main()
 
   File proteinDatabase(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinDatabase, T("*.protein"));
-  ObjectContainerPtr proteins = proteinsStream->load(1)->randomize();
+  ObjectContainerPtr proteins = proteinsStream->load()->randomize();
   std::cout << proteins->size() << " proteins." << std::endl;
   if (!proteins)
     return 1;
-
+/*
   File ramachadranPlotFile(T("C:\\Projets\\LBC++\\projects\\temp\\ramac.txt"));
   ramachadranPlotFile.deleteRecursively();
   OutputStream* ramachadranPlot = ramachadranPlotFile.createOutputStream();
-  jassert(ramachadranPlot);
+  jassert(ramachadranPlot);*/
 
   static ScalarVariableStatistics nCalphaLength(T("N--CA length"));
   static ScalarVariableStatistics calphaCLength(T("CA--C length")); 
   static ScalarVariableStatistics cnLength(T("C--N length")); 
-  static ScalarVariableStatistics calphaCalphaLength(T("CA--CA length")); 
 
   static ScalarVariableStatistics calphaAngle(T("N--CA--C angle"));
   static ScalarVariableStatistics carbonAngle(T("CA--C--N' angle"));
@@ -53,6 +52,27 @@ int main()
     size_t n = aminoAcidSequence->size();
 
     ProteinBackboneBondSequencePtr backbone = tertiaryStructure->createBackbone();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ProteinBackboneBondPtr bond = backbone->getBond(i);
+      if (bond)
+      {
+        if (bond->getBond1().hasLength())
+          nCalphaLength.push(bond->getBond1().getLength());
+        if (bond->getBond2().hasLength())
+          calphaCLength.push(bond->getBond2().getLength());
+        if (bond->getBond3().hasLength())
+          cnLength.push(bond->getBond3().getLength());
+
+        if (bond->getBond1().hasThetaAngle())
+          calphaAngle.push(bond->getBond1().getThetaAngle());
+        if (bond->getBond2().hasThetaAngle())
+          carbonAngle.push(bond->getBond2().getThetaAngle());
+        if (bond->getBond3().hasThetaAngle())
+          nitrogenAngle.push(bond->getBond3().getThetaAngle());
+      }
+    }
+
 /*    ProteinTertiaryStructurePtr tertiaryStructure2 = ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone);
 
     std::cout << "RMSE = " << tertiaryStructure2->computeCAlphaAtomsRMSE(tertiaryStructure) << std::endl;
@@ -67,51 +87,14 @@ int main()
     protein->setObject(tertiaryStructure2);
     protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));
     break;*/
-
-    for (size_t i = 0; i < n; ++i)
-    {
-      ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
-      if (!residue)
-        continue;
-
-      Vector3 nitrogen = residue->getNitrogenAtom()->getPosition();
-      Vector3 calpha = residue->getCAlphaAtom()->getPosition();
-      Vector3 carbon = residue->getCarbonAtom()->getPosition();
-
-      nCalphaLength.push((calpha - nitrogen).l2norm());
-      calphaCLength.push((carbon - calpha).l2norm());
-      ProteinResiduePtr nextResidue = i < tertiaryStructure->size() - 1 ? tertiaryStructure->getResidue(i + 1) : ProteinResiduePtr();
-      if (nextResidue)
-      {
-        Vector3 nextNitrogen = nextResidue->getNitrogenAtom()->getPosition();
-        cnLength.push((nextNitrogen - carbon).l2norm());
-
-        Vector3 nextCalpha = nextResidue->getCAlphaAtom()->getPosition();
-        calphaCalphaLength.push((nextCalpha - calpha).l2norm());
-
-        carbonAngle.push((carbon - calpha).angle(nextNitrogen - carbon));
-        nitrogenAngle.push((nextNitrogen - carbon).angle(nextCalpha - nextNitrogen));
-      }
-
-      calphaAngle.push((calpha - nitrogen).angle(carbon - calpha));
-    }
-
-    for (size_t i = 1; i < backbone->size() - 1; ++i)
-    {
-      DihedralAngle phi = backbone->getPhi(i);
-      DihedralAngle psi = backbone->getPsi(i);
-      if (phi.exists() && psi.exists())
-        (*ramachadranPlot) << lbcpp::toString(phi) << " " << lbcpp::toString(psi) << "\n";
-    }
   }
 
   std::cout << nCalphaLength.toString() << std::endl;
   std::cout << calphaCLength.toString() << std::endl;
   std::cout << cnLength.toString() << std::endl;
-  std::cout << calphaCalphaLength.toString() << std::endl;
   std::cout << calphaAngle.toString() << std::endl;
   std::cout << carbonAngle.toString() << std::endl;
   std::cout << nitrogenAngle.toString() << std::endl;
-  delete ramachadranPlot; 
+  //delete ramachadranPlot; 
   return 0;
 }
