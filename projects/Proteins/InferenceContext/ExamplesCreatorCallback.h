@@ -76,7 +76,7 @@ public:
       std::cout << "ok\n ==> empirical risk = " << std::flush;
       double empiricalRisk = gbm->computeEmpiricalRisk(trainingData);
       if (it->second.updateEmpiricalRisk(gbm->getParameters(), empiricalRisk))
-        std::cout << "!!" << empiricalRisk << "!!";
+        std::cout << "!" << String(empiricalRisk, 4) << "!";
       else
         std::cout << empiricalRisk;
       std::cout << ", num. params = " << gbm->getParameters()->l0norm() << " L2 norm = " << gbm->getParameters()->l2norm() << std::endl;

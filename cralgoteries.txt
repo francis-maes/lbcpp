@@ -1,5 +1,3 @@
-2- ProbabilisticSequenceLabelingInference
-3- Guzu SS3 structual features
 4- CommonFeatureGenerators.h et CommonFeatureGenerators.lcpp
 5- Features for phi/psi angles
  

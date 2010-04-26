@@ -188,7 +188,10 @@ public:
     : Evaluator(name),
       lengthEvaluator(new RegressionEvaluator(name + T(" length"))),
       angleEvaluator(new RegressionEvaluator(name + T(" angle"))),
-      dihedralAngleEvaluator(new DihedralAngleRegressionEvaluator(name + T(" dihedral angle"))) {}
+      phiEvaluator(new DihedralAngleRegressionEvaluator(name + T(" phi"))),
+      psiEvaluator(new DihedralAngleRegressionEvaluator(name + T(" psi"))),
+      omegaEvaluator(new DihedralAngleRegressionEvaluator(name + T(" omega"))) {}
+
 
   virtual String toString() const
   {
@@ -196,11 +199,14 @@ public:
       return String::empty;
     return T("Backbone length: ") + String(lengthEvaluator->getRMSE(), 4)
       + T(" angle: ") + String(angleEvaluator->getRMSE(), 4)
-      + T(" dihedral angle: ") + String(dihedralAngleEvaluator->getRMSE(), 4);
+      + T(" phi: ") + String(phiEvaluator->getRMSE(), 4)
+      + T(" psi: ") + String(psiEvaluator->getRMSE(), 4)
+      + T(" omega: ") + String(omegaEvaluator->getRMSE(), 4);
   }
 
   virtual double getDefaultScore() const
-    {return lengthEvaluator->getDefaultScore() + angleEvaluator->getDefaultScore() + dihedralAngleEvaluator->getDefaultScore();}
+    {return lengthEvaluator->getDefaultScore() + angleEvaluator->getDefaultScore() +
+      ((phiEvaluator->getDefaultScore() + psiEvaluator->getDefaultScore() + omegaEvaluator->getDefaultScore()) / 3.0);}
 
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
@@ -221,6 +227,22 @@ public:
         addBondPrediction(p->getBond2(), c->getBond2());
         addBondPrediction(p->getBond3(), c->getBond3());
       }
+
+      if (p->getPhiAngle().exists() && c->getPhiAngle().exists())
+      {
+        double delta = (double)p->getPhiAngle() - (double)c->getPhiAngle();
+        phiEvaluator->addDelta(delta);
+      }
+      if (p->getPsiAngle().exists() && c->getPsiAngle().exists())
+      {
+        double delta = (double)p->getPsiAngle() - (double)c->getPsiAngle();
+        psiEvaluator->addDelta(delta);
+      }
+      if (p->getOmegaAngle().exists() && c->getOmegaAngle().exists())
+      {
+        double delta = (double)p->getOmegaAngle() - (double)c->getOmegaAngle();
+        omegaEvaluator->addDelta(delta);
+      }
     }
   }
 
@@ -230,17 +252,15 @@ public:
       lengthEvaluator->addDelta(predicted.getLength() - correct.getLength());
     if (predicted.hasThetaAngle() && correct.hasThetaAngle())
       angleEvaluator->addDelta((double)predicted.getThetaAngle() - (double)correct.getThetaAngle());
-    if (predicted.hasPhiDihedralAngle() && correct.hasPhiDihedralAngle())
-    {
-      double delta = (double)predicted.getPhiDihedralAngle() - (double)correct.getPhiDihedralAngle();
-      dihedralAngleEvaluator->addDelta(delta);
-    }
   }
 
 private:
   RegressionEvaluatorPtr lengthEvaluator;
   RegressionEvaluatorPtr angleEvaluator;
-  RegressionEvaluatorPtr dihedralAngleEvaluator;
+
+  RegressionEvaluatorPtr phiEvaluator;
+  RegressionEvaluatorPtr psiEvaluator;
+  RegressionEvaluatorPtr omegaEvaluator;
 };
 
 class ProteinTertiaryStructureEvaluator : public Evaluator

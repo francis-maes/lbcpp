@@ -1,0 +1,17 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ProteinBackboneBondSequence.lcpp| Protein Backbone Bonds         |
+| Author  : Francis Maes                   |                                 |
+| Started : 23/04/2010 13:14               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "Protein/ProteinBackboneBondSequence.h"
+#include "InferenceData/CommonFeatureGenerators.h"
+using namespace lbcpp;
+
+featureGenerator ProteinBackboneBondSequence::elementFeatures(size_t position) const
+{
+  featureCall(0) multiScaleDihedralAngleFeatures(this->getPhi(position));
+  featureCall(0) multiScaleDihedralAngleFeatures(this->getPsi(position));
+}

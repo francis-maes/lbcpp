@@ -53,10 +53,9 @@ int main()
     size_t n = aminoAcidSequence->size();
 
     ProteinBackboneBondSequencePtr backbone = tertiaryStructure->createBackbone();
-    ProteinTertiaryStructurePtr tertiaryStructure2 = ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone);
+/*    ProteinTertiaryStructurePtr tertiaryStructure2 = ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone);
 
     std::cout << "RMSE = " << tertiaryStructure2->computeCAlphaAtomsRMSE(tertiaryStructure) << std::endl;
-    break;
 
     ProteinBackboneBondSequencePtr backbone2 = tertiaryStructure2->createBackbone();
     for (size_t i = n - 20; i < n; ++i)
@@ -67,11 +66,13 @@ int main()
 
     protein->setObject(tertiaryStructure2);
     protein->saveToPDBFile(File(T("C:/Projets/LBC++/projects/temp/pouet.pdb")));
-    break;
+    break;*/
 
-    for (size_t i = 0; i < tertiaryStructure->size(); ++i)
+    for (size_t i = 0; i < n; ++i)
     {
       ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+      if (!residue)
+        continue;
 
       Vector3 nitrogen = residue->getNitrogenAtom()->getPosition();
       Vector3 calpha = residue->getCAlphaAtom()->getPosition();
@@ -95,8 +96,13 @@ int main()
       calphaAngle.push((calpha - nitrogen).angle(carbon - calpha));
     }
 
-    //for (size_t i = 1; i < dihedralAngles->size() - 1; ++i)
-    //  (*ramachadranPlot) << lbcpp::toString(dihedralAngles->getPhi(i)) << " " << lbcpp::toString(dihedralAngles->getPsi(i)) << "\n";
+    for (size_t i = 1; i < backbone->size() - 1; ++i)
+    {
+      DihedralAngle phi = backbone->getPhi(i);
+      DihedralAngle psi = backbone->getPsi(i);
+      if (phi.exists() && psi.exists())
+        (*ramachadranPlot) << lbcpp::toString(phi) << " " << lbcpp::toString(psi) << "\n";
+    }
   }
 
   std::cout << nCalphaLength.toString() << std::endl;

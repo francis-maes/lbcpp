@@ -141,3 +141,14 @@ featureGenerator AccumulatedScoresMatrix::sumFeatures(size_t begin, size_t end) 
   }
 }
 
+/*
+** LabelSequence
+*/
+featureGenerator LabelSequence::bidirectionalSegmentConjunctionFeatures(size_t position, size_t segmentCount) const
+{
+  String before = this->getSegmentConjunctionFeatureName(position, segmentCount, false);
+  String after = this->getSegmentConjunctionFeatureName(position, segmentCount, true);
+  featureScope(0) featureSense(before);
+  featureScope(1) featureSense(after);
+  featureScope(2) featureSense(before + T("---") + after);
+}

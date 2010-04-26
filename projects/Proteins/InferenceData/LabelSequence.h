@@ -50,6 +50,9 @@ public:
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const;
 
+  String getSegmentConjunctionFeatureName(size_t beginPosition, size_t segmentCount, bool forward = true) const;
+  FeatureGeneratorPtr bidirectionalSegmentConjunctionFeatures(size_t position, size_t segmentCount) const;
+
   /*
   ** Serialization
   */
