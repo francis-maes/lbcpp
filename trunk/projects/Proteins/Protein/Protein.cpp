@@ -157,8 +157,6 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new ScalarSequence(name, n);
   else if (name.startsWith(T("SolventAccessibilityThreshold")))
     return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
-  else if (name == T("OrderDisorderSequence"))
-    return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
   else if (name == T("DisorderProbabilitySequence"))
     return new ScalarSequence(name, n);
   else if (name == T("ResidueResidueContactProbabilityMatrix"))
