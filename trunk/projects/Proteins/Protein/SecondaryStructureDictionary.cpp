@@ -74,22 +74,6 @@ DSSPSecondaryStructureDictionary::DSSPSecondaryStructureDictionary()
 }
 
 /*
-** SolventAccesibility2StateDictionary
-*/
-FeatureDictionaryPtr SolventAccesibility2StateDictionary::getInstance()
-{
-  static FeatureDictionaryPtr instance = new SolventAccesibility2StateDictionary();
-  return instance;
-}
-
-SolventAccesibility2StateDictionary::SolventAccesibility2StateDictionary()
-  : FeatureDictionary(T("SolventAccesibility2State"), new StringDictionary(T("SolventAccesibility2State features")), StringDictionaryPtr())
-{
-  addFeature(T("B"));
-  addFeature(T("E"));
-}
-
-/*
 ** AminoAcidPropertyDictionary
 */
 FeatureDictionaryPtr AminoAcidPropertyDictionary::getInstance()

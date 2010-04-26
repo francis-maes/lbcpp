@@ -197,7 +197,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), wSS8, wSS8, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilitySequence"), wSA, wSA, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), wSA, wSA, true));
   
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
   
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
     
     if (predictionTarget.contains(T("SA")))
     {
-      step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i), featureFunction, T("SolventAccessibilitySequence"));
+      step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
       proteinInference->appendStep(step);
     }
   }

@@ -89,15 +89,34 @@ void Protein::computeMissingFields()
   LabelSequencePtr aminoAcidSequence = getAminoAcidSequence();
   if (!aminoAcidSequence)
     return;
+  size_t n = aminoAcidSequence->size();
 
   LabelSequencePtr secondaryStructureSequence = getSecondaryStructureSequence();
   LabelSequencePtr dsspSecondaryStructureSequence = getDSSPSecondaryStructureSequence();
+  ScalarSequencePtr normalizedSolventAccessibilitySequence = getNormalizedSolventAccessibilitySequence();
 
+  /*
+  ** Secondary Structure
+  */
   // 8-state DSSP SS => 3-state SS
   if (dsspSecondaryStructureSequence && !secondaryStructureSequence)
     setObject(secondaryStructureSequence = SecondaryStructureDictionary::createSequenceFromDSSPSequence
       (T("SecondaryStructureSequence"), dsspSecondaryStructureSequence));
 
+  /*
+  ** Solvent Accesiblity
+  */
+  if (normalizedSolventAccessibilitySequence)
+  {
+    // Normalized SA => SA 20%
+    LabelSequencePtr solventAccessibility20 = getSolventAccessibilityThreshold20();
+    if (!solventAccessibility20)
+      setObject(solventAccessibility20 = normalizedSolventAccessibilitySequence->makeBinaryLabelSequence(T("SolventAccessibilityThreshold20"), 0.2));
+  }
+
+  /*
+  ** Tertiary Structure
+  */
   ProteinTertiaryStructurePtr tertiaryStructure = getTertiaryStructure();
   if (tertiaryStructure)
   {
@@ -122,8 +141,8 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new LabelSequence(name, DSSPSecondaryStructureDictionary::getInstance(), n);
   else if (name == T("NormalizedSolventAccessibilitySequence"))
     return new ScalarSequence(name, n);
-  else if (name == T("SolventAccessibilitySequence"))
-    return new LabelSequence(name, SolventAccesibility2StateDictionary::getInstance(), n);
+  else if (name.startsWith(T("SolventAccessibilityThreshold")))
+    return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
   else if (name == T("OrderDisorderSequence"))
     return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
   else if (name == T("DisorderProbabilitySequence"))
@@ -163,7 +182,10 @@ ScalarSequencePtr Protein::getNormalizedSolventAccessibilitySequence() const
   {return getObject(T("NormalizedSolventAccessibilitySequence"));}
 
 LabelSequencePtr Protein::getSolventAccessibilitySequence() const
-  {return getObject(T("SolventAccessibilitySequence"));}
+  {return getObject(T("SolventAccessibilitySequence"));} // OLD
+
+LabelSequencePtr Protein::getSolventAccessibilityThreshold20() const
+  {return getObject(T("SolventAccessibilityThreshold20"));}
 
 ScalarSequencePtr Protein::getDisorderProbabilitySequence() const
   {return getObject(T("DisorderProbabilitySequence"));}

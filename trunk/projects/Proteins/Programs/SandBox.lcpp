@@ -185,10 +185,20 @@ int main(int argc, char** argv)
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
-  /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513New"));
-  
+  File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
-  std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
+  /*File outputDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
+  for (size_t i = 0; i < cb513Proteins->size(); ++i)
+  {
+    ProteinPtr protein = cb513Proteins->getAndCast<Protein>(i);
+    jassert(protein);
+    std::cout << protein->getName() << std::endl;
+    protein->computeMissingFields();
+    protein->saveToFile(outputDirectory.getChildFile(protein->getName() + T(".protein")));
+  }
+  return 0;*/
+
+  std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
   ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
@@ -196,8 +206,8 @@ int main(int argc, char** argv)
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
-  ObjectContainerPtr trainingData = smallPDBProteins->fold(0,2)->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = smallPDBProteins->fold(1,2)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr trainingData = cb513Proteins->fold(0,2)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = cb513Proteins->fold(1,2)->apply(new ObjectToObjectPairFunction());
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
@@ -215,7 +225,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccesibilitySequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
 
   /*
   ** Creation of the inference 
@@ -226,10 +236,10 @@ int main(int argc, char** argv)
     ProteinSequenceInferenceStepPtr step;
 
     // the same feature function is used for CO and for subsequent passes
+    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
+    proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
-    //step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilitySequence"));
-    //proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
     step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);

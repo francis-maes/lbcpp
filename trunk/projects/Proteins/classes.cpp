@@ -73,6 +73,5 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);
   LBCPP_DECLARE_DICTIONARY(DSSPSecondaryStructureDictionary);
-  LBCPP_DECLARE_DICTIONARY(SolventAccesibility2StateDictionary);
   LBCPP_DECLARE_DICTIONARY(AminoAcidPropertyDictionary);
 }

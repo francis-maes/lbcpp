@@ -61,11 +61,7 @@ bool ScalarSequence::hasValue(size_t position) const
   {jassert(position < sequence.size()); return sequence[position] != DBL_MAX;}
 
 void ScalarSequence::appendValue(double value)
-{
-  jassert(index < 255);
-  sequence.push_back(value);
-  validateModification();
-}
+  {sequence.push_back(value); validateModification();}
 
 void ScalarSequence::removeValue(size_t position)
   {setValue(position, DBL_MAX);}

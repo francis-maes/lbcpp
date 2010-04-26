@@ -16,7 +16,8 @@ public:
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
     
-    if (labels == SolventAccesibility2StateDictionary::getInstance()) {
+    // FIXME: find another way to test the target
+    if (labels == BinaryClassificationDictionary::getInstance()) {
       classifier->setL2Regularizer(150);
       std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: 150";
     }

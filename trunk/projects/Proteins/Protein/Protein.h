@@ -62,7 +62,9 @@ public:
   ** Solvent Accesibility
   */
   ScalarSequencePtr getNormalizedSolventAccessibilitySequence() const;
-  LabelSequencePtr getSolventAccessibilitySequence() const;
+  LabelSequencePtr getSolventAccessibilityThreshold20() const;
+
+  LabelSequencePtr getSolventAccessibilitySequence() const; // OLD
 
   /*
   ** Order/Disorder
