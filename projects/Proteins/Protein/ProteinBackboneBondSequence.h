@@ -98,6 +98,12 @@ public:
     ProteinBackboneBondPtr bond = getBond(index);
     return bond ? bond->getPsiAngle() : DihedralAngle();
   }
+  
+  DihedralAngle getOmega(size_t index) const
+  {
+    ProteinBackboneBondPtr bond = getBond(index);
+    return bond ? bond->getOmegaAngle() : DihedralAngle();
+  }
 };
 
 }; /* namespace lbcpp */

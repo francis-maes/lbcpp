@@ -32,6 +32,7 @@ void declareInferenceClasses()
   // InferenceStep
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
   LBCPP_DECLARE_CLASS(RegressionInferenceStep);
+  LBCPP_DECLARE_CLASS(TransferRegressionInferenceStep);
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInferenceStep);
 
   // InferenceCallback
@@ -62,13 +63,17 @@ void declareProteinClasses()
 
   LBCPP_DECLARE_CLASS(Protein);
 
-  LBCPP_DECLARE_CLASS(ProteinSequenceLabelingInferenceStep);
-  LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
-  LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
-  LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
-  LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
-
   LBCPP_DECLARE_CLASS(ProteinInference);
+    LBCPP_DECLARE_CLASS(ProteinSequenceLabelingInferenceStep);
+    
+    LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
+      LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
+
+    LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
+      LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
+      LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
+      LBCPP_DECLARE_CLASS(ScaledSigmoidScalarFunction);
+
 
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);
