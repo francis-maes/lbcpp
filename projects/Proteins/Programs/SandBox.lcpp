@@ -185,9 +185,9 @@ int main(int argc, char** argv)
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\SS3_BBB_SmallPDB.model"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
-  File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
+  /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
-  /*File outputDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
+  File outputDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
   for (size_t i = 0; i < cb513Proteins->size(); ++i)
   {
     ProteinPtr protein = cb513Proteins->getAndCast<Protein>(i);
@@ -206,8 +206,8 @@ int main(int argc, char** argv)
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
-  ObjectContainerPtr trainingData = cb513Proteins->invFold(0,7)->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = cb513Proteins->fold(1,7)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr trainingData = smallPDBProteins->invFold(0,7)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = smallPDBProteins->fold(1,7)->apply(new ObjectToObjectPairFunction());
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
@@ -228,28 +228,29 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
-  // New features :
+  /* New features :
   featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
   featureFunction->addSubFeatures(proteinPositionFeatures());
   featureFunction->addSubFeatures(proteinLengthFeatures());
+  */
 
   /*
   ** Creation of the inference 
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  for (size_t i = 0; i < 10; ++i)
+  for (size_t i = 0; i < 1; ++i)
   {
     ProteinSequenceInferenceStepPtr step;
 
     // the same feature function is used for CO and for subsequent passes
 /*    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
     proteinInference->appendStep(step);*/
+    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+    proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
     /*step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureProbabilities"), T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);*/
-    //step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
-    //proteinInference->appendStep(step);
   }
 
   /*
@@ -259,39 +260,18 @@ int main(int argc, char** argv)
   InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true, modelDirectory);
   learner->train(proteinInference, trainingData);
 
-#if 0 // PSSMs
-
-
-#define TRAIN_AND_SAVE
-
-#ifdef TRAIN_AND_SAVE 
-  proteinInference->appendStep(Object::createFromFileAndCast<InferenceStep>(contentOnlyModel));
-  proteinInference->appendStep(new PSSMPredictionInferenceStep(T("PSSM-1")));
-
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
-  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true, 1);
-  learner->train(proteinInference, trainingData);
-
-  proteinInference->saveToFile(modelDirectory);
-#else
-  
-  proteinInference->appendStep(Object::createFromFileAndCast<InferenceStep>(contentOnlyModel));
+  /*
+  ** Evaluation
+  */
   InferenceContextPtr validationContext = singleThreadedInferenceContext();
   ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
   validationContext->appendCallback(evaluation);
 
   validationContext->runWithSupervisedExamples(proteinInference, trainingData);
   std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
-  double trainRmse = evaluation->getPSSMRootMeanSquareError();
 
   validationContext->runWithSupervisedExamples(proteinInference, testingData);
   std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
-  double testRmse = evaluation->getPSSMRootMeanSquareError();
-  
-  std::cout << "Train: " << trainRmse << " Test: " << testRmse << std::endl;
-  
-#endif
 
-#endif // PSSMS
   return 0;
 }

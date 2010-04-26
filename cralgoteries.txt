@@ -1,21 +1,12 @@
-4- CommonFeatureGenerators.h et CommonFeatureGenerators.lcpp
-5- Features for phi/psi angles
- 
-New Inference Step/Data:
+
+Misc: 
  * TransferRegressionInference (=> Bond length and angles)
- 
-Features:
- 
+ * Chopper les données de test du precedent CASP
+ * Learning with hidden units
 
 Reorganisation du projet
  * Refaire les repertoires
  * renomage InferenceStep => Inference
-
-Learning:
- * Learning with file cache
- * Learning with hidden units
-
-Chopper les données de test du precedent CASP
 
 Explorer:
   * dispatcher le code des juce::Component 
