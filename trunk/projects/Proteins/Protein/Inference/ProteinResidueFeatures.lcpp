@@ -175,6 +175,8 @@ featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr inpu
 */
 void declareProteinResidueFeaturesClasses()
 {
+  LBCPP_DECLARE_CLASS(ProteinUnitResidueFeature);
+  LBCPP_DECLARE_CLASS(ProteinPositionIndexResidueFeature);
   LBCPP_DECLARE_CLASS(SequenceWindowProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(FrequencyWindowProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(CompositeProteinResidueFeatures);

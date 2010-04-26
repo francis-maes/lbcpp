@@ -1,6 +1,8 @@
+1- Learning with file cache
+2- ProbabilisticSequenceLabelingInference
+3- Guzu SS3 structual features
+
 New Inference Step/Data:
- * ScalarSequence
- * ProbabilisticSequenceLabelingInference
  * TransferRegressionInference (=> Bond length and angles)
  
 Features:
@@ -14,6 +16,8 @@ Reorganisation du projet
 Learning:
  * Learning with file cache
  * Learning with hidden units
+
+Chopper les données de test du precedent CASP
 
 Explorer:
   * dispatcher le code des juce::Component 

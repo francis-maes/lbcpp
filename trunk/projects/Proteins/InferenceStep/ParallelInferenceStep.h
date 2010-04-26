@@ -84,7 +84,6 @@ public:
   virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
     {return VectorBasedInferenceHelper::getSubStep(index);}
  
-protected:
   virtual bool saveToFile(const File& file) const
     {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
 

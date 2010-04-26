@@ -55,13 +55,14 @@ public:
   virtual InferenceStepPtr getSubStep(size_t index) const
     {return VectorBasedInferenceHelper::getSubStep(index);}
  
-protected:
   virtual bool saveToFile(const File& file) const
     {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
 
   virtual bool loadFromFile(const File& file)
     {return loadFromDirectory(file) && loadSubInferencesFromDirectory(file);}
 };
+
+typedef ReferenceCountedObjectPtr<VectorSequentialInferenceStep> VectorSequentialInferenceStepPtr;
 
 }; /* namespace lbcpp */
 

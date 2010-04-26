@@ -27,7 +27,7 @@ protected:
 };
 
 InferenceLearnerPtr globalSimulationLearner(InferenceLearnerCallbackPtr callback);
-InferenceLearnerPtr stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData = true, size_t firstStepToLearn = 0);
+InferenceLearnerPtr stepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData = true, const File& modelDirectory = File::nonexistent);
 
 }; /* namespace lbcpp */
 

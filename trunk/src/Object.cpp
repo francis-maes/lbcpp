@@ -199,9 +199,9 @@ bool Object::saveToFile(const File& file) const
 
 bool Object::saveToDirectory(const File& directory) const
 {
-  if (directory.exists())
-    directory.deleteRecursively();
-  if (!directory.createDirectory())
+  if (directory.existsAsFile())
+    directory.deleteFile();
+  if (!directory.exists() && !directory.createDirectory())
   {
     error(T("Object::saveToFile"), T("Could not create directory ") + directory.getFullPathName());
     return false;

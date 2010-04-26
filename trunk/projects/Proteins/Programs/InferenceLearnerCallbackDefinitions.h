@@ -368,12 +368,13 @@ private:
   StoppingCriterionPtr stoppingCriterion;
 };
 
+#if 0 // Saving and restoring the best parameters is now done directly by the InferenceLearner
 class BestStepKeeperInferenceLearnerCallback : public EvaluationInferenceLearnerCallback
 {
 public:
-  BestStepKeeperInferenceLearnerCallback(ProteinInferencePtr proteinInference, String& prefixFilename, size_t firstStepToLearn = 0)
+  BestStepKeeperInferenceLearnerCallback(ProteinInferencePtr proteinInference, String& prefixFilename)
   : proteinInference(proteinInference)
-  , prefixFilename(prefixFilename), stepNumber(firstStepToLearn)
+  , prefixFilename(prefixFilename)
   , bestScore(0.)
   {}
   
@@ -397,14 +398,16 @@ public:
   
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
+    int stepNumber = proteinInference->findStepNumber(step);
+    jassert(stepNumber >= 0);
+
     File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/decorated.inference/") + lbcpp::toString(stepNumber) + T("_") + step->getName() + T(".inference"));
     jassert(toLoad.exists());
     InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
     jassert(inference);
     std::cout << "Loaded step: " << inference->getName() << std::endl;
     
-    proteinInference->setSubStep(stepNumber, inference);
-    ++stepNumber;
+    proteinInference->setSubStep((size_t)stepNumber, inference);
   }
   
 private:
@@ -415,6 +418,7 @@ private:
   
   double bestScore;
 };
+#endif // 0
 
 class StandardOutputInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
   virtual void preLearningIterationCallback(size_t iterationNumber)

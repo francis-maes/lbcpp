@@ -47,8 +47,8 @@ private:
 class StepByStepDeterministicSimulationLearner : public InferenceLearner
 {
 public:
-  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, size_t firstStepToLearn)
-    : InferenceLearner(callback), firstStepToLearn(firstStepToLearn)
+  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, const File& modelDirectory)
+    : InferenceLearner(callback), modelDirectory(modelDirectory)
   {
     if (useCacheOnTrainingData)
       cache = new InferenceResultCache();
@@ -56,7 +56,7 @@ public:
 
   virtual void train(InferenceStepPtr inf, ObjectContainerPtr trainingData)
   {
-    SequentialInferenceStepPtr inference = inf.dynamicCast<SequentialInferenceStep>();
+    VectorSequentialInferenceStepPtr inference = inf.dynamicCast<VectorSequentialInferenceStep>();
     jassert(inference);
     size_t numSteps = inference->getNumSubSteps();
     
@@ -78,9 +78,18 @@ public:
     /*
     ** Train step by step
     */
-    for (size_t stepNumber = firstStepToLearn; stepNumber < numSteps; ++stepNumber)
+    for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
     {
       InferenceStepPtr step = inference->getSubStep(stepNumber);
+      
+      File stepFile;
+      if (modelDirectory != File::nonexistent)
+        stepFile = inference->getSubInferenceFile(stepNumber, modelDirectory);
+      if (stepFile.exists() && step->loadFromFile(stepFile))
+      {
+        std::cout << "Loaded inference step " << stepFile.getFileNameWithoutExtension() << "." << std::endl;
+        continue;
+      }
 
       // decorate inference to add "break"
       InferenceStepPtr decoratedInference = addBreakToInference(inference, step);
@@ -89,12 +98,24 @@ public:
       callback->preLearningStepCallback(step);
       trainPass(decoratedInference, step, trainingData);
       callback->postLearningStepCallback(step);
+
+      if (modelDirectory != File::nonexistent)
+      {
+        step->saveToFile(stepFile);
+        std::cout << "Saved inference step " << stepFile.getFileNameWithoutExtension() << "." << std::endl;
+      }
+    }
+
+    if (modelDirectory != File::nonexistent)
+    {
+      std::cout << "Save inference: " << modelDirectory.getFileNameWithoutExtension() << std::endl;
+      inference->saveToFile(modelDirectory);
     }
   }
   
 private:
   InferenceResultCachePtr cache;
-  size_t firstStepToLearn;
+  File modelDirectory;
 
   InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
     {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
@@ -117,16 +138,8 @@ private:
       if (!callback->postLearningIterationCallback(inference, i))
         break;
     }
-/*
-    // make examples at each learning iteration
-    for (size_t i = 0; true; ++i)
-    {
-      callback->preLearningIterationCallback(i);
-      trainingContext->runWithSupervisedExamples(inference, trainingData);
-      learningCallback->trainAndFlushExamples();
-      if (!callback->postLearningIterationCallback(inference, i))
-        break;
-    }*/
+
+    learningCallback->restoreBestParameters();
   }
 };
 
