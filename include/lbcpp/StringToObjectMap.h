@@ -56,7 +56,10 @@ public:
     }
     return res;
   }
-  
+
+  void removeObject(const String& key)
+    {objects.erase(key);}
+
   void setObject(const String& key, ObjectPtr object)
   {
     objects[key] = object;
@@ -92,14 +95,6 @@ protected:
   {
     if (!NameableObject::load(istr) || !lbcpp::read(istr, objects))
       return false;
-
-/*    // temp
-    for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
-    {
-      NameableObjectPtr nameableObject = it->second.dynamicCast<NameableObject>();
-      if (nameableObject)
-        nameableObject->setName(it->first);
-    }*/
     return true;
   }
 

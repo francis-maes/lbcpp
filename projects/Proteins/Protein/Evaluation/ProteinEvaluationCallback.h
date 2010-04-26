@@ -191,8 +191,8 @@ public:
 
   virtual String toString() const
   {
-    //if (lengthEvaluator->getRMSE() == 0.0)
-    //  return String::empty;
+    if (lengthEvaluator->getRMSE() == 0.0)
+      return String::empty;
     return T("Backbone length: ") + String(lengthEvaluator->getRMSE(), 4)
       + T(" angle: ") + String(angleEvaluator->getRMSE(), 4)
       + T(" dihedral angle: ") + String(dihedralAngleEvaluator->getRMSE(), 4);
@@ -315,7 +315,7 @@ public:
     pssmEvaluator->addPrediction(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix());
     secondaryStructureEvaluator->addPrediction(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence());
     dsspSecondaryStructureEvaluator->addPrediction(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence());
-    solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilitySequence(), correct->getSolventAccessibilitySequence());
+    solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilityThreshold20(), correct->getSolventAccessibilityThreshold20());
     backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());
 
     ProteinTertiaryStructurePtr tertiaryStructure = predicted->getTertiaryStructure();
@@ -336,7 +336,7 @@ public:
       return secondaryStructureEvaluator;
     if (targetName == T("DSSPSecondaryStructureSequence"))
       return dsspSecondaryStructureEvaluator;
-    if (targetName == T("SolventAccessibilitySequence"))
+    if (targetName == T("SolventAccessibilityThreshold20"))
       return solventAccesibility2StateEvaluator;
     if (targetName ==  T("BackboneBondSequence"))
       return backboneBondEvaluator;

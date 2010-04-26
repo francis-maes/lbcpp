@@ -56,21 +56,6 @@ public:
 private:
   DSSPSecondaryStructureDictionary();
 };
-
-class SolventAccesibility2StateDictionary : public FeatureDictionary
-{
-public:
-  static FeatureDictionaryPtr getInstance();
-
-  enum Type
-  {
-    burried = 0,
-    exposed,
-  };
-
-private:
-  SolventAccesibility2StateDictionary();
-};
   
 class AminoAcidPropertyDictionary : public FeatureDictionary
 {
