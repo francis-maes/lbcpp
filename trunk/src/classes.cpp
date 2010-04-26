@@ -52,6 +52,7 @@ void declareLBCppCoreClasses()
   declareStoppingCriterions();
   declareOptimizers();
   
+  LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
   declareGradientBasedLearners();
   declareGradientBasedLearningMachines();
   

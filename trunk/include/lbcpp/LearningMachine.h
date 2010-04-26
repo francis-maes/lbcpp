@@ -149,6 +149,20 @@ protected:
 inline ClassifierPtr loadClassifier(const File& file)
   {return Object::createFromFileAndCast<Classifier>(file);}
 
+class BinaryClassificationDictionary : public FeatureDictionary
+{
+public:
+  static FeatureDictionaryPtr getInstance();
+
+  enum Type
+  {
+    negative = 0,
+    positive,
+  };
+
+private:
+  BinaryClassificationDictionary();
+};
 
 class BinaryClassifier : public Classifier
 {

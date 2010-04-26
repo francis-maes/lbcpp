@@ -28,16 +28,14 @@ public:
     size_t n = protein->getLength();
 
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScoreVectorSequencePtr orderDisorderScoreSequence = protein->getOrderDisorderScoreSequence();
-    jassert(orderDisorderScoreSequence);
+    ScalarSequencePtr disorderProbabilitySequence = protein->getDisorderProbabilitySequence();
+    jassert(disorderProbabilitySequence);
     
     for (size_t i = 0; i < n; ++i)
     {
-      double orderProbability = orderDisorderScoreSequence->getScore(i, OrderDisorderDictionary::order); 
-      double disorderProbability = orderDisorderScoreSequence->getScore(i, OrderDisorderDictionary::disorder); 
-      jassert(fabs(1.0 - (orderProbability + disorderProbability)) < 0.00001);
+      double disorderProbability = disorderProbabilitySequence->getValue(i);
       print(aminoAcidSequence->getString(i) + T(" ") + 
-        (orderProbability >= disorderProbability ? T("O") : T("D")) + T(" ") + 
+        (disorderProbability > 0.5 ? T("D") : T("O")) + T(" ") + 
         String(disorderProbability, 2), true);
     }
   }

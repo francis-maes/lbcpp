@@ -127,3 +127,21 @@ size_t ScoreVectorSequence::getIndex(size_t position, size_t scoreIndex) const
   jassert(scoreIndex < numScores);
   return scoreIndex + position * numScores;
 }
+
+void ScoreVectorSequence::ensureAccumulatorsAreComputed()
+{
+  if (!accumulators)
+  {
+    accumulators = new AccumulatedScoresMatrix(dictionary, size());
+    for (size_t i = 0; i < size(); ++i)
+    {
+      std::vector<double>& accumulatedScores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        accumulatedScores = accumulators->getAccumulatedScores(i - 1);
+      if (accumulatedScores.size() < numScores + 1)
+        accumulatedScores.resize(numScores + 1, 0.0);
+      for (size_t scoreIndex = 0; scoreIndex < numScores; ++scoreIndex)
+        accumulatedScores[scoreIndex + 1] += getScore(i, scoreIndex);
+    }
+  }
+}

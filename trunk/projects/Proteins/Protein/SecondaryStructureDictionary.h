@@ -71,21 +71,6 @@ public:
 private:
   SolventAccesibility2StateDictionary();
 };
-
-class OrderDisorderDictionary : public FeatureDictionary
-{
-public:
-  static FeatureDictionaryPtr getInstance();
-
-  enum Type
-  {
-    order = 0,
-    disorder,
-  };
-
-private:
-  OrderDisorderDictionary();
-};
   
 class AminoAcidPropertyDictionary : public FeatureDictionary
 {

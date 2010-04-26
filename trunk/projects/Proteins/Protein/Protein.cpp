@@ -120,12 +120,14 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new LabelSequence(name, SecondaryStructureDictionary::getInstance(), n);
   else if (name == T("DSSPSecondaryStructureSequence"))
     return new LabelSequence(name, DSSPSecondaryStructureDictionary::getInstance(), n);
+  else if (name == T("NormalizedSolventAccessibilitySequence"))
+    return new ScalarSequence(name, n);
   else if (name == T("SolventAccessibilitySequence"))
     return new LabelSequence(name, SolventAccesibility2StateDictionary::getInstance(), n);
   else if (name == T("OrderDisorderSequence"))
-    return new LabelSequence(name, OrderDisorderDictionary::getInstance(), n);
-  else if (name == T("OrderDisorderScoreSequence"))
-    return new ScoreVectorSequence(name, OrderDisorderDictionary::getInstance(), n);
+    return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
+  else if (name == T("DisorderProbabilitySequence"))
+    return new ScalarSequence(name, n);
   else if (name == T("ResidueResidueContactProbabilityMatrix"))
     return new ScoreSymmetricMatrix(name, n, 0.5);
   else if (name == T("BackboneBondSequence"))
@@ -157,14 +159,14 @@ LabelSequencePtr Protein::getSecondaryStructureSequence() const
 LabelSequencePtr Protein::getDSSPSecondaryStructureSequence() const
   {return getObject(T("DSSPSecondaryStructureSequence"));}
 
+ScalarSequencePtr Protein::getNormalizedSolventAccessibilitySequence() const
+  {return getObject(T("NormalizedSolventAccessibilitySequence"));}
+
 LabelSequencePtr Protein::getSolventAccessibilitySequence() const
   {return getObject(T("SolventAccessibilitySequence"));}
 
-LabelSequencePtr Protein::getOrderDisorderSequence() const
-  {return getObject(T("OrderDisorderSequence"));}
-
-ScoreVectorSequencePtr Protein::getOrderDisorderScoreSequence() const
-  {return getObject(T("OrderDisorderScoreSequence"));}
+ScalarSequencePtr Protein::getDisorderProbabilitySequence() const
+  {return getObject(T("DisorderProbabilitySequence"));}
 
 ScoreSymmetricMatrixPtr Protein::getResidueResidueContactProbabilityMatrix() const
   {return getObject(T("ResidueResidueContactProbabilityMatrix"));}
