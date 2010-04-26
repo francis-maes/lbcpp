@@ -91,7 +91,7 @@ public:
     size_t n = protein->getLength();
     jassert(n);
     double normalizedPosition = position / (double)n;
-    multiScalePercentageFeatures(normalizedPosition, numIntervalsInCoarsestScale, intervalRatio, numScales);
+    featureCall(0) multiScalePercentageFeatures(normalizedPosition, numIntervalsInCoarsestScale, intervalRatio, numScales);
   }
 
   virtual String toString() const
@@ -128,7 +128,7 @@ public:
   virtual featureGenerator compute(ProteinPtr protein, size_t position)
   {
     size_t n = protein->getLength();
-    multiScaleNumberFeatures((double)n, numIntervalsPerLog10InCoarestScale, intervalRatio, numScales);
+    featureCall(0) multiScaleNumberFeatures((double)n, numIntervalsPerLog10InCoarestScale, intervalRatio, numScales);
   }
 
   virtual String toString() const
