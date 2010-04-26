@@ -8,6 +8,8 @@ ADD_CRALGORITHM_SOURCES(InferenceData/Sequence.lcpp Protein/Inference/ProteinRes
 SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/AccumulatedScoresMatrix.h
   InferenceData/Sequence.h
+  InferenceData/ScalarSequence.h
+  InferenceData/ScalarSequence.cpp
   InferenceData/LabelSequence.h
   InferenceData/LabelSequence.cpp
   InferenceData/ScoreVectorSequence.h

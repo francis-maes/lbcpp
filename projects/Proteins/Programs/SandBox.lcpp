@@ -90,7 +90,7 @@ public:
     static const double regularizer = 0.0;
     static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.01);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.05);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return generalizedLinearRegressor(learner, regularizer);
   }
@@ -122,7 +122,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 100;
+    return iterationNumber < 10;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -221,12 +221,9 @@ int main(int argc, char** argv)
   ** Creation of the inference 
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  for (size_t i = 0; i < 2; ++i)
+  for (size_t i = 0; i < 5; ++i)
   {
     ProteinSequenceInferenceStepPtr step;
-
-    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
-    proteinInference->appendStep(step);
 
     // the same feature function is used for CO and for subsequent passes
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
@@ -235,6 +232,9 @@ int main(int argc, char** argv)
     //proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
+    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+    proteinInference->appendStep(step);
+
   }
 
   /*

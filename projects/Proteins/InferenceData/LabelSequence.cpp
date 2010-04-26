@@ -120,3 +120,21 @@ void LabelSequence::save(OutputStream& ostr) const
   lbcpp::write(ostr, dictionary->getName());
   lbcpp::write(ostr, sequence);
 }
+
+void LabelSequence::ensureAccumulatorsAreComputed()
+{
+  if (!accumulators)
+  {
+    accumulators = new AccumulatedScoresMatrix(dictionary, size());
+    for (size_t i = 0; i < size(); ++i)
+    {
+      std::vector<double>& scores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        scores = accumulators->getAccumulatedScores(i - 1);
+      size_t accumulatorNumber = (size_t)(sequence[i] == 255 ? 0 : sequence[i] + 1);
+      if (scores.size() <= accumulatorNumber)
+        scores.resize(accumulatorNumber + 1, 0.0);
+      scores[accumulatorNumber] += 1.0;
+    }
+  }
+}

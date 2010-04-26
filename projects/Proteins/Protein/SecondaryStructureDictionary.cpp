@@ -90,22 +90,6 @@ SolventAccesibility2StateDictionary::SolventAccesibility2StateDictionary()
 }
 
 /*
-** OrderDisorderDictionary
-*/
-FeatureDictionaryPtr OrderDisorderDictionary::getInstance()
-{
-  static FeatureDictionaryPtr instance = new OrderDisorderDictionary();
-  return instance;
-}
-
-OrderDisorderDictionary::OrderDisorderDictionary()
-  : FeatureDictionary(T("OrderDisorder"), new StringDictionary(T("OrderDisorder features")), StringDictionaryPtr())
-{
-  addFeature(T("O"));
-  addFeature(T("D"));
-}
-
-/*
 ** AminoAcidPropertyDictionary
 */
 FeatureDictionaryPtr AminoAcidPropertyDictionary::getInstance()

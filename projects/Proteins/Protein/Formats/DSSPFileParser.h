@@ -26,9 +26,7 @@ public:
   }
 
   virtual void parseBegin()
-  {
-    serialNumber = 0;
-  }
+    {serialNumber = 0;}
 
   virtual bool parseLine(const String& line)
   {
@@ -41,8 +39,8 @@ public:
     {
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
-        dsspSecondaryStructureSequence = new LabelSequence(T("DSSPSecondaryStructureSequence"), DSSPSecondaryStructureDictionary::getInstance(), n);
-        solventAccesibilitySequence = new LabelSequence(T("SolventAccessibilitySequence"), SolventAccesibility2StateDictionary::getInstance(), n);
+        dsspSecondaryStructureSequence = protein->createEmptyObject(T("DSSPSecondaryStructureSequence"));
+        solventAccesibilitySequence = protein->createEmptyObject(T("NormalizedSolventAccessibilitySequence"));
         ++serialNumber;
       }
       return true;
@@ -72,6 +70,9 @@ public:
       return false;
     }
 
+    /*
+    ** Amino Acid
+    */
     String aminoAcidCode = line.substring(10, 14).trim();
     if (aminoAcidCode != aminoAcidSequence->getString(residueNumber))
     {
@@ -79,6 +80,9 @@ public:
       return false;
     }
     
+    /*
+    ** 8-state Secondary Structure
+    */
     String secondaryStructureCode = line.substring(16, 17);
     if (secondaryStructureCode == T(" "))
       secondaryStructureCode = T("_");
@@ -89,7 +93,19 @@ public:
       return false;
     }
     dsspSecondaryStructureSequence->setIndex((size_t)residueNumber, (size_t)secondaryStructureIndex);
-    // FIXME: solvent accesibility
+
+    /*
+    ** Solvent accesibility
+    */
+    String solventAccesibilityString = line.substring(34, 38).trim();
+    if (!solventAccesibilityString.containsOnly(T("0123456789")))
+    {
+      Object::error(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccesibilityString);
+      return false;
+    }
+    int absoluteSolventAccesiblity = solventAccesibilityString.getIntValue();
+    double normalization = 500; // FIXME
+    solventAccesibilitySequence->setValue((size_t)residueNumber, absoluteSolventAccesiblity / (double)normalization);
     return true;
   }
 
@@ -111,7 +127,7 @@ protected:
   ProteinPtr protein;
   LabelSequencePtr aminoAcidSequence;
   LabelSequencePtr dsspSecondaryStructureSequence;
-  LabelSequencePtr solventAccesibilitySequence;
+  ScalarSequencePtr solventAccesibilitySequence;
   int serialNumber;
 };
 

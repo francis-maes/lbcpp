@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_PROTEIN_H_
 
 # include "../InferenceData/LabelSequence.h"
+# include "../InferenceData/ScalarSequence.h"
 # include "../InferenceData/ScoreVectorSequence.h"
 # include "../InferenceData/CartesianCoordinatesSequence.h"
 # include "../InferenceData/BondCoordinatesSequence.h"
@@ -60,13 +61,13 @@ public:
   /*
   ** Solvent Accesibility
   */
+  ScalarSequencePtr getNormalizedSolventAccessibilitySequence() const;
   LabelSequencePtr getSolventAccessibilitySequence() const;
 
   /*
   ** Order/Disorder
   */
-  LabelSequencePtr getOrderDisorderSequence() const;
-  ScoreVectorSequencePtr getOrderDisorderScoreSequence() const;
+  ScalarSequencePtr getDisorderProbabilitySequence() const;
 
   /*
   ** Residue-residue distance

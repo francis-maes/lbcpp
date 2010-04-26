@@ -1,9 +1,19 @@
-* Prediction de ScoreVectorSequence et adaptation des features generators de LabelSequence
+New Inference Step/Data:
+ * ScalarSequence
+ * ProbabilisticSequenceLabelingInference
+ * TransferRegressionInference (=> Bond length and angles)
+ 
+Features:
+ * CommonFeatureGenerators.h et CommonFeatureGenerators.lcpp
+ * Features for phi/psi angles
 
-Various:
-* SICA-prob: sampling
-* numberFeatures
-* multi layer prediction of the PSSM
+Reorganisation du projet
+ * Refaire les repertoires
+ * renomage InferenceStep => Inference
+
+Learning:
+ * Learning with file cache
+ * Learning with hidden units
 
 Explorer:
   * dispatcher le code des juce::Component 

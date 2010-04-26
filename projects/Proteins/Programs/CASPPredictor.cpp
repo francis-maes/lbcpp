@@ -25,12 +25,11 @@ void addDefaultPredictions(ProteinPtr protein)
   /*
   ** Order-disorder region
   */
-  ScoreVectorSequencePtr orderDisorderScoreSequence =
-    new ScoreVectorSequence(T("OrderDisorderScoreSequence"), OrderDisorderDictionary::getInstance(), n);
+  ScalarSequencePtr orderDisorderScoreSequence = protein->createEmptyObject(T("OrderDisorderScoreSequence"));
   for (size_t i = 0; i < n; ++i)
   {
-    orderDisorderScoreSequence->setScore(i, OrderDisorderDictionary::order, 0.5);
-    orderDisorderScoreSequence->setScore(i, OrderDisorderDictionary::disorder, 0.5);
+    double disorderProbability = RandomGenerator::getInstance().sampleDouble();
+    orderDisorderScoreSequence->setValue(i, disorderProbability);
   }
   protein->setObject(orderDisorderScoreSequence);
 
@@ -40,6 +39,9 @@ void addDefaultPredictions(ProteinPtr protein)
   ScoreSymmetricMatrixPtr rrContactMatrix = 
     new ScoreSymmetricMatrix(T("ResidueResidueContactProbabilityMatrix"), n, 0.5);
   protein->setObject(rrContactMatrix);
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = i + 1; j < n; ++j)
+      rrContactMatrix->setScore(i, j, RandomGenerator::getInstance().sampleDouble());
 
   /*
   ** Tertiary structure

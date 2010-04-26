@@ -245,6 +245,22 @@ size_t BinaryClassifier::sample(const FeatureGeneratorPtr input) const
 }
 
 /*
+** BinaryClassificationDictionary
+*/
+FeatureDictionaryPtr BinaryClassificationDictionary::getInstance()
+{
+  static FeatureDictionaryPtr instance = new BinaryClassificationDictionary();
+  return instance;
+}
+
+BinaryClassificationDictionary::BinaryClassificationDictionary()
+  : FeatureDictionary(T("BinaryClassification"), new StringDictionary(T("BinaryClassification features")), StringDictionaryPtr())
+{
+  addFeature(T("negative"));
+  addFeature(T("positive"));
+}
+
+/*
 ** Generalized classifier
 */
 size_t GeneralizedClassifier::predict(const GeneralizedClassificationExample& example) const
