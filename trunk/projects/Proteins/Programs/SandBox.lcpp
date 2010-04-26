@@ -182,7 +182,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\SS3_CB513.model"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\SS3_CB513_hard.model"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
   File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
@@ -238,9 +238,9 @@ int main(int argc, char** argv)
     // the same feature function is used for CO and for subsequent passes
 /*    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
     proteinInference->appendStep(step);*/
-    step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
+    step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
-    /*step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
+    /*step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureProbabilities"), T("DSSPSecondaryStructureSequence"));
     proteinInference->appendStep(step);
     step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
     proteinInference->appendStep(step);*/

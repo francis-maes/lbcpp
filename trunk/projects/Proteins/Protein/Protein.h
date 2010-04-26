@@ -56,7 +56,10 @@ public:
   ** Secondary Structure
   */
   LabelSequencePtr getSecondaryStructureSequence() const;
+  ScoreVectorSequencePtr getSecondaryStructureProbabilities() const;
+  
   LabelSequencePtr getDSSPSecondaryStructureSequence() const;
+  ScoreVectorSequencePtr getDSSPSecondaryStructureProbabilities() const;
 
   /*
   ** Solvent Accesibility

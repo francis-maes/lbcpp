@@ -27,8 +27,8 @@ namespace lbcpp
 class ProteinSequenceInferenceStep : public SharedParallelInferenceStep, public ProteinResidueRelatedInferenceStepHelper
 {
 public:
-  ProteinSequenceInferenceStep(const String& name, InferenceStepPtr subInference, ProteinResidueFeaturesPtr features, const String& targetName)
-    : SharedParallelInferenceStep(name, subInference), ProteinResidueRelatedInferenceStepHelper(targetName, features) {}
+  ProteinSequenceInferenceStep(const String& name, InferenceStepPtr subInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
+    : SharedParallelInferenceStep(name, subInference), ProteinResidueRelatedInferenceStepHelper(targetName, features, supervisionName) {}
   
   ProteinSequenceInferenceStep() {}
   
@@ -40,7 +40,7 @@ public:
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
   {
-    SequencePtr sequence = getTarget(supervision).dynamicCast<Sequence>();
+    SequencePtr sequence = getSupervision(supervision).dynamicCast<Sequence>();
     return sequence ? sequence->get(index) : ObjectPtr();
   }
 
@@ -69,14 +69,25 @@ typedef ReferenceCountedObjectPtr<ProteinSequenceInferenceStep> ProteinSequenceI
 class ProteinSequenceLabelingInferenceStep : public ProteinSequenceInferenceStep
 {
 public:
-  ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName)
-    : ProteinSequenceInferenceStep(name, new ClassificationInferenceStep(name + T("Classification")), features, targetName) {}
+  ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
+    : ProteinSequenceInferenceStep(name, new ClassificationInferenceStep(name + T("Classification")), features, targetName, supervisionName) {}
   ProteinSequenceLabelingInferenceStep() {}
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
   {
-    LabelSequencePtr res = ProteinSequenceInferenceStep::createEmptyOutput(input).dynamicCast<LabelSequence>();
-    getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>()->setLabels(res->getDictionary());
+    SequencePtr res = ProteinSequenceInferenceStep::createEmptyOutput(input).dynamicCast<Sequence>();
+    ClassificationInferenceStepPtr step = getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>();
+    LabelSequencePtr ls = res.dynamicCast<LabelSequence>();
+    if (ls)
+      step->setLabels(ls->getDictionary());
+    else
+    {
+      ScoreVectorSequencePtr svs = res.dynamicCast<ScoreVectorSequence>();
+      if (svs)
+        step->setLabels(svs->getDictionary());
+      else
+        jassert(false);
+    }
     return res;
   }
 };

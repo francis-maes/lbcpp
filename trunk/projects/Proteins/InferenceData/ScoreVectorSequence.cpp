@@ -17,6 +17,25 @@ ScoreVectorSequence::ScoreVectorSequence(const String& name, FeatureDictionaryPt
   matrix.resize(length * this->numScores, 0.0);
 }
 
+LabelSequencePtr ScoreVectorSequence::makeArgmaxLabelSequence(const String& name) const
+{
+  size_t n = size();
+  LabelSequencePtr res = new LabelSequence(name, getDictionary(), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    double bestScore = -DBL_MAX;
+    size_t bestScoreIndex = 0;
+    for (size_t j = 0; j < numScores; ++j)
+    {
+      double score = getScore(i, j);
+      if (score > bestScore)
+        bestScore = score, bestScoreIndex = j;
+    }
+    res->setIndex(i, bestScoreIndex);
+  }
+  return res;
+}
+
 void ScoreVectorSequence::resize(size_t newSize)
 {
   length = newSize;
