@@ -25,7 +25,7 @@ void addDefaultPredictions(ProteinPtr protein)
   /*
   ** Order-disorder region
   */
-  ScalarSequencePtr orderDisorderScoreSequence = protein->createEmptyObject(T("OrderDisorderScoreSequence"));
+  ScalarSequencePtr orderDisorderScoreSequence = protein->createEmptyObject(T("DisorderProbabilitySequence"));
   for (size_t i = 0; i < n; ++i)
   {
     double disorderProbability = RandomGenerator::getInstance().sampleDouble();
