@@ -3,9 +3,15 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-ADD_CRALGORITHM_SOURCES(InferenceData/Sequence.lcpp Protein/Inference/ProteinResidueFeatures.lcpp)
+ADD_CRALGORITHM_SOURCES(
+  InferenceData/CommonFeatureGenerators.lcpp
+  InferenceData/Sequence.lcpp
+  Protein/ProteinBackboneBondSequence.lcpp
+  Protein/Inference/ProteinResidueFeatures.lcpp
+)
 
 SET(LBCPP_INFERENCE_DATA_SOURCES
+  InferenceData/CommonFeatureGenerators.h
   InferenceData/AccumulatedScoresMatrix.h
   InferenceData/Sequence.h
   InferenceData/ScalarSequence.h
@@ -68,7 +74,6 @@ SET(LBCPP_PROTEIN_SOURCES
   Protein/SecondaryStructureDictionary.h
   Protein/SecondaryStructureDictionary.cpp
   Protein/ProteinBackboneBondSequence.h
-  Protein/ProteinBackboneBondSequence.cpp
   Protein/ProteinResidue.h
   Protein/ProteinResidue.cpp
   Protein/ProteinTertiaryStructure.h
@@ -127,12 +132,12 @@ SET(PROTEINS_SOURCES
 )
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
-SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/Sequence.lcpp)
+SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
 SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
-SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_SOURCES})
+SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
 SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp)
 SOURCE_SUB_GROUP(Protein Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
 SOURCE_SUB_GROUP(Protein Formats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})

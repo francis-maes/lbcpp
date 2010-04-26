@@ -163,3 +163,67 @@ void LabelSequence::ensureAccumulatorsAreComputed()
     }
   }
 }
+
+static int getSegmentCode(const LabelSequence& sequence, int position)
+{
+  if (position < 0)
+    return -3;
+  else if (position >= (int)sequence.size())
+    return -2;
+  else
+    return sequence.hasObject(position) ? (int)sequence.getIndex(position) : -1;
+}
+
+static String segmentFeatureName(FeatureDictionaryPtr dictionary, int segmentCode, int length)
+{
+  if (segmentCode == -3)
+    return T(">>");
+  if (segmentCode == -2)
+    return T("<<");
+  if (segmentCode == -1)
+    return T("_");
+
+  String res = dictionary->getFeature((size_t)segmentCode);
+  if (length < 5)
+    res += String(length);
+  else if (length < 10)
+    res += T("[5-10[");
+  else if (length < 20)
+    res += T("[10-20[");
+  else if (length < 50)
+    res += T("[20-50[");
+  else if (length < 100)
+    res += T("[50-100[");
+  else if (length < 200)
+    res += T("[100-200[");
+  else if (length < 500)
+    res += T("[200-500[");
+  else
+    res += T("[500-oo[");
+  return res;
+}
+
+String LabelSequence::getSegmentConjunctionFeatureName(size_t beginPosition, size_t segmentCount, bool forward) const
+{
+  int delta = forward ? 1 : -1;
+  int n = (int)this->size();
+  jassert(beginPosition < this->size());
+  int pos = (int)beginPosition;
+  int currentCode = getSegmentCode(*this, pos);
+  int currentCodeFirstPos = pos;
+
+  String featureName;
+  for (size_t i = 0; i < segmentCount; ++i)
+  {
+    while (pos >= 0 && pos < n && getSegmentCode(*this, pos) == currentCode)
+      pos += delta;
+    
+    featureName += segmentFeatureName(this->getDictionary(), currentCode, abs(pos - currentCodeFirstPos));
+    if (currentCode <= -2)
+      break;
+
+    currentCode = getSegmentCode(*this, pos);
+    currentCodeFirstPos = pos;
+  }
+  return featureName;
+}

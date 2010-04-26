@@ -314,7 +314,8 @@ public:
       ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
       jassert(example);
       FeatureGeneratorPtr input = example->getFirst().dynamicCast<FeatureGenerator>();
-      ScalarFunctionPtr lossFunction = example->getFirst().dynamicCast<ScalarFunction>();
+      ScalarFunctionPtr lossFunction = example->getSecond().dynamicCast<ScalarFunction>();
+      jassert(input && lossFunction);
 
       // FIXME : gradient direction
       double lossOutput;

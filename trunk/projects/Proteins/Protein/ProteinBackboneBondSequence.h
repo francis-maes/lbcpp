@@ -51,6 +51,15 @@ public:
   bool exists() const
     {return bond1.exists() || bond2.exists() || bond3.exists();}
 
+  DihedralAngle getPhiAngle() const
+    {return bond1.getPhiDihedralAngle();}
+
+  DihedralAngle getPsiAngle() const
+    {return bond2.getPhiDihedralAngle();}
+
+  DihedralAngle getOmegaAngle() const
+    {return bond3.getPhiDihedralAngle();}
+
 private:
   BondCoordinates bond1; // N--CA
   BondCoordinates bond2; // CA--C
@@ -76,18 +85,19 @@ public:
   void setBond(size_t position, ProteinBackboneBondPtr bond)
     {BaseClass::setElement(position, bond);}
 
-/*
-  DihedralAnglesPair getAnglesPair(size_t index) const
-    {jassert(index < elements.size()); return elements[index];}
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
 
   DihedralAngle getPhi(size_t index) const
-    {return getAnglesPair(index).first;}
+  {
+    ProteinBackboneBondPtr bond = getBond(index);
+    return bond ? bond->getPhiAngle() : DihedralAngle();
+  }
 
   DihedralAngle getPsi(size_t index) const
-    {return getAnglesPair(index).second;}
-
-  void setAnglesPair(size_t index, DihedralAngle phi, DihedralAngle psi)
-    {jassert(index < elements.size()); elements[index] = DihedralAnglesPair(phi, psi);}*/
+  {
+    ProteinBackboneBondPtr bond = getBond(index);
+    return bond ? bond->getPsiAngle() : DihedralAngle();
+  }
 };
 
 }; /* namespace lbcpp */
