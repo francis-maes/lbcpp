@@ -130,6 +130,8 @@ public:
   bool isCBetaAtomMissing() const
     {return aminoAcid != AminoAcidDictionary::glycine && !getCBetaAtom();}
 
+  ProteinAtomPtr checkAndGetCBetaOrCAlphaAtom() const;
+
 protected:
   AminoAcidDictionary::Type aminoAcid;
   std::vector<ProteinAtomPtr> atoms;

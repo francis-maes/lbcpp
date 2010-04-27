@@ -49,11 +49,13 @@ void declareInferenceClasses()
 #include "Protein/Inference/ProteinInference.h"
 
 extern void declareProteinResidueFeaturesClasses();
+extern void declareProteinResiduePairFeaturesClasses();
 
 void declareProteinClasses()
 {
   declareInferenceClasses();
   declareProteinResidueFeaturesClasses();
+  declareProteinResiduePairFeaturesClasses();
 
   LBCPP_DECLARE_CLASS(ProteinBackboneBondSequence);
   LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);

@@ -36,8 +36,7 @@ void addDefaultPredictions(ProteinPtr protein)
   /*
   ** Residue-residue contact
   */
-  ScoreSymmetricMatrixPtr rrContactMatrix = 
-    new ScoreSymmetricMatrix(T("ResidueResidueContactProbabilityMatrix"), n, 0.5);
+  ScoreSymmetricMatrixPtr rrContactMatrix = protein->createEmptyObject(T("ResidueResidueContactMatrix8Cb"));
   protein->setObject(rrContactMatrix);
   for (size_t i = 0; i < n; ++i)
     for (size_t j = i + 1; j < n; ++j)

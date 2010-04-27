@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_STEP_HELPER_H_
 
 # include "ProteinResidueFeatures.h"
+# include "ProteinResiduePairFeatures.h"
 
 namespace lbcpp
 {
@@ -67,6 +68,23 @@ public:
 
 protected:
   ProteinResidueFeaturesPtr features;
+
+  bool load(InputStream& istr)
+    {return ProteinInferenceStepHelper::load(istr) && lbcpp::read(istr, features);}
+
+  void save(OutputStream& ostr) const
+    {ProteinInferenceStepHelper::save(ostr); lbcpp::write(ostr, features);}
+};
+
+class ProteinResiduePairRelatedInferenceStepHelper : public ProteinInferenceStepHelper
+{
+public:
+  ProteinResiduePairRelatedInferenceStepHelper(const String& targetName, ProteinResiduePairFeaturesPtr features, const String& supervisionName = String::empty)
+    : ProteinInferenceStepHelper(targetName, supervisionName), features(features) {}
+  ProteinResiduePairRelatedInferenceStepHelper() {}
+
+protected:
+  ProteinResiduePairFeaturesPtr features;
 
   bool load(InputStream& istr)
     {return ProteinInferenceStepHelper::load(istr) && lbcpp::read(istr, features);}
