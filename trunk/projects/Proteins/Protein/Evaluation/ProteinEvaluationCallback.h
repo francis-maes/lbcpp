@@ -13,184 +13,21 @@
 # include "../../InferenceContext/InferenceCallback.h"
 # include "../../InferenceContext/InferenceStack.h"
 
+# include "../../Evaluator/RegressionErrorEvaluator.h"
+
 namespace lbcpp
 {
-
-class Evaluator : public NameableObject
-{
-public:
-  Evaluator(const String& name) : NameableObject(name) {}
-  Evaluator() {}
-
-  virtual void addPrediction(ObjectPtr predicted, ObjectPtr correct) = 0;
-  virtual double getDefaultScore() const = 0;
-};
-
-typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
-
-class ClassificationEvaluator : public Evaluator
-{
-public:
-  ClassificationEvaluator(const String& name) : Evaluator(name), accuracy(new ScalarVariableMean()) {}
-  ClassificationEvaluator() {}
-
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
-  {
-    LabelPtr predicted = predictedObject.dynamicCast<Label>();
-    LabelPtr correct = correctObject.dynamicCast<Label>();
-    if (!predicted || !correct)
-      return;
-    jassert(predicted->getDictionary() == correct->getDictionary());
-    accuracy->push(predicted->getIndex() == correct->getIndex() ? 1.0 : 0.0);
-  }
-  
-  virtual String toString() const
-  {
-    double count = accuracy->getCount();
-    if (!count)
-      return String::empty;
-    return getName() + T(": ") + String(accuracy->getMean() * 100.0, 2) + T("% (") + lbcpp::toString(count) + T(" examples)");
-  }
-
-  virtual double getDefaultScore() const
-    {return accuracy->getMean();}
-
-protected:
-  ScalarVariableMeanPtr accuracy;
-};
-
-typedef ReferenceCountedObjectPtr<ClassificationEvaluator> ClassificationEvaluatorPtr;
-
-class SequenceLabelingEvaluator : public Evaluator
-{
-public:
-  SequenceLabelingEvaluator(const String& name)
-    : Evaluator(name), classificationEvaluator(new ClassificationEvaluator(name)) {}
-
-  virtual String toString() const
-    {return classificationEvaluator->toString();}
-
-  virtual double getDefaultScore() const
-    {return classificationEvaluator->getDefaultScore();}
-
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
-  {
-    LabelSequencePtr predicted = predictedObject.dynamicCast<LabelSequence>();
-    LabelSequencePtr correct = correctObject.dynamicCast<LabelSequence>();
-    if (!predicted || !correct)
-      return;
-    jassert(correct->getDictionary() == predicted->getDictionary());
-
-    size_t n = predicted->size();
-    jassert(correct->size() == n);
-    for (size_t i = 0; i < n; ++i)
-      classificationEvaluator->addPrediction(predicted->get(i), correct->get(i));
-  }
-
-protected:
-  ClassificationEvaluatorPtr classificationEvaluator;
-};
-
-typedef ReferenceCountedObjectPtr<SequenceLabelingEvaluator> SequenceLabelingEvaluatorPtr;
-
-class RegressionEvaluator : public Evaluator
-{
-public:
-  RegressionEvaluator(const String& name) : Evaluator(name),
-    absoluteError(new ScalarVariableMean()), squaredError(new ScalarVariableMean()) {}
-  RegressionEvaluator() {}
-
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
-  {
-    ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
-    ScalarPtr correct = correctObject.dynamicCast<Scalar>();
-    if (predicted && correct)
-      addDelta(predicted->getValue() - correct->getValue());
-  }
-
-  virtual void addDelta(double delta)
-  {
-    absoluteError->push(fabs(delta));
-    squaredError->push(delta * delta);
-  }
-
-  virtual String toString() const
-  {
-    double count = squaredError->getCount();
-    if (!count)
-      return String::empty;
-    return getName() + T(": rmse = ") + String(getRMSE(), 4)
-        + T(" abs = ") + String(absoluteError->getMean(), 4)
-        + T(" (") + lbcpp::toString(count) + T(" examples)");
-  }
-
-  virtual double getDefaultScore() const
-    {return -getRMSE();}
-
-  double getRMSE() const
-    {return sqrt(squaredError->getMean());}
-
-protected:
-  ScalarVariableMeanPtr absoluteError;
-  ScalarVariableMeanPtr squaredError;
-};
-
-typedef ReferenceCountedObjectPtr<RegressionEvaluator> RegressionEvaluatorPtr;
-
-class DihedralAngleRegressionEvaluator : public RegressionEvaluator
-{
-public:
-  DihedralAngleRegressionEvaluator(const String& name) : RegressionEvaluator(name) {}
-
-  virtual void addDelta(double delta)
-    {RegressionEvaluator::addDelta(DihedralAngle::normalize(delta));}
-};
-
-class ScoreVectorSequenceRegressionEvaluator : public Evaluator
-{
-public:
-  ScoreVectorSequenceRegressionEvaluator(const String& name)
-    : Evaluator(name), regressionEvaluator(new RegressionEvaluator(name)) {}
-
-  virtual String toString() const
-    {return regressionEvaluator->toString();}
-
-  virtual double getDefaultScore() const
-    {return regressionEvaluator->getDefaultScore();}
-
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
-  {
-    ScoreVectorSequencePtr predicted = predictedObject.dynamicCast<ScoreVectorSequence>();
-    ScoreVectorSequencePtr correct = correctObject.dynamicCast<ScoreVectorSequence>();
-    if (!predicted || !correct)
-      return;
-
-    jassert(correct->getNumScores() >= predicted->getNumScores());
-    jassert(correct->getDictionary() == predicted->getDictionary());
-    size_t n = predicted->size();
-    size_t s = predicted->getNumScores();
-    jassert(correct->size() == n);
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = 0; j < s; ++j)
-        regressionEvaluator->addPrediction(new Scalar(predicted->getScore(i, j)), new Scalar(correct->getScore(i, j)));
-  }
-
-protected:
-  RegressionEvaluatorPtr regressionEvaluator;
-};
-
-typedef ReferenceCountedObjectPtr<ScoreVectorSequenceRegressionEvaluator> ScoreVectorSequenceRegressionEvaluatorPtr;
 
 class ProteinBackboneBondSequenceEvaluator : public Evaluator
 {
 public:
   ProteinBackboneBondSequenceEvaluator(const String& name)
     : Evaluator(name),
-      lengthEvaluator(new RegressionEvaluator(name + T(" length"))),
-      angleEvaluator(new RegressionEvaluator(name + T(" angle"))),
-      phiEvaluator(new DihedralAngleRegressionEvaluator(name + T(" phi"))),
-      psiEvaluator(new DihedralAngleRegressionEvaluator(name + T(" psi"))),
-      omegaEvaluator(new DihedralAngleRegressionEvaluator(name + T(" omega"))) {}
+      lengthEvaluator(new RegressionErrorEvaluator(name + T(" length"))),
+      angleEvaluator(new RegressionErrorEvaluator(name + T(" angle"))),
+      phiEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" phi"))),
+      psiEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" psi"))),
+      omegaEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" omega"))) {}
 
 
   virtual String toString() const
@@ -255,12 +92,12 @@ public:
   }
 
 private:
-  RegressionEvaluatorPtr lengthEvaluator;
-  RegressionEvaluatorPtr angleEvaluator;
+  RegressionErrorEvaluatorPtr lengthEvaluator;
+  RegressionErrorEvaluatorPtr angleEvaluator;
 
-  RegressionEvaluatorPtr phiEvaluator;
-  RegressionEvaluatorPtr psiEvaluator;
-  RegressionEvaluatorPtr omegaEvaluator;
+  RegressionErrorEvaluatorPtr phiEvaluator;
+  RegressionErrorEvaluatorPtr psiEvaluator;
+  RegressionErrorEvaluatorPtr omegaEvaluator;
 };
 
 class ProteinTertiaryStructureEvaluator : public Evaluator
@@ -300,11 +137,11 @@ class ProteinEvaluator : public Evaluator
 public:
   ProteinEvaluator() :
     Evaluator(T("Protein")), numProteins(0),
-    pssmEvaluator(new ScoreVectorSequenceRegressionEvaluator(T("PSSM"))),
-    secondaryStructureEvaluator(new SequenceLabelingEvaluator(T("SS3"))),
-    dsspSecondaryStructureEvaluator(new SequenceLabelingEvaluator(T("SS8"))),
-    solventAccesibility2StateEvaluator(new SequenceLabelingEvaluator(T("SA2"))),
-    disorderEvaluator(new SequenceLabelingEvaluator(T("DR"))),
+    pssmEvaluator(scoreVectorSequenceRegressionErrorEvaluator(T("PSSM"))),
+    secondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS3"))),
+    dsspSecondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS8"))),
+    solventAccesibility2StateEvaluator(sequenceLabelingAccuracyEvaluator(T("SA2"))),
+    disorderEvaluator(binarySequenceLabelingConfusionEvaluator(T("DR"))),
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
     tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))) {}
 
@@ -376,13 +213,13 @@ public:
 protected:
   size_t numProteins;
 
-  ScoreVectorSequenceRegressionEvaluatorPtr pssmEvaluator;
-  SequenceLabelingEvaluatorPtr secondaryStructureEvaluator;
-  SequenceLabelingEvaluatorPtr dsspSecondaryStructureEvaluator;
-  SequenceLabelingEvaluatorPtr solventAccesibility2StateEvaluator;
-  SequenceLabelingEvaluatorPtr disorderEvaluator;
+  EvaluatorPtr pssmEvaluator;
+  EvaluatorPtr secondaryStructureEvaluator;
+  EvaluatorPtr dsspSecondaryStructureEvaluator;
+  EvaluatorPtr solventAccesibility2StateEvaluator;
+  EvaluatorPtr disorderEvaluator;
   EvaluatorPtr backboneBondEvaluator;
-  ProteinTertiaryStructureEvaluatorPtr tertiaryStructureEvaluator;
+  EvaluatorPtr tertiaryStructureEvaluator;
 
   static void evaluatorToString(String& res, EvaluatorPtr evaluator)
   {

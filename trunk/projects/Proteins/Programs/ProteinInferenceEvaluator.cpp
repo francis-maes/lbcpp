@@ -11,6 +11,7 @@
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "InferenceStep/DecoratorInferenceStep.h"
 #include "InferenceContext/CancelAfterStepCallback.h"
+#include "InferenceContext/CacheInferenceCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
@@ -60,6 +61,8 @@ int main(int argc, char** argv)
   InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
   ProteinEvaluationCallbackPtr evaluationCallback = new ProteinEvaluationCallback();
   inferenceContext->appendCallback(evaluationCallback);
+  InferenceResultCachePtr cache = new InferenceResultCache();
+  inferenceContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
 
   std::cout << std::endl;
   for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
