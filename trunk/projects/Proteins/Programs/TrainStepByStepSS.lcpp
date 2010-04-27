@@ -30,8 +30,8 @@ void clusterizeAAIndex(const std::vector< ScoreVectorSequencePtr > aaIndex, size
     return;
   
   size_t numCluster = aaIndex.size();
-  std::vector< int > clusters[numCluster];
-  double distance[numCluster][numCluster];
+  std::vector< std::vector<int> > clusters(numCluster);
+  std::vector< std::vector<double> > distance(numCluster, std::vector<double>(numCluster, 0.0));
   
   /*
   ** Initialize structure
