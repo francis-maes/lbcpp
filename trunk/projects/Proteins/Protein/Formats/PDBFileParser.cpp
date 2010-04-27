@@ -530,7 +530,7 @@ LabelSequencePtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
     {
       size_t j = i + 1;
       while (j < n && res->getIndex(j) == 1) ++j;
-      if ((j - i) < minimumDisorderLength)
+      if ((j - i) < (size_t)minimumDisorderLength)
         for (size_t ii = i; ii < j; ++ii)
           res->clear(ii);
       i = j;

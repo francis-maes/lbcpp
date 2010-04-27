@@ -290,6 +290,9 @@ int main(int argc, char** argv)
   ** Creation of features function
   */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
+  
+  featureFunction->addSubFeatures(proteinUnitResidueFeature());
+  
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), wAA, wAA, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
 
@@ -303,6 +306,8 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), wSA, wSA, true));
   
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
+  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
   
   /*
   ** Creation of the inference

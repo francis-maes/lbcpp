@@ -70,6 +70,7 @@ public:
       LearningMachinePtr machine = it->first;
       ObjectContainerPtr trainingData = it->second.examples->randomize();
       std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
+      jassert(machine);
       machine->trainStochastic(trainingData);
       GradientBasedLearningMachine* gbm = machine.dynamicCast<GradientBasedLearningMachine>().get();
       jassert(gbm);
