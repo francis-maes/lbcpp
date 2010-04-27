@@ -124,6 +124,16 @@ GradientBasedRegressorPtr lbcpp::generalizedLinearRegressor(GradientBasedLearner
 /*
 ** Classifier
 */
+GradientBasedClassifierPtr lbcpp::largeMarginClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer)
+{
+  GradientBasedClassifierPtr res = new LargeMarginClassifier();
+  res->setLearner(learner);
+  res->setLabels(labels);
+  if (l2regularizer)
+    res->setL2Regularizer(l2regularizer);
+  return res;
+}
+
 GradientBasedClassifierPtr lbcpp::maximumEntropyClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer)
 {
   GradientBasedClassifierPtr res = new MaximumEntropyClassifier();
@@ -205,6 +215,8 @@ void declareGradientBasedLearningMachines()
   LBCPP_DECLARE_CLASS(GeneralizedLinearRegressor);
 
   LBCPP_DECLARE_CLASS(MaximumEntropyClassifier);
+  LBCPP_DECLARE_CLASS(LargeMarginClassifier);
+
   LBCPP_DECLARE_CLASS(LogisticRegressionClassifier);
   LBCPP_DECLARE_CLASS(LinearSupportVectorMachine);
   LBCPP_DECLARE_CLASS(LinearGeneralizedClassifier);

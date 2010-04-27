@@ -253,6 +253,7 @@ public:
 inline GradientBasedClassifierPtr loadGradientBasedClassifier(const File& file)
   {return Object::createFromFileAndCast<GradientBasedClassifier>(file);}
 
+extern GradientBasedClassifierPtr largeMarginClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer = 0.0);
 extern GradientBasedClassifierPtr maximumEntropyClassifier(GradientBasedLearnerPtr learner, FeatureDictionaryPtr labels, double l2regularizer = 0.0);
 
 /*
