@@ -39,7 +39,9 @@ FeatureDictionaryPtr SparseVector::getDictionary() const
 {
   if (dictionary)
     return dictionary;
-  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("SparseVector");
+  static FeatureDictionaryPtr defaultDictionary;
+  if (defaultDictionary)
+    defaultDictionary = FeatureDictionaryManager::getInstance().getOrCreateRootDictionary(T("SparseVector"), true, true);
   return defaultDictionary;
 }
 

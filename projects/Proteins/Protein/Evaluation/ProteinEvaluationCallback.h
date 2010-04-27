@@ -304,10 +304,9 @@ public:
     secondaryStructureEvaluator(new SequenceLabelingEvaluator(T("SS3"))),
     dsspSecondaryStructureEvaluator(new SequenceLabelingEvaluator(T("SS8"))),
     solventAccesibility2StateEvaluator(new SequenceLabelingEvaluator(T("SA2"))),
+    disorderEvaluator(new SequenceLabelingEvaluator(T("DR"))),
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
-    tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS")))
-  {
-  }
+    tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))) {}
 
   virtual String toString() const
   {
@@ -319,6 +318,7 @@ public:
     evaluatorToString(res, secondaryStructureEvaluator);
     evaluatorToString(res, dsspSecondaryStructureEvaluator);
     evaluatorToString(res, solventAccesibility2StateEvaluator);
+    evaluatorToString(res, disorderEvaluator);
     evaluatorToString(res, backboneBondEvaluator);
     evaluatorToString(res, tertiaryStructureEvaluator);
     return res;
@@ -338,6 +338,7 @@ public:
     secondaryStructureEvaluator->addPrediction(predicted->getSecondaryStructureSequence(), correct->getSecondaryStructureSequence());
     dsspSecondaryStructureEvaluator->addPrediction(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence());
     solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilityThreshold20(), correct->getSolventAccessibilityThreshold20());
+    disorderEvaluator->addPrediction(predicted->getDisorderSequence(), correct->getDisorderSequence());
     backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());
 
     ProteinTertiaryStructurePtr tertiaryStructure = predicted->getTertiaryStructure();
@@ -360,6 +361,8 @@ public:
       return dsspSecondaryStructureEvaluator;
     if (targetName == T("SolventAccessibilityThreshold20"))
       return solventAccesibility2StateEvaluator;
+    if (targetName == T("DisorderSequence") || targetName == T("DisorderProbabilitySequence"))
+      return disorderEvaluator;
     if (targetName ==  T("BackboneBondSequence"))
       return backboneBondEvaluator;
     if (targetName == T("TertiaryStructure"))
@@ -377,6 +380,7 @@ protected:
   SequenceLabelingEvaluatorPtr secondaryStructureEvaluator;
   SequenceLabelingEvaluatorPtr dsspSecondaryStructureEvaluator;
   SequenceLabelingEvaluatorPtr solventAccesibility2StateEvaluator;
+  SequenceLabelingEvaluatorPtr disorderEvaluator;
   EvaluatorPtr backboneBondEvaluator;
   ProteinTertiaryStructureEvaluatorPtr tertiaryStructureEvaluator;
 

@@ -28,12 +28,34 @@ void ScalarSequence::resize(size_t newSize)
   validateModification();
 }
 
-void ScalarSequence::set(size_t position, ObjectPtr object)
+inline double getScalarValueFromObject(ObjectPtr object)
 {
   ScalarPtr scalar = object.dynamicCast<Scalar>();
-  jassert(scalar);
+  if (scalar)
+    return scalar->getValue();
+  LabelPtr label = object.dynamicCast<lbcpp::Label>();
+  if (label)
+  {
+    jassert(label->getDictionary() == BinaryClassificationDictionary::getInstance());
+    int index = label->getIndex();
+    jassert(index == 0 || index == 1);
+    return index == 1 ? 1.0 : 0.0;
+  }
+  DenseVectorPtr scores = object.dynamicCast<DenseVector>();
+  if (scores)
+  {
+    jassert(scores->getDictionary() == BinaryClassificationDictionary::getInstance()
+      && scores->getNumValues() == 2 && fabs(scores->get(0) + scores->get(1) - 1.0) < 0.0001);
+    return scores->get(1);
+  }
+  jassert(false);
+  return 0.0;
+}
+
+void ScalarSequence::set(size_t position, ObjectPtr object)
+{
   jassert(position < sequence.size());
-  sequence[position] = scalar->getValue();
+  sequence[position] = getScalarValueFromObject(object);
   validateModification();
 }
 

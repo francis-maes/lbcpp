@@ -33,7 +33,9 @@ FeatureDictionaryPtr DenseVector::getDictionary() const
 {
   if (dictionary)
     return dictionary;
-  static FeatureDictionaryPtr defaultDictionary = new FeatureDictionary("DenseVector Default");
+  static FeatureDictionaryPtr defaultDictionary;
+  if (defaultDictionary)
+    defaultDictionary = FeatureDictionaryManager::getInstance().getOrCreateRootDictionary(T("DenseVector"), true, true);
   return defaultDictionary;
 }
 

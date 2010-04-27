@@ -90,19 +90,19 @@ public:
   DihedralAngle getPhi(size_t index) const
   {
     ProteinBackboneBondPtr bond = getBond(index);
-    return bond ? bond->getPhiAngle() : DihedralAngle();
+    return bond ? bond->getPhiAngle().normalized() : DihedralAngle();
   }
 
   DihedralAngle getPsi(size_t index) const
   {
     ProteinBackboneBondPtr bond = getBond(index);
-    return bond ? bond->getPsiAngle() : DihedralAngle();
+    return bond ? bond->getPsiAngle().normalized() : DihedralAngle();
   }
   
   DihedralAngle getOmega(size_t index) const
   {
     ProteinBackboneBondPtr bond = getBond(index);
-    return bond ? bond->getOmegaAngle() : DihedralAngle();
+    return bond ? bond->getOmegaAngle().normalized() : DihedralAngle();
   }
 };
 

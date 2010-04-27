@@ -131,7 +131,7 @@ public:
 
     setResult(dsspSecondaryStructureSequence);
     protein->setObject(dsspSecondaryStructureSequence);
-    // todo: convert to three states
+    protein->setObject(solventAccesibilitySequence);
     return true;
   }
   

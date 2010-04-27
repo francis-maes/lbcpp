@@ -18,9 +18,16 @@ using namespace lbcpp;
 */
 void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 {
-  jassert(inputDictionary);
-  write(ostr, inputDictionary->getName());
-  write(ostr, parameters);
+  if (parameters)
+  {
+    write(ostr, true);
+    jassert(inputDictionary);
+    write(ostr, inputDictionary->getName());
+    write(ostr, parameters);
+  }
+  else
+    write(ostr, false);
+
   write(ostr, regularizer);
   write(ostr, learner);
   write(ostr, initializeParametersRandomly);
@@ -28,11 +35,16 @@ void GradientBasedLearningMachine::saveImpl(OutputStream& ostr) const
 
 bool GradientBasedLearningMachine::loadImpl(InputStream& istr)
 {
-  inputDictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
-  return inputDictionary && read(istr, parameters) &&
-            read(istr, regularizer) &&
-            read(istr, learner) &&
-            read(istr, initializeParametersRandomly);
+  bool hasParameters;
+  if (!lbcpp::read(istr, hasParameters))
+    return false;
+  if (hasParameters)
+  {
+    inputDictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+    if (!inputDictionary || !read(istr, parameters))
+      return false;
+  }
+  return read(istr, regularizer) && read(istr, learner) && read(istr, initializeParametersRandomly);
 }
 
 void GradientBasedLearningMachine::cloneImpl(GradientBasedLearningMachine& target) const

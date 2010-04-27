@@ -72,6 +72,7 @@ public:
   /*
   ** Order/Disorder
   */
+  LabelSequencePtr getDisorderSequence() const;
   ScalarSequencePtr getDisorderProbabilitySequence() const;
 
   /*

@@ -10,8 +10,18 @@ using namespace lbcpp;
 
 LabelSequence::LabelSequence(const String& name, FeatureDictionaryPtr dictionary, size_t length)
   : Sequence(name), dictionary(dictionary), sequence(length, 255)
-  {jassert(dictionary && dictionary->getNumFeatures() < 255);}
+{
+  jassert(dictionary && dictionary->getNumFeatures() < 255);
+}
 
+String LabelSequence::elementToString(size_t position) const
+{
+  int index = getIndex(position);
+  if (dictionary == BinaryClassificationDictionary::getInstance())
+    return (index < 0 ? T("?") : (index == 0 ? T("-") : T("+")));
+  else
+    return (index < 0 ? T("?") : dictionary->getFeature((size_t)index));
+}
 
 void LabelSequence::resize(size_t newSize)
 {

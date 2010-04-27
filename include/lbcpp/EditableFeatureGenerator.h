@@ -85,10 +85,7 @@ public:
   {
     static FeatureDictionaryPtr dictionary;
     if (!dictionary)
-    {
-      dictionary = new FeatureDictionary(T("Scalar"), new StringDictionary(T("Scalar features")), StringDictionaryPtr());
-      dictionary->addFeature(T("value"));
-    }
+      dictionary = FeatureDictionaryManager::getInstance().getOrCreateRootDictionary(T("Scalar"), true, false);
     return dictionary;
   }
 

@@ -152,9 +152,14 @@ int main(int argc, char* argv[])
 
 
   File outputDirectory = cwd.getChildFile(argv[argc - 1]);
-  if (!outputDirectory.isDirectory())
+  if (outputDirectory.exists() && !outputDirectory.isDirectory())
   {
     std::cerr << argv[argc - 1] << " is not a directory" << std::endl;
+    return 1;
+  }
+  if (!outputDirectory.exists() && !outputDirectory.createDirectory())
+  {
+    std::cerr << "Could not create directory " << argv[argc - 1] << std::endl;
     return 1;
   }
  
