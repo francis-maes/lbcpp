@@ -122,7 +122,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 10;
+    return iterationNumber < 1;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -182,7 +182,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\BBB_SS3_Transfer_SmallPDB.model"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\ALL_SmallPDB.model"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
   /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
@@ -201,13 +201,13 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 7);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
   ObjectContainerPtr trainingData = smallPDBProteins->invFold(0,7)->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = smallPDBProteins->fold(1,7)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = smallPDBProteins->fold(0,7)->apply(new ObjectToObjectPairFunction());
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
@@ -226,6 +226,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
   /* New features :
@@ -238,19 +239,19 @@ int main(int argc, char** argv)
   ** Creation of the inference 
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  for (size_t i = 0; i < 2; ++i)
+  for (size_t i = 0; i < 5; ++i)
   {
     ProteinSequenceInferenceStepPtr step;
-
-    // the same feature function is used for CO and for subsequent passes
-/*    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
-    proteinInference->appendStep(step);*/
-    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+    step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
+    proteinInference->appendStep(step);
+    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
     proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
     proteinInference->appendStep(step);
-    /*step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureProbabilities"), T("DSSPSecondaryStructureSequence"));
-    proteinInference->appendStep(step);*/
+    step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, /*T("DSSPSecondaryStructureProbabilities"), */T("DSSPSecondaryStructureSequence"));
+    proteinInference->appendStep(step);
+    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+    proteinInference->appendStep(step);
   }
 
   /*

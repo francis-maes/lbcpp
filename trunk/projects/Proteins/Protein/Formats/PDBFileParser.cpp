@@ -34,6 +34,10 @@ bool PDBFileParser::parseLine(const String& line)
   String keyword = getSubString(line, 1, 6).trim();
   if (keyword == T("HEADER"))
     return parseHeaderLine(line);
+  else if (keyword == T("EXPDTA"))
+    return parseExpDataLine(line);
+  else if (keyword == T("REMARK"))
+    return parseRemarkLine(line);
   else if (keyword == T("SEQRES"))
     return parseSeqResLine(line);
   else if (keyword == T("MODRES"))
@@ -55,11 +59,10 @@ bool PDBFileParser::parseLine(const String& line)
     return currentModelSerialNumber != 1 || parseHetAtomLine(line);
   else if (keyword == T("ANISOU") || keyword == T("CONECT") || keyword == T("MASTER"))
     return true;
-  else if (keyword == T("REMARK") || keyword == T("COMPND") || keyword == T("SOURCE") ||
+  else if (keyword == T("COMPND") || keyword == T("SOURCE") ||
            keyword == T("AUTHOR") || keyword == T("REVDAT") || keyword == T("TITLE") ||
            keyword == T("KEYWDS") || keyword == T("JRNL") || keyword == T("DBREF") ||
-           keyword == T("NUMMDL") || keyword == T("EXPDTA") || keyword == T("MDLTYP") ||
-           keyword == T("SPRSDE"))
+           keyword == T("NUMMDL") || keyword == T("MDLTYP") || keyword == T("SPRSDE"))
     return true; // skip line
 
   Object::warning(T("PDBFileParser::parseLine"), T("Unknown keyword ") + keyword);
@@ -69,6 +72,35 @@ bool PDBFileParser::parseLine(const String& line)
 bool PDBFileParser::parseHeaderLine(const String& line)
 {
   proteinName = getSubString(line, 63, 66);
+  return true;
+}
+
+bool PDBFileParser::parseExpDataLine(const String& line)
+{
+  experimentData = getSubString(line, 11, 79).trim();
+  std::cout << "Protein " << proteinName << " Experiment " << experimentData << std::endl;
+  return true;
+}
+
+bool PDBFileParser::parseRemarkLine(const String& line)
+{
+  String remark = getSubString(line, 12, 70).trim();
+  if (remark.startsWith(T("RESOLUTION.")))
+  {
+    int b = strlen("RESOLUTION.");
+    int n = remark.indexOf(b, T("ANGSTROMS."));
+    if (n >= 0)
+    {
+      static const double highestTolerableResolution = 2.5;
+      double resolution = remark.substring(b, n).trim().getDoubleValue();
+      std::cout << "Protein " << proteinName << " Resolution " << resolution << std::endl;
+      if (!beTolerant && resolution > highestTolerableResolution)
+      {
+        Object::error(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + lbcpp::toString(resolution) + T(" is not precise enough"));
+        return false;
+      }
+    }
+  }
   return true;
 }
 
@@ -474,6 +506,43 @@ ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPt
   return tertiaryStructure;
 }
 
+LabelSequencePtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
+{
+  if (experimentData != T("X-RAY DIFFRACTION"))
+    return LabelSequencePtr(); // for the moment, disorder regions are only determined for X-ray diffraction models
+
+  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+  if (!tertiaryStructure)
+    return LabelSequencePtr();
+  
+  size_t n = tertiaryStructure->size();
+
+  // an element is in disorder if the associated residue is not defined
+  LabelSequencePtr res = protein->createEmptyObject(T("DisorderSequence"));
+  for (size_t i = 0; i < n; ++i)
+    res->setIndex(i, (tertiaryStructure->getResidue(i) == ProteinResiduePtr()) ? 1 : 0);
+
+  // remove disorder segments whose length is less than 4
+  static const int minimumDisorderLength = 4;
+  for (size_t i = 0; i < n; )
+  {
+    if (res->getIndex(i) == 1)
+    {
+      size_t j = i + 1;
+      while (j < n && res->getIndex(j) == 1) ++j;
+      if ((j - i) < minimumDisorderLength)
+        for (size_t ii = i; ii < j; ++ii)
+          res->clear(ii);
+      i = j;
+    }
+    else
+      ++i;
+  }
+
+  std::cout << "Disorder sequence: " << res->toString() << std::endl;
+  return res;
+}
+
 bool PDBFileParser::parseEnd()
 {
   if (!chains.size())
@@ -489,6 +558,10 @@ bool PDBFileParser::parseEnd()
     if (!tertiaryStructure)
       return false;
     protein->setObject(tertiaryStructure);
+
+    LabelSequencePtr disorderSequence = finalizeDisorderSequence(protein);
+    if (disorderSequence)
+      protein->setObject(disorderSequence);
   }
 
   setResult(chains.begin()->second.protein);

@@ -24,16 +24,10 @@ public:
     
   FeatureDictionaryPtr getDictionary() const
   {
-    static FeatureDictionaryPtr dictionary = createDictionary();
+    static FeatureDictionaryPtr dictionary;
+    if (!dictionary)
+      dictionary = FeatureDictionaryManager::getInstance().getOrCreateRootDictionary(T("unit"), true, false);
     return dictionary;
-  }
-  
-private:
-  static FeatureDictionaryPtr createDictionary()
-  {
-    FeatureDictionaryPtr res = new FeatureDictionary("unit");
-    res->getFeatures()->add("unit");
-    return res;
   }
 };
 

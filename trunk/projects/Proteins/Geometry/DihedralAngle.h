@@ -99,6 +99,9 @@ public:
   DihedralAngle& operator =(double angle)
     {this->angle = angle; return *this;}
 
+  DihedralAngle normalized() const
+    {return exists() ? DihedralAngle(normalize(angle)) : DihedralAngle();}
+
 private:
   double angle;
 };

@@ -49,7 +49,9 @@ public:
   
   static FeatureDictionaryPtr getDictionary()
   {
-    static FeatureDictionaryPtr dictionary = new FeatureDictionary("SyntheticLinearMultiClassGenerator");
+    static FeatureDictionaryPtr dictionary;
+    if (!dictionary)
+      dictionary = FeatureDictionaryManager::getInstance().getOrCreateRootDictionary(T("SyntheticLinearMultiClassGenerator"), true, true);
     return dictionary;
   }
   

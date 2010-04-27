@@ -19,6 +19,8 @@ class ScalarSequence : public Sequence
 public:
   ScalarSequence(const String& name, size_t length = 0);
   ScalarSequence() {}
+  
+  LabelSequencePtr makeBinaryLabelSequence(const String& name, double threshold = 0.5) const;
 
   /*
   ** ScalarSequence
@@ -29,8 +31,6 @@ public:
   void setValue(size_t position, double value);
   void removeValue(size_t position);
   void appendValue(double value);
-
-  LabelSequencePtr makeBinaryLabelSequence(const String& name, double threshold) const;
 
   /*
   ** ObjectContainer

@@ -10,17 +10,6 @@
 #include "InferenceData/CommonFeatureGenerators.h"
 using namespace lbcpp;
 
-// TODO: conjunctions !!!
-
-class ConjunctionFeatureVisitor : public FeatureVisitor
-{
-public:
-  virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
-  {
-
-  }
-};
-
 featureGenerator recursiveConjunctionFeatures(SparseVectorPtr vector, FeatureGeneratorPtr subFeatures)
 {
   typedef std::vector<std::pair<size_t, double> > FeatureVector;

@@ -77,18 +77,27 @@ public:
   {
     SequencePtr res = ProteinSequenceInferenceStep::createEmptyOutput(input).dynamicCast<Sequence>();
     ClassificationInferenceStepPtr step = getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>();
+    jassert(step);
     LabelSequencePtr ls = res.dynamicCast<LabelSequence>();
     if (ls)
-      step->setLabels(ls->getDictionary());
-    else
     {
-      ScoreVectorSequencePtr svs = res.dynamicCast<ScoreVectorSequence>();
-      if (svs)
-        step->setLabels(svs->getDictionary());
-      else
-        jassert(false);
+      step->setLabels(ls->getDictionary());
+      return res;
     }
-    return res;
+    ScoreVectorSequencePtr svs = res.dynamicCast<ScoreVectorSequence>();
+    if (svs)
+    {
+      step->setLabels(svs->getDictionary());
+      return res;
+    }
+    ScalarSequencePtr ss = res.dynamicCast<ScalarSequence>();
+    if (ss)
+    {
+      step->setLabels(BinaryClassificationDictionary::getInstance());
+      return res;
+    }
+    jassert(false);
+    return ObjectPtr();
   }
 };
 

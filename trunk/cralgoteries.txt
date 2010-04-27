@@ -1,7 +1,6 @@
 
 Misc: 
- * TransferRegressionInference (=> Bond length and angles)
- * Conjonctions entre les phi et les psi
+ * Generer les données Order/Disorder
  * Chopper les données de test du precedent CASP
  * Learning with hidden units
 

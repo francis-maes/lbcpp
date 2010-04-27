@@ -35,6 +35,7 @@ protected:
   };
 
   String proteinName;
+  String experimentData;
   typedef std::map<char, Chain> ChainMap;
   ChainMap chains; // by chain ID
   std::set<char> skippedChains;
@@ -48,6 +49,8 @@ protected:
   size_t currentResidueIndex;
 
   bool parseHeaderLine(const String& line);
+  bool parseExpDataLine(const String& line);
+  bool parseRemarkLine(const String& line);
 
   bool parseSeqResLine(const String& line);
 
@@ -64,7 +67,10 @@ protected:
   bool getChainId(const String& line, int column, char& res) const;
   Chain* getChain(const String& line, int column);
   bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
+
   ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResiduePtr> >& tertiaryStructureBlocks);
+  LabelSequencePtr finalizeDisorderSequence(ProteinPtr protein);
+
   bool checkResidueConsistency(ProteinResiduePtr residue);
 };
 

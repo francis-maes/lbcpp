@@ -41,16 +41,10 @@ struct BiasArchitecture : public ScalarArchitecture<BiasArchitecture>
   
   static FeatureDictionaryPtr getDictionary()
   {
-    static FeatureDictionaryPtr dictionary = createDictionary();
+    static FeatureDictionaryPtr dictionary;
+    if (!dictionary)
+      dictionary = FeatureDictionaryManager::getInstance().getOrCreateRootDictionary(T("bias"), true, false);
     return dictionary;
-  }
-  
-private:
-  static FeatureDictionaryPtr createDictionary()
-  {
-    FeatureDictionaryPtr res = new FeatureDictionary("bias");
-    res->getFeatures()->add("bias");
-    return res;
   }
 };
 

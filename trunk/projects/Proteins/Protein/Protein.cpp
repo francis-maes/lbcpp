@@ -95,6 +95,8 @@ void Protein::computeMissingFields()
   LabelSequencePtr dsspSecondaryStructureSequence = getDSSPSecondaryStructureSequence();
   ScoreVectorSequencePtr dsspSecondaryStructureProbabilities = getDSSPSecondaryStructureProbabilities();
   ScalarSequencePtr normalizedSolventAccessibilitySequence = getNormalizedSolventAccessibilitySequence();
+  LabelSequencePtr disorderSequence = getDisorderSequence();
+  ScalarSequencePtr disorderProbabilities = getDisorderProbabilitySequence();
 
   /*
   ** Secondary Structure
@@ -111,6 +113,13 @@ void Protein::computeMissingFields()
   // SS3 probabilities => SS3 LabelSequence
   if (secondaryStructureProbabilities && !secondaryStructureSequence)
     setObject(secondaryStructureSequence = secondaryStructureProbabilities->makeArgmaxLabelSequence(T("SecondaryStructureSequence")));
+
+  /*
+  ** Disorder Regions
+  */
+  // Disorder probabilities => Disorder Sequence
+  if (disorderProbabilities && !disorderSequence)
+    setObject(disorderSequence = disorderProbabilities->makeBinaryLabelSequence(T("DisorderSequence")));
 
   /*
   ** Solvent Accesiblity
@@ -155,6 +164,8 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
   else if (name == T("NormalizedSolventAccessibilitySequence"))
     return new ScalarSequence(name, n);
   else if (name.startsWith(T("SolventAccessibilityThreshold")))
+    return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
+  else if (name == T("DisorderSequence"))
     return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
   else if (name == T("DisorderProbabilitySequence"))
     return new ScalarSequence(name, n);
@@ -203,6 +214,9 @@ LabelSequencePtr Protein::getSolventAccessibilitySequence() const
 
 LabelSequencePtr Protein::getSolventAccessibilityThreshold20() const
   {return getObject(T("SolventAccessibilityThreshold20"));}
+
+LabelSequencePtr Protein::getDisorderSequence() const
+  {return getObject(T("DisorderSequence"));}
 
 ScalarSequencePtr Protein::getDisorderProbabilitySequence() const
   {return getObject(T("DisorderProbabilitySequence"));}

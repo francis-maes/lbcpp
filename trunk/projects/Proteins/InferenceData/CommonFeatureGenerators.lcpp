@@ -59,7 +59,8 @@ featureGenerator multiScaleNumberFeatures(double number, size_t numIntervalsPerL
 
 featureGenerator percentageFeatures(double percentage, size_t numIntervals, bool cycle)
 {
-  jassert(percentage >= 0.0 && percentage <= 1.0);
+  jassert(percentage > -0.001 && percentage < 1.001);
+  percentage = juce::jlimit(0.0, 1.0, percentage);
   double value = percentage * (double)numIntervals;
   size_t first = (size_t)value;
   size_t second = first + 1;
