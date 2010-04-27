@@ -78,11 +78,16 @@ public:
     static const double regularizer = 0.0;
     static const bool useConstantLearningRate = false;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(2.0, 250000) : constantIterationFunction(1.0);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 250000) : constantIterationFunction(1.0);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
-    classifier->setL2Regularizer(regularizer);
-    return classifier;
+    if (labels == BinaryClassificationDictionary::getInstance())
+    {
+      GradientBasedBinaryClassifierPtr classifier = linearSVMBinaryClassifier(learner, labels);
+      classifier->setL2Regularizer(0.01);
+      return classifier;
+    }
+    else
+      return maximumEntropyClassifier(learner, labels, regularizer);
   }
 
   virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
@@ -122,7 +127,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 5;
+    return iterationNumber < 15;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -182,7 +187,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\ALL_SmallPDB.model"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\DR_SmallPDB.model"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
   /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
@@ -229,11 +234,15 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
-  /* New features :
-  featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 5, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 10, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 20, true));
+
+  // New features :
+  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
   featureFunction->addSubFeatures(proteinPositionFeatures());
   featureFunction->addSubFeatures(proteinLengthFeatures());
-  */
+  
 
   /*
   ** Creation of the inference 
@@ -244,6 +253,7 @@ int main(int argc, char** argv)
     ProteinSequenceInferenceStepPtr step;
     step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
     proteinInference->appendStep(step);
+#if 0
     step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
     proteinInference->appendStep(step);
     step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
@@ -252,6 +262,7 @@ int main(int argc, char** argv)
     proteinInference->appendStep(step);
     step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
     proteinInference->appendStep(step);
+#endif // 0
   }
 
   /*

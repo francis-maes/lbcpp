@@ -40,29 +40,21 @@ public:
     if (!totalCount)
       return String::empty;
   
-    size_t positiveCount = truePositive + falseNegative;
-    size_t negativeCount = falsePositive + trueNegative;
-
-    size_t predictedPositiveCount = truePositive + falsePositive;
-    size_t predictedNegativeCount = falseNegative + trueNegative;
-
-    double precision = truePositive / (double)predictedPositiveCount;
-    double recall = truePositive / (double)positiveCount;
-    double f1score = 2.0 * precision * recall / (precision + recall);
-
-    double matthewsCorrelation = (double)(truePositive * trueNegative - falsePositive * falseNegative)
-      / sqrt((double)(positiveCount * negativeCount * predictedPositiveCount * predictedNegativeCount));
+    double precision = truePositive && falsePositive ? truePositive / (double)(truePositive + falsePositive) : 0.0;
+    double recall = truePositive && falseNegative ? truePositive / (double)(truePositive + falseNegative) : 0.0;
+    double f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
 
     return getName() + T(": TP = ") + lbcpp::toString(truePositive) + T(" FP = ") + lbcpp::toString(falsePositive)
                      + T(": FN = ") + lbcpp::toString(falseNegative) + T(" TN = ") + lbcpp::toString(trueNegative) + T("\n")
                      + T("\tP = ") + String(precision * 100.0, 2)
-                     + T("% T = ") + String(recall * 100.0, 2)
+                     + T("% R = ") + String(recall * 100.0, 2)
                      + T("% F1 = ") + String(f1score * 100.0, 2)
-                     + T("% MCC = ") + lbcpp::toString(matthewsCorrelation);
+                     + T("% MCC = ") + String(computeMatthewsCorrelation(), 4);
   }
 
   virtual double getDefaultScore() const
-    {return totalCount ? (truePositive + trueNegative) / (double)totalCount : 0.0;}
+    {return computeMatthewsCorrelation();}
+
 
 protected:
  // correct: positive   negative
@@ -70,7 +62,21 @@ protected:
   size_t falseNegative, trueNegative; // predicted as negative
 
   size_t totalCount;
+
+  double computeMatthewsCorrelation() const
+  {
+    size_t positiveCount = truePositive + falseNegative;
+    size_t negativeCount = falsePositive + trueNegative;
+
+    size_t predictedPositiveCount = truePositive + falsePositive;
+    size_t predictedNegativeCount = falseNegative + trueNegative;
+
+    double mccNo = (double)(truePositive * trueNegative) - (double)(falsePositive * falseNegative);
+    double mccDeno = (double)positiveCount * (double)negativeCount * (double)predictedPositiveCount * (double)predictedNegativeCount;
+    return mccDeno ? (mccNo / sqrt(mccDeno)) : mccNo;
+  }
 };
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_

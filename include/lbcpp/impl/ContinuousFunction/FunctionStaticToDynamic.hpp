@@ -136,10 +136,14 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
   
   virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const
   {
-    jassert(parameters && input);
-    double res;
-    BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
-    return res;
+    if (parameters && input)
+    {
+      double res;
+      BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
+      return res;
+    }
+    else
+      return 0.0;
   }
 
 STATIC_TO_DYNAMIC_ENDCLASS(ScalarArchitecture);
