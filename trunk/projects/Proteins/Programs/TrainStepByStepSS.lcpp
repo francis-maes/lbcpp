@@ -13,6 +13,7 @@
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 #include "Protein/SecondaryStructureDictionary.h"
 #include "Programs/ArgumentSet.h"
@@ -325,6 +326,12 @@ int main(int argc, char** argv)
     if (predictionTarget.contains(T("SA")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
+      proteinInference->appendStep(step);
+    }
+
+    if (predictionTarget.contains(T("BBB")))
+    {
+      step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
       proteinInference->appendStep(step);
     }
   }
