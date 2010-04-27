@@ -50,7 +50,7 @@ public:
     aminoAcidsPerProtein.push(countNumberOfElements(protein->getAminoAcidSequence()));
     secondaryStructureElementsPerProtein.push(countNumberOfElements(protein->getSecondaryStructureSequence()));
     dsspElementsPerProtein.push(countNumberOfElements(protein->getDSSPSecondaryStructureSequence()));
-    solventAccesibilityElementsPerProtein.push(countNumberOfElements(protein->getSolventAccessibilitySequence()));
+    solventAccesibilityElementsPerProtein.push(countNumberOfElements(protein->getNormalizedSolventAccessibilitySequence()));
 
     ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
     residuesPerProtein.push(countNumberOfElements(tertiaryStructure));

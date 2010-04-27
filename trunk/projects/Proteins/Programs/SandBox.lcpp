@@ -122,7 +122,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 1;
+    return iterationNumber < 5;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -201,7 +201,7 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 7);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
