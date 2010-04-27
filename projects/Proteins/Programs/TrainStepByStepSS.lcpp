@@ -260,9 +260,6 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < clusteredAAIndex.size(); ++i) {
     std::cout << lbcpp::toString(clusteredAAIndex[i]) << std::endl;
   }
-  
-  return 0;
-
 
   ObjectContainerPtr proteins;
   if (isTestVersion)
@@ -274,6 +271,7 @@ int main(int argc, char** argv)
   {
     ProteinPtr protein = (ProteinPtr) proteins->get(i);
     protein->computePropertiesFrom(clusteredAAIndex);
+    protein->computeMissingFields();
   }
 
   proteins = proteins->apply(new ObjectToObjectPairFunction());

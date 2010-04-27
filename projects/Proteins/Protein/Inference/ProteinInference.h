@@ -28,7 +28,9 @@ public:
     jassert(inputProtein);
     ProteinPtr workingProtein = new Protein(inputProtein->getName());
     workingProtein->setObject(inputProtein->getAminoAcidSequence());
+    jassert(inputProtein->getAminoAcidSequence());
     ScoreVectorSequencePtr pssm = inputProtein->getPositionSpecificScoringMatrix();
+    jassert(inputProtein->getPositionSpecificScoringMatrix());
     if (pssm)
       workingProtein->setObject(pssm);
     workingProtein->setObject(inputProtein->getAminoAcidProperty());
