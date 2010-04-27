@@ -209,9 +209,6 @@ ScoreVectorSequencePtr Protein::getDSSPSecondaryStructureProbabilities() const
 ScalarSequencePtr Protein::getNormalizedSolventAccessibilitySequence() const
   {return getObject(T("NormalizedSolventAccessibilitySequence"));}
 
-LabelSequencePtr Protein::getSolventAccessibilitySequence() const
-  {return getObject(T("SolventAccessibilitySequence"));} // OLD
-
 LabelSequencePtr Protein::getSolventAccessibilityThreshold20() const
   {return getObject(T("SolventAccessibilityThreshold20"));}
 
