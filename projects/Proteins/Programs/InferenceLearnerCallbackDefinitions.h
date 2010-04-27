@@ -31,7 +31,7 @@ public:
     
     IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(initialLearningRate, numberIterationLearningRate) : constantIterationFunction(0.5);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    return leastSquaresLinearRegressor(learner, 0.0/*regularizer*/);
+    return generalizedLinearRegressor(learner, 0.0/*regularizer*/);
   }
   
   void setL2Regularizer(double regularizer)
@@ -54,13 +54,10 @@ typedef ReferenceCountedObjectPtr<DefaultInferenceLearnerCallback> DefaultInfere
 class EvaluationInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  enum TargetType {UNKNOWN = -1, SS3, SS8, SA};
-  enum {numberTarget = 3};
-  
   EvaluationInferenceLearnerCallback(InferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback())
   : trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
   , factory(factory)
-  , target(UNKNOWN), targetName(T("NO_TARGET"))
+  , target(T("NO_TARGET"))
   , targetTrainingScore(0.), targetTestingScore(0.)
   {
     trainingEvaluation->startInferencesCallback(0); // initialize a zero score
@@ -71,22 +68,21 @@ public:
   {
     jassert(trainingEvaluation);
     this->trainingEvaluation = trainingEvaluation;
-    targetTrainingScore = trainingEvaluation->getDefaultScoreForTarget(targetName);
+    targetTrainingScore = trainingEvaluation->getDefaultScoreForTarget(target);
   }
   
   virtual void setTestingEvaluation(ProteinEvaluationCallbackPtr testingEvaluation)
   {
     jassert(testingEvaluation);
     this->testingEvaluation = testingEvaluation;
-    targetTestingScore = testingEvaluation->getDefaultScoreForTarget(targetName);
+    targetTestingScore = testingEvaluation->getDefaultScoreForTarget(target);
   }
   
-  virtual void setTargetName(String& targetName)
-  {
-    this->targetName = targetName;
-    target = getTypeFromTargetName(targetName);
-    jassert(target != UNKNOWN);
-  }
+  virtual void setTarget(const String& targetName)
+    {this->target = targetName;}
+  
+  virtual const String& getTarget() const
+    {return target;}
   
   virtual InferenceContextPtr createContext()
     {jassert(factory); return factory->createContext();}
@@ -107,22 +103,6 @@ protected:
   ProteinEvaluationCallbackPtr getTestingEvaluation()
     {jassert(testingEvaluation); return testingEvaluation;}
   
-  TargetType getTypeFromTargetName(const String& targetName)
-  {
-    if (targetName == T("SecondaryStructureSequence"))
-      return SS3;
-    if (targetName == T("DSSPSecondaryStructureSequence"))
-      return SS8;
-    if (targetName == T("SolventAccessibilitySequence"))
-      return SA;
-    
-    jassert(false);
-    return UNKNOWN;
-  }
-  
-  TargetType getTarget()
-    {return target;}
-  
   double getTargetTrainingScore()
     {return targetTrainingScore;}
   
@@ -134,9 +114,8 @@ private:
   ProteinEvaluationCallbackPtr testingEvaluation;
   
   InferenceLearnerCallbackPtr factory;
-  
-  TargetType target;
-  String targetName;
+
+  String target;
   double targetTrainingScore;
   double targetTestingScore;
 };
@@ -205,7 +184,7 @@ public:
     
     for (size_t i = 0; i < callbacks.size(); ++i)
     {
-      callbacks[i]->setTargetName(target);
+      callbacks[i]->setTarget(target);
       callbacks[i]->preLearningStepCallback(step);
     }
   }
@@ -249,43 +228,19 @@ class GnuPlotInferenceLearnerCallback : public EvaluationInferenceLearnerCallbac
 {
 public:
   GnuPlotInferenceLearnerCallback(String& prefix)
-  : prefixFilename(prefix)
-  //    , startTimeIteration(0.0)
-  , startTimePass(juce::Time::getMillisecondCounter())
-  //    , oIteration(NULL)
-  //    , iterationNumber(0), passNumber(0)
-  , bestTrainingScore(0.), bestTestingScore(0.)
-  {
-    for (size_t i = 0; i < numberTarget; ++i) {
-      oTargetPass[i] = NULL;
-      targetIteration[i] = 0;
-    }
-  }
+    : prefixFilename(prefix)
+    , startTimePass(juce::Time::getMillisecondCounter())
+    , bestTrainingScore(0.), bestTestingScore(0.)
+    {}
   
   ~GnuPlotInferenceLearnerCallback()
   {
-    for (size_t i = 0; i < numberTarget; ++i)
-      delete oTargetPass[i];
-  }
-  
-  virtual void preLearningIterationCallback(size_t iterationNumber)
-  {
-    //  this->iterationNumber = iterationNumber;
+    for (std::map< String, OutputStream* >::const_iterator iter = oTargetPass.begin(); iter != oTargetPass.end(); iter++)
+      delete iter->second;
   }
   
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    //    *oIteration << (int) iterationNumber << '\t'
-    //               << getTrainingEvaluation()->getQ3Score() << '\t'
-    //               << getTestingEvaluation()->getQ3Score()  << '\t'
-    //               << getTrainingEvaluation()->getQ8Score() << '\t'
-    //               << getTestingEvaluation()->getQ8Score()  << '\t'
-    //               << getTrainingEvaluation()->getSA2Score() << '\t'
-    //               << getTestingEvaluation()->getSA2Score()  << '\t'
-    //               << (juce::Time::getMillisecondCounter() - startTimeIteration) / 1000. << '\t'
-    //               << (int) passNumber << '\n';
-    //    oIteration->flush();
-    
     if (getTargetTrainingScore() > bestTrainingScore) {
       bestTrainingScore = getTargetTrainingScore();
       bestTestingScore = getTargetTestingScore();
@@ -296,29 +251,17 @@ public:
   
   virtual void preLearningStepCallback(InferenceStepPtr step)
   {
-    //    startTimeIteration = juce::Time::getMillisecondCounter();
-    //
-    //    File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".iter_") + lbcpp::toString(passNumber));
-    //    dst.deleteFile();
-    //    oIteration = dst.createOutputStream();
     bestTrainingScore = 0.;
     bestTestingScore = 0.;
   }
   
   virtual void postLearningStepCallback(InferenceStepPtr step)
   {
-    //    jassert(oIteration);
-    //    delete oIteration;
-    jassert(getTarget() != UNKNOWN);
-    
-    if (!oTargetPass[getTarget()]) {
-      static const juce::tchar* targetToString[] = {
-        T("SS3"), T("SS8"), T("SA")
-      };
-      
-      File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".") + targetToString[getTarget()]);
+    if (!oTargetPass.count(getTarget())) {
+      File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".") + getTarget());
       dst.deleteFile();
       oTargetPass[getTarget()] = dst.createOutputStream();
+      targetIteration[getTarget()] = 0;
     }
     
     jassert(oTargetPass[getTarget()]);
@@ -330,21 +273,14 @@ public:
     oTargetPass[getTarget()]->flush();
     
     targetIteration[getTarget()]++;
-    //   ++passNumber;
   }
   
 private:
   String prefixFilename;
-  
-  //  double startTimeIteration;
   double startTimePass;
   
-  OutputStream* oTargetPass[numberTarget];
-  //  OutputStream* oIteration;
-  
-  size_t targetIteration[numberTarget];
-  //  size_t iterationNumber;
-  //  size_t passNumber;
+  std::map< String, OutputStream* > oTargetPass;
+  std::map< String, size_t > targetIteration;
   
   double bestTrainingScore;
   double bestTestingScore;
