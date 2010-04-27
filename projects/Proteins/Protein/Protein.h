@@ -76,7 +76,9 @@ public:
   /*
   ** Residue-residue distance
   */
-  ScoreSymmetricMatrixPtr getResidueResidueContactProbabilityMatrix() const; // contact at 8 angstrom
+  ScoreSymmetricMatrixPtr getResidueResidueContactMatrix8Cb() const; // contact at 8 angstrom between Cb atoms
+  ScoreSymmetricMatrixPtr getResidueResidueDistanceMatrixCb() const; // distance matrix between Cb atoms
+
 
   /*
   ** Tertiary structure

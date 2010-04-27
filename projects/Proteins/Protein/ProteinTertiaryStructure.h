@@ -12,6 +12,7 @@
 # include "../InferenceData/LabelSequence.h"
 # include "../InferenceData/CartesianCoordinatesSequence.h"
 # include "../InferenceData/BondCoordinatesSequence.h"
+# include "../InferenceData/ScoreSymmetricMatrix.h"
 # include "AminoAcidDictionary.h"
 # include "ProteinResidue.h"
 # include "ProteinBackboneBondSequence.h"
@@ -31,10 +32,11 @@ public:
   static ProteinTertiaryStructurePtr createFromCAlphaTrace(LabelSequencePtr aminoAcidSequence, CartesianCoordinatesSequencePtr trace);
   static ProteinTertiaryStructurePtr createFromBackbone(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr backbone);
 
-  LabelSequencePtr createAminoAcidSequence() const;
-  CartesianCoordinatesSequencePtr createCAlphaTrace() const;
-  CartesianCoordinatesSequencePtr createCBetaTrace() const;
-  ProteinBackboneBondSequencePtr createBackbone() const;
+  LabelSequencePtr makeAminoAcidSequence() const;
+  CartesianCoordinatesSequencePtr makeCAlphaTrace() const;
+  CartesianCoordinatesSequencePtr makeCBetaTrace() const;
+  ProteinBackboneBondSequencePtr makeBackbone() const;
+  ScoreSymmetricMatrixPtr makeCBetaDistanceMatrix() const;
 
   virtual size_t size() const
     {return residues.size();}

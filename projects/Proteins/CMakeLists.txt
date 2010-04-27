@@ -8,6 +8,7 @@ ADD_CRALGORITHM_SOURCES(
   InferenceData/Sequence.lcpp
   Protein/ProteinBackboneBondSequence.lcpp
   Protein/Inference/ProteinResidueFeatures.lcpp
+  Protein/Inference/ProteinResiduePairFeatures.lcpp
 )
 
 SET(LBCPP_INFERENCE_DATA_SOURCES
@@ -24,6 +25,7 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/BondCoordinatesSequence.h
   InferenceData/BondCoordinatesSequence.cpp
   InferenceData/ScoreSymmetricMatrix.h
+  InferenceData/ScoreSymmetricMatrix.cpp
 )
 
 SET(LBCPP_INFERENCE_STEP_SOURCES
@@ -150,7 +152,7 @@ SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_EVALUATOR_SOURCES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
-SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp)
+SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
 SOURCE_SUB_GROUP(Protein Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
 SOURCE_SUB_GROUP(Protein Formats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
 

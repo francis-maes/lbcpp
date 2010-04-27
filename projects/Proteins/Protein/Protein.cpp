@@ -68,13 +68,6 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
   jassert(aminoAcidSequence);
   ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
   jassert(tertiaryStructure && tertiaryStructure->size() == aminoAcidSequence->size());
-/*
-  res->setObject(tertiaryStructure->createCAlphaTrace());
-  if (!tertiaryStructure->hasOnlyCAlphaAtoms())
-  {
-    res->setObject(tertiaryStructure->createCBetaTrace());
-    res->setObject(ProteinBackboneBondSequence::createDihedralAngles(tertiaryStructure));
-  }*/
   return res;
 }
 
@@ -97,6 +90,10 @@ void Protein::computeMissingFields()
   ScalarSequencePtr normalizedSolventAccessibilitySequence = getNormalizedSolventAccessibilitySequence();
   LabelSequencePtr disorderSequence = getDisorderSequence();
   ScalarSequencePtr disorderProbabilities = getDisorderProbabilitySequence();
+  
+  ScoreSymmetricMatrixPtr residueResidueDistanceMatrixCb = getResidueResidueDistanceMatrixCb();
+  ScoreSymmetricMatrixPtr residueResidueContactMatrix8Cb = getResidueResidueContactMatrix8Cb();
+
 
   /*
   ** Secondary Structure
@@ -141,8 +138,19 @@ void Protein::computeMissingFields()
     // Tertiary Structure => Backbone bonds
     ProteinBackboneBondSequencePtr backbone = getBackboneBondSequence();
     if (!backbone)
-      setObject(backbone = tertiaryStructure->createBackbone());
+      setObject(backbone = tertiaryStructure->makeBackbone());
   }
+ 
+  /*
+  ** Contact maps
+  */
+  // tertiary structure => distance matrix
+  if (tertiaryStructure && !residueResidueDistanceMatrixCb)
+    setObject(residueResidueDistanceMatrixCb = tertiaryStructure->makeCBetaDistanceMatrix());
+
+  // distance matrix => contact matrix
+  if (residueResidueDistanceMatrixCb && !residueResidueContactMatrix8Cb)
+    setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Cb"), 0.5));
 }
 
 ObjectPtr Protein::createEmptyObject(const String& name) const
@@ -169,8 +177,10 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
   else if (name == T("DisorderProbabilitySequence"))
     return new ScalarSequence(name, n);
-  else if (name == T("ResidueResidueContactProbabilityMatrix"))
-    return new ScoreSymmetricMatrix(name, n, 0.5);
+  else if (name == T("ResidueResidueContactMatrix8Cb"))
+    return new ScoreSymmetricMatrix(name, n);
+  else if (name == T("ResidueResidueDistanceMatrixCb"))
+    return new ScoreSymmetricMatrix(name, n);
   else if (name == T("BackboneBondSequence"))
     return new ProteinBackboneBondSequence(n);
   else if (name == T("TertiaryStructure"))
@@ -218,8 +228,11 @@ LabelSequencePtr Protein::getDisorderSequence() const
 ScalarSequencePtr Protein::getDisorderProbabilitySequence() const
   {return getObject(T("DisorderProbabilitySequence"));}
 
-ScoreSymmetricMatrixPtr Protein::getResidueResidueContactProbabilityMatrix() const
-  {return getObject(T("ResidueResidueContactProbabilityMatrix"));}
+ScoreSymmetricMatrixPtr Protein::getResidueResidueContactMatrix8Cb() const
+  {return getObject(T("ResidueResidueContactMatrix8Cb"));}
+
+ScoreSymmetricMatrixPtr Protein::getResidueResidueDistanceMatrixCb() const
+  {return getObject(T("ResidueResidueDistanceMatrixCb"));}
 
 CartesianCoordinatesSequencePtr Protein::getCAlphaTrace() const
   {return getObject(T("CAlphaTrace"));}

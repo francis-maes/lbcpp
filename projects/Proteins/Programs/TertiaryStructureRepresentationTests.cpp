@@ -51,7 +51,7 @@ int main()
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     size_t n = aminoAcidSequence->size();
 
-    ProteinBackboneBondSequencePtr backbone = tertiaryStructure->createBackbone();
+    ProteinBackboneBondSequencePtr backbone = tertiaryStructure->makeBackbone();
     for (size_t i = 0; i < n; ++i)
     {
       ProteinBackboneBondPtr bond = backbone->getBond(i);
@@ -77,7 +77,7 @@ int main()
 
     std::cout << "RMSE = " << tertiaryStructure2->computeCAlphaAtomsRMSE(tertiaryStructure) << std::endl;
 
-    ProteinBackboneBondSequencePtr backbone2 = tertiaryStructure2->createBackbone();
+    ProteinBackboneBondSequencePtr backbone2 = tertiaryStructure2->makeBackbone();
     for (size_t i = n - 20; i < n; ++i)
     {
       std::cout << (i+1) << "Correct: " << backbone->getBond(i)->toString() << std::endl

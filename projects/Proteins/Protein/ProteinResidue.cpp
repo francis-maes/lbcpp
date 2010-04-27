@@ -72,6 +72,27 @@ double ProteinResidue::getDistanceBetweenAtoms(const String& name1, ProteinResid
   return a1 && a2 ? (a1->getPosition() - a2->getPosition()).l2norm() : DBL_MAX;
 }
 
+ProteinAtomPtr ProteinResidue::checkAndGetCBetaOrCAlphaAtom() const
+{
+  if (isCBetaAtomMissing())
+  {
+    Object::error(T("ProteinResidue::checkAndGetCBetaOrCAlphaAtom"),
+      T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(getAminoAcid()));
+    return ProteinAtomPtr();
+  }
+  if (!hasCAlphaAtom())
+  {
+    Object::error(T("ProteinResidue::checkAndGetCBetaOrCAlphaAtom"),
+      T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(getAminoAcid()));
+    return ProteinAtomPtr();
+  }
+  ProteinAtomPtr atom = getCBetaAtom();
+  if (!atom)
+    atom = getCAlphaAtom();
+  jassert(atom);
+  return atom;
+}
+
 bool ProteinResidue::load(InputStream& istr)
 {
   int aminoAcidType;

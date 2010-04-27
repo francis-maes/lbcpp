@@ -85,7 +85,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromBackbone(LabelSe
   return res;
 }
 
-LabelSequencePtr ProteinTertiaryStructure::createAminoAcidSequence() const
+LabelSequencePtr ProteinTertiaryStructure::makeAminoAcidSequence() const
 {
   size_t n = size();
   jassert(n);
@@ -95,7 +95,7 @@ LabelSequencePtr ProteinTertiaryStructure::createAminoAcidSequence() const
   return res;
 }
 
-CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCAlphaTrace() const
+CartesianCoordinatesSequencePtr ProteinTertiaryStructure::makeCAlphaTrace() const
 {
   size_t n = size();
   CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
@@ -116,37 +116,22 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCAlphaTrace() co
   return res;
 }
 
-CartesianCoordinatesSequencePtr ProteinTertiaryStructure::createCBetaTrace() const
+CartesianCoordinatesSequencePtr ProteinTertiaryStructure::makeCBetaTrace() const
 {
   size_t n = size();
   CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
   for (size_t i = 0; i < n; ++i)
   {
     ProteinResiduePtr residue = getResidue(i);
-    if (!residue)
-      continue; // FIXME: CartesianCoordinatesSequencePtr must support NULL values
-    if (residue->isCBetaAtomMissing())
-    {
-      Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
-        T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-      return CartesianCoordinatesSequencePtr();
-    }
-    if (!residue->hasCAlphaAtom())
-    {
-      Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
-        T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(residue->getAminoAcid()) + T(" ") + lbcpp::toString(i + 1));
-      return CartesianCoordinatesSequencePtr();
-    }
-    ProteinAtomPtr atom = residue->getCBetaAtom();
+    ProteinAtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : ProteinAtomPtr();
     if (!atom)
-      atom = residue->getCAlphaAtom();
-    jassert(atom);
+      return CartesianCoordinatesSequencePtr();
     res->setPosition(i, atom->getPosition());
   }
   return res;
 }
 
-ProteinBackboneBondSequencePtr ProteinTertiaryStructure::createBackbone() const
+ProteinBackboneBondSequencePtr ProteinTertiaryStructure::makeBackbone() const
 {
   size_t n = residues.size();
 
@@ -184,6 +169,36 @@ ProteinBackboneBondSequencePtr ProteinTertiaryStructure::createBackbone() const
       bondCoordinates->getCoordinates(j + 1),
       j + 2 < bondCoordinates->size() ? bondCoordinates->getCoordinates(j + 2) : BondCoordinates());
     res->set(i, bond);
+  }
+  return res;
+}
+
+ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() const
+{
+  size_t n = size();
+
+  std::vector<Vector3> positions(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = getResidue(i);
+    ProteinAtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : ProteinAtomPtr();
+    if (atom)
+      positions[i] = atom->getPosition();
+  }
+
+  ScoreSymmetricMatrixPtr res = new ScoreSymmetricMatrix(T("ResidueResidueDistanceMatrixCb"), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    res->setScore(i, i, 0.0);
+    Vector3 position1 = positions[i];
+    if (!position1.exists())
+      continue;
+    for (size_t j = i + 1; j < n; ++j)
+    {
+      Vector3 position2 = positions[j];
+      if (position2.exists())
+        res->setScore(i, j, (position1 - position2).l2norm());
+    }
   }
   return res;
 }

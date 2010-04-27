@@ -1,11 +1,6 @@
-* Splitter les evaluators
-* BinaryClassifierConfusionEvaluator
-* Tester un peu le DR
 * ContactInference
 
-
 Misc: 
- * Generer les données Order/Disorder
  * Chopper les données de test du precedent CASP
  * Learning with hidden units
 

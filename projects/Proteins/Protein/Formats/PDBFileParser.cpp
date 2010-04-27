@@ -479,7 +479,7 @@ ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPt
     tertiaryStructure = new ProteinTertiaryStructure(n);
     for (size_t i = 0; i < n; ++i)
       tertiaryStructure->setResidue(i, tertiaryStructureBlocks[0][i]);
-    aminoAcidSequence = tertiaryStructure->createAminoAcidSequence();
+    aminoAcidSequence = tertiaryStructure->makeAminoAcidSequence();
     protein->setObject(aminoAcidSequence);
   }
   protein->setObject(tertiaryStructure);

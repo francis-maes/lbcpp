@@ -30,22 +30,18 @@ public:
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     printAminoAcidSequence(aminoAcidSequence);
     
-    ScoreSymmetricMatrixPtr residueResidueContactProbabilityMatrix = protein->getResidueResidueContactProbabilityMatrix();
-    jassert(residueResidueContactProbabilityMatrix);
+    ScoreSymmetricMatrixPtr residueResidueContactMatrix8Cb = protein->getResidueResidueContactMatrix8Cb();
+    jassert(residueResidueContactMatrix8Cb && residueResidueContactMatrix8Cb->getDimension() == n);
     size_t lineCount = 0;
     for (size_t i = 0; i < n; ++i)
     {
       for (size_t j = i + 6; j < n; ++j)
       {
-        double probability = residueResidueContactProbabilityMatrix->getScore(i, j);
+        double probability = residueResidueContactMatrix8Cb->getScore(i, j);
         jassert(probability >= 0.0 && probability <= 1.0);
         print(lbcpp::toString(i + 1) + T(" ") + lbcpp::toString(j + 1) + T(" 0 8 ") + String(probability, 2), true);
         ++lineCount;
-        if (lineCount >= 31500)
-          break;
       }
-      if (lineCount >= 31500)
-        break;
     }
   }
 
