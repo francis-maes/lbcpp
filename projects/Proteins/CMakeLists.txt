@@ -68,6 +68,16 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/Matrix4.cpp
 )
 
+SET(LBCPP_EVALUATOR_SOURCES
+  Evaluator/Evaluator.h
+  Evaluator/Evaluator.cpp
+  Evaluator/ObjectContainerEvaluator.h
+  Evaluator/BinaryClassificationConfusionEvaluator.h
+  Evaluator/ClassificationAccuracyEvaluator.h
+  Evaluator/RegressionErrorEvaluator.h
+  Evaluator/ScoreVectorSequenceErrorEvaluator.h
+)
+
 SET(LBCPP_PROTEIN_SOURCES
   Protein/AminoAcidDictionary.h
   Protein/AminoAcidDictionary.cpp
@@ -118,6 +128,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
+  ${LBCPP_EVALUATOR_SOURCES}
   ${LBCPP_PROTEIN_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES}
   ${LBCPP_PROTEIN_EVALUATION_SOURCES}
@@ -136,6 +147,7 @@ SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/C
 SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
+SOURCE_GROUP(Evaluator FILES ${LBCPP_EVALUATOR_SOURCES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
 SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp)
