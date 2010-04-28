@@ -37,10 +37,10 @@ protected:
 class VectorBasedInferenceHelper
 {
 public:
-  virtual size_t getNumSubSteps() const
+  size_t getNumSubSteps() const
     {return subInferences.size();}
 
-  virtual InferenceStepPtr getSubStep(size_t index) const
+  InferenceStepPtr getSubStep(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index];}
 
   void setSubStep(size_t index, InferenceStepPtr subStep)

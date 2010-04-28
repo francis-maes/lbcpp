@@ -1,4 +1,4 @@
-* ContactInference
+* Integrer le StopingCriterion dans le ExamplesCreatorCallback
 
 Misc: 
  * Chopper les données de test du precedent CASP
