@@ -64,7 +64,8 @@ bool VectorBasedInferenceHelper::loadSubInferencesFromDirectory(const File& file
     InferenceStepPtr step = Object::createFromFileAndCast<InferenceStep>(stepFile);
     if (!step)
       return false;
-    subInferences.resize(number + 1);
+    if (number >= subInference.size())
+      subInferences.resize(number + 1);
     subInferences[number] = step;
   }
   for (size_t i = 0; i < subInferences.size(); ++i)

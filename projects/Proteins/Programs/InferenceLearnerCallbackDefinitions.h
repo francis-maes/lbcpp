@@ -58,7 +58,7 @@ public:
   : trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback())
   , factory(factory)
   , target(T("NO_TARGET"))
-  , targetTrainingScore(0.), targetTestingScore(0.)
+  , trainingScore(0.), testingScore(0.)
   {
     trainingEvaluation->startInferencesCallback(0); // initialize a zero score
     testingEvaluation->startInferencesCallback(0);
@@ -68,14 +68,14 @@ public:
   {
     jassert(trainingEvaluation);
     this->trainingEvaluation = trainingEvaluation;
-    targetTrainingScore = trainingEvaluation->getDefaultScoreForTarget(target);
+    trainingScore = trainingEvaluation->getDefaultScoreForTarget(target);
   }
   
   virtual void setTestingEvaluation(ProteinEvaluationCallbackPtr testingEvaluation)
   {
     jassert(testingEvaluation);
     this->testingEvaluation = testingEvaluation;
-    targetTestingScore = testingEvaluation->getDefaultScoreForTarget(target);
+    testingScore = testingEvaluation->getDefaultScoreForTarget(target);
   }
   
   virtual void setTarget(const String& targetName)
@@ -103,11 +103,11 @@ protected:
   ProteinEvaluationCallbackPtr getTestingEvaluation()
     {jassert(testingEvaluation); return testingEvaluation;}
   
-  double getTargetTrainingScore()
-    {return targetTrainingScore;}
+  double getTrainingScore()
+    {return trainingScore;}
   
-  double getTargetTestingScore()
-    {return targetTestingScore;}
+  double getTestingScore()
+    {return testingScore;}
   
 private:
   ProteinEvaluationCallbackPtr trainingEvaluation;
@@ -116,8 +116,8 @@ private:
   InferenceLearnerCallbackPtr factory;
 
   String target;
-  double targetTrainingScore;
-  double targetTestingScore;
+  double trainingScore;
+  double testingScore;
 };
 
 typedef ReferenceCountedObjectPtr<EvaluationInferenceLearnerCallback> EvaluationInferenceLearnerCallbackPtr;
@@ -241,9 +241,9 @@ public:
   
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    if (getTargetTrainingScore() > bestTrainingScore) {
-      bestTrainingScore = getTargetTrainingScore();
-      bestTestingScore = getTargetTestingScore();
+    if (getTrainingScore() > bestTrainingScore) {
+      bestTrainingScore = getTrainingScore();
+      bestTestingScore = getTestingScore();
     }
     
     return true;
@@ -298,7 +298,7 @@ public:
   
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
-  {return !stoppingCriterion->shouldOptimizerStop(getTargetTrainingScore());}
+  {return !stoppingCriterion->shouldOptimizerStop(getTrainingScore());}
   
 private:
   StoppingCriterionPtr stoppingCriterion;
@@ -320,13 +320,13 @@ public:
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    if (getTargetTrainingScore() > bestScore)
+    if (getTrainingScore() > bestScore)
     {
       File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename);
       inference->saveToFile(dst);
       std::cout << "Save iteration: " << inference->getName()
       << " - Iteration: " << iterationNumber << std::endl;
-      bestScore = getTargetTrainingScore();
+      bestScore = getTrainingScore();
     }
     
     return true;
@@ -358,7 +358,7 @@ private:
 
 class StandardOutputInferenceLearnerCallback : public EvaluationInferenceLearnerCallback {
   virtual void preLearningIterationCallback(size_t iterationNumber)
-  {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << std::endl;}
+    {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << std::endl;}
   
   // returns false if learning should stop
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
