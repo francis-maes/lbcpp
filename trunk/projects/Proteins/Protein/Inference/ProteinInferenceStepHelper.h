@@ -32,9 +32,6 @@ public:
   ObjectPtr createEmptyOutput(ObjectPtr input) const
     {jassert(targetName.isNotEmpty()); return getProtein(input)->createEmptyObject(targetName);}
 
-  //ObjectPtr getSupervision(ObjectPtr object) const
-  //  {jassert(targetName.isNotEmpty()); return getProtein(object)->getObject(targetName);}
-
   ObjectPtr getSupervision(ObjectPtr object) const
     {jassert(supervisionName.isNotEmpty()); return getProtein(object)->getObject(supervisionName);}
 
@@ -53,17 +50,10 @@ protected:
     {return getProtein(object)->getLength();}
 
   bool load(InputStream& istr)
-  {
-    if (!lbcpp::read(istr, targetName))
-      return false;
-    // FIXME: serialise supervision name
-    if (supervisionName.isEmpty())
-      supervisionName = targetName;
-    return true;
-  }
+    {return lbcpp::read(istr, targetName) && lbcpp::read(istr, supervisionName);}
 
   void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, targetName);}
+    {lbcpp::write(ostr, targetName); lbcpp::write(ostr, supervisionName);}
 };
 
 class ProteinResidueRelatedInferenceStepHelper : public ProteinInferenceStepHelper
