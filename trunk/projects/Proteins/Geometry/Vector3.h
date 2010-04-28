@@ -162,6 +162,24 @@ struct Traits<Vector3>
   }
 };
 
+class Vector3Object : public Object
+{
+public:
+  Vector3Object(const Vector3& value) : value(value) {}
+  Vector3Object() {}
+
+  Vector3 getValue() const
+    {return value;}
+
+  Vector3& getValue()
+    {return value;}
+
+private:
+  Vector3 value;
+};
+
+typedef ReferenceCountedObjectPtr<Vector3Object> Vector3ObjectPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_GEOMETRY_VECTOR3_H_

@@ -134,6 +134,11 @@ void Protein::computeMissingFields()
   */
   ProteinTertiaryStructurePtr tertiaryStructure = getTertiaryStructure();
   ProteinBackboneBondSequencePtr backbone = getBackboneBondSequence();
+  CartesianCoordinatesSequencePtr calphaTrace = getCAlphaTrace();
+
+  // Tertiary Structure => CAlpha trace
+  if (tertiaryStructure && !calphaTrace)
+    setObject(calphaTrace = tertiaryStructure->makeCAlphaTrace());
 
   // Tertiary Structure => Backbone bonds
   if (tertiaryStructure && !backbone)
@@ -185,6 +190,8 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new ScoreSymmetricMatrix(name, n);
   else if (name == T("BackboneBondSequence"))
     return new ProteinBackboneBondSequence(n);
+  else if (name == T("CAlphaTrace"))
+    return new CartesianCoordinatesSequence(name, n);
   else if (name == T("TertiaryStructure"))
     return new ProteinTertiaryStructure(n);
   else

@@ -110,7 +110,7 @@ public:
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return input;}
 
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
     ProteinBackboneBondPtr bond = supervision.dynamicCast<ProteinBackboneBond>();
     if (!bond)

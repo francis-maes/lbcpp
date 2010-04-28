@@ -31,7 +31,7 @@ public:
   virtual size_t getNumSubInferences(ObjectPtr input) const = 0;
   virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const = 0;
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const = 0;
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const = 0;
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const = 0;
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const = 0;
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;

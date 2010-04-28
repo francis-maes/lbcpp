@@ -42,8 +42,8 @@ public:
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
-    if (pdbDebugDirectory.exists() && correctProtein)
-      inputProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(inputProtein->getName() + T("_correct.pdb")));
+    if (pdbDebugDirectory.exists() && correctProtein && correctProtein->getTertiaryStructure())
+      correctProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.pdb")));
 
     // main inference loop
     for (size_t i = 0; i < subInferences.size(); ++i)
@@ -52,7 +52,7 @@ public:
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
       jassert(inferenceOutput);
-      std::cout << "INFERED: " << inferenceOutput->toString() << std::endl;
+      //std::cout << "INFERED: " << inferenceOutput->toString() << std::endl;
       workingProtein = addObjectToProtein(workingProtein, inferenceOutput, correctProtein);
       
       if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
@@ -98,6 +98,11 @@ public:
     if (backbone)
       res->setObject(tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(aminoAcids, backbone));
 
+    // when a c-alpha trace is predicted, update the tertiary structure automatically
+    CartesianCoordinatesSequencePtr calphaTrace = newObject.dynamicCast<CartesianCoordinatesSequence>();
+    if (calphaTrace)
+      res->setObject(tertiaryStructure = ProteinTertiaryStructure::createFromCAlphaTrace(aminoAcids, calphaTrace));
+
     // if we have access to the correct tertiary structure and if we have freshly created a tertiary structure
     // superpose our structure to the correct one.
     // Thisway, when performing tertiary structure refinement, the input, output and supervision tertiary structures
@@ -109,6 +114,9 @@ public:
       {
         Matrix4 transformation = tertiaryStructure->superposeCAlphaAtoms(correctTertiaryStructure);
         tertiaryStructure->applyAffineTransform(transformation);
+        calphaTrace = workingProtein->getCAlphaTrace();
+        if (calphaTrace)
+          calphaTrace->applyAffineTransform(transformation);
       }
     }
     return res;

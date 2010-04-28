@@ -39,7 +39,7 @@ public:
     return features->compute(getProtein(input), ij.first, ij.second);
   }
 
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
     ensureSubStepIndicesAreComputed(supervision);
     jassert(index < subStepIndices.size());
