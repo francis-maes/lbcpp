@@ -183,13 +183,15 @@ public:
   {
     RegressorPtr regressor = step->getRegressor();
     callRegression(stack, regressor, input, supervision, returnCode);
-    if (returnCode != InferenceStep::finishedReturnCode)
+    if (returnCode == InferenceStep::errorReturnCode)
     {
       Object::error("InferenceContext::runRegression", "Could not regress");
       return ObjectPtr(); 
     }
     jassert(regressor);
     step->setRegressor(regressor);
+    if (returnCode == InferenceStep::canceledReturnCode)
+      return ObjectPtr();
     FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
     return new Scalar(regressor->predict(inputFeatures));
   }
