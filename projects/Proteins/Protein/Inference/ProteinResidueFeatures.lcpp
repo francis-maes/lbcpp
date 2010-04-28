@@ -249,6 +249,7 @@ public:
     LabelSequencePtr sequence = protein->getObject(sequenceName).dynamicCast<LabelSequence>();
     if (sequence)
       return sequence->bidirectionalSegmentConjunctionFeatures(position, numSegmentsPerSide);
+      //return sequence->bidirectionalSegmentFeatures(position, numSegmentsPerSide);
     else
       return FeatureGeneratorPtr();
   }

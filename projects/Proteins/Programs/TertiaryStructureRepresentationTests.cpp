@@ -14,6 +14,9 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+void printConfidenceInterval(ScalarVariableStatistics& stats)
+  {std::cout << stats.getMean() - 3.0 * stats.getStandardDeviation() << " ... " << stats.getMean() + 3.0 * stats.getStandardDeviation() << std::endl;}
+
 int main()
 {
   declareProteinClasses();
@@ -39,6 +42,34 @@ int main()
   std::cout << proteins->size() << " proteins." << std::endl;
   if (!proteins)
     return 1;
+
+  static ScalarVariableStatistics cacaLength(T("CA--CA length"));
+  static ScalarVariableStatistics cacacaAngle(T("CA--CA--CA angle"));
+  static ScalarVariableStatistics cacacacaDihedral(T("CA--CA--CA--CA dihedral"));
+
+  for (size_t index = 0; index < proteins->size(); ++index)
+  {
+    ProteinPtr protein = proteins->getAndCast<Protein>(index);
+    std::cout << "Protein " << protein->getName() << std::endl;
+    protein->computeMissingFields();
+    CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
+    BondCoordinatesSequencePtr calphaTraceBonds = new BondCoordinatesSequence(T("yo"), calphaTrace);
+    for (size_t i = 0; i < calphaTraceBonds->size(); ++i)
+    {
+      BondCoordinates bond = calphaTraceBonds->getCoordinates(i);
+      if (bond.hasLength())
+        cacaLength.push(bond.getLength());
+      if (bond.hasThetaAngle())
+        cacacaAngle.push(bond.getThetaAngle());
+      if (bond.hasPhiDihedralAngle())
+        cacacacaDihedral.push(bond.getPhiDihedralAngle());
+    }
+  }
+
+  std::cout << cacaLength.toString() << std::endl; printConfidenceInterval(cacaLength);
+  std::cout << std::endl << cacacaAngle.toString() << std::endl; printConfidenceInterval(cacacaAngle);
+  std::cout << std::endl << cacacacaDihedral.toString() << std::endl; printConfidenceInterval(cacacacaDihedral);
+  return 0;
 /*
   File ramachadranPlotFile(T("C:\\Projets\\LBC++\\projects\\temp\\ramac.txt"));
   ramachadranPlotFile.deleteRecursively();

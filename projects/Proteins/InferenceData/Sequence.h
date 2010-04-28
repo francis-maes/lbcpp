@@ -70,7 +70,15 @@ public:
     {jassert(index < elements.size()); elements[index] = element;}
 
   const ElementType& getElement(size_t index) const
-  {jassert(index < elements.size()); return elements[index];}
+    {jassert(index < elements.size()); return elements[index];}
+
+  virtual ObjectPtr clone() const
+  {
+    typedef BuiltinVectorBasedSequence<ElementType> ThisClass;
+    ReferenceCountedObjectPtr<ThisClass> res = Object::createAndCast<ThisClass>(getClassName());
+    res->elements = elements;
+    return res;
+  }
 
 protected:
   VectorType elements;

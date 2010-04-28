@@ -84,7 +84,7 @@ BondCoordinatesSequence::BondCoordinatesSequence(const String& name, size_t leng
 {
 }
 
-CartesianCoordinatesSequencePtr BondCoordinatesSequence::createCartesianCoordinates(const String& name, const Matrix4& initialMatrix)
+CartesianCoordinatesSequencePtr BondCoordinatesSequence::makeCartesianCoordinates(const String& name, const Matrix4& initialMatrix)
 {
   size_t n = size() + 1;
 

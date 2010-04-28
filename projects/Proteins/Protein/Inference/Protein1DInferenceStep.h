@@ -38,10 +38,13 @@ public:
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return features->compute(getProtein(input), index);}
 
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
-    SequencePtr sequence = getSupervision(supervision).dynamicCast<Sequence>();
-    return sequence ? sequence->get(index) : ObjectPtr();
+    ObjectPtr supervisionObject = getSupervision(supervision);
+    jassert(supervisionObject);
+    ObjectContainerPtr objects = supervisionObject.dynamicCast<ObjectContainer>();
+    jassert(objects);
+    return objects->get(index);
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const

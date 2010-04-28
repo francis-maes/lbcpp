@@ -11,6 +11,7 @@
 
 # include "Sequence.h"
 # include "../Geometry/Vector3.h"
+# include "../Geometry/Matrix4.h"
 
 namespace lbcpp
 {
@@ -27,6 +28,19 @@ public:
   virtual bool hasObject(size_t index) const
     {return getPosition(index).exists();}
 
+  virtual ObjectPtr get(size_t index) const
+  {
+    Vector3 p = getPosition(index);
+    return p.exists() ? new Vector3Object(p) : ObjectPtr();
+  }
+
+  virtual void set(size_t index, ObjectPtr object)
+  {
+    Vector3ObjectPtr v3o = object.dynamicCast<Vector3Object>();
+    jassert(v3o);
+    setPosition(index, v3o->getValue());
+  }
+
   bool hasPosition(size_t index) const
     {return hasObject(index);}
 
@@ -41,6 +55,28 @@ public:
 
   void clearPosition(size_t index)
     {setElement(index, Vector3());}
+
+  void applyAffineTransform(const Matrix4& affineTransform)
+  {
+    for (size_t i = 0; i < elements.size(); ++i)
+      if (elements[i].exists())
+        setElement(i, affineTransform.transformAffine(getElement(i)));
+  }
+
+  Vector3 getGravityCenter() const
+  {
+    // todo: cache
+    Vector3 sum = 0;
+    size_t count = 0;
+    for (size_t i = 0; i < elements.size(); ++i)
+      if (elements[i].exists())
+      {
+        sum += elements[i];
+        ++count;
+      }
+    return count ? sum / (double)count : sum;
+  }
+
 };
 
 typedef ReferenceCountedObjectPtr<CartesianCoordinatesSequence> CartesianCoordinatesSequencePtr;

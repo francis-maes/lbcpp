@@ -52,6 +52,8 @@ public:
 
   String getSegmentConjunctionFeatureName(size_t beginPosition, size_t segmentCount, bool forward = true) const;
   FeatureGeneratorPtr bidirectionalSegmentConjunctionFeatures(size_t position, size_t segmentCount) const;
+  FeatureGeneratorPtr segmentFeatures(size_t beginPosition, size_t segmentCount, bool forward = true) const;
+  FeatureGeneratorPtr bidirectionalSegmentFeatures(size_t beginPosition, size_t segmentCount) const;
 
   virtual String elementToString(size_t position) const;
 

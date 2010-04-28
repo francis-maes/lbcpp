@@ -99,7 +99,7 @@ public:
   BondCoordinatesSequence(const String& name, size_t length = 0);
   BondCoordinatesSequence() {}  
 
-  CartesianCoordinatesSequencePtr createCartesianCoordinates(const String& name, const Matrix4& initialMatrix = Matrix4::identity);
+  CartesianCoordinatesSequencePtr makeCartesianCoordinates(const String& name, const Matrix4& initialMatrix = Matrix4::identity);
 
   virtual bool hasObject(size_t position) const
     {return BaseClass::getElement(position).exists();}

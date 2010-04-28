@@ -98,7 +98,7 @@ int main(int argc, char** argv)
   }
 
   std::cout << "Loading data... " << std::flush;
-  ObjectContainerPtr proteins = loadProteins(proteinsFileOrDirectory, 1);
+  ObjectContainerPtr proteins = loadProteins(proteinsFileOrDirectory);
   if (!proteins)
     return 2;
   std::cout << proteins->size() << " protein(s)." << std::endl;

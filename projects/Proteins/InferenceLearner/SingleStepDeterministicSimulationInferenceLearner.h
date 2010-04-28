@@ -47,8 +47,8 @@ private:
 class StepByStepDeterministicSimulationLearner : public InferenceLearner
 {
 public:
-  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, const File& modelDirectory)
-    : InferenceLearner(callback), modelDirectory(modelDirectory)
+  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, const File& modelDirectory, bool doNotSaveModel)
+    : InferenceLearner(callback), modelDirectory(modelDirectory), doNotSaveModel(doNotSaveModel)
   {
     if (useCacheOnTrainingData)
       cache = new InferenceResultCache();
@@ -99,14 +99,14 @@ public:
       trainPass(decoratedInference, step, trainingData);
       callback->postLearningStepCallback(step);
 
-      if (modelDirectory != File::nonexistent)
+      if (modelDirectory != File::nonexistent && !doNotSaveModel)
       {
         step->saveToFile(stepFile);
         std::cout << "Saved inference step " << stepFile.getFileNameWithoutExtension().quoted() << "." << std::endl;
       }
     }
 
-    if (modelDirectory != File::nonexistent)
+    if (modelDirectory != File::nonexistent && !doNotSaveModel)
     {
       std::cout << "Save inference " << modelDirectory.getFileNameWithoutExtension().quoted() << std::endl;
       inference->saveToFile(modelDirectory);
@@ -116,6 +116,7 @@ public:
 private:
   InferenceResultCachePtr cache;
   File modelDirectory;
+  bool doNotSaveModel;
 
   InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
     {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}

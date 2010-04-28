@@ -39,6 +39,8 @@ int svd(int m, int n, int withu, int withv, double eps, double tol,
 bool Matrix3::makeSVDDecomposition(Matrix3& u, Vector3& d, Matrix3& v) const
 {
   int returnCode = svd(3, 3, 1, 1, DBL_EPSILON, 30 * DBL_EPSILON, *this, (double* )&d, u, v);
+  if (!isNumberValid(d.getX()) || !isNumberValid(d.getY()) || !isNumberValid(d.getZ()))
+    return false;
   jassert(returnCode || ((*this) - (u * Matrix3::diagonal(d) * v.transposed())).l2norm() < 0.00001);
   return returnCode == 0;
 }

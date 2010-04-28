@@ -317,10 +317,8 @@ static Matrix4 superposeStructures(const std::vector< std::pair<Vector3, Vector3
   // make SVD decomposition
   Matrix3 u, v;
   Vector3 diag;
-  bool ok = correlationMatrix.makeSVDDecomposition(u, diag, v);
-  jassert(ok);
-  if (!ok)
-    return Matrix4::zero;
+  if (!correlationMatrix.makeSVDDecomposition(u, diag, v))
+    return Matrix4::identity;
 
   // compute optimal rotation matrix
   Matrix3 rotation = v * u.transposed();

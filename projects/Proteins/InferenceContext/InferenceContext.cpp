@@ -149,7 +149,7 @@ public:
       returnCode = InferenceStep::finishedReturnCode;
       ObjectPtr subOutput = runInference(inference->getSubInference(input, i),
                 inference->getSubInput(input, i),
-                supervision ? inference->getSubSupervision(supervision, i) : ObjectPtr(),
+                supervision ? inference->getSubSupervision(supervision, i, res) : ObjectPtr(),
                 returnCode);
       if (returnCode == InferenceStep::errorReturnCode)
       {
