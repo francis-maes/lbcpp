@@ -78,6 +78,12 @@ public:
   */
   void multiplyMatrix(Matrix4& matrix);
 
+  bool load(InputStream& istr)
+    {return lbcpp::read(istr, length) && lbcpp::read(istr, theta) && lbcpp::read(istr, phi);}
+
+  void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, length); lbcpp::write(ostr, theta); lbcpp::write(ostr, phi);}
+
 private:
   double length;
   Angle theta;

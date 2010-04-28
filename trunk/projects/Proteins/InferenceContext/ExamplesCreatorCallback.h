@@ -44,7 +44,7 @@ public:
       {
         LabelPtr label = supervision.dynamicCast<Label>();
         jassert(classifier && label);
-        addExample(classifier, new ClassificationExample(input, label->getIndex()));
+        addExample(stack, classifier, new ClassificationExample(input, label->getIndex()));
         returnCode = InferenceStep::canceledReturnCode;
       }
     }
@@ -62,14 +62,14 @@ public:
         ScalarPtr scalar = supervision.dynamicCast<Scalar>();
         if (scalar)
         {
-          addExample(regressor, new RegressionExample(input, scalar->getValue()));
+          addExample(stack, regressor, new RegressionExample(input, scalar->getValue()));
           returnCode = InferenceStep::canceledReturnCode;
         }
         else
         {
           ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
           jassert(lossFunction);
-          addExample(regressor, new ObjectPair(input, lossFunction));
+          addExample(stack, regressor, new ObjectPair(input, lossFunction));
           returnCode = InferenceStep::canceledReturnCode;
         }
       }
@@ -82,7 +82,7 @@ public:
     {
       LearningMachinePtr machine = it->first;
       ObjectContainerPtr trainingData = it->second.examples->randomize();
-      std::cout << "Training with " << trainingData->size() << " examples... " << std::flush;
+      std::cout << "Training " << it->second.name << " with " << trainingData->size() << " examples... " << std::flush;
       jassert(machine);
       machine->trainStochastic(trainingData);
       GradientBasedLearningMachine* gbm = machine.dynamicCast<GradientBasedLearningMachine>().get();
@@ -124,6 +124,7 @@ protected:
   {
     LearningMachineInfo() : bestEmpiricalRisk(DBL_MAX) {}
 
+    String name;
     VectorObjectContainerPtr examples;
     DenseVectorPtr bestParameters;
     double bestEmpiricalRisk;
@@ -148,8 +149,13 @@ protected:
   typedef std::map<LearningMachinePtr, LearningMachineInfo> LearningMachineMap;
   LearningMachineMap learningMachines;
 
-  void addExample(LearningMachinePtr learningMachine, ObjectPtr example)
-    {learningMachines[learningMachine].addExample(example);}
+  void addExample(InferenceStackPtr stack, LearningMachinePtr learningMachine, ObjectPtr example)
+  {
+    LearningMachineInfo& info = learningMachines[learningMachine];
+    if (info.name.isEmpty())
+      info.name = stack->getCurrentInference()->getName();
+    info.addExample(example);
+  }
 };
 
 typedef ReferenceCountedObjectPtr<ExamplesCreatorCallback> ExamplesCreatorCallbackPtr;

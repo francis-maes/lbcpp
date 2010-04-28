@@ -102,6 +102,7 @@ SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
   Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h
   Protein/Inference/Protein2DInferenceStep.h
   Protein/Inference/ProteinContactMapInferenceStep.h
+  Protein/Inference/ProteinTertiaryStructureInferenceStep.h
   Protein/Inference/ProteinInference.h
 )
 

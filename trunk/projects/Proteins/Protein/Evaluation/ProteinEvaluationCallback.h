@@ -273,15 +273,16 @@ public:
     {evaluator = new ProteinEvaluator();}
 
   virtual String toString() const
-    {return evaluator->toString();}
+    {return evaluator ? evaluator->toString() : T("N/A");}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
       // top-level inference is finished
-      jassert(output.dynamicCast<Protein>() && supervision.dynamicCast<Protein>());
-      evaluator->addPrediction(output, supervision);
+      jassert((!output || output.dynamicCast<Protein>()) && (!supervision || supervision.dynamicCast<Protein>()));
+      if (output && supervision)
+        evaluator->addPrediction(output, supervision);
     }
   }
 

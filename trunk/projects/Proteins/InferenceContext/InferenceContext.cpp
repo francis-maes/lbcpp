@@ -20,7 +20,9 @@ using namespace lbcpp;
 ** InferenceContext
 */
 ObjectPtr InferenceContext::runInference(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {return inference->run(InferenceContextPtr(this), input, supervision, returnCode);}
+{
+  return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
+}
 
 void InferenceContext::callStartInferences(size_t count)
 {
@@ -118,6 +120,7 @@ public:
   {
     stack->push(inference);
     ObjectPtr output;
+    returnCode = InferenceStep::finishedReturnCode;
     callPreInference(stack, input, supervision, output, returnCode);
     if (returnCode == InferenceStep::errorReturnCode)
     {
@@ -126,11 +129,10 @@ public:
       return ObjectPtr();
     }
     
-    if (returnCode != InferenceStep::canceledReturnCode)
-    {
-      if (!output)
-        output = InferenceContext::runInference(inference, input, supervision, returnCode);
-    }
+    if (returnCode == InferenceStep::canceledReturnCode)
+      {jassert(output);}
+    else if (!output)
+      output = InferenceContext::runInference(inference, input, supervision, returnCode);  
 
     callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();
