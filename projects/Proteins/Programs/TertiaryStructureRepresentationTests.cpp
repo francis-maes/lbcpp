@@ -18,6 +18,21 @@ int main()
 {
   declareProteinClasses();
 
+  /*  
+  File inputFile(T("C:\\Projets\\LBC++\\projects\\temp\\1E4T_correct.pdb"));
+  File outputFile(T("C:\\Projets\\LBC++\\projects\\temp\\1E4T_pouet.pdb"));
+
+  ProteinPtr protein = Protein::createFromPDB(inputFile);
+  jassert(protein);
+  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+  jassert(tertiaryStructure->hasCompleteBackbone());
+  ProteinBackboneBondSequencePtr backbone = tertiaryStructure->makeBackbone();
+  protein->setObject(ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone));
+  protein->saveToPDBFile(outputFile);
+  return 0;*/
+  
+
   File proteinDatabase(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
   ObjectStreamPtr proteinsStream = directoryObjectStream(proteinDatabase, T("*.protein"));
   ObjectContainerPtr proteins = proteinsStream->load()->randomize();

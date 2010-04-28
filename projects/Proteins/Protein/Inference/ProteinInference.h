@@ -17,7 +17,11 @@ namespace lbcpp
 class ProteinInference : public VectorSequentialInferenceStep
 {
 public:
-  ProteinInference() : VectorSequentialInferenceStep(T("Protein")) {}
+  ProteinInference() : VectorSequentialInferenceStep(T("Protein"))
+    {}
+
+  void setPDBDebugDirectory(const File& directory)
+    {pdbDebugDirectory = directory;}
 
   // child inference are all of the form
   // Protein -> Protein sub object
@@ -26,6 +30,7 @@ public:
     // input and working proteins
     ProteinPtr inputProtein = input.dynamicCast<Protein>();
     jassert(inputProtein);
+
     ProteinPtr workingProtein = new Protein(inputProtein->getName());
     workingProtein->setObject(inputProtein->getAminoAcidSequence());
     jassert(inputProtein->getAminoAcidSequence());
@@ -37,6 +42,8 @@ public:
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    if (pdbDebugDirectory.exists() && correctProtein)
+      inputProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(inputProtein->getName() + T("_correct.pdb")));
 
     // main inference loop
     for (size_t i = 0; i < subInferences.size(); ++i)
@@ -45,12 +52,19 @@ public:
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
       jassert(inferenceOutput);
+      std::cout << "INFERED: " << inferenceOutput->toString() << std::endl;
       workingProtein = addObjectToProtein(workingProtein, inferenceOutput, correctProtein);
+      
+      if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
+        workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
+          (inputProtein->getName() + T("_pred") + lbcpp::toString(i) + T(".pdb")));
+
       if (returnCode != finishedReturnCode)
         break;
     }
 
     // return the last version of the working protein
+    jassert(workingProtein);
     return workingProtein;
   }
 
@@ -99,6 +113,9 @@ public:
     }
     return res;
   }
+
+private:
+  File pdbDebugDirectory;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInference> ProteinInferencePtr;

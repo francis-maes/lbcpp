@@ -22,6 +22,8 @@ public:
   
   LabelSequencePtr makeBinaryLabelSequence(const String& name, double threshold = 0.5) const;
 
+  virtual String toString() const;
+
   /*
   ** ScalarSequence
   */

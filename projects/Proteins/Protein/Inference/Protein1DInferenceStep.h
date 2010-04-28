@@ -70,7 +70,7 @@ class ProteinSequenceLabelingInferenceStep : public Protein1DInferenceStep
 {
 public:
   ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
-    : Protein1DInferenceStep(name, new ClassificationInferenceStep(name + T("Classification")), features, targetName, supervisionName) {}
+    : Protein1DInferenceStep(name, new ClassificationInferenceStep(name + T(" Classif")), features, targetName, supervisionName) {}
   ProteinSequenceLabelingInferenceStep() {}
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const

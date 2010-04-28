@@ -46,6 +46,7 @@ void declareInferenceClasses()
 
 #include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
+#include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 
 extern void declareProteinResidueFeaturesClasses();
@@ -57,6 +58,7 @@ void declareProteinClasses()
   declareProteinResidueFeaturesClasses();
   declareProteinResiduePairFeaturesClasses();
 
+  LBCPP_DECLARE_CLASS(ProteinBackboneBond);
   LBCPP_DECLARE_CLASS(ProteinBackboneBondSequence);
   LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
   LBCPP_DECLARE_CLASS(ProteinAtom);
@@ -76,6 +78,8 @@ void declareProteinClasses()
       LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
       LBCPP_DECLARE_CLASS(ScaledSigmoidScalarFunction);
 
+    LBCPP_DECLARE_CLASS(ProteinTertiaryStructureRefinementInferenceStep);
+      LBCPP_DECLARE_CLASS(ProteinResidueRefinementInferenceStep);
 
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);

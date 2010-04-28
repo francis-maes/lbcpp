@@ -12,6 +12,21 @@ using namespace lbcpp;
 ScalarSequence::ScalarSequence(const String& name, size_t length)
   : Sequence(name), sequence(length, DBL_MAX) {}
 
+String ScalarSequence::toString() const
+{
+  String res;
+  for (size_t i = 0; i < sequence.size(); ++i)
+  {
+    if (res.isNotEmpty())
+      res += T(" ");
+    if (hasValue(i))
+      res += String(sequence[i], 2);
+    else
+      res += T("?");
+  }
+  return res;
+}
+
 LabelSequencePtr ScalarSequence::makeBinaryLabelSequence(const String& name, double threshold) const
 {
   size_t n = size();

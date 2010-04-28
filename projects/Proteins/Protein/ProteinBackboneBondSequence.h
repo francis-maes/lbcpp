@@ -64,6 +64,12 @@ private:
   BondCoordinates bond1; // N--CA
   BondCoordinates bond2; // CA--C
   BondCoordinates bond3; // C--N
+
+  virtual bool load(InputStream& istr)
+    {return bond1.load(istr) && bond2.load(istr) && bond3.load(istr);}
+
+  virtual void save(OutputStream& ostr) const
+    {bond1.save(ostr); bond2.save(ostr); bond3.save(ostr);}
 };
 
 typedef ReferenceCountedObjectPtr<ProteinBackboneBond> ProteinBackboneBondPtr;

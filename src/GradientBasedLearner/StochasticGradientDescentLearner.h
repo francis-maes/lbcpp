@@ -35,7 +35,10 @@ public:
       if (inputSize.getCount() < 10 ||                         // every time until having 10 samples
           (inputSize.getCount() < 100 && (epoch % 10 == 0)) || // every 10 epochs until having 100 samples
           (epoch % 100 == 0))                                  // every 100 epochs after that
-      inputSize.push((double)(gradient->l0norm()));
+      {
+        inputSize.push((double)(gradient->l0norm()));
+        //std::cout << "Alpha: " << weight * computeAlpha() << " inputSize: " << inputSize.toString() << std::endl;
+      }
     }
     
     //std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;

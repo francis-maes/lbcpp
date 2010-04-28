@@ -373,7 +373,7 @@ int main(int argc, char** argv)
       proteinInference->appendStep(step);
     }
     
-    if (predictionTarget.contains(T("DR"))
+    if (predictionTarget.contains(T("DR")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
       proteinInference->appendStep(step);

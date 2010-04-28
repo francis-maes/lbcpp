@@ -14,21 +14,16 @@
 namespace lbcpp
 {
 
-class StringComponent : public Component
+class StringComponent : public Viewport
 {
 public:
   StringComponent(ObjectPtr object)
   {
-    addAndMakeVisible(label = new juce::Label("toto", object->toString()));
+    setViewedComponent(label = new juce::Label("toto", object->toString()));
     label->setJustificationType(Justification::topLeft);
+    label->setSize(5000, 5000); // bouh ! 
   }
     
-  virtual ~StringComponent()
-    {deleteAllChildren();}
-  
-  virtual void resized()
-    {label->setBoundsRelative(0, 0, 1, 1);}
-  
   juce_UseDebuggingNewOperator
 
 private:

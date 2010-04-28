@@ -19,108 +19,12 @@
 #include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinContactMapInferenceStep.h"
+#include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-class ProteinResidueRefinementInferenceStep : public VectorParallelInferenceStep
-{
-public:
-  ProteinResidueRefinementInferenceStep(const String& name)
-    : VectorParallelInferenceStep(name)
-  {
-    for (size_t i = 0; i < 3; ++i)
-    {
-      String prefix = name + T(" ") + getBackboneAtomName(i) + T(".");
-      appendStep(new RegressionInferenceStep(prefix + T("x")));
-      appendStep(new RegressionInferenceStep(prefix + T("y")));
-      appendStep(new RegressionInferenceStep(prefix + T("z")));
-    }
-  }
-
-  static String getBackboneAtomName(size_t index)
-  {
-    jassert(index < 3);
-    static const juce::tchar* backboneAtomNames[] = {T("N"), T("CA"), T("C")};
-    return backboneAtomNames[index];
-  }
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return input;}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-  {
-    ProteinResiduePtr residue = supervision.dynamicCast<ProteinResidue>();
-    if (!residue)
-      return ObjectPtr();
-
-    jassert(index < 9);
-    ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));
-    if (!atom || !atom->getPosition().exists())
-      return ObjectPtr();
-
-    Vector3 position = atom->getPosition();
-    index %= 3;
-    double target = (index == 0 ? position.getX() : (index == 1 ? position.getY() : position.getZ()));
-   
-    // loss(prediction) = (target - prediction)^2
-    return squareFunction(addConstantScalarFunction(-target));
-  }
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-  {
-    ProteinResiduePtr res = new ProteinResidue();
-    res->addAtom(new ProteinAtom(T("N"), T("N")));
-    res->addAtom(new ProteinAtom(T("CA"), T("C")));
-    res->addAtom(new ProteinAtom(T("C"), T("C")));
-    return res;
-  }
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-  {
-    ProteinResiduePtr residue = output.dynamicCast<ProteinResidue>();
-    ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
-    jassert(residue && prediction);
-    ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));
-    jassert(atom);
-    index %= 3;
-    if (index == 0)
-      atom->getPosition().setX(prediction->getValue());
-    else if (index == 1)
-      atom->getPosition().setY(prediction->getValue());
-    else if (index == 2)
-      atom->getPosition().setZ(prediction->getValue());
-  }
-};
-
-class ProteinTertiaryStructureRefinementInferenceStep : public Protein1DInferenceStep
-{
-public:
-  ProteinTertiaryStructureRefinementInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : Protein1DInferenceStep(name, new ProteinResidueRefinementInferenceStep(name + T(" Residue")), features, T("TertiaryStructure")) {}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-  {
-    ProteinTertiaryStructurePtr tertiaryStructure = output.dynamicCast<ProteinTertiaryStructure>();
-    ProteinResiduePtr residue = subOutput.dynamicCast<ProteinResidue>();
-    jassert(tertiaryStructure && residue);
-    tertiaryStructure->setResidue(index, residue); 
-  }
-};
-/*
-class CartesianProteinResidueFeatures : public ProteinResidueFeatures
-{
-public:
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
-  {
-    ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-    if (!tertiaryStructure)
-      return;
-
-    featureSense("FIXME");
-  }
-};*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -210,11 +114,19 @@ public:
 
   virtual RegressorPtr createRegressor(InferenceStackPtr stack)
   {
-    std::cout << "CreateRegressor for step " << stack->getInference(1)->getName() << std::endl;
+    String inferenceStepName = stack->getInference(1)->getName();
+      
+    std::cout << "CreateRegressor for step " << inferenceStepName << std::endl;
     static const double regularizer = 0.0;
-    static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? constantIterationFunction(0.00001) : invLinearIterationFunction(0.5, 150000);
+    IterationFunctionPtr learningRate;
+    if (inferenceStepName.startsWith(T("BBB")))
+      learningRate = constantIterationFunction(0.1);
+    else if (inferenceStepName.startsWith(T("TS")))
+      learningRate = constantIterationFunction(0.0001);
+    else
+      learningRate = invLinearIterationFunction(0.5, 150000);
+
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return generalizedLinearRegressor(learner, regularizer);
   }
@@ -237,6 +149,7 @@ public:
     
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
+
     /*double testRmse = evaluation->getPSSMRootMeanSquareError();
 
     if (trainRmse < bestTrainRmse)
@@ -246,7 +159,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 10;
+    return iterationNumber < 5;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -307,7 +220,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\BBB_TS_SmallPDB.model"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\BBB_SmallPDB_dbg.model"));
 
   /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
@@ -330,8 +243,8 @@ int main(int argc, char** argv)
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
-  ObjectContainerPtr trainingData = smallPDBProteins->invFold(0,7)->apply(new ObjectToObjectPairFunction());
-  ObjectContainerPtr testingData = smallPDBProteins->fold(0,7)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr trainingData = smallPDBProteins->range(0,1)->apply(new ObjectToObjectPairFunction());
+  ObjectContainerPtr testingData = smallPDBProteins->range(0,1)->apply(new ObjectToObjectPairFunction());
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
@@ -375,7 +288,8 @@ int main(int argc, char** argv)
   ** Creation of the inference 
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  for (size_t i = 0; i < 2; ++i)
+  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
+  for (size_t i = 0; i < 5; ++i)
   {
     {
       //Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
@@ -385,14 +299,12 @@ int main(int argc, char** argv)
     {
       Protein1DInferenceStepPtr step;
 
-      if (i == 0)
+      //if (i == 0)
       {
-        step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
-        proteinInference->appendStep(step);
       }
 
-      step = new ProteinTertiaryStructureRefinementInferenceStep(T("TS Pass ") + lbcpp::toString(i), tertiaryStructureFeatureFunction);
-      proteinInference->appendStep(step);
+      //step = new ProteinTertiaryStructureRefinementInferenceStep(T("TS Pass ") + lbcpp::toString(i), tertiaryStructureFeatureFunction);
+      //proteinInference->appendStep(step);
      
 #if 0
       step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
@@ -401,9 +313,13 @@ int main(int argc, char** argv)
       proteinInference->appendStep(step);
       step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
       proteinInference->appendStep(step);
-      step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, /*T("DSSPSecondaryStructureProbabilities"), */T("DSSPSecondaryStructureSequence"));
-      proteinInference->appendStep(step);
 #endif // 0
+
+      step = new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction);
+      proteinInference->appendStep(step);
+
+      //step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, /*T("DSSPSecondaryStructureProbabilities"), */T("DSSPSecondaryStructureSequence"));
+      //proteinInference->appendStep(step);
 
     }
   }
