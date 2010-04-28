@@ -44,7 +44,7 @@ void declareInferenceClasses()
 #include "Protein/AminoAcidDictionary.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
-#include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 

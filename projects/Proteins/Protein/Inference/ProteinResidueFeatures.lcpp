@@ -270,7 +270,7 @@ ProteinResidueFeaturesPtr lbcpp::proteinSegmentConjunctionFeatures(const String&
 /*
 ** Misc
 */
-#include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/Protein1DInferenceStep.h"
 
 featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr input, size_t scoreIndex) const
 {

@@ -14,7 +14,11 @@ DenseVector::DenseVector(const DenseVector& otherVector)
   : BaseClass(otherVector.getDictionary()), values(otherVector.values), subVectors(otherVector.subVectors.size())
 {
   for (size_t i = 0; i < subVectors.size(); ++i)
-    subVectors[i] = new DenseVector(*otherVector.subVectors[i]);
+  {
+    DenseVectorPtr otherSubVector = otherVector.subVectors[i];
+    if (otherSubVector)
+      subVectors[i] = new DenseVector(*otherSubVector);
+  }
 }
 
 DenseVector::DenseVector(FeatureDictionaryPtr dictionary, const std::vector<double>& values)
@@ -221,6 +225,7 @@ bool DenseVector::load(InputStream& istr)
     double featureValue;
     if (!features->readIdentifier(istr, featureIndex) || !lbcpp::read(istr, featureValue))
       return false;
+    jassert(isNumberValid(featureValue));
     set(featureIndex, featureValue);
   }
 

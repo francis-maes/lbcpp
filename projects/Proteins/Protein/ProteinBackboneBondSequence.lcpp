@@ -47,3 +47,35 @@ featureGenerator ProteinBackboneBondSequence::elementFeatures(size_t position) c
   featureCall(1) psiFeatures;
   featureCall(2) omegaFeatures;
 }
+
+// TODO: ranger
+#include "Protein/ProteinTertiaryStructure.h"
+
+featureGenerator ProteinAtom::positionFeatures() const
+{
+  Vector3 p = this->getPosition();
+  if (p.exists())
+  {
+    featureSense(0, p.getX());
+    featureSense(1, p.getY());
+    featureSense(2, p.getX());
+  }
+}
+
+featureGenerator ProteinResidue::positionFeatures() const
+{
+  for (size_t i = 0; i < this->getNumAtoms(); ++i)
+  {
+    ProteinAtomPtr atom = this->getAtom(i);
+    featureCall(atom->getName()) atom->positionFeatures();
+  }
+}
+
+featureGenerator ProteinTertiaryStructure::elementFeatures(size_t position) const
+{
+  ProteinResiduePtr residue = this->getResidue(position);
+  if (residue)
+    featureCall((size_t)residue->getAminoAcid()) residue->positionFeatures();
+  else
+    featureSense("none");
+}

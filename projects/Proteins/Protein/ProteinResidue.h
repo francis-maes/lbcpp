@@ -11,6 +11,7 @@
 
 # include "AminoAcidDictionary.h"
 # include "../Geometry/Vector3.h"
+# include "../Geometry/Matrix4.h"
 
 namespace lbcpp
 {
@@ -29,6 +30,9 @@ public:
 
   const Vector3& getPosition() const
     {return position;}
+  
+  Vector3& getPosition()
+    {return position;}
 
   void setPosition(const Vector3& position)
     {this->position = position;}
@@ -36,11 +40,20 @@ public:
   double getX() const
     {return position.getX();}
 
+  void setX(double value)
+    {position.setX(value);}
+
   double getY() const
     {return position.getY();}
 
+  void setY(double value)
+    {position.setY(value);}
+
   double getZ() const
     {return position.getZ();}
+
+  void setZ(double value)
+    {position.setZ(value);}
 
   void setOccupancy(double occupancy)
     {this->occupancy = occupancy;}
@@ -53,6 +66,8 @@ public:
 
   double getTemperatureFactor() const
     {return temperatureFactor;}
+
+  FeatureGeneratorPtr positionFeatures() const;
 
 protected:
   String elementSymbol;
@@ -84,6 +99,9 @@ public:
 
   AminoAcidDictionary::Type getAminoAcid() const
     {return aminoAcid;}
+
+  void setAminoAcid(AminoAcidDictionary::Type aa)
+    {aminoAcid = aa;}
 
   size_t getNumAtoms() const
     {return atoms.size();}
@@ -131,6 +149,10 @@ public:
     {return aminoAcid != AminoAcidDictionary::glycine && !getCBetaAtom();}
 
   ProteinAtomPtr checkAndGetCBetaOrCAlphaAtom() const;
+
+  void applyAffineTransform(const Matrix4& affineTransform) const;
+
+  FeatureGeneratorPtr positionFeatures() const;
 
 protected:
   AminoAcidDictionary::Type aminoAcid;

@@ -12,7 +12,7 @@
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
-#include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 #include "Protein/SecondaryStructureDictionary.h"
@@ -313,7 +313,7 @@ int main(int argc, char** argv)
   ** Creation of the inference
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  ProteinSequenceInferenceStepPtr step;
+  Protein1DInferenceStepPtr step;
 
   for (size_t i = 0; i < (size_t) maxPass; ++i) {
     if (predictionTarget.contains(T("SS3")))

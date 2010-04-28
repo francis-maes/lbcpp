@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_STEP_BACKBONE_BOND_SEQUENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_STEP_BACKBONE_BOND_SEQUENCE_H_
 
-# include "ProteinSequenceInferenceStep.h"
+# include "Protein1DInferenceStep.h"
 # include "../../InferenceStep/DecoratorInferenceStep.h"
 
 namespace lbcpp
@@ -171,11 +171,11 @@ private:
 
 // Input, Supervision: Protein
 // Output: BackbondBondSequence
-class ProteinBackboneBondSequenceInferenceStep : public ProteinSequenceInferenceStep
+class ProteinBackboneBondSequenceInferenceStep : public Protein1DInferenceStep
 {
 public:
   ProteinBackboneBondSequenceInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : ProteinSequenceInferenceStep(name, new ProteinBackboneBondInferenceStep(name + T("Bond")), features, T("BackboneBondSequence")) {}
+    : Protein1DInferenceStep(name, new ProteinBackboneBondInferenceStep(name + T("Bond")), features, T("BackboneBondSequence")) {}
 
   ProteinBackboneBondSequenceInferenceStep()
     {}
