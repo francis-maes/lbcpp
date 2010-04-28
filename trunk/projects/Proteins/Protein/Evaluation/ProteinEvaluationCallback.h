@@ -288,6 +288,7 @@ public:
   double getDefaultScoreForTarget(const String& targetName)
   {
     EvaluatorPtr targetEvaluator = evaluator->getEvaluatorForTarget(targetName);
+    jassert(targetEvaluator);
     return targetEvaluator ? targetEvaluator->getDefaultScore() : 0.0;
   }
 

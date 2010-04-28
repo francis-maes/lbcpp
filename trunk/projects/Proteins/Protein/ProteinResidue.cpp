@@ -109,7 +109,7 @@ bool ProteinResidue::load(InputStream& istr)
   int aminoAcidType;
   if (!lbcpp::read(istr, aminoAcidType))
     return false;
-  if (aminoAcidType < 0 || aminoAcidType >= 20)
+  if (aminoAcidType < 0 || aminoAcidType >= AminoAcidDictionary::unknown)
   {
     Object::error(T("ProteinResidue::load"), T("Invalid amino acid type ") + lbcpp::toString(aminoAcidType));
     return false;
