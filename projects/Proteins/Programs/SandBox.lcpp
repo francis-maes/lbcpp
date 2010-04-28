@@ -65,17 +65,18 @@ public:
   }
 
 protected:
-  ObjectPtr currentInput;
+  String currentInputName;
   std::vector< std::pair<size_t, size_t> > subStepIndices;
 
   void ensureSubStepIndicesAreComputed(ObjectPtr input) const
   {
-    if (currentInput != input || subStepIndices.empty())
+    jassert(input->getName().isNotEmpty() && input->getName() != T("Unnamed"));
+    if (currentInputName != input->getName() || subStepIndices.empty())
     {
       Protein2DInferenceStep* pthis = const_cast<Protein2DInferenceStep* >(this);
       pthis->subStepIndices.clear();
       computeSubStepIndices(getProtein(input), pthis->subStepIndices);
-      pthis->currentInput = input;
+      pthis->currentInputName = input->getName();
     }
   }
 
@@ -188,9 +189,26 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
-  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
+  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
   {
-    std::cout << "CreateClassifier for step " << step->getName() << std::endl;
+    String inferenceStepName = stack->getInference(1)->getName();
+    if (inferenceStepName.startsWith(T("RR")) || inferenceStepName.startsWith(T("DR")))
+    {
+      LabelPtr label = supervision.dynamicCast<Label>();
+      if (label->getIndex() == 1)
+        return 1.0;
+      else
+        return inferenceStepName.startsWith(T("RR")) 
+          ? 0.05 // 5% probability for negative residue-residue contact examples
+          : 0.2; // 20% probability for negative disorder examples
+
+    }
+    return 1.0;
+  }
+
+  virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
+  {
+    std::cout << "CreateClassifier for step " << stack->getInference(1)->getName() << std::endl;
     if (labels == BinaryClassificationDictionary::getInstance())
     {
       IterationFunctionPtr learningRate = invLinearIterationFunction(0.5, 250000);
@@ -207,8 +225,9 @@ public:
     }
   }
 
-  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
+  virtual RegressorPtr createRegressor(InferenceStackPtr stack)
   {
+    std::cout << "CreateRegressor for step " << stack->getInference(1)->getName() << std::endl;
     static const double regularizer = 0.0;
     static const bool useConstantLearningRate = true;
 
@@ -244,7 +263,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 15;
+    return iterationNumber < 10;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -305,7 +324,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\DR_SmallPDB.model"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\ALL_SmallPDB.model"));
   File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
 
   /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
@@ -324,7 +343,7 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 7);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
@@ -351,16 +370,17 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
-/*
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 5, true));
+
+ /* featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 5, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 10, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 20, true));
 
   // New features :
-  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
+  featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
   featureFunction->addSubFeatures(proteinPositionFeatures());
-  featureFunction->addSubFeatures(proteinLengthFeatures());*/
-  
+  //featureFunction->addSubFeatures(proteinLengthFeatures());
+  */
+
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
   pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
   pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
@@ -369,25 +389,26 @@ int main(int argc, char** argv)
   ** Creation of the inference 
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  for (size_t i = 0; i < 5; ++i)
+  for (size_t i = 0; i < 2; ++i)
   {
-    Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
-                                                          pairFeatureFunction, T("ResidueResidueContactMatrix8Cb"));
-    proteinInference->appendStep(step);
-
-#if 0
-    ProteinSequenceInferenceStepPtr step;
-    step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
-    proteinInference->appendStep(step);
-    step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
-    proteinInference->appendStep(step);
-    step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
-    proteinInference->appendStep(step);
-    step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, /*T("DSSPSecondaryStructureProbabilities"), */T("DSSPSecondaryStructureSequence"));
-    proteinInference->appendStep(step);
-    step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
-    proteinInference->appendStep(step);
-#endif // 0
+    {
+      //Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
+       //                                                   pairFeatureFunction, T("ResidueResidueContactMatrix8Cb"));
+      //proteinInference->appendStep(step);
+    }
+    {
+      ProteinSequenceInferenceStepPtr step;
+      step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
+      proteinInference->appendStep(step);
+      step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
+      proteinInference->appendStep(step);
+      step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+      proteinInference->appendStep(step);
+      step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
+      proteinInference->appendStep(step);
+      step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, /*T("DSSPSecondaryStructureProbabilities"), */T("DSSPSecondaryStructureSequence"));
+      proteinInference->appendStep(step);
+    }
   }
 
   /*

@@ -48,8 +48,6 @@ protected:
   RegressionErrorEvaluatorPtr regressionEvaluator;
 };
 
-typedef ReferenceCountedObjectPtr<ScoreVectorSequenceRegressionEvaluator> ScoreVectorSequenceRegressionEvaluatorPtr;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_EVALUATOR_SCORE_VECTOR_SEQUENCE_REGRESSION_ERROR_H_

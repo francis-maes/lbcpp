@@ -34,31 +34,44 @@ public:
         returnCode = InferenceStep::errorReturnCode;
         return;
       }
-      classifier = learnerCallback->createClassifier(stack->getCurrentInference(), labels);
+      classifier = learnerCallback->createClassifier(stack, labels);
     }
 
     if (supervision && enableExamplesCreation)
     {
-      LabelPtr label = supervision.dynamicCast<Label>();
-      jassert(classifier && label);
-      addExample(classifier, new ClassificationExample(input, label->getIndex()));
+      double p = learnerCallback->getProbabilityToCreateAnExample(stack, input, supervision);
+      if (p == 1 || RandomGenerator::getInstance().sampleBool(p))
+      {
+        LabelPtr label = supervision.dynamicCast<Label>();
+        jassert(classifier && label);
+        addExample(classifier, new ClassificationExample(input, label->getIndex()));
+        returnCode = InferenceStep::canceledReturnCode;
+      }
     }
   }
   
   virtual void regressionCallback(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {
     if (!regressor)
-      regressor = learnerCallback->createRegressor(stack->getCurrentInference());
+      regressor = learnerCallback->createRegressor(stack);
     if (supervision && enableExamplesCreation)
     {
-      ScalarPtr scalar = supervision.dynamicCast<Scalar>();
-      if (scalar)
-        addExample(regressor, new RegressionExample(input, scalar->getValue()));
-      else
+      double p = learnerCallback->getProbabilityToCreateAnExample(stack, input, supervision);
+      if (p == 1 || RandomGenerator::getInstance().sampleBool(p))
       {
-        ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
-        jassert(lossFunction);
-        addExample(regressor, new ObjectPair(input, lossFunction));
+        ScalarPtr scalar = supervision.dynamicCast<Scalar>();
+        if (scalar)
+        {
+          addExample(regressor, new RegressionExample(input, scalar->getValue()));
+          returnCode = InferenceStep::canceledReturnCode;
+        }
+        else
+        {
+          ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
+          jassert(lossFunction);
+          addExample(regressor, new ObjectPair(input, lossFunction));
+          returnCode = InferenceStep::canceledReturnCode;
+        }
       }
     }    
   }

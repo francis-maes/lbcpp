@@ -7,7 +7,7 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
-  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
+  virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
   {
     static const bool useConstantLearningRate = false;
     
@@ -25,7 +25,7 @@ public:
     return classifier;
   }
   
-  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
+  virtual RegressorPtr createRegressor(InferenceStackPtr stack)
   {
     static const bool useConstantLearningRate = true;
     
@@ -87,11 +87,11 @@ public:
   virtual InferenceContextPtr createContext()
     {jassert(factory); return factory->createContext();}
   
-  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
-    {jassert(factory); return factory->createClassifier(step, labels);}
+  virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
+    {jassert(factory); return factory->createClassifier(stack, labels);}
   
-  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
-    {jassert(factory); return factory->createRegressor(step);}
+  virtual RegressorPtr createRegressor(InferenceStackPtr stack)
+    {jassert(factory); return factory->createRegressor(stack);}
   
   void setFactory(InferenceLearnerCallbackPtr factory)
     {this->factory = factory;}
@@ -135,11 +135,11 @@ public:
   virtual InferenceContextPtr createContext()
   {return factory->createContext();}
   
-  virtual ClassifierPtr createClassifier(ClassificationInferenceStepPtr step, FeatureDictionaryPtr labels)
-  {return factory->createClassifier(step, labels);}
+  virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
+  {return factory->createClassifier(stack, labels);}
   
-  virtual RegressorPtr createRegressor(RegressionInferenceStepPtr step)
-  {return factory->createRegressor(step);}
+  virtual RegressorPtr createRegressor(InferenceStackPtr stack)
+  {return factory->createRegressor(stack);}
   
   virtual void preLearningIterationCallback(size_t iterationNumber)
   {

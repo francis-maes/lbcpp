@@ -132,6 +132,42 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ProteinTertiaryStructureEvaluator> ProteinTertiaryStructureEvaluatorPtr;
 
+class ProteinContactMapEvaluator : public Evaluator
+{
+public:
+  ProteinContactMapEvaluator(const String& name)
+    : Evaluator(name), classificationEvaluator(binaryClassificationConfusionEvaluator(name)) {}
+
+  virtual String toString() const
+    {return classificationEvaluator->toString();}
+
+  virtual double getDefaultScore() const
+    {return classificationEvaluator->getDefaultScore();}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ScoreSymmetricMatrixPtr predicted = predictedObject.dynamicCast<ScoreSymmetricMatrix>();
+    ScoreSymmetricMatrixPtr correct = correctObject.dynamicCast<ScoreSymmetricMatrix>();
+    if (!predicted || !correct)
+      return;
+
+    jassert(predicted->getDimension() == predicted->getDimension());
+    size_t n = predicted->getDimension();
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = i; j < n; ++j)
+      {
+        if (correct->hasScore(i, j) && predicted->hasScore(i, j))
+          classificationEvaluator->addPrediction(
+            new Label(BinaryClassificationDictionary::getInstance(), predicted->getScore(i, j) > 0.5),
+            new Label(BinaryClassificationDictionary::getInstance(), correct->getScore(i, j) > 0.5));
+      }
+  }
+
+protected:
+  EvaluatorPtr classificationEvaluator;
+};
+
+
 class ProteinEvaluator : public Evaluator
 {
 public:
@@ -143,7 +179,9 @@ public:
     solventAccesibility2StateEvaluator(sequenceLabelingAccuracyEvaluator(T("SA2"))),
     disorderEvaluator(binarySequenceLabelingConfusionEvaluator(T("DR"))),
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
-    tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))) {}
+    tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))),
+    contactMapEvaluator(new ProteinContactMapEvaluator(T("RR")))    
+    {}
 
   virtual String toString() const
   {
@@ -158,6 +196,7 @@ public:
     evaluatorToString(res, disorderEvaluator);
     evaluatorToString(res, backboneBondEvaluator);
     evaluatorToString(res, tertiaryStructureEvaluator);
+    evaluatorToString(res, contactMapEvaluator);
     return res;
   }
 
@@ -168,7 +207,7 @@ public:
     if (!predicted || !correct)
       return;
 
-   ++numProteins;
+    ++numProteins;
     predicted->computeMissingFields();
 
     pssmEvaluator->addPrediction(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix());
@@ -177,15 +216,8 @@ public:
     solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilityThreshold20(), correct->getSolventAccessibilityThreshold20());
     disorderEvaluator->addPrediction(predicted->getDisorderSequence(), correct->getDisorderSequence());
     backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());
-
-    ProteinTertiaryStructurePtr tertiaryStructure = predicted->getTertiaryStructure();
-    if (!tertiaryStructure)
-    {
-      ProteinBackboneBondSequencePtr backbone = predicted->getBackboneBondSequence();
-      if (backbone)
-        tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(predicted->getAminoAcidSequence(), backbone);
-    }
-    tertiaryStructureEvaluator->addPrediction(tertiaryStructure, correct->getTertiaryStructure());
+    tertiaryStructureEvaluator->addPrediction(predicted->getTertiaryStructure(), correct->getTertiaryStructure());
+    contactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Cb(), correct->getResidueResidueContactMatrix8Cb());
   }
 
   EvaluatorPtr getEvaluatorForTarget(const String& targetName)
@@ -204,6 +236,8 @@ public:
       return backboneBondEvaluator;
     if (targetName == T("TertiaryStructure"))
       return tertiaryStructureEvaluator;
+    if (targetName == T("ResidueResidueContactMatrix8Cb"))
+      return contactMapEvaluator;
     return EvaluatorPtr();
   }
   
@@ -220,6 +254,7 @@ protected:
   EvaluatorPtr disorderEvaluator;
   EvaluatorPtr backboneBondEvaluator;
   EvaluatorPtr tertiaryStructureEvaluator;
+  EvaluatorPtr contactMapEvaluator;
 
   static void evaluatorToString(String& res, EvaluatorPtr evaluator)
   {
