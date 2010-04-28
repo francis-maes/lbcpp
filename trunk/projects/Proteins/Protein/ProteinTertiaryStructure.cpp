@@ -203,12 +203,23 @@ ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() cons
   return res;
 }
 
-bool ProteinTertiaryStructure::hasOnlyCAlphaAtoms() const
+bool ProteinTertiaryStructure::hasCompleteBackbone() const
 {
   for (size_t i = 0; i < residues.size(); ++i)
   {
     ProteinResiduePtr residue = residues[i];
-    if (residue && (residue->getNumAtoms() > 1 || residue->getAtom(0)->getName() != T("CA")))
+    if (residue && !residue->hasCompleteBackbone())
+      return false;
+  }
+  return true;
+}
+
+bool ProteinTertiaryStructure::hasBackboneAndCBetaAtoms() const
+{
+  for (size_t i = 0; i < residues.size(); ++i)
+  {
+    ProteinResiduePtr residue = residues[i];
+    if (residue && (!residue->hasCompleteBackbone() || residue->isCBetaAtomMissing()))
       return false;
   }
   return true;
@@ -216,8 +227,6 @@ bool ProteinTertiaryStructure::hasOnlyCAlphaAtoms() const
 
 bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
 {
-  bool onlyCAlpha = hasOnlyCAlphaAtoms();
-
   bool res = true;
   for (size_t i = 0; i < residues.size(); ++i)
   {
@@ -233,7 +242,7 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
     }
     ProteinResiduePtr nextResidue = i < residues.size() - 1 ? residues[i + 1] : ProteinResiduePtr();
     
-    if (!onlyCAlpha)
+    if (residue->hasCompleteBackbone())
     {
       double d = residue->getDistanceBetweenAtoms(T("N"), T("CA"));
       if (d < 1.0 || d > 2.0)

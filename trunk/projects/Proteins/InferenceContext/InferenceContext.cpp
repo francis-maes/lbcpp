@@ -119,14 +119,19 @@ public:
     stack->push(inference);
     ObjectPtr output;
     callPreInference(stack, input, supervision, output, returnCode);
-    if (returnCode)
+    if (returnCode == InferenceStep::errorReturnCode)
     {
-      std::cerr << "Warning: pre-inference failed with code " << returnCode << std::endl;
+      std::cerr << "Warning: pre-inference failed" << std::endl;
       jassert(false);
       return ObjectPtr();
     }
-    if (!output)
-      output = InferenceContext::runInference(inference, input, supervision, returnCode);
+    
+    if (returnCode != InferenceStep::canceledReturnCode)
+    {
+      if (!output)
+        output = InferenceContext::runInference(inference, input, supervision, returnCode);
+    }
+
     callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();
     return output;
@@ -139,16 +144,20 @@ public:
     size_t n = inference->getNumSubInferences(input);
     for (size_t i = 0; i < n; ++i)
     {
+      returnCode = InferenceStep::finishedReturnCode;
       ObjectPtr subOutput = runInference(inference->getSubInference(input, i),
                 inference->getSubInput(input, i),
                 supervision ? inference->getSubSupervision(supervision, i) : ObjectPtr(),
                 returnCode);
-      if (returnCode != InferenceStep::finishedReturnCode)
+      if (returnCode == InferenceStep::errorReturnCode)
       {
         Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
         return ObjectPtr(); 
       }
-      inference->setSubOutput(res, i, subOutput);
+      if (subOutput)
+        inference->setSubOutput(res, i, subOutput);
+      else
+        jassert(returnCode == InferenceStep::canceledReturnCode);
     }
     return res;
   }
@@ -157,13 +166,15 @@ public:
   {
     ClassifierPtr classifier = step->getClassifier();
     callClassification(stack, classifier, input, supervision, returnCode);
-    if (returnCode != InferenceStep::finishedReturnCode)
+    if (returnCode == InferenceStep::errorReturnCode)
     {
       Object::error("InferenceContext::runClassification", "Could not classify");
       return ObjectPtr(); 
     }
     jassert(classifier);
     step->setClassifier(classifier);
+    if (returnCode == InferenceStep::canceledReturnCode)
+      return ObjectPtr();
     FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
     return classifier->predictProbabilities(inputFeatures);
   }

@@ -133,24 +133,26 @@ void Protein::computeMissingFields()
   ** Tertiary Structure
   */
   ProteinTertiaryStructurePtr tertiaryStructure = getTertiaryStructure();
-  if (tertiaryStructure)
-  {
-    // Tertiary Structure => Backbone bonds
-    ProteinBackboneBondSequencePtr backbone = getBackboneBondSequence();
-    if (!backbone)
-      setObject(backbone = tertiaryStructure->makeBackbone());
-  }
+  ProteinBackboneBondSequencePtr backbone = getBackboneBondSequence();
+
+  // Tertiary Structure => Backbone bonds
+  if (tertiaryStructure && !backbone)
+    setObject(backbone = tertiaryStructure->makeBackbone());
+
+  // Backbone bonds => Tertiary Structure
+  if (backbone && !tertiaryStructure)
+    setObject(tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone));
  
   /*
   ** Contact maps
   */
   // tertiary structure => distance matrix
-  if (tertiaryStructure && !residueResidueDistanceMatrixCb)
+  if (tertiaryStructure && !residueResidueDistanceMatrixCb && tertiaryStructure->hasBackboneAndCBetaAtoms())
     setObject(residueResidueDistanceMatrixCb = tertiaryStructure->makeCBetaDistanceMatrix());
 
   // distance matrix => contact matrix
   if (residueResidueDistanceMatrixCb && !residueResidueContactMatrix8Cb)
-    setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Cb"), 0.5));
+    setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Cb"), 8.0, 1.0, 0.0));
 }
 
 ObjectPtr Protein::createEmptyObject(const String& name) const

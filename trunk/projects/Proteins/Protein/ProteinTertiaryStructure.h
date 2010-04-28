@@ -66,7 +66,9 @@ public:
   void append(ProteinResiduePtr residue)
     {residues.push_back(residue);}
 
-  bool hasOnlyCAlphaAtoms() const;
+  bool hasCompleteBackbone() const;
+  bool hasBackboneAndCBetaAtoms() const;
+
   bool isConsistent(String& failureReason) const;
 
   void pruneResiduesThatDoNotHaveCompleteBackbone();

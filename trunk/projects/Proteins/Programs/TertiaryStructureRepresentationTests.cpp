@@ -45,7 +45,7 @@ int main()
 
     ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
     jassert(tertiaryStructure);
-    if (tertiaryStructure->hasOnlyCAlphaAtoms())
+    if (!tertiaryStructure->hasCompleteBackbone())
       continue;
 
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
