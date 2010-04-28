@@ -318,6 +318,8 @@ int main(int argc, char** argv)
   
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
   
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
+  
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
   std::cout << "New features: ";
@@ -368,6 +370,12 @@ int main(int argc, char** argv)
     if (predictionTarget.contains(T("SA")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
+      proteinInference->appendStep(step);
+    }
+    
+    if (predictionTarget.contains(T("DR"))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
       proteinInference->appendStep(step);
     }
 
