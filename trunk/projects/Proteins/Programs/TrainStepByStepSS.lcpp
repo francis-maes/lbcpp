@@ -171,6 +171,9 @@ int main(int argc, char** argv)
   
   arguments.insert(new BooleanArgument(T("IsTestVersion"), &isTestVersion));
 
+  String testFeatures;
+  arguments.insert(new StringArgument(T("TestFeatures"), &testFeatures));
+
   if (!arguments.parse(argv, 1, argc-1))
   {
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
@@ -190,7 +193,7 @@ int main(int argc, char** argv)
 /*------------------------------------------------------------------------------
           /!\   Testing Area - BE CAREFUL - AT YOUR OWN RISK   /!\
 ------------------------------------------------------------------------------*/
-//#define PSSM
+//#define VIEW
 #ifdef PSSM
   while (!proteinsStream->isExhausted()) {
     ProteinPtr myProtein = proteinsStream->nextAndCast<Protein>();
@@ -207,8 +210,6 @@ int main(int argc, char** argv)
     jassert(newPSSM);
     myProtein->setObject(newPSSM);
   
-    myProtein->computeProperties();
-  
     File outputFile("/scratch/jbecker/CB513_PROTEIN/SOFT/" + myProtein->getName() + T(".protein"));
     myProtein->saveToFile(outputFile);
     
@@ -219,13 +220,23 @@ int main(int argc, char** argv)
 
 #endif
 #ifdef VIEW
-  ObjectContainerPtr prots = proteinsStream->load(1)->randomize();
-  for (size_t i = 0; i < prots->size(); ++i)
+  while (!proteinsStream->isExhausted())
   {
-    ProteinPtr protein = (ProteinPtr) prots->get(i);
-    protein->computeProperties();
+    ProteinPtr protein = proteinsStream->nextAndCast<Protein>();
+    if (!protein)
+      continue;
+    File outputFile(T("/scratch/jbecker/PDB70/sequence/") + protein->getName() + T(".seq"));
 
-    std::cout << protein->toString() << std::endl;
+    std::cout << protein->getName() << " ... ";
+    std::cout.flush();
+    OutputStream* o = outputFile.createOutputStream();
+
+    *o << protein->getAminoAcidSequence()->toString();
+    o->flush();
+
+    delete o;
+
+    std::cout << "OK -> " << outputFile.getFullPathName() << std::endl;
   }
   
   
@@ -308,12 +319,38 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
+
+  std::cout << "New features: ";
+  if (testFeatures.contains(T("SegCon")))
+  {
+    featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
+    std::cout << "SegmentConjunction(2)  ";
+  }
+
+  if (testFeatures.contains(T("Pos")))
+  {
+    featureFunction->addSubFeatures(proteinPositionFeatures());
+    std::cout << "Position  ";
+  }
+
+  if (testFeatures.contains(T("Len")))
+  {
+    featureFunction->addSubFeatures(proteinLengthFeatures());
+    std::cout << "Length  ";
+  }
+  std::cout << std::endl;
   
   /*
   ** Creation of the inference
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
   Protein1DInferenceStepPtr step;
+
+  for (size_t i = 0; i < 10; ++i)
+  {
+    step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
+    proteinInference->appendStep(step);
+  }
 
   for (size_t i = 0; i < (size_t) maxPass; ++i) {
     if (predictionTarget.contains(T("SS3")))
