@@ -28,6 +28,7 @@
 # define LBCPP_TRAITS_H_
 
 # include "common.h"
+# include <cfloat>
 
 namespace lbcpp
 {
@@ -76,7 +77,7 @@ inline std::ostream& operator <<(std::ostream& ostr, const String& value)
 inline bool isNumberValid(double number)
 {
 #ifdef JUCE_WIN32
-    return number == number;
+    return (number == number) && (number != DBL_MAX) && (number != -DBL_MAX);
 #else
     return !std::isnan(number) && !std::isinf(number);
 #endif

@@ -53,7 +53,14 @@ protected:
     {return getProtein(object)->getLength();}
 
   bool load(InputStream& istr)
-    {return lbcpp::read(istr, targetName);}
+  {
+    if (!lbcpp::read(istr, targetName))
+      return false;
+    // FIXME: serialise supervision name
+    if (supervisionName.isEmpty())
+      supervisionName = targetName;
+    return true;
+  }
 
   void save(OutputStream& ostr) const
     {lbcpp::write(ostr, targetName);}

@@ -16,128 +16,111 @@
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Evaluation/ProteinStatisticsCalculator.h"
 #include "Protein/SecondaryStructureDictionary.h"
-#include "Protein/Inference/ProteinSequenceInferenceStep.h"
+#include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
+#include "Protein/Inference/ProteinContactMapInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-class Protein2DInferenceStep : public SharedParallelInferenceStep, public ProteinResiduePairRelatedInferenceStepHelper
+class ProteinResidueRefinementInferenceStep : public VectorParallelInferenceStep
 {
 public:
-  Protein2DInferenceStep(const String& name, InferenceStepPtr subInference, ProteinResiduePairFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
-    : SharedParallelInferenceStep(name, subInference), ProteinResiduePairRelatedInferenceStepHelper(targetName, features, supervisionName) {}
-  
-  Protein2DInferenceStep() {}
-  
-  virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const = 0;
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const = 0;
-  virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const = 0;
-
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {ensureSubStepIndicesAreComputed(input); return subStepIndices.size();}
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+  ProteinResidueRefinementInferenceStep(const String& name)
+    : VectorParallelInferenceStep(name)
   {
-    ensureSubStepIndicesAreComputed(input);
-    jassert(index < subStepIndices.size());
-    std::pair<size_t, size_t> ij = subStepIndices[index];
-    return features->compute(getProtein(input), ij.first, ij.second);
-  }
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-  {
-    ensureSubStepIndicesAreComputed(supervision);
-    jassert(index < subStepIndices.size());
-    std::pair<size_t, size_t> ij = subStepIndices[index];
-    return getSubSupervision(getSupervision(supervision), ij.first, ij.second);
-  }
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return ProteinResiduePairRelatedInferenceStepHelper::createEmptyOutput(input);}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-  {
-    jassert(index < subStepIndices.size());
-    std::pair<size_t, size_t> ij = subStepIndices[index];
-    setSubOutput(output, ij.first, ij.second, subOutput);
-  }
-
-protected:
-  String currentInputName;
-  std::vector< std::pair<size_t, size_t> > subStepIndices;
-
-  void ensureSubStepIndicesAreComputed(ObjectPtr input) const
-  {
-    jassert(input->getName().isNotEmpty() && input->getName() != T("Unnamed"));
-    if (currentInputName != input->getName() || subStepIndices.empty())
+    for (size_t i = 0; i < 3; ++i)
     {
-      Protein2DInferenceStep* pthis = const_cast<Protein2DInferenceStep* >(this);
-      pthis->subStepIndices.clear();
-      computeSubStepIndices(getProtein(input), pthis->subStepIndices);
-      pthis->currentInputName = input->getName();
+      String prefix = name + T(" ") + getBackboneAtomName(i) + T(".");
+      appendStep(new RegressionInferenceStep(prefix + T("x")));
+      appendStep(new RegressionInferenceStep(prefix + T("y")));
+      appendStep(new RegressionInferenceStep(prefix + T("z")));
     }
   }
 
-  virtual bool load(InputStream& istr)
+  static String getBackboneAtomName(size_t index)
   {
-    return SharedParallelInferenceStep::load(istr) &&
-      ProteinResiduePairRelatedInferenceStepHelper::load(istr);
+    jassert(index < 3);
+    static const juce::tchar* backboneAtomNames[] = {T("N"), T("CA"), T("C")};
+    return backboneAtomNames[index];
   }
 
-  virtual void save(OutputStream& ostr) const
-  {
-    SharedParallelInferenceStep::save(ostr);
-    ProteinResiduePairRelatedInferenceStepHelper::save(ostr);
-  }
-};
-  
-typedef ReferenceCountedObjectPtr<Protein2DInferenceStep> Protein2DInferenceStepPtr;
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return input;}
 
-class ProteinContactMapInferenceStep : public Protein2DInferenceStep
-{
-public:
-  ProteinContactMapInferenceStep(const String& name, ProteinResiduePairFeaturesPtr features, const String& targetName)
-    : Protein2DInferenceStep(name, new ClassificationInferenceStep(name + T("Classification")), features, targetName)
-    {}
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+  {
+    ProteinResiduePtr residue = supervision.dynamicCast<ProteinResidue>();
+    if (!residue)
+      return ObjectPtr();
+
+    jassert(index < 9);
+    ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));
+    if (!atom || !atom->getPosition().exists())
+      return ObjectPtr();
+
+    Vector3 position = atom->getPosition();
+    index %= 3;
+    double target = (index == 0 ? position.getX() : (index == 1 ? position.getY() : position.getZ()));
+   
+    // loss(prediction) = (target - prediction)^2
+    return squareFunction(addConstantScalarFunction(-target));
+  }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
   {
-    ClassificationInferenceStepPtr step = getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>();
-    jassert(step);
-    step->setLabels(BinaryClassificationDictionary::getInstance());
-    return Protein2DInferenceStep::createEmptyOutput(input);
+    ProteinResiduePtr res = new ProteinResidue();
+    res->addAtom(new ProteinAtom(T("N"), T("N")));
+    res->addAtom(new ProteinAtom(T("CA"), T("C")));
+    res->addAtom(new ProteinAtom(T("C"), T("C")));
+    return res;
   }
 
-  virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
   {
-    size_t n = protein->getLength();
-    res.reserve(n * (n - 5) / 2);
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = i + 6; j < n; ++j)
-        res.push_back(std::make_pair(i, j));
-  }
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const
-  {
-    ScoreSymmetricMatrixPtr contactMap = supervisionObject.dynamicCast<ScoreSymmetricMatrix>();
-    jassert(contactMap);
-    if (!contactMap->hasScore(firstPosition, secondPosition))
-      return ObjectPtr();
-    double score = contactMap->getScore(firstPosition, secondPosition);
-    return new Label(BinaryClassificationDictionary::getInstance(), score > 0.5 ? 1 : 0);
-  }
-
-  virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const
-  {
-    ScoreSymmetricMatrixPtr contactMap = output.dynamicCast<ScoreSymmetricMatrix>();
-    jassert(contactMap);
-    DenseVectorPtr probabilities = subOutput.dynamicCast<DenseVector>();
-    jassert(probabilities && probabilities->getDictionary() == BinaryClassificationDictionary::getInstance());
-    contactMap->setScore(firstPosition, secondPosition, probabilities->get(1));
+    ProteinResiduePtr residue = output.dynamicCast<ProteinResidue>();
+    ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
+    jassert(residue && prediction);
+    ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));
+    jassert(atom);
+    index %= 3;
+    if (index == 0)
+      atom->getPosition().setX(prediction->getValue());
+    else if (index == 1)
+      atom->getPosition().setY(prediction->getValue());
+    else if (index == 2)
+      atom->getPosition().setZ(prediction->getValue());
   }
 };
+
+class ProteinTertiaryStructureRefinementInferenceStep : public Protein1DInferenceStep
+{
+public:
+  ProteinTertiaryStructureRefinementInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
+    : Protein1DInferenceStep(name, new ProteinResidueRefinementInferenceStep(name + T(" Residue")), features, T("TertiaryStructure")) {}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    ProteinTertiaryStructurePtr tertiaryStructure = output.dynamicCast<ProteinTertiaryStructure>();
+    ProteinResiduePtr residue = subOutput.dynamicCast<ProteinResidue>();
+    jassert(tertiaryStructure && residue);
+    tertiaryStructure->setResidue(index, residue); 
+  }
+};
+/*
+class CartesianProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  {
+    ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+    if (!tertiaryStructure)
+      return;
+
+    featureSense("FIXME");
+  }
+};*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -231,7 +214,7 @@ public:
     static const double regularizer = 0.0;
     static const bool useConstantLearningRate = true;
 
-    IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(0.5, 150000) : constantIterationFunction(0.05);
+    IterationFunctionPtr learningRate = useConstantLearningRate ? constantIterationFunction(0.00001) : invLinearIterationFunction(0.5, 150000);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     return generalizedLinearRegressor(learner, regularizer);
   }
@@ -324,8 +307,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\ALL_SmallPDB.model"));
-  File contentOnlyModel = modelDirectory.getChildFile(T("0_PSSM-0.inference"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\BBB_TS_SmallPDB.model"));
 
   /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
@@ -371,6 +353,10 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
+  CompositeProteinResidueFeaturesPtr tertiaryStructureFeatureFunction = new CompositeProteinResidueFeatures();
+  tertiaryStructureFeatureFunction->addSubFeatures(proteinUnitResidueFeature());
+  tertiaryStructureFeatureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("TertiaryStructure"), 5, 5, true));
+
  /* featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 5, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 10, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("DisorderProbabilitySequence"), 20, true));
@@ -397,17 +383,28 @@ int main(int argc, char** argv)
       //proteinInference->appendStep(step);
     }
     {
-      ProteinSequenceInferenceStepPtr step;
+      Protein1DInferenceStepPtr step;
+
+      if (i == 0)
+      {
+        step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
+        proteinInference->appendStep(step);
+      }
+
+      step = new ProteinTertiaryStructureRefinementInferenceStep(T("TS Pass ") + lbcpp::toString(i), tertiaryStructureFeatureFunction);
+      proteinInference->appendStep(step);
+     
+#if 0
       step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
       proteinInference->appendStep(step);
       step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
-      proteinInference->appendStep(step);
-      step = new ProteinBackboneBondSequenceInferenceStep(T("Backbone Pass ") + lbcpp::toString(i), featureFunction);
       proteinInference->appendStep(step);
       step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
       proteinInference->appendStep(step);
       step = new ProteinSequenceLabelingInferenceStep(T("SS8 Pass ") + lbcpp::toString(i), featureFunction, /*T("DSSPSecondaryStructureProbabilities"), */T("DSSPSecondaryStructureSequence"));
       proteinInference->appendStep(step);
+#endif // 0
+
     }
   }
 

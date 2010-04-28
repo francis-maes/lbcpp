@@ -264,12 +264,19 @@ public:
     const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr parametersGradientDirection, FeatureGeneratorPtr* parametersGradient)
   {
     double architectureOutput;
+    
     FeatureGeneratorPtr architectureOutputGradientWrtParameters;
     architecture->compute(parameters, input, &architectureOutput, parametersGradient ? &architectureOutputGradientWrtParameters : NULL, NULL);
+    jassert(isNumberValid(architectureOutput));
     double lossDerivative;
     lossFunction->compute(architectureOutput, output, NULL, parametersGradient ? &lossDerivative : NULL);
     if (parametersGradient)
+    {
+      jassert(isNumberValid(lossDerivative));
       *parametersGradient = multiplyByScalar(architectureOutputGradientWrtParameters, lossDerivative);
+    }
+    if (output)
+      jassert(isNumberValid(*output));
   }
 
 private:

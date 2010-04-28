@@ -49,8 +49,7 @@ public:
 
   virtual void set(size_t index, ObjectPtr object);
 
-  virtual FeatureGeneratorPtr elementFeatures(size_t position) const
-    {return FeatureGeneratorPtr();} // todo
+  virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
     {return FeatureGeneratorPtr();} // todo
 
@@ -76,6 +75,7 @@ public:
 
   Matrix4 superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const;
   double computeCAlphaAtomsRMSE(ProteinTertiaryStructurePtr targetStructure) const;
+  void applyAffineTransform(const Matrix4& affineTransform) const;
 
 private:
   std::vector<ProteinResiduePtr> residues;

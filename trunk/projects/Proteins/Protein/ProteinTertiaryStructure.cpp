@@ -294,7 +294,9 @@ size_t ProteinTertiaryStructure::getNumSpecifiedResidues() const
 static Matrix4 superposeStructures(const std::vector< std::pair<Vector3, Vector3> >& pointPairs)
 {
   size_t n = pointPairs.size();
-  jassert(n);
+  if (!n)
+    return Matrix4::identity;
+
   double invN = 1.0 / (double)n;
 
   // compute centroids
@@ -383,4 +385,16 @@ double ProteinTertiaryStructure::computeCAlphaAtomsRMSE(ProteinTertiaryStructure
     ++count;
   }
   return count ? sqrt(error / (double)count) : 0.0;
+}
+
+void ProteinTertiaryStructure::applyAffineTransform(const Matrix4& affineTransform) const
+{
+  jassert(affineTransform.isAffine());
+  size_t n = size();
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = getResidue(i);
+    if (residue)
+      residue->applyAffineTransform(affineTransform);
+  }
 }

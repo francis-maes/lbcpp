@@ -53,7 +53,10 @@ struct AddWeightedVectorOperation : public AssignmentVectorOperation
   double weight;
   
   void process(double& lValue, const double rValue)
-    {lValue += rValue * weight;}
+  {
+    jassert(isNumberValid(lValue) && isNumberValid(rValue));
+    lValue += rValue * weight;
+  }
 
   template<class VectorPtr>
   void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double subWeight)
@@ -67,8 +70,11 @@ struct AddWeightedSignsVectorOperation : public AssignmentVectorOperation
   
   double weight;
   
-  inline void process(double& lvalue, const double rvalue)
-    {lvalue += rvalue > 0 ? weight : (rvalue < 0 ? -weight : 0);}
+  inline void process(double& lValue, const double rValue)
+  {
+    lValue += rValue > 0 ? weight : (rValue < 0 ? -weight : 0);
+    jassert(isNumberValid(lValue) && isNumberValid(rValue));
+  }
 
   template<class VectorPtr>
   void call(VectorPtr vector, FeatureGeneratorPtr featureGenerator, double subWeight)

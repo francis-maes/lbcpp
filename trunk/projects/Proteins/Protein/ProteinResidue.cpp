@@ -93,6 +93,17 @@ ProteinAtomPtr ProteinResidue::checkAndGetCBetaOrCAlphaAtom() const
   return atom;
 }
 
+void ProteinResidue::applyAffineTransform(const Matrix4& affineTransform) const
+{
+  jassert(affineTransform.isAffine());
+  for (size_t i = 0; i < atoms.size(); ++i)
+  {
+    Vector3 position = atoms[i]->getPosition();
+    if (position.exists())
+      atoms[i]->setPosition(affineTransform.transformAffine(position));
+  }
+}
+
 bool ProteinResidue::load(InputStream& istr)
 {
   int aminoAcidType;
