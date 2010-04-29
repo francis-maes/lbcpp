@@ -112,6 +112,12 @@ FeatureGeneratorPtr ScalarSequence::sumFeatures(size_t begin, size_t end) const
   return accumulators->sumFeatures(begin, end);
 }
 
+FeatureGeneratorPtr ScalarSequence::entropyFeatures(size_t begin, size_t end) const
+{
+  const_cast<ScalarSequence* >(this)->ensureAccumulatorsAreComputed();
+  return accumulators->entropyFeatures(begin, end);
+}
+
 ObjectPtr ScalarSequence::clone() const
 {
   ScalarSequencePtr res = Object::createAndCast<ScalarSequence>(getClassName());

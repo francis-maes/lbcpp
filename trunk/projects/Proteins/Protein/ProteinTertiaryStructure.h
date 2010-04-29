@@ -52,6 +52,8 @@ public:
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
     {return FeatureGeneratorPtr();} // todo
+  virtual FeatureGeneratorPtr entropyFeatures(size_t begin, size_t end) const
+    {return FeatureGeneratorPtr();} // todo
 
   ProteinResiduePtr getResidue(size_t index) const
     {jassert(index < residues.size()); return residues[index];}

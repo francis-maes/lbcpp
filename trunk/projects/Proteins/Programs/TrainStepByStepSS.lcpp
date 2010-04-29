@@ -306,15 +306,23 @@ int main(int argc, char** argv)
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), wAA, wAA, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
+  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), wPSSM, wPSSM, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
+  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), wSS3, wSS3, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
+  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
+
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), wSS8, wSS8, true));
+  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
+
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), wSA, wSA, true));
+  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
+
   
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
   
@@ -347,13 +355,13 @@ int main(int argc, char** argv)
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
   Protein1DInferenceStepPtr step;
-
+  /*
   for (size_t i = 0; i < 10; ++i)
   {
     step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
     proteinInference->appendStep(step);
   }
-
+  */
   for (size_t i = 0; i < (size_t) maxPass; ++i) {
     if (predictionTarget.contains(T("SS3")))
     {

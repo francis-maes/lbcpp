@@ -127,6 +127,12 @@ FeatureGeneratorPtr LabelSequence::sumFeatures(size_t begin, size_t end) const
   return accumulators->sumFeatures(begin, end);
 }
 
+FeatureGeneratorPtr LabelSequence::entropyFeatures(size_t begin, size_t end) const
+{
+  const_cast<LabelSequence* >(this)->ensureAccumulatorsAreComputed();
+  return accumulators->entropyFeatures(begin, end);
+}
+
 ObjectPtr LabelSequence::clone() const
 {
   LabelSequencePtr res = Object::createAndCast<LabelSequence>(getClassName());
