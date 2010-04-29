@@ -27,8 +27,8 @@ class Protein : public StringToObjectMap
 {
 public:
   Protein(const String& name)
-    : StringToObjectMap(name) {}
-  Protein() {}
+    : StringToObjectMap(name), versionNumber(0) {}
+  Protein() : versionNumber(0) {}
 
   static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
   static ProteinPtr createFromFASTA(const File& fastaFile);
@@ -93,7 +93,15 @@ public:
   */
   void computePropertiesFrom(const std::vector< ScalarSequencePtr >& aaindex);
 
+  void setVersionNumber(size_t versionNumber)
+    {this->versionNumber = versionNumber;}
+
+  size_t getVersionNumber() const
+    {return versionNumber;}
+
 protected:
+  size_t versionNumber;
+
   virtual bool load(InputStream& istr);
   virtual void save(OutputStream& ostr) const;
 };

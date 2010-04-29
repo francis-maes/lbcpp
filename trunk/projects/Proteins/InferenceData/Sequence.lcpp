@@ -13,6 +13,14 @@
 #include "InferenceData/CommonFeatureGenerators.h"
 using namespace lbcpp;
 
+#ifdef JUCE_WIN32
+inline double log2(double x)
+{
+  static const double oneOverLog2 = 1.0/log(2.0);
+  return log(x) * oneOverLog2;
+}
+#endif // JUCE_WIN32
+
 /*
 ** Sequence
 */

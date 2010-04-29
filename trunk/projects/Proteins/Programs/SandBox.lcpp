@@ -88,7 +88,7 @@ public:
     // loss(prediction) = (target - prediction)^2
     if (target == DBL_MAX)
       return ObjectPtr();
-    return new AbsoluteDifferenceScalarFunction(target);
+    return squareFunction(addConstantScalarFunction(-target)); //new AbsoluteDifferenceScalarFunction(target);
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
@@ -123,14 +123,13 @@ public:
 
   static double computeSupervisionWeight(int deltaPosition, int windowHalfSize)
   {
-    jassert(deltaPosition >= -windowHalfSize && deltaPosition <= windowHalfSize);
-    double stddev = (double)windowHalfSize / 2.0;
+ //   jassert(deltaPosition >= -windowHalfSize && deltaPosition <= windowHalfSize);
+//    double stddev = (double)windowHalfSize / 2.0;
     return 1.0;//exp(-(double)(deltaPosition * deltaPosition) / (stddev * stddev));
   }
 
   static void computeSupervision(CartesianCoordinatesSequencePtr predicted, CartesianCoordinatesSequencePtr correct, std::vector<Vector3>& res, int halfWindowSize = 30)
   {
-    std::cout << "Computing supervision..." << std::endl;
     size_t n = predicted->size();
     jassert(n == correct->size());
 
@@ -187,6 +186,18 @@ public:
         //std::cout << std::endl;
       }
     }
+
+    double error = 0.0;
+    size_t count = 0;
+    for (size_t i = 0; i < n; ++i)
+      if (predicted->getPosition(i).exists() && res[i].exists())
+      {
+        error = (predicted->getPosition(i) - res[i]).sumOfSquares();
+        ++count;
+      }
+    if (count)
+      error /= count;
+    std::cout << "Supervision RMSE = " << sqrt(error) << std::endl;
   }
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
@@ -195,19 +206,26 @@ public:
     CartesianCoordinatesSequencePtr predictedCAlphaTrace = predictedObject.dynamicCast<CartesianCoordinatesSequence>();
     jassert(predictedCAlphaTrace);
     Vector3 predictedPosition = predictedCAlphaTrace->getPosition(index);
-    jassert(predictedPosition.exists());
 
-    if (currentTarget != protein)
+    if (currentTarget != protein || currentPredictedCAlphaTrace != predictedCAlphaTrace)
     {
       CartesianCoordinatesSequencePtr correctCAlphaTrace = protein->getCAlphaTrace();
       jassert(predictedCAlphaTrace && correctCAlphaTrace);
 
       ProteinCAlphaTraceUpdateInferenceStep* nonConstThis = const_cast<ProteinCAlphaTraceUpdateInferenceStep* >(this);
-      computeSupervision(predictedCAlphaTrace, correctCAlphaTrace, nonConstThis->currentSupervision);
+      computeSupervision(predictedCAlphaTrace, correctCAlphaTrace, nonConstThis->currentSupervision, 50);
       nonConstThis->currentTarget = protein;
+      nonConstThis->currentPredictedCAlphaTrace = predictedCAlphaTrace;
     }
 
     jassert(index < currentSupervision.size());
+    if (!currentSupervision[index].exists())
+      return ObjectPtr();
+    jassert(predictedPosition.exists());
+    /*if (index == 51)
+    {
+      std::cout << ">>Current position: " << predictedPosition.toString() << " supervision target: " << currentSupervision[index].toString() << std::endl;
+    }*/
     return new Vector3Object(currentSupervision[index] - predictedPosition);
   }
 
@@ -216,35 +234,62 @@ public:
     CartesianCoordinatesSequencePtr calphaTrace = output.dynamicCast<CartesianCoordinatesSequence>();
     Vector3ObjectPtr delta = subOutput.dynamicCast<Vector3Object>();
     jassert(calphaTrace && delta);
+    //std::cout << calphaTrace->getPosition(index).toString() << " + " << delta->getValue().toString() << " => ";
     calphaTrace->setPosition(index, calphaTrace->getPosition(index) + delta->getValue());
+    //std::cout << calphaTrace->getPosition(index).toString() << std::endl;
+    
+    //if (index == 51)
+    //  std::cout << ">>Predicted Delta: " << delta->getValue().toString() << " new position: " << calphaTrace->getPosition(index).toString() << std::endl;
     //jassert(index < currentSupervision.size());
     //calphaTrace->setPosition(index, currentSupervision[index]);
+
+    //if (index == 51)
+    //  std::cout << ">>Hack to supervision target: " << currentSupervision[index].toString() << std::endl;
   }
 
 private:
   ProteinPtr currentTarget;
+  CartesianCoordinatesSequencePtr currentPredictedCAlphaTrace;
   std::vector<Vector3> currentSupervision;
 };
 
 class MyCalphaUpdateFeatures : public ProteinResidueFeatures
 {
 public:
+  featureGenerator deltaFeatures(const Vector3& current, const Vector3& target)
+  {
+    jassert(current.exists() && target.exists());
+    featureSense(0, target.getX() - current.getX());
+    featureSense(1, target.getY() - current.getY());
+    featureSense(2, target.getZ() - current.getZ());
+  }
+
   virtual featureGenerator compute(ProteinPtr protein, size_t position)
   {
     CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
     jassert(calphaTrace);
     Vector3 currentPosition = calphaTrace->getPosition(position);
     jassert(currentPosition.exists());
-   // featureSense(0, currentPosition.getX());
-   // featureSense(1, currentPosition.getY());
-   // featureSense(2, currentPosition.getZ());
-    featureSense(position + 3);
-    
-    Vector3 gravityCenter = calphaTrace->getGravityCenter();
-   // std::cout << "This: " << currentPosition.toString() << " Gravity Center: " << gravityCenter.toString() << std::endl;
-    featureSense(0, gravityCenter.getX() - currentPosition.getX());
-    featureSense(1, gravityCenter.getY() - currentPosition.getY());
-    featureSense(2, gravityCenter.getZ() - currentPosition.getZ());
+
+    size_t n = calphaTrace->size();
+
+    featureScope(protein->getVersionNumber())
+      featureScope(position)
+        featureSense(0);
+    /*{ 
+      for (int i = (int)position - 10; i < (int)position + 10; ++i)
+        if (i >= 0 && i < (int)n && i != (int)position)
+        {
+          Vector3 otherPosition = calphaTrace->getPosition(i);
+          if (otherPosition.exists())
+          {
+            int ii = i - (position - 10);
+            jassert(ii >= 0);
+            featureCall((size_t)ii) deltaFeatures(currentPosition, otherPosition);
+          }
+        }
+      featureCall(21) deltaFeatures(currentPosition, calphaTrace->getGravityCenter());
+    }*/
   }
 };
 
@@ -345,7 +390,7 @@ public:
     if (inferenceStepName.startsWith(T("BBB")))
       learningRate = constantIterationFunction(0.1);
     else if (inferenceStepName.startsWith(T("CA")))
-      learningRate = constantIterationFunction(0.0001);
+      learningRate = constantIterationFunction(0.01);
     else if (inferenceStepName.startsWith(T("TS")))
       learningRate = constantIterationFunction(0.0001);
     else
