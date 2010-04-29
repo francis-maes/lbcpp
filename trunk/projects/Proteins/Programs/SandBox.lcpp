@@ -390,7 +390,7 @@ public:
     if (inferenceStepName.startsWith(T("BBB")))
       learningRate = constantIterationFunction(0.1);
     else if (inferenceStepName.startsWith(T("CA")))
-      learningRate = constantIterationFunction(0.01);
+      learningRate = constantIterationFunction(0.1);
     else if (inferenceStepName.startsWith(T("TS")))
       learningRate = constantIterationFunction(0.0001);
     else
@@ -472,7 +472,7 @@ public:
   {
     ProteinPtr protein = input.dynamicCast<Protein>();
     jassert(protein);
-    RandomGenerator random((long long)input.get());
+    RandomGenerator random(0);
 
     size_t n = protein->getLength();
     BondCoordinatesSequencePtr bonds = new BondCoordinatesSequence(T("CA bonds"), n - 1);
@@ -644,8 +644,8 @@ int main(int argc, char** argv)
   //proteinInference->appendStep(new ProteinCAlphaBondSequenceInferenceStep(T("Initial c-alpha bonds"), featureFunction));
 
   InferenceStepPtr initStep
-    = InferenceStep::createFromFileAndCast<InferenceStep>(modelDirectory.getChildFile(T("0_Initial c-alpha bonds.inference")));
-    //= new SampleRandomCAlphaTraceInferenceStep();
+    //= InferenceStep::createFromFileAndCast<InferenceStep>(modelDirectory.getChildFile(T("0_Initial c-alpha bonds.inference")));
+    = new SampleRandomCAlphaTraceInferenceStep();
   proteinInference->appendStep(initStep);
   InferenceStepPtr calphaUpdateStep = new ProteinCAlphaTraceUpdateInferenceStep(T("CA Update Pass"), calphaUpdateFeatures);
 
