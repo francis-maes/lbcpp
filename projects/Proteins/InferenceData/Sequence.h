@@ -28,6 +28,7 @@ public:
 
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const = 0;
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const = 0; // begin and end are in [0, size()]
+  virtual FeatureGeneratorPtr entropyFeatures(size_t begin, size_t end) const = 0;
 
   virtual String toString() const;
 
@@ -64,6 +65,9 @@ public:
     {return unitFeatureGenerator();}
 
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const
+    {return unitFeatureGenerator();}
+  
+  virtual FeatureGeneratorPtr entropyFeatures(size_t begin, size_t end) const
     {return unitFeatureGenerator();}
 
   void setElement(size_t index, const ElementType& element)

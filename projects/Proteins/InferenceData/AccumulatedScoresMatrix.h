@@ -25,6 +25,8 @@ public:
     {jassert(index < accumulators.size()); return accumulators[index];}
 
   FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const;
+  
+  FeatureGeneratorPtr entropyFeatures(size_t begin, size_t end) const;
 
   size_t getLength() const
     {return accumulators.size();}

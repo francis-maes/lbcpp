@@ -107,6 +107,12 @@ String ScoreVectorSequence::elementToString(size_t position) const
   return res + T("\n");
 }
 
+FeatureGeneratorPtr ScoreVectorSequence::entropyFeatures(size_t begin, size_t end) const
+{
+  const_cast<ScoreVectorSequence* >(this)->ensureAccumulatorsAreComputed();
+  return accumulators->entropyFeatures(begin, end);
+}
+
 ObjectPtr ScoreVectorSequence::clone() const
 {
   ScoreVectorSequencePtr res = Object::createAndCast<ScoreVectorSequence>(getClassName());

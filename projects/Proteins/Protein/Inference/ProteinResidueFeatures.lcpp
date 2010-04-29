@@ -269,6 +269,47 @@ ProteinResidueFeaturesPtr lbcpp::proteinSegmentConjunctionFeatures(const String&
   {return new SegmentConjunctionProteinResidueFeatures(sequenceName, numSegmentsPerSide);}
 
 /*
+** SequenceEntropyProteinResidueFeatures
+*/
+class SequenceEntropyProteinResidueFeatures : public ProteinResidueFeatures {
+public:
+  SequenceEntropyProteinResidueFeatures(const String& sequenceName, size_t numPrevsAndNexts)
+    : sequenceName(sequenceName), numPrevsAndNexts(numPrevsAndNexts) {}
+  SequenceEntropyProteinResidueFeatures() {}
+
+  virtual String toString() const
+    {return sequenceName + T("[-") + lbcpp::toString(numPrevsAndNexts) + T("]");}
+    
+  virtual String getName() const
+    {return sequenceName + T(" entropy");}
+
+  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  {
+    size_t begin = juce::jlimit(0, (int)protein->getLength(), (int)(position - numPrevsAndNexts));
+    size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + numPrevsAndNexts));
+    
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    if (!sequence)
+      return FeatureGeneratorPtr();
+    
+    return sequence->entropyFeatures(begin, end);
+  }
+
+protected:
+  String sequenceName;
+  size_t numPrevsAndNexts;
+  
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName) && lbcpp::read(istr, numPrevsAndNexts);}
+  
+  virtual void save(OutputStream& ostr)
+    {lbcpp::write(ostr, sequenceName); lbcpp::write(ostr, numPrevsAndNexts);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinSequenceEntropyFeatures(const String& sequenceName, size_t numPrevsAndNexts)
+  {return ProteinResidueFeaturesPtr(new SequenceEntropyProteinResidueFeatures(sequenceName, numPrevsAndNexts));}
+
+/*
 ** Misc
 */
 #include "Protein/Inference/Protein1DInferenceStep.h"
@@ -293,5 +334,6 @@ void declareProteinResidueFeaturesClasses()
   LBCPP_DECLARE_CLASS(SequenceWindowProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(FrequencyWindowProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(SegmentConjunctionProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS(SequenceEntropyProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(CompositeProteinResidueFeatures);
 }

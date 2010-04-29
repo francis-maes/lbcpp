@@ -49,7 +49,8 @@ public:
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
   virtual FeatureGeneratorPtr sumFeatures(size_t begin, size_t end) const;
   virtual String elementToString(size_t position) const;
-
+  virtual FeatureGeneratorPtr entropyFeatures(size_t begin, size_t end) const;
+  
   /*
   ** Object
   */
