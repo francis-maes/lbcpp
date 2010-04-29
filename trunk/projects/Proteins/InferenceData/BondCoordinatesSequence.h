@@ -90,6 +90,27 @@ private:
   DihedralAngle phi;
 };
 
+class BondCoordinatesObject : public Object
+{
+public:
+  BondCoordinatesObject(const BondCoordinates& value) : value(value) {}
+  BondCoordinatesObject() {}
+
+  BondCoordinates getValue() const
+    {return value;}
+
+  BondCoordinates& getValue()
+    {return value;}
+
+  void setValue(const BondCoordinates& coordinates)
+    {value = coordinates;}
+
+private:
+  BondCoordinates value;
+};
+
+typedef ReferenceCountedObjectPtr<BondCoordinatesObject> BondCoordinatesObjectPtr;
+
 class BondCoordinatesSequence : public BuiltinVectorBasedSequence<BondCoordinates>
 {
 public:
@@ -103,6 +124,19 @@ public:
 
   virtual bool hasObject(size_t position) const
     {return BaseClass::getElement(position).exists();}
+  
+  virtual ObjectPtr get(size_t index) const
+  {
+    BondCoordinates p = getCoordinates(index);
+    return p.exists() ? new BondCoordinatesObject(p) : ObjectPtr();
+  }
+
+  virtual void set(size_t index, ObjectPtr object)
+  {
+    BondCoordinatesObjectPtr bond = object.dynamicCast<BondCoordinatesObject>();
+    jassert(bond);
+    setCoordinates(index, bond->getValue());
+  }
 
   bool hasCoordinates(size_t position) const
     {return BaseClass::hasObject(position);}

@@ -28,6 +28,7 @@
 # define LBCPP_TRAITS_H_
 
 # include "common.h"
+# include <cmath>
 # include <cfloat>
 
 namespace lbcpp

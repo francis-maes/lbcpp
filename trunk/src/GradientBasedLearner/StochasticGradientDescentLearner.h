@@ -43,9 +43,9 @@ public:
     
     //std::cout << "GRADIENT ...." << std::endl << gradient->toString() << std::endl;
     //std::cout << "======================EPOCH " << epoch << " =========================================" << std::endl
-    //   << "Params.addWeighted(" << gradient->l2norm() << " , " << (-weight * computeAlpha()) << ")" << std::endl;
+    //std::cout   << "Params.addWeighted(" << gradient->l2norm() << " , " << (-weight * computeAlpha()) << ")" << std::endl;
     parameters->addWeighted(gradient, -weight * computeAlpha());
-    //std::cout << " => PARAMETERS = " << parameters->toString() << " L2norm = " << parameters->l2norm() << " num params = " << parameters->l0norm() << std::endl;
+    //std::cout << " => PARAMETERS = L2norm = " << parameters->l2norm() << " num params = " << parameters->l0norm() << std::endl;
     ++epoch;
   }
   

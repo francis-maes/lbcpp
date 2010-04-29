@@ -18,6 +18,59 @@
 namespace lbcpp
 {
 
+class BondCoordinatesSequenceEvaluator : public Evaluator
+{
+public:
+  BondCoordinatesSequenceEvaluator(const String& name)
+    : Evaluator(name),
+      lengthEvaluator(new RegressionErrorEvaluator(name + T(" length"))),
+      angleEvaluator(new RegressionErrorEvaluator(name + T(" angle"))),
+      dihedralEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" dihedral")))
+    {}
+  
+  virtual String toString() const
+  {
+    if (lengthEvaluator->getRMSE() == 0.0)
+      return String::empty;
+    return getName() + T(" length: ") + String(lengthEvaluator->getRMSE(), 4)
+      + T(" angle: ") + String(angleEvaluator->getRMSE(), 4)
+      + T(" dihedral: ") + String(dihedralEvaluator->getRMSE(), 4);
+  }
+
+  virtual double getDefaultScore() const
+    {return angleEvaluator->getDefaultScore() + dihedralEvaluator->getDefaultScore();}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    BondCoordinatesSequencePtr predicted = predictedObject.dynamicCast<BondCoordinatesSequence>();
+    BondCoordinatesSequencePtr correct = correctObject.dynamicCast<BondCoordinatesSequence>();
+    if (!predicted || !correct)
+      return;
+
+    size_t n = predicted->size();
+    jassert(n == correct->size());
+    for (size_t i = 0; i < n; ++i)
+    {
+      BondCoordinates p = predicted->getCoordinates(i);
+      BondCoordinates c = correct->getCoordinates(i);
+      if (!p.exists() && !c.exists())
+        continue;
+     
+      if (p.hasLength() && c.hasLength())
+        lengthEvaluator->addDelta(p.getLength() - c.getLength());
+      if (p.hasThetaAngle() && c.hasThetaAngle())
+        angleEvaluator->addDelta((double)p.getThetaAngle() - (double)c.getThetaAngle());
+      if (p.hasPhiDihedralAngle() && c.hasPhiDihedralAngle())
+        dihedralEvaluator->addDelta((double)p.getPhiDihedralAngle() - (double)c.getPhiDihedralAngle());
+    }
+  }
+
+private:
+  RegressionErrorEvaluatorPtr lengthEvaluator;
+  RegressionErrorEvaluatorPtr angleEvaluator;
+  RegressionErrorEvaluatorPtr dihedralEvaluator;
+};  
+
 class ProteinBackboneBondSequenceEvaluator : public Evaluator
 {
 public:
@@ -178,6 +231,7 @@ public:
     dsspSecondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS8"))),
     solventAccesibility2StateEvaluator(sequenceLabelingAccuracyEvaluator(T("SA2"))),
     disorderEvaluator(binarySequenceLabelingConfusionEvaluator(T("DR"))),
+    calphaBondsEvaluator(new BondCoordinatesSequenceEvaluator(T("CAB"))),
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
     tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))),
     contactMapEvaluator(new ProteinContactMapEvaluator(T("RR")))    
@@ -194,6 +248,7 @@ public:
     evaluatorToString(res, dsspSecondaryStructureEvaluator);
     evaluatorToString(res, solventAccesibility2StateEvaluator);
     evaluatorToString(res, disorderEvaluator);
+    evaluatorToString(res, calphaBondsEvaluator);
     evaluatorToString(res, backboneBondEvaluator);
     evaluatorToString(res, tertiaryStructureEvaluator);
     evaluatorToString(res, contactMapEvaluator);
@@ -215,6 +270,7 @@ public:
     dsspSecondaryStructureEvaluator->addPrediction(predicted->getDSSPSecondaryStructureSequence(), correct->getDSSPSecondaryStructureSequence());
     solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilityThreshold20(), correct->getSolventAccessibilityThreshold20());
     disorderEvaluator->addPrediction(predicted->getDisorderSequence(), correct->getDisorderSequence());
+    calphaBondsEvaluator->addPrediction(predicted->getCAlphaBondSequence(), correct->getCAlphaBondSequence());
     backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());
     tertiaryStructureEvaluator->addPrediction(predicted->getTertiaryStructure(), correct->getTertiaryStructure());
     contactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Cb(), correct->getResidueResidueContactMatrix8Cb());
@@ -232,6 +288,8 @@ public:
       return solventAccesibility2StateEvaluator;
     if (targetName == T("DisorderSequence") || targetName == T("DisorderProbabilitySequence"))
       return disorderEvaluator;
+    if (targetName == T("CAlphaBondSequence"))
+      return calphaBondsEvaluator;
     if (targetName ==  T("BackboneBondSequence"))
       return backboneBondEvaluator;
     if (targetName == T("TertiaryStructure"))
@@ -252,6 +310,7 @@ protected:
   EvaluatorPtr dsspSecondaryStructureEvaluator;
   EvaluatorPtr solventAccesibility2StateEvaluator;
   EvaluatorPtr disorderEvaluator;
+  EvaluatorPtr calphaBondsEvaluator;
   EvaluatorPtr backboneBondEvaluator;
   EvaluatorPtr tertiaryStructureEvaluator;
   EvaluatorPtr contactMapEvaluator;

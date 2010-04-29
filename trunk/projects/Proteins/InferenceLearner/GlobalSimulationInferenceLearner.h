@@ -23,7 +23,7 @@ public:
 
   virtual void train(InferenceStepPtr inference, ObjectContainerPtr trainingData)
   {
-    ExamplesCreatorCallbackPtr learningCallback = new ExamplesCreatorCallback(callback);
+    ExamplesCreatorCallbackPtr learningCallback = new ExamplesCreatorCallback(callback, false);
     InferenceContextPtr trainingContext = callback->createContext();
     trainingContext->appendCallback(learningCallback);
 

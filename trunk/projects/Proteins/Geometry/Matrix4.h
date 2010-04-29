@@ -54,6 +54,9 @@ public:
   static const Matrix4 zero;
   static const Matrix4 identity;
 
+  // returns the matrix (rotation + translation) to transform points1 into points2
+  static Matrix4 findAffineTransformToSuperposePoints(const std::vector< std::pair<Vector3, Vector3> >& pointPairs, bool* succeeded = NULL);
+
   String toString() const;
 
   double* operator [](size_t row)

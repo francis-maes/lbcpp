@@ -23,7 +23,7 @@ class SingleStepSimulationLearningCallback : public ExamplesCreatorCallback
 {
 public:
   SingleStepSimulationLearningCallback(InferenceStepPtr inference, InferenceLearnerCallbackPtr callback)
-    : ExamplesCreatorCallback(callback), inference(inference) {}
+    : ExamplesCreatorCallback(callback, true), inference(inference) {}
 
   virtual void startInferencesCallback(size_t count)
     {enableExamplesCreation = false;}

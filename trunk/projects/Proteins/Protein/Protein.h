@@ -84,6 +84,7 @@ public:
   ** Tertiary structure
   */
   CartesianCoordinatesSequencePtr getCAlphaTrace() const;
+  BondCoordinatesSequencePtr getCAlphaBondSequence() const;
   ProteinBackboneBondSequencePtr getBackboneBondSequence() const;
   ProteinTertiaryStructurePtr getTertiaryStructure() const;
   

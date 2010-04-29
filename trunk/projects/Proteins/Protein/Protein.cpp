@@ -135,6 +135,7 @@ void Protein::computeMissingFields()
   ProteinTertiaryStructurePtr tertiaryStructure = getTertiaryStructure();
   ProteinBackboneBondSequencePtr backbone = getBackboneBondSequence();
   CartesianCoordinatesSequencePtr calphaTrace = getCAlphaTrace();
+  BondCoordinatesSequencePtr calphaBondSequence = getCAlphaBondSequence();
 
   // Tertiary Structure => CAlpha trace
   if (tertiaryStructure && !calphaTrace)
@@ -147,7 +148,12 @@ void Protein::computeMissingFields()
   // Backbone bonds => Tertiary Structure
   if (backbone && !tertiaryStructure)
     setObject(tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(aminoAcidSequence, backbone));
- 
+
+  // CAlpha trace => CAlpha bonds
+  if (calphaTrace && !calphaBondSequence)
+    setObject(calphaBondSequence = new BondCoordinatesSequence(T("CAlphaBondSequence"), calphaTrace));
+  
+
   /*
   ** Contact maps
   */
@@ -192,6 +198,8 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new ProteinBackboneBondSequence(n);
   else if (name == T("CAlphaTrace"))
     return new CartesianCoordinatesSequence(name, n);
+  else if (name == T("CAlphaBondSequence"))
+    return new BondCoordinatesSequence(name, n - 1);
   else if (name == T("TertiaryStructure"))
     return new ProteinTertiaryStructure(n);
   else
@@ -245,6 +253,9 @@ ScoreSymmetricMatrixPtr Protein::getResidueResidueDistanceMatrixCb() const
 
 CartesianCoordinatesSequencePtr Protein::getCAlphaTrace() const
   {return getObject(T("CAlphaTrace"));}
+
+BondCoordinatesSequencePtr Protein::getCAlphaBondSequence() const
+  {return getObject(T("CAlphaBondSequence"));}
 
 ProteinBackboneBondSequencePtr Protein::getBackboneBondSequence() const
   {return getObject(T("BackboneBondSequence"));}

@@ -25,6 +25,33 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+class AbsoluteDifferenceScalarFunction : public ScalarFunction
+{
+public:
+  AbsoluteDifferenceScalarFunction(double reference = 0.0)
+    : reference(reference) {jassert(isNumberValid(reference));}
+
+  virtual bool isDerivable() const
+    {return false;}
+
+  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  {
+    if (output)
+      *output = fabs(input - reference);
+    if (derivative)
+      *derivative = input > reference ? 1.0 : (input < reference ? -1.0 : 0.0);
+  }
+
+protected:
+  double reference;
+
+  virtual bool load(InputStream& istr)
+    {return ScalarFunction::load(istr) && lbcpp::read(istr, reference);}
+
+  virtual void save(OutputStream& ostr) const
+    {ScalarFunction::save(ostr); lbcpp::write(ostr, reference);}
+};
+
 // Input: Features
 // Output: direction Vector3Object 
 // Supervision: target Vector3Object
@@ -59,7 +86,9 @@ public:
     Vector3 v = vo->getValue();
     double target = (index == 0 ? v.getX() : (index == 1 ? v.getY() : v.getZ()));
     // loss(prediction) = (target - prediction)^2
-    return squareFunction(addConstantScalarFunction(-target));
+    if (target == DBL_MAX)
+      return ObjectPtr();
+    return new AbsoluteDifferenceScalarFunction(target);
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
@@ -92,31 +121,109 @@ public:
     return calphaTrace->clone();
   }
 
+  static double computeSupervisionWeight(int deltaPosition, int windowHalfSize)
+  {
+    jassert(deltaPosition >= -windowHalfSize && deltaPosition <= windowHalfSize);
+    double stddev = (double)windowHalfSize / 2.0;
+    return 1.0;//exp(-(double)(deltaPosition * deltaPosition) / (stddev * stddev));
+  }
+
+  static void computeSupervision(CartesianCoordinatesSequencePtr predicted, CartesianCoordinatesSequencePtr correct, std::vector<Vector3>& res, int halfWindowSize = 30)
+  {
+    std::cout << "Computing supervision..." << std::endl;
+    size_t n = predicted->size();
+    jassert(n == correct->size());
+
+    res.clear();
+    res.resize(n, Vector3(0.0));
+    std::vector<double> weights(n, 0.0);
+
+    std::vector< std::pair<Vector3, Vector3 > > pointPairs;
+    pointPairs.reserve(2 * halfWindowSize + 1);
+
+    for (size_t position = 0; position < n; ++position)
+    {
+      int first = juce::jmax(0, (int)position - (int)halfWindowSize);
+      int last = juce::jmin((int)n - 1, (int)position + (int)halfWindowSize);
+
+      pointPairs.clear();
+      for (int i = first; i <= last; ++i)
+      {
+        Vector3 p = predicted->getPosition(i);
+        Vector3 c = correct->getPosition(i);
+        if (p.exists() && c.exists())
+          pointPairs.push_back(std::make_pair(c, p));
+      }
+      bool success;
+      Matrix4 affineTransform = Matrix4::findAffineTransformToSuperposePoints(pointPairs, &success);
+      if (success)
+      {
+        for (int i = first; i <= last; ++i)
+        {
+          Vector3 c = correct->getPosition(i);
+          if (c.exists())
+          {
+            Vector3 target = affineTransform.transformAffine(c);
+            double w = computeSupervisionWeight(i - (int)position, halfWindowSize);
+            res[i].addWeighted(target, w);
+            weights[i] += w;
+          }
+        }
+      }
+    }
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      //std::cout << "i = " << i << " weight = " << weights[i];
+      if (weights[i])
+      {
+        res[i] /= weights[i];
+        //std::cout << "current: " << predicted->getPosition(i).toString() << " Supervision = " << res[i].toString() << " " << std::endl;
+        jassert(isNumberValid(res[i].getX()) && isNumberValid(res[i].getY()) && isNumberValid(res[i].getZ()));
+      }
+      else
+      {
+        res[i] = Vector3();
+        //std::cout << std::endl;
+      }
+    }
+  }
+
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
     ProteinPtr protein = getProtein(supervision);
     CartesianCoordinatesSequencePtr predictedCAlphaTrace = predictedObject.dynamicCast<CartesianCoordinatesSequence>();
-    CartesianCoordinatesSequencePtr correctCAlphaTrace = protein->getCAlphaTrace();
-    jassert(correctCAlphaTrace && predictedCAlphaTrace);
+    jassert(predictedCAlphaTrace);
     Vector3 predictedPosition = predictedCAlphaTrace->getPosition(index);
-    Vector3 correctPosition = correctCAlphaTrace->getPosition(index);
     jassert(predictedPosition.exists());
-    if (!correctPosition.exists())
-      return ObjectPtr();
-    Vector3 delta = correctPosition - predictedPosition;
-  /*  double norm = delta.l2norm();
-    if (norm > 10.0)
-      delta *= 10.0 / norm;*/
-    return new Vector3Object(delta);
+
+    if (currentTarget != protein)
+    {
+      CartesianCoordinatesSequencePtr correctCAlphaTrace = protein->getCAlphaTrace();
+      jassert(predictedCAlphaTrace && correctCAlphaTrace);
+
+      ProteinCAlphaTraceUpdateInferenceStep* nonConstThis = const_cast<ProteinCAlphaTraceUpdateInferenceStep* >(this);
+      computeSupervision(predictedCAlphaTrace, correctCAlphaTrace, nonConstThis->currentSupervision);
+      nonConstThis->currentTarget = protein;
+    }
+
+    jassert(index < currentSupervision.size());
+    return new Vector3Object(currentSupervision[index] - predictedPosition);
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
   {
     CartesianCoordinatesSequencePtr calphaTrace = output.dynamicCast<CartesianCoordinatesSequence>();
-    Vector3ObjectPtr direction = subOutput.dynamicCast<Vector3Object>();
-    jassert(calphaTrace && direction);
-    calphaTrace->setPosition(index, calphaTrace->getPosition(index) + direction->getValue());
+    Vector3ObjectPtr delta = subOutput.dynamicCast<Vector3Object>();
+    jassert(calphaTrace && delta);
+    calphaTrace->setPosition(index, calphaTrace->getPosition(index) + delta->getValue());
+    //jassert(index < currentSupervision.size());
+    //calphaTrace->setPosition(index, currentSupervision[index]);
   }
+
+private:
+  ProteinPtr currentTarget;
+  std::vector<Vector3> currentSupervision;
 };
 
 class MyCalphaUpdateFeatures : public ProteinResidueFeatures
@@ -133,10 +240,11 @@ public:
    // featureSense(2, currentPosition.getZ());
     featureSense(position + 3);
     
-    /*Vector3 gravityCenter = calphaTrace->getGravityCenter();
+    Vector3 gravityCenter = calphaTrace->getGravityCenter();
+   // std::cout << "This: " << currentPosition.toString() << " Gravity Center: " << gravityCenter.toString() << std::endl;
     featureSense(0, gravityCenter.getX() - currentPosition.getX());
     featureSense(1, gravityCenter.getY() - currentPosition.getY());
-    featureSense(2, gravityCenter.getZ() - currentPosition.getZ());*/
+    featureSense(2, gravityCenter.getZ() - currentPosition.getZ());
   }
 };
 
@@ -237,7 +345,7 @@ public:
     if (inferenceStepName.startsWith(T("BBB")))
       learningRate = constantIterationFunction(0.1);
     else if (inferenceStepName.startsWith(T("CA")))
-      learningRate = constantIterationFunction(0.1);
+      learningRate = constantIterationFunction(0.0001);
     else if (inferenceStepName.startsWith(T("TS")))
       learningRate = constantIterationFunction(0.0001);
     else
@@ -375,7 +483,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\YO.model"));
+  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\CALPHA.model"));
 
   /*File cb513Directory(T("C:\\Projets\\LBC++\\projects\\temp\\CB513"));
   ObjectContainerPtr cb513Proteins = loadProteins(cb513Directory);
@@ -393,17 +501,55 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 1);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPair());
 
   //proteins = proteins->apply(new ProteinToInputOutputPair());
 
-  ObjectContainerPtr trainingData = smallPDBProteins->range(0,1);
-  ObjectContainerPtr testingData = smallPDBProteins->range(0,1);
+  ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
+  ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
 
   std::cout << trainingData->size() << " Training Proteins "
             << testingData->size() << " Testing Proteins" << std::endl;
+
+
+#if 0
+  ProteinPtr protein = smallPDBProteins->getAndCast<ObjectPair>(0)->getSecond().dynamicCast<Protein>();
+  CartesianCoordinatesSequencePtr correctCAlphaTrace = protein->getCAlphaTrace();
+  ProteinTertiaryStructurePtr correctTS = protein->getTertiaryStructure();
+  
+  for (int i = 0; i < 100; ++i)
+  {
+    CartesianCoordinatesSequencePtr calphaTrace;
+    if (i == 0)
+    {
+      InferenceStepPtr step = InferenceStep::createFromFileAndCast<InferenceStep>(modelDirectory.getChildFile(T("0_Initial c-alpha bonds.inference")));
+      jassert(step);
+      
+      //SampleRandomCAlphaTraceInferenceStep pouet;
+      InferenceStep::ReturnCode returnCode;
+      BondCoordinatesSequencePtr bonds = step->run(singleThreadedInferenceContext(), protein, ObjectPtr(), returnCode).dynamicCast<BondCoordinatesSequence>();
+      jassert(bonds);
+      calphaTrace = bonds->makeCartesianCoordinates(T("CAlphaTrace"));//  pouet.run(InferenceContextPtr(), protein, ObjectPtr(), returnCode).dynamicCast<CartesianCoordinatesSequence>();
+      protein->setObject(calphaTrace);
+      protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(protein->getAminoAcidSequence(), calphaTrace));
+    }
+
+    protein->saveToPDBFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs\\prot") + String(i) + T(".pdb")));
+
+    calphaTrace = protein->getCAlphaTrace();
+    jassert(calphaTrace);
+    std::vector<Vector3> v;
+    ProteinCAlphaTraceUpdateInferenceStep::computeSupervision(calphaTrace, correctCAlphaTrace, v, 50);
+    CartesianCoordinatesSequencePtr newCAlphaTrace = new CartesianCoordinatesSequence(T("CAlphaTrace"), v);
+    protein->setObject(newCAlphaTrace);
+    ProteinTertiaryStructurePtr predictedTS = ProteinTertiaryStructure::createFromCAlphaTrace(protein->getAminoAcidSequence(), newCAlphaTrace);
+    protein->setObject(predictedTS);
+    std::cout << "RMSE = " << predictedTS->computeCAlphaAtomsRMSE(correctTS) << std::endl;
+  }
+  return 0;
+#endif // 0
 
 
   /*
@@ -449,23 +595,29 @@ int main(int argc, char** argv)
   //proteinInference->loadSubInferencesFromDirectory(modelDirectory);
   proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
 
-  proteinInference->appendStep(new SampleRandomCAlphaTraceInferenceStep());
-  for (size_t i = 1; i < 10; ++i)
+  //proteinInference->appendStep(new SampleRandomCAlphaTraceInferenceStep());
+  //proteinInference->appendStep(new ProteinCAlphaBondSequenceInferenceStep(T("Initial c-alpha bonds"), featureFunction));
+
+  InferenceStepPtr initStep
+    = InferenceStep::createFromFileAndCast<InferenceStep>(modelDirectory.getChildFile(T("0_Initial c-alpha bonds.inference")));
+    //= new SampleRandomCAlphaTraceInferenceStep();
+  proteinInference->appendStep(initStep);
+  InferenceStepPtr calphaUpdateStep = new ProteinCAlphaTraceUpdateInferenceStep(T("CA Update Pass"), calphaUpdateFeatures);
+
+  for (size_t i = 0; i < 10; ++i)
   {
-    InferenceStepPtr calphaUpdateStep = new ProteinCAlphaTraceUpdateInferenceStep(T("CA Update Pass ") + lbcpp::toString(i), calphaUpdateFeatures);
     proteinInference->appendStep(calphaUpdateStep);
     continue;
-
     {
       //Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
        //                                                   pairFeatureFunction, T("ResidueResidueContactMatrix8Cb"));
       //proteinInference->appendStep(step);
     }
     {
-      Protein1DInferenceStepPtr step;
+      //Protein1DInferenceStepPtr step;
 
       //step = new ProteinTertiaryStructureRefinementInferenceStep(T("TS Pass ") + lbcpp::toString(i), tertiaryStructureFeatureFunction);
-      proteinInference->appendStep(step);
+      //proteinInference->appendStep(step);
      
 #if 0
       step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
@@ -483,13 +635,14 @@ int main(int argc, char** argv)
 
     }
   }
-  std::cout << "Inference: " << proteinInference->toString() << std::endl;
+  //std::cout << "Inference: " << proteinInference->toString() << std::endl;
 
   /*
   ** Learning
   */
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
-  InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true, modelDirectory, true);
+  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, false);
+  //InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true, modelDirectory, true);
+  InferenceLearnerPtr learner = globalSimulationLearner(callback);
   learner->train(proteinInference, trainingData);
 
   /*

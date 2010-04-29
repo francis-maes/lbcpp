@@ -9,38 +9,10 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_STEP_BACKBONE_BOND_SEQUENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_STEP_BACKBONE_BOND_SEQUENCE_H_
 
-# include "Protein1DInferenceStep.h"
-# include "../../InferenceStep/DecoratorInferenceStep.h"
+# include "ProteinCAlphaBondSequenceInferenceStep.h"
 
 namespace lbcpp
 {
-
-class AngleDifferenceScalarFunction : public ScalarFunction
-{
-public:
-  AngleDifferenceScalarFunction(double referenceAngle = 0.0)
-    : referenceAngle(referenceAngle) {}
-
-  virtual bool isDerivable() const
-    {return false;}
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-  {
-    if (output)
-      *output = DihedralAngle::normalize(input - referenceAngle);
-    if (derivative)
-      *derivative = 1.0;
-  }
-
-protected:
-  double referenceAngle;
-
-  virtual bool load(InputStream& istr)
-    {return ScalarFunction::load(istr) && lbcpp::read(istr, referenceAngle);}
-
-  virtual void save(OutputStream& ostr) const
-    {ScalarFunction::save(ostr); lbcpp::write(ostr, referenceAngle);}
-};
 
 class ScaledSigmoidScalarFunction : public ScalarFunction
 {
