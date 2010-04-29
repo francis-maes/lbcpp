@@ -94,12 +94,16 @@ public:
     }
 
     // when a backbone is predicted, update the tertiary structure automatically
+    BondCoordinatesSequencePtr calphaBondSequence = newObject.dynamicCast<BondCoordinatesSequence>();
+    CartesianCoordinatesSequencePtr calphaTrace = newObject.dynamicCast<CartesianCoordinatesSequence>();
+    if (calphaBondSequence && calphaBondSequence->getName() == T("CAlphaBondSequence"))
+      res->setObject(calphaTrace = calphaBondSequence->makeCartesianCoordinates(T("CAlphaTrace")));
+
     ProteinBackboneBondSequencePtr backbone = newObject.dynamicCast<ProteinBackboneBondSequence>();
     if (backbone)
       res->setObject(tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(aminoAcids, backbone));
-
+  
     // when a c-alpha trace is predicted, update the tertiary structure automatically
-    CartesianCoordinatesSequencePtr calphaTrace = newObject.dynamicCast<CartesianCoordinatesSequence>();
     if (calphaTrace)
       res->setObject(tertiaryStructure = ProteinTertiaryStructure::createFromCAlphaTrace(aminoAcids, calphaTrace));
 

@@ -23,6 +23,8 @@ public:
 
   CartesianCoordinatesSequence(const String& name, size_t length)
     : BaseClass(name, length) {}
+  CartesianCoordinatesSequence(const String& name, const std::vector<Vector3>& positions)
+    : BaseClass(name, positions) {}
   CartesianCoordinatesSequence() {}
 
   virtual bool hasObject(size_t index) const

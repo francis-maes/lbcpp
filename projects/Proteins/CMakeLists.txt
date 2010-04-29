@@ -99,10 +99,11 @@ SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
   Protein/Inference/ProteinResiduePairFeatures.h
   Protein/Inference/ProteinInferenceStepHelper.h
   Protein/Inference/Protein1DInferenceStep.h
+  Protein/Inference/ProteinCAlphaBondSequenceInferenceStep.h
   Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h
+  Protein/Inference/ProteinTertiaryStructureInferenceStep.h
   Protein/Inference/Protein2DInferenceStep.h
   Protein/Inference/ProteinContactMapInferenceStep.h
-  Protein/Inference/ProteinTertiaryStructureInferenceStep.h
   Protein/Inference/ProteinInference.h
 )
 

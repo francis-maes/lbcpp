@@ -21,8 +21,8 @@ namespace lbcpp
 class ExamplesCreatorCallback : public InferenceCallback
 {
 public:
-  ExamplesCreatorCallback(InferenceLearnerCallbackPtr learnerCallback)
-    : learnerCallback(learnerCallback), enableExamplesCreation(true) {}
+  ExamplesCreatorCallback(InferenceLearnerCallbackPtr learnerCallback, bool cancelAfterExampleCreation)
+    : learnerCallback(learnerCallback), enableExamplesCreation(true), cancelAfterExampleCreation(cancelAfterExampleCreation) {}
 
   virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
   {
@@ -44,8 +44,7 @@ public:
       {
         LabelPtr label = supervision.dynamicCast<Label>();
         jassert(classifier && label);
-        addExample(stack, classifier, new ClassificationExample(input, label->getIndex()));
-        returnCode = InferenceStep::canceledReturnCode;
+        addExample(stack, classifier, new ClassificationExample(input, label->getIndex()), returnCode);
       }
     }
   }
@@ -61,16 +60,12 @@ public:
       {
         ScalarPtr scalar = supervision.dynamicCast<Scalar>();
         if (scalar)
-        {
-          addExample(stack, regressor, new RegressionExample(input, scalar->getValue()));
-          returnCode = InferenceStep::canceledReturnCode;
-        }
+          addExample(stack, regressor, new RegressionExample(input, scalar->getValue()), returnCode);
         else
         {
           ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
           jassert(lossFunction);
-          addExample(stack, regressor, new ObjectPair(input, lossFunction));
-          returnCode = InferenceStep::canceledReturnCode;
+          addExample(stack, regressor, new ObjectPair(input, lossFunction), returnCode);
         }
       }
     }    
@@ -119,6 +114,7 @@ public:
 protected:
   InferenceLearnerCallbackPtr learnerCallback;
   bool enableExamplesCreation;
+  bool cancelAfterExampleCreation;
 
   struct LearningMachineInfo
   {
@@ -149,12 +145,14 @@ protected:
   typedef std::map<LearningMachinePtr, LearningMachineInfo> LearningMachineMap;
   LearningMachineMap learningMachines;
 
-  void addExample(InferenceStackPtr stack, LearningMachinePtr learningMachine, ObjectPtr example)
+  void addExample(InferenceStackPtr stack, LearningMachinePtr learningMachine, ObjectPtr example, InferenceStep::ReturnCode& returnCode)
   {
     LearningMachineInfo& info = learningMachines[learningMachine];
     if (info.name.isEmpty())
       info.name = stack->getCurrentInference()->getName();
     info.addExample(example);
+    if (cancelAfterExampleCreation)
+      returnCode = InferenceStep::canceledReturnCode;
   }
 };
 

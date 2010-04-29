@@ -64,6 +64,17 @@ public:
     return (*this) * inverseValue;
   }
 
+  Vector3& addWeighted(const Vector3& otherVector, double weight)
+  {
+    if (weight)
+    {
+      x += otherVector.x * weight;
+      y += otherVector.y * weight;
+      z += otherVector.z * weight;
+    }
+    return *this;    
+  }
+
   Vector3& operator +=(const Vector3& otherVector)
   {
     x += otherVector.x;

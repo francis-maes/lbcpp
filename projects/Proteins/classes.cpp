@@ -45,6 +45,7 @@ void declareInferenceClasses()
 #include "Protein/SecondaryStructureDictionary.h"
 
 #include "Protein/Inference/Protein1DInferenceStep.h"
+#include "Protein/Inference/ProteinCAlphaBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
@@ -57,7 +58,7 @@ void declareProteinClasses()
   declareInferenceClasses();
   declareProteinResidueFeaturesClasses();
   declareProteinResiduePairFeaturesClasses();
-
+  
   LBCPP_DECLARE_CLASS(ProteinBackboneBond);
   LBCPP_DECLARE_CLASS(ProteinBackboneBondSequence);
   LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
@@ -73,10 +74,13 @@ void declareProteinClasses()
     LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
       LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
 
-    LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
-      LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
+    LBCPP_DECLARE_CLASS(ProteinCAlphaBondSequenceInferenceStep);
       LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
+      LBCPP_DECLARE_CLASS(ProteinCAlphaBondInferenceStep);
+
+    LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
       LBCPP_DECLARE_CLASS(ScaledSigmoidScalarFunction);
+      LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
 
     LBCPP_DECLARE_CLASS(ProteinTertiaryStructureRefinementInferenceStep);
       LBCPP_DECLARE_CLASS(ProteinResidueRefinementInferenceStep);

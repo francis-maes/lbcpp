@@ -46,11 +46,13 @@ template<class ElementType>
 class BuiltinVectorBasedSequence : public Sequence
 {
 public:
+  typedef std::vector<ElementType> VectorType;
+
   BuiltinVectorBasedSequence(const String& name, size_t length = 0)
     : Sequence(name), elements(length) {}
+  BuiltinVectorBasedSequence(const String& name, const VectorType& elements)
+    : Sequence(name), elements(elements) {}
   BuiltinVectorBasedSequence() {}
-
-  typedef std::vector<ElementType> VectorType;
 
   virtual size_t size() const
     {return elements.size();}

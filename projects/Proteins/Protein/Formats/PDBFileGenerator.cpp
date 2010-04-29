@@ -53,6 +53,8 @@ void PDBFileGenerator::consume(ObjectPtr object)
       for (size_t j = 0; j < residue->getNumAtoms(); ++j)
       {
         ProteinAtomPtr atom = residue->getAtom(j);
+        jassert(atom->getPosition().exists());
+        jassert(isNumberValid(atom->getX()) && isNumberValid(atom->getY()) && isNumberValid(atom->getZ()));
         print(makeAtomLine(atomNumber++, atom->getName(), residue->getName(), String::empty,
           i + 1, atom->getX(), atom->getY(), atom->getZ(), atom->getOccupancy(), atom->getTemperatureFactor(),
           String::empty, atom->getElementSymbol(), String::empty), true);
