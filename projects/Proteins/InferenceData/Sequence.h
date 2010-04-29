@@ -82,6 +82,7 @@ public:
   {
     typedef BuiltinVectorBasedSequence<ElementType> ThisClass;
     ReferenceCountedObjectPtr<ThisClass> res = Object::createAndCast<ThisClass>(getClassName());
+    res->name = name;
     res->elements = elements;
     return res;
   }

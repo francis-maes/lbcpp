@@ -73,6 +73,7 @@ public:
     // we have to clone the protein, so that feature generators to may be called later keep the correct versions of their input objects
     ProteinPtr res = workingProtein->clone();
     res->setObject(newObject);
+    res->setVersionNumber(workingProtein->getVersionNumber() + 1);
 
     LabelSequencePtr aminoAcids = res->getAminoAcidSequence();
     jassert(aminoAcids);
@@ -107,6 +108,7 @@ public:
     if (calphaTrace)
       res->setObject(tertiaryStructure = ProteinTertiaryStructure::createFromCAlphaTrace(aminoAcids, calphaTrace));
 
+    /*
     // if we have access to the correct tertiary structure and if we have freshly created a tertiary structure
     // superpose our structure to the correct one.
     // Thisway, when performing tertiary structure refinement, the input, output and supervision tertiary structures
@@ -122,7 +124,7 @@ public:
         if (calphaTrace)
           calphaTrace->applyAffineTransform(transformation);
       }
-    }
+    }*/
     return res;
   }
 
