@@ -292,3 +292,36 @@ convergence:
 	return retval;
 }
 
+/*
+** Vector3KDTree
+*/
+#include "kdtree_lib.h"
+
+Vector3KDTree::Vector3KDTree()
+  {tree = kd_create(3);}
+
+Vector3KDTree::~Vector3KDTree()
+{
+  if (tree)
+    kd_free(tree);
+}
+
+void Vector3KDTree::insert(size_t index, const Vector3& position)
+{
+  jassert(position.exists());
+  kd_insert3(tree, position.getX(), position.getY(), position.getZ(), (void*)index);
+}
+
+void Vector3KDTree::findPointsInSphere(const Vector3& center, double radius, std::vector<size_t>& results)
+{
+  jassert(center.exists());
+  struct kdres* res = kd_nearest_range3(tree, center.getX(), center.getY(), center.getZ(), radius);
+  results.resize(kd_res_size(res));
+  for (size_t i = 0; i < results.size(); ++i)
+  {
+    jassert(!kd_res_end(res));
+    results[i] = (size_t)kd_res_item_data(res);
+    kd_res_next(res);
+  }
+  kd_res_free(res);
+}

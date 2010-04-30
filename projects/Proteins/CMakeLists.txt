@@ -68,8 +68,8 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/Matrix3.cpp  
   Geometry/Matrix4.h
   Geometry/Matrix4.cpp
-  Geometry/kdtree.h
-  Geometry/kdtree.c
+  Geometry/kdtree_lib.h
+  Geometry/kdtree_lib.c
 )
 
 SET(LBCPP_EVALUATOR_SOURCES

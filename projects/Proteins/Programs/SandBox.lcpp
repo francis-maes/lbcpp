@@ -22,7 +22,6 @@
 #include "Protein/Inference/ProteinContactMapInferenceStep.h"
 #include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
-#include "Geometry/kdtree.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -307,40 +306,6 @@ private:
   std::vector<Vector3> currentSupervision;
 };
 
-class KDTree : public Object
-{
-public:
-  KDTree(size_t dimension)
-    {tree = kd_create(dimension);}
-
-  virtual ~KDTree()
-  {
-    if (tree)
-      kd_free(tree);
-  }
-
-  void insert(size_t index, const Vector3& position)
-    {jassert(position.exists()); kd_insert3(tree, position.getX(), position.getY(), position.getZ(), (void*)index);}
-
-  void findPointsInSphere(const Vector3& center, double radius, std::vector<size_t>& results)
-  {
-    jassert(center.exists());
-    struct kdres* res = kd_nearest_range3(tree, center.getX(), center.getY(), center.getZ(), radius);
-    results.resize(kd_res_size(res));
-    for (size_t i = 0; i < results.size(); ++i)
-    {
-      jassert(!kd_res_end(res));
-      results[i] = (size_t)kd_res_item_data(res);
-      kd_res_next(res);
-    }
-    kd_res_free(res);
-  }
-
-private:
-  struct kdtree* tree;
-};
-typedef ReferenceCountedObjectPtr<KDTree> KDTreePtr;
-
 class MyCalphaUpdateFeatures : public ProteinResidueFeatures
 {
 public:
@@ -362,7 +327,7 @@ public:
     {
       gravityCenter = calphaTrace->getGravityCenter();
       currentInputCAlphaTrace = calphaTrace;
-      kdTree = new KDTree(3);
+      kdTree = new Vector3KDTree();
       for (size_t i = 0; i < calphaTrace->size(); ++i)
       {
         Vector3 position = calphaTrace->getPosition(i);
@@ -419,10 +384,18 @@ public:
 protected:
   CartesianCoordinatesSequencePtr currentInputCAlphaTrace;
   Vector3 gravityCenter;
-  KDTreePtr kdTree;
+  Vector3KDTreePtr kdTree;
 };
 
-/////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 class GeometricConstraint : public Object
 {
@@ -660,14 +633,14 @@ private:
 
   ProteinPtr currentInputProtein;
   CartesianCoordinatesSequencePtr currentInputCalphaTrace;
-  KDTreePtr kdTree;
+  Vector3KDTreePtr kdTree;
   std::vector< std::pair<size_t, size_t> > pairsInContact;
 
   void inputProteinChangedCallback(ProteinPtr protein)
   {
     double contactRadius = 12.0;
 
-    kdTree = new KDTree(3);
+    kdTree = new Vector3KDTree();
     currentInputCalphaTrace = protein->getCAlphaTrace();
     jassert(currentInputCalphaTrace);
     size_t n = protein->getLength();
@@ -769,7 +742,206 @@ public:
   }
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
+
+class ProteinCAlphaBondUpdateInferenceStep : public VectorParallelInferenceStep
+{
+public:
+  ProteinCAlphaBondUpdateInferenceStep(const String& name)
+    : VectorParallelInferenceStep(name)
+  {
+    ClassificationInferenceStepPtr step = new ClassificationInferenceStep(name + T(" angle"));
+    step->setLabels(BinaryClassificationDictionary::getInstance());
+    appendStep(step);
+
+    step = new ClassificationInferenceStep(name + T(" dihedral"));
+    step->setLabels(BinaryClassificationDictionary::getInstance());
+    appendStep(step);
+  }
+
+  ProteinCAlphaBondUpdateInferenceStep() {}
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return input;}
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  {
+    ObjectPairPtr pair = supervision.dynamicCast<ObjectPair>();
+    if (!pair)
+      return ObjectPtr();
+    return index ? pair->getSecond() : pair->getFirst();
+  }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return new ObjectPair();}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    ObjectPairPtr pair = output.dynamicCast<ObjectPair>();
+    if (index == 0)
+      pair->setFirst(subOutput);
+    else
+      pair->setSecond(subOutput);
+  }
+};
+
+class ProteinCAlphaBondsUpdateInferenceStep : public Protein1DInferenceStep
+{
+public:
+  ProteinCAlphaBondsUpdateInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
+    : Protein1DInferenceStep(name, new ProteinCAlphaBondUpdateInferenceStep(name + T(" Bond")), features, T("CAlphaBondSequence")) {}
+  
+  ProteinCAlphaBondsUpdateInferenceStep() {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return getProteinLength(input) - 1;}
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  {
+    const_cast<ProteinCAlphaBondsUpdateInferenceStep* >(this)->currentInputBonds = getProtein(input)->getCAlphaBondSequence();
+    jassert(currentInputBonds);
+    return currentInputBonds->clone();
+  }
+ 
+  static double applyPrediction(double currentValue, double increaseProbability, double step)
+    {return currentValue + (increaseProbability - 0.5) * 2 * step;}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    BondCoordinatesSequencePtr bonds = output.dynamicCast<BondCoordinatesSequence>();
+    ObjectPairPtr pair = subOutput.dynamicCast<ObjectPair>();
+    jassert(bonds && pair);
+
+    double thetaP = pair->getFirst().dynamicCast<DenseVector>()->get(1);
+    double phiP = pair->getSecond().dynamicCast<DenseVector>()->get(1);
+/*
+    if (currentCorrectBonds->getCoordinates(index).getThetaAngle().exists() &&
+        currentInputBonds->getCoordinates(index).getThetaAngle().exists())
+      thetaP = (currentCorrectBonds->getCoordinates(index).getThetaAngle() > currentInputBonds->getCoordinates(index).getThetaAngle() ? 1.0 : 0.0);
+
+    if (currentCorrectBonds->getCoordinates(index).getPhiDihedralAngle().exists() &&
+        currentInputBonds->getCoordinates(index).getPhiDihedralAngle().exists())
+      phiP = (DihedralAngle::normalize(currentCorrectBonds->getCoordinates(index).getPhiDihedralAngle() - currentInputBonds->getCoordinates(index).getPhiDihedralAngle()) > 0.0 ? 1.0 : 0.0);
+*/
+    BondCoordinates c = bonds->getCoordinates(index);
+    if (index == 51)
+    std::cout << "Bond before: " << c.toString();
+    if (c.hasThetaAngle())
+    {
+      double angle = applyPrediction(c.getThetaAngle(), thetaP, 0.1);
+      angle = juce::jlimit(0.95, 2.75, angle);
+      c.setThetaAngle(angle);
+    }
+    if (c.hasPhiDihedralAngle())
+      c.setPhiDihedralAngle(DihedralAngle::normalize(applyPrediction(c.getPhiDihedralAngle(), phiP, 0.1)));
+    if (index == 51) std::cout << " after : " << c.toString() << " correct: " << currentCorrectBonds->getCoordinates(index).toString() << std::endl;
+    bonds->setCoordinates(index, c);
+  }
+
+  static LabelPtr makeBinaryLabel(double current, double target, double threshold, bool normalizeAngle)
+  {
+    double delta = target - current;
+    if (normalizeAngle)
+      delta = DihedralAngle::normalize(delta);
+    if (fabs(delta) < threshold)
+      return LabelPtr();
+    return new Label(BinaryClassificationDictionary::getInstance(), delta > 0 ? 1 : 0);
+  }
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  {
+    BondCoordinatesSequencePtr correctBonds = getSupervision(supervision).dynamicCast<BondCoordinatesSequence>();
+    jassert(currentInputBonds);
+    const_cast<ProteinCAlphaBondsUpdateInferenceStep* >(this)->currentCorrectBonds = correctBonds;
+    BondCoordinates correct = correctBonds->getCoordinates(index);
+    if (!correct.exists())
+      return ObjectPtr();
+    BondCoordinates current = currentInputBonds->getCoordinates(index);
+    jassert(current.exists());
+    LabelPtr angleLabel;
+    if (correct.hasThetaAngle() && current.hasThetaAngle())
+      angleLabel = makeBinaryLabel(current.getThetaAngle(), correct.getThetaAngle(), 0.1, false);
+
+    LabelPtr dihedralLabel;
+    if (correct.hasPhiDihedralAngle() && current.hasPhiDihedralAngle())
+      dihedralLabel = makeBinaryLabel(current.getPhiDihedralAngle(), correct.getPhiDihedralAngle(), 0.2, true);
+
+    return angleLabel || dihedralLabel ? new ObjectPair(angleLabel, dihedralLabel) : ObjectPtr();
+  }
+
+private:
+  BondCoordinatesSequencePtr currentInputBonds;
+  BondCoordinatesSequencePtr currentCorrectBonds;
+};
+
+class MyCalphaBondUpdateFeatures : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  {
+    LabelSequencePtr aminoAcids = protein->getAminoAcidSequence();
+    ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
+    BondCoordinatesSequencePtr calphaBondSequence = protein->getCAlphaBondSequence();
+    CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
+    jassert(calphaTrace && calphaBondSequence && aminoAcids);
+
+    if (currentInputCAlphaTrace != calphaTrace)
+    {
+      gravityCenter = calphaTrace->getGravityCenter();
+      currentInputCAlphaTrace = calphaTrace;
+      /*kdTree = new Vector3KDTree();
+      for (size_t i = 0; i < calphaTrace->size(); ++i)
+      {
+        Vector3 position = calphaTrace->getPosition(i);
+        if (position.exists())
+          kdTree->insert(i, position);
+      }*/
+    }
+
+    featureScope(protein->getVersionNumber())
+    {
+      //featureScope(0) featureSense(position);
+      featureCall(0) pssm->windowFeatures(position, 5, 5, true);
+
+      jassert(position < calphaBondSequence->size());
+      BondCoordinates bond = calphaBondSequence->getCoordinates(position);
+      if (bond.exists())
+      {
+        if (bond.hasThetaAngle())
+          featureCall(1) numberLogFeatures(bond.getThetaAngle());
+        if (bond.hasPhiDihedralAngle())
+          featureCall(2) dihedralAngleFeatures(DihedralAngle::normalize(bond.getPhiDihedralAngle()));
+      }
+    }
+  }
+
+protected:
+  CartesianCoordinatesSequencePtr currentInputCAlphaTrace;
+  Vector3 gravityCenter;
+  Vector3KDTreePtr kdTree;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -1030,7 +1202,7 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 70);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 1);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPair());
 
@@ -1086,16 +1258,16 @@ int main(int argc, char** argv)
   */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
 
-  featureFunction->addSubFeatures(proteinUnitResidueFeature());
-//  featureFunction->addSubFeatures(proteinPositionIndexResidueFeature()); // DEBUG !!
-
+  //featureFunction->addSubFeatures(proteinUnitResidueFeature());
+  //featureFunction->addSubFeatures(proteinPositionIndexResidueFeature()); // DEBUG !!
+/*
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));*/
 
   CompositeProteinResidueFeaturesPtr tertiaryStructureFeatureFunction = new CompositeProteinResidueFeatures();
   tertiaryStructureFeatureFunction->addSubFeatures(proteinUnitResidueFeature());
@@ -1135,11 +1307,19 @@ int main(int argc, char** argv)
   initStep->setName(T("Init Step"));
   proteinInference->appendStep(initStep);
   //InferenceStepPtr calphaUpdateStep = new ProteinCAlphaTraceUpdateInferenceStep(T("CA Update Pass"), calphaUpdateFeatures);
-  InferenceStepPtr calphaUpdateStep = new RefineCAlphaPositionsInferenceStep(T("CA Update Pass"), pairFeatureFunction);
+  //InferenceStepPtr calphaUpdateStep = new RefineCAlphaPositionsInferenceStep(T("CA Update Pass"), pairFeatureFunction);
 
-  for (size_t i = 0; i < 10; ++i)
+  CompositeProteinResidueFeaturesPtr calphaBondFeatureFunction = new CompositeProteinResidueFeatures();
+  calphaBondFeatureFunction->addSubFeatures(new MyCalphaBondUpdateFeatures());
+  //calphaBondFeatureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
+  //calphaBondFeatureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
+
+
+  InferenceStepPtr calphaBondUpdateStep = new ProteinCAlphaBondsUpdateInferenceStep(T("CAB Update Pass"), calphaBondFeatureFunction);
+  for (size_t i = 0; i < 2; ++i)
   {
-    proteinInference->appendStep(calphaUpdateStep);
+    proteinInference->appendStep(calphaBondUpdateStep);
+    //proteinInference->appendStep(calphaUpdateStep);
     continue;
     {
       //Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
