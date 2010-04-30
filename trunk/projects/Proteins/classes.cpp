@@ -14,6 +14,7 @@ using namespace lbcpp;
 #include "InferenceData/ScalarSequence.h"
 #include "InferenceData/ScoreVectorSequence.h"
 #include "InferenceData/ScoreSymmetricMatrix.h"
+#include "InferenceData/BondCoordinatesSequence.h"
 
 #include "InferenceStep/ClassificationInferenceStep.h"
 #include "InferenceStep/RegressionInferenceStep.h"
@@ -28,6 +29,8 @@ void declareInferenceClasses()
   LBCPP_DECLARE_CLASS(ScalarSequence);
   LBCPP_DECLARE_CLASS(ScoreVectorSequence);
   LBCPP_DECLARE_CLASS(ScoreSymmetricMatrix);
+  LBCPP_DECLARE_CLASS(BondCoordinatesSequence);
+  LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
 
   // InferenceStep
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
@@ -61,7 +64,6 @@ void declareProteinClasses()
   
   LBCPP_DECLARE_CLASS(ProteinBackboneBond);
   LBCPP_DECLARE_CLASS(ProteinBackboneBondSequence);
-  LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
   LBCPP_DECLARE_CLASS(ProteinAtom);
   LBCPP_DECLARE_CLASS(ProteinResidue);
   LBCPP_DECLARE_CLASS(ProteinTertiaryStructure);

@@ -11,6 +11,11 @@
 
 # include <lbcpp/lbcpp.h>
 
+extern "C"
+{
+  struct kdtree;
+};
+
 namespace lbcpp
 {
 
@@ -190,6 +195,20 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<Vector3Object> Vector3ObjectPtr;
+
+class Vector3KDTree : public Object
+{
+public:
+  Vector3KDTree();
+  virtual ~Vector3KDTree();
+
+  void insert(size_t index, const Vector3& position);
+  void findPointsInSphere(const Vector3& center, double radius, std::vector<size_t>& results);
+
+private:
+  struct kdtree* tree;
+};
+typedef ReferenceCountedObjectPtr<Vector3KDTree> Vector3KDTreePtr;
 
 }; /* namespace lbcpp */
 

@@ -28,8 +28,14 @@ public:
   ObjectPtr getFirst() const
     {return first;}
 
+  void setFirst(ObjectPtr object)
+    {first = object;}
+
   ObjectPtr getSecond() const
     {return second;}
+
+  void setSecond(ObjectPtr object)
+    {second = object;}
 
   /*
   ** ObjectContainer
