@@ -2,16 +2,20 @@
 class DefaultInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000) {}
+  DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000), drProbability(0.2) {}
   
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
-  virtual double getProbabilityToCreateExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
+  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
   {
     String inferenceStepName = stack->getInference(1)->getName();
+    std::cout << inferenceStepName << std::endl;
     if (inferenceStepName.startsWith(T("DR")))
-        return 0.2;
+    {
+      std::cout << "DefaultInferenceLearnerCallback::getProbabilityToCreateExample - " << drProbability << std::endl;
+      return drProbability;
+    }
     return 1.0;
   }
   
@@ -50,11 +54,15 @@ public:
   
   void setNumberInterationLearningRate(size_t value)
     {this->numberIterationLearningRate = value;}
+
+  void setDRProbability(double value)
+    {this->drProbability = value;}
   
 protected:
   double regularizer;
   double initialLearningRate;
   size_t numberIterationLearningRate;
+  double drProbability;
 };
 
 typedef ReferenceCountedObjectPtr<DefaultInferenceLearnerCallback> DefaultInferenceLearnerCallbackPtr;

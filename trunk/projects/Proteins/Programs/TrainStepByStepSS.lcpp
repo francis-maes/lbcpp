@@ -170,6 +170,9 @@ int main(int argc, char** argv)
   String testFeatures;
   arguments.insert(new StringArgument(T("TestFeatures"), testFeatures));
 
+  double drProb = 0.2;
+  arguments.insert(new DoubleArgument(T("DRProbability"), drProb));
+
   if (!arguments.parse(argv, 1, argc-1))
   {
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
@@ -302,24 +305,23 @@ int main(int argc, char** argv)
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), wAA, wAA, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
-  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), wPSSM, wPSSM, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
-  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), wSS3, wSS3, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
-  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
 
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), wSS8, wSS8, true));
-  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), wSA, wSA, true));
-  featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
-
-  
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
+ 
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), wProp, true));
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
@@ -389,6 +391,7 @@ int main(int argc, char** argv)
   factory->setL2Regularizer(regularizer);
   factory->setInitialLearningRate(initialLearningRate);
   factory->setNumberInterationLearningRate(numberIterationLearningRate);
+  factory->setDRProbability(drProb);
 
   MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
   callback->useCache(true);
