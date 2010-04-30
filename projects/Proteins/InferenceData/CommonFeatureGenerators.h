@@ -17,6 +17,7 @@
 
 extern lbcpp::FeatureGeneratorPtr positiveNumberFeatures(double number, size_t numIntervalsPerUnit = 1);
 extern lbcpp::FeatureGeneratorPtr positiveNumberLogFeatures(double number, size_t numIntervalsPerLog10 = 3);
+extern lbcpp::FeatureGeneratorPtr numberLogFeatures(double number, size_t numIntervalsPerLog10 = 3);
 
 extern lbcpp::FeatureGeneratorPtr multiScalePositiveNumberFeatures(double number, size_t numIntervalsPerLog10InCoarestScale = 1, size_t intervalRatio = 2, size_t numScales = 4);
 extern lbcpp::FeatureGeneratorPtr multiScaleNumberFeatures(double number, size_t numIntervalsPerLog10InCoarestScale = 1, size_t intervalRatio = 2, size_t numScales = 4);
