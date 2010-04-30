@@ -21,8 +21,8 @@ class CartesianCoordinatesSequence : public BuiltinVectorBasedSequence<Vector3>
 public:
   typedef BuiltinVectorBasedSequence<Vector3> BaseClass;
 
-  CartesianCoordinatesSequence(const String& name, size_t length)
-    : BaseClass(name, length) {}
+  CartesianCoordinatesSequence(const String& name, size_t length, const Vector3& defaultValue = Vector3())
+    : BaseClass(name, length, defaultValue) {}
   CartesianCoordinatesSequence(const String& name, const std::vector<Vector3>& positions)
     : BaseClass(name, positions) {}
   CartesianCoordinatesSequence() {}
@@ -58,6 +58,9 @@ public:
   void clearPosition(size_t index)
     {setElement(index, Vector3());}
 
+  void movePosition(size_t index, const Vector3& delta)
+    {Vector3 v = getPosition(index); jassert(v.exists()); v += delta; setPosition(index, v);}
+
   void applyAffineTransform(const Matrix4& affineTransform)
   {
     for (size_t i = 0; i < elements.size(); ++i)
@@ -79,6 +82,8 @@ public:
     return count ? sum / (double)count : sum;
   }
 
+  std::vector<Vector3>& getVectorOfPositions()
+    {return elements;}
 };
 
 typedef ReferenceCountedObjectPtr<CartesianCoordinatesSequence> CartesianCoordinatesSequencePtr;

@@ -11,19 +11,20 @@ using namespace lbcpp;
 
 featureGenerator positiveNumberFeatures(double number, size_t numIntervalsPerUnit)
 {
+  jassert(isNumberValid(number));
   int previous = (int)floor(number);
   int next = previous + 1;
   double k = number - (double)previous;
-  if (k != 0.0)
+  if (k != 1.0)
   {
     if (previous > 0)
       featureScope(0) featureSense((size_t)previous, 1 - k);
     else
       featureScope(1) featureSense((size_t)-previous, 1 - k);
   }
-  if (k != 1.0)
+  if (k != 0.0)
   {
-    if (previous > 0)
+    if (next > 0)
       featureScope(0) featureSense((size_t)next, k);
     else
       featureScope(1) featureSense((size_t)-next, k);
@@ -34,6 +35,17 @@ featureGenerator positiveNumberLogFeatures(double number, size_t numIntervalsPer
 {
   jassert(number > 0);
   featureCall(0) positiveNumberFeatures(log(number), numIntervalsPerLog10);
+}
+
+featureGenerator numberLogFeatures(double number, size_t numIntervalsPerLog10)
+{
+  jassert(isNumberValid(number));
+  if (number == 0)
+    featureSense(T("zero"));
+  else if (number > 0)
+    featureCall(T("positive")) positiveNumberLogFeatures(number, numIntervalsPerLog10);
+  else
+    featureCall(T("negative")) positiveNumberLogFeatures(-number, numIntervalsPerLog10); 
 }
 
 featureGenerator multiScalePositiveNumberFeatures(double number, size_t numIntervalsPerLog10InCoarestScale, size_t intervalRatio, size_t numScales)

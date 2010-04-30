@@ -13,6 +13,7 @@
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"
 #include "InferenceData/ScoreSymmetricMatrix.h"
+#include "InferenceData/CommonFeatureGenerators.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Evaluation/ProteinStatisticsCalculator.h"
 #include "Protein/SecondaryStructureDictionary.h"
@@ -21,6 +22,7 @@
 #include "Protein/Inference/ProteinContactMapInferenceStep.h"
 #include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
+#include "Geometry/kdtree.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -123,7 +125,7 @@ public:
 
   static double lerp(double a, double b, double k) {return a + k * (b - a);}
 
-  void applyBoundConstraints(double& valueToConstrain, double minimum, double maximum, double intensity = 1.0)
+  static void applyBoundConstraints(double& valueToConstrain, double minimum, double maximum, double intensity = 1.0)
   {
     jassert(minimum <= maximum);
     if (valueToConstrain < minimum)
@@ -132,7 +134,10 @@ public:
       valueToConstrain = lerp(valueToConstrain, maximum, 1.0);
   }
 
-  CartesianCoordinatesSequencePtr applyCAlphaConstraints(CartesianCoordinatesSequencePtr calphaTrace, double intensity = 1.0)
+  static void applyPreferedValueConstraint(double& value, double preferredValue, double intensity)
+    {value = lerp(value, preferredValue, intensity);}
+
+  static CartesianCoordinatesSequencePtr applyCAlphaConstraints(CartesianCoordinatesSequencePtr calphaTrace, bool lengthConstraints, bool angleConstraints, double intensity = 1.0)
   {
     BondCoordinatesSequencePtr bonds = new BondCoordinatesSequence(T("bonds"), calphaTrace);
     for (size_t i = 0; i < bonds->size(); ++i)
@@ -140,16 +145,18 @@ public:
       BondCoordinates b = bonds->getCoordinates(i);
       if (!b.exists())
         continue;
-      if (b.hasLength())
+      if (lengthConstraints && b.hasLength())
       {
         double length = b.getLength();
         applyBoundConstraints(length, 3.65, 3.95, intensity);
+        applyPreferedValueConstraint(length, 3.8, intensity / 30.0);
         b.setLength(length);
       }
-      if (b.hasThetaAngle())
+      if (angleConstraints && b.hasThetaAngle())
       {
         double angle = b.getThetaAngle();
         applyBoundConstraints(angle, 0.95, 2.75, intensity);
+        applyPreferedValueConstraint(angle, 1.85, intensity / 30.0);
         b.setThetaAngle(angle);
       }
       bonds->setCoordinates(i, b);
@@ -162,7 +169,7 @@ public:
     ObjectPtr res = Protein1DInferenceStep::run(context, input, supervision, returnCode);
     CartesianCoordinatesSequencePtr prediction = res.dynamicCast<CartesianCoordinatesSequence>();
     jassert(prediction);
-    return applyCAlphaConstraints(prediction, 1.0);
+    return applyCAlphaConstraints(prediction, true, true, 0.9);
   }
 
   static double computeSupervisionWeight(int deltaPosition, int windowHalfSize)
@@ -300,6 +307,40 @@ private:
   std::vector<Vector3> currentSupervision;
 };
 
+class KDTree : public Object
+{
+public:
+  KDTree(size_t dimension)
+    {tree = kd_create(dimension);}
+
+  virtual ~KDTree()
+  {
+    if (tree)
+      kd_free(tree);
+  }
+
+  void insert(size_t index, const Vector3& position)
+    {jassert(position.exists()); kd_insert3(tree, position.getX(), position.getY(), position.getZ(), (void*)index);}
+
+  void findPointsInSphere(const Vector3& center, double radius, std::vector<size_t>& results)
+  {
+    jassert(center.exists());
+    struct kdres* res = kd_nearest_range3(tree, center.getX(), center.getY(), center.getZ(), radius);
+    results.resize(kd_res_size(res));
+    for (size_t i = 0; i < results.size(); ++i)
+    {
+      jassert(!kd_res_end(res));
+      results[i] = (size_t)kd_res_item_data(res);
+      kd_res_next(res);
+    }
+    kd_res_free(res);
+  }
+
+private:
+  struct kdtree* tree;
+};
+typedef ReferenceCountedObjectPtr<KDTree> KDTreePtr;
+
 class MyCalphaUpdateFeatures : public ProteinResidueFeatures
 {
 public:
@@ -321,10 +362,21 @@ public:
     {
       gravityCenter = calphaTrace->getGravityCenter();
       currentInputCAlphaTrace = calphaTrace;
+      kdTree = new KDTree(3);
+      for (size_t i = 0; i < calphaTrace->size(); ++i)
+      {
+        Vector3 position = calphaTrace->getPosition(i);
+        if (position.exists())
+          kdTree->insert(i, position);
+      }
     }
 
     Vector3 currentPosition = calphaTrace->getPosition(position);
     jassert(currentPosition.exists());
+
+    std::vector<size_t> pointsInSphere;
+    kdTree->findPointsInSphere(currentPosition, 20, pointsInSphere);
+   // std::cout << "Points in sphere: " << pointsInSphere.size() << std::endl;
 
     size_t n = calphaTrace->size();
     //  featureScope(position)
@@ -333,6 +385,7 @@ public:
     featureScope(protein->getVersionNumber())
     //featureScope(aminoAcids->getIndex(position))
     { 
+      /*
       for (int i = (int)position - 10; i < (int)position + 10; ++i)
         if (i >= 0 && i < (int)n && i != (int)position)
         {
@@ -344,15 +397,378 @@ public:
             //featureScope(aminoAcids->getIndex(ii))
               featureCall((size_t)ii) deltaFeatures(currentPosition, otherPosition);
           }
-        }
-      featureCall(21) deltaFeatures(currentPosition, gravityCenter);
+        }*/
+
+      featureCall(0) deltaFeatures(currentPosition, gravityCenter);
+      for (size_t i = 0; i < pointsInSphere.size(); ++i)
+      {
+        Vector3 pointInSphere = calphaTrace->getPosition(pointsInSphere[i]);
+        jassert(pointInSphere.exists());
+
+        double distance = (pointInSphere - currentPosition).l2norm();
+        if (distance == 0)
+          continue;
+        jassert(distance < 20.0);
+        size_t discreteSize = (size_t)(distance / 2.0);
+        //featureScope(aminoAcids->getIndex(pointsInSphere[i]))
+          featureCall(1 + discreteSize) deltaFeatures(currentPosition, pointInSphere);
+      }
     }
   }
 
 protected:
   CartesianCoordinatesSequencePtr currentInputCAlphaTrace;
   Vector3 gravityCenter;
+  KDTreePtr kdTree;
 };
+
+/////////////////////////////////////////////////////////////////////
+
+class GeometricConstraint : public Object
+{
+public:
+  GeometricConstraint(double importance = 1.0) : importance(importance) {}
+
+  virtual void apply(std::vector<Vector3>& coordinates, double amount) = 0;
+  virtual double computeError(const std::vector<Vector3>& coordinates) = 0;
+
+protected:
+  double importance;
+};
+
+typedef ReferenceCountedObjectPtr<GeometricConstraint> GeometricConstraintPtr;
+
+class BinaryGeometricConstraint : public GeometricConstraint
+{
+public:
+  BinaryGeometricConstraint(size_t i, size_t j, double importance)
+    : GeometricConstraint(importance), i(i), j(j) {}
+
+protected:
+  size_t i;
+  size_t j;
+};
+
+class AngleGeometricConstraint : public GeometricConstraint
+{
+public:
+  AngleGeometricConstraint(size_t index, double minAngle, double maxAngle, double importance)
+    : GeometricConstraint(importance), index(index), minAngle(minAngle), maxAngle(maxAngle) {}
+
+  virtual void apply(std::vector<Vector3>& coordinates, double amount)
+  {
+    jassert(index > 0 && index < coordinates.size() - 1);
+    Vector3 a = coordinates[index - 1];
+    Vector3 b = coordinates[index];
+    Vector3 c = coordinates[index + 1];
+    Vector3 t = (a + c) / 2.0;
+    jassert(a.exists() && b.exists() && c.exists());
+
+    int numIters = (int)(10.0 * importance);
+    for (int i = 0; (b - a).angle(c - a) < minAngle && i < numIters; ++i)
+      a += (t - a) * 0.1 * amount * importance;
+    for (int i = 0; (b - a).angle(c - a) > maxAngle && i < numIters; ++i)
+      a -= (t - a) * 0.1 * amount * importance;
+  }
+
+  virtual double computeError(const std::vector<Vector3>& coordinates)
+    {return 0.0;}
+
+protected:
+  size_t index;
+  double minAngle;
+  double maxAngle;
+};
+
+class LengthGeometricConstraint : public BinaryGeometricConstraint
+{
+public:
+  LengthGeometricConstraint(size_t i, size_t j, double minLength, double maxLength, double importance)
+    : BinaryGeometricConstraint(i, j, importance), minLength(minLength), maxLength(maxLength) {}
+
+  virtual void apply(std::vector<Vector3>& coordinates, double amount)
+  {
+    Vector3 A = coordinates[i];
+    Vector3 B = coordinates[j];
+    jassert(A.exists() && B.exists());
+    Vector3 D = (B - A);
+    double oldNorm = D.l2norm();
+    jassert(oldNorm);
+    if (!oldNorm)
+      return;
+    double length = juce::jlimit(minLength, maxLength, oldNorm);
+    if (length == oldNorm)
+      return;
+    double newNorm = oldNorm + importance * amount * (length - oldNorm);
+    D *= newNorm / (2 * oldNorm);
+    Vector3 M = (A + B) / 2.0;
+    coordinates[i] = M - D;
+    coordinates[j] = M + D;
+  }
+
+  virtual double computeError(const std::vector<Vector3>& coordinates)
+  {
+    Vector3 A = coordinates[i];
+    Vector3 B = coordinates[j];
+    jassert(A.exists() && B.exists());
+    double l = (A - B).l2norm();
+    if (l < minLength)
+      return fabs(l - minLength);
+    else if (l > maxLength)
+      return fabs(l - maxLength);
+    else
+      return 0.0;
+  }
+
+protected:
+  double minLength, maxLength;
+};
+
+class RefineCAlphaPositionsInferenceStep : public SharedParallelInferenceStep
+{
+public:
+  RefineCAlphaPositionsInferenceStep(const String& name, ProteinResiduePairFeaturesPtr featureFunction)
+    : SharedParallelInferenceStep(name, new RegressionInferenceStep(name)), featureFunction(featureFunction) {}
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+  {
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    if (protein != currentInputProtein)
+    {
+      RefineCAlphaPositionsInferenceStep* nonConstThis = const_cast<RefineCAlphaPositionsInferenceStep* >(this);
+      nonConstThis->currentInputProtein = protein;
+      nonConstThis->inputProteinChangedCallback(protein);
+    }
+    return pairsInContact.size();// + protein->getLength() - 2;
+  }
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return featureFunction->compute(input.dynamicCast<Protein>(), pairsInContact[index].first, pairsInContact[index].second);}
+
+  ProteinPtr currentSupervisionProtein;
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  {
+    ProteinPtr protein = supervision.dynamicCast<Protein>();
+    const_cast<RefineCAlphaPositionsInferenceStep*>(this)->currentSupervisionProtein = protein;
+    jassert(protein);
+    CartesianCoordinatesSequencePtr correctCalphaTrace = protein->getCAlphaTrace();
+    jassert(correctCalphaTrace); 
+
+    double target;
+    if (index < pairsInContact.size())
+    {
+      size_t i = pairsInContact[index].first;
+      size_t j = pairsInContact[index].second;
+      jassert(j > i);
+
+      if (!correctCalphaTrace->hasPosition(i) || !correctCalphaTrace->hasPosition(j))
+        return ObjectPtr();
+
+      target = (correctCalphaTrace->getPosition(i) - correctCalphaTrace->getPosition(j)).l2norm();
+    }
+    else
+    {
+      index -= pairsInContact.size();
+      jassert(index < protein->getLength() - 2);
+      Vector3 a = correctCalphaTrace->getPosition(index);
+      Vector3 b = correctCalphaTrace->getPosition(index + 1);
+      Vector3 c = correctCalphaTrace->getPosition(index + 2);
+      if (!a.exists() || !b.exists() || !c.exists())
+        return ObjectPtr();
+      target = (a - b).angle(c - b);
+    }
+    return squareFunction(addConstantScalarFunction(-target));
+  }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  {
+    VectorObjectContainerPtr res = new VectorObjectContainer(T("Constraints"));
+   /* ProteinPtr protein = input.dynamicCast<Protein>();
+    size_t n = protein->getLength();
+    for (size_t i = 0; i < n - 1; ++i)
+    {
+      res->append(new LengthGeometricConstraint(i, i + 1, 3.65, 3.95, 1.0));
+      res->append(new LengthGeometricConstraint(i, i + 1, 3.8, 3.8, 0.1));
+      if (i > 0)
+      {
+        res->append(new AngleGeometricConstraint(i, 0.95, 2.75, 1.0));
+        res->append(new AngleGeometricConstraint(i, 1.85, 1.85, 0.1));
+      }
+    }*/
+    return res;
+  }
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    VectorObjectContainerPtr constraints = output.dynamicCast<VectorObjectContainer>();
+    ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
+    jassert(constraints && scalar);
+    if (scalar->getValue() <= 0.0)
+      return;
+
+   /* CartesianCoordinatesSequencePtr correct = currentSupervisionProtein->getCAlphaTrace();
+    if (!correct->hasPosition(i) || !correct->hasPosition(j))
+      return;
+    double pouet = (correct->getPosition(i) - correct->getPosition(j)).l2norm();
+    if (scalar->getValue() && fabs(scalar->getValue() - pouet) > 0.1)
+      std::cout << "ERROR = " << fabs(scalar->getValue() - pouet) << " correct = " << pouet << " predicted = " << scalar->getValue() << std::endl;
+*/
+    if (index < pairsInContact.size())
+    {
+      size_t i = pairsInContact[index].first;
+      size_t j = pairsInContact[index].second;
+
+      if (j == i + 1)
+        return;
+      double value = scalar->getValue();
+      constraints->append(new LengthGeometricConstraint(i, j, scalar->getValue(), scalar->getValue(), 1.0));
+    }
+    else
+    {
+      index -= pairsInContact.size();
+      constraints->append(new AngleGeometricConstraint(index + 1, scalar->getValue(), scalar->getValue(), 100.0));
+    }
+  }
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectPtr res = SharedParallelInferenceStep::run(context, input, supervision, returnCode);
+    VectorObjectContainerPtr constraints = res.dynamicCast<VectorObjectContainer>();
+    jassert(constraints && currentInputCalphaTrace);
+
+    CartesianCoordinatesSequencePtr predictedCalphaTrace = currentInputCalphaTrace->clone();
+    for (size_t iteration = 0; iteration < 10; ++iteration)
+    {
+      std::vector<size_t> order;
+      RandomGenerator::getInstance().sampleOrder(constraints->size(), order);
+      double error = 0.0;
+      for (size_t i = 0; i < order.size(); ++i)
+      {
+        GeometricConstraintPtr constraint = constraints->getAndCast<GeometricConstraint>(i);
+        jassert(constraint);
+        error += constraint->computeError(predictedCalphaTrace->getVectorOfPositions());
+        constraint->apply(predictedCalphaTrace->getVectorOfPositions(), 1.0);
+      }
+      //std::cout << iteration << " Mean error before : " << error / order.size() << std::endl;
+    }
+    return predictedCalphaTrace;// ProteinCAlphaTraceUpdateInferenceStep::applyCAlphaConstraints(predictedCalphaTrace, true, false);
+  }
+
+private:
+  ProteinResiduePairFeaturesPtr featureFunction;
+
+  ProteinPtr currentInputProtein;
+  CartesianCoordinatesSequencePtr currentInputCalphaTrace;
+  KDTreePtr kdTree;
+  std::vector< std::pair<size_t, size_t> > pairsInContact;
+
+  void inputProteinChangedCallback(ProteinPtr protein)
+  {
+    double contactRadius = 12.0;
+
+    kdTree = new KDTree(3);
+    currentInputCalphaTrace = protein->getCAlphaTrace();
+    jassert(currentInputCalphaTrace);
+    size_t n = protein->getLength();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Vector3 p = currentInputCalphaTrace->getPosition(i);
+      if (p.exists())
+        kdTree->insert(i, p);
+    }
+
+    pairsInContact.clear();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Vector3 p = currentInputCalphaTrace->getPosition(i);
+      if (p.exists())
+      {
+        std::vector<size_t> indices;
+        while (indices.size() < 2)
+        {
+          indices.clear();
+          kdTree->findPointsInSphere(p, contactRadius, indices);
+          contactRadius *= 1.5;
+        }
+
+        // add some randomly selected contacts
+        //for (size_t k = 0; k < 30; ++k)
+        //  indices.push_back(RandomGenerator::getInstance().sampleSize(n));
+
+        for (size_t jj = 0; jj < indices.size(); ++jj)
+        {
+          size_t j = indices[jj];
+          if (j <= i)
+            continue;
+        //  if (abs((int)i - (int)j) <= 6 && RandomGenerator::getInstance().sampleBool(0.9))
+        //    continue; // skip short links
+          pairsInContact.push_back(std::make_pair(i, j));
+        }
+      }
+    }
+  }
+};
+
+typedef ReferenceCountedObjectPtr<RefineCAlphaPositionsInferenceStep> RefineCAlphaPositionsInferenceStepPtr;
+
+class TriDimProteinResiduePairFeatures : public ProteinResiduePairFeatures
+{
+public:
+  featureGenerator pairGeometricFeatures(const Vector3& s1, const Vector3& s2, const Vector3& s3,
+                                        const Vector3& d1, const Vector3& d2, const Vector3& d3)
+  {
+    if (!s2.exists() || !d2.exists())
+      return;
+    featureCall(0) numberLogFeatures((s2 - d2).l2norm());
+    if (!s1.exists() || !d1.exists())
+      return;
+    featureCall(1) numberLogFeatures((s2 - s1).dotProduct(d2 - d1));
+    if (!s3.exists() || !d3.exists())
+      return;
+    featureCall(2) numberLogFeatures((s3 - s1).dotProduct(d3 - d1));
+    Vector3 snormal = (s2 - s1).crossProduct(s3 - s2);
+    Vector3 dnormal = (d2 - d1).crossProduct(d3 - d2);
+    featureCall(3) numberLogFeatures(snormal.dotProduct(dnormal));
+  }
+
+  featureGenerator directedFeatures(CartesianCoordinatesSequencePtr calphaTrace, size_t sourceIndex, size_t targetIndex)
+  {
+    size_t n = calphaTrace->size();
+    Vector3 beforeTarget = calphaTrace->getPositionChecked((int)targetIndex - 1);
+    Vector3 target = calphaTrace->getPosition(targetIndex);
+    Vector3 afterTarget = calphaTrace->getPositionChecked((int)targetIndex + 1);
+
+    for (int delta = -5; delta <= 5; ++delta)
+    {
+      int i = (int)sourceIndex + delta;
+      Vector3 beforeSource = calphaTrace->getPositionChecked(i - 1);
+      Vector3 source = calphaTrace->getPositionChecked(i);
+      Vector3 afterSource = calphaTrace->getPositionChecked(i + 1);
+      featureCall(delta + 5) pairGeometricFeatures(beforeSource, source, afterSource, beforeTarget, target, afterTarget);
+    }
+  }
+
+  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  {
+    CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
+    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    Vector3 p1 = calphaTrace->getPosition(firstPosition);
+    Vector3 p2 = calphaTrace->getPosition(secondPosition);
+    jassert(p1.exists() && p2.exists());
+    
+    featureScope(aminoAcidSequence->getIndex(firstPosition))
+      featureScope(aminoAcidSequence->getIndex(secondPosition))
+      {
+        featureCall(0) positiveNumberLogFeatures((double)abs((int)secondPosition - (int)firstPosition), 5);
+        featureCall(1) positiveNumberLogFeatures((p1 - p2).l2norm());  
+      }
+
+    //featureCall(aminoAcidSequence->getIndex(secondPosition)) directedFeatures(calphaTrace, firstPosition, secondPosition);
+    //featureCall(aminoAcidSequence->getIndex(firstPosition)) directedFeatures(calphaTrace, secondPosition, firstPosition);*/
+  }
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -409,6 +825,11 @@ public:
     String inferenceStepName = stack->getInference(1)->getName();
     if (inferenceStepName == T("Init Step"))
       return 0.0;
+    if (inferenceStepName == T("CA Update Pass"))
+    {
+      //RefineCAlphaPositionsInferenceStepPtr step = stack->getParentInference().dynamicCast<RefineCAlphaPositionsInferenceStep>();
+      return 0.01;
+    }
     if (inferenceStepName.startsWith(T("RR")) || inferenceStepName.startsWith(T("DR")))
     {
       LabelPtr label = supervision.dynamicCast<Label>();
@@ -453,7 +874,7 @@ public:
     if (inferenceStepName.startsWith(T("BBB")))
       learningRate = constantIterationFunction(0.1);
     else if (inferenceStepName.startsWith(T("CA")))
-      learningRate = constantIterationFunction(0.0001);
+      learningRate = constantIterationFunction(0.5);
     else if (inferenceStepName.startsWith(T("TS")))
       learningRate = constantIterationFunction(0.0001);
     else
@@ -497,7 +918,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 15;
+    return iterationNumber < 50;
   }
 
   virtual void preLearningStepCallback(InferenceStepPtr step)
@@ -609,7 +1030,7 @@ int main(int argc, char** argv)
   std::cout << "CB513 " << ProteinStatisticsCalculator::computeStatistics(cb513Proteins) << std::endl;*/
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 35);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 70);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPair());
 
@@ -693,6 +1114,8 @@ int main(int argc, char** argv)
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
   pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
   pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
+  pairFeatureFunction->addSubFeatures(new TriDimProteinResiduePairFeatures());
+  //pairFeatureFunction->addSubFeatures(proteinPositionIndexResiduePairFeature());
 
   ProteinResidueFeaturesPtr calphaUpdateFeatures = new MyCalphaUpdateFeatures();
 
@@ -711,7 +1134,8 @@ int main(int argc, char** argv)
     //= new SampleRandomCAlphaTraceInferenceStep();
   initStep->setName(T("Init Step"));
   proteinInference->appendStep(initStep);
-  InferenceStepPtr calphaUpdateStep = new ProteinCAlphaTraceUpdateInferenceStep(T("CA Update Pass"), calphaUpdateFeatures);
+  //InferenceStepPtr calphaUpdateStep = new ProteinCAlphaTraceUpdateInferenceStep(T("CA Update Pass"), calphaUpdateFeatures);
+  InferenceStepPtr calphaUpdateStep = new RefineCAlphaPositionsInferenceStep(T("CA Update Pass"), pairFeatureFunction);
 
   for (size_t i = 0; i < 10; ++i)
   {

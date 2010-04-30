@@ -75,6 +75,25 @@ ProteinResiduePairFeaturesPtr lbcpp::separationLengthResiduePairFeatures()
   {return new SeparationLengthProteinResiduePairFeatures();}
 
 /*
+** ProteinPositionIndexResidueFeature
+*/
+class ProteinPositionIndicesResiduePairFeature : public ProteinResiduePairFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+    {featureScope(firstPosition) featureSense(secondPosition);}
+
+  virtual String toString() const
+    {return T("positionIndex");}
+
+  virtual String getName() const
+    {return T("positionIndex");}
+};
+
+ProteinResiduePairFeaturesPtr lbcpp::proteinPositionIndexResiduePairFeature()
+  {return new ProteinPositionIndicesResiduePairFeature();}
+
+/*
 ** Classes
 */
 void declareProteinResiduePairFeaturesClasses()
