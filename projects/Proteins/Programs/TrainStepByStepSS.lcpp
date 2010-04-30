@@ -129,10 +129,8 @@ int main(int argc, char** argv)
   String proteinsDirectory("/Users/jbecker/Documents/Workspace/CASP9/CB513");
   String prefixResults("result");
   int currentFold = 0;
-  //String inferenceModel("CO");
-  String predictionTarget("SS3");
+  std::vector<String> predictionTargets;
   int maxIteration = 5;
-  int maxPass = 5;
   int wAA = 10;
   int wPSSM = 10;
   int wSS3 = 10;
@@ -149,30 +147,28 @@ int main(int argc, char** argv)
   bool isTestVersion = false;
   
   ArgumentSet arguments;
-  arguments.insert(new StringArgument(T("ProteinsDirectory"), &proteinsDirectory));
-  arguments.insert(new StringArgument(T("PrefixResults"), &prefixResults));
-  arguments.insert(new IntegerArgument(T("CurrentFold"), &currentFold));
-  //arguments.insert(new StringArgument(T("InferenceModel"), &inferenceModel));
-  arguments.insert(new StringArgument(T("PredictionTarget"), &predictionTarget));
-  arguments.insert(new IntegerArgument(T("MaximumIteration"), &maxIteration));
-  arguments.insert(new IntegerArgument(T("MaximumPass"), &maxPass));
-  arguments.insert(new IntegerArgument(T("AminoAcidWindow"), &wAA));
-  arguments.insert(new IntegerArgument(T("PSSMWindow"), &wPSSM));
-  arguments.insert(new IntegerArgument(T("NumberOfAAIndex"), &numberAAIndex));
-  arguments.insert(new IntegerArgument(T("PropertyWindow"), &wProp));
-  arguments.insert(new IntegerArgument(T("SS3Window"), &wSS3));
-  arguments.insert(new IntegerArgument(T("SS8Window"), &wSS8));
-  arguments.insert(new IntegerArgument(T("SAWindow"), &wSA));
-  arguments.insert(new DoubleArgument(T("Regularizer"), &regularizer));
-  arguments.insert(new DoubleArgument(T("InitialLearningRate"), &initialLearningRate));
-  arguments.insert(new IntegerArgument(T("NumberIterationLearningRate"), &numberIterationLearningRate));
-  arguments.insert(new BooleanArgument(T("UseSavedModel"), &useSavedModel));
-  arguments.insert(new StringArgument(T("SavedModelDirectory"), &savedModelDirectory));
+  arguments.insert(new StringArgument(T("ProteinsDirectory"), proteinsDirectory));
+  arguments.insert(new StringArgument(T("PrefixResults"), prefixResults));
+  arguments.insert(new IntegerArgument(T("CurrentFold"), currentFold));
+  arguments.insert(new TargetExpressionArgument(T("PredictionTargets"), predictionTargets));
+  arguments.insert(new IntegerArgument(T("MaximumIteration"), maxIteration));
+  arguments.insert(new IntegerArgument(T("AminoAcidWindow"), wAA));
+  arguments.insert(new IntegerArgument(T("PSSMWindow"), wPSSM));
+  arguments.insert(new IntegerArgument(T("NumberOfAAIndex"), numberAAIndex));
+  arguments.insert(new IntegerArgument(T("PropertyWindow"), wProp));
+  arguments.insert(new IntegerArgument(T("SS3Window"), wSS3));
+  arguments.insert(new IntegerArgument(T("SS8Window"), wSS8));
+  arguments.insert(new IntegerArgument(T("SAWindow"), wSA));
+  arguments.insert(new DoubleArgument(T("Regularizer"), regularizer));
+  arguments.insert(new DoubleArgument(T("InitialLearningRate"), initialLearningRate));
+  arguments.insert(new IntegerArgument(T("NumberIterationLearningRate"), numberIterationLearningRate));
+  arguments.insert(new BooleanArgument(T("UseSavedModel"), useSavedModel));
+  arguments.insert(new StringArgument(T("SavedModelDirectory"), savedModelDirectory));
   
-  arguments.insert(new BooleanArgument(T("IsTestVersion"), &isTestVersion));
+  arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
 
   String testFeatures;
-  arguments.insert(new StringArgument(T("TestFeatures"), &testFeatures));
+  arguments.insert(new StringArgument(T("TestFeatures"), testFeatures));
 
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -355,14 +351,9 @@ int main(int argc, char** argv)
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
   Protein1DInferenceStepPtr step;
-  /*
-  for (size_t i = 0; i < 10; ++i)
-  {
-    step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
-    proteinInference->appendStep(step);
-  }
-  */
-  for (size_t i = 0; i < (size_t) maxPass; ++i) {
+
+  for (size_t i = 0; i < predictionTargets.size(); ++i) {
+    String predictionTarget = predictionTargets[i];
     if (predictionTarget.contains(T("SS3")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS3_Pass_") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));

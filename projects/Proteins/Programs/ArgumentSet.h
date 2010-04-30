@@ -36,7 +36,7 @@ protected:
 class IntegerArgument : public Argument
 {
 public:
-  IntegerArgument(const String& name, int* destination)
+  IntegerArgument(const String& name, int& destination)
     : Argument(name), destination(destination) {}
   
   virtual String toString() const
@@ -46,41 +46,38 @@ public:
   {
     if (stopIndex - startIndex < 1)
       return 0;
-    *destination = (int) strtol(str[++startIndex], (char**) NULL, 10);
+    destination = (int) strtol(str[++startIndex], (char**) NULL, 10);
     return 2;
   }
   
   virtual String getStringValue() const
-  {
-    jassert(destination);
-    return String(*destination);
-  }
+    {return String(destination);}
   
 private:
-  int* destination;
+  int& destination;
 };
 
 class BooleanArgument : public Argument
 {
 public:
-  BooleanArgument(const String& name, bool* destination)
+  BooleanArgument(const String& name, bool& destination)
     : Argument(name), destination(destination)
-    {*destination = false;}
+    {destination = false;}
   
   virtual String toString() const
     {return name + " (bool)";}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
-    *destination = true;
+    destination = true;
     
     if (stopIndex - startIndex == 0)
       return 1;
     
     startIndex++;
-    if (strcmp(str[startIndex], "false") || strcmp(str[startIndex], "true"))
+    if (!strcmp(str[startIndex], "false") || !strcmp(str[startIndex], "true"))
     {
-      *destination = strcmp(str[startIndex], "true") == 0 ? true : false;
+      destination = strcmp(str[startIndex], "true") == 0 ? true : false;
       return 2;
     }
     
@@ -88,16 +85,16 @@ public:
   }
   
   String getStringValue() const
-    {return (*destination) ? T("True") : T("False");}
+    {return (destination) ? T("True") : T("False");}
    
 private:
-  bool* destination;
+  bool& destination;
 };
 
 class StringArgument : public Argument
 {
 public:
-  StringArgument(const String& name, String* destination)
+  StringArgument(const String& name, String& destination)
     : Argument(name), destination(destination) {}
   
   virtual String toString() const
@@ -109,21 +106,21 @@ public:
       return 0;
     
     startIndex++;
-    *destination = str[startIndex];
+    destination = str[startIndex];
     return 2;
   }
   
   String getStringValue() const
-    {return *destination;}
+    {return destination;}
 
 private:
-  String* destination;
+  String& destination;
 };
 
 class DoubleArgument : public Argument
 {
 public:
-  DoubleArgument(String name, double* destination)
+  DoubleArgument(String name, double& destination)
     : Argument(name), destination(destination)  {}
   
   virtual String toString() const
@@ -134,15 +131,58 @@ public:
     if (stopIndex - startIndex < 1)
       return 0;
 
-    *destination = (double) strtod(str[++startIndex], (char**) NULL);
+    destination = (double) strtod(str[++startIndex], (char**) NULL);
     return 2;
   }
   
   virtual String getStringValue() const
-    {return String(*destination);}
+    {return String(destination);}
   
 private:
-  double* destination;
+  double& destination;
+};
+
+class TargetExpressionArgument : public Argument
+{
+public:
+  TargetExpressionArgument(String name, std::vector<String>& destination)
+  : Argument(name), destination(destination) {}
+  
+  virtual String toString() const
+    {return name + " ((targets)nbPasses(targets)nbPasses...)";}
+  
+  virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
+  {
+    if (stopIndex - startIndex < 1)
+      return 0;
+
+    targets = str[++startIndex];
+    int beginIndex = targets.indexOfChar(T('('));
+    while (beginIndex != -1 && beginIndex != targets.length())
+    {
+      int endIndex = targets.indexOfChar(beginIndex, T(')'));
+      if (endIndex == -1)
+        return 0;
+      
+      String target(targets.substring(beginIndex+1, endIndex));
+      beginIndex = targets.indexOfChar(endIndex, T('('));
+      if (beginIndex == -1)
+        beginIndex = targets.length();
+      
+      size_t numPasses = targets.substring(endIndex+1, beginIndex).getIntValue();
+      for (size_t i = 0; i < numPasses; ++i)
+        destination.push_back(target);
+    }
+    
+    return 2;
+  }
+  
+  virtual String getStringValue() const
+    {return targets;}
+  
+private:
+  std::vector<String>& destination;
+  String targets;
 };
 
 class ArgumentSet
