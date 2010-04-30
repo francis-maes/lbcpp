@@ -40,11 +40,10 @@ public:
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
-    ObjectPtr supervisionObject = getSupervision(supervision);
-    jassert(supervisionObject);
-    ObjectContainerPtr objects = supervisionObject.dynamicCast<ObjectContainer>();
-    jassert(objects);
-    return objects->get(index);
+    if (!supervision)
+      return ObjectPtr();
+    ObjectContainerPtr objects = getSupervision(supervision).dynamicCast<ObjectContainer>();
+    return objects ? objects->get(index) : ObjectPtr();
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
