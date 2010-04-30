@@ -7,6 +7,14 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
+  virtual double getProbabilityToCreateExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
+  {
+    String inferenceStepName = stack->getInference(1)->getName();
+    if (inferenceStepName.startsWith(T("DR")))
+        return 0.2;
+    return 1.0;
+  }
+  
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
   {
     static const bool useConstantLearningRate = false;
@@ -15,9 +23,9 @@ public:
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
-    
-    // FIXME: find another way to test the target
-    if (labels == BinaryClassificationDictionary::getInstance()) {
+
+    String inferenceStepName = stack->getInference(1)->getName();
+    if (inferenceStepName.startsWith(T("SA")) || inferenceStepName.startsWith(T("DR"))) {
       classifier->setL2Regularizer(150);
       std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: 150";
     }
