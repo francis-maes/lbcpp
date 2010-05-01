@@ -19,7 +19,7 @@ class DSSPFileParser : public TextObjectParser
 {
 public:
   DSSPFileParser(const File& file, ProteinPtr protein)
-    : TextObjectParser(file), protein(protein), firstResidueNumber(-1), lastResidueNumber(-1)
+    : TextObjectParser(file), protein(protein), firstResidueNumber(-1)
   {
     jassert(protein->getAminoAcidSequence());
     std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
@@ -47,14 +47,14 @@ public:
       return true;
     }
 
+    if (serialNumber == 1)
+      firstChainID = line.substring(11, 12);
+
     if (line.length() < 100)
     {
       Object::error(T("DSSPFileParser::parseLine"), T("Line is not long enough"));
       return false;
     }
-
-    if (line.substring(11, 12) != T("A") && line.substring(11, 12) != T(" "))
-      return true;
 
     int newSerialNumber = line.substring(0, 5).trim().getIntValue();
     if (newSerialNumber != (int)serialNumber)
@@ -63,6 +63,9 @@ public:
       return false;
     }
     ++serialNumber;
+    
+    if (line.substring(11, 12) != firstChainID)
+      return true;
     
     String residueNumberString = line.substring(5, 10).trim();
     if (residueNumberString.isEmpty())
@@ -78,8 +81,6 @@ public:
       Object::error(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + lbcpp::toString(residueNumber));
       return false;
     }
-
-    lastResidueNumber = residueNumber;
 
     /*
     ** Amino Acid
@@ -136,16 +137,18 @@ public:
       return false;
     }
 
-    LabelSequencePtr proteinAminoAcidSequence = protein->getAminoAcidSequence();
-    
+    size_t nbReadResidues = protein->getLength();
+    for (; aminoAcidSequence->getIndex(nbReadResidues-1) < 0; --nbReadResidues);
+
+    LabelSequencePtr proteinAminoAcidSequence = protein->getAminoAcidSequence(); 
     size_t nbMaxCorrectAlignment = 0;
     size_t bestShift = 0;
-    for (size_t i = 0; i < protein->getLength() - lastResidueNumber; ++i)
+    for (size_t i = 0; i <= protein->getLength() - nbReadResidues; ++i)
     {
       size_t nbCorrectAlignment = 0;
-      for (size_t j = 0; j < lastResidueNumber; ++j)
+      for (size_t j = 0; j < nbReadResidues; ++j)
       {
-        if (proteinAminoAcidSequence->getString(i) == aminoAcidSequence->getString(j))
+        if (proteinAminoAcidSequence->getString(i + j) == aminoAcidSequence->getString(j))
           ++nbCorrectAlignment;
       }
 
@@ -155,8 +158,7 @@ public:
         bestShift = i;
       }
     }
-    
-    //std::cout << "Real AA: " << proteinAminoAcidSequence->toString() << std::endl;
+
     std::cout << "Gap:";
     for (size_t i = 0; i < bestShift; ++i)
       std::cout << " ";
@@ -176,7 +178,7 @@ public:
       dsspSecondaryStructureSequence->setIndex(bestShift + i, this->dsspSecondaryStructureSequence->getIndex(i));
       solventAccesibilitySequence->setValue(bestShift + i, this->solventAccesibilitySequence->getValue(i));
     }
-    std::cout << dsspSecondaryStructureSequence->toString() << std::endl;
+    std::cout << "SS :" << dsspSecondaryStructureSequence->toString() << std::endl;
 
     setResult(dsspSecondaryStructureSequence);
     protein->setObject(dsspSecondaryStructureSequence);
@@ -191,7 +193,7 @@ protected:
   ScalarSequencePtr solventAccesibilitySequence;
   int serialNumber;
   int firstResidueNumber;
-  int lastResidueNumber;
+  String firstChainID;
 };
 
 }; /* namespace lbcpp */
