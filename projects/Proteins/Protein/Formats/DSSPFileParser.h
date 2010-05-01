@@ -19,9 +19,9 @@ class DSSPFileParser : public TextObjectParser
 {
 public:
   DSSPFileParser(const File& file, ProteinPtr protein)
-    : TextObjectParser(file), protein(protein), aminoAcidSequence(protein->getAminoAcidSequence()), firstResidueNumber(-1)
+    : TextObjectParser(file), protein(protein), firstResidueNumber(-1)
   {
-    jassert(aminoAcidSequence);
+    jassert(protein->getAminoAcidSequence());
     std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
   }
 
@@ -39,6 +39,7 @@ public:
     {
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
+        aminoAcidSequence = protein->createEmptyObject(T("AminoAcidSequence"));
         dsspSecondaryStructureSequence = protein->createEmptyObject(T("DSSPSecondaryStructureSequence"));
         solventAccesibilitySequence = protein->createEmptyObject(T("NormalizedSolventAccessibilitySequence"));
         ++serialNumber;
@@ -78,12 +79,8 @@ public:
     /*
     ** Amino Acid
     */
-    String aminoAcidCode = line.substring(10, 14).trim();
-    if (aminoAcidCode != aminoAcidSequence->getString(residueNumber))
-    {
-      Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not match: ") + aminoAcidCode);
-      return false;
-    }
+    size_t aminoAcidCode = AminoAcidDictionary::getTypeFromOneLetterCode(line.substring(10, 11).trim().getLastCharacter());
+    aminoAcidSequence->setIndex((size_t)residueNumber, aminoAcidCode);
     
     /*
     ** 8-state Secondary Structure
@@ -133,6 +130,44 @@ public:
       Object::error(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
       return false;
     }
+
+    LabelSequencePtr proteinAminoAcidSequence = protein->getAminoAcidSequence();
+    
+    size_t nbMaxCorrectAlignment = 0;
+    size_t bestShift = 0;
+    for (size_t i = 0; i < protein->getLength() - aminoAcidSequence->size(); ++i)
+    {
+      size_t nbCorrectAlignment = 0;
+      for (size_t j = 0; j < aminoAcidSequence->size(); ++j)
+      {
+        if (proteinAminoAcidSequence->getString(i) == aminoAcidSequence->getString(j))
+          ++nbCorrectAlignment;
+      }
+
+      if (nbCorrectAlignment > nbMaxCorrectAlignment)
+      {
+        nbMaxCorrectAlignment = nbCorrectAlignment;
+        bestShift = i;
+      }
+    }
+    
+    if (nbMaxCorrectAlignment != aminoAcidSequence->size())
+    {
+      Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches"));
+      return false;
+    }
+
+    LabelSequencePtr dsspSecondaryStructureSequence = protein->createEmptyObject(T("DSSPSecondaryStructureSequence"));
+    ScalarSequencePtr solventAccesibilitySequence = protein->createEmptyObject(T("NormalizedSolventAccessibilitySequence"));
+    
+    for (size_t i = 0; i < aminoAcidSequence->size(); ++i)
+    {
+      dsspSecondaryStructureSequence->setIndex(i, this->dsspSecondaryStructureSequence->getIndex(bestShift + i));
+      solventAccesibilitySequence->setValue(i, this->solventAccesibilitySequence->getValue(bestShift + i));
+    }
+    
+    std::cout << "Real AA: " << proteinAminoAcidSequence->toString() << std::endl;
+    std::cout << "DSSP AA: " << aminoAcidSequence->toString() << std::endl;
 
     setResult(dsspSecondaryStructureSequence);
     protein->setObject(dsspSecondaryStructureSequence);
