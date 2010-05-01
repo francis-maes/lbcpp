@@ -10,12 +10,8 @@ public:
   virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
   {
     String inferenceStepName = stack->getInference(1)->getName();
-    std::cout << inferenceStepName << std::endl;
     if (inferenceStepName.startsWith(T("DR")))
-    {
-      std::cout << "DefaultInferenceLearnerCallback::getProbabilityToCreateExample - " << drProbability << std::endl;
       return drProbability;
-    }
     return 1.0;
   }
   
@@ -109,6 +105,9 @@ public:
   virtual RegressorPtr createRegressor(InferenceStackPtr stack)
     {jassert(factory); return factory->createRegressor(stack);}
   
+  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
+    {jassert(factory); return factory->getProbabilityToCreateAnExample(stack, input, supervision);}
+  
   void setFactory(InferenceLearnerCallbackPtr factory)
     {this->factory = factory;}
   
@@ -146,16 +145,19 @@ public:
   , cache(new InferenceResultCache()) {}
   
   virtual ~MultiInferenceLearnerCallback()
-  {}
+    {}
   
   virtual InferenceContextPtr createContext()
-  {return factory->createContext();}
+    {return factory->createContext();}
   
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
-  {return factory->createClassifier(stack, labels);}
+    {return factory->createClassifier(stack, labels);}
   
   virtual RegressorPtr createRegressor(InferenceStackPtr stack)
-  {return factory->createRegressor(stack);}
+    {return factory->createRegressor(stack);}
+  
+  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
+    {return factory->getProbabilityToCreateAnExample(stack, input, supervision);}
   
   virtual void preLearningIterationCallback(size_t iterationNumber)
   {

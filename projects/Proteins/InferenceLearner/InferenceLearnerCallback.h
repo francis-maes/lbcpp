@@ -22,8 +22,8 @@ public:
   virtual RegressorPtr createRegressor(InferenceStackPtr stack) = 0;
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels) = 0;
 
-  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
-    {return 1.0;}
+  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision) = 0;
+  //{std::cout << "Using default probability" << std::endl; return 1.0;}
 
   virtual void preLearningIterationCallback(size_t iterationNumber)
     {}
