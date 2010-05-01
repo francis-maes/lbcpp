@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-  String proteinsDirectory("/Users/jbecker/Documents/Workspace/CASP9/CB513");
+  String proteinsDirectory("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version");
   String prefixResults("result");
   int currentFold = 0;
   std::vector<String> predictionTargets;
@@ -246,6 +246,7 @@ int main(int argc, char** argv)
   /*
   ** Retreive and compute AAIndex for each protein
   */
+  /*
   File file("/scratch/jbecker/aaindex1");
   if (isTestVersion)
     file = T("/Users/jbecker/Documents/Workspace/CASP9/aaindex1");
@@ -271,7 +272,7 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < clusteredAAIndex.size(); ++i) {
     std::cout << lbcpp::toString(clusteredAAIndex[i]) << std::endl;
   }
-
+  */
   ObjectContainerPtr proteins;
   if (isTestVersion)
     proteins = proteinsStream->load(7)->randomize();
@@ -281,7 +282,7 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < proteins->size(); ++i)
   {
     ProteinPtr protein = (ProteinPtr) proteins->get(i);
-    protein->computePropertiesFrom(clusteredAAIndex);
+//    protein->computePropertiesFrom(clusteredAAIndex);
     protein->computeMissingFields();
   }
 
