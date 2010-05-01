@@ -19,7 +19,7 @@ class DSSPFileParser : public TextObjectParser
 {
 public:
   DSSPFileParser(const File& file, ProteinPtr protein)
-    : TextObjectParser(file), protein(protein), firstResidueNumber(-1)
+    : TextObjectParser(file), protein(protein), firstResidueNumber(-1), lastResidueNumber(-1)
   {
     jassert(protein->getAminoAcidSequence());
     std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
@@ -52,6 +52,10 @@ public:
       Object::error(T("DSSPFileParser::parseLine"), T("Line is not long enough"));
       return false;
     }
+
+    if (line.substring(11, 12) != T("A") && line.substring(11, 12) != T(" "))
+      return true;
+
     int newSerialNumber = line.substring(0, 5).trim().getIntValue();
     if (newSerialNumber != (int)serialNumber)
     {
@@ -64,8 +68,7 @@ public:
     if (residueNumberString.isEmpty())
       return true; // skip
 
-    int residueNumber = residueNumberString.getIntValue() - 1;
-    
+    int residueNumber = residueNumberString.getIntValue();
     if (firstResidueNumber == -1)
       firstResidueNumber = residueNumber;
     residueNumber -= firstResidueNumber;
@@ -76,10 +79,12 @@ public:
       return false;
     }
 
+    lastResidueNumber = residueNumber;
+
     /*
     ** Amino Acid
     */
-    size_t aminoAcidCode = AminoAcidDictionary::getTypeFromOneLetterCode(line.substring(10, 11).trim().getLastCharacter());
+    size_t aminoAcidCode = AminoAcidDictionary::getTypeFromOneLetterCode(line.substring(13, 14).trim().getLastCharacter());
     aminoAcidSequence->setIndex((size_t)residueNumber, aminoAcidCode);
     
     /*
@@ -135,10 +140,10 @@ public:
     
     size_t nbMaxCorrectAlignment = 0;
     size_t bestShift = 0;
-    for (size_t i = 0; i < protein->getLength() - aminoAcidSequence->size(); ++i)
+    for (size_t i = 0; i < protein->getLength() - lastResidueNumber; ++i)
     {
       size_t nbCorrectAlignment = 0;
-      for (size_t j = 0; j < aminoAcidSequence->size(); ++j)
+      for (size_t j = 0; j < lastResidueNumber; ++j)
       {
         if (proteinAminoAcidSequence->getString(i) == aminoAcidSequence->getString(j))
           ++nbCorrectAlignment;
@@ -151,23 +156,27 @@ public:
       }
     }
     
-    if (nbMaxCorrectAlignment != aminoAcidSequence->size())
+    //std::cout << "Real AA: " << proteinAminoAcidSequence->toString() << std::endl;
+    std::cout << "Gap:";
+    for (size_t i = 0; i < bestShift; ++i)
+      std::cout << " ";
+    std::cout  << aminoAcidSequence->toString() << std::endl;
+    /*
+    if (nbMaxCorrectAlignment != lastResidueNumber)
     {
       Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches"));
       return false;
     }
-
+    */
     LabelSequencePtr dsspSecondaryStructureSequence = protein->createEmptyObject(T("DSSPSecondaryStructureSequence"));
     ScalarSequencePtr solventAccesibilitySequence = protein->createEmptyObject(T("NormalizedSolventAccessibilitySequence"));
     
-    for (size_t i = 0; i < aminoAcidSequence->size(); ++i)
+    for (size_t i = 0; i < aminoAcidSequence->size() - bestShift; ++i)
     {
-      dsspSecondaryStructureSequence->setIndex(i, this->dsspSecondaryStructureSequence->getIndex(bestShift + i));
-      solventAccesibilitySequence->setValue(i, this->solventAccesibilitySequence->getValue(bestShift + i));
+      dsspSecondaryStructureSequence->setIndex(bestShift + i, this->dsspSecondaryStructureSequence->getIndex(i));
+      solventAccesibilitySequence->setValue(bestShift + i, this->solventAccesibilitySequence->getValue(i));
     }
-    
-    std::cout << "Real AA: " << proteinAminoAcidSequence->toString() << std::endl;
-    std::cout << "DSSP AA: " << aminoAcidSequence->toString() << std::endl;
+    std::cout << dsspSecondaryStructureSequence->toString() << std::endl;
 
     setResult(dsspSecondaryStructureSequence);
     protein->setObject(dsspSecondaryStructureSequence);
@@ -182,6 +191,7 @@ protected:
   ScalarSequencePtr solventAccesibilitySequence;
   int serialNumber;
   int firstResidueNumber;
+  int lastResidueNumber;
 };
 
 }; /* namespace lbcpp */
