@@ -8,7 +8,7 @@ function launch {
 	expected_time=`expr $nbPass + 1`
 	expected_time=`expr $expected_time '*' 2`
 	
-cat << EOF
+qsub << EOF
 #$ -l h_vmem=2G 
 #$ -l h_rt=${expected_time}:00:00
 
@@ -23,7 +23,7 @@ EOF
 
 }
 
-target="(DR)10"
+target="(SS3)10"
 nbIteration="5"
 nbPass="10"
 
@@ -39,10 +39,10 @@ regularizer="10"
 initialLearningRate="2"
 numberIterationLearningRate="250000"
 
-useSavedModel="true"
-savedModelDirectory="DR_PROB"
+useSavedModel="false"
+savedModelDirectory="USED_MODEL_SS3-SS8"
 
-prefix=""
+prefix="CHECK_ENTROPY"
 database="SmallPDB/last_version"
 
 #for target in SA SS3-SA SS8-SA SS3-SS8-SA
@@ -55,12 +55,12 @@ database="SmallPDB/last_version"
 #  launch
 #done
 
-for drProb in 0.05 0.1 0.15 0.2 0.25 0.30 0.35 0.40 0.45 0.5 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1
-do
+#for drProb in 0.05 0.1 0.15 0.2 0.25 0.30 0.35 0.40 0.45 0.5 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1
+#do
 #	prefix="AAI_${aaindex}"
 #	savedModelDirectory="${prefix}_${target}"
-  prefix="DRPROB_$drProb"
-  savedModelDirectory="$prefix"
-  other="DRProbability $drProb"
+#  prefix="DRPROB_$drProb"
+#  savedModelDirectory="$prefix"
+#  other="DRProbability $drProb"
 	launch
-done
+#done
