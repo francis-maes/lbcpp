@@ -19,7 +19,7 @@ class DSSPFileParser : public TextObjectParser
 {
 public:
   DSSPFileParser(const File& file, ProteinPtr protein)
-    : TextObjectParser(file), protein(protein), aminoAcidSequence(protein->getAminoAcidSequence())
+    : TextObjectParser(file), protein(protein), aminoAcidSequence(protein->getAminoAcidSequence()), firstResidueNumber(-1)
   {
     jassert(aminoAcidSequence);
     std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
@@ -64,6 +64,11 @@ public:
       return true; // skip
 
     int residueNumber = residueNumberString.getIntValue() - 1;
+    
+    if (firstResidueNumber == -1)
+      firstResidueNumber = residueNumber;
+    residueNumber -= firstResidueNumber;
+    
     if (residueNumber < 0 || residueNumber >= (int)n)
     {
       Object::error(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + lbcpp::toString(residueNumber));
@@ -141,6 +146,7 @@ protected:
   LabelSequencePtr dsspSecondaryStructureSequence;
   ScalarSequencePtr solventAccesibilitySequence;
   int serialNumber;
+  int firstResidueNumber;
 };
 
 }; /* namespace lbcpp */
