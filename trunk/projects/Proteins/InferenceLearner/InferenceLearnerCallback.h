@@ -17,7 +17,7 @@ namespace lbcpp
 class InferenceLearnerCallback : public Object
 {
 public:
-  virtual InferenceContextPtr createContext() = 0;
+  virtual InferenceContextPtr createContext(bool doLearning) = 0;
 
   virtual RegressorPtr createRegressor(InferenceStackPtr stack) = 0;
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels) = 0;

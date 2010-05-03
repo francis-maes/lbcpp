@@ -69,15 +69,7 @@ public:
     {return angle != M_2_TIMES_PI;}
 
   static double normalize(double angle)
-  {
-    double res = fmod(angle, M_2_TIMES_PI);
-    if (res < -M_PI)
-      res += M_2_TIMES_PI;
-    else if (res > M_PI)
-      res -= M_2_TIMES_PI;
-    jassert(res >= -M_PI && res < M_PI);
-    return res;
-  }
+    {return normalizeAngle(angle);}
 
   static double compute(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d)
   {    

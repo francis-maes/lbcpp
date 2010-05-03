@@ -232,7 +232,7 @@ public:
   **
   ** @return scalar product result.
   */
-  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
+  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator, DotProductCache* cache = NULL) const;
 
   /**
   ** Multiplication by a scalar value.

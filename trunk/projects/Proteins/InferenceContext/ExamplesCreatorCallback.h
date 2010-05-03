@@ -76,7 +76,7 @@ public:
     for (LearningMachineMap::iterator it = learningMachines.begin(); it != learningMachines.end(); ++it)
     {
       LearningMachinePtr machine = it->first;
-      ObjectContainerPtr trainingData = it->second.examples->randomize();
+      ObjectContainerPtr trainingData = it->second.examples;//->randomize();
       std::cout << "Training " << it->second.name << " with " << trainingData->size() << " examples... " << std::flush;
       jassert(machine);
       machine->trainStochastic(trainingData);

@@ -137,28 +137,28 @@ FEATURE_GENERATOR_DEFAULT_IMPL(void) addWeightedSignsTo(DenseVectorPtr target, d
   _this().staticFeatureGenerator(staticVisitor);
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const SparseVectorPtr vector) const
+FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const SparseVectorPtr vector, FeatureGenerator::DotProductCache* cache) const
 {
   vector->ensureDictionary(_this().getDictionary());
-  impl::DotProductSparseVectorVisitor staticVisitor(vector);
+  impl::DotProductSparseVectorVisitor staticVisitor(vector, cache);
   _this().staticFeatureGenerator(staticVisitor);
   return staticVisitor.getResult();
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector) const
+FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const DenseVectorPtr vector, FeatureGenerator::DotProductCache* cache) const
 {
   vector->ensureDictionary(_this().getDictionary());
-  impl::DotProductDenseVectorVisitor staticVisitor(vector);
+  impl::DotProductDenseVectorVisitor staticVisitor(vector, cache);
   _this().staticFeatureGenerator(staticVisitor);
   return staticVisitor.getResult();
 }
 
-FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const FeatureGeneratorPtr featureGenerator) const
+FEATURE_GENERATOR_DEFAULT_IMPL(double) dotProduct(const FeatureGeneratorPtr featureGenerator, FeatureGenerator::DotProductCache* cache) const
 {
   if (featureGenerator->isDense())
-    return dotProduct(featureGenerator->toDenseVector());
+    return dotProduct(featureGenerator->toDenseVector(), cache);
   else
-    return dotProduct(featureGenerator->toSparseVector());
+    return dotProduct(featureGenerator->toSparseVector(), cache);
 }
 
 # undef FEATURE_GENERATOR_DEFAULT_IMPL

@@ -11,7 +11,7 @@
 using namespace lbcpp;
 
 /*
-** CompositeProteinResidueFeatures
+** CompositeProteinResiduePairFeatures
 */
 featureGenerator CompositeProteinResiduePairFeatures::compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
 {
@@ -45,14 +45,28 @@ public:
     : pointFeatureGenerator(pointFeatureGenerator) {}
   ProteinPointResiduePairFeatures() {}
 
+  void prepare(ProteinPtr protein)
+  {
+    if (currentProtein != protein)
+    {
+      pointFeatures.resize(protein->getLength());
+      for (size_t i = 0; i < pointFeatures.size(); ++i)
+        pointFeatures[i] = pointFeatureGenerator->compute(protein, i)->toSparseVector();
+      currentProtein = protein;
+    }
+  }
+
   virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
   {
-    featureCall(0) pointFeatureGenerator->compute(protein, firstPosition);
-    featureCall(0) pointFeatureGenerator->compute(protein, secondPosition);
+    prepare(protein);
+    featureCall(0) pointFeatures[firstPosition];
+    featureCall(1) pointFeatures[secondPosition];
   }
 
 protected:
   ProteinResidueFeaturesPtr pointFeatureGenerator;
+  ProteinPtr currentProtein;
+  std::vector<SparseVectorPtr> pointFeatures;
 
   virtual bool load(InputStream& istr)
     {return ProteinResiduePairFeatures::load(istr) && lbcpp::read(istr, pointFeatureGenerator);}
@@ -68,7 +82,18 @@ class SeparationLengthProteinResiduePairFeatures : public ProteinResiduePairFeat
 {
 public:
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
-    {return multiScaleNumberFeatures((double)abs((int)firstPosition - (int)secondPosition));}
+  {
+    size_t delta = (size_t)abs((int)firstPosition - (int)secondPosition);
+    if (featuresPerLength.size() <= delta)
+      featuresPerLength.resize(delta + 1);
+    FeatureGeneratorPtr& res = featuresPerLength[delta];
+    if (!res)
+      res = numberLogFeatures((double)delta);
+    return res;
+  }
+
+private:
+  std::vector<FeatureGeneratorPtr> featuresPerLength;
 };
 
 ProteinResiduePairFeaturesPtr lbcpp::separationLengthResiduePairFeatures()

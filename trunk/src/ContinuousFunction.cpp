@@ -9,6 +9,12 @@
 #include <lbcpp/ContinuousFunction.h>
 #include <lbcpp/impl/impl.h>
 #include <lbcpp/ObjectPair.h>
+
+#include "ContinuousFunction/MiscScalarFunctions.h"
+#include "ContinuousFunction/BinarySumScalarVectorFunction.h"
+#include "ContinuousFunction/ScalarArchitectureExampleLossFunction.h"
+#include "ContinuousFunction/ScalarArchitectureEmpiricalRiskFunction.h"
+#include "ContinuousFunction/HingeLossScalarFunction.h"
 using namespace lbcpp;
 
 /*
@@ -38,52 +44,8 @@ double ScalarFunction::computeDerivative(double input, double direction) const
 void ScalarFunction::compute(double input, double* output, double* derivative) const
   {compute(input, output, NULL, derivative);}
 
-class ScalarFunctionComposition : public ScalarFunction
-{
-public:
-  ScalarFunctionComposition(ScalarFunctionPtr f1, ScalarFunctionPtr f2)
-    : f1(f1), f2(f2) {}
-
-  virtual bool isDerivable() const
-    {return f1->isDerivable() && f2->isDerivable();}
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-  {
-    double f1output, f1derivative;
-    f1->compute(input, &f1output, derivativeDirection, derivative ? &f1derivative : NULL);
-    f2->compute(f1output, output, NULL, derivative);
-    if (derivative)
-      *derivative *= f1derivative;
-  }
-
-private:
-  ScalarFunctionPtr f1;
-  ScalarFunctionPtr f2;
-};
-
 ScalarFunctionPtr ScalarFunction::composeWith(ScalarFunctionPtr postFunction) const
   {return new ScalarFunctionComposition(ScalarFunctionPtr(const_cast<ScalarFunction* >(this)), postFunction);}
-
-class AddConstantScalarFunction : public ScalarFunction
-{
-public:
-  AddConstantScalarFunction(double constant)
-    : constant(constant) {}
-
-  virtual bool isDerivable() const
-    {return true;}
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-  {
-    if (output)
-      *output = input + constant;
-    if (derivative)
-      *derivative = 1.0;
-  }
-
-private:
-  double constant;
-};
 
 ScalarFunctionPtr lbcpp::addConstantScalarFunction(double constant)
   {return new AddConstantScalarFunction(constant);}
@@ -91,29 +53,14 @@ ScalarFunctionPtr lbcpp::addConstantScalarFunction(double constant)
 ScalarFunctionPtr lbcpp::squareFunction()
   {return impl::staticToDynamic(impl::squareFunction());}
 
-class ScalarFunctionPlusConstant : public ScalarFunction
-{
-public:
-  ScalarFunctionPlusConstant(ScalarFunctionPtr function, double constant)
-    : function(function), constant(constant) {}
-
-  virtual bool isDerivable() const
-    {return function->isDerivable();}
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-  {
-    function->compute(input, output, derivativeDirection, derivative);
-    if (output)
-      *output += constant;
-  }
-
-protected:
-  ScalarFunctionPtr function;
-  double constant;
-};
-
 ScalarFunctionPtr lbcpp::sum(ScalarFunctionPtr function, double constant)
   {return new ScalarFunctionPlusConstant(function, constant);}
+
+ScalarFunctionPtr lbcpp::angleDifferenceScalarFunction(double reference)
+  {return new AngleDifferenceScalarFunction(reference);}
+
+ScalarFunctionPtr lbcpp::hingeLoss(size_t correctClass, double margin)
+  {return new HingeLossScalarFunction(correctClass, margin);}
 
 /*
 ** ScalarVectorFunction
@@ -208,36 +155,10 @@ ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction(double weight)
 //    : impl::staticToDynamic(impl::sumOfSquares());
 }
 
-class ScalarVectorFunctionBinarySum : public ScalarVectorFunction
-{
-public:
-  ScalarVectorFunctionBinarySum(ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2)
-    : f1(f1), f2(f2) {}
-
-  virtual bool isDerivable() const
-    {return f1->isDerivable() && f2->isDerivable();}
-
-  virtual void compute(const FeatureGeneratorPtr input, double* output, const FeatureGeneratorPtr gradientDirection, FeatureGeneratorPtr* gradient) const
-  {
-    double output1, output2;
-    FeatureGeneratorPtr gradient1, gradient2;
-    f1->compute(input, output ? &output1 : NULL, gradientDirection, gradient ? &gradient1 : NULL);
-    f2->compute(input, output ? &output2 : NULL, gradientDirection, gradient ? &gradient2 : NULL);
-    if (output)
-      *output = output1 + output2;
-    if (gradient)
-      *gradient = weightedSum(gradient1, 1.0, gradient2, 1.0);
-  }
-
-protected:
-  ScalarVectorFunctionPtr f1;
-  ScalarVectorFunctionPtr f2;
-};
-
 ScalarVectorFunctionPtr lbcpp::sum(ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2)
 {
   if (f1)
-    return f2 ? new ScalarVectorFunctionBinarySum(f1, f2) : f1;
+    return f2 ? new BinarySumScalarVectorFunction(f1, f2) : f1;
   else
     return f2 ? f2 : ScalarVectorFunctionPtr();
 }
@@ -248,101 +169,8 @@ ScalarVectorFunctionPtr lbcpp::sum(ScalarVectorFunctionPtr f1, ScalarVectorFunct
 ScalarArchitecturePtr lbcpp::linearArchitecture()
   {return impl::staticToDynamic(impl::linearArchitecture());}
 
-class ScalarArchitectureExampleLossVectorFunction : public ScalarVectorFunction
-{
-public:
-  ScalarArchitectureExampleLossVectorFunction(ScalarArchitecturePtr architecture, FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction)
-    : architecture(architecture), input(input), lossFunction(lossFunction) {}
-
-  virtual bool isDerivable() const
-    {return lossFunction->isDerivable() && architecture->isDerivable();}
-
-  virtual void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr parametersGradientDirection, FeatureGeneratorPtr* parametersGradient) const
-    {compute(architecture, input, lossFunction, parameters, output, parametersGradientDirection, parametersGradient);}
-
-  static void compute(ScalarArchitecturePtr architecture, FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction, 
-    const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr parametersGradientDirection, FeatureGeneratorPtr* parametersGradient)
-  {
-    double architectureOutput;
-    
-    FeatureGeneratorPtr architectureOutputGradientWrtParameters;
-    architecture->compute(parameters, input, &architectureOutput, parametersGradient ? &architectureOutputGradientWrtParameters : NULL, NULL);
-    jassert(isNumberValid(architectureOutput));
-    double lossDerivative;
-    lossFunction->compute(architectureOutput, output, NULL, parametersGradient ? &lossDerivative : NULL);
-    if (parametersGradient)
-    {
-      jassert(isNumberValid(lossDerivative));
-      *parametersGradient = multiplyByScalar(architectureOutputGradientWrtParameters, lossDerivative);
-    }
-    if (output)
-      jassert(isNumberValid(*output));
-  }
-
-private:
-  ScalarArchitecturePtr architecture;
-  FeatureGeneratorPtr input;
-  ScalarFunctionPtr lossFunction;
-};
-
 ScalarVectorFunctionPtr ScalarArchitecture::makeExampleLoss(FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction) const
   {return new ScalarArchitectureExampleLossVectorFunction(ScalarArchitecturePtr(const_cast<ScalarArchitecture* >(this)), input, lossFunction);}
-
-class ScalarArchitectureEmpiricalRiskVectorFunction : public ScalarVectorFunction
-{
-public:
-  ScalarArchitectureEmpiricalRiskVectorFunction(ScalarArchitecturePtr architecture, ObjectContainerPtr examples)
-    : architecture(architecture), examples(examples) {}
-
-  virtual bool isDerivable() const
-    {return architecture->isDerivable();}
-
-  virtual void compute(const FeatureGeneratorPtr parameters, double* output, const FeatureGeneratorPtr parametersGradientDirection, FeatureGeneratorPtr* parametersGradient) const
-  {
-    if (output)
-      *output = 0;
-    if (!examples->size())
-    {
-      if (parametersGradient)
-        *parametersGradient = emptyFeatureGenerator();
-      return;
-    }
-    double invZ = 1.0 / examples->size();
-    
-    std::vector<std::pair<FeatureGeneratorPtr, double> >* gradientLinearCombination = NULL;
-    if (parametersGradient)
-    {
-      gradientLinearCombination = new std::vector<std::pair<FeatureGeneratorPtr, double> >();
-      gradientLinearCombination->reserve(examples->size());
-    }
-
-    for (size_t i = 0; i < examples->size(); ++i)
-    {
-      ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
-      jassert(example);
-      FeatureGeneratorPtr input = example->getFirst().dynamicCast<FeatureGenerator>();
-      ScalarFunctionPtr lossFunction = example->getSecond().dynamicCast<ScalarFunction>();
-      jassert(input && lossFunction);
-
-      // FIXME : gradient direction
-      double lossOutput;
-      FeatureGeneratorPtr lossGradient;
-      ScalarArchitectureExampleLossVectorFunction::compute(architecture, input, lossFunction,
-        parameters, output ? &lossOutput : NULL, FeatureGeneratorPtr(), parametersGradient ? &lossGradient : NULL);
-      if (output)
-        *output += lossOutput * invZ;
-      if (parametersGradient)
-        gradientLinearCombination->push_back(std::make_pair(lossGradient, invZ));
-    }
-    
-    if (parametersGradient)
-      *parametersGradient = linearCombination(gradientLinearCombination);
-  }
-
-private:
-  ScalarArchitecturePtr architecture;
-  ObjectContainerPtr examples;
-};
 
 ScalarVectorFunctionPtr ScalarArchitecture::makeEmpiricalRisk(ObjectContainerPtr examples) const
   {return new ScalarArchitectureEmpiricalRiskVectorFunction(ScalarArchitecturePtr(const_cast<ScalarArchitecture* >(this)), examples);}
@@ -354,4 +182,5 @@ void declareContinuousFunctions()
 {
   LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction);
   LBCPP_DECLARE_CLASS(WeightedSumOfSquaresScalarVectorFunction);
+  LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
 }

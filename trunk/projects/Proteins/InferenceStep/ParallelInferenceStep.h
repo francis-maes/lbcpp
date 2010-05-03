@@ -67,6 +67,9 @@ public:
   InferenceStepPtr getSharedInferenceStep() const
     {return subInference;}
 
+  void setSharedInferenceStep(InferenceStepPtr step)
+    {subInference = step;}
+
 protected:
   InferenceStepPtr subInference;
 };

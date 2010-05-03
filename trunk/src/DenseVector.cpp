@@ -195,14 +195,14 @@ double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const
   return res;
 }
 
-double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator) const
+double DenseVector::dotProduct(const FeatureGeneratorPtr featureGenerator, DotProductCache* cache) const
 {
   jassert(featureGenerator);
   const DenseVectorPtr otherVector = featureGenerator.dynamicCast<DenseVector>();
   if (otherVector)
-    return denseDotProduct(otherVector);
+    return denseDotProduct(otherVector); // todo: use cache also in the dense vector dot product
   else
-    return featureGenerator->dotProduct(DenseVectorPtr(const_cast<DenseVector* >(this)));
+    return featureGenerator->dotProduct(DenseVectorPtr(const_cast<DenseVector* >(this)), cache);
 }
 
 bool DenseVector::load(InputStream& istr)

@@ -119,12 +119,29 @@ inline ScalarFunctionPtr difference(ScalarFunctionPtr function, double constant)
 // x -> x + constant
 extern ScalarFunctionPtr addConstantScalarFunction(double constant);
 
+// x -> angleDifference(x, reference)
+extern ScalarFunctionPtr angleDifferenceScalarFunction(double reference);
+
 // x -> x^2
 extern ScalarFunctionPtr squareFunction();
 
 // x -> f(x)^2
 inline ScalarFunctionPtr squareFunction(ScalarFunctionPtr input)
   {return input->composeWith(squareFunction());}
+
+/*
+** Regression Loss Functions
+*/
+inline ScalarFunctionPtr squareLoss(double target)
+  {return squareFunction(addConstantScalarFunction(-target));}
+
+inline ScalarFunctionPtr dihedralAngleSquareLoss(double target)
+  {return squareFunction(angleDifferenceScalarFunction(target));}
+
+/*
+** Binary Classification Loss Functions
+*/
+extern ScalarFunctionPtr hingeLoss(size_t correctClass, double margin = 1);
 
 
 /**
@@ -250,6 +267,8 @@ public:
 class ScalarArchitecture : public ContinuousFunction
 {
 public:
+  ScalarArchitecture() : dotProductCache(NULL) {}
+
   // The two following functions create functions that take parameters as inputs and compute the loss associated to these parameters
   ScalarVectorFunctionPtr makeExampleLoss(FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction) const;
   ScalarVectorFunctionPtr makeEmpiricalRisk(ObjectContainerPtr examples) const;
@@ -302,6 +321,9 @@ public:
       double* output,
       FeatureGeneratorPtr* gradientWrtParameters,
       FeatureGeneratorPtr* gradientWrtInput) const = 0;
+
+  FeatureGenerator::DotProductCache* dotProductCache;
+
 };
 
 extern ScalarArchitecturePtr linearArchitecture();

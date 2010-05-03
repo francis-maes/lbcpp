@@ -87,6 +87,16 @@ inline bool isNumberValid(double number)
 inline bool isNumberNearlyNull(double value, double epsilon = 0.00001)
   {return fabs(value) < epsilon;}
 
+inline double normalizeAngle(double angle)
+{
+  double res = fmod(angle, M_2_TIMES_PI);
+  if (res < -M_PI)
+    res += M_2_TIMES_PI;
+  else if (res > M_PI)
+    res -= M_2_TIMES_PI;
+  jassert(res >= -M_PI && res < M_PI);
+  return res;
+}
 
 /*
 ** Specialized builtin-type traits

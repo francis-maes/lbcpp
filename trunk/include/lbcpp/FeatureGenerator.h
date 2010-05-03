@@ -226,7 +226,9 @@ public:
   **
   ** @return dot product result.
   */
-  virtual double dotProduct(const SparseVectorPtr vector) const = 0;
+  typedef std::map<std::pair<FeatureGeneratorPtr, FeatureGeneratorPtr>, double> DotProductCache;
+
+  virtual double dotProduct(const SparseVectorPtr vector, DotProductCache* cache = NULL) const = 0;
 
   /**
   ** Dot product ( featureGenerator . @a vector ).
@@ -235,7 +237,7 @@ public:
   **
   ** @return dot product result.
   */
-  virtual double dotProduct(const DenseVectorPtr vector) const = 0;
+  virtual double dotProduct(const DenseVectorPtr vector, DotProductCache* cache = NULL) const = 0;
 
   /**
   ** Dot product ( featureGenerator . @a featureGenerator ).
@@ -244,7 +246,7 @@ public:
   **
   ** @return dot product result.
   */
-  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const = 0;
+  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator, DotProductCache* cache = NULL) const = 0;
 
 
 
@@ -500,17 +502,17 @@ public:
   /**
   ** @see FeatureGenerator::dotProduct
   */
-  virtual double dotProduct(const SparseVectorPtr vector) const;
+  virtual double dotProduct(const SparseVectorPtr vector, FeatureGenerator::DotProductCache* cache = NULL) const;
 
   /**
   ** @see FeatureGenerator::dotProduct
   */
-  virtual double dotProduct(const DenseVectorPtr vector) const;
+  virtual double dotProduct(const DenseVectorPtr vector, FeatureGenerator::DotProductCache* cache = NULL) const;
 
   /**
   ** @see FeatureGenerator::dotProduct
   */
-  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator) const;
+  virtual double dotProduct(const FeatureGeneratorPtr featureGenerator, FeatureGenerator::DotProductCache* cache = NULL) const;
 
 protected:
   const ExactType& _this() const {return *static_cast<const ExactType* >(this);}

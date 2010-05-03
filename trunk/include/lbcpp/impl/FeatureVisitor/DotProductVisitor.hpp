@@ -22,8 +22,8 @@ public:
   typedef VectorStackBasedFeatureVisitor<ExactType, VectorType> BaseClass;
   typedef typename BaseClass::VectorPtr VectorPtr;
   
-  DotProductVectorVisitor(VectorPtr vector)
-    : BaseClass(vector), res(0.0) {jassert(BaseClass::currentVector);}
+  DotProductVectorVisitor(VectorPtr vector, FeatureGenerator::DotProductCache* cache)
+    : BaseClass(vector), cache(cache), res(0.0) {jassert(BaseClass::currentVector);}
     
   void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
     {res += getCurrentVector().get(index) * value * BaseClass::currentWeight;}
@@ -36,7 +36,7 @@ public:
     {
       weight *= BaseClass::currentWeight;
       if (weight)
-        res += featureGenerator->dotProduct(subVector) * weight;
+        res += makeDotProduct(featureGenerator, subVector) * weight;
     }
   }
 
@@ -55,22 +55,40 @@ public:
 
 private:
   double res;
+  FeatureGenerator::DotProductCache* cache;
+
+  double makeDotProduct(FeatureGeneratorPtr featureGenerator, VectorPtr vector)
+  {
+    if (!cache)
+      return featureGenerator->dotProduct(vector);
+
+    std::pair<FeatureGeneratorPtr, FeatureGeneratorPtr> key(featureGenerator, vector);
+    FeatureGenerator::DotProductCache::const_iterator it = cache->find(key);
+    if (it == cache->end())
+    {
+      double res = featureGenerator->dotProduct(vector, cache);
+      (*cache)[key] = res;
+      return res;
+    }
+    else
+      return it->second;
+  }
 };
 
 class DotProductDenseVectorVisitor 
   : public DotProductVectorVisitor<DotProductDenseVectorVisitor, DenseVector>
 {
 public:
-  DotProductDenseVectorVisitor(DenseVectorPtr vector)
-    : DotProductVectorVisitor<DotProductDenseVectorVisitor, DenseVector>(vector) {}
+  DotProductDenseVectorVisitor(DenseVectorPtr vector, FeatureGenerator::DotProductCache* cache = NULL)
+    : DotProductVectorVisitor<DotProductDenseVectorVisitor, DenseVector>(vector, cache) {}
 };
 
 class DotProductSparseVectorVisitor 
   : public DotProductVectorVisitor<DotProductSparseVectorVisitor, SparseVector>
 {
 public:
-  DotProductSparseVectorVisitor(SparseVectorPtr vector)
-    : DotProductVectorVisitor<DotProductSparseVectorVisitor, SparseVector>(vector) {}
+  DotProductSparseVectorVisitor(SparseVectorPtr vector, FeatureGenerator::DotProductCache* cache = NULL)
+    : DotProductVectorVisitor<DotProductSparseVectorVisitor, SparseVector>(vector, cache) {}
 };
 
 }; /* namespace impl */

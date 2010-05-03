@@ -14,33 +14,6 @@
 namespace lbcpp
 {
 
-class AngleDifferenceScalarFunction : public ScalarFunction
-{
-public:
-  AngleDifferenceScalarFunction(double referenceAngle = 0.0)
-    : referenceAngle(referenceAngle) {}
-
-  virtual bool isDerivable() const
-    {return false;}
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-  {
-    if (output)
-      *output = DihedralAngle::normalize(input - referenceAngle);
-    if (derivative)
-      *derivative = 1.0;
-  }
-
-protected:
-  double referenceAngle;
-
-  virtual bool load(InputStream& istr)
-    {return ScalarFunction::load(istr) && lbcpp::read(istr, referenceAngle);}
-
-  virtual void save(OutputStream& ostr) const
-    {ScalarFunction::save(ostr); lbcpp::write(ostr, referenceAngle);}
-};
-
 class ProteinCAlphaBondInferenceStep : public VectorParallelInferenceStep
 {
 public:
@@ -68,9 +41,9 @@ public:
     jassert(bond);
     BondCoordinates& c = bond->getValue();
     if (index == 0)
-      return c.hasThetaAngle() ? ObjectPtr(squareFunction(addConstantScalarFunction(-c.getThetaAngle()))) : ObjectPtr();
+      return c.hasThetaAngle() ? squareLoss(c.getThetaAngle()) : ObjectPtr();
     else
-      return c.hasPhiDihedralAngle() ? ObjectPtr(squareFunction(new AngleDifferenceScalarFunction(c.getPhiDihedralAngle()))) : ObjectPtr();
+      return c.hasPhiDihedralAngle() ? dihedralAngleSquareLoss(c.getPhiDihedralAngle()) : ObjectPtr();
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const

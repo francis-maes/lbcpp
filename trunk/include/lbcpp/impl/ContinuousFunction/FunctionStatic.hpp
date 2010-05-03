@@ -84,6 +84,8 @@ struct VectorLossFunction : public ScalarVectorFunction<ExactType>
 template<class ExactType>
 struct ScalarArchitecture : public ContinuousFunction<ExactType>
 {
+  ScalarArchitecture() : dotProductCache(NULL) {}
+
   FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const
     {jassert(false); return FeatureDictionaryPtr();}
     
@@ -93,6 +95,7 @@ struct ScalarArchitecture : public ContinuousFunction<ExactType>
       FeatureGeneratorPtr* gradientWrtInput) const
     {jassert(false);}
   
+  FeatureGenerator::DotProductCache* dotProductCache;
   
   // todo: non-derivable scalar architectures
 };
