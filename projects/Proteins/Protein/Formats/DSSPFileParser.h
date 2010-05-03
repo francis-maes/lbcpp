@@ -22,7 +22,7 @@ public:
     : TextObjectParser(file), protein(protein), firstResidueNumber(-1)
   {
     jassert(protein->getAminoAcidSequence());
-    std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
+    //std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
   }
 
   virtual void parseBegin()

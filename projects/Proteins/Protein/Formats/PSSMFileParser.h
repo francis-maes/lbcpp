@@ -20,7 +20,7 @@ public:
   PSSMFileParser(const File& file, LabelSequencePtr aminoAcidSequence)
     : TextObjectParser(file), aminoAcidSequence(aminoAcidSequence)
   {
-    std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
+    //std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
   }
 
   virtual void parseBegin()
