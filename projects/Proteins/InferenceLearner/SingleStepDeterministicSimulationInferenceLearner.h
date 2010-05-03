@@ -125,7 +125,7 @@ private:
   {
     // create classification examples
     ExamplesCreatorCallbackPtr learningCallback = new SingleStepSimulationLearningCallback(step, callback);
-    InferenceContextPtr trainingContext = callback->createContext();
+    InferenceContextPtr trainingContext = callback->createContext(true);
     trainingContext->appendCallback(learningCallback);
     if (cache)
       trainingContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));

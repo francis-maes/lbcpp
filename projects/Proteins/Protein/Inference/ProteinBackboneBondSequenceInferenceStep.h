@@ -97,11 +97,11 @@ public:
     {
       // prediction of a dihedral angle
       // loss(prediction) = angleDiff(target, prediction)^2
-      return squareFunction(new AngleDifferenceScalarFunction(target));
+      return dihedralAngleSquareLoss(target);
     }
 
     // loss(prediction) = (target - prediction)^2
-    return squareFunction(addConstantScalarFunction(-target));
+    return squareLoss(target);
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const

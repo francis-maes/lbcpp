@@ -56,7 +56,7 @@ public:
     double target = (index == 0 ? position.getX() : (index == 1 ? position.getY() : position.getZ()));
    
     // loss(prediction) = (target - prediction)^2
-    return squareFunction(addConstantScalarFunction(-target));
+    return squareLoss(target);
   }
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const

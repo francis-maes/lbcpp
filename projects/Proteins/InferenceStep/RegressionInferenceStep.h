@@ -41,6 +41,26 @@ public:
   void setRegressor(RegressorPtr regressor)
     {this->regressor = regressor;}
 
+  void createDotProductCache()
+  {
+    if (regressor)
+    {
+      GradientBasedRegressorPtr gbr = regressor.dynamicCast<GradientBasedRegressor>();
+      jassert(gbr);
+      gbr->createDotProductCache();
+    }
+  }
+
+  void clearDotProductCache()
+  {
+    if (regressor)
+    {
+      GradientBasedRegressorPtr gbr = regressor.dynamicCast<GradientBasedRegressor>();
+      jassert(gbr);
+      gbr->clearDotProductCache();
+    }
+  }
+
 protected:
   RegressorPtr regressor;
 

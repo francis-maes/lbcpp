@@ -4,7 +4,7 @@ class DefaultInferenceLearnerCallback : public InferenceLearnerCallback
 public:
   DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000), drProbability(0.2) {}
   
-  virtual InferenceContextPtr createContext()
+  virtual InferenceContextPtr createContext(bool doLearning)
     {return singleThreadedInferenceContext();}
   
   virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
@@ -96,8 +96,8 @@ public:
   virtual const String& getTarget() const
     {return target;}
   
-  virtual InferenceContextPtr createContext()
-    {jassert(factory); return factory->createContext();}
+  virtual InferenceContextPtr createContext(bool doLearning)
+    {jassert(factory); return factory->createContext(doLearning);}
   
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
     {jassert(factory); return factory->createClassifier(stack, labels);}
@@ -147,8 +147,8 @@ public:
   virtual ~MultiInferenceLearnerCallback()
     {}
   
-  virtual InferenceContextPtr createContext()
-    {return factory->createContext();}
+  virtual InferenceContextPtr createContext(bool doLearning)
+    {return factory->createContext(doLearning);}
   
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
     {return factory->createClassifier(stack, labels);}
@@ -170,7 +170,7 @@ public:
   // returns false if learning should stop (if at least one callback return false)
   virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
   {
-    InferenceContextPtr validationContext = createContext();
+    InferenceContextPtr validationContext = createContext(false);
     
     if (cache)
       validationContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));

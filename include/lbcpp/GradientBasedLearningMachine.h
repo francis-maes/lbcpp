@@ -38,10 +38,10 @@ namespace lbcpp
 class GradientBasedLearningMachine
 {
 public:
-  GradientBasedLearningMachine() : initializeParametersRandomly(false)
+  GradientBasedLearningMachine() : initializeParametersRandomly(false), dotProductCache(NULL)
     {}
 
-  virtual ~GradientBasedLearningMachine() {}
+  virtual ~GradientBasedLearningMachine() {clearDotProductCache();}
 
   /*
   ** Abstract
@@ -89,6 +89,22 @@ public:
     initializeParametersRandomly = true;
   }
 
+  void createDotProductCache()
+  {
+    clearDotProductCache();
+    dotProductCache = new FeatureGenerator::DotProductCache();
+  }
+
+  void clearDotProductCache()
+  {
+    if (dotProductCache)
+    {
+      delete dotProductCache;
+      dotProductCache = NULL;
+    }
+  }
+
+
   /*
   ** Regularizer
   */
@@ -128,6 +144,7 @@ protected:
   ScalarVectorFunctionPtr regularizer; /*!< */
   GradientBasedLearnerPtr learner; /*!< */
   bool initializeParametersRandomly; /*!< */
+  FeatureGenerator::DotProductCache* dotProductCache;
 
   /*
   ** Serialization
@@ -210,7 +227,16 @@ public:
     {return getPredictionArchitecture()->createInitialParameters(inputDictionary, initializeRandomly);}
 
   virtual double predict(const FeatureGeneratorPtr input) const
-    {return parameters ? getPredictionArchitecture()->compute(parameters, input) : 0.0;}
+  {
+    if (!parameters)
+      return 0.0;
+    ScalarArchitecturePtr architecture = getPredictionArchitecture();
+    architecture->dotProductCache = dotProductCache;
+    double res = architecture->compute(parameters, input);
+    architecture->dotProductCache = NULL;
+    return res;
+  }
+
 };
 
 inline GradientBasedRegressorPtr loadGradientBasedRegressor(const File& file)

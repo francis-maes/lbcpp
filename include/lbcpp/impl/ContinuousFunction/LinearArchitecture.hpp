@@ -28,7 +28,7 @@ struct LinearArchitecture : public ScalarArchitecture<LinearArchitecture>
       FeatureGeneratorPtr* gradientWrtInput) const
   {
     if (output)
-      *output = parameters->dotProduct(input);
+      *output = parameters->dotProduct(input, dotProductCache);
     if (gradientWrtParameters)
       *gradientWrtParameters = input;
     if (gradientWrtInput)

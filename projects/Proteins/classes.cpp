@@ -77,7 +77,6 @@ void declareProteinClasses()
       LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
 
     LBCPP_DECLARE_CLASS(ProteinCAlphaBondSequenceInferenceStep);
-      LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
       LBCPP_DECLARE_CLASS(ProteinCAlphaBondInferenceStep);
 
     LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
