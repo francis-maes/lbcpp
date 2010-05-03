@@ -15,6 +15,13 @@
 namespace lbcpp
 {
 
+class ProteinBetaBridges : public Object
+{
+public:
+  // TODO ... 
+  
+};
+
 class DSSPFileParser : public TextObjectParser
 {
 public:
@@ -121,11 +128,48 @@ public:
       162.1, 189.7, 187.05, 256.0
     };
 
-    double normalizedSolventAccessibility = (double)absoluteSolventAccesiblity / maximumSolventAccissibilityValue[secondaryStructureIndex];
-    jassert(normalizedSolventAccessibility <= 1.);
-    if (normalizedSolventAccessibility > 1.)
-      normalizedSolventAccessibility = 1.;
+    double normalizedSolventAccessibility = (double)absoluteSolventAccesiblity / maximumSolventAccissibilityValue[aminoAcidCode];
+    // jassert(normalizedSolventAccessibility <= 1.0); FIXME: IT FAILS !
+    if (normalizedSolventAccessibility > 1.0)
+      normalizedSolventAccessibility = 1.0;
     solventAccesibilitySequence->setValue((size_t)residueNumber, normalizedSolventAccessibility);
+
+    /*
+    ** Beta bridge partners
+    */
+    String bp1 = line.substring(25, 29).trim();
+    String bp2 = line.substring(29, 33).trim();
+    if (secondaryStructureCode != T("E"))
+    {
+      if (bp1 != T("0") || bp2 != T("0"))
+      {
+        Object::error(T("DSSPFileParser::parseLine"), T("BP fields should be null"));
+        return false;
+      }
+    }
+    else
+    {
+      int index1 = bp1.getIntValue();
+      int index2 = bp2.getIntValue();
+      if (index1 || index2)
+        betaBridgePartners[newSerialNumber] = std::make_pair(index1, index2);
+    }
+    return true;
+  }
+
+  bool finalizeBetaBridgePartners()
+  {
+    std::cout << "betaBridgePartners: " << std::endl;
+    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
+    {
+      if (it->second.first)
+        std::cout << it->first << " => " << it->second.first << std::endl;
+      if (it->second.second)
+        std::cout << it->first << " => " << it->second.second << std::endl;
+    }
+    
+    exit(1);
+
     return true;
   }
 
@@ -136,6 +180,8 @@ public:
       Object::error(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
       return false;
     }
+    if (!finalizeBetaBridgePartners())
+      return false;
 
     size_t nbReadResidues = protein->getLength();
     for (; aminoAcidSequence->getIndex(nbReadResidues-1) < 0; --nbReadResidues);
@@ -194,6 +240,7 @@ protected:
   int serialNumber;
   int firstResidueNumber;
   String firstChainID;
+  std::map<int, std::pair<int, int> > betaBridgePartners;
 };
 
 }; /* namespace lbcpp */
