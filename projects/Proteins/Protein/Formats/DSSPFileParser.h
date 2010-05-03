@@ -15,11 +15,265 @@
 namespace lbcpp
 {
 
+class ProteinBetaStrandBond : public Object
+{
+public:
+  bool isParallel() const
+    {return parallel;}
+
+  bool isAntiParallel() const
+    {return !parallel;}
+
+private:
+  bool parallel;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinBetaStrandBond> ProteinBetaStrandBondPtr;
+
+class ProteinBetaStrand : public Object
+{
+public:
+  ProteinBetaStrand(size_t begin, size_t end,
+      ProteinBetaStrandBondPtr bondWithPrevious = ProteinBetaStrandBondPtr(), 
+      ProteinBetaStrandBondPtr bondWithNext = ProteinBetaStrandBondPtr())
+    : begin(begin), end(end), bondWithPrevious(bondWithPrevious), bondWithNext(bondWithNext) {}
+
+private:
+  size_t begin, end;
+  ProteinBetaStrandBondPtr bondWithPrevious;
+  ProteinBetaStrandBondPtr bondWithNext;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinBetaStrand> ProteinBetaStrandPtr;
+
 class ProteinBetaBridges : public Object
 {
 public:
-  // TODO ... 
   
+private:
+  std::vector<ProteinBetaStrandPtr> strands;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinBetaBridges> ProteinBetaBridgesPtr;
+
+class ProteinBetaBridgesBuilder
+{
+public:
+  struct LinkPair
+  {
+    LinkPair() : first(-1), second(-1) {}
+
+    bool insert(int value)
+    {
+      if (first < 0)
+      {
+        jassert(second < 0);
+        first = value;
+        return true;
+      }
+      else if (value == first)
+        return true;
+
+      if (second < 0)
+      {
+        second = value;
+        return true;
+      }
+      else if (value == second)
+        return true;
+
+      Object::error(T("LinkPair::insert"), T("Too many elements in pair"));
+      return false;
+    }
+
+    size_t getFirst() const
+      {jassert(first >= 0); return (size_t)first;}
+
+    size_t getSecond() const
+      {jassert(second >= 0); return (size_t)second;}
+
+    size_t size() const
+      {return first >= 0 ? (second >= 0 ? 2 : 1) : 0;}
+
+    int first;
+    int second;
+  };
+
+  bool addBetaLink(size_t first, size_t second)
+  {
+    jassert(first != second);
+    if (first > second)
+      {size_t tmp = first; first = second; second = tmp;}
+    std::cout << "(" << first << ", " << second << ")\t" << std::flush;
+    return betaLinks[first].insert(second);
+  }
+
+  struct BridgeInConstruction
+  {
+    BridgeInConstruction() : sourceStart(0), targetStart(0), order(0), length(0) {}
+
+    bool exists() const
+      {return length > 0;}
+
+    bool isConsistentWith(size_t source, size_t target) const
+    {
+      if (!exists())
+        return true;
+      if (source != sourceStart + length)
+        return false;
+
+      int delta = (int)target - (int)targetStart;
+      if (order == 0)
+      {
+        if (abs(delta) != (int)length)
+          return false;
+      }
+      else if (delta * order != (int)length)
+        return false;
+
+      return true;
+    }
+
+    void expand(size_t source, size_t target)
+    {
+      if (exists())
+      {
+        jassert(isConsistentWith(source, target));
+        if (!order)
+        {
+          jassert(length == 1);
+          order = (int)target - (int)targetStart;
+          jassert(order == -1 || order == 1);
+        }
+        ++length;
+      }
+      else
+      {
+        sourceStart = source;
+        targetStart = target;
+        order = 0;
+        length = 1;
+      }
+    }
+
+    String toString() const
+    {
+      if (!length)
+        return T("N/A");
+      else if (length == 1)
+        return lbcpp::toString(sourceStart) + T(" <--> ") + lbcpp::toString(targetStart);
+      jassert(order == 1 || order == -1);
+      return T("[") + lbcpp::toString(sourceStart) + T(", ") + lbcpp::toString(sourceStart + length - 1) + T("] <--> [") +
+        lbcpp::toString(targetStart) + T(", ") + lbcpp::toString(targetStart + (length - 1) * order) + T("]");
+    }
+
+    size_t sourceStart;
+    size_t targetStart;
+    int order; // 0 = undetermined yet, -1 = antiparallel, +1 = parallel
+    size_t length;
+  };
+
+  void addLinkToBridge(BridgeInConstruction& currentBridge, size_t first, size_t second, std::vector<BridgeInConstruction>& bridges)
+  {
+    if (!currentBridge.isConsistentWith(first, second))
+    {
+      if (currentBridge.exists())
+        bridges.push_back(currentBridge);
+      currentBridge = BridgeInConstruction();
+    }
+
+    currentBridge.expand(first, second);
+  }
+#if 0
+  bool savePNG(juce::Image& image, const File& file)
+  {
+    if (file.exists())
+      file.deleteFile();
+
+    juce::PNGImageFormat format;
+
+    OutputStream* ostr = file.createOutputStream();
+    if (!ostr)
+      return false;
+
+    format.writeImageToStream(image, *ostr);
+    delete ostr;
+    return true;
+  }
+
+  void makeImage(ProteinPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
+  {
+    std::map<int, int> betaMapping;
+    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
+      betaMapping[it->first] = it->first;//betaMapping.size();
+
+    protein->computeMissingFields();
+    ScoreSymmetricMatrixPtr contactMap = protein->getResidueResidueContactMatrix8Cb();
+    jassert(contactMap);
+    //->saveToPNGFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\contact8.png")));
+
+    int size = contactMap->getDimension();
+    juce::Image* image = new juce::Image(juce::Image::RGB, size, size, true);
+
+    for (int i = 0; i < size; ++i)
+      for (int j = 0; j < size; ++j)
+      {
+        double p = contactMap->getScore(i, j);
+        image->setPixelAt(i, j, p ? juce::Colours::white : juce::Colours::black);
+      }
+/*    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
+    {
+      if (it->second.first)
+        image->setPixelAt(betaMapping[it->first], betaMapping[it->second.first], juce::Colours::red);
+      if (it->second.second)
+        image->setPixelAt(betaMapping[it->first], betaMapping[it->second.second], juce::Colours::blue);
+    }*/
+
+    savePNG(*image, File(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\pouet.png")));
+    delete image;
+  }
+#endif // 0
+
+  ProteinBetaBridgesPtr build(ProteinPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
+  {
+    if (!betaBridgePartners.size())
+      return ProteinBetaBridgesPtr();
+
+    //makeImage(protein, betaBridgePartners);
+
+    // build directed beta links
+    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
+    {
+      if (it->second.first && !addBetaLink((size_t)it->first, (size_t)it->second.first))
+        return ProteinBetaBridgesPtr();
+      if (it->second.second && !addBetaLink((size_t)it->first, (size_t)it->second.second))
+        return ProteinBetaBridgesPtr();
+    }
+
+    std::vector<BridgeInConstruction> bridges;
+
+    BridgeInConstruction bridge1, bridge2;
+    for (std::map<size_t, LinkPair>::const_iterator it = betaLinks.begin(); it != betaLinks.end(); ++it)
+    {
+      if (it->second.size() >= 1)
+        addLinkToBridge(bridge1, it->first, it->second.getFirst(), bridges);
+      if (it->second.size() == 2)
+        addLinkToBridge(bridge2, it->first, it->second.getSecond(), bridges);
+    }
+    if (bridge1.exists())
+      bridges.push_back(bridge1);
+    if (bridge2.exists())
+      bridges.push_back(bridge2);
+
+    std::cout << "Beta Bridges: " << std::endl;
+    for (size_t i = 0; i < bridges.size(); ++i)
+      std::cout << bridges[i].toString() << std::endl;
+
+    return new ProteinBetaBridges();
+  }
+
+private:
+  std::map<size_t, LinkPair> betaLinks;
 };
 
 class DSSPFileParser : public TextObjectParser
@@ -156,22 +410,31 @@ public:
     }
     return true;
   }
-
+/*
   bool finalizeBetaBridgePartners()
   {
-    std::cout << "betaBridgePartners: " << std::endl;
-    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
-    {
-      if (it->second.first)
-        std::cout << it->first << " => " << it->second.first << std::endl;
-      if (it->second.second)
-        std::cout << it->first << " => " << it->second.second << std::endl;
-    }
-    
-    exit(1);
+    ProteinBetaBridgesBuilder builder;
+    ProteinBetaBridgesPtr betaBridges = builder.build(protein, betaBridgePartners);
 
-    return true;
-  }
+    int betaSheetStart = -1;
+    for (size_t i = 0; i < dsspSecondaryStructureSequence->size(); ++i)
+    {
+      if (dsspSecondaryStructureSequence->getIndex(i) == DSSPSecondaryStructureDictionary::extendedStrandInSheet)
+      {
+        if (betaSheetStart < 0)
+          betaSheetStart = (int)i;
+      }
+      else
+      {
+        if (betaSheetStart >= 0)
+        {
+          std::cout << "BETA SHEET: " << betaSheetStart + 1 << " - " << i << std::endl;
+          betaSheetStart = -1;
+        }
+      }
+    }
+    return betaBridges;
+  }*/
 
   virtual bool parseEnd()
   {
@@ -180,8 +443,8 @@ public:
       Object::error(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
       return false;
     }
-    if (!finalizeBetaBridgePartners())
-      return false;
+ //   if (!finalizeBetaBridgePartners())
+ //     return false;
 
     size_t nbReadResidues = protein->getLength();
     for (; aminoAcidSequence->getIndex(nbReadResidues-1) < 0; --nbReadResidues);
