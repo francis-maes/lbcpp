@@ -11,10 +11,13 @@
 #include "../Protein/AminoAcidDictionary.h"
 #include "../Protein/SecondaryStructureDictionary.h"
 #include "../Protein/Formats/CASPFileGenerator.h"
+#include "../Protein/Formats/PSSMFileParser.h"
+#include "../Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+#if 0
 void addDefaultPredictions(ProteinPtr protein)
 {
   size_t n = protein->getLength();
@@ -54,6 +57,7 @@ void addDefaultPredictions(ProteinPtr protein)
   protein->setObject(trace);
   protein->setObject(ProteinTertiaryStructure::createFromCAlphaTrace(aminoAcidSequence, trace));
 }
+#endif // 0
 
 int main(int argc, char* argv[])
 {
@@ -66,8 +70,8 @@ int main(int argc, char* argv[])
   }
   File cwd = File::getCurrentWorkingDirectory();
   File fastaFile = cwd.getChildFile(argv[1]);
-  File pssmFile = cwd.getChildFile(argv[1]);
-  
+  File pssmFile = cwd.getChildFile(argv[2]);
+ 
   File outputDirectory = fastaFile.getParentDirectory();
   String outputBaseName = fastaFile.getFileNameWithoutExtension();
   
@@ -78,28 +82,80 @@ int main(int argc, char* argv[])
     std::cerr << "Could not load FASTA file" << std::endl;
     return 1;
   }
-  
-  std::cout << "Target Name: " << protein->getName() << std::endl;
-  std::cout << "Amino Acid Sequence: " << protein->getAminoAcidSequence()->toString() << std::endl;
 
+  std::cout << "Target Name: " << protein->getName() << std::endl;
+  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+  std::cout << "Amino Acid Sequence: " << aminoAcidSequence->toString() << std::endl;
+
+  ScoreVectorSequencePtr pssm = (new PSSMFileParser(pssmFile, aminoAcidSequence))->nextAndCast<ScoreVectorSequence>();
+  if (!pssm)
+  {
+    std::cerr << "Could not load PSSM file" << std::endl;
+    return 1;
+  }
+  protein->setObject(pssm);
+
+  File modelFile(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\TestDR.model"));
+  InferenceStepPtr inference = InferenceStep::createFromFile(modelFile);
+  if (!inference)
+  {
+    std::cerr << "Could not load model" << std::endl;
+    return 1;
+  }
+  
   std::cout << "Making predictions ..." << std::endl;
-  addDefaultPredictions(protein);
-  std::cout << std::endl;
+
+  InferenceStep::ReturnCode returnCode = InferenceStep::finishedReturnCode;
+  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode);
+  if (returnCode != InferenceStep::finishedReturnCode)
+  {
+    std::cerr << "Invalid return code in inference" << std::endl;
+    return 1;
+  }
+  if (!protein)
+  {
+    std::cerr << "Could not complete inference" << std::endl;
+    return 1;
+  }
+
+  //addDefaultPredictions(protein);
+  //std::cout << std::endl;
   //std::cout << "===========================" << std::endl << protein->toString() << std::endl;
   
   String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
 
-//  caspTertiaryStructureFileGenerator     (cwd.getChildFile(outputBaseName + T(".TS")), method)->consume(protein);
-  File rrFile = outputDirectory.getChildFile(outputBaseName + T(".rr"));
-  std::cout << "Write residue-residue distance file " << rrFile.getFullPathName() << std::endl;
-  caspResidueResidueDistanceFileGenerator(rrFile, method)->consume(protein);
+  int numFilesGenerated = 0;
+  if (protein->getResidueResidueContactMatrix8Cb())
+  {
+    File rrFile = outputDirectory.getChildFile(outputBaseName + T(".rr"));
+    std::cout << "Write residue-residue distance file " << rrFile.getFullPathName() << std::endl;
+    caspResidueResidueDistanceFileGenerator(rrFile, method)->consume(protein);
+    ++numFilesGenerated;
+  }
   
-  File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
-  std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
-  caspOrderDisorderRegionFileGenerator(drFile, method)->consume(protein);
+  if (protein->getDisorderProbabilitySequence())
+  {
+    std::cout << "Disorder probability sequence: " << protein->getDisorderProbabilitySequence()->toString() << std::endl;
+    File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
+    std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
+    caspOrderDisorderRegionFileGenerator(drFile, method)->consume(protein);
+    ++numFilesGenerated;
+  }
 
-  File pdbFile = outputDirectory.getChildFile(outputBaseName + T(".pdbca"));
-  std::cout << "Write C-alpha chain in PDB file " << pdbFile.getFullPathName() << std::endl;
-  protein->saveToPDBFile(pdbFile);
+  if (protein->getCAlphaTrace())
+  {
+    File pdbFile = outputDirectory.getChildFile(outputBaseName + T(".pdbca"));
+    std::cout << "Write C-alpha chain in PDB file " << pdbFile.getFullPathName() << std::endl;
+    protein->saveToPDBFile(pdbFile);
+    ++numFilesGenerated;
+  }
+
+  if (!numFilesGenerated)
+  {
+    std::cerr << "Not any predicted files" << std::endl;
+    return 1;
+  }
+
+  std::cout << "Generated " << numFilesGenerated << " file(s)" << std::endl;
   return 0;
 }

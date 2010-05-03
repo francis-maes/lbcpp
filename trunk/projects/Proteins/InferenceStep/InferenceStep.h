@@ -30,6 +30,9 @@ public:
   virtual void accept(InferenceVisitorPtr visitor) = 0;
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
+  static InferenceStepPtr createFromFile(const File& file)
+    {return Object::createFromFileAndCast<InferenceStep>(file);}
+
 protected:
   friend class InferenceContext;
 };
