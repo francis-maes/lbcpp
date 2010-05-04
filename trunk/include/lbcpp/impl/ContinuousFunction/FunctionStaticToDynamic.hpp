@@ -129,7 +129,7 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
       FeatureGeneratorPtr* gradientWrtInput) const
   {
     jassert(parameters && input);
-    const_cast<ImplementationType& >(BaseClass::impl).dotProductCache = dotProductCache;
+    const_cast<ImplementationType& >(BaseClass::impl).dotProductCache = BaseClass::dotProductCache;
     BaseClass::impl.compute(parameters, input, output, gradientWrtParameters, gradientWrtInput);
     const_cast<ImplementationType& >(BaseClass::impl).dotProductCache = NULL;
     jassert(!gradientWrtParameters || (*gradientWrtParameters)->getDictionary() == parameters->getDictionary());
@@ -141,7 +141,7 @@ STATIC_TO_DYNAMIC_CLASS(ScalarArchitecture, Object)
     if (parameters && input)
     {
       double res;
-      const_cast<ImplementationType& >(BaseClass::impl).dotProductCache = dotProductCache;
+      const_cast<ImplementationType& >(BaseClass::impl).dotProductCache = BaseClass::dotProductCache;
       BaseClass::impl.compute(parameters, input, &res, NULL, NULL);
       const_cast<ImplementationType& >(BaseClass::impl).dotProductCache = NULL;
       return res;

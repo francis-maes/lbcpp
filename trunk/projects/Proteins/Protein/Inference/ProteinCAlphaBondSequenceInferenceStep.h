@@ -41,9 +41,9 @@ public:
     jassert(bond);
     BondCoordinates& c = bond->getValue();
     if (index == 0)
-      return c.hasThetaAngle() ? squareLoss(c.getThetaAngle()) : ObjectPtr();
+      return c.hasThetaAngle() ? squareLoss(c.getThetaAngle()) : ScalarFunctionPtr();
     else
-      return c.hasPhiDihedralAngle() ? dihedralAngleSquareLoss(c.getPhiDihedralAngle()) : ObjectPtr();
+      return c.hasPhiDihedralAngle() ? dihedralAngleSquareLoss(c.getPhiDihedralAngle()) : ScalarFunctionPtr();
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
