@@ -63,6 +63,15 @@ protected:
   std::vector<InferenceStepPtr> subInferences;
 };
 
+class LearnableAtomicInferenceStep : public InferenceStep
+{
+public:
+  LearnableAtomicInferenceStep(const String& name) : InferenceStep(name) {}
+  LearnableAtomicInferenceStep() {}
+
+  virtual void accept(InferenceVisitorPtr visitor);
+};
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_STEP_H_

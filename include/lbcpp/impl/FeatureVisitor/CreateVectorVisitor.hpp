@@ -32,6 +32,12 @@ struct CreateVectorVisitor : public VectorStackBasedFeatureVisitor< ExactType, V
       BaseClass::currentVector->get(number) += value;
   }
 
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
+  {
+    VectorPtr subVector = ((ExactType* )this)->getCurrentSubVector(scopeNumber, featureGenerator->getDictionary());
+    featureGenerator->addWeightedTo(subVector, weight);
+  }
+
   VectorPtr getResult() const
     {return result;}
   

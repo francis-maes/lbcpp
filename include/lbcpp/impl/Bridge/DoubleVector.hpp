@@ -55,7 +55,7 @@ inline void SparseVector::staticFeatureGenerator(FeatureVisitor& visitor) const
   
   for (size_t i = 0; i < subVectors.size(); ++i)
   {
-    const std::pair<size_t, SparseVectorPtr>& subVector = subVectors[i];
+    std::pair<size_t, SparseVectorPtr> subVector = subVectors[i];
     if (subVector.second && visitor.featureEnter(dictionary, subVector.first, subVector.second->getDictionary(), 1.0))
     {
       subVector.second->staticFeatureGenerator(visitor);

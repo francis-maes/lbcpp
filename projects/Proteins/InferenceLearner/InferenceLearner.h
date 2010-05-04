@@ -24,6 +24,9 @@ public:
 
 protected:
   InferenceLearnerCallbackPtr callback;
+
+  void addLearningCallbacksToContext(InferenceContextPtr context, InferenceStepPtr inference);
+  virtual InferenceContextPtr createLearningContext(InferenceStepPtr inference);
 };
 
 InferenceLearnerPtr globalSimulationLearner(InferenceLearnerCallbackPtr callback);

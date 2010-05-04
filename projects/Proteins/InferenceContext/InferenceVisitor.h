@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_VISITOR_H_
 
 # include "../InferencePredeclarations.h"
+# include "InferenceStack.h"
 
 namespace lbcpp
 {
@@ -22,6 +23,7 @@ public:
   virtual void visit(SequentialInferenceStepPtr inference) = 0;
   virtual void visit(ParallelInferenceStepPtr inference) = 0;
   virtual void visit(SharedParallelInferenceStepPtr inference) = 0;
+  virtual void visit(LearnableAtomicInferenceStepPtr inference) {}
 
   virtual void visit(ClassificationInferenceStepPtr inference) {}
   virtual void visit(RegressionInferenceStepPtr inference) {}
@@ -33,6 +35,9 @@ public:
   virtual void visit(SequentialInferenceStepPtr inference);
   virtual void visit(ParallelInferenceStepPtr inference) {}
   virtual void visit(SharedParallelInferenceStepPtr inference);
+
+protected:
+  InferenceStack stack;
 };
 
 }; /* namespace lbcpp */

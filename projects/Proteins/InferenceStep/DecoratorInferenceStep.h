@@ -36,6 +36,9 @@ public:
   virtual void accept(InferenceVisitorPtr visitor);
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 
+  InferenceStepPtr getDecoratedInference() const
+    {return decorated;}
+
 protected:
   InferenceStepPtr decorated;
 };

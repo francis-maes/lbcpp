@@ -45,6 +45,9 @@ public:
     : pointFeatureGenerator(pointFeatureGenerator) {}
   ProteinPointResiduePairFeatures() {}
 
+  virtual String getName() const
+    {return T("PointFeatures");}
+
   void prepare(ProteinPtr protein)
   {
     if (currentProtein != protein)
@@ -81,6 +84,9 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinPointResiduePairFeatures(ProteinResi
 class SeparationLengthProteinResiduePairFeatures : public ProteinResiduePairFeatures
 {
 public:
+  virtual String getName() const
+    {return T("SeparationLength");}
+
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
   {
     size_t delta = (size_t)abs((int)firstPosition - (int)secondPosition);

@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "InferenceStep.h"
+#include "../InferenceContext/InferenceVisitor.h"
 using namespace lbcpp;
 
 /*
@@ -76,3 +77,9 @@ bool VectorBasedInferenceHelper::loadSubInferencesFromDirectory(const File& file
     }
   return true;
 }
+
+/*
+** LearnableAtomicInferenceStep
+*/
+void LearnableAtomicInferenceStep::accept(InferenceVisitorPtr visitor)
+  {visitor->visit(LearnableAtomicInferenceStepPtr(this));}
