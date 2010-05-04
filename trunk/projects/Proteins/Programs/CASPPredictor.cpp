@@ -88,20 +88,22 @@ int main(int argc, char* argv[])
   std::cout << "Amino Acid Sequence: " << aminoAcidSequence->toString() << std::endl;
 
   ScoreVectorSequencePtr pssm = (new PSSMFileParser(pssmFile, aminoAcidSequence))->nextAndCast<ScoreVectorSequence>();
-  if (!pssm)
+  if (!pssm || pssm->size() != aminoAcidSequence->size())
   {
     std::cerr << "Could not load PSSM file" << std::endl;
     return 1;
   }
   protein->setObject(pssm);
+  //  std::cout << "Loaded pssm: " << pssm->toString() << std::endl;
 
   File modelFile = cwd.getChildFile(T("protein.inference"));
-  InferenceStepPtr inference = InferenceStep::createFromFile(modelFile);
+  ProteinInferencePtr inference = InferenceStep::createFromFileAndCast<ProteinInference>(modelFile);
   if (!inference)
   {
     std::cerr << "Could not load model" << std::endl;
     return 1;
   }
+  std::cout << "Loaded " << inference->getNumSubSteps() << " inference steps" << std::endl;
   
   std::cout << "Making predictions ..." << std::endl;
 
@@ -122,7 +124,7 @@ int main(int argc, char* argv[])
   //std::cout << std::endl;
   //std::cout << "===========================" << std::endl << protein->toString() << std::endl;
   
-  String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
+  String method = T("The model used to perform these predictions is a multi-task sequence labeling model. Here, only two tasks are taken into account: solvent accesibility prediction and disorder region prediction. The model used here is SA_REG_300 with the six first passes (3 passes of SA and 3 passes of DR)");
 
   int numFilesGenerated = 0;
   if (protein->getResidueResidueContactMatrix8Cb())
@@ -135,6 +137,7 @@ int main(int argc, char* argv[])
   
   if (protein->getDisorderProbabilitySequence())
   {
+    std::cout << "Solvent accesibility sequence: " << protein->getSolventAccessibilityThreshold20()->toString() << std::endl;
     std::cout << "Disorder probability sequence: " << protein->getDisorderProbabilitySequence()->toString() << std::endl;
     File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
     std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
