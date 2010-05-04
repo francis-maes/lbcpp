@@ -93,6 +93,8 @@ void Protein::computeMissingFields()
   
   ScoreSymmetricMatrixPtr residueResidueDistanceMatrixCb = getResidueResidueDistanceMatrixCb();
   ScoreSymmetricMatrixPtr residueResidueContactMatrix8Cb = getResidueResidueContactMatrix8Cb();
+  ScoreSymmetricMatrixPtr residueResidueDistanceMatrixCa = getResidueResidueDistanceMatrixCa();
+  ScoreSymmetricMatrixPtr residueResidueContactMatrix8Ca = getResidueResidueContactMatrix8Ca();
 
 
   /*
@@ -158,10 +160,15 @@ void Protein::computeMissingFields()
   ** Contact maps
   */
   // tertiary structure => distance matrix
+  if (tertiaryStructure && !residueResidueDistanceMatrixCa && tertiaryStructure->hasCAlphaAtoms())
+    setObject(residueResidueDistanceMatrixCa = tertiaryStructure->makeCAlphaDistanceMatrix());
+
   if (tertiaryStructure && !residueResidueDistanceMatrixCb && tertiaryStructure->hasBackboneAndCBetaAtoms())
     setObject(residueResidueDistanceMatrixCb = tertiaryStructure->makeCBetaDistanceMatrix());
 
   // distance matrix => contact matrix
+  if (residueResidueDistanceMatrixCa && !residueResidueContactMatrix8Ca)
+    setObject(residueResidueContactMatrix8Ca = residueResidueDistanceMatrixCa->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Ca"), 8.0, 1.0, 0.0));
   if (residueResidueDistanceMatrixCb && !residueResidueContactMatrix8Cb)
     setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Cb"), 8.0, 1.0, 0.0));
 }
@@ -190,6 +197,10 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new LabelSequence(name, BinaryClassificationDictionary::getInstance(), n);
   else if (name == T("DisorderProbabilitySequence"))
     return new ScalarSequence(name, n);
+  else if (name == T("ResidueResidueContactMatrix8Ca"))
+    return new ScoreSymmetricMatrix(name, n);
+  else if (name == T("ResidueResidueDistanceMatrixCa"))
+    return new ScoreSymmetricMatrix(name, n);
   else if (name == T("ResidueResidueContactMatrix8Cb"))
     return new ScoreSymmetricMatrix(name, n);
   else if (name == T("ResidueResidueDistanceMatrixCb"))
@@ -244,6 +255,12 @@ LabelSequencePtr Protein::getDisorderSequence() const
 
 ScalarSequencePtr Protein::getDisorderProbabilitySequence() const
   {return getObject(T("DisorderProbabilitySequence"));}
+
+ScoreSymmetricMatrixPtr Protein::getResidueResidueContactMatrix8Ca() const
+  {return getObject(T("ResidueResidueContactMatrix8Ca"));}
+
+ScoreSymmetricMatrixPtr Protein::getResidueResidueDistanceMatrixCa() const
+  {return getObject(T("ResidueResidueDistanceMatrixCa"));}
 
 ScoreSymmetricMatrixPtr Protein::getResidueResidueContactMatrix8Cb() const
   {return getObject(T("ResidueResidueContactMatrix8Cb"));}

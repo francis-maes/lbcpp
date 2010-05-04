@@ -61,6 +61,7 @@ inline FeatureVisitorPtr staticToDynamic(impl::FeatureVisitor<ExactType>& implem
 template<class ExactType>
 inline void FeatureVisitor<ExactType>::featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
 {
+  jassert(false); // I suspect a bug here.. FeatureVisitors should better implement featureCall() explicitely
   if (_this().featureEnter(dictionary, scopeNumber, featureGenerator->getDictionary(), weight))
   {
     EditableFeatureGeneratorPtr editable = featureGenerator.dynamicCast<EditableFeatureGenerator>();

@@ -177,20 +177,11 @@ ProteinBackboneBondSequencePtr ProteinTertiaryStructure::makeBackbone() const
   return res;
 }
 
-ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() const
+inline ScoreSymmetricMatrixPtr makeDistanceMatrix(const String& name, const std::vector<Vector3>& positions)
 {
-  size_t n = size();
+  size_t n = positions.size();
 
-  std::vector<Vector3> positions(n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    ProteinResiduePtr residue = getResidue(i);
-    ProteinAtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : ProteinAtomPtr();
-    if (atom)
-      positions[i] = atom->getPosition();
-  }
-
-  ScoreSymmetricMatrixPtr res = new ScoreSymmetricMatrix(T("ResidueResidueDistanceMatrixCb"), n);
+  ScoreSymmetricMatrixPtr res = new ScoreSymmetricMatrix(name, n);
   for (size_t i = 0; i < n; ++i)
   {
     res->setScore(i, i, 0.0);
@@ -205,6 +196,34 @@ ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() cons
     }
   }
   return res;
+}
+
+ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCAlphaDistanceMatrix() const
+{
+  size_t n = size();
+  std::vector<Vector3> positions(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = getResidue(i);
+    ProteinAtomPtr atom = residue ? residue->getCAlphaAtom() : ProteinAtomPtr();
+    if (atom)
+      positions[i] = atom->getPosition();
+  }
+  return makeDistanceMatrix(T("ResidueResidueDistanceMatrixCa"), positions);
+}
+
+ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() const
+{
+  size_t n = size();
+  std::vector<Vector3> positions(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ProteinResiduePtr residue = getResidue(i);
+    ProteinAtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : ProteinAtomPtr();
+    if (atom)
+      positions[i] = atom->getPosition();
+  }
+  return makeDistanceMatrix(T("ResidueResidueDistanceMatrixCb"), positions);
 }
 
 bool ProteinTertiaryStructure::hasCompleteBackbone() const
@@ -224,6 +243,17 @@ bool ProteinTertiaryStructure::hasBackboneAndCBetaAtoms() const
   {
     ProteinResiduePtr residue = residues[i];
     if (residue && (!residue->hasCompleteBackbone() || residue->isCBetaAtomMissing()))
+      return false;
+  }
+  return true;
+}
+
+bool ProteinTertiaryStructure::hasCAlphaAtoms() const
+{
+  for (size_t i = 0; i < residues.size(); ++i)
+  {
+    ProteinResiduePtr residue = residues[i];
+    if (residue && !residue->hasCAlphaAtom())
       return false;
   }
   return true;

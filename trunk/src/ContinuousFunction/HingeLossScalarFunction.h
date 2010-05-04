@@ -23,6 +23,9 @@ public:
     : correctClass(correctClass), margin(margin) {jassert(correctClass <= 1);}
   HingeLossScalarFunction() : correctClass(0), margin(0.0) {}
 
+  virtual String toString() const
+    {return String(T("HingeLoss(")) + (correctClass ? T("+") : T("-")) + T(")");}
+
   virtual bool isDerivable() const
     {return false;}
 

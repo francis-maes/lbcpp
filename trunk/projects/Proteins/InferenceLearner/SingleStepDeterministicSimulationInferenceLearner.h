@@ -78,13 +78,13 @@ public:
     /*
     ** Train step by step
     */
-    for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
+    for (currentStepNumber = 0; currentStepNumber  < numSteps; ++currentStepNumber )
     {
-      InferenceStepPtr step = inference->getSubStep(stepNumber);
+      InferenceStepPtr step = inference->getSubStep(currentStepNumber);
       
       File stepFile;
       if (modelDirectory != File::nonexistent)
-        stepFile = inference->getSubInferenceFile(stepNumber, modelDirectory);
+        stepFile = inference->getSubInferenceFile(currentStepNumber, modelDirectory);
       if (stepFile.exists() && step->loadFromFile(stepFile))
       {
         std::cout << "Loaded inference step " << stepFile.getFileNameWithoutExtension().quoted() << "." << std::endl;
@@ -112,6 +112,20 @@ public:
       inference->saveToFile(modelDirectory);
     }
   }
+
+protected:
+  size_t currentStepNumber;
+
+  virtual InferenceContextPtr createLearningContext(InferenceStepPtr inf)
+  {
+    if (inf.dynamicCast<DecoratorInferenceStep>())
+      inf = inf.dynamicCast<DecoratorInferenceStep>()->getDecoratedInference();
+    VectorSequentialInferenceStepPtr inference = inf.dynamicCast<VectorSequentialInferenceStep>();
+    jassert(inference);
+    size_t numSteps = inference->getNumSubSteps();
+    jassert(currentStepNumber < numSteps);
+    return InferenceLearner::createLearningContext(inference->getSubStep(currentStepNumber));
+  }
   
 private:
   InferenceResultCachePtr cache;
@@ -125,7 +139,7 @@ private:
   {
     // create classification examples
     ExamplesCreatorCallbackPtr learningCallback = new SingleStepSimulationLearningCallback(step, callback);
-    InferenceContextPtr trainingContext = callback->createContext(true);
+    InferenceContextPtr trainingContext = createLearningContext(inference);
     trainingContext->appendCallback(learningCallback);
     if (cache)
       trainingContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));

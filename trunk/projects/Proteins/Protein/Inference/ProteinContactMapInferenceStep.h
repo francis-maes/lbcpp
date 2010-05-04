@@ -17,17 +17,14 @@ namespace lbcpp
 // Input: Features
 // Output: Scalar
 // Supervision: ScalarFunction
-class ScalarLinearInferenceStep : public InferenceStep
+class LinearScalarInferenceStep : public LearnableAtomicInferenceStep
 {
 public:
-  ScalarLinearInferenceStep(const String& name)
-    : InferenceStep(name), dotProductCache(NULL) {}
+  LinearScalarInferenceStep(const String& name)
+    : LearnableAtomicInferenceStep(name), dotProductCache(NULL) {}
 
-  virtual ~ScalarLinearInferenceStep()
+  virtual ~LinearScalarInferenceStep()
     {clearDotProductCache();}
-
-  virtual void accept(InferenceVisitorPtr visitor)
-    {/*visitor->visit(InferenceStepPtr(this));*/}
 
   void createDotProductCache()
   {
@@ -37,8 +34,11 @@ public:
 
   void clearDotProductCache()
   {
-    delete dotProductCache;
-    dotProductCache = NULL;
+    if (dotProductCache)
+    {
+      delete dotProductCache;
+      dotProductCache = NULL;
+    }
   }
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
@@ -61,18 +61,18 @@ private:
   FeatureGenerator::DotProductCache* dotProductCache;
 };
 
-typedef ReferenceCountedObjectPtr<ScalarLinearInferenceStep> ScalarLinearInferenceStepPtr;
+typedef ReferenceCountedObjectPtr<LinearScalarInferenceStep> LinearScalarInferenceStepPtr;
 
 ///////////////////////// not yet used /////////////////////////
 
 class ScalarInferenceLearner : public InferenceCallback
 {
 public:
-  ScalarInferenceLearner(ScalarLinearInferenceStepPtr step)
-    : step(step), epoch(0) {}
+  ScalarInferenceLearner(LinearScalarInferenceStepPtr step)
+    : step(step), epoch(1) {}
 
   // epoch starts at 1
-  virtual void learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
+  virtual bool learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
@@ -82,36 +82,73 @@ public:
       ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
       ScalarPtr prediction = output.dynamicCast<Scalar>();
       jassert(features && loss && prediction);
-      learningEpoch(++epoch, features, prediction->getValue(), loss);
+      if (learningEpoch(epoch, features, prediction->getValue(), loss))
+        ++epoch;
     }
   }
 
+  virtual void finishInferencesCallback()
+  {
+    std::cout << "Epoch " << epoch << ", " << step->getParameters()->l0norm() << " parameters, L2 = " << step->getParameters()->l2norm() << std::endl;
+  }
+
 protected:
-  ScalarLinearInferenceStepPtr step;
+  LinearScalarInferenceStepPtr step;
   size_t epoch;
 };
 
 class StochasticScalarLinearInferenceLearner : public ScalarInferenceLearner
 {
 public:
-  StochasticScalarLinearInferenceLearner(ScalarLinearInferenceStepPtr step, IterationFunctionPtr learningRate, ScalarFunctionPtr regularizer = ScalarFunctionPtr())
-    : ScalarInferenceLearner(step), learningRate(learningRate), regularizer(regularizer) {}
+  StochasticScalarLinearInferenceLearner(LinearScalarInferenceStepPtr step, IterationFunctionPtr learningRate, ScalarFunctionPtr regularizer = ScalarFunctionPtr(), bool normalizeLearningRate = true)
+    : ScalarInferenceLearner(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
 
-  virtual void learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
+  virtual bool learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
-    double alpha = learningRate->compute(epoch);
-    features->addWeightedTo(step->getParameters(), -alpha * exampleLoss->computeDerivative(prediction));
+    // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
+    if (inputSize.getCount() < 10 ||                         // every time until having 10 samples
+        (inputSize.getCount() < 100 && (epoch % 10 == 0)) || // every 10 epochs until having 100 samples
+        (epoch % 100 == 0))                                  // every 100 epochs after that
+    {
+      inputSize.push((double)(features->l1norm()));
+      //std::cout << "Alpha: " << weight * computeAlpha() << " inputSize: " << inputSize.toString() << std::endl;
+    }
 
-    size_t regularizerFrequency = 100;
+    if (exampleLoss->compute(1.0) > exampleLoss->compute(-1.0) && RandomGenerator::getInstance().sampleBool(0.95))
+      return true; // reject 95% of negative examples
+
+    //std::cout << "Loss: " << exampleLoss->toString() << " Derivative: " << exampleLoss->computeDerivative(prediction) << " PRediction = " << prediction << std::endl;
+    double k = computeAlpha() * exampleLoss->computeDerivative(prediction);
+
+    features->addWeightedTo(step->getParameters(), - k);
+    step->clearDotProductCache();
+
+    //if (epoch % 1000 == 0)
+    //  std::cout << step->getParameters()->toString() << std::endl;
+
+/*    size_t regularizerFrequency = 100;
     if ((epoch % regularizerFrequency) == 0)
     {
       // todo: apply regularizer
-    }
+    }*/
+    return true;
   }
 
 protected:
   IterationFunctionPtr learningRate;
   ScalarFunctionPtr regularizer;
+  bool normalizeLearningRate;
+  ScalarVariableMean inputSize;
+
+  double computeAlpha() const
+  {
+    double res = 1.0;
+    if (learningRate)
+      res *= learningRate->compute(epoch);
+    if (normalizeLearningRate && inputSize.getMean())
+      res /= inputSize.getMean();
+    return res;
+  }
 };
 
 /////////////////////////
@@ -122,8 +159,8 @@ public:
   ProteinContactMapInferenceStep(const String& name, ProteinResiduePairFeaturesPtr features, const String& targetName)
     : Protein2DInferenceStep(name, InferenceStepPtr(), features, targetName)
   {
-    //ScalarLinearInferenceStepPtr sharedStep = new ScalarLinearInferenceStep(name + T(" Classification"));   
-    setSharedInferenceStep(new RegressionInferenceStep(name + T(" Classification")));
+    setSharedInferenceStep(new LinearScalarInferenceStep(name + T(" Classification")));
+    //setSharedInferenceStep(new RegressionInferenceStep(name + T(" Classification")));
   }
 
   virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const
@@ -154,7 +191,7 @@ public:
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    RegressionInferenceStepPtr sharedStep = getSharedInferenceStep().dynamicCast<RegressionInferenceStep>();
+    LinearScalarInferenceStepPtr sharedStep = getSharedInferenceStep().dynamicCast<LinearScalarInferenceStep>();
     jassert(sharedStep);
     sharedStep->createDotProductCache();
     ObjectPtr res = Protein2DInferenceStep::run(context, input, supervision, returnCode);

@@ -128,11 +128,11 @@ public:
   
   bool featureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary, double weight)
   {
-    jassert(currentVector);
-    currentVectorStack.push_back(std::make_pair(currentVector, currentWeight));
+    jassert(currentVector && currentVector->getDictionary()->checkEquals(dictionary));
     VectorPtr subVector = ((ExactType* )this)->getCurrentSubVector(number, subDictionary);
     if (!subVector)
       return false;
+    currentVectorStack.push_back(std::make_pair(currentVector, currentWeight));
     currentVector = subVector;
     currentWeight *= weight;
     return true;
@@ -156,6 +156,8 @@ protected:
     VectorPtr& subVector = currentVector->getSubVector(number);
     if (!subVector)
       subVector = VectorPtr(new VectorType(subDictionary));
+    else
+      subVector->ensureDictionary(subDictionary);
     return subVector;
   }
 

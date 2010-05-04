@@ -35,6 +35,9 @@ typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInf
 class RegressionInferenceStep;
 typedef ReferenceCountedObjectPtr<RegressionInferenceStep> RegressionInferenceStepPtr;
 
+class LearnableAtomicInferenceStep;
+typedef ReferenceCountedObjectPtr<LearnableAtomicInferenceStep> LearnableAtomicInferenceStepPtr;
+
 /*
 ** InferenceVisitor
 */

@@ -234,7 +234,8 @@ public:
     calphaBondsEvaluator(new BondCoordinatesSequenceEvaluator(T("CAB"))),
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
     tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))),
-    contactMapEvaluator(new ProteinContactMapEvaluator(T("RR")))    
+    calphaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRa"))),
+    cbetaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRb")))
     {}
 
   virtual String toString() const
@@ -251,7 +252,8 @@ public:
     evaluatorToString(res, calphaBondsEvaluator);
     evaluatorToString(res, backboneBondEvaluator);
     evaluatorToString(res, tertiaryStructureEvaluator);
-    evaluatorToString(res, contactMapEvaluator);
+    evaluatorToString(res, calphaContactMapEvaluator);
+    evaluatorToString(res, cbetaContactMapEvaluator);
     return res;
   }
 
@@ -273,7 +275,8 @@ public:
     calphaBondsEvaluator->addPrediction(predicted->getCAlphaBondSequence(), correct->getCAlphaBondSequence());
     backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());
     tertiaryStructureEvaluator->addPrediction(predicted->getTertiaryStructure(), correct->getTertiaryStructure());
-    contactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Cb(), correct->getResidueResidueContactMatrix8Cb());
+    calphaContactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Ca(), correct->getResidueResidueContactMatrix8Ca());
+    cbetaContactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Cb(), correct->getResidueResidueContactMatrix8Cb());
   }
 
   EvaluatorPtr getEvaluatorForTarget(const String& targetName)
@@ -294,8 +297,10 @@ public:
       return backboneBondEvaluator;
     if (targetName == T("TertiaryStructure"))
       return tertiaryStructureEvaluator;
+    if (targetName == T("ResidueResidueContactMatrix8Ca"))
+      return calphaContactMapEvaluator;
     if (targetName == T("ResidueResidueContactMatrix8Cb"))
-      return contactMapEvaluator;
+      return cbetaContactMapEvaluator;
     return EvaluatorPtr();
   }
   
@@ -313,7 +318,8 @@ protected:
   EvaluatorPtr calphaBondsEvaluator;
   EvaluatorPtr backboneBondEvaluator;
   EvaluatorPtr tertiaryStructureEvaluator;
-  EvaluatorPtr contactMapEvaluator;
+  EvaluatorPtr calphaContactMapEvaluator;
+  EvaluatorPtr cbetaContactMapEvaluator;
 
   static void evaluatorToString(String& res, EvaluatorPtr evaluator)
   {

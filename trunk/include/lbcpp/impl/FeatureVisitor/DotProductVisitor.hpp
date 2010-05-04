@@ -46,7 +46,8 @@ public:
   VectorPtr getCurrentSubVector(size_t number, lbcpp::FeatureDictionaryPtr subDictionary)
   {
     VectorPtr res = getCurrentVector().getSubVector(number);
-    jassert(!res || res->getDictionary() == subDictionary);
+    if (res)
+      res->getDictionary()->checkEquals(subDictionary);
     return res;
   }
   
@@ -71,7 +72,10 @@ private:
       return res;
     }
     else
+    {
+      jassert(featureGenerator->dotProduct(vector) == it->second);
       return it->second;
+    }
   }
 };
 

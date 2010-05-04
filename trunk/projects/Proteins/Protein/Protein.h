@@ -76,6 +76,8 @@ public:
   /*
   ** Residue-residue distance
   */
+  ScoreSymmetricMatrixPtr getResidueResidueDistanceMatrixCa() const; // distance matrix between Ca atoms
+  ScoreSymmetricMatrixPtr getResidueResidueContactMatrix8Ca() const; // contact at 8 angstrom between Ca atoms
   ScoreSymmetricMatrixPtr getResidueResidueDistanceMatrixCb() const; // distance matrix between Cb atoms
   ScoreSymmetricMatrixPtr getResidueResidueContactMatrix8Cb() const; // contact at 8 angstrom between Cb atoms
 

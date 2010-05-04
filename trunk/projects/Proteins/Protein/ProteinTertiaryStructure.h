@@ -36,6 +36,7 @@ public:
   CartesianCoordinatesSequencePtr makeCAlphaTrace() const;
   CartesianCoordinatesSequencePtr makeCBetaTrace() const;
   ProteinBackboneBondSequencePtr makeBackbone() const;
+  ScoreSymmetricMatrixPtr makeCAlphaDistanceMatrix() const;
   ScoreSymmetricMatrixPtr makeCBetaDistanceMatrix() const;
 
   virtual size_t size() const
@@ -69,6 +70,7 @@ public:
 
   bool hasCompleteBackbone() const;
   bool hasBackboneAndCBetaAtoms() const;
+  bool hasCAlphaAtoms() const;
 
   bool isConsistent(String& failureReason) const;
 
