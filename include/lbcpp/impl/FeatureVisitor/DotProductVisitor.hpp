@@ -54,8 +54,8 @@ public:
     {jassert(BaseClass::currentVector); return const_cast<const VectorType& >(*BaseClass::currentVector.get());}
 
 private:
-  double res;
   FeatureGenerator::DotProductCache* cache;
+  double res;
 
   double makeDotProduct(FeatureGeneratorPtr featureGenerator, VectorPtr vector)
   {

@@ -391,6 +391,7 @@ public:
     /*
     ** Beta bridge partners
     */
+#if 0
     String bp1 = line.substring(25, 29).trim();
     String bp2 = line.substring(29, 33).trim();
     if (secondaryStructureCode != T("E"))
@@ -408,6 +409,7 @@ public:
       if (index1 || index2)
         betaBridgePartners[newSerialNumber] = std::make_pair(index1, index2);
     }
+#endif // 0
     return true;
   }
 /*
