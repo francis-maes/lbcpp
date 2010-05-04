@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
   }
   protein->setObject(pssm);
 
-  File modelFile(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\TestDR.model"));
+  File modelFile = cwd.getChildFile(T("protein.inference"));
   InferenceStepPtr inference = InferenceStep::createFromFile(modelFile);
   if (!inference)
   {
