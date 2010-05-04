@@ -96,7 +96,9 @@ int main(int argc, char* argv[])
   protein->setObject(pssm);
   //  std::cout << "Loaded pssm: " << pssm->toString() << std::endl;
 
-  File modelFile = cwd.getChildFile(T("protein.inference"));
+  File thisExeFile = cwd.getChildFile(argv[0]);
+  File modelFile = thisExeFile.getParentDirectory().getChildFile(T("protein.inference"));
+  std::cout << "Model file: " << modelFile.getFullPathName() << std::endl;
   ProteinInferencePtr inference = InferenceStep::createFromFileAndCast<ProteinInference>(modelFile);
   if (!inference)
   {
