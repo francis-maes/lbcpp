@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "InferenceVisitor.h"
-#include "../InferenceStep/SequentialInferenceStep.h"
-#include "../InferenceStep/ParallelInferenceStep.h"
+#include "../Inference/SequentialInferenceStep.h"
+#include "../Inference/ParallelInferenceStep.h"
 using namespace lbcpp;
 
 void DefaultInferenceVisitor::visit(SequentialInferenceStepPtr inference)

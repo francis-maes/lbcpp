@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_H_
 
-# include "../../InferenceStep/SequentialInferenceStep.h"
+# include "../../Inference/SequentialInferenceStep.h"
 
 namespace lbcpp
 {

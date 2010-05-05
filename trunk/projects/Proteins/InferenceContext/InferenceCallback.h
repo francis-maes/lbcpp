@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_H_
 # define LBCPP_INFERENCE_CALLBACK_H_
 
-# include "../InferenceStep/InferenceStep.h"
+# include "../Inference/InferenceStep.h"
 
 namespace lbcpp
 {

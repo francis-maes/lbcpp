@@ -11,8 +11,8 @@
 
 # include "InferenceCallback.h"
 # include "InferenceStack.h"
-# include "../InferenceStep/ClassificationInferenceStep.h"
-# include "../InferenceStep/RegressionInferenceStep.h"
+# include "../Inference/ClassificationInferenceStep.h"
+# include "../Inference/RegressionInferenceStep.h"
 # include "../InferenceLearner/InferenceLearnerCallback.h"
 
 namespace lbcpp

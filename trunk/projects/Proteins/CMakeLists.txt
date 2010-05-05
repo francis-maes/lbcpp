@@ -11,6 +11,19 @@ ADD_CRALGORITHM_SOURCES(
   Protein/Inference/ProteinResiduePairFeatures.lcpp
 )
 
+SET(LBCPP_INFERENCE_SOURCES
+  Inference/InferenceStep.h
+  Inference/InferenceStep.cpp
+  Inference/ClassificationInferenceStep.h
+  Inference/RegressionInferenceStep.h
+  Inference/SequentialInferenceStep.h
+  Inference/SequentialInferenceStep.cpp
+  Inference/ParallelInferenceStep.h
+  Inference/DecoratorInferenceStep.h
+  Inference/DecoratorInferenceStep.cpp
+  Inference/ParallelSharedMultiRegressionInferenceStep.h
+)
+
 SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/CommonFeatureGenerators.h
   InferenceData/AccumulatedScoresMatrix.h
@@ -26,19 +39,6 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/BondCoordinatesSequence.cpp
   InferenceData/ScoreSymmetricMatrix.h
   InferenceData/ScoreSymmetricMatrix.cpp
-)
-
-SET(LBCPP_INFERENCE_STEP_SOURCES
-  InferenceStep/InferenceStep.h
-  InferenceStep/InferenceStep.cpp
-  InferenceStep/ClassificationInferenceStep.h
-  InferenceStep/RegressionInferenceStep.h
-  InferenceStep/SequentialInferenceStep.h
-  InferenceStep/SequentialInferenceStep.cpp
-  InferenceStep/ParallelInferenceStep.h
-  InferenceStep/DecoratorInferenceStep.h
-  InferenceStep/DecoratorInferenceStep.cpp
-  InferenceStep/ParallelSharedMultiRegressionInferenceStep.h
 )
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
@@ -132,7 +132,7 @@ SET(LBCPP_PROTEIN_FORMATS_SOURCES
 
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_DATA_SOURCES}
-  ${LBCPP_INFERENCE_STEP_SOURCES}
+  ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}

@@ -14,57 +14,6 @@
 namespace lbcpp
 {
 
-// Input: Features
-// Output: Scalar
-// Supervision: ScalarFunction
-class LinearScalarInferenceStep : public LearnableAtomicInferenceStep
-{
-public:
-  LinearScalarInferenceStep(const String& name)
-    : LearnableAtomicInferenceStep(name), dotProductCache(NULL) {}
-
-  virtual ~LinearScalarInferenceStep()
-    {clearDotProductCache();}
-
-  void createDotProductCache()
-  {
-    clearDotProductCache();
-    dotProductCache = new FeatureGenerator::DotProductCache();
-  }
-
-  void clearDotProductCache()
-  {
-    if (dotProductCache)
-    {
-      delete dotProductCache;
-      dotProductCache = NULL;
-    }
-  }
-
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
-    jassert(features);
-    if (!parameters)
-    {
-      parameters = new DenseVector(features->getDictionary());
-      return new Scalar(0.0);
-    }
-    return new Scalar(features->dotProduct(parameters, dotProductCache));
-  }
-
-  DenseVectorPtr getParameters() const
-    {return parameters;}
-
-private:
-  DenseVectorPtr parameters;
-  FeatureGenerator::DotProductCache* dotProductCache;
-};
-
-typedef ReferenceCountedObjectPtr<LinearScalarInferenceStep> LinearScalarInferenceStepPtr;
-
-///////////////////////// not yet used /////////////////////////
-
 class ScalarInferenceLearner : public InferenceCallback
 {
 public:
