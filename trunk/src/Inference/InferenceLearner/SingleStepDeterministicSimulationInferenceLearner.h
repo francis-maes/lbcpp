@@ -133,7 +133,7 @@ private:
   bool doNotSaveModel;
 
   InferencePtr addBreakToInference(InferencePtr inference, InferencePtr lastStepBeforeBreak)
-    {return new CallbackBasedDecoratorInference(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
+    {return callbackBasedDecoratorInference(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
 
   void trainPass(InferencePtr inference, InferencePtr step, ObjectContainerPtr trainingData)
   {

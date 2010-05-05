@@ -74,4 +74,6 @@
 # include "Inference/InferenceResultCache.h"
 # include "Inference/Evaluator.h"
 
+# include "impl/impl.h"
+
 #endif // !LBCPP_LBCPP_H_

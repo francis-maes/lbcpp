@@ -44,3 +44,4 @@ InferenceContextPtr InferenceLearner::createLearningContext(InferencePtr inferen
   addLearningCallbacksToContext(context, inference);
   return context;
 }
+

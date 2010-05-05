@@ -10,6 +10,7 @@
 #include "InferenceCallback/CancelAfterStepCallback.h"
 #include "InferenceCallback/ExamplesCreatorCallback.h"
 #include "InferenceCallback/CacheInferenceCallback.h"
+#include "InferenceCallback/StochasticScalarLinearInferenceLearningCallback.h"
 using namespace lbcpp;
 
 InferenceCallbackPtr lbcpp::cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
@@ -17,6 +18,13 @@ InferenceCallbackPtr lbcpp::cacheInferenceCallback(InferenceResultCachePtr cache
 
 InferenceCallbackPtr lbcpp::cancelAfterStepCallback(InferencePtr lastStepBeforeBreak)
   {return new CancelAfterStepCallback(lastStepBeforeBreak);}
+
+InferenceCallbackPtr lbcpp::stochasticScalarLinearInferenceLearningCallback(InferencePtr inference,
+                                                                            IterationFunctionPtr learningRate,
+                                                                            ScalarFunctionPtr regularizer,
+                                                                            bool normalizeLearningRate)
+  {return new StochasticScalarLinearInferenceLearningCallback(inference.dynamicCast<LearnableAtomicInference>(),
+                  learningRate, regularizer, normalizeLearningRate);}
 
 void declareInferenceCallbackClasses()
 {

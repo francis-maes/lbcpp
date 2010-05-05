@@ -38,9 +38,9 @@ public:
   {
     if (parentStep.dynamicCast<ProteinContactMapInferenceStep>())
     {
-      LinearScalarInferencePtr linearInference = step.dynamicCast<LinearScalarInference>();
+      LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
       jassert(linearInference);
-      return new StochasticScalarLinearInferenceLearner(linearInference, invLinearIterationFunction(0.5, 250000));
+      return stochasticScalarLinearInferenceLearningCallback(linearInference, invLinearIterationFunction(0.5, 250000));
     }
     return InferenceCallbackPtr();
   }
@@ -153,7 +153,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 50;
+    return iterationNumber < 150;
   }
 
   virtual void preLearningStepCallback(InferencePtr step)
