@@ -9,7 +9,7 @@
 #ifndef LBCPP_POLICY_EPSILON_GREEDY_H_
 # define LBCPP_POLICY_EPSILON_GREEDY_H_
 
-# include <lbcpp/Policy.h>
+# include <lbcpp/CRAlgorithm/Policy.h>
 
 namespace lbcpp
 {

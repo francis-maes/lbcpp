@@ -9,7 +9,7 @@
 #ifndef LBCPP_STATIC_VARIABLE_HPP_
 # define LBCPP_STATIC_VARIABLE_HPP_
 
-# include "../../Variable.h"
+# include "../../CRAlgorithm/Variable.h"
 
 namespace lbcpp
 {

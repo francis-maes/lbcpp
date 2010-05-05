@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/CRAlgorithm.h>
+#include <lbcpp/CRAlgorithm/CRAlgorithm.h>
 #include "ChooseFunction/ChooseValueFunctions.h"
 #include "ChooseFunction/ClassifierValueFunctions.h"
 #include "ChooseFunction/RankerValueFunctions.h"

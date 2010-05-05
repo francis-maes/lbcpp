@@ -9,8 +9,8 @@
 #ifndef LBCPP_STATIC_CALLBACK_HPP_
 # define LBCPP_STATIC_CALLBACK_HPP_
 
-# include "../../Callback.h"
-# include "../../Policy.h"
+# include "../../CRAlgorithm/Callback.h"
+# include "../../CRAlgorithm/Policy.h"
 # include "Choose.hpp"
 # include "StaticInterface.hpp"
 

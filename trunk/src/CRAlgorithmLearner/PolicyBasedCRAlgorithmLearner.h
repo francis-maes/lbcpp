@@ -9,7 +9,7 @@
 #ifndef LBCPP_CRALGORITHM_LEARNER_POLICY_BASED_H_
 # define LBCPP_CRALGORITHM_LEARNER_POLICY_BASED_H_
 
-# include <lbcpp/CRAlgorithmLearner.h>
+# include <lbcpp/CRAlgorithm/CRAlgorithmLearner.h>
 
 namespace lbcpp
 {

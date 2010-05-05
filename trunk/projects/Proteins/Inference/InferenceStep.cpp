@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "InferenceStep.h"
-#include "../InferenceContext/InferenceVisitor.h"
+#include "InferenceVisitor.h"
 using namespace lbcpp;
 
 /*

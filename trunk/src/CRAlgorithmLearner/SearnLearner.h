@@ -9,7 +9,7 @@
 #ifndef LBCPP_CRALGORITHM_LEARNER_SEARN_H_
 # define LBCPP_CRALGORITHM_LEARNER_SEARN_H_
 
-# include <lbcpp/CRAlgorithmLearner.h>
+# include <lbcpp/CRAlgorithm/CRAlgorithmLearner.h>
 # include <lbcpp/GradientBasedLearningMachine.h>
 # include <lbcpp/Optimizer.h>
 

@@ -9,8 +9,8 @@
 #ifndef LBCPP_STATIC_CHOOSE_HPP_
 # define LBCPP_STATIC_CHOOSE_HPP_
 
-# include "../../Choose.h"
-# include "../../CRAlgorithm.h"
+# include "../../CRAlgorithm/Choose.h"
+# include "../../CRAlgorithm/CRAlgorithm.h"
 # include "Variable.hpp"
 # include "FeatureGenerator.hpp"
 # include "ChooseFunction.hpp"

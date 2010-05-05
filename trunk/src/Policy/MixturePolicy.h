@@ -9,7 +9,7 @@
 #ifndef LBCPP_POLICY_MIXTURE_H_
 # define LBCPP_POLICY_MIXTURE_H_
 
-# include <lbcpp/Policy.h>
+# include <lbcpp/CRAlgorithm/Policy.h>
 
 namespace lbcpp
 {

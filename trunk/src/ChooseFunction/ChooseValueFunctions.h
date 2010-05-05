@@ -9,7 +9,7 @@
 #ifndef LBCPP_CORE_VALUE_FUNCTION_CHOOSE_H_
 # define LBCPP_CORE_VALUE_FUNCTION_CHOOSE_H_
 
-# include <lbcpp/ChooseFunction.h>
+# include <lbcpp/CRAlgorithm/ChooseFunction.h>
 
 namespace lbcpp
 {

@@ -9,7 +9,7 @@
 #ifndef LBCPP_POLICY_MONTE_CARLO_CONTROL_H_
 # define LBCPP_POLICY_MONTE_CARLO_CONTROL_H_
 
-# include <lbcpp/Policy.h>
+# include <lbcpp/CRAlgorithm/Policy.h>
 # include <lbcpp/RandomVariable.h>
 
 namespace lbcpp
