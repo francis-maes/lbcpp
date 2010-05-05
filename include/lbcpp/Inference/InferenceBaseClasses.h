@@ -259,7 +259,6 @@ extern LearnableAtomicInferencePtr linearScalarInference(const String& name);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
 
-
 // Input: FeatureGenerator
 // Output: FeatureVector
 // Supervision: Label

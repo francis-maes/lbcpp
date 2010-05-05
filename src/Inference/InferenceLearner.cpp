@@ -25,7 +25,7 @@ public:
 
   virtual void visit(LearnableAtomicInferencePtr inference)
   {
-    InferenceCallbackPtr learningCallback = callback->getLearningCallback(inference, stack.getCurrentInference());
+    InferenceCallbackPtr learningCallback = callback->createLearningCallback(inference, stack.getCurrentInference());
     if (learningCallback)
       context->appendCallback(learningCallback);
   }

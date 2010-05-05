@@ -11,6 +11,7 @@
 
 # include "Inference.h"
 # include "../ObjectPredeclarations.h"
+# include "../Utilities/RandomVariable.h"
 
 namespace lbcpp
 {
@@ -42,11 +43,29 @@ public:
     {}
 };
 
+class ScalarInferenceLearningCallback : public InferenceCallback
+{
+public:
+  ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step);
+
+  // epoch starts at 1
+  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
+
+protected:
+  LearnableAtomicInferencePtr step;
+  size_t epoch;
+  ScalarVariableMean inputSize;
+
+  void updateInputSize(FeatureGeneratorPtr inputfeatures);
+};
+
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
 extern InferenceCallbackPtr stochasticScalarLinearInferenceLearningCallback(InferencePtr inference,
                                                                             IterationFunctionPtr learningRate,
-                                                                            ScalarFunctionPtr regularizer = ScalarFunctionPtr(),
+                                                                            ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(),
                                                                             bool normalizeLearningRate = true);
 
 }; /* namespace lbcpp */

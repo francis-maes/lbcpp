@@ -21,6 +21,149 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+
+class LocalRandomizedScalarLinearInferenceLearningCallback : public ScalarInferenceLearningCallback
+{
+public:
+  LocalRandomizedScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+    : ScalarInferenceLearningCallback(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
+
+  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
+  {
+    updateInputSize(features);
+
+    if (exampleLoss->compute(1.0) > exampleLoss->compute(-1.0) && RandomGenerator::getInstance().sampleBool(0.8))
+      return 0; // reject 80% of negative examples
+
+    enum {randomizationSize = 10000};
+
+    examples.push_back(std::make_pair(features, exampleLoss));
+    if (examples.size() < 10000)
+      return 0;
+
+    std::vector<size_t> order;
+    RandomGenerator::getInstance().sampleOrder(examples.size(), order);
+    for (size_t i = 0; i < order.size(); ++i)
+      processExample(examples[order[i]].first, examples[order[i]].second);
+    applyRegularizer(step->getParameters(), regularizer, computeAlpha() * (double)examples.size());
+    examples.clear();
+    return order.size();
+  }
+
+  void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
+  {
+    DenseVectorPtr parameters = step->getParameters();
+    double alpha = computeAlpha();
+    double prediction = features->dotProduct(parameters);
+    features->addWeightedTo(parameters, - alpha * exampleLoss->computeDerivative(prediction));
+    step->validateParametersChange();
+  }
+
+  void applyRegularizer(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer, double alpha)
+    {regularizer->computeGradient(parameters)->addWeightedTo(parameters, - alpha);}
+
+  virtual void finishInferencesCallback()
+  {
+    std::cout << "Epoch " << epoch << ", " << step->getParameters()->l0norm() << " parameters, L2 = " << step->getParameters()->l2norm() << std::endl;
+  }
+
+protected:
+  IterationFunctionPtr learningRate;
+  ScalarVectorFunctionPtr regularizer;
+  bool normalizeLearningRate;
+
+  std::vector< std::pair<FeatureGeneratorPtr, ScalarFunctionPtr> > examples;
+
+  double computeAlpha() const
+  {
+    double res = 1.0;
+    if (learningRate)
+      res *= learningRate->compute(epoch);
+    if (normalizeLearningRate && inputSize.getMean())
+      res /= inputSize.getMean();
+    return res;
+  }
+};
+
+class MyScalarLinearInferenceLearningCallback : public ScalarInferenceLearningCallback
+{
+public:
+  MyScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+    : ScalarInferenceLearningCallback(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
+
+  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
+  {
+    updateInputSize(features);
+    if (exampleLoss->compute(1.0) > exampleLoss->compute(-1.0) && RandomGenerator::getInstance().sampleBool(0.8))
+      return 0; // reject 80% of negative examples
+
+    examples.push_back(std::make_pair(features, exampleLoss));
+    return 0;
+  }
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference() == step && supervision && output)
+    {
+      currentParentStep = stack->getParentInference();
+      FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
+      ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+      ScalarPtr prediction = output.dynamicCast<Scalar>();
+      jassert(features && loss && prediction);
+      epoch += learningEpoch(epoch, features, prediction->getValue(), loss);
+    }
+    else if (stack->getCurrentInference() == currentParentStep)
+      epoch += flushExamples();
+  }
+
+  InferencePtr currentParentStep;
+
+  size_t flushExamples()
+  {
+    std::vector<size_t> order;
+    RandomGenerator::getInstance().sampleOrder(examples.size(), order);
+    for (size_t i = 0; i < order.size(); ++i)
+      processExample(examples[order[i]].first, examples[order[i]].second);
+    applyRegularizer(step->getParameters(), regularizer, computeAlpha() * (double)examples.size());
+    examples.clear();
+    return order.size();
+  }
+
+  void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
+  {
+    DenseVectorPtr parameters = step->getParameters();
+    double alpha = computeAlpha();
+    double prediction = features->dotProduct(parameters);
+    features->addWeightedTo(parameters, - alpha * exampleLoss->computeDerivative(prediction));
+    step->validateParametersChange();
+  }
+
+  void applyRegularizer(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer, double alpha)
+    {if (regularizer) regularizer->computeGradient(parameters)->addWeightedTo(parameters, - alpha);}
+
+  virtual void finishInferencesCallback()
+  {
+    std::cout << "Epoch " << epoch << ", " << step->getParameters()->l0norm() << " parameters, L2 = " << step->getParameters()->l2norm() << std::endl;
+  }
+
+protected:
+  IterationFunctionPtr learningRate;
+  ScalarVectorFunctionPtr regularizer;
+  bool normalizeLearningRate;
+
+  std::vector< std::pair<FeatureGeneratorPtr, ScalarFunctionPtr> > examples;
+
+  double computeAlpha() const
+  {
+    double res = 1.0;
+    if (learningRate)
+      res *= learningRate->compute(epoch);
+    if (normalizeLearningRate && inputSize.getMean())
+      res /= inputSize.getMean();
+    return res;
+  }
+};
+
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
@@ -34,13 +177,16 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
-  virtual InferenceCallbackPtr getLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
+  virtual InferenceCallbackPtr createLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
   {
     if (parentStep.dynamicCast<ProteinContactMapInferenceStep>())
     {
       LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
       jassert(linearInference);
-      return stochasticScalarLinearInferenceLearningCallback(linearInference, invLinearIterationFunction(0.5, 250000));
+      double l2regularizer = 0;//.0001;
+      return new MyScalarLinearInferenceLearningCallback(linearInference,
+          invLinearIterationFunction(2, 250000),
+          l2regularizer ? sumOfSquaresFunction(l2regularizer) : ScalarVectorFunctionPtr());
     }
     return InferenceCallbackPtr();
   }
@@ -204,7 +350,7 @@ int main(int argc, char** argv)
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\RR.model"));
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 2);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 7);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ObjectToObjectPairFunction());
 
@@ -222,7 +368,7 @@ int main(int argc, char** argv)
   */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
 
-  //featureFunction->addSubFeatures(proteinUnitResidueFeature());
+  featureFunction->addSubFeatures(proteinUnitResidueFeature());
   //featureFunction->addSubFeatures(proteinPositionIndexResidueFeature()); // DEBUG !!
 
   //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
