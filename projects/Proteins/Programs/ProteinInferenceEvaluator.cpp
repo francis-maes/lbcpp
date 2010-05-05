@@ -38,7 +38,7 @@ ObjectContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0
 }
 
 InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
-  {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
+  {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, cancelAfterStepCallback(lastStepBeforeBreak));}
 
 class SaveOutputInferenceCallback : public InferenceCallback
 {
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
   }
   else if (mode == T("StepByStep"))
   {
-    inferenceContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
+    inferenceContext->appendCallback(cacheInferenceCallback(cache, inference));
     std::cout << std::endl;
     for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
     {

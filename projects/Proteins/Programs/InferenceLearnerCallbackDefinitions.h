@@ -173,7 +173,7 @@ public:
     InferenceContextPtr validationContext = createContext();
     
     if (cache)
-      validationContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
+      validationContext->appendCallback(cacheInferenceCallback(cache, inference));
     
     ProteinEvaluationCallbackPtr trainingEvaluation = new ProteinEvaluationCallback();
     validationContext->appendCallback(trainingEvaluation);

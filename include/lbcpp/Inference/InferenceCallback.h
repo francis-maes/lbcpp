@@ -42,6 +42,9 @@ public:
     {}
 };
 
+extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferenceStepPtr parentStep);
+extern InferenceCallbackPtr cancelAfterStepCallback(InferenceStepPtr lastStepBeforeBreak);
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_CALLBACK_H_

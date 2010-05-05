@@ -10,8 +10,6 @@
 # define LBCPP_PROTEIN_INFERENCE_2D_STEP_H_
 
 # include "ProteinInferenceStepHelper.h"
-# include "../../Inference/ClassificationInferenceStep.h"
-# include "../../Inference/ParallelInferenceStep.h"
 
 namespace lbcpp
 {

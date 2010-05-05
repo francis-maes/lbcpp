@@ -142,7 +142,7 @@ private:
     InferenceContextPtr trainingContext = createLearningContext(inference);
     trainingContext->appendCallback(learningCallback);
     if (cache)
-      trainingContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
+      trainingContext->appendCallback(cacheInferenceCallback(cache, inference));
     trainingContext->runWithSupervisedExamples(inference, trainingData);
 
     // learn

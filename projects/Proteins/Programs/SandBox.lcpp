@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../../../src/Inference/InferenceContext/CacheInferenceCallback.h"
 #include "InferenceData/ScoreSymmetricMatrix.h"
 #include "InferenceData/CommonFeatureGenerators.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
@@ -127,7 +126,7 @@ public:
     ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
     validationContext->appendCallback(evaluation);
     if (cache)
-      validationContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
+      validationContext->appendCallback(cacheInferenceCallback(cache, inference));
 
     juce::uint32 startTime = Time::getMillisecondCounter();
     validationContext->runWithSupervisedExamples(inference, trainingData);

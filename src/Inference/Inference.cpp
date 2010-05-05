@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/InferenceBaseClasses.h>
+#include <lbcpp/Inference/InferenceResultCache.h>
 using namespace lbcpp;
 
 /*
@@ -82,3 +83,45 @@ bool VectorBasedInferenceHelper::loadSubInferencesFromDirectory(const File& file
 */
 void LearnableAtomicInferenceStep::accept(InferenceVisitorPtr visitor)
   {visitor->visit(LearnableAtomicInferenceStepPtr(this));}
+
+
+/*
+** InferenceStepResultCache
+*/
+ObjectPtr InferenceStepResultCache::get(ObjectPtr input) const
+{
+  InputOutputMap::const_iterator it = cache.find(input->getName());
+  return it == cache.end() ? ObjectPtr() : it->second;
+}
+
+/*
+** InferenceResultCache
+*/
+InferenceStepResultCachePtr InferenceResultCache::getCacheForInferenceStep(InferenceStepPtr step) const
+{
+  CacheMap::const_iterator it = cache.find(step);
+  return it == cache.end() ? InferenceStepResultCachePtr() : it->second;
+}
+
+ObjectPtr InferenceResultCache::get(InferenceStepPtr step, ObjectPtr input) const
+{
+  InferenceStepResultCachePtr stepCache = getCacheForInferenceStep(step);
+  ObjectPtr res = stepCache ? stepCache->get(input) : ObjectPtr();
+  //if (res)
+  //  std::cout << "Use: " << step->getName() << " input: " << input->getName() << std::endl;
+  return res;
+}
+
+void InferenceResultCache::addStepCache(InferenceStepResultCachePtr stepCache)
+{
+  cache[stepCache->getStep()] = stepCache;
+}
+
+void InferenceResultCache::add(InferenceStepPtr step, ObjectPtr input, ObjectPtr output)
+{
+  //std::cout << "Add: " << step->getName() << " input: " << input->getName() << " output: " << output->toString() << std::endl;
+  InferenceStepResultCachePtr stepCache = getCacheForInferenceStep(step);
+  if (!stepCache)
+    stepCache = cache[step] = new InferenceStepResultCache(step);
+  stepCache->add(input, output);
+}
