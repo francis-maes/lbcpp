@@ -2,6 +2,17 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 
 SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
+SET(LBCPP_CRALGORITHM_HEADERS
+  ../include/lbcpp/CRAlgorithm/ChooseFunction.h
+  ../include/lbcpp/CRAlgorithm/Variable.h
+  ../include/lbcpp/CRAlgorithm/Choose.h
+  ../include/lbcpp/CRAlgorithm/Callback.h
+  ../include/lbcpp/CRAlgorithm/Policy.h
+  ../include/lbcpp/CRAlgorithm/CRAlgorithmScope.h
+  ../include/lbcpp/CRAlgorithm/CRAlgorithm.h
+  ../include/lbcpp/CRAlgorithm/CRAlgorithmLearner.h
+)
+  
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/common.h
   ../include/lbcpp/Traits.h
@@ -34,14 +45,6 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/Optimizer.h
   ../include/lbcpp/GradientBasedLearner.h
   ../include/lbcpp/GradientBasedLearningMachine.h
-  ../include/lbcpp/ChooseFunction.h
-  ../include/lbcpp/Variable.h
-  ../include/lbcpp/Choose.h
-  ../include/lbcpp/Callback.h
-  ../include/lbcpp/Policy.h
-  ../include/lbcpp/CRAlgorithmScope.h
-  ../include/lbcpp/CRAlgorithm.h
-  ../include/lbcpp/CRAlgorithmLearner.h
   ../include/lbcpp/lbcpp.h
 )
 
@@ -221,6 +224,7 @@ SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
 
 SET(LBCPP_CORE
   ${LBCPP_CORE_HEADERS}
+  ${LBCPP_CRALGORITHM_HEADERS}
   ${LBCPP_CORE_IMPL_HEADERS}
   ${LBCPP_CORE_IMPL_FEATURE_VISITOR}
   ${LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION}
@@ -249,9 +253,11 @@ SOURCE_GROUP(ContinuousFunction FILES ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 SOURCE_GROUP(GradientBasedLearningMachine FILES ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES})
 SOURCE_GROUP(GradientBasedLearner FILES ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES})
-SOURCE_GROUP(ChooseFunction FILES ${LBCPP_CORE_CHOOSE_FUNCTION_SOURCES})
-SOURCE_GROUP(Policy FILES ${LBCPP_CORE_POLICY_SOURCES})
-SOURCE_GROUP(CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES})
+
+SOURCE_SUB_GROUP(CRAlgorithm includes FILES ${LBCPP_CRALGORITHM_HEADERS})
+SOURCE_SUB_GROUP(CRAlgorithm ChooseFunction FILES ${LBCPP_CORE_CHOOSE_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(CRAlgorithm Policy FILES ${LBCPP_CORE_POLICY_SOURCES})
+SOURCE_SUB_GROUP(CRAlgorithm CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 

@@ -24,23 +24,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   CRAlgorithmLearner.h
-**@author Francis MAES
-**@date   Fri Jun 12 16:57:27 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_CRALGORITHM_LEARNER_H_
 # define LBCPP_CRALGORITHM_LEARNER_H_
 
-# include "LearningMachine.h"
+# include "../LearningMachine.h"
 # include "CRAlgorithm.h"
-# include "IterationFunction.h"
-# include "StoppingCriterion.h"
+# include "../IterationFunction.h"
+# include "../StoppingCriterion.h"
 
 namespace lbcpp
 {

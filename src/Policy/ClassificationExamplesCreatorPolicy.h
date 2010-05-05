@@ -9,7 +9,7 @@
 #ifndef LBCPP_POLICY_CLASSIFICATION_EXAMPLES_CREATOR_H_
 # define LBCPP_POLICY_CLASSIFICATION_EXAMPLES_CREATOR_H_
 
-# include <lbcpp/Policy.h>
+# include <lbcpp/CRAlgorithm/Policy.h>
 # include <lbcpp/LearningMachine.h>
 
 namespace lbcpp

@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/CRAlgorithm.h>
+#include <lbcpp/CRAlgorithm/CRAlgorithm.h>
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 

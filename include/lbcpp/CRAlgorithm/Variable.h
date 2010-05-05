@@ -24,20 +24,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   Variable.h
-**@author Francis MAES
-**@date   Sat Jun 13 18:10:51 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_VARIABLE_H_
 # define LBCPP_VARIABLE_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 # include "ChooseFunction.h"
 
 namespace lbcpp

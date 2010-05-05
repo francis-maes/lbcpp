@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/CRAlgorithmLearner.h>
+#include <lbcpp/CRAlgorithm/CRAlgorithmLearner.h>
 #include "CRAlgorithmLearner/SearnLearner.h"
 #include "CRAlgorithmLearner/SarsaLearner.h"
 using namespace lbcpp;

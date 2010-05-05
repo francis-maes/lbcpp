@@ -9,7 +9,7 @@
 #ifndef LBCPP_STATIC_CRALGORITHM_HPP_
 # define LBCPP_STATIC_CRALGORITHM_HPP_
 
-# include "../../CRAlgorithm.h"
+# include "../../CRAlgorithm/CRAlgorithm.h"
 # include "CRAlgorithmScope.hpp"
 # include "Choose.hpp"
 # include "Callback.hpp"

@@ -54,11 +54,11 @@
 # include "LearningMachine.h"
 # include "GradientBasedLearningMachine.h"
 
-# include "CRAlgorithmScope.h"
-# include "Choose.h"
-# include "Callback.h"
-# include "Policy.h"
-# include "CRAlgorithm.h"
-# include "CRAlgorithmLearner.h"
+# include "CRAlgorithm/CRAlgorithmScope.h"
+# include "CRAlgorithm/Choose.h"
+# include "CRAlgorithm/Callback.h"
+# include "CRAlgorithm/Policy.h"
+# include "CRAlgorithm/CRAlgorithm.h"
+# include "CRAlgorithm/CRAlgorithmLearner.h"
 
 #endif // !LBCPP_LBCPP_H_

@@ -9,9 +9,9 @@
 #ifndef LBCPP_CORE_IMPL_CHOOSE_FUNCTION_STATIC_H_
 # define LBCPP_CORE_IMPL_CHOOSE_FUNCTION_STATIC_H_
 
-# include "../../ChooseFunction.h"
-# include "../../Variable.h"
-# include "../../Choose.h"
+# include "../../CRAlgorithm/ChooseFunction.h"
+# include "../../CRAlgorithm/Variable.h"
+# include "../../CRAlgorithm/Choose.h"
 
 namespace lbcpp {
 namespace impl {

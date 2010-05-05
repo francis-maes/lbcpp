@@ -9,7 +9,7 @@
 #ifndef LBCPP_STATIC_CRALGORITHM_SCOPE_HPP_
 # define LBCPP_STATIC_CRALGORITHM_SCOPE_HPP_
 
-# include "../../CRAlgorithmScope.h"
+# include "../../CRAlgorithm/CRAlgorithmScope.h"
 
 namespace lbcpp
 {

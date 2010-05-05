@@ -24,13 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-** @file   IterationFunction.h
-** @author Francis MAES
-** @date   Fri Jun 12 18:26:12 2009
-** @brief IterationFunction
-*/
-
 #ifndef LBCPP_ITERATION_FUNCTION_H_
 # define LBCPP_ITERATION_FUNCTION_H_
 

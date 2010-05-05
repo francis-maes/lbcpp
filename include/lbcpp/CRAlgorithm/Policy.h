@@ -24,21 +24,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   Policy.h
-**@author Francis MAES
-**@date   Fri Jun 12 19:20:10 2009
-**
-**@brief  Policy class declaration.
-**
-**
-*/
-
 #ifndef LBCPP_POLICY_H_
 # define LBCPP_POLICY_H_
 
-# include "ObjectPredeclarations.h"
-# include "RandomVariable.h" // only for IterationFuction
+# include "../ObjectPredeclarations.h"
+# include "../IterationFunction.h"
 
 namespace lbcpp
 {

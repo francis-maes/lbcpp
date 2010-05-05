@@ -23,22 +23,11 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
-/*!
-**@file   ChooseFunction.h
-**@author Francis MAES
-**@date   Fri Jun 12 17:04:39 2009
-**
-**@brief  Functions that depend on a choose.
-**
-**
-*/
-
 #ifndef LBCPP_CHOOSE_FUNCTION_H_
 # define LBCPP_CHOOSE_FUNCTION_H_
 
-# include "ObjectPredeclarations.h"
-# include "GradientBasedLearningMachine.h"
+# include "../ObjectPredeclarations.h"
+# include "../GradientBasedLearningMachine.h"
 
 namespace lbcpp
 {

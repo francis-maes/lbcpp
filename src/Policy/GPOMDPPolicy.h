@@ -9,7 +9,7 @@
 #ifndef LBCPP_POLICY_GPOMDP_H_
 # define LBCPP_POLICY_GPOMDP_H_
 
-# include <lbcpp/Policy.h>
+# include <lbcpp/CRAlgorithm/Policy.h>
 # include <lbcpp/RandomVariable.h>
 # include <lbcpp/GradientBasedLearningMachine.h>
 
