@@ -9,7 +9,8 @@
 #ifndef LBCPP_EVALUATOR_H_
 # define LBCPP_EVALUATOR_H_
 
-# include <lbcpp/lbcpp.h>
+# include <lbcpp/Object/Object.h>
+# include <lbcpp/Utilities/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -26,12 +27,39 @@ public:
 
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 
+class RegressionErrorEvaluator : public Evaluator
+{
+public:
+  RegressionErrorEvaluator(const String& name);
+  RegressionErrorEvaluator() {}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject);
+  virtual void addDelta(double delta);
+
+  virtual String toString() const;
+
+  virtual double getDefaultScore() const
+    {return -getRMSE();}
+
+  double getRMSE() const;
+
+protected:
+  ScalarVariableMeanPtr absoluteError;
+  ScalarVariableMeanPtr squaredError;
+};
+
+typedef ReferenceCountedObjectPtr<RegressionErrorEvaluator> RegressionErrorEvaluatorPtr;
+
+// Classification
 extern EvaluatorPtr classificationAccuracyEvaluator(const String& name);
 extern EvaluatorPtr binaryClassificationConfusionEvaluator(const String& name);
-extern EvaluatorPtr regressionErrorEvaluator(const String& name);
 
+// Regression
+extern EvaluatorPtr regressionErrorEvaluator(const String& name);
+extern EvaluatorPtr dihedralRegressionErrorEvaluator(const String& name);
+
+// Structured
 extern EvaluatorPtr objectContainerEvaluator(const String& name, EvaluatorPtr objectEvaluator);
-extern EvaluatorPtr scoreVectorSequenceRegressionErrorEvaluator(const String& name);
 
 inline EvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
   {return objectContainerEvaluator(name, classificationAccuracyEvaluator(name));}

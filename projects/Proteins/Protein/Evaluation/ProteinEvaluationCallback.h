@@ -10,10 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 
 # include "../Protein.h"
-# include <lbcpp/Inference/InferenceCallback.h>
-# include <lbcpp/Inference/InferenceStack.h>
-
-# include "../../Evaluator/RegressionErrorEvaluator.h"
+# include "ScoreVectorSequenceErrorEvaluator.h"
 
 namespace lbcpp
 {
@@ -23,9 +20,9 @@ class BondCoordinatesSequenceEvaluator : public Evaluator
 public:
   BondCoordinatesSequenceEvaluator(const String& name)
     : Evaluator(name),
-      lengthEvaluator(new RegressionErrorEvaluator(name + T(" length"))),
-      angleEvaluator(new RegressionErrorEvaluator(name + T(" angle"))),
-      dihedralEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" dihedral")))
+      lengthEvaluator(regressionErrorEvaluator(name + T(" length"))),
+      angleEvaluator(regressionErrorEvaluator(name + T(" angle"))),
+      dihedralEvaluator(dihedralRegressionErrorEvaluator(name + T(" dihedral")))
     {}
   
   virtual String toString() const
@@ -76,11 +73,11 @@ class ProteinBackboneBondSequenceEvaluator : public Evaluator
 public:
   ProteinBackboneBondSequenceEvaluator(const String& name)
     : Evaluator(name),
-      lengthEvaluator(new RegressionErrorEvaluator(name + T(" length"))),
-      angleEvaluator(new RegressionErrorEvaluator(name + T(" angle"))),
-      phiEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" phi"))),
-      psiEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" psi"))),
-      omegaEvaluator(new DihedralAngleRegressionErrorEvaluator(name + T(" omega"))) {}
+      lengthEvaluator(regressionErrorEvaluator(name + T(" length"))),
+      angleEvaluator(regressionErrorEvaluator(name + T(" angle"))),
+      phiEvaluator(dihedralRegressionErrorEvaluator(name + T(" phi"))),
+      psiEvaluator(dihedralRegressionErrorEvaluator(name + T(" psi"))),
+      omegaEvaluator(dihedralRegressionErrorEvaluator(name + T(" omega"))) {}
 
 
   virtual String toString() const
@@ -220,6 +217,8 @@ protected:
   EvaluatorPtr classificationEvaluator;
 };
 
+inline EvaluatorPtr scoreVectorSequenceRegressionErrorEvaluator(const String& name)
+  {return new ScoreVectorSequenceRegressionEvaluator(name);}
 
 class ProteinEvaluator : public Evaluator
 {

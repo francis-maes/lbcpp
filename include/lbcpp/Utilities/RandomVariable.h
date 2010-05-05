@@ -27,7 +27,7 @@
 #ifndef LBCPP_RANDOM_VARIABLE_H_
 # define LBCPP_RANDOM_VARIABLE_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 # include <cfloat>
 
 namespace lbcpp

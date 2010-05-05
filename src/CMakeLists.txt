@@ -162,6 +162,7 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceContext.h
   ../include/lbcpp/Inference/InferenceBaseClasses.h
   ../include/lbcpp/Inference/InferenceLearner.h
+  ../include/lbcpp/Inference/Evaluator.h
 )
 
 SET(LBCPP_INFERENCE_SOURCES
@@ -171,6 +172,7 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp
   Inference/InferenceLearner.cpp
+  Inference/Evaluator.cpp
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
@@ -183,6 +185,14 @@ SET(LBCPP_INFERENCE_LEARNER_SOURCES
   Inference/InferenceLearner/GlobalSimulationInferenceLearner.h
   Inference/InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
 )
+
+SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
+  Inference/Evaluator/ObjectContainerEvaluator.h
+  Inference/Evaluator/BinaryClassificationConfusionEvaluator.h
+  Inference/Evaluator/ClassificationAccuracyEvaluator.h
+  Inference/Evaluator/RegressionErrorEvaluator.h
+)
+
 
 ##### BAZAR ####
 
@@ -321,6 +331,7 @@ SET(LBCPP_CORE
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
+  ${LBCPP_INFERENCE_EVALUATOR_SOURCES}
 )
 
 SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
@@ -351,7 +362,7 @@ SOURCE_SUB_GROUP(CRAlgorithm CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_L
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference Learner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
-
+SOURCE_SUB_GROUP(Inference Evaluator FILES ${LBCPP_INFERENCE_EVALUATOR_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 

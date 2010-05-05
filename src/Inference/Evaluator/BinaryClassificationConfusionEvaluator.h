@@ -9,7 +9,7 @@
 #ifndef LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 # define LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 
-# include "Evaluator.h"
+# include <lbcpp/Inference/Evaluator.h>
 
 namespace lbcpp
 {

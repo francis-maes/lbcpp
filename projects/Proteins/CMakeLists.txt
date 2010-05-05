@@ -39,16 +39,6 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/kdtree_lib.c
 )
 
-SET(LBCPP_EVALUATOR_SOURCES
-  Evaluator/Evaluator.h
-  Evaluator/Evaluator.cpp
-  Evaluator/ObjectContainerEvaluator.h
-  Evaluator/BinaryClassificationConfusionEvaluator.h
-  Evaluator/ClassificationAccuracyEvaluator.h
-  Evaluator/RegressionErrorEvaluator.h
-  Evaluator/ScoreVectorSequenceErrorEvaluator.h
-)
-
 SET(LBCPP_PROTEIN_SOURCES
   Protein/AminoAcidDictionary.h
   Protein/AminoAcidDictionary.cpp
@@ -77,6 +67,7 @@ SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
 )
 
 SET(LBCPP_PROTEIN_EVALUATION_SOURCES
+  Protein/Evaluation/ScoreVectorSequenceErrorEvaluator.h
   Protein/Evaluation/ProteinEvaluationCallback.h
   Protein/Evaluation/ProteinStatisticsCalculator.h
 )
@@ -100,7 +91,6 @@ SET(LBCPP_PROTEIN_FORMATS_SOURCES
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_DATA_SOURCES}
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
-  ${LBCPP_EVALUATOR_SOURCES}
   ${LBCPP_PROTEIN_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES}
   ${LBCPP_PROTEIN_EVALUATION_SOURCES}
@@ -115,14 +105,12 @@ SET(PROTEINS_SOURCES
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 
-SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
-
-SOURCE_GROUP(Evaluator FILES ${LBCPP_EVALUATOR_SOURCES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
-SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
-SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
-SOURCE_SUB_GROUP(Protein Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
-SOURCE_SUB_GROUP(Protein Formats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
+SOURCE_GROUP(GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
+SOURCE_GROUP(ProteinData FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
+SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
+SOURCE_GROUP(ProteinEvaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
+SOURCE_GROUP(ProteinFormats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

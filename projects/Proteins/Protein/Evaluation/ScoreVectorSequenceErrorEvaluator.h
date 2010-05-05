@@ -9,8 +9,7 @@
 #ifndef LBCPP_EVALUATOR_SCORE_VECTOR_SEQUENCE_REGRESSION_ERROR_H_
 # define LBCPP_EVALUATOR_SCORE_VECTOR_SEQUENCE_REGRESSION_ERROR_H_
 
-# include "RegressionErrorEvaluator.h"
-# include "../InferenceData/ScoreVectorSequence.h"
+# include "../../InferenceData/ScoreVectorSequence.h"
 
 namespace lbcpp
 {
