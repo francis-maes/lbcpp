@@ -11,7 +11,7 @@
 
 # include <lbcpp/CRAlgorithm/CRAlgorithmLearner.h>
 # include <lbcpp/GradientBasedLearningMachine.h>
-# include <lbcpp/Optimizer.h>
+# include <lbcpp/FeatureGenerator/Optimizer.h>
 
 namespace lbcpp
 {

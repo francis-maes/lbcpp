@@ -10,8 +10,8 @@
 # define LBCPP_STATIC_FEATURE_GENERATOR_HPP_
 
 # include "FeatureGeneratorDefaultImplementations.hpp"
-# include "../../SparseVector.h"
-# include "../../DenseVector.h"
+# include "../../FeatureGenerator/SparseVector.h"
+# include "../../FeatureGenerator/DenseVector.h"
 
 namespace lbcpp
 {

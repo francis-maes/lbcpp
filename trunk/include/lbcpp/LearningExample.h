@@ -24,21 +24,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   LearningExample.h
-**@author Francis MAES
-**@date   Fri Jun 12 18:26:54 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
 
 #ifndef LBCPP_LEARNING_EXAMPLE_H_
 # define LBCPP_LEARNING_EXAMPLE_H_
 
-# include "FeatureGenerator.h"
-# include "EditableFeatureGenerator.h"
+# include "FeatureGenerator/FeatureGenerator.h"
+# include "FeatureGenerator/EditableFeatureGenerator.h"
 # include "Utilities.h"
 
 namespace lbcpp

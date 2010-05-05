@@ -13,7 +13,7 @@
 ** "On the limited memory BFGS method for large scale optimization",
 ** by D. Liu and J. Nocedal, Mathematical Programming B 45 (1989) 503-528
 */
-# include <lbcpp/Optimizer.h>
+# include <lbcpp/FeatureGenerator/Optimizer.h>
 # include "QuasiNewtonMemory.h"
 # include "BackTrackingLineSearch.h"
 

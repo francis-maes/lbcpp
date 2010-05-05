@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/EditableFeatureGenerator.h>
+#include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
 #include <lbcpp/ObjectGraph.h>
 #include <lbcpp/Table.h>
 #include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>

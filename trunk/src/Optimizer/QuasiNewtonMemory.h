@@ -9,7 +9,7 @@
 #ifndef LBCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
 # define LBCPP_OPTIMIZER_QUASI_NEWTON_MEMORY_H_
 
-# include <lbcpp/FeatureGenerator.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <deque>
 
 namespace lbcpp

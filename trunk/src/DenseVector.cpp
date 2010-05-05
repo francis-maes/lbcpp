@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/DenseVector.h>
+#include <lbcpp/FeatureGenerator/DenseVector.h>
 #include <lbcpp/impl/Bridge/DoubleVector.hpp>
 #include <cfloat>
 using namespace lbcpp;

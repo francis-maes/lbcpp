@@ -10,7 +10,7 @@
 # define LBCPP_STATIC_FEATURE_VISITOR_CREATE_VECTOR_HPP_
 
 # include "FeatureVisitorStatic.hpp"
-# include "../../SparseVector.h"
+# include "../../FeatureGenerator/SparseVector.h"
 
 namespace lbcpp {
 namespace impl {

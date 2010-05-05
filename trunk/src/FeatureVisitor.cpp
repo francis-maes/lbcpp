@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/FeatureVisitor.h>
+#include <lbcpp/FeatureGenerator/FeatureVisitor.h>
 using namespace lbcpp;
 
 /*

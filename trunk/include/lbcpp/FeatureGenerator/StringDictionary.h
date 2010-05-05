@@ -27,7 +27,7 @@
 #ifndef LBCPP_STRING_DICTIONARY_H_
 # define LBCPP_STRING_DICTIONARY_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 # include <map>
 
 namespace lbcpp

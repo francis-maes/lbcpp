@@ -27,7 +27,7 @@
 #ifndef LBCPP_LEARNING_MACHINE_H_
 # define LBCPP_LEARNING_MACHINE_H_
 
-# include "ContinuousFunction.h"
+# include "FeatureGenerator/ContinuousFunction.h"
 # include "ObjectContainer.h"
 # include "Utilities.h"
 

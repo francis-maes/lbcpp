@@ -9,7 +9,7 @@
 #include <lbcpp/ObjectConsumer.h>
 #include <lbcpp/ObjectStream.h>
 #include <lbcpp/ObjectContainer.h>
-#include <lbcpp/FeatureVisitor.h>
+#include <lbcpp/FeatureGenerator/FeatureVisitor.h>
 #include <lbcpp/LearningExample.h>
 #include <fstream>
 using namespace lbcpp;

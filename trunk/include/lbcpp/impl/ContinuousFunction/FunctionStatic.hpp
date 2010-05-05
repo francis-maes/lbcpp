@@ -11,7 +11,7 @@
 
 # include "BinaryScalarOperation.hpp"
 # include "../Object.hpp"
-# include "../../ContinuousFunction.h"
+# include "../../FeatureGenerator/ContinuousFunction.h"
 # include <cfloat>
 
 namespace lbcpp {

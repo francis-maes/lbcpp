@@ -8,7 +8,7 @@
 
 #include <lbcpp/LearningExample.h>
 #include <lbcpp/ObjectStream.h>
-#include <lbcpp/SparseVector.h>
+#include <lbcpp/FeatureGenerator/SparseVector.h>
 using namespace lbcpp;
 
 class TransformClassificationExampleIntoRankingExample : public ObjectFunction

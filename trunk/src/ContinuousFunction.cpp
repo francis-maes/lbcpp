@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ContinuousFunction.h>
+#include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 #include <lbcpp/impl/impl.h>
 #include <lbcpp/ObjectPair.h>
 

@@ -9,7 +9,7 @@
 #ifndef LBCPP_FEATURE_GENERATOR_EMPTY_H_
 # define LBCPP_FEATURE_GENERATOR_EMPTY_H_
 
-# include <lbcpp/FeatureGenerator.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 
 namespace lbcpp
