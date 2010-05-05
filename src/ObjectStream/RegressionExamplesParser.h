@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_STREAM_REGRESSION_EXAMPLES_PARSER_H_
 # define LBCPP_OBJECT_STREAM_REGRESSION_EXAMPLES_PARSER_H_
 
-# include <lbcpp/ObjectStream.h>
+# include <lbcpp/Object/ObjectStream.h>
 
 namespace lbcpp
 {

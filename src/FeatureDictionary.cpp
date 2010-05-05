@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/FeatureDictionary.h>
-#include <lbcpp/ObjectGraph.h>
-#include <lbcpp/Table.h>
+#include <lbcpp/FeatureGenerator/FeatureDictionary.h>
+#include <lbcpp/Object/ObjectGraph.h>
+#include <lbcpp/Object/Table.h>
 using namespace lbcpp;
 
 /*

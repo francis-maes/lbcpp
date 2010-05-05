@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
-#include <lbcpp/ObjectGraph.h>
-#include <lbcpp/Table.h>
+#include <lbcpp/Object/ObjectGraph.h>
+#include <lbcpp/Object/Table.h>
 #include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
 #include <lbcpp/impl/Bridge/DoubleVector.hpp>
 

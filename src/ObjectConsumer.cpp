@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ObjectConsumer.h>
-#include <lbcpp/ObjectStream.h>
-#include <lbcpp/ObjectContainer.h>
+#include <lbcpp/Object/ObjectConsumer.h>
+#include <lbcpp/Object/ObjectStream.h>
+#include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/FeatureGenerator/FeatureVisitor.h>
 #include <lbcpp/LearningExample.h>
 #include <fstream>

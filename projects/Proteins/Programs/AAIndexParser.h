@@ -1,5 +1,4 @@
 #include <lbcpp/lbcpp.h>
-#include <lbcpp/ObjectStream.h>
 #include "InferenceData/ScoreVectorSequence.h"
 
 class AAIndexParser : public TextObjectParser

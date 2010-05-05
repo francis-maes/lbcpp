@@ -27,7 +27,7 @@
 #ifndef LBCPP_TABLE_H_
 # define LBCPP_TABLE_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {

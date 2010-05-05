@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/LearningExample.h>
-#include <lbcpp/ObjectStream.h>
+#include <lbcpp/Object/ObjectStream.h>
 #include <lbcpp/FeatureGenerator/SparseVector.h>
 using namespace lbcpp;
 

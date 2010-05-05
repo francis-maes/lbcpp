@@ -28,13 +28,11 @@
 # define LBCPP_CONTAINER_TRAITS_H_
 
 # include "Traits.h"
-# include "RandomGenerator.h"
+# include "../RandomGenerator.h"
 # include <vector>
 # include <set>
 # include <map>
 # include <limits>
-
-# include <iostream> //tmp
 
 namespace lbcpp
 {

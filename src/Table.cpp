@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/Table.h>
+#include <lbcpp/Object/Table.h>
 using namespace lbcpp;
 
 size_t Table::getNumColumns() const

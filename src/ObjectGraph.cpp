@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ObjectGraph.h>
+#include <lbcpp/Object/ObjectGraph.h>
 using namespace lbcpp;
 
 void ObjectGraph::enumerateNodes(std::vector<ObjectPtr>& nodes, std::map<ObjectPtr, size_t>& inverseTable) const
