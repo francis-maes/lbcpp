@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include <lbcpp/StoppingCriterion.h>
 #include "InferenceContext/CacheInferenceCallback.h"
 #include "Inference/InferenceLearner.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"

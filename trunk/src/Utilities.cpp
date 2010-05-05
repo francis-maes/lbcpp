@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Utilities.h>
-#include <lbcpp/RandomGenerator.h>
-#include <lbcpp/IterationFunction.h>
+#include <lbcpp/Utilities/ProgressCallback.h>
+#include <lbcpp/Utilities/RandomGenerator.h>
+#include <lbcpp/Utilities/IterationFunction.h>
 #include <iostream>
 #include <fstream>
 using namespace lbcpp;

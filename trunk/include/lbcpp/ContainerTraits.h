@@ -28,7 +28,7 @@
 # define LBCPP_CONTAINER_TRAITS_H_
 
 # include "Traits.h"
-# include "../RandomGenerator.h"
+# include "Utilities/RandomGenerator.h"
 # include <vector>
 # include <set>
 # include <map>

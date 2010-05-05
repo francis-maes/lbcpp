@@ -29,7 +29,7 @@
 
 # include "LearningMachine.h"
 # include "GradientBasedLearner.h"
-# include "RandomVariable.h"
+# include "Utilities/RandomVariable.h"
 # include "Object/ObjectContainer.h"
 
 namespace lbcpp

@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/IterationFunction.h>
+#include <lbcpp/Utilities/IterationFunction.h>
 using namespace lbcpp;
 
 class ConstantIterationFunction : public IterationFunction

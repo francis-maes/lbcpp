@@ -9,7 +9,7 @@
 #include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/Object/ObjectStream.h>
 #include <lbcpp/Object/ObjectGraph.h>
-#include <lbcpp/RandomGenerator.h>
+#include <lbcpp/Utilities/RandomGenerator.h>
 using namespace lbcpp;
 
 VectorObjectContainerPtr ObjectContainer::toVector() const

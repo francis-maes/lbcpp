@@ -27,7 +27,7 @@
 #ifndef LBCPP_STOPPING_CRITERION_H_
 # define LBCPP_STOPPING_CRITERION_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {

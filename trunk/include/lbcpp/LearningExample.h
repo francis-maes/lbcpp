@@ -30,7 +30,6 @@
 
 # include "FeatureGenerator/FeatureGenerator.h"
 # include "FeatureGenerator/EditableFeatureGenerator.h"
-# include "Utilities.h"
 
 namespace lbcpp
 {

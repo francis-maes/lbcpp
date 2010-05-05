@@ -17,95 +17,21 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: Utilities.h                    | Miscelaneous Utilities          |
+| Filename: ProgressCallback.h             | Progression Callback            |
 | Author  : Francis Maes                   |                                 |
 | Started : 29/03/2009 18:49               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_UTILITIES_H_
-# define LBCPP_UTILITIES_H_
+#ifndef LBCPP_UTILITIES_PROGRESS_CALLBACK_H_
+# define LBCPP_UTILITIES_PROGRESS_CALLBACK_H_
 
-# include "common.h"
-# include "Object/ReferenceCountedObject.h"
+# include "../common.h"
+# include "../Object/ReferenceCountedObject.h"
 
 namespace lbcpp
 {
-
-/*!
-** @class ErrorHandler
-** @brief Error handler.
-**
-** The Error Handler is a singleton which receives all the
-** error and warning messages produced by the library. By
-** default, errors and warnings are displayed on the standard
-** output. This behavior can be changed by overriding the ErrorHandler
-** class and by changing the singleton.
-**
-*/
-class ErrorHandler
-{
-public:
-  /**
-  ** Destructor.
-  */
-  virtual ~ErrorHandler() {}
-
-  /**
-  ** Displays an error message.
-  **
-  ** @param where : where the error occurs.
-  ** @param what : what's going wrong.
-  */
-  virtual void errorMessage(const String& where, const String& what) = 0;
-
-  /**
-  ** Displays a warning message.
-  **
-  ** @param where : where the problem occurs.
-  ** @param what : what's going wrong.
-  */
-  virtual void warningMessage(const String& where, const String& what) = 0;
-
-  /**
-  ** ErrorHandler instance setter.
-  **
-  ** @param handler : ErrorHandler instance.
-  */
-  static void setInstance(ErrorHandler& handler);
-
-  /**
-  ** ErrorHandler instance getter.
-  **
-  ** @return the ErrorHandler instance.
-  */
-  static ErrorHandler& getInstance() {jassert(instance); return *instance;}
-
-  /**
-  ** Displays an error message using the ErrorManager singleton.
-  **
-  ** @param where : where the error occurs.
-  ** @param what : what's going wrong.
-  ** @see Object::error
-  */
-  static void error(const String& where, const String& what)
-    {getInstance().errorMessage(where, what);}
-
-  /**
-  ** Displays a warning message using the ErrorManager singleton.
-  **
-  ** @param where : where the problem occurs.
-  ** @param what : what's going wrong.
-  ** @see Object::warning
-  */
-  static void warning(const String& where, const String& what)
-    {getInstance().warningMessage(where, what);}
-
-private:
-  static ErrorHandler* instance;
-};
-
 
 /**
 ** @class ProgressCallback
@@ -162,4 +88,4 @@ extern ProgressCallbackPtr consoleProgressCallback();
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_UTILITIES_H_
+#endif // !LBCPP_UTILITIES_PROGRESS_CALLBACK_H_

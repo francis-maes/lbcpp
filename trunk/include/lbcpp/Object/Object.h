@@ -27,9 +27,9 @@
 #ifndef LBCPP_OBJECT_H_
 # define LBCPP_OBJECT_H_
 
-# include "ContainerTraits.h"
+# include "../ContainerTraits.h"
 # include "ReferenceCountedObject.h"
-# include "../Utilities.h"
+# include "ErrorHandler.h"
 
 namespace lbcpp
 {
