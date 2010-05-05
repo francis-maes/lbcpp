@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../../../src/Inference/InferenceCallback/CacheInferenceCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
