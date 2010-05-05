@@ -10,7 +10,7 @@
 # define LBCPP_POLICY_GPOMDP_H_
 
 # include <lbcpp/CRAlgorithm/Policy.h>
-# include <lbcpp/RandomVariable.h>
+# include <lbcpp/Utilities/RandomVariable.h>
 # include <lbcpp/GradientBasedLearningMachine.h>
 
 namespace lbcpp

@@ -9,8 +9,8 @@
 #ifndef LBCPP_INFERENCE_CONTEXT_CACHE_CALLBACK_H_
 # define LBCPP_INFERENCE_CONTEXT_CACHE_CALLBACK_H_
 
-# include "../Inference/InferenceCallback.h"
-# include "../Inference/InferenceStack.h"
+# include <lbcpp/Inference/InferenceCallback.h>
+# include <lbcpp/Inference/InferenceStack.h>
 
 namespace lbcpp
 {

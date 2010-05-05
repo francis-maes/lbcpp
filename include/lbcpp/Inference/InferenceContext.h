@@ -9,7 +9,8 @@
 #ifndef LBCPP_INFERENCE_CONTEXT_H_
 # define LBCPP_INFERENCE_CONTEXT_H_
 
-# include "../Inference/InferenceStep.h"
+# include "Inference.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {

@@ -12,7 +12,6 @@ ADD_CRALGORITHM_SOURCES(
 )
 
 SET(LBCPP_INFERENCE_SOURCES
-  Inference/InferenceStep.h
   Inference/InferenceStep.cpp
   Inference/ClassificationInferenceStep.h
   Inference/RegressionInferenceStep.h
@@ -22,13 +21,8 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/DecoratorInferenceStep.h
   Inference/DecoratorInferenceStep.cpp
   Inference/ParallelSharedMultiRegressionInferenceStep.h
-  Inference/InferenceVisitor.h
   Inference/InferenceVisitor.cpp
-  Inference/InferenceStack.h
-  Inference/InferenceCallback.h
-  Inference/InferenceContext.h
   Inference/InferenceContext.cpp
-  Inference/InferenceLearner.h
   Inference/InferenceLearner.cpp
 )
 
@@ -141,7 +135,6 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_EVALUATION_SOURCES}
   ${LBCPP_PROTEIN_FORMATS_SOURCES}
   classes.cpp
-  InferencePredeclarations.h
 )
 
 SET(PROTEINS_SOURCES

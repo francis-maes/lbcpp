@@ -6,9 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "InferenceContext.h"
-#include "InferenceCallback.h"
-#include "InferenceStack.h"
+#include <lbcpp/Inference/InferenceContext.h>
+#include <lbcpp/Inference/InferenceCallback.h>
+#include <lbcpp/Inference/InferenceStack.h>
+#include <lbcpp/Object/ObjectPair.h>
 #include "../Inference/ParallelInferenceStep.h"
 #include "../Inference/SequentialInferenceStep.h"
 #include "../Inference/ClassificationInferenceStep.h"

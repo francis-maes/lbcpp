@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_LEARNER_H_
 # define LBCPP_INFERENCE_CALLBACK_LEARNER_H_
 
-# include "../InferencePredeclarations.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {

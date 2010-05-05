@@ -9,7 +9,6 @@
 #ifndef LBCPP_INFERENCE_CONTEXT_VISITOR_H_
 # define LBCPP_INFERENCE_CONTEXT_VISITOR_H_
 
-# include "../InferencePredeclarations.h"
 # include "InferenceStack.h"
 
 namespace lbcpp

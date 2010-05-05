@@ -10,7 +10,7 @@
 # define LBCPP_POLICY_MONTE_CARLO_CONTROL_H_
 
 # include <lbcpp/CRAlgorithm/Policy.h>
-# include <lbcpp/RandomVariable.h>
+# include <lbcpp/Utilities/RandomVariable.h>
 
 namespace lbcpp
 {

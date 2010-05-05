@@ -10,8 +10,8 @@
 # define LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 
 # include "../Protein.h"
-# include "../../Inference/InferenceCallback.h"
-# include "../../Inference/InferenceStack.h"
+# include <lbcpp/Inference/InferenceCallback.h>
+# include <lbcpp/Inference/InferenceStack.h>
 
 # include "../../Evaluator/RegressionErrorEvaluator.h"
 

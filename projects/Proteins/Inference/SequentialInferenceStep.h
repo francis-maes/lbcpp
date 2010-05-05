@@ -9,9 +9,9 @@
 #ifndef LBCPP_INFERENCE_STEP_SEQUENTIAL_H_
 # define LBCPP_INFERENCE_STEP_SEQUENTIAL_H_
 
-# include "InferenceStep.h"
-# include "InferenceVisitor.h"
-# include "InferenceContext.h"
+# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/InferenceContext.h>
+# include <lbcpp/Inference/InferenceVisitor.h>
 
 namespace lbcpp
 {

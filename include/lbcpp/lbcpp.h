@@ -64,4 +64,11 @@
 # include "CRAlgorithm/CRAlgorithm.h"
 # include "CRAlgorithm/CRAlgorithmLearner.h"
 
+# include "Inference/Inference.h"
+# include "Inference/InferenceStack.h"
+# include "Inference/InferenceContext.h"
+# include "Inference/InferenceCallback.h"
+# include "Inference/InferenceVisitor.h"
+# include "Inference/InferenceLearner.h"
+
 #endif // !LBCPP_LBCPP_H_

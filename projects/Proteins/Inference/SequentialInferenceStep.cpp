@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "SequentialInferenceStep.h"
-#include "InferenceContext.h"
+#include <lbcpp/Inference/InferenceContext.h>
 using namespace lbcpp;
 
 String SequentialInferenceStep::toString() const

@@ -9,7 +9,6 @@
 #ifndef LBCPP_INFERENCE_LEARNER_GLOBAL_SIMULATION_H_
 # define LBCPP_INFERENCE_LEARNER_GLOBAL_SIMULATION_H_
 
-# include "InferenceLearner.h"
 # include "../InferenceContext/ExamplesCreatorCallback.h"
 
 namespace lbcpp

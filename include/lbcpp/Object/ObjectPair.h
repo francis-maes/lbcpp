@@ -9,6 +9,7 @@
 #ifndef LBCPP_COMMON_OBJECT_PAIR_H_
 # define LBCPP_COMMON_OBJECT_PAIR_H_
 
+# include "ObjectContainer.h"
 # include "ObjectStream.h"
 
 namespace lbcpp

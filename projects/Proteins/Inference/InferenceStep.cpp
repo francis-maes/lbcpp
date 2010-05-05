@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "InferenceStep.h"
-#include "InferenceVisitor.h"
+#include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Inference/InferenceVisitor.h>
 using namespace lbcpp;
 
 /*
