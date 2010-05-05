@@ -41,26 +41,6 @@ public:
   void setRegressor(RegressorPtr regressor)
     {this->regressor = regressor;}
 
-  void createDotProductCache()
-  {
-    if (regressor)
-    {
-      GradientBasedRegressorPtr gbr = regressor.dynamicCast<GradientBasedRegressor>();
-      jassert(gbr);
-      gbr->createDotProductCache();
-    }
-  }
-
-  void clearDotProductCache()
-  {
-    if (regressor)
-    {
-      GradientBasedRegressorPtr gbr = regressor.dynamicCast<GradientBasedRegressor>();
-      jassert(gbr);
-      gbr->clearDotProductCache();
-    }
-  }
-
 protected:
   RegressorPtr regressor;
 
@@ -70,6 +50,56 @@ protected:
   virtual void save(OutputStream& ostr) const
     {InferenceStep::save(ostr); lbcpp::write(ostr, regressor);}
 };
+
+
+// Input: Features
+// Output: Scalar
+// Supervision: ScalarFunction
+class LinearScalarInferenceStep : public LearnableAtomicInferenceStep
+{
+public:
+  LinearScalarInferenceStep(const String& name)
+    : LearnableAtomicInferenceStep(name), dotProductCache(NULL) {}
+
+  virtual ~LinearScalarInferenceStep()
+    {clearDotProductCache();}
+
+  void createDotProductCache()
+  {
+    clearDotProductCache();
+    dotProductCache = new FeatureGenerator::DotProductCache();
+  }
+
+  void clearDotProductCache()
+  {
+    if (dotProductCache)
+    {
+      delete dotProductCache;
+      dotProductCache = NULL;
+    }
+  }
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
+    jassert(features);
+    if (!parameters)
+    {
+      parameters = new DenseVector(features->getDictionary());
+      return new Scalar(0.0);
+    }
+    return new Scalar(features->dotProduct(parameters, dotProductCache));
+  }
+
+  DenseVectorPtr getParameters() const
+    {return parameters;}
+
+private:
+  DenseVectorPtr parameters;
+  FeatureGenerator::DotProductCache* dotProductCache;
+};
+
+typedef ReferenceCountedObjectPtr<LinearScalarInferenceStep> LinearScalarInferenceStepPtr;
 
 }; /* namespace lbcpp */
 

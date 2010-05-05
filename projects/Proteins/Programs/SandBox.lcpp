@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "InferenceStep/RegressionInferenceStep.h"
-#include "InferenceStep/ParallelSharedMultiRegressionInferenceStep.h"
+#include "Inference/RegressionInferenceStep.h"
+#include "Inference/ParallelSharedMultiRegressionInferenceStep.h"
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"

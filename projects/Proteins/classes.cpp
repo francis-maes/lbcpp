@@ -16,9 +16,9 @@ using namespace lbcpp;
 #include "InferenceData/ScoreSymmetricMatrix.h"
 #include "InferenceData/BondCoordinatesSequence.h"
 
-#include "InferenceStep/ClassificationInferenceStep.h"
-#include "InferenceStep/RegressionInferenceStep.h"
-#include "InferenceStep/DecoratorInferenceStep.h"
+#include "Inference/ClassificationInferenceStep.h"
+#include "Inference/RegressionInferenceStep.h"
+#include "Inference/DecoratorInferenceStep.h"
 
 #include "InferenceContext/CancelAfterStepCallback.h"
 

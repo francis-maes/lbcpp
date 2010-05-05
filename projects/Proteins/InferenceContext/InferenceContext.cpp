@@ -9,10 +9,10 @@
 #include "InferenceContext.h"
 #include "InferenceCallback.h"
 #include "InferenceStack.h"
-#include "../InferenceStep/ParallelInferenceStep.h"
-#include "../InferenceStep/SequentialInferenceStep.h"
-#include "../InferenceStep/ClassificationInferenceStep.h"
-#include "../InferenceStep/RegressionInferenceStep.h"
+#include "../Inference/ParallelInferenceStep.h"
+#include "../Inference/SequentialInferenceStep.h"
+#include "../Inference/ClassificationInferenceStep.h"
+#include "../Inference/RegressionInferenceStep.h"
 #include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 

@@ -9,7 +9,7 @@
 #include <lbcpp/lbcpp.h>
 #include "InferenceLearner/InferenceLearner.h"
 #include "InferenceLearner/InferenceLearnerCallback.h"
-#include "InferenceStep/DecoratorInferenceStep.h"
+#include "Inference/DecoratorInferenceStep.h"
 #include "InferenceContext/CancelAfterStepCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
