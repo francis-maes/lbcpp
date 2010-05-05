@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "GlobalSimulationInferenceLearner.h"
-#include "SingleStepDeterministicSimulationInferenceLearner.h"
+#include "InferenceLearner/GlobalSimulationInferenceLearner.h"
+#include "InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h"
 using namespace lbcpp;
 
 InferenceLearnerPtr lbcpp::globalSimulationLearner(InferenceLearnerCallbackPtr callback)
