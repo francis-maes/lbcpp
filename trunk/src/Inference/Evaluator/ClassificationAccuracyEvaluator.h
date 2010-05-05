@@ -9,7 +9,8 @@
 #ifndef LBCPP_EVALUATOR_CLASSIFICATION_ACCURACY_H_
 # define LBCPP_EVALUATOR_CLASSIFICATION_ACCURACY_H_
 
-# include "Evaluator.h"
+# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
 
 namespace lbcpp
 {

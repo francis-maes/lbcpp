@@ -9,7 +9,8 @@
 #ifndef LBCPP_EVALUATOR_OBJECT_CONTAINER_H_
 # define LBCPP_EVALUATOR_OBJECT_CONTAINER_H_
 
-# include "Evaluator.h"
+# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Object/ObjectContainer.h>
 
 namespace lbcpp
 {
