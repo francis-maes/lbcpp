@@ -44,6 +44,10 @@ public:
 
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
+extern InferenceCallbackPtr stochasticScalarLinearInferenceLearningCallback(InferencePtr inference,
+                                                                            IterationFunctionPtr learningRate,
+                                                                            ScalarFunctionPtr regularizer = ScalarFunctionPtr(),
+                                                                            bool normalizeLearningRate = true);
 
 }; /* namespace lbcpp */
 

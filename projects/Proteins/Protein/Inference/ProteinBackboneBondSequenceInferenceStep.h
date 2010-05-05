@@ -62,13 +62,13 @@ public:
       /*  if (j == 0)
         {
           static const double bondIntervals[] = {1.2, 1.8, 1.3, 2.0, 1.1, 1.9};
-          appendStep(new TransferRegressionInferenceStep(regressionInference->getName(), regressionInference,
+          appendStep(new TransferFunctionDecoratorInference(regressionInference->getName(), regressionInference,
             new ScaledSigmoidScalarFunction(bondIntervals[j*2], bondIntervals[j*2] + 1)));
         }
         else if (j == 1)
         {
           static const double angleIntervals[] = {1.5, 2.5, 1.7, 2.4, 1.4, 2.5};
-          appendStep(new TransferRegressionInferenceStep(regressionInference->getName(), regressionInference,
+          appendStep(new TransferFunctionDecoratorInference(regressionInference->getName(), regressionInference,
             new ScaledSigmoidScalarFunction(angleIntervals[j*2], angleIntervals[j*2] + 1)));
         }
         else*/

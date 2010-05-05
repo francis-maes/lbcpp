@@ -168,7 +168,6 @@ SET(LBCPP_INFERENCE_HEADERS
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
-  Inference/InferenceBaseClasses.cpp
   Inference/InferenceVisitor.cpp
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp
@@ -176,10 +175,17 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/Evaluator.cpp
 )
 
+SET(LBCPP_INFERENCE_INFERENCE_SOURCES
+  Inference/Inference/LinearScalarInference.h
+  Inference/Inference/TransferFunctionDecoratorInference.h
+  Inference/Inference/CallbackBasedDecoratorInference.h
+)
+
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
   Inference/InferenceCallback/ExamplesCreatorCallback.h
+  Inference/InferenceCallback/StochasticScalarLinearInferenceLearningCallback.h
 )
 
 SET(LBCPP_INFERENCE_LEARNER_SOURCES
@@ -330,6 +336,7 @@ SET(LBCPP_CORE
   
   ${LBCPP_INFERENCE_HEADERS}
   ${LBCPP_INFERENCE_SOURCES}
+  ${LBCPP_INFERENCE_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_EVALUATOR_SOURCES}
@@ -361,6 +368,7 @@ SOURCE_SUB_GROUP(CRAlgorithm Policy FILES ${LBCPP_CORE_POLICY_SOURCES})
 SOURCE_SUB_GROUP(CRAlgorithm CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES})
 
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(Inference Inference FILES ${LBCPP_INFERENCE_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference Learner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Inference Evaluator FILES ${LBCPP_INFERENCE_EVALUATOR_SOURCES})
