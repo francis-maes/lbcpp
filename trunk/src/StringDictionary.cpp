@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/StringDictionary.h>
-#include <lbcpp/Table.h>
+#include <lbcpp/FeatureGenerator/StringDictionary.h>
+#include <lbcpp/Object/Table.h>
 using namespace lbcpp;
 
 StringDictionary::StringDictionary(const StringDictionary& otherDictionary)

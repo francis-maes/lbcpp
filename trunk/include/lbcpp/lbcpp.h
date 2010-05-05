@@ -27,20 +27,18 @@
 #ifndef LBCPP_LBCPP_H_
 # define LBCPP_LBCPP_H_
 
+# include "Object/Traits.h"
+# include "Object/ContainerTraits.h"
+# include "Object/Object.h"
+# include "Object/ObjectContainer.h"
+# include "Object/ObjectStream.h"
+# include "Object/ObjectConsumer.h"
+# include "Object/ObjectPair.h"
+# include "Object/ObjectGraph.h"
+# include "Object/Table.h"
+# include "Object/StringToObjectMap.h"
+
 # include "RandomGenerator.h"
-
-# include "Traits.h"
-# include "ContainerTraits.h"
-# include "Object.h"
-# include "ObjectContainer.h"
-# include "ObjectStream.h"
-# include "ObjectConsumer.h"
-# include "ObjectPair.h"
-
-# include "ObjectGraph.h"
-# include "Table.h"
-# include "StringToObjectMap.h"
-
 # include "RandomVariable.h"
 # include "LearningExample.h"
 # include "IterationFunction.h"

@@ -29,7 +29,7 @@
 
 # include "ContainerTraits.h"
 # include "ReferenceCountedObject.h"
-# include "Utilities.h"
+# include "../Utilities.h"
 
 namespace lbcpp
 {

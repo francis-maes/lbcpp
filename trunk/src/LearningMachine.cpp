@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/LearningMachine.h>
-#include <lbcpp/ObjectStream.h>
-#include <lbcpp/ObjectContainer.h>
+#include <lbcpp/Object/ObjectStream.h>
+#include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/impl/Bridge/DoubleVector.hpp>
 #include <cfloat>
 using namespace lbcpp;

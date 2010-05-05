@@ -28,7 +28,7 @@
 # define LBCPP_UTILITIES_H_
 
 # include "common.h"
-# include "ReferenceCountedObject.h"
+# include "Object/ReferenceCountedObject.h"
 
 namespace lbcpp
 {

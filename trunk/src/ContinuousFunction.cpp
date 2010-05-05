@@ -8,7 +8,7 @@
 
 #include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 #include <lbcpp/impl/impl.h>
-#include <lbcpp/ObjectPair.h>
+#include <lbcpp/Object/ObjectPair.h>
 
 #include "ContinuousFunction/MiscScalarFunctions.h"
 #include "ContinuousFunction/BinarySumScalarVectorFunction.h"

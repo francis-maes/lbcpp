@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ObjectStream.h>
-#include <lbcpp/ObjectContainer.h>
+#include <lbcpp/Object/ObjectStream.h>
+#include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/FeatureGenerator/SparseVector.h>
 #include <lbcpp/FeatureGenerator/DenseVector.h>
 #include <lbcpp/LearningExample.h>

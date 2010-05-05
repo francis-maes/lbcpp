@@ -27,7 +27,7 @@
 #ifndef LBCPP_OBJECT_CONTAINER_H_
 # define LBCPP_OBJECT_CONTAINER_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {

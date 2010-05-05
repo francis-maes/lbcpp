@@ -28,7 +28,7 @@
 # define LBCPP_LEARNING_MACHINE_H_
 
 # include "FeatureGenerator/ContinuousFunction.h"
-# include "ObjectContainer.h"
+# include "Object/ObjectContainer.h"
 # include "Utilities.h"
 
 namespace lbcpp

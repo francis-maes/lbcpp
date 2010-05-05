@@ -2,6 +2,20 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 
 SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
+SET(LBCPP_OBJECT_HEADERS
+  ../include/lbcpp/Object/Traits.h
+  ../include/lbcpp/Object/ContainerTraits.h
+  ../include/lbcpp/Object/ReferenceCountedObject.h
+  ../include/lbcpp/Object/Object.h
+  ../include/lbcpp/Object/ObjectStream.h
+  ../include/lbcpp/Object/ObjectContainer.h
+  ../include/lbcpp/Object/ObjectPair.h
+  ../include/lbcpp/Object/ObjectConsumer.h
+  ../include/lbcpp/Object/ObjectGraph.h
+  ../include/lbcpp/Object/Table.h
+  ../include/lbcpp/Object/StringToObjectMap.h
+)
+
 SET(LBCPP_FEATURE_GENERATOR_HEADERS
   ../include/lbcpp/FeatureGenerator/StringDictionary.h
   ../include/lbcpp/FeatureGenerator/FeatureDictionary.h
@@ -27,20 +41,9 @@ SET(LBCPP_CRALGORITHM_HEADERS
   
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/common.h
-  ../include/lbcpp/Traits.h
-  ../include/lbcpp/RandomGenerator.h
-  ../include/lbcpp/ContainerTraits.h
-  ../include/lbcpp/ReferenceCountedObject.h
-  ../include/lbcpp/Utilities.h
-  ../include/lbcpp/Object.h
   ../include/lbcpp/ObjectPredeclarations.h
-  ../include/lbcpp/ObjectStream.h
-  ../include/lbcpp/ObjectContainer.h
-  ../include/lbcpp/ObjectPair.h
-  ../include/lbcpp/ObjectConsumer.h
-  ../include/lbcpp/ObjectGraph.h
-  ../include/lbcpp/Table.h
-  ../include/lbcpp/StringToObjectMap.h
+  ../include/lbcpp/Utilities.h
+  ../include/lbcpp/RandomGenerator.h
   ../include/lbcpp/RandomVariable.h
   ../include/lbcpp/LearningExample.h
   ../include/lbcpp/LearningMachine.h
@@ -227,6 +230,7 @@ SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
 
 SET(LBCPP_CORE
   ${LBCPP_CORE_HEADERS}
+  ${LBCPP_OBJECT_HEADERS}
   ${LBCPP_FEATURE_GENERATOR_HEADERS}
   ${LBCPP_CRALGORITHM_HEADERS}
   ${LBCPP_CORE_IMPL_HEADERS}
@@ -251,9 +255,11 @@ SOURCE_GROUP(impl/FeatureVisitor FILES ${LBCPP_CORE_IMPL_FEATURE_VISITOR})
 SOURCE_GROUP(impl/ContinuousFunction FILES ${LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION})
 SOURCE_GROUP(impl/Bridge FILES ${LBCPP_CORE_IMPL_BRIDGE})
 SOURCE_GROUP(sources FILES ${LBCPP_CORE_SOURCES})
-SOURCE_GROUP(ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
 SOURCE_GROUP(GradientBasedLearningMachine FILES ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES})
 SOURCE_GROUP(GradientBasedLearner FILES ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES})
+
+SOURCE_SUB_GROUP(Object includes FILES ${LBCPP_OBJECT_HEADERS})
+SOURCE_SUB_GROUP(Object ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
 
 SOURCE_SUB_GROUP(FeatureGenerator includes FILES ${LBCPP_FEATURE_GENERATOR_HEADERS})
 SOURCE_SUB_GROUP(FeatureGenerator FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})

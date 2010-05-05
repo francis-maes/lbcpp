@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Object.h>
+#include <lbcpp/Object/Object.h>
 #include <map>
 #include <fstream>
 using namespace lbcpp;

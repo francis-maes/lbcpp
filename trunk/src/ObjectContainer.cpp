@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ObjectContainer.h>
-#include <lbcpp/ObjectStream.h>
-#include <lbcpp/ObjectGraph.h>
+#include <lbcpp/Object/ObjectContainer.h>
+#include <lbcpp/Object/ObjectStream.h>
+#include <lbcpp/Object/ObjectGraph.h>
 #include <lbcpp/RandomGenerator.h>
 using namespace lbcpp;
 

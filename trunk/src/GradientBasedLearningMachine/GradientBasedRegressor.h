@@ -10,7 +10,7 @@
 # define LBCPP_GRADIENT_BASED_LEARNING_MACHINE_REGRESSOR_H_
 
 # include "StaticToDynamicGradientBasedMachine.h"
-# include <lbcpp/ObjectPair.h>
+# include <lbcpp/Object/ObjectPair.h>
 
 namespace lbcpp
 {

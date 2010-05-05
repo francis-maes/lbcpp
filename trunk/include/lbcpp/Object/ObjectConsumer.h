@@ -26,7 +26,7 @@
 #ifndef LBCPP_OBJECT_CONSUMER_H_
 # define LBCPP_OBJECT_CONSUMER_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {
