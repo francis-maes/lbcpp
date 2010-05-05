@@ -7,9 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "Inference/DecoratorInferenceStep.h"
-#include "InferenceContext/CancelAfterStepCallback.h"
-#include "InferenceContext/CacheInferenceCallback.h"
+//#include "../../../../src/Inference/InferenceContext/CancelAfterStepCallback.h"
+#include "../../../../src/Inference/InferenceCallback/CacheInferenceCallback.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;

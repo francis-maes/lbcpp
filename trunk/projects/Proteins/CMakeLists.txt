@@ -11,21 +11,6 @@ ADD_CRALGORITHM_SOURCES(
   Protein/Inference/ProteinResiduePairFeatures.lcpp
 )
 
-SET(LBCPP_INFERENCE_SOURCES
-  Inference/InferenceStep.cpp
-  Inference/ClassificationInferenceStep.h
-  Inference/RegressionInferenceStep.h
-  Inference/SequentialInferenceStep.h
-  Inference/SequentialInferenceStep.cpp
-  Inference/ParallelInferenceStep.h
-  Inference/DecoratorInferenceStep.h
-  Inference/DecoratorInferenceStep.cpp
-  Inference/ParallelSharedMultiRegressionInferenceStep.h
-  Inference/InferenceVisitor.cpp
-  Inference/InferenceContext.cpp
-  Inference/InferenceLearner.cpp
-)
-
 SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/CommonFeatureGenerators.h
   InferenceData/AccumulatedScoresMatrix.h
@@ -41,17 +26,6 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/BondCoordinatesSequence.cpp
   InferenceData/ScoreSymmetricMatrix.h
   InferenceData/ScoreSymmetricMatrix.cpp
-)
-
-SET(LBCPP_INFERENCE_CONTEXT_SOURCES
-  InferenceContext/CancelAfterStepCallback.h
-  InferenceContext/CacheInferenceCallback.h
-  InferenceContext/ExamplesCreatorCallback.h
-)
-
-SET(LBCPP_INFERENCE_LEARNER_SOURCES
-  InferenceLearner/GlobalSimulationInferenceLearner.h
-  InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
 )
 
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
@@ -125,9 +99,6 @@ SET(LBCPP_PROTEIN_FORMATS_SOURCES
 
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_DATA_SOURCES}
-  ${LBCPP_INFERENCE_SOURCES}
-  ${LBCPP_INFERENCE_CONTEXT_SOURCES}
-  ${LBCPP_INFERENCE_LEARNER_SOURCES}
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_EVALUATOR_SOURCES}
   ${LBCPP_PROTEIN_SOURCES}
@@ -143,11 +114,9 @@ SET(PROTEINS_SOURCES
 )
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
-SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
 
 SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
-SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
-SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
+
 SOURCE_GROUP(Evaluator FILES ${LBCPP_EVALUATOR_SOURCES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(Protein FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)

@@ -6,8 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/Inference.h>
-#include <lbcpp/Inference/InferenceVisitor.h>
+#include <lbcpp/Inference/InferenceBaseClasses.h>
 using namespace lbcpp;
 
 /*

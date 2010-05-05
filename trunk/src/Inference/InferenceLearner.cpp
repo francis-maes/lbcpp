@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include <lbcpp/Inference/InferenceBaseClasses.h>
 #include "InferenceLearner/GlobalSimulationInferenceLearner.h"
 #include "InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h"
 using namespace lbcpp;

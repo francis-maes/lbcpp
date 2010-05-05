@@ -2,6 +2,8 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 
 SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
+##### OBJECT ####
+
 SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ReferenceCountedObject.h
   ../include/lbcpp/Object/ErrorHandler.h  
@@ -15,6 +17,24 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/StringToObjectMap.h
 )
 
+SET(LBCPP_OBJECT_SOURCES
+  Object.cpp
+  ObjectStream.cpp
+  ObjectContainer.cpp
+  ObjectConsumer.cpp
+  ObjectGraph.cpp
+  Table.cpp
+)
+
+SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
+  ObjectStream/ClassificationExamplesParser.h
+  ObjectStream/ClassificationExamplesSyntheticGenerator.h
+  ObjectStream/RegressionExamplesParser.h
+)
+
+
+##### UTILITIES ####
+
 SET(LBCPP_UTILITIES_HEADERS
   ../include/lbcpp/Utilities/ProgressCallback.h
   ../include/lbcpp/Utilities/RandomGenerator.h
@@ -22,6 +42,14 @@ SET(LBCPP_UTILITIES_HEADERS
   ../include/lbcpp/Utilities/IterationFunction.h
   ../include/lbcpp/Utilities/StoppingCriterion.h
 )
+
+SET(LBCPP_UTILITIES_SOURCES
+  Utilities.cpp
+  IterationFunction.cpp
+  StoppingCriterion.cpp
+)
+
+##### FEATURE GENERATOR ####
 
 SET(LBCPP_FEATURE_GENERATOR_HEADERS
   ../include/lbcpp/FeatureGenerator/StringDictionary.h
@@ -35,6 +63,45 @@ SET(LBCPP_FEATURE_GENERATOR_HEADERS
   ../include/lbcpp/FeatureGenerator/Optimizer.h
 )
 
+SET(LBCPP_FEATURE_GENERATOR_SOURCES
+  StringDictionary.cpp
+  FeatureDictionary.cpp
+  FeatureGenerator.cpp
+  FeatureVisitor.cpp
+  SparseVector.cpp
+  DenseVector.cpp
+  DoubleVectorHelpers.hpp
+  ContinuousFunction.cpp
+  Optimizer.cpp
+)
+
+SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
+  FeatureGenerator/EmptyFeatureGenerator.h
+  FeatureGenerator/UnitFeatureGenerator.h
+  FeatureGenerator/SubFeatureGenerator.h
+  FeatureGenerator/WeightedFeatureGenerator.h
+  FeatureGenerator/LinearCombinationFeatureGenerator.h
+  FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
+)
+
+SET(LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES
+  ContinuousFunction/MiscScalarFunctions.h
+  ContinuousFunction/HingeLossScalarFunction.h
+  ContinuousFunction/BinarySumScalarVectorFunction.h
+  ContinuousFunction/ScalarArchitectureExampleLossFunction.h
+  ContinuousFunction/ScalarArchitectureEmpiricalRiskFunction.h
+)
+
+SET(LBCPP_CORE_OPTIMIZER_SOURCES
+  Optimizer/RPropOptimizer.h
+  Optimizer/GradientDescentOptimizer.h
+  Optimizer/BackTrackingLineSearch.h
+  Optimizer/QuasiNewtonMemory.h
+  Optimizer/LBFGSOptimizer.h
+)
+
+##### CR-ALGORITHM ####
+
 SET(LBCPP_CRALGORITHM_HEADERS
   ../include/lbcpp/CRAlgorithm/ChooseFunction.h
   ../include/lbcpp/CRAlgorithm/Variable.h
@@ -46,6 +113,46 @@ SET(LBCPP_CRALGORITHM_HEADERS
   ../include/lbcpp/CRAlgorithm/CRAlgorithmLearner.h
 )
 
+SET(LBCPP_CRALGORITHM_SOURCES
+  ChooseFunction.cpp
+  Choose.cpp
+  Policy.cpp
+  CRAlgorithmLearner.cpp
+)
+
+SET(LBCPP_CORE_CHOOSE_FUNCTION_SOURCES
+  ChooseFunction/ChooseValueFunctions.h
+  ChooseFunction/RegressorValueFunctions.h
+  ChooseFunction/ClassifierValueFunctions.h
+  ChooseFunction/RankerValueFunctions.h
+  ChooseFunction/SimulationStateValueFunction.h
+  ChooseFunction/StateValueBasedActionValueFunction.h
+)
+
+SET(LBCPP_CORE_POLICY_SOURCES
+  Policy/RandomPolicy.h
+  Policy/GreedyPolicy.h
+  Policy/StochasticPolicy.h
+  Policy/EpsilonGreedyPolicy.h
+  Policy/GibbsGreedyPolicy.h
+  Policy/MixturePolicy.h
+  Policy/ComputeStatisticsPolicy.h
+  Policy/VerbosePolicy.h
+  Policy/ClassificationExamplesCreatorPolicy.h
+  Policy/RankingExamplesCreatorPolicy.h
+  Policy/QLearningPolicy.h
+  Policy/MonteCarloControlPolicy.h
+  Policy/GPOMDPPolicy.h
+)
+
+SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
+  CRAlgorithmLearner/SearnLearner.h
+  CRAlgorithmLearner/PolicyBasedCRAlgorithmLearner.h
+  CRAlgorithmLearner/SarsaLearner.h
+)
+
+##### INFERENCE ####
+
 SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/predeclarations.h
   ../include/lbcpp/Inference/Inference.h
@@ -53,9 +160,32 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceVisitor.h
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceContext.h
+  ../include/lbcpp/Inference/InferenceBaseClasses.h
   ../include/lbcpp/Inference/InferenceLearner.h
 )
-  
+
+SET(LBCPP_INFERENCE_SOURCES
+  Inference/Inference.cpp
+  Inference/InferenceBaseClasses.cpp
+  Inference/InferenceVisitor.cpp
+  Inference/InferenceCallback.cpp
+  Inference/InferenceContext.cpp
+  Inference/InferenceLearner.cpp
+)
+
+SET(LBCPP_INFERENCE_CALLBACK_SOURCES
+  Inference/InferenceCallback/CancelAfterStepCallback.h
+  Inference/InferenceCallback/CacheInferenceCallback.h
+  Inference/InferenceCallback/ExamplesCreatorCallback.h
+)
+
+SET(LBCPP_INFERENCE_LEARNER_SOURCES
+  Inference/InferenceLearner/GlobalSimulationInferenceLearner.h
+  Inference/InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
+)
+
+##### BAZAR ####
+
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/common.h
   ../include/lbcpp/ObjectPredeclarations.h
@@ -134,80 +264,12 @@ SET(LBCPP_CORE_IMPL_BRIDGE
   ${LBCPP_CORE_IMPL}/Bridge/CRAlgorithm.hpp
 )
 
-SET(LBCPP_OBJECT_SOURCES
-  Object.cpp
-  ObjectStream.cpp
-  ObjectContainer.cpp
-  ObjectConsumer.cpp
-  ObjectGraph.cpp
-  Table.cpp
-)
-
-SET(LBCPP_UTILITIES_SOURCES
-  Utilities.cpp
-  IterationFunction.cpp
-  StoppingCriterion.cpp
-)
-
-SET(LBCPP_FEATURE_GENERATOR_SOURCES
-  StringDictionary.cpp
-  FeatureDictionary.cpp
-  FeatureGenerator.cpp
-  FeatureVisitor.cpp
-  SparseVector.cpp
-  DenseVector.cpp
-  DoubleVectorHelpers.hpp
-  ContinuousFunction.cpp
-  Optimizer.cpp
-)
-
-SET(LBCPP_CRALGORITHM_SOURCES
-  ChooseFunction.cpp
-  Choose.cpp
-  Policy.cpp
-  CRAlgorithmLearner.cpp
-)
-
-SET(LBCPP_INFERENCE_SOURCES
-)
-
 SET(LBCPP_CORE_SOURCES
   classes.cpp
   LearningExample.cpp
   LearningMachine.cpp
   GradientBasedLearner.cpp
   GradientBasedLearningMachine.cpp
-)
-
-SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
-  ObjectStream/ClassificationExamplesParser.h
-  ObjectStream/ClassificationExamplesSyntheticGenerator.h
-  ObjectStream/RegressionExamplesParser.h
-)
-
-SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
-  FeatureGenerator/EmptyFeatureGenerator.h
-  FeatureGenerator/UnitFeatureGenerator.h
-  FeatureGenerator/SubFeatureGenerator.h
-  FeatureGenerator/WeightedFeatureGenerator.h
-  FeatureGenerator/LinearCombinationFeatureGenerator.h
-  FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
-)
-
-SET(LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES
-  ContinuousFunction/MiscScalarFunctions.h
-  ContinuousFunction/HingeLossScalarFunction.h
-  ContinuousFunction/BinarySumScalarVectorFunction.h
-  ContinuousFunction/ScalarArchitectureExampleLossFunction.h
-  ContinuousFunction/ScalarArchitectureEmpiricalRiskFunction.h
-)
-
-SET(LBCPP_CORE_OPTIMIZER_SOURCES
-  Optimizer/RPropOptimizer.h
-  Optimizer/GradientDescentOptimizer.h
-  Optimizer/BackTrackingLineSearch.h
-  Optimizer/QuasiNewtonMemory.h
-  Optimizer/LBFGSOptimizer.h
 )
 
 SET(LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES
@@ -226,36 +288,6 @@ SET(LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES
   GradientBasedLearningMachine/GradientBasedRanker.h
 )
 
-SET(LBCPP_CORE_CHOOSE_FUNCTION_SOURCES
-  ChooseFunction/ChooseValueFunctions.h
-  ChooseFunction/RegressorValueFunctions.h
-  ChooseFunction/ClassifierValueFunctions.h
-  ChooseFunction/RankerValueFunctions.h
-  ChooseFunction/SimulationStateValueFunction.h
-  ChooseFunction/StateValueBasedActionValueFunction.h
-)
-
-SET(LBCPP_CORE_POLICY_SOURCES
-  Policy/RandomPolicy.h
-  Policy/GreedyPolicy.h
-  Policy/StochasticPolicy.h
-  Policy/EpsilonGreedyPolicy.h
-  Policy/GibbsGreedyPolicy.h
-  Policy/MixturePolicy.h
-  Policy/ComputeStatisticsPolicy.h
-  Policy/VerbosePolicy.h
-  Policy/ClassificationExamplesCreatorPolicy.h
-  Policy/RankingExamplesCreatorPolicy.h
-  Policy/QLearningPolicy.h
-  Policy/MonteCarloControlPolicy.h
-  Policy/GPOMDPPolicy.h
-)
-
-SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
-  CRAlgorithmLearner/SearnLearner.h
-  CRAlgorithmLearner/PolicyBasedCRAlgorithmLearner.h
-  CRAlgorithmLearner/SarsaLearner.h
-)
 
 SET(LBCPP_CORE
   ${LBCPP_CORE_HEADERS}
@@ -287,6 +319,8 @@ SET(LBCPP_CORE
   
   ${LBCPP_INFERENCE_HEADERS}
   ${LBCPP_INFERENCE_SOURCES}
+  ${LBCPP_INFERENCE_CALLBACK_SOURCES}
+  ${LBCPP_INFERENCE_LEARNER_SOURCES}
 )
 
 SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
@@ -315,6 +349,8 @@ SOURCE_SUB_GROUP(CRAlgorithm Policy FILES ${LBCPP_CORE_POLICY_SOURCES})
 SOURCE_SUB_GROUP(CRAlgorithm CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES})
 
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
+SOURCE_SUB_GROUP(Inference Learner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
