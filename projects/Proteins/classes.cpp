@@ -16,32 +16,6 @@ using namespace lbcpp;
 #include "InferenceData/ScoreSymmetricMatrix.h"
 #include "InferenceData/BondCoordinatesSequence.h"
 
-#include "Inference/ClassificationInferenceStep.h"
-#include "Inference/RegressionInferenceStep.h"
-#include "Inference/DecoratorInferenceStep.h"
-
-#include "InferenceContext/CancelAfterStepCallback.h"
-
-void declareInferenceClasses()
-{
-  // Data
-  LBCPP_DECLARE_CLASS(LabelSequence);
-  LBCPP_DECLARE_CLASS(ScalarSequence);
-  LBCPP_DECLARE_CLASS(ScoreVectorSequence);
-  LBCPP_DECLARE_CLASS(ScoreSymmetricMatrix);
-  LBCPP_DECLARE_CLASS(BondCoordinatesSequence);
-  LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
-
-  // InferenceStep
-  LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
-  LBCPP_DECLARE_CLASS(RegressionInferenceStep);
-  LBCPP_DECLARE_CLASS(TransferRegressionInferenceStep);
-  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInferenceStep);
-
-  // InferenceCallback
-  LBCPP_DECLARE_CLASS(CancelAfterStepCallback);
-}
-
 #include "Protein/ProteinTertiaryStructure.h"
 #include "Protein/Protein.h"
 #include "Protein/AminoAcidDictionary.h"
@@ -58,7 +32,15 @@ extern void declareProteinResiduePairFeaturesClasses();
 
 void declareProteinClasses()
 {
-  declareInferenceClasses();
+  // Data
+  LBCPP_DECLARE_CLASS(LabelSequence);
+  LBCPP_DECLARE_CLASS(ScalarSequence);
+  LBCPP_DECLARE_CLASS(ScoreVectorSequence);
+  LBCPP_DECLARE_CLASS(ScoreSymmetricMatrix);
+  LBCPP_DECLARE_CLASS(BondCoordinatesSequence);
+  LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
+
+
   declareProteinResidueFeaturesClasses();
   declareProteinResiduePairFeaturesClasses();
   

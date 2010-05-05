@@ -1,0 +1,164 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: SingleStepDeterministicSim....h| A Learner that performs         |
+| Author  : Francis Maes                   | deterministic simulation of a   |
+| Started : 16/04/2010 18:19               |  single step                    |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#ifndef LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_
+# define LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_
+
+# include <lbcpp/Inference/InferenceLearner.h>
+# include <lbcpp/Inference/InferenceBaseClasses.h>
+
+# include "../InferenceCallback/CacheInferenceCallback.h"
+# include "../InferenceCallback/ExamplesCreatorCallback.h"
+# include "../InferenceCallback/CancelAfterStepCallback.h"
+
+namespace lbcpp
+{
+
+class SingleStepSimulationLearningCallback : public ExamplesCreatorCallback
+{
+public:
+  SingleStepSimulationLearningCallback(InferenceStepPtr inference, InferenceLearnerCallbackPtr callback)
+    : ExamplesCreatorCallback(callback, true), inference(inference) {}
+
+  virtual void startInferencesCallback(size_t count)
+    {enableExamplesCreation = false;}
+
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference() == inference)
+      enableExamplesCreation = true;
+  }
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference() == inference)
+      enableExamplesCreation = false;
+  }
+
+private:
+  InferenceStepPtr inference;
+};
+
+class StepByStepDeterministicSimulationLearner : public InferenceLearner
+{
+public:
+  StepByStepDeterministicSimulationLearner(InferenceLearnerCallbackPtr callback, bool useCacheOnTrainingData, const File& modelDirectory, bool doNotSaveModel)
+    : InferenceLearner(callback), modelDirectory(modelDirectory), doNotSaveModel(doNotSaveModel)
+  {
+    if (useCacheOnTrainingData)
+      cache = new InferenceResultCache();
+  }
+
+  virtual void train(InferenceStepPtr inf, ObjectContainerPtr trainingData)
+  {
+    VectorSequentialInferenceStepPtr inference = inf.dynamicCast<VectorSequentialInferenceStep>();
+    jassert(inference);
+    size_t numSteps = inference->getNumSubSteps();
+    
+    /*
+    ** Check unicity of InferenceStep names
+    */
+    std::set<String> names;
+    for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
+    {
+      String name = inference->getSubStep(stepNumber)->getName();
+      if (names.find(name) != names.end())
+      {
+        Object::error(T("StepByStepDeterministicSimulationLearner::train"), T("Duplicated inference step name: ") + name);
+        return;
+      }
+      names.insert(name);
+    }
+
+    /*
+    ** Train step by step
+    */
+    for (currentStepNumber = 0; currentStepNumber  < numSteps; ++currentStepNumber )
+    {
+      InferenceStepPtr step = inference->getSubStep(currentStepNumber);
+      
+      File stepFile;
+      if (modelDirectory != File::nonexistent)
+        stepFile = inference->getSubInferenceFile(currentStepNumber, modelDirectory);
+      if (stepFile.exists() && step->loadFromFile(stepFile))
+      {
+        std::cout << "Loaded inference step " << stepFile.getFileNameWithoutExtension().quoted() << "." << std::endl;
+        continue;
+      }
+
+      // decorate inference to add "break"
+      InferenceStepPtr decoratedInference = addBreakToInference(inference, step);
+
+      // train current inference step
+      callback->preLearningStepCallback(step);
+      trainPass(decoratedInference, step, trainingData);
+      callback->postLearningStepCallback(step);
+
+      if (modelDirectory != File::nonexistent && !doNotSaveModel)
+      {
+        step->saveToFile(stepFile);
+        std::cout << "Saved inference step " << stepFile.getFileNameWithoutExtension().quoted() << "." << std::endl;
+      }
+    }
+
+    if (modelDirectory != File::nonexistent && !doNotSaveModel)
+    {
+      std::cout << "Save inference " << modelDirectory.getFileNameWithoutExtension().quoted() << std::endl;
+      inference->saveToFile(modelDirectory);
+    }
+  }
+
+protected:
+  size_t currentStepNumber;
+
+  virtual InferenceContextPtr createLearningContext(InferenceStepPtr inf)
+  {
+    if (inf.dynamicCast<DecoratorInferenceStep>())
+      inf = inf.dynamicCast<DecoratorInferenceStep>()->getDecoratedInference();
+    VectorSequentialInferenceStepPtr inference = inf.dynamicCast<VectorSequentialInferenceStep>();
+    jassert(inference);
+    size_t numSteps = inference->getNumSubSteps();
+    jassert(currentStepNumber < numSteps);
+    return InferenceLearner::createLearningContext(inference->getSubStep(currentStepNumber));
+  }
+  
+private:
+  InferenceResultCachePtr cache;
+  File modelDirectory;
+  bool doNotSaveModel;
+
+  InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
+    {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
+
+  void trainPass(InferenceStepPtr inference, InferenceStepPtr step, ObjectContainerPtr trainingData)
+  {
+    // create classification examples
+    ExamplesCreatorCallbackPtr learningCallback = new SingleStepSimulationLearningCallback(step, callback);
+    InferenceContextPtr trainingContext = createLearningContext(inference);
+    trainingContext->appendCallback(learningCallback);
+    if (cache)
+      trainingContext->appendCallback(new AutoSubStepsCacheInferenceCallback(cache, inference));
+    trainingContext->runWithSupervisedExamples(inference, trainingData);
+
+    // learn
+    for (size_t i = 0; true; ++i)
+    {
+      callback->preLearningIterationCallback(i);
+      learningCallback->trainStochasticIteration();
+      if (!callback->postLearningIterationCallback(inference, i))
+        break;
+    }
+
+    learningCallback->restoreBestParameters();
+  }
+};
+
+
+}; /* namespace lbcpp */
+
+#endif // !LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_

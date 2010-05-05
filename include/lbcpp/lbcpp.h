@@ -69,6 +69,7 @@
 # include "Inference/InferenceContext.h"
 # include "Inference/InferenceCallback.h"
 # include "Inference/InferenceVisitor.h"
+# include "Inference/InferenceBaseClasses.h"
 # include "Inference/InferenceLearner.h"
 
 #endif // !LBCPP_LBCPP_H_

@@ -6,15 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/InferenceContext.h>
-#include <lbcpp/Inference/InferenceCallback.h>
-#include <lbcpp/Inference/InferenceStack.h>
+#include <lbcpp/Inference/InferenceBaseClasses.h>
 #include <lbcpp/Object/ObjectPair.h>
-#include "../Inference/ParallelInferenceStep.h"
-#include "../Inference/SequentialInferenceStep.h"
-#include "../Inference/ClassificationInferenceStep.h"
-#include "../Inference/RegressionInferenceStep.h"
-#include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
 /*

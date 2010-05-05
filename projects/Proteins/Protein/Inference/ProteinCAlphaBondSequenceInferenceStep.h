@@ -9,7 +9,6 @@
 # define LBCPP_PROTEIN_INFERENCE_STEP_CALPHA_BOND_SEQUENCE_H_
 
 # include "Protein1DInferenceStep.h"
-# include "../../Inference/DecoratorInferenceStep.h"
 
 namespace lbcpp
 {

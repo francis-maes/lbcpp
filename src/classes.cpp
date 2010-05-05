@@ -9,15 +9,18 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-extern void declareContinuousFunctions();
-extern void declareIterationFunctions();
-extern void declareStoppingCriterions();
-extern void declareOptimizers();
 extern void declareGradientBasedLearners();
 extern void declareGradientBasedLearningMachines();
-extern void declareChooseFunctions();
-extern void declarePolicies();
-extern void declareCRAlgorithmLearners();
+
+// Object
+void declareObjectRelatedClasses()
+{
+  LBCPP_DECLARE_CLASS(StringToObjectMap);
+}
+
+// Utilities
+extern void declareIterationFunctions();
+extern void declareStoppingCriterions();
 
 void declareRandomVariableStatistics()
 {
@@ -26,10 +29,9 @@ void declareRandomVariableStatistics()
   LBCPP_DECLARE_CLASS(ScalarVariableStatistics);
 }
 
-void declareObjectRelatedClasses()
-{
-  LBCPP_DECLARE_CLASS(StringToObjectMap);
-}
+// FeatureGenerator
+extern void declareContinuousFunctions();
+extern void declareOptimizers();
 
 void declareFeatureGenerators()
 {
@@ -40,6 +42,16 @@ void declareFeatureGenerators()
   LBCPP_DECLARE_CLASS(SparseVector);
   LBCPP_DECLARE_CLASS(DenseVector);
 }
+
+// CRAlgorithm
+extern void declareChooseFunctions();
+extern void declarePolicies();
+extern void declareCRAlgorithmLearners();
+
+// Inference
+extern void declareInferenceClasses();
+extern void declareInferenceCallbackClasses();
+
 
 void declareLBCppCoreClasses()
 {
@@ -59,4 +71,7 @@ void declareLBCppCoreClasses()
   declareChooseFunctions();
   declarePolicies();
   declareCRAlgorithmLearners();
+
+  declareInferenceClasses();
+  declareInferenceCallbackClasses();
 }

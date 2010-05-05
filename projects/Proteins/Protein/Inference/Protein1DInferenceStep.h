@@ -9,9 +9,6 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_
 
-# include "../../Inference/ClassificationInferenceStep.h"
-# include "../../Inference/ParallelInferenceStep.h"
-# include "../../Inference/ParallelSharedMultiRegressionInferenceStep.h"
 # include "ProteinInferenceStepHelper.h"
 
 namespace lbcpp
