@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/StoppingCriterion.h>
+#include <lbcpp/Utilities/StoppingCriterion.h>
 #include <deque>
 #include <cfloat>
 using namespace lbcpp;

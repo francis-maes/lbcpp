@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_STREAM_CLASSIFICATION_EXAMPLES_SYNTHETIC_GENERATOR_H_
 # define LBCPP_OBJECT_STREAM_CLASSIFICATION_EXAMPLES_SYNTHETIC_GENERATOR_H_
 
-# include <lbcpp/ObjectStream.h>
+# include <lbcpp/Object/ObjectStream.h>
 # include <cfloat>
 
 namespace lbcpp

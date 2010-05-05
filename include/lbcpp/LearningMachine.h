@@ -29,18 +29,10 @@
 
 # include "FeatureGenerator/ContinuousFunction.h"
 # include "Object/ObjectContainer.h"
-# include "Utilities.h"
+# include "Utilities/ProgressCallback.h"
 
 namespace lbcpp
 {
-
-class TrainingProgressCallback : public ProgressCallback
-{
-public:
-  virtual bool trainingProgressStep(LearningMachinePtr model, ObjectContainerPtr examples) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<TrainingProgressCallback> TrainingProgressCallbackPtr;
 
 /*!
 ** @class LearningMachine

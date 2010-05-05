@@ -24,27 +24,17 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   RandomGenerator.h
-**@author Francis MAES
-**@date   Mon Jun 15 23:39:13 2009
-**
-**@brief  RandomGenerator numbers generator.
-**
-**
-*/
-
 #ifndef LBCPP_RANDOM_H_
 # define LBCPP_RANDOM_H_
 
-# include "common.h"
+# include "../common.h"
 
 namespace lbcpp
 {
 
 /*!
 ** @class RandomGenerator
-** @brief RandomGenerator generator singleton.
+** @brief Pseudo-random number generator
 */
 class RandomGenerator
 {

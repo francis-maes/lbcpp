@@ -28,7 +28,7 @@
 # define LBCPP_POLICY_H_
 
 # include "../ObjectPredeclarations.h"
-# include "../IterationFunction.h"
+# include "../Utilities/IterationFunction.h"
 
 namespace lbcpp
 {

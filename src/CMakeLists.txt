@@ -3,9 +3,8 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
 SET(LBCPP_OBJECT_HEADERS
-  ../include/lbcpp/Object/Traits.h
-  ../include/lbcpp/Object/ContainerTraits.h
   ../include/lbcpp/Object/ReferenceCountedObject.h
+  ../include/lbcpp/Object/ErrorHandler.h  
   ../include/lbcpp/Object/Object.h
   ../include/lbcpp/Object/ObjectStream.h
   ../include/lbcpp/Object/ObjectContainer.h
@@ -14,6 +13,14 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ObjectGraph.h
   ../include/lbcpp/Object/Table.h
   ../include/lbcpp/Object/StringToObjectMap.h
+)
+
+SET(LBCPP_UTILITIES_HEADERS
+  ../include/lbcpp/Utilities/ProgressCallback.h
+  ../include/lbcpp/Utilities/RandomGenerator.h
+  ../include/lbcpp/Utilities/RandomVariable.h
+  ../include/lbcpp/Utilities/IterationFunction.h
+  ../include/lbcpp/Utilities/StoppingCriterion.h
 )
 
 SET(LBCPP_FEATURE_GENERATOR_HEADERS
@@ -42,13 +49,10 @@ SET(LBCPP_CRALGORITHM_HEADERS
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/common.h
   ../include/lbcpp/ObjectPredeclarations.h
-  ../include/lbcpp/Utilities.h
-  ../include/lbcpp/RandomGenerator.h
-  ../include/lbcpp/RandomVariable.h
+  ../include/lbcpp/Traits.h
+  ../include/lbcpp/ContainerTraits.h
   ../include/lbcpp/LearningExample.h
   ../include/lbcpp/LearningMachine.h
-  ../include/lbcpp/IterationFunction.h
-  ../include/lbcpp/StoppingCriterion.h
   ../include/lbcpp/GradientBasedLearner.h
   ../include/lbcpp/GradientBasedLearningMachine.h
   ../include/lbcpp/lbcpp.h

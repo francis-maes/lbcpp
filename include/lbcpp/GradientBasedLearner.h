@@ -28,7 +28,8 @@
 # define LBCPP_GRADIENT_BASED_LEARNER_H_
 
 # include "FeatureGenerator/ContinuousFunction.h"
-# include "IterationFunction.h"
+# include "Utilities/IterationFunction.h"
+# include "Utilities/ProgressCallback.h"
 
 namespace lbcpp
 {

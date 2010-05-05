@@ -27,7 +27,7 @@
 #ifndef LBCPP_TRAITS_H_
 # define LBCPP_TRAITS_H_
 
-# include "../common.h"
+# include "common.h"
 # include <cmath>
 # include <cfloat>
 

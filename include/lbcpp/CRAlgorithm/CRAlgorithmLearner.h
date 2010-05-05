@@ -29,8 +29,8 @@
 
 # include "../LearningMachine.h"
 # include "CRAlgorithm.h"
-# include "../IterationFunction.h"
-# include "../StoppingCriterion.h"
+# include "../Utilities/IterationFunction.h"
+# include "../Utilities/StoppingCriterion.h"
 
 namespace lbcpp
 {
