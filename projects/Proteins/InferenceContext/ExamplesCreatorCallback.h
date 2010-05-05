@@ -13,7 +13,7 @@
 # include "InferenceStack.h"
 # include "../Inference/ClassificationInferenceStep.h"
 # include "../Inference/RegressionInferenceStep.h"
-# include "../InferenceLearner/InferenceLearnerCallback.h"
+# include "../Inference/InferenceLearner.h"
 
 namespace lbcpp
 {

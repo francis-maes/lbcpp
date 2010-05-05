@@ -7,8 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "InferenceLearner/InferenceLearner.h"
-#include "InferenceLearner/InferenceLearnerCallback.h"
+#include "Inference/InferenceLearner.h"
 #include "Inference/DecoratorInferenceStep.h"
 #include "InferenceContext/CancelAfterStepCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"

@@ -10,8 +10,8 @@
 # define LBCPP_INFERENCE_STEP_DECORATOR_H_
 
 # include "InferenceStep.h"
-# include "../InferenceContext/InferenceContext.h"
-# include "../InferenceContext/InferenceCallback.h"
+# include "InferenceContext.h"
+# include "InferenceCallback.h"
 
 namespace lbcpp
 {
