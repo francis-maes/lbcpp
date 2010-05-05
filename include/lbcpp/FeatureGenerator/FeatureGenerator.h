@@ -27,7 +27,7 @@
 #ifndef LBCPP_FEATURE_GENERATOR_H_
 # define LBCPP_FEATURE_GENERATOR_H_
 
-# include "ObjectPredeclarations.h"
+# include "../ObjectPredeclarations.h"
 # include "FeatureDictionary.h"
 # include <vector>
 # include <cmath>

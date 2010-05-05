@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Optimizer.h>
+#include <lbcpp/FeatureGenerator/Optimizer.h>
 #include "Optimizer/RPropOptimizer.h"
 #include "Optimizer/GradientDescentOptimizer.h"
 #include "Optimizer/LBFGSOptimizer.h"

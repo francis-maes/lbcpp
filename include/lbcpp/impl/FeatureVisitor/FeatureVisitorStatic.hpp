@@ -9,8 +9,8 @@
 #ifndef LBCPP_FEATURE_VISITOR_STATIC_H_
 # define LBCPP_FEATURE_VISITOR_STATIC_H_
 
-# include "../../FeatureGenerator.h"
-# include "../../EditableFeatureGenerator.h"
+# include "../../FeatureGenerator/FeatureGenerator.h"
+# include "../../FeatureGenerator/EditableFeatureGenerator.h"
 # include "../Object.hpp"
 
 namespace lbcpp {

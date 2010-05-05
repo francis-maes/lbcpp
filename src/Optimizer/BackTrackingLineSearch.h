@@ -9,7 +9,7 @@
 #ifndef LBCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
 # define LBCPP_OPTIMIZER_BACKTRACKING_LINE_SEARCH_H_
 
-# include <lbcpp/Optimizer.h>
+# include <lbcpp/FeatureGenerator/Optimizer.h>
 # include <lbcpp/IterationFunction.h>
 
 namespace lbcpp

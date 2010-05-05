@@ -11,7 +11,7 @@
 
 # include "FeatureVisitorStatic.hpp"
 # include "../StaticToDynamic.hpp"
-# include <lbcpp/FeatureVisitor.h>
+# include <lbcpp/FeatureGenerator/FeatureVisitor.h>
 
 namespace lbcpp {
 namespace impl {

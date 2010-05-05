@@ -10,7 +10,7 @@
 # define LBCPP_FEATURE_VISITOR_UNARY_OPERATION_HPP_
 
 # include "FeatureVisitorStatic.hpp"
-# include "../../DenseVector.h"
+# include "../../FeatureGenerator/DenseVector.h"
 
 namespace lbcpp {
 namespace impl {

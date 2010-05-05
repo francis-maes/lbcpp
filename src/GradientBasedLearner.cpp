@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/GradientBasedLearner.h>
-#include <lbcpp/Optimizer.h>
+#include <lbcpp/FeatureGenerator/Optimizer.h>
 #include <lbcpp/impl/impl.h>
 #include "GradientBasedLearner/BatchGradientBasedLearner.h"
 #include "GradientBasedLearner/NonLearnerGradientBasedLearner.h"

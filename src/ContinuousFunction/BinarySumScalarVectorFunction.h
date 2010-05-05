@@ -9,7 +9,7 @@
 #ifndef LBCPP_CONTINUOUS_FUNCTION_BINARY_SUM_SCALAR_VECTOR_FUNCTION_H_
 # define LBCPP_CONTINUOUS_FUNCTION_BINARY_SUM_SCALAR_VECTOR_FUNCTION_H_
 
-# include <lbcpp/ContinuousFunction.h>
+# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
 namespace lbcpp
 {

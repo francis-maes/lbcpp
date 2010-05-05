@@ -11,8 +11,8 @@
 
 # include "FeatureGenerator.hpp"
 # include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
-# include "../../SparseVector.h"
-# include "../../DenseVector.h"
+# include "../../FeatureGenerator/SparseVector.h"
+# include "../../FeatureGenerator/DenseVector.h"
 
 namespace lbcpp
 {

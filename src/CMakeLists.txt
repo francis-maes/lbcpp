@@ -2,6 +2,18 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 
 SET(LBCPP_CORE_IMPL ../include/lbcpp/impl)
 
+SET(LBCPP_FEATURE_GENERATOR_HEADERS
+  ../include/lbcpp/FeatureGenerator/StringDictionary.h
+  ../include/lbcpp/FeatureGenerator/FeatureDictionary.h
+  ../include/lbcpp/FeatureGenerator/FeatureGenerator.h
+  ../include/lbcpp/FeatureGenerator/FeatureVisitor.h
+  ../include/lbcpp/FeatureGenerator/EditableFeatureGenerator.h
+  ../include/lbcpp/FeatureGenerator/SparseVector.h
+  ../include/lbcpp/FeatureGenerator/DenseVector.h
+  ../include/lbcpp/FeatureGenerator/ContinuousFunction.h
+  ../include/lbcpp/FeatureGenerator/Optimizer.h
+)
+
 SET(LBCPP_CRALGORITHM_HEADERS
   ../include/lbcpp/CRAlgorithm/ChooseFunction.h
   ../include/lbcpp/CRAlgorithm/Variable.h
@@ -30,19 +42,10 @@ SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/Table.h
   ../include/lbcpp/StringToObjectMap.h
   ../include/lbcpp/RandomVariable.h
-  ../include/lbcpp/StringDictionary.h
-  ../include/lbcpp/FeatureDictionary.h
-  ../include/lbcpp/FeatureGenerator.h
-  ../include/lbcpp/FeatureVisitor.h
-  ../include/lbcpp/EditableFeatureGenerator.h
-  ../include/lbcpp/SparseVector.h
-  ../include/lbcpp/DenseVector.h
   ../include/lbcpp/LearningExample.h
   ../include/lbcpp/LearningMachine.h
-  ../include/lbcpp/ContinuousFunction.h
   ../include/lbcpp/IterationFunction.h
   ../include/lbcpp/StoppingCriterion.h
-  ../include/lbcpp/Optimizer.h
   ../include/lbcpp/GradientBasedLearner.h
   ../include/lbcpp/GradientBasedLearningMachine.h
   ../include/lbcpp/lbcpp.h
@@ -224,6 +227,7 @@ SET(LBCPP_CORE_CRALGORITHM_LEARNER_SOURCES
 
 SET(LBCPP_CORE
   ${LBCPP_CORE_HEADERS}
+  ${LBCPP_FEATURE_GENERATOR_HEADERS}
   ${LBCPP_CRALGORITHM_HEADERS}
   ${LBCPP_CORE_IMPL_HEADERS}
   ${LBCPP_CORE_IMPL_FEATURE_VISITOR}
@@ -248,11 +252,13 @@ SOURCE_GROUP(impl/ContinuousFunction FILES ${LBCPP_CORE_IMPL_CONTINUOUS_FUNCTION
 SOURCE_GROUP(impl/Bridge FILES ${LBCPP_CORE_IMPL_BRIDGE})
 SOURCE_GROUP(sources FILES ${LBCPP_CORE_SOURCES})
 SOURCE_GROUP(ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
-SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
-SOURCE_GROUP(ContinuousFunction FILES ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES})
-SOURCE_GROUP(Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 SOURCE_GROUP(GradientBasedLearningMachine FILES ${LBCPP_CORE_GRADIENT_BASED_MACHINE_SOURCES})
 SOURCE_GROUP(GradientBasedLearner FILES ${LBCPP_CORE_GRADIENT_BASED_LEARNER_SOURCES})
+
+SOURCE_SUB_GROUP(FeatureGenerator includes FILES ${LBCPP_FEATURE_GENERATOR_HEADERS})
+SOURCE_SUB_GROUP(FeatureGenerator FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
+SOURCE_SUB_GROUP(FeatureGenerator ContinuousFunction FILES ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(FeatureGenerator Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 
 SOURCE_SUB_GROUP(CRAlgorithm includes FILES ${LBCPP_CRALGORITHM_HEADERS})
 SOURCE_SUB_GROUP(CRAlgorithm ChooseFunction FILES ${LBCPP_CORE_CHOOSE_FUNCTION_SOURCES})

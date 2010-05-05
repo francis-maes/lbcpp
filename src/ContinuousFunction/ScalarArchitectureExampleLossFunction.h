@@ -9,7 +9,7 @@
 #ifndef LBCPP_CONTINUOUS_FUNCTION_SCALAR_ARCHITECTURE_EXAMPLE_LOSS_H_
 # define LBCPP_CONTINUOUS_FUNCTION_SCALAR_ARCHITECTURE_EXAMPLE_LOSS_H_
 
-# include <lbcpp/ContinuousFunction.h>
+# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
 namespace lbcpp
 {

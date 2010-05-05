@@ -9,7 +9,7 @@
 #ifndef LBCPP_OPTIMIZER_RPROP_H_
 # define LBCPP_OPTIMIZER_RPROP_H_
 
-# include <lbcpp/Optimizer.h>
+# include <lbcpp/FeatureGenerator/Optimizer.h>
 
 namespace lbcpp
 {

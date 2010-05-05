@@ -27,7 +27,7 @@
 #ifndef LBCPP_OPTIMIZER_H_
 # define LBCPP_OPTIMIZER_H_
 
-# include "StoppingCriterion.h"
+# include "../StoppingCriterion.h"
 # include "ContinuousFunction.h"
 
 namespace lbcpp

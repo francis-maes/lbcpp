@@ -8,8 +8,8 @@
 
 #include <lbcpp/ObjectStream.h>
 #include <lbcpp/ObjectContainer.h>
-#include <lbcpp/SparseVector.h>
-#include <lbcpp/DenseVector.h>
+#include <lbcpp/FeatureGenerator/SparseVector.h>
+#include <lbcpp/FeatureGenerator/DenseVector.h>
 #include <lbcpp/LearningExample.h>
 
 #include "ObjectStream/ClassificationExamplesParser.h"

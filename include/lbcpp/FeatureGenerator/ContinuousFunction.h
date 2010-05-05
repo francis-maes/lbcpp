@@ -29,7 +29,7 @@
 
 # include "SparseVector.h"
 # include "DenseVector.h"
-# include "LearningExample.h"
+# include "../LearningExample.h"
 
 namespace lbcpp
 {
