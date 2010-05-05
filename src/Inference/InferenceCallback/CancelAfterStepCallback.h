@@ -18,14 +18,14 @@ namespace lbcpp
 class CancelAfterStepCallback : public InferenceCallback
 {
 public:
-  CancelAfterStepCallback(InferenceStepPtr step)
+  CancelAfterStepCallback(InferencePtr step)
     : stepName(step->getName()) {}
   CancelAfterStepCallback() {}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference()->getName() == stepName)
-      returnCode = InferenceStep::canceledReturnCode;
+      returnCode = Inference::canceledReturnCode;
   }
 
 protected:

@@ -12,10 +12,10 @@
 #include "InferenceCallback/CacheInferenceCallback.h"
 using namespace lbcpp;
 
-InferenceCallbackPtr lbcpp::cacheInferenceCallback(InferenceResultCachePtr cache, InferenceStepPtr parentStep)
+InferenceCallbackPtr lbcpp::cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
   {return new CacheInferenceCallback(cache, parentStep);}
 
-InferenceCallbackPtr lbcpp::cancelAfterStepCallback(InferenceStepPtr lastStepBeforeBreak)
+InferenceCallbackPtr lbcpp::cancelAfterStepCallback(InferencePtr lastStepBeforeBreak)
   {return new CancelAfterStepCallback(lastStepBeforeBreak);}
 
 void declareInferenceCallbackClasses()

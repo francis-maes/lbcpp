@@ -19,10 +19,10 @@ class InferenceVisitor : public ReferenceCountedObject
 public:
   virtual ~InferenceVisitor() {}
 
-  virtual void visit(SequentialInferenceStepPtr inference) = 0;
-  virtual void visit(ParallelInferenceStepPtr inference) = 0;
-  virtual void visit(SharedParallelInferenceStepPtr inference) = 0;
-  virtual void visit(LearnableAtomicInferenceStepPtr inference) {}
+  virtual void visit(SequentialInferencePtr inference) = 0;
+  virtual void visit(ParallelInferencePtr inference) = 0;
+  virtual void visit(SharedParallelInferencePtr inference) = 0;
+  virtual void visit(LearnableAtomicInferencePtr inference) {}
 
   virtual void visit(ClassificationInferenceStepPtr inference) {}
   virtual void visit(RegressionInferenceStepPtr inference) {}
@@ -31,9 +31,9 @@ public:
 class DefaultInferenceVisitor : public InferenceVisitor
 {
 public:
-  virtual void visit(SequentialInferenceStepPtr inference);
-  virtual void visit(ParallelInferenceStepPtr inference) {}
-  virtual void visit(SharedParallelInferenceStepPtr inference);
+  virtual void visit(SequentialInferencePtr inference);
+  virtual void visit(ParallelInferencePtr inference) {}
+  virtual void visit(SharedParallelInferencePtr inference);
 
 protected:
   InferenceStack stack;

@@ -23,7 +23,7 @@ public:
   CreateLearningCallbacksVisitor(InferenceContextPtr context, InferenceLearnerCallbackPtr callback)
     : context(context), callback(callback) {}
 
-  virtual void visit(LearnableAtomicInferenceStepPtr inference)
+  virtual void visit(LearnableAtomicInferencePtr inference)
   {
     InferenceCallbackPtr learningCallback = callback->getLearningCallback(inference, stack.getCurrentInference());
     if (learningCallback)
@@ -35,10 +35,10 @@ private:
   InferenceLearnerCallbackPtr callback;
 };
 
-void InferenceLearner::addLearningCallbacksToContext(InferenceContextPtr context, InferenceStepPtr inference)
+void InferenceLearner::addLearningCallbacksToContext(InferenceContextPtr context, InferencePtr inference)
   {inference->accept(InferenceVisitorPtr(new CreateLearningCallbacksVisitor(context, callback)));}
 
-InferenceContextPtr InferenceLearner::createLearningContext(InferenceStepPtr inference)
+InferenceContextPtr InferenceLearner::createLearningContext(InferencePtr inference)
 {
   InferenceContextPtr context = callback->createContext();
   addLearningCallbacksToContext(context, inference);

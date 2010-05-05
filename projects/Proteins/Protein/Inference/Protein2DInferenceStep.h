@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class Protein2DInferenceStep : public SharedParallelInferenceStep, public ProteinResiduePairRelatedInferenceStepHelper
+class Protein2DInferenceStep : public SharedParallelInference, public ProteinResiduePairRelatedInferenceStepHelper
 {
 public:
-  Protein2DInferenceStep(const String& name, InferenceStepPtr subInference, ProteinResiduePairFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
-    : SharedParallelInferenceStep(name, subInference), ProteinResiduePairRelatedInferenceStepHelper(targetName, features, supervisionName) {}
+  Protein2DInferenceStep(const String& name, InferencePtr subInference, ProteinResiduePairFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
+    : SharedParallelInference(name, subInference), ProteinResiduePairRelatedInferenceStepHelper(targetName, features, supervisionName) {}
   
   Protein2DInferenceStep() {}
   
@@ -73,13 +73,13 @@ protected:
 
   virtual bool load(InputStream& istr)
   {
-    return SharedParallelInferenceStep::load(istr) &&
+    return SharedParallelInference::load(istr) &&
       ProteinResiduePairRelatedInferenceStepHelper::load(istr);
   }
 
   virtual void save(OutputStream& ostr) const
   {
-    SharedParallelInferenceStep::save(ostr);
+    SharedParallelInference::save(ostr);
     ProteinResiduePairRelatedInferenceStepHelper::save(ostr);
   }
 };

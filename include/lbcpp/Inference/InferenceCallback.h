@@ -18,7 +18,7 @@ namespace lbcpp
 class InferenceCallback : public Object
 {
 public:
-  typedef InferenceStep::ReturnCode ReturnCode;
+  typedef Inference::ReturnCode ReturnCode;
 
   virtual void startInferencesCallback(size_t count)
     {}
@@ -28,7 +28,7 @@ public:
 
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
-  // the function may also set a returnCode != InferenceStep::finishedReturnCode to skip the inference step
+  // the function may also set a returnCode != Inference::finishedReturnCode to skip the inference step
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
     {}
 
@@ -42,8 +42,8 @@ public:
     {}
 };
 
-extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferenceStepPtr parentStep);
-extern InferenceCallbackPtr cancelAfterStepCallback(InferenceStepPtr lastStepBeforeBreak);
+extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
+extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
 
 }; /* namespace lbcpp */
 

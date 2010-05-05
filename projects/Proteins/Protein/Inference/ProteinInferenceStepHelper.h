@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-// helper class for InferenceStep that have Proteins as inputs and as supervision
+// helper class for Inference that have Proteins as inputs and as supervision
 class ProteinInferenceStepHelper
 {
 public:

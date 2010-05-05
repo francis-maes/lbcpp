@@ -34,11 +34,11 @@ public:
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
   
-  virtual InferenceCallbackPtr getLearningCallback(LearnableAtomicInferenceStepPtr step, InferenceStepPtr parentStep)
+  virtual InferenceCallbackPtr getLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
   {
     if (parentStep.dynamicCast<ProteinContactMapInferenceStep>())
     {
-      LinearScalarInferenceStepPtr linearInference = step.dynamicCast<LinearScalarInferenceStep>();
+      LinearScalarInferencePtr linearInference = step.dynamicCast<LinearScalarInference>();
       jassert(linearInference);
       return new StochasticScalarLinearInferenceLearner(linearInference, invLinearIterationFunction(0.5, 250000));
     }
@@ -120,7 +120,7 @@ public:
     {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;}
 
   // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
   {
     InferenceContextPtr validationContext = createContext();
     ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
@@ -156,7 +156,7 @@ public:
     return iterationNumber < 50;
   }
 
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
   {
     String passName = step->getName();
     std::cout << std::endl << "=====================================================" << std::endl;
@@ -165,7 +165,7 @@ public:
     //bestTrainRmse = bestTestRmse = DBL_MAX;
   }
 
-  virtual void postLearningStepCallback(InferenceStepPtr step)
+  virtual void postLearningStepCallback(InferencePtr step)
   {
     //std::cout << "Best Train RMSE: " << bestTrainRmse << std::endl;
     //std::cout << "Best Test RMSE: " << bestTestRmse << std::endl;

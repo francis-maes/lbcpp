@@ -168,7 +168,7 @@ public:
   }
   
   // returns false if learning should stop (if at least one callback return false)
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
   {
     InferenceContextPtr validationContext = createContext();
     
@@ -196,7 +196,7 @@ public:
     return res;
   }
   
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
   {
     String target = step.dynamicCast<Protein1DInferenceStep>()->getTargetName();
     
@@ -207,7 +207,7 @@ public:
     }
   }
   
-  virtual void postLearningStepCallback(InferenceStepPtr step)
+  virtual void postLearningStepCallback(InferencePtr step)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
     {
@@ -257,7 +257,7 @@ public:
       delete iter->second;
   }
   
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
   {
     if (getTrainingScore() > bestTrainingScore) {
       bestTrainingScore = getTrainingScore();
@@ -267,13 +267,13 @@ public:
     return true;
   }
   
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
   {
     bestTrainingScore = 0.;
     bestTestingScore = 0.;
   }
   
-  virtual void postLearningStepCallback(InferenceStepPtr step)
+  virtual void postLearningStepCallback(InferencePtr step)
   {
     if (!oTargetPass.count(getTarget())) {
       File dst = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T(".") + getTarget());
@@ -311,11 +311,11 @@ public:
   : stoppingCriterion(logicalOr(maxIterationsStoppingCriterion(25), maxIterationsWithoutImprovementStoppingCriterion(maximumIteration)))
   {}
   
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
   {stoppingCriterion->reset();}
   
   // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
   {return !stoppingCriterion->shouldOptimizerStop(getTrainingScore());}
   
 private:
@@ -332,11 +332,11 @@ public:
   , bestScore(0.)
   {}
   
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
   {bestScore = 0.;}
   
   // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
   {
     if (getTrainingScore() > bestScore)
     {
@@ -350,14 +350,14 @@ public:
     return true;
   }
   
-  virtual void postLearningStepCallback(InferenceStepPtr step)
+  virtual void postLearningStepCallback(InferencePtr step)
   {
     int stepNumber = proteinInference->findStepNumber(step);
     jassert(stepNumber >= 0);
 
     File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/decorated.inference/") + lbcpp::toString(stepNumber) + T("_") + step->getName() + T(".inference"));
     jassert(toLoad.exists());
-    InferenceStepPtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
+    InferencePtr inference = Object::createFromFileAndCast<InferenceStep>(toLoad);
     jassert(inference);
     std::cout << "Loaded step: " << inference->getName() << std::endl;
     
@@ -379,14 +379,14 @@ class StandardOutputInferenceLearnerCallback : public EvaluationInferenceLearner
     {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << std::endl;}
   
   // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
   {
     std::cout << "Train evaluation: " << getTrainingEvaluation()->toString() << std::endl;
     std::cout << "Test evaluation: " << getTestingEvaluation()->toString() << std::endl;
     return true;
   }
   
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
   {
     String passName = step->getName();
     std::cout << std::endl << "=====================================================" << std::endl;

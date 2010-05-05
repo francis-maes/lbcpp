@@ -21,11 +21,11 @@ namespace lbcpp
 // SubInference:
 //   Input: Features
 //   Output, Supervision: Sequence elements
-class Protein1DInferenceStep : public SharedParallelInferenceStep, public ProteinResidueRelatedInferenceStepHelper
+class Protein1DInferenceStep : public SharedParallelInference, public ProteinResidueRelatedInferenceStepHelper
 {
 public:
-  Protein1DInferenceStep(const String& name, InferenceStepPtr subInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
-    : SharedParallelInferenceStep(name, subInference), ProteinResidueRelatedInferenceStepHelper(targetName, features, supervisionName) {}
+  Protein1DInferenceStep(const String& name, InferencePtr subInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
+    : SharedParallelInference(name, subInference), ProteinResidueRelatedInferenceStepHelper(targetName, features, supervisionName) {}
   
   Protein1DInferenceStep() {}
   
@@ -52,13 +52,13 @@ public:
 protected:
   virtual bool load(InputStream& istr)
   {
-    return SharedParallelInferenceStep::load(istr) &&
+    return SharedParallelInference::load(istr) &&
       ProteinResidueRelatedInferenceStepHelper::load(istr);
   }
 
   virtual void save(OutputStream& ostr) const
   {
-    SharedParallelInferenceStep::save(ostr);
+    SharedParallelInference::save(ostr);
     ProteinResidueRelatedInferenceStepHelper::save(ostr);
   }
 };
@@ -100,11 +100,11 @@ public:
   }
 };
 
-class PSSMRowPredictionInferenceStep : public ParallelSharedMultiRegressionInferenceStep
+class PSSMRowPredictionInferenceStep : public ParallelSharedMultiRegressionInference
 {
 public:
   PSSMRowPredictionInferenceStep()
-    : ParallelSharedMultiRegressionInferenceStep(T("PSSMRow"), AminoAcidDictionary::getInstance()) {}
+    : ParallelSharedMultiRegressionInference(T("PSSMRow"), AminoAcidDictionary::getInstance()) {}
 
   virtual size_t getNumSubInferences(ObjectPtr) const
     {return AminoAcidDictionary::numAminoAcids;}

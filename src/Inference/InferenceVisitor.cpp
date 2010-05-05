@@ -9,7 +9,7 @@
 #include <lbcpp/Inference/InferenceBaseClasses.h>
 using namespace lbcpp;
 
-void DefaultInferenceVisitor::visit(SequentialInferenceStepPtr inference)
+void DefaultInferenceVisitor::visit(SequentialInferencePtr inference)
 {
   stack.push(inference);
   for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
@@ -17,7 +17,7 @@ void DefaultInferenceVisitor::visit(SequentialInferenceStepPtr inference)
   stack.pop();
 }
 
-void DefaultInferenceVisitor::visit(SharedParallelInferenceStepPtr inference)
+void DefaultInferenceVisitor::visit(SharedParallelInferencePtr inference)
 {
   stack.push(inference);
   inference->getSharedInferenceStep()->accept(InferenceVisitorPtr(this));

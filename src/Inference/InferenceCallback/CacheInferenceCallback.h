@@ -19,7 +19,7 @@ namespace lbcpp
 class CacheInferenceCallback : public InferenceCallback
 {
 public:
-  CacheInferenceCallback(InferenceResultCachePtr cache, InferenceStepPtr parentStep)
+  CacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
     : cache(cache), parentStep(parentStep) {}
 
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -30,7 +30,7 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    if (stack->getParentInference() == parentStep && returnCode == InferenceStep::finishedReturnCode)
+    if (stack->getParentInference() == parentStep && returnCode == Inference::finishedReturnCode)
     {
       cache->add(stack->getCurrentInference(), input, output);
       jassert(cache->get(stack->getCurrentInference(), input));
@@ -39,7 +39,7 @@ public:
 
 private:
   InferenceResultCachePtr cache;
-  InferenceStepPtr parentStep;
+  InferencePtr parentStep;
 };
 
 }; /* namespace lbcpp */

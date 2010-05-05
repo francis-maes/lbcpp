@@ -30,7 +30,7 @@ public:
       FeatureDictionaryPtr labels = stack->getCurrentInference().dynamicCast<ClassificationInferenceStep>()->getLabels();
       if (!labels)
       {
-        returnCode = InferenceStep::errorReturnCode;
+        returnCode = Inference::errorReturnCode;
         return;
       }
       classifier = learnerCallback->createClassifier(stack, labels);
@@ -144,14 +144,14 @@ protected:
   typedef std::map<LearningMachinePtr, LearningMachineInfo> LearningMachineMap;
   LearningMachineMap learningMachines;
 
-  void addExample(InferenceStackPtr stack, LearningMachinePtr learningMachine, ObjectPtr example, InferenceStep::ReturnCode& returnCode)
+  void addExample(InferenceStackPtr stack, LearningMachinePtr learningMachine, ObjectPtr example, Inference::ReturnCode& returnCode)
   {
     LearningMachineInfo& info = learningMachines[learningMachine];
     if (info.name.isEmpty())
       info.name = stack->getCurrentInference()->getName();
     info.addExample(example);
     if (cancelAfterExampleCreation)
-      returnCode = InferenceStep::canceledReturnCode;
+      returnCode = Inference::canceledReturnCode;
   }
 };
 

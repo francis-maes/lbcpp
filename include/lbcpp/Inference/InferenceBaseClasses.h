@@ -23,11 +23,11 @@ namespace lbcpp
 // Input: FeatureGenerator
 // Output: FeatureVector
 // Supervision: Label
-class ClassificationInferenceStep : public InferenceStep
+class ClassificationInferenceStep : public Inference
 {
 public:
   ClassificationInferenceStep(const String& name)
-    : InferenceStep(name) {}
+    : Inference(name) {}
   ClassificationInferenceStep() {}
 
   virtual String toString() const
@@ -61,20 +61,20 @@ protected:
   ClassifierPtr classifier;
 
   virtual bool load(InputStream& istr)
-    {return InferenceStep::load(istr) && lbcpp::read(istr, classifier);}
+    {return Inference::load(istr) && lbcpp::read(istr, classifier);}
 
   virtual void save(OutputStream& ostr) const
-    {InferenceStep::save(ostr); lbcpp::write(ostr, classifier);}
+    {Inference::save(ostr); lbcpp::write(ostr, classifier);}
 };
 
 // Input: FeatureGenerator
 // Output: Scalar
 // Supervision: Scalar
-class RegressionInferenceStep : public InferenceStep
+class RegressionInferenceStep : public Inference
 {
 public:
   RegressionInferenceStep(const String& name)
-    : InferenceStep(name) {}
+    : Inference(name) {}
   RegressionInferenceStep() {}
 
   virtual String toString() const
@@ -96,10 +96,10 @@ protected:
   RegressorPtr regressor;
 
   virtual bool load(InputStream& istr)
-    {return InferenceStep::load(istr) && lbcpp::read(istr, regressor);}
+    {return Inference::load(istr) && lbcpp::read(istr, regressor);}
 
   virtual void save(OutputStream& ostr) const
-    {InferenceStep::save(ostr); lbcpp::write(ostr, regressor);}
+    {Inference::save(ostr); lbcpp::write(ostr, regressor);}
 };
 
 class VectorBasedInferenceHelper
@@ -108,31 +108,31 @@ public:
   size_t getNumSubSteps() const
     {return subInferences.size();}
 
-  InferenceStepPtr getSubStep(size_t index) const
+  InferencePtr getSubStep(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index];}
 
-  void setSubStep(size_t index, InferenceStepPtr subStep)
+  void setSubStep(size_t index, InferencePtr subStep)
     {jassert(index < subInferences.size()); subInferences[index] = subStep;}
 
-  void appendStep(InferenceStepPtr inference)
+  void appendStep(InferencePtr inference)
     {subInferences.push_back(inference);}
 
   File getSubInferenceFile(size_t index, const File& directory) const;
 
-  int findStepNumber(InferenceStepPtr step) const;
+  int findStepNumber(InferencePtr step) const;
 
   bool saveSubInferencesToDirectory(const File& file) const;
   bool loadSubInferencesFromDirectory(const File& file);
 
 protected:
-  std::vector<InferenceStepPtr> subInferences;
+  std::vector<InferencePtr> subInferences;
 };
 
-class LearnableAtomicInferenceStep : public InferenceStep
+class LearnableAtomicInference : public Inference
 {
 public:
-  LearnableAtomicInferenceStep(const String& name) : InferenceStep(name) {}
-  LearnableAtomicInferenceStep() {}
+  LearnableAtomicInference(const String& name) : Inference(name) {}
+  LearnableAtomicInference() {}
 
   virtual void accept(InferenceVisitorPtr visitor);
 };
@@ -141,21 +141,21 @@ public:
 // Input: Features
 // Output: Scalar
 // Supervision: ScalarFunction
-class LinearScalarInferenceStep : public LearnableAtomicInferenceStep
+class LinearScalarInference : public LearnableAtomicInference
 {
 public:
-  LinearScalarInferenceStep(const String& name)
-    : LearnableAtomicInferenceStep(name), dotProductCache(NULL) {}
+  LinearScalarInference(const String& name)
+    : LearnableAtomicInference(name), dotProductCache(NULL) {}
 
-  virtual ~LinearScalarInferenceStep()
+  virtual ~LinearScalarInference()
     {clearDotProductCache();}
 
-  void createDotProductCache()
-  {
-    clearDotProductCache();
-    dotProductCache = new FeatureGenerator::DotProductCache();
-  }
+  virtual void beginRunSession()
+    {clearDotProductCache(); dotProductCache = new FeatureGenerator::DotProductCache();}
 
+  virtual void endRunSession()
+    {clearDotProductCache();}
+  
   void clearDotProductCache()
   {
     if (dotProductCache)
@@ -185,22 +185,22 @@ private:
   FeatureGenerator::DotProductCache* dotProductCache;
 };
 
-typedef ReferenceCountedObjectPtr<LinearScalarInferenceStep> LinearScalarInferenceStepPtr;
+typedef ReferenceCountedObjectPtr<LinearScalarInference> LinearScalarInferencePtr;
 
-class ParallelInferenceStep : public InferenceStep
+class ParallelInference : public Inference
 {
 public:
-  ParallelInferenceStep(const String& name) : InferenceStep(name) {}
-  ParallelInferenceStep() {}
+  ParallelInference(const String& name) : Inference(name) {}
+  ParallelInference() {}
 
   virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(ParallelInferenceStepPtr(this));}
+    {visitor->visit(ParallelInferencePtr(this));}
   
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return context->runParallelInferences(ParallelInferenceStepPtr(this), input, supervision, returnCode);}
+    {return context->runParallelInferences(ParallelInferencePtr(this), input, supervision, returnCode);}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const = 0;
-  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const = 0;
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const = 0;
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const = 0;
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const = 0;
 
@@ -208,17 +208,25 @@ public:
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
 };
 
-class SharedParallelInferenceStep : public ParallelInferenceStep
+class SharedParallelInference : public ParallelInference
 {
 public:
-  SharedParallelInferenceStep(const String& name, InferenceStepPtr subInference)
-    : ParallelInferenceStep(name), subInference(subInference) {}
-  SharedParallelInferenceStep() {}
+  SharedParallelInference(const String& name, InferencePtr subInference)
+    : ParallelInference(name), subInference(subInference) {}
+  SharedParallelInference() {}
 
   virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(SharedParallelInferenceStepPtr(this));}
-  
-  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
+    {visitor->visit(SharedParallelInferencePtr(this));}
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    subInference->beginRunSession();
+    ObjectPtr res = ParallelInference::run(context, input, supervision, returnCode);
+    subInference->endRunSession();
+    return res;
+  }
+
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
     {return subInference;}
 
   virtual String toString() const
@@ -228,29 +236,29 @@ public:
   {
     if (!loadFromDirectory(file))
       return false;
-    subInference = createFromFileAndCast<InferenceStep>(file.getChildFile(T("shared.inference")));
-    return subInference != InferenceStepPtr();
+    subInference = createFromFileAndCast<Inference>(file.getChildFile(T("shared.inference")));
+    return subInference != InferencePtr();
   }
 
   virtual bool saveToFile(const File& file) const
     {return saveToDirectory(file) && subInference->saveToFile(file.getChildFile(T("shared.inference")));}
 
-  InferenceStepPtr getSharedInferenceStep() const
+  InferencePtr getSharedInferenceStep() const
     {return subInference;}
 
-  void setSharedInferenceStep(InferenceStepPtr step)
+  void setSharedInferenceStep(InferencePtr step)
     {subInference = step;}
 
 protected:
-  InferenceStepPtr subInference;
+  InferencePtr subInference;
 };
 
 
-class ParallelSharedMultiRegressionInferenceStep : public SharedParallelInferenceStep
+class ParallelSharedMultiRegressionInference : public SharedParallelInference
 {
 public:
-  ParallelSharedMultiRegressionInferenceStep(const String& name, FeatureDictionaryPtr outputDictionary)
-    : SharedParallelInferenceStep(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
+  ParallelSharedMultiRegressionInference(const String& name, FeatureDictionaryPtr outputDictionary)
+    : SharedParallelInference(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
 
   virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
 
@@ -289,17 +297,17 @@ protected:
   FeatureDictionaryPtr outputDictionary;
 };
 
-class VectorParallelInferenceStep : public ParallelInferenceStep, public VectorBasedInferenceHelper
+class VectorParallelInference : public ParallelInference, public VectorBasedInferenceHelper
 {
 public:
-  VectorParallelInferenceStep(const String& name)
-    : ParallelInferenceStep(name) {}
-  VectorParallelInferenceStep() {}
+  VectorParallelInference(const String& name)
+    : ParallelInference(name) {}
+  VectorParallelInference() {}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
     {return VectorBasedInferenceHelper::getNumSubSteps();}
 
-  virtual InferenceStepPtr getSubInference(ObjectPtr input, size_t index) const
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
     {return VectorBasedInferenceHelper::getSubStep(index);}
  
   virtual bool saveToFile(const File& file) const
@@ -310,17 +318,17 @@ public:
 };
 
 
-class SequentialInferenceStep : public InferenceStep
+class SequentialInference : public Inference
 {
 public:
-  SequentialInferenceStep(const String& name) : InferenceStep(name) {}
-  SequentialInferenceStep() {}
+  SequentialInference(const String& name) : Inference(name) {}
+  SequentialInference() {}
 
   /*
   ** Abstract
   */
   virtual size_t getNumSubSteps() const = 0;
-  virtual InferenceStepPtr getSubStep(size_t index) const = 0;
+  virtual InferencePtr getSubStep(size_t index) const = 0;
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
     {return supervision;}
@@ -331,22 +339,22 @@ public:
   virtual String toString() const;
 
   /*
-  ** InferenceStep
+  ** Inference
   */
   virtual void accept(InferenceVisitorPtr visitor);
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 };
 
-class VectorSequentialInferenceStep : public SequentialInferenceStep, public VectorBasedInferenceHelper
+class VectorSequentialInference : public SequentialInference, public VectorBasedInferenceHelper
 {
 public:
-  VectorSequentialInferenceStep(const String& name)
-    : SequentialInferenceStep(name) {}
+  VectorSequentialInference(const String& name)
+    : SequentialInference(name) {}
 
   virtual size_t getNumSubSteps() const
     {return VectorBasedInferenceHelper::getNumSubSteps();}
 
-  virtual InferenceStepPtr getSubStep(size_t index) const
+  virtual InferencePtr getSubStep(size_t index) const
     {return VectorBasedInferenceHelper::getSubStep(index);}
  
   virtual bool saveToFile(const File& file) const
@@ -356,15 +364,15 @@ public:
     {return loadFromDirectory(file) && loadSubInferencesFromDirectory(file);}
 };
 
-typedef ReferenceCountedObjectPtr<VectorSequentialInferenceStep> VectorSequentialInferenceStepPtr;
+typedef ReferenceCountedObjectPtr<VectorSequentialInference> VectorSequentialInferencePtr;
 
 
-class DecoratorInferenceStep : public InferenceStep
+class DecoratorInference : public Inference
 {
 public:
-  DecoratorInferenceStep(const String& name, InferenceStepPtr decorated)
-    : InferenceStep(name), decorated(decorated) {}
-  DecoratorInferenceStep() {}
+  DecoratorInference(const String& name, InferencePtr decorated)
+    : Inference(name), decorated(decorated) {}
+  DecoratorInference() {}
  
   /*
   ** Object
@@ -374,24 +382,24 @@ public:
   virtual bool saveToFile(const File& file) const;
 
   /*
-  ** InferenceStep
+  ** Inference
   */
   virtual void accept(InferenceVisitorPtr visitor);
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 
-  InferenceStepPtr getDecoratedInference() const
+  InferencePtr getDecoratedInference() const
     {return decorated;}
 
 protected:
-  InferenceStepPtr decorated;
+  InferencePtr decorated;
 };
 
-class CallbackBasedDecoratorInferenceStep : public DecoratorInferenceStep
+class CallbackBasedDecoratorInference : public DecoratorInference
 {
 public:
-  CallbackBasedDecoratorInferenceStep(const String& name, InferenceStepPtr decorated, InferenceCallbackPtr callback)
-    : DecoratorInferenceStep(name, decorated), callback(callback) {}
-  CallbackBasedDecoratorInferenceStep() {}
+  CallbackBasedDecoratorInference(const String& name, InferencePtr decorated, InferenceCallbackPtr callback)
+    : DecoratorInference(name, decorated), callback(callback) {}
+  CallbackBasedDecoratorInference() {}
  
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 
@@ -402,11 +410,11 @@ protected:
   virtual void save(OutputStream& ostr) const;
 };
 
-class TransferRegressionInferenceStep : public DecoratorInferenceStep
+class TransferRegressionInferenceStep : public DecoratorInference
 {
 public:
-  TransferRegressionInferenceStep(const String& name, InferenceStepPtr regressionStep, ScalarFunctionPtr transferFunction)
-    : DecoratorInferenceStep(name, regressionStep), transferFunction(transferFunction) {}
+  TransferRegressionInferenceStep(const String& name, InferencePtr regressionStep, ScalarFunctionPtr transferFunction)
+    : DecoratorInference(name, regressionStep), transferFunction(transferFunction) {}
   TransferRegressionInferenceStep() {}
   
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
@@ -417,7 +425,7 @@ public:
       jassert(loss);
       supervision = transferFunction->composeWith(loss);
     }
-    ObjectPtr result = DecoratorInferenceStep::run(context, input, supervision, returnCode);
+    ObjectPtr result = DecoratorInference::run(context, input, supervision, returnCode);
     if (result)
     {
       ScalarPtr scalarResult = result.dynamicCast<Scalar>();
@@ -431,10 +439,10 @@ protected:
   ScalarFunctionPtr transferFunction;
 
   virtual bool load(InputStream& istr)
-    {return DecoratorInferenceStep::load(istr) && lbcpp::read(istr, transferFunction);}
+    {return DecoratorInference::load(istr) && lbcpp::read(istr, transferFunction);}
 
   virtual void save(OutputStream& ostr) const
-    {DecoratorInferenceStep::save(ostr); lbcpp::write(ostr, transferFunction);}
+    {DecoratorInference::save(ostr); lbcpp::write(ostr, transferFunction);}
 };
 
 

@@ -20,7 +20,7 @@ public:
   GlobalSimulationInferenceLearner(InferenceLearnerCallbackPtr callback)
     : InferenceLearner(callback) {}
 
-  virtual void train(InferenceStepPtr inference, ObjectContainerPtr trainingData)
+  virtual void train(InferencePtr inference, ObjectContainerPtr trainingData)
   {
     ExamplesCreatorCallbackPtr learningCallback = new ExamplesCreatorCallback(callback, false);
     InferenceContextPtr trainingContext = createLearningContext(inference);

@@ -161,6 +161,7 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceContext.h
   ../include/lbcpp/Inference/InferenceBaseClasses.h
+  ../include/lbcpp/Inference/InferenceResultCache.h
   ../include/lbcpp/Inference/InferenceLearner.h
   ../include/lbcpp/Inference/Evaluator.h
 )

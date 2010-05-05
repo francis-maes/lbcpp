@@ -15,19 +15,19 @@ namespace lbcpp
 {
 
 /*
-** InferenceStep
+** Inference
 */
-class InferenceStep;
-typedef ReferenceCountedObjectPtr<InferenceStep> InferenceStepPtr;
+class Inference;
+typedef ReferenceCountedObjectPtr<Inference> InferencePtr;
 
-class SequentialInferenceStep;
-typedef ReferenceCountedObjectPtr<SequentialInferenceStep> SequentialInferenceStepPtr;
+class SequentialInference;
+typedef ReferenceCountedObjectPtr<SequentialInference> SequentialInferencePtr;
 
-class ParallelInferenceStep;
-typedef ReferenceCountedObjectPtr<ParallelInferenceStep> ParallelInferenceStepPtr;
+class ParallelInference;
+typedef ReferenceCountedObjectPtr<ParallelInference> ParallelInferencePtr;
 
-class SharedParallelInferenceStep;
-typedef ReferenceCountedObjectPtr<SharedParallelInferenceStep> SharedParallelInferenceStepPtr;
+class SharedParallelInference;
+typedef ReferenceCountedObjectPtr<SharedParallelInference> SharedParallelInferencePtr;
 
 class ClassificationInferenceStep;
 typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInferenceStepPtr;
@@ -35,8 +35,8 @@ typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInf
 class RegressionInferenceStep;
 typedef ReferenceCountedObjectPtr<RegressionInferenceStep> RegressionInferenceStepPtr;
 
-class LearnableAtomicInferenceStep;
-typedef ReferenceCountedObjectPtr<LearnableAtomicInferenceStep> LearnableAtomicInferenceStepPtr;
+class LearnableAtomicInference;
+typedef ReferenceCountedObjectPtr<LearnableAtomicInference> LearnableAtomicInferencePtr;
 
 /*
 ** InferenceVisitor
