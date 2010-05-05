@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "Inference/InferenceLearner.h"
 #include "Inference/DecoratorInferenceStep.h"
 #include "InferenceContext/CancelAfterStepCallback.h"
 #include "InferenceContext/CacheInferenceCallback.h"

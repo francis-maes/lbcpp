@@ -9,11 +9,12 @@
 #ifndef LBCPP_INFERENCE_CONTEXT_EXAMPLES_CREATOR_H_
 # define LBCPP_INFERENCE_CONTEXT_EXAMPLES_CREATOR_H_
 
-# include "InferenceCallback.h"
-# include "InferenceStack.h"
+# include <lbcpp/Inference/InferenceCallback.h>
+# include <lbcpp/Inference/InferenceStack.h>
+# include <lbcpp/Inference/InferenceLearner.h>
+# include <lbcpp/lbcpp.h> // tmp
 # include "../Inference/ClassificationInferenceStep.h"
 # include "../Inference/RegressionInferenceStep.h"
-# include "../Inference/InferenceLearner.h"
 
 namespace lbcpp
 {

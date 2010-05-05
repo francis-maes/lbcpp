@@ -10,7 +10,7 @@
 # define LBCPP_OPTIMIZER_GRADIENT_DESCENT_H_
 
 # include <lbcpp/FeatureGenerator/Optimizer.h>
-# include <lbcpp/IterationFunction.h>
+# include <lbcpp/Utilities/IterationFunction.h>
 
 namespace lbcpp
 {

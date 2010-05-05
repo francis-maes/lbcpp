@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_
 # define LBCPP_INFERENCE_LEARNER_SINGLE_STEP_DETERMINISTIC_SIMULATION_H_
 
-# include "InferenceLearner.h"
+# include <lbcpp/Inference/InferenceLearner.h>
 # include "../InferenceContext/CacheInferenceCallback.h"
 # include "../InferenceContext/ExamplesCreatorCallback.h"
 # include "../InferenceContext/CancelAfterStepCallback.h"

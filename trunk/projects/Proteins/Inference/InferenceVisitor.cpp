@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "InferenceVisitor.h"
+#include <lbcpp/Inference/InferenceVisitor.h>
 #include "../Inference/SequentialInferenceStep.h"
 #include "../Inference/ParallelInferenceStep.h"
 using namespace lbcpp;

@@ -9,9 +9,9 @@
 #ifndef LBCPP_INFERENCE_STEP_PARALLEL_H_
 # define LBCPP_INFERENCE_STEP_PARALLEL_H_
 
-# include "InferenceStep.h"
-# include "InferenceVisitor.h"
-# include "InferenceContext.h"
+# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/InferenceVisitor.h>
+# include <lbcpp/Inference/InferenceContext.h>
 
 namespace lbcpp
 {

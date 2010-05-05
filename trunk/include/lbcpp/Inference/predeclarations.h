@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_PREDECLARATIONS_H_
 # define LBCPP_INFERENCE_PREDECLARATIONS_H_
 
-# include <lbcpp/lbcpp.h>
+# include "../Object/Object.h"
 
 namespace lbcpp
 {
