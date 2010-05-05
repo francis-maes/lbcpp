@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class ProteinResidueRefinementInferenceStep : public VectorParallelInferenceStep
+class ProteinResidueRefinementInferenceStep : public VectorParallelInference
 {
 public:
   ProteinResidueRefinementInferenceStep(const String& name)
-    : VectorParallelInferenceStep(name)
+    : VectorParallelInference(name)
   {
     for (size_t i = 0; i < 3; ++i)
     {

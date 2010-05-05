@@ -17,7 +17,7 @@ namespace lbcpp
 class ScalarInferenceLearner : public InferenceCallback
 {
 public:
-  ScalarInferenceLearner(LinearScalarInferenceStepPtr step)
+  ScalarInferenceLearner(LinearScalarInferencePtr step)
     : step(step), epoch(1) {}
 
   // epoch starts at 1
@@ -42,14 +42,14 @@ public:
   }
 
 protected:
-  LinearScalarInferenceStepPtr step;
+  LinearScalarInferencePtr step;
   size_t epoch;
 };
 
 class StochasticScalarLinearInferenceLearner : public ScalarInferenceLearner
 {
 public:
-  StochasticScalarLinearInferenceLearner(LinearScalarInferenceStepPtr step, IterationFunctionPtr learningRate, ScalarFunctionPtr regularizer = ScalarFunctionPtr(), bool normalizeLearningRate = true)
+  StochasticScalarLinearInferenceLearner(LinearScalarInferencePtr step, IterationFunctionPtr learningRate, ScalarFunctionPtr regularizer = ScalarFunctionPtr(), bool normalizeLearningRate = true)
     : ScalarInferenceLearner(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
 
   virtual bool learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
@@ -106,9 +106,9 @@ class ProteinContactMapInferenceStep : public Protein2DInferenceStep
 {
 public:
   ProteinContactMapInferenceStep(const String& name, ProteinResiduePairFeaturesPtr features, const String& targetName)
-    : Protein2DInferenceStep(name, InferenceStepPtr(), features, targetName)
+    : Protein2DInferenceStep(name, InferencePtr(), features, targetName)
   {
-    setSharedInferenceStep(new LinearScalarInferenceStep(name + T(" Classification")));
+    setSharedInferenceStep(new LinearScalarInference(name + T(" Classification")));
     //setSharedInferenceStep(new RegressionInferenceStep(name + T(" Classification")));
   }
 
@@ -136,16 +136,6 @@ public:
     ScalarPtr score = subOutput.dynamicCast<Scalar>();
     jassert(contactMap && score);
     contactMap->setScore(firstPosition, secondPosition, 1.0 / (1.0 + exp(-score->getValue())));
-  }
-
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    LinearScalarInferenceStepPtr sharedStep = getSharedInferenceStep().dynamicCast<LinearScalarInferenceStep>();
-    jassert(sharedStep);
-    sharedStep->createDotProductCache();
-    ObjectPtr res = Protein2DInferenceStep::run(context, input, supervision, returnCode);
-    sharedStep->clearDotProductCache();
-    return res;
   }
 };
 

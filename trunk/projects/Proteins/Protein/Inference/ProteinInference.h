@@ -14,10 +14,10 @@
 namespace lbcpp
 {
 
-class ProteinInference : public VectorSequentialInferenceStep
+class ProteinInference : public VectorSequentialInference
 {
 public:
-  ProteinInference() : VectorSequentialInferenceStep(T("Protein"))
+  ProteinInference() : VectorSequentialInference(T("Protein"))
     {}
 
   void setPDBDebugDirectory(const File& directory)
@@ -48,7 +48,7 @@ public:
     // main inference loop
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      InferenceStepPtr inferenceStep = subInferences[i];
+      InferencePtr inferenceStep = subInferences[i];
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
       jassert(inferenceOutput);

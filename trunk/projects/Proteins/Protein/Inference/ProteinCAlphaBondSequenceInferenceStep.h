@@ -13,11 +13,11 @@
 namespace lbcpp
 {
 
-class ProteinCAlphaBondInferenceStep : public VectorParallelInferenceStep
+class ProteinCAlphaBondInferenceStep : public VectorParallelInference
 {
 public:
   ProteinCAlphaBondInferenceStep(const String& name)
-    : VectorParallelInferenceStep(name)
+    : VectorParallelInference(name)
   {
     appendStep(new RegressionInferenceStep(getName() + T(" angle")));
     appendStep(new RegressionInferenceStep(getName() + T(" dihedral")));

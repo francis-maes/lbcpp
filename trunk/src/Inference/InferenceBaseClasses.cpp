@@ -11,70 +11,70 @@ using namespace lbcpp;
 
 
 /*
-** DecoratorInferenceStep
+** DecoratorInference
 */
-String DecoratorInferenceStep::toString() const
+String DecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
 
-bool DecoratorInferenceStep::loadFromFile(const File& file)
+bool DecoratorInference::loadFromFile(const File& file)
 {
   if (!loadFromDirectory(file))
     return false;
-  decorated = createFromFileAndCast<InferenceStep>(file.getChildFile(T("decorated.inference")));
-  return decorated != InferenceStepPtr();
+  decorated = createFromFileAndCast<Inference>(file.getChildFile(T("decorated.inference")));
+  return decorated != InferencePtr();
 }
 
-bool DecoratorInferenceStep::saveToFile(const File& file) const
+bool DecoratorInference::saveToFile(const File& file) const
 {
   return saveToDirectory(file) &&
     decorated->saveToFile(file.getChildFile(T("decorated.inference")));
 }
 
-ObjectPtr DecoratorInferenceStep::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+ObjectPtr DecoratorInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   if (decorated)
     return decorated->run(context, input, supervision, returnCode);
   else
   {
-    returnCode = InferenceStep::errorReturnCode;
+    returnCode = Inference::errorReturnCode;
     return ObjectPtr();
   }
 }
 
-void DecoratorInferenceStep::accept(InferenceVisitorPtr visitor)
+void DecoratorInference::accept(InferenceVisitorPtr visitor)
 {
   if (decorated)
     decorated->accept(visitor);
 }
 
 /*
-** CallbackBasedDecoratorInferenceStep
+** CallbackBasedDecoratorInference
 */
-bool CallbackBasedDecoratorInferenceStep::load(InputStream& istr)
-  {return DecoratorInferenceStep::load(istr) && lbcpp::read(istr, callback);}
+bool CallbackBasedDecoratorInference::load(InputStream& istr)
+  {return DecoratorInference::load(istr) && lbcpp::read(istr, callback);}
 
-void CallbackBasedDecoratorInferenceStep::save(OutputStream& ostr) const
-  {DecoratorInferenceStep::save(ostr); lbcpp::write(ostr, callback);}
+void CallbackBasedDecoratorInference::save(OutputStream& ostr) const
+  {DecoratorInference::save(ostr); lbcpp::write(ostr, callback);}
 
-ObjectPtr CallbackBasedDecoratorInferenceStep::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+ObjectPtr CallbackBasedDecoratorInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   jassert(callback);
   context->appendCallback(callback);
-  ObjectPtr res = DecoratorInferenceStep::run(context, input, supervision, returnCode);
+  ObjectPtr res = DecoratorInference::run(context, input, supervision, returnCode);
   context->removeCallback(callback);
   return res;
 }
 
 /*
-** SequentialInferenceStep
+** SequentialInference
 */
-String SequentialInferenceStep::toString() const
+String SequentialInference::toString() const
 {
   String res = getClassName() + T("(");
   size_t n = getNumSubSteps();
   for (size_t i = 0; i < n; ++i)
   {
-    InferenceStepPtr step = getSubStep(i);
+    InferencePtr step = getSubStep(i);
     res += step->toString();
     if (i < n - 1)
       res += T(", ");
@@ -82,16 +82,16 @@ String SequentialInferenceStep::toString() const
   return res + T(")");
 }
 
-void SequentialInferenceStep::accept(InferenceVisitorPtr visitor)
-  {visitor->visit(SequentialInferenceStepPtr(this));}
+void SequentialInference::accept(InferenceVisitorPtr visitor)
+  {visitor->visit(SequentialInferencePtr(this));}
 
-ObjectPtr SequentialInferenceStep::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+ObjectPtr SequentialInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   size_t n = getNumSubSteps();
   ObjectPtr currentData = input;
   for (size_t i = 0; i < n; ++i)
   {
-    InferenceStepPtr step = getSubStep(i);
+    InferencePtr step = getSubStep(i);
     ObjectPtr currentSupervision = supervision ? getSubSupervision(supervision, i) : ObjectPtr();
     currentData = context->runInference(step, currentData, currentSupervision, returnCode);
     if (returnCode != finishedReturnCode)
@@ -106,5 +106,5 @@ void declareInferenceClasses()
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
   LBCPP_DECLARE_CLASS(RegressionInferenceStep);
   LBCPP_DECLARE_CLASS(TransferRegressionInferenceStep);
-  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInferenceStep);
+  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference);
 }

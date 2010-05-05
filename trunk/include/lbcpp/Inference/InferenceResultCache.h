@@ -17,19 +17,19 @@ namespace lbcpp
 class InferenceStepResultCache : public Object
 {
 public:
-  InferenceStepResultCache(InferenceStepPtr step)
-    : step(step) {}
+  InferenceStepResultCache(InferencePtr inference)
+    : inference(inference) {}
 
   ObjectPtr get(ObjectPtr input) const;
 
   void add(ObjectPtr input, ObjectPtr output)
     {cache[input->getName()] = output;}
 
-  InferenceStepPtr getStep() const
-    {return step;}
+  InferencePtr getInference() const
+    {return inference;}
 
 private:
-  InferenceStepPtr step;
+  InferencePtr inference;
   
   typedef std::map<String, ObjectPtr> InputOutputMap;
   InputOutputMap cache;
@@ -40,15 +40,15 @@ typedef ReferenceCountedObjectPtr<InferenceStepResultCache> InferenceStepResultC
 class InferenceResultCache : public Object
 {
 public:
-  InferenceStepResultCachePtr getCacheForInferenceStep(InferenceStepPtr step) const;
+  InferenceStepResultCachePtr getCacheForInferenceStep(InferencePtr inference) const;
 
-  ObjectPtr get(InferenceStepPtr step, ObjectPtr input) const;
+  ObjectPtr get(InferencePtr inference, ObjectPtr input) const;
 
   void addStepCache(InferenceStepResultCachePtr stepCache);
-  void add(InferenceStepPtr step, ObjectPtr input, ObjectPtr output);
+  void add(InferencePtr inference, ObjectPtr input, ObjectPtr output);
 
 private:
-  typedef std::map<InferenceStepPtr, InferenceStepResultCachePtr> CacheMap;
+  typedef std::map<InferencePtr, InferenceStepResultCachePtr> CacheMap;
   CacheMap cache;
 };
 

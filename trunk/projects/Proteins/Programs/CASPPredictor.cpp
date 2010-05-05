@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
   File thisExeFile = cwd.getChildFile(argv[0]);
   File modelFile = thisExeFile.getParentDirectory().getChildFile(T("protein.inference"));
   std::cout << "Model file: " << modelFile.getFullPathName() << std::endl;
-  ProteinInferencePtr inference = InferenceStep::createFromFileAndCast<ProteinInference>(modelFile);
+  ProteinInferencePtr inference = Inference::createFromFileAndCast<ProteinInference>(modelFile);
   if (!inference)
   {
     std::cerr << "Could not load model" << std::endl;
@@ -109,9 +109,9 @@ int main(int argc, char* argv[])
   
   std::cout << "Making predictions ..." << std::endl;
 
-  InferenceStep::ReturnCode returnCode = InferenceStep::finishedReturnCode;
+  Inference::ReturnCode returnCode = Inference::finishedReturnCode;
   protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode);
-  if (returnCode != InferenceStep::finishedReturnCode)
+  if (returnCode != Inference::finishedReturnCode)
   {
     std::cerr << "Invalid return code in inference" << std::endl;
     return 1;

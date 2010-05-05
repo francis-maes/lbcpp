@@ -23,7 +23,7 @@ public:
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels) = 0;
 
   virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision) = 0;
-  virtual InferenceCallbackPtr getLearningCallback(LearnableAtomicInferenceStepPtr step, InferenceStepPtr parentStep)
+  virtual InferenceCallbackPtr getLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
     {return InferenceCallbackPtr();}
 
   //{std::cout << "Using default probability" << std::endl; return 1.0;}
@@ -32,13 +32,13 @@ public:
     {}
 
   // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferenceStepPtr inference, size_t iterationNumber)
+  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
     {return iterationNumber < 100;}
 
-  virtual void preLearningStepCallback(InferenceStepPtr step)
+  virtual void preLearningStepCallback(InferencePtr step)
     {}
 
-  virtual void postLearningStepCallback(InferenceStepPtr step)
+  virtual void postLearningStepCallback(InferencePtr step)
     {}
 };
 
@@ -48,13 +48,13 @@ public:
   InferenceLearner(InferenceLearnerCallbackPtr callback)
     : callback(callback) {}
 
-  virtual void train(InferenceStepPtr inference, ObjectContainerPtr trainingData) = 0;
+  virtual void train(InferencePtr inference, ObjectContainerPtr trainingData) = 0;
 
 protected:
   InferenceLearnerCallbackPtr callback;
 
-  void addLearningCallbacksToContext(InferenceContextPtr context, InferenceStepPtr inference);
-  virtual InferenceContextPtr createLearningContext(InferenceStepPtr inference);
+  void addLearningCallbacksToContext(InferenceContextPtr context, InferencePtr inference);
+  virtual InferenceContextPtr createLearningContext(InferencePtr inference);
 };
 
 InferenceLearnerPtr globalSimulationLearner(InferenceLearnerCallbackPtr callback);

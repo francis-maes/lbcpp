@@ -13,7 +13,7 @@ using namespace lbcpp;
 /*
 ** InferenceContext
 */
-ObjectPtr InferenceContext::runInference(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+ObjectPtr InferenceContext::runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
 }
@@ -76,10 +76,10 @@ public:
   virtual String getName() const
     {return getClassName();}
 
-  virtual ReturnCode runWithSelfSupervisedExamples(InferenceStepPtr inference, ObjectContainerPtr examples)
+  virtual ReturnCode runWithSelfSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
     {return runWithSupervisedExamples(inference, examples->apply(new ObjectToObjectPairFunction()));}
 
-  virtual ReturnCode runWithUnsupervisedExamples(InferenceStepPtr inference, ObjectContainerPtr examples)
+  virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
     {return runWithSupervisedExamples(inference, examples->apply(new ObjectToObjectPairFunction(true, false)));}
 };
 
@@ -92,38 +92,38 @@ public:
   SingleThreadedInferenceContext()
     : stack(new InferenceStack()) {}
 
-  virtual ReturnCode runWithSupervisedExamples(InferenceStepPtr inference, ObjectContainerPtr examples)
+  virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
   {
     callStartInferences(examples->size());
     
-    ReturnCode returnCode = InferenceStep::finishedReturnCode;
+    ReturnCode returnCode = Inference::finishedReturnCode;
     for (size_t i = 0; i < examples->size(); ++i)
     {
       ObjectPairPtr example = examples->get(i).dynamicCast<ObjectPair>();
       jassert(example);
       runInference(inference, example->getFirst(), example->getSecond(), returnCode);
-      if (returnCode == InferenceStep::errorReturnCode)
+      if (returnCode == Inference::errorReturnCode)
         break;
-      returnCode = InferenceStep::finishedReturnCode;
+      returnCode = Inference::finishedReturnCode;
     }
     callFinishInferences();
     return returnCode;
   }
 
-  virtual ObjectPtr runInference(InferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     stack->push(inference);
     ObjectPtr output;
-    returnCode = InferenceStep::finishedReturnCode;
+    returnCode = Inference::finishedReturnCode;
     callPreInference(stack, input, supervision, output, returnCode);
-    if (returnCode == InferenceStep::errorReturnCode)
+    if (returnCode == Inference::errorReturnCode)
     {
       std::cerr << "Warning: pre-inference failed" << std::endl;
       jassert(false);
       return ObjectPtr();
     }
     
-    if (returnCode == InferenceStep::canceledReturnCode)
+    if (returnCode == Inference::canceledReturnCode)
       {jassert(output);}
     else if (!output)
       output = InferenceContext::runInference(inference, input, supervision, returnCode);  
@@ -133,19 +133,19 @@ public:
     return output;
   }
 
-  virtual ObjectPtr runParallelInferences(ParallelInferenceStepPtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr runParallelInferences(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     ObjectPtr res = inference->createEmptyOutput(input);
 
     size_t n = inference->getNumSubInferences(input);
     for (size_t i = 0; i < n; ++i)
     {
-      returnCode = InferenceStep::finishedReturnCode;
+      returnCode = Inference::finishedReturnCode;
       ObjectPtr subOutput = runInference(inference->getSubInference(input, i),
                 inference->getSubInput(input, i),
                 supervision ? inference->getSubSupervision(supervision, i, res) : ObjectPtr(),
                 returnCode);
-      if (returnCode == InferenceStep::errorReturnCode)
+      if (returnCode == Inference::errorReturnCode)
       {
         Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
         return ObjectPtr(); 
@@ -153,7 +153,7 @@ public:
       if (subOutput)
         inference->setSubOutput(res, i, subOutput);
       else
-        jassert(returnCode == InferenceStep::canceledReturnCode);
+        jassert(returnCode == Inference::canceledReturnCode);
     }
     return res;
   }
@@ -162,14 +162,14 @@ public:
   {
     ClassifierPtr classifier = step->getClassifier();
     callClassification(stack, classifier, input, supervision, returnCode);
-    if (returnCode == InferenceStep::errorReturnCode)
+    if (returnCode == Inference::errorReturnCode)
     {
       Object::error("InferenceContext::runClassification", "Could not classify");
       return ObjectPtr(); 
     }
     jassert(classifier);
     step->setClassifier(classifier);
-    if (returnCode == InferenceStep::canceledReturnCode)
+    if (returnCode == Inference::canceledReturnCode)
       return ObjectPtr();
     FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
     return classifier->predictProbabilities(inputFeatures);
@@ -179,14 +179,14 @@ public:
   {
     RegressorPtr regressor = step->getRegressor();
     callRegression(stack, regressor, input, supervision, returnCode);
-    if (returnCode == InferenceStep::errorReturnCode)
+    if (returnCode == Inference::errorReturnCode)
     {
       Object::error("InferenceContext::runRegression", "Could not regress");
       return ObjectPtr(); 
     }
     jassert(regressor);
     step->setRegressor(regressor);
-    if (returnCode == InferenceStep::canceledReturnCode)
+    if (returnCode == Inference::canceledReturnCode)
       return ObjectPtr();
     FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
     return new Scalar(regressor->predict(inputFeatures));

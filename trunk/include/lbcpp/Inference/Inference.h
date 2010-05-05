@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: InferenceStep.h                | Inference step base class       |
+| Filename: Inference.h                | Inference step base class       |
 | Author  : Francis Maes                   |                                 |
 | Started : 08/04/2010 19:30               |                                 |
 `------------------------------------------/                                 |
@@ -14,10 +14,10 @@
 namespace lbcpp
 {
 
-class InferenceStep : public NameableObject
+class Inference : public NameableObject
 {
 public:
-  InferenceStep(const String& name = T("Unnamed"))
+  Inference(const String& name = T("Unnamed"))
     : NameableObject(name) {}
 
   enum ReturnCode
@@ -28,10 +28,15 @@ public:
   };
 
   virtual void accept(InferenceVisitorPtr visitor) = 0;
+
+  // Used in SharedParallelInference before and after a block of many run() calls
+  virtual void beginRunSession() {}
+  virtual void endRunSession() {}
+
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
-  static InferenceStepPtr createFromFile(const File& file)
-    {return Object::createFromFileAndCast<InferenceStep>(file);}
+  static InferencePtr createFromFile(const File& file)
+    {return Object::createFromFileAndCast<Inference>(file);}
 
 protected:
   friend class InferenceContext;

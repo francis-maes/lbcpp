@@ -22,7 +22,7 @@ namespace lbcpp
 class SingleStepSimulationLearningCallback : public ExamplesCreatorCallback
 {
 public:
-  SingleStepSimulationLearningCallback(InferenceStepPtr inference, InferenceLearnerCallbackPtr callback)
+  SingleStepSimulationLearningCallback(InferencePtr inference, InferenceLearnerCallbackPtr callback)
     : ExamplesCreatorCallback(callback, true), inference(inference) {}
 
   virtual void startInferencesCallback(size_t count)
@@ -41,7 +41,7 @@ public:
   }
 
 private:
-  InferenceStepPtr inference;
+  InferencePtr inference;
 };
 
 class StepByStepDeterministicSimulationLearner : public InferenceLearner
@@ -54,14 +54,14 @@ public:
       cache = new InferenceResultCache();
   }
 
-  virtual void train(InferenceStepPtr inf, ObjectContainerPtr trainingData)
+  virtual void train(InferencePtr inf, ObjectContainerPtr trainingData)
   {
-    VectorSequentialInferenceStepPtr inference = inf.dynamicCast<VectorSequentialInferenceStep>();
+    VectorSequentialInferencePtr inference = inf.dynamicCast<VectorSequentialInference>();
     jassert(inference);
     size_t numSteps = inference->getNumSubSteps();
     
     /*
-    ** Check unicity of InferenceStep names
+    ** Check unicity of Inference names
     */
     std::set<String> names;
     for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
@@ -80,7 +80,7 @@ public:
     */
     for (currentStepNumber = 0; currentStepNumber  < numSteps; ++currentStepNumber )
     {
-      InferenceStepPtr step = inference->getSubStep(currentStepNumber);
+      InferencePtr step = inference->getSubStep(currentStepNumber);
       
       File stepFile;
       if (modelDirectory != File::nonexistent)
@@ -92,7 +92,7 @@ public:
       }
 
       // decorate inference to add "break"
-      InferenceStepPtr decoratedInference = addBreakToInference(inference, step);
+      InferencePtr decoratedInference = addBreakToInference(inference, step);
 
       // train current inference step
       callback->preLearningStepCallback(step);
@@ -116,11 +116,11 @@ public:
 protected:
   size_t currentStepNumber;
 
-  virtual InferenceContextPtr createLearningContext(InferenceStepPtr inf)
+  virtual InferenceContextPtr createLearningContext(InferencePtr inf)
   {
-    if (inf.dynamicCast<DecoratorInferenceStep>())
-      inf = inf.dynamicCast<DecoratorInferenceStep>()->getDecoratedInference();
-    VectorSequentialInferenceStepPtr inference = inf.dynamicCast<VectorSequentialInferenceStep>();
+    if (inf.dynamicCast<DecoratorInference>())
+      inf = inf.dynamicCast<DecoratorInference>()->getDecoratedInference();
+    VectorSequentialInferencePtr inference = inf.dynamicCast<VectorSequentialInference>();
     jassert(inference);
     size_t numSteps = inference->getNumSubSteps();
     jassert(currentStepNumber < numSteps);
@@ -132,10 +132,10 @@ private:
   File modelDirectory;
   bool doNotSaveModel;
 
-  InferenceStepPtr addBreakToInference(InferenceStepPtr inference, InferenceStepPtr lastStepBeforeBreak)
-    {return new CallbackBasedDecoratorInferenceStep(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
+  InferencePtr addBreakToInference(InferencePtr inference, InferencePtr lastStepBeforeBreak)
+    {return new CallbackBasedDecoratorInference(inference->getName() + T(" breaked"), inference, new CancelAfterStepCallback(lastStepBeforeBreak));}
 
-  void trainPass(InferenceStepPtr inference, InferenceStepPtr step, ObjectContainerPtr trainingData)
+  void trainPass(InferencePtr inference, InferencePtr step, ObjectContainerPtr trainingData)
   {
     // create classification examples
     ExamplesCreatorCallbackPtr learningCallback = new SingleStepSimulationLearningCallback(step, callback);
