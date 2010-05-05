@@ -9,8 +9,7 @@
 #include <lbcpp/lbcpp.h>
 #include "Inference/RegressionInferenceStep.h"
 #include "Inference/ParallelSharedMultiRegressionInferenceStep.h"
-#include "InferenceLearner/InferenceLearner.h"
-#include "InferenceLearner/InferenceLearnerCallback.h"
+#include "Inference/InferenceLearner.h"
 #include "InferenceContext/CacheInferenceCallback.h"
 #include "InferenceData/ScoreSymmetricMatrix.h"
 #include "InferenceData/CommonFeatureGenerators.h"

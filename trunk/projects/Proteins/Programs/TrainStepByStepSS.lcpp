@@ -9,8 +9,7 @@
 #include <lbcpp/lbcpp.h>
 #include <lbcpp/StoppingCriterion.h>
 #include "InferenceContext/CacheInferenceCallback.h"
-#include "InferenceLearner/InferenceLearner.h"
-#include "InferenceLearner/InferenceLearnerCallback.h"
+#include "Inference/InferenceLearner.h"
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Inference/Protein1DInferenceStep.h"
 #include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
