@@ -22,6 +22,14 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/DecoratorInferenceStep.h
   Inference/DecoratorInferenceStep.cpp
   Inference/ParallelSharedMultiRegressionInferenceStep.h
+  Inference/InferenceVisitor.h
+  Inference/InferenceVisitor.cpp
+  Inference/InferenceStack.h
+  Inference/InferenceCallback.h
+  Inference/InferenceContext.h
+  Inference/InferenceContext.cpp
+  Inference/InferenceLearner.h
+  Inference/InferenceLearner.cpp
 )
 
 SET(LBCPP_INFERENCE_DATA_SOURCES
@@ -42,21 +50,12 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
 )
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
-  InferenceContext/InferenceVisitor.h
-  InferenceContext/InferenceVisitor.cpp
-  InferenceContext/InferenceStack.h
-  InferenceContext/InferenceContext.h
-  InferenceContext/InferenceContext.cpp
-  InferenceContext/InferenceCallback.h
   InferenceContext/CancelAfterStepCallback.h
   InferenceContext/CacheInferenceCallback.h
   InferenceContext/ExamplesCreatorCallback.h
 )
 
 SET(LBCPP_INFERENCE_LEARNER_SOURCES
-  InferenceLearner/InferenceLearnerCallback.h
-  InferenceLearner/InferenceLearner.h
-  InferenceLearner/InferenceLearner.cpp
   InferenceLearner/GlobalSimulationInferenceLearner.h
   InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
 )
@@ -151,8 +150,9 @@ SET(PROTEINS_SOURCES
 )
 
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
+SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
+
 SOURCE_GROUP(InferenceData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
-SOURCE_GROUP(InferenceStep FILES ${LBCPP_INFERENCE_STEP_SOURCES})
 SOURCE_GROUP(InferenceContext FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_GROUP(InferenceLearner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_EVALUATOR_SOURCES})
