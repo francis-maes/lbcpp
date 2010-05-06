@@ -102,6 +102,11 @@ int main(int argc, char** argv)
       std::cerr << "Missing 'output directory' argument" << std::endl;
       return 1;
     }
+    if (!outputDirectory.exists() && !outputDirectory.createDirectory())
+    {
+      std::cerr << "Could not create output directory " << outputDirectory.getFullPathName() << std::endl;
+      return 1;
+    }
   }
 
   std::cout << "Loading data... " << std::flush;
