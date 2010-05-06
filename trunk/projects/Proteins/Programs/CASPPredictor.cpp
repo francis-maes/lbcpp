@@ -65,13 +65,22 @@ int main(int argc, char* argv[])
 
   if (argc < 3)
   {
-    std::cerr << "Usage: " << argv[0] << " fastaFile pssmFile" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " fastaFile pssmFile [modelFile]" << std::endl;
     return 1;
   }
   File cwd = File::getCurrentWorkingDirectory();
   File fastaFile = cwd.getChildFile(argv[1]);
   File pssmFile = cwd.getChildFile(argv[2]);
- 
+
+  File modelFile;
+  if (argc > 3)
+    modelFile = cwd.getChildFile(argv[3]);
+  else
+    {
+      File thisExeFile = cwd.getChildFile(argv[0]);
+      modelFile = thisExeFile.getParentDirectory().getChildFile(T("protein.inference"));
+    }
+
   File outputDirectory = fastaFile.getParentDirectory();
   String outputBaseName = fastaFile.getFileNameWithoutExtension();
   
@@ -96,8 +105,6 @@ int main(int argc, char* argv[])
   protein->setObject(pssm);
   //  std::cout << "Loaded pssm: " << pssm->toString() << std::endl;
 
-  File thisExeFile = cwd.getChildFile(argv[0]);
-  File modelFile = thisExeFile.getParentDirectory().getChildFile(T("protein.inference"));
   std::cout << "Model file: " << modelFile.getFullPathName() << std::endl;
   ProteinInferencePtr inference = Inference::createFromFileAndCast<ProteinInference>(modelFile);
   if (!inference)
