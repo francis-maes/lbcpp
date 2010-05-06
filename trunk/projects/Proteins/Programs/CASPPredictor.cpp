@@ -59,6 +59,13 @@ void addDefaultPredictions(ProteinPtr protein)
 }
 #endif // 0
 
+void displayObjectIfExists(ProteinPtr protein, const String& objectName)
+{
+  ObjectPtr object = protein->getObject(objectName);
+  if (object)
+    std::cout << object->getName() << ": " << object->toString() << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
   declareProteinClasses();
@@ -76,10 +83,10 @@ int main(int argc, char* argv[])
   if (argc > 3)
     modelFile = cwd.getChildFile(argv[3]);
   else
-    {
-      File thisExeFile = cwd.getChildFile(argv[0]);
-      modelFile = thisExeFile.getParentDirectory().getChildFile(T("protein.inference"));
-    }
+  {
+    File thisExeFile = cwd.getChildFile(argv[0]);
+    modelFile = thisExeFile.getParentDirectory().getChildFile(T("protein.inference"));
+  }
 
   File outputDirectory = fastaFile.getParentDirectory();
   String outputBaseName = fastaFile.getFileNameWithoutExtension();
@@ -143,11 +150,14 @@ int main(int argc, char* argv[])
     caspResidueResidueDistanceFileGenerator(rrFile, method)->consume(protein);
     ++numFilesGenerated;
   }
+
+  displayObjectIfExists(protein, T("SecondaryStructureSequence"));
+  displayObjectIfExists(protein, T("DSSPSecondaryStructureSequence"));
+  displayObjectIfExists(protein, T("SolventAccessibilityThreshold20"));
+  displayObjectIfExists(protein, T("DisorderProbabilitySequence"));
   
   if (protein->getDisorderProbabilitySequence())
   {
-    std::cout << "Solvent accesibility sequence: " << protein->getSolventAccessibilityThreshold20()->toString() << std::endl;
-    std::cout << "Disorder probability sequence: " << protein->getDisorderProbabilitySequence()->toString() << std::endl;
     File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
     std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
     caspOrderDisorderRegionFileGenerator(drFile, method)->consume(protein);
