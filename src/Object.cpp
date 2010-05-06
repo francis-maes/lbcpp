@@ -98,6 +98,12 @@ ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
 
 ObjectPtr Object::createFromFile(const File& file)
 {
+  if (!file.exists())
+  {
+    error(T("Object::createFromFile"), T("File ") + file.getFullPathName() + T(" does not exists"));
+    return ObjectPtr();
+  }
+  
   File f = file.isDirectory() ? file.getChildFile(T(".classFile")) : file;
   InputStream* inputStream = f.createInputStream();
   if (!inputStream)
