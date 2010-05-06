@@ -79,6 +79,15 @@ public:
   
   ObjectsMap getObjects() const
     {return objects;}
+    
+  std::vector<String> getKeys() const
+  {
+    std::vector<String> res;
+    res.reserve(objects.size());
+    for (ObjectsMap::const_iterator it = objects.begin(); it != objects.end(); ++it)
+      res.push_back(it->first);
+    return res;
+  }
 
   virtual ObjectPtr clone() const
   {
