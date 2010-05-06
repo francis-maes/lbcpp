@@ -590,10 +590,10 @@ private:
   int nextFilePosition;
 };
 
+extern ObjectStreamPtr directoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern = T("*"));
+
 inline ObjectStreamPtr directoryObjectStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
   {return new DirectoryObjectStream(directory, wildCardPattern, searchFilesRecursively);}
-
-extern ObjectStreamPtr directoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern = T("*"));
 
 }; /* namespace lbcpp */
 

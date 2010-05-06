@@ -24,6 +24,7 @@ public:
   {
     ProteinPtr protein = input.dynamicCast<Protein>();
     jassert(protein);
+    protein->computeMissingFields();
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setObject(protein->getAminoAcidSequence());
     inputProtein->setObject(protein->getPositionSpecificScoringMatrix());
