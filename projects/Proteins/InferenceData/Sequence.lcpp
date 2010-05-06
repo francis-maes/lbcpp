@@ -114,8 +114,7 @@ featureGenerator Sequence::multiScaleSymetricFrequencyFeatures(size_t position, 
 */
 featureGenerator AccumulatedScoresMatrix::sumFeatures(size_t begin, size_t end) const
 {
-  size_t length = this->getLength();
-  jassert(begin <= length && end <= length && begin <= end);
+  jassert(begin <= this->getLength() && end <= this->getLength() && begin <= end);
   if (begin == end || !end)
     return;
   std::vector<double> accumulatorsBegin;
@@ -144,8 +143,7 @@ featureGenerator AccumulatedScoresMatrix::sumFeatures(size_t begin, size_t end) 
 
 featureGenerator AccumulatedScoresMatrix::entropyFeatures(size_t begin, size_t end) const
 {
-  size_t length = this->getLength();
-  jassert(begin <= length && end < length && begin <= end);
+  jassert(begin <= this->getLength() && end < this->getLength() && begin <= end);
   if (begin == end || !end)
     return;
   const std::vector<double> accumulatorsBegin = this->getAccumulatedScores(begin);

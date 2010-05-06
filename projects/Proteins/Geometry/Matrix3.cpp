@@ -66,7 +66,7 @@ bool Matrix3::makeSVDDecomposition(Matrix3& u, Vector3& d, Matrix3& v) const
 int svd(int m,int n,int withu,int withv,double eps,double tol,
 	const Matrix3& a,double *q,Matrix3& u,Matrix3& v)
 {
-	int i,j,k,l,l1,iter,retval;
+	int i,j,k,l = 0,l1,iter,retval;
 	double c,f,g,h,s,x,y,z;
 	double *e;
 

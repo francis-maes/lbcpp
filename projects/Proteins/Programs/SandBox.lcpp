@@ -526,9 +526,10 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\RR.model"));
+//  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\RR.model"));
 
-  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+//  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+   File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
   /*ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());*/

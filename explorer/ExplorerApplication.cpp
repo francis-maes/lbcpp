@@ -202,13 +202,7 @@ public:
     {return JUCE_T("1.0");}
 
   virtual bool moreThanOneInstanceAllowed()
-  {
-#ifndef JUCE_LINUX
-    return false;
-#else
-    return true; //xxx should be false but doesn't work on linux..
-#endif
-  }
+    {return true;}
 
   virtual void anotherInstanceStarted(const String& commandLine)
   {
