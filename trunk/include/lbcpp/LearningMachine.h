@@ -29,6 +29,7 @@
 
 # include "FeatureGenerator/ContinuousFunction.h"
 # include "Object/ObjectContainer.h"
+# include "Object/ObjectStream.h"
 # include "Utilities/ProgressCallback.h"
 
 namespace lbcpp
@@ -118,12 +119,7 @@ public:
   ** Evaluation
   */
   double evaluateAccuracy(ObjectStreamPtr examples) const;
-  double evaluateAccuracy(ObjectContainerPtr examples) const
-    {return evaluateAccuracy(ObjectStreamPtr(examples->toStream()));}
-
   double evaluateWeightedAccuracy(ObjectStreamPtr examples) const;
-  double evaluateWeightedAccuracy(ObjectContainerPtr examples) const
-    {return evaluateWeightedAccuracy(examples->toStream());}
 
   /*
   ** Serialization
@@ -192,8 +188,6 @@ public:
   virtual double predict(const FeatureGeneratorPtr input) const = 0;
 
   double evaluateMeanAbsoluteError(ObjectStreamPtr examples) const;
-  double evaluateMeanAbsoluteError(ObjectContainerPtr examples) const
-    {return evaluateMeanAbsoluteError(examples->toStream());}
 };
 
 inline RegressorPtr loadRegressor(const File& file)
@@ -210,8 +204,6 @@ public:
   virtual DenseVectorPtr predictScores(const FeatureGeneratorPtr compositeInput) const;
 
   double evaluateMeanTopRankCost(ObjectStreamPtr examples) const;
-  double evaluateMeanTopRankCost(ObjectContainerPtr examples) const
-    {return evaluateMeanTopRankCost(examples->toStream());}
 };
 
 inline RankerPtr loadRanker(const File& file)

@@ -533,8 +533,9 @@ int main(int argc, char** argv)
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());*/
   
-  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
-                                                          smallPDBDirectory.getChildFile(T("protein")));
+  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
+        smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
+        smallPDBDirectory.getChildFile(T("protein")))->load();
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -572,14 +573,19 @@ int main(int argc, char** argv)
   //pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinLengthFeatures(3)));
   pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("AminoAcidSequence"))));
   pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("PositionSpecificScoringMatrix"))));
+  pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("SecondaryStructureSequence"))));
+  pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("DSSPSecondaryStructureSequence"))));
+  pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("DisorderProbabilitySequence"))));
 
   // point features
   pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
 
   // pair features
   pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
-  //pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
-  //pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("PositionSpecificScoringMatrix")));
+  pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
+  pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("PositionSpecificScoringMatrix")));
+  pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("SecondaryStructureSequence")));
+  pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("DisorderProbabilitySequence")));
 
   pairFeatureFunction->addSubFeatures(new MyResiduePairFeatures());
 
