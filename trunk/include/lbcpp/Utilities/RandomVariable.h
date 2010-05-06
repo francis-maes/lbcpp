@@ -39,6 +39,9 @@ public:
   ScalarVariableMean(const String& name = T("Unnamed"))
     : NameableObject(name), sum(0.0), cnt(0.0) {}
 
+  void clear()
+    {sum = cnt = 0.0;}
+
   void push(double val)
     {sum += val; cnt += 1.0;}
 

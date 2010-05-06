@@ -94,3 +94,17 @@ AminoAcidDictionary::Type AminoAcidDictionary::getTypeFromOneLetterCode(const ju
   jassert(false);
   return unknown;
 }
+
+AminoAcidDictionary::AminoAcidCategory AminoAcidDictionary::getCategory(Type aminoAcidType)
+{
+  juce::tchar c = oneLetterCodes[aminoAcidType];
+  if (String(T("GAVLIPMFW")).indexOfChar(c) >= 0)
+    return nonPolarCategory;
+  if (String(T("STNQCY")).indexOfChar(c) >= 0)
+    return polarCategory;
+  if (c == 'D' || c == 'E')
+    return acidicCategory;
+  if (c == 'K' || c == 'R' || c == 'H')
+    return basicCategory;
+  return unknownCategory;
+}

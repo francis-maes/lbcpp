@@ -17,6 +17,9 @@ namespace lbcpp
 class ProteinResiduePairFeatures : public Object
 {
 public:
+  virtual String getName() const
+    {return getClassName();}
+
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition) = 0;
 };
 
@@ -24,7 +27,18 @@ typedef ReferenceCountedObjectPtr<ProteinResiduePairFeatures> ProteinResiduePair
 
 extern ProteinResiduePairFeaturesPtr separationLengthResiduePairFeatures();
 extern ProteinResiduePairFeaturesPtr proteinPointResiduePairFeatures(ProteinResidueFeaturesPtr pointFeatureGenerator);
+extern ProteinResiduePairFeaturesPtr proteinGlobalToResiduePairFeatures(ProteinGlobalFeaturesPtr globalFeatures);
+extern ProteinResiduePairFeaturesPtr proteinCentralCompositionResiduePairFeatures(const String& sequenceName);
 extern ProteinResiduePairFeaturesPtr proteinPositionIndexResiduePairFeature();
+
+enum ResiduePairConjunctionType
+{
+  aaResiduePairConjunction,
+  aaCategoryResiduePairConjunction,
+  proteinLengthResiduePairConjunction
+};
+
+extern ProteinResiduePairFeaturesPtr conjunctionResiduePairFeatures(ResiduePairConjunctionType conjunctionType, ProteinResiduePairFeaturesPtr baseFeatures);
 
 class CompositeProteinResiduePairFeatures : public ProteinResiduePairFeatures
 {

@@ -116,44 +116,6 @@ ProteinResidueFeaturesPtr lbcpp::proteinPositionFeatures(size_t numIntervalsInCo
   {return new PositionProteinResidueFeatures(numIntervalsInCoarsestScale, intervalRatio, numScales);}
 
 /*
-** LengthProteinResidueFeatures
-*/
-class LengthProteinResidueFeatures : public ProteinResidueFeatures
-{
-public:
-  LengthProteinResidueFeatures(size_t numIntervalsPerLog10InCoarestScale, size_t intervalRatio, size_t numScales)
-    : numIntervalsPerLog10InCoarestScale(numIntervalsPerLog10InCoarestScale), intervalRatio(intervalRatio), numScales(numScales) {}
-  LengthProteinResidueFeatures() {}
-
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
-  {
-    size_t n = protein->getLength();
-    featureCall(0) multiScaleNumberFeatures((double)n, numIntervalsPerLog10InCoarestScale, intervalRatio, numScales);
-  }
-
-  virtual String toString() const
-    {return T("length");}
-
-  virtual String getName() const
-    {return T("length");}
-
-protected:
-  size_t numIntervalsPerLog10InCoarestScale;
-  size_t intervalRatio;
-  size_t numScales;
-
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, numIntervalsPerLog10InCoarestScale) && lbcpp::read(istr, intervalRatio) && lbcpp::read(istr, numScales);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, numIntervalsPerLog10InCoarestScale); lbcpp::write(ostr, intervalRatio); lbcpp::write(ostr, numScales);}
-};
-
-ProteinResidueFeaturesPtr lbcpp::proteinLengthFeatures(size_t numIntervalsPerLog10InCoarestScale, size_t intervalRatio, size_t numScales)
-  {return new LengthProteinResidueFeatures(numIntervalsPerLog10InCoarestScale, intervalRatio, numScales);}
-
-
-/*
 ** SequenceWindowProteinResidueFeatures
 */
 class SequenceWindowProteinResidueFeatures : public ProteinResidueFeatures
@@ -330,7 +292,6 @@ void declareProteinResidueFeaturesClasses()
   LBCPP_DECLARE_CLASS(ProteinUnitResidueFeature);
   LBCPP_DECLARE_CLASS(ProteinPositionIndexResidueFeature);
   LBCPP_DECLARE_CLASS(PositionProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(LengthProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(SequenceWindowProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(FrequencyWindowProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(SegmentConjunctionProteinResidueFeatures);
