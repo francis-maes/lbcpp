@@ -34,7 +34,7 @@ public:
   {
     ScoreSymmetricMatrixPtr contactMap = supervisionObject.dynamicCast<ScoreSymmetricMatrix>();
     jassert(contactMap);
-    if (!contactMap->hasScore(firstPosition, secondPosition))
+    if (!contactMap || !contactMap->hasScore(firstPosition, secondPosition))
       return ObjectPtr();
     return hingeLoss(contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0);
   }

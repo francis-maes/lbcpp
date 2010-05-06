@@ -51,6 +51,11 @@ public:
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    
+    /*std::cout << "Input protein = " << lbcpp::toString(workingProtein->getKeys()) << std::endl;
+    if (correctProtein)
+      std::cout << "Correct protein = " << lbcpp::toString(correctProtein->getKeys()) << std::endl;*/
+    
     if (pdbDebugDirectory.exists() && correctProtein && correctProtein->getTertiaryStructure())
       correctProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.pdb")));
 

@@ -537,6 +537,8 @@ int main(int argc, char** argv)
   ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
         smallPDBDirectory.getChildFile(T("protein")))->load();
+  for (size_t i = 0; i < smallPDBProteins->size(); ++i)
+    smallPDBProteins->getAndCast<ObjectPair>(i)->getSecond().dynamicCast<Protein>()->computeMissingFields();
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -601,7 +603,7 @@ int main(int argc, char** argv)
   ** Creation of the inference 
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
+//  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
 
   for (size_t i = 0; i < 2; ++i)
   {
