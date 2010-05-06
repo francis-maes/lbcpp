@@ -60,8 +60,9 @@ private:
 
   double makeDotProduct(FeatureGeneratorPtr featureGenerator, VectorPtr vector)
   {
-    if (!cache)
-      return featureGenerator->dotProduct(vector);
+    // only dot products with sparse vectors are cache
+    if (!cache || !featureGenerator.dynamicCast<SparseVector>())
+      return featureGenerator->dotProduct(vector, cache);
 
     std::pair<FeatureGeneratorPtr, FeatureGeneratorPtr> key(featureGenerator, vector);
     FeatureGenerator::DotProductCache::const_iterator it = cache->find(key);

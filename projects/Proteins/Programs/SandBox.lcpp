@@ -21,19 +21,78 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+class IterativeScalarInferenceLearningCallback : public ScalarInferenceLearningCallback
+{
+public:
+  IterativeScalarInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, bool normalizeLearningRate = true)
+    : ScalarInferenceLearningCallback(step), lossValue(T("Loss")), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate) {}
 
-class LocalRandomizedScalarLinearInferenceLearningCallback : public ScalarInferenceLearningCallback
+  virtual void finishInferencesCallback()
+  {
+    std::cout << step->getName() << " Epoch " << epoch << ", " << step->getParameters()->l0norm() << " parameters, L2 = " << String(step->getParameters()->l2norm(), 3) << std::endl;
+    if (lossValue.getCount())
+    {
+      std::cout << lossValue.toString() << std::endl;
+      lossValue.clear();
+    }
+    std::cout << std::endl;
+  }
+
+protected:
+  ScalarVariableMean lossValue;
+  IterationFunctionPtr learningRate;
+  bool normalizeLearningRate;
+
+  double computeAlpha() const
+  {
+    double res = 1.0;
+    if (learningRate)
+      res *= learningRate->compute(epoch);
+    if (normalizeLearningRate && inputSize.getMean())
+      res /= inputSize.getMean();
+    return res;
+  }
+
+  void applyRegularizer(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer, double alpha)
+  {
+    if (regularizer)
+    {
+      regularizer->computeGradient(parameters)->addWeightedTo(parameters, - alpha);
+      step->validateParametersChange();
+    }
+  }
+};
+
+class IterativeDelayedScalarInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
+{
+public:
+  IterativeDelayedScalarInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, bool normalizeLearningRate = true)
+    : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate) {}
+
+protected:
+  std::vector< std::pair<FeatureGeneratorPtr, ScalarFunctionPtr> > examples;
+
+  void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
+  {
+    DenseVectorPtr parameters = step->getParameters();
+    double alpha = computeAlpha();
+    double prediction = features->dotProduct(parameters);
+    double loss = exampleLoss->computeDerivative(prediction);
+    lossValue.push(loss);
+    features->addWeightedTo(parameters, - alpha * loss);
+    step->validateParametersChange();
+  }
+};
+
+class LocalRandomizedScalarLinearInferenceLearningCallback : public IterativeDelayedScalarInferenceLearningCallback
 {
 public:
   LocalRandomizedScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
-    : ScalarInferenceLearningCallback(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
+    : IterativeDelayedScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer) {}
 
-  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
+  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
     updateInputSize(features);
-
-    if (exampleLoss->compute(1.0) > exampleLoss->compute(-1.0) && RandomGenerator::getInstance().sampleBool(0.8))
-      return 0; // reject 80% of negative examples
 
     enum {randomizationSize = 10000};
 
@@ -50,75 +109,34 @@ public:
     return order.size();
   }
 
-  void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
-  {
-    DenseVectorPtr parameters = step->getParameters();
-    double alpha = computeAlpha();
-    double prediction = features->dotProduct(parameters);
-    features->addWeightedTo(parameters, - alpha * exampleLoss->computeDerivative(prediction));
-    step->validateParametersChange();
-  }
-
-  void applyRegularizer(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer, double alpha)
-    {regularizer->computeGradient(parameters)->addWeightedTo(parameters, - alpha);}
-
   virtual void finishInferencesCallback()
   {
     std::cout << "Epoch " << epoch << ", " << step->getParameters()->l0norm() << " parameters, L2 = " << step->getParameters()->l2norm() << std::endl;
   }
 
 protected:
-  IterationFunctionPtr learningRate;
   ScalarVectorFunctionPtr regularizer;
-  bool normalizeLearningRate;
-
-  std::vector< std::pair<FeatureGeneratorPtr, ScalarFunctionPtr> > examples;
-
-  double computeAlpha() const
-  {
-    double res = 1.0;
-    if (learningRate)
-      res *= learningRate->compute(epoch);
-    if (normalizeLearningRate && inputSize.getMean())
-      res /= inputSize.getMean();
-    return res;
-  }
 };
 
-class MyScalarLinearInferenceLearningCallback : public ScalarInferenceLearningCallback
+class PerEpisodeRandomizedLinearInferenceLearningCallback : public IterativeDelayedScalarInferenceLearningCallback
 {
 public:
-  MyScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
-    : ScalarInferenceLearningCallback(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
+  PerEpisodeRandomizedLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+    : IterativeDelayedScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer) {}
 
-  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
+  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
-    updateInputSize(features);
+    //if (RandomGenerator::getInstance().sampleBool(0.95))
+    //  return 0; //reject 95% of examples
     if (exampleLoss->compute(1.0) > exampleLoss->compute(-1.0) && RandomGenerator::getInstance().sampleBool(0.8))
       return 0; // reject 80% of negative examples
 
+    updateInputSize(features);
     examples.push_back(std::make_pair(features, exampleLoss));
     return 0;
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
-  {
-    if (stack->getCurrentInference() == step && supervision && output)
-    {
-      currentParentStep = stack->getParentInference();
-      FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
-      ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
-      ScalarPtr prediction = output.dynamicCast<Scalar>();
-      jassert(features && loss && prediction);
-      epoch += learningEpoch(epoch, features, prediction->getValue(), loss);
-    }
-    else if (stack->getCurrentInference() == currentParentStep)
-      epoch += flushExamples();
-  }
-
-  InferencePtr currentParentStep;
-
-  size_t flushExamples()
+  virtual size_t postEpisodeCallback()
   {
     std::vector<size_t> order;
     RandomGenerator::getInstance().sampleOrder(examples.size(), order);
@@ -129,39 +147,67 @@ public:
     return order.size();
   }
 
-  void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
-  {
-    DenseVectorPtr parameters = step->getParameters();
-    double alpha = computeAlpha();
-    double prediction = features->dotProduct(parameters);
-    features->addWeightedTo(parameters, - alpha * exampleLoss->computeDerivative(prediction));
-    step->validateParametersChange();
-  }
-
-  void applyRegularizer(DenseVectorPtr parameters, ScalarVectorFunctionPtr regularizer, double alpha)
-    {if (regularizer) regularizer->computeGradient(parameters)->addWeightedTo(parameters, - alpha);}
-
-  virtual void finishInferencesCallback()
-  {
-    std::cout << "Epoch " << epoch << ", " << step->getParameters()->l0norm() << " parameters, L2 = " << step->getParameters()->l2norm() << std::endl;
-  }
-
 protected:
-  IterationFunctionPtr learningRate;
   ScalarVectorFunctionPtr regularizer;
-  bool normalizeLearningRate;
+};
 
-  std::vector< std::pair<FeatureGeneratorPtr, ScalarFunctionPtr> > examples;
+class PerEpisodeScalarLinearInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
+{
+public:
+  PerEpisodeScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+    : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer), examplesCount(0), updateNumber(0) {}
 
-  double computeAlpha() const
+  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
-    double res = 1.0;
-    if (learningRate)
-      res *= learningRate->compute(epoch);
-    if (normalizeLearningRate && inputSize.getMean())
-      res /= inputSize.getMean();
-    return res;
+    bool isNegativeExample = exampleLoss->compute(1.0) > exampleLoss->compute(-1.0);
+    if (isNegativeExample && RandomGenerator::getInstance().sampleBool(0.8))
+      return 0; // reject 80% of negative examples
+    double importance = 1.0;//isNegativeExample ? 0.1 : 1.0;
+
+    updateInputSize(features);
+    DenseVectorPtr parameters = step->getParameters();
+    if (!gradientAccumulator)
+      gradientAccumulator = new DenseVector(parameters->getDictionary());
+  //  if (features->l2norm() > 50)
+  //    std::cout << "Features: " << features->l0norm() << " " << features->l2norm() << " prediction = " << prediction << " loss = " << exampleLoss->computeDerivative(prediction) << " importance = " << importance << std::endl;
+    features->addWeightedTo(gradientAccumulator, importance * exampleLoss->computeDerivative(prediction));
+   // if (gradientAccumulator->l2norm() > 100000)
+   //   std::cout << "Gradient accumulator: " << gradientAccumulator->l0norm() << " " << gradientAccumulator->l2norm() << std::endl;
+    ++examplesCount;
+
+    if (examplesCount % 100 == 0)
+      flushGradient();
+
+    return 1;
   }
+
+  void flushGradient()
+  {
+    if (gradientAccumulator)
+    {
+      double k = - computeAlpha();
+      ++updateNumber;
+
+      //std::cout << updateNumber << " Gradient accumulator: " << gradientAccumulator->l0norm() << " " << gradientAccumulator->l2norm() << std::endl;
+      gradientAccumulator->addWeightedTo(step->getParameters(), k);
+      applyRegularizer(step->getParameters(), regularizer, (double)examplesCount * computeAlpha());
+      step->validateParametersChange();
+      examplesCount = 0;
+      gradientAccumulator = DenseVectorPtr();
+    }
+  }
+
+  virtual size_t postEpisodeCallback()
+  {
+    flushGradient();
+    return 0;
+  }
+
+private:
+  DenseVectorPtr gradientAccumulator;
+  ScalarVectorFunctionPtr regularizer;
+  size_t examplesCount;
+  size_t updateNumber;
 };
 
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
@@ -184,8 +230,8 @@ public:
       LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
       jassert(linearInference);
       double l2regularizer = 0;//.0001;
-      return new MyScalarLinearInferenceLearningCallback(linearInference,
-          invLinearIterationFunction(2, 250000),
+      return new PerEpisodeRandomizedLinearInferenceLearningCallback(linearInference,
+          constantIterationFunction(2.0),//invLinearIterationFunction(2, 2000000),
           l2regularizer ? sumOfSquaresFunction(l2regularizer) : ScalarVectorFunctionPtr());
     }
     return InferenceCallbackPtr();
@@ -280,16 +326,23 @@ public:
     std::cout << "Train evaluation time: " << length << "s" << std::endl;
     std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
     //double trainRmse = 
-    
+
+    static double bestTrainAcc = 0.0;
+    double trainAcc = evaluation->getDefaultScoreForTarget(T("ResidueResidueContactMatrix8Ca"));
+    if (trainAcc > bestTrainAcc)
+      bestTrainAcc = trainAcc;
+    std::cout << "Best Train F1: " << String(bestTrainAcc * 100.0, 2) << "%" << std::endl;
+
+
     validationContext->runWithSupervisedExamples(inference, testingData);
     std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
 
-   /* static double bestTestAcc = 0.0;
-    double testAcc = evaluation->getDefaultScoreForTarget(T("SecondaryStructureSequence"));
+    static double bestTestAcc = 0.0;
+    double testAcc = evaluation->getDefaultScoreForTarget(T("ResidueResidueContactMatrix8Ca"));
     if (testAcc > bestTestAcc)
       bestTestAcc = testAcc;
-    std::cout << "Best Test Accuracy: " << String(bestTestAcc * 100, 2) << "%" << std::endl;
-*/
+    std::cout << "Best Test F1: " << String(bestTestAcc * 100.0, 2) << "%" << std::endl;
+
     /*double testRmse = evaluation->getPSSMRootMeanSquareError();
 
     if (trainRmse < bestTrainRmse)
@@ -299,7 +352,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 150;
+    return iterationNumber < 50;
   }
 
   virtual void preLearningStepCallback(InferencePtr step)
@@ -343,6 +396,131 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   return res;
 }
 
+class MyResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  {
+    featureCall(0) computePSSMEntropy(protein, position);    
+  }
+
+  FeatureGeneratorPtr computePSSMEntropy(ProteinPtr protein, size_t position)
+  {
+    ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
+    if (!pssm)
+      return FeatureGeneratorPtr();
+
+    double entropy = 0.0;
+    for (size_t i = 0; i < pssm->getNumScores(); ++i)
+    {
+      double probability = pssm->getScore(position, i);
+      if (probability > 0.00001)
+        entropy -= probability * log2(probability);
+    }
+    return numberLogFeatures(entropy, 1);
+  }
+};
+
+class MyResiduePairFeatures : public ProteinResiduePairFeatures
+{
+public:
+  featureGenerator pssmProductFeatures(ScoreVectorSequencePtr pssm, int firstPosition, int secondPosition)
+  {
+    size_t n = pssm->size();
+    if (firstPosition < 0 || firstPosition >= (int)n || secondPosition < 0 || secondPosition >= (int)n)
+      return;
+
+    for (size_t i = 0; i < pssm->getNumScores(); ++i)
+    {
+      double s = pssm->getScore(firstPosition, i) * pssm->getScore(secondPosition, i);
+      if (s)
+        featureSense(i, s);
+    }
+  }
+
+  featureGenerator pssmWindowProduct(ScoreVectorSequencePtr pssm, size_t firstPosition, size_t secondPosition, int pssmProductHalfWindowSize)
+  {
+    for (int delta1 = -pssmProductHalfWindowSize; delta1 <= pssmProductHalfWindowSize; ++delta1)
+      featureScope(delta1 + pssmProductHalfWindowSize)
+        for (int delta2 = -pssmProductHalfWindowSize; delta2 <= pssmProductHalfWindowSize; ++delta2)
+          featureCall(delta2 + pssmProductHalfWindowSize)
+            pssmProductFeatures(pssm, (int)firstPosition + delta1, (int)secondPosition + delta2);
+  }
+
+  featureGenerator structureNeighborhoodFeatures(ProteinPtr protein, ScoreSymmetricMatrixPtr contactMap, size_t position)
+  {
+    size_t n = contactMap->getDimension();
+    size_t numContacts = 0;
+    for (size_t i = 0; i < n; ++i)
+      if (contactMap->hasScore(position, i) && i != position)
+      {
+        if (contactMap->getScore(position, i) > 0.5)
+        {
+          featureSense(protein->getAminoAcidSequence()->getIndex(i));
+          ++numContacts;
+        }
+      }
+    featureCall(0) numberLogFeatures((double)numContacts);
+  }
+
+  featureGenerator structureFeatures(ProteinPtr protein, ScoreSymmetricMatrixPtr contactMap, size_t firstPosition, size_t secondPosition)
+  {
+    featureCall(0) structureNeighborhoodFeatures(protein, contactMap, firstPosition);
+    featureCall(1) structureNeighborhoodFeatures(protein, contactMap, secondPosition);
+  }
+
+  FeatureGeneratorPtr prolongedDirectionContactFeatures(ScoreSymmetricMatrixPtr contactMap, size_t firstPosition, size_t secondPosition, int delta1, int delta2)
+  {
+    int dim = (int)contactMap->getDimension();
+    size_t count;
+    for (count = 0; true; ++count)
+    {
+      int p1 = (int)firstPosition + delta1 * count;
+      int p2 = (int)secondPosition + delta2 * count;
+      if (p1 < 0 || p2 < 0 || p1 >= dim || p2 >= dim)
+        break;
+      if (contactMap->getScore(p1, p2) <= 0.5)
+        break;
+    }
+    return numberLogFeatures(count, 5);
+  }
+
+  featureGenerator prolongedContactFeatures(ProteinPtr protein, ScoreSymmetricMatrixPtr contactMap, size_t firstPosition, size_t secondPosition)
+  {
+    featureCall(0) prolongedDirectionContactFeatures(contactMap, firstPosition, secondPosition, -1, -1);
+    featureCall(1) prolongedDirectionContactFeatures(contactMap, firstPosition, secondPosition, -1, +1);
+    featureCall(2) prolongedDirectionContactFeatures(contactMap, firstPosition, secondPosition, +1, +1);
+    featureCall(3) prolongedDirectionContactFeatures(contactMap, firstPosition, secondPosition, +1, -1);
+  }
+
+  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  {
+    featureSense("unit");
+
+    ScoreSymmetricMatrixPtr contactMap = protein->getResidueResidueContactMatrix8Ca();
+
+    ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
+
+    featureCall(1) pssmWindowProduct(pssm, firstPosition, secondPosition, 1);
+    
+    if (contactMap)
+    {
+      //featureCall(2) structureFeatures(protein, contactMap, firstPosition, secondPosition);
+      featureCall(3) prolongedContactFeatures(protein, contactMap, firstPosition, secondPosition);
+    }
+     
+    //featureCall(1)
+//      pssmProductFeatures(protein->getPositionSpecificScoringMatrix(), firstPosition, secondPosition);
+
+    featureScope(0)
+    {
+      LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+      featureScope(aminoAcidSequence->getIndex(firstPosition))
+        featureSense(aminoAcidSequence->getIndex(secondPosition));
+    }
+  }
+};
+
 int main(int argc, char** argv)
 {
   declareProteinClasses();
@@ -350,7 +528,7 @@ int main(int argc, char** argv)
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\RR.model"));
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory, 7);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ObjectToObjectPairFunction());
 
@@ -368,7 +546,7 @@ int main(int argc, char** argv)
   */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
 
-  featureFunction->addSubFeatures(proteinUnitResidueFeature());
+  //featureFunction->addSubFeatures(proteinUnitResidueFeature());
   //featureFunction->addSubFeatures(proteinPositionIndexResidueFeature()); // DEBUG !!
 
   //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
@@ -384,9 +562,29 @@ int main(int argc, char** argv)
   //featureFunction->addSubFeatures(proteinLengthFeatures());
   //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 5));
 
+  //featureFunction->addSubFeatures(new MyResidueFeatures());
+
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
+
+  // global
+  //pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinLengthFeatures(3)));
+  pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("AminoAcidSequence"))));
+  pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("PositionSpecificScoringMatrix"))));
+
+  // point features
   pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
-  //pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
+
+  // pair features
+  pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
+  //pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
+  //pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("PositionSpecificScoringMatrix")));
+
+  pairFeatureFunction->addSubFeatures(new MyResiduePairFeatures());
+
+  CompositeProteinResiduePairFeaturesPtr pairFeatureFunction2 = new CompositeProteinResiduePairFeatures();
+  pairFeatureFunction2->addSubFeatures(conjunctionResiduePairFeatures(aaCategoryResiduePairConjunction, pairFeatureFunction));
+  pairFeatureFunction2->addSubFeatures(conjunctionResiduePairFeatures(proteinLengthResiduePairConjunction, pairFeatureFunction));
+
   //pairFeatureFunction->addSubFeatures(new TriDimProteinResiduePairFeatures());
   //pairFeatureFunction->addSubFeatures(proteinPositionIndexResiduePairFeature());
 
@@ -396,10 +594,10 @@ int main(int argc, char** argv)
   ProteinInferencePtr proteinInference = new ProteinInference();
   proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
 
-  for (size_t i = 0; i < 1; ++i)
+  for (size_t i = 0; i < 2; ++i)
   {
     Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
-                                                       pairFeatureFunction, T("ResidueResidueContactMatrix8Ca"));
+                                                       pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
     proteinInference->appendStep(step);
     
 #if 0
@@ -425,7 +623,7 @@ int main(int argc, char** argv)
 
   /*
   ** Evaluation
-  */
+  *
   InferenceContextPtr validationContext = singleThreadedInferenceContext();
   ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
   validationContext->appendCallback(evaluation);
@@ -435,6 +633,6 @@ int main(int argc, char** argv)
 
   validationContext->runWithSupervisedExamples(proteinInference, testingData);
   std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
-
+  */
   return 0;
 }

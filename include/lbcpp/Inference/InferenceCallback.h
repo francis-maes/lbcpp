@@ -48,8 +48,8 @@ class ScalarInferenceLearningCallback : public InferenceCallback
 public:
   ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step);
 
-  // epoch starts at 1
-  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
+  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
+  virtual size_t postEpisodeCallback() {return 0;}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
 
@@ -57,6 +57,7 @@ protected:
   LearnableAtomicInferencePtr step;
   size_t epoch;
   ScalarVariableMean inputSize;
+  InferencePtr currentParentStep;
 
   void updateInputSize(FeatureGeneratorPtr inputfeatures);
 };

@@ -34,15 +34,14 @@ public:
       (correct->getIndex() == 1) ? ++falseNegative : ++trueNegative;
     ++totalCount;
   }
-  
+
   virtual String toString() const
   {
     if (!totalCount)
       return String::empty;
   
-    double precision = truePositive && falsePositive ? truePositive / (double)(truePositive + falsePositive) : 0.0;
-    double recall = truePositive && falseNegative ? truePositive / (double)(truePositive + falseNegative) : 0.0;
-    double f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
+    double precision, recall, f1score;
+    computePrecisionRecallAndF1(precision, recall, f1score);
 
     return getName() + T(": TP = ") + lbcpp::toString(truePositive) + T(" FP = ") + lbcpp::toString(falsePositive)
                      + T(": FN = ") + lbcpp::toString(falseNegative) + T(" TN = ") + lbcpp::toString(trueNegative) + T("\n")
@@ -53,8 +52,11 @@ public:
   }
 
   virtual double getDefaultScore() const
-    {return computeMatthewsCorrelation();}
-
+  {
+    double precision, recall, f1score;
+    computePrecisionRecallAndF1(precision, recall, f1score);
+    return f1score;
+  }
 
 protected:
  // correct: positive   negative
@@ -74,6 +76,13 @@ protected:
     double mccNo = (double)(truePositive * trueNegative) - (double)(falsePositive * falseNegative);
     double mccDeno = (double)positiveCount * (double)negativeCount * (double)predictedPositiveCount * (double)predictedNegativeCount;
     return mccDeno ? (mccNo / sqrt(mccDeno)) : mccNo;
+  }
+
+  void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const
+  {
+    precision = truePositive && falsePositive ? truePositive / (double)(truePositive + falsePositive) : 0.0;
+    recall = truePositive && falseNegative ? truePositive / (double)(truePositive + falseNegative) : 0.0;
+    f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
   }
 };
 

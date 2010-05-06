@@ -98,6 +98,14 @@ inline double normalizeAngle(double angle)
   return res;
 }
 
+#ifdef JUCE_WIN32
+inline double log2(double x)
+{
+  static const double oneOverLog2 = 1.0/log(2.0);
+  return log(x) * oneOverLog2;
+}
+#endif // JUCE_WIN32
+
 /*
 ** Specialized builtin-type traits
 */

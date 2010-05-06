@@ -45,9 +45,6 @@ public:
     : pointFeatureGenerator(pointFeatureGenerator) {}
   ProteinPointResiduePairFeatures() {}
 
-  virtual String getName() const
-    {return T("PointFeatures");}
-
   void prepare(ProteinPtr protein)
   {
     if (currentProtein != protein)
@@ -84,7 +81,7 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinPointResiduePairFeatures(ProteinResi
 class SeparationLengthProteinResiduePairFeatures : public ProteinResiduePairFeatures
 {
 public:
-  virtual String getName() const
+  virtual String toString() const
     {return T("SeparationLength");}
 
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
@@ -94,7 +91,7 @@ public:
       featuresPerLength.resize(delta + 1);
     FeatureGeneratorPtr& res = featuresPerLength[delta];
     if (!res)
-      res = numberLogFeatures((double)delta);
+      res = numberLogFeatures((double)delta, 5)->toSparseVector();
     return res;
   }
 
@@ -106,6 +103,112 @@ ProteinResiduePairFeaturesPtr lbcpp::separationLengthResiduePairFeatures()
   {return new SeparationLengthProteinResiduePairFeatures();}
 
 /*
+** ProteinCentralCompositionResiduePairFeatures
+*/
+class ProteinCentralCompositionResiduePairFeatures : public ProteinResiduePairFeatures
+{
+public:
+  ProteinCentralCompositionResiduePairFeatures(const String& sequenceName)
+    : sequenceName(sequenceName) {}
+
+  ProteinCentralCompositionResiduePairFeatures() {}
+
+  virtual String toString() const
+    {return T("CentralComposition(") + sequenceName + T(")");}
+
+  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  {
+    if (firstPosition > secondPosition)
+      {size_t tmp = firstPosition; firstPosition = secondPosition; secondPosition = tmp;}
+
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    return sequence ? sequence->possiblyOutOfBoundsFrequencyFeatures((int)firstPosition + 1, (int)secondPosition - 1) : FeatureGeneratorPtr();
+  }
+
+protected:
+  String sequenceName;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, sequenceName);}
+};
+
+ProteinResiduePairFeaturesPtr lbcpp::proteinCentralCompositionResiduePairFeatures(const String& sequenceName)
+  {return new ProteinCentralCompositionResiduePairFeatures(sequenceName);}
+
+/*
+** ConjunctionResiduePairFeatures
+*/
+class ConjunctionResiduePairFeatures : public ProteinResiduePairFeatures
+{
+public:
+  ConjunctionResiduePairFeatures(ResiduePairConjunctionType conjunctionType, ProteinResiduePairFeaturesPtr baseFeatures)
+    : conjunctionType(conjunctionType), baseFeatures(baseFeatures) {}
+
+  ConjunctionResiduePairFeatures() {}
+ 
+  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  {
+    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    size_t n = aminoAcidSequence->size();
+
+    switch (conjunctionType)
+    {
+    case aaResiduePairConjunction:
+      featureScope(0)
+        featureScope(aminoAcidSequence->getIndex(firstPosition))
+          featureCall(aminoAcidSequence->getIndex(secondPosition))
+            baseFeatures->compute(protein, firstPosition, secondPosition);
+      break;
+
+    case aaCategoryResiduePairConjunction:
+      featureScope(1)
+        featureScope(AminoAcidDictionary::getCategory((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(firstPosition)))
+          featureCall(AminoAcidDictionary::getCategory((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(secondPosition)))
+            baseFeatures->compute(protein, firstPosition, secondPosition);
+      break;
+
+    case proteinLengthResiduePairConjunction:
+      {
+        int l;
+        if (n <= 50)
+          l = 0;
+        else if (n <= 100)
+          l = 1;
+        else if (n <= 150)
+          l = 2;
+        else if (n > 150)
+          l = 3;
+        featureScope(2) featureCall(l) baseFeatures->compute(protein, firstPosition, secondPosition);
+      }
+      break;
+    };
+  }
+
+protected:
+  ResiduePairConjunctionType conjunctionType;
+  ProteinResiduePairFeaturesPtr baseFeatures;
+
+  virtual bool load(InputStream& istr)
+  {
+    int t;
+    if (!lbcpp::read(istr, t) || !lbcpp::read(istr, baseFeatures))
+      return false;
+    conjunctionType = (ResiduePairConjunctionType)t;
+    return true;
+  }
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, (int)conjunctionType); lbcpp::write(ostr, baseFeatures);}
+};
+
+
+ProteinResiduePairFeaturesPtr lbcpp::conjunctionResiduePairFeatures(ResiduePairConjunctionType conjunctionType, ProteinResiduePairFeaturesPtr baseFeatures)
+  {return new ConjunctionResiduePairFeatures(conjunctionType, baseFeatures);}
+
+/*
 ** ProteinPositionIndexResidueFeature
 */
 class ProteinPositionIndicesResiduePairFeature : public ProteinResiduePairFeatures
@@ -115,9 +218,6 @@ public:
     {featureScope(firstPosition) featureSense(secondPosition);}
 
   virtual String toString() const
-    {return T("positionIndex");}
-
-  virtual String getName() const
     {return T("positionIndex");}
 };
 
@@ -132,4 +232,5 @@ void declareProteinResiduePairFeaturesClasses()
   LBCPP_DECLARE_CLASS(CompositeProteinResiduePairFeatures);
   LBCPP_DECLARE_CLASS(ProteinPointResiduePairFeatures);
   LBCPP_DECLARE_CLASS(SeparationLengthProteinResiduePairFeatures);
+  LBCPP_DECLARE_CLASS(ProteinCentralCompositionResiduePairFeatures);
 }

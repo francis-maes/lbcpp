@@ -68,6 +68,17 @@ public:
   static Type getTypeFromOneLetterCode(const juce::juce_wchar oneLetterCode);
   static const String getThreeLettersCode(Type aminoAcidType);
 
+  enum AminoAcidCategory
+  {
+    nonPolarCategory,
+    polarCategory,
+    acidicCategory,
+    basicCategory,
+    unknownCategory
+  };
+
+  static AminoAcidCategory getCategory(Type aminoAcidType);
+
 private:
   AminoAcidDictionary();
 };

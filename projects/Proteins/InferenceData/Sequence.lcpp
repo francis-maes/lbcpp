@@ -13,14 +13,6 @@
 #include "InferenceData/CommonFeatureGenerators.h"
 using namespace lbcpp;
 
-#ifdef JUCE_WIN32
-inline double log2(double x)
-{
-  static const double oneOverLog2 = 1.0/log(2.0);
-  return log(x) * oneOverLog2;
-}
-#endif // JUCE_WIN32
-
 /*
 ** Sequence
 */
@@ -166,9 +158,7 @@ featureGenerator AccumulatedScoresMatrix::entropyFeatures(size_t begin, size_t e
     if (probability > 0.001)
       entropy -= probability * log2(probability);
   }
-  //featureCall("entropy") percentageFeatures(entropy, 10, false);
-  featureCall(T("entropy")) positiveNumberFeatures(entropy, 10);
-  //featureSense("entropy", entropy);
+  featureCall(T("entropy")) numberLogFeatures(entropy);
 }
 
 /*

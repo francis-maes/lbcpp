@@ -21,7 +21,7 @@ public:
   StochasticScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : ScalarInferenceLearningCallback(step), learningRate(learningRate), regularizer(regularizer), normalizeLearningRate(normalizeLearningRate) {}
 
-  virtual size_t learningEpoch(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
+  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
     updateInputSize(features);
 

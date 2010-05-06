@@ -340,7 +340,7 @@ int main(int argc, char** argv)
 
   if (testFeatures.contains(T("Len")))
   {
-    featureFunction->addSubFeatures(proteinLengthFeatures());
+    featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
     std::cout << "Length  ";
   }
   std::cout << std::endl;

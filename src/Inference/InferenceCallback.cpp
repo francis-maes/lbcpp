@@ -23,12 +23,15 @@ void ScalarInferenceLearningCallback::postInferenceCallback(InferenceStackPtr st
 {
   if (step == stack->getCurrentInference() && supervision && output)
   {
+    currentParentStep = stack->getParentInference();
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
     ScalarPtr prediction = output.dynamicCast<Scalar>();
     jassert(features && loss && prediction);
-    epoch += learningEpoch(epoch, features, prediction->getValue(), loss);
+    epoch += postInferenceCallback(epoch, features, prediction->getValue(), loss);
   }
+  else if (stack->getCurrentInference() == currentParentStep)
+    epoch += postEpisodeCallback();
 }
 
 void ScalarInferenceLearningCallback::updateInputSize(FeatureGeneratorPtr inputfeatures)

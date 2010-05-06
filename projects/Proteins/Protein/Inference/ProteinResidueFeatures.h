@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_RESIDUE_FEATURES_H_
 # define LBCPP_PROTEIN_INFERENCE_RESIDUE_FEATURES_H_
 
-# include "../Protein.h"
+# include "ProteinGlobalFeatures.h"
 
 namespace lbcpp
 {
@@ -17,19 +17,20 @@ namespace lbcpp
 class ProteinResidueFeatures : public Object
 {
 public:
+  virtual String getName() const
+    {return getClassName();}
+
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinResidueFeatures> ProteinResidueFeaturesPtr;
 
+extern ProteinResidueFeaturesPtr proteinGlobalToResidueFeatures(ProteinGlobalFeaturesPtr globalFeatures);
 extern ProteinResidueFeaturesPtr proteinUnitResidueFeature();
 extern ProteinResidueFeaturesPtr proteinPositionIndexResidueFeature();
 
 // multiScalePercentageFeatures(position / length)
 extern ProteinResidueFeaturesPtr proteinPositionFeatures(size_t numIntervalsInCoarsestScale = 1, size_t intervalRatio = 2, size_t numScales = 3);
-
-// multiScaleNumberFeatures(length)
-extern ProteinResidueFeaturesPtr proteinLengthFeatures(size_t numIntervalsPerLog10InCoarestScale = 2, size_t intervalRatio = 2, size_t numScales = 2);
 
 extern ProteinResidueFeaturesPtr proteinSequenceWindowFeatures(const String& sequenceName, size_t numPrevs, size_t numNexts, bool includeCurrent);
 extern ProteinResidueFeaturesPtr proteinFrequencyWindowFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent);

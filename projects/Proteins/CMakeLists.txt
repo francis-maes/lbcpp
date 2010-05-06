@@ -7,6 +7,7 @@ ADD_CRALGORITHM_SOURCES(
   InferenceData/CommonFeatureGenerators.lcpp
   InferenceData/Sequence.lcpp
   Protein/ProteinBackboneBondSequence.lcpp
+  Protein/Inference/ProteinGlobalFeatures.lcpp
   Protein/Inference/ProteinResidueFeatures.lcpp
   Protein/Inference/ProteinResiduePairFeatures.lcpp
 )
@@ -54,6 +55,7 @@ SET(LBCPP_PROTEIN_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
+  Protein/Inference/ProteinGlobalFeatures.h
   Protein/Inference/ProteinResidueFeatures.h
   Protein/Inference/ProteinResiduePairFeatures.h
   Protein/Inference/ProteinInferenceStepHelper.h
@@ -108,7 +110,7 @@ SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
 SOURCE_GROUP(ProteinData FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
-SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
+SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinGlobalFeatures.lcpp Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
 SOURCE_GROUP(ProteinEvaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
 SOURCE_GROUP(ProteinFormats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
 

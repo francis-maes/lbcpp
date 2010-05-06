@@ -27,6 +27,7 @@ using namespace lbcpp;
 #include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 
+extern void declareProteinGlobalFeaturesClasses();
 extern void declareProteinResidueFeaturesClasses();
 extern void declareProteinResiduePairFeaturesClasses();
 
@@ -40,7 +41,7 @@ void declareProteinClasses()
   LBCPP_DECLARE_CLASS(BondCoordinatesSequence);
   LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
 
-
+  declareProteinGlobalFeaturesClasses();
   declareProteinResidueFeaturesClasses();
   declareProteinResiduePairFeaturesClasses();
   

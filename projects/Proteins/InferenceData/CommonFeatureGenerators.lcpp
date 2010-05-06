@@ -12,6 +12,7 @@ using namespace lbcpp;
 featureGenerator positiveNumberFeatures(double number, size_t numIntervalsPerUnit)
 {
   jassert(isNumberValid(number));
+  number *= numIntervalsPerUnit;
   int previous = (int)floor(number);
   int next = previous + 1;
   double k = number - (double)previous;
