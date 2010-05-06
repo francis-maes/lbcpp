@@ -119,7 +119,7 @@ public:
   */
   double evaluateAccuracy(ObjectStreamPtr examples) const;
   double evaluateAccuracy(ObjectContainerPtr examples) const
-    {return evaluateAccuracy(examples->toStream());}
+    {return evaluateAccuracy(ObjectStreamPtr(examples->toStream()));}
 
   double evaluateWeightedAccuracy(ObjectStreamPtr examples) const;
   double evaluateWeightedAccuracy(ObjectContainerPtr examples) const

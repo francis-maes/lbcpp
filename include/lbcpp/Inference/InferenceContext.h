@@ -23,7 +23,6 @@ public:
   /*
   ** High level operations
   */
-  virtual ReturnCode runWithSelfSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
   virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
   virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
 

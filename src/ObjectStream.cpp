@@ -12,9 +12,11 @@
 #include <lbcpp/FeatureGenerator/DenseVector.h>
 #include <lbcpp/LearningExample.h>
 
+#include "ObjectStream/ApplyFunctionObjectStream.h"
 #include "ObjectStream/ClassificationExamplesParser.h"
 #include "ObjectStream/RegressionExamplesParser.h"
 #include "ObjectStream/ClassificationExamplesSyntheticGenerator.h"
+#include "ObjectStream/DirectoriesObjectPairStream.h"
 
 #include <fstream>
 using namespace lbcpp;
@@ -49,40 +51,6 @@ bool ObjectStream::iterate(size_t maximumCount)
       break;
   }
   return true;
-}
-
-/*
-** ApplyFunctionObjectStream
-*/
-class ApplyFunctionObjectStream : public ObjectStream
-{
-public:
-  ApplyFunctionObjectStream(ObjectStreamPtr stream, ObjectFunctionPtr function)
-    : ObjectStream(function->getName() + T("(") + stream->getName() + T(")")), stream(stream), function(function) {}
-    
-  virtual String getContentClassName() const
-    {return function->getOutputClassName(stream->getContentClassName());}
-
-  virtual bool rewind()
-    {return stream->rewind();}
-
-  virtual bool isExhausted() const
-    {return stream->isExhausted();}
-    
-  virtual ObjectPtr next()
-  {
-    ObjectPtr object = stream->next();
-    return object ? function->function(object) : ObjectPtr();
-  }
-
-private:
-  ObjectStreamPtr stream;
-  ObjectFunctionPtr function;
-};
-
-ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
-{
-  return new ApplyFunctionObjectStream(this, function);
 }
 
 /*
@@ -270,12 +238,23 @@ ObjectPtr DirectoryObjectStream::next()
 {
   if (isExhausted())
     return ObjectPtr();
-  File file = *files[nextFilePosition];
-  ++nextFilePosition;
-  return parseFile(file);
+  while (nextFilePosition < files.size())
+  {
+    File file = *files[nextFilePosition];
+    ++nextFilePosition;
+    ObjectPtr res = parseFile(file);
+    if (res)
+      return res;
+  }
+  return ObjectPtr();
 }
 
 ObjectPtr DirectoryObjectStream::parseFile(const File& file)
-{
-  return Object::createFromFile(file);
-}
+  {return Object::createFromFile(file);}
+
+
+ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
+  {return new ApplyFunctionObjectStream(this, function);}
+
+ObjectStreamPtr lbcpp::directoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern)
+  {return new DirectoriesObjectPairStream(directory1, directory2, wildCardPattern);}

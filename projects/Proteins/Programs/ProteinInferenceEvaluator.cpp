@@ -69,15 +69,15 @@ public:
   }
 };
 
-
 int main(int argc, char** argv)
 {
   declareProteinClasses();
 
   if (argc < 4)
   {
-    std::cerr << "Usage: " << argv[0] << " modelDirectory proteinFileOrDirectory mode" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " modelDirectory proteinFileOrDirectory mode [param]" << std::endl;
     std::cerr << "Possible values for 'mode': All StepByStep or AllSave" << std::endl;
+    std::cerr << "Param is only for mode AllSave and is the output directory" << std::endl;
     return 1;
   }
 
@@ -90,6 +90,18 @@ int main(int argc, char** argv)
   {
     std::cerr << proteinsFileOrDirectory.getFullPathName() << " does not exists." << std::endl;
     return 1;
+  }
+
+  File outputDirectory;
+  if (mode == T("AllSave"))
+  {
+    if (argc > 4)
+      outputDirectory = cwd.getChildFile(argv[4]);
+    else
+    {
+      std::cerr << "Missing 'output directory' argument" << std::endl;
+      return 1;
+    }
   }
 
   std::cout << "Loading data... " << std::flush;
@@ -117,9 +129,9 @@ int main(int argc, char** argv)
   if (mode == T("All") || mode == T("AllSave"))
   {
     if (mode == T("AllSave"))
-      inferenceContext->appendCallback(new SaveOutputInferenceCallback(cwd.getChildFile(T("proteins")), T("protein")));
+      inferenceContext->appendCallback(new SaveOutputInferenceCallback(outputDirectory, T("protein")));
     std::cout << "Making predictions..." << std::endl;
-    inferenceContext->runWithSelfSupervisedExamples(inference, proteins);
+    inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else if (mode == T("StepByStep"))
@@ -140,14 +152,14 @@ int main(int argc, char** argv)
         decoratedInference = inference;
       }
       
-      inferenceContext->runWithSelfSupervisedExamples(decoratedInference, proteins);
+      inferenceContext->runWithSupervisedExamples(decoratedInference, proteins->apply(new ProteinToInputOutputPairFunction()));
       std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
   }
   else if (mode == T("AllSave"))
   {
     std::cout << "Making predictions..." << std::endl;
-    inferenceContext->runWithSelfSupervisedExamples(inference, proteins);
+    inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
     
   }

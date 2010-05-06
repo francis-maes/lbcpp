@@ -27,9 +27,11 @@ SET(LBCPP_OBJECT_SOURCES
 )
 
 SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
+  ObjectStream/ApplyFunctionObjectStream.h
   ObjectStream/ClassificationExamplesParser.h
   ObjectStream/ClassificationExamplesSyntheticGenerator.h
   ObjectStream/RegressionExamplesParser.h
+  ObjectStream/DirectoriesObjectPairStream.h
 )
 
 

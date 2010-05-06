@@ -14,6 +14,23 @@
 namespace lbcpp
 {
 
+class ProteinToInputOutputPairFunction : public ObjectFunction
+{
+public:
+  virtual String getOutputClassName(const String& inputClassName) const
+    {return T("ObjectPair");}
+
+  virtual ObjectPtr function(ObjectPtr input) const
+  {
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
+    ProteinPtr inputProtein = new Protein(protein->getName());
+    inputProtein->setObject(protein->getAminoAcidSequence());
+    inputProtein->setObject(protein->getPositionSpecificScoringMatrix());
+    return new ObjectPair(inputProtein, protein);
+  }
+};
+
 class ProteinInference : public VectorSequentialInference
 {
 public:
@@ -27,18 +44,9 @@ public:
   // Protein -> Protein sub object
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    // input and working proteins
-    ProteinPtr inputProtein = input.dynamicCast<Protein>();
-    jassert(inputProtein);
-
-    ProteinPtr workingProtein = new Protein(inputProtein->getName());
-    workingProtein->setObject(inputProtein->getAminoAcidSequence());
-    jassert(inputProtein->getAminoAcidSequence());
-    ScoreVectorSequencePtr pssm = inputProtein->getPositionSpecificScoringMatrix();
-    jassert(inputProtein->getPositionSpecificScoringMatrix());
-    if (pssm)
-      workingProtein->setObject(pssm);
-    workingProtein->setObject(inputProtein->getAminoAcidProperty());
+    // working proteins
+    ProteinPtr workingProtein = input.dynamicCast<Protein>();
+    jassert(workingProtein);
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
@@ -57,7 +65,7 @@ public:
       
       if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
         workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
-          (inputProtein->getName() + T("_pred") + lbcpp::toString(i) + T(".pdb")));
+          (workingProtein->getName() + T("_pred") + lbcpp::toString(i) + T(".pdb")));
 
       if (returnCode != finishedReturnCode)
         break;
@@ -70,6 +78,9 @@ public:
 
   ProteinPtr addObjectToProtein(ProteinPtr workingProtein, ObjectPtr newObject, ProteinPtr correctProtein)
   {
+    if (newObject.dynamicCast<Protein>())
+      return newObject.dynamicCast<Protein>(); // when a whole protein is predicted, it replaces the current protein
+
     // we have to clone the protein, so that feature generators to may be called later keep the correct versions of their input objects
     ProteinPtr res = workingProtein->clone();
     res->setObject(newObject);
