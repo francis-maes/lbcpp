@@ -282,7 +282,7 @@ int main(int argc, char** argv)
     protein->computeMissingFields();
   }
 
-  proteins = proteins->apply(new ObjectToObjectPairFunction());
+  proteins = proteins->apply(new ProteinToInputOutputPairFunction());
 
   /*
   ** Management of folds: Training fold and testing fold

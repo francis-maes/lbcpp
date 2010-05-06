@@ -379,6 +379,7 @@ private:
 //  double bestTrainRmse, bestTestRmse;
 };
 
+
 ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
   ObjectStreamPtr proteinsStream = directoryObjectStream(directory, T("*.protein"));
@@ -527,12 +528,13 @@ int main(int argc, char** argv)
 
   File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\RR.model"));
 
-  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\protein"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
+  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+  /*ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
-  smallPDBProteins = smallPDBProteins->apply(new ObjectToObjectPairFunction());
-
-  //proteins = proteins->apply(new ProteinToInputOutputPair());
+  smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());*/
+  
+  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
+                                                          smallPDBDirectory.getChildFile(T("protein")));
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -551,11 +553,11 @@ int main(int argc, char** argv)
 
   //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
-  /*featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));*/
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
   // New features :
   //featureFunction->addSubFeatures(proteinPositionFeatures());

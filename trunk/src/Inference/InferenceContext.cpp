@@ -76,9 +76,6 @@ public:
   virtual String getName() const
     {return getClassName();}
 
-  virtual ReturnCode runWithSelfSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
-    {return runWithSupervisedExamples(inference, examples->apply(new ObjectToObjectPairFunction()));}
-
   virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
     {return runWithSupervisedExamples(inference, examples->apply(new ObjectToObjectPairFunction(true, false)));}
 };
