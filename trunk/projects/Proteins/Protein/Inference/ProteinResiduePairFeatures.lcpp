@@ -63,6 +63,9 @@ public:
     featureCall(1) pointFeatures[secondPosition];
   }
 
+  virtual String getName() const
+    {return pointFeatureGenerator->getName() + T(" points");}
+
 protected:
   ProteinResidueFeaturesPtr pointFeatureGenerator;
   ProteinPtr currentProtein;
@@ -82,6 +85,9 @@ class SeparationLengthProteinResiduePairFeatures : public ProteinResiduePairFeat
 {
 public:
   virtual String toString() const
+    {return T("SeparationLength");}
+
+  virtual String getName() const
     {return T("SeparationLength");}
 
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
@@ -116,6 +122,9 @@ public:
   virtual String toString() const
     {return T("CentralComposition(") + sequenceName + T(")");}
 
+  virtual String getName() const
+    {return sequenceName + T(" central composition");}
+
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
   {
     if (firstPosition > secondPosition)
@@ -149,6 +158,23 @@ public:
 
   ConjunctionResiduePairFeatures() {}
  
+  String getConjunctionTypeName() const
+  {
+    switch (conjunctionType)
+    {
+    case aaResiduePairConjunction:
+      return T("aaResiduePair");
+    case aaCategoryResiduePairConjunction:
+      return T("aaCategoryResiduePair");
+    case proteinLengthResiduePairConjunction:
+      return T("proteinLengthResiduePair");
+    }
+    return String::empty;
+  }
+ 
+  virtual String getName() const
+    {return baseFeatures->getName() + T(" ") + getConjunctionTypeName();}
+
   virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
   {
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
@@ -216,6 +242,9 @@ class ProteinPositionIndicesResiduePairFeature : public ProteinResiduePairFeatur
 public:
   virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
     {featureScope(firstPosition) featureSense(secondPosition);}
+
+  virtual String getName() const
+    {return T("positionIndex");}
 
   virtual String toString() const
     {return T("positionIndex");}

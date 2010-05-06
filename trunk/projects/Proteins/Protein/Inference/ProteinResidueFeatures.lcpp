@@ -97,9 +97,6 @@ public:
   virtual String toString() const
     {return T("position");}
 
-  virtual String getName() const
-    {return T("position");}
-
 protected:
   size_t numIntervalsInCoarsestScale;
   size_t intervalRatio;
@@ -205,6 +202,9 @@ public:
   SegmentConjunctionProteinResidueFeatures(const String& sequenceName, size_t numSegmentsPerSide)
     : sequenceName(sequenceName), numSegmentsPerSide(numSegmentsPerSide) {}
   SegmentConjunctionProteinResidueFeatures() {}
+
+  virtual String getName() const
+    {return sequenceName + T(" segmentconj");}
 
   virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
   {
