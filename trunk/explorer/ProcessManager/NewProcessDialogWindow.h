@@ -97,7 +97,11 @@ public:
       RecentProcessesPtr recent = RecentProcesses::getInstance();
       size_t numRecents = recent->getNumRecentExecutables();
       for (size_t i = 0; i < numRecents; ++i)
-        comboBox->addItem(recent->getRecentExecutable(i).getFullPathName(), i + 1);
+      {
+        String str = recent->getRecentExecutable(i).getFullPathName();
+        if (str.isNotEmpty())
+          comboBox->addItem(str, i + 1);
+      }
       if (numRecents)
         startingDirectory = recent->getRecentExecutable(0).getParentDirectory();
 #ifdef JUCE_WIN32

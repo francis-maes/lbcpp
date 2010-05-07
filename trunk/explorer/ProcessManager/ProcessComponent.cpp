@@ -72,7 +72,7 @@ class ProcessConsoleComponent : public Component
 public:
   ProcessConsoleComponent(ProcessPtr process, ProcessConsoleSettingsPtr settings)
     : process(process), settings(settings)
-    {setOpaque(true);}
+    {jassert(settings); setOpaque(true);}
 
   void updateContent()
   {
@@ -123,19 +123,15 @@ private:
 /*
 ** ProcessComponent
 */
-ProcessComponent::ProcessComponent(ProcessPtr process) : process(process)
+ProcessComponent::ProcessComponent(ProcessPtr process, ProcessConsoleSettingsPtr settings) : process(process)
 {
-  ProcessConsoleSettingsPtr settings = new ProcessConsoleSettings(); // todo: serialize
-  settings->addFilter(new ProcessConsoleFilter(T("ITERATION"), Colours::red));
-  settings->addFilter(new ProcessConsoleFilter(T("L2 norm ="), Colours::orange));
-  settings->addFilter(new ProcessConsoleFilter(T("SS3"), Colours::yellow));
-  settings->addFilter(new ProcessConsoleFilter(T("DR"), Colours::green));
-  settings->addFilter(new ProcessConsoleFilter(String::empty, Colours::cyan));
-  settings->addFilter(new ProcessConsoleFilter(String::empty, Colours::white));
-
+  jassert(settings);
   addAndMakeVisible(properties = new ProcessPropertiesComponent(process));
   addAndMakeVisible(viewport = new Viewport());
-  addAndMakeVisible(consoleTools = settings->createComponent());
+  if (settings)
+    addAndMakeVisible(consoleTools = settings->createComponent());
+  else
+    consoleTools = NULL;
   console = new ProcessConsoleComponent(process, settings);
   viewport->setViewedComponent(console);
   viewport->setScrollBarsShown(true, false);
@@ -153,7 +149,8 @@ void ProcessComponent::resized()
   viewport->setBounds(0, propertiesHeight, getWidth(), getHeight() - propertiesHeight - consoleToolsHeight);
   if (console)
     console->setSize(viewport->getWidth(), juce::jmax(console->getDesiredHeight(), viewport->getHeight()));
-  consoleTools->setBounds(0, getHeight() - consoleToolsHeight, getWidth(), consoleToolsHeight);
+  if (consoleTools)
+    consoleTools->setBounds(0, getHeight() - consoleToolsHeight, getWidth(), consoleToolsHeight);
 }
 
 void ProcessComponent::updateContent()
@@ -162,3 +159,5 @@ void ProcessComponent::updateContent()
 juce::Component* Process::createComponent() const
   {return new ProcessComponent(ProcessPtr(const_cast<Process* >(this)));}
 
+juce::Component* Process::createComponent(ProcessConsoleSettingsPtr settings) const
+  {return new ProcessComponent(ProcessPtr(const_cast<Process* >(this)), settings);}

@@ -48,6 +48,13 @@ std::vector<File> RecentProcesses::getRecentWorkingDirectories(const File& execu
   return index >= 0? v[index].workingDirectories : std::vector<File>();
 }
 
+ProcessConsoleSettingsPtr RecentProcesses::getExecutableConsoleSettings(const File& executable) const
+{
+  int index = findRecentExecutable(executable);
+  jassert(index >= 0);
+  return index >= 0? v[index].consoleSettings : ProcessConsoleSettingsPtr();
+}
+
 void RecentProcesses::addRecent(const File& executable, const String& arguments, const File& workingDirectory)
 {
   addRecentExecutable(executable);
@@ -55,6 +62,18 @@ void RecentProcesses::addRecent(const File& executable, const String& arguments,
   if (workingDirectory.exists())
     v[0].addRecentWorkingDirectory(workingDirectory);
   ExplorerConfiguration::save();
+}
+
+RecentProcesses::RecentExecutable::RecentExecutable(const File& executable)
+  : executable(executable), consoleSettings(new ProcessConsoleSettings)
+{
+  arguments.push_back(T(" "));
+  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::red));
+  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::orange));
+  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::yellow));
+  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::green));
+  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::cyan));
+  consoleSettings->addFilter(new ProcessConsoleFilter(String::empty, juce::Colours::white));
 }
 
 void RecentProcesses::RecentExecutable::addRecentArguments(const String& args)
@@ -95,7 +114,8 @@ bool RecentProcesses::load(InputStream& istr)
 
   v.resize(size);
   for (size_t i = 0; i < size; ++i)
-    if (!lbcpp::read(istr, v[i].executable) || !lbcpp::read(istr, v[i].arguments) || !lbcpp::read(istr, v[i].workingDirectories))
+    if (!lbcpp::read(istr, v[i].executable) || !lbcpp::read(istr, v[i].arguments) ||
+        !lbcpp::read(istr, v[i].workingDirectories) || !lbcpp::read(istr, v[i].consoleSettings))
       return false;
 
   return true;
@@ -109,5 +129,7 @@ void RecentProcesses::save(OutputStream& ostr) const
     lbcpp::write(ostr, v[i].executable);
     lbcpp::write(ostr, v[i].arguments);
     lbcpp::write(ostr, v[i].workingDirectories);
+    lbcpp::write(ostr, v[i].consoleSettings);
   }
 }
+

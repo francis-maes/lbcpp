@@ -155,7 +155,9 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
 
 void ProcessManagerComponent::processSelectedCallback(ProcessPtr process)
 {
-  changeSecondComponent(process->createComponent());
+  RecentProcessesPtr recents = RecentProcesses::getInstance();
+  ProcessConsoleSettingsPtr settings = recents->getExecutableConsoleSettings(process->getExecutableFile());
+  changeSecondComponent(process->createComponent(settings));
 }
 
 

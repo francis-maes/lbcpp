@@ -22,7 +22,7 @@ namespace lbcpp
 class ProcessComponent : public Component
 {
 public:
-  ProcessComponent(ProcessPtr process);
+  ProcessComponent(ProcessPtr process, ProcessConsoleSettingsPtr settings = ProcessConsoleSettingsPtr());
   virtual ~ProcessComponent();
 
   virtual void resized();

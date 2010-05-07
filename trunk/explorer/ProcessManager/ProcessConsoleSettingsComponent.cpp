@@ -5,7 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+
 #include "ProcessManagerComponent.h"
+#include "../ExplorerConfiguration.h"
 using namespace lbcpp;
 
 class ProcessConsoleFilterComponent : public Component, public juce::ButtonListener
@@ -41,12 +43,19 @@ public:
       AlertWindow alertWindow(T("Configure pattern"), T("Choose a new pattern"), AlertWindow::QuestionIcon);
       alertWindow.addTextEditor(T("pattern"), filter->getPattern(), T("Pattern:"));
       alertWindow.addButton(T("OK"), 1, juce::KeyPress::returnKey);
-      alertWindow.addButton(T("Cancel"), 0, juce::KeyPress::returnKey);
+      alertWindow.addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
       if (alertWindow.runModalLoop())
+      {
         filter->setPattern(alertWindow.getTextEditorContents(T("pattern")));
+        configureButton->setButtonText(filter->getPattern());
+        ExplorerConfiguration::save();
+      }
     }
     else if (button == displayButton)
+    {
       filter->setDisplayFlag(displayButton->getToggleState());
+      ExplorerConfiguration::save();
+    }
   }
 
   juce_UseDebuggingNewOperator
