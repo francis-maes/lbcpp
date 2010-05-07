@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-class ProcessManagerComponent : public SplittedLayout, public MenuBarModel
+class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer
 {
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
@@ -25,10 +25,14 @@ public:
   virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const String& menuName);
   virtual void menuItemSelected(int menuItemID, int topLevelMenuIndex);
 
+  virtual void timerCallback();
+
   juce_UseDebuggingNewOperator
 
 private:
   ProcessManagerPtr processManager;
+
+  void updateProcessLists();
 };
 
 }; /* namespace lbcpp */

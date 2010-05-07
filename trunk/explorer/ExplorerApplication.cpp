@@ -169,7 +169,7 @@ public:
       else if (menuItemID == 2)
         contentTabs->closeCurrentTab();
       else if (menuItemID == 3)
-        contentTabs->addObject(new LocalProcessManager());
+        contentTabs->addObject(localProcessManager());
       else if (menuItemID == 4)
         JUCEApplication::quit();
     }
