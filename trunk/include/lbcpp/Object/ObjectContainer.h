@@ -90,6 +90,14 @@ public:
   bool empty() const
     {return size() == 0;}
 
+  int findObject(ObjectPtr object) const
+  {
+    for (size_t i = 0; i < size(); ++i)
+      if (get(i) == object)
+        return (int)i;
+    return -1;
+  }
+
   /**
   ** Gets an element from the container and casts it.
   **
@@ -377,7 +385,6 @@ public:
   */
   std::vector<ObjectPtr>& getData()
     {return objects;}
-
 
 protected:
   std::vector<ObjectPtr> objects; /*!< Object list.*/
