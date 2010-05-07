@@ -46,6 +46,38 @@ public:
 
 static ExplorerErrorHandler explorerErrorHandler;
 
+class ExplorerContentTabs : public TabbedComponent
+{
+public:
+  ExplorerContentTabs(DocumentWindow* mainWindow)
+    : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
+
+  void addObject(ObjectPtr object)
+  {
+    Component* component = createComponentForObject(object, true);
+    addTab(object->getName(), Colours::lightblue, component, true);
+  }
+
+  void closeCurrentTab()
+  {
+    int current = getCurrentTabIndex();
+    if (current >= 0)
+      removeTab(current);
+  }
+
+  virtual void currentTabChanged(const int newCurrentTabIndex, const String& newCurrentTabName)
+  {
+    String windowName = JUCE_T("LBC++ Explorer");
+    if (newCurrentTabIndex >= 0)
+      windowName += JUCE_T(" - ") + getCurrentTabName();
+    mainWindow->setName(windowName);
+  }
+
+private:
+  DocumentWindow* mainWindow;
+};
+
+
 class ExplorerMainWindow : public DocumentWindow, public MenuBarModel
 {
 public:
@@ -72,7 +104,7 @@ public:
     jassert(params);
     new ObjectGraphAndContentComponent(params->toGraph())*/
     
-    setContentComponent(content = new ObjectComponentContainer());
+    setContentComponent(contentTabs = new ExplorerContentTabs(this));
     //setContentComponent(new TableComponent(params->getDictionary()->toTable()));
   }
   
@@ -100,7 +132,7 @@ public:
     if (topLevelMenuIndex == 0)
     {
       menu.addItem(1, "Open");
-      menu.addItem(2, "Close", content->getObject() != ObjectPtr());
+      menu.addItem(2, "Close", contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
       menu.addItem(3, "Quit");
     }
@@ -119,39 +151,19 @@ public:
       {
         ObjectPtr object = loadObject(chooser.getResult());
         if (object)
-        {
-          content->setObject(object, true);
-          setName(JUCE_T("LBC++ Explorer - ") + object->getClassName() + JUCE_T(" ") + object->getName());
-        }
+          contentTabs->addObject(object);
       }
     }
     else if (menuItemID == 2)
-    {
-      content->setObject(ObjectPtr());
-      setName(JUCE_T("LBC++ Explorer"));
-    }
+      contentTabs->closeCurrentTab();
     else if (menuItemID == 3)
-    {
       JUCEApplication::quit();
-    }
   }
   
   juce_UseDebuggingNewOperator
 
 private:
-  ObjectComponentContainer* content;
-  
-  FeatureDictionaryPtr createRandomDictionary(size_t maxChildrens)
-  {
-    FeatureDictionaryPtr res = new FeatureDictionary("random");
-    if (maxChildrens)
-    {
-      size_t n = maxChildrens;//lbcpp::Random::getInstance().sampleSize(maxChildrens);
-      for (size_t i = 0; i < n; ++i)
-        res->addScope("pouet " + lbcpp::toString(i), createRandomDictionary(maxChildrens - 1));
-    }
-    return res;
-  }
+  ExplorerContentTabs* contentTabs;
 };
 
 extern void declareLBCppCoreClasses();

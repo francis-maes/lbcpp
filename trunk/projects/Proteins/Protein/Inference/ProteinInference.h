@@ -51,6 +51,8 @@ public:
     
     // supervision
     ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    if (correctProtein)
+      correctProtein->computeMissingFields();
     
     /*std::cout << "Input protein = " << lbcpp::toString(workingProtein->getKeys()) << std::endl;
     if (correctProtein)
