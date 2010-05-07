@@ -20,7 +20,7 @@ public:
     if ((layoutflags & noResizeBar) != 0)
       resizebar = new Component();
     else
-      resizebar = new StretchableLayoutResizerBar(&layout, 1, (layoutflags & vertical) == 0);
+      resizebar = new juce::StretchableLayoutResizerBar(&layout, 1, (layoutflags & vertical) == 0);
     addAndMakeVisible(resizebar);
     double s = (layoutflags & miniResizeBar) != 0 ? 2 : 8;
     layout.setItemLayout(1, s, s, s);
@@ -93,7 +93,7 @@ public:
     resized();
   }
 
-  StretchableLayoutManager layout;
+  juce::StretchableLayoutManager layout;
 
   juce_UseDebuggingNewOperator
 
