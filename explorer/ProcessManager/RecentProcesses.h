@@ -34,6 +34,7 @@ public:
 
   std::vector<String> getRecentArguments(const File& executable) const;
   std::vector<File> getRecentWorkingDirectories(const File& executable) const;
+  ProcessConsoleSettingsPtr getExecutableConsoleSettings(const File& executable) const;
 
   void addRecentExecutable(const File& file);
   void addRecent(const File& executable, const String& arguments, const File& workingDirectory);
@@ -42,13 +43,12 @@ protected:
   struct RecentExecutable
   {
     RecentExecutable() {}
-
-    RecentExecutable(const File& executable)
-      : executable(executable) {arguments.push_back(T(" "));}
+    RecentExecutable(const File& executable);
 
     File executable;
     std::vector<String> arguments;
     std::vector<File> workingDirectories;
+    ProcessConsoleSettingsPtr consoleSettings;
 
     void addRecentArguments(const String& args);
     void addRecentWorkingDirectory(const File& workingDirectory);

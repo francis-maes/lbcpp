@@ -14,6 +14,30 @@
 namespace lbcpp
 {
 
+template<>
+struct Traits<juce::Colour>
+{
+  typedef juce::Colour Type;
+
+  static inline String toString(const juce::Colour& value)
+    {return value.toString();}
+
+  static inline void write(OutputStream& ostr, const juce::Colour& value)
+    {ostr.writeString(value.toString());}
+
+  static inline bool read(InputStream& istr, juce::Colour& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    String str = istr.readString();
+    res = juce::Colour::fromString(str);
+    return true;
+  }
+};
+
+class ProcessConsoleSettings;
+typedef ReferenceCountedObjectPtr<ProcessConsoleSettings> ProcessConsoleSettingsPtr;
+
 class Process : public NameableObject
 {
 public:
@@ -33,8 +57,6 @@ public:
   const std::vector<String>& getProcessOutput() const
     {return processOutput;}
 
-  virtual juce::Component* createComponent() const;
-
   File getExecutableFile() const
     {return executableFile;}
 
@@ -43,6 +65,9 @@ public:
 
   File getWorkingDirectory() const
     {return workingDirectory;}
+
+  virtual juce::Component* createComponent() const;
+  juce::Component* createComponent(ProcessConsoleSettingsPtr settings) const;
 
 protected:
   File executableFile;
@@ -82,9 +107,14 @@ public:
 
 private:
   String pattern;
-
   bool display;
   juce::Colour colour;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, pattern) && lbcpp::read(istr, display) && lbcpp::read(istr, colour);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, pattern); lbcpp::write(ostr, display); lbcpp::write(ostr, colour);}
 };
 
 typedef ReferenceCountedObjectPtr<ProcessConsoleFilter> ProcessConsoleFilterPtr;
@@ -119,9 +149,13 @@ public:
 
 private:
   std::vector<ProcessConsoleFilterPtr> filters;
-};
 
-typedef ReferenceCountedObjectPtr<ProcessConsoleSettings> ProcessConsoleSettingsPtr;
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, filters);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, filters);}
+};
 
 class ProcessList;
 typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;

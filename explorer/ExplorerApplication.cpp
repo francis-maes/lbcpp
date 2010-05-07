@@ -204,6 +204,8 @@ public:
 
     LBCPP_DECLARE_CLASS(ExplorerConfiguration);
     LBCPP_DECLARE_CLASS(RecentProcesses);
+    LBCPP_DECLARE_CLASS(ProcessConsoleSettings);
+      LBCPP_DECLARE_CLASS(ProcessConsoleFilter);
 
     theCommandManager = new ApplicationCommandManager();
 
