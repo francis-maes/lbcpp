@@ -17,6 +17,7 @@
 #include "Protein/Inference/ProteinContactMapInferenceStep.h"
 #include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
+#include <fstream>
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -161,15 +162,19 @@ public:
     bool isNegativeExample = exampleLoss->compute(1.0) > exampleLoss->compute(-1.0);
     if (isNegativeExample && RandomGenerator::getInstance().sampleBool(0.8))
       return 0; // reject 80% of negative examples
+
     double importance = 1.0;//isNegativeExample ? 0.1 : 1.0;
 
     updateInputSize(features);
     DenseVectorPtr parameters = step->getParameters();
+    
     if (!gradientAccumulator)
       gradientAccumulator = new DenseVector(parameters->getDictionary());
   //  if (features->l2norm() > 50)
   //    std::cout << "Features: " << features->l0norm() << " " << features->l2norm() << " prediction = " << prediction << " loss = " << exampleLoss->computeDerivative(prediction) << " importance = " << importance << std::endl;
     features->addWeightedTo(gradientAccumulator, importance * exampleLoss->computeDerivative(prediction));
+    lossValue.push(exampleLoss->compute(prediction));
+    
    // if (gradientAccumulator->l2norm() > 100000)
    //   std::cout << "Gradient accumulator: " << gradientAccumulator->l0norm() << " " << gradientAccumulator->l2norm() << std::endl;
     ++examplesCount;
@@ -229,8 +234,8 @@ public:
       LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
       jassert(linearInference);
       double l2regularizer = 0;//.0001;
-      return new PerEpisodeRandomizedLinearInferenceLearningCallback(linearInference,
-          constantIterationFunction(2.0),//invLinearIterationFunction(2, 2000000),
+      return new PerEpisodeScalarLinearInferenceLearningCallback(linearInference,
+          constantIterationFunction(0.005),//invLinearIterationFunction(2, 2000000),
           l2regularizer ? sumOfSquaresFunction(l2regularizer) : ScalarVectorFunctionPtr());
     }
     return InferenceCallbackPtr();
@@ -342,6 +347,9 @@ public:
       bestTestAcc = testAcc;
     std::cout << "Best Test F1: " << String(bestTestAcc * 100.0, 2) << "%" << std::endl;
 
+    static std::ofstream ostr("C:\\Projets\\LBC++\\projects\\temp\\curve_PEMB_SmallPDB_0_005.txt");
+    ostr << iterationNumber << " " << trainAcc << " " << testAcc << std::endl;
+
     /*double testRmse = evaluation->getPSSMRootMeanSquareError();
 
     if (trainRmse < bestTrainRmse)
@@ -351,7 +359,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 50;
+    return iterationNumber < 250;
   }
 
   virtual void preLearningStepCallback(InferencePtr step)
@@ -527,17 +535,15 @@ int main(int argc, char** argv)
 
 //  File modelDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\RR.model"));
 
-//  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
-   File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
+  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+   //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
   /*ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());*/
   
   ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
-        smallPDBDirectory.getChildFile(T("protein")))->load(21);
-  for (size_t i = 0; i < smallPDBProteins->size(); ++i)
-    smallPDBProteins->getAndCast<ObjectPair>(i)->getSecond().dynamicCast<Protein>()->computeMissingFields();
+        smallPDBDirectory.getChildFile(T("protein")))->load();
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
