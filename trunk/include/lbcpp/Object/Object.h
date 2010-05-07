@@ -249,8 +249,8 @@ public:
     {ErrorHandler::warning(where, what);}
 
   // user interface
-  //virtual juce::Component* createComponent() const
-  //  {return NULL;}
+  virtual juce::Component* createComponent() const
+    {return NULL;}
 
 protected:
   bool loadFromDirectory(const File& directory);
