@@ -23,18 +23,24 @@ void ProcessManager::updateProcesses()
 {
   // remove finished processes
   for (size_t i = 0; i < runningProcesses->size();)
-    if (runningProcesses->getProcess(i)->isFinished())
+  {
+    ProcessPtr process = runningProcesses->getProcess(i);
+    process->update();
+    if (process->isFinished())
       runningProcesses->moveToTop(i, finishedProcesses);
     else
       ++i;
+  }
 
   // add waiting processes
   size_t numCpus = getNumberOfCpus();
-  while (runningProcesses->size() < numCpus && waitingProcesses->size() > 0)
+  for (size_t i = 0; i < waitingProcesses->size() && runningProcesses->size() < numCpus;)
   {
-    ProcessPtr process = waitingProcesses->getProcess(0);
-    waitingProcesses->moveToBottom(0, runningProcesses);
-    process->start();
+    ProcessPtr process = waitingProcesses->getProcess(i);
+    if (process->start())
+      waitingProcesses->moveToBottom(0, runningProcesses);
+    else
+      ++i;
   }
 }
 
@@ -53,8 +59,10 @@ void ProcessManager::killAllRunningProcesses()
       runningProcesses->moveToTop(i, finishedProcesses);
     else
     {
-      process->kill();
-      runningProcesses->moveToTop(i, killedProcesses);
+      if (process->kill())
+        runningProcesses->moveToTop(i, killedProcesses);
+      else
+        ++i;
     }
   }
 }
@@ -70,16 +78,50 @@ public:
   LocalProcess(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
     : Process(executableFile, arguments, workingDirectory, name), process(NULL) {}
  
-  virtual void start()
+  virtual bool start()
   {
     jassert(!process);
     process = juce::ConsoleProcess::create(executableFile.getFullPathName(), arguments, workingDirectory.getFullPathName());
+    return process != NULL;
   }
 
-  virtual void kill()
+  virtual bool kill()
   {
-    jassert(process);
-    delete process;
+    if (process->kill())
+    {
+      jassert(process);
+      delete process;
+      return true;
+    }
+    return false;
+  }
+
+  virtual void update()
+  {
+    if (!process)
+      return;
+    for (int i = 0; i < 10; ++i)
+    {
+      String str;
+      if (!process->readStandardOutput(str) || str.isEmpty())
+        break;
+      
+      if (processOutput.empty())
+        processOutput.push_back(String::empty);
+      String* lastLine = &processOutput.back();
+      for (int j = 0; j < str.length(); ++j)
+      {
+        if (str[j] == '\r')
+          continue;
+        if (str[j] == '\n')
+        {
+          processOutput.push_back(String::empty);
+          lastLine = &processOutput.back();
+        }
+        else
+          *lastLine += str[j];
+      }
+    }
   }
 
   virtual bool isFinished() const

@@ -52,7 +52,8 @@ void RecentProcesses::addRecent(const File& executable, const String& arguments,
 {
   addRecentExecutable(executable);
   v[0].addRecentArguments(arguments);
-  v[0].addRecentWorkingDirectory(workingDirectory);
+  if (workingDirectory.exists())
+    v[0].addRecentWorkingDirectory(workingDirectory);
   ExplorerConfiguration::save();
 }
 

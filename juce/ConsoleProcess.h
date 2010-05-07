@@ -22,6 +22,7 @@ public:
   virtual bool readStandardOutput(String& result) const = 0;
   virtual bool writeStandardInput(const String& input) const = 0;
   virtual bool isRunning(int& returnCode) = 0;
+  virtual bool kill() = 0;
 
   juce_UseDebuggingNewOperator
 

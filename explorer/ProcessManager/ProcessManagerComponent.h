@@ -21,11 +21,18 @@ class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, publ
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
 
+  virtual void processSelectedCallback(ProcessPtr process);
+
+  // MenuBarModel
   virtual const StringArray getMenuBarNames();
   virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const String& menuName);
   virtual void menuItemSelected(int menuItemID, int topLevelMenuIndex);
 
+  // Timer
   virtual void timerCallback();
+
+  // Component
+  virtual void resized();
 
   juce_UseDebuggingNewOperator
 
@@ -33,6 +40,9 @@ private:
   ProcessManagerPtr processManager;
 
   void updateProcessLists();
+
+  Viewport* getViewport() const
+    {return (Viewport* )second;}
 };
 
 }; /* namespace lbcpp */

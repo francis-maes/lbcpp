@@ -24,15 +24,21 @@ public:
   virtual String toString() const
     {return executableFile.getFullPathName() + T(" ") + arguments;}
 
-  virtual void start() = 0;
-  virtual void kill() = 0;
+  virtual bool start() = 0;
+  virtual bool kill() = 0;
 
+  virtual void update() = 0;
   virtual bool isFinished() const = 0;
   
+  const std::vector<String>& getProcessOutput() const
+    {return processOutput;}
+
 protected:
   File executableFile;
   String arguments;
   File workingDirectory;
+
+  std::vector<String> processOutput;
 };
 
 typedef ReferenceCountedObjectPtr<Process> ProcessPtr;
@@ -68,6 +74,9 @@ class ProcessManager : public Object
 {
 public:
   ProcessManager();
+
+  virtual ~ProcessManager()
+    {killAllRunningProcesses();}
 
   virtual String getName() const
     {return T("Process Manager");}

@@ -224,7 +224,10 @@ public:
     
   virtual bool writeStandardInput(const String& input) const
     {return standardIO.writeStandardInput(input);}  
-    
+  
+  virtual bool kill()
+    {jassert(false); return false;} // not implemented yet
+
   virtual bool isRunning(int& returnCode)
   {
     // process previously dead... or never be run???

@@ -244,6 +244,13 @@ public:
     return false;
   }
 
+  virtual bool kill()
+  {
+    if (processHandle == INVALID_HANDLE_VALUE)
+      return false;
+    return TerminateProcess(processHandle, 1) == TRUE;
+  }
+
   juce_UseDebuggingNewOperator
 
 protected:

@@ -359,7 +359,7 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 250;
+    return iterationNumber < 10;
   }
 
   virtual void preLearningStepCallback(InferencePtr step)
@@ -543,7 +543,7 @@ int main(int argc, char** argv)
   
   ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
-        smallPDBDirectory.getChildFile(T("protein")))->load();
+        smallPDBDirectory.getChildFile(T("protein")))->load(2);
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -614,11 +614,10 @@ int main(int argc, char** argv)
   {
     Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
                                                        pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
-    proteinInference->appendStep(step);
+    //proteinInference->appendStep(step);
     
+      proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
 #if 0
-      step = new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence"));
-      proteinInference->appendStep(step);
       step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
       proteinInference->appendStep(step);
       step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
