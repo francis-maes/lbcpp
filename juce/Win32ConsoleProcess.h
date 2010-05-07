@@ -211,7 +211,7 @@ public:
     int notUsed;
     if (isRunning(notUsed))
     {
-      jassertfalse; // class deletion but the process is still running.
+      //jassertfalse; // class deletion but the process is still running.
       // force process detach and free resources.
       standardIO.release(); 
       HandleHelper::close(&processHandle);

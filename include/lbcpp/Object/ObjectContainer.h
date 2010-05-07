@@ -356,6 +356,12 @@ public:
   void append(ObjectPtr object)
     {objects.push_back(object);}
 
+  void prepend(ObjectPtr object)
+    {objects.insert(objects.begin(), object);}
+
+  void clear()
+    {objects.clear();}
+
   /**
   ** Data getter.
   **

@@ -32,6 +32,16 @@ public:
     addProcessList(T("Killed"), processManager->getKilledProcesses());
   }
 
+  void updateContent()
+  {
+    for (int i = 0; i < getNumTabs(); ++i)
+    {
+      juce::ListBox* c = dynamic_cast<juce::ListBox* >(getTabContentComponent(i));
+      jassert(c);
+      c->updateContent();
+    }
+  }
+
   juce_UseDebuggingNewOperator
 
 private:
@@ -44,7 +54,18 @@ private:
 */
 ProcessManagerComponent::ProcessManagerComponent(ProcessManagerPtr processManager)
   : SplittedLayout(new ProcessManagerListTabs(processManager), new Viewport(), 0.33, SplittedLayout::typicalHorizontal), processManager(processManager)
-  {}
+  {startTimer(100);}
+
+void ProcessManagerComponent::timerCallback()
+{
+  processManager->updateProcesses();
+  updateProcessLists();
+}
+
+void ProcessManagerComponent::updateProcessLists()
+{
+  ((ProcessManagerListTabs* )first)->updateContent();
+}
 
 const StringArray ProcessManagerComponent::getMenuBarNames()
 {
@@ -58,8 +79,8 @@ const PopupMenu ProcessManagerComponent::getMenuForIndex(int topLevelMenuIndex, 
   jassert(topLevelMenuIndex == 0);
   PopupMenu menu;
   menu.addItem(1, T("New Process"));
-  menu.addItem(2, T("Kill all Running Processes"));
-  menu.addItem(3, T("Clear Process Lists"));
+  menu.addItem(2, T("Clear Finished Process Lists"));
+  menu.addItem(3, T("Kill all Processes"));
   return menu;
 }
 
@@ -84,9 +105,13 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
     break;
 
   case 2:
+    processManager->clearFinishedProcessLists();
+    updateProcessLists();
     break;
 
   case 3:
+    processManager->killAllRunningProcesses();
+    updateProcessLists();
     break;
   };
 }

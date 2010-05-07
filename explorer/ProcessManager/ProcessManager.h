@@ -17,19 +17,28 @@ namespace lbcpp
 class Process : public NameableObject
 {
 public:
-  Process(const File& executableFile, const String& arguments, const String& name = String::empty)
+  Process(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
     : NameableObject(name.isEmpty() ? executableFile.getFileNameWithoutExtension() + T(" ") + arguments : name),
-      executableFile(executableFile), arguments(arguments) {}
+      executableFile(executableFile), arguments(arguments), workingDirectory(workingDirectory) {}
 
   virtual String toString() const
     {return executableFile.getFullPathName() + T(" ") + arguments;}
 
-private:
+  virtual void start() = 0;
+  virtual void kill() = 0;
+
+  virtual bool isFinished() const = 0;
+  
+protected:
   File executableFile;
   String arguments;
+  File workingDirectory;
 };
 
 typedef ReferenceCountedObjectPtr<Process> ProcessPtr;
+
+class ProcessList;
+typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
 
 class ProcessList : public VectorObjectContainer
 {
@@ -39,19 +48,26 @@ public:
 
   ProcessPtr getProcess(size_t index) const
     {return getAndCast<Process>(index);}
-};
 
-typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
+  void moveToTop(size_t index, ProcessListPtr target)
+  {
+    ProcessPtr process = getProcess(index);
+    objects.erase(objects.begin() + index);
+    target->prepend(process);
+  }
+
+  void moveToBottom(size_t index, ProcessListPtr target)
+  {
+    ProcessPtr process = getProcess(index);
+    objects.erase(objects.begin() + index);
+    target->append(process);
+  }
+};
 
 class ProcessManager : public Object
 {
 public:
-  ProcessManager() : runningProcesses(new ProcessList()), 
-        waitingProcesses(new ProcessList()), 
-        finishedProcesses(new ProcessList()), 
-        killedProcesses(new ProcessList())
-  {
-  }
+  ProcessManager();
 
   virtual String getName() const
     {return T("Process Manager");}
@@ -59,6 +75,7 @@ public:
   virtual juce::Component* createComponent() const;
 
   virtual ProcessPtr addNewProcess(const File& executable, const String& arguments, const File& workingDirectory) = 0;
+  virtual size_t getNumberOfCpus() const = 0;
 
   ProcessListPtr getRunningProcesses() const
     {return runningProcesses;}
@@ -72,6 +89,10 @@ public:
   ProcessListPtr getKilledProcesses() const
     {return killedProcesses;}
 
+  void updateProcesses();
+  void clearFinishedProcessLists();
+  void killAllRunningProcesses();
+
 protected:
   ProcessListPtr runningProcesses;
   ProcessListPtr waitingProcesses;
@@ -81,15 +102,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ProcessManager> ProcessManagerPtr;
 
-class LocalProcessManager : public ProcessManager
-{
-public:
-  virtual ProcessPtr addNewProcess(const File& executable, const String& arguments, const File& workingDirectory)
-  {
-    ProcessPtr res = new Process(executable, arguments);
-    return res;
-  }
-};
+extern ProcessManagerPtr localProcessManager();
 
 }; /* namespace lbcpp */
 
