@@ -33,6 +33,17 @@ public:
   const std::vector<String>& getProcessOutput() const
     {return processOutput;}
 
+  virtual juce::Component* createComponent() const;
+
+  File getExecutableFile() const
+    {return executableFile;}
+
+  String getArguments() const
+    {return arguments;}
+
+  File getWorkingDirectory() const
+    {return workingDirectory;}
+
 protected:
   File executableFile;
   String arguments;

@@ -44,7 +44,7 @@ protected:
     RecentExecutable() {}
 
     RecentExecutable(const File& executable)
-      : executable(executable) {arguments.push_back(T("<empty>"));}
+      : executable(executable) {arguments.push_back(T(" "));}
 
     File executable;
     std::vector<String> arguments;

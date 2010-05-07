@@ -31,18 +31,12 @@ public:
   // Timer
   virtual void timerCallback();
 
-  // Component
-  virtual void resized();
-
   juce_UseDebuggingNewOperator
 
 private:
   ProcessManagerPtr processManager;
 
   void updateProcessLists();
-
-  Viewport* getViewport() const
-    {return (Viewport* )second;}
 };
 
 }; /* namespace lbcpp */

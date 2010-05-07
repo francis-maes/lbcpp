@@ -17,16 +17,19 @@ namespace lbcpp
 class ExplorerConfiguration : public StringToObjectMap
 {
 public:
-  static File getConfigurationFile()
-  {
+  static File getApplicationDataDirectory()
+  {return File(T("C:\\temp"));
     File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
     if (!directory.exists() && !directory.createDirectory())
     {
-      Object::error(T("ExplorerConfiguration::getConfigurationFile"), T("Could not create application data directory"));
+      Object::error(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
       return File::nonexistent;
     }
-    return directory.getChildFile(T("config.data"));
+    return directory;
   }
+
+  static File getConfigurationFile()
+    {return getApplicationDataDirectory().getChildFile(T("config.data"));}
 
   static StringToObjectMapPtr getInstance()
   {

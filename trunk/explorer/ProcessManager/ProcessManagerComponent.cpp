@@ -14,11 +14,15 @@ class ProcessConsoleComponent : public Component
 {
 public:
   ProcessConsoleComponent(ProcessPtr process) : process(process)
-  {
-  }
+    {setOpaque(true);}
 
   void updateContent()
-    {setSize(getWidth(), getDesiredHeight()); repaint();}
+  {
+    int dh = getDesiredHeight();
+    if (getHeight() < dh)
+      setSize(getWidth(), dh);
+    repaint();
+  }
 
   int getDesiredHeight() const
     {return 12 * process->getProcessOutput().size();}
@@ -36,6 +40,100 @@ public:
 private:
   ProcessPtr process;
 };
+
+class ProcessPropertiesComponent : public Component
+{
+public:
+  ProcessPropertiesComponent(ProcessPtr process)
+  {
+    addAndMakeVisible(executableProperty = new PropertyComponent(T("Executable"), process->getExecutableFile().getFullPathName()));
+    addAndMakeVisible(argumentsProperty = new PropertyComponent(T("Arguments"), process->getArguments()));
+    addAndMakeVisible(workingDirectoryProperty = new PropertyComponent(T("Working Directory"), process->getWorkingDirectory().getFullPathName()));
+    setOpaque(true);
+  }
+
+  virtual ~ProcessPropertiesComponent()
+    {deleteAllChildren();}
+  
+  virtual void resized()
+  {
+    int w = getWidth();
+    int h = getHeight();
+    executableProperty->setBounds(0, 0, w, h / 3);
+    argumentsProperty->setBounds(0, h / 3, w, h / 3);
+    workingDirectoryProperty->setBounds(0, 2 * h / 3, w, h / 3);
+  }
+
+  virtual void paint(Graphics& g)
+    {g.fillAll(Colours::antiquewhite);}
+
+  class PropertyComponent : public Component
+  {
+  public:
+    PropertyComponent(const String& name, const String& value)
+      : name(name), value(value) {}
+
+    virtual void paint(Graphics& g)
+    {
+      int nameWidth = 120;
+
+      Font nameFont(12, Font::bold);
+      g.setFont(nameFont);
+      g.drawText(name, 0, 0, nameWidth, getHeight(), Justification::centredLeft, true);
+      
+      Font valueFont(12, Font::plain);
+      g.setFont(valueFont);
+      g.drawText(value, nameWidth, 0, getWidth() - nameWidth, getHeight(), Justification::centredLeft, true);
+    }
+
+  private:
+    String name, value;
+  };
+
+private:
+  PropertyComponent* executableProperty;
+  PropertyComponent* argumentsProperty;
+  PropertyComponent* workingDirectoryProperty;
+};
+
+class ProcessComponent : public Component
+{
+public:
+  ProcessComponent(ProcessPtr process) : process(process)
+  {
+    addAndMakeVisible(properties = new ProcessPropertiesComponent(process));
+    addAndMakeVisible(viewport = new Viewport());
+    console = new ProcessConsoleComponent(process);
+    viewport->setViewedComponent(console);
+    viewport->setScrollBarsShown(true, false);
+  }
+
+  virtual ~ProcessComponent()
+    {deleteAllChildren();}
+
+  virtual void resized()
+  {
+    int propertiesHeight = 50;
+    properties->setBounds(0, 0, getWidth(), propertiesHeight);
+    viewport->setBounds(0, propertiesHeight, getWidth(), getHeight() - propertiesHeight);
+    if (console)
+      console->setSize(viewport->getWidth(), juce::jmax(console->getDesiredHeight(), viewport->getHeight()));
+  }
+
+  void updateContent()
+    {console->updateContent();}
+
+protected:
+  ProcessPtr process;
+
+  ProcessPropertiesComponent* properties;
+
+  Viewport* viewport;
+  ProcessConsoleComponent* console;
+};
+
+juce::Component* Process::createComponent() const
+  {return new ProcessComponent(ProcessPtr(const_cast<Process* >(this)));}
 
 class ProcessManagerListTabs : public TabbedComponent
 {
@@ -98,16 +196,15 @@ private:
   };
 
   void addProcessList(const String& name, ProcessListPtr processes)
-    {addTab(name, Colours::lightblue, new ProcessListComponent(owner, processes), true);}
+    {addTab(name, Colours::antiquewhite, new ProcessListComponent(owner, processes), true);}
 };
 
 /*
 ** ProcessManagerComponent
 */
 ProcessManagerComponent::ProcessManagerComponent(ProcessManagerPtr processManager)
-  : SplittedLayout(new ProcessManagerListTabs(this, processManager), new Viewport(), 0.33, SplittedLayout::typicalHorizontal), processManager(processManager)
+  : SplittedLayout(new ProcessManagerListTabs(this, processManager), NULL, 0.33, SplittedLayout::typicalHorizontal), processManager(processManager)
 {
-  getViewport()->setScrollBarsShown(true, false);
   startTimer(100);
 }
 
@@ -121,9 +218,9 @@ void ProcessManagerComponent::updateProcessLists()
 {
   ((ProcessManagerListTabs* )first)->updateContent();
   
-  ProcessConsoleComponent* currentProcessConsole = (ProcessConsoleComponent* )getViewport()->getViewedComponent();
-  if (currentProcessConsole)
-    currentProcessConsole->updateContent();
+  ProcessComponent* currentProcessComponent = (ProcessComponent* )second;
+  if (currentProcessComponent)
+    currentProcessComponent->updateContent();
 
   resized();
 }
@@ -183,20 +280,9 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
 
 void ProcessManagerComponent::processSelectedCallback(ProcessPtr process)
 {
-  Viewport* viewport = getViewport();
-  ProcessConsoleComponent* content = new ProcessConsoleComponent(process);
-  content->setSize(viewport->getWidth(), juce::jmax(content->getDesiredHeight(), viewport->getHeight()));
-  viewport->setViewedComponent(content); 
+  changeSecondComponent(process->createComponent());
 }
 
-void ProcessManagerComponent::resized()
-{
-  SplittedLayout::resized();
-  Viewport* viewport = getViewport();
-  ProcessConsoleComponent* content = dynamic_cast<ProcessConsoleComponent* >(viewport->getViewedComponent());
-  if (content)
-    content->setSize(viewport->getWidth(), juce::jmax(content->getDesiredHeight(), viewport->getHeight()));
-}
 
 juce::Component* ProcessManager::createComponent() const
   {return new ProcessManagerComponent(ProcessManagerPtr(const_cast<ProcessManager* >(this)));}

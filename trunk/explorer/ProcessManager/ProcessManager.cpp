@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ProcessManager.h"
+#include "../ExplorerConfiguration.h"
 using namespace lbcpp;
 
 /*
@@ -77,11 +78,24 @@ class LocalProcess : public Process
 public:
   LocalProcess(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
     : Process(executableFile, arguments, workingDirectory, name), process(NULL) {}
+  virtual ~LocalProcess()
+  {
+    if (process)
+      delete process;
+  }
  
   virtual bool start()
   {
     jassert(!process);
-    process = juce::ConsoleProcess::create(executableFile.getFullPathName(), arguments, workingDirectory.getFullPathName());
+    File exe = getCopyFile(executableFile);
+    if (!exe.exists())
+      executableFile.copyFileTo(exe);
+    if (!exe.exists())
+    {
+      Object::error(T("LocalProcess::start"), T("Could not copy executable"));
+      return false;
+    }
+    process = juce::ConsoleProcess::create(exe.getFullPathName(), arguments, workingDirectory.getFullPathName());
     return process != NULL;
   }
 
@@ -129,6 +143,18 @@ public:
 
 private:
   juce::ConsoleProcess* process;
+
+  File getCopyFile(const File& executable)
+  {
+    Time lastModificationTime = executable.getLastModificationTime();
+    File applicationData = ExplorerConfiguration::getApplicationDataDirectory();
+    String name = executable.getFileNameWithoutExtension();
+    String date = lastModificationTime.toString(true, true, true, true);
+    name += T("_");
+    name += date.replaceCharacter(' ', '_').replaceCharacter(':', '_');
+    name += executable.getFileExtension();
+    return applicationData.getChildFile(name);
+  }
 };
 
 class LocalProcessManager : public ProcessManager

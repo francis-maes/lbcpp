@@ -47,7 +47,7 @@ public:
     virtual void paintListBoxItem(int rowNumber, Graphics& g, int width, int height, bool rowIsSelected)
     {
       if (rowIsSelected)
-        g.fillAll(Colours::lightblue);
+        g.fillAll(Colours::lightgrey);
 
       g.setColour(Colours::black);
       Font f(height * 0.7f);
