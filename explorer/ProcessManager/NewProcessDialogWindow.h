@@ -136,7 +136,7 @@ public:
         RecentProcessesPtr recent = RecentProcesses::getInstance();
         std::vector<String> arguments = recent->getRecentArguments(comboBoxThatHasChanged->getText());
         for (size_t i = 0; i < arguments.size(); ++i)
-          addItem(arguments[i].isEmpty() ? T("<empty>") : arguments[i], i + 1);
+          addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], i + 1);
         setSelectedItemIndex(0);
       }
     }
