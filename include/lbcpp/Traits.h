@@ -171,26 +171,6 @@ struct Traits<unsigned char>
 };
 
 template<>
-struct Traits<String>
-{
-  typedef String Type;
-
-  static inline String toString(const String& value)
-    {return value.quoted();}
-
-  static inline void write(OutputStream& ostr, const String& string)
-    {ostr.writeString(string);}
-
-  static inline bool read(InputStream& istr, String& res)
-  {
-    if (istr.isExhausted())
-      return false;
-    res = istr.readString();
-    return true;
-  }
-};
-
-template<>
 struct Traits<size_t>
 {
   typedef size_t Type;
@@ -271,6 +251,45 @@ struct Traits<double>
 };
 
 
+template<>
+struct Traits<String>
+{
+  typedef String Type;
+
+  static inline String toString(const String& value)
+    {return value.quoted();}
+
+  static inline void write(OutputStream& ostr, const String& string)
+    {ostr.writeString(string);}
+
+  static inline bool read(InputStream& istr, String& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = istr.readString();
+    return true;
+  }
+};
+
+template<>
+struct Traits<File>
+{
+  typedef File Type;
+
+  static inline String toString(const File& value)
+    {return value.getFullPathName();}
+
+  static inline void write(OutputStream& ostr, const File& value)
+    {ostr.writeString(value.getFullPathName());}
+
+  static inline bool read(InputStream& istr, File& res)
+  {
+    if (istr.isExhausted())
+      return false;
+    res = File(istr.readString());
+    return true;
+  }
+};
 
 /*
 ** Pointer Traits
