@@ -54,6 +54,75 @@ protected:
 
 typedef ReferenceCountedObjectPtr<Process> ProcessPtr;
 
+class ProcessConsoleFilter : public Object
+{
+public:
+  ProcessConsoleFilter(const String& pattern = String::empty, const juce::Colour& colour = juce::Colours::red)
+    : pattern(pattern), display(true), colour(colour) {}
+  
+  virtual juce::Component* createComponent() const;
+
+  juce::Colour getColour() const
+    {return colour;}
+
+  bool match(const String& text) const
+    {return pattern.isNotEmpty() && text.indexOf(pattern) >= 0;}
+
+  void setDisplayFlag(bool display)
+    {this->display = display;}
+
+  bool getDisplayFlag() const
+    {return display;}
+
+  String getPattern() const
+    {return pattern;}
+
+  void setPattern(const String& pattern)
+    {this->pattern = pattern;}
+
+private:
+  String pattern;
+
+  bool display;
+  juce::Colour colour;
+};
+
+typedef ReferenceCountedObjectPtr<ProcessConsoleFilter> ProcessConsoleFilterPtr;
+
+class ProcessConsoleSettings : public Object
+{
+public:
+  size_t getNumFilters() const
+    {return filters.size();}
+
+  ProcessConsoleFilterPtr getFilter(size_t index) const
+    {jassert(index < filters.size()); return filters[index];}
+
+  void addFilter(ProcessConsoleFilterPtr filter)
+    {filters.push_back(filter);}
+
+  virtual juce::Component* createComponent() const;
+
+  juce::Colour getColourForLine(const String& line, bool& display) const
+  {
+    jassert(filters.size());
+    for (size_t i = 0; i < filters.size(); ++i)
+      if (filters[i]->match(line))
+      {
+        display = filters[i]->getDisplayFlag();
+        return filters[i]->getColour();
+      }
+    ProcessConsoleFilterPtr filter = filters.back();
+    display = filter->getDisplayFlag();
+    return filter->getColour();
+  }
+
+private:
+  std::vector<ProcessConsoleFilterPtr> filters;
+};
+
+typedef ReferenceCountedObjectPtr<ProcessConsoleSettings> ProcessConsoleSettingsPtr;
+
 class ProcessList;
 typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
 

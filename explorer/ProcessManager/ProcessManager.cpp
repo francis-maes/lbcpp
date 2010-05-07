@@ -105,6 +105,7 @@ public:
     {
       jassert(process);
       delete process;
+      process = NULL;
       return true;
     }
     return false;

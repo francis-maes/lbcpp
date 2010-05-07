@@ -24,6 +24,8 @@ SET(EXPLORER_PROCESS_MANAGER_SOURCES
   ProcessManager/RecentProcesses.h
   ProcessManager/RecentProcesses.cpp
   ProcessManager/ProcessManagerComponent.h
+  ProcessManager/ProcessComponent.cpp
+  ProcessManager/ProcessConsoleSettingsComponent.cpp
   ProcessManager/ProcessManagerComponent.cpp
   ProcessManager/NewProcessDialogWindow.h
 )
