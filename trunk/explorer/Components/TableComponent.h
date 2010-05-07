@@ -65,6 +65,8 @@ public:
     setTable(sortTask->getFrameAttributeCast<representation::Table>(T("result")));*/
   }
 
+  juce_UseDebuggingNewOperator
+
 protected:
   TablePtr table;
   std::vector<int> autoSizeWidths;

@@ -15,9 +15,21 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/ObjectGraphComponent.h
   Components/ObjectGraphAndContentComponent.h
   Components/StringToObjectMapTabbedComponent.h
+  Components/ObjectContainerNameListComponent.h
+)
+
+SET(EXPLORER_PROCESS_MANAGER_SOURCES
+  ProcessManager/ProcessManager.h
+  ProcessManager/ProcessManager.cpp
+  ProcessManager/RecentProcesses.h
+  ProcessManager/RecentProcesses.cpp
+  ProcessManager/ProcessManagerComponent.h
+  ProcessManager/ProcessManagerComponent.cpp
+  ProcessManager/NewProcessDialogWindow.h
 )
 
 SET(EXPLORER_APPLICATION_SOURCES
+  ExplorerConfiguration.h
   ExplorerApplication.cpp
 )
 
@@ -25,11 +37,13 @@ SET(LBCPP_EXPLORER_SOURCES
  ${EXPLORER_UTILITIES_SOURCES}
  ${EXPLORER_COMPONENTS_SOURCES}
  ${EXPLORER_APPLICATION_SOURCES}
+ ${EXPLORER_PROCESS_MANAGER_SOURCES}
 )
 
 SOURCE_GROUP(Utilities FILES ${EXPLORER_UTILITIES_SOURCES})
 SOURCE_GROUP(Components FILES ${EXPLORER_COMPONENTS_SOURCES})
 SOURCE_GROUP(Explorer FILES ${EXPLORER_APPLICATION_SOURCES})
+SOURCE_GROUP(ProcessManager FILES ${EXPLORER_PROCESS_MANAGER_SOURCES})
 
 IF(APPLE)
        SET(MACOSX_BUNDLE_INFO_STRING "LBC++ Explorer")

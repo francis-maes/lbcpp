@@ -77,7 +77,10 @@ public:
 
   typedef std::map<String, ObjectPtr> ObjectsMap;
   
-  ObjectsMap getObjects() const
+  const ObjectsMap& getObjects() const
+    {return objects;}
+
+  ObjectsMap& getObjects()
     {return objects;}
     
   std::vector<String> getKeys() const
