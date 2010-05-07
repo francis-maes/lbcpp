@@ -151,10 +151,10 @@ protected:
   ScalarVectorFunctionPtr regularizer;
 };
 
-class PerEpisodeScalarLinearInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
+class PerEpisodeMiniBactchLinearInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
 {
 public:
-  PerEpisodeScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+  PerEpisodeMiniBactchLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer), examplesCount(0), updateNumber(0) {}
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
@@ -226,21 +226,7 @@ public:
 
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
-  
-  virtual InferenceCallbackPtr createLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
-  {
-    if (parentStep.dynamicCast<ProteinContactMapInferenceStep>())
-    {
-      LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
-      jassert(linearInference);
-      double l2regularizer = 0;//.0001;
-      return new PerEpisodeScalarLinearInferenceLearningCallback(linearInference,
-          constantIterationFunction(0.005),//invLinearIterationFunction(2, 2000000),
-          l2regularizer ? sumOfSquaresFunction(l2regularizer) : ScalarVectorFunctionPtr());
-    }
-    return InferenceCallbackPtr();
-  }
-  
+
   virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
   {
     String inferenceStepName = stack->getInference(1)->getName();
@@ -347,7 +333,7 @@ public:
       bestTestAcc = testAcc;
     std::cout << "Best Test F1: " << String(bestTestAcc * 100.0, 2) << "%" << std::endl;
 
-    static std::ofstream ostr("C:\\Projets\\LBC++\\projects\\temp\\curve_PEMB_SmallPDB_0_005.txt");
+    static std::ofstream ostr("C:\\Projets\\LBC++\\projects\\temp\\curve_PEMB_SmallPDB_0_2.txt");
     ostr << iterationNumber << " " << trainAcc << " " << testAcc << std::endl;
 
     /*double testRmse = evaluation->getPSSMRootMeanSquareError();
@@ -359,9 +345,23 @@ public:
     }*/
 
     // stopping criterion
-    return iterationNumber < 10;
+    return iterationNumber < 250;
   }
-
+  
+  virtual InferenceCallbackPtr createLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
+  {
+    if (parentStep.dynamicCast<ProteinContactMapInferenceStep>())
+    {
+      LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
+      jassert(linearInference);
+      double l2regularizer = 0;//.0001;
+      return new PerEpisodeMiniBactchLinearInferenceLearningCallback(linearInference,
+          constantIterationFunction(0.2),// invLinearIterationFunction(0.5, 1000000),
+          l2regularizer ? sumOfSquaresFunction(l2regularizer) : ScalarVectorFunctionPtr());
+    }
+    return InferenceCallbackPtr();
+  }
+  
   virtual void preLearningStepCallback(InferencePtr step)
   {
     String passName = step->getName();
@@ -614,7 +614,7 @@ int main(int argc, char** argv)
   {
     Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
                                                        pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
-    //proteinInference->appendStep(step);
+  //  proteinInference->appendStep(step);
     
       proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
 #if 0

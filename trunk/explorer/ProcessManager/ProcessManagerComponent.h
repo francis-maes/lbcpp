@@ -13,8 +13,33 @@
 # include "../Components/common.h"
 # include "../Utilities/SplittedLayout.h"
 
+class ProcessPropertiesComponent;
+class ProcessConsoleComponent;
+
 namespace lbcpp
 {
+
+class ProcessComponent : public Component
+{
+public:
+  ProcessComponent(ProcessPtr process);
+  virtual ~ProcessComponent();
+
+  virtual void resized();
+
+  void updateContent();
+
+  juce_UseDebuggingNewOperator
+
+protected:
+  ProcessPtr process;
+
+  ProcessPropertiesComponent* properties;
+
+  Viewport* viewport;
+  ProcessConsoleComponent* console;
+  Component* consoleTools;
+};
 
 class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer
 {
