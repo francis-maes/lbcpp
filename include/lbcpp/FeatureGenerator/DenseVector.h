@@ -136,6 +136,12 @@ public:
   double get(size_t index) const
     {return index < values.size() ? values[index] : 0.0;}
 
+  double get(const String& name) const
+  {
+    jassert(dictionary); int index = dictionary->getFeatures()->getIndex(name);
+    return index >= 0 && index < (int)values.size() ? values[index] : 0.0;
+  }
+
   /**
   ** Returns the value at the index @a index.
   **
@@ -199,6 +205,13 @@ public:
 
   DenseVectorPtr getSubVector(size_t index) const
     {return index < subVectors.size() ? subVectors[index] : DenseVectorPtr();}
+
+  DenseVectorPtr getSubVector(const String& name) const
+  {
+    jassert(dictionary);
+    int index = dictionary->getScopes()->getIndex(name);
+    return index > 0 ? getSubVector((size_t)index) : DenseVectorPtr();
+  }
 
   /**
   ** Subvector setter.

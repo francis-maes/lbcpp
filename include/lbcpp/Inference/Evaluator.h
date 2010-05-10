@@ -53,6 +53,7 @@ typedef ReferenceCountedObjectPtr<RegressionErrorEvaluator> RegressionErrorEvalu
 // Classification
 extern EvaluatorPtr classificationAccuracyEvaluator(const String& name);
 extern EvaluatorPtr binaryClassificationConfusionEvaluator(const String& name);
+extern EvaluatorPtr rocAnalysisEvaluator(const String& name);
 
 // Regression
 extern EvaluatorPtr regressionErrorEvaluator(const String& name);
@@ -67,6 +68,42 @@ inline EvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
 inline EvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
   {return objectContainerEvaluator(name, binaryClassificationConfusionEvaluator(name));}
 
+
+class BinaryClassificationConfusionMatrix : public Object
+{
+public:
+  BinaryClassificationConfusionMatrix();
+
+  virtual String toString() const;
+
+  void clear();
+  void addPrediction(bool predicted, bool correct);
+
+  double computeMatthewsCorrelation() const;
+  void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const;
+
+  size_t getSampleCount() const
+    {return totalCount;}
+
+  size_t getTruePositives() const
+    {return truePositive;}
+
+  size_t getFalsePositives() const
+    {return falsePositive;}
+
+  size_t getFalseNegatives() const
+    {return falseNegative;}
+
+  size_t getTrueNegatives() const
+    {return trueNegative;}
+
+private:
+ // correct: positive   negative
+  size_t truePositive, falsePositive; // predicted as positive
+  size_t falseNegative, trueNegative; // predicted as negative
+
+  size_t totalCount;
+};
 
 }; /* namespace lbcpp */
 

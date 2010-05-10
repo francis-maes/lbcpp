@@ -35,7 +35,7 @@ public:
     if (!correctClass)
       input = -input;
 
-    if (input >= margin)
+    if (input > margin)
     {
       if (output) *output = 0.0;
       if (derivative) *derivative = 0.0;
@@ -43,11 +43,11 @@ public:
     else if (input == margin)
     {
       if (output) *output = 0.0;
-      if (derivative) {jassert(derivativeDirection); *derivative = derivativeDirection <= 0 ? -sign : 0;}
+      if (derivative) *derivative = (!derivativeDirection || *derivativeDirection <= 0) ? -sign : 0;
     }
     else
     {
-      if (output) *output = 1 - input;
+      if (output) *output = margin - input;
       if (derivative) *derivative = -sign;
     }
   }

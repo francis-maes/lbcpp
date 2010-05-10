@@ -20,6 +20,9 @@ EvaluatorPtr lbcpp::classificationAccuracyEvaluator(const String& name)
 EvaluatorPtr lbcpp::binaryClassificationConfusionEvaluator(const String& name)
   {return new BinaryClassificationConfusionEvaluator(name);}
 
+EvaluatorPtr lbcpp::rocAnalysisEvaluator(const String& name)
+  {return new ROCAnalysisEvaluator(name);}
+
 EvaluatorPtr lbcpp::regressionErrorEvaluator(const String& name)
   {return new RegressionErrorEvaluator(name);}
 
@@ -65,4 +68,66 @@ String RegressionErrorEvaluator::toString() const
 double RegressionErrorEvaluator::getRMSE() const
 {
   return sqrt(squaredError->getMean());
+}
+
+/*
+** BinaryClassificationConfusionMatrix
+*/
+
+BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix()
+  : truePositive(0), falsePositive(0), falseNegative(0), trueNegative(0), totalCount(0)
+{
+}
+
+inline String toFixedLengthString(const String& str, int size)
+{
+  jassert(str.length() <= size);
+  String res = str;
+  while (res.length() < size)
+    if (res.length() % 2 == 0)
+      res = T(" ") + res;
+    else
+      res += T(" ");
+  return res;
+}
+
+String BinaryClassificationConfusionMatrix::toString() const
+{
+  return toFixedLengthString(T("Actual value: "), 20) + toFixedLengthString(T("positive"), 15) + toFixedLengthString(T("negative"), 15) + T("\n") +
+         toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n") +
+         toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n");
+}
+
+void BinaryClassificationConfusionMatrix::clear()
+{
+  truePositive = falsePositive = falseNegative = trueNegative = totalCount = 0;
+}
+
+void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool correct)
+{
+  if (predicted)
+    correct ? ++truePositive : ++falsePositive;
+  else
+    correct ? ++falseNegative : ++trueNegative;
+  ++totalCount;
+}
+
+double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
+{
+  size_t positiveCount = truePositive + falseNegative;
+  size_t negativeCount = falsePositive + trueNegative;
+
+  size_t predictedPositiveCount = truePositive + falsePositive;
+  size_t predictedNegativeCount = falseNegative + trueNegative;
+
+  double mccNo = (double)(truePositive * trueNegative) - (double)(falsePositive * falseNegative);
+  double mccDeno = (double)positiveCount * (double)negativeCount * (double)predictedPositiveCount * (double)predictedNegativeCount;
+  return mccDeno ? (mccNo / sqrt(mccDeno)) : mccNo;
+}
+
+void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const
+{
+  precision = (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;
+  recall = (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;
+  f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
 }

@@ -13,13 +13,51 @@
 
 namespace lbcpp
 {
+/*
+class AddScalarBiasDecoratorInference : public DecoratorInference
+{
+public:
+  AddScalarBiasDecoratorInference(const String& name, InferencePtr regressionStep)
+    : DecoratorInference(name, regressionStep), bias(0.0) {}
+  AddScalarBiasDecoratorInference() {}
+  
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectPtr result = DecoratorInference::run(context, input, supervision, returnCode);
+    if (result)
+    {
+      ScalarPtr scalarResult = result.dynamicCast<Scalar>();
+      jassert(scalarResult);
+      if (supervision)
+      {
+        ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+        jassert(loss);
+        bias -= 0.001 * loss->computeDerivative(scalarResult->getValue());
+        static int count = 0;
+        if (++count % 10000 == 0)
+          std::cout << "Bias: " << bias << std::endl;
+      }
+      result = new Scalar(scalarResult->getValue() + bias);
+    }
+    return result;
+  }
 
+protected:
+  ScalarVariableMean delta;
+  double bias;
+
+  virtual bool load(InputStream& istr)
+    {return DecoratorInference::load(istr) && lbcpp::read(istr, bias);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorInference::save(ostr); lbcpp::write(ostr, bias);}
+};*/
 class ProteinContactMapInferenceStep : public Protein2DInferenceStep
 {
 public:
   ProteinContactMapInferenceStep(const String& name, ProteinResiduePairFeaturesPtr features, const String& targetName)
     : Protein2DInferenceStep(name, InferencePtr(), features, targetName)
-    {setSharedInferenceStep(linearScalarInference(name + T(" Classification")));}
+    {setSharedInferenceStep(/*new AddScalarBiasDecoratorInference*/(name, linearScalarInference(name + T(" Classification"))));}
 
   virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const
   {
@@ -36,7 +74,7 @@ public:
     jassert(contactMap);
     if (!contactMap || !contactMap->hasScore(firstPosition, secondPosition))
       return ObjectPtr();
-    return hingeLoss(contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0);
+    return hingeLoss(contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0, 0.0);
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const

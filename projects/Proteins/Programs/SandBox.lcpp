@@ -73,7 +73,7 @@ public:
 protected:
   std::vector< std::pair<FeatureGeneratorPtr, ScalarFunctionPtr> > examples;
 
-  void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
+  virtual void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
   {
     DenseVectorPtr parameters = step->getParameters();
     double alpha = computeAlpha();
@@ -117,6 +117,48 @@ public:
 protected:
   ScalarVectorFunctionPtr regularizer;
 };
+#include <deque>
+class ScalarVariableRecentMean : public NameableObject
+{
+public:
+  ScalarVariableRecentMean(const String& name = T("unnamed"), size_t historySize = 10000)
+    : NameableObject(name), historySize(historySize), sum(0.0), epoch(0) {}
+
+  void push(double value)
+  {
+    values.push_back(value);
+    sum += value;
+    if (values.size() > historySize)
+    {
+      sum -= values.front();
+      values.pop_front();
+    }
+    ++epoch;
+    if (epoch % historySize == 0)
+      sum = computeSum();
+  }
+
+  double getSum() const
+    {return sum;}
+
+  size_t getCount() const
+    {return values.size();}
+
+private:
+  std::deque<double> values;
+  size_t historySize;
+  double sum;
+
+  size_t epoch;
+
+  double computeSum() const
+  {
+    double res = 0.0;
+    for (std::deque<double>::const_iterator it = values.begin(); it != values.end(); ++it)
+      res += *it;
+    return res;
+  }
+};
 
 class PerEpisodeRandomizedLinearInferenceLearningCallback : public IterativeDelayedScalarInferenceLearningCallback
 {
@@ -126,11 +168,12 @@ public:
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
-    //if (RandomGenerator::getInstance().sampleBool(0.95))
-    //  return 0; //reject 95% of examples
-    if (exampleLoss->compute(1.0) > exampleLoss->compute(-1.0) && RandomGenerator::getInstance().sampleBool(0.8))
+    //if (RandomGenerator::getInstance().sampleBool(0.9))
+    //  return 0; //reject 90% of examples
+    bool isNegativeExample = exampleLoss->compute(1.0) > exampleLoss->compute(-1.0);
+    if (isNegativeExample && RandomGenerator::getInstance().sampleBool(0.8))
       return 0; // reject 80% of negative examples
-
+ 
     updateInputSize(features);
     examples.push_back(std::make_pair(features, exampleLoss));
     return 0;
@@ -147,58 +190,139 @@ public:
     return order.size();
   }
 
+  virtual void processExample(FeatureGeneratorPtr features, ScalarFunctionPtr exampleLoss)
+  {
+    DenseVectorPtr parameters = step->getParameters();
+    double alpha = computeAlpha();
+    double prediction = features->dotProduct(parameters);
+
+    bool isNegativeExample = exampleLoss->compute(1.0) > exampleLoss->compute(-1.0);
+    truePositives.push(prediction > 0 && !isNegativeExample ? 1.0 : 0.0);
+    falsePositives.push(prediction > 0 && isNegativeExample ? 1.0 : 0.0);
+    falseNegatives.push(prediction < 0 && !isNegativeExample ? 1.0 : 0.0);
+    trueNegatives.push(prediction < 0 && isNegativeExample ? 1.0 : 0.0);
+  
+    /*double f1derivativeWRTtp = 0.001;
+    double f1derivativeWRTtn = 0.001;
+    double f1 = 0.0;
+    double unionSize = 2.0 * truePositives.getSum() + falsePositives.getSum() + falseNegatives.getSum();
+    if (unionSize)
+    {
+      f1 = 2.0 * truePositives.getSum() / unionSize;
+      double invK = 2.0 / (unionSize * unionSize);
+      f1derivativeWRTtp = juce::jlimit(0.0, 0.1, (truePositives.getSum() + falsePositives.getSum() + falseNegatives.getSum()) * invK);
+      f1derivativeWRTtn = juce::jlimit(0.0, 0.1, truePositives.getSum() * invK);
+      if (!f1derivativeWRTtp && !f1derivativeWRTtn)
+        f1derivativeWRTtp = f1derivativeWRTtn = 0.001;
+    }
+
+    static std::ofstream ostr("C:\\Projets\\LBC++\\projects\\temp\\f1der.txt");
+    static int epoch = 0;
+    ostr << ++epoch << " " << f1derivativeWRTtp << " " << f1derivativeWRTtn << " " << f1 << std::endl;
+
+    double importance = isNegativeExample ? f1derivativeWRTtn : f1derivativeWRTtp;*/
+    double importance = 1.0;
+    lossValue.push(importance * exampleLoss->compute(prediction));
+    features->addWeightedTo(parameters, - alpha * importance * exampleLoss->computeDerivative(prediction));
+    step->validateParametersChange();
+  }
+
 protected:
   ScalarVectorFunctionPtr regularizer;
+  ScalarVariableRecentMean truePositives;
+  ScalarVariableRecentMean falsePositives;
+  ScalarVariableRecentMean falseNegatives;
+  ScalarVariableRecentMean trueNegatives;
 };
 
-class PerEpisodeMiniBactchLinearInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
+class PerEpisodeMiniBatchLinearInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
 {
 public:
-  PerEpisodeMiniBactchLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+  PerEpisodeMiniBatchLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer), examplesCount(0), updateNumber(0) {}
+
+  void addFeaturesToGradient(DenseVectorPtr& gradientAccumulator, FeatureGeneratorPtr features, double weight)
+  {
+    if (weight)
+    {
+      if (!gradientAccumulator)
+        gradientAccumulator = new DenseVector(features->getDictionary());
+      features->addWeightedTo(gradientAccumulator, weight);
+    }
+  }
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
   {
     bool isNegativeExample = exampleLoss->compute(1.0) > exampleLoss->compute(-1.0);
-    if (isNegativeExample && RandomGenerator::getInstance().sampleBool(0.8))
-      return 0; // reject 80% of negative examples
+    //if (isNegativeExample && RandomGenerator::getInstance().sampleBool(0.8))
+    //  return 0; // reject 80% of negative examples
 
-    double importance = 1.0;//isNegativeExample ? 0.1 : 1.0;
-
+    confusionMatrix.addPrediction(prediction > 0, !isNegativeExample);
+    
     updateInputSize(features);
     DenseVectorPtr parameters = step->getParameters();
     
-    if (!gradientAccumulator)
-      gradientAccumulator = new DenseVector(parameters->getDictionary());
-  //  if (features->l2norm() > 50)
-  //    std::cout << "Features: " << features->l0norm() << " " << features->l2norm() << " prediction = " << prediction << " loss = " << exampleLoss->computeDerivative(prediction) << " importance = " << importance << std::endl;
-    features->addWeightedTo(gradientAccumulator, importance * exampleLoss->computeDerivative(prediction));
+    if (isNegativeExample)
+      addFeaturesToGradient(negativeGradientAccumulator, features, exampleLoss->computeDerivative(prediction));
+    else
+      addFeaturesToGradient(positiveGradientAccumulator, features, exampleLoss->computeDerivative(prediction));
+
     lossValue.push(exampleLoss->compute(prediction));
-    
-   // if (gradientAccumulator->l2norm() > 100000)
-   //   std::cout << "Gradient accumulator: " << gradientAccumulator->l0norm() << " " << gradientAccumulator->l2norm() << std::endl;
     ++examplesCount;
 
-    if (examplesCount % 100 == 0)
-      flushGradient();
+   // if (examplesCount == 100)
+   //   flushGradient();
 
     return 1;
   }
 
   void flushGradient()
   {
-    if (gradientAccumulator)
+    if (negativeGradientAccumulator || positiveGradientAccumulator)
     {
+      double unionSize = (double)(confusionMatrix.getSampleCount() + confusionMatrix.getTruePositives() - confusionMatrix.getTrueNegatives());
+      if (!unionSize)
+        return;
+
+      double f1 = 2.0 * confusionMatrix.getTruePositives() / unionSize;
+      double invK = 2.0 / (unionSize * unionSize);
+      double f1derivativeWRTtp = (confusionMatrix.getSampleCount() - confusionMatrix.getTrueNegatives()) * invK; 
+      double f1derivativeWRTtn = confusionMatrix.getTruePositives() * invK; 
+
+      //std::cout << "Confusion matrix: " << std::endl << confusionMatrix.toString();
+      //std::cout << "d(F1)/d(TP): " << f1derivativeWRTtp << " d(F1)/d(TN): " << f1derivativeWRTtn << std::endl; 
+      confusionMatrix.clear();
+
       double k = - computeAlpha();
       ++updateNumber;
 
-      //std::cout << updateNumber << " Gradient accumulator: " << gradientAccumulator->l0norm() << " " << gradientAccumulator->l2norm() << std::endl;
-      gradientAccumulator->addWeightedTo(step->getParameters(), k);
+      //std::cout << "Pos Gradient: " << (positiveGradientAccumulator ? positiveGradientAccumulator->l2norm() * k * f1derivativeWRTtp : 0.0)
+      //  << " Neg Gradient: " << (negativeGradientAccumulator ? negativeGradientAccumulator->l2norm() * k * f1derivativeWRTtn : 0.0) << std::endl;
+      if (negativeGradientAccumulator && f1derivativeWRTtn)
+        negativeGradientAccumulator->addWeightedTo(step->getParameters(), k * juce::jmin(0.0001, f1derivativeWRTtn));
+
+      if (positiveGradientAccumulator && f1derivativeWRTtp)
+        positiveGradientAccumulator->addWeightedTo(step->getParameters(), k * juce::jmin(0.0001, f1derivativeWRTtp));
+
       applyRegularizer(step->getParameters(), regularizer, (double)examplesCount * computeAlpha());
       step->validateParametersChange();
+
+      //std::cout << "Unit Pos gradient: " << pouetGetUnit(positiveGradientAccumulator) << " Neg: " << pouetGetUnit(negativeGradientAccumulator) << std::endl;
+      //std::cout << "Unit parameter: " << pouetGetUnit(step->getParameters()) << std::endl;
+
       examplesCount = 0;
-      gradientAccumulator = DenseVectorPtr();
+      positiveGradientAccumulator = negativeGradientAccumulator = DenseVectorPtr();
     }
+  }
+
+  double pouetGetUnit(DenseVectorPtr vector)
+  {
+    if (!vector)
+      return 0.0;
+    vector = vector->getSubVector(T("MyResiduePairFeatures"));
+    if (!vector)
+      return 0.0;
+    return vector->get(T("unit"));
   }
 
   virtual size_t postEpisodeCallback()
@@ -208,10 +332,13 @@ public:
   }
 
 private:
-  DenseVectorPtr gradientAccumulator;
+  DenseVectorPtr positiveGradientAccumulator;
+  DenseVectorPtr negativeGradientAccumulator;
   ScalarVectorFunctionPtr regularizer;
   size_t examplesCount;
   size_t updateNumber;
+
+  BinaryClassificationConfusionMatrix confusionMatrix;
 };
 
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
@@ -333,7 +460,7 @@ public:
       bestTestAcc = testAcc;
     std::cout << "Best Test F1: " << String(bestTestAcc * 100.0, 2) << "%" << std::endl;
 
-    static std::ofstream ostr("C:\\Projets\\LBC++\\projects\\temp\\curve_PEMB_SmallPDB_0_2.txt");
+    static std::ofstream ostr("C:\\Projets\\LBC++\\projects\\temp\\Curve_reject80neg.txt");
     ostr << iterationNumber << " " << trainAcc << " " << testAcc << std::endl;
 
     /*double testRmse = evaluation->getPSSMRootMeanSquareError();
@@ -355,8 +482,8 @@ public:
       LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
       jassert(linearInference);
       double l2regularizer = 0;//.0001;
-      return new PerEpisodeMiniBactchLinearInferenceLearningCallback(linearInference,
-          constantIterationFunction(0.2),// invLinearIterationFunction(0.5, 1000000),
+      return new PerEpisodeRandomizedLinearInferenceLearningCallback(linearInference,
+          invLinearIterationFunction(1.0, 10000),
           l2regularizer ? sumOfSquaresFunction(l2regularizer) : ScalarVectorFunctionPtr());
     }
     return InferenceCallbackPtr();
@@ -407,6 +534,9 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 class MyResidueFeatures : public ProteinResidueFeatures
 {
 public:
+  virtual String getName() const
+    {return T("MyResidueFeatures");}
+
   virtual featureGenerator compute(ProteinPtr protein, size_t position)
   {
     featureCall(0) computePSSMEntropy(protein, position);    
@@ -501,10 +631,13 @@ public:
     featureCall(3) prolongedDirectionContactFeatures(contactMap, firstPosition, secondPosition, +1, -1);
   }
 
+  virtual String getName() const
+    {return T("MyResiduePairFeatures");}
+
   virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
   {
     featureSense("unit");
-
+/*
     ScoreSymmetricMatrixPtr contactMap = protein->getResidueResidueContactMatrix8Ca();
 
     ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
@@ -525,7 +658,7 @@ public:
       LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
       featureScope(aminoAcidSequence->getIndex(firstPosition))
         featureSense(aminoAcidSequence->getIndex(secondPosition));
-    }
+    }*/
   }
 };
 
@@ -537,13 +670,13 @@ int main(int argc, char** argv)
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
    //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
-  /*ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 2);
   std::cout << "SmallPDB " << ProteinStatisticsCalculator::computeStatistics(smallPDBProteins) << std::endl;
-  smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());*/
+  smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
   
-  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
+  /*ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
-        smallPDBDirectory.getChildFile(T("protein")))->load(2);
+        smallPDBDirectory.getChildFile(T("protein")))->load(2);*/
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -573,10 +706,11 @@ int main(int argc, char** argv)
   //featureFunction->addSubFeatures(proteinLengthFeatures());
   //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 5));
 
-  //featureFunction->addSubFeatures(new MyResidueFeatures());
+  featureFunction->addSubFeatures(new MyResidueFeatures());
 
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
-
+  pairFeatureFunction->addSubFeatures(proteinPositionIndexResiduePairFeature());
+/*
   // global
   //pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinLengthFeatures(3)));
   pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("AminoAcidSequence"))));
@@ -584,18 +718,19 @@ int main(int argc, char** argv)
   pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("SecondaryStructureSequence"))));
   pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("DSSPSecondaryStructureSequence"))));
   pairFeatureFunction->addSubFeatures(proteinGlobalToResiduePairFeatures(proteinGlobalCompositionFeatures(T("DisorderProbabilitySequence"))));
-
+*/
   // point features
   pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
 
   // pair features
   pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
-  pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
+ /* pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
   pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("PositionSpecificScoringMatrix")));
   pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("SecondaryStructureSequence")));
   pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("DisorderProbabilitySequence")));
-
+*/
   pairFeatureFunction->addSubFeatures(new MyResiduePairFeatures());
+
 
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction2 = new CompositeProteinResiduePairFeatures();
   pairFeatureFunction2->addSubFeatures(conjunctionResiduePairFeatures(aaCategoryResiduePairConjunction, pairFeatureFunction));
@@ -614,9 +749,9 @@ int main(int argc, char** argv)
   {
     Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
                                                        pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
-  //  proteinInference->appendStep(step);
+    proteinInference->appendStep(step);
     
-      proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
+      //proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
 #if 0
       step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
       proteinInference->appendStep(step);
