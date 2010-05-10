@@ -280,7 +280,7 @@ class DSSPFileParser : public TextObjectParser
 {
 public:
   DSSPFileParser(const File& file, ProteinPtr protein)
-    : TextObjectParser(file), protein(protein), firstResidueNumber(-1)
+    : TextObjectParser(file), protein(protein)//, firstResidueNumber(-1)
   {
     jassert(protein->getAminoAcidSequence());
     //std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
@@ -308,8 +308,8 @@ public:
       return true;
     }
 
-    if (serialNumber == 1)
-      firstChainID = line.substring(11, 12);
+//    if (serialNumber == 1)
+//      firstChainID = line.substring(11, 12);
 
     if (line.length() < 100)
     {
@@ -325,17 +325,17 @@ public:
     }
     ++serialNumber;
     
-    if (line.substring(11, 12) != firstChainID)
-      return true;
+//    if (line.substring(11, 12) != firstChainID)
+//      return true;
     
     String residueNumberString = line.substring(5, 10).trim();
     if (residueNumberString.isEmpty())
       return true; // skip
 
     int residueNumber = residueNumberString.getIntValue();
-    if (firstResidueNumber == -1)
-      firstResidueNumber = residueNumber;
-    residueNumber -= firstResidueNumber;
+//    if (firstResidueNumber == -1)
+//      firstResidueNumber = residueNumber;
+//    residueNumber -= firstResidueNumber;
     
     if (residueNumber < 0 || residueNumber >= (int)n)
     {
@@ -347,6 +347,11 @@ public:
     ** Amino Acid
     */
     size_t aminoAcidCode = AminoAcidDictionary::getTypeFromOneLetterCode(line.substring(13, 14).trim().getLastCharacter());
+    if (aminoAcidCode >= AminoAcidDictionary::unknown)
+    {
+      Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + aminoAcidCode);
+      return false;
+    }
     aminoAcidSequence->setIndex((size_t)residueNumber, aminoAcidCode);
     
     /*
@@ -385,7 +390,10 @@ public:
     double normalizedSolventAccessibility = (double)absoluteSolventAccesiblity / maximumSolventAccissibilityValue[aminoAcidCode];
     // jassert(normalizedSolventAccessibility <= 1.0); FIXME: IT FAILS !
     if (normalizedSolventAccessibility > 1.0)
+    {
+      std::cout << "Solvent Accessibility Exeeded: " << aminoAcidCode << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidCode] << std::endl;
       normalizedSolventAccessibility = 1.0;
+    }
     solventAccesibilitySequence->setValue((size_t)residueNumber, normalizedSolventAccessibility);
 
     /*
@@ -447,7 +455,7 @@ public:
     }
  //   if (!finalizeBetaBridgePartners())
  //     return false;
-
+/*
     size_t nbReadResidues = protein->getLength();
     for (; aminoAcidSequence->getIndex(nbReadResidues-1) < 0; --nbReadResidues);
 
@@ -458,7 +466,7 @@ public:
     {
       size_t nbCorrectAlignment = 0;
       for (size_t j = 0; j < nbReadResidues; ++j)
-      {
+      {	
         if (proteinAminoAcidSequence->getString(i + j) == aminoAcidSequence->getString(j))
           ++nbCorrectAlignment;
       }
@@ -474,6 +482,7 @@ public:
     for (size_t i = 0; i < bestShift; ++i)
       std::cout << " ";
     std::cout  << aminoAcidSequence->toString() << std::endl;
+ */
     /*
     if (nbMaxCorrectAlignment != lastResidueNumber)
     {
@@ -481,6 +490,7 @@ public:
       return false;
     }
     */
+/*
     LabelSequencePtr dsspSecondaryStructureSequence = protein->createEmptyObject(T("DSSPSecondaryStructureSequence"));
     ScalarSequencePtr solventAccesibilitySequence = protein->createEmptyObject(T("NormalizedSolventAccessibilitySequence"));
     
@@ -489,6 +499,7 @@ public:
       dsspSecondaryStructureSequence->setIndex(bestShift + i, this->dsspSecondaryStructureSequence->getIndex(i));
       solventAccesibilitySequence->setValue(bestShift + i, this->solventAccesibilitySequence->getValue(i));
     }
+*/
     std::cout << "SS :" << dsspSecondaryStructureSequence->toString() << std::endl;
 
     setResult(dsspSecondaryStructureSequence);
@@ -503,8 +514,8 @@ protected:
   LabelSequencePtr dsspSecondaryStructureSequence;
   ScalarSequencePtr solventAccesibilitySequence;
   int serialNumber;
-  int firstResidueNumber;
-  String firstChainID;
+//  int firstResidueNumber;
+//  String firstChainID;
   std::map<int, std::pair<int, int> > betaBridgePartners;
 };
 
