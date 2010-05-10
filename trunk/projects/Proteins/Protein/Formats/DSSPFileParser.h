@@ -381,10 +381,10 @@ public:
     int absoluteSolventAccesiblity = solventAccesibilityString.getIntValue();
 
     static const double maximumSolventAccissibilityValue[] = {
-      118.1, 256.0, 165.5, 158.7, 146.1,
-      186.2, 193.2, 88.1, 202.5, 181.0,
-      193.1, 225.8, 203.4, 222.8, 146.8,
-      129.8, 152.5, 266.3, 236.8, 164.5,
+      204, 341, 238, 258, 198,
+      266, 320, 220, 340, 248,
+      250, 337, 305, 329, 244,
+      207, 223, 346, 341, 223,
       162.1, 189.7, 187.05, 256.0
     };
 
