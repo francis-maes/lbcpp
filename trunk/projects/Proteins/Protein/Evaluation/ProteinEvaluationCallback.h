@@ -186,10 +186,12 @@ class ProteinContactMapEvaluator : public Evaluator
 {
 public:
   ProteinContactMapEvaluator(const String& name)
-    : Evaluator(name), classificationEvaluator(binaryClassificationConfusionEvaluator(name)) {}
+    : Evaluator(name),
+      classificationEvaluator(binaryClassificationConfusionEvaluator(name)), 
+      rocEvaluator(rocAnalysisEvaluator(name)) {}
 
   virtual String toString() const
-    {return classificationEvaluator->toString();}
+    {return classificationEvaluator->toString() + T("\n") + rocEvaluator->toString();}
 
   virtual double getDefaultScore() const
     {return classificationEvaluator->getDefaultScore();}
@@ -207,14 +209,17 @@ public:
       for (size_t j = i; j < n; ++j)
       {
         if (correct->hasScore(i, j) && predicted->hasScore(i, j))
-          classificationEvaluator->addPrediction(
-            new Label(BinaryClassificationDictionary::getInstance(), predicted->getScore(i, j) > 0.5),
-            new Label(BinaryClassificationDictionary::getInstance(), correct->getScore(i, j) > 0.5));
+        {
+          LabelPtr correctLabel = new Label(BinaryClassificationDictionary::getInstance(), correct->getScore(i, j) > 0.5);
+          classificationEvaluator->addPrediction(new Label(BinaryClassificationDictionary::getInstance(), predicted->getScore(i, j) > 0.5), correctLabel);
+          rocEvaluator->addPrediction(new Scalar(predicted->getScore(i, j)), correctLabel);
+        }
       }
   }
 
 protected:
   EvaluatorPtr classificationEvaluator;
+  EvaluatorPtr rocEvaluator;
 };
 
 inline EvaluatorPtr scoreVectorSequenceRegressionErrorEvaluator(const String& name)

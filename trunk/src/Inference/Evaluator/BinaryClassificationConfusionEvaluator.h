@@ -10,15 +10,78 @@
 # define LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 
 # include <lbcpp/Inference/Evaluator.h>
+# include <fstream>
 
 namespace lbcpp
 {
+
+class ROCAnalysisEvaluator : public Evaluator
+{
+public:
+  ROCAnalysisEvaluator(const String& name)
+    : Evaluator(name), numPositives(0), numNegatives(0) {}
+  ROCAnalysisEvaluator() {}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
+    LabelPtr correct = correctObject.dynamicCast<Label>();
+    if (!predicted || !correct)
+      return;
+    bool isPositive = (correct->getIndex() == 1);
+    isPositive ? ++numPositives : ++numNegatives;
+    predictedScores.insert(std::make_pair(predicted->getValue(), isPositive));
+  }
+ 
+  virtual String toString() const
+  {
+    String res;
+
+    size_t truePositives = numPositives;
+    size_t falsePositives = numNegatives;
+
+/*    File directory(T("C:\\Projets\\LBC++\\projects\\temp"));
+    static int count = 0;
+    File curveFile = directory.getChildFile(T("Curve") + String(count) + T(".txt"));
+    curveFile.deleteFile();
+    std::ofstream ostr((const char* )curveFile.getFullPathName());
+    ++count;*/
+
+    double bestF1 = 0.0;
+    double bestThreshold = 0.5;
+    jassert(predictedScores.size() == (numPositives + numNegatives));
+    for (std::multimap<double, bool>::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+    {
+      size_t falseNegatives = numPositives - truePositives;
+      double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
+      if (f1 > bestF1)
+        bestF1 = f1, bestThreshold = it->first;
+      //ostr << it->first << " " << lbcpp::toString(100 * falsePositives / (double)numNegatives) << " " 
+      //      << lbcpp::toString(100 * truePositives / (double)numPositives) << " " << (100.0 * f1) << std::endl;
+      if (it->second)
+        --truePositives;
+      else
+        --falsePositives;
+    }
+    jassert(truePositives == 0 && falsePositives == 0);
+    return T("Best F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
+  }
+
+  virtual double getDefaultScore() const
+  {
+    return 0.0;
+  }
+ 
+private:
+  std::multimap<double, bool> predictedScores;
+  size_t numPositives, numNegatives;
+};
 
 class BinaryClassificationConfusionEvaluator : public Evaluator
 {
 public:
   BinaryClassificationConfusionEvaluator(const String& name)
-    : Evaluator(name), truePositive(0), falsePositive(0), falseNegative(0), trueNegative(0), totalCount(0) {}
+    : Evaluator(name) {}
   BinaryClassificationConfusionEvaluator() {}
 
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
@@ -28,62 +91,33 @@ public:
     if (!predicted || !correct)
       return;
     jassert(predicted->getDictionary() == correct->getDictionary());
-    if (predicted->getIndex() == 1)
-      (correct->getIndex() == 1) ? ++truePositive : ++falsePositive;
-    else
-      (correct->getIndex() == 1) ? ++falseNegative : ++trueNegative;
-    ++totalCount;
+    confusionMatrix.addPrediction(predicted->getIndex() == 1, correct->getIndex() == 1);
   }
 
   virtual String toString() const
   {
-    if (!totalCount)
+    if (!confusionMatrix.getSampleCount())
       return String::empty;
   
     double precision, recall, f1score;
-    computePrecisionRecallAndF1(precision, recall, f1score);
+    confusionMatrix.computePrecisionRecallAndF1(precision, recall, f1score);
 
-    return getName() + T(": TP = ") + lbcpp::toString(truePositive) + T(" FP = ") + lbcpp::toString(falsePositive)
-                     + T(": FN = ") + lbcpp::toString(falseNegative) + T(" TN = ") + lbcpp::toString(trueNegative) + T("\n")
-                     + T("\tP = ") + String(precision * 100.0, 2)
+    return getName() + T("\n") + confusionMatrix.toString()
+                     + T("P = ") + String(precision * 100.0, 2)
                      + T("% R = ") + String(recall * 100.0, 2)
                      + T("% F1 = ") + String(f1score * 100.0, 2)
-                     + T("% MCC = ") + String(computeMatthewsCorrelation(), 4);
+                     + T("% MCC = ") + String(confusionMatrix.computeMatthewsCorrelation(), 4);
   }
 
   virtual double getDefaultScore() const
   {
     double precision, recall, f1score;
-    computePrecisionRecallAndF1(precision, recall, f1score);
+    confusionMatrix.computePrecisionRecallAndF1(precision, recall, f1score);
     return f1score;
   }
 
 protected:
- // correct: positive   negative
-  size_t truePositive, falsePositive; // predicted as positive
-  size_t falseNegative, trueNegative; // predicted as negative
-
-  size_t totalCount;
-
-  double computeMatthewsCorrelation() const
-  {
-    size_t positiveCount = truePositive + falseNegative;
-    size_t negativeCount = falsePositive + trueNegative;
-
-    size_t predictedPositiveCount = truePositive + falsePositive;
-    size_t predictedNegativeCount = falseNegative + trueNegative;
-
-    double mccNo = (double)(truePositive * trueNegative) - (double)(falsePositive * falseNegative);
-    double mccDeno = (double)positiveCount * (double)negativeCount * (double)predictedPositiveCount * (double)predictedNegativeCount;
-    return mccDeno ? (mccNo / sqrt(mccDeno)) : mccNo;
-  }
-
-  void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const
-  {
-    precision = truePositive && falsePositive ? truePositive / (double)(truePositive + falsePositive) : 0.0;
-    recall = truePositive && falseNegative ? truePositive / (double)(truePositive + falseNegative) : 0.0;
-    f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
-  }
+  BinaryClassificationConfusionMatrix confusionMatrix;
 };
 
 }; /* namespace lbcpp */
