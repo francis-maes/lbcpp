@@ -283,7 +283,8 @@ public:
     : TextObjectParser(file), protein(protein)//, firstResidueNumber(-1)
   {
     jassert(protein->getAminoAcidSequence());
-    //std::cout << "AA: " << protein->getAminoAcidSequence()->toString() << std::endl;
+    aminoAcidSequence = protein->getAminoAcidSequence();
+    std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
   }
 
   virtual void parseBegin()
@@ -300,7 +301,7 @@ public:
     {
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
-        aminoAcidSequence = protein->createEmptyObject(T("AminoAcidSequence"));
+//        aminoAcidSequence = protein->createEmptyObject(T("AminoAcidSequence"));
         dsspSecondaryStructureSequence = protein->createEmptyObject(T("DSSPSecondaryStructureSequence"));
         solventAccesibilitySequence = protein->createEmptyObject(T("NormalizedSolventAccessibilitySequence"));
         ++serialNumber;
@@ -332,7 +333,7 @@ public:
     if (residueNumberString.isEmpty())
       return true; // skip
 
-    int residueNumber = residueNumberString.getIntValue();
+    int residueNumber = residueNumberString.getIntValue() -1;
 //    if (firstResidueNumber == -1)
 //      firstResidueNumber = residueNumber;
 //    residueNumber -= firstResidueNumber;
@@ -347,12 +348,12 @@ public:
     ** Amino Acid
     */
     size_t aminoAcidCode = AminoAcidDictionary::getTypeFromOneLetterCode(line.substring(13, 14).trim().getLastCharacter());
-    if (aminoAcidCode >= AminoAcidDictionary::unknown)
+    if (aminoAcidCode != aminoAcidSequence->getIndex(residueNumber))
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + aminoAcidCode);
+      Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + lbcpp::toString(aminoAcidCode));
       return false;
     }
-    aminoAcidSequence->setIndex((size_t)residueNumber, aminoAcidCode);
+//    aminoAcidSequence->setIndex((size_t)residueNumber, aminoAcidCode);
     
     /*
     ** 8-state Secondary Structure
@@ -500,7 +501,8 @@ public:
       solventAccesibilitySequence->setValue(bestShift + i, this->solventAccesibilitySequence->getValue(i));
     }
 */
-    std::cout << "SS :" << dsspSecondaryStructureSequence->toString() << std::endl;
+    //std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
+    std::cout << "SS: " << dsspSecondaryStructureSequence->toString() << std::endl;
 
     setResult(dsspSecondaryStructureSequence);
     protein->setObject(dsspSecondaryStructureSequence);
