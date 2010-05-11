@@ -174,3 +174,111 @@ public:
 
 ProcessManagerPtr lbcpp::localProcessManager()
   {return new LocalProcessManager();}
+
+#if 0
+#include "/usr/include/ne7ssh.h"
+
+class SshConnection
+{
+public:
+  SshConnection(String userName, String userPassword, String remoteHost, size_t remotePort)
+    : userName(userName), userPassword(userPassword), remoteHost(remoteHost), remotePort(remotePort), retry(maximumRetry), channel(-1), ssh(new ne7ssh())
+  {
+    ssh->setOptions("aes192-cbc", "hmac-md5");
+  }
+  
+  virtual ~SshConnection()
+    {ssh->close(channel); delete ssh;}
+
+private:
+  bool initiateConnection()
+  {
+    while (channel < 0 && retry)
+    {
+      channel = ssh->connectWithPassword(remoteHost, remotePort, userName, userPassword);
+      jassert(channel);
+      
+      if (channel >= 0 && !ssh->waitFor(channel, " $", 10))
+      {
+        clearConnection();
+        retry--;
+      }      
+    }
+    
+    if (!retry)
+      return false;
+    retry = maximumRetry;
+    return true;
+  }
+  
+  void clearConnection()
+  {ssh->close(channel); channel = -1;}
+  
+  bool checkSSHConnection()
+  {
+    initiateConnection();
+
+    while (!ssh->send ("echo OK\n", channel) && retry)
+    {
+      clearConnection();
+      initiateConnection();
+
+      retry--;
+    }
+
+    if (!retry)
+      return false;
+    retry = maximumRetry;
+    
+    // wait responce
+    if (!ssh->waitFor(channel, " $", 5))
+    {
+      clearConnection();
+      return false;
+    }
+
+    // read result
+    std::cout << "[SSH] " << ssh->read(channel) << std::endl;
+  }
+  
+  enum {maximumRetry = 3};
+  
+  String userName;
+  String userPassword;
+  String remoteHost;
+  size_t remotePort;
+  size_t retry;
+  int channel;
+  
+  ne7ssh* ssh;
+};
+
+class SshSgeProcess : public Process
+{
+  SshSgeProcess(const File& executableFile, const String& arguments, const File& workingDirectory, const String& name = String::empty)
+  : Process(executableFile, arguments, workingDirectory, name), process(0) {}
+  
+  virtual bool start()
+  {
+    return false;
+  }
+  
+  virtual bool kill()
+  {
+    return false;
+  }
+  
+  virtual void update()
+  {
+    
+  }
+  
+  virtual bool isFinished() const
+  {
+    return false;
+  }
+  
+private:
+  size_t process;
+};
+#endif

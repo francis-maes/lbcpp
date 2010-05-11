@@ -7,7 +7,7 @@ using namespace lbcpp;
 class Argument
 {
 public:
-  Argument(const String& name) : name(name)
+  Argument(const String& name) : name(name), visited(false)
     {}
 
   virtual ~Argument()
@@ -29,8 +29,20 @@ public:
   
   virtual String getStringValue() const = 0;
   
+  bool wasVisited() const
+    {return visited;}
+  
+  void markAsVisited()
+    {visited = true;}
+  
+  void markAsNotVisited()
+    {visited = false;}
+  
 protected:
   String name;
+
+private:
+  bool visited;
 };
 
 class IntegerArgument : public Argument
@@ -194,18 +206,24 @@ public:
       delete arguments[i];
   }
   
-  bool insert(Argument* newArgument)
+  bool insert(Argument* newArgument, bool mandatory = false)
   {
     if (nameToArgument[newArgument->getName()])
       return false;
     
     nameToArgument[newArgument->getName()] = newArgument;
     arguments.push_back(newArgument);
+    
+    if (mandatory)
+      mandatories.push_back(newArgument);
+
     return true;
   }
   
   bool parse(char** str, size_t startIndex, size_t nbStr)
   {
+    markArgumentsAsNotVisited();
+    
     for (size_t i = startIndex; i < startIndex + nbStr; )
     {
       Argument* arg = nameToArgument[str[i]];
@@ -222,7 +240,14 @@ public:
         return false;
       }
 
+      arg->markAsVisited();
+
       i += argRead;
+    }
+    
+    if (!allMandatoryArgumentWasRead()) {
+      std::cout << "Missing mandatory argument !" << std::endl;
+      return false;
     }
     
     return true;
@@ -241,8 +266,22 @@ public:
 private:
   std::map<String, Argument* > nameToArgument;
   std::vector<Argument* > arguments;
+  std::vector<Argument* > mandatories;
+  
+  void markArgumentsAsNotVisited()
+  {
+    for (size_t i = 0; i < arguments.size(); ++i)
+      arguments[i]->markAsNotVisited();
+  }
+  
+  bool allMandatoryArgumentWasRead() const
+  {
+    for (size_t i = 0; i < mandatories.size(); ++i)
+      if (!mandatories[i]->wasVisited())
+        return false;
+    return true;
+  }
 };
-
 
 std::ostream& operator<<(std::ostream& o, const ArgumentSet& args)
 {

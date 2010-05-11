@@ -398,6 +398,7 @@ bool PDBFileParser::parseAndCheckAtomSerialNumber(const String& line, int firstC
   if (!getInteger(line, firstColumn, lastColumn, serialNumber))
     return false;
   ++currentAtomSerialNumber;
+//  currentAtomSerialNumber = serialNumber;
   if (serialNumber != currentAtomSerialNumber)
   {
     Object::error(T("PDBFileParser::parseAtomLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
