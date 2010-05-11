@@ -25,26 +25,26 @@ public:
   enum Type
   {
     // 20 amino acids
-    alanine = 0,
-    arginine,
-    asparagine,
-    asparticAcid,
-    cysteine,
-    glutamicAcid,
-    glutamine,
-    glycine,
-    histidine,
-    isoleucine,
-    leucine,
-    lysine,
-    methionine,
-    phenylalanine,
-    proline,
-    serine,
-    threonine,
-    tryptophan,
-    tyrosine,
-    valine,
+    alanine = 0,      // A  -  Ala
+    arginine,         // R  -  Arg
+    asparagine,       // N  -  Asn
+    asparticAcid,     // D  -  Asp
+    cysteine,         // C  -  Cys
+    glutamicAcid,     // E  -  Glu
+    glutamine,        // Q  -  Gln
+    glycine,          // G  -  Gly
+    histidine,        // H  -  His
+    isoleucine,       // I  -  Ile
+    leucine,          // L  -  Leu
+    lysine,           // K  -  Lys
+    methionine,       // M  -  Met
+    phenylalanine,    // F  -  Phe
+    proline,          // P  -  Pro
+    serine,           // S  -  Ser
+    threonine,        // T  -  Thr
+    tryptophan,       // W  -  Trp
+    tyrosine,         // Y  -  Tyr
+    valine,           // V  -  Val
     
     // 3 ambiguous amino acids
     asparagineOrAsparticAcid,
