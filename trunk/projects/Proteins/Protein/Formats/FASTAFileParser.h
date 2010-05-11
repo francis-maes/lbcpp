@@ -34,7 +34,7 @@ public:
       currentName = str.substring(1);
     }
     else
-      currentAminoAcidSequence = str;
+      currentAminoAcidSequence += str;
     return true;
   }
   
