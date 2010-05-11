@@ -24,17 +24,6 @@ int main(int argc, char** argv)
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
     return 1;
   }
-
-  if (!pdbDirectoryFile.exists() || !fastaFile.exists() || !outputDirectoryFile.exists()) {
-    std::cerr << "Error: Fasta file and/or PDB directory and/or output directory does not exists." << std::endl;
-    return 2;
-  }
-  
-  if (!pdbDirectoryFile.isDirectory() || !outputDirectoryFile.isDirectory())
-  {
-    std::cerr << "Error: PDB directory and/or output directory is not a directory." << std::endl;
-    return 3;
-  }
   
   FASTAFileParser fastaParser(fastaFile);
   while (true)
