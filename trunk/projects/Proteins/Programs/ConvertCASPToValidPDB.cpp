@@ -11,24 +11,20 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-  String pdbDirectory;
-  String fastaFileName;
-  String outputDirectory;
+  File pdbDirectoryFile;
+  File fastaFile;
+  File outputDirectoryFile;
   
   ArgumentSet arguments;
-  arguments.insert(new StringArgument(T("pdbDirectory"), pdbDirectory), true);
-  arguments.insert(new StringArgument(T("fastaFile"), fastaFileName), true);
-  arguments.insert(new StringArgument(T("outputDirectory"), outputDirectory), true);
+  arguments.insert(new FileArgument(T("pdbDirectory"), pdbDirectoryFile, true, true), true);
+  arguments.insert(new FileArgument(T("fastaFile"), fastaFile, true), true);
+  arguments.insert(new FileArgument(T("outputDirectory"), outputDirectoryFile, true, true), true);
   
   if (!arguments.parse(argv, 1, argc-1)) {
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
     return 1;
   }
-  
-  File pdbDirectoryFile = File::getCurrentWorkingDirectory().getChildFile(pdbDirectory);
-  File fastaFile = File::getCurrentWorkingDirectory().getChildFile(fastaFileName);
-  File outputDirectoryFile = File::getCurrentWorkingDirectory().getChildFile(outputDirectory);
-  
+
   if (!pdbDirectoryFile.exists() || !fastaFile.exists() || !outputDirectoryFile.exists()) {
     std::cerr << "Error: Fasta file and/or PDB directory and/or output directory does not exists." << std::endl;
     return 2;
