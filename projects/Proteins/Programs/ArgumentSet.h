@@ -7,14 +7,11 @@ using namespace lbcpp;
 class Argument
 {
 public:
-  Argument(const String& name) : name(name), visited(false)
+  Argument(const String& name) : name(name), visited(false), mandatory(false)
     {}
 
   virtual ~Argument()
     {}
-  
-  virtual String toString() const
-    {return name;}
   
   String getName() const
     {return name;}
@@ -29,6 +26,13 @@ public:
   
   virtual String getStringValue() const = 0;
   
+  virtual String getValueDescription() const = 0;
+  
+  virtual String toString() const
+  {
+    return name + ((isMandatory()) ? T("*") : String::empty)+ T(" (") + getValueDescription() + T(") ");
+  }
+  
   bool wasVisited() const
     {return visited;}
   
@@ -38,11 +42,21 @@ public:
   void markAsNotVisited()
     {visited = false;}
   
+  bool isMandatory() const
+    {return mandatory;}
+  
+  void markAsMandatory()
+    {mandatory = true;}
+  
+  void markAsNotMandatory()
+    {mandatory = false;}
+  
 protected:
   String name;
 
 private:
   bool visited;
+  bool mandatory;
 };
 
 class IntegerArgument : public Argument
@@ -51,8 +65,8 @@ public:
   IntegerArgument(const String& name, int& destination)
     : Argument(name), destination(destination) {}
   
-  virtual String toString() const
-    {return name + T(" (int)");}
+  virtual String getValueDescription() const
+    {return T("int");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -76,8 +90,8 @@ public:
     : Argument(name), destination(destination)
     {destination = false;}
   
-  virtual String toString() const
-    {return name + " (bool)";}
+  virtual String getValueDescription() const
+    {return T("bool");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -109,8 +123,8 @@ public:
   StringArgument(const String& name, String& destination)
     : Argument(name), destination(destination) {}
   
-  virtual String toString() const
-    {return name + T(" (string)");}
+  virtual String getValueDescription() const
+    {return T("string");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -135,8 +149,8 @@ public:
   DoubleArgument(String name, double& destination)
     : Argument(name), destination(destination)  {}
   
-  virtual String toString() const
-    {return name + " (double)";}
+  virtual String getValueDescription() const
+    {return T("double");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -160,8 +174,8 @@ public:
   TargetExpressionArgument(String name, std::vector<String>& destination)
   : Argument(name), destination(destination) {}
   
-  virtual String toString() const
-    {return name + " ((targets)nbPasses(targets)nbPasses...)";}
+  virtual String getValueDescription() const
+    {return T("(targets)nbPasses(targets)nbPasses...");}
   
   virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
   {
@@ -197,6 +211,40 @@ private:
   String targets;
 };
 
+class FileArgument : public Argument
+{
+public:
+  FileArgument(String name, File& destination, bool mustExists = false, bool mustBeADirectory = false)
+    : Argument(name), destination(destination), mustExists(mustExists), mustBeADirectory(mustBeADirectory)
+  {}
+  
+  virtual String getValueDescription() const
+    {return (mustExists ? String("an existing ") + (mustBeADirectory ? T("directory") : T("file")) : T("path"));}
+  
+  virtual size_t parse(char** str, size_t startIndex, size_t stopIndex)
+  {
+    if (stopIndex - startIndex < 1)
+      return 0;
+    
+    File toCheck = File::getCurrentWorkingDirectory().getChildFile(str[++startIndex]);
+    if (mustExists)
+      if (!toCheck.exists() || (mustBeADirectory && !toCheck.isDirectory()))
+      return 0;
+    
+    destination = toCheck.getFullPathName();
+    
+    return 2;
+  }
+  
+  virtual String getStringValue() const
+  {return destination.getFullPathName();}
+  
+private:
+  File& destination;
+  bool mustExists;
+  bool mustBeADirectory;
+};
+
 class ArgumentSet
 {
 public:
@@ -215,13 +263,17 @@ public:
     arguments.push_back(newArgument);
     
     if (mandatory)
+    {
+      newArgument->markAsMandatory();
       mandatories.push_back(newArgument);
+    }
 
     return true;
   }
   
   bool parse(char** str, size_t startIndex, size_t nbStr)
   {
+    parsedArgument = 0;
     markArgumentsAsNotVisited();
     
     for (size_t i = startIndex; i < startIndex + nbStr; )
@@ -243,6 +295,7 @@ public:
       arg->markAsVisited();
 
       i += argRead;
+      ++parsedArgument;
     }
     
     if (!allMandatoryArgumentWasRead()) {
@@ -252,6 +305,9 @@ public:
     
     return true;
   }
+  
+  size_t numberReadArgument() const
+    {return parsedArgument;}
   
   String toString() const
   {
@@ -267,6 +323,7 @@ private:
   std::map<String, Argument* > nameToArgument;
   std::vector<Argument* > arguments;
   std::vector<Argument* > mandatories;
+  size_t parsedArgument;
   
   void markArgumentsAsNotVisited()
   {
