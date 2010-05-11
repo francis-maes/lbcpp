@@ -96,6 +96,41 @@ void Protein::computeMissingFields()
   ScoreSymmetricMatrixPtr residueResidueDistanceMatrixCa = getResidueResidueDistanceMatrixCa();
   ScoreSymmetricMatrixPtr residueResidueContactMatrix8Ca = getResidueResidueContactMatrix8Ca();
 
+  /*
+  ** Amino Acid Sequence - Reduced Alphabet
+  */
+  // J.Y. Yang and M.Q. Yang - Predicting protein disorder by analyzing amino acid sequence - BMC Genomics 2008
+  AminoAcidDictionary::Type aminoAcidMap[AminoAcidDictionary::unknown + 1] = {
+    AminoAcidDictionary::alanine,
+    AminoAcidDictionary::histidine,
+    AminoAcidDictionary::asparagine,
+    AminoAcidDictionary::asparticAcid,
+    AminoAcidDictionary::cysteine,
+    AminoAcidDictionary::asparticAcid,
+    AminoAcidDictionary::asparagine,
+    AminoAcidDictionary::alanine,
+    AminoAcidDictionary::histidine,
+    AminoAcidDictionary::isoleucine,
+    AminoAcidDictionary::isoleucine,
+    AminoAcidDictionary::histidine,
+    AminoAcidDictionary::methionine,
+    AminoAcidDictionary::phenylalanine,
+    AminoAcidDictionary::alanine,
+    AminoAcidDictionary::serine,
+    AminoAcidDictionary::serine,
+    AminoAcidDictionary::phenylalanine,
+    AminoAcidDictionary::phenylalanine,
+    AminoAcidDictionary::isoleucine,
+    AminoAcidDictionary::asparticAcid,
+    AminoAcidDictionary::asparticAcid,
+    AminoAcidDictionary::isoleucine,
+    AminoAcidDictionary::unknown
+  };
+  
+  LabelSequencePtr reducedAlphabetSequence = new LabelSequence(name, AminoAcidDictionary::getInstance(), getLength());
+  for (size_t i = 0; i < getLength(); ++i)
+    reducedAlphabetSequence->setIndex(i, aminoAcidMap[aminoAcidSequence->getIndex(i)]);
+  setObject(T("ReducedAminoAcidAlphabetSequence"), reducedAlphabetSequence);
 
   /*
   ** Secondary Structure

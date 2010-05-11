@@ -192,55 +192,8 @@ int main(int argc, char** argv)
 /*------------------------------------------------------------------------------
           /!\   Testing Area - BE CAREFUL - AT YOUR OWN RISK   /!\
 ------------------------------------------------------------------------------*/
-//#define VIEW
-#ifdef PSSM
-  while (!proteinsStream->isExhausted()) {
-    ProteinPtr myProtein = proteinsStream->nextAndCast<Protein>();
-    std::cout << myProtein->getName();
-    std::cout.flush();   
- 
-    File pssmFile("/scratch/jbecker/CB513_PSSM/SOFT_NR_DB/" + myProtein->getName() + T(".pssm"));
-    if (!pssmFile.exists()) {
-      std::cout << " No pssm file found !" << std::endl;
-      continue;
-    }
-    
-    ObjectPtr newPSSM = ObjectStreamPtr(new PSSMFileParser(pssmFile, myProtein->getLength()))->next(); 
-    jassert(newPSSM);
-    myProtein->setObject(newPSSM);
-  
-    File outputFile("/scratch/jbecker/CB513_PROTEIN/SOFT/" + myProtein->getName() + T(".protein"));
-    myProtein->saveToFile(outputFile);
-    
-    std::cout << " OK" << std::endl;
-  }
 
-  return 0;
 
-#endif
-#ifdef VIEW
-  while (!proteinsStream->isExhausted())
-  {
-    ProteinPtr protein = proteinsStream->nextAndCast<Protein>();
-    if (!protein)
-      continue;
-    File outputFile(T("/scratch/jbecker/PDB70/sequence/") + protein->getName() + T(".seq"));
-
-    std::cout << protein->getName() << " ... ";
-    std::cout.flush();
-    OutputStream* o = outputFile.createOutputStream();
-
-    *o << protein->getAminoAcidSequence()->toString();
-    o->flush();
-
-    delete o;
-
-    std::cout << "OK -> " << outputFile.getFullPathName() << std::endl;
-  }
-  
-  
-  return 0;
-#endif
 /*----------------------------------------------------------------------------*/
 
   /*
@@ -307,6 +260,9 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), wAA, wAA, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
   //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
+  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), wAA, wAA, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), wPSSM, wPSSM, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
