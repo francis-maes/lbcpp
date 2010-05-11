@@ -135,6 +135,8 @@ int main(int argc, char** argv)
   int wProp = 50;
   int numberAAIndex = 25;
   double regularizer = 20.0;
+  double DRRegularizer = 150.0;
+  double SARegularizer = 150.0;
   double initialLearningRate = 2.0;
   int numberIterationLearningRate = 150000;
   bool useSavedModel = false;
@@ -156,6 +158,8 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("SS8Window"), wSS8));
   arguments.insert(new IntegerArgument(T("SAWindow"), wSA));
   arguments.insert(new DoubleArgument(T("Regularizer"), regularizer));
+  arguments.insert(new DoubleArgument(T("DRRegularizer"), DRRegularizer));
+  arguments.insert(new DoubleArgument(T("SARegularizer"), SARegularizer));
   arguments.insert(new DoubleArgument(T("InitialLearningRate"), initialLearningRate));
   arguments.insert(new IntegerArgument(T("NumberIterationLearningRate"), numberIterationLearningRate));
   arguments.insert(new BooleanArgument(T("UseSavedModel"), useSavedModel));
@@ -273,7 +277,7 @@ int main(int argc, char** argv)
   if (isTestVersion)
     proteins = proteinsStream->load(7)->randomize();
   else
-    proteins = proteinsStream->load()->randomize();
+    proteins = proteinsStream->load(500)->randomize();
 
   for (size_t i = 0; i < proteins->size(); ++i)
   {
@@ -389,6 +393,8 @@ int main(int argc, char** argv)
   factory->setInitialLearningRate(initialLearningRate);
   factory->setNumberInterationLearningRate(numberIterationLearningRate);
   factory->setDRProbability(drProb);
+  factory->setDRRegularizer(DRRegularizer);
+  factory->setSARegularizer(SARegularizer);
 
   MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
   callback->useCache(true);

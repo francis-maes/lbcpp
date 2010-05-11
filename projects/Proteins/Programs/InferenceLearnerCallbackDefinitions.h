@@ -2,7 +2,7 @@
 class DefaultInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000), drProbability(0.2) {}
+  DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000), drProbability(0.2), drRegularizer(150.0), saRegularizer(150.0) {}
   
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
@@ -25,9 +25,15 @@ public:
     classifier->setL2Regularizer(regularizer);
 
     String inferenceStepName = stack->getInference(1)->getName();
-    if (inferenceStepName.startsWith(T("SA")) || inferenceStepName.startsWith(T("DR"))) {
-      classifier->setL2Regularizer(150);
-      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: 150";
+    if (inferenceStepName.startsWith(T("SA"))) {
+      classifier->setL2Regularizer(saRegularizer);
+      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: " << saRegularizer;
+    }
+
+    if (inferenceStepName.startsWith(T("DR")))
+    {
+      classifier->setL2Regularizer(drRegularizer);
+      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: " << drRegularizer;
     }
 
     return classifier;
@@ -54,11 +60,18 @@ public:
   void setDRProbability(double value)
     {this->drProbability = value;}
   
+  void setDRRegularizer(double value)
+    {this->drRegularizer = value;}
+
+  void setSARegularizer(double value)
+    {this->saRegularizer = value;}
 protected:
   double regularizer;
   double initialLearningRate;
   size_t numberIterationLearningRate;
   double drProbability;
+  double drRegularizer;
+  double saRegularizer;
 };
 
 typedef ReferenceCountedObjectPtr<DefaultInferenceLearnerCallback> DefaultInferenceLearnerCallbackPtr;
