@@ -68,7 +68,6 @@ inline EvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
 inline EvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
   {return objectContainerEvaluator(name, binaryClassificationConfusionEvaluator(name));}
 
-
 class BinaryClassificationConfusionMatrix : public Object
 {
 public:
@@ -103,6 +102,25 @@ private:
   size_t falseNegative, trueNegative; // predicted as negative
 
   size_t totalCount;
+};
+
+class ROCAnalyse : public Object
+{
+public:
+  ROCAnalyse() : numPositives(0), numNegatives(0) {}
+
+  void addPrediction(double predictedScore, bool isPositive);
+  double findBestThreshold(double& bestF1Score) const;
+
+  size_t getSampleCount() const
+    {return predictedScores.size();}
+
+  void clear()
+    {predictedScores.clear(); numPositives = numNegatives = 0;}
+
+private:
+  std::multimap<double, bool> predictedScores;
+  size_t numPositives, numNegatives;
 };
 
 }; /* namespace lbcpp */

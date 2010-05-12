@@ -25,6 +25,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinResiduePairFeatures> ProteinResiduePairFeaturesPtr;
 
+extern ProteinResiduePairFeaturesPtr proteinUnitResiduePairFeature();
 extern ProteinResiduePairFeaturesPtr separationLengthResiduePairFeatures();
 extern ProteinResiduePairFeaturesPtr proteinPointResiduePairFeatures(ProteinResidueFeaturesPtr pointFeatureGenerator);
 extern ProteinResiduePairFeaturesPtr proteinGlobalToResiduePairFeatures(ProteinGlobalFeaturesPtr globalFeatures);

@@ -75,7 +75,7 @@ protected:
   LearningDataObjectPrinter(OutputStream* newOutputStream)
     : TextObjectPrinter(newOutputStream) {}
 
-  void printFeatureList(FeatureGeneratorPtr features);
+  void printFeatureList(FeatureGeneratorPtr features, StringDictionaryPtr featureMapping = StringDictionaryPtr());
 };
 
 extern ObjectConsumerPtr objectSaveToFileConsumer(const File& directory, const String& extension);

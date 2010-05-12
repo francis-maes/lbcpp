@@ -15,68 +15,6 @@
 namespace lbcpp
 {
 
-class ROCAnalysisEvaluator : public Evaluator
-{
-public:
-  ROCAnalysisEvaluator(const String& name)
-    : Evaluator(name), numPositives(0), numNegatives(0) {}
-  ROCAnalysisEvaluator() {}
-
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
-  {
-    ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
-    LabelPtr correct = correctObject.dynamicCast<Label>();
-    if (!predicted || !correct)
-      return;
-    bool isPositive = (correct->getIndex() == 1);
-    isPositive ? ++numPositives : ++numNegatives;
-    predictedScores.insert(std::make_pair(predicted->getValue(), isPositive));
-  }
- 
-  virtual String toString() const
-  {
-    String res;
-
-    size_t truePositives = numPositives;
-    size_t falsePositives = numNegatives;
-
-/*    File directory(T("C:\\Projets\\LBC++\\projects\\temp"));
-    static int count = 0;
-    File curveFile = directory.getChildFile(T("Curve") + String(count) + T(".txt"));
-    curveFile.deleteFile();
-    std::ofstream ostr((const char* )curveFile.getFullPathName());
-    ++count;*/
-
-    double bestF1 = 0.0;
-    double bestThreshold = 0.5;
-    jassert(predictedScores.size() == (numPositives + numNegatives));
-    for (std::multimap<double, bool>::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-    {
-      size_t falseNegatives = numPositives - truePositives;
-      double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
-      if (f1 > bestF1)
-        bestF1 = f1, bestThreshold = it->first;
-      //ostr << it->first << " " << lbcpp::toString(100 * falsePositives / (double)numNegatives) << " " 
-      //      << lbcpp::toString(100 * truePositives / (double)numPositives) << " " << (100.0 * f1) << std::endl;
-      if (it->second)
-        --truePositives;
-      else
-        --falsePositives;
-    }
-    jassert(truePositives == 0 && falsePositives == 0);
-    return T("Best F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
-  }
-
-  virtual double getDefaultScore() const
-  {
-    return 0.0;
-  }
- 
-private:
-  std::multimap<double, bool> predictedScores;
-  size_t numPositives, numNegatives;
-};
-
 class BinaryClassificationConfusionEvaluator : public Evaluator
 {
 public:
@@ -118,6 +56,44 @@ public:
 
 protected:
   BinaryClassificationConfusionMatrix confusionMatrix;
+};
+
+class ROCAnalysisEvaluator : public Evaluator
+{
+public:
+  ROCAnalysisEvaluator(const String& name)
+    : Evaluator(name)  {}
+  ROCAnalysisEvaluator() {}
+
+  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  {
+    ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
+    LabelPtr correct = correctObject.dynamicCast<Label>();
+    if (!predicted || !correct)
+      return;
+    roc.addPrediction(predicted->getValue(), correct->getIndex() == 1);
+  }
+ 
+  virtual String toString() const
+  {
+    if (!roc.getSampleCount())
+      return String::empty;
+
+    double bestF1;
+    double bestThreshold = roc.findBestThreshold(bestF1);
+
+    return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
+  }
+
+  virtual double getDefaultScore() const
+  {
+    double bestF1;
+    roc.findBestThreshold(bestF1);
+    return bestF1;
+  }
+
+private:
+  ROCAnalyse roc;
 };
 
 }; /* namespace lbcpp */

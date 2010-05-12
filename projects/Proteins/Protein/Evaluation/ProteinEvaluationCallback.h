@@ -194,7 +194,7 @@ public:
     {return classificationEvaluator->toString() + T("\n") + rocEvaluator->toString();}
 
   virtual double getDefaultScore() const
-    {return classificationEvaluator->getDefaultScore();}
+    {return rocEvaluator->getDefaultScore();}
 
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {

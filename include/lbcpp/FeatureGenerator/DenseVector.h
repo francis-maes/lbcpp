@@ -210,7 +210,7 @@ public:
   {
     jassert(dictionary);
     int index = dictionary->getScopes()->getIndex(name);
-    return index > 0 ? getSubVector((size_t)index) : DenseVectorPtr();
+    return index >= 0 ? getSubVector((size_t)index) : DenseVectorPtr();
   }
 
   /**
