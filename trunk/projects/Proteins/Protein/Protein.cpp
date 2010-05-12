@@ -99,8 +99,9 @@ void Protein::computeMissingFields()
   /*
   ** Amino Acid Sequence - Reduced Alphabet
   */
+  LabelSequencePtr reducedAlphabetSequence = getObject(T("ReducedAminoAcidAlphabetSequence"));
   // J.Y. Yang and M.Q. Yang - Predicting protein disorder by analyzing amino acid sequence - BMC Genomics 2008
-  AminoAcidDictionary::Type aminoAcidMap[AminoAcidDictionary::unknown + 1] = {
+  static const AminoAcidDictionary::Type alphabetModel1[AminoAcidDictionary::unknown + 1] = {
     AminoAcidDictionary::alanine,
     AminoAcidDictionary::histidine,
     AminoAcidDictionary::asparagine,
@@ -126,11 +127,127 @@ void Protein::computeMissingFields()
     AminoAcidDictionary::isoleucine,
     AminoAcidDictionary::unknown
   };
+  // Lynne Reed Murphy et al. - Simplified amino  acid alphabets for protein fold recognition and implications for folding - Protein Engineering 2000
+  // Three groups
+  static const AminoAcidDictionary::Type alphabetModel2[AminoAcidDictionary::unknown + 1] = {
+    AminoAcidDictionary::alanine,          // A  -  Ala
+    AminoAcidDictionary::glutamicAcid,         // R  -  Arg
+    AminoAcidDictionary::glutamicAcid,       // N  -  Asn
+    AminoAcidDictionary::glutamicAcid,     // D  -  Asp
+    AminoAcidDictionary::alanine,         // C  -  Cys
+    AminoAcidDictionary::glutamicAcid,     // E  -  Glu
+    AminoAcidDictionary::glutamicAcid,        // Q  -  Gln
+    AminoAcidDictionary::alanine,          // G  -  Gly
+    AminoAcidDictionary::glutamicAcid,        // H  -  His
+    AminoAcidDictionary::alanine,       // I  -  Ile
+    AminoAcidDictionary::alanine,          // L  -  Leu
+    AminoAcidDictionary::glutamicAcid,           // K  -  Lys
+    AminoAcidDictionary::alanine,       // M  -  Met
+    AminoAcidDictionary::phenylalanine,    // F  -  Phe
+    AminoAcidDictionary::alanine,          // P  -  Pro
+    AminoAcidDictionary::alanine,           // S  -  Ser
+    AminoAcidDictionary::alanine,        // T  -  Thr
+    AminoAcidDictionary::phenylalanine,       // W  -  Trp
+    AminoAcidDictionary::phenylalanine,         // Y  -  Tyr
+    AminoAcidDictionary::alanine,           // V  -  Val
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown
+  };
+  // Five groups
+  static const AminoAcidDictionary::Type alphabetModel3[AminoAcidDictionary::unknown + 1] = {
+    AminoAcidDictionary::alanine,          // A  -  Ala
+    AminoAcidDictionary::histidine,         // R  -  Arg
+    AminoAcidDictionary::asparticAcid,       // N  -  Asn
+    AminoAcidDictionary::asparticAcid,     // D  -  Asp
+    AminoAcidDictionary::cysteine,         // C  -  Cys
+    AminoAcidDictionary::asparticAcid,     // E  -  Glu
+    AminoAcidDictionary::asparticAcid,        // Q  -  Gln
+    AminoAcidDictionary::alanine,          // G  -  Gly
+    AminoAcidDictionary::histidine,        // H  -  His
+    AminoAcidDictionary::cysteine,       // I  -  Ile
+    AminoAcidDictionary::cysteine,          // L  -  Leu
+    AminoAcidDictionary::histidine,           // K  -  Lys
+    AminoAcidDictionary::cysteine,       // M  -  Met
+    AminoAcidDictionary::phenylalanine,    // F  -  Phe
+    AminoAcidDictionary::alanine,          // P  -  Pro
+    AminoAcidDictionary::alanine,           // S  -  Ser
+    AminoAcidDictionary::alanine,        // T  -  Thr
+    AminoAcidDictionary::phenylalanine,       // W  -  Trp
+    AminoAcidDictionary::phenylalanine,         // Y  -  Tyr
+    AminoAcidDictionary::cysteine,           // V  -  Val
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown
+  };
+  // Six groups
+  static const AminoAcidDictionary::Type alphabetModel4[AminoAcidDictionary::unknown + 1] = {
+    AminoAcidDictionary::alanine,      // A  -  Ala
+    AminoAcidDictionary::lysine,         // R  -  Arg
+    AminoAcidDictionary::asparticAcid,       // N  -  Asn
+    AminoAcidDictionary::asparticAcid,     // D  -  Asp
+    AminoAcidDictionary::cysteine,         // C  -  Cys
+    AminoAcidDictionary::asparticAcid,     // E  -  Glu
+    AminoAcidDictionary::asparticAcid,        // Q  -  Gln
+    AminoAcidDictionary::alanine,          // G  -  Gly
+    AminoAcidDictionary::cysteine,        // H  -  His
+    AminoAcidDictionary::isoleucine,       // I  -  Ile
+    AminoAcidDictionary::isoleucine,          // L  -  Leu
+    AminoAcidDictionary::lysine,           // K  -  Lys
+    AminoAcidDictionary::isoleucine,       // M  -  Met
+    AminoAcidDictionary::phenylalanine,    // F  -  Phe
+    AminoAcidDictionary::cysteine,          // P  -  Pro
+    AminoAcidDictionary::alanine,           // S  -  Ser
+    AminoAcidDictionary::alanine,        // T  -  Thr
+    AminoAcidDictionary::phenylalanine,       // W  -  Trp
+    AminoAcidDictionary::phenylalanine,         // Y  -  Tyr
+    AminoAcidDictionary::isoleucine,           // V  -  Val
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown
+  };
+  // C. Etchebest et al. - A reduced amino acid alphabet for understanding and designing protein adaptation to mutation - European Biophysics Journal 2007
+  static const AminoAcidDictionary::Type alphabetModel5[AminoAcidDictionary::unknown + 1] = {
+    AminoAcidDictionary::alanine,      // A  -  Ala
+    AminoAcidDictionary::alanine,         // R  -  Arg
+    AminoAcidDictionary::cysteine,       // N  -  Asn
+    AminoAcidDictionary::cysteine,     // D  -  Asp
+    AminoAcidDictionary::cysteine,         // C  -  Cys
+    AminoAcidDictionary::alanine,     // E  -  Glu
+    AminoAcidDictionary::alanine,        // Q  -  Gln
+    AminoAcidDictionary::glycine,          // G  -  Gly
+    AminoAcidDictionary::cysteine,        // H  -  His
+    AminoAcidDictionary::phenylalanine,       // I  -  Ile
+    AminoAcidDictionary::alanine,          // L  -  Leu
+    AminoAcidDictionary::alanine,           // K  -  Lys
+    AminoAcidDictionary::alanine,       // M  -  Met
+    AminoAcidDictionary::phenylalanine,    // F  -  Phe
+    AminoAcidDictionary::proline,          // P  -  Pro
+    AminoAcidDictionary::cysteine,           // S  -  Ser
+    AminoAcidDictionary::cysteine,        // T  -  Thr
+    AminoAcidDictionary::phenylalanine,       // W  -  Trp
+    AminoAcidDictionary::phenylalanine,         // Y  -  Tyr
+    AminoAcidDictionary::phenylalanine,           // V  -  Val
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown,
+    AminoAcidDictionary::unknown
+  };
   
-  LabelSequencePtr reducedAlphabetSequence = new LabelSequence(name, AminoAcidDictionary::getInstance(), getLength());
-  for (size_t i = 0; i < getLength(); ++i)
-    reducedAlphabetSequence->setIndex(i, aminoAcidMap[aminoAcidSequence->getIndex(i)]);
-  setObject(T("ReducedAminoAcidAlphabetSequence"), reducedAlphabetSequence);
+  static const AminoAcidDictionary::Type* aminoAcidMap = alphabetModel4;
+  
+  if (!reducedAlphabetSequence)
+  {
+    reducedAlphabetSequence = new LabelSequence(T("ReducedAminoAcidAlphabetSequence"), AminoAcidDictionary::getInstance(), getLength());
+    for (size_t i = 0; i < getLength(); ++i)
+      reducedAlphabetSequence->setIndex(i, aminoAcidMap[aminoAcidSequence->getIndex(i)]);
+    setObject(reducedAlphabetSequence);
+//    std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
+//    std::cout << "RA1:" << reducedAlphabetSequence->toString() << std::endl;
+  }
 
   /*
   ** Secondary Structure
