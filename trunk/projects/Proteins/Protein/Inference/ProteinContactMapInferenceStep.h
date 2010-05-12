@@ -74,7 +74,7 @@ public:
     jassert(contactMap);
     if (!contactMap || !contactMap->hasScore(firstPosition, secondPosition))
       return ObjectPtr();
-    return hingeLoss(contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0, 0.0);
+    return hingeLoss(contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0, 1.0);
   }
 
   virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const

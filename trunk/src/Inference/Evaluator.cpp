@@ -131,3 +131,37 @@ void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& pr
   recall = (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;
   f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
 }
+
+/*
+** ROCAnalyse
+*/
+void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
+{
+  isPositive ? ++numPositives : ++numNegatives;
+  predictedScores.insert(std::make_pair(predictedScore, isPositive));
+}
+
+double ROCAnalyse::findBestThreshold(double& bestF1Score) const
+{
+  size_t truePositives = numPositives;
+  size_t falsePositives = numNegatives;
+
+  bestF1Score = 0.0;
+  double bestThreshold = 0.5;
+  jassert(predictedScores.size() == (numPositives + numNegatives));
+  for (std::multimap<double, bool>::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  {
+    size_t falseNegatives = numPositives - truePositives;
+    double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
+    if (f1 > bestF1Score)
+    {
+      bestF1Score = f1;
+      bestThreshold = it->first;
+    }
+    if (it->second)
+      --truePositives;
+    else
+      --falsePositives;
+  }
+  return bestThreshold;
+}

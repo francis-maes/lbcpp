@@ -38,6 +38,28 @@ bool CompositeProteinResiduePairFeatures::load(InputStream& istr)
 void CompositeProteinResiduePairFeatures::save(OutputStream& ostr) const
   {lbcpp::write(ostr, subFeatureFunctions);}
 
+/*
+** ProteinUnitResiduePairFeature
+*/
+class ProteinUnitResiduePairFeature : public ProteinResiduePairFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+    {featureSense(0);}
+
+  virtual String toString() const
+    {return T("unit");}
+
+  virtual String getName() const
+    {return T("unit");}
+};
+
+ProteinResiduePairFeaturesPtr lbcpp::proteinUnitResiduePairFeature()
+  {return new ProteinUnitResiduePairFeature();}
+
+/*
+** ProteinPointResiduePairFeatures
+*/
 class ProteinPointResiduePairFeatures : public ProteinResiduePairFeatures
 {
 public:
@@ -45,22 +67,10 @@ public:
     : pointFeatureGenerator(pointFeatureGenerator) {}
   ProteinPointResiduePairFeatures() {}
 
-  void prepare(ProteinPtr protein)
-  {
-    if (currentProtein != protein)
-    {
-      pointFeatures.resize(protein->getLength());
-      for (size_t i = 0; i < pointFeatures.size(); ++i)
-        pointFeatures[i] = pointFeatureGenerator->compute(protein, i)->toSparseVector();
-      currentProtein = protein;
-    }
-  }
-
   virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
-  {
-    prepare(protein);
-    featureCall(0) pointFeatures[firstPosition];
-    featureCall(1) pointFeatures[secondPosition];
+  {   
+    featureCall(0) getFeatures(protein, firstPosition);
+    featureCall(1) getFeatures(protein, secondPosition);
   }
 
   virtual String getName() const
@@ -76,6 +86,19 @@ protected:
 
   virtual void save(OutputStream& ostr) const
     {ProteinResiduePairFeatures::save(ostr); lbcpp::write(ostr, pointFeatureGenerator);}
+
+  FeatureGeneratorPtr getFeatures(ProteinPtr protein, size_t position)
+  {
+    if (currentProtein != protein)
+    {
+      pointFeatures.clear();
+      pointFeatures.resize(protein->getLength());
+      currentProtein = protein;
+    }
+    if (!pointFeatures[position])
+      pointFeatures[position] = pointFeatureGenerator->compute(protein, position)->toSparseVector();
+    return pointFeatures[position];
+  }
 };
 
 ProteinResiduePairFeaturesPtr lbcpp::proteinPointResiduePairFeatures(ProteinResidueFeaturesPtr pointFeatureGenerator)
@@ -258,6 +281,7 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinPositionIndexResiduePairFeature()
 */
 void declareProteinResiduePairFeaturesClasses()
 {
+  LBCPP_DECLARE_CLASS(ProteinUnitResiduePairFeature);
   LBCPP_DECLARE_CLASS(CompositeProteinResiduePairFeatures);
   LBCPP_DECLARE_CLASS(ProteinPointResiduePairFeatures);
   LBCPP_DECLARE_CLASS(SeparationLengthProteinResiduePairFeatures);

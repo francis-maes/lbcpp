@@ -84,26 +84,51 @@ TextObjectPrinter::TextObjectPrinter(const File& file)
 */
 struct WriteFeatureListVisitor : public PathBasedFeatureVisitor
 {
-  WriteFeatureListVisitor(OutputStream& ostr) : ostr(ostr), isFirst(true) {}
+  WriteFeatureListVisitor(OutputStream& ostr, StringDictionaryPtr featureMapping) : ostr(ostr), isFirst(true), featureMapping(featureMapping) {}
   
   OutputStream& ostr;
   bool isFirst;
+  StringDictionaryPtr featureMapping;
+  std::map<size_t, double> features;
   
   virtual void featureSense(const std::vector<size_t>& path, const String& name, double value)
   {
     if (value)
     {
+      if (featureMapping)
+        features[featureMapping->add(name)] += value;
+      else
+      {
+        if (isFirst)
+          isFirst = false;
+        else
+          ostr << " ";
+        ostr << name << ":" << value;
+      }
+    }
+  }
+
+  void finalize()
+  {
+    for (std::map<size_t, double>::const_iterator it = features.begin(); it != features.end(); ++it)
+    {
       if (isFirst)
         isFirst = false;
       else
         ostr << " ";
-      ostr << (const char* )name << ":" << value;
+      String value = lbcpp::toString(it->second);
+      jassert(value.containsOnly(T("0123456789.e-")));
+      ostr << lbcpp::toString(it->first) << ":" << value;
     }
   }
 };
 
-void LearningDataObjectPrinter::printFeatureList(FeatureGeneratorPtr features)
-  {features->accept(new WriteFeatureListVisitor(*ostr));}
+void LearningDataObjectPrinter::printFeatureList(FeatureGeneratorPtr features, StringDictionaryPtr featureMapping)
+{
+  ReferenceCountedObjectPtr<WriteFeatureListVisitor> visitor = new WriteFeatureListVisitor(*ostr, featureMapping);
+  features->accept(visitor);
+  visitor->finalize();
+}
 
 /*
 ** ClassificationExamplesPrinter
