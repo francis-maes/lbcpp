@@ -205,7 +205,7 @@ public:
     LBCPP_DECLARE_CLASS(ExplorerConfiguration);
     LBCPP_DECLARE_CLASS(RecentProcesses);
     LBCPP_DECLARE_CLASS(ProcessConsoleSettings);
-      LBCPP_DECLARE_CLASS(ProcessConsoleFilter);
+    LBCPP_DECLARE_CLASS(ProcessConsoleFilter);
 
     theCommandManager = new ApplicationCommandManager();
 
@@ -250,8 +250,12 @@ private:
 
 // START_JUCE_APPLICATION(ExplorerApplication)
 // pb de link ...
-
 int main(int argc, char* argv[])
 {
+  /*
+  #include "Utilities/SshConnection.h"
+  SshConnection ssh(T("jbecker"), T("@lphaBrav0"), T("nic3.ulg.ac.be"), 22);
+  ssh.test(T("echo OK"));
+  */
   return JUCEApplication::main (argc, argv, new ExplorerApplication());
 }

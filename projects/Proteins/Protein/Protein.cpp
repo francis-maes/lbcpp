@@ -323,6 +323,101 @@ void Protein::computeMissingFields()
     setObject(residueResidueContactMatrix8Ca = residueResidueDistanceMatrixCa->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Ca"), 8.0, 1.0, 0.0));
   if (residueResidueDistanceMatrixCb && !residueResidueContactMatrix8Cb)
     setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Cb"), 8.0, 1.0, 0.0));
+
+  /*
+  ** Descriptors from "A HMM derived structural alphabet for proteins" (2004)
+  */
+  static const double structuralAlphabetDescriptiors[27][4] = {
+    {5.39 ,5.09 ,5.38 ,2.92},
+    {5.43 ,5.09 ,5.42 ,2.94},
+    {5.41 ,5.23 ,5.61 ,2.86},
+    {5.62 ,5.25 ,5.42 ,2.87},
+    {5.59 ,5.49 ,5.78 ,2.58},
+    {5.40 ,5.58 ,5.42 ,3.39},
+    {5.78 ,5.68 ,6.07 ,1.46},
+    {5.55 ,7.74 ,5.60 ,-3.31},
+    {5.60 ,6.71 ,5.50 ,3.69},
+    {5.69 ,8.09 ,5.67 ,3.09},
+    {5.66 ,8.95 ,6.54 ,2.09},
+    {5.66 ,8.91 ,6.66 ,-1.46},
+    {5.66 ,8.07 ,6.70 ,2.96},
+    {5.70 ,7.26 ,7.02 ,0.88},
+    {6.03 ,6.85 ,5.64 ,-0.63},
+    {6.47 ,5.92 ,5.56 ,0.53},
+    {6.57 ,8.96 ,5.58 ,-2.19},
+    {6.71 ,8.27 ,5.47 ,-3.56},
+    {6.21 ,9.21 ,5.77 ,0.27},
+    {6.87 ,8.28 ,6.03 ,-3.44},
+    {6.89 ,8.94 ,6.76 ,-0.48},
+    {6.72 ,9.12 ,6.41 ,-3.31},
+    {6.71 ,9.64 ,6.50 ,-2.60},
+    {6.39 ,9.93 ,6.75 ,-1.07},
+    {6.87 ,10.06 ,6.51 ,-1.41},
+    {6.48 ,10.17 ,7.09 ,0.66},
+    {6.80 ,10.35 ,6.85 ,-0.25}
+  };
+
+  LabelSequencePtr structuralAlphabetSequence = getObject(T("StructuralAlphabetSequence"));
+  if (calphaTrace && !structuralAlphabetSequence)
+  {
+    structuralAlphabetSequence = new LabelSequence(T("StructuralAlphabetSequence"), StructuralAlphabetDictionary::getInstance(), getLength());  
+    
+    for (size_t i = 3; i < calphaTrace->size(); ++i)
+    {
+      Vector3ObjectPtr v3o_a = static_cast<Vector3ObjectPtr>(calphaTrace->get(i - 3));
+      Vector3ObjectPtr v3o_b = static_cast<Vector3ObjectPtr>(calphaTrace->get(i - 2));
+      Vector3ObjectPtr v3o_c = static_cast<Vector3ObjectPtr>(calphaTrace->get(i - 1));
+      Vector3ObjectPtr v3o_d = static_cast<Vector3ObjectPtr>(calphaTrace->get(i));
+      
+      if (!v3o_a || !v3o_b || !v3o_c || !v3o_d)
+      {
+        ++i;
+        continue;
+      }
+      
+      Vector3 a = v3o_a->getValue();
+      Vector3 b = v3o_b->getValue();
+      Vector3 c = v3o_c->getValue();
+      Vector3 d = v3o_d->getValue();
+      
+      double d1 = (a - c).l2norm();
+      double d2 = (a - d).l2norm();
+      double d3 = (b - d).l2norm();
+      
+      Vector3 normalVector =  (b - a).crossProduct(c - a);
+      
+      double d4 = (normalVector.dotProduct(d) - normalVector.dotProduct(a)) / normalVector.l2norm();
+      
+      size_t bestGroup = 0;
+      double minDistance = DBL_MAX;
+      for (size_t j = 0; j < 27; ++j)
+      {
+        double diff_1 = d1 - structuralAlphabetDescriptiors[j][0];
+        double diff_2 = d2 - structuralAlphabetDescriptiors[j][1];
+        double diff_3 = d3 - structuralAlphabetDescriptiors[j][2];
+        double diff_4 = d4 - structuralAlphabetDescriptiors[j][3];
+        
+        diff_1 *= diff_1;
+        diff_2 *= diff_2;
+        diff_3 *= diff_3;
+        diff_4 *= diff_4;
+        
+        double dist = sqrt(diff_1 + diff_2 + diff_3 + diff_4);
+        
+        if (dist < minDistance)
+        {
+          minDistance = dist;
+          bestGroup = j;
+        }
+      }
+
+      structuralAlphabetSequence->setIndex(i, bestGroup);
+      //std::cout << d1 << "\t" << d2 << "\t" << d3 << "\t" << d4 << "\t\t" << bestGroup << std::endl;
+    }
+  
+    setObject(structuralAlphabetSequence);
+    //std::cout << "SAS:" << structuralAlphabetSequence->toString() << std::endl;
+  }
 }
 
 ObjectPtr Protein::createEmptyObject(const String& name) const
@@ -386,6 +481,9 @@ ScoreVectorSequencePtr Protein::getAminoAcidProperty() const
 
 LabelSequencePtr Protein::getSecondaryStructureSequence() const
   {return getObject(T("SecondaryStructureSequence"));}
+
+LabelSequencePtr Protein::getReducedAminoAcidAlphabetSequence() const
+  {return getObject(T("ReducedAminoAcidAlphabetSequence"));}
 
 ScoreVectorSequencePtr Protein::getSecondaryStructureProbabilities() const
   {return getObject(T("SecondaryStructureProbabilities"));}

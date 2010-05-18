@@ -66,6 +66,14 @@ private:
   AminoAcidPropertyDictionary();
 };
 
+class StructuralAlphabetDictionary : public FeatureDictionary
+{
+public:
+  static FeatureDictionaryPtr getInstance();
+
+private:
+  StructuralAlphabetDictionary();
+};
 
 }; /* namespace lbcpp */
 
