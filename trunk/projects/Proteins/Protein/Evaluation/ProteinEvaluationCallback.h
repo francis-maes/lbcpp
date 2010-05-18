@@ -239,7 +239,8 @@ public:
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
     tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))),
     calphaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRa"))),
-    cbetaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRb")))
+    cbetaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRb"))),
+    structuralAlphabetEvaluator(sequenceLabelingAccuracyEvaluator(T("StAl")))
     {}
 
   virtual String toString() const
@@ -258,6 +259,7 @@ public:
     evaluatorToString(res, tertiaryStructureEvaluator);
     evaluatorToString(res, calphaContactMapEvaluator);
     evaluatorToString(res, cbetaContactMapEvaluator);
+    evaluatorToString(res, structuralAlphabetEvaluator);
     return res;
   }
 
@@ -281,6 +283,7 @@ public:
     tertiaryStructureEvaluator->addPrediction(predicted->getTertiaryStructure(), correct->getTertiaryStructure());
     calphaContactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Ca(), correct->getResidueResidueContactMatrix8Ca());
     cbetaContactMapEvaluator->addPrediction(predicted->getResidueResidueContactMatrix8Cb(), correct->getResidueResidueContactMatrix8Cb());
+    structuralAlphabetEvaluator->addPrediction(predicted->getStructuralAlphabetSequence(), correct->getStructuralAlphabetSequence());
   }
 
   EvaluatorPtr getEvaluatorForTarget(const String& targetName)
@@ -305,6 +308,8 @@ public:
       return calphaContactMapEvaluator;
     if (targetName == T("ResidueResidueContactMatrix8Cb"))
       return cbetaContactMapEvaluator;
+    if (targetName == T("StructuralAlphabetSequence"))
+      return structuralAlphabetEvaluator;
     return EvaluatorPtr();
   }
   
@@ -324,6 +329,7 @@ protected:
   EvaluatorPtr tertiaryStructureEvaluator;
   EvaluatorPtr calphaContactMapEvaluator;
   EvaluatorPtr cbetaContactMapEvaluator;
+  EvaluatorPtr structuralAlphabetEvaluator;
 
   static void evaluatorToString(String& res, EvaluatorPtr evaluator)
   {

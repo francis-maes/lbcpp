@@ -460,6 +460,8 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
     return new BondCoordinatesSequence(name, n - 1);
   else if (name == T("TertiaryStructure"))
     return new ProteinTertiaryStructure(n);
+  else if (name == T("StructuralAlphabetSequence"))
+    return new LabelSequence(name, StructuralAlphabetDictionary::getInstance(), n);
   else
   {
     jassert(false);
@@ -484,6 +486,9 @@ LabelSequencePtr Protein::getSecondaryStructureSequence() const
 
 LabelSequencePtr Protein::getReducedAminoAcidAlphabetSequence() const
   {return getObject(T("ReducedAminoAcidAlphabetSequence"));}
+
+LabelSequencePtr Protein::getStructuralAlphabetSequence() const
+  {return getObject(T("StructuralAlphabetSequence"));}
 
 ScoreVectorSequencePtr Protein::getSecondaryStructureProbabilities() const
   {return getObject(T("SecondaryStructureProbabilities"));}

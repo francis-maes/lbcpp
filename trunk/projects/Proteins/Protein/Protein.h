@@ -52,6 +52,7 @@ public:
   ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const;
   ScoreVectorSequencePtr getAminoAcidProperty() const;
   LabelSequencePtr getReducedAminoAcidAlphabetSequence() const;
+  LabelSequencePtr getStructuralAlphabetSequence() const;
 
   /*
   ** Secondary Structure
