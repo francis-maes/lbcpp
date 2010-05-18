@@ -345,6 +345,12 @@ int main(int argc, char** argv)
       step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
       proteinInference->appendStep(step);
     }
+    
+    if (predictionTarget.contains(T("StAl")))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("StAl_Pass_") + lbcpp::toString(i), featureFunction, T("StructuralAlphabetSequence"));
+      proteinInference->appendStep(step);
+    }
   }
 
   DefaultInferenceLearnerCallbackPtr factory = new DefaultInferenceLearnerCallback();
