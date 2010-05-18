@@ -28,6 +28,7 @@ public:
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setObject(protein->getAminoAcidSequence());
     inputProtein->setObject(protein->getPositionSpecificScoringMatrix());
+    inputProtein->setObject(protein->getReducedAminoAcidAlphabetSequence());
     return new ObjectPair(inputProtein, protein);
   }
 };

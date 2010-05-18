@@ -264,6 +264,9 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), wAA, wAA, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
 
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), wAA, wAA, true));
+
+
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), wPSSM, wPSSM, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
   //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));

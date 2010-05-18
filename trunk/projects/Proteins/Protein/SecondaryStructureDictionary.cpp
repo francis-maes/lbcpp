@@ -102,3 +102,20 @@ AminoAcidPropertyDictionary::AminoAcidPropertyDictionary()
   addFeature(T("DeleageRoux"));
 }
 
+/*
+** StructuralAlphabetDictionary
+*/
+FeatureDictionaryPtr StructuralAlphabetDictionary::getInstance()
+{
+  static FeatureDictionaryPtr instance = new StructuralAlphabetDictionary();
+  return instance;
+}
+
+StructuralAlphabetDictionary::StructuralAlphabetDictionary()
+: FeatureDictionary(T("StructuralAlphabet"), new StringDictionary(T("StructuralAlphabet features")), StringDictionaryPtr())
+{
+  addFeature(T("a"));
+  for (size_t i = 0; i < 26; ++i)
+    addFeature(String((char) ('A' + i)) + T("-"));
+}
+
