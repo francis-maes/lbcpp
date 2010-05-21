@@ -261,7 +261,7 @@ public:
   GnuPlotInferenceLearnerCallback(String& prefix)
     : prefixFilename(prefix)
     , startTimePass(juce::Time::getMillisecondCounter())
-    , bestTrainingScore(0.), bestTestingScore(0.)
+    , bestTrainingScore(-DBL_MAX), bestTestingScore(-DBL_MAX)
     {}
   
   ~GnuPlotInferenceLearnerCallback()
@@ -282,8 +282,8 @@ public:
   
   virtual void preLearningStepCallback(InferencePtr step)
   {
-    bestTrainingScore = 0.;
-    bestTestingScore = 0.;
+    bestTrainingScore = -DBL_MAX;
+    bestTestingScore = -DBL_MAX;
   }
   
   virtual void postLearningStepCallback(InferencePtr step)
