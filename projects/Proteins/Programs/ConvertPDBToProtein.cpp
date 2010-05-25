@@ -23,7 +23,10 @@ bool convert(const File& inputFile, const File& outputFile)
  
   File output = outputFile;
   if (output.isDirectory())
+  {
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
+    protein->saveToPDBFile(outputFile.getChildFile(inputFile.getFileNameWithoutExtension() + T(".pdb")));
+  }
   protein->saveToFile(output);
   return true;
 }

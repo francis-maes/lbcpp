@@ -2,7 +2,7 @@
 class DefaultInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
-  DefaultInferenceLearnerCallback() : regularizer(1.0), initialLearningRate(2.0), numberIterationLearningRate(150000), drProbability(0.2), drRegularizer(150.0), saRegularizer(150.0) {}
+  DefaultInferenceLearnerCallback() : regularizer(0.0), initialLearningRate(2.0), numberIterationLearningRate(150000), drProbability(0.2), drRegularizer(150.0), saRegularizer(150.0) {}
   
   virtual InferenceContextPtr createContext()
     {return singleThreadedInferenceContext();}
@@ -24,16 +24,18 @@ public:
     GradientBasedClassifierPtr classifier = maximumEntropyClassifier(learner, labels);
     classifier->setL2Regularizer(regularizer);
 
+    std::cout << "DefaultInferenceLearnerCallback::createClassifier - DEFAULT Regularizer: " << regularizer;
+
     String inferenceStepName = stack->getInference(1)->getName();
     if (inferenceStepName.startsWith(T("SA"))) {
-      classifier->setL2Regularizer(saRegularizer);
-      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: " << saRegularizer;
+      classifier->setL2Regularizer(0.5);
+      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: 0.5";
     }
 
-    if (inferenceStepName.startsWith(T("DR")))
+    if (inferenceStepName.startsWith(T("SS8")))
     {
-      classifier->setL2Regularizer(drRegularizer);
-      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: " << drRegularizer;
+      classifier->setL2Regularizer(10);
+      std::cout << "DefaultInferenceLearnerCallback::createClassifier - Regularizer: 10";
     }
 
     return classifier;
@@ -45,7 +47,7 @@ public:
     
     IterationFunctionPtr learningRate = useConstantLearningRate ? invLinearIterationFunction(initialLearningRate, numberIterationLearningRate) : constantIterationFunction(0.5);
     GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-    return generalizedLinearRegressor(learner, 0.0/*regularizer*/);
+    return generalizedLinearRegressor(learner, regularizer);
   }
   
   void setL2Regularizer(double regularizer)
@@ -59,12 +61,13 @@ public:
 
   void setDRProbability(double value)
     {this->drProbability = value;}
-  
+/*  
   void setDRRegularizer(double value)
     {this->drRegularizer = value;}
 
   void setSARegularizer(double value)
     {this->saRegularizer = value;}
+*/
 protected:
   double regularizer;
   double initialLearningRate;
