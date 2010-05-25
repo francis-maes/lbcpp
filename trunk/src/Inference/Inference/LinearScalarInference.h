@@ -45,6 +45,17 @@ public:
     }
   }
 
+  virtual FeatureGeneratorPtr getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput, double& lossValue)
+  {
+    FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
+    ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
+    ScalarPtr prediction = predictedOutput.dynamicCast<Scalar>();
+    jassert(features && lossFunction && prediction);
+    double lossDerivative;
+    lossFunction->compute(prediction->getValue(), &lossValue, &lossDerivative);
+    return multiplyByScalar(features, lossDerivative);  
+  }
+
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();

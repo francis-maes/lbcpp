@@ -12,6 +12,7 @@
 # include "Inference.h"
 # include "../ObjectPredeclarations.h"
 # include "../Utilities/RandomVariable.h"
+# include "../Utilities/IterationFunction.h"
 
 namespace lbcpp
 {
@@ -43,31 +44,45 @@ public:
     {}
 };
 
-class ScalarInferenceLearningCallback : public InferenceCallback
-{
-public:
-  ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step);
-
-  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
-  virtual size_t postEpisodeCallback() {return 0;}
-
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
-
-protected:
-  LearnableAtomicInferencePtr step;
-  size_t epoch;
-  ScalarVariableMean inputSize;
-  InferencePtr currentParentStep;
-
-  void updateInputSize(FeatureGeneratorPtr inputfeatures);
-};
-
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
-extern InferenceCallbackPtr stochasticScalarLinearInferenceLearningCallback(InferencePtr inference,
-                                                                            IterationFunctionPtr learningRate,
-                                                                            ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(),
-                                                                            bool normalizeLearningRate = true);
+
+class LearningInferenceCallback : public InferenceCallback
+{
+public:
+  LearningInferenceCallback(InferencePtr inference)
+    : inference(inference) {}
+
+  enum UpdateFrequency
+  {
+    never,
+    perStep,
+    perEpisode,
+    perPass,
+    perStepMiniBatch
+  };
+
+  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput) = 0;
+  virtual void episodeFinishedCallback() = 0;
+  virtual void passFinishedCallback() = 0;
+
+protected:
+  InferencePtr inference;
+  InferencePtr currentParentStep;
+
+  virtual void finishInferencesCallback();
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
+};
+
+typedef ReferenceCountedObjectPtr<LearningInferenceCallback> LearningInferenceCallbackPtr;
+
+extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(InferencePtr inference, 
+                                          LearningInferenceCallback::UpdateFrequency learningUpdateFrequency = LearningInferenceCallback::perEpisode,
+                                          IterationFunctionPtr learningRate = constantIterationFunction(1.0),
+                                          bool normalizeLearningRate = true,
+                                          LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
+                                          LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency = LearningInferenceCallback::perEpisode,
+                                          ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr());
 
 }; /* namespace lbcpp */
 

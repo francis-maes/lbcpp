@@ -31,6 +31,8 @@ public:
 
   virtual void accept(InferenceVisitorPtr visitor);
 
+  virtual FeatureGeneratorPtr getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput, double& exampleLossValue) = 0;
+
   DenseVectorPtr getParameters() const
     {return parameters;}
 
@@ -106,7 +108,6 @@ public:
 protected:
   InferencePtr subInference;
 };
-
 
 class ParallelSharedMultiRegressionInference : public SharedParallelInference
 {

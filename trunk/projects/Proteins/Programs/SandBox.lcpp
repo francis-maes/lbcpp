@@ -22,6 +22,57 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+class ScalarInferenceLearningCallback : public InferenceCallback
+{
+public:
+  ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step);
+
+  virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
+  virtual size_t postEpisodeCallback() {return 0;}
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
+
+protected:
+  LearnableAtomicInferencePtr step;
+  size_t epoch;
+  ScalarVariableMean inputSize;
+  InferencePtr currentParentStep;
+
+  void updateInputSize(FeatureGeneratorPtr inputfeatures);
+};
+
+/*
+** ScalarInferenceLearningCallback
+*/
+ScalarInferenceLearningCallback::ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step)
+    : step(step), epoch(1) {}
+
+void ScalarInferenceLearningCallback::postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+{
+  if (step == stack->getCurrentInference() && supervision && output)
+  {
+    currentParentStep = stack->getParentInference();
+    FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
+    ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+    ScalarPtr prediction = output.dynamicCast<Scalar>();
+    jassert(features && loss && prediction);
+    epoch += postInferenceCallback(epoch, features, prediction->getValue(), loss);
+  }
+  else if (stack->getCurrentInference() == currentParentStep)
+    epoch += postEpisodeCallback();
+}
+
+void ScalarInferenceLearningCallback::updateInputSize(FeatureGeneratorPtr inputfeatures)
+{
+  // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
+  if (inputSize.getCount() < 10 ||                         // every time until having 10 samples
+      (inputSize.getCount() < 100 && (epoch % 10 == 0)) || // every 10 epochs until having 100 samples
+      (epoch % 100 == 0))                                  // every 100 epochs after that
+    inputSize.push((double)(inputfeatures->l1norm()));
+}
+
+// -
+
 class IterativeScalarInferenceLearningCallback : public ScalarInferenceLearningCallback
 {
 public:
@@ -823,7 +874,7 @@ int main(int argc, char** argv)
   
   ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
-        smallPDBDirectory.getChildFile(T("protein")))->load();
+        smallPDBDirectory.getChildFile(T("protein")))->load(7);
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -894,11 +945,11 @@ int main(int argc, char** argv)
 
   for (size_t i = 0; i < 1; ++i)
   {
-    Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
-                                                       pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
-    proteinInference->appendStep(step);
+    //Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
+    //                                                   pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
+    //proteinInference->appendStep(step);
     
-      //proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
+    proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
 #if 0
       step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
       proteinInference->appendStep(step);
