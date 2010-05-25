@@ -187,7 +187,10 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
   Inference/InferenceCallback/ExamplesCreatorCallback.h
-  Inference/InferenceCallback/StochasticScalarLinearInferenceLearningCallback.h
+  Inference/InferenceCallback/GradientDescentLearningCallback.h
+  Inference/InferenceCallback/GradientDescentLearningCallback.cpp
+  Inference/InferenceCallback/PerStepGradientDescentLearningCallback.h
+  Inference/InferenceCallback/RandomizedPerStepGradientDescentLearningCallback.h
 )
 
 SET(LBCPP_INFERENCE_LEARNER_SOURCES
