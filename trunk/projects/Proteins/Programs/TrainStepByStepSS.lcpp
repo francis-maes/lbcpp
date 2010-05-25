@@ -133,17 +133,19 @@ int main(int argc, char** argv)
   int wSS8 = 10;
   int wSA = 10;
   int wProp = 50;
+  int wStAl = 20;
+  int wStAlFreq = 80;
   int numberAAIndex = 25;
-  double regularizer = 20.0;
-  double DRRegularizer = 150.0;
-  double SARegularizer = 150.0;
+  double regularizer = 0.0;
+//  double DRRegularizer = 150.0;
+//  double SARegularizer = 150.0;
   double initialLearningRate = 2.0;
   int numberIterationLearningRate = 150000;
   bool useSavedModel = false;
   String savedModelDirectory("SAVED_MODEL");
   
   bool isTestVersion = false;
-  
+
   ArgumentSet arguments;
   arguments.insert(new StringArgument(T("ProteinsDirectory"), proteinsDirectory));
   arguments.insert(new StringArgument(T("PrefixResults"), prefixResults));
@@ -157,9 +159,11 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("SS3Window"), wSS3));
   arguments.insert(new IntegerArgument(T("SS8Window"), wSS8));
   arguments.insert(new IntegerArgument(T("SAWindow"), wSA));
+  arguments.insert(new IntegerArgument(T("StAlWindow"), wStAl));
+  arguments.insert(new IntegerArgument(T("StAlWindowFreq"), wStAlFreq));
   arguments.insert(new DoubleArgument(T("Regularizer"), regularizer));
-  arguments.insert(new DoubleArgument(T("DRRegularizer"), DRRegularizer));
-  arguments.insert(new DoubleArgument(T("SARegularizer"), SARegularizer));
+//  arguments.insert(new DoubleArgument(T("DRRegularizer"), DRRegularizer));
+//  arguments.insert(new DoubleArgument(T("SARegularizer"), SARegularizer));
   arguments.insert(new DoubleArgument(T("InitialLearningRate"), initialLearningRate));
   arguments.insert(new IntegerArgument(T("NumberIterationLearningRate"), numberIterationLearningRate));
   arguments.insert(new BooleanArgument(T("UseSavedModel"), useSavedModel));
@@ -230,7 +234,7 @@ int main(int argc, char** argv)
   if (isTestVersion)
     proteins = proteinsStream->load(7)->randomize();
   else
-    proteins = proteinsStream->load(500)->randomize();
+    proteins = proteinsStream->load(140)->randomize();
 
   for (size_t i = 0; i < proteins->size(); ++i)
   {
@@ -261,11 +265,13 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
   //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
   
+  featureFunction->addSubFeatures(proteinPositionFeatures());
+  
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), wAA, wAA, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
 
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), wAA, wAA, true));
-
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), wStAl, wStAl, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), wStAlFreq, true));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), wPSSM, wPSSM, true));
   featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
@@ -288,25 +294,17 @@ int main(int argc, char** argv)
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
-  std::cout << "New features: ";
   if (testFeatures.contains(T("SegCon")))
   {
     featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
-    std::cout << "SegmentConjunction(2)  ";
-  }
-
-  if (testFeatures.contains(T("Pos")))
-  {
-    featureFunction->addSubFeatures(proteinPositionFeatures());
-    std::cout << "Position  ";
+    std::cout << "SegmentConjunction(2)" << std::endl;
   }
 
   if (testFeatures.contains(T("Len")))
   {
     featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
-    std::cout << "Length  ";
+    std::cout << "Length" << std::endl;
   }
-  std::cout << std::endl;
   
   /*
   ** Creation of the inference
@@ -358,8 +356,8 @@ int main(int argc, char** argv)
   factory->setInitialLearningRate(initialLearningRate);
   factory->setNumberInterationLearningRate(numberIterationLearningRate);
   factory->setDRProbability(drProb);
-  factory->setDRRegularizer(DRRegularizer);
-  factory->setSARegularizer(SARegularizer);
+//  factory->setDRRegularizer(DRRegularizer);
+//  factory->setSARegularizer(SARegularizer);
 
   MultiInferenceLearnerCallbackPtr callback = new MultiInferenceLearnerCallback(trainingData, testingData, factory);
   callback->useCache(true);

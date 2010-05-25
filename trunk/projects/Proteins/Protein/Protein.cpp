@@ -237,10 +237,11 @@ void Protein::computeMissingFields()
     AminoAcidDictionary::unknown
   };
   
-  static const AminoAcidDictionary::Type* aminoAcidMap = alphabetModel4;
+  static const AminoAcidDictionary::Type* aminoAcidMap = alphabetModel2;
   
   if (!reducedAlphabetSequence)
   {
+//    std::cout << "Reduced alphabet: Model 5" << std::endl;
     reducedAlphabetSequence = new LabelSequence(T("ReducedAminoAcidAlphabetSequence"), AminoAcidDictionary::getInstance(), getLength());
     for (size_t i = 0; i < getLength(); ++i)
       reducedAlphabetSequence->setIndex(i, aminoAcidMap[aminoAcidSequence->getIndex(i)]);
