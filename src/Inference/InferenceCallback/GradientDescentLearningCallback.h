@@ -59,6 +59,7 @@ protected:
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
   void applyExample(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
   void applyRegularizer();
+  void checkRegularizerAfterStep();
   void parametersChanged();
 
   virtual void finishInferencesCallback();
