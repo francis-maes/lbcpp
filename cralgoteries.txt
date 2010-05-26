@@ -1,9 +1,10 @@
-
+ * MultiClassLinearSVMInference
+ * MultiClassMaxentInference
+ * Ranger les nouvelles classes d'inference
+-
  * Integrer un StoppingCriterion
  * Integrer la sauvegarde des meilleurs parametres
- * MultiClassLinearSVMInference
- * "batch" learning
-
+ * "batch" learner, new step-by-step learner
  
 Misc: 
  * Learning with hidden units

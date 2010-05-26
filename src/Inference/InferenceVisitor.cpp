@@ -12,8 +12,16 @@ using namespace lbcpp;
 void DefaultInferenceVisitor::visit(SequentialInferencePtr inference)
 {
   stack.push(inference);
-  for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
-    inference->getSubStep(i)->accept(InferenceVisitorPtr(this));
+  for (size_t i = 0; i < inference->getNumSubInferences(); ++i)
+    inference->getSubInference(i)->accept(InferenceVisitorPtr(this));
+  stack.pop();
+}
+
+void DefaultInferenceVisitor::visit(StaticParallelInferencePtr inference)
+{
+  stack.push(inference);
+  for (size_t i = 0; i < inference->getNumSubInferences(); ++i)
+    inference->getSubInference(i)->accept(InferenceVisitorPtr(this));
   stack.pop();
 }
 

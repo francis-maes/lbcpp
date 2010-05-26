@@ -110,15 +110,15 @@ typedef ReferenceCountedObjectPtr<Scalar> ScalarPtr;
 class Label : public FeatureGeneratorDefaultImplementations<Label, EditableFeatureGenerator>
 {
 public:
-  Label(FeatureDictionaryPtr featureDictionary, size_t index = 0)
-    : index(index)
+  Label(FeatureDictionaryPtr featureDictionary, size_t index = 0, double score = 1.0)
+    : index(index), score(score)
     {setDictionary(featureDictionary);}
 
-  Label(StringDictionaryPtr stringDictionary, size_t index = 0)
-    : index(index)
+  Label(StringDictionaryPtr stringDictionary, size_t index = 0, double score = 1.0)
+    : index(index), score(score)
     {setDictionary(FeatureDictionaryManager::getInstance().getFlatVectorDictionary(stringDictionary));}
 
-  Label() : index(0) {}
+  Label() : index(0), score(0.0) {}
 
   virtual String toString() const
     {return getString();}
@@ -131,6 +131,9 @@ public:
 
   size_t getIndex() const
     {return index;}
+
+  double getScore() const
+    {return score;}
 
   String getString() const
     {return getDictionary()->getFeature(index);}
@@ -148,6 +151,7 @@ protected:
 
 private:
   size_t index;
+  double score;
 };
 
 typedef ReferenceCountedObjectPtr<Label> LabelPtr;

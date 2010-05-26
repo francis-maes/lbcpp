@@ -103,6 +103,14 @@ bool DecoratorInference::saveToFile(const File& file) const
     decorated->saveToFile(file.getChildFile(T("decorated.inference")));
 }
 
+ObjectPtr DecoratorInference::clone() const
+{
+  DecoratorInferencePtr res = createAndCast<DecoratorInference>(getClassName());
+  res->decorated = decorated->clone().dynamicCast<Inference>();
+  res->name = name;
+  return res;
+}
+
 ObjectPtr DecoratorInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   if (decorated)
@@ -126,10 +134,10 @@ void DecoratorInference::accept(InferenceVisitorPtr visitor)
 String SequentialInference::toString() const
 {
   String res = getClassName() + T("(");
-  size_t n = getNumSubSteps();
+  size_t n = getNumSubInferences();
   for (size_t i = 0; i < n; ++i)
   {
-    InferencePtr step = getSubStep(i);
+    InferencePtr step = getSubInference(i);
     res += step->toString();
     if (i < n - 1)
       res += T(", ");
@@ -142,11 +150,11 @@ void SequentialInference::accept(InferenceVisitorPtr visitor)
 
 ObjectPtr SequentialInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
-  size_t n = getNumSubSteps();
+  size_t n = getNumSubInferences();
   ObjectPtr currentData = input;
   for (size_t i = 0; i < n; ++i)
   {
-    InferencePtr step = getSubStep(i);
+    InferencePtr step = getSubInference(i);
     ObjectPtr currentSupervision = supervision ? getSubSupervision(supervision, i) : ObjectPtr();
     currentData = context->runInference(step, currentData, currentSupervision, returnCode);
     if (returnCode != finishedReturnCode)
@@ -157,18 +165,37 @@ ObjectPtr SequentialInference::run(InferenceContextPtr context, ObjectPtr input,
 }
 
 /*
-** LearnableAtomicInference
+** ParameterizedInference
 */
-void LearnableAtomicInference::accept(InferenceVisitorPtr visitor)
-  {visitor->visit(LearnableAtomicInferencePtr(this));}
+void ParameterizedInference::accept(InferenceVisitorPtr visitor)
+  {visitor->visit(ParameterizedInferencePtr(this));}
 
-DenseVectorPtr LearnableAtomicInference::getOrCreateParameters(FeatureDictionaryPtr dictionary)
+DenseVectorPtr ParameterizedInference::getOrCreateParameters(FeatureDictionaryPtr dictionary)
 {
   if (!parameters)
     parameters = new DenseVector(dictionary);
   else
     parameters->ensureDictionary(dictionary);
   return parameters;
+}
+
+ObjectPtr ParameterizedInference::clone() const
+{
+  ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());
+  jassert(res);
+  res->parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+  res->name = name;
+  return res;
+}
+
+bool ParameterizedInference::load(InputStream& istr)
+  {return Inference::load(istr) && lbcpp::read(istr, parameters);}
+
+void ParameterizedInference::save(OutputStream& ostr) const
+{
+  jassert(parameters && parameters->getDictionary());
+  Inference::save(ostr);
+  lbcpp::write(ostr, parameters);
 }
 
 /*
@@ -192,8 +219,8 @@ File VectorBasedInferenceHelper::getSubInferenceFile(size_t index, const File& d
 
 bool VectorBasedInferenceHelper::saveSubInferencesToDirectory(const File& directory) const
 {
-  for (size_t i = 0; i < getNumSubSteps(); ++i)
-    getSubStep(i)->saveToFile(getSubInferenceFile(i, directory));
+  for (size_t i = 0; i < getNumSubInferences(); ++i)
+    getSubInference(i)->saveToFile(getSubInferenceFile(i, directory));
   return true;
 }
 
@@ -281,12 +308,14 @@ void InferenceResultCache::add(InferencePtr inference, ObjectPtr input, ObjectPt
 }
 
 
-#include "Inference/LinearScalarInference.h"
+#include "Inference/LinearInference.h"
 #include "Inference/CallbackBasedDecoratorInference.h"
 #include "Inference/TransferFunctionDecoratorInference.h"
+#include "Inference/BinaryClassificationInference.h"
+#include "Inference/OneAgainstAllClassificationInference.h"
 
-LearnableAtomicInferencePtr lbcpp::linearScalarInference(const String& name)
-  {return new LinearScalarInference(name);}
+ParameterizedInferencePtr lbcpp::linearScalarInference(const String& name)
+  {return new LinearInference(name);}
 
 InferencePtr lbcpp::transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction)
   {return new TransferFunctionDecoratorInference(name, decoratedInference, transferFunction);}
@@ -294,10 +323,29 @@ InferencePtr lbcpp::transferFunctionDecoratorInference(const String& name, Infer
 InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
   {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
+InferencePtr lbcpp::binaryLinearSVMInference(const String& name)
+  {return new BinaryLinearSVMInference(name);}
+
+InferencePtr lbcpp::binaryLogisticRegressionInference(const String& name)
+  {return new BinaryLogisticRegressionInference(name);}
+
+InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel)
+  {return new OneAgainstAllClassificationInference(name, labelsDictionary, binaryClassifierModel);}
+
 void declareInferenceClasses()
 {
+  // old
   LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
   LBCPP_DECLARE_CLASS(RegressionInferenceStep);
+  // -
+
+  LBCPP_DECLARE_CLASS(LinearInference);
+
+  LBCPP_DECLARE_CLASS(BinaryLinearSVMInference);
+  LBCPP_DECLARE_CLASS(BinaryLogisticRegressionInference);
+
+  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference);
+
   LBCPP_DECLARE_CLASS(TransferFunctionDecoratorInference);
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference);
 }

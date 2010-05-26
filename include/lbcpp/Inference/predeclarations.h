@@ -26,6 +26,9 @@ typedef ReferenceCountedObjectPtr<SequentialInference> SequentialInferencePtr;
 class ParallelInference;
 typedef ReferenceCountedObjectPtr<ParallelInference> ParallelInferencePtr;
 
+class StaticParallelInference;
+typedef ReferenceCountedObjectPtr<StaticParallelInference> StaticParallelInferencePtr;
+
 class SharedParallelInference;
 typedef ReferenceCountedObjectPtr<SharedParallelInference> SharedParallelInferencePtr;
 
@@ -35,8 +38,11 @@ typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInf
 class RegressionInferenceStep;
 typedef ReferenceCountedObjectPtr<RegressionInferenceStep> RegressionInferenceStepPtr;
 
-class LearnableAtomicInference;
-typedef ReferenceCountedObjectPtr<LearnableAtomicInference> LearnableAtomicInferencePtr;
+class ParameterizedInference;
+typedef ReferenceCountedObjectPtr<ParameterizedInference> ParameterizedInferencePtr;
+
+class DecoratorInference;
+typedef ReferenceCountedObjectPtr<DecoratorInference> DecoratorInferencePtr;
 
 /*
 ** InferenceVisitor

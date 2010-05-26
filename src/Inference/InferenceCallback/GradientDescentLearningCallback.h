@@ -33,7 +33,7 @@ protected:
 class GradientDescentLearningCallback : public IterativeLearningInferenceCallback
 {
 public:
-  GradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
+  GradientDescentLearningCallback(ParameterizedInferencePtr inference,
                                   UpdateFrequency learningUpdateFrequency,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
@@ -42,8 +42,8 @@ public:
   virtual void episodeFinishedCallback();
   virtual void passFinishedCallback();
   
-  LearnableAtomicInferencePtr getInference() const
-    {return inference.staticCast<LearnableAtomicInference>();}
+  ParameterizedInferencePtr getInference() const
+    {return inference.staticCast<ParameterizedInference>();}
 
   DenseVectorPtr getParameters() const
     {return getInference()->getParameters();}

@@ -58,7 +58,7 @@ static bool isRandomizationRequired(LearningInferenceCallback::UpdateFrequency l
   return false;
 }
 
-LearningInferenceCallbackPtr lbcpp::stochasticDescentLearningCallback(LearnableAtomicInferencePtr inference, 
+LearningInferenceCallbackPtr lbcpp::stochasticDescentLearningCallback(ParameterizedInferencePtr inference, 
                                                             LearningInferenceCallback::UpdateFrequency randomizationFrequency,
                                                             LearningInferenceCallback::UpdateFrequency learningUpdateFrequency,
                                                             IterationFunctionPtr learningRate,

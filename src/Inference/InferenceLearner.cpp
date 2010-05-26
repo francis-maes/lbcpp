@@ -23,7 +23,7 @@ public:
   CreateLearningCallbacksVisitor(InferenceContextPtr context, InferenceLearnerCallbackPtr callback)
     : context(context), callback(callback) {}
 
-  virtual void visit(LearnableAtomicInferencePtr inference)
+  virtual void visit(ParameterizedInferencePtr inference)
   {
     InferenceCallbackPtr learningCallback = callback->createLearningCallback(inference, stack.getCurrentInference());
     if (learningCallback)

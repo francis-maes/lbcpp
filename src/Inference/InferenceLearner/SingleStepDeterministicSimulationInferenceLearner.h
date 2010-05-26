@@ -58,7 +58,7 @@ public:
   {
     VectorSequentialInferencePtr inference = inf.dynamicCast<VectorSequentialInference>();
     jassert(inference);
-    size_t numSteps = inference->getNumSubSteps();
+    size_t numSteps = inference->getNumSubInferences();
     
     /*
     ** Check unicity of Inference names
@@ -66,7 +66,7 @@ public:
     std::set<String> names;
     for (size_t stepNumber = 0; stepNumber < numSteps; ++stepNumber)
     {
-      String name = inference->getSubStep(stepNumber)->getName();
+      String name = inference->getSubInference(stepNumber)->getName();
       if (names.find(name) != names.end())
       {
         Object::error(T("StepByStepDeterministicSimulationLearner::train"), T("Duplicated inference step name: ") + name);
@@ -80,7 +80,7 @@ public:
     */
     for (currentStepNumber = 0; currentStepNumber  < numSteps; ++currentStepNumber )
     {
-      InferencePtr step = inference->getSubStep(currentStepNumber);
+      InferencePtr step = inference->getSubInference(currentStepNumber);
       
       File stepFile;
       if (modelDirectory != File::nonexistent)
@@ -122,9 +122,9 @@ protected:
       inf = inf.dynamicCast<DecoratorInference>()->getDecoratedInference();
     VectorSequentialInferencePtr inference = inf.dynamicCast<VectorSequentialInference>();
     jassert(inference);
-    size_t numSteps = inference->getNumSubSteps();
+    size_t numSteps = inference->getNumSubInferences();
     jassert(currentStepNumber < numSteps);
-    return InferenceLearner::createLearningContext(inference->getSubStep(currentStepNumber));
+    return InferenceLearner::createLearningContext(inference->getSubInference(currentStepNumber));
   }
   
 private:

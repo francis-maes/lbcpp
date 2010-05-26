@@ -25,7 +25,7 @@ extern void declareProteinClasses();
 class ScalarInferenceLearningCallback : public InferenceCallback
 {
 public:
-  ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step);
+  ScalarInferenceLearningCallback(ParameterizedInferencePtr inference);
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr loss) = 0;
   virtual size_t postEpisodeCallback() {return 0;}
@@ -33,7 +33,7 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
 
 protected:
-  LearnableAtomicInferencePtr step;
+  ParameterizedInferencePtr step;
   size_t epoch;
   ScalarVariableMean inputSize;
   InferencePtr currentParentStep;
@@ -44,7 +44,7 @@ protected:
 /*
 ** ScalarInferenceLearningCallback
 */
-ScalarInferenceLearningCallback::ScalarInferenceLearningCallback(LearnableAtomicInferencePtr step)
+ScalarInferenceLearningCallback::ScalarInferenceLearningCallback(ParameterizedInferencePtr step)
     : step(step), epoch(1) {}
 
 void ScalarInferenceLearningCallback::postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -76,7 +76,7 @@ void ScalarInferenceLearningCallback::updateInputSize(FeatureGeneratorPtr inputf
 class IterativeScalarInferenceLearningCallback : public ScalarInferenceLearningCallback
 {
 public:
-  IterativeScalarInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, bool normalizeLearningRate = true)
+  IterativeScalarInferenceLearningCallback(ParameterizedInferencePtr step, IterationFunctionPtr learningRate, bool normalizeLearningRate = true)
     : ScalarInferenceLearningCallback(step), lossValue(T("Loss")), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate) {}
 
   virtual void finishInferencesCallback()
@@ -161,7 +161,7 @@ protected:
 class SimpleBipartiteRankingScalarInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
 {
 public:
-  SimpleBipartiteRankingScalarInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+  SimpleBipartiteRankingScalarInferenceLearningCallback(ParameterizedInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer) {}
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
@@ -239,7 +239,7 @@ protected:
 class IterativeDelayedScalarInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
 {
 public:
-  IterativeDelayedScalarInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, bool normalizeLearningRate = true)
+  IterativeDelayedScalarInferenceLearningCallback(ParameterizedInferencePtr step, IterationFunctionPtr learningRate, bool normalizeLearningRate = true)
     : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate) {}
 
 protected:
@@ -259,7 +259,7 @@ protected:
 class LocalRandomizedScalarLinearInferenceLearningCallback : public IterativeDelayedScalarInferenceLearningCallback
 {
 public:
-  LocalRandomizedScalarLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+  LocalRandomizedScalarLinearInferenceLearningCallback(ParameterizedInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : IterativeDelayedScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer), numPositives(0), numNegatives(0) {}
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
@@ -348,7 +348,7 @@ private:
 class PerEpisodeRandomizedLinearInferenceLearningCallback : public IterativeDelayedScalarInferenceLearningCallback
 {
 public:
-  PerEpisodeRandomizedLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+  PerEpisodeRandomizedLinearInferenceLearningCallback(ParameterizedInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : IterativeDelayedScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer) {}
 
   virtual size_t postInferenceCallback(size_t epoch, FeatureGeneratorPtr features, double prediction, ScalarFunctionPtr exampleLoss)
@@ -423,7 +423,7 @@ protected:
 class PerEpisodeMiniBatchLinearInferenceLearningCallback : public IterativeScalarInferenceLearningCallback
 {
 public:
-  PerEpisodeMiniBatchLinearInferenceLearningCallback(LearnableAtomicInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
+  PerEpisodeMiniBatchLinearInferenceLearningCallback(ParameterizedInferencePtr step, IterationFunctionPtr learningRate, ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(), bool normalizeLearningRate = true)
     : IterativeScalarInferenceLearningCallback(step, learningRate, normalizeLearningRate), regularizer(regularizer), examplesCount(0), updateNumber(0) {}
 
   void addFeaturesToGradient(DenseVectorPtr& gradientAccumulator, FeatureGeneratorPtr features, double weight)
@@ -671,13 +671,13 @@ public:
     return iterationNumber < 250;
   }
   
-  virtual InferenceCallbackPtr createLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
+  virtual InferenceCallbackPtr createLearningCallback(ParameterizedInferencePtr step, InferencePtr parentStep)
   {
     if (parentStep.dynamicCast<ProteinContactMapInferenceStep>())
     {
       //return new ConsumeInferenceCallback(step, new MyClassificationExamplesPrinter(File(T("C:\\Projets\\LBC++\\projects\\temp\\twoprotRR.data"))));
 
-      LearnableAtomicInferencePtr linearInference = step.dynamicCast<LearnableAtomicInference>();
+      ParameterizedInferencePtr linearInference = step.dynamicCast<ParameterizedInference>();
       jassert(linearInference);
       double l2regularizer = 0;//.0001;
       return new LocalRandomizedScalarLinearInferenceLearningCallback(linearInference,

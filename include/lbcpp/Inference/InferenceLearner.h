@@ -23,7 +23,7 @@ public:
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels) = 0;
 
   virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision) = 0;
-  virtual InferenceCallbackPtr createLearningCallback(LearnableAtomicInferencePtr step, InferencePtr parentStep)
+  virtual InferenceCallbackPtr createLearningCallback(ParameterizedInferencePtr step, InferencePtr parentStep)
     {return InferenceCallbackPtr();}
 
   //{std::cout << "Using default probability" << std::endl; return 1.0;}

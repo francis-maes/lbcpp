@@ -21,8 +21,9 @@ public:
 
   virtual void visit(SequentialInferencePtr inference) = 0;
   virtual void visit(ParallelInferencePtr inference) = 0;
+  virtual void visit(StaticParallelInferencePtr inference) = 0;
   virtual void visit(SharedParallelInferencePtr inference) = 0;
-  virtual void visit(LearnableAtomicInferencePtr inference) {}
+  virtual void visit(ParameterizedInferencePtr inference) {}
 
   virtual void visit(ClassificationInferenceStepPtr inference) {}
   virtual void visit(RegressionInferenceStepPtr inference) {}
@@ -33,6 +34,7 @@ class DefaultInferenceVisitor : public InferenceVisitor
 public:
   virtual void visit(SequentialInferencePtr inference);
   virtual void visit(ParallelInferencePtr inference) {}
+  virtual void visit(StaticParallelInferencePtr inference);
   virtual void visit(SharedParallelInferencePtr inference);
 
 protected:

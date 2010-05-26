@@ -14,7 +14,8 @@
 #include "ContinuousFunction/BinarySumScalarVectorFunction.h"
 #include "ContinuousFunction/ScalarArchitectureExampleLossFunction.h"
 #include "ContinuousFunction/ScalarArchitectureEmpiricalRiskFunction.h"
-#include "ContinuousFunction/HingeLossScalarFunction.h"
+#include "ContinuousFunction/HingeLossFunction.h"
+#include "ContinuousFunction/LogBinomialLossFunction.h"
 using namespace lbcpp;
 
 /*
@@ -59,8 +60,37 @@ ScalarFunctionPtr lbcpp::sum(ScalarFunctionPtr function, double constant)
 ScalarFunctionPtr lbcpp::angleDifferenceScalarFunction(double reference)
   {return new AngleDifferenceScalarFunction(reference);}
 
-ScalarFunctionPtr lbcpp::hingeLoss(size_t correctClass, double margin)
-  {return new HingeLossScalarFunction(correctClass, margin);}
+BinaryClassificationLossFunctionPtr lbcpp::hingeLoss(size_t correctClass, double margin)
+  {return new HingeLossFunction(correctClass, margin);}
+
+BinaryClassificationLossFunctionPtr lbcpp::logBinomialLoss(size_t correctClass)
+  {return new LogBinomialLossFunction(correctClass);}
+
+/*
+** BinaryClassificationLossFunction
+*/
+BinaryClassificationLossFunction::BinaryClassificationLossFunction(size_t correctClass)
+  : correctClass(correctClass) {jassert(correctClass <= 1);}
+
+String BinaryClassificationLossFunction::toString() const
+  {return getClassName() + T("(") + (correctClass ? T("+") : T("-")) + T(")");}
+
+void BinaryClassificationLossFunction::compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+{
+  bool invertSign = (correctClass == 0);
+  double dd;
+  if (derivativeDirection)
+    dd = invertSign ? -(*derivativeDirection) : *derivativeDirection;
+  computePositive(invertSign ? -input : input, output, derivativeDirection ? &dd : NULL, derivative);
+  if (derivative && invertSign)
+    *derivative = - (*derivative);
+}
+
+bool BinaryClassificationLossFunction::load(InputStream& istr)
+  {return ScalarFunction::load(istr) && lbcpp::read(istr, correctClass);}
+
+void BinaryClassificationLossFunction::save(OutputStream& ostr) const
+  {ScalarFunction::save(ostr); lbcpp::write(ostr, correctClass);}
 
 /*
 ** ScalarVectorFunction
@@ -183,4 +213,6 @@ void declareContinuousFunctions()
   LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction);
   LBCPP_DECLARE_CLASS(WeightedSumOfSquaresScalarVectorFunction);
   LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
+  LBCPP_DECLARE_CLASS(HingeLossFunction);
+  LBCPP_DECLARE_CLASS(LogBinomialLossFunction);
 }

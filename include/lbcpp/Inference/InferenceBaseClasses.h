@@ -23,11 +23,11 @@ namespace lbcpp
 /*
 ** AtomicInference
 */
-class LearnableAtomicInference : public Inference
+class ParameterizedInference : public Inference
 {
 public:
-  LearnableAtomicInference(const String& name) : Inference(name) {}
-  LearnableAtomicInference() {}
+  ParameterizedInference(const String& name) : Inference(name) {}
+  ParameterizedInference() {}
 
   virtual void accept(InferenceVisitorPtr visitor);
 
@@ -35,6 +35,8 @@ public:
 
   DenseVectorPtr getParameters() const
     {return parameters;}
+  
+  virtual ObjectPtr clone() const;
 
   virtual void validateParametersChange() {}
 
@@ -43,11 +45,8 @@ protected:
 
   DenseVectorPtr getOrCreateParameters(FeatureDictionaryPtr dictionary);
 
-  virtual bool load(InputStream& istr)
-    {return Inference::load(istr) && lbcpp::read(istr, parameters);}
-
-  virtual void save(OutputStream& ostr) const
-    {Inference::save(ostr); lbcpp::write(ostr, parameters);}
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
 };
 
 /*
@@ -72,6 +71,26 @@ public:
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const = 0;
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
+};
+
+class StaticParallelInference : public ParallelInference
+{
+public:
+  StaticParallelInference(const String& name)
+    : ParallelInference(name) {}
+  StaticParallelInference() {}
+
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(StaticParallelInferencePtr(this));}
+
+  virtual size_t getNumSubInferences() const = 0;
+  virtual InferencePtr getSubInference(size_t index) const = 0;
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return getNumSubInferences();}
+
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
+    {return getSubInference(index);}
 };
 
 class SharedParallelInference : public ParallelInference
@@ -138,8 +157,8 @@ public:
   /*
   ** Abstract
   */
-  virtual size_t getNumSubSteps() const = 0;
-  virtual InferencePtr getSubStep(size_t index) const = 0;
+  virtual size_t getNumSubInferences() const = 0;
+  virtual InferencePtr getSubInference(size_t index) const = 0;
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
     {return supervision;}
@@ -162,10 +181,10 @@ public:
 class VectorBasedInferenceHelper
 {
 public:
-  size_t getNumSubSteps() const
+  size_t getNumSubInferences() const
     {return subInferences.size();}
 
-  InferencePtr getSubStep(size_t index) const
+  InferencePtr getSubInference(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index];}
 
   void setSubStep(size_t index, InferencePtr subStep)
@@ -185,18 +204,18 @@ protected:
   std::vector<InferencePtr> subInferences;
 };
 
-class VectorParallelInference : public ParallelInference, public VectorBasedInferenceHelper
+class VectorStaticParallelInference : public StaticParallelInference, public VectorBasedInferenceHelper
 {
 public:
-  VectorParallelInference(const String& name)
-    : ParallelInference(name) {}
-  VectorParallelInference() {}
+  VectorStaticParallelInference(const String& name)
+    : StaticParallelInference(name) {}
+  VectorStaticParallelInference() {}
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return VectorBasedInferenceHelper::getNumSubSteps();}
+  virtual size_t getNumSubInferences() const
+    {return VectorBasedInferenceHelper::getNumSubInferences();}
 
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
-    {return VectorBasedInferenceHelper::getSubStep(index);}
+  virtual InferencePtr getSubInference(size_t index) const
+    {return VectorBasedInferenceHelper::getSubInference(index);}
  
   virtual bool saveToFile(const File& file) const
     {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
@@ -211,11 +230,11 @@ public:
   VectorSequentialInference(const String& name)
     : SequentialInference(name) {}
 
-  virtual size_t getNumSubSteps() const
-    {return VectorBasedInferenceHelper::getNumSubSteps();}
+  virtual size_t getNumSubInferences() const
+    {return VectorBasedInferenceHelper::getNumSubInferences();}
 
-  virtual InferencePtr getSubStep(size_t index) const
-    {return VectorBasedInferenceHelper::getSubStep(index);}
+  virtual InferencePtr getSubInference(size_t index) const
+    {return VectorBasedInferenceHelper::getSubInference(index);}
  
   virtual bool saveToFile(const File& file) const
     {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
@@ -242,6 +261,7 @@ public:
   virtual String toString() const;
   virtual bool loadFromFile(const File& file);
   virtual bool saveToFile(const File& file) const;
+  virtual ObjectPtr clone() const;
 
   /*
   ** Inference
@@ -256,9 +276,14 @@ protected:
   InferencePtr decorated;
 };
 
-extern LearnableAtomicInferencePtr linearScalarInference(const String& name);
+extern ParameterizedInferencePtr linearScalarInference(const String& name);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
+
+extern InferencePtr binaryLinearSVMInference(const String& name = T("unnamed"));
+extern InferencePtr binaryLogisticRegressionInference(const String& name = T("unnamed"));
+
+extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
 
 // Input: FeatureGenerator
 // Output: FeatureVector
