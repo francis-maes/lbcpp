@@ -10,8 +10,9 @@
 #include "InferenceCallback/CancelAfterStepCallback.h"
 #include "InferenceCallback/ExamplesCreatorCallback.h"
 #include "InferenceCallback/CacheInferenceCallback.h"
-#include "InferenceCallback/PerStepGradientDescentLearningCallback.h"
-#include "InferenceCallback/RandomizedPerStepGradientDescentLearningCallback.h"
+#include "InferenceCallback/StochasticGradientDescentLearningCallback.h"
+#include "InferenceCallback/BatchGradientDescentLearningCallback.h"
+#include "InferenceCallback/RandomizerLearningInferenceCallback.h"
 using namespace lbcpp;
 
 InferenceCallbackPtr lbcpp::cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
@@ -38,6 +39,26 @@ void LearningInferenceCallback::postInferenceCallback(InferenceStackPtr stack, O
     episodeFinishedCallback();
 }
 
+static bool isRandomizationRequired(LearningInferenceCallback::UpdateFrequency learningUpdateFrequency, LearningInferenceCallback::UpdateFrequency randomizationFrequency)
+{
+  jassert(learningUpdateFrequency != LearningInferenceCallback::never);
+
+  if (learningUpdateFrequency == LearningInferenceCallback::perStep)
+    return false;
+  if (learningUpdateFrequency == LearningInferenceCallback::perEpisode)
+  {
+    jassert(randomizationFrequency == LearningInferenceCallback::never || randomizationFrequency == LearningInferenceCallback::perEpisode);
+    return randomizationFrequency == LearningInferenceCallback::perEpisode;
+  }
+  if (learningUpdateFrequency == LearningInferenceCallback::perPass)
+  {
+    jassert(randomizationFrequency == LearningInferenceCallback::never || randomizationFrequency == LearningInferenceCallback::perPass);
+    return randomizationFrequency == LearningInferenceCallback::perPass;
+  }
+  if (learningUpdateFrequency >= LearningInferenceCallback::perStepMiniBatch)
+    return true;
+}
+
 LearningInferenceCallbackPtr lbcpp::stochasticDescentLearningCallback(InferencePtr inference, 
                                                             LearningInferenceCallback::UpdateFrequency learningUpdateFrequency,
                                                             IterationFunctionPtr learningRate,
@@ -46,16 +67,16 @@ LearningInferenceCallbackPtr lbcpp::stochasticDescentLearningCallback(InferenceP
                                                             LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency,
                                                             ScalarVectorFunctionPtr regularizer)
 {
-  bool hasRandomization = (randomizationFrequency != LearningInferenceCallback::never && randomizationFrequency != LearningInferenceCallback::perStep);
+  jassert(learningUpdateFrequency != LearningInferenceCallback::never);
+  LearningInferenceCallbackPtr res;
   if (learningUpdateFrequency == LearningInferenceCallback::perStep)
-  {
-    if (hasRandomization)
-      return new RandomizedPerStepGradientDescentLearningCallback(inference, learningRate, normalizeLearningRate, randomizationFrequency, regularizerUpdateFrequency, regularizer);
-    else
-      return new PerStepGradientDescentLearningCallback(inference, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
-  }
-  jassert(false); // Missing implementation
-  return InferenceCallbackPtr();
+    res = new StochasticGradientDescentLearningCallback(inference, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+  else
+    res = new BatchGradientDescentLearningCallback(inference, learningUpdateFrequency,
+                                              learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+  return isRandomizationRequired(learningUpdateFrequency, randomizationFrequency) 
+    ? LearningInferenceCallbackPtr(new RandomizerLearningInferenceCallback(inference, randomizationFrequency, res))
+    : res;
 }
 
 void declareInferenceCallbackClasses()

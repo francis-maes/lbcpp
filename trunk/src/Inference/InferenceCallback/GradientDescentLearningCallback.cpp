@@ -84,14 +84,22 @@ bool GradientDescentLearningCallback::shouldApplyRegularizerAfterStep(size_t epo
   return false;
 }
 
+void GradientDescentLearningCallback::checkRegularizerAfterStep()
+{
+  if (shouldApplyRegularizerAfterStep(epoch))
+  {
+    applyRegularizer();
+    parametersChanged();
+  }
+}
+
 void GradientDescentLearningCallback::applyExample(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
 {
   ++epoch;
   FeatureGeneratorPtr gradient = getExampleGradient(input, supervision, predictedOutput);
   gradient->addWeightedTo(getParameters(), - computeLearningRate());
-  if (shouldApplyRegularizerAfterStep(epoch))
-    applyRegularizer();
   parametersChanged();
+  checkRegularizerAfterStep();
 }
 
 void GradientDescentLearningCallback::applyRegularizer()
