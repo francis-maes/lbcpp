@@ -15,7 +15,7 @@ class MaxIterationsStoppingCriterion : public StoppingCriterion
 {
 public:
   MaxIterationsStoppingCriterion(size_t maxIterations = 0)
-    : maxIterations(maxIterations) {}
+    : iterations(0), maxIterations(maxIterations) {}
 
   virtual String toString() const
     {return "MaxIterations(" + lbcpp::toString(maxIterations) + ")";}
@@ -49,7 +49,7 @@ class MaxIterationsWithoutImprovementStoppingCriterion : public StoppingCriterio
 {
 public:
   MaxIterationsWithoutImprovementStoppingCriterion(size_t maxIterationsWithoutImprovement = 5)
-    : maxIterationsWithoutImprovement(maxIterationsWithoutImprovement)
+    : maxIterationsWithoutImprovement(maxIterationsWithoutImprovement), numIterationsWithoutImprovement(0), bestValue(-DBL_MAX)
     {reset();}
 
   virtual String toString() const
@@ -60,7 +60,8 @@ public:
 
   virtual bool shouldOptimizerStop(double value)
   {
-    if (value > bestValue)
+    static const double epsilon = 1e-10;
+    if (value > bestValue + epsilon) // reject too small improvements
     {
       bestValue = value;
       numIterationsWithoutImprovement = 0;

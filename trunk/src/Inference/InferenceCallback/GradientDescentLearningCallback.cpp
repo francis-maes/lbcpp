@@ -73,8 +73,10 @@ void GradientDescentLearningCallback::passFinishedCallback()
   std::cout << inference->getName() << " Epoch " << epoch << ", " << getParameters()->l0norm() << " parameters, L2 = " << String(getParameters()->l2norm(), 3) << std::endl;
   if (lossValue.getCount())
   {
+    double mean = lossValue.getMean();
     std::cout << lossValue.toString() << std::endl;
     lossValue.clear();
+    lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
   std::cout << std::endl;
 }
