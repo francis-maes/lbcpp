@@ -1,31 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: PerStepGradientDescentLearn...h| Stochastic gradient descent     |
-| Author  : Francis Maes                   |                                 |
-| Started : 25/05/2010 18:55               |                                 |
+| Filename: BatchGradientDescentLearnin...h| Batch (or large mini-batch)     |
+| Author  : Francis Maes                   |  gradient descent               |
+| Started : 26/05/2010 12:06               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_CALLBACK_PER_STEP_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
-# define LBCPP_INFERENCE_CALLBACK_PER_STEP_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
+#ifndef LBCPP_INFERENCE_CALLBACK_BATCH_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
+# define LBCPP_INFERENCE_CALLBACK_BATCH_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
 
 # include "GradientDescentLearningCallback.h"
 
 namespace lbcpp
 {
-
-class StochasticGradientDescentLearningCallback : public GradientDescentLearningCallback
-{
-public:
-  StochasticGradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
-                                  IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                  UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
-    : GradientDescentLearningCallback(inference, perStep, learningRate, normalizeLearningRate,
-                                      never, regularizerUpdateFrequency, regularizer) {}
-
-  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
-    {applyExample(input, supervision, predictedOutput);}
-};
 
 class BatchGradientDescentLearningCallback : public GradientDescentLearningCallback
 {
@@ -35,19 +22,20 @@ public:
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
     : GradientDescentLearningCallback(inference, learningUpdateFrequency, learningRate, normalizeLearningRate,
-                                      never, regularizerUpdateFrequency, regularizer)
+                                      regularizerUpdateFrequency, regularizer)
     {jassert(learningUpdateFrequency != never && learningUpdateFrequency != perStep);}
 
   virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
   {
-    FeatureGeneratorPtr exampleGradient = getExampleGradient(input, supervision, predictedOutput)
+    GradientDescentLearningCallback::stepFinishedCallback(input, supervision, predictedOutput);
+    FeatureGeneratorPtr exampleGradient = getExampleGradient(input, supervision, predictedOutput);
     if (!gradientSum)
       gradientSum = new DenseVector(exampleGradient->getDictionary());
     exampleGradient->addTo(gradientSum);
     ++epoch;
-    if (learningUpdateFrequency >= miniBatch)
+    if (learningUpdateFrequency >= perStepMiniBatch)
     {
-      int miniBatchSize = learningUpdateFrequency - miniBatch;
+      int miniBatchSize = learningUpdateFrequency - perStepMiniBatch;
       if (miniBatchSize <= 1 || (epoch % miniBatchSize == 0))
         applyGradientSum();
     }
@@ -62,11 +50,7 @@ public:
   }
 
   virtual void passFinishedCallback()
-  {
-    if (learningUpdateFrequency == perPass)
-      applyGradientSum();
-    GradientDescentLearningCallback::passFinishedCallback();
-  }
+    {applyGradientSum(); GradientDescentLearningCallback::passFinishedCallback();}
 
 protected:
   DenseVectorPtr gradientSum;
@@ -75,8 +59,8 @@ protected:
   {
     if (gradientSum)
     {
-      gradientSum->addWeightedTo(getParameters(), - computeLearningRate());
-      parametersChanged();
+      std::cout << "E" << std::flush;
+      gradientDescentStep(gradientSum);
       gradientSum = DenseVectorPtr();
     }
   }
@@ -84,4 +68,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_CALLBACK_PER_STEP_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
+#endif // !LBCPP_INFERENCE_CALLBACK_BATCH_GRADIENT_DESCENT_LEARNING_CALLBACK_H_

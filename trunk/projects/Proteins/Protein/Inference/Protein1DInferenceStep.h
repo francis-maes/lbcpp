@@ -68,6 +68,12 @@ typedef ReferenceCountedObjectPtr<Protein1DInferenceStep> Protein1DInferenceStep
 class ProteinSequenceLabelingInferenceStep : public Protein1DInferenceStep
 {
 public:
+  ProteinSequenceLabelingInferenceStep(const String& name, InferencePtr classificationInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
+    : Protein1DInferenceStep(name, classificationInference, features, targetName, supervisionName)
+  {
+    classificationInference->setName(getName() + T(" Classif"));
+  }
+
   ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
     : Protein1DInferenceStep(name, new ClassificationInferenceStep(name + T(" Classif")), features, targetName, supervisionName) {}
   ProteinSequenceLabelingInferenceStep() {}
@@ -76,27 +82,27 @@ public:
   {
     SequencePtr res = Protein1DInferenceStep::createEmptyOutput(input).dynamicCast<Sequence>();
     ClassificationInferenceStepPtr step = getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>();
-    jassert(step);
-    LabelSequencePtr ls = res.dynamicCast<LabelSequence>();
-    if (ls)
+    if (step)
     {
-      step->setLabels(ls->getDictionary());
-      return res;
+      LabelSequencePtr ls = res.dynamicCast<LabelSequence>();
+      if (ls)
+        step->setLabels(ls->getDictionary());
+      else
+      {
+        ScoreVectorSequencePtr svs = res.dynamicCast<ScoreVectorSequence>();
+        if (svs)
+          step->setLabels(svs->getDictionary());
+        else
+        {
+          ScalarSequencePtr ss = res.dynamicCast<ScalarSequence>();
+          if (ss)
+            step->setLabels(BinaryClassificationDictionary::getInstance());
+          else
+            jassert(false);
+        }
+      }
     }
-    ScoreVectorSequencePtr svs = res.dynamicCast<ScoreVectorSequence>();
-    if (svs)
-    {
-      step->setLabels(svs->getDictionary());
-      return res;
-    }
-    ScalarSequencePtr ss = res.dynamicCast<ScalarSequence>();
-    if (ss)
-    {
-      step->setLabels(BinaryClassificationDictionary::getInstance());
-      return res;
-    }
-    jassert(false);
-    return ObjectPtr();
+    return res;
   }
 };
 

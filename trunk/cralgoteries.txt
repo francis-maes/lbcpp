@@ -1,7 +1,11 @@
-* Integrer le StopingCriterion dans le ExamplesCreatorCallback
 
+ * Integrer un StoppingCriterion
+ * Integrer la sauvegarde des meilleurs parametres
+ * MultiClassLinearSVMInference
+ * "batch" learning
+
+ 
 Misc: 
- * Chopper les données de test du precedent CASP
  * Learning with hidden units
 
 Reorganisation du projet

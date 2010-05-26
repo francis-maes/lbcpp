@@ -36,9 +36,9 @@ public:
   GradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
                                   UpdateFrequency learningUpdateFrequency,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                  UpdateFrequency randomizationFrequency,
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
 
+  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
   virtual void episodeFinishedCallback();
   virtual void passFinishedCallback();
   
@@ -50,19 +50,17 @@ public:
 
 protected:
   UpdateFrequency learningUpdateFrequency;
-  UpdateFrequency randomizationFrequency;
   UpdateFrequency regularizerUpdateFrequency;
   ScalarVectorFunctionPtr regularizer;
   ScalarVariableMean lossValue;
+  size_t lastApplyRegularizerEpoch;
 
   FeatureGeneratorPtr getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
   void applyExample(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
   void applyRegularizer();
   void checkRegularizerAfterStep();
-  void parametersChanged();
-
-  virtual void finishInferencesCallback();
+  void gradientDescentStep(FeatureGeneratorPtr gradient, double weight = 1.0);
 };
 
 }; /* namespace lbcpp */
