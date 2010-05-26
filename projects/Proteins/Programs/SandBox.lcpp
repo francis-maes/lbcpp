@@ -66,15 +66,20 @@ public:
     std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
 
     // stopping criterion
-    return iterationNumber < 5;
+    return iterationNumber < 100;
   }
   
   virtual InferenceCallbackPtr createLearningCallback(ParameterizedInferencePtr inference, InferencePtr parentInference)
   {
+    StoppingCriterionPtr stoppingCriterion = logicalOr(
+      maxIterationsStoppingCriterion(100),  
+      maxIterationsWithoutImprovementStoppingCriterion(1));
+
     return stochasticDescentLearningCallback(inference,
-      LearningInferenceCallback::never,                                   // randomization
-      LearningInferenceCallback::perStep, invLinearIterationFunction(1.0, 10000), true, // learning
-      LearningInferenceCallback::perStepMiniBatch20, sumOfSquaresFunction(0.0));    // regularizer
+      LearningInferenceCallback::never,                                                 // randomization
+      LearningInferenceCallback::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
+      LearningInferenceCallback::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+      LearningInferenceCallback::perPass, stoppingCriterion, true);                     // stopping criterion
   }
   
   virtual void preLearningStepCallback(InferencePtr step)
@@ -117,7 +122,7 @@ int main(int argc, char** argv)
   declareProteinClasses();
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")));
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
   
 /*  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
@@ -145,11 +150,11 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < 1; ++i)
   {
     InferencePtr multiClassClassifier = oneAgainstAllClassificationInference(T("SS3"),
-                                              SecondaryStructureDictionary::getInstance(),
+                                              DSSPSecondaryStructureDictionary::getInstance(),
                                               binaryLinearSVMInference());
     proteinInference->appendStep(
       new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), multiClassClassifier,
-                                               featureFunction, T("SecondaryStructureSequence")));
+                                               featureFunction, T("DSSPSecondaryStructureSequence")));
   }
 
   InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, false);

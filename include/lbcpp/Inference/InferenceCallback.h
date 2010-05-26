@@ -47,6 +47,9 @@ public:
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
 
+class LearningInferenceCallback;
+typedef ReferenceCountedObjectPtr<LearningInferenceCallback> LearningInferenceCallbackPtr;
+
 class LearningInferenceCallback : public InferenceCallback
 {
 public:
@@ -75,6 +78,17 @@ public:
   virtual void episodeFinishedCallback() = 0;
   virtual void passFinishedCallback() = 0;
 
+  virtual double getCurrentLossEstimate() const = 0;
+  virtual bool isLearningStopped() const
+    {return false;}
+
+  ParameterizedInferencePtr getInference() const
+    {return inference.staticCast<ParameterizedInference>();}
+
+  DenseVectorPtr getParameters() const;
+
+  LearningInferenceCallbackPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
+
 protected:
   InferencePtr inference;
 
@@ -82,15 +96,21 @@ protected:
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
 };
 
-typedef ReferenceCountedObjectPtr<LearningInferenceCallback> LearningInferenceCallbackPtr;
-
 extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(ParameterizedInferencePtr inference, 
-                                          LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
-                                          LearningInferenceCallback::UpdateFrequency learningUpdateFrequency = LearningInferenceCallback::perEpisode,
-                                          IterationFunctionPtr learningRate = constantIterationFunction(1.0),
-                                          bool normalizeLearningRate = true,
-                                          LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency = LearningInferenceCallback::perEpisode,
-                                          ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr());
+          // randomization
+          LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
+          // learning steps
+          LearningInferenceCallback::UpdateFrequency learningUpdateFrequency = LearningInferenceCallback::perEpisode,
+          IterationFunctionPtr learningRate = constantIterationFunction(1.0),
+          bool normalizeLearningRate = true,
+          // regularizer
+          LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency = LearningInferenceCallback::perEpisode,
+          ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(),
+          // stopping criterion
+          LearningInferenceCallback::UpdateFrequency criterionTestFrequency = LearningInferenceCallback::never,
+          StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
+          bool restoreBestParametersWhenLearningStops = false
+    );
 
 }; /* namespace lbcpp */
 

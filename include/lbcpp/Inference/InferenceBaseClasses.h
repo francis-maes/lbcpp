@@ -35,7 +35,10 @@ public:
 
   DenseVectorPtr getParameters() const
     {return parameters;}
-  
+ 
+  void setParameters(DenseVectorPtr parameteres)
+    {this->parameters = parameters; validateParametersChange();}
+
   virtual ObjectPtr clone() const;
 
   virtual void validateParametersChange() {}

@@ -44,6 +44,9 @@ public:
       flushExamples();
     targetLearningCallback->passFinishedCallback();
   }
+  
+  virtual double getCurrentLossEstimate() const
+    {return targetLearningCallback->getCurrentLossEstimate();}
 
 private:
   UpdateFrequency randomizationFrequency;

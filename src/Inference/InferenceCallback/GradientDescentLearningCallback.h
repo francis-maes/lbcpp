@@ -41,13 +41,9 @@ public:
   virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
   virtual void episodeFinishedCallback();
   virtual void passFinishedCallback();
+  virtual double getCurrentLossEstimate() const
+    {return lossValue.getMean();}
   
-  ParameterizedInferencePtr getInference() const
-    {return inference.staticCast<ParameterizedInference>();}
-
-  DenseVectorPtr getParameters() const
-    {return getInference()->getParameters();}
-
 protected:
   UpdateFrequency learningUpdateFrequency;
   UpdateFrequency regularizerUpdateFrequency;
