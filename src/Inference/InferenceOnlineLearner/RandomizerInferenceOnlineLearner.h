@@ -9,48 +9,54 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_RANDOMIZER_LEARNING_H_
 # define LBCPP_INFERENCE_CALLBACK_RANDOMIZER_LEARNING_H_
 
-# include "GradientDescentLearningCallback.h"
+# include "GradientDescentOnlineLearner.h"
 
 namespace lbcpp
 {
 
-class RandomizerLearningInferenceCallback : public LearningInferenceCallback
+class RandomizerInferenceOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  RandomizerLearningInferenceCallback(InferencePtr inference, UpdateFrequency randomizationFrequency, LearningInferenceCallbackPtr targetLearningCallback)
-    : LearningInferenceCallback(inference), randomizationFrequency(randomizationFrequency), targetLearningCallback(targetLearningCallback) {}
+  RandomizerInferenceOnlineLearner(UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback)
+    : randomizationFrequency(randomizationFrequency), targetLearningCallback(targetLearningCallback) {}
 
-  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  RandomizerInferenceOnlineLearner()
+    : randomizationFrequency(never) {}
+
+  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
   {
     examples.push_back(Example(input, supervision, predictedOutput));
     if (randomizationFrequency >= perStepMiniBatch)
     {
       int miniBatchSize = randomizationFrequency - perStepMiniBatch;
       if (miniBatchSize <= 1 || (examples.size() % miniBatchSize) == 0)
-        flushExamples();
+        flushExamples(inference);
     }
   }
  
-  virtual void episodeFinishedCallback()
+  virtual void episodeFinishedCallback(InferencePtr inference)
   {
     if (randomizationFrequency == perEpisode || randomizationFrequency >= perStepMiniBatch + 1)
-      flushExamples();
-    targetLearningCallback->episodeFinishedCallback();
+      flushExamples(inference);
+    targetLearningCallback->episodeFinishedCallback(inference);
   }
 
-  virtual void passFinishedCallback()
+  virtual void passFinishedCallback(InferencePtr inference)
   {
     if (randomizationFrequency == perPass)
-      flushExamples();
-    targetLearningCallback->passFinishedCallback();
+      flushExamples(inference);
+    targetLearningCallback->passFinishedCallback(inference);
   }
   
   virtual double getCurrentLossEstimate() const
     {return targetLearningCallback->getCurrentLossEstimate();}
 
+  virtual ObjectPtr clone() const
+    {return new RandomizerInferenceOnlineLearner(randomizationFrequency, targetLearningCallback->cloneAndCast<InferenceOnlineLearner>());}
+
 private:
   UpdateFrequency randomizationFrequency;
-  LearningInferenceCallbackPtr targetLearningCallback;
+  InferenceOnlineLearnerPtr targetLearningCallback;
 
   struct Example
   {
@@ -64,7 +70,7 @@ private:
 
   std::vector<Example> examples;
  
-  void flushExamples()
+  void flushExamples(InferencePtr inference)
   {
     if (!examples.size())
       return;
@@ -74,7 +80,7 @@ private:
     for (size_t i = 0; i < order.size(); ++i)
     {
       Example& example = examples[order[i]];
-      targetLearningCallback->stepFinishedCallback(example.input, example.supervision, example.predictedOutput);
+      targetLearningCallback->stepFinishedCallback(inference, example.input, example.supervision, example.predictedOutput);
     }
     examples.clear();
   }

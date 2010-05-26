@@ -51,7 +51,7 @@ extern void declareCRAlgorithmLearners();
 // Inference
 extern void declareInferenceClasses();
 extern void declareInferenceCallbackClasses();
-
+extern void declareInferenceOnlineLearnerClasses();
 
 void declareLBCppCoreClasses()
 {
@@ -74,4 +74,5 @@ void declareLBCppCoreClasses()
 
   declareInferenceClasses();
   declareInferenceCallbackClasses();
+  declareInferenceOnlineLearnerClasses();
 }

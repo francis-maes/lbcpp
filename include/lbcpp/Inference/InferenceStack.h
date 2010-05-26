@@ -30,6 +30,13 @@ public:
     return stack[stack.size() - 2];
   }
 
+  InferencePtr getGrandParentInference() const
+  {
+    if (stack.size() <= 2)
+      return InferencePtr();
+    return stack[stack.size() - 3];
+  }
+
   void push(InferencePtr inference)
     {stack.push_back(inference);}
 

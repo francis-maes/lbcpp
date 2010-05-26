@@ -8,6 +8,7 @@
 
 #include <lbcpp/Inference/InferenceBaseClasses.h>
 #include <lbcpp/Inference/InferenceResultCache.h>
+#include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
 /*
@@ -107,6 +108,7 @@ ObjectPtr DecoratorInference::clone() const
 {
   DecoratorInferencePtr res = createAndCast<DecoratorInference>(getClassName());
   res->decorated = decorated->clone().dynamicCast<Inference>();
+  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
   res->name = name;
   return res;
 }
@@ -151,17 +153,18 @@ void SequentialInference::accept(InferenceVisitorPtr visitor)
 ObjectPtr SequentialInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   size_t n = getNumSubInferences();
-  ObjectPtr currentData = input;
+  ObjectPtr lastOutput;
   for (size_t i = 0; i < n; ++i)
   {
-    InferencePtr step = getSubInference(i);
-    ObjectPtr currentSupervision = supervision ? getSubSupervision(supervision, i) : ObjectPtr();
-    currentData = context->runInference(step, currentData, currentSupervision, returnCode);
+    InferencePtr currentInference = getSubInference(i);
+    ObjectPtr currentInput = getSubInput(input, supervision, i, lastOutput);
+    ObjectPtr currentSupervision = getSubSupervision(supervision, i);
+    lastOutput = context->runInference(currentInference, currentInput, currentSupervision, returnCode);
     if (returnCode != finishedReturnCode)
       return ObjectPtr();
-    jassert(currentData);
+    jassert(lastOutput);
   }
-  return currentData;
+  return getOutput(input, supervision, lastOutput);
 }
 
 /*
@@ -184,6 +187,7 @@ ObjectPtr ParameterizedInference::clone() const
   ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());
   jassert(res);
   res->parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
   res->name = name;
   return res;
 }
@@ -314,7 +318,9 @@ void InferenceResultCache::add(InferencePtr inference, ObjectPtr input, ObjectPt
 #include "Inference/BinaryClassificationInference.h"
 #include "Inference/OneAgainstAllClassificationInference.h"
 
-ParameterizedInferencePtr lbcpp::linearScalarInference(const String& name)
+#include "Inference/RunOnSupervisedExamplesInference.h"
+
+InferencePtr lbcpp::linearScalarInference(const String& name)
   {return new LinearInference(name);}
 
 InferencePtr lbcpp::transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction)
@@ -323,14 +329,17 @@ InferencePtr lbcpp::transferFunctionDecoratorInference(const String& name, Infer
 InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
   {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
-InferencePtr lbcpp::binaryLinearSVMInference(const String& name)
-  {return new BinaryLinearSVMInference(name);}
+InferencePtr lbcpp::binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
+  {return new BinaryLinearSVMInference(learner, name);}
 
-InferencePtr lbcpp::binaryLogisticRegressionInference(const String& name)
-  {return new BinaryLogisticRegressionInference(name);}
+InferencePtr lbcpp::binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
+  {return new BinaryLogisticRegressionInference(learner, name);}
 
 InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel)
   {return new OneAgainstAllClassificationInference(name, labelsDictionary, binaryClassifierModel);}
+
+InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
+  {return new RunOnSupervisedExamplesInference(inference);}
 
 void declareInferenceClasses()
 {

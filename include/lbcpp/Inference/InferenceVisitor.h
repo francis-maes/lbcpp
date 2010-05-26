@@ -19,6 +19,8 @@ class InferenceVisitor : public ReferenceCountedObject
 public:
   virtual ~InferenceVisitor() {}
 
+  virtual void visit(InferenceBatchLearnerPtr inference) = 0;
+
   virtual void visit(SequentialInferencePtr inference) = 0;
   virtual void visit(ParallelInferencePtr inference) = 0;
   virtual void visit(StaticParallelInferencePtr inference) = 0;
@@ -32,6 +34,8 @@ public:
 class DefaultInferenceVisitor : public InferenceVisitor
 {
 public:
+  virtual void visit(InferenceBatchLearnerPtr inference);
+
   virtual void visit(SequentialInferencePtr inference);
   virtual void visit(ParallelInferencePtr inference) {}
   virtual void visit(StaticParallelInferencePtr inference);

@@ -38,6 +38,13 @@ public:
   virtual bool load(InputStream& istr)
     {return read(istr, maxIterations);}
 
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<MaxIterationsStoppingCriterion> res = new MaxIterationsStoppingCriterion(maxIterations);
+    res->iterations = iterations;
+    return res;
+  }
+
 private:
   size_t iterations, maxIterations;
 };
@@ -69,7 +76,7 @@ public:
     else
     {
       ++numIterationsWithoutImprovement;
-      if (numIterationsWithoutImprovement >= maxIterationsWithoutImprovement)
+      if (numIterationsWithoutImprovement > maxIterationsWithoutImprovement)
         return true;
     }
     return false;
@@ -80,6 +87,15 @@ public:
 
   virtual bool load(InputStream& istr)
     {return read(istr, maxIterationsWithoutImprovement);}
+
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<MaxIterationsWithoutImprovementStoppingCriterion> res 
+      = new MaxIterationsWithoutImprovementStoppingCriterion(maxIterationsWithoutImprovement);
+    res->numIterationsWithoutImprovement = numIterationsWithoutImprovement;
+    res->bestValue = bestValue;
+    return res;
+  }
 
 private:
   size_t maxIterationsWithoutImprovement;
@@ -93,8 +109,8 @@ StoppingCriterionPtr lbcpp::maxIterationsWithoutImprovementStoppingCriterion(siz
 class AverageImprovementStoppingCriterion : public StoppingCriterion
 {
 public:
-  AverageImprovementStoppingCriterion(double tolerance = 0.001, bool relativeImprovment = false)
-    : tolerance(tolerance), relativeImprovment(relativeImprovment) {}
+  AverageImprovementStoppingCriterion(double tolerance = 0.001, bool relativeImprovement = false)
+    : tolerance(tolerance), relativeImprovement(relativeImprovement) {}
     
   virtual String toString() const
     {return "AvgImprovment(" + lbcpp::toString(tolerance) + ")";}
@@ -112,7 +128,7 @@ public:
       else */if (prevs.size() >= 5)
       {
         double averageImprovement = (prevVal - value) / prevs.size();
-        if (relativeImprovment)
+        if (relativeImprovement)
         {
           double relAvgImpr = value ? averageImprovement / fabs(value) : 0;
   //        std::cout << "Av-Improvment: " << averageImprovement << " RealImprovment: " << relAvgImpr << " tol = " << tolerance << std::endl;
@@ -140,9 +156,17 @@ public:
   virtual bool load(InputStream& istr)
     {return read(istr, tolerance);}
 
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<AverageImprovementStoppingCriterion> res 
+      = new AverageImprovementStoppingCriterion(tolerance, relativeImprovement);
+    res->prevs = prevs;
+    return res;
+  }
+
 private:
   double tolerance;
-  bool relativeImprovment;
+  bool relativeImprovement;
   std::deque<double> prevs;
 };
 
@@ -181,6 +205,9 @@ public:
 
   virtual bool load(InputStream& istr)
     {return read(istr, criterion1) && read(istr, criterion2);}
+
+  virtual ObjectPtr clone() const
+    {return new LogicalOrStoppingCriterion(criterion1->cloneAndCast<StoppingCriterion>(), criterion2->cloneAndCast<StoppingCriterion>());}
 
 private:
   StoppingCriterionPtr criterion1;

@@ -163,8 +163,14 @@ public:
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
 
+  virtual ObjectPtr getSubInput(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr lastOutput) const
+    {return index == 0 ? input : lastOutput;}
+
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
     {return supervision;}
+
+  virtual ObjectPtr getOutput(ObjectPtr input, ObjectPtr supervision, ObjectPtr lastOutput) const
+    {return lastOutput;}
 
   /*
   ** Object
@@ -278,15 +284,6 @@ public:
 protected:
   InferencePtr decorated;
 };
-
-extern ParameterizedInferencePtr linearScalarInference(const String& name);
-extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
-extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
-
-extern InferencePtr binaryLinearSVMInference(const String& name = T("unnamed"));
-extern InferencePtr binaryLogisticRegressionInference(const String& name = T("unnamed"));
-
-extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
 
 // Input: FeatureGenerator
 // Output: FeatureVector

@@ -9,56 +9,58 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_STOPPING_CRITERION_LEARNING_H_
 # define LBCPP_INFERENCE_CALLBACK_STOPPING_CRITERION_LEARNING_H_
 
-# include "GradientDescentLearningCallback.h"
+# include "GradientDescentOnlineLearner.h"
 # include <lbcpp/Utilities/StoppingCriterion.h>
 
 namespace lbcpp
 {
 
-class StoppingCriterionLearningInferenceCallback : public LearningInferenceCallback
+class StoppingCriterionInferenceOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  StoppingCriterionLearningInferenceCallback(LearningInferenceCallbackPtr learner, UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops)
-    : LearningInferenceCallback(learner->getInference()), learner(learner), criterionTestFrequency(criterionTestFrequency),
+  StoppingCriterionInferenceOnlineLearner(InferenceOnlineLearnerPtr learner, UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops)
+    : learner(learner), criterionTestFrequency(criterionTestFrequency),
         criterion(criterion), restoreBestParametersWhenLearningStops(restoreBestParametersWhenLearningStops),
         learningStopped(false), bestScore(-DBL_MAX), epoch(0)
      {criterion->reset();}
-  
-  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+
+  StoppingCriterionInferenceOnlineLearner() : criterionTestFrequency(never), learningStopped(false), bestScore(-DBL_MAX), epoch(0) {}
+
+  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
   {
     if (!learningStopped)
     {
-      learner->stepFinishedCallback(input, supervision, predictedOutput);
+      learner->stepFinishedCallback(inference, input, supervision, predictedOutput);
 
       ++epoch;
       if (criterionTestFrequency == perStep)
-        testStoppingCriterion();
+        testStoppingCriterion(inference);
       else if (criterionTestFrequency >= perStepMiniBatch)
       {
         size_t miniBatchSize = criterionTestFrequency - perStepMiniBatch;
         if ((miniBatchSize <= 1) || (epoch % miniBatchSize) == 0)
-          testStoppingCriterion();
+          testStoppingCriterion(inference);
       }
     }
   }
 
-  virtual void episodeFinishedCallback()
+  virtual void episodeFinishedCallback(InferencePtr inference)
   {
     if (!learningStopped)
     {
-      learner->episodeFinishedCallback();
+      learner->episodeFinishedCallback(inference);
       if (criterionTestFrequency == perEpisode)
-        testStoppingCriterion();
+        testStoppingCriterion(inference);
     }
   }
 
-  virtual void passFinishedCallback()
+  virtual void passFinishedCallback(InferencePtr inference)
   {
     if (!learningStopped) 
     {
-      learner->passFinishedCallback();
+      learner->passFinishedCallback(inference);
       if (criterionTestFrequency == perPass)
-        testStoppingCriterion();
+        testStoppingCriterion(inference);
     }
   }
 
@@ -68,8 +70,20 @@ public:
   virtual bool isLearningStopped() const
     {return learningStopped;}
 
+  virtual ObjectPtr clone() const
+  {
+    ReferenceCountedObjectPtr<StoppingCriterionInferenceOnlineLearner> res 
+      = new StoppingCriterionInferenceOnlineLearner(learner->cloneAndCast<InferenceOnlineLearner>(), criterionTestFrequency,
+                                                    criterion->cloneAndCast<StoppingCriterion>(), restoreBestParametersWhenLearningStops);
+    res->learningStopped = learningStopped;
+    res->bestParameters = bestParameters ? bestParameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+    res->bestScore = bestScore;
+    res->epoch = epoch;
+    return res;
+  }
+
 private:
-  LearningInferenceCallbackPtr learner;
+  InferenceOnlineLearnerPtr learner;
   UpdateFrequency criterionTestFrequency;
   StoppingCriterionPtr criterion;
   bool restoreBestParametersWhenLearningStops;
@@ -79,13 +93,13 @@ private:
   double bestScore;
   size_t epoch;
 
-  void testStoppingCriterion()
+  void testStoppingCriterion(InferencePtr inference)
   {
     bool currentParametersAreBest = false;
     double score = -getCurrentLossEstimate();
     if (restoreBestParametersWhenLearningStops && score > bestScore)
     {
-      bestParameters = getParameters()->clone();
+      bestParameters = getParameters(inference)->clone();
       bestScore = score;
       currentParametersAreBest = true;
     }
@@ -93,7 +107,7 @@ private:
     {
       learningStopped = true;
       if (bestParameters && !currentParametersAreBest)
-        getInference()->setParameters(bestParameters);
+        getParameterizedInference(inference)->setParameters(bestParameters);
     }
   }
 };

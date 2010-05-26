@@ -164,6 +164,8 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceContext.h
   ../include/lbcpp/Inference/InferenceBaseClasses.h
+  ../include/lbcpp/Inference/InferenceOnlineLearner.h
+  ../include/lbcpp/Inference/InferenceBatchLearner.h
   ../include/lbcpp/Inference/InferenceResultCache.h
   ../include/lbcpp/Inference/InferenceLearner.h
   ../include/lbcpp/Inference/Evaluator.h
@@ -172,6 +174,7 @@ SET(LBCPP_INFERENCE_HEADERS
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
   Inference/InferenceVisitor.cpp
+  Inference/InferenceOnlineLearner.cpp
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp
   Inference/InferenceLearner.cpp
@@ -184,24 +187,29 @@ SET(LBCPP_INFERENCE_INFERENCE_SOURCES
   Inference/Inference/OneAgainstAllClassificationInference.h
   Inference/Inference/TransferFunctionDecoratorInference.h
   Inference/Inference/CallbackBasedDecoratorInference.h
+  Inference/Inference/RunOnSupervisedExamplesInference.h
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
   Inference/InferenceCallback/ExamplesCreatorCallback.h
-  Inference/InferenceCallback/GradientDescentLearningCallback.h
-  Inference/InferenceCallback/GradientDescentLearningCallback.cpp
-  Inference/InferenceCallback/StochasticGradientDescentLearningCallback.h
-  Inference/InferenceCallback/MiniBatchGradientDescentLearningCallback.h
-  Inference/InferenceCallback/BatchGradientDescentLearningCallback.h
-  Inference/InferenceCallback/RandomizerLearningInferenceCallback.h
-  Inference/InferenceCallback/StoppingCriterionLearningInferenceCallback.h
+  Inference/InferenceCallback/OnlineLearningInferenceCallback.h
 )
 
-SET(LBCPP_INFERENCE_LEARNER_SOURCES
-  Inference/InferenceLearner/GlobalSimulationInferenceLearner.h
-  Inference/InferenceLearner/SingleStepDeterministicSimulationInferenceLearner.h
+SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
+  Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.h
+  Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.cpp
+  Inference/InferenceOnlineLearner/StochasticGradientDescentOnlineLearner.h
+  Inference/InferenceOnlineLearner/MiniBatchGradientDescentOnlineLearner.h
+  Inference/InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h
+  Inference/InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h
+  Inference/InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h
+)
+
+SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
+  Inference/InferenceBatchLearner/SimulationInferenceBatchLearner.h
+  Inference/InferenceBatchLearner/SequentialInferenceBatchLearner.h
 )
 
 SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
@@ -349,7 +357,8 @@ SET(LBCPP_CORE
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
-  ${LBCPP_INFERENCE_LEARNER_SOURCES}
+  ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
+  ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_EVALUATOR_SOURCES}
 )
 
@@ -381,7 +390,8 @@ SOURCE_SUB_GROUP(CRAlgorithm CRAlgorithmLearner FILES ${LBCPP_CORE_CRALGORITHM_L
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Inference FILES ${LBCPP_INFERENCE_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
-SOURCE_SUB_GROUP(Inference Learner FILES ${LBCPP_INFERENCE_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Inference BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Inference Evaluator FILES ${LBCPP_INFERENCE_EVALUATOR_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})

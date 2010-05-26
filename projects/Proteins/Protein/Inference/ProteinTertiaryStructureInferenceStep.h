@@ -42,9 +42,11 @@ public:
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
-    ProteinResiduePtr residue = supervision.dynamicCast<ProteinResidue>();
-    if (!residue)
+    if (!supervision)
       return ObjectPtr();
+
+    ProteinResiduePtr residue = supervision.dynamicCast<ProteinResidue>();
+    jassert(residue);
 
     jassert(index < 9);
     ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));

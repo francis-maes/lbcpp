@@ -11,8 +11,6 @@
 
 # include "Inference.h"
 # include "../ObjectPredeclarations.h"
-# include "../Utilities/RandomVariable.h"
-# include "../Utilities/IterationFunction.h"
 
 namespace lbcpp
 {
@@ -37,80 +35,30 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
     {}
 
+  // old 
   virtual void classificationCallback(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
     {}
-
   virtual void regressionCallback(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
     {}
+  // --
 };
 
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
 
-class LearningInferenceCallback;
-typedef ReferenceCountedObjectPtr<LearningInferenceCallback> LearningInferenceCallbackPtr;
-
-class LearningInferenceCallback : public InferenceCallback
+class InferenceOnlineLearnerCallback : public InferenceCallback
 {
 public:
-  LearningInferenceCallback(InferencePtr inference)
-    : inference(inference) {}
+  InferenceOnlineLearnerCallback(InferencePtr inference, InferenceOnlineLearnerPtr learner)
+    : inference(inference), learner(learner) {}
 
-  enum UpdateFrequency
-  {
-    never,
-    perStep,
-    perEpisode,
-    perPass,
-    perStepMiniBatch,
-    perStepMiniBatch2 = perStepMiniBatch + 2,
-    perStepMiniBatch5 = perStepMiniBatch + 5,
-    perStepMiniBatch10 = perStepMiniBatch + 10,
-    perStepMiniBatch20 = perStepMiniBatch + 20,
-    perStepMiniBatch50 = perStepMiniBatch + 50,
-    perStepMiniBatch100 = perStepMiniBatch + 100,
-    perStepMiniBatch200 = perStepMiniBatch + 200,
-    perStepMiniBatch500 = perStepMiniBatch + 500,
-    perStepMiniBatch1000 = perStepMiniBatch + 1000,
-  };
-
-  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput) = 0;
-  virtual void episodeFinishedCallback() = 0;
-  virtual void passFinishedCallback() = 0;
-
-  virtual double getCurrentLossEstimate() const = 0;
-  virtual bool isLearningStopped() const
-    {return false;}
-
-  ParameterizedInferencePtr getInference() const
-    {return inference.staticCast<ParameterizedInference>();}
-
-  DenseVectorPtr getParameters() const;
-
-  LearningInferenceCallbackPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
-
-protected:
-  InferencePtr inference;
-
-  virtual void finishInferencesCallback();
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
-};
+  virtual void finishInferencesCallback();
 
-extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(ParameterizedInferencePtr inference, 
-          // randomization
-          LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
-          // learning steps
-          LearningInferenceCallback::UpdateFrequency learningUpdateFrequency = LearningInferenceCallback::perEpisode,
-          IterationFunctionPtr learningRate = constantIterationFunction(1.0),
-          bool normalizeLearningRate = true,
-          // regularizer
-          LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency = LearningInferenceCallback::perEpisode,
-          ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(),
-          // stopping criterion
-          LearningInferenceCallback::UpdateFrequency criterionTestFrequency = LearningInferenceCallback::never,
-          StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
-          bool restoreBestParametersWhenLearningStops = false
-    );
+private:
+  InferencePtr inference;
+  InferenceOnlineLearnerPtr learner;
+};
 
 }; /* namespace lbcpp */
 

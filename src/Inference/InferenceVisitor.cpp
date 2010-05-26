@@ -7,7 +7,15 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/InferenceBaseClasses.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
+
+void DefaultInferenceVisitor::visit(InferenceBatchLearnerPtr inference)
+{
+  stack.push(inference);
+  inference->getLearnedInference()->accept(InferenceVisitorPtr(this));
+  stack.pop();
+}
 
 void DefaultInferenceVisitor::visit(SequentialInferencePtr inference)
 {

@@ -22,6 +22,50 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+class MyInferenceCallback : public InferenceCallback
+{
+public:
+  MyInferenceCallback(InferencePtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
+    : inference(inference), trainingData(trainingData), testingData(testingData) {}
+
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 1)
+    {
+      iterationNumber = 0;
+      startingTime = Time::getMillisecondCounter();
+    }
+    else if (stack->getDepth() == 2)
+    {
+      std::cout << std::endl << " ================== ITERATION " << iterationNumber++ << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
+    }
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 2)
+    {
+      InferenceContextPtr validationContext = singleThreadedInferenceContext();
+      ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
+      validationContext->appendCallback(evaluation);
+      validationContext->runWithSupervisedExamples(inference, trainingData);
+      std::cout << "Train: " << evaluation->toString() << std::endl;
+      validationContext->runWithSupervisedExamples(inference, testingData);
+      std::cout << "Test: " << evaluation->toString() << std::endl;
+    }
+    else if (stack->getDepth() == 1)
+    {
+      std::cout << "Bye." << std::endl;
+    }
+  }
+
+private:
+  InferencePtr inference;
+  ObjectContainerPtr trainingData, testingData;
+  size_t iterationNumber;
+  juce::uint32 startingTime;
+};
+
 class MyInferenceLearnerCallback : public InferenceLearnerCallback
 {
 public:
@@ -69,19 +113,6 @@ public:
     return iterationNumber < 100;
   }
   
-  virtual InferenceCallbackPtr createLearningCallback(ParameterizedInferencePtr inference, InferencePtr parentInference)
-  {
-    StoppingCriterionPtr stoppingCriterion = logicalOr(
-      maxIterationsStoppingCriterion(100),  
-      maxIterationsWithoutImprovementStoppingCriterion(1));
-
-    return stochasticDescentLearningCallback(inference,
-      LearningInferenceCallback::never,                                                 // randomization
-      LearningInferenceCallback::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
-      LearningInferenceCallback::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
-      LearningInferenceCallback::perPass, stoppingCriterion, true);                     // stopping criterion
-  }
-  
   virtual void preLearningStepCallback(InferencePtr step)
   {
     String passName = step->getName();
@@ -117,6 +148,24 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   return res;
 }
 
+InferenceOnlineLearnerPtr createOnlineLearner()
+{
+  StoppingCriterionPtr stoppingCriterion = logicalOr(
+    maxIterationsStoppingCriterion(100),  
+    maxIterationsWithoutImprovementStoppingCriterion(1));
+  return gradientDescentInferenceOnlineLearner(
+    InferenceOnlineLearner::never,                                                 // randomization
+    InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
+    InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+}
+
+InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary)
+{
+  InferencePtr binaryClassifier = binaryLinearSVMInference(createOnlineLearner());
+  return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
+}
+
 int main(int argc, char** argv)
 {
   declareProteinClasses();
@@ -149,18 +198,14 @@ int main(int argc, char** argv)
   ProteinInferencePtr proteinInference = new ProteinInference();
   for (size_t i = 0; i < 1; ++i)
   {
-    InferencePtr multiClassClassifier = oneAgainstAllClassificationInference(T("SS3"),
-                                              DSSPSecondaryStructureDictionary::getInstance(),
-                                              binaryLinearSVMInference());
     proteinInference->appendStep(
-      new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), multiClassClassifier,
-                                               featureFunction, T("DSSPSecondaryStructureSequence")));
+      new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
+                             createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),
+                             featureFunction, T("SecondaryStructureSequence")));
   }
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, false);
-  //InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);//, modelDirectory, true);
-  InferenceLearnerPtr learner = globalSimulationLearner(callback);
-  learner->train(proteinInference, trainingData);
-
+  InferenceContextPtr learningContext = singleThreadedInferenceContext();
+  learningContext->appendCallback(new MyInferenceCallback(proteinInference, trainingData, testingData));
+  learningContext->train(simulationInferenceBatchLearner(proteinInference), trainingData);
   return 0;
 }
