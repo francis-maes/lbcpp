@@ -44,14 +44,21 @@ void IterativeLearningInferenceCallback::updateNumberOfActiveFeatures(FeatureGen
 GradientDescentLearningCallback::GradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
                                   UpdateFrequency learningUpdateFrequency,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                  UpdateFrequency randomizationFrequency,
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
     : IterativeLearningInferenceCallback(inference, learningRate, normalizeLearningRate),
-      learningUpdateFrequency(learningUpdateFrequency), randomizationFrequency(randomizationFrequency),
-      regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer)
+      learningUpdateFrequency(learningUpdateFrequency),
+      regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer),
+      lossValue(T("Loss")), lastApplyRegularizerEpoch(0)
 {
 }
 
+void GradientDescentLearningCallback::stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+{
+  FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
+  jassert(features);
+  updateNumberOfActiveFeatures(features);
+}
+  
 void GradientDescentLearningCallback::episodeFinishedCallback()
 {
   if (regularizerUpdateFrequency == perEpisode)
@@ -62,6 +69,14 @@ void GradientDescentLearningCallback::passFinishedCallback()
 {
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer();
+  
+  std::cout << inference->getName() << " Epoch " << epoch << ", " << getParameters()->l0norm() << " parameters, L2 = " << String(getParameters()->l2norm(), 3) << std::endl;
+  if (lossValue.getCount())
+  {
+    std::cout << lossValue.toString() << std::endl;
+    lossValue.clear();
+  }
+  std::cout << std::endl;
 }
 
 FeatureGeneratorPtr GradientDescentLearningCallback::getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
@@ -87,18 +102,21 @@ bool GradientDescentLearningCallback::shouldApplyRegularizerAfterStep(size_t epo
 void GradientDescentLearningCallback::checkRegularizerAfterStep()
 {
   if (shouldApplyRegularizerAfterStep(epoch))
-  {
     applyRegularizer();
-    parametersChanged();
-  }
+}
+
+void GradientDescentLearningCallback::gradientDescentStep(FeatureGeneratorPtr gradient, double weight)
+{
+  gradient->addWeightedTo(getParameters(), -computeLearningRate() * weight);
+  //std::cout << "gradient: " << gradient->l2norm() << " learning rate: " << computeLearningRate() * weight << " parameters: " << getParameters()->l2norm() << std::endl;
+  getInference()->validateParametersChange();
 }
 
 void GradientDescentLearningCallback::applyExample(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
 {
+  std::cout << "e" << std::flush;
   ++epoch;
-  FeatureGeneratorPtr gradient = getExampleGradient(input, supervision, predictedOutput);
-  gradient->addWeightedTo(getParameters(), - computeLearningRate());
-  parametersChanged();
+  gradientDescentStep(getExampleGradient(input, supervision, predictedOutput));
   checkRegularizerAfterStep();
 }
 
@@ -106,23 +124,8 @@ void GradientDescentLearningCallback::applyRegularizer()
 {
   if (regularizer)
   {
-    DenseVectorPtr parameters = getParameters();
-    regularizer->computeGradient(parameters)->addWeightedTo(parameters, - computeLearningRate());
-    parametersChanged();  
+    std::cout << "R" << std::flush;
+    gradientDescentStep(regularizer->computeGradient(getParameters()), (double)(epoch - lastApplyRegularizerEpoch));
+    lastApplyRegularizerEpoch = epoch;
   }
-}
-
-void GradientDescentLearningCallback::parametersChanged()
-  {getInference()->validateParametersChange();}
-
-void GradientDescentLearningCallback::finishInferencesCallback()
-{
-  IterativeLearningInferenceCallback::finishInferencesCallback();
-  std::cout << inference->getName() << " Epoch " << epoch << ", " << getParameters()->l0norm() << " parameters, L2 = " << String(getParameters()->l2norm(), 3) << std::endl;
-  if (lossValue.getCount())
-  {
-    std::cout << lossValue.toString() << std::endl;
-    lossValue.clear();
-  }
-  std::cout << std::endl;
 }

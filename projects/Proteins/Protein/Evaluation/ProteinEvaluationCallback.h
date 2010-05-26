@@ -191,7 +191,14 @@ public:
       rocEvaluator(rocAnalysisEvaluator(name)) {}
 
   virtual String toString() const
-    {return classificationEvaluator->toString() + T("\n") + rocEvaluator->toString();}
+  {
+    String res = classificationEvaluator->toString();
+    String str2 = rocEvaluator->toString();
+    if (res.isNotEmpty() && str2.isNotEmpty())
+      res += T("\n");
+    res += str2;
+    return res;
+  }
 
   virtual double getDefaultScore() const
     {return rocEvaluator->getDefaultScore();}

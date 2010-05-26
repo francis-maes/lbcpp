@@ -11,6 +11,7 @@
 #include "InferenceCallback/ExamplesCreatorCallback.h"
 #include "InferenceCallback/CacheInferenceCallback.h"
 #include "InferenceCallback/StochasticGradientDescentLearningCallback.h"
+#include "InferenceCallback/MiniBatchGradientDescentLearningCallback.h"
 #include "InferenceCallback/BatchGradientDescentLearningCallback.h"
 #include "InferenceCallback/RandomizerLearningInferenceCallback.h"
 using namespace lbcpp;
@@ -31,11 +32,8 @@ void LearningInferenceCallback::finishInferencesCallback()
 void LearningInferenceCallback::postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
 {
   if (inference == stack->getCurrentInference() && supervision && output)
-  {
-    currentParentStep = stack->getParentInference();
     stepFinishedCallback(input, supervision, output);
-  }
-  else if (stack->getCurrentInference() == currentParentStep)
+  else if (stack->getDepth() == 1)
     episodeFinishedCallback();
 }
 
@@ -43,37 +41,50 @@ static bool isRandomizationRequired(LearningInferenceCallback::UpdateFrequency l
 {
   jassert(learningUpdateFrequency != LearningInferenceCallback::never);
 
-  if (learningUpdateFrequency == LearningInferenceCallback::perStep)
+  if (randomizationFrequency == LearningInferenceCallback::never ||
+      randomizationFrequency == LearningInferenceCallback::perStep)
     return false;
+  if (learningUpdateFrequency == LearningInferenceCallback::perStep ||
+      learningUpdateFrequency >= LearningInferenceCallback::perStepMiniBatch)
+    return true;
   if (learningUpdateFrequency == LearningInferenceCallback::perEpisode)
   {
-    jassert(randomizationFrequency == LearningInferenceCallback::never || randomizationFrequency == LearningInferenceCallback::perEpisode);
-    return randomizationFrequency == LearningInferenceCallback::perEpisode;
+    jassert(randomizationFrequency != LearningInferenceCallback::perPass); // this combination is not supported
+    return false;
   }
   if (learningUpdateFrequency == LearningInferenceCallback::perPass)
-  {
-    jassert(randomizationFrequency == LearningInferenceCallback::never || randomizationFrequency == LearningInferenceCallback::perPass);
-    return randomizationFrequency == LearningInferenceCallback::perPass;
-  }
-  if (learningUpdateFrequency >= LearningInferenceCallback::perStepMiniBatch)
-    return true;
+    return false;
+  jassert(false);
+  return false;
 }
 
-LearningInferenceCallbackPtr lbcpp::stochasticDescentLearningCallback(InferencePtr inference, 
+LearningInferenceCallbackPtr lbcpp::stochasticDescentLearningCallback(LearnableAtomicInferencePtr inference, 
+                                                            LearningInferenceCallback::UpdateFrequency randomizationFrequency,
                                                             LearningInferenceCallback::UpdateFrequency learningUpdateFrequency,
                                                             IterationFunctionPtr learningRate,
                                                             bool normalizeLearningRate,
-                                                            LearningInferenceCallback::UpdateFrequency randomizationFrequency,
                                                             LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency,
                                                             ScalarVectorFunctionPtr regularizer)
 {
   jassert(learningUpdateFrequency != LearningInferenceCallback::never);
   LearningInferenceCallbackPtr res;
+
+  size_t miniBatchSize = 0;
+  if (learningUpdateFrequency >= LearningInferenceCallback::perStepMiniBatch)
+  {
+    miniBatchSize = learningUpdateFrequency - LearningInferenceCallback::perStepMiniBatch;
+    if (miniBatchSize <= 1)
+      learningUpdateFrequency = LearningInferenceCallback::perStep;
+  }
+
   if (learningUpdateFrequency == LearningInferenceCallback::perStep)
     res = new StochasticGradientDescentLearningCallback(inference, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+  else if (learningUpdateFrequency >= LearningInferenceCallback::perStepMiniBatch && miniBatchSize < 100)
+    res = new MiniBatchGradientDescentLearningCallback(inference, miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   else
     res = new BatchGradientDescentLearningCallback(inference, learningUpdateFrequency,
                                               learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+
   return isRandomizationRequired(learningUpdateFrequency, randomizationFrequency) 
     ? LearningInferenceCallbackPtr(new RandomizerLearningInferenceCallback(inference, randomizationFrequency, res))
     : res;

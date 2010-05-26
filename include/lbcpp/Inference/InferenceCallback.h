@@ -59,7 +59,16 @@ public:
     perStep,
     perEpisode,
     perPass,
-    perStepMiniBatch
+    perStepMiniBatch,
+    perStepMiniBatch2 = perStepMiniBatch + 2,
+    perStepMiniBatch5 = perStepMiniBatch + 5,
+    perStepMiniBatch10 = perStepMiniBatch + 10,
+    perStepMiniBatch20 = perStepMiniBatch + 20,
+    perStepMiniBatch50 = perStepMiniBatch + 50,
+    perStepMiniBatch100 = perStepMiniBatch + 100,
+    perStepMiniBatch200 = perStepMiniBatch + 200,
+    perStepMiniBatch500 = perStepMiniBatch + 500,
+    perStepMiniBatch1000 = perStepMiniBatch + 1000,
   };
 
   virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput) = 0;
@@ -68,7 +77,6 @@ public:
 
 protected:
   InferencePtr inference;
-  InferencePtr currentParentStep;
 
   virtual void finishInferencesCallback();
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
@@ -76,11 +84,11 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LearningInferenceCallback> LearningInferenceCallbackPtr;
 
-extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(InferencePtr inference, 
+extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(LearnableAtomicInferencePtr inference, 
+                                          LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
                                           LearningInferenceCallback::UpdateFrequency learningUpdateFrequency = LearningInferenceCallback::perEpisode,
                                           IterationFunctionPtr learningRate = constantIterationFunction(1.0),
                                           bool normalizeLearningRate = true,
-                                          LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
                                           LearningInferenceCallback::UpdateFrequency regularizerUpdateFrequency = LearningInferenceCallback::perEpisode,
                                           ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr());
 

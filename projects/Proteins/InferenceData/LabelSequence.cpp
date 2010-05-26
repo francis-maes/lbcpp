@@ -43,7 +43,7 @@ void LabelSequence::set(size_t position, ObjectPtr object)
     DenseVectorPtr scores = object.dynamicCast<DenseVector>();
     if (scores)
     {
-      jassert(scores->getDictionary() == dictionary);
+      scores->ensureDictionary(dictionary);
       int i = scores->findIndexOfMaximumValue();
       if (i < 0)
       {

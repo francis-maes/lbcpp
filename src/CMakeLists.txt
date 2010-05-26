@@ -190,6 +190,7 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/GradientDescentLearningCallback.h
   Inference/InferenceCallback/GradientDescentLearningCallback.cpp
   Inference/InferenceCallback/StochasticGradientDescentLearningCallback.h
+  Inference/InferenceCallback/MiniBatchGradientDescentLearningCallback.h
   Inference/InferenceCallback/BatchGradientDescentLearningCallback.h
   Inference/InferenceCallback/RandomizerLearningInferenceCallback.h
 )

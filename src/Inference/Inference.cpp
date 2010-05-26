@@ -106,7 +106,7 @@ bool DecoratorInference::saveToFile(const File& file) const
 ObjectPtr DecoratorInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   if (decorated)
-    return decorated->run(context, input, supervision, returnCode);
+    return context->runInference(decorated, input, supervision, returnCode);
   else
   {
     returnCode = Inference::errorReturnCode;
