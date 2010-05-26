@@ -66,7 +66,16 @@ class InferenceResultCache;
 typedef ReferenceCountedObjectPtr<InferenceResultCache> InferenceResultCachePtr;
 
 /*
-** InferenceLearner
+** Inference learners
+*/
+class InferenceOnlineLearner;
+typedef ReferenceCountedObjectPtr<InferenceOnlineLearner> InferenceOnlineLearnerPtr;
+
+class InferenceBatchLearner;
+typedef ReferenceCountedObjectPtr<InferenceBatchLearner> InferenceBatchLearnerPtr;
+
+/*
+** InferenceLearner -- old
 */
 class InferenceLearnerCallback;
 typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;

@@ -9,24 +9,25 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_STOCHASTIC_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
 # define LBCPP_INFERENCE_CALLBACK_STOCHASTIC_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
 
-# include "GradientDescentLearningCallback.h"
+# include "GradientDescentOnlineLearner.h"
 
 namespace lbcpp
 {
 
-class StochasticGradientDescentLearningCallback : public GradientDescentLearningCallback
+class StochasticGradientDescentOnlineLearner : public GradientDescentOnlineLearner
 {
 public:
-  StochasticGradientDescentLearningCallback(ParameterizedInferencePtr inference,
-                                  IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                  UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
-    : GradientDescentLearningCallback(inference, perStep, learningRate, normalizeLearningRate,
+  StochasticGradientDescentOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate, 
+                                          UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
+    : GradientDescentOnlineLearner(perStep, learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer) {}
 
-  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  StochasticGradientDescentOnlineLearner() {}
+
+  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
   {
-    GradientDescentLearningCallback::stepFinishedCallback(input, supervision, predictedOutput);
-    applyExample(input, supervision, predictedOutput);
+    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, predictedOutput);
+    applyExample(inference, input, supervision, predictedOutput);
   }
 };
 

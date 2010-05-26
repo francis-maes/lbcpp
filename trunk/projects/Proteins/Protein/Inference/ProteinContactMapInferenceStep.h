@@ -70,6 +70,8 @@ public:
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const
   {
+    if (!supervisionObject)
+      return ObjectPtr();
     ScoreSymmetricMatrixPtr contactMap = supervisionObject.dynamicCast<ScoreSymmetricMatrix>();
     jassert(contactMap);
     if (!contactMap || !contactMap->hasScore(firstPosition, secondPosition))

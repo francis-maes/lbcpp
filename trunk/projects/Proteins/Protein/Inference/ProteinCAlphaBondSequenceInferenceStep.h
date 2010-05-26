@@ -36,6 +36,8 @@ public:
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
+    if (!supervision)
+      return ObjectPtr();
     BondCoordinatesObjectPtr bond = supervision.dynamicCast<BondCoordinatesObject>();
     jassert(bond);
     BondCoordinates& c = bond->getValue();

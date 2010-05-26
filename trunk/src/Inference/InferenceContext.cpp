@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/InferenceBaseClasses.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 #include <lbcpp/Object/ObjectPair.h>
 using namespace lbcpp;
 
@@ -16,6 +17,13 @@ using namespace lbcpp;
 ObjectPtr InferenceContext::runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
+}
+
+Inference::ReturnCode InferenceContext::train(InferenceBatchLearnerPtr learner, ObjectContainerPtr examples)
+{
+  ReturnCode res = Inference::finishedReturnCode;
+  runInference(learner, examples, ObjectPtr(), res);
+  return res;
 }
 
 void InferenceContext::callStartInferences(size_t count)
@@ -140,7 +148,7 @@ public:
       returnCode = Inference::finishedReturnCode;
       ObjectPtr subOutput = runInference(inference->getSubInference(input, i),
                 inference->getSubInput(input, i),
-                supervision ? inference->getSubSupervision(supervision, i, res) : ObjectPtr(),
+                inference->getSubSupervision(supervision, i, res),
                 returnCode);
       if (returnCode == Inference::errorReturnCode)
       {

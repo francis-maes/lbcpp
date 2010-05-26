@@ -1,3 +1,5 @@
+  // dead code
+
 /*-----------------------------------------.---------------------------------.
 | Filename: InferenceLearner.h             | Inference Learners              |
 | Author  : Francis Maes                   |                                 |
@@ -10,6 +12,7 @@
 # define LBCPP_INFERENCE_CALLBACK_LEARNER_H_
 
 # include "predeclarations.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {

@@ -39,6 +39,8 @@ public:
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
   {
+    if (!supervision)
+      return ObjectPtr();
     ensureSubStepIndicesAreComputed(supervision);
     jassert(index < subStepIndices.size());
     std::pair<size_t, size_t> ij = subStepIndices[index];

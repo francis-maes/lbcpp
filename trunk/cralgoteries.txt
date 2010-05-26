@@ -1,7 +1,4 @@
--
- * Integrer un StoppingCriterion
- * Integrer la sauvegarde des meilleurs parametres
--
+
  * Splitter la hierarchie des learner. Par exemple: InferenceOnlineLearner 
  * Stocker les InferenceOnlineLearner dans les ParameterizedInference
  

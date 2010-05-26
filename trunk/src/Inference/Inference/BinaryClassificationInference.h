@@ -60,9 +60,9 @@ protected:
 class BinaryLinearSVMInference : public BinaryClassificationInference
 {
 public:
-  BinaryLinearSVMInference(const String& name)
-    : BinaryClassificationInference(name, linearScalarInference(name)) {}
-
+  BinaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
+    : BinaryClassificationInference(name, linearScalarInference(name))
+    {decorated->setLearner(learner);}
   BinaryLinearSVMInference() {}
 
   virtual ScalarFunctionPtr getLoss(size_t correctLabel) const
@@ -72,9 +72,9 @@ public:
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
 {
 public:
-  BinaryLogisticRegressionInference(const String& name)
-    : BinaryClassificationInference(name, linearScalarInference(name)) {}
-
+  BinaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
+    : BinaryClassificationInference(name, linearScalarInference(name))
+    {decorated->setLearner(learner);}
   BinaryLogisticRegressionInference() {}
 
   virtual ScalarFunctionPtr getLoss(size_t correctLabel) const

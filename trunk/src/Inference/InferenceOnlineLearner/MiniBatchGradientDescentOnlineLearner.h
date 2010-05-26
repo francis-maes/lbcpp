@@ -9,47 +9,49 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_MINI_BATCH_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
 # define LBCPP_INFERENCE_CALLBACK_MINI_BATCH_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
 
-# include "GradientDescentLearningCallback.h"
+# include "GradientDescentOnlineLearner.h"
 
 namespace lbcpp
 {
 
-class MiniBatchGradientDescentLearningCallback : public GradientDescentLearningCallback
+class MiniBatchGradientDescentOnlineLearner : public GradientDescentOnlineLearner
 {
 public:
-  MiniBatchGradientDescentLearningCallback(ParameterizedInferencePtr inference, size_t miniBatchSize,
+  MiniBatchGradientDescentOnlineLearner(size_t miniBatchSize,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
-    : GradientDescentLearningCallback(inference, (UpdateFrequency)(perStepMiniBatch + miniBatchSize), learningRate, normalizeLearningRate,
+    : GradientDescentOnlineLearner((UpdateFrequency)(perStepMiniBatch + miniBatchSize), learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer), miniBatchSize(miniBatchSize)
     {jassert(miniBatchSize > 1);}
 
-  virtual void stepFinishedCallback(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  MiniBatchGradientDescentOnlineLearner() {}
+
+  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
   {
-    GradientDescentLearningCallback::stepFinishedCallback(input, supervision, predictedOutput);
-    FeatureGeneratorPtr exampleGradient = getExampleGradient(input, supervision, predictedOutput);
+    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, predictedOutput);
+    FeatureGeneratorPtr exampleGradient = getExampleGradient(inference, input, supervision, predictedOutput);
     if (!gradientSum)
       gradientSum = new SparseVector(exampleGradient->getDictionary());
     exampleGradient->addTo(gradientSum);
     ++epoch;
     if ((epoch % miniBatchSize) == 0)
-      applyGradientSum();
-    checkRegularizerAfterStep();
+      applyGradientSum(inference);
+    checkRegularizerAfterStep(inference);
   }
 
-  virtual void passFinishedCallback()
-    {applyGradientSum(); GradientDescentLearningCallback::passFinishedCallback();}
+  virtual void passFinishedCallback(InferencePtr inference)
+    {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(inference);}
 
 protected:
   SparseVectorPtr gradientSum;
   size_t miniBatchSize;
 
-  void applyGradientSum()
+  void applyGradientSum(InferencePtr inference)
   {
     if (gradientSum)
     {
       //std::cout << "E" << std::flush;
-      gradientDescentStep(gradientSum);
+      gradientDescentStep(inference, gradientSum);
       gradientSum = SparseVectorPtr();
     }
   }
