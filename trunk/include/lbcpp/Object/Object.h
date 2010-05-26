@@ -311,7 +311,7 @@ public:
   virtual String toString() const
     {return getClassName() + T(" ") + name;}
 
-  void setName(const String& name)
+  virtual void setName(const String& name)
     {this->name = name;}
 
 protected:

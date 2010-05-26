@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: HingeLossScalarFunction.h      | Hinge Loss Function             |
+| Filename: HingeLossFunction.h            | Hinge Loss Function             |
 | Author  : Francis Maes                   |                                 |
 | Started : 03/05/2010 16:13               |                                 |
 `------------------------------------------/                                 |
@@ -15,26 +15,19 @@ namespace lbcpp
 {
 
 // f(x) = max(0, 1 - input)
-class HingeLossScalarFunction : public ScalarFunction
+class HingeLossFunction : public BinaryClassificationLossFunction
 {
 public:
   // correctClass: 0 = negative, 1 = positive
-  HingeLossScalarFunction(size_t correctClass, double margin)
-    : correctClass(correctClass), margin(margin) {jassert(correctClass <= 1);}
-  HingeLossScalarFunction() : correctClass(0), margin(0.0) {}
-
-  virtual String toString() const
-    {return String(T("HingeLoss(")) + (correctClass ? T("+") : T("-")) + T(")");}
+  HingeLossFunction(size_t correctClass, double margin)
+    : BinaryClassificationLossFunction(correctClass), margin(margin) {}
+  HingeLossFunction() : margin(0.0) {}
 
   virtual bool isDerivable() const
     {return false;}
 
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const
   {
-    double sign = correctClass ? 1.0 : -1.0;
-    if (!correctClass)
-      input = -input;
-
     if (input > margin)
     {
       if (output) *output = 0.0;
@@ -43,18 +36,23 @@ public:
     else if (input == margin)
     {
       if (output) *output = 0.0;
-      if (derivative) *derivative = (!derivativeDirection || *derivativeDirection <= 0) ? -sign : 0;
+      if (derivative) *derivative = (!derivativeDirection || *derivativeDirection <= 0) ? -1.0 : 0;
     }
     else
     {
       if (output) *output = margin - input;
-      if (derivative) *derivative = -sign;
+      if (derivative) *derivative = -1.0;
     }
   }
 
 protected:
-  size_t correctClass;
   double margin;
+
+  virtual bool load(InputStream& istr)
+    {return BinaryClassificationLossFunction::load(istr) && lbcpp::read(istr, margin);}
+
+  virtual void save(OutputStream& ostr) const
+    {BinaryClassificationLossFunction::save(ostr); lbcpp::write(ostr, margin);}
 };
 
 }; /* namespace lbcpp */

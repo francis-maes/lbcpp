@@ -65,7 +65,7 @@ private:
   {
     if (!examples.size())
       return;
-    std::cout << "**" << std::flush;
+    //std::cout << "*" << std::flush;
     std::vector<size_t> order;
     RandomGenerator::getInstance().sampleOrder(examples.size(), order);
     for (size_t i = 0; i < order.size(); ++i)

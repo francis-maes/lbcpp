@@ -84,7 +84,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LearningInferenceCallback> LearningInferenceCallbackPtr;
 
-extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(LearnableAtomicInferencePtr inference, 
+extern LearningInferenceCallbackPtr stochasticDescentLearningCallback(ParameterizedInferencePtr inference, 
                                           LearningInferenceCallback::UpdateFrequency randomizationFrequency = LearningInferenceCallback::never,
                                           LearningInferenceCallback::UpdateFrequency learningUpdateFrequency = LearningInferenceCallback::perEpisode,
                                           IterationFunctionPtr learningRate = constantIterationFunction(1.0),

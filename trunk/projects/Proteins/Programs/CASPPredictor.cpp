@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
     std::cerr << "Could not load model" << std::endl;
     return 1;
   }
-  std::cout << "Loaded " << inference->getNumSubSteps() << " inference steps" << std::endl;
+  std::cout << "Loaded " << inference->getNumSubInferences() << " inference steps" << std::endl;
   
   std::cout << "Making predictions ..." << std::endl;
 

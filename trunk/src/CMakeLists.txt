@@ -88,7 +88,8 @@ SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
 
 SET(LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES
   ContinuousFunction/MiscScalarFunctions.h
-  ContinuousFunction/HingeLossScalarFunction.h
+  ContinuousFunction/HingeLossFunction.h
+  ContinuousFunction/LogBinomialLossFunction.h
   ContinuousFunction/BinarySumScalarVectorFunction.h
   ContinuousFunction/ScalarArchitectureExampleLossFunction.h
   ContinuousFunction/ScalarArchitectureEmpiricalRiskFunction.h
@@ -178,7 +179,9 @@ SET(LBCPP_INFERENCE_SOURCES
 )
 
 SET(LBCPP_INFERENCE_INFERENCE_SOURCES
-  Inference/Inference/LinearScalarInference.h
+  Inference/Inference/LinearInference.h
+  Inference/Inference/BinaryClassificationInference.h
+  Inference/Inference/OneAgainstAllClassificationInference.h
   Inference/Inference/TransferFunctionDecoratorInference.h
   Inference/Inference/CallbackBasedDecoratorInference.h
 )

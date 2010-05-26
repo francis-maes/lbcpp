@@ -17,7 +17,7 @@ namespace lbcpp
 class StochasticGradientDescentLearningCallback : public GradientDescentLearningCallback
 {
 public:
-  StochasticGradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
+  StochasticGradientDescentLearningCallback(ParameterizedInferencePtr inference,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
     : GradientDescentLearningCallback(inference, perStep, learningRate, normalizeLearningRate,

@@ -17,7 +17,7 @@ namespace lbcpp
 class MiniBatchGradientDescentLearningCallback : public GradientDescentLearningCallback
 {
 public:
-  MiniBatchGradientDescentLearningCallback(LearnableAtomicInferencePtr inference, size_t miniBatchSize,
+  MiniBatchGradientDescentLearningCallback(ParameterizedInferencePtr inference, size_t miniBatchSize,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
     : GradientDescentLearningCallback(inference, (UpdateFrequency)(perStepMiniBatch + miniBatchSize), learningRate, normalizeLearningRate,
@@ -48,7 +48,7 @@ protected:
   {
     if (gradientSum)
     {
-      std::cout << "E" << std::flush;
+      //std::cout << "E" << std::flush;
       gradientDescentStep(gradientSum);
       gradientSum = SparseVectorPtr();
     }

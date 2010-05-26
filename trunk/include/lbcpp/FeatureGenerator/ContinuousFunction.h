@@ -109,6 +109,26 @@ public:
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
 };
 
+class BinaryClassificationLossFunction : public ScalarFunction
+{
+public:
+  // correctClass: 0 = negative, 1 = positive
+  BinaryClassificationLossFunction(size_t correctClass = 0);
+  virtual String toString() const;
+
+  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const;
+
+protected:
+  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
+
+  size_t correctClass;
+
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+};
+
+typedef ReferenceCountedObjectPtr<BinaryClassificationLossFunction> BinaryClassificationLossFunctionPtr;
+
 // x -> f(x) + constant
 extern ScalarFunctionPtr sum(ScalarFunctionPtr function, double constant);
 
@@ -141,7 +161,8 @@ inline ScalarFunctionPtr dihedralAngleSquareLoss(double target)
 /*
 ** Binary Classification Loss Functions
 */
-extern ScalarFunctionPtr hingeLoss(size_t correctClass, double margin = 1);
+extern BinaryClassificationLossFunctionPtr hingeLoss(size_t correctClass, double margin = 1);
+extern BinaryClassificationLossFunctionPtr logBinomialLoss(size_t correctClass);
 
 
 /**

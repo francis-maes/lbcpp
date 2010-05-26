@@ -41,7 +41,7 @@ void IterativeLearningInferenceCallback::updateNumberOfActiveFeatures(FeatureGen
 /*
 ** GradientDescentLearningCallback
 */
-GradientDescentLearningCallback::GradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
+GradientDescentLearningCallback::GradientDescentLearningCallback(ParameterizedInferencePtr inference,
                                   UpdateFrequency learningUpdateFrequency,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
@@ -114,7 +114,7 @@ void GradientDescentLearningCallback::gradientDescentStep(FeatureGeneratorPtr gr
 
 void GradientDescentLearningCallback::applyExample(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
 {
-  std::cout << "e" << std::flush;
+  //std::cout << "e" << std::flush;
   ++epoch;
   gradientDescentStep(getExampleGradient(input, supervision, predictedOutput));
   checkRegularizerAfterStep();
@@ -124,7 +124,7 @@ void GradientDescentLearningCallback::applyRegularizer()
 {
   if (regularizer)
   {
-    std::cout << "R" << std::flush;
+    //std::cout << "R" << std::flush;
     gradientDescentStep(regularizer->computeGradient(getParameters()), (double)(epoch - lastApplyRegularizerEpoch));
     lastApplyRegularizerEpoch = epoch;
   }

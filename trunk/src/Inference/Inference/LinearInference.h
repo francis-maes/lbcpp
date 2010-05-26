@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LinearScalarInference.h        | Linear Scalar Inference         |
+| Filename: LinearInference.h              | Linear Scalar Inference         |
 | Author  : Francis Maes                   |                                 |
 | Started : 05/05/2010 14:57               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_LINEAR_SCALAR_H_
-# define LBCPP_INFERENCE_LINEAR_SCALAR_H_
+#ifndef LBCPP_INFERENCE_LINEAR_H_
+# define LBCPP_INFERENCE_LINEAR_H_
 
 # include <lbcpp/Inference/InferenceBaseClasses.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
@@ -18,13 +18,14 @@ namespace lbcpp
 // Input: Features
 // Output: Scalar
 // Supervision: ScalarFunction
-class LinearScalarInference : public LearnableAtomicInference
+class LinearInference : public ParameterizedInference
 {
 public:
-  LinearScalarInference(const String& name)
-    : LearnableAtomicInference(name), dotProductCache(NULL) {}
+  LinearInference(const String& name)
+    : ParameterizedInference(name), dotProductCache(NULL) {}
+  LinearInference() : dotProductCache(NULL) {}
 
-  virtual ~LinearScalarInference()
+  virtual ~LinearInference()
     {clearDotProductCache();}
 
   virtual void beginRunSession()
@@ -68,8 +69,8 @@ private:
   FeatureGenerator::DotProductCache* dotProductCache;
 };
 
-typedef ReferenceCountedObjectPtr<LinearScalarInference> LinearScalarInferencePtr;
+typedef ReferenceCountedObjectPtr<LinearInference> LinearInferencePtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_LINEAR_SCALAR_H_
+#endif // !LBCPP_INFERENCE_LINEAR_H_

@@ -118,12 +118,12 @@ int main(int argc, char** argv)
   std::cout << "Loading inference... " << std::flush;
   ProteinInferencePtr inference = new ProteinInference();
   inference->loadSubInferencesFromDirectory(modelDirectory);
-  if (!inference->getNumSubSteps())
+  if (!inference->getNumSubInferences())
   {
     std::cerr << "Could not find any inference step in directory " << modelDirectory.getFullPathName() << std::endl;
     return 3;
   }
-  std::cout << inference->getNumSubSteps() << " step(s)." << std::endl;
+  std::cout << inference->getNumSubInferences() << " step(s)." << std::endl;
 
   InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
   ProteinEvaluationCallbackPtr evaluationCallback = new ProteinEvaluationCallback();
@@ -143,13 +143,13 @@ int main(int argc, char** argv)
   {
     inferenceContext->appendCallback(cacheInferenceCallback(cache, inference));
     std::cout << std::endl;
-    for (size_t i = 0; i < inference->getNumSubSteps(); ++i)
+    for (size_t i = 0; i < inference->getNumSubInferences(); ++i)
     {
       InferencePtr decoratedInference;
-      if (i < inference->getNumSubSteps() - 1)
+      if (i < inference->getNumSubInferences() - 1)
       {
         std::cout << "Making predictions for steps 1.." << (i+1) << std::endl;
-        decoratedInference = addBreakToInference(inference, inference->getSubStep(i));
+        decoratedInference = addBreakToInference(inference, inference->getSubInference(i));
       }
       else
       {

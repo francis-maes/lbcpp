@@ -17,7 +17,7 @@ namespace lbcpp
 class BatchGradientDescentLearningCallback : public GradientDescentLearningCallback
 {
 public:
-  BatchGradientDescentLearningCallback(LearnableAtomicInferencePtr inference,
+  BatchGradientDescentLearningCallback(ParameterizedInferencePtr inference,
                                   UpdateFrequency learningUpdateFrequency,
                                   IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                   UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
@@ -59,7 +59,7 @@ protected:
   {
     if (gradientSum)
     {
-      std::cout << "E" << std::flush;
+      //std::cout << "E" << std::flush;
       gradientDescentStep(gradientSum);
       gradientSum = DenseVectorPtr();
     }

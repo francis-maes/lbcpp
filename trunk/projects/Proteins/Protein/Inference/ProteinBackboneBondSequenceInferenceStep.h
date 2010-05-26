@@ -45,11 +45,11 @@ protected:
 
 // Input: Features
 // Output, Supervision: BackbondBond
-class ProteinBackboneBondInferenceStep : public VectorParallelInference
+class ProteinBackboneBondInferenceStep : public VectorStaticParallelInference
 {
 public:
   ProteinBackboneBondInferenceStep(const String& name)
-    : VectorParallelInference(name)
+    : VectorStaticParallelInference(name)
   {
     for (size_t i = 0; i < 3; ++i)
     {

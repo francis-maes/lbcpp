@@ -41,21 +41,9 @@ public:
     return 1.0;
   }
 
-
   virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
-  {
-    std::cout << "CreateClassifier for step " << stack->getInference(1)->getName() << std::endl;
-    if (labels == BinaryClassificationDictionary::getInstance())
-    {
-      IterationFunctionPtr learningRate = invLinearIterationFunction(0.5, 250000);
-      GradientBasedLearnerPtr learner = stochasticDescentLearner(learningRate);  
-      GradientBasedBinaryClassifierPtr classifier = linearSVMBinaryClassifier(learner, labels);
-      classifier->setL2Regularizer(0.01);
-      return classifier;
-    }
-    jassert(false); return ClassifierPtr();
-  }
-
+    {jassert(false); return ClassifierPtr();}
+    
   virtual RegressorPtr createRegressor(InferenceStackPtr stack)
     {jassert(false); return RegressorPtr();}
 
@@ -81,12 +69,12 @@ public:
     return iterationNumber < 5;
   }
   
-  virtual InferenceCallbackPtr createLearningCallback(LearnableAtomicInferencePtr inference, InferencePtr parentInference)
+  virtual InferenceCallbackPtr createLearningCallback(ParameterizedInferencePtr inference, InferencePtr parentInference)
   {
     return stochasticDescentLearningCallback(inference,
       LearningInferenceCallback::never,                                   // randomization
       LearningInferenceCallback::perStep, invLinearIterationFunction(1.0, 10000), true, // learning
-      LearningInferenceCallback::perStepMiniBatch20, sumOfSquaresFunction(0.01));    // regularizer
+      LearningInferenceCallback::perStepMiniBatch20, sumOfSquaresFunction(0.0));    // regularizer
   }
   
   virtual void preLearningStepCallback(InferencePtr step)
@@ -124,47 +112,6 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   return res;
 }
 
-class BinaryClassificationInference : public DecoratorInference
-{
-public:
-  BinaryClassificationInference(const String& name, InferencePtr scoreInference)
-    : DecoratorInference(name, scoreInference) {}
-  BinaryClassificationInference() {}
-
-  virtual ScalarFunctionPtr getLoss(size_t correctLabel) const = 0;
-
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    FeatureDictionaryPtr labelDictionary = BinaryClassificationDictionary::getInstance();
-    LabelPtr correctLabel = supervision.dynamicCast<Label>();
-    jassert(!supervision || (correctLabel && correctLabel->getDictionary() == labelDictionary));
-    ObjectPtr res = DecoratorInference::run(context, input, correctLabel ? getLoss(correctLabel->getIndex()) : ScalarFunctionPtr(), returnCode);
-    if (!res)
-      return res;
-    ScalarPtr scalar = res.dynamicCast<Scalar>();
-    jassert(scalar);
-    return new Label(labelDictionary, scalar->getValue() > 0 ? 1 : 0);
-  }
-};
-
-class BinaryLinearSVMInference : public BinaryClassificationInference
-{
-public:
-  BinaryLinearSVMInference()
-    : negativeLoss(hingeLoss(0)), positiveLoss(hingeLoss(1)) {}
-
-  BinaryLinearSVMInference(const String& name)
-    : BinaryClassificationInference(name, linearScalarInference(name)),
-      negativeLoss(hingeLoss(0)), positiveLoss(hingeLoss(1)) {}
-
-  virtual ScalarFunctionPtr getLoss(size_t correctLabel) const
-    {return correctLabel ? positiveLoss : negativeLoss;}
-  
-private:
-  ScalarFunctionPtr negativeLoss;
-  ScalarFunctionPtr positiveLoss;
-};
-
 int main(int argc, char** argv)
 {
   declareProteinClasses();
@@ -197,12 +144,15 @@ int main(int argc, char** argv)
   ProteinInferencePtr proteinInference = new ProteinInference();
   for (size_t i = 0; i < 1; ++i)
   {
+    InferencePtr multiClassClassifier = oneAgainstAllClassificationInference(T("SS3"),
+                                              SecondaryStructureDictionary::getInstance(),
+                                              binaryLinearSVMInference());
     proteinInference->appendStep(
-      new ProteinSequenceLabelingInferenceStep(T("SA20 Pass ") + lbcpp::toString(i), new BinaryLinearSVMInference(T("SA20")),
-                                               featureFunction, T("SolventAccessibilityThreshold20")));
+      new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), multiClassClassifier,
+                                               featureFunction, T("SecondaryStructureSequence")));
   }
 
-  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, true);
+  InferenceLearnerCallbackPtr callback = new MyInferenceLearnerCallback(trainingData, testingData, false);
   //InferenceLearnerPtr learner = stepByStepDeterministicSimulationLearner(callback, true);//, modelDirectory, true);
   InferenceLearnerPtr learner = globalSimulationLearner(callback);
   learner->train(proteinInference, trainingData);
