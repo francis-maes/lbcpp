@@ -19,17 +19,16 @@ namespace lbcpp
 class SimulationInferenceBatchLearner : public InferenceBatchLearner
 {
 public:
-  SimulationInferenceBatchLearner(InferencePtr inference)
-    : InferenceBatchLearner(inference) {}
-  
-  virtual ReturnCode train(InferenceContextPtr context, ObjectContainerPtr trainingData)
+  virtual ReturnCode train(InferenceContextPtr context, InferencePtr inference, ObjectContainerPtr trainingData)
   {
     ReturnCode returnCode = Inference::finishedReturnCode;
     
+    InferencePtr learningIteration = runOnSupervisedExamplesInference(inference);
+
     OnlineLearningInferenceCallbackPtr onlineLearningCallback = new OnlineLearningInferenceCallback(InferencePtr(this));
     context->appendCallback(onlineLearningCallback);
     while (!onlineLearningCallback->isLearningStopped() && returnCode == Inference::finishedReturnCode)
-      context->runInference(runOnSupervisedExamplesInference(inference), trainingData, ObjectPtr(), returnCode);
+      context->runInference(learningIteration, inference, trainingData, returnCode);
     context->removeCallback(onlineLearningCallback);
     return returnCode;
   }
