@@ -24,22 +24,22 @@ ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr infere
   size_t n = inference->getNumSubInferences();
   ObjectPtr currentObject = inference->prepareInference(input, supervision, returnCode);
   if (returnCode != Inference::finishedReturnCode)
-    return ObjectPtr();
+    return currentObject;
   
   for (size_t i = 0; i < n; ++i)
   {
     InferencePtr subInference = inference->getSubInference(i);
     ObjectPairPtr currentInputAndSupervision = inference->prepareSubInference(input, supervision, i, currentObject, returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return ObjectPtr();
+      return currentObject;
 
     ObjectPtr subInferenceOutput = runInference(subInference, currentInputAndSupervision->getFirst(), currentInputAndSupervision->getSecond(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return ObjectPtr();
+      return currentObject;
 
     currentObject = inference->finalizeSubInference(input, supervision, i, currentObject, subInferenceOutput, returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return ObjectPtr();
+      return currentObject;
   }
   return inference->finalizeInference(input, supervision, currentObject, returnCode);
 }

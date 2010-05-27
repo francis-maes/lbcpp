@@ -1,14 +1,20 @@
-* SequenceInference: extend the base class with getSubInput / setSubOutput / ...
-* SequentialInferenceBatchLearner
+* Trouver un moyen d'évaluer juste les passes apprises
+* Gestion du cache fichier
+
+-
+* Revoir la classe abstraite d'inférence séquentiel pour intégrer la longueur dynamique
+* Revoir les classes abstraites d'inférence parallèle pour être plus proche de l'inférence séquentielle
+-
+
 * ParallelInferenceBatchLearner
-* New class: ProteinInferenceFactory
-* Atomic MultiClass machines (MultiLinear)
+* Atomic MultiClass machines (MultiLinear..)
  
-Misc: 
- * Learning with hidden units
+* Apprentissage avec couche cachée
+
 
 Explorer:
-  * Widgets pour Classifier / FeatureGenerator
+  * Arbres d'inférence avec vu détaillé sur le coté
+  * Arbres pour les features generators 
 
 =====
 

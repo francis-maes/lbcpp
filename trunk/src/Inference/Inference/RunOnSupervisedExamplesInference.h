@@ -29,10 +29,10 @@ public:
   }
 
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return examples->getAndCast<ObjectPair>(index)->getFirst();}
+    {return getExample(index)->getFirst();}
 
   virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
-    {return examples->getAndCast<ObjectPair>(index)->getSecond();}
+    {return getExample(index)->getSecond();}
 
   virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
     {return ObjectPtr();}
@@ -40,8 +40,33 @@ public:
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
     {}
 
-private:
+protected:
   ObjectContainerPtr examples;
+
+  ObjectPairPtr getExample(size_t index) const
+    {return examples->getAndCast<ObjectPair>(index);}
+};
+
+class RunSequentialInferenceStepOnExamples : public RunOnSupervisedExamplesInference
+{
+public:
+  RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, size_t subInferenceNumber, std::vector<ObjectPtr>& currentObjects)
+    : RunOnSupervisedExamplesInference(inference->getSubInference(subInferenceNumber)), inference(inference), subInferenceNumber(subInferenceNumber), currentObjects(currentObjects) {}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    ObjectPairPtr example = getExample(index);
+    ObjectPtr& currentObject = currentObjects[index];
+    ReturnCode returnCode = finishedReturnCode;
+    currentObject = inference->finalizeSubInference(example->getFirst(), example->getSecond(), subInferenceNumber, currentObject, subOutput, returnCode);
+    jassert(returnCode == finishedReturnCode);
+  }
+
+private:
+  SequentialInferencePtr inference;
+  size_t subInferenceNumber;
+
+  std::vector<ObjectPtr>& currentObjects;
 };
 
 }; /* namespace lbcpp */

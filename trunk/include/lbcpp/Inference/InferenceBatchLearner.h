@@ -38,6 +38,7 @@ protected:
 };
 
 extern InferenceBatchLearnerPtr simulationInferenceBatchLearner();
+extern InferenceBatchLearnerPtr sharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner);
 
 }; /* namespace lbcpp */
 
