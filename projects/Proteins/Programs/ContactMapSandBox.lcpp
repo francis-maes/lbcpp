@@ -947,16 +947,16 @@ int main(int argc, char** argv)
   {
     //Protein2DInferenceStepPtr step = new ProteinContactMapInferenceStep(T("RR Pass ") + lbcpp::toString(i),
     //                                                   pairFeatureFunction2, T("ResidueResidueContactMatrix8Ca"));
-    //proteinInference->appendStep(step);
+    //proteinInference->appendInference(step);
     
-    proteinInference->appendStep(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
+    proteinInference->appendInference(new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i), featureFunction, /*T("SecondaryStructureProbabilities"), */T("SecondaryStructureSequence")));
 #if 0
       step = new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
       step = new ProteinSequenceLabelingInferenceStep(T("SA Pass ") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
       step = new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction);
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
 #endif // 0
   }
   //std::cout << "Inference: " << proteinInference->toString() << std::endl;

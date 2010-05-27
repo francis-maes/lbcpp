@@ -26,6 +26,9 @@ public:
     for (size_t i = 0; i < inferenceSequence->getNumSubInferences(); ++i)
     {
       InferenceBatchLearnerPtr subLearner = getSubLearner(inferenceSequence, i);
+
+
+
       // FIXME: Extend the SequentialInference base class
       // FIXME: compute sub-training data
       ReturnCode res = context->train(subLearner, inferenceSequence->getSubInference(i), trainingData);

@@ -33,11 +33,40 @@ public:
   }
 };
 
+// Prototype:
+//   Input: Protein
+//   Supervision: Protein
+//   Output: Protein
+
+// Sub-inferences prototype:
+//   Input: Protein
+//   Supervision: Protein
+//   Output: Protein Object or Protein
+
 class ProteinInference : public VectorSequentialInference
 {
 public:
   ProteinInference() : VectorSequentialInference(T("Protein"))
     {}
+
+  //////////////////////////////////
+  /*
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
+    {return supervision;}
+
+  virtual ObjectPtr 
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  {
+
+  }
+
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const = 0;
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
+
+  */
+  ////////////////////////////
 
   void setPDBDebugDirectory(const File& directory)
     {pdbDebugDirectory = directory;}
@@ -65,7 +94,7 @@ public:
     // main inference loop
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      InferencePtr inferenceStep = subInferences[i];
+      InferencePtr inferenceStep = subInferences.get(i);
 
       ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
       jassert(inferenceOutput);

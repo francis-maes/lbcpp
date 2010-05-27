@@ -173,6 +173,7 @@ SET(LBCPP_INFERENCE_HEADERS
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
+  Inference/InferenceBaseClasses.cpp
   Inference/InferenceVisitor.cpp
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceCallback.cpp

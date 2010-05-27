@@ -368,7 +368,7 @@ public:
   
   virtual void postLearningStepCallback(InferencePtr step)
   {
-    int stepNumber = proteinInference->findStepNumber(step);
+    int stepNumber = proteinInference->find(step);
     jassert(stepNumber >= 0);
 
     File toLoad = File::getCurrentWorkingDirectory().getChildFile(prefixFilename + T("/decorated.inference/") + lbcpp::toString(stepNumber) + T("_") + step->getName() + T(".inference"));

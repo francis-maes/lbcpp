@@ -23,9 +23,9 @@ public:
     for (size_t i = 0; i < 3; ++i)
     {
       String prefix = name + T(" ") + getBackboneAtomName(i) + T(".");
-      appendStep(new RegressionInferenceStep(prefix + T("x")));
-      appendStep(new RegressionInferenceStep(prefix + T("y")));
-      appendStep(new RegressionInferenceStep(prefix + T("z")));
+      subInferences.append(new RegressionInferenceStep(prefix + T("x")));
+      subInferences.append(new RegressionInferenceStep(prefix + T("y")));
+      subInferences.append(new RegressionInferenceStep(prefix + T("z")));
     }
   }
   ProteinResidueRefinementInferenceStep() {}
