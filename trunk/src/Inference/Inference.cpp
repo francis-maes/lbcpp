@@ -22,7 +22,7 @@ int InferenceVector::find(InferencePtr inference) const
 
 File InferenceVector::getSubInferenceFile(size_t index, const File& directory) const
 {
-  jassert(index < subInferences.size());
+  jassert(index < v.size());
   InferencePtr step = v[index];
   jassert(step);
   return directory.getChildFile(lbcpp::toString(index) + T("_") + step->getName() + T(".inference"));

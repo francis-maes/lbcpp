@@ -19,6 +19,31 @@ ObjectPtr InferenceContext::runInference(InferencePtr inference, ObjectPtr input
   return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
 }
 
+ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{  
+  size_t n = inference->getNumSubInferences();
+  ObjectPtr currentObject = inference->prepareInference(input, supervision, returnCode);
+  if (returnCode != Inference::finishedReturnCode)
+    return ObjectPtr();
+  
+  for (size_t i = 0; i < n; ++i)
+  {
+    InferencePtr subInference = inference->getSubInference(i);
+    ObjectPairPtr currentInputAndSupervision = inference->prepareSubInference(input, supervision, i, currentObject, returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return ObjectPtr();
+
+    ObjectPtr subInferenceOutput = runInference(subInference, currentInputAndSupervision->getFirst(), currentInputAndSupervision->getSecond(), returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return ObjectPtr();
+
+    currentObject = inference->finalizeSubInference(input, supervision, i, currentObject, subInferenceOutput, returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return ObjectPtr();
+  }
+  return inference->finalizeInference(input, supervision, currentObject, returnCode);
+}
+
 Inference::ReturnCode InferenceContext::train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
@@ -138,7 +163,7 @@ public:
     return output;
   }
 
-  virtual ObjectPtr runParallelInferences(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr runParallelInference(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     ObjectPtr res = inference->createEmptyOutput(input);
 
