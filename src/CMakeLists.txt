@@ -163,7 +163,10 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceVisitor.h
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceContext.h
-  ../include/lbcpp/Inference/InferenceBaseClasses.h
+  ../include/lbcpp/Inference/ParameterizedInference.h
+  ../include/lbcpp/Inference/DecoratorInference.h
+  ../include/lbcpp/Inference/SequentialInference.h
+  ../include/lbcpp/Inference/ParallelInference.h
   ../include/lbcpp/Inference/InferenceOnlineLearner.h
   ../include/lbcpp/Inference/InferenceBatchLearner.h
   ../include/lbcpp/Inference/InferenceResultCache.h

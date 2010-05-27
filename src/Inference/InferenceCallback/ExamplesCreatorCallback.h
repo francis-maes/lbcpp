@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_EXAMPLES_CREATOR_H_
 
 # include <lbcpp/Inference/InferenceLearner.h>
-# include <lbcpp/Inference/InferenceBaseClasses.h>
+# include <lbcpp/Inference/ParameterizedInference.h>
 # include <lbcpp/Object/ObjectPair.h>
 # include <lbcpp/GradientBasedLearningMachine.h>
 

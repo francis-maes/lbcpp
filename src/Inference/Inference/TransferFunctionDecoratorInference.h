@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_TRANSFER_FUNCTION_DECORATOR_H_
 # define LBCPP_INFERENCE_TRANSFER_FUNCTION_DECORATOR_H_
 
-# include <lbcpp/Inference/InferenceBaseClasses.h>
+# include <lbcpp/Inference/DecoratorInference.h>
 
 namespace lbcpp
 {

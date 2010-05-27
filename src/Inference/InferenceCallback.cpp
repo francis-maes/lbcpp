@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/InferenceBaseClasses.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 #include <lbcpp/Inference/InferenceResultCache.h>
 #include "InferenceCallback/CancelAfterStepCallback.h"

@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_ONE_AGAINST_ALL_CLASSIFICATION_H_
 # define LBCPP_INFERENCE_ONE_AGAINST_ALL_CLASSIFICATION_H_
 
-# include <lbcpp/Inference/InferenceBaseClasses.h>
+# include <lbcpp/Inference/ParallelInference.h>
 
 namespace lbcpp
 {

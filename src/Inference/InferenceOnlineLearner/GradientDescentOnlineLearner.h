@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_GRADIENT_DESCENT_LEARNING_H_
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Inference/InferenceBaseClasses.h>
+# include <lbcpp/Inference/ParameterizedInference.h>
 
 namespace lbcpp
 {
