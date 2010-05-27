@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/InferenceBaseClasses.h>
-#include <lbcpp/Inference/InferenceResultCache.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
@@ -45,44 +44,6 @@ bool SharedParallelInference::loadFromFile(const File& file)
 
 bool SharedParallelInference::saveToFile(const File& file) const
   {return saveToDirectory(file) && subInference->saveToFile(file.getChildFile(T("shared.inference")));}
-
-/*
-** ParallelSharedMultiRegressionInference
-*/
-ParallelSharedMultiRegressionInference::ParallelSharedMultiRegressionInference(const String& name, FeatureDictionaryPtr outputDictionary)
-  : SharedParallelInference(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
-
-size_t ParallelSharedMultiRegressionInference::getNumSubInferences(ObjectPtr input) const
-{
-  ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
-  jassert(container);
-  return container->size();
-}
-
-ObjectPtr ParallelSharedMultiRegressionInference::getSubInput(ObjectPtr input, size_t index) const
-  {return getInputFeatures(input, index);}
-
-ObjectPtr ParallelSharedMultiRegressionInference::getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
-{
-  if (!supervision)
-    return ObjectPtr();
-
-  DenseVectorPtr vector = supervision.dynamicCast<DenseVector>();
-  jassert(vector);
-  return new Scalar(vector->get(index));
-}
-
-ObjectPtr ParallelSharedMultiRegressionInference::createEmptyOutput(ObjectPtr input) const
-  {return new DenseVector(outputDictionary, getNumSubInferences(input));}
-
-void ParallelSharedMultiRegressionInference::setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-{
-  DenseVectorPtr vector = output.dynamicCast<DenseVector>();
-  jassert(vector);
-  ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
-  jassert(scalar);
-  vector->set(index, scalar->getValue());
-}
 
 /*
 ** DecoratorInference
@@ -135,7 +96,7 @@ void DecoratorInference::accept(InferenceVisitorPtr visitor)
 */
 String SequentialInference::toString() const
 {
-  String res = getClassName() + T("(");
+  String res = getClassName();/* + T("(");
   size_t n = getNumSubInferences();
   for (size_t i = 0; i < n; ++i)
   {
@@ -144,7 +105,8 @@ String SequentialInference::toString() const
     if (i < n - 1)
       res += T(", ");
   }
-  return res + T(")");
+  return res + T(")");*/
+  return res;
 }
 
 /*
@@ -180,45 +142,4 @@ void ParameterizedInference::save(OutputStream& ostr) const
   jassert(parameters && parameters->getDictionary());
   Inference::save(ostr);
   lbcpp::write(ostr, parameters);
-}
-
-/*
-** InferenceStepResultCache
-*/
-ObjectPtr InferenceStepResultCache::get(ObjectPtr input) const
-{
-  InputOutputMap::const_iterator it = cache.find(input->getName());
-  return it == cache.end() ? ObjectPtr() : it->second;
-}
-
-/*
-** InferenceResultCache
-*/
-InferenceStepResultCachePtr InferenceResultCache::getCacheForInferenceStep(InferencePtr step) const
-{
-  CacheMap::const_iterator it = cache.find(step);
-  return it == cache.end() ? InferenceStepResultCachePtr() : it->second;
-}
-
-ObjectPtr InferenceResultCache::get(InferencePtr step, ObjectPtr input) const
-{
-  InferenceStepResultCachePtr stepCache = getCacheForInferenceStep(step);
-  ObjectPtr res = stepCache ? stepCache->get(input) : ObjectPtr();
-  //if (res)
-  //  std::cout << "Use: " << step->getName() << " input: " << input->getName() << std::endl;
-  return res;
-}
-
-void InferenceResultCache::addStepCache(InferenceStepResultCachePtr stepCache)
-{
-  cache[stepCache->getInference()] = stepCache;
-}
-
-void InferenceResultCache::add(InferencePtr inference, ObjectPtr input, ObjectPtr output)
-{
-  //std::cout << "Add: " << step->getName() << " input: " << input->getName() << " output: " << output->toString() << std::endl;
-  InferenceStepResultCachePtr stepCache = getCacheForInferenceStep(inference);
-  if (!stepCache)
-    stepCache = cache[inference] = new InferenceStepResultCache(inference);
-  stepCache->add(input, output);
 }

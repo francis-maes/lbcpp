@@ -13,8 +13,9 @@ using namespace lbcpp;
 void DefaultInferenceVisitor::visit(SequentialInferencePtr inference)
 {
   stack.push(inference);
-  for (size_t i = 0; i < inference->getNumSubInferences(); ++i)
-    inference->getSubInference(i)->accept(InferenceVisitorPtr(this));
+  // FIXME !
+ // for (size_t i = 0; i < inference->getNumSubInferences(); ++i)
+ //   inference->getSubInference(i)->accept(InferenceVisitorPtr(this));
   stack.pop();
 }
 

@@ -26,6 +26,10 @@ public:
   
   virtual ReturnCode train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples);
 
+  virtual SequentialInferenceStatePtr makeSequentialInferenceInitialState(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
+  virtual void makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, ObjectPtr subOutput, ReturnCode& returnCode);
+
+
   // old:
   virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
   virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;

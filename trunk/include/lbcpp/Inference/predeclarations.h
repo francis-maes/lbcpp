@@ -20,6 +20,9 @@ namespace lbcpp
 class Inference;
 typedef ReferenceCountedObjectPtr<Inference> InferencePtr;
 
+class SequentialInferenceState;
+typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceStatePtr;
+
 class SequentialInference;
 typedef ReferenceCountedObjectPtr<SequentialInference> SequentialInferencePtr;
 

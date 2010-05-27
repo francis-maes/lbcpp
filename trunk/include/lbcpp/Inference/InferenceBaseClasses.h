@@ -22,7 +22,7 @@ namespace lbcpp
 {
 
 /*
-** AtomicInference
+** ParameterizedInference
 */
 class ParameterizedInference : public Inference
 {
@@ -132,65 +132,6 @@ protected:
   InferencePtr subInference;
 };
 
-class ParallelSharedMultiRegressionInference : public SharedParallelInference
-{
-public:
-  ParallelSharedMultiRegressionInference(const String& name, FeatureDictionaryPtr outputDictionary);
-
-  virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
-
-  virtual size_t getNumSubInferences(ObjectPtr input) const;
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const;
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const;
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const;
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const;
-
-protected:
-  FeatureDictionaryPtr outputDictionary;
-};
-
-/*
-** SequentialInference
-*/
-class SequentialInference : public Inference
-{
-public:
-  SequentialInference(const String& name) : Inference(name) {}
-  SequentialInference() {}
-
-  /*
-  ** Abstract
-  */
-  virtual size_t getNumSubInferences() const = 0;
-  virtual InferencePtr getSubInference(size_t index) const = 0;
-
-  virtual ObjectPtr prepareInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return input;}
-
-  virtual ObjectPairPtr prepareSubInference(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr currentObject, ReturnCode& returnCode)
-    {return new ObjectPair(currentObject, supervision);}
-  
-  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr currentObject, ObjectPtr subInferenceOutput, ReturnCode& returnCode)
-    {return subInferenceOutput;}
-
-  virtual ObjectPtr finalizeInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr currentObject, ReturnCode& returnCode)
-    {return currentObject;}
-
-  /*
-  ** Inference
-  */
-  virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(SequentialInferencePtr(this));}
-
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
-
-  /*
-  ** Object
-  */
-  virtual String toString() const;
-};
-
 class VectorStaticParallelInference : public StaticParallelInference
 {
 public:
@@ -214,32 +155,128 @@ protected:
   InferenceVector subInferences;
 };
 
+/*
+** SequentialInference
+*/
+class SequentialInferenceState : public Object
+{
+public:
+  SequentialInferenceState(ObjectPtr input, ObjectPtr supervision)
+    : input(input), supervision(supervision), stepNumber(0) {}
+
+  ObjectPtr getInput() const
+    {return input;}
+
+  ObjectPtr getSupervision() const
+    {return supervision;}
+
+  ObjectPtr getCurrentObject() const
+    {return currentObject;}
+
+  void setCurrentObject(ObjectPtr object)
+    {currentObject = object;}
+
+  size_t getCurrentStepNumber() const
+    {return stepNumber;}
+
+  void incrementStepNumber()
+    {++stepNumber;}
+
+  InferencePtr getCurrentSubInference() const
+    {return subInference;}
+
+  void setCurrentSubInference(InferencePtr subInference)
+    {this->subInference = subInference;}
+
+  bool isFinal() const
+    {return !subInference;}
+
+private:
+  ObjectPtr input;
+  ObjectPtr supervision;
+  ObjectPtr currentObject;
+  size_t stepNumber;
+  InferencePtr subInference;
+};
+typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceStatePtr;
+
+class SequentialInference : public Inference
+{
+public:
+  SequentialInference(const String& name) : Inference(name) {}
+  SequentialInference() {}
+
+  /*
+  ** Abstract
+  */
+  virtual ObjectPtr prepareInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+    {return state->getInput();}
+
+  virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
+
+  virtual ObjectPairPtr prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+    {return new ObjectPair(state->getCurrentObject(), state->getSupervision());}
+  
+  virtual ObjectPtr finalizeSubInference(SequentialInferenceStatePtr state, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+    {return subInferenceOutput;}
+
+  virtual InferencePtr getNextSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
+
+  virtual ObjectPtr finalizeInference(SequentialInferenceStatePtr finalState, ReturnCode& returnCode) const
+    {return finalState->getCurrentObject();}
+
+  /*
+  ** Inference
+  */
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(SequentialInferencePtr(this));}
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
+
+  /*
+  ** Object
+  */
+  virtual String toString() const;
+};
+
 class VectorSequentialInference : public SequentialInference
 {
 public:
   VectorSequentialInference(const String& name)
     : SequentialInference(name) {}
 
-  virtual size_t getNumSubInferences() const
+  virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+    {return subInferences.get(0);}
+
+  virtual InferencePtr getNextSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+  {
+    size_t index = state->getCurrentStepNumber();
+    jassert(state->getCurrentSubInference() == subInferences.get(index));
+    ++index;
+    return index < subInferences.size() ? subInferences.get(index) : InferencePtr();
+  }
+
+  size_t getNumSubInferences() const
     {return subInferences.size();}
 
-  virtual InferencePtr getSubInference(size_t index) const
+  InferencePtr getSubInference(size_t index) const
     {return subInferences.get(index);}
  
   void appendInference(InferencePtr inference)
     {subInferences.append(inference);}
-
-  virtual bool saveToFile(const File& file) const
-    {return saveToDirectory(file) && subInferences.saveToDirectory(file);}
-
-  virtual bool loadFromFile(const File& file)
-    {return loadFromDirectory(file) && subInferences.loadFromDirectory(file);}
 
   File getSubInferenceFile(size_t index, const File& modelDirectory) const
     {return subInferences.getSubInferenceFile(index, modelDirectory);}
 
   bool loadSubInferencesFromDirectory(const File& file)
     {return subInferences.loadFromDirectory(file);}
+
+  virtual bool saveToFile(const File& file) const
+    {return saveToDirectory(file) && subInferences.saveToDirectory(file);}
+
+  virtual bool loadFromFile(const File& file)
+    {return loadFromDirectory(file) && subInferences.loadFromDirectory(file);}
 
 protected:
   InferenceVector subInferences;

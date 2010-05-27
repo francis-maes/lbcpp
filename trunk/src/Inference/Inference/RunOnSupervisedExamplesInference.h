@@ -15,11 +15,11 @@
 namespace lbcpp
 {
  
-class RunOnSupervisedExamplesInference : public SharedParallelInference
+class RunOnSupervisedExamplesInference : public ParallelInference
 {
 public:
   RunOnSupervisedExamplesInference(InferencePtr inference)
-    : SharedParallelInference(T("RunOnSupervisedExamples"), inference) {}
+    : ParallelInference(T("RunOnSupervisedExamples")), inference(inference) {}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const
   {
@@ -27,6 +27,9 @@ public:
     jassert(examples);
     return examples->size();
   }
+
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
+    {return inference;}
 
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return getExample(index)->getFirst();}
@@ -41,6 +44,7 @@ public:
     {}
 
 protected:
+  InferencePtr inference;
   ObjectContainerPtr examples;
 
   ObjectPairPtr getExample(size_t index) const
@@ -50,23 +54,23 @@ protected:
 class RunSequentialInferenceStepOnExamples : public RunOnSupervisedExamplesInference
 {
 public:
-  RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, size_t subInferenceNumber, std::vector<ObjectPtr>& currentObjects)
-    : RunOnSupervisedExamplesInference(inference->getSubInference(subInferenceNumber)), inference(inference), subInferenceNumber(subInferenceNumber), currentObjects(currentObjects) {}
+  RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
+    : RunOnSupervisedExamplesInference(InferencePtr()), inference(inference), currentStates(currentStates) {}
+
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
+    {return currentStates[index]->getCurrentSubInference();}
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
   {
-    ObjectPairPtr example = getExample(index);
-    ObjectPtr& currentObject = currentObjects[index];
     ReturnCode returnCode = finishedReturnCode;
-    currentObject = inference->finalizeSubInference(example->getFirst(), example->getSecond(), subInferenceNumber, currentObject, subOutput, returnCode);
+    // FIXME: use the current context
+    singleThreadedInferenceContext()->makeSequentialInferenceNextState(inference, currentStates[index], subOutput, returnCode);
     jassert(returnCode == finishedReturnCode);
   }
 
 private:
   SequentialInferencePtr inference;
-  size_t subInferenceNumber;
-
-  std::vector<ObjectPtr>& currentObjects;
+  std::vector<SequentialInferenceStatePtr>& currentStates;
 };
 
 }; /* namespace lbcpp */
