@@ -22,6 +22,24 @@ public:
   RunOnSupervisedExamplesInference(InferencePtr inference)
     : ParallelInference(T("RunOnSupervisedExamples")), inference(inference) {}
 
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectContainerPtr examples = input.dynamicCast<ObjectContainer>();
+    jassert(examples);
+
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(examples->size());
+    for (size_t i = 0; i < examples->size(); ++i)
+    {
+      ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
+      res->addSubInference(inference, example->getFirst(), example->getSecond());
+    }
+    return res;
+  }
+
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+    {return ObjectPtr();}
+
   virtual size_t getNumSubInferences(ObjectPtr input) const
   {
     const_cast<RunOnSupervisedExamplesInference* >(this)->examples = input.dynamicCast<ObjectContainer>();
@@ -57,6 +75,32 @@ class RunSequentialInferenceStepOnExamples : public RunOnSupervisedExamplesInfer
 public:
   RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
     : RunOnSupervisedExamplesInference(InferencePtr()), inference(inference), currentStates(currentStates) {}
+
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectContainerPtr examples = input.dynamicCast<ObjectContainer>();
+    jassert(examples);
+
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(examples->size());
+    for (size_t i = 0; i < examples->size(); ++i)
+    {
+      ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
+      res->addSubInference(currentStates[i]->getCurrentSubInference(), example->getFirst(), example->getSecond());
+    }
+    return res;
+  }
+
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
+    {
+      context->makeSequentialInferenceNextState(inference, currentStates[i], state->getSubOutput(i), returnCode);
+      if (returnCode != finishedReturnCode)
+        break;
+    }
+    return ObjectPtr();
+  }
 
   virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
     {return currentStates[index]->getCurrentSubInference();}
