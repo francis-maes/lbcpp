@@ -49,28 +49,28 @@ public:
   ProteinInference() : VectorSequentialInference(T("Protein"))
     {}
 
-  virtual ObjectPtr prepareInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ObjectPtr prepareInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
   {
-    if (supervision)
+    if (state->getSupervision())
     {
-      ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+      ProteinPtr correctProtein = state->getSupervision().dynamicCast<Protein>();
       jassert(correctProtein);
       correctProtein->computeMissingFields();
       if (pdbDebugDirectory.exists() && correctProtein && correctProtein->getTertiaryStructure())
         correctProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.pdb")));
     }
-    return input;
+    return state->getInput();
   }
   
-  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr currentObject, ObjectPtr subInferenceOutput, ReturnCode& returnCode)
+  virtual ObjectPtr finalizeSubInference(SequentialInferenceStatePtr state, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
   {
-    ProteinPtr workingProtein = currentObject.dynamicCast<Protein>();
+    ProteinPtr workingProtein = state->getCurrentObject().dynamicCast<Protein>();
     jassert(workingProtein);
-    workingProtein = addObjectToProtein(workingProtein, subInferenceOutput, supervision.dynamicCast<Protein>());
+    workingProtein = addObjectToProtein(workingProtein, subInferenceOutput, state->getSupervision().dynamicCast<Protein>());
 
     if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
       workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
-        (workingProtein->getName() + T("_pred") + lbcpp::toString(index) + T(".pdb")));
+        (workingProtein->getName() + T("_pred") + lbcpp::toString(state->getCurrentStepNumber()) + T(".pdb")));
 
     return workingProtein;
   }
@@ -126,7 +126,7 @@ public:
 private:
   File pdbDebugDirectory;
 
-  ProteinPtr addObjectToProtein(ProteinPtr workingProtein, ObjectPtr newObject, ProteinPtr correctProtein)
+  static ProteinPtr addObjectToProtein(ProteinPtr workingProtein, ObjectPtr newObject, ProteinPtr correctProtein)
   {
     if (newObject.dynamicCast<Protein>())
       return newObject.dynamicCast<Protein>(); // when a whole protein is predicted, it replaces the current protein

@@ -29,28 +29,28 @@ public:
 
     // prepare inferences
     ReturnCode returnCode = finishedReturnCode;
-    std::vector<ObjectPtr> currentObjects(numTrainingExamples);
+    std::vector<SequentialInferenceStatePtr> currentStates(numTrainingExamples);
     for (size_t i = 0; i < numTrainingExamples; ++i)
     {
       ObjectPairPtr example = trainingData->getAndCast<ObjectPair>(i);
       jassert(example);
-      currentObjects[i] = inference->prepareInference(example->getFirst(), example->getSecond(), returnCode);
+      SequentialInferenceStatePtr state = context->makeSequentialInferenceInitialState(inference, example->getFirst(), example->getSecond(), returnCode);
       if (returnCode != finishedReturnCode)
         return returnCode;
+      currentStates[i] = state;
     }
 
-    for (size_t step = 0; step < inference->getNumSubInferences(); ++step)
+    size_t stepNumber = 0;
+    while (true)
     {
-      InferencePtr subInference = inference->getSubInference(step);
-      InferenceBatchLearnerPtr subLearner = getSubLearner(inference, step);
+      InferenceBatchLearnerPtr subLearner = getSubLearner(inference, stepNumber);
 
       // make sub-training data 
       VectorObjectContainerPtr subTrainingData = new VectorObjectContainer();
       subTrainingData->resize(numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
       {
-        ObjectPairPtr example = trainingData->getAndCast<ObjectPair>(i);
-        ObjectPairPtr subExample = inference->prepareSubInference(example->getFirst(), example->getSecond(), step, currentObjects[i], returnCode);
+        ObjectPairPtr subExample = inference->prepareSubInference(currentStates[i], returnCode);
         if (returnCode != finishedReturnCode)
           return returnCode;
         subTrainingData->set(i, subExample);
@@ -59,19 +59,35 @@ public:
       // apply sub-learner if it exists
       if (subLearner)
       {
+        jassert(currentStates.size());
+        InferencePtr subInference = currentStates[0]->getCurrentSubInference();
+#ifdef JUCE_DEBUG
+        for (size_t i = 1; i < currentStates.size(); ++i)
+          jassert(currentStates[i]->getCurrentSubInference() == subInference);
+#endif // JUCE_DEBUG
+
         ReturnCode res = context->train(subLearner, subInference, subTrainingData);
         if (res != finishedReturnCode)
           return res;
       }
       
-      if (step < inference->getNumSubInferences() - 1)
-      {
-        // evaluate sub-inference and update currentObjects
-        InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(inference, step, currentObjects);
-        context->runInference(evaluateStepOnSubTrainingData, subTrainingData, ObjectPtr(), returnCode);
-      }
+      // evaluate sub-inference and update currentObjects
+      InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(inference, currentStates);
+      context->runInference(evaluateStepOnSubTrainingData, subTrainingData, ObjectPtr(), returnCode);
+
+      // check if we have reached the final state on all examples
+      bool areAllStatesFinal = true;
+      for (size_t i = 0; i < currentStates.size(); ++i)
+        if (!currentStates[i]->isFinal())
+        {
+          areAllStatesFinal = false;
+          break;
+        }
+      if (areAllStatesFinal)
+        return finishedReturnCode;
+
+      ++stepNumber;
     }
-    return finishedReturnCode;
   }
 };
 

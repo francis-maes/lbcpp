@@ -19,29 +19,54 @@ ObjectPtr InferenceContext::runInference(InferencePtr inference, ObjectPtr input
   return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
 }
 
-ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-{  
-  size_t n = inference->getNumSubInferences();
-  ObjectPtr currentObject = inference->prepareInference(input, supervision, returnCode);
+SequentialInferenceStatePtr InferenceContext::makeSequentialInferenceInitialState(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{
+  SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
+
+  state->setCurrentObject(inference->prepareInference(state, returnCode));
   if (returnCode != Inference::finishedReturnCode)
-    return currentObject;
-  
-  for (size_t i = 0; i < n; ++i)
+    return SequentialInferenceStatePtr();
+
+  state->setCurrentSubInference(inference->getInitialSubInference(state, returnCode));
+  if (returnCode != Inference::finishedReturnCode)
+    return SequentialInferenceStatePtr();
+
+  return state;
+}
+
+void InferenceContext::makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, ObjectPtr subOutput, ReturnCode& returnCode)
+{
+  state->setCurrentObject(inference->finalizeSubInference(state, subOutput, returnCode));
+  if (returnCode != Inference::finishedReturnCode)
+    return;
+
+  state->setCurrentSubInference(inference->getNextSubInference(state, returnCode));
+  if (returnCode != Inference::finishedReturnCode)
+    return;
+
+  state->incrementStepNumber();
+}
+
+ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{
+  SequentialInferenceStatePtr state = makeSequentialInferenceInitialState(inference, input, supervision, returnCode);
+  if (!state)
+    return ObjectPtr();
+  while (!state->isFinal())
   {
-    InferencePtr subInference = inference->getSubInference(i);
-    ObjectPairPtr currentInputAndSupervision = inference->prepareSubInference(input, supervision, i, currentObject, returnCode);
+    ObjectPairPtr currentInputAndSupervision = inference->prepareSubInference(state, returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return currentObject;
+      return state->getCurrentObject();
 
-    ObjectPtr subInferenceOutput = runInference(subInference, currentInputAndSupervision->getFirst(), currentInputAndSupervision->getSecond(), returnCode);
+    ObjectPtr subOutput = runInference(state->getCurrentSubInference(), currentInputAndSupervision->getFirst(), currentInputAndSupervision->getSecond(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return currentObject;
+      return state->getCurrentObject();
 
-    currentObject = inference->finalizeSubInference(input, supervision, i, currentObject, subInferenceOutput, returnCode);
+    makeSequentialInferenceNextState(inference, state, subOutput, returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return currentObject;
+      return state->getCurrentObject();
   }
-  return inference->finalizeInference(input, supervision, currentObject, returnCode);
+  return inference->finalizeInference(state, returnCode);
 }
 
 Inference::ReturnCode InferenceContext::train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples)

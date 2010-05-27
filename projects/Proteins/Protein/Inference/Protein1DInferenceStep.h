@@ -106,6 +106,52 @@ public:
   }
 };
 
+//// PSSM predition
+
+class ParallelSharedMultiRegressionInference : public SharedParallelInference
+{
+public:
+  ParallelSharedMultiRegressionInference(const String& name, FeatureDictionaryPtr outputDictionary)
+    : SharedParallelInference(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
+
+  virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+  {
+    ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
+    jassert(container);
+    return container->size();
+  }
+
+  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+    {return getInputFeatures(input, index);}
+
+  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  {
+    if (!supervision)
+      return ObjectPtr();
+
+    DenseVectorPtr vector = supervision.dynamicCast<DenseVector>();
+    jassert(vector);
+    return new Scalar(vector->get(index));
+  }
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+    {return new DenseVector(outputDictionary, getNumSubInferences(input));}
+
+  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  {
+    DenseVectorPtr vector = output.dynamicCast<DenseVector>();
+    jassert(vector);
+    ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
+    jassert(scalar);
+    vector->set(index, scalar->getValue());
+  }
+
+protected:
+  FeatureDictionaryPtr outputDictionary;
+};
+
 class PSSMRowPredictionInferenceStep : public ParallelSharedMultiRegressionInference
 {
 public:
@@ -125,6 +171,8 @@ public:
     : Protein1DInferenceStep(name, new PSSMRowPredictionInferenceStep(), features, T("PositionSpecificScoringMatrix")) {}
   PSSMPredictionInferenceStep() {}
 };
+
+/////////////
 
 }; /* namespace lbcpp */
 
