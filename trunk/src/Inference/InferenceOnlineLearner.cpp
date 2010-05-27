@@ -100,6 +100,6 @@ void declareInferenceOnlineLearnerClasses()
 void InferenceBatchLearner::accept(InferenceVisitorPtr visitor)
   {visitor->visit(InferenceBatchLearnerPtr(this));}
 
-InferenceBatchLearnerPtr lbcpp::simulationInferenceBatchLearner(InferencePtr inference)
-  {return new SimulationInferenceBatchLearner(inference);}
+InferenceBatchLearnerPtr lbcpp::simulationInferenceBatchLearner()
+  {return new SimulationInferenceBatchLearner();}
 

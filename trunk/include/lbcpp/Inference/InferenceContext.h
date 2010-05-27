@@ -23,7 +23,7 @@ public:
   virtual ObjectPtr runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
   virtual ObjectPtr runParallelInferences(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
   
-  virtual ReturnCode train(InferenceBatchLearnerPtr learner, ObjectContainerPtr examples);
+  virtual ReturnCode train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples);
 
   // old:
   virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;

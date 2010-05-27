@@ -1,19 +1,13 @@
-
- * Splitter la hierarchie des learner. Par exemple: InferenceOnlineLearner 
- * Stocker les InferenceOnlineLearner dans les ParameterizedInference
- 
- * "batch" learner, new step-by-step learner
+* SequenceInference: extend the base class with getSubInput / setSubOutput / ...
+* SequentialInferenceBatchLearner
+* ParallelInferenceBatchLearner
+* New class: ProteinInferenceFactory
+* Atomic MultiClass machines (MultiLinear)
  
 Misc: 
  * Learning with hidden units
 
-Reorganisation du projet
- * Refaire les repertoires
- * renomage InferenceStep => Inference
-
 Explorer:
-  * dispatcher le code des juce::Component 
-  * Render l'explorer minimaliste (1 fichier)
   * Widgets pour Classifier / FeatureGenerator
 
 =====

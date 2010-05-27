@@ -19,10 +19,10 @@ ObjectPtr InferenceContext::runInference(InferencePtr inference, ObjectPtr input
   return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
 }
 
-Inference::ReturnCode InferenceContext::train(InferenceBatchLearnerPtr learner, ObjectContainerPtr examples)
+Inference::ReturnCode InferenceContext::train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
-  runInference(learner, examples, ObjectPtr(), res);
+  runInference(learner, inference, examples, res);
   return res;
 }
 
