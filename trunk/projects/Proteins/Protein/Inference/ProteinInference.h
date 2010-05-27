@@ -64,6 +64,9 @@ public:
   
   virtual ObjectPtr finalizeSubInference(SequentialInferenceStatePtr state, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
   {
+    if (!subInferenceOutput)
+      return state->getCurrentObject(); // skip empty predictions
+
     ProteinPtr workingProtein = state->getCurrentObject().dynamicCast<Protein>();
     jassert(workingProtein);
     workingProtein = addObjectToProtein(workingProtein, subInferenceOutput, state->getSupervision().dynamicCast<Protein>());
