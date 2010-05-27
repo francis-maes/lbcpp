@@ -286,41 +286,45 @@ public:
   
   virtual featureGenerator compute(ProteinPtr protein, size_t position)
   {
+    enum {windowLength = 5};
+
+    size_t begin = juce::jlimit(0, (int)protein->getLength() -1, (int)(position - windowLength));
+    size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + windowLength));
+
     std::vector<LabelSequencePtr> sequences = protein->getLabelSequences();
 
     String res;
-    /* Conjunction: Vertical over all sequences */
-    for (size_t i = 0; i < sequences.size(); ++i)
-      res += sequences[i]->getName() + sequences[i]->elementToString(position);
-    featureScope("stconj_fv") featureSense(res);
-#if 1
-    /* Conjunction: Vertical 2-by-2 sequences */
-    for (size_t i = 0; i < sequences.size() - 1; ++i)
-      for (size_t j = i + 1; j < sequences.size(); ++j)
-        featureScope("stconj_2v") featureSense(sequences[i]->getName()
-          + sequences[i]->elementToString(position)
-          + sequences[j]->getName()
-          + sequences[j]->elementToString(position));
+    for (size_t pos = begin; pos <= end; ++pos) // Windowed
+    {
+      /* Conjunction: Vertical over all sequences */
+      for (size_t i = 0; i < sequences.size(); ++i)
+        res += sequences[i]->getName() + sequences[i]->elementToString(pos);
+      featureScope("stconj_fv") featureScope(pos - position) featureSense(res);
 
-    /* Conjunction: Right-Down-Oblic 2-by-2 */
-    for (size_t i = 0; position != protein->getLength() - 1 && i < sequences.size(); ++i)
-      for (size_t j = i + 1; j < sequences.size(); ++j)
-        featureScope("stconj_2ro") featureSense(sequences[i]->getName()
-          + sequences[i]->elementToString(position)
-          + sequences[j]->getName()
-          + sequences[j]->elementToString(position + 1));
-    
-    /* Conjunction: Left-Down-Oblic 2-by-2 */
-    for (size_t i = 0; position != 0 && i < sequences.size(); ++i)
-      for (size_t j = i + 1; j < sequences.size(); ++j)
-        featureScope("stconj_2lo") featureSense(sequences[i]->getName()
-          + sequences[i]->elementToString(position)
-          + sequences[j]->getName()
-          + sequences[j]->elementToString(position - 1));
-#endif    
-    //std::cout << res << std::endl;
-    
-    featureSense(res);
+      /* Conjunction: Vertical 2-by-2 sequences */
+      for (size_t i = 0; i < sequences.size() - 1; ++i)
+        for (size_t j = i + 1; j < sequences.size(); ++j)
+          featureScope("stconj_2v") featureScope(pos - position) featureSense(sequences[i]->getName()
+            + sequences[i]->elementToString(pos)
+            + sequences[j]->getName()
+            + sequences[j]->elementToString(pos));
+  
+      /* Conjunction: Right-Down-Oblic 2-by-2 */
+      for (size_t i = 0; pos != protein->getLength() - 1 && i < sequences.size(); ++i)
+        for (size_t j = i + 1; j < sequences.size(); ++j)
+          featureScope("stconj_2ro") featureScope(pos - position) featureSense(sequences[i]->getName()
+            + sequences[i]->elementToString(pos)
+            + sequences[j]->getName()
+            + sequences[j]->elementToString(pos + 1));
+      
+      /* Conjunction: Left-Down-Oblic 2-by-2 */
+      for (size_t i = 0; pos != 0 && i < sequences.size(); ++i)
+        for (size_t j = i + 1; j < sequences.size(); ++j)
+          featureScope("stconj_2lo") featureScope(pos - position) featureSense(sequences[i]->getName()
+            + sequences[i]->elementToString(pos)
+            + sequences[j]->getName()
+            + sequences[j]->elementToString(pos - 1));
+    }
   }
 };
 
