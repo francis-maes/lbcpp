@@ -103,3 +103,5 @@ void InferenceBatchLearner::accept(InferenceVisitorPtr visitor)
 InferenceBatchLearnerPtr lbcpp::simulationInferenceBatchLearner()
   {return new SimulationInferenceBatchLearner();}
 
+InferenceBatchLearnerPtr lbcpp::sharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner)
+  {return new SharedSequentialInferenceBatchLearner(subLearner);}

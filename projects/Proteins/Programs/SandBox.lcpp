@@ -30,20 +30,35 @@ public:
 
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+
     if (stack->getDepth() == 1)
     {
-      iterationNumber = 0;
       startingTime = Time::getMillisecondCounter();
     }
     else if (stack->getDepth() == 2)
     {
-      std::cout << std::endl << " ================== ITERATION " << iterationNumber++ << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
+      InferencePtr learnedInference = input.dynamicCast<Inference>();
+      if (learnedInference)
+      {
+        String inferenceName = learnedInference->getName();
+        std::cout << std::endl << "=====================================================" << std::endl;
+        std::cout << "======= " << inferenceName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
+        std::cout << "=====================================================" << std::endl;
+      }
+      iterationNumber = 0;
+    }
+    else if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
+    {
+      std::cout << std::endl << " ================== ITERATION " << ++iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
     }
   }
   
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    if (stack->getDepth() == 2)
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+
+    if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
     {
       InferenceContextPtr validationContext = singleThreadedInferenceContext();
       ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
@@ -52,6 +67,9 @@ public:
       std::cout << "Train: " << evaluation->toString() << std::endl;
       validationContext->runWithSupervisedExamples(inference, testingData);
       std::cout << "Test: " << evaluation->toString() << std::endl;
+    }
+    else if (stack->getDepth() == 2)
+    {
     }
     else if (stack->getDepth() == 1)
     {
@@ -63,71 +81,6 @@ private:
   InferencePtr inference;
   ObjectContainerPtr trainingData, testingData;
   size_t iterationNumber;
-  juce::uint32 startingTime;
-};
-
-class MyInferenceLearnerCallback : public InferenceLearnerCallback
-{
-public:
-  MyInferenceLearnerCallback(ObjectContainerPtr trainingData, ObjectContainerPtr testingData, bool useCacheOnTestingData = true)
-    : trainingData(trainingData), testingData(testingData), startingTime(Time::getMillisecondCounter())
-  {
-    if (useCacheOnTestingData)
-      cache = new InferenceResultCache();
-  }
-
-  virtual InferenceContextPtr createContext()
-    {return singleThreadedInferenceContext();}
-
-  virtual double getProbabilityToCreateAnExample(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision)
-  {
-    //String inferenceStepName = stack->getInference(1)->getName();
-    return 1.0;
-  }
-
-  virtual ClassifierPtr createClassifier(InferenceStackPtr stack, FeatureDictionaryPtr labels)
-    {jassert(false); return ClassifierPtr();}
-    
-  virtual RegressorPtr createRegressor(InferenceStackPtr stack)
-    {jassert(false); return RegressorPtr();}
-
-  virtual void preLearningIterationCallback(size_t iterationNumber)
-    {std::cout << std::endl << " ================== ITERATION " << iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;}
-
-  // returns false if learning should stop
-  virtual bool postLearningIterationCallback(InferencePtr inference, size_t iterationNumber)
-  {
-    InferenceContextPtr validationContext = createContext();
-    ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
-    validationContext->appendCallback(evaluation);
-    if (cache)
-      validationContext->appendCallback(cacheInferenceCallback(cache, inference));
-
-    juce::uint32 startTime = Time::getMillisecondCounter();
-    validationContext->runWithSupervisedExamples(inference, trainingData);
-    double length = (Time::getMillisecondCounter() - startTime) / 1000.0;
-    std::cout << "Train evaluation time: " << length << "s" << std::endl;
-    std::cout << "Train evaluation: " << evaluation->toString() << std::endl;
-
-    // stopping criterion
-    return iterationNumber < 100;
-  }
-  
-  virtual void preLearningStepCallback(InferencePtr step)
-  {
-    String passName = step->getName();
-    std::cout << std::endl << "=====================================================" << std::endl;
-    std::cout << "======= LEARNING PASS " << passName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
-    std::cout << "=====================================================" << std::endl;
-  }
-
-  virtual void postLearningStepCallback(InferencePtr step)
-    {}
-
-private:
-  ObjectContainerPtr trainingData;
-  ObjectContainerPtr testingData;
-  InferenceResultCachePtr cache;
   juce::uint32 startingTime;
 };
 
@@ -150,9 +103,9 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 
 InferenceOnlineLearnerPtr createOnlineLearner()
 {
-  StoppingCriterionPtr stoppingCriterion = logicalOr(
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/*logicalOr(
     maxIterationsStoppingCriterion(100),  
-    maxIterationsWithoutImprovementStoppingCriterion(1));
+    maxIterationsWithoutImprovementStoppingCriterion(1));*/
   return gradientDescentInferenceOnlineLearner(
     InferenceOnlineLearner::never,                                                 // randomization
     InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
@@ -196,7 +149,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));*/
 
   ProteinInferencePtr proteinInference = new ProteinInference();
-  for (size_t i = 0; i < 5; ++i)
+  for (size_t i = 0; i < 2; ++i)
   {
     proteinInference->appendInference(
       new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
@@ -207,7 +160,7 @@ int main(int argc, char** argv)
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
   learningContext->appendCallback(new MyInferenceCallback(proteinInference, trainingData, testingData));
 
-  //InferenceBatchLearnerPtr learner = sharedSequentialInferenceLearner(parallelInferenceLearner(simulationInferenceLearner()));
-  learningContext->train(simulationInferenceBatchLearner(), proteinInference, trainingData);
+  InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+  learningContext->train(learner, proteinInference, trainingData);
   return 0;
 }
