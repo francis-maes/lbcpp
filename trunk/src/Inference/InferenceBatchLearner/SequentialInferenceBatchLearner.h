@@ -18,7 +18,7 @@ namespace lbcpp
 class SequentialInferenceBatchLearner : public InferenceBatchLearner
 {
 public:
-  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t index) const = 0;
+  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t stepNumber) const = 0;
  
   virtual ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
   {
@@ -97,11 +97,24 @@ public:
   SharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner)
     : subLearner(subLearner) {}
 
-  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t index) const
+  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t stepNumber) const
     {return subLearner;}
 
 protected:
   InferenceBatchLearnerPtr subLearner;
+};
+
+class VectorSequentialInferenceBatchLearner : public SequentialInferenceBatchLearner
+{
+public:
+  VectorSequentialInferenceBatchLearner(const std::vector<InferenceBatchLearnerPtr>& subLearners)
+    : subLearners(subLearners) {}
+
+  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t stepNumber) const
+    {jassert(stepNumber < subLearners.size()); return subLearners[stepNumber];}
+
+protected:
+  std::vector<InferenceBatchLearnerPtr> subLearners;
 };
 
 }; /* namespace lbcpp */

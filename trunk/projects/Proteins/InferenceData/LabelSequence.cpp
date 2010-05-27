@@ -31,6 +31,12 @@ void LabelSequence::resize(size_t newSize)
 
 void LabelSequence::set(size_t position, ObjectPtr object)
 {
+  if (!object)
+  {
+    clear(position);
+    return;
+  }
+
   size_t index;
   LabelPtr label = object.dynamicCast<lbcpp::Label>();
   if (label)
@@ -58,9 +64,7 @@ void LabelSequence::set(size_t position, ObjectPtr object)
       return;
     }
   }
-  jassert(position < sequence.size());    
-  sequence[position] = index;
-  validateModification();
+  setIndex(position, index);
 }
 
 bool LabelSequence::hasObject(size_t index) const
@@ -91,7 +95,6 @@ int LabelSequence::getIndex(size_t position) const
 
 void LabelSequence::setIndex(size_t position, size_t index)
 {
-  jassert(index < 255);
   jassert(position < sequence.size() && index <= 255);
   sequence[position] = (unsigned char)index;
   validateModification();
