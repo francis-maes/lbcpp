@@ -28,7 +28,7 @@ public:
     OnlineLearningInferenceCallbackPtr onlineLearningCallback = new OnlineLearningInferenceCallback(InferencePtr(this));
     context->appendCallback(onlineLearningCallback);
     while (!onlineLearningCallback->isLearningStopped() && returnCode == Inference::finishedReturnCode)
-      context->runInference(learningIteration, inference, trainingData, returnCode);
+      context->runInference(learningIteration, trainingData, ObjectPtr(), returnCode);
     context->removeCallback(onlineLearningCallback);
     return returnCode;
   }
