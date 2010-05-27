@@ -1,10 +1,4 @@
-* Trouver un moyen d'évaluer juste les passes apprises
-* Gestion du cache fichier
-
--
-* Revoir la classe abstraite d'inférence séquentiel pour intégrer la longueur dynamique
 * Revoir les classes abstraites d'inférence parallèle pour être plus proche de l'inférence séquentielle
--
 
 * ParallelInferenceBatchLearner
 * Atomic MultiClass machines (MultiLinear..)

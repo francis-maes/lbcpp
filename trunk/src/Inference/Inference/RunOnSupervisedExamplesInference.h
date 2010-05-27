@@ -9,7 +9,8 @@
 #ifndef LBCPP_INFERENCE_RUN_ON_SUPERVISED_EXAMPLES_H_
 # define LBCPP_INFERENCE_RUN_ON_SUPERVISED_EXAMPLES_H_
 
-# include <lbcpp/Inference/InferenceBaseClasses.h>
+# include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/Object/ObjectPair.h>
 
 namespace lbcpp

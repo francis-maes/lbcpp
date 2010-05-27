@@ -1,12 +1,12 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Inference.cpp              | Inference step base class       |
+| Filename: Inference.cpp                  | Inference step base class       |
 | Author  : Francis Maes                   |                                 |
 | Started : 08/04/2010 23:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/InferenceBaseClasses.h>
+#include <lbcpp/Inference/Inference.h>
 using namespace lbcpp;
 
 /*

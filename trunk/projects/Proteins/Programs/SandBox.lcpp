@@ -68,9 +68,6 @@ public:
       validationContext->runWithSupervisedExamples(inference, testingData);
       std::cout << "Test: " << evaluation->toString() << std::endl;
     }
-    else if (stack->getDepth() == 2)
-    {
-    }
     else if (stack->getDepth() == 1)
     {
       std::cout << "Bye." << std::endl;

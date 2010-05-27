@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_LINEAR_H_
 # define LBCPP_INFERENCE_LINEAR_H_
 
-# include <lbcpp/Inference/InferenceBaseClasses.h>
+# include <lbcpp/Inference/ParameterizedInference.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
 namespace lbcpp

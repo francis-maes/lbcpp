@@ -6,7 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/InferenceBaseClasses.h>
+#include <lbcpp/Inference/SequentialInference.h>
+#include <lbcpp/Inference/ParallelInference.h>
+#include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
 
