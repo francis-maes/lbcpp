@@ -39,6 +39,7 @@ protected:
 
 extern InferenceBatchLearnerPtr simulationInferenceBatchLearner();
 extern InferenceBatchLearnerPtr sharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner);
+extern InferenceBatchLearnerPtr vectorSequentialInferenceBatchLearner(const std::vector<InferenceBatchLearnerPtr>& subLearners);
 
 }; /* namespace lbcpp */
 

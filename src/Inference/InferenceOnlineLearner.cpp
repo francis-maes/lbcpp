@@ -105,3 +105,6 @@ InferenceBatchLearnerPtr lbcpp::simulationInferenceBatchLearner()
 
 InferenceBatchLearnerPtr lbcpp::sharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner)
   {return new SharedSequentialInferenceBatchLearner(subLearner);}
+
+InferenceBatchLearnerPtr lbcpp::vectorSequentialInferenceBatchLearner(const std::vector<InferenceBatchLearnerPtr>& subLearners)
+  {return new VectorSequentialInferenceBatchLearner(subLearners);}

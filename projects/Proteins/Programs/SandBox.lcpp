@@ -160,7 +160,19 @@ int main(int argc, char** argv)
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
   learningContext->appendCallback(new MyInferenceCallback(proteinInference, trainingData, testingData));
 
-  InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+  InferenceBatchLearnerPtr learner;
+  // Exemple 1) Pour tout apprendre en global:
+  // learner = simulationInferenceBatchLearner();
+
+  // Exemple 2) Pour tout appendre en step by step:
+  // learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+
+  // Exemple 3) Pour n'apprendre que le deuxieme step:
+  //             stepLearners[0] reste vide (on suppose que le premier step à déja été appris)
+  std::vector<InferenceBatchLearnerPtr> stepLearners(2);
+  stepLearners[1] = simulationInferenceBatchLearner();
+  learner = vectorSequentialInferenceBatchLearner(stepLearners);
+  
   learningContext->train(learner, proteinInference, trainingData);
   return 0;
 }

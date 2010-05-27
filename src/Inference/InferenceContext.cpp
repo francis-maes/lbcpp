@@ -205,8 +205,7 @@ public:
         Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
         return ObjectPtr(); 
       }
-      if (subOutput)
-        inference->setSubOutput(res, i, subOutput);
+      inference->setSubOutput(res, i, subOutput);
     }
     return res;
   }
