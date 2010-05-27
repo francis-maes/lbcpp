@@ -272,6 +272,62 @@ ProteinResidueFeaturesPtr lbcpp::proteinSequenceEntropyFeatures(const String& se
   {return ProteinResidueFeaturesPtr(new SequenceEntropyProteinResidueFeatures(sequenceName, numPrevsAndNexts));}
 
 /*
+** MultiSequenceConjunctionProteinResidueFeatures
+*/
+class MultiSequenceConjunctionProteinResidueFeatures : public ProteinResidueFeatures {
+public:
+  MultiSequenceConjunctionProteinResidueFeatures() {}
+  
+  virtual String toString() const
+    {return T("MutiSequence");}
+  
+  virtual String getName() const
+    {return T("MultiSequence conjunction");}
+  
+  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  {
+    std::vector<LabelSequencePtr> sequences = protein->getLabelSequences();
+
+    String res;
+    /* Conjunction: Vertical over all sequences */
+    for (size_t i = 0; i < sequences.size(); ++i)
+      res += sequences[i]->getName() + sequences[i]->elementToString(position);
+    featureScope("stconj_fv") featureSense(res);
+#if 1
+    /* Conjunction: Vertical 2-by-2 sequences */
+    for (size_t i = 0; i < sequences.size() - 1; ++i)
+      for (size_t j = i + 1; j < sequences.size(); ++j)
+        featureScope("stconj_2v") featureSense(sequences[i]->getName()
+          + sequences[i]->elementToString(position)
+          + sequences[j]->getName()
+          + sequences[j]->elementToString(position));
+
+    /* Conjunction: Right-Down-Oblic 2-by-2 */
+    for (size_t i = 0; position != protein->getLength() - 1 && i < sequences.size(); ++i)
+      for (size_t j = i + 1; j < sequences.size(); ++j)
+        featureScope("stconj_2ro") featureSense(sequences[i]->getName()
+          + sequences[i]->elementToString(position)
+          + sequences[j]->getName()
+          + sequences[j]->elementToString(position + 1));
+    
+    /* Conjunction: Left-Down-Oblic 2-by-2 */
+    for (size_t i = 0; position != 0 && i < sequences.size(); ++i)
+      for (size_t j = i + 1; j < sequences.size(); ++j)
+        featureScope("stconj_2lo") featureSense(sequences[i]->getName()
+          + sequences[i]->elementToString(position)
+          + sequences[j]->getName()
+          + sequences[j]->elementToString(position - 1));
+#endif    
+    //std::cout << res << std::endl;
+    
+    featureSense(res);
+  }
+};
+
+ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures()
+  {return ProteinResidueFeaturesPtr(new MultiSequenceConjunctionProteinResidueFeatures());}
+
+/*
 ** Misc
 */
 #include "Protein/Inference/Protein1DInferenceStep.h"
@@ -297,4 +353,5 @@ void declareProteinResidueFeaturesClasses()
   LBCPP_DECLARE_CLASS(SegmentConjunctionProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(SequenceEntropyProteinResidueFeatures);
   LBCPP_DECLARE_CLASS(CompositeProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS(MultiSequenceConjunctionProteinResidueFeatures);
 }

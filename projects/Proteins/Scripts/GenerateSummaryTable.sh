@@ -138,8 +138,13 @@ echo "\addtolength{\textwidth}{1.75in}"
 #echo "\addtolength{\topmargin}{-.875in}"
 #echo "\addtolength{\textheight}{1.75in}"
 echo "\begin{document}"
+echo "\title{${2}}"
+echo "\maketitle"
 echo "\begin{longtable}{l||cccccc}"
-echo "   & SS3 & SS8 & SA & DR & BBB & StAl \\\\ \hline \hline \endhead"
+echo "   & \multicolumn{6}{c}{{\bf Target}} \\"
+echo "  {\bf Method} & SS3 & SS8 & SA & DR & BBB & StAl \\\\ \hline \hline \endhead"
+echo "  \hline \multicolumn{7}{r}{{Continued on next page}} \\ \endfoot"
+echo "  \endlastfoot"
 echo "  \hline \hline"
 
 # Content-Only
@@ -190,9 +195,9 @@ echo "  \hline \hline"
 FromCurrentToPreviousScores
 
 # Multi-Task
-for (( nbTask=0; nbTask <= `echo ${TARGETS} | wc -w`; nbTask++ ))
+for (( nbTask=1; nbTask <= `echo ${TARGETS} | wc -w`; nbTask++ ))
 do
-  MultiTask ${nbTask}
+  MultiTask `expr ${nbTask} - 1`
   echo "  \hline"
 
   FromCurrentToPreviousScores

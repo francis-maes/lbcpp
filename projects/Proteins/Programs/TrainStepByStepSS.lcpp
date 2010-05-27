@@ -294,6 +294,8 @@ int main(int argc, char** argv)
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
+  //featureFunction->addSubFeatures(multiSequenceConjunctionFeatures());
+
   if (testFeatures.contains(T("SegCon")))
   {
     featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));

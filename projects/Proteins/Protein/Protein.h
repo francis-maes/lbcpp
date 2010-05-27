@@ -50,6 +50,7 @@ public:
   size_t getLength() const;
   LabelSequencePtr getAminoAcidSequence() const;
   ScoreVectorSequencePtr getPositionSpecificScoringMatrix() const;
+
   ScoreVectorSequencePtr getAminoAcidProperty() const;
   LabelSequencePtr getReducedAminoAcidAlphabetSequence() const;
   LabelSequencePtr getStructuralAlphabetSequence() const;
@@ -93,6 +94,11 @@ public:
   ProteinTertiaryStructurePtr getTertiaryStructure() const;
   
   /*
+  ** List of existing sequences
+  */
+  std::vector<LabelSequencePtr>& getLabelSequences();
+  
+  /*
   ** Compute some information
   */
   void computePropertiesFrom(const std::vector< ScalarSequencePtr >& aaindex);
@@ -108,6 +114,9 @@ protected:
 
   virtual bool load(InputStream& istr);
   virtual void save(OutputStream& ostr) const;
+
+private:
+  std::vector<LabelSequencePtr> sequences;
 };
 
 }; /* namespace lbcpp */

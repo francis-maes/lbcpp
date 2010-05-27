@@ -602,3 +602,32 @@ void Protein::save(OutputStream& ostr) const
   lbcpp::write(ostr, versionNumber);
   StringToObjectMap::save(ostr);
 }
+
+std::vector<LabelSequencePtr>& Protein::getLabelSequences()
+{
+  sequences.clear();
+  sequences.push_back(getAminoAcidSequence());
+  
+  SequencePtr toAdd;
+  toAdd = getStructuralAlphabetSequence();
+  if (toAdd)
+    sequences.push_back(toAdd);
+  
+  toAdd = getSecondaryStructureSequence();
+  if (toAdd)
+    sequences.push_back(toAdd);
+  
+  toAdd = getDSSPSecondaryStructureSequence();
+  if (toAdd)
+    sequences.push_back(toAdd);
+  
+  toAdd = getSolventAccessibilityThreshold20();
+  if (toAdd)
+    sequences.push_back(toAdd);
+  
+  toAdd = getDisorderSequence();
+  if (toAdd)
+    sequences.push_back(toAdd);
+  
+  return sequences;
+}
