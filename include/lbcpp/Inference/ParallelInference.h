@@ -23,6 +23,9 @@ public:
   ParallelInferenceState(ObjectPtr input, ObjectPtr supervision)
     : input(input), supervision(supervision) {}
 
+  void reserve(size_t size)
+    {subInferences.reserve(size);}
+
   ObjectPtr getInput() const
     {return input;}
 
@@ -82,9 +85,9 @@ public:
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 
-  virtual void prepareInference(ParallelInferenceStatePtr state, ReturnCode& returnCode)
-    {jassert(false);}
-  virtual ObjectPtr finalizeInference(ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {jassert(false); return ParallelInferenceStatePtr();}
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {jassert(false); return ObjectPtr();}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const = 0;

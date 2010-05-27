@@ -30,6 +30,47 @@ public:
   }
   OneAgainstAllClassificationInference() {}
 
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(subInferences.size());
+
+    if (supervision)
+    {
+      LabelPtr correctLabel = supervision.dynamicCast<Label>();
+      jassert(correctLabel);
+      size_t correct = correctLabel->getIndex();
+      for (size_t i = 0; i < subInferences.size(); ++i)
+        res->addSubInference(subInferences.get(i), input,
+            new Label(BinaryClassificationDictionary::getInstance(), i == correct ? 1 : 0));
+    }
+    else
+      for (size_t i = 0; i < subInferences.size(); ++i)
+        res->addSubInference(subInferences.get(i), input, ObjectPtr());
+
+    return res;
+  }
+
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    double bestScore = -DBL_MAX;
+    int bestClass = -1;
+    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
+    {
+      LabelPtr prediction = state->getSubOutput(i).dynamicCast<Label>();
+      if (!prediction)
+        continue;
+      double score = prediction->getScore();
+      if (score > bestScore)
+        bestScore = score, bestClass = (int)i;
+      else if (score == bestScore)
+        bestClass = -1;
+    }
+    if (bestClass < 0)
+      return ObjectPtr();
+    return new Label(dictionary, (size_t)bestClass);
+  }
+
   virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
     {return input;}
 
