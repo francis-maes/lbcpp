@@ -72,7 +72,7 @@ public:
             new ScaledSigmoidScalarFunction(angleIntervals[j*2], angleIntervals[j*2] + 1)));
         }
         else*/
-          appendStep(regressionInference);
+          subInferences.append(regressionInference);
       }
     }
   }

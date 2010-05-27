@@ -317,37 +317,37 @@ int main(int argc, char** argv)
     if (predictionTarget.contains(T("SS3")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS3_Pass_") + lbcpp::toString(i), featureFunction, T("SecondaryStructureSequence"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
     }
     
     if (predictionTarget.contains(T("SS8")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS8_Pass_") + lbcpp::toString(i), featureFunction, T("DSSPSecondaryStructureSequence"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
     }
     
     if (predictionTarget.contains(T("SA")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i), featureFunction, T("SolventAccessibilityThreshold20"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
     }
     
     if (predictionTarget.contains(T("DR")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i), featureFunction, T("DisorderProbabilitySequence"), T("DisorderSequence"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
     }
 
     if (predictionTarget.contains(T("BBB")))
     {
       step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
     }
     
     if (predictionTarget.contains(T("StAl")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("StAl_Pass_") + lbcpp::toString(i), featureFunction, T("StructuralAlphabetSequence"));
-      proteinInference->appendStep(step);
+      proteinInference->appendInference(step);
     }
   }
 

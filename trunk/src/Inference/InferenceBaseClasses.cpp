@@ -1,0 +1,244 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: InferenceBaseClasses.cpp       | Inference base classes          |
+| Author  : Francis Maes                   |                                 |
+| Started : 27/05/2010 16:30               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include <lbcpp/Inference/InferenceBaseClasses.h>
+#include <lbcpp/Inference/InferenceResultCache.h>
+#include <lbcpp/Inference/InferenceOnlineLearner.h>
+using namespace lbcpp;
+
+/*
+** SharedParallelInference
+*/
+SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
+  : ParallelInference(name), subInference(subInference) {}
+
+void SharedParallelInference::accept(InferenceVisitorPtr visitor)
+  {visitor->visit(SharedParallelInferencePtr(this));}
+
+ObjectPtr SharedParallelInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{
+  subInference->beginRunSession();
+  ObjectPtr res = ParallelInference::run(context, input, supervision, returnCode);
+  subInference->endRunSession();
+  return res;
+}
+
+String SharedParallelInference::toString() const
+{
+  jassert(subInference);
+  return getClassName() + T("(") + subInference->toString() + T(")");
+}
+
+bool SharedParallelInference::loadFromFile(const File& file)
+{
+  if (!loadFromDirectory(file))
+    return false;
+
+  subInference = createFromFileAndCast<Inference>(file.getChildFile(T("shared.inference")));
+  return subInference != InferencePtr();
+}
+
+bool SharedParallelInference::saveToFile(const File& file) const
+  {return saveToDirectory(file) && subInference->saveToFile(file.getChildFile(T("shared.inference")));}
+
+/*
+** ParallelSharedMultiRegressionInference
+*/
+ParallelSharedMultiRegressionInference::ParallelSharedMultiRegressionInference(const String& name, FeatureDictionaryPtr outputDictionary)
+  : SharedParallelInference(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
+
+size_t ParallelSharedMultiRegressionInference::getNumSubInferences(ObjectPtr input) const
+{
+  ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
+  jassert(container);
+  return container->size();
+}
+
+ObjectPtr ParallelSharedMultiRegressionInference::getSubInput(ObjectPtr input, size_t index) const
+  {return getInputFeatures(input, index);}
+
+ObjectPtr ParallelSharedMultiRegressionInference::getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+{
+  if (!supervision)
+    return ObjectPtr();
+
+  DenseVectorPtr vector = supervision.dynamicCast<DenseVector>();
+  jassert(vector);
+  return new Scalar(vector->get(index));
+}
+
+ObjectPtr ParallelSharedMultiRegressionInference::createEmptyOutput(ObjectPtr input) const
+  {return new DenseVector(outputDictionary, getNumSubInferences(input));}
+
+void ParallelSharedMultiRegressionInference::setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+{
+  DenseVectorPtr vector = output.dynamicCast<DenseVector>();
+  jassert(vector);
+  ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
+  jassert(scalar);
+  vector->set(index, scalar->getValue());
+}
+
+/*
+** DecoratorInference
+*/
+String DecoratorInference::toString() const
+  {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
+
+bool DecoratorInference::loadFromFile(const File& file)
+{
+  if (!loadFromDirectory(file))
+    return false;
+  decorated = createFromFileAndCast<Inference>(file.getChildFile(T("decorated.inference")));
+  return decorated != InferencePtr();
+}
+
+bool DecoratorInference::saveToFile(const File& file) const
+{
+  return saveToDirectory(file) &&
+    decorated->saveToFile(file.getChildFile(T("decorated.inference")));
+}
+
+ObjectPtr DecoratorInference::clone() const
+{
+  DecoratorInferencePtr res = createAndCast<DecoratorInference>(getClassName());
+  res->decorated = decorated->clone().dynamicCast<Inference>();
+  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->name = name;
+  return res;
+}
+
+ObjectPtr DecoratorInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{
+  if (decorated)
+    return context->runInference(decorated, input, supervision, returnCode);
+  else
+  {
+    returnCode = Inference::errorReturnCode;
+    return ObjectPtr();
+  }
+}
+
+void DecoratorInference::accept(InferenceVisitorPtr visitor)
+{
+  if (decorated)
+    decorated->accept(visitor);
+}
+
+/*
+** SequentialInference
+*/
+String SequentialInference::toString() const
+{
+  String res = getClassName() + T("(");
+  size_t n = getNumSubInferences();
+  for (size_t i = 0; i < n; ++i)
+  {
+    InferencePtr step = getSubInference(i);
+    res += step->toString();
+    if (i < n - 1)
+      res += T(", ");
+  }
+  return res + T(")");
+}
+
+void SequentialInference::accept(InferenceVisitorPtr visitor)
+  {visitor->visit(SequentialInferencePtr(this));}
+
+ObjectPtr SequentialInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{
+  size_t n = getNumSubInferences();
+  ObjectPtr lastOutput;
+  for (size_t i = 0; i < n; ++i)
+  {
+    InferencePtr currentInference = getSubInference(i);
+    ObjectPtr currentInput = getSubInput(input, supervision, i, lastOutput);
+    ObjectPtr currentSupervision = getSubSupervision(supervision, i);
+    lastOutput = context->runInference(currentInference, currentInput, currentSupervision, returnCode);
+    if (returnCode != finishedReturnCode)
+      return ObjectPtr();
+    jassert(lastOutput);
+  }
+  return getOutput(input, supervision, lastOutput);
+}
+
+/*
+** ParameterizedInference
+*/
+void ParameterizedInference::accept(InferenceVisitorPtr visitor)
+  {visitor->visit(ParameterizedInferencePtr(this));}
+
+DenseVectorPtr ParameterizedInference::getOrCreateParameters(FeatureDictionaryPtr dictionary)
+{
+  if (!parameters)
+    parameters = new DenseVector(dictionary);
+  else
+    parameters->ensureDictionary(dictionary);
+  return parameters;
+}
+
+ObjectPtr ParameterizedInference::clone() const
+{
+  ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());
+  jassert(res);
+  res->parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->name = name;
+  return res;
+}
+
+bool ParameterizedInference::load(InputStream& istr)
+  {return Inference::load(istr) && lbcpp::read(istr, parameters);}
+
+void ParameterizedInference::save(OutputStream& ostr) const
+{
+  jassert(parameters && parameters->getDictionary());
+  Inference::save(ostr);
+  lbcpp::write(ostr, parameters);
+}
+
+/*
+** InferenceStepResultCache
+*/
+ObjectPtr InferenceStepResultCache::get(ObjectPtr input) const
+{
+  InputOutputMap::const_iterator it = cache.find(input->getName());
+  return it == cache.end() ? ObjectPtr() : it->second;
+}
+
+/*
+** InferenceResultCache
+*/
+InferenceStepResultCachePtr InferenceResultCache::getCacheForInferenceStep(InferencePtr step) const
+{
+  CacheMap::const_iterator it = cache.find(step);
+  return it == cache.end() ? InferenceStepResultCachePtr() : it->second;
+}
+
+ObjectPtr InferenceResultCache::get(InferencePtr step, ObjectPtr input) const
+{
+  InferenceStepResultCachePtr stepCache = getCacheForInferenceStep(step);
+  ObjectPtr res = stepCache ? stepCache->get(input) : ObjectPtr();
+  //if (res)
+  //  std::cout << "Use: " << step->getName() << " input: " << input->getName() << std::endl;
+  return res;
+}
+
+void InferenceResultCache::addStepCache(InferenceStepResultCachePtr stepCache)
+{
+  cache[stepCache->getInference()] = stepCache;
+}
+
+void InferenceResultCache::add(InferencePtr inference, ObjectPtr input, ObjectPtr output)
+{
+  //std::cout << "Add: " << step->getName() << " input: " << input->getName() << " output: " << output->toString() << std::endl;
+  InferenceStepResultCachePtr stepCache = getCacheForInferenceStep(inference);
+  if (!stepCache)
+    stepCache = cache[inference] = new InferenceStepResultCache(inference);
+  stepCache->add(input, output);
+}

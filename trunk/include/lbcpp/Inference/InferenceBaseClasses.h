@@ -184,36 +184,7 @@ public:
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 };
 
-/*
-** Inferences with a vector of sub-inferences
-*/
-class VectorBasedInferenceHelper
-{
-public:
-  size_t getNumSubInferences() const
-    {return subInferences.size();}
-
-  InferencePtr getSubInference(size_t index) const
-    {jassert(index < subInferences.size()); return subInferences[index];}
-
-  void setSubStep(size_t index, InferencePtr subStep)
-    {jassert(index < subInferences.size()); subInferences[index] = subStep;}
-
-  void appendStep(InferencePtr inference)
-    {subInferences.push_back(inference);}
-
-  File getSubInferenceFile(size_t index, const File& directory) const;
-
-  int findStepNumber(InferencePtr step) const;
-
-  bool saveSubInferencesToDirectory(const File& file) const;
-  bool loadSubInferencesFromDirectory(const File& file);
-
-protected:
-  std::vector<InferencePtr> subInferences;
-};
-
-class VectorStaticParallelInference : public StaticParallelInference, public VectorBasedInferenceHelper
+class VectorStaticParallelInference : public StaticParallelInference
 {
 public:
   VectorStaticParallelInference(const String& name)
@@ -221,35 +192,50 @@ public:
   VectorStaticParallelInference() {}
 
   virtual size_t getNumSubInferences() const
-    {return VectorBasedInferenceHelper::getNumSubInferences();}
+    {return subInferences.size();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return VectorBasedInferenceHelper::getSubInference(index);}
+    {return subInferences.get(index);}
  
   virtual bool saveToFile(const File& file) const
-    {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
+    {return saveToDirectory(file) && subInferences.saveToDirectory(file);}
 
   virtual bool loadFromFile(const File& file)
-    {return loadFromDirectory(file) && loadSubInferencesFromDirectory(file);}
+    {return loadFromDirectory(file) && subInferences.loadFromDirectory(file);}
+
+protected:
+  InferenceVector subInferences;
 };
 
-class VectorSequentialInference : public SequentialInference, public VectorBasedInferenceHelper
+class VectorSequentialInference : public SequentialInference
 {
 public:
   VectorSequentialInference(const String& name)
     : SequentialInference(name) {}
 
   virtual size_t getNumSubInferences() const
-    {return VectorBasedInferenceHelper::getNumSubInferences();}
+    {return subInferences.size();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return VectorBasedInferenceHelper::getSubInference(index);}
+    {return subInferences.get(index);}
  
+  void appendInference(InferencePtr inference)
+    {subInferences.append(inference);}
+
   virtual bool saveToFile(const File& file) const
-    {return saveToDirectory(file) && saveSubInferencesToDirectory(file);}
+    {return saveToDirectory(file) && subInferences.saveToDirectory(file);}
 
   virtual bool loadFromFile(const File& file)
-    {return loadFromDirectory(file) && loadSubInferencesFromDirectory(file);}
+    {return loadFromDirectory(file) && subInferences.loadFromDirectory(file);}
+
+  File getSubInferenceFile(size_t index, const File& modelDirectory) const
+    {return subInferences.getSubInferenceFile(index, modelDirectory);}
+
+  bool loadSubInferencesFromDirectory(const File& file)
+    {return subInferences.loadFromDirectory(file);}
+
+protected:
+  InferenceVector subInferences;
 };
 
 typedef ReferenceCountedObjectPtr<VectorSequentialInference> VectorSequentialInferencePtr;

@@ -19,8 +19,8 @@ public:
   ProteinCAlphaBondInferenceStep(const String& name)
     : VectorStaticParallelInference(name)
   {
-    appendStep(new RegressionInferenceStep(getName() + T(" angle")));
-    appendStep(new RegressionInferenceStep(getName() + T(" dihedral")));
+    subInferences.append(new RegressionInferenceStep(getName() + T(" angle")));
+    subInferences.append(new RegressionInferenceStep(getName() + T(" dihedral")));
   }
   ProteinCAlphaBondInferenceStep() {}
 

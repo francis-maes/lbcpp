@@ -73,6 +73,36 @@ extern InferencePtr oneAgainstAllClassificationInference(const String& name, Fea
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
 extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
 
+
+class InferenceVector
+{
+public:
+  size_t size() const
+    {return v.size();}
+
+  void resize(size_t size)
+    {v.resize(size);}
+
+  void set(size_t index, InferencePtr subInference)
+    {jassert(index < v.size()); v[index] = subInference;}
+
+  InferencePtr get(size_t index) const
+    {jassert(index < v.size()); return v[index];}
+
+  void append(InferencePtr inference)
+    {v.push_back(inference);}
+
+  int find(InferencePtr inference) const;
+
+  bool saveToDirectory(const File& file) const;
+  bool loadFromDirectory(const File& file);
+
+  File getSubInferenceFile(size_t index, const File& directory) const;
+
+protected:
+  std::vector<InferencePtr> v;
+};
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_STEP_H_

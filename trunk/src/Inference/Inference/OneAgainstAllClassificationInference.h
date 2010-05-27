@@ -23,8 +23,9 @@ public:
     subInferences.resize(dictionary->getNumFeatures());
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      subInferences[i] = binaryClassifierModel->cloneAndCast<BinaryClassificationInference>();
-      subInferences[i]->setName(dictionary->getFeature(i));
+      InferencePtr subInference = binaryClassifierModel->cloneAndCast<BinaryClassificationInference>();
+      subInference->setName(dictionary->getFeature(i));
+      subInferences.set(i, subInference);
     }
   }
   OneAgainstAllClassificationInference() {}
