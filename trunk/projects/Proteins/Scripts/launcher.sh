@@ -50,50 +50,57 @@ other="DRProbability 0.95 TestFeatures Pos"
 
 #for target in `python CombinaisonGenerator.py StAl BBB DR SA SS8 SS3`
 
+program="Windowed5OblicVertical2by2TaskFeatures"
+target="(SS3)6(SS8)7(SA)2(DR)2(BBB)1(StAl)10(SS3)5"
+savedModelDirectory="${program}_model"
+prefix="${program}"
+cp -r BackUp.SelfLoop ${program}_model
+launch
+
 #-------------------- Learning Rate ---------------------#
-numberIterations=""
-for exposant in {3..6}
-do
-  value=`echo "10 ^ ${exposant}" | bc`
-  for multi in 1 2 5
-  do
-    iteration=`echo "${value} * ${multi}" | bc`
-    numberIterations="${numberIterations} ${iteration}"
-  done
-done
-
-echo "Number Iterations: ${numberIterations}"
-
-initialLearningRates=""
-for rates in 0.0001 0.001 0.01 0.1 1 10 100 1000 10000
-do
-  for multi in 1 2 5
-  do
-    learningRate=`echo "${rates} * ${multi}" | bc`
-    initialLearningRates="${initialLearningRates} ${learningRate}"
-  done
-done
-
-echo "Initial Learning Rate: ${initialLearningRates}"
-
-for numberIteration in $numberIterations
-do
-  for learningRate in $initialLearningRates
-  do
-    for target in SS3 SS8 SA DR BBB StAl
-    do
-      program="LEARNING_RATE"
-      prefix="LR_MP_${learningRate}_${numberIteration}"
-      savedModelDirectory="${prefix}_${target}"
-      target="($target)10"
-
-      initialLearningRate=${learningRate}
-      numberIterationLearningRate=${numberIteration}
-
-      launch
-    done
-  done
-done
+#numberIterations=""
+#for exposant in {3..6}
+#do
+#  value=`echo "10 ^ ${exposant}" | bc`
+#  for multi in 1 2 5
+#  do
+#    iteration=`echo "${value} * ${multi}" | bc`
+#    numberIterations="${numberIterations} ${iteration}"
+#  done
+#done
+#
+#echo "Number Iterations: ${numberIterations}"
+#
+#initialLearningRates=""
+#for rates in 0.0001 0.001 0.01 0.1 1 10 100 1000 10000
+#do
+#  for multi in 1 2 5
+#  do
+#    learningRate=`echo "${rates} * ${multi}" | bc`
+#    initialLearningRates="${initialLearningRates} ${learningRate}"
+#  done
+#done
+#
+#echo "Initial Learning Rate: ${initialLearningRates}"
+#
+#for numberIteration in $numberIterations
+#do
+#  for learningRate in $initialLearningRates
+#  do
+#    for target in SS3 SS8 SA DR BBB StAl
+#    do
+#      program="LEARNING_RATE"
+#      prefix="LR_MP_${learningRate}_${numberIteration}"
+#      savedModelDirectory="${prefix}_${target}"
+#      target="($target)10"
+#
+#      initialLearningRate=${learningRate}
+#      numberIterationLearningRate=${numberIteration}
+#
+#      launch
+#    done
+#  done
+#done
 #------------------- END Learning Rate ------------------#
 
 
@@ -123,15 +130,3 @@ done
 #done
 #-------------------- END Regularizer --------------------#
 
-#for wStAl in 1 2 5 10 20 30 40 50 60 70 80 90 100 110
-#do
-#for wStAlFreq in 1 2 5 10 20 30 40 50 60 70 80 90 100 110
-#do
-#  program="ref"
-#  savedModelDirectory="ref_${wStAl}_${wStAlFreq}"
-#  prefix=$savedModelDirectory
-#  target="(${targ})10"
-#  other="DRProbability 0.95 TestFeatures Pos DRRegularizer 10 SARegularizer 500 StAlWindow ${wStAl} StAlWindowFreq ${wStAlFreq}"
-#  launch
-#done
-#done

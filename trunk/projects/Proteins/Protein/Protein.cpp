@@ -606,7 +606,7 @@ void Protein::save(OutputStream& ostr) const
 std::vector<LabelSequencePtr>& Protein::getLabelSequences()
 {
   sequences.clear();
-  sequences.push_back(getAminoAcidSequence());
+//  sequences.push_back(getAminoAcidSequence());
   
   SequencePtr toAdd;
   toAdd = getStructuralAlphabetSequence();
