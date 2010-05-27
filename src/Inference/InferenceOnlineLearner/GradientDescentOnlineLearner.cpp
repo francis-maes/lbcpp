@@ -38,7 +38,9 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
     applyRegularizer(inference);
   
   DenseVectorPtr parameters = getParameters(inference);
-  std::cout << inference->getName() << " Epoch " << epoch << ", " << parameters->l0norm() << " parameters, L2 = " << String(parameters->l2norm(), 3) << std::endl;
+  size_t l0norm = parameters ? parameters->l0norm() : 0;
+  double l2norm = parameters ? parameters->l2norm() : 0.0;
+  std::cout << inference->getName() << " Epoch " << epoch << ", " << l0norm << " parameters, L2 = " << String(l2norm, 3) << std::endl;
   if (lossValue.getCount())
   {
     double mean = lossValue.getMean();
@@ -75,11 +77,21 @@ void GradientDescentOnlineLearner::checkRegularizerAfterStep(InferencePtr infere
     applyRegularizer(inference);
 }
 
-void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inference, FeatureGeneratorPtr gradient, double weight)
+void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inf, FeatureGeneratorPtr gradient, double weight)
 {
-  gradient->addWeightedTo(getParameters(inference), -computeLearningRate() * weight);
+  ParameterizedInferencePtr inference = getParameterizedInference(inf);
+  DenseVectorPtr parameters = inference->getParameters();
+  if (!parameters)
+  {
+    parameters = new DenseVector(gradient->getDictionary());
+    inference->setParameters(parameters);
+  }
+  else
+    parameters->ensureDictionary(gradient->getDictionary());
+
+  gradient->addWeightedTo(parameters, -computeLearningRate() * weight);
   //std::cout << "gradient: " << gradient->l2norm() << " learning rate: " << computeLearningRate() * weight << " parameters: " << getParameters()->l2norm() << std::endl;
-  getParameterizedInference(inference)->validateParametersChange();
+  inference->validateParametersChange();
 }
 
 void GradientDescentOnlineLearner::applyExample(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
@@ -94,8 +106,11 @@ void GradientDescentOnlineLearner::applyRegularizer(InferencePtr inference)
 {
   if (regularizer)
   {
-    //std::cout << "R" << std::flush;
-    gradientDescentStep(inference, regularizer->computeGradient(getParameters(inference)), (double)(epoch - lastApplyRegularizerEpoch));
+    DenseVectorPtr parameters = getParameters(inference);
+    if (parameters)
+      //std::cout << "R" << std::flush;
+      gradientDescentStep(inference, regularizer->computeGradient(getParameters(inference)), (double)(epoch - lastApplyRegularizerEpoch));
+
     lastApplyRegularizerEpoch = epoch;
   }
 }

@@ -47,6 +47,8 @@ public:
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
   {
+    if (!subOutput)
+      return;
     DenseVectorPtr scoreVector = output.dynamicCast<DenseVector>();
     LabelPtr predictedLabel = subOutput.dynamicCast<Label>();
     jassert(scoreVector && predictedLabel);
@@ -61,7 +63,19 @@ public:
       return ObjectPtr();
     DenseVectorPtr classScores = res.dynamicCast<DenseVector>();
     jassert(classScores);
-    return new Label(dictionary, classScores->findIndexOfMaximumValue());
+    double bestScore = -DBL_MAX;
+    int bestClass = -1;
+    for (size_t i = 0; i < classScores->getNumValues(); ++i)
+    {
+      double score = classScores->get(i);
+      if (score > bestScore)
+        bestScore = score, bestClass = (int)i;
+      else if (score == bestScore)
+        bestClass = -1;
+    }
+    if (bestClass < 0)
+      return ObjectPtr();
+    return new Label(dictionary, (size_t)bestClass);
   }
 
 private:

@@ -95,18 +95,17 @@ private:
 
   void testStoppingCriterion(InferencePtr inference)
   {
-    bool currentParametersAreBest = false;
     double score = -getCurrentLossEstimate();
-    if (restoreBestParametersWhenLearningStops && score > bestScore)
+    DenseVectorPtr parameters = getParameters(inference);
+    if (parameters && restoreBestParametersWhenLearningStops && score > bestScore)
     {
-      bestParameters = getParameters(inference)->clone();
+      bestParameters = parameters->clone();
       bestScore = score;
-      currentParametersAreBest = true;
     }
     if (criterion->shouldOptimizerStop(score))
     {
       learningStopped = true;
-      if (bestParameters && !currentParametersAreBest)
+      if (bestParameters)
         getParameterizedInference(inference)->setParameters(bestParameters);
     }
   }

@@ -104,6 +104,15 @@ public:
     }
     return res;
   }
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectContainerPtr res = SharedParallelInference::run(context, input, supervision, returnCode).dynamicCast<ObjectContainer>();
+    for (size_t i = 0; i < res->size(); ++i)
+      if (res->get(i))
+        return res;
+    return ObjectPtr(); // only missing values, return an empty object
+  }
 };
 
 //// PSSM predition

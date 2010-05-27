@@ -115,15 +115,6 @@ String SequentialInference::toString() const
 void ParameterizedInference::accept(InferenceVisitorPtr visitor)
   {visitor->visit(ParameterizedInferencePtr(this));}
 
-DenseVectorPtr ParameterizedInference::getOrCreateParameters(FeatureDictionaryPtr dictionary)
-{
-  if (!parameters)
-    parameters = new DenseVector(dictionary);
-  else
-    parameters->ensureDictionary(dictionary);
-  return parameters;
-}
-
 ObjectPtr ParameterizedInference::clone() const
 {
   ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());

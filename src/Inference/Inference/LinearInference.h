@@ -29,7 +29,7 @@ public:
     {clearDotProductCache();}
 
   virtual void beginRunSession()
-    {clearDotProductCache(); dotProductCache = new FeatureGenerator::DotProductCache();}
+    {clearDotProductCache(); if (parameters) dotProductCache = new FeatureGenerator::DotProductCache();}
 
   virtual void endRunSession()
     {clearDotProductCache();}
@@ -46,22 +46,31 @@ public:
     }
   }
 
+  double getScalar(ObjectPtr object) const
+  {
+    if (!object)
+      return 0.0;
+    ScalarPtr scalar = object.dynamicCast<Scalar>();
+    jassert(scalar);
+    return scalar->getValue();
+  }
+
   virtual FeatureGeneratorPtr getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput, double& lossValue)
   {
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
-    ScalarPtr prediction = predictedOutput.dynamicCast<Scalar>();
-    jassert(features && lossFunction && prediction);
+    jassert(features && lossFunction);
     double lossDerivative;
-    lossFunction->compute(prediction->getValue(), &lossValue, &lossDerivative);
+    lossFunction->compute(getScalar(predictedOutput), &lossValue, &lossDerivative);
     return multiplyByScalar(features, lossDerivative);  
   }
 
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
+    if (!parameters)
+      return ObjectPtr();
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     jassert(features);
-    DenseVectorPtr parameters = getOrCreateParameters(features->getDictionary());
     return new Scalar(features->dotProduct(parameters, dotProductCache));
   }
 

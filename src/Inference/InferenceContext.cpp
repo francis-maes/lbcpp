@@ -207,8 +207,6 @@ public:
       }
       if (subOutput)
         inference->setSubOutput(res, i, subOutput);
-      else
-        jassert(returnCode == Inference::canceledReturnCode);
     }
     return res;
   }

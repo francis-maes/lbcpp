@@ -37,7 +37,7 @@ public:
   DenseVectorPtr getParameters() const
     {return parameters;}
  
-  void setParameters(DenseVectorPtr parameteres)
+  void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters; validateParametersChange();}
 
   virtual ObjectPtr clone() const;
@@ -46,8 +46,6 @@ public:
 
 protected:
   DenseVectorPtr parameters;
-
-  DenseVectorPtr getOrCreateParameters(FeatureDictionaryPtr dictionary);
 
   virtual bool load(InputStream& istr);
   virtual void save(OutputStream& ostr) const;
