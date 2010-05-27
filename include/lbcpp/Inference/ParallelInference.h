@@ -96,26 +96,6 @@ public:
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
 };
 
-class StaticParallelInference : public ParallelInference
-{
-public:
-  StaticParallelInference(const String& name)
-    : ParallelInference(name) {}
-  StaticParallelInference() {}
-
-  virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(StaticParallelInferencePtr(this));}
-
-  virtual size_t getNumSubInferences() const = 0;
-  virtual InferencePtr getSubInference(size_t index) const = 0;
-
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return getNumSubInferences();}
-
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
-    {return getSubInference(index);}
-};
-
 class SharedParallelInference : public ParallelInference
 {
 public:
@@ -149,6 +129,26 @@ public:
 
 protected:
   InferencePtr subInference;
+};
+
+class StaticParallelInference : public ParallelInference
+{
+public:
+  StaticParallelInference(const String& name)
+    : ParallelInference(name) {}
+  StaticParallelInference() {}
+
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(StaticParallelInferencePtr(this));}
+
+  virtual size_t getNumSubInferences() const = 0;
+  virtual InferencePtr getSubInference(size_t index) const = 0;
+
+  virtual size_t getNumSubInferences(ObjectPtr input) const
+    {return getNumSubInferences();}
+
+  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
+    {return getSubInference(index);}
 };
 
 class VectorStaticParallelInference : public StaticParallelInference
