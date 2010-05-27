@@ -49,28 +49,36 @@ public:
   ProteinInference() : VectorSequentialInference(T("Protein"))
     {}
 
-  //////////////////////////////////
-  /*
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-    {return supervision;}
-
-  virtual ObjectPtr 
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  virtual ObjectPtr prepareInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-
+    if (supervision)
+    {
+      ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+      jassert(correctProtein);
+      correctProtein->computeMissingFields();
+      if (pdbDebugDirectory.exists() && correctProtein && correctProtein->getTertiaryStructure())
+        correctProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.pdb")));
+    }
+    return input;
   }
+  
+  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr currentObject, ObjectPtr subInferenceOutput, ReturnCode& returnCode)
+  {
+    ProteinPtr workingProtein = currentObject.dynamicCast<Protein>();
+    jassert(workingProtein);
+    workingProtein = addObjectToProtein(workingProtein, subInferenceOutput, supervision.dynamicCast<Protein>());
 
+    if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
+      workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
+        (workingProtein->getName() + T("_pred") + lbcpp::toString(index) + T(".pdb")));
 
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const = 0;
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
-
-  */
-  ////////////////////////////
+    return workingProtein;
+  }
 
   void setPDBDebugDirectory(const File& directory)
     {pdbDebugDirectory = directory;}
 
+#if 0
   // child inference are all of the form
   // Protein -> Protein sub object
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
@@ -113,6 +121,10 @@ public:
     jassert(workingProtein);
     return workingProtein;
   }
+#endif // 0
+
+private:
+  File pdbDebugDirectory;
 
   ProteinPtr addObjectToProtein(ProteinPtr workingProtein, ObjectPtr newObject, ProteinPtr correctProtein)
   {
@@ -176,9 +188,6 @@ public:
     }*/
     return res;
   }
-
-private:
-  File pdbDebugDirectory;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInference> ProteinInferencePtr;

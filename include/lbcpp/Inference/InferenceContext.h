@@ -21,7 +21,8 @@ public:
   typedef Inference::ReturnCode ReturnCode;
 
   virtual ObjectPtr runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  virtual ObjectPtr runParallelInferences(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+  virtual ObjectPtr runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
+  virtual ObjectPtr runParallelInference(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
   
   virtual ReturnCode train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples);
 

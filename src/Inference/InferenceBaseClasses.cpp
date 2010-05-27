@@ -147,26 +147,6 @@ String SequentialInference::toString() const
   return res + T(")");
 }
 
-void SequentialInference::accept(InferenceVisitorPtr visitor)
-  {visitor->visit(SequentialInferencePtr(this));}
-
-ObjectPtr SequentialInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-{
-  size_t n = getNumSubInferences();
-  ObjectPtr lastOutput;
-  for (size_t i = 0; i < n; ++i)
-  {
-    InferencePtr currentInference = getSubInference(i);
-    ObjectPtr currentInput = getSubInput(input, supervision, i, lastOutput);
-    ObjectPtr currentSupervision = getSubSupervision(supervision, i);
-    lastOutput = context->runInference(currentInference, currentInput, currentSupervision, returnCode);
-    if (returnCode != finishedReturnCode)
-      return ObjectPtr();
-    jassert(lastOutput);
-  }
-  return getOutput(input, supervision, lastOutput);
-}
-
 /*
 ** ParameterizedInference
 */

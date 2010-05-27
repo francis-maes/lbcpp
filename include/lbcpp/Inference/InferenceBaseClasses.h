@@ -16,6 +16,7 @@
 # include "../FeatureGenerator/FeatureGenerator.h"
 # include "../FeatureGenerator/DenseVector.h"
 # include "../LearningMachine.h"
+# include "../Object/ObjectPair.h"
 
 namespace lbcpp
 {
@@ -65,7 +66,7 @@ public:
     {visitor->visit(ParallelInferencePtr(this));}
   
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return context->runParallelInferences(ParallelInferencePtr(this), input, supervision, returnCode);}
+    {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 
   virtual size_t getNumSubInferences(ObjectPtr input) const = 0;
   virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const = 0;
@@ -163,25 +164,31 @@ public:
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
 
-  virtual ObjectPtr getSubInput(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr lastOutput) const
-    {return index == 0 ? input : lastOutput;}
+  virtual ObjectPtr prepareInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return input;}
 
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index) const
-    {return supervision;}
+  virtual ObjectPairPtr prepareSubInference(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr currentObject, ReturnCode& returnCode)
+    {return new ObjectPair(currentObject, supervision);}
+  
+  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, size_t index, ObjectPtr currentObject, ObjectPtr subInferenceOutput, ReturnCode& returnCode)
+    {return subInferenceOutput;}
 
-  virtual ObjectPtr getOutput(ObjectPtr input, ObjectPtr supervision, ObjectPtr lastOutput) const
-    {return lastOutput;}
+  virtual ObjectPtr finalizeInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr currentObject, ReturnCode& returnCode)
+    {return currentObject;}
+
+  /*
+  ** Inference
+  */
+  virtual void accept(InferenceVisitorPtr visitor)
+    {visitor->visit(SequentialInferencePtr(this));}
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
 
   /*
   ** Object
   */
   virtual String toString() const;
-
-  /*
-  ** Inference
-  */
-  virtual void accept(InferenceVisitorPtr visitor);
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 };
 
 class VectorStaticParallelInference : public StaticParallelInference
