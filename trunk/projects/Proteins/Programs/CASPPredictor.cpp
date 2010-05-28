@@ -135,6 +135,7 @@ int main(int argc, char* argv[])
     std::cerr << "Could not complete inference" << std::endl;
     return 1;
   }
+  protein->computeMissingFields();
 
   //addDefaultPredictions(protein);
   //std::cout << std::endl;
