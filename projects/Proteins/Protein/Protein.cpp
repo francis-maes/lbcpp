@@ -321,9 +321,9 @@ void Protein::computeMissingFields()
 
   // distance matrix => contact matrix
   if (residueResidueDistanceMatrixCa && !residueResidueContactMatrix8Ca)
-    setObject(residueResidueContactMatrix8Ca = residueResidueDistanceMatrixCa->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Ca"), 8.0, 1.0, 0.0));
+    setObject(residueResidueContactMatrix8Ca = residueResidueDistanceMatrixCa->makeProbabilityMatrix(T("ResidueResidueContactMatrix8Ca"), 8.0));
   if (residueResidueDistanceMatrixCb && !residueResidueContactMatrix8Cb)
-    setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeThresholdedMatrix(T("ResidueResidueContactMatrix8Cb"), 8.0, 1.0, 0.0));
+    setObject(residueResidueContactMatrix8Cb = residueResidueDistanceMatrixCb->makeProbabilityMatrix(T("ResidueResidueContactMatrix8Cb"), 8.0));
 
   /*
   ** Descriptors from "A HMM derived structural alphabet for proteins" (2004)

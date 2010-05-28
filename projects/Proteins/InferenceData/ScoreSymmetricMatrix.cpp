@@ -24,6 +24,19 @@ ScoreSymmetricMatrixPtr ScoreSymmetricMatrix::makeThresholdedMatrix(const String
   return res;
 }
 
+ScoreSymmetricMatrixPtr ScoreSymmetricMatrix::makeProbabilityMatrix(const String& name, double threshold, double temperature) const
+{
+  ScoreSymmetricMatrixPtr res = new ScoreSymmetricMatrix(name, dimension);
+  for (size_t i = 0; i < dimension; ++i)
+    for (size_t j = i; j < dimension; ++j)
+      if (hasScore(i, j))
+      {
+        double score = (getScore(i, j) - threshold) * temperature;
+        res->setScore(i, j, 1.0 / (1.0 + exp(-score)));
+      }
+  return res;
+}
+
 static inline String scoreToStringFixedSize(double value, int fixedSize)
 {
   String str(value, 1);

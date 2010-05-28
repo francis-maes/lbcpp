@@ -27,6 +27,7 @@ public:
     {return dimension;}
 
   ScoreSymmetricMatrixPtr makeThresholdedMatrix(const String& name, double threshold, double belowValue = 0.0, double aboveValue = 1.0) const;
+  ScoreSymmetricMatrixPtr makeProbabilityMatrix(const String& name, double threshold, double temperature = 1.0) const;
 
   virtual String toString() const;
 
