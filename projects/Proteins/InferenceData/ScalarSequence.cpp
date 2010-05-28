@@ -70,8 +70,13 @@ inline double getScalarValueFromObject(ObjectPtr object)
 void ScalarSequence::set(size_t position, ObjectPtr object)
 {
   jassert(position < sequence.size());
-  sequence[position] = getScalarValueFromObject(object);
-  validateModification();
+  if (object)
+  {
+    sequence[position] = getScalarValueFromObject(object);
+    validateModification();
+  }
+  else
+    clear(position);
 }
 
 bool ScalarSequence::hasObject(size_t index) const
