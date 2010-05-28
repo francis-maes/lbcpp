@@ -102,10 +102,10 @@ InferencePtr lbcpp::binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, 
 InferencePtr lbcpp::binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new BinaryLogisticRegressionInference(learner, name);}
 
-InferencePtr regressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name)
+InferencePtr lbcpp::regressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new RegressionSquareInference(learner, name);}
 
-InferencePtr regressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name)
+InferencePtr lbcpp::regressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new RegressionAbsoluteInference(learner, name);}
 
 InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel)
