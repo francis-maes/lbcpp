@@ -54,6 +54,9 @@ ScalarFunctionPtr lbcpp::addConstantScalarFunction(double constant)
 ScalarFunctionPtr lbcpp::squareFunction()
   {return impl::staticToDynamic(impl::squareFunction());}
 
+ScalarFunctionPtr lbcpp::absFunction()
+  {return impl::staticToDynamic(impl::absFunction());}
+
 ScalarFunctionPtr lbcpp::sum(ScalarFunctionPtr function, double constant)
   {return new ScalarFunctionPlusConstant(function, constant);}
 

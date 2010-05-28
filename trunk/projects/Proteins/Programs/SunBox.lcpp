@@ -1,0 +1,317 @@
+/*
+ *  SunBox.lcpp
+ *  LBCpp
+ *
+ *  Created by Becker Julien on 27/05/10.
+ *  Copyright 2010 University of Liège. All rights reserved.
+ *
+ */
+
+#include <lbcpp/lbcpp.h>
+
+#include "Programs/ArgumentSet.h"
+
+#include "Protein/Protein.h"
+#include "Protein/SecondaryStructureDictionary.h"
+
+#include "Protein/Evaluation/ProteinEvaluationCallback.h"
+#include "Protein/Inference/ProteinInference.h"
+#include "Protein/Inference/Protein1DInferenceStep.h"
+
+using namespace lbcpp;
+
+extern void declareProteinClasses();
+
+// Compute train and test score at given depth and defined public access methods to those scores.
+// Avoid the need to compute scores more than once.
+// Be sure to add this callback as the last callback (this assumption ensure that EvaluationInferenceCallback will be
+// called *before* your callbacks ... ) 
+class EvaluationInferenceCallback : public InferenceCallback
+{
+public:
+  EvaluationInferenceCallback(InferencePtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData, String depth)
+    : inference(inference)
+    , trainingData(trainingData), testingData(testingData)
+    , depth(depth), target(String::empty)
+    , trainingScore(-DBL_MAX), testingScore(-DBL_MAX) {}
+
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+//    std::cout << "Depth: " << stack->getDepth() << std::endl;
+//    std::cout << "Current Inference ClassName: " << stack->getCurrentInference()->getClassName() << std::endl;
+  }
+    
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference()->getClassName() != depth)
+      return;
+    
+    // TODO find a way to retreive target name
+    // The information is available on depth+1 ... (another idea (less proper, I think) is to buffer information from last call with depth+1)
+    //target = stack->getCurrentInference().dynamicCast<RunOnSupervisedExamplesInferencePtr>()->getSubInference(ObjectPtr, 0).dynamicCast<Protein1DInferenceStepPtr>()->getTargetName();
+    //std::cout << "Target Name: " << target << std::endl;
+    InferenceContextPtr validationContext = singleThreadedInferenceContext();
+    ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
+    validationContext->appendCallback(evaluation);
+
+    validationContext->runWithSupervisedExamples(inference, trainingData);
+    //trainingScore = evaluation->getDefaultScoreForTarget(target);
+    trainingScoreString = evaluation->toString();
+    std::cout << "Train: " << trainingScore << " - Test: ";
+    validationContext->runWithSupervisedExamples(inference, testingData);
+    //testingScore = evaluation->getDefaultScoreForTarget(target);
+    testingScoreString = evaluation->toString();
+    std::cout << testingScore << std::endl;
+  }
+  
+  String getTarget() const
+    {return target;}
+  
+  double getTrainingScore() const
+    {return trainingScore;}
+  
+  double getTestingScore() const
+    {return testingScore;}
+  
+  String getTrainingScoreToString() const
+    {return trainingScoreString;}
+  
+  String getTestingScoreToString() const
+    {return testingScoreString;}
+
+private:
+  InferencePtr inference;
+  ObjectContainerPtr trainingData;
+  ObjectContainerPtr testingData;
+  String depth;
+  String target;
+  double trainingScore;
+  double testingScore;
+  String trainingScoreString;
+  String testingScoreString;
+};
+
+typedef ReferenceCountedObjectPtr<EvaluationInferenceCallback> EvaluationInferenceCallbackPtr;
+
+class StandardOutputInferenceCallback : public InferenceCallback
+{
+public:
+  StandardOutputInferenceCallback(EvaluationInferenceCallbackPtr evaluation)
+    : evaluation(evaluation), iterationNumber(0), startingTime(0.0) {}
+  
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 1)
+    {
+      startingTime = Time::getMillisecondCounter();
+    }
+    else if (stack->getDepth() == 2)
+    {
+      InferencePtr learnedInference = input.dynamicCast<Inference>();
+      if (learnedInference)
+      {
+        String inferenceName = learnedInference->getName();
+        std::cout << std::endl << "=====================================================" << std::endl;
+        std::cout << "======= LEARNING PASS " << inferenceName << " ========== " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
+        std::cout << "=====================================================" << std::endl;
+      }
+      iterationNumber = 0;
+    }
+    else if (stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"))
+    {
+      std::cout << std::endl
+                << " ================== ITERATION " << ++iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
+    }
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"))
+    {
+      std::cout << "Train: " << evaluation->getTrainingScoreToString() << std::endl;
+      std::cout << "Test: " << evaluation->getTestingScoreToString() << std::endl;
+    }
+    else if (stack->getDepth() == 1)
+    {
+      std::cout << "Bye." << std::endl;
+    }
+  }
+
+private:
+  EvaluationInferenceCallbackPtr evaluation;
+  size_t iterationNumber;
+  juce::uint32 startingTime;
+};
+
+// TODO GnuPlotInferenceLearnerCallback - Need training and testing scores as double value
+// see EvaluationInferenceCallback::postInferenceCallback
+
+InferenceOnlineLearnerPtr createOnlineLearner()
+{
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/*logicalOr(
+    maxIterationsStoppingCriterion(100),  
+    maxIterationsWithoutImprovementStoppingCriterion(1));*/
+  return gradientDescentInferenceOnlineLearner(
+    InferenceOnlineLearner::never,                                                 // randomization
+    InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
+    InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+}
+
+InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary)
+{
+  InferencePtr binaryClassifier = binaryLinearSVMInference(createOnlineLearner());
+  return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
+}
+
+int main(int argc, char** argv)
+{
+  declareProteinClasses();
+  
+  enum {numFolds = 7};
+  
+  File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
+  int numProteinsToLoad = 0;
+  std::vector<String> targets;
+  
+  ArgumentSet arguments;
+  arguments.insert(new FileArgument(T("ProteinsDirectory"), proteinsDirectory, true, true));
+  arguments.insert(new IntegerArgument(T("NumProteinsToLoad"), numProteinsToLoad));
+  arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
+  
+  if (!arguments.parse(argv, 1, argc-1))
+  {
+    std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
+    return -1;
+  }
+  
+  std::cout << "*---- Program Parameters -----" << std::endl;
+  std::cout << arguments;
+  std::cout << "*-----------------------------" << std::endl;
+
+  // TODO Allows use of already learned proteins
+  // TODO Randomize *before* loading
+  ObjectContainerPtr proteins = directoryObjectStream(proteinsDirectory, T("*.protein"))->load(numProteinsToLoad);
+  proteins = proteins->randomize()->apply(new ProteinToInputOutputPairFunction());
+
+  // TODO Allows use of two distinct directory to train and test
+  ObjectContainerPtr trainingData = proteins->invFold(0, numFolds);
+  ObjectContainerPtr testingData = proteins->fold(0, numFolds);
+
+  std::cout << trainingData->size() << " Training Proteins & "
+            << testingData->size()  << " Testing Proteins" << std::endl;
+
+  /*
+  ** Creation of features function
+  */
+  CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
+  
+  featureFunction->addSubFeatures(proteinUnitResidueFeature());
+  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 9, 9, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
+  
+  featureFunction->addSubFeatures(proteinPositionFeatures());
+  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 9, 9, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
+
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), 20, 20, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), 80, true));
+
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 11, 11, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
+
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 10, 10, true));
+  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
+
+
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 10, 10, true));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
+
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 10, 10, true));
+  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
+ 
+  //featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), 0, true));
+  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
+  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
+
+  //featureFunction->addSubFeatures(multiSequenceConjunctionFeatures());
+
+
+  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
+  //featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
+
+  /*
+  ** Creation of the inference
+  */
+  ProteinInferencePtr proteinInference = new ProteinInference();
+  Protein1DInferenceStepPtr step;
+  
+  for (size_t i = 0; i < targets.size(); ++i)
+  {
+    if (targets[i].contains(T("SS3")))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("SS3_Pass_") + lbcpp::toString(i)
+          , createMultiClassClassifier(SecondaryStructureDictionary::getInstance())
+          , featureFunction, T("SecondaryStructureSequence"));
+      proteinInference->appendInference(step);
+    }
+
+    if (targets[i].contains(T("SS8")))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("SS8_Pass_") + lbcpp::toString(i)
+          , createMultiClassClassifier(DSSPSecondaryStructureDictionary::getInstance())
+          , featureFunction, T("DSSPSecondaryStructureSequence"));
+      proteinInference->appendInference(step);
+    }
+    
+    if (targets[i].contains(T("SA")))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i)
+          , binaryLinearSVMInference(createOnlineLearner())
+          , featureFunction, T("SolventAccessibilityThreshold20"));
+      proteinInference->appendInference(step);
+    }
+    
+    if (targets[i].contains(T("DR")))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i)
+          //, binaryLinearSVMInference(createOnlineLearner())
+          , regressionSquareInference(createOnlineLearner())
+          , featureFunction
+          , T("DisorderProbabilitySequence")
+          , T("DisorderSequence"));
+      proteinInference->appendInference(step);
+    }
+    
+    if (targets[i].contains(T("BBB")))
+    {
+      // Euh ...
+    }
+    
+    if (targets[i].contains(T("StAl")))
+    {
+      step = new ProteinSequenceLabelingInferenceStep(T("StAl_Pass_") + lbcpp::toString(i)
+          , createMultiClassClassifier(StructuralAlphabetDictionary::getInstance())
+          , featureFunction, T("StructuralAlphabetSequence"));
+      proteinInference->appendInference(step);
+    }
+  }
+  
+  InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+
+  InferenceContextPtr learningContext = singleThreadedInferenceContext();
+  EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData, T("RunOnSupervisedExamplesInference"));
+
+  learningContext->appendCallback(new StandardOutputInferenceCallback(evaluationCallback));
+  learningContext->appendCallback(evaluationCallback); // must be the last callback
+  learningContext->train(learner, proteinInference, trainingData);
+
+  return 0;
+}

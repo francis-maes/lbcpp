@@ -144,3 +144,8 @@ ADD_CRALGORITHM_SOURCES(Programs/TrainStepByStepSS.lcpp)
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 ADD_EXECUTABLE(TrainStepByStepSS ${CRALGORITHMS_OUTPUT_FILES} Programs/InferenceLearnerCallbackDefinitions.h)
 TARGET_LINK_LIBRARIES(TrainStepByStepSS proteins lbcpp-core)
+
+ADD_CRALGORITHM_SOURCES(Programs/SunBox.lcpp)
+SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
+ADD_EXECUTABLE(SunBox ${CRALGORITHMS_OUTPUT_FILES} Programs/ArgumentSet.h)
+TARGET_LINK_LIBRARIES(SunBox proteins lbcpp-core)
