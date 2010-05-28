@@ -161,7 +161,7 @@ inline ScalarFunctionPtr absFunction(ScalarFunctionPtr input)
 inline ScalarFunctionPtr squareLoss(double target)
   {return squareFunction(addConstantScalarFunction(-target));}
 
-inline ScalarFunctionPtr absLoss(double target)
+inline ScalarFunctionPtr absoluteLoss(double target)
   {return absFunction(addConstantScalarFunction(-target));}
 
 inline ScalarFunctionPtr dihedralAngleSquareLoss(double target)

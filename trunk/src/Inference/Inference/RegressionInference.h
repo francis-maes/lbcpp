@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
  | Filename: RegressionInference.h          | Regression Inference classes    |
- | Author  : Francis Maes                   |                                 |
+ | Author  : Julien Becker                  |                                 |
  | Started : 28/05/2010 05:11               |                                 |
  `------------------------------------------/                                 |
                                 |                                             |
@@ -34,9 +34,7 @@ public:
     ScalarPtr target = supervision.dynamicCast<Scalar>();
     jassert(!supervision || target);
     ScalarFunctionPtr lossFunction = target ? getLoss(target->getValue()) : ScalarFunctionPtr();
-    
-    ObjectPtr res = DecoratorInference::run(context, input, lossFunction, returnCode);
-    return res;
+    return DecoratorInference::run(context, input, lossFunction, returnCode);
   }
 };
 
@@ -45,7 +43,8 @@ class RegressionSquareInference : public RegressionInference
 public:
   RegressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
-  {decorated->setLearner(learner);}
+    {decorated->setLearner(learner);}
+
   RegressionSquareInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
@@ -57,11 +56,12 @@ class RegressionAbsoluteInference : public RegressionInference
 public:
   RegressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
-  {decorated->setLearner(learner);}
+    {decorated->setLearner(learner);}
+
   RegressionAbsoluteInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return absLoss(target);}
+    {return absoluteLoss(target);}
 };
   
 }; /* namespace lbcpp */
