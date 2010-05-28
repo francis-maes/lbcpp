@@ -82,6 +82,7 @@ bool InferenceVector::loadFromDirectory(const File& file)
 #include "Inference/CallbackBasedDecoratorInference.h"
 #include "Inference/TransferFunctionDecoratorInference.h"
 #include "Inference/BinaryClassificationInference.h"
+#include "Inference/RegressionInference.h"
 #include "Inference/OneAgainstAllClassificationInference.h"
 
 #include "Inference/RunOnSupervisedExamplesInference.h"
@@ -100,6 +101,12 @@ InferencePtr lbcpp::binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, 
 
 InferencePtr lbcpp::binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new BinaryLogisticRegressionInference(learner, name);}
+
+InferencePtr regressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name)
+  {return new RegressionSquareInference(learner, name);}
+
+InferencePtr regressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name)
+  {return new RegressionAbsoluteInference(learner, name);}
 
 InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel)
   {return new OneAgainstAllClassificationInference(name, labelsDictionary, binaryClassifierModel);}

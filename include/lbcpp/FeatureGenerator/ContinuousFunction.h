@@ -149,11 +149,20 @@ extern ScalarFunctionPtr squareFunction();
 inline ScalarFunctionPtr squareFunction(ScalarFunctionPtr input)
   {return input->composeWith(squareFunction());}
 
+// x -> |x|
+extern ScalarFunctionPtr absFunction();
+
+inline ScalarFunctionPtr absFunction(ScalarFunctionPtr input)
+  {return input->composeWith(absFunction());}
+
 /*
 ** Regression Loss Functions
 */
 inline ScalarFunctionPtr squareLoss(double target)
   {return squareFunction(addConstantScalarFunction(-target));}
+
+inline ScalarFunctionPtr absLoss(double target)
+  {return absFunction(addConstantScalarFunction(-target));}
 
 inline ScalarFunctionPtr dihedralAngleSquareLoss(double target)
   {return squareFunction(angleDifferenceScalarFunction(target));}

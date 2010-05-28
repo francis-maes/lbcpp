@@ -192,6 +192,7 @@ SET(LBCPP_INFERENCE_INFERENCE_SOURCES
   Inference/Inference/TransferFunctionDecoratorInference.h
   Inference/Inference/CallbackBasedDecoratorInference.h
   Inference/Inference/RunOnSupervisedExamplesInference.h
+  Inference/Inference/RegressionInference.h
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES

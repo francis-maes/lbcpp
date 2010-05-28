@@ -67,6 +67,8 @@ extern InferencePtr transferFunctionDecoratorInference(const String& name, Infer
 
 extern InferencePtr binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern InferencePtr regressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern InferencePtr regressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
 extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
 
