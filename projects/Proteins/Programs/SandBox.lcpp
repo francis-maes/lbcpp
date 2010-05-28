@@ -157,6 +157,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
   ProteinInferencePtr proteinInference = new ProteinInference();
+  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
   for (size_t i = 0; i < 2; ++i)
   {
     proteinInference->appendInference(
