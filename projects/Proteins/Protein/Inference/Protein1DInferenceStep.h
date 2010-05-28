@@ -56,9 +56,17 @@ public:
     jassert(protein);    
     ObjectContainerPtr res = protein->createEmptyObject(targetName).dynamicCast<ObjectContainer>();
     jassert(res);
+    bool hasAtLeastOnePrediction = false;
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
-      res->set(i, state->getSubOutput(i));
-    return res;
+    {
+      ObjectPtr subOutput = state->getSubOutput(i);
+      if (subOutput)
+      {
+        res->set(i, subOutput);
+        hasAtLeastOnePrediction = true;
+      }
+    }
+    return hasAtLeastOnePrediction ? res : ObjectContainerPtr();
   }
 
 protected:
@@ -86,18 +94,13 @@ public:
     classificationInference->setName(getName() + T(" Classif"));
   }
 
+  // old
   ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
     : Protein1DInferenceStep(name, new ClassificationInferenceStep(name + T(" Classif")), features, targetName, supervisionName) {}
+  //--
+
   ProteinSequenceLabelingInferenceStep() {}
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    ObjectContainerPtr res = SharedParallelInference::run(context, input, supervision, returnCode).dynamicCast<ObjectContainer>();
-    for (size_t i = 0; i < res->size(); ++i)
-      if (res->get(i))
-        return res;
-    return ObjectPtr(); // only missing values, return an empty object
-  }
 };
 
 //// PSSM predition

@@ -62,22 +62,26 @@ protected:
   // todo: save learner
 };
 
+// Atomic
 extern InferencePtr linearScalarInference(const String& name);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
+// Binary Classification
 extern InferencePtr binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr binaryLabelToProbabilityInference(const String& name, InferencePtr binaryClassifier, double temperature = 1.0);
 
+// Regression
 extern InferencePtr squareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr absoluteRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr dihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
+// MultiClass Classification
 extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
 
+// Misc
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
 extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
-
 
 class InferenceVector
 {
