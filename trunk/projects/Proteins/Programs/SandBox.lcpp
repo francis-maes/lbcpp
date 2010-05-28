@@ -98,14 +98,14 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   return res;
 }
 
-InferenceOnlineLearnerPtr createOnlineLearner()
+InferenceOnlineLearnerPtr createOnlineLearner(double initialLearningRate = 1.0)
 {
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/*logicalOr(
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/*logicalOr(
     maxIterationsStoppingCriterion(100),  
     maxIterationsWithoutImprovementStoppingCriterion(1));*/
   return gradientDescentInferenceOnlineLearner(
     InferenceOnlineLearner::never,                                                 // randomization
-    InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
+    InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
     InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
@@ -119,12 +119,19 @@ InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary)
   return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
 }
 
+InferencePtr createLeastSquaresRegressor(const String& name = T("Unnamed"))
+  {return squareRegressionInference(createOnlineLearner(0.1), name);}
+
+InferencePtr createDihedralRegressor(const String& name = T("Unnamed"))
+  {return dihedralAngleRegressionInference(createOnlineLearner(0.1), name);}
+
+
 int main(int argc, char** argv)
 {
   declareProteinClasses();
 
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")));
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
   
 /*  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
@@ -146,12 +153,16 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   /*featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
-  
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));*/
+  */
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
   ProteinInferencePtr proteinInference = new ProteinInference();
   for (size_t i = 0; i < 2; ++i)
   {
+    proteinInference->appendInference(
+      new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
+              createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
+    continue;
     proteinInference->appendInference(
       new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
                              createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),

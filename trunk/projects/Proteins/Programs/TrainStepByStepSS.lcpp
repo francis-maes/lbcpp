@@ -342,8 +342,9 @@ int main(int argc, char** argv)
 
     if (predictionTarget.contains(T("BBB")))
     {
-      step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
-      proteinInference->appendInference(step);
+      jassert(false); // Cassé !
+      //step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i), featureFunction);
+      //proteinInference->appendInference(step);
     }
     
     if (predictionTarget.contains(T("StAl")))

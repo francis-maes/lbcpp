@@ -48,32 +48,29 @@ protected:
 class ProteinBackboneBondInferenceStep : public VectorStaticParallelInference
 {
 public:
-  ProteinBackboneBondInferenceStep(const String& name)
+  ProteinBackboneBondInferenceStep(const String& name, InferencePtr lengthRegressor, InferencePtr angleRegressor, InferencePtr dihedralRegressor)
     : VectorStaticParallelInference(name)
   {
     for (size_t i = 0; i < 3; ++i)
     {
-      String namePrefix = T("Bond") + lbcpp::toString(i + 1);
-      for (size_t j = 0; j < 3; ++j)
-      {
-        String namePostfix = (j == 0 ? T("Length") : (j == 1 ? T("Angle") : T("DihedralAngle")));
-        RegressionInferenceStepPtr regressionInference = new RegressionInferenceStep(namePrefix + T(" ") + namePostfix);
+      String namePrefix = T("Bond") + lbcpp::toString(i + 1) + T(" ");
 
-      /*  if (j == 0)
-        {
-          static const double bondIntervals[] = {1.2, 1.8, 1.3, 2.0, 1.1, 1.9};
-          appendStep(new TransferFunctionDecoratorInference(regressionInference->getName(), regressionInference,
-            new ScaledSigmoidScalarFunction(bondIntervals[j*2], bondIntervals[j*2] + 1)));
-        }
-        else if (j == 1)
-        {
-          static const double angleIntervals[] = {1.5, 2.5, 1.7, 2.4, 1.4, 2.5};
-          appendStep(new TransferFunctionDecoratorInference(regressionInference->getName(), regressionInference,
-            new ScaledSigmoidScalarFunction(angleIntervals[j*2], angleIntervals[j*2] + 1)));
-        }
-        else*/
-          subInferences.append(regressionInference);
-      }
+      InferencePtr regressor;
+      
+      regressor = lengthRegressor->cloneAndCast<Inference>();
+      regressor->setName(namePrefix + T("Length"));
+      subInferences.append(regressor);
+
+      regressor = angleRegressor->cloneAndCast<Inference>();
+      regressor->setName(namePrefix + T("Angle"));
+      subInferences.append(regressor);
+      
+      regressor = dihedralRegressor->cloneAndCast<Inference>();
+      regressor->setName(namePrefix + T("Dihedral"));
+      subInferences.append(regressor);
+
+//          static const double bondIntervals[] = {1.2, 1.8, 1.3, 2.0, 1.1, 1.9};
+//          static const double angleIntervals[] = {1.5, 2.5, 1.7, 2.4, 1.4, 2.5};
     }
   }
 
@@ -90,9 +87,7 @@ public:
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
       bool targetExists = false;
-      double target = 0.0;
-      if (bond)
-        getTarget(bond, i, targetExists);
+      double target = bond ? getTarget(bond, i, targetExists) : 0.0;
       res->addSubInference(subInferences[i], input, targetExists ? ObjectPtr(new Scalar(target)) : ObjectPtr());
     }
     return res;
@@ -101,6 +96,7 @@ public:
   virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     ProteinBackboneBondPtr res = new ProteinBackboneBond();
+    bool hasAtLeastOnePrediction = false;
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
       ScalarPtr prediction = state->getSubOutput(i).dynamicCast<Scalar>();
@@ -108,9 +104,10 @@ public:
       {
         bool targetExists;
         getTarget(res, i, targetExists) = prediction->getValue();
+        hasAtLeastOnePrediction = true;
       }
     }
-    return res;
+    return hasAtLeastOnePrediction ? res : ProteinBackboneBondPtr();
   }
 
 private:
@@ -143,8 +140,9 @@ private:
 class ProteinBackboneBondSequenceInferenceStep : public Protein1DInferenceStep
 {
 public:
-  ProteinBackboneBondSequenceInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : Protein1DInferenceStep(name, new ProteinBackboneBondInferenceStep(name + T("Bond")), features, T("BackboneBondSequence")) {}
+  ProteinBackboneBondSequenceInferenceStep(const String& name, ProteinResidueFeaturesPtr features, InferencePtr lengthRegressor, InferencePtr angleRegressor, InferencePtr dihedralRegressor)
+    : Protein1DInferenceStep(name, new ProteinBackboneBondInferenceStep(name + T("Bond"), lengthRegressor, angleRegressor, dihedralRegressor),
+      features, T("BackboneBondSequence")) {}
 
   ProteinBackboneBondSequenceInferenceStep()
     {}

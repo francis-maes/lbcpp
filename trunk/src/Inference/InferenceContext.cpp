@@ -200,14 +200,18 @@ public:
     size_t n = state->getNumSubInferences();
     for (size_t i = 0; i < n; ++i)
     {
-      returnCode = Inference::finishedReturnCode;
-      ObjectPtr subOutput = runInference(state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), returnCode);
-      if (returnCode == Inference::errorReturnCode)
+      InferencePtr subInference = state->getSubInference(i);
+      if (subInference)
       {
-        Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
-        return ObjectPtr(); 
+        returnCode = Inference::finishedReturnCode;
+        ObjectPtr subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        if (returnCode == Inference::errorReturnCode)
+        {
+          Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
+          return ObjectPtr(); 
+        }
+        state->setSubOutput(i, subOutput);
       }
-      state->setSubOutput(i, subOutput);
     }
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
   }
