@@ -32,7 +32,7 @@ ScoreSymmetricMatrixPtr ScoreSymmetricMatrix::makeProbabilityMatrix(const String
       if (hasScore(i, j))
       {
         double score = (getScore(i, j) - threshold) * temperature;
-        res->setScore(i, j, 1.0 / (1.0 + exp(-score)));
+        res->setScore(i, j, 1.0 / (1.0 + exp(score)));
       }
   return res;
 }
