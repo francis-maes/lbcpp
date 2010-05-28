@@ -32,6 +32,6 @@ void DefaultInferenceVisitor::visit(StaticParallelInferencePtr inference)
 void DefaultInferenceVisitor::visit(SharedParallelInferencePtr inference)
 {
   stack.push(inference);
-  inference->getSharedInferenceStep()->accept(InferenceVisitorPtr(this));
+  inference->getSubInference()->accept(InferenceVisitorPtr(this));
   stack.pop();
 }

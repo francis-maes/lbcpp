@@ -110,9 +110,12 @@ InferenceOnlineLearnerPtr createOnlineLearner()
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
 
+InferencePtr createBinaryClassifier(const String& name = T("Unnamed"))
+  {return binaryLinearSVMInference(createOnlineLearner(), name);}
+
 InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary)
 {
-  InferencePtr binaryClassifier = binaryLinearSVMInference(createOnlineLearner());
+  InferencePtr binaryClassifier = createBinaryClassifier();
   return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
 }
 
@@ -140,9 +143,10 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   /*featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
+  
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));*/
 
   ProteinInferencePtr proteinInference = new ProteinInference();
@@ -152,6 +156,11 @@ int main(int argc, char** argv)
       new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
                              createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),
                              featureFunction, T("SecondaryStructureSequence")));
+      proteinInference->appendInference(
+        new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i),
+                             binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR"))),
+                             featureFunction,
+                             T("DisorderProbabilitySequence"), T("DisorderSequence")));
   }
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
@@ -162,13 +171,13 @@ int main(int argc, char** argv)
   // learner = simulationInferenceBatchLearner();
 
   // Exemple 2) Pour tout appendre en step by step:
-  // learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+  learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
 
   // Exemple 3) Pour n'apprendre que le deuxieme step:
   //             stepLearners[0] reste vide (on suppose que le premier step à déja été appris)
-  std::vector<InferenceBatchLearnerPtr> stepLearners(2);
-  stepLearners[1] = simulationInferenceBatchLearner();
-  learner = vectorSequentialInferenceBatchLearner(stepLearners);
+  //std::vector<InferenceBatchLearnerPtr> stepLearners(2);
+  //stepLearners[1] = simulationInferenceBatchLearner();
+  //learner = vectorSequentialInferenceBatchLearner(stepLearners);
   
   learningContext->train(learner, proteinInference, trainingData);
   return 0;

@@ -29,25 +29,37 @@ public:
   
   Protein1DInferenceStep() {}
   
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return getProteinLength(input);}
+  virtual size_t getNumSubInferences(ProteinPtr protein) const
+    {return protein->getLength();}
 
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return features->compute(getProtein(input), index);}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    if (!supervision)
-      return ObjectPtr();
-    ObjectContainerPtr objects = getSupervision(supervision).dynamicCast<ObjectContainer>();
-    return objects ? objects->get(index) : ObjectPtr();
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
+    ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    jassert(correctProtein || !supervision);
+    ObjectContainerPtr objects;
+    if (correctProtein)
+      objects = correctProtein->getObject(supervisionName).dynamicCast<ObjectContainer>();
+    
+    size_t n = getNumSubInferences(protein);
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(n);
+    for (size_t i = 0; i < n; ++i)
+      res->addSubInference(subInference, features->compute(protein, i), objects ? objects->get(i) : ObjectPtr());
+    return res;
   }
 
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return ProteinResidueRelatedInferenceStepHelper::createEmptyOutput(input);}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-    {output.dynamicCast<ObjectContainer>()->set(index, subOutput);}
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    ProteinPtr protein = state->getInput().dynamicCast<Protein>();
+    jassert(protein);    
+    ObjectContainerPtr res = protein->createEmptyObject(targetName).dynamicCast<ObjectContainer>();
+    jassert(res);
+    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
+      res->set(i, state->getSubOutput(i));
+    return res;
+  }
 
 protected:
   virtual bool load(InputStream& istr)
@@ -78,33 +90,6 @@ public:
     : Protein1DInferenceStep(name, new ClassificationInferenceStep(name + T(" Classif")), features, targetName, supervisionName) {}
   ProteinSequenceLabelingInferenceStep() {}
 
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-  {
-    SequencePtr res = Protein1DInferenceStep::createEmptyOutput(input).dynamicCast<Sequence>();
-    ClassificationInferenceStepPtr step = getSharedInferenceStep().dynamicCast<ClassificationInferenceStep>();
-    if (step)
-    {
-      LabelSequencePtr ls = res.dynamicCast<LabelSequence>();
-      if (ls)
-        step->setLabels(ls->getDictionary());
-      else
-      {
-        ScoreVectorSequencePtr svs = res.dynamicCast<ScoreVectorSequence>();
-        if (svs)
-          step->setLabels(svs->getDictionary());
-        else
-        {
-          ScalarSequencePtr ss = res.dynamicCast<ScalarSequence>();
-          if (ss)
-            step->setLabels(BinaryClassificationDictionary::getInstance());
-          else
-            jassert(false);
-        }
-      }
-    }
-    return res;
-  }
-
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     ObjectContainerPtr res = SharedParallelInference::run(context, input, supervision, returnCode).dynamicCast<ObjectContainer>();
@@ -123,38 +108,35 @@ public:
   ParallelSharedMultiRegressionInference(const String& name, FeatureDictionaryPtr outputDictionary)
     : SharedParallelInference(name, new RegressionInferenceStep(name + T("Regression"))), outputDictionary(outputDictionary) {}
 
+  virtual size_t getNumSubInferences() const = 0;
   virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
     jassert(container);
-    return container->size();
-  }
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return getInputFeatures(input, index);}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
-  {
-    if (!supervision)
-      return ObjectPtr();
-
     DenseVectorPtr vector = supervision.dynamicCast<DenseVector>();
-    jassert(vector);
-    return new Scalar(vector->get(index));
+    jassert(!supervision || vector)
+
+    size_t n = getNumSubInferences();
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(n);
+    for (size_t i = 0; i < n; ++i)
+      res->addSubInference(subInference, getInputFeatures(input, i), new Scalar(vector->get(i)));
+    return res;
   }
 
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return new DenseVector(outputDictionary, getNumSubInferences(input));}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    DenseVectorPtr vector = output.dynamicCast<DenseVector>();
-    jassert(vector);
-    ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
-    jassert(scalar);
-    vector->set(index, scalar->getValue());
+    size_t n = state->getNumSubInferences();
+    DenseVectorPtr res = new DenseVector(outputDictionary, n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      ScalarPtr scalar = state->getSubOutput(i).dynamicCast<Scalar>();
+      if (scalar)
+        res->set(i, scalar->getValue());
+    }
+    return res;
   }
 
 protected:
@@ -167,7 +149,7 @@ public:
   PSSMRowPredictionInferenceStep()
     : ParallelSharedMultiRegressionInference(T("PSSMRow"), AminoAcidDictionary::getInstance()) {}
 
-  virtual size_t getNumSubInferences(ObjectPtr) const
+  virtual size_t getNumSubInferences() const
     {return AminoAcidDictionary::numAminoAcids;}
  
   FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t scoreIndex) const;

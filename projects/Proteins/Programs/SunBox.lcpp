@@ -283,7 +283,7 @@ int main(int argc, char** argv)
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i)
           //, binaryLinearSVMInference(createOnlineLearner())
-          , regressionSquareInference(createOnlineLearner())
+          , squareRegressionInference(createOnlineLearner())
           , featureFunction
           , T("DisorderProbabilitySequence")
           , T("DisorderSequence"));

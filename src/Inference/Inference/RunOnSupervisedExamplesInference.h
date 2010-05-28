@@ -40,41 +40,15 @@ public:
   virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return ObjectPtr();}
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-  {
-    const_cast<RunOnSupervisedExamplesInference* >(this)->examples = input.dynamicCast<ObjectContainer>();
-    jassert(examples);
-    return examples->size();
-  }
-
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
-    {return inference;}
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return getExample(index)->getFirst();}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
-    {return getExample(index)->getSecond();}
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return ObjectPtr();}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-    {}
-
 protected:
   InferencePtr inference;
-  ObjectContainerPtr examples;
-
-  ObjectPairPtr getExample(size_t index) const
-    {return examples->getAndCast<ObjectPair>(index);}
 };
 
-class RunSequentialInferenceStepOnExamples : public RunOnSupervisedExamplesInference
+class RunSequentialInferenceStepOnExamples : public ParallelInference
 {
 public:
   RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
-    : RunOnSupervisedExamplesInference(InferencePtr()), inference(inference), currentStates(currentStates) {}
+    : ParallelInference(T("RunSequentialInferenceStepOnExamples")), inference(inference), currentStates(currentStates) {}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
@@ -100,17 +74,6 @@ public:
         break;
     }
     return ObjectPtr();
-  }
-
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
-    {return currentStates[index]->getCurrentSubInference();}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-  {
-    ReturnCode returnCode = finishedReturnCode;
-    // FIXME: use the current context
-    singleThreadedInferenceContext()->makeSequentialInferenceNextState(inference, currentStates[index], subOutput, returnCode);
-    jassert(returnCode == finishedReturnCode);
   }
 
 private:
