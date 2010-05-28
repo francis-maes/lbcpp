@@ -29,25 +29,9 @@ public:
   void setTargetName(const String& targetName)
     {this->targetName = targetName;}
 
-  ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {jassert(targetName.isNotEmpty()); return getProtein(input)->createEmptyObject(targetName);}
-
-  ObjectPtr getSupervision(ObjectPtr object) const
-    {jassert(supervisionName.isNotEmpty()); return getProtein(object)->getObject(supervisionName);}
-
 protected:
   String targetName;
   String supervisionName;
-
-  ProteinPtr getProtein(ObjectPtr object) const
-  {
-    ProteinPtr protein = object.dynamicCast<Protein>();
-    jassert(protein);
-    return protein;
-  }
-
-  size_t getProteinLength(ObjectPtr object) const
-    {return getProtein(object)->getLength();}
 
   bool load(InputStream& istr)
     {return lbcpp::read(istr, targetName) && lbcpp::read(istr, supervisionName);}

@@ -26,53 +26,44 @@ public:
   virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const = 0;
   virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const = 0;
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {ensureSubStepIndicesAreComputed(input); return subStepIndices.size();}
-
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    ensureSubStepIndicesAreComputed(input);
-    jassert(index < subStepIndices.size());
-    std::pair<size_t, size_t> ij = subStepIndices[index];
-    return features->compute(getProtein(input), ij.first, ij.second);
+    ProteinPtr protein = input.dynamicCast<Protein>();
+    jassert(protein);
+    computeSubStepIndices(protein, subStepIndices);
+
+    ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    jassert(correctProtein || !supervision);
+    ObjectPtr targetObject = correctProtein ? correctProtein->getObject(supervisionName) : ObjectPtr();
+
+
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(subStepIndices.size());
+    for (size_t i = 0; i < subStepIndices.size(); ++i)
+    {
+      std::pair<size_t, size_t> ij = subStepIndices[i];
+      res->addSubInference(subInference, features->compute(protein, ij.first, ij.second), getSubSupervision(targetObject, ij.first, ij.second));
+    }
+    return res;
   }
 
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    if (!supervision)
-      return ObjectPtr();
-    ensureSubStepIndicesAreComputed(supervision);
-    jassert(index < subStepIndices.size());
-    std::pair<size_t, size_t> ij = subStepIndices[index];
-    return getSubSupervision(getSupervision(supervision), ij.first, ij.second);
-  }
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return ProteinResiduePairRelatedInferenceStepHelper::createEmptyOutput(input);}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-  {
-    jassert(index < subStepIndices.size());
-    std::pair<size_t, size_t> ij = subStepIndices[index];
-    setSubOutput(output, ij.first, ij.second, subOutput);
+    ProteinPtr protein = state->getInput().dynamicCast<Protein>();
+    jassert(protein);    
+    ObjectPtr res = protein->createEmptyObject(targetName);
+    jassert(subStepIndices.size() == state->getNumSubInferences());
+    for (size_t i = 0; i < subStepIndices.size(); ++i)
+    {
+      std::pair<size_t, size_t> ij = subStepIndices[i];
+      setSubOutput(res, ij.first, ij.second, state->getSubOutput(i));
+    }
+    return res;
   }
 
 protected:
-  String currentInputName;
   std::vector< std::pair<size_t, size_t> > subStepIndices;
-
-  void ensureSubStepIndicesAreComputed(ObjectPtr input) const
-  {
-    jassert(input->getName().isNotEmpty() && input->getName() != T("Unnamed"));
-    if (currentInputName != input->getName() || subStepIndices.empty())
-    {
-      Protein2DInferenceStep* pthis = const_cast<Protein2DInferenceStep* >(this);
-      pthis->subStepIndices.clear();
-      computeSubStepIndices(getProtein(input), pthis->subStepIndices);
-      pthis->currentInputName = input->getName();
-    }
-  }
-
+    
   virtual bool load(InputStream& istr)
   {
     return SharedParallelInference::load(istr) &&

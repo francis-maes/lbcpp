@@ -22,6 +22,7 @@ public:
   {
     for (size_t i = 0; i < 3; ++i)
     {
+      // FIXME:
       String prefix = name + T(" ") + getBackboneAtomName(i) + T(".");
       subInferences.append(new RegressionInferenceStep(prefix + T("x")));
       subInferences.append(new RegressionInferenceStep(prefix + T("y")));
@@ -37,36 +38,42 @@ public:
     return backboneAtomNames[index];
   }
 
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return input;}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    if (!supervision)
-      return ObjectPtr();
-
     ProteinResiduePtr residue = supervision.dynamicCast<ProteinResidue>();
-    jassert(residue);
+    jassert(residue || !supervision);
 
-    jassert(index < 9);
-    ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));
-    if (!atom || !atom->getPosition().exists())
-      return ObjectPtr();
-
-    Vector3 position = atom->getPosition();
-    index %= 3;
-    double target = (index == 0 ? position.getX() : (index == 1 ? position.getY() : position.getZ()));
-   
-    // loss(prediction) = (target - prediction)^2
-    return squareLoss(target);
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    for (size_t i = 0; i < 3; ++i)
+    {
+      ProteinAtomPtr atom = residue ? residue->findAtomByName(getBackboneAtomName(i)) : ProteinAtomPtr();
+      if (atom && !atom->getPosition().exists())
+        atom = ProteinAtomPtr();
+      for (size_t j = 0; j < 3; ++j)
+        if (atom)
+        {
+          Vector3 position = atom->getPosition();
+          double target = (j == 0 ? position.getX() : (j == 1 ? position.getY() : position.getZ()));
+          res->addSubInference(subInferences[i], input, new Scalar(target));
+        }
+        else
+          res->addSubInference(subInferences[i], input, ObjectPtr());
+    }
+    return res;
   }
 
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     ProteinResiduePtr res = new ProteinResidue();
     res->addAtom(new ProteinAtom(T("N"), T("N")));
     res->addAtom(new ProteinAtom(T("CA"), T("C")));
     res->addAtom(new ProteinAtom(T("C"), T("C")));
+    jassert(false); // FIXME
+    return res;
+  }/*
+
+  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
+  {
     return res;
   }
 
@@ -84,7 +91,7 @@ public:
       atom->getPosition().setY(prediction->getValue());
     else if (index == 2)
       atom->getPosition().setZ(prediction->getValue());
-  }
+  }*/
 };
 
 class ProteinTertiaryStructureRefinementInferenceStep : public Protein1DInferenceStep
@@ -94,14 +101,6 @@ public:
     : Protein1DInferenceStep(name, new ProteinResidueRefinementInferenceStep(name + T(" Residue")), features, T("TertiaryStructure")) {}
   
   ProteinTertiaryStructureRefinementInferenceStep() {}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
-  {
-    ProteinTertiaryStructurePtr tertiaryStructure = output.dynamicCast<ProteinTertiaryStructure>();
-    ProteinResiduePtr residue = subOutput.dynamicCast<ProteinResidue>();
-    jassert(tertiaryStructure && residue);
-    tertiaryStructure->setResidue(index, residue); 
-  }
 };
 
 }; /* namespace lbcpp */

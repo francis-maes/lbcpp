@@ -79,41 +79,38 @@ public:
 
   ProteinBackboneBondInferenceStep() {}
 
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const
-    {return input;}
-
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+
     ProteinBackboneBondPtr bond = supervision.dynamicCast<ProteinBackboneBond>();
-    if (!bond)
-      return ObjectPtr();
+    jassert(bond || !supervision);
     
-    bool targetExists;
-    double target = getTarget(bond, index, targetExists);
-    if (!targetExists)
-      return ObjectPtr();
-
-    if (index % 3 == 2)
+    res->reserve(subInferences.size());
+    for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      // prediction of a dihedral angle
-      // loss(prediction) = angleDiff(target, prediction)^2
-      return dihedralAngleSquareLoss(target);
+      bool targetExists = false;
+      double target = 0.0;
+      if (bond)
+        getTarget(bond, i, targetExists);
+      res->addSubInference(subInferences[i], input, targetExists ? ObjectPtr(new Scalar(target)) : ObjectPtr());
     }
-
-    // loss(prediction) = (target - prediction)^2
-    return squareLoss(target);
+    return res;
   }
 
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const
-    {return new ProteinBackboneBond();}
-
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    ProteinBackboneBondPtr bond = output.dynamicCast<ProteinBackboneBond>();
-    ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
-    jassert(bond && prediction);
-    bool targetExists;
-    getTarget(bond, index, targetExists) = prediction->getValue();
+    ProteinBackboneBondPtr res = new ProteinBackboneBond();
+    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
+    {
+      ScalarPtr prediction = state->getSubOutput(i).dynamicCast<Scalar>();
+      if (prediction)
+      {
+        bool targetExists;
+        getTarget(res, i, targetExists) = prediction->getValue();
+      }
+    }
+    return res;
   }
 
 private:

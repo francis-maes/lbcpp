@@ -38,27 +38,40 @@ public:
   }
 };
 
-class RegressionSquareInference : public RegressionInference
+class SquareRegressionInference : public RegressionInference
 {
 public:
-  RegressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name)
+  SquareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
     {decorated->setLearner(learner);}
 
-  RegressionSquareInference() {}
+  SquareRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
     {return squareLoss(target);}
 };
 
-class RegressionAbsoluteInference : public RegressionInference
+class AngleRegressionInference : public RegressionInference
 {
 public:
-  RegressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name)
+  AngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
     {decorated->setLearner(learner);}
 
-  RegressionAbsoluteInference() {}
+  AngleRegressionInference() {}
+  
+  virtual ScalarFunctionPtr getLoss(double target) const
+    {return dihedralAngleSquareLoss(target);}
+};
+
+class AbsoluteRegressionInference : public RegressionInference
+{
+public:
+  AbsoluteRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
+    : RegressionInference(name, linearScalarInference(name))
+    {decorated->setLearner(learner);}
+
+  AbsoluteRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
     {return absoluteLoss(target);}

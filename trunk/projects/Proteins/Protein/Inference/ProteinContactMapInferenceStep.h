@@ -57,7 +57,7 @@ class ProteinContactMapInferenceStep : public Protein2DInferenceStep
 public:
   ProteinContactMapInferenceStep(const String& name, ProteinResiduePairFeaturesPtr features, const String& targetName)
     : Protein2DInferenceStep(name, InferencePtr(), features, targetName)
-    {setSharedInferenceStep(/*new AddScalarBiasDecoratorInference*/(name, linearScalarInference(name + T(" Classification"))));}
+    {setSubInference(/*new AddScalarBiasDecoratorInference*/(name, linearScalarInference(name + T(" Classification"))));}
 
   virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const
   {

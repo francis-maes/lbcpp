@@ -67,8 +67,11 @@ extern InferencePtr transferFunctionDecoratorInference(const String& name, Infer
 
 extern InferencePtr binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr regressionSquareInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr regressionAbsoluteInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern InferencePtr binaryLabelToProbabilityInference(const String& name, InferencePtr binaryClassifier, double temperature = 1.0);
+
+extern InferencePtr squareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern InferencePtr absoluteRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern InferencePtr dihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
 extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
 
@@ -90,6 +93,9 @@ public:
 
   InferencePtr get(size_t index) const
     {jassert(index < v.size()); return v[index];}
+
+  InferencePtr operator [](size_t index) const
+    {return get(index);}
 
   void append(InferencePtr inference)
     {v.push_back(inference);}

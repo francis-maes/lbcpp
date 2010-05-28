@@ -1,6 +1,10 @@
-* Revoir les classes abstraites d'inférence parallèle pour être plus proche de l'inférence séquentielle
 
+* Nouvelle interface pour les ParallelInference
+* revoir ProteinBackboneBondInferenceStep
+
+-
 * ParallelInferenceBatchLearner
+* ParallelProteinInference
 * Atomic MultiClass machines (MultiLinear..)
  
 * Apprentissage avec couche cachée

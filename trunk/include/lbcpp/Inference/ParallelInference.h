@@ -85,18 +85,8 @@ public:
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {jassert(false); return ParallelInferenceStatePtr();}
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
-    {jassert(false); return ObjectPtr();}
-
-  virtual size_t getNumSubInferences(ObjectPtr input) const = 0;
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const = 0;
-  virtual ObjectPtr getSubInput(ObjectPtr input, size_t index) const = 0;
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervision, size_t index, ObjectPtr predictedObject) const = 0;
-
-  virtual ObjectPtr createEmptyOutput(ObjectPtr input) const = 0;
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const = 0;
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
 };
 
 class SharedParallelInference : public ParallelInference
@@ -105,17 +95,11 @@ public:
   SharedParallelInference(const String& name, InferencePtr subInference);
   SharedParallelInference() {}
 
-  InferencePtr getSharedInferenceStep() const
+  InferencePtr getSubInference() const
     {return subInference;}
 
-  void setSharedInferenceStep(InferencePtr step)
+  void setSubInference(InferencePtr step)
     {subInference = step;}
-
-  /*
-  ** ParallelInference
-  */
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
-    {return subInference;}
 
   /*
   ** Inference

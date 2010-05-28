@@ -193,24 +193,23 @@ public:
 
   virtual ObjectPtr runParallelInference(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    ObjectPtr res = inference->createEmptyOutput(input);
-
-    size_t n = inference->getNumSubInferences(input);
+    ParallelInferenceStatePtr state = inference->prepareInference(InferenceContextPtr(this), input, supervision, returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return ObjectPtr();
+    
+    size_t n = state->getNumSubInferences();
     for (size_t i = 0; i < n; ++i)
     {
       returnCode = Inference::finishedReturnCode;
-      ObjectPtr subOutput = runInference(inference->getSubInference(input, i),
-                inference->getSubInput(input, i),
-                inference->getSubSupervision(supervision, i, res),
-                returnCode);
+      ObjectPtr subOutput = runInference(state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), returnCode);
       if (returnCode == Inference::errorReturnCode)
       {
         Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
         return ObjectPtr(); 
       }
-      inference->setSubOutput(res, i, subOutput);
+      state->setSubOutput(i, subOutput);
     }
-    return res;
+    return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
   }
 
   virtual ObjectPtr runClassification(ClassificationInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
