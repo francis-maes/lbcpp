@@ -120,6 +120,9 @@ void declareInferenceClasses()
 
   LBCPP_DECLARE_CLASS(BinaryLinearSVMInference);
   LBCPP_DECLARE_CLASS(BinaryLogisticRegressionInference);
+  
+  LBCPP_DECLARE_CLASS(RegressionSquareInference);
+  LBCPP_DECLARE_CLASS(RegressionAbsoluteInference);
 
   LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference);
 

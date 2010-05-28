@@ -76,7 +76,7 @@ void ScalarSequence::set(size_t position, ObjectPtr object)
     validateModification();
   }
   else
-    clear(position);
+    removeValue(position);
 }
 
 bool ScalarSequence::hasObject(size_t index) const
