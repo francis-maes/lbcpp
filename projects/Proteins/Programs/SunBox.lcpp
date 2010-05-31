@@ -14,9 +14,11 @@
 #include "Protein/Protein.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
-#include "Protein/Evaluation/ProteinEvaluationCallback.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
 #include "Protein/Inference/ProteinInference.h"
 #include "Protein/Inference/Protein1DInferenceStep.h"
+
+#include "Protein/Evaluation/ProteinEvaluationCallback.h"
 
 using namespace lbcpp;
 
@@ -29,10 +31,10 @@ extern void declareProteinClasses();
 class EvaluationInferenceCallback : public InferenceCallback
 {
 public:
-  EvaluationInferenceCallback(InferencePtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData, String depth)
+  EvaluationInferenceCallback(InferencePtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
     : inference(inference)
     , trainingData(trainingData), testingData(testingData)
-    , depth(depth), target(String::empty)
+    , target(String::empty)
     , trainingScore(-DBL_MAX), testingScore(-DBL_MAX) {}
 
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -43,23 +45,29 @@ public:
     
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    if (stack->getCurrentInference()->getClassName() != depth)
-      return;
+    typedef ReferenceCountedObjectPtr<ProteinInferenceStepHelper> ProteinInferenceStepHelperPtr;
+    ProteinInferenceStepHelperPtr helper = stack->getCurrentInference().dynamicCast<ProteinInferenceStepHelper>();
     
-    // TODO find a way to retreive target name
-    // The information is available on depth+1 ... (another idea (less proper, I think) is to buffer information from last call with depth+1)
-    //target = stack->getCurrentInference().dynamicCast<RunOnSupervisedExamplesInferencePtr>()->getSubInference(ObjectPtr, 0).dynamicCast<Protein1DInferenceStepPtr>()->getTargetName();
-    //std::cout << "Target Name: " << target << std::endl;
+    if (helper)
+    {
+      target = helper->getTargetName();
+    }
+    
+    if (stack->getCurrentInference()->getClassName() != T("RunOnSupervisedExamplesInference"))
+      return;
+
+    jassert(target != String::empty);
+    std::cout << "Target Name: " << target << std::endl;
     InferenceContextPtr validationContext = singleThreadedInferenceContext();
     ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
     validationContext->appendCallback(evaluation);
 
     validationContext->runWithSupervisedExamples(inference, trainingData);
-    //trainingScore = evaluation->getDefaultScoreForTarget(target);
+    trainingScore = evaluation->getDefaultScoreForTarget(target);
     trainingScoreString = evaluation->toString();
     std::cout << "Train: " << trainingScore << " - Test: ";
     validationContext->runWithSupervisedExamples(inference, testingData);
-    //testingScore = evaluation->getDefaultScoreForTarget(target);
+    testingScore = evaluation->getDefaultScoreForTarget(target);
     testingScoreString = evaluation->toString();
     std::cout << testingScore << std::endl;
   }
@@ -83,10 +91,11 @@ private:
   InferencePtr inference;
   ObjectContainerPtr trainingData;
   ObjectContainerPtr testingData;
-  String depth;
   String target;
+
   double trainingScore;
   double testingScore;
+
   String trainingScoreString;
   String testingScoreString;
 };
@@ -97,15 +106,11 @@ class StandardOutputInferenceCallback : public InferenceCallback
 {
 public:
   StandardOutputInferenceCallback(EvaluationInferenceCallbackPtr evaluation)
-    : evaluation(evaluation), iterationNumber(0), startingTime(0) {}
+    : evaluation(evaluation), iterationNumber(0), startingTime(Time::getMillisecondCounter()) {}
   
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    if (stack->getDepth() == 1)
-    {
-      startingTime = Time::getMillisecondCounter();
-    }
-    else if (stack->getDepth() == 2)
+    if (stack->getDepth() == 2)
     {
       InferencePtr learnedInference = input.dynamicCast<Inference>();
       if (learnedInference)
@@ -143,17 +148,81 @@ private:
   juce::uint32 startingTime;
 };
 
-// TODO GnuPlotInferenceLearnerCallback - Need training and testing scores as double value
-// see EvaluationInferenceCallback::postInferenceCallback
-
-InferenceOnlineLearnerPtr createOnlineLearner()
+class GnuPlotInferenceCallback : public InferenceCallback
 {
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/*logicalOr(
-    maxIterationsStoppingCriterion(100),  
-    maxIterationsWithoutImprovementStoppingCriterion(1));*/
+public:
+  GnuPlotInferenceCallback(EvaluationInferenceCallbackPtr evaluation, const String& prefix)
+    : evaluation(evaluation), prefix(prefix)
+    , startingTime(Time::getMillisecondCounter())
+    , bestTraininScore(-DBL_MAX), bestTestingScore(-DBL_MAX) {}
+  
+  virtual ~GnuPlotInferenceCallback()
+  {
+    for (std::map< String, OutputStream* >::const_iterator iter = oStream.begin(); iter != oStream.end(); iter++)
+      delete iter->second;
+  }
+
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 2)
+    {
+      bestTraininScore = -DBL_MAX;
+      bestTestingScore = -DBL_MAX;
+    }
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference()->getClassName() == T("SimulationInferenceBatchLearner"))
+    {
+      const String target = evaluation->getTarget();
+      jassert(target != String::empty);
+      if (!oStream.count(target))
+      {
+        File dst = File::getCurrentWorkingDirectory().getChildFile(prefix + T(".") + target);
+        dst.deleteFile();
+        oStream[target] = dst.createOutputStream();
+        passes[target] = 0;
+      }
+      
+      *oStream[target] << (int) passes[target] << '\t'
+      << bestTraininScore << '\t'
+      << bestTestingScore << '\t'
+      << (juce::Time::getMillisecondCounter() - startingTime) / 1000. << '\n';
+      oStream[target]->flush();
+
+      ++passes[target];
+    } 
+    else if (stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"))
+    {
+      if (evaluation->getTrainingScore() >= bestTraininScore)
+      {
+        bestTraininScore = evaluation->getTrainingScore();
+        bestTestingScore = evaluation->getTestingScore();
+      }
+    }
+  }
+
+private:
+  EvaluationInferenceCallbackPtr evaluation;
+  String prefix;
+  juce::uint32 startingTime;
+  
+  std::map< String, OutputStream* > oStream;
+  std::map< String, size_t > passes;
+
+  double bestTraininScore;
+  double bestTestingScore;
+};
+
+InferenceOnlineLearnerPtr createOnlineLearner(double initialLearningRate = 1.0)
+{
+  StoppingCriterionPtr stoppingCriterion = logicalOr(
+    maxIterationsStoppingCriterion(20),  
+    maxIterationsWithoutImprovementStoppingCriterion(3));
   return gradientDescentInferenceOnlineLearner(
     InferenceOnlineLearner::never,                                                 // randomization
-    InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 10000), true, // learning steps
+    InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
     InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
@@ -164,6 +233,15 @@ InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary)
   return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
 }
 
+InferencePtr createBinaryClassifier(const String& name = T("Unnamed"))
+  {return binaryLinearSVMInference(createOnlineLearner(), name);}
+
+InferencePtr createLeastSquaresRegressor(const String& name = T("Unnamed"))
+  {return squareRegressionInference(createOnlineLearner(0.1), name);}
+
+InferencePtr createDihedralRegressor(const String& name = T("Unnamed"))
+  {return dihedralAngleRegressionInference(createOnlineLearner(0.1), name);}
+
 int main(int argc, char** argv)
 {
   declareProteinClasses();
@@ -173,11 +251,13 @@ int main(int argc, char** argv)
   File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
   int numProteinsToLoad = 0;
   std::vector<String> targets;
+  String output(T("result"));
   
   ArgumentSet arguments;
   arguments.insert(new FileArgument(T("ProteinsDirectory"), proteinsDirectory, true, true));
   arguments.insert(new IntegerArgument(T("NumProteinsToLoad"), numProteinsToLoad));
   arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
+  arguments.insert(new StringArgument(T("Output"), output));
   
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -283,7 +363,7 @@ int main(int argc, char** argv)
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i)
           //, binaryLinearSVMInference(createOnlineLearner())
-          , squareRegressionInference(createOnlineLearner())
+          , binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR")))
           , featureFunction
           , T("DisorderProbabilitySequence")
           , T("DisorderSequence"));
@@ -292,7 +372,12 @@ int main(int argc, char** argv)
     
     if (targets[i].contains(T("BBB")))
     {
-      // Euh ...
+      step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i)
+          , featureFunction
+          , createLeastSquaresRegressor()
+          , createLeastSquaresRegressor()
+          , createDihedralRegressor());
+      proteinInference->appendInference(step);
     }
     
     if (targets[i].contains(T("StAl")))
@@ -307,9 +392,10 @@ int main(int argc, char** argv)
   InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
-  EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData, T("RunOnSupervisedExamplesInference"));
+  EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
 
   learningContext->appendCallback(new StandardOutputInferenceCallback(evaluationCallback));
+  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output));
   learningContext->appendCallback(evaluationCallback); // must be the last callback
   learningContext->train(learner, proteinInference, trainingData);
 
