@@ -149,8 +149,7 @@ protected:
       inf = inf.dynamicCast<DecoratorInference>()->getDecoratedInference();
     VectorSequentialInferencePtr inference = inf.dynamicCast<VectorSequentialInference>();
     jassert(inference);
-    size_t numSteps = inference->getNumSubInferences();
-    jassert(currentStepNumber < numSteps);
+    jassert(currentStepNumber < inference->getNumSubInferences());
     return InferenceLearner::createLearningContext(inference->getSubInference(currentStepNumber));
   }
   

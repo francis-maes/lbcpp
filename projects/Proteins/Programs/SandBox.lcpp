@@ -130,7 +130,9 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
 
-  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+  //File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+  File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
+  
   ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")));
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
   
@@ -157,7 +159,7 @@ int main(int argc, char** argv)
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
   ProteinInferencePtr proteinInference = new ProteinInference();
-  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
+//  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
   for (size_t i = 0; i < 2; ++i)
   {
     proteinInference->appendInference(
@@ -186,7 +188,7 @@ int main(int argc, char** argv)
   learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
 
   // Exemple 3) Pour n'apprendre que le deuxieme step:
-  //             stepLearners[0] reste vide (on suppose que le premier step à déja été appris)
+  //             stepLearners[0] reste vide (on suppose que le premier step â€¡ dÃˆja ÃˆtÃˆ appris)
   //std::vector<InferenceBatchLearnerPtr> stepLearners(2);
   //stepLearners[1] = simulationInferenceBatchLearner();
   //learner = vectorSequentialInferenceBatchLearner(stepLearners);
