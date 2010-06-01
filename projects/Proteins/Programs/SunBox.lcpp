@@ -34,8 +34,7 @@ public:
   EvaluationInferenceCallback(InferencePtr inference, ObjectContainerPtr trainingData, ObjectContainerPtr testingData)
     : inference(inference)
     , trainingData(trainingData), testingData(testingData)
-    , target(String::empty)
-    , trainingScore(-DBL_MAX), testingScore(-DBL_MAX) {}
+    , trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback) {}
 
   virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
@@ -57,47 +56,47 @@ public:
       return;
 
     jassert(target != String::empty);
-    std::cout << "Target Name: " << target << std::endl;
     InferenceContextPtr validationContext = singleThreadedInferenceContext();
-    ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
-    validationContext->appendCallback(evaluation);
 
+    validationContext->appendCallback(trainingEvaluation);
     validationContext->runWithSupervisedExamples(inference, trainingData);
-    trainingScore = evaluation->getDefaultScoreForTarget(target);
-    trainingScoreString = evaluation->toString();
-    std::cout << "Train: " << trainingScore << " - Test: ";
+
+    validationContext->removeCallback(trainingEvaluation);
+
+    validationContext->appendCallback(testingEvaluation);
     validationContext->runWithSupervisedExamples(inference, testingData);
-    testingScore = evaluation->getDefaultScoreForTarget(target);
-    testingScoreString = evaluation->toString();
-    std::cout << testingScore << std::endl;
   }
   
   String getTarget() const
     {return target;}
   
   double getTrainingScore() const
-    {return trainingScore;}
+    {jassert(target != String::empty); return trainingEvaluation->getDefaultScoreForTarget(target);}
   
   double getTestingScore() const
-    {return testingScore;}
+    {jassert(target != String::empty); return testingEvaluation->getDefaultScoreForTarget(target);}
   
+  double getTrainingScoreForTarget(const String& target) const
+    {return trainingEvaluation->getDefaultScoreForTarget(target);}
+
+  double getTestingScoreForTarget(const String& target) const
+    {return testingEvaluation->getDefaultScoreForTarget(target);}
+
   String getTrainingScoreToString() const
-    {return trainingScoreString;}
+    {return trainingEvaluation->toString();}
   
   String getTestingScoreToString() const
-    {return testingScoreString;}
+    {return testingEvaluation->toString();}
 
 private:
   InferencePtr inference;
-  ObjectContainerPtr trainingData;
-  ObjectContainerPtr testingData;
   String target;
 
-  double trainingScore;
-  double testingScore;
+  ObjectContainerPtr trainingData;
+  ObjectContainerPtr testingData;
 
-  String trainingScoreString;
-  String testingScoreString;
+  ProteinEvaluationCallbackPtr trainingEvaluation;
+  ProteinEvaluationCallbackPtr testingEvaluation;
 };
 
 typedef ReferenceCountedObjectPtr<EvaluationInferenceCallback> EvaluationInferenceCallbackPtr;
@@ -135,6 +134,8 @@ public:
     {
       std::cout << "Train: " << evaluation->getTrainingScoreToString() << std::endl;
       std::cout << "Test: " << evaluation->getTestingScoreToString() << std::endl;
+
+      std::cout << "RR Score: " << evaluation->getTestingScoreForTarget("ResidueResidueContactMatrix8Ca") << std::endl;
     }
     else if (stack->getDepth() == 1)
     {
@@ -148,15 +149,15 @@ private:
   juce::uint32 startingTime;
 };
 
-class GnuPlotInferenceCallback : public InferenceCallback
+class GlobalGnuPlotInferenceCallback : public InferenceCallback
 {
 public:
-  GnuPlotInferenceCallback(EvaluationInferenceCallbackPtr evaluation, const String& prefix)
+  GlobalGnuPlotInferenceCallback(EvaluationInferenceCallbackPtr evaluation, const String& prefix)
     : evaluation(evaluation), prefix(prefix)
     , startingTime(Time::getMillisecondCounter())
     , bestTraininScore(-DBL_MAX), bestTestingScore(-DBL_MAX) {}
   
-  virtual ~GnuPlotInferenceCallback()
+  virtual ~GlobalGnuPlotInferenceCallback()
   {
     for (std::map< String, OutputStream* >::const_iterator iter = oStream.begin(); iter != oStream.end(); iter++)
       delete iter->second;
@@ -205,7 +206,7 @@ public:
 
 private:
   EvaluationInferenceCallbackPtr evaluation;
-  String prefix;
+  const String prefix;
   juce::uint32 startingTime;
   
   std::map< String, OutputStream* > oStream;
@@ -215,14 +216,81 @@ private:
   double bestTestingScore;
 };
 
-InferenceOnlineLearnerPtr createOnlineLearner(double initialLearningRate = 1.0)
+class GnuPlotInferenceCallback : public InferenceCallback
+{
+public:
+  GnuPlotInferenceCallback(EvaluationInferenceCallbackPtr evaluation, const String& prefix, const String& target, const String& relatedTarget = String::empty)
+  : evaluation(evaluation)
+  , prefix(prefix), target(target), relatedTarget(relatedTarget.isEmpty() ? target : relatedTarget)
+  , startingTime(Time::getMillisecondCounter())
+  , bestTrainingScore(-DBL_MAX), bestTestingScore(-DBL_MAX)
+  , oStream(NULL), passes(0) {}
+
+  virtual ~GnuPlotInferenceCallback()
+    {delete oStream;}
+
+  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 2)
+    {
+      bestTrainingScore = -DBL_MAX;
+      bestTestingScore = -DBL_MAX;
+    }
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference()->getClassName() == T("SimulationInferenceBatchLearner") && evaluation->getTarget() == relatedTarget)
+    {
+      if (!oStream)
+      {
+        File dst = File::getCurrentWorkingDirectory().getChildFile(prefix + T(".") + relatedTarget + T(".") + target);
+        dst.deleteFile();
+        oStream = dst.createOutputStream();
+        passes = 0;
+      }
+      
+      *oStream << (int) passes << '\t'
+      << bestTrainingScore << '\t'
+      << bestTestingScore << '\t'
+      << (juce::Time::getMillisecondCounter() - startingTime) / 1000. << '\n';
+      oStream->flush();
+
+      ++passes;
+    } 
+    else if (stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"))
+    {
+      if (evaluation->getTrainingScoreForTarget(target) >= bestTrainingScore)
+      {
+        bestTrainingScore = evaluation->getTrainingScoreForTarget(target);
+        bestTestingScore = evaluation->getTestingScoreForTarget(target);
+      }
+    }
+    
+  }
+
+private:
+  EvaluationInferenceCallbackPtr evaluation;
+  const String prefix;
+  const String target;
+  const String relatedTarget;
+  juce::uint32 startingTime;
+  OutputStream* oStream;
+  size_t passes;
+  double bestTrainingScore;
+  double bestTestingScore;
+};
+
+static double learningRate = 1.0;
+static int learningStep = 10000;
+InferenceOnlineLearnerPtr createOnlineLearner()
 {
   StoppingCriterionPtr stoppingCriterion = logicalOr(
     maxIterationsStoppingCriterion(20),  
     maxIterationsWithoutImprovementStoppingCriterion(3));
   return gradientDescentInferenceOnlineLearner(
     InferenceOnlineLearner::never,                                                 // randomization
-    InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
+    InferenceOnlineLearner::perStep, invLinearIterationFunction(learningRate, learningStep), true, // learning steps
     InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
@@ -237,10 +305,10 @@ InferencePtr createBinaryClassifier(const String& name = T("Unnamed"))
   {return binaryLinearSVMInference(createOnlineLearner(), name);}
 
 InferencePtr createLeastSquaresRegressor(const String& name = T("Unnamed"))
-  {return squareRegressionInference(createOnlineLearner(0.1), name);}
+  {return squareRegressionInference(createOnlineLearner(/*0.1*/), name);}
 
 InferencePtr createDihedralRegressor(const String& name = T("Unnamed"))
-  {return dihedralAngleRegressionInference(createOnlineLearner(0.1), name);}
+  {return dihedralAngleRegressionInference(createOnlineLearner(/*0.1*/), name);}
 
 int main(int argc, char** argv)
 {
@@ -258,6 +326,8 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("NumProteinsToLoad"), numProteinsToLoad));
   arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
   arguments.insert(new StringArgument(T("Output"), output));
+  arguments.insert(new DoubleArgument(T("LearningRate"), learningRate));
+  arguments.insert(new IntegerArgument(T("LearningStep"), learningStep));
   
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -395,7 +465,11 @@ int main(int argc, char** argv)
   EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
 
   learningContext->appendCallback(new StandardOutputInferenceCallback(evaluationCallback));
-  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output));
+  learningContext->appendCallback(new GlobalGnuPlotInferenceCallback(evaluationCallback, output));
+  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence")));
+  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("ResidueResidueContactMatrix8Ca"), T("BackboneBondSequence")));
+  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("StructuralAlphabetSequence"), T("BackboneBondSequence")));
+  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("BackboneBondSequence"), T("TertiaryStructure")));
   learningContext->appendCallback(evaluationCallback); // must be the last callback
   learningContext->train(learner, proteinInference, trainingData);
 
