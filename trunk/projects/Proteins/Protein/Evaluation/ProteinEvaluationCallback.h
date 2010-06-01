@@ -213,7 +213,7 @@ public:
     jassert(predicted->getDimension() == predicted->getDimension());
     size_t n = predicted->getDimension();
     for (size_t i = 0; i < n; ++i)
-      for (size_t j = i; j < n; ++j)
+      for (size_t j = i + 6; j < n; ++j)
       {
         if (correct->hasScore(i, j) && predicted->hasScore(i, j))
         {
