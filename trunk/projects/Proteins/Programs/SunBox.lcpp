@@ -134,8 +134,6 @@ public:
     {
       std::cout << "Train: " << evaluation->getTrainingScoreToString() << std::endl;
       std::cout << "Test: " << evaluation->getTestingScoreToString() << std::endl;
-
-      std::cout << "RR Score: " << evaluation->getTestingScoreForTarget("ResidueResidueContactMatrix8Ca") << std::endl;
     }
     else if (stack->getDepth() == 1)
     {
@@ -223,8 +221,8 @@ public:
   : evaluation(evaluation)
   , prefix(prefix), target(target), relatedTarget(relatedTarget.isEmpty() ? target : relatedTarget)
   , startingTime(Time::getMillisecondCounter())
-  , bestTrainingScore(-DBL_MAX), bestTestingScore(-DBL_MAX)
-  , oStream(NULL), passes(0) {}
+  , oStream(NULL), passes(0) 
+  , bestTrainingScore(-DBL_MAX), bestTestingScore(-DBL_MAX) {}
 
   virtual ~GnuPlotInferenceCallback()
     {delete oStream;}
@@ -283,10 +281,11 @@ private:
 
 static double learningRate = 1.0;
 static int learningStep = 10000;
+static int stoppingIteration = 20;
 InferenceOnlineLearnerPtr createOnlineLearner()
 {
   StoppingCriterionPtr stoppingCriterion = logicalOr(
-    maxIterationsStoppingCriterion(20),  
+    maxIterationsStoppingCriterion(stoppingIteration),  
     maxIterationsWithoutImprovementStoppingCriterion(3));
   return gradientDescentInferenceOnlineLearner(
     InferenceOnlineLearner::never,                                                 // randomization
@@ -315,11 +314,14 @@ int main(int argc, char** argv)
   declareProteinClasses();
   
   enum {numFolds = 7};
-  
+
   File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
   int numProteinsToLoad = 0;
   std::vector<String> targets;
   String output(T("result"));
+  File inputInference;
+  bool saveInference = false;
+  bool isTestVersion = false;
   
   ArgumentSet arguments;
   arguments.insert(new FileArgument(T("ProteinsDirectory"), proteinsDirectory, true, true));
@@ -328,11 +330,22 @@ int main(int argc, char** argv)
   arguments.insert(new StringArgument(T("Output"), output));
   arguments.insert(new DoubleArgument(T("LearningRate"), learningRate));
   arguments.insert(new IntegerArgument(T("LearningStep"), learningStep));
+  arguments.insert(new BooleanArgument(T("SaveInference"), saveInference));
+  arguments.insert(new FileArgument(T("InputInference"), inputInference, true, true));
+  arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
+  
   
   if (!arguments.parse(argv, 1, argc-1))
   {
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
     return -1;
+  }
+  
+  if (isTestVersion)
+  {
+    if (!numProteinsToLoad)
+      numProteinsToLoad = numFolds;
+    stoppingIteration = 2;
   }
   
   std::cout << "*---- Program Parameters -----" << std::endl;
@@ -402,7 +415,7 @@ int main(int argc, char** argv)
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
   Protein1DInferenceStepPtr step;
-  
+
   for (size_t i = 0; i < targets.size(); ++i)
   {
     if (targets[i].contains(T("SS3")))
@@ -432,7 +445,6 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("DR")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i)
-          //, binaryLinearSVMInference(createOnlineLearner())
           , binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR")))
           , featureFunction
           , T("DisorderProbabilitySequence")
@@ -459,6 +471,13 @@ int main(int argc, char** argv)
     }
   }
   
+  
+  if (inputInference != File::nonexistent)
+  {
+    proteinInference = Object::createFromFileAndCast<ProteinInference>(inputInference);
+    
+  }
+  
   InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
@@ -471,7 +490,11 @@ int main(int argc, char** argv)
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("StructuralAlphabetSequence"), T("BackboneBondSequence")));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("BackboneBondSequence"), T("TertiaryStructure")));
   learningContext->appendCallback(evaluationCallback); // must be the last callback
+
   learningContext->train(learner, proteinInference, trainingData);
+
+  if (saveInference)
+    proteinInference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output));
 
   return 0;
 }
