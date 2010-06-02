@@ -292,6 +292,7 @@ public:
     size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + windowLength));
 
     std::vector<LabelSequencePtr> sequences = protein->getLabelSequences();
+    const size_t sequencesSize = sequences.size();
 
     String res;
     for (size_t pos = begin; pos <= end; ++pos) // Windowed
@@ -299,29 +300,29 @@ public:
       size_t i, j;
 
       /* Conjunction: Vertical over all sequences */
-      for (i = 0; i < sequences.size(); ++i)
+      for (i = 0; i < sequencesSize; ++i)
         res += sequences[i]->getName() + sequences[i]->elementToString(pos);
       featureScope("stconj_fv") featureScope(pos - position) featureSense(res);
 
       /* Conjunction: Vertical 2-by-2 sequences */
-      for (i = 0; i < sequences.size() - 1; ++i)
-        for (j = i + 1; j < sequences.size(); ++j)
+      for (i = 0; sequencesSize && i < sequencesSize - 1; ++i)
+        for (j = i + 1; j < sequencesSize; ++j)
           featureScope("stconj_2v") featureScope(pos - position) featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
             + sequences[j]->getName()
             + sequences[j]->elementToString(pos));
   
       /* Conjunction: Right-Down-Oblic 2-by-2 */
-      for (i = 0; pos != protein->getLength() - 1 && i < sequences.size(); ++i)
-        for (j = i + 1; j < sequences.size(); ++j)
+      for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
+        for (j = i + 1; j < sequencesSize; ++j)
           featureScope("stconj_2ro") featureScope(pos - position) featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
             + sequences[j]->getName()
             + sequences[j]->elementToString(pos + 1));
       
       /* Conjunction: Left-Down-Oblic 2-by-2 */
-      for (i = 0; pos != 0 && i < sequences.size(); ++i)
-        for (j = i + 1; j < sequences.size(); ++j)
+      for (i = 0; pos != 0 && i < sequencesSize; ++i)
+        for (j = i + 1; j < sequencesSize; ++j)
           featureScope("stconj_2lo") featureScope(pos - position) featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
             + sequences[j]->getName()
