@@ -141,6 +141,7 @@ ObjectPtr GradientDescentOnlineLearner::clone() const
   GradientDescentOnlineLearnerPtr res = createAndCast<GradientDescentOnlineLearner>(getClassName());
   res->numberOfActiveFeatures = numberOfActiveFeatures;
   res->epoch = epoch;
+  res->learningRate = learningRate;
   res->learningUpdateFrequency = learningUpdateFrequency;
   res->normalizeLearningRate = normalizeLearningRate;
   res->regularizerUpdateFrequency = regularizerUpdateFrequency;
