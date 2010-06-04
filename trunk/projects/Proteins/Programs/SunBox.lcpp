@@ -282,15 +282,16 @@ private:
 static double learningRate = 1.0;
 static int learningStep = 10000;
 static int stoppingIteration = 20;
+static double regularizer = 0.0;
 InferenceOnlineLearnerPtr createOnlineLearner()
 {
   StoppingCriterionPtr stoppingCriterion = logicalOr(
-    maxIterationsStoppingCriterion(stoppingIteration),  
+    maxIterationsStoppingCriterion(stoppingIteration),
     maxIterationsWithoutImprovementStoppingCriterion(3));
   return gradientDescentInferenceOnlineLearner(
     InferenceOnlineLearner::never,                                                 // randomization
     InferenceOnlineLearner::perStep, invLinearIterationFunction(learningRate, learningStep), true, // learning steps
-    InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+    InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(regularizer),         // regularizer
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
 
@@ -316,6 +317,7 @@ int main(int argc, char** argv)
   enum {numFolds = 7};
 
   File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
+  File testingProteinsDirectory;
   int numProteinsToLoad = 0;
   std::vector<String> targets;
   String output(T("result"));
@@ -326,6 +328,7 @@ int main(int argc, char** argv)
   ArgumentSet arguments;
   arguments.insert(new FileArgument(T("ProteinsDirectory"), proteinsDirectory, true, true));
   arguments.insert(new IntegerArgument(T("NumProteinsToLoad"), numProteinsToLoad));
+  arguments.insert(new FileArgument(T("TestingProteinsDirectory"), testingProteinsDirectory, true, true));
   arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
   arguments.insert(new StringArgument(T("Output"), output));
   arguments.insert(new DoubleArgument(T("LearningRate"), learningRate));
@@ -354,12 +357,23 @@ int main(int argc, char** argv)
 
   // TODO Allows use of already learned proteins
   // TODO Randomize *before* loading
-  ObjectContainerPtr proteins = directoryObjectStream(proteinsDirectory, T("*.protein"))->load(numProteinsToLoad);
-  proteins = proteins->randomize()->apply(new ProteinToInputOutputPairFunction());
+  ObjectContainerPtr trainingData = directoryObjectStream(proteinsDirectory, T("*.protein"))
+    ->load(numProteinsToLoad)
+    ->randomize()
+    ->apply(new ProteinToInputOutputPairFunction());
 
-  // TODO Allows use of two distinct directory to train and test
-  ObjectContainerPtr trainingData = proteins->invFold(0, numFolds);
-  ObjectContainerPtr testingData = proteins->fold(0, numFolds);
+  ObjectContainerPtr testingData;
+  if (testingProteinsDirectory == File::nonexistent)
+  {
+    testingData = trainingData->fold(0, numFolds);
+    trainingData = trainingData->invFold(0, numFolds);
+  }
+  else
+  {
+    testingData = directoryObjectStream(testingProteinsDirectory, T("*.protein"))
+      ->load()
+      ->apply(new ProteinToInputOutputPairFunction());
+  }
 
   std::cout << trainingData->size() << " Training Proteins & "
             << testingData->size()  << " Testing Proteins" << std::endl;
@@ -474,8 +488,10 @@ int main(int argc, char** argv)
   
   if (inputInference != File::nonexistent)
   {
-    proteinInference = Object::createFromFileAndCast<ProteinInference>(inputInference);
-    
+    //proteinInference = Object::createFromFileAndCast<ProteinInference>(inputInference);
+    std::cout << "Loading inference ..." << std::endl;
+    //proteinInference->loadSubInferencesFromDirectory(inputInference);
+
   }
   
   InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
