@@ -485,16 +485,38 @@ int main(int argc, char** argv)
     }
   }
   
+  InferenceBatchLearnerPtr learner;
   
   if (inputInference != File::nonexistent)
   {
-    //proteinInference = Object::createFromFileAndCast<ProteinInference>(inputInference);
+    std::vector<InferenceBatchLearnerPtr> stepLearners(proteinInference->getNumSubInferences());
     std::cout << "Loading inference ..." << std::endl;
-    //proteinInference->loadSubInferencesFromDirectory(inputInference);
 
+    size_t i = 0;
+    // Load existing and contiguous inferences
+    for (; i < proteinInference->getNumSubInferences(); ++i)
+    {
+      File f = proteinInference->getSubInferenceFile(i, inputInference);
+      if (!f.exists())
+        break;
+      InferencePtr inference = Inference::createFromFile(f);
+      if (!inference)
+        break;
+      proteinInference->setSubInference(i, inference);
+      std::cout << "Inference " << f.getFileName().quoted() << " loaded !" << std::endl;
+    }
+    // set a learner for the reminder inferences
+    for (; i < proteinInference->getNumSubInferences(); ++i)
+    {
+      stepLearners[i] = simulationInferenceBatchLearner();
+    }
+
+    learner = vectorSequentialInferenceBatchLearner(stepLearners);
+  } else {
+    learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
   }
-  
-  InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+
+  //InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
   EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
