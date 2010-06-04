@@ -122,6 +122,9 @@ public:
 
   InferencePtr getSubInference(size_t index) const
     {return subInferences.get(index);}
+  
+  void setSubInference(size_t index, InferencePtr inference)
+    {subInferences.set(index, inference);}
  
   void appendInference(InferencePtr inference)
     {subInferences.append(inference);}
