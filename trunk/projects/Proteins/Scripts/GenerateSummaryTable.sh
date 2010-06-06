@@ -5,8 +5,6 @@ TARGETS="SS3 SS8 SA DR BBB StAl"
 _MINUS_INF=-10000;
 
 #----- GLOBAL VARIABLES -----#
-declare -A _PreviousScores
-declare -A _CurrentScores
 
 #----- FUNCTIONS ------------#
 function OrderTarget
@@ -55,11 +53,26 @@ function CompareToPreviousScore
   fi
 }
 
+function InitScores
+{
+  for task in $TARGETS
+  do
+    echo $_MINUS_INF > .currentScore.${task}
+    echo $_MINUS_INF > .previousScore.${task}
+  done
+}
+
 function FromCurrentToPreviousScores
 {
   for task in $TARGETS
   do
-    mv .currentScore.$task .previousScore.$task
+    current=`cat .currentScore.${task}`
+    previous=`cat .previousScore.${task}`
+
+    if [[ $(echo "if (${previous} < ${current}) 1 else 0" | bc) -eq 1 ]]
+    then
+      mv .currentScore.$task .previousScore.$task
+    fi
     echo $_MINUS_INF > .currentScore.$task
   done
 }
@@ -106,7 +119,7 @@ function MultiTask
         fileName=`OrderTarget "${combi}-${task}"`
         targetName=`FullTargetName ${task}`
         value=`cat ${prefix}${fileName}.*.$targetName | grep "^4" | cut -f 3`
-
+        value=${value:0:6}
         if [ -z $value ]
         then
           value="N/A"
@@ -127,6 +140,8 @@ function MultiTask
 
 prefix=$1
 
+InitScores
+
 #\cellcolor[gray]{0.85}
 # Header
 echo "\documentclass{article}"
@@ -139,9 +154,10 @@ echo "\addtolength{\textwidth}{1.75in}"
 #echo "\addtolength{\textheight}{1.75in}"
 echo "\begin{document}"
 echo "\title{${2}}"
+echo "\author{Francis Maes, Julien Becker}"
 echo "\maketitle"
 echo "\begin{longtable}{l||cccccc}"
-echo "   & \multicolumn{6}{c}{{\bf Target}} \\"
+echo "   & \multicolumn{6}{c}{{\bf Target}} \\\\"
 echo "  {\bf Method} & SS3 & SS8 & SA & DR & BBB & StAl \\\\ \hline \hline \endhead"
 echo "  \hline \multicolumn{7}{r}{{Continued on next page}} \\ \endfoot"
 echo "  \endlastfoot"
@@ -162,7 +178,7 @@ do
     setCurrentScore ${task} $_MINUS_INF
   fi
 
-  echo -n $value
+  echo -n ${value:0:6}
 done
 echo " \\\\"
 echo "  \hline \hline"
@@ -179,6 +195,7 @@ do
     echo -n " & "
     targetName=`FullTargetName ${task}`
     value=`cat ${prefix}${task}.*.${targetName} | grep "^${pass}" | cut -f 3`
+    value=${value:0:6}
     if [ -z $value ]
     then
       value="N/A"
@@ -186,7 +203,7 @@ do
     then
       value="\cellcolor[gray]{0.85} ${value}"
     fi
-    echo -n $value
+    echo -n ${value}
   done
   echo " \\\\"
 done
@@ -209,3 +226,4 @@ echo "\end{document}"
 
 rm .currentScore.*
 rm .previousScore.*
+

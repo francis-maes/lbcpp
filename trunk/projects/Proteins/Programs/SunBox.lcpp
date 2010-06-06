@@ -178,7 +178,7 @@ public:
       jassert(target != String::empty);
       if (!oStream.count(target))
       {
-        File dst = File::getCurrentWorkingDirectory().getChildFile(prefix + T(".") + target);
+        File dst = File::getCurrentWorkingDirectory().getChildFile(prefix + T("..") + target);
         dst.deleteFile();
         oStream[target] = dst.createOutputStream();
         passes[target] = 0;
@@ -279,11 +279,12 @@ private:
   double bestTestingScore;
 };
 
-static double learningRate = 1.0;
-static int learningStep = 10000;
+static double defaultLearningRate = 1.0;
+static int defaultLearningStep = 10000;
 static int stoppingIteration = 20;
 static double regularizer = 0.0;
-InferenceOnlineLearnerPtr createOnlineLearner()
+
+InferenceOnlineLearnerPtr createOnlineLearner(double learningRate, size_t learningStep)
 {
   StoppingCriterionPtr stoppingCriterion = logicalOr(
     maxIterationsStoppingCriterion(stoppingIteration),
@@ -295,20 +296,17 @@ InferenceOnlineLearnerPtr createOnlineLearner()
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
 
-InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary)
+InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary, double learningRate, size_t learningStep)
 {
-  InferencePtr binaryClassifier = binaryLinearSVMInference(createOnlineLearner());
+  InferencePtr binaryClassifier = binaryLinearSVMInference(createOnlineLearner(learningRate, learningStep));
   return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
 }
 
-InferencePtr createBinaryClassifier(const String& name = T("Unnamed"))
-  {return binaryLinearSVMInference(createOnlineLearner(), name);}
+InferencePtr createLeastSquaresRegressor(double learningRate, size_t learningStep, const String& name = T("Unnamed"))
+  {return squareRegressionInference(createOnlineLearner(learningRate, learningStep), name);}
 
-InferencePtr createLeastSquaresRegressor(const String& name = T("Unnamed"))
-  {return squareRegressionInference(createOnlineLearner(/*0.1*/), name);}
-
-InferencePtr createDihedralRegressor(const String& name = T("Unnamed"))
-  {return dihedralAngleRegressionInference(createOnlineLearner(/*0.1*/), name);}
+InferencePtr createDihedralRegressor(double learningRate, size_t learningStep, const String& name = T("Unnamed"))
+  {return dihedralAngleRegressionInference(createOnlineLearner(learningRate, learningStep), name);}
 
 int main(int argc, char** argv)
 {
@@ -331,8 +329,9 @@ int main(int argc, char** argv)
   arguments.insert(new FileArgument(T("TestingProteinsDirectory"), testingProteinsDirectory, true, true));
   arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
   arguments.insert(new StringArgument(T("Output"), output));
-  arguments.insert(new DoubleArgument(T("LearningRate"), learningRate));
-  arguments.insert(new IntegerArgument(T("LearningStep"), learningStep));
+  arguments.insert(new DoubleArgument(T("LearningRate"), defaultLearningRate));
+  arguments.insert(new IntegerArgument(T("LearningStep"), defaultLearningStep));
+  arguments.insert(new DoubleArgument(T("Regularizer"), regularizer));
   arguments.insert(new BooleanArgument(T("SaveInference"), saveInference));
   arguments.insert(new FileArgument(T("InputInference"), inputInference, true, true));
   arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
@@ -435,7 +434,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("SS3")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS3_Pass_") + lbcpp::toString(i)
-          , createMultiClassClassifier(SecondaryStructureDictionary::getInstance())
+          , createMultiClassClassifier(SecondaryStructureDictionary::getInstance(), 0.5, 5000)
           , featureFunction, T("SecondaryStructureSequence"));
       proteinInference->appendInference(step);
     }
@@ -443,7 +442,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("SS8")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS8_Pass_") + lbcpp::toString(i)
-          , createMultiClassClassifier(DSSPSecondaryStructureDictionary::getInstance())
+          , createMultiClassClassifier(DSSPSecondaryStructureDictionary::getInstance(), 0.5, 5000)
           , featureFunction, T("DSSPSecondaryStructureSequence"));
       proteinInference->appendInference(step);
     }
@@ -451,7 +450,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("SA")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SA_Pass_") + lbcpp::toString(i)
-          , binaryLinearSVMInference(createOnlineLearner())
+          , binaryLinearSVMInference(createOnlineLearner(1.0, 10000))
           , featureFunction, T("SolventAccessibilityThreshold20"));
       proteinInference->appendInference(step);
     }
@@ -459,7 +458,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("DR")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i)
-          , binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR")))
+          , binaryLabelToProbabilityInference(T("DR-prob"), binaryLinearSVMInference(createOnlineLearner(50.0, 1000000), T("DR")))
           , featureFunction
           , T("DisorderProbabilitySequence")
           , T("DisorderSequence"));
@@ -470,16 +469,16 @@ int main(int argc, char** argv)
     {
       step = new ProteinBackboneBondSequenceInferenceStep(T("BBB_Pass_") + lbcpp::toString(i)
           , featureFunction
-          , createLeastSquaresRegressor()
-          , createLeastSquaresRegressor()
-          , createDihedralRegressor());
+          , createLeastSquaresRegressor(0.1, 1000)
+          , createLeastSquaresRegressor(0.1, 1000)
+          , createDihedralRegressor(0.1, 1000));
       proteinInference->appendInference(step);
     }
     
     if (targets[i].contains(T("StAl")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("StAl_Pass_") + lbcpp::toString(i)
-          , createMultiClassClassifier(StructuralAlphabetDictionary::getInstance())
+          , createMultiClassClassifier(StructuralAlphabetDictionary::getInstance(), 0.03, 1000)
           , featureFunction, T("StructuralAlphabetSequence"));
       proteinInference->appendInference(step);
     }
@@ -526,7 +525,7 @@ int main(int argc, char** argv)
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence")));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("ResidueResidueContactMatrix8Ca"), T("BackboneBondSequence")));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("StructuralAlphabetSequence"), T("BackboneBondSequence")));
-  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("BackboneBondSequence"), T("TertiaryStructure")));
+  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("TertiaryStructure"), T("BackboneBondSequence")));
   learningContext->appendCallback(evaluationCallback); // must be the last callback
 
   learningContext->train(learner, proteinInference, trainingData);

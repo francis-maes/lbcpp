@@ -5,12 +5,16 @@ function launch {
   targetName=`echo $targetName | sed 's/)/./g'`
 	name="${prefix}${targetName}"
 
-	expected_time=`expr $nbPass + 1`
-	expected_time=`expr $expected_time '*' 3`
-	
+  nbTarget=`echo $targetName | grep -o "-" | wc -l`
+	expected_time=`expr ${nbTarget} + 3`
+	expected_time=`expr $expected_time '*' 10`
+  echo "Expected Time: ${expected_time}"
+
+  sleep 2
+
 qsub << EOF
-#$ -l h_vmem=2G 
-#$ -l h_rt=30:00:00
+#$ -l h_vmem=1G
+#$ -l h_rt=${expected_time}:00:00
 
 #$ -m eas
 #$ -M J.Becker@ULg.ac.be
@@ -18,44 +22,37 @@ qsub << EOF
 #$ -cwd
 
 #$ -N ${name}
-./${program} ProteinsDirectory /scratch/jbecker/${database} PrefixResults ${name} CurrentFold 0 PredictionTargets "${target}" MaximumIteration ${nbIteration} AminoAcidWindow ${wAA} PSSMWindow ${wPSSM} NumberOfAAIndex ${aaindex} PropertyWindow ${wProp} SS3Window ${wSS3} SS8Window ${wSS8} SAWindow ${wSA} Regularizer ${regularizer} InitialLearningRate ${initialLearningRate} NumberIterationLearningRate ${numberIterationLearningRate} UseSavedModel ${useSavedModel} SavedModelDirectory ${savedModelDirectory} ${other}
+./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${name} Targets "${target}" NumProteinsToLoad 140 ${other}
 EOF
 
 }
 
-program="TrainStepByStepSS"
+program="SunBox"
 
 target="(DR)10"
-nbIteration="5"
-
-wAA="9"
-wPSSM="11"
-wSS3="10"
-wSS8="10"
-wSA="10"
-wProp="0"
-aaindex="0"
-
-regularizer="10"
-initialLearningRate="2"
-numberIterationLearningRate="250000"
-
-useSavedModel="true"
-savedModelDirectory="TEST_MODEL_DR"
 
 prefix="MODEL_DR"
 database="PDB70/protein"
 
-other="DRProbability 0.95 TestFeatures Pos"
+#other="DRProbability 0.95 TestFeatures Pos"
 
-#for target in `python CombinaisonGenerator.py StAl BBB DR SA SS8 SS3`
-
-program="Windowed5OblicVertical2by2TaskFeatures"
-target="(SS3)6(SS8)7(SA)2(DR)2(BBB)1(StAl)10(SS3)5"
-savedModelDirectory="${program}_model"
-prefix="${program}"
-cp -r BackUp.SelfLoop ${program}_model
+for targ in `python CombinaisonGenerator.py StAl BBB DR SA SS8 SS3`
+#for lr in 0.0001 0.0002 0.0005 0.001 0.002 0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 10 20 50 100 200 500 1000 2000 5000 10000
+#for ls in 100 200 500 1000 2000 5000 10000 20000 50000 1000000 2000000 5000000 10000000 20000000 50000000
+do
+program="TunedSunBox"
+prefix="TunedSunBox"
+other="SaveInference"
+target="(${targ})10"
 launch
+done
+
+#for targ in SS8 BBB 
+#do
+#  target="(${targ})10"
+#  prefix="RelatedTarget"
+#  launch
+#done
 
 #-------------------- Learning Rate ---------------------#
 #numberIterations=""
