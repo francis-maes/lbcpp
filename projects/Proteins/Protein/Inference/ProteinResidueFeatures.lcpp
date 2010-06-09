@@ -302,12 +302,16 @@ public:
       /* Conjunction: Vertical over all sequences */
       for (i = 0; i < sequencesSize; ++i)
         res += sequences[i]->getName() + sequences[i]->elementToString(pos);
-      featureScope("stconj_fv") featureScope(pos - position) featureSense(res);
+      featureScope("stconj_fv")
+        featureScope(binarizeIntegerAroundZero(pos - position))
+          featureSense(res);
 
       /* Conjunction: Vertical 2-by-2 sequences */
       for (i = 0; sequencesSize && i < sequencesSize - 1; ++i)
         for (j = i + 1; j < sequencesSize; ++j)
-          featureScope("stconj_2v") featureScope(pos - position) featureSense(sequences[i]->getName()
+          featureScope("stconj_2v")
+            featureScope(binarizeIntegerAroundZero(pos - position))
+              featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
             + sequences[j]->getName()
             + sequences[j]->elementToString(pos));
@@ -315,7 +319,9 @@ public:
       /* Conjunction: Right-Down-Oblic 2-by-2 */
       for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
         for (j = i + 1; j < sequencesSize; ++j)
-          featureScope("stconj_2ro") featureScope(pos - position) featureSense(sequences[i]->getName()
+          featureScope("stconj_2ro")
+            featureScope(binarizeIntegerAroundZero(pos - position))
+              featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
             + sequences[j]->getName()
             + sequences[j]->elementToString(pos + 1));
@@ -323,12 +329,17 @@ public:
       /* Conjunction: Left-Down-Oblic 2-by-2 */
       for (i = 0; pos != 0 && i < sequencesSize; ++i)
         for (j = i + 1; j < sequencesSize; ++j)
-          featureScope("stconj_2lo") featureScope(pos - position) featureSense(sequences[i]->getName()
+          featureScope("stconj_2lo")
+            featureScope(binarizeIntegerAroundZero(pos - position))
+              featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
             + sequences[j]->getName()
             + sequences[j]->elementToString(pos - 1));
     }
   }
+private:
+  inline size_t binarizeIntegerAroundZero(int value) const
+    {return value < 0 ? 0 : 1;}
 };
 
 ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures()

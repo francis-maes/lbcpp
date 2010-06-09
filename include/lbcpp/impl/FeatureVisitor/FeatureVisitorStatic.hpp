@@ -65,15 +65,20 @@ struct FeatureVisitor : public Object<ExactType>
 protected:
   ExactType& _this() {return *static_cast<ExactType* >(this);}
   
+  void assertScopeNumberIsValid(size_t number)
+    {jassert((int)number >= 0);}
+  
   bool callFeatureEnter(lbcpp::FeatureDictionaryPtr dictionary, size_t number, lbcpp::FeatureDictionaryPtr subDictionary, double weight)
   {
     jassert(isNumberValid(weight));
+    assertScopeNumberIsValid(number);
     return _this().featureEnter(dictionary, number, subDictionary, weight);
   }
 
   void callFeatureSense(lbcpp::FeatureDictionaryPtr dictionary, size_t number, double value)
   {
     jassert(isNumberValid(value));
+    assertScopeNumberIsValid(number);
     _this().featureSense(dictionary, number, value);
   }
 
@@ -83,6 +88,7 @@ protected:
   void callFeatureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
   {
     jassert(isNumberValid(weight));
+    assertScopeNumberIsValid(scopeNumber);
     if (weight)
       _this().featureCall(dictionary, scopeNumber, featureGenerator, weight);
   }
