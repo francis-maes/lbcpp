@@ -23,10 +23,12 @@ public:
     for (size_t i = 0; i < 3; ++i)
     {
       // FIXME:
+      /*
       String prefix = name + T(" ") + getBackboneAtomName(i) + T(".");
       subInferences.append(new RegressionInferenceStep(prefix + T("x")));
       subInferences.append(new RegressionInferenceStep(prefix + T("y")));
       subInferences.append(new RegressionInferenceStep(prefix + T("z")));
+      */
     }
   }
   ProteinResidueRefinementInferenceStep() {}

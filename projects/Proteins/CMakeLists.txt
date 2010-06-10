@@ -137,14 +137,6 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_CREXECUTABLE(SandBox Programs/SandBox.lcpp)
 TARGET_LINK_LIBRARIES(SandBox proteins)
 
-ADD_CREXECUTABLE(ContactMapSandBox Programs/ContactMapSandBox.lcpp)
-TARGET_LINK_LIBRARIES(ContactMapSandBox proteins)
-
-ADD_CRALGORITHM_SOURCES(Programs/TrainStepByStepSS.lcpp)
-SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
-ADD_EXECUTABLE(TrainStepByStepSS ${CRALGORITHMS_OUTPUT_FILES} Programs/InferenceLearnerCallbackDefinitions.h)
-TARGET_LINK_LIBRARIES(TrainStepByStepSS proteins lbcpp-core)
-
 ADD_CRALGORITHM_SOURCES(Programs/SunBox.lcpp)
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 ADD_EXECUTABLE(SunBox ${CRALGORITHMS_OUTPUT_FILES} Programs/ArgumentSet.h)

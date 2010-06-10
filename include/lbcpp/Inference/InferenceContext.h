@@ -33,8 +33,6 @@ public:
   // old:
   virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
   virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
-  virtual ObjectPtr runClassification(ClassificationInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
-  virtual ObjectPtr runRegression(RegressionInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
   /*
   ** Inference Callbacks
@@ -48,8 +46,6 @@ protected:
   void callFinishInferences();
   void callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode);
   void callPostInference(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
-  void callClassification(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
-  void callRegression(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode);
     
 private:
   std::vector<InferenceCallbackPtr> callbacks;

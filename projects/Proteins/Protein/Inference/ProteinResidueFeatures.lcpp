@@ -347,7 +347,7 @@ ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures()
 
 /*
 ** Misc
-*/
+*
 #include "Protein/Inference/Protein1DInferenceStep.h"
 
 featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr input, size_t scoreIndex) const
@@ -356,7 +356,7 @@ featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr inpu
   jassert(commonFeatures);
   featureSense(scoreIndex);
   featureCall(scoreIndex) commonFeatures;
-}
+}*/
 
 /*
 ** Classes

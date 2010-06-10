@@ -35,12 +35,6 @@ typedef ReferenceCountedObjectPtr<StaticParallelInference> StaticParallelInferen
 class SharedParallelInference;
 typedef ReferenceCountedObjectPtr<SharedParallelInference> SharedParallelInferencePtr;
 
-class ClassificationInferenceStep;
-typedef ReferenceCountedObjectPtr<ClassificationInferenceStep> ClassificationInferenceStepPtr;
-
-class RegressionInferenceStep;
-typedef ReferenceCountedObjectPtr<RegressionInferenceStep> RegressionInferenceStepPtr;
-
 class ParameterizedInference;
 typedef ReferenceCountedObjectPtr<ParameterizedInference> ParameterizedInferencePtr;
 

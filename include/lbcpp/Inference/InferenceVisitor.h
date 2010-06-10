@@ -24,11 +24,6 @@ public:
   virtual void visit(StaticParallelInferencePtr inference) = 0;
   virtual void visit(SharedParallelInferencePtr inference) = 0;
 
-  // old--
-  virtual void visit(ClassificationInferenceStepPtr inference) {}
-  virtual void visit(RegressionInferenceStepPtr inference) {}
-
-  // new
   virtual void visit(ParameterizedInferencePtr inference) {}
   virtual void visit(InferenceBatchLearnerPtr inference) {}
 };

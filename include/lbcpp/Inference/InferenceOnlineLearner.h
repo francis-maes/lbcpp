@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_ONLINE_LEARNER_H_
 
 # include "Inference.h"
+# include "ParameterizedInference.h"
 # include "../ObjectPredeclarations.h"
 # include "../Utilities/RandomVariable.h"
 # include "../Utilities/IterationFunction.h"
