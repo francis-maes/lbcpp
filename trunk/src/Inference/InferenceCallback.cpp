@@ -9,7 +9,6 @@
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 #include <lbcpp/Inference/InferenceResultCache.h>
 #include "InferenceCallback/CancelAfterStepCallback.h"
-#include "InferenceCallback/ExamplesCreatorCallback.h"
 #include "InferenceCallback/CacheInferenceCallback.h"
 #include "InferenceCallback/OnlineLearningInferenceCallback.h"
 using namespace lbcpp;

@@ -103,18 +103,6 @@ void InferenceContext::callPostInference(InferenceStackPtr stack, ObjectPtr inpu
     callbacks[i]->postInferenceCallback(stack, input, supervision, output, returnCode);
 }
 
-void InferenceContext::callClassification(InferenceStackPtr stack, ClassifierPtr& classifier, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
-{
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->classificationCallback(stack, classifier, input, supervision, returnCode);
-}
-
-void InferenceContext::callRegression(InferenceStackPtr stack, RegressorPtr& regressor, ObjectPtr& input, ObjectPtr& supervision, ReturnCode& returnCode)
-{
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->regressionCallback(stack, regressor, input, supervision, returnCode);
-}
-
 void InferenceContext::appendCallback(InferenceCallbackPtr callback)
   {jassert(callback); callbacks.push_back(callback);}
 
@@ -214,40 +202,6 @@ public:
       }
     }
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
-  }
-
-  virtual ObjectPtr runClassification(ClassificationInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    ClassifierPtr classifier = step->getClassifier();
-    callClassification(stack, classifier, input, supervision, returnCode);
-    if (returnCode == Inference::errorReturnCode)
-    {
-      Object::error("InferenceContext::runClassification", "Could not classify");
-      return ObjectPtr(); 
-    }
-    jassert(classifier);
-    step->setClassifier(classifier);
-    if (returnCode == Inference::canceledReturnCode)
-      return ObjectPtr();
-    FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
-    return classifier->predictProbabilities(inputFeatures);
-  }
-
-  virtual ObjectPtr runRegression(RegressionInferenceStepPtr step, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    RegressorPtr regressor = step->getRegressor();
-    callRegression(stack, regressor, input, supervision, returnCode);
-    if (returnCode == Inference::errorReturnCode)
-    {
-      Object::error("InferenceContext::runRegression", "Could not regress");
-      return ObjectPtr(); 
-    }
-    jassert(regressor);
-    step->setRegressor(regressor);
-    if (returnCode == Inference::canceledReturnCode)
-      return ObjectPtr();
-    FeatureGeneratorPtr inputFeatures = input.dynamicCast<FeatureGenerator>();    
-    return new Scalar(regressor->predict(inputFeatures));
   }
 
 private:

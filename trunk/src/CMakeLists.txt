@@ -170,7 +170,6 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceOnlineLearner.h
   ../include/lbcpp/Inference/InferenceBatchLearner.h
   ../include/lbcpp/Inference/InferenceResultCache.h
-  ../include/lbcpp/Inference/InferenceLearner.h
   ../include/lbcpp/Inference/Evaluator.h
 )
 
@@ -181,7 +180,6 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp
-  Inference/InferenceLearner.cpp
   Inference/Evaluator.cpp
 )
 
@@ -198,7 +196,6 @@ SET(LBCPP_INFERENCE_INFERENCE_SOURCES
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
-  Inference/InferenceCallback/ExamplesCreatorCallback.h
   Inference/InferenceCallback/OnlineLearningInferenceCallback.h
 )
 

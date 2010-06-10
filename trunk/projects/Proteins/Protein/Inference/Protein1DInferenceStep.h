@@ -94,17 +94,12 @@ public:
     classificationInference->setName(getName() + T(" Classif"));
   }
 
-  // old
-  ProteinSequenceLabelingInferenceStep(const String& name, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
-    : Protein1DInferenceStep(name, new ClassificationInferenceStep(name + T(" Classif")), features, targetName, supervisionName) {}
-  //--
-
   ProteinSequenceLabelingInferenceStep() {}
 
 };
 
 //// PSSM predition
-
+/*
 class ParallelSharedMultiRegressionInference : public SharedParallelInference
 {
 public:
@@ -165,7 +160,7 @@ public:
     : Protein1DInferenceStep(name, new PSSMRowPredictionInferenceStep(), features, T("PositionSpecificScoringMatrix")) {}
   PSSMPredictionInferenceStep() {}
 };
-
+*/
 /////////////
 
 }; /* namespace lbcpp */

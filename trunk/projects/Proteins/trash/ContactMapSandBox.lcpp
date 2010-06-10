@@ -711,7 +711,6 @@ private:
 //  double bestTrainRmse, bestTestRmse;
 };
 
-
 ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
   ObjectStreamPtr proteinsStream = directoryObjectStream(directory, T("*.protein"));
@@ -983,4 +982,9 @@ int main(int argc, char** argv)
   std::cout << "Test evaluation: " << evaluation->toString() << std::endl;
   */
   return 0;
+}
+
+int main(int argc, char** argv)
+{
+  return 1;
 }

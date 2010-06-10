@@ -137,9 +137,4 @@ void declareInferenceClasses()
 
   LBCPP_DECLARE_CLASS(TransferFunctionDecoratorInference);
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference);
-
-  // old
-  LBCPP_DECLARE_CLASS(ClassificationInferenceStep);
-  LBCPP_DECLARE_CLASS(RegressionInferenceStep);
-  // -
 }
