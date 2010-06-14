@@ -577,6 +577,7 @@ class DirectoryObjectStream : public ObjectStream
 {
 public:
   DirectoryObjectStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+  DirectoryObjectStream();
 
   virtual bool rewind();
   virtual bool isExhausted() const;
@@ -585,9 +586,18 @@ public:
 protected:
   virtual ObjectPtr parseFile(const File& file);
 
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+
 private:
+  File directory;
+  String wildCardPattern;
+  bool searchFilesRecursively;
+
   juce::OwnedArray<File> files;
   int nextFilePosition;
+
+  void initialize();
 };
 
 extern ObjectStreamPtr directoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern = T("*"));

@@ -90,6 +90,33 @@ private:
   DihedralAngle phi;
 };
 
+template<>
+struct Traits<BondCoordinates>
+{
+  typedef BondCoordinates Type;
+
+  static inline String toString(const BondCoordinates& value)
+    {return value.toString();}
+
+  static inline void write(OutputStream& ostr, const BondCoordinates& value)
+  {
+    lbcpp::write(ostr, value.getLength());
+    lbcpp::write(ostr, value.getThetaAngle());
+    lbcpp::write(ostr, value.getPhiDihedralAngle());
+  }
+
+  static inline bool read(InputStream& istr, BondCoordinates& res)
+  {
+    double length;
+    Angle theta;
+    DihedralAngle phi;
+    if (!lbcpp::read(istr, length) || !lbcpp::read(istr, theta) || !lbcpp::read(istr, phi))
+      return false;
+    res = BondCoordinates(length, theta, phi);
+    return true;
+  }
+};
+
 class BondCoordinatesObject : public Object
 {
 public:

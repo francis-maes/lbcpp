@@ -389,6 +389,12 @@ public:
 protected:
   std::vector<ObjectPtr> objects; /*!< Object list.*/
   String contentClassName; /*!< Content class name. */
+
+  virtual bool load(InputStream& istr)
+    {return ObjectContainer::load(istr) && lbcpp::read(istr, objects) && lbcpp::read(istr, contentClassName);}
+
+  virtual void save(OutputStream& ostr) const
+    {ObjectContainer::save(ostr); lbcpp::write(ostr, objects); lbcpp::write(ostr, contentClassName);}
 };
 
 
@@ -410,6 +416,8 @@ public:
   */
   DecoratorObjectContainer(const String& name, ObjectContainerPtr target)
     : ObjectContainer(name), target(target) {}
+
+  DecoratorObjectContainer() {}
 
   /**
   ** Content class name getter.
@@ -439,6 +447,13 @@ public:
 
 protected:
   ObjectContainerPtr target;    /*!< A pointer to the decorated ObjectContainer. */
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return ObjectContainer::load(istr) && lbcpp::read(istr, target);}
+
+  virtual void save(OutputStream& ostr) const
+    {ObjectContainer::save(ostr); lbcpp::write(ostr, target);}
 };
 
 }; /* namespace lbcpp */

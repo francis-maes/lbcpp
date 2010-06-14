@@ -11,11 +11,15 @@ using namespace lbcpp;
 
 extern void declareGradientBasedLearners();
 extern void declareGradientBasedLearningMachines();
+extern void declareObjectContainerClasses();
+extern void declareObjectStreamClasses();
 
 // Object
 void declareObjectRelatedClasses()
 {
   LBCPP_DECLARE_CLASS(StringToObjectMap);
+  declareObjectContainerClasses();
+  declareObjectStreamClasses();
 }
 
 // Utilities

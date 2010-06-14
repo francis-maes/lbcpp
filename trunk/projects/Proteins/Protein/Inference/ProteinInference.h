@@ -17,6 +17,9 @@ namespace lbcpp
 class ProteinToInputOutputPairFunction : public ObjectFunction
 {
 public:
+  virtual String getName() const
+    {return T("ProteinToInputOutputPair");}
+
   virtual String getOutputClassName(const String& inputClassName) const
     {return T("ObjectPair");}
 
@@ -29,7 +32,7 @@ public:
     inputProtein->setObject(protein->getAminoAcidSequence());
     inputProtein->setObject(protein->getPositionSpecificScoringMatrix());
     inputProtein->setObject(protein->getReducedAminoAcidAlphabetSequence());
-    return new ObjectPair(inputProtein, protein);
+    return new ObjectPair(protein->getName(), inputProtein, protein);
   }
 };
 

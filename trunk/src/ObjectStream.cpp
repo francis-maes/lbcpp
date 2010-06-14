@@ -220,10 +220,18 @@ ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatur
 ** DirectoryObjectStream
 */
 DirectoryObjectStream::DirectoryObjectStream(const File& directory, const String& wildCardPattern, bool searchFilesRecursively)
-  : ObjectStream(directory.getFullPathName() + T("/") + wildCardPattern + (searchFilesRecursively ? T(" rec") : T(""))), nextFilePosition(0)
+  : ObjectStream(directory.getFullPathName() + T("/") + wildCardPattern + (searchFilesRecursively ? T(" rec") : T(""))),
+    directory(directory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
+  {initialize();}
+
+DirectoryObjectStream::DirectoryObjectStream() : nextFilePosition(0) {}
+
+void DirectoryObjectStream::initialize()
 {
   directory.findChildFiles(files, File::findFiles, searchFilesRecursively, wildCardPattern);
+  nextFilePosition = 0;
 }
+
 
 bool DirectoryObjectStream::isExhausted() const
   {return nextFilePosition >= files.size();}
@@ -252,9 +260,32 @@ ObjectPtr DirectoryObjectStream::next()
 ObjectPtr DirectoryObjectStream::parseFile(const File& file)
   {return Object::createFromFile(file);}
 
+bool DirectoryObjectStream::load(InputStream& istr)
+{
+  bool ok = NameableObject::load(istr) && lbcpp::read(istr, directory) && 
+    lbcpp::read(istr, wildCardPattern) && lbcpp::read(istr, searchFilesRecursively);
+  if (!ok)
+    return false;
+  initialize();
+  return true;
+}
+
+void DirectoryObjectStream::save(OutputStream& ostr) const
+{
+  ObjectStream::save(ostr);
+  lbcpp::write(ostr, directory);
+  lbcpp::write(ostr, wildCardPattern);
+  lbcpp::write(ostr, searchFilesRecursively);
+}
+
+ObjectStreamPtr lbcpp::directoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern)
+  {return new DirectoriesObjectPairStream(directory1, directory2, wildCardPattern);}
 
 ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
   {return new ApplyFunctionObjectStream(this, function);}
 
-ObjectStreamPtr lbcpp::directoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern)
-  {return new DirectoriesObjectPairStream(directory1, directory2, wildCardPattern);}
+void declareObjectStreamClasses()
+{
+  LBCPP_DECLARE_CLASS(DirectoryObjectStream);
+  LBCPP_DECLARE_CLASS(DirectoriesObjectPairStream);
+}

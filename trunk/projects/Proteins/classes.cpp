@@ -53,6 +53,8 @@ void declareProteinClasses()
 
   LBCPP_DECLARE_CLASS(Protein);
 
+  LBCPP_DECLARE_CLASS(ProteinToInputOutputPairFunction);
+
   LBCPP_DECLARE_CLASS(ProteinInference);
     LBCPP_DECLARE_CLASS(ProteinSequenceLabelingInferenceStep);
     
