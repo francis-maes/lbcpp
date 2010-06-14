@@ -6,15 +6,34 @@
                                |                                             |
                                `--------------------------------------------*/
 
-//#include "Components/ObjectGraphAndContentComponent.h"
+#include "ObjectComponentContainer.h"
 #include "StringComponent.h"
 #include "TableComponent.h"
 #include "TreeComponent.h"
 #include "StringToObjectMapTabbedComponent.h"
 using namespace lbcpp;
 
-Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
+
+class FeatureGeneratorComponent : public ObjectSelectorAndContentComponent
 {
+public:
+  FeatureGeneratorComponent(FeatureGeneratorPtr featureGenerator, const String& name = String::empty)
+    : ObjectSelectorAndContentComponent(new ObjectTreeComponent(featureGenerator, name))
+  {
+  }
+
+  virtual void objectSelectedCallback(ObjectPtr selected)
+  {
+    FeatureGeneratorPtr featureGenerator = selected.dynamicCast<FeatureGenerator>();
+    jassert(featureGenerator);
+    ObjectSelectorAndContentComponent::objectSelectedCallback(featureGenerator->toTable());
+  }
+};
+
+Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName)
+{
+  String name = explicitName.isEmpty() ? object->getName() : explicitName;
+
   if (!object)
     return NULL;
   Component* res = object->createComponent();
@@ -25,7 +44,10 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelCompon
     return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
 
   if (object.dynamicCast<FeatureGenerator>())
-    return new ObjectTreeComponent(object);
+    return new FeatureGeneratorComponent(object.dynamicCast<FeatureGenerator>(), name);
+
+  if (object.dynamicCast<Table>())
+    return new TableComponent(object.dynamicCast<Table>());
 
   //ObjectGraphPtr graph = object->toGraph();
   //if (topLevelComponent && graph)
