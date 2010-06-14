@@ -13,8 +13,8 @@
 # include "../Components/common.h"
 # include "../Utilities/SplittedLayout.h"
 # include "../Utilities/ObjectSelector.h"
+# include "../Utilities/PropertyListDisplayComponent.h"
 
-class ProcessPropertiesComponent;
 class ProcessConsoleComponent;
 
 namespace lbcpp
@@ -35,7 +35,7 @@ public:
 protected:
   ProcessPtr process;
 
-  ProcessPropertiesComponent* properties;
+  PropertyListDisplayComponent* properties;
 
   Viewport* viewport;
   ProcessConsoleComponent* console;

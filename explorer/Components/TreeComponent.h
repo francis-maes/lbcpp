@@ -54,6 +54,7 @@ public:
     setRootItemVisible(true);
     setWantsKeyboardFocus(true);
     buildTree();
+    root->setSelected(true, true);
   }
 
   virtual ~ObjectTreeComponent()

@@ -8,65 +8,6 @@
 #include "ProcessManagerComponent.h"
 using namespace lbcpp;
 
-class ProcessPropertiesComponent : public Component
-{
-public:
-  ProcessPropertiesComponent(ProcessPtr process)
-  {
-    addAndMakeVisible(executableProperty = new PropertyComponent(T("Executable"), process->getExecutableFile().getFullPathName()));
-    addAndMakeVisible(argumentsProperty = new PropertyComponent(T("Arguments"), process->getArguments()));
-    addAndMakeVisible(workingDirectoryProperty = new PropertyComponent(T("Working Directory"), process->getWorkingDirectory().getFullPathName()));
-    setOpaque(true);
-  }
-
-  virtual ~ProcessPropertiesComponent()
-    {deleteAllChildren();}
-  
-  virtual void resized()
-  {
-    int w = getWidth();
-    int h = getHeight();
-    executableProperty->setBounds(0, 0, w, h / 3);
-    argumentsProperty->setBounds(0, h / 3, w, h / 3);
-    workingDirectoryProperty->setBounds(0, 2 * h / 3, w, h / 3);
-  }
-
-  virtual void paint(Graphics& g)
-    {g.fillAll(Colours::antiquewhite);}
-
-  class PropertyComponent : public Component
-  {
-  public:
-    PropertyComponent(const String& name, const String& value)
-      : name(name), value(value) {}
-
-    virtual void paint(Graphics& g)
-    {
-      int nameWidth = 120;
-
-      Font nameFont(12, Font::bold);
-      g.setFont(nameFont);
-      g.drawText(name, 0, 0, nameWidth, getHeight(), Justification::centredLeft, true);
-      
-      Font valueFont(12, Font::plain);
-      g.setFont(valueFont);
-      g.drawText(value, nameWidth, 0, getWidth() - nameWidth, getHeight(), Justification::centredLeft, true);
-    }
-
-    juce_UseDebuggingNewOperator
-
-  private:
-    String name, value;
-  };
-
-  juce_UseDebuggingNewOperator
-
-private:
-  PropertyComponent* executableProperty;
-  PropertyComponent* argumentsProperty;
-  PropertyComponent* workingDirectoryProperty;
-};
-
 class ProcessConsoleComponent : public Component
 {
 public:
@@ -126,7 +67,11 @@ private:
 ProcessComponent::ProcessComponent(ProcessPtr process, ProcessConsoleSettingsPtr settings) : process(process)
 {
   jassert(settings);
-  addAndMakeVisible(properties = new ProcessPropertiesComponent(process));
+  addAndMakeVisible(properties = new PropertyListDisplayComponent());
+  properties->addProperty(T("Executable"), process->getExecutableFile().getFullPathName());
+  properties->addProperty(T("Arguments"), process->getArguments());
+  properties->addProperty(T("Working Directory"), process->getWorkingDirectory().getFullPathName());
+
   addAndMakeVisible(viewport = new Viewport());
   if (settings)
     addAndMakeVisible(consoleTools = settings->createComponent());

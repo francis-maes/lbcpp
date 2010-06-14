@@ -9,6 +9,7 @@ SET(EXPLORER_UTILITIES_SOURCES
   Utilities/SshConnection.h
   Utilities/SimpleTreeViewItem.h
   Utilities/ObjectSelector.h
+  Utilities/PropertyListDisplayComponent.h
 )
 
 SET(EXPLORER_COMPONENTS_SOURCES
@@ -20,6 +21,7 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/ObjectGraphComponent.h
   Components/StringToObjectMapTabbedComponent.h
   Components/ObjectContainerNameListComponent.h
+  Components/ObjectBrowser.h
   Components/ObjectComponents.cpp
 )
 

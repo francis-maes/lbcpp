@@ -19,23 +19,14 @@ namespace lbcpp
 class ObjectComponentContainer : public Component
 {
 public:
-  ObjectComponentContainer() : component(NULL) {}
+  ObjectComponentContainer() : component(NULL)
+    {}
+
   virtual ~ObjectComponentContainer()
     {deleteAllChildren();}
-  
+
   void setObject(ObjectPtr object)
-  {
-    deleteAllChildren();
-    if (object)
-    {
-      component = createComponentForObject(object);
-      addAndMakeVisible(component);
-      component->setBoundsRelative(0, 0, 1, 1);
-    }
-    else
-      component = NULL;
-    this->object = object;
-  }
+    {setComponent((this->object = object) ? createComponentForObject(object) : NULL);}
   
   ObjectPtr getObject() const
     {return object;}
@@ -49,21 +40,22 @@ public:
 private:
   Component* component;
   ObjectPtr object;
-};
 
-class ObjectSelectorAndContentComponent : public SplittedLayout, public ObjectSelectorCallback
-{
-public:
-  ObjectSelectorAndContentComponent(Component* selector)
-    : SplittedLayout(selector, new ObjectComponentContainer(), 0.33, typicalHorizontal)
+  void setComponent(Component* newComponent)
   {
-    ObjectSelector* s = dynamic_cast<ObjectSelector* >(selector);
-    jassert(s);
-    s->addCallback(*this);
-  }
+    if (component)
+    {
+      removeChildComponent(component);
+      delete component;
+    }
+    component = newComponent;
+    if (newComponent)
+    {
+      addAndMakeVisible(newComponent);
+      resized();
+    }
 
-  virtual void objectSelectedCallback(ObjectPtr selected)
-    {((ObjectComponentContainer* )second)->setObject(selected);}
+  }
 };
 
 }; /* namespace lbcpp */

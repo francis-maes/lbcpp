@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_ONLINE_LEARNING_H_
 
 # include <lbcpp/Inference/InferenceCallback.h>
+# include <lbcpp/Inference/InferenceStack.h>
 
 namespace lbcpp
 {

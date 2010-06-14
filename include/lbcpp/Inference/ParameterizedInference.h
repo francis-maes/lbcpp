@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_PARAMETERIZED_H_
 
 # include "Inference.h"
-# include "InferenceVisitor.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
 # include "../FeatureGenerator/FeatureGenerator.h"
@@ -29,8 +28,6 @@ class ParameterizedInference : public Inference
 public:
   ParameterizedInference(const String& name) : Inference(name) {}
   ParameterizedInference() {}
-
-  virtual void accept(InferenceVisitorPtr visitor);
 
   virtual FeatureGeneratorPtr getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput, double& exampleLossValue) = 0;
 

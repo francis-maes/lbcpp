@@ -42,12 +42,6 @@ class DecoratorInference;
 typedef ReferenceCountedObjectPtr<DecoratorInference> DecoratorInferencePtr;
 
 /*
-** InferenceVisitor
-*/
-class InferenceVisitor;
-typedef ReferenceCountedObjectPtr<InferenceVisitor> InferenceVisitorPtr;
-
-/*
 ** InferenceContext
 */
 class InferenceCallback;

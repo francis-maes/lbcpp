@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_SEQUENTIAL_H_
 
 # include "Inference.h"
-# include "InferenceVisitor.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
 # include "../Object/ObjectPair.h"
@@ -88,9 +87,6 @@ public:
   /*
   ** Inference
   */
-  virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(SequentialInferencePtr(this));}
-
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
 
@@ -100,11 +96,23 @@ public:
   virtual String toString() const;
 };
 
-class VectorSequentialInference : public SequentialInference
+class StaticSequentialInference : public SequentialInference
+{
+public:
+  StaticSequentialInference(const String& name)
+    : SequentialInference(name) {}
+
+  virtual size_t getNumSubInferences() const = 0;
+  virtual InferencePtr getSubInference(size_t index) const = 0;
+
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
+};
+
+class VectorSequentialInference : public StaticSequentialInference
 {
 public:
   VectorSequentialInference(const String& name)
-    : SequentialInference(name) {}
+    : StaticSequentialInference(name) {}
 
   virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
     {return subInferences.get(0);}
@@ -117,10 +125,10 @@ public:
     return index < subInferences.size() ? subInferences.get(index) : InferencePtr();
   }
 
-  size_t getNumSubInferences() const
+  virtual size_t getNumSubInferences() const
     {return subInferences.size();}
 
-  InferencePtr getSubInference(size_t index) const
+  virtual InferencePtr getSubInference(size_t index) const
     {return subInferences.get(index);}
   
   void setSubInference(size_t index, InferencePtr inference)

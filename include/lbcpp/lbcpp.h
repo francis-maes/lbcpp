@@ -68,7 +68,6 @@
 # include "Inference/InferenceStack.h"
 # include "Inference/InferenceContext.h"
 # include "Inference/InferenceCallback.h"
-# include "Inference/InferenceVisitor.h"
 # include "Inference/ParameterizedInference.h"
 # include "Inference/DecoratorInference.h"
 # include "Inference/SequentialInference.h"

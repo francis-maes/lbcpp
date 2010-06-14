@@ -31,14 +31,6 @@ public:
     errorReturnCode,
   };
 
-  /*
-  ** Static analysis
-  */
-  virtual void accept(InferenceVisitorPtr visitor) = 0;
-
-  /*
-  ** Dynamic execution
-  */
   // Used in SharedParallelInference before and after a block of many run() calls
   virtual void beginRunSession() {}
   virtual void endRunSession() {}

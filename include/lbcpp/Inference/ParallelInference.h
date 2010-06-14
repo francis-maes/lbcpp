@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_PARALLEL_H_
 
 # include "Inference.h"
-# include "InferenceVisitor.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
 
@@ -79,43 +78,11 @@ public:
   ParallelInference(const String& name) : Inference(name) {}
   ParallelInference() {}
 
-  virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(ParallelInferencePtr(this));}
-  
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
   virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
-};
-
-class SharedParallelInference : public ParallelInference
-{
-public:
-  SharedParallelInference(const String& name, InferencePtr subInference);
-  SharedParallelInference() {}
-
-  InferencePtr getSubInference() const
-    {return subInference;}
-
-  void setSubInference(InferencePtr step)
-    {subInference = step;}
-
-  /*
-  ** Inference
-  */
-  virtual void accept(InferenceVisitorPtr visitor);
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-
-  /*
-  ** Object
-  */
-  virtual String toString() const;
-  virtual bool loadFromFile(const File& file);
-  virtual bool saveToFile(const File& file) const;
-
-protected:
-  InferencePtr subInference;
 };
 
 class StaticParallelInference : public ParallelInference
@@ -125,17 +92,10 @@ public:
     : ParallelInference(name) {}
   StaticParallelInference() {}
 
-  virtual void accept(InferenceVisitorPtr visitor)
-    {visitor->visit(StaticParallelInferencePtr(this));}
-
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
 
-  virtual size_t getNumSubInferences(ObjectPtr input) const
-    {return getNumSubInferences();}
-
-  virtual InferencePtr getSubInference(ObjectPtr input, size_t index) const
-    {return getSubInference(index);}
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 };
 
 class VectorStaticParallelInference : public StaticParallelInference
@@ -159,6 +119,43 @@ public:
 
 protected:
   InferenceVector subInferences;
+};
+
+class SharedParallelInference : public StaticParallelInference
+{
+public:
+  SharedParallelInference(const String& name, InferencePtr subInference);
+  SharedParallelInference() {}
+
+  InferencePtr getSubInference() const
+    {return subInference;}
+
+  void setSubInference(InferencePtr step)
+    {subInference = step;}
+
+  /*
+  ** StaticParallelInference
+  */
+  virtual size_t getNumSubInferences() const
+    {return 1;}
+
+  virtual InferencePtr getSubInference(size_t index) const
+    {jassert(index == 0); return subInference;}
+
+  /*
+  ** Inference
+  */
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
+
+  /*
+  ** Object
+  */
+  virtual String toString() const;
+  virtual bool loadFromFile(const File& file);
+  virtual bool saveToFile(const File& file) const;
+
+protected:
+  InferencePtr subInference;
 };
 
 }; /* namespace lbcpp */
