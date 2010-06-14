@@ -199,6 +199,9 @@ public:
   virtual ObjectPtr clone() const
     {jassert(false); return ObjectPtr();}
 
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
+    {}
+
   /**
   ** Clones and cast the current object.
   **

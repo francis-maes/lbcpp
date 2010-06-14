@@ -286,6 +286,8 @@ public:
   ** @return the sub-FeatureGenerator at the index @a num.
   */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const = 0;
+
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& res) const;
 };
 
   /**

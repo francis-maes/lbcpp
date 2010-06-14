@@ -7,16 +7,20 @@ INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 SET(EXPLORER_UTILITIES_SOURCES
   Utilities/SplittedLayout.h
   Utilities/SshConnection.h
+  Utilities/SimpleTreeViewItem.h
+  Utilities/ObjectSelector.h
 )
 
 SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
   Components/StringComponent.h
   Components/TableComponent.h
+  Components/TreeComponent.h
   Components/ObjectGraphComponent.h
   Components/ObjectGraphAndContentComponent.h
   Components/StringToObjectMapTabbedComponent.h
   Components/ObjectContainerNameListComponent.h
+  Components/ObjectComponents.cpp
 )
 
 SET(EXPLORER_PROCESS_MANAGER_SOURCES
@@ -33,6 +37,7 @@ SET(EXPLORER_PROCESS_MANAGER_SOURCES
 
 SET(EXPLORER_APPLICATION_SOURCES
   ExplorerConfiguration.h
+  ExplorerConfiguration.cpp
   ExplorerApplication.cpp
 )
 

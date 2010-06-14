@@ -13,8 +13,8 @@ using namespace lbcpp;
 class ProcessManagerListTabs : public TabbedComponent
 {
 public:
-  ProcessManagerListTabs(ProcessManagerComponent* owner, ProcessManagerPtr processManager)
-    : TabbedComponent(TabbedButtonBar::TabsAtBottom), owner(owner)
+  ProcessManagerListTabs(ProcessManagerPtr processManager, ObjectSelectorCallback& selectorCallback)
+    : TabbedComponent(TabbedButtonBar::TabsAtBottom), selectorCallback(selectorCallback)
   {
     addProcessList(T("Running"), processManager->getRunningProcesses());
     addProcessList(T("Waiting"), processManager->getWaitingProcesses());
@@ -42,7 +42,7 @@ public:
       if (index >= 0)
       {
         c->selectRow(index);
-        owner->processSelectedCallback(process);
+        //selector.sendObjectSelected(process);
         return;
       }
     }
@@ -51,34 +51,21 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  ProcessManagerComponent* owner;
-
-  class ProcessListComponent : public ObjectContainerNameListComponent
-  {
-  public:
-    ProcessListComponent(ProcessManagerComponent* owner, ProcessListPtr processes)
-      : ObjectContainerNameListComponent(processes), owner(owner) {}
-
-    virtual void objectSelectedCallback(size_t index, ObjectPtr object)
-    {
-      ProcessPtr process = object.dynamicCast<Process>();
-      jassert(process);
-      owner->processSelectedCallback(process);
-    }
-
-  private:
-    ProcessManagerComponent* owner;
-  };
+  ObjectSelectorCallback& selectorCallback;
 
   void addProcessList(const String& name, ProcessListPtr processes)
-    {addTab(name, Colours::antiquewhite, new ProcessListComponent(owner, processes), true);}
+  {
+    ObjectContainerNameListComponent* list = new ObjectContainerNameListComponent(processes);
+    list->addCallback(selectorCallback);
+    addTab(name, Colours::antiquewhite, list, true);
+  }
 };
 
 /*
 ** ProcessManagerComponent
 */
 ProcessManagerComponent::ProcessManagerComponent(ProcessManagerPtr processManager)
-  : SplittedLayout(new ProcessManagerListTabs(this, processManager), NULL, 0.33, SplittedLayout::typicalHorizontal), processManager(processManager)
+  : SplittedLayout(new ProcessManagerListTabs(processManager, *this), NULL, 0.33, SplittedLayout::typicalHorizontal), processManager(processManager)
 {
   startTimer(100);
 }
@@ -153,11 +140,14 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   };
 }
 
-void ProcessManagerComponent::processSelectedCallback(ProcessPtr process)
+void ProcessManagerComponent::objectSelectedCallback(ObjectPtr object)
 {
+  ProcessPtr process = object.dynamicCast<Process>();
+  jassert(process);
   RecentProcessesPtr recents = RecentProcesses::getInstance();
   ProcessConsoleSettingsPtr settings = recents->getExecutableConsoleSettings(process->getExecutableFile());
-  changeSecondComponent(process->createComponent(settings));
+  if (settings)
+    changeSecondComponent(process->createComponent(settings));
 }
 
 

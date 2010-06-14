@@ -6,10 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-//#include "Components/ObjectGraphAndContentComponent.h"
-#include "Components/StringComponent.h"
-#include "Components/TableComponent.h"
-#include "Components/StringToObjectMapTabbedComponent.h"
 #include "Utilities/SplittedLayout.h"
 #include "ProcessManager/ProcessManager.h"
 #include "ProcessManager/RecentProcesses.h"
@@ -17,26 +13,6 @@
 using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
-
-Component* lbcpp::createComponentForObject(ObjectPtr object, bool topLevelComponent)
-{
-  if (!object)
-    return NULL;
-  Component* res = object->createComponent();
-  if (res)
-    return res;
-
-  if (object.dynamicCast<StringToObjectMap>())
-    return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
-
-  //ObjectGraphPtr graph = object->toGraph();
-  //if (topLevelComponent && graph)
-  //  return new ObjectGraphAndContentComponent(graph);
-  TablePtr table = object->toTable();
-  if (table)
-    return new TableComponent(table);
-  return new StringComponent(object);
-}
 
 class ExplorerErrorHandler : public ErrorHandler
 {
@@ -133,6 +109,16 @@ public:
     {
       PopupMenu menu;
       menu.addItem(1, "Open");
+      
+      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance();
+      if (configuration->getNumRecentFiles())
+      {
+        PopupMenu openRecentFilesMenu;
+        for (size_t i = 0; i < configuration->getNumRecentFiles(); ++i)
+          openRecentFilesMenu.addItem(100 + i, configuration->getRecentFile(i).getFileName());
+        menu.addSubMenu(T("Open Recent File"), openRecentFilesMenu);
+      }
+
       menu.addItem(2, "Close", contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
       menu.addItem(3, "Process Manager");
@@ -153,18 +139,30 @@ public:
   {
     if (topLevelMenuIndex == 0)
     {
+      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance();
+
       if (menuItemID == 1)
       {
+        File directory = configuration->getRecentDirectory();
+        if (!directory.exists())
+          directory = File::getSpecialLocation (File::userHomeDirectory);
+
         FileChooser chooser("Please select the file you want to load...",
-                                 File::getSpecialLocation (File::userHomeDirectory),
+                                 directory,
                                  "*.*");
 
         if (chooser.browseForFileToOpen())
         {
-          ObjectPtr object = loadObject(chooser.getResult());
-          if (object)
-            contentTabs->addObject(object);
+          File result = chooser.getResult();
+          configuration->setRecentDirectory(result.getParentDirectory());
+          loadObjectFromFile(result);
         }
+      }
+      else if (menuItemID >= 100)
+      {
+        size_t recentFileId = menuItemID - 100;
+        jassert(recentFileId < configuration->getNumRecentFiles());
+        loadObjectFromFile(configuration->getRecentFile(recentFileId));
       }
       else if (menuItemID == 2)
         contentTabs->closeCurrentTab();
@@ -180,6 +178,15 @@ public:
       jassert(additionalMenus);
       return additionalMenus->menuItemSelected(menuItemID, topLevelMenuIndex - 1);
     }
+  }
+
+  void loadObjectFromFile(const File& file)
+  {
+    ExplorerRecentFiles::getInstance()->addRecentFile(file);
+    ExplorerConfiguration::save();
+    ObjectPtr object = loadObject(file);
+    if (object)
+      contentTabs->addObject(object);
   }
   
   juce_UseDebuggingNewOperator
@@ -203,6 +210,8 @@ public:
     declareProteinClasses();
 
     LBCPP_DECLARE_CLASS(ExplorerConfiguration);
+
+    LBCPP_DECLARE_CLASS(ExplorerRecentFiles);
     LBCPP_DECLARE_CLASS(RecentProcesses);
     LBCPP_DECLARE_CLASS(ProcessConsoleSettings);
     LBCPP_DECLARE_CLASS(ProcessConsoleFilter);
