@@ -12,6 +12,7 @@
 # include "ProcessManager.h"
 # include "../Components/common.h"
 # include "../Utilities/SplittedLayout.h"
+# include "../Utilities/ObjectSelector.h"
 
 class ProcessPropertiesComponent;
 class ProcessConsoleComponent;
@@ -41,12 +42,12 @@ protected:
   Component* consoleTools;
 };
 
-class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer
+class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer, public ObjectSelectorCallback
 {
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
 
-  virtual void processSelectedCallback(ProcessPtr process);
+ virtual void objectSelectedCallback(ObjectPtr object);
 
   // MenuBarModel
   virtual const StringArray getMenuBarNames();

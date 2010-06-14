@@ -324,6 +324,15 @@ protected:
 };
 
 ObjectGraphPtr FeatureGenerator::toGraph() const
+  {return new FeatureGeneratorGraph(const_cast<FeatureGenerator* >(this));}
+
+void FeatureGenerator::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& res) const
 {
-  return new FeatureGeneratorGraph(const_cast<FeatureGenerator* >(this));
+  StringDictionaryPtr scopes = getDictionary()->getScopes();
+  res.resize(getNumSubGenerators());
+  for (size_t i = 0; i < res.size(); ++i)
+  {
+    res[i].first = scopes->getString(getSubGeneratorIndex(i));
+    res[i].second = getSubGenerator(i);
+  }
 }

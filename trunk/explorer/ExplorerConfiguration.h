@@ -14,36 +14,50 @@
 namespace lbcpp
 {
 
+class ExplorerRecentFiles;
+typedef ReferenceCountedObjectPtr<ExplorerRecentFiles> ExplorerRecentFilesPtr;
+
+class ExplorerRecentFiles : public Object
+{
+public:
+  ExplorerRecentFiles() {}
+
+  static ExplorerRecentFilesPtr getInstance();
+
+  virtual String getName() const
+    {return T("ExplorerRecentFiles");}
+
+  File getRecentDirectory() const
+    {return recentDirectory;}
+
+  void setRecentDirectory(const File& directory)
+    {recentDirectory = directory;}
+
+  size_t getNumRecentFiles() const
+    {return recentFiles.size();}
+
+  File getRecentFile(size_t index) const
+    {jassert(index < recentFiles.size()); return recentFiles[index];}
+
+  void addRecentFile(const File& file);
+
+protected:
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+
+private:
+  enum {maxRecentFiles = 8};
+  File recentDirectory;
+  std::vector<File> recentFiles;
+};
+
 class ExplorerConfiguration : public StringToObjectMap
 {
 public:
-  static File getApplicationDataDirectory()
-  {return File(T("C:\\temp"));
-    File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
-    if (!directory.exists() && !directory.createDirectory())
-    {
-      Object::error(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
-      return File::nonexistent;
-    }
-    return directory;
-  }
+  static File getApplicationDataDirectory();
+  static File getConfigurationFile();
 
-  static File getConfigurationFile()
-    {return getApplicationDataDirectory().getChildFile(T("config.data"));}
-
-  static StringToObjectMapPtr getInstance()
-  {
-    static StringToObjectMapPtr configuration;
-    if (!configuration)
-    {
-      File configurationFile = getConfigurationFile();
-      if (configurationFile.exists())
-        configuration = Object::createFromFileAndCast<StringToObjectMap>(configurationFile);
-      if (!configuration)
-        configuration = new ExplorerConfiguration();
-    }
-    return configuration;
-  }
+  static StringToObjectMapPtr getInstance();
 
   static void save()
     {getInstance()->saveToFile(getConfigurationFile());}

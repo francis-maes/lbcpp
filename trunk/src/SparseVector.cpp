@@ -141,35 +141,64 @@ void SparseVector::multiplyByScalar(double scalar)
 
 bool SparseVector::load(InputStream& istr)
 {
-  jassert(false); // this code needs to be rewrited with Strings
-  size_t numSubVectors;
-  if (!read(istr, values) || !read(istr, numSubVectors))
+  dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
+  if (!dictionary)
     return false;
-  subVectors.resize(numSubVectors);
+  StringDictionaryPtr features = dictionary->getFeatures();
+  StringDictionaryPtr scopes = dictionary->getScopes();
+
+  size_t numValues;
+  if (!read(istr, numValues))
+    return false;
+
+  values.clear();
+  values.reserve(numValues);
+  for (size_t i = 0; i < numValues; ++i)
+  {
+    size_t featureIndex;
+    double featureValue;
+    if (!features->readIdentifier(istr, featureIndex) || !lbcpp::read(istr, featureValue))
+      return false;
+    jassert(isNumberValid(featureValue));
+    values.push_back(std::make_pair(featureIndex, featureValue));
+  }
+
+  size_t numSubVectors;
+  if (!read(istr, numSubVectors))
+    return false;
+
+  subVectors.clear();
+  subVectors.reserve(numSubVectors);
   for (size_t i = 0; i < numSubVectors; ++i)
   {
-    size_t index;
-    if (!read(istr, index))
+    size_t scopeIndex;
+    SparseVectorPtr subVector;
+    if (!scopes->readIdentifier(istr, scopeIndex) || !read(istr, subVector))
       return false;
-    SparseVectorPtr subVector(new SparseVector(getDictionary()->getSubDictionary(index)));
-    if (!subVector->load(istr))
-      return false;
-    subVectors[i] = std::make_pair(index, subVector);
+    subVectors.push_back(std::make_pair(scopeIndex, subVector));
   }
   return true;
 }
 
 void SparseVector::save(OutputStream& ostr) const
 {
-  jassert(false); // this code needs to be rewrited with Strings
-  write(ostr, values);
+  jassert(dictionary);
+  write(ostr, dictionary->getName());
+  StringDictionaryPtr features = dictionary->getFeatures();
+  StringDictionaryPtr scopes = dictionary->getScopes();  
+
+  write(ostr, values.size());
+  for (size_t i = 0; i < values.size(); ++i)
+  {
+    features->writeIdentifier(ostr, values[i].first);
+    write(ostr, values[i].second);
+  }
+
   write(ostr, subVectors.size());
   for (size_t i = 0; i < subVectors.size(); ++i)
   {
-    const std::pair<size_t, SparseVectorPtr>& e = subVectors[i];
-    write(ostr, e.first);
-    jassert(e.second);
-    e.second->save(ostr);
+    scopes->writeIdentifier(ostr, subVectors[i].first);
+    write(ostr, subVectors[i].second);
   }
 }
 

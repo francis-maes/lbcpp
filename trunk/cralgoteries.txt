@@ -1,20 +1,26 @@
 
-* Nouvelle interface pour les ParallelInference
-* revoir ProteinBackboneBondInferenceStep
+Library:
+ * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
+ * Remove old LearningMachine code
+ * Remove static ContinuousFunction code
+ * Remove "featureGenerator" keyword
+ * Remove translator
 
--
-* ParallelInferenceBatchLearner
-* ParallelProteinInference
-* Atomic MultiClass machines (MultiLinear..)
+Inference:
+ * ParallelInferenceBatchLearner
+ * Atomic MultiClass machines (MultiLinear, Ranking...)
+ * Apprentissage avec couche cachée
  
-* Apprentissage avec couche cachée
-
+Proteins: 
+ * ContactMap prediction
+ * ParallelProteinInference
 
 Explorer:
-  * Arbres d'inférence avec vu détaillé sur le coté
-  * Arbres pour les features generators 
-
-=====
+ * Arbres d'inférence avec vu détaillé sur le coté
+ * Arbres pour les features generators 
+ * Protein viewer
+ 
+======
 
 FeatureGenerator:
   * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar
@@ -25,19 +31,10 @@ ContinuousFunctions:
   * ScalarDerivableArchitecturesDotProduct
   * TransferArchitecture
   * Gerer le gradientDirection/derivativeDirection partout
-  * SŽrialisation et fonctions de crŽation pour les dynamiques
   * L1-norm
 
 Optimizers:
   * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
-
-Policy:
- * GPomdp -> ScalarVectorFunction
- * CRankPost
- * TableLogger
- * policyRun inline
-
-* CRAlgorithmLearner: Sarsa, QLearning, MonteCarloControl, OlPomdp, CRank
 
 
 ==================

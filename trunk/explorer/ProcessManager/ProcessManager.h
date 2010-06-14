@@ -135,7 +135,9 @@ public:
 
   juce::Colour getColourForLine(const String& line, bool& display) const
   {
-    jassert(filters.size());
+    if (filters.empty())
+      return juce::Colours::white;
+
     for (size_t i = 0; i < filters.size(); ++i)
       if (filters[i]->match(line))
       {

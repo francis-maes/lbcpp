@@ -10,6 +10,7 @@
 # define EXPLORER_COMPONENTS_OBJECT_CONTAINER_NAME_LIST_H_
 
 # include "common.h"
+# include "../Utilities/ObjectSelector.h"
 
 namespace lbcpp
 {
@@ -18,7 +19,7 @@ namespace lbcpp
 # pragma warning(disable:4355)
 #endif // JUCE_WIN32
 
-class ObjectContainerNameListComponent : public juce::ListBox
+class ObjectContainerNameListComponent : public juce::ListBox, public ObjectSelector
 {
 public:
   ObjectContainerNameListComponent(ObjectContainerPtr container)
@@ -27,15 +28,12 @@ public:
   virtual ~ObjectContainerNameListComponent()
     {delete getModel();}
 
-  virtual void objectSelectedCallback(size_t index, ObjectPtr object) {}
-
   void selectedRowsChanged()
   {
     int row = getSelectedRow();
     if (row >= 0)
-      objectSelectedCallback((size_t)row, container->get(row));
+      sendObjectSelected(container->get(row));
   }
-
 
   struct Model : public juce::ListBoxModel
   {

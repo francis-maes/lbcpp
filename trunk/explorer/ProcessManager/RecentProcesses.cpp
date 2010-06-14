@@ -114,10 +114,13 @@ bool RecentProcesses::load(InputStream& istr)
 
   v.resize(size);
   for (size_t i = 0; i < size; ++i)
+  {
     if (!lbcpp::read(istr, v[i].executable) || !lbcpp::read(istr, v[i].arguments) ||
         !lbcpp::read(istr, v[i].workingDirectories) || !lbcpp::read(istr, v[i].consoleSettings))
       return false;
-
+    if (!v[i].consoleSettings)
+      v[i].consoleSettings = new ProcessConsoleSettings();
+  }
   return true;
 }
 
