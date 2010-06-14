@@ -13,11 +13,11 @@ SET(EXPLORER_UTILITIES_SOURCES
 
 SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
+  Components/ObjectComponentContainer.h
   Components/StringComponent.h
   Components/TableComponent.h
   Components/TreeComponent.h
   Components/ObjectGraphComponent.h
-  Components/ObjectGraphAndContentComponent.h
   Components/StringToObjectMapTabbedComponent.h
   Components/ObjectContainerNameListComponent.h
   Components/ObjectComponents.cpp

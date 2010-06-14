@@ -1,18 +1,17 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ObjectGraphAndContentComponent.h| Object Graph And Content       |
+| Filename: ObjectComponentContainer.h     | A Object proxy component        |
 | Author  : Francis Maes                   |                                 |
 | Started : 15/06/2009 13:17               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_COMPONENTS_OBJECT_GRAPH_AND_CONTENT_H_
-# define EXPLORER_COMPONENTS_OBJECT_GRAPH_AND_CONTENT_H_
+#ifndef EXPLORER_COMPONENTS_CONTAINER_H_
+# define EXPLORER_COMPONENTS_CONTAINER_H_
 
-# include "ObjectGraphComponent.h"
-# include "StringComponent.h"
-# include "TableComponent.h"
+# include "common.h"
 # include "../Utilities/SplittedLayout.h"
+# include "../Utilities/ObjectSelector.h"
 
 namespace lbcpp
 {
@@ -24,12 +23,12 @@ public:
   virtual ~ObjectComponentContainer()
     {deleteAllChildren();}
   
-  void setObject(ObjectPtr object, bool topLevelComponent = false)
+  void setObject(ObjectPtr object)
   {
     deleteAllChildren();
     if (object)
     {
-      component = createComponentForObject(object, topLevelComponent);
+      component = createComponentForObject(object);
       addAndMakeVisible(component);
       component->setBoundsRelative(0, 0, 1, 1);
     }
@@ -52,29 +51,22 @@ private:
   ObjectPtr object;
 };
 
-class ObjectGraphAndContentComponent : public SplittedLayout
+class ObjectSelectorAndContentComponent : public SplittedLayout, public ObjectSelectorCallback
 {
 public:
-  struct GraphComponent : public ObjectGraphComponent
+  ObjectSelectorAndContentComponent(Component* selector)
+    : SplittedLayout(selector, new ObjectComponentContainer(), 0.33, typicalHorizontal)
   {
-    GraphComponent(ObjectGraphPtr graph)
-      : ObjectGraphComponent(graph) {}
-    
-    virtual void selectionChanged(int selectedNode)
-      {((ObjectGraphAndContentComponent* )getParentComponent())->selectionChanged(selectedNode >= 0 ? layouter.getNode(selectedNode) : ObjectPtr());}
-  };
-  
-  ObjectGraphAndContentComponent(ObjectGraphPtr graph)
-    : SplittedLayout(new GraphComponent(graph), new ObjectComponentContainer(), 0.5, typicalHorizontal), graph(graph) {}
-  
-  void selectionChanged(ObjectPtr selected)
+    ObjectSelector* s = dynamic_cast<ObjectSelector* >(selector);
+    jassert(s);
+    s->addCallback(*this);
+  }
+
+  virtual void objectSelectedCallback(ObjectPtr selected)
     {((ObjectComponentContainer* )second)->setObject(selected);}
-  
-private:
-  ObjectGraphPtr graph;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_COMPONENTS_OBJECT_GRAPH_AND_CONTENT_H_
+#endif // !EXPLORER_COMPONENTS_CONTAINER_H_
 

@@ -37,7 +37,7 @@ using juce::FileChooser;
 
 namespace lbcpp
 {
-  extern Component* createComponentForObject(ObjectPtr object, bool topLevelComponent = false);
+  extern Component* createComponentForObject(ObjectPtr object, const String& name = String::empty);
 
 }; /* namespace lbcpp */
 

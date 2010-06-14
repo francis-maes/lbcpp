@@ -34,10 +34,10 @@ public:
   ExplorerContentTabs(DocumentWindow* mainWindow)
     : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
 
-  void addObject(ObjectPtr object)
+  void addObject(ObjectPtr object, const String& name)
   {
-    Component* component = createComponentForObject(object, true);
-    addTab(object->getName(), Colours::lightblue, component, true);
+    Component* component = createComponentForObject(object, name);
+    addTab(name, Colours::lightblue, component, true);
     objects.push_back(object);
     setCurrentTabIndex(getNumTabs() - 1);
   }
@@ -167,7 +167,7 @@ public:
       else if (menuItemID == 2)
         contentTabs->closeCurrentTab();
       else if (menuItemID == 3)
-        contentTabs->addObject(localProcessManager());
+        contentTabs->addObject(localProcessManager(), T("Process Manager"));
       else if (menuItemID == 4)
         JUCEApplication::quit();
     }
@@ -186,7 +186,7 @@ public:
     ExplorerConfiguration::save();
     ObjectPtr object = loadObject(file);
     if (object)
-      contentTabs->addObject(object);
+      contentTabs->addObject(object, file.getFileNameWithoutExtension());
   }
   
   juce_UseDebuggingNewOperator

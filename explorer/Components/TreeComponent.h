@@ -48,8 +48,8 @@ protected:
 class ObjectTreeComponent : public juce::TreeView, public ObjectSelector
 {
 public:
-  ObjectTreeComponent(ObjectPtr object) 
-    : object(object), root(NULL)
+  ObjectTreeComponent(ObjectPtr object, const String& name) 
+    : object(object), name(name), root(NULL)
   {
     setRootItemVisible(true);
     setWantsKeyboardFocus(true);
@@ -57,7 +57,7 @@ public:
   }
 
   virtual ~ObjectTreeComponent()
-    {if (root) delete root;}
+    {clearTree();}
 
   virtual bool keyPressed(const juce::KeyPress& key)
   {
@@ -73,15 +73,14 @@ public:
   {
     if (root)
     {
-      setRootItem(NULL);
-      delete root;
+      deleteRootItem();
       root = NULL;
     }    
   }
 
   void buildTree()
   {
-    root = new ObjectTreeViewItem(object, object->getName(), *this);
+    root = new ObjectTreeViewItem(object, name, *this);
     setRootItem(root);
     root->setOpen(true);
   }
@@ -96,6 +95,7 @@ public:
 
 protected:
   ObjectPtr object;
+  String name;
   ObjectTreeViewItem* root;
 };
 
