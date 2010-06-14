@@ -133,7 +133,7 @@ int main(int argc, char** argv)
   File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
   //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
   
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")));
+  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
   
 /*  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
@@ -158,19 +158,21 @@ int main(int argc, char** argv)
   */
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
+  /*
+  // Output one feature vector
   FeatureGeneratorPtr features = featureFunction->compute(trainingData->getAndCast<ObjectPair>(0)->getSecond(), 2);
   jassert(features);
   features->toSparseVector()->saveToFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\features.data")));
-  return 0;
+  return 0;*/
 
   ProteinInferencePtr proteinInference = new ProteinInference();
 //  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
   for (size_t i = 0; i < 2; ++i)
   {
-    proteinInference->appendInference(
+/*    proteinInference->appendInference(
       new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
               createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
-    continue;
+    continue;*/
     proteinInference->appendInference(
       new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
                              createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),
@@ -199,5 +201,6 @@ int main(int argc, char** argv)
   //learner = vectorSequentialInferenceBatchLearner(stepLearners);
   
   learningContext->train(learner, proteinInference, trainingData);
+  proteinInference->saveToFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\NewStyle.inference")));
   return 0;
 }

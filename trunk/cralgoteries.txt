@@ -1,3 +1,5 @@
+* Remove InferenceVisitor
+
 
 Library:
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers

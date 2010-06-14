@@ -14,13 +14,75 @@
 using namespace lbcpp;
 
 /*
-** SharedParallelInference
+** ParameterizedInference
 */
-SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
-  : ParallelInference(name), subInference(subInference) {}
+ObjectPtr ParameterizedInference::clone() const
+{
+  ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());
+  jassert(res);
+  res->parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->name = name;
+  return res;
+}
 
-void SharedParallelInference::accept(InferenceVisitorPtr visitor)
-  {visitor->visit(SharedParallelInferencePtr(this));}
+bool ParameterizedInference::load(InputStream& istr)
+  {return Inference::load(istr) && lbcpp::read(istr, parameters);}
+
+void ParameterizedInference::save(OutputStream& ostr) const
+{
+  jassert(parameters && parameters->getDictionary());
+  Inference::save(ostr);
+  lbcpp::write(ostr, parameters);
+}
+
+
+
+/*
+** SequentialInference
+*/
+String SequentialInference::toString() const
+{
+  String res = getClassName();/* + T("(");
+  size_t n = getNumSubInferences();
+  for (size_t i = 0; i < n; ++i)
+  {
+    InferencePtr step = getSubInference(i);
+    res += step->toString();
+    if (i < n - 1)
+      res += T(", ");
+  }
+  return res + T(")");*/
+  return res;
+}
+
+void StaticSequentialInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
+{
+  subObjects.resize(getNumSubInferences());
+  for (size_t i = 0; i < subObjects.size(); ++i)
+  {
+    InferencePtr subInference = getSubInference(i);
+    subObjects[i].first = subInference->getName();
+    subObjects[i].second = subInference;
+  }
+}
+
+/*
+** ParallelInference
+*/
+void StaticParallelInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
+{
+  subObjects.resize(getNumSubInferences());
+  for (size_t i = 0; i < subObjects.size(); ++i)
+  {
+    InferencePtr subInference = getSubInference(i);
+    subObjects[i].first = subInference->getName();
+    subObjects[i].second = subInference;
+  }
+}
+
+SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
+  : StaticParallelInference(name), subInference(subInference) {}
 
 ObjectPtr SharedParallelInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
@@ -88,52 +150,9 @@ ObjectPtr DecoratorInference::run(InferenceContextPtr context, ObjectPtr input, 
   }
 }
 
-void DecoratorInference::accept(InferenceVisitorPtr visitor)
+void DecoratorInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
 {
-  if (decorated)
-    decorated->accept(visitor);
-}
-
-/*
-** SequentialInference
-*/
-String SequentialInference::toString() const
-{
-  String res = getClassName();/* + T("(");
-  size_t n = getNumSubInferences();
-  for (size_t i = 0; i < n; ++i)
-  {
-    InferencePtr step = getSubInference(i);
-    res += step->toString();
-    if (i < n - 1)
-      res += T(", ");
-  }
-  return res + T(")");*/
-  return res;
-}
-
-/*
-** ParameterizedInference
-*/
-void ParameterizedInference::accept(InferenceVisitorPtr visitor)
-  {visitor->visit(ParameterizedInferencePtr(this));}
-
-ObjectPtr ParameterizedInference::clone() const
-{
-  ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());
-  jassert(res);
-  res->parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
-  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
-  res->name = name;
-  return res;
-}
-
-bool ParameterizedInference::load(InputStream& istr)
-  {return Inference::load(istr) && lbcpp::read(istr, parameters);}
-
-void ParameterizedInference::save(OutputStream& ostr) const
-{
-  jassert(parameters && parameters->getDictionary());
-  Inference::save(ostr);
-  lbcpp::write(ostr, parameters);
+  subObjects.resize(1);
+  subObjects[0].first = decorated->getName();
+  subObjects[0].second = decorated;
 }

@@ -21,8 +21,6 @@ namespace lbcpp
 class InferenceBatchLearner : public Inference
 {
 public:
-  virtual void accept(InferenceVisitorPtr visitor);
-
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     InferencePtr inference = input.dynamicCast<Inference>();

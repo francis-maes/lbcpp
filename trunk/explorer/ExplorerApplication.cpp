@@ -36,7 +36,7 @@ public:
 
   void addObject(ObjectPtr object, const String& name)
   {
-    Component* component = createComponentForObject(object, name);
+    Component* component = createComponentForObject(object, name, true);
     addTab(name, Colours::lightblue, component, true);
     objects.push_back(object);
     setCurrentTabIndex(getNumTabs() - 1);
@@ -109,6 +109,7 @@ public:
     {
       PopupMenu menu;
       menu.addItem(1, "Open");
+      menu.addItem(2, "Open Directory");
       
       ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance();
       if (configuration->getNumRecentFiles())
@@ -119,11 +120,11 @@ public:
         menu.addSubMenu(T("Open Recent File"), openRecentFilesMenu);
       }
 
-      menu.addItem(2, "Close", contentTabs->getCurrentTabIndex() >= 0);
+      menu.addItem(3, "Close", contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
-      menu.addItem(3, "Process Manager");
+      menu.addItem(4, "Process Manager");
       menu.addSeparator();
-      menu.addItem(4, "Quit");
+      menu.addItem(5, "Quit");
       return menu;
     }
     else
@@ -141,17 +142,18 @@ public:
     {
       ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance();
 
-      if (menuItemID == 1)
+      if (menuItemID == 1 || menuItemID == 2)
       {
         File directory = configuration->getRecentDirectory();
         if (!directory.exists())
-          directory = File::getSpecialLocation (File::userHomeDirectory);
+          directory = File::getSpecialLocation(File::userHomeDirectory);
 
         FileChooser chooser("Please select the file you want to load...",
                                  directory,
                                  "*.*");
 
-        if (chooser.browseForFileToOpen())
+        if ((menuItemID == 1 && chooser.browseForFileToOpen()) ||
+            (menuItemID == 2 && chooser.browseForDirectory()))
         {
           File result = chooser.getResult();
           configuration->setRecentDirectory(result.getParentDirectory());
@@ -164,11 +166,11 @@ public:
         jassert(recentFileId < configuration->getNumRecentFiles());
         loadObjectFromFile(configuration->getRecentFile(recentFileId));
       }
-      else if (menuItemID == 2)
-        contentTabs->closeCurrentTab();
       else if (menuItemID == 3)
-        contentTabs->addObject(localProcessManager(), T("Process Manager"));
+        contentTabs->closeCurrentTab();
       else if (menuItemID == 4)
+        contentTabs->addObject(localProcessManager(), T("Process Manager"));
+      else if (menuItemID == 5)
         JUCEApplication::quit();
     }
     else

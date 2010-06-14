@@ -11,16 +11,15 @@
 #include "TableComponent.h"
 #include "TreeComponent.h"
 #include "StringToObjectMapTabbedComponent.h"
+#include "ObjectBrowser.h"
 using namespace lbcpp;
-
 
 class FeatureGeneratorComponent : public ObjectSelectorAndContentComponent
 {
 public:
   FeatureGeneratorComponent(FeatureGeneratorPtr featureGenerator, const String& name = String::empty)
-    : ObjectSelectorAndContentComponent(new ObjectTreeComponent(featureGenerator, name))
-  {
-  }
+    : ObjectSelectorAndContentComponent(featureGenerator, new ObjectTreeComponent(featureGenerator, name))
+    {}
 
   virtual void objectSelectedCallback(ObjectPtr selected)
   {
@@ -30,7 +29,22 @@ public:
   }
 };
 
-Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName)
+class InferenceComponent : public ObjectSelectorAndContentComponent
+{
+public:
+  InferenceComponent(InferencePtr inference, const String& name = String::empty)
+    : ObjectSelectorAndContentComponent(inference, new ObjectTreeComponent(inference, name))
+    {}
+/*
+  virtual void objectSelectedCallback(ObjectPtr selected)
+  {
+    InferencePtr subInference = selected.dynamicCast<Inference>();
+    jassert(subInference);
+    ObjectSelectorAndContentComponent::objectSelectedCallback(subInference->toString());
+  }*/
+};
+
+Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName, bool topLevelComponent)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
 
@@ -45,6 +59,20 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, const String& expli
 
   if (object.dynamicCast<FeatureGenerator>())
     return new FeatureGeneratorComponent(object.dynamicCast<FeatureGenerator>(), name);
+
+  if (object.dynamicCast<Inference>())
+  {
+    if (topLevelComponent)
+      return new ObjectBrowser(new InferenceComponent(object.dynamicCast<Inference>(), name));
+
+    if (object.dynamicCast<ParameterizedInference>())
+    {
+      ParameterizedInferencePtr inference = object.staticCast<ParameterizedInference>();
+      return createComponentForObject(inference->getParameters(), inference->getName());
+    }
+    else
+      return new InferenceComponent(object.dynamicCast<Inference>(), name);
+  }
 
   if (object.dynamicCast<Table>())
     return new TableComponent(object.dynamicCast<Table>());

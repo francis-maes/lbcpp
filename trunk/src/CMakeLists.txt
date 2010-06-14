@@ -160,7 +160,6 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/predeclarations.h
   ../include/lbcpp/Inference/Inference.h
   ../include/lbcpp/Inference/InferenceStack.h
-  ../include/lbcpp/Inference/InferenceVisitor.h
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceContext.h
   ../include/lbcpp/Inference/ParameterizedInference.h
@@ -176,7 +175,6 @@ SET(LBCPP_INFERENCE_HEADERS
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
   Inference/InferenceBaseClasses.cpp
-  Inference/InferenceVisitor.cpp
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp

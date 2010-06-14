@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_DECORATOR_H_
 
 # include "Inference.h"
-# include "InferenceVisitor.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
 
@@ -35,11 +34,12 @@ public:
   /*
   ** Inference
   */
-  virtual void accept(InferenceVisitorPtr visitor);
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
 
   InferencePtr getDecoratedInference() const
     {return decorated;}
+
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 
 protected:
   InferencePtr decorated;

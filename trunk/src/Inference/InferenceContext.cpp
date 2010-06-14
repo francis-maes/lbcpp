@@ -11,6 +11,7 @@
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
+#include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Object/ObjectPair.h>
 using namespace lbcpp;
 
