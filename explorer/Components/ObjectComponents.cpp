@@ -13,6 +13,7 @@
 #include "TreeComponent.h"
 #include "StringToObjectMapTabbedComponent.h"
 #include "ObjectBrowser.h"
+#include "../Proteins/ProteinComponent.h"
 using namespace lbcpp;
 
 class FeatureGeneratorComponent : public ObjectSelectorAndContentComponent
@@ -72,8 +73,28 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
       return new InferenceComponent(object.dynamicCast<Inference>(), name);
   }
 
+  if (object.dynamicCast<Protein>())
+    return new ProteinComponent(object.dynamicCast<Protein>(), name);
+
+  if (object.dynamicCast<ObjectPair>())
+  {
+    ObjectPairPtr pair = object.dynamicCast<ObjectPair>();
+    if (pair->getFirst().dynamicCast<Protein>() && 
+        pair->getSecond().dynamicCast<Protein>())
+    {
+      std::vector<std::pair<String, ProteinPtr> > proteins;
+      proteins.push_back(std::make_pair(T("Input"), pair->getFirst().dynamicCast<Protein>()));
+      proteins.push_back(std::make_pair(T("Supervision"), pair->getSecond().dynamicCast<Protein>()));
+      return new MultiProteinComponent(proteins);
+    }
+  }
+
   if (object.dynamicCast<ObjectContainer>())
+  {
+    
+
     return new ObjectSelectorAndContentComponent(object, new ObjectContainerNameListComponent(object.dynamicCast<ObjectContainer>()));
+  }
 
   if (object.dynamicCast<Table>())
     return new TableComponent(object.dynamicCast<Table>());
