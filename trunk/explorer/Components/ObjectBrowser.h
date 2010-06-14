@@ -39,7 +39,9 @@ public:
 
     addAndMakeVisible(properties = new PropertyListDisplayComponent(40));
     properties->addProperty(T("Class"), object->getClassName());
-    properties->addProperty(T("Name"), object->getName());
+    String name = object->getName();
+    if (name.indexOf(T("unimplemented")) < 0)
+      properties->addProperty(T("Name"), name);
 
     addAndMakeVisible(selector);
     addAndMakeVisible(resizeBar = new juce::StretchableLayoutResizerBar(&layout, 1, true));
