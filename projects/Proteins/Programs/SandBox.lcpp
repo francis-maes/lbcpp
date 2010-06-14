@@ -135,6 +135,8 @@ int main(int argc, char** argv)
   
   ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
+  smallPDBProteins->saveToFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB.container")));
+  return 0;
   
 /*  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),

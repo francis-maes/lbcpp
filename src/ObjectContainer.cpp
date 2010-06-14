@@ -9,6 +9,7 @@
 #include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/Object/ObjectStream.h>
 #include <lbcpp/Object/ObjectGraph.h>
+#include <lbcpp/Object/ObjectPair.h>
 #include <lbcpp/Utilities/RandomGenerator.h>
 using namespace lbcpp;
 
@@ -85,6 +86,8 @@ public:
   ApplyFunctionObjectContainer(ObjectContainerPtr target, ObjectFunctionPtr function)
     : DecoratorObjectContainer(function->getName() + T("(") + target->getName() + T(")"), target), function(function)
     {}
+
+  ApplyFunctionObjectContainer() {}
     
   virtual String getContentClassName() const
     {return function->getOutputClassName(target->getContentClassName());}
@@ -92,6 +95,13 @@ public:
   virtual ObjectPtr get(size_t index) const
     {return function->function(target->get(index));}
   
+protected:
+  virtual bool load(InputStream& istr)
+    {return DecoratorObjectContainer::load(istr) && lbcpp::read(istr, function);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorObjectContainer::save(ostr); lbcpp::write(ostr, function);}
+
 private:
   ObjectFunctionPtr function;
 };
@@ -118,13 +128,22 @@ public:
   RandomizedObjectContainer(ObjectContainerPtr target)
     : DecoratorObjectContainer(T("randomize(") + target->getName() + T(")"), target)
     {lbcpp::RandomGenerator::getInstance().sampleOrder(target->size(), order);}
-    
+   
+  RandomizedObjectContainer() {}
+
   virtual ObjectPtr get(size_t index) const
   {
     jassert(order.size() == target->size() && index < order.size());
     return target->get(order[index]);
   }
-  
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return DecoratorObjectContainer::load(istr) && lbcpp::read(istr, order);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorObjectContainer::save(ostr); lbcpp::write(ostr, order);}  
+
 private:
   std::vector<size_t> order;
 };
@@ -138,6 +157,7 @@ class DuplicatedObjectContainer : public DecoratorObjectContainer
 public:
   DuplicatedObjectContainer(ObjectContainerPtr target, size_t count)
     : DecoratorObjectContainer(T("duplicate(") + target->getName() + T(", ") + lbcpp::toString(count) + T(")"), target), count(count) {}
+  DuplicatedObjectContainer() : count(0) {}
   
   virtual size_t size() const
     {return count * target->size();}
@@ -147,6 +167,13 @@ public:
     jassert(index < target->size() * count);
     return target->get(index % target->size());
   }
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return DecoratorObjectContainer::load(istr) && lbcpp::read(istr, count);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorObjectContainer::save(ostr); lbcpp::write(ostr, count);}  
 
 private:
   size_t count;
@@ -162,7 +189,8 @@ public:
   RangeObjectContainer(ObjectContainerPtr target, size_t begin, size_t end)
     : DecoratorObjectContainer(target->getName() + T(" [") + lbcpp::toString(begin) + T(", ") + lbcpp::toString(end) + T("["), target),
     begin(begin), end(end) {jassert(end >= begin);}
-  
+  RangeObjectContainer() : begin(0), end(0) {}
+
   virtual size_t size() const
     {return end - begin;}
     
@@ -172,7 +200,14 @@ public:
     jassert(index < end);
     return target->get(index);
   }
-  
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return DecoratorObjectContainer::load(istr) && lbcpp::read(istr, begin) && lbcpp::read(istr, end);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorObjectContainer::save(ostr); lbcpp::write(ostr, begin); lbcpp::write(ostr, end);}  
+
 private:
   size_t begin, end;
 };
@@ -187,7 +222,8 @@ public:
   ExcludeRangeObjectContainer(ObjectContainerPtr target, size_t begin, size_t end)
     : DecoratorObjectContainer(target->getName() + T(" /[") + lbcpp::toString(begin) + T(", ") + lbcpp::toString(end) + T("["), target),
     begin(begin), end(end) {jassert(end >= begin);}
-  
+  ExcludeRangeObjectContainer() : begin(0), end(0) {}
+
   virtual size_t size() const
     {return target->size() - (end - begin);}
     
@@ -199,6 +235,13 @@ public:
     else
       return target->get(index + (end - begin));
   }
+
+protected:
+  virtual bool load(InputStream& istr)
+    {return DecoratorObjectContainer::load(istr) && lbcpp::read(istr, begin) && lbcpp::read(istr, end);}
+
+  virtual void save(OutputStream& ostr) const
+    {DecoratorObjectContainer::save(ostr); lbcpp::write(ostr, begin); lbcpp::write(ostr, end);}  
   
 private:
   size_t begin, end;
@@ -255,3 +298,14 @@ private:
 // Append two object containers.
 ObjectContainerPtr lbcpp::append(ObjectContainerPtr left, ObjectContainerPtr right)
   {return new BinaryAppendObjectContainer(left, right);}
+
+void declareObjectContainerClasses()
+{
+  LBCPP_DECLARE_CLASS(VectorObjectContainer);
+  LBCPP_DECLARE_CLASS(ApplyFunctionObjectContainer);
+  LBCPP_DECLARE_CLASS(RangeObjectContainer);
+  LBCPP_DECLARE_CLASS(ExcludeRangeObjectContainer);
+  LBCPP_DECLARE_CLASS(DuplicatedObjectContainer);
+  LBCPP_DECLARE_CLASS(RandomizedObjectContainer);
+  LBCPP_DECLARE_CLASS(ObjectPair);
+}

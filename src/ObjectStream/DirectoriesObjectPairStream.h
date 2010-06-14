@@ -21,6 +21,7 @@ public:
   DirectoriesObjectPairStream(const File& directory1, const File& directory2, const String& wildCardPattern = T("*"))
     : DirectoryObjectStream(directory1, wildCardPattern), directory2(directory2)
     {}
+  DirectoriesObjectPairStream() {}
 
   virtual ObjectPtr parseFile(const File& file1)
   {
@@ -37,6 +38,12 @@ public:
 
 protected:
   File directory2;
+
+  virtual bool load(InputStream& istr)
+    {return DirectoryObjectStream::load(istr) && lbcpp::read(istr, directory2);}
+
+  virtual void save(OutputStream& ostr) const
+    {DirectoryObjectStream::save(ostr); lbcpp::write(ostr, directory2);}
 };
 
 }; /* namespace lbcpp */

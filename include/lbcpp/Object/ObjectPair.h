@@ -24,7 +24,11 @@ public:
     : first(first), second(second) {}
   ObjectPair() {}
 
-  // todo: toString/read/write/clone
+  virtual String toString() const
+    {return T("(") + Traits<ObjectPtr>::toString(first) + T(", ") + Traits<ObjectPtr>::toString(second) + T(")");}
+
+  virtual ObjectPtr clone() const
+    {return new ObjectPair(name, first, second);}
 
   ObjectPtr getFirst() const
     {return first;}
@@ -53,6 +57,12 @@ public:
 protected:
   ObjectPtr first;
   ObjectPtr second;
+
+  virtual bool load(InputStream& istr)
+    {return ObjectContainer::load(istr) && lbcpp::read(istr, first) && lbcpp::read(istr, second);}
+
+  virtual void save(OutputStream& ostr) const
+    {ObjectContainer::save(ostr); lbcpp::write(ostr, first); lbcpp::write(ostr, second);}
 };
 
 typedef ReferenceCountedObjectPtr<ObjectPair> ObjectPairPtr;

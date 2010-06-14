@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ObjectComponentContainer.h"
+#include "ObjectContainerNameListComponent.h"
 #include "StringComponent.h"
 #include "TableComponent.h"
 #include "TreeComponent.h"
@@ -44,7 +45,7 @@ public:
   }*/
 };
 
-Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName, bool topLevelComponent)
+Component* createComponentForObjectImpl(ObjectPtr object, const String& explicitName)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
 
@@ -62,9 +63,6 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, const String& expli
 
   if (object.dynamicCast<Inference>())
   {
-    if (topLevelComponent)
-      return new ObjectBrowser(new InferenceComponent(object.dynamicCast<Inference>(), name));
-
     if (object.dynamicCast<ParameterizedInference>())
     {
       ParameterizedInferencePtr inference = object.staticCast<ParameterizedInference>();
@@ -73,6 +71,9 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, const String& expli
     else
       return new InferenceComponent(object.dynamicCast<Inference>(), name);
   }
+
+  if (object.dynamicCast<ObjectContainer>())
+    return new ObjectSelectorAndContentComponent(object, new ObjectContainerNameListComponent(object.dynamicCast<ObjectContainer>()));
 
   if (object.dynamicCast<Table>())
     return new TableComponent(object.dynamicCast<Table>());
@@ -84,4 +85,16 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, const String& expli
   if (table)
     return new TableComponent(table);
   return new StringComponent(object);
+}
+
+Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName, bool topLevelComponent)
+{
+  Component* res = createComponentForObjectImpl(object, explicitName);
+  if (topLevelComponent)
+  {
+    ObjectSelectorAndContentComponent* selector = dynamic_cast<ObjectSelectorAndContentComponent* >(res);
+    if (selector)
+      res = new ObjectBrowser(selector);
+  }
+  return res;
 }
