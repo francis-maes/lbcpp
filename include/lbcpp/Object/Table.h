@@ -65,6 +65,8 @@ public:
   virtual size_t getNumRows() const = 0;
   size_t getNumColumns() const;
 
+  virtual TablePtr sort(size_t columnNumber, bool decreasingOrder) const;
+
   virtual int getInteger(size_t rowNumber, size_t columnNumber) const
     {jassert(false); return 0;}
   virtual double getDouble(size_t rowNumber, size_t columnNumber) const

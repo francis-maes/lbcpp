@@ -52,17 +52,11 @@ public:
     return columnId >= 0 && columnId < (int)autoSizeWidths.size() ? autoSizeWidths[columnId] + 10 : 0;
   }
 
-  virtual void sortOrderChanged(int newSortColumnId, const bool isForwards)
+  virtual void sortOrderChanged(int columnId, const bool isForwards)
   {
-/*    representation::TaskPtr sortTask = 
-      representation::Frame::createFrameCast<representation::Task>("SortTableTask");
-    representation::TaskEnvironmentPtr taskEnvironment = 
-      representation::Frame::createFrameCast<representation::TaskEnvironment>("QuietTaskEnvironment");
-    sortTask->setFrameAttribute(T("table"), table);
-    sortTask->setStringAttribute(T("attribute"), table->getColumnAttribute(newSortColumnId - 100));
-    sortTask->setBoolAttribute(T("ascending"), isForwards);
-    sortTask->run(taskEnvironment);
-    setTable(sortTask->getFrameAttributeCast<representation::Table>(T("result")));*/
+    columnId -= 100;
+    jassert(columnId >= 0 && columnId < (int)table->getNumColumns()); 
+    setTable(table->sort((size_t)columnId, !isForwards));
   }
 
   juce_UseDebuggingNewOperator
