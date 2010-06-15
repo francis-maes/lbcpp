@@ -9,29 +9,18 @@
 #ifndef EXPLORER_COMPONENTS_OBJECT_BROWSER_H_
 # define EXPLORER_COMPONENTS_OBJECT_BROWSER_H_
 
-# include "ObjectComponentContainer.h"
+# include "ObjectProxyComponent.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
+# include "../Utilities/ComponentWithPreferedSize.h"
 
 namespace lbcpp
 {
-
-class ComponentWithPreferedSize
-{
-public:
-  virtual ~ComponentWithPreferedSize() {}
-
-  virtual int getPreferedWidth(int availableWidth, int availableHeight) const
-    {return availableWidth;}
-
-  virtual int getPreferedHeight(int availableWidth, int availableHeight) const
-    {return availableHeight;}
-};
 
 class ObjectSelectorAndContentComponent : public Component, public ObjectSelectorCallback, public ComponentWithPreferedSize
 {
 public:
   ObjectSelectorAndContentComponent(ObjectPtr object, Component* selector)
-    : object(object), selector(selector), content(new ObjectComponentContainer())
+    : object(object), selector(selector), content(new ObjectProxyComponent())
   {
     ObjectSelector* s = dynamic_cast<ObjectSelector* >(selector);
     jassert(s);
@@ -89,28 +78,15 @@ private:
   PropertyListDisplayComponent* properties;
   Component* selector;
   Component* resizeBar;
-  ObjectComponentContainer* content;
+  ObjectProxyComponent* content;
   juce::StretchableLayoutManager layout;
 };
 
-class ObjectBrowser : public Viewport
+class ObjectBrowser : public ViewportComponent
 {
 public:
   ObjectBrowser(ObjectSelectorAndContentComponent* content)
-    : content(content)
-  {
-    setScrollBarsShown(false, true);
-    setViewedComponent(content);
-  }
-
-  virtual void resized()
-  {
-    content->setSize(content->getPreferedWidth(getWidth(), getHeight()), getHeight());
-    Viewport::resized();
-  }
-
-private:
-  ObjectSelectorAndContentComponent* content;
+    : ViewportComponent(content, false, true) {}
 };
 
 }; /* namespace lbcpp */

@@ -371,10 +371,7 @@ void Protein::computeMissingFields()
       Vector3ObjectPtr v3o_d = static_cast<Vector3ObjectPtr>(calphaTrace->get(i));
       
       if (!v3o_a || !v3o_b || !v3o_c || !v3o_d)
-      {
-        ++i;
         continue;
-      }
       
       Vector3 a = v3o_a->getValue();
       Vector3 b = v3o_b->getValue();

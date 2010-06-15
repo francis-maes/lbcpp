@@ -114,8 +114,12 @@ FeatureDictionaryPtr StructuralAlphabetDictionary::getInstance()
 StructuralAlphabetDictionary::StructuralAlphabetDictionary()
 : FeatureDictionary(T("StructuralAlphabet"), new StringDictionary(T("StructuralAlphabet features")), StringDictionaryPtr())
 {
-  addFeature(T("a"));
   for (size_t i = 0; i < 26; ++i)
-    addFeature(String((char) ('A' + i)) + T("-"));
+  {
+    String str = T("A");
+    str[0] += i;
+    addFeature(str);
+  }
+  addFeature(T("a"));
 }
 

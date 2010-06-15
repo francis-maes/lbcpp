@@ -129,14 +129,16 @@ InferencePtr createDihedralRegressor(const String& name = T("Unnamed"))
 int main(int argc, char** argv)
 {
   declareProteinClasses();
+  
+  File workingDirectory(T("/Users/francis/tmp"));
+  // ("C:\\Projets\\LBC++\\projects\\temp\\")
 
-  File smallPDBDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB"));
+  File smallPDBDirectory = workingDirectory.getChildFile(T("SmallPDB"));
   //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
   
   ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
-  smallPDBProteins->saveToFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB.container")));
-  return 0;
+//  smallPDBProteins->saveToFile(workingDirectory.getChildFile(T("SmallPDB.container")));
   
 /*  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
         smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
@@ -160,30 +162,30 @@ int main(int argc, char** argv)
   */
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
-  /*
+  
   // Output one feature vector
-  FeatureGeneratorPtr features = featureFunction->compute(trainingData->getAndCast<ObjectPair>(0)->getSecond(), 2);
+/*  FeatureGeneratorPtr features = featureFunction->compute(trainingData->getAndCast<ObjectPair>(0)->getSecond(), 2);
   jassert(features);
-  features->toSparseVector()->saveToFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\features.data")));
+  features->toSparseVector()->saveToFile(workingDirectory.getChildFile(T("features.data")));
   return 0;*/
 
   ProteinInferencePtr proteinInference = new ProteinInference();
 //  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
   for (size_t i = 0; i < 2; ++i)
   {
-/*    proteinInference->appendInference(
+    proteinInference->appendInference(
       new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
               createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
-    continue;*/
+//    continue;
     proteinInference->appendInference(
       new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
                              createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),
                              featureFunction, T("SecondaryStructureSequence")));
-      proteinInference->appendInference(
+/*      proteinInference->appendInference(
         new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i),
                              binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR"))),
                              featureFunction,
-                             T("DisorderProbabilitySequence"), T("DisorderSequence")));
+                             T("DisorderProbabilitySequence"), T("DisorderSequence")));*/
   }
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
@@ -203,6 +205,6 @@ int main(int argc, char** argv)
   //learner = vectorSequentialInferenceBatchLearner(stepLearners);
   
   learningContext->train(learner, proteinInference, trainingData);
-  proteinInference->saveToFile(File(T("C:\\Projets\\LBC++\\projects\\temp\\Models\\NewStyle.inference")));
+  proteinInference->saveToFile(workingDirectory.getChildFile(T("NewStyle.inference")));
   return 0;
 }
