@@ -10,11 +10,12 @@ SET(EXPLORER_UTILITIES_SOURCES
   Utilities/SimpleTreeViewItem.h
   Utilities/ObjectSelector.h
   Utilities/PropertyListDisplayComponent.h
+  Utilities/ComponentWithPreferedSize.h
 )
 
 SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
-  Components/ObjectComponentContainer.h
+  Components/ObjectProxyComponent.h
   Components/StringComponent.h
   Components/TableComponent.h
   Components/TreeComponent.h

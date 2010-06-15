@@ -80,8 +80,7 @@ struct TableSortOperator
     if (decreasingOrder)
       {size_t tmp = a; a = b; b = tmp;}
     
-    size_t numRows = table->getNumRows();
-    jassert(a < numRows && b < numRows);
+    jassert(a < table->getNumRows() && b < table->getNumRows());
     
     switch (table->getHeader()->getColumnType(columnNumber))
     {

@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "ObjectComponentContainer.h"
+#include "ObjectProxyComponent.h"
 #include "ObjectContainerNameListComponent.h"
 #include "StringComponent.h"
 #include "TableComponent.h"
@@ -56,9 +56,6 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   if (res)
     return res;
 
-  if (object.dynamicCast<StringToObjectMap>())
-    return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
-
   if (object.dynamicCast<FeatureGenerator>())
     return new FeatureGeneratorComponent(object.dynamicCast<FeatureGenerator>(), name);
 
@@ -90,14 +87,14 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   }
 
   if (object.dynamicCast<ObjectContainer>())
-  {
-    
-
     return new ObjectSelectorAndContentComponent(object, new ObjectContainerNameListComponent(object.dynamicCast<ObjectContainer>()));
-  }
 
   if (object.dynamicCast<Table>())
     return new TableComponent(object.dynamicCast<Table>());
+
+  if (object.dynamicCast<StringToObjectMap>())
+    return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
+
 
   //ObjectGraphPtr graph = object->toGraph();
   //if (topLevelComponent && graph)
