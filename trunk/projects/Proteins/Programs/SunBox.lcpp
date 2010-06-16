@@ -14,9 +14,9 @@
 #include "Protein/Protein.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
-#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInference.h"
 #include "Protein/Inference/ProteinInference.h"
-#include "Protein/Inference/Protein1DInferenceStep.h"
+#include "Protein/Inference/Protein1DTargetInference.h"
 
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 
@@ -44,8 +44,8 @@ public:
     
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    typedef ReferenceCountedObjectPtr<ProteinInferenceStepHelper> ProteinInferenceStepHelperPtr;
-    ProteinInferenceStepHelperPtr helper = stack->getCurrentInference().dynamicCast<ProteinInferenceStepHelper>();
+    typedef ReferenceCountedObjectPtr<ProteinTargetInferenceHelper> ProteinTargetInferenceHelperPtr;
+    ProteinTargetInferenceHelperPtr helper = stack->getCurrentInference().dynamicCast<ProteinTargetInferenceHelper>();
     
     if (helper)
     {
@@ -427,7 +427,7 @@ int main(int argc, char** argv)
   ** Creation of the inference
   */
   ProteinInferencePtr proteinInference = new ProteinInference();
-  Protein1DInferenceStepPtr step;
+  Protein1DTargetInferencePtr step;
 
   for (size_t i = 0; i < targets.size(); ++i)
   {

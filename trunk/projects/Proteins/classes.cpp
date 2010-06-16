@@ -21,10 +21,12 @@ using namespace lbcpp;
 #include "Protein/AminoAcidDictionary.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
-#include "Protein/Inference/Protein1DInferenceStep.h"
-#include "Protein/Inference/ProteinCAlphaBondSequenceInferenceStep.h"
-#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
-#include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
+#include "Protein/Inference/Protein1DTargetInference.h"
+#include "Protein/Inference/ProteinCAlphaBondSequenceInference.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInference.h"
+#include "Protein/Inference/Protein2DTargetInference.h"
+#include "Protein/Inference/ProteinContactMapInference.h"
+#include "Protein/Inference/ProteinTertiaryStructureInference.h"
 #include "Protein/Inference/ProteinInference.h"
 
 extern void declareProteinGlobalFeaturesClasses();
@@ -67,6 +69,8 @@ void declareProteinClasses()
     LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
       LBCPP_DECLARE_CLASS(ScaledSigmoidScalarFunction);
       LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
+
+    LBCPP_DECLARE_CLASS(ProteinContactMapInference);
 
     LBCPP_DECLARE_CLASS(ProteinTertiaryStructureRefinementInferenceStep);
       LBCPP_DECLARE_CLASS(ProteinResidueRefinementInferenceStep);

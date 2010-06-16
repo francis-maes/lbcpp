@@ -122,19 +122,19 @@ private:
     int y2 = y1 + elementHeight;
     
     g.setColour(Colours::black);
-    g.drawLine(x1, y1, x1 + (end - begin) * elementWidth, y1);
-    g.drawLine(x1, y2, x1 + (end - begin) * elementWidth, y2);
+    g.drawLine((float)x1, (float)y1, (float)(x1 + (end - begin) * elementWidth), (float)y1);
+    g.drawLine((float)x1, (float)y2, (float)(x1 + (end - begin) * elementWidth), (float)y2);
     
     int x = x1;
     for (size_t i = begin; i < end; ++i)
     {
       g.setColour(Colours::black);
-      g.drawLine(x, y1, x, y2 + 1);
+      g.drawLine((float)x, (float)y1, (float)x, (float)(y2 + 1));
       paintSequenceElement(g, x + 1, y1 + 1, elementHeight - 1, elementWidth - 1, sequence, i);
       x += elementWidth;
     }
     g.setColour(Colours::black);
-    g.drawLine(x, y1, x, y2 + 1);
+    g.drawLine((float)x, (float)y1, (float)x, (float)(y2 + 1));
   }
 
   void paintSequenceElement(Graphics& g, int x, int y, int w, int h, ObjectContainerPtr sequence, size_t index)

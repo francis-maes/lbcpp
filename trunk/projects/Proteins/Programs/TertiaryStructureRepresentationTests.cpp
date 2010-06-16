@@ -21,6 +21,21 @@ int main()
 {
   declareProteinClasses();
 
+  {
+    File inputDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\proteinWithSS3DR"));
+    File outputDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\smallProteinWithSS3DR"));
+    ObjectStreamPtr inputProteins = directoryObjectStream(inputDirectory, T("*.protein"));
+    while (!inputProteins->isExhausted())
+    {
+      ProteinPtr protein = inputProteins->nextAndCast<Protein>();
+      jassert(protein);
+      std::cout << protein->getName() << ": " << protein->getLength() << " amino acids" << std::endl;
+      if (protein->getLength() < 50)
+        protein->saveToFile(outputDirectory.getChildFile(protein->getName() + T(".protein")));
+    }
+  }
+  return 0;
+
   /*  
   File inputFile(T("C:\\Projets\\LBC++\\projects\\temp\\1E4T_correct.pdb"));
   File outputFile(T("C:\\Projets\\LBC++\\projects\\temp\\1E4T_pouet.pdb"));

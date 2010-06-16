@@ -58,13 +58,13 @@ SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
   Protein/Inference/ProteinGlobalFeatures.h
   Protein/Inference/ProteinResidueFeatures.h
   Protein/Inference/ProteinResiduePairFeatures.h
-  Protein/Inference/ProteinInferenceStepHelper.h
-  Protein/Inference/Protein1DInferenceStep.h
-  Protein/Inference/ProteinCAlphaBondSequenceInferenceStep.h
-  Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h
-  Protein/Inference/ProteinTertiaryStructureInferenceStep.h
-  Protein/Inference/Protein2DInferenceStep.h
-  Protein/Inference/ProteinContactMapInferenceStep.h
+  Protein/Inference/ProteinTargetInferenceHelper.h
+  Protein/Inference/Protein1DTargetInference.h
+  Protein/Inference/ProteinCAlphaBondSequenceInference.h
+  Protein/Inference/ProteinBackboneBondSequenceInference.h
+  Protein/Inference/ProteinTertiaryStructureInference.h
+  Protein/Inference/Protein2DTargetInference.h
+  Protein/Inference/ProteinContactMapInference.h
   Protein/Inference/ProteinInference.h
 )
 

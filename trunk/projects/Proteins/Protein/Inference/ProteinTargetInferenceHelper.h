@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinInferenceStepHelper.h   | A base class for simplying      |
+| Filename: ProteinTargetInferenceHelper.h   | A base class for simplying      |
 | Author  : Francis Maes                   |  protein InferenceSteps         |
 | Started : 23/04/2010 12:59               |                                 |
 `------------------------------------------/                                 |
@@ -16,12 +16,12 @@ namespace lbcpp
 {
 
 // helper class for Inference that have Proteins as inputs and as supervision
-class ProteinInferenceStepHelper
+class ProteinTargetInferenceHelper
 {
 public:
-  ProteinInferenceStepHelper(const String& targetName, const String& supervisionName = String::empty)
+  ProteinTargetInferenceHelper(const String& targetName, const String& supervisionName = String::empty)
     : targetName(targetName), supervisionName(supervisionName.isEmpty() ? targetName : supervisionName) {}
-  ProteinInferenceStepHelper() {}
+  ProteinTargetInferenceHelper() {}
 
   String getTargetName() const
     {return targetName;}
@@ -40,38 +40,38 @@ protected:
     {lbcpp::write(ostr, targetName); lbcpp::write(ostr, supervisionName);}
 };
 
-class ProteinResidueRelatedInferenceStepHelper : public ProteinInferenceStepHelper
+class ProteinResidueRelatedInferenceStepHelper : public ProteinTargetInferenceHelper
 {
 public:
   ProteinResidueRelatedInferenceStepHelper(const String& targetName, ProteinResidueFeaturesPtr features, const String& supervisionName = String::empty)
-    : ProteinInferenceStepHelper(targetName, supervisionName), features(features) {}
+    : ProteinTargetInferenceHelper(targetName, supervisionName), features(features) {}
   ProteinResidueRelatedInferenceStepHelper() {}
 
 protected:
   ProteinResidueFeaturesPtr features;
 
   bool load(InputStream& istr)
-    {return ProteinInferenceStepHelper::load(istr) && lbcpp::read(istr, features);}
+    {return ProteinTargetInferenceHelper::load(istr) && lbcpp::read(istr, features);}
 
   void save(OutputStream& ostr) const
-    {ProteinInferenceStepHelper::save(ostr); lbcpp::write(ostr, features);}
+    {ProteinTargetInferenceHelper::save(ostr); lbcpp::write(ostr, features);}
 };
 
-class ProteinResiduePairRelatedInferenceStepHelper : public ProteinInferenceStepHelper
+class ProteinResiduePairRelatedInferenceStepHelper : public ProteinTargetInferenceHelper
 {
 public:
   ProteinResiduePairRelatedInferenceStepHelper(const String& targetName, ProteinResiduePairFeaturesPtr features, const String& supervisionName = String::empty)
-    : ProteinInferenceStepHelper(targetName, supervisionName), features(features) {}
+    : ProteinTargetInferenceHelper(targetName, supervisionName), features(features) {}
   ProteinResiduePairRelatedInferenceStepHelper() {}
 
 protected:
   ProteinResiduePairFeaturesPtr features;
 
   bool load(InputStream& istr)
-    {return ProteinInferenceStepHelper::load(istr) && lbcpp::read(istr, features);}
+    {return ProteinTargetInferenceHelper::load(istr) && lbcpp::read(istr, features);}
 
   void save(OutputStream& ostr) const
-    {ProteinInferenceStepHelper::save(ostr); lbcpp::write(ostr, features);}
+    {ProteinTargetInferenceHelper::save(ostr); lbcpp::write(ostr, features);}
 };
 
 }; /* namespace lbcpp */

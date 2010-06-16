@@ -44,9 +44,9 @@ featureGenerator numberLogFeatures(double number, size_t numIntervalsPerLog10)
   if (number == 0)
     featureSense(T("zero"));
   else if (number > 0)
-    featureCall(T("positive")) positiveNumberLogFeatures(number, numIntervalsPerLog10);
+    featureCall(T("positive")) positiveNumberFeatures(log(number), numIntervalsPerLog10);
   else
-    featureCall(T("negative")) positiveNumberLogFeatures(-number, numIntervalsPerLog10); 
+    featureCall(T("negative")) positiveNumberFeatures(log(-number), numIntervalsPerLog10); 
 }
 
 featureGenerator multiScalePositiveNumberFeatures(double number, size_t numIntervalsPerLog10InCoarestScale, size_t intervalRatio, size_t numScales)

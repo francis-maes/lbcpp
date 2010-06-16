@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_TERTIARY_STRUCTURE_STEP_H_
 # define LBCPP_PROTEIN_INFERENCE_TERTIARY_STRUCTURE_STEP_H_
 
-# include "Protein1DInferenceStep.h"
+# include "Protein1DTargetInference.h"
 
 namespace lbcpp
 {
@@ -96,11 +96,11 @@ public:
   }*/
 };
 
-class ProteinTertiaryStructureRefinementInferenceStep : public Protein1DInferenceStep
+class ProteinTertiaryStructureRefinementInferenceStep : public Protein1DTargetInference
 {
 public:
   ProteinTertiaryStructureRefinementInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : Protein1DInferenceStep(name, new ProteinResidueRefinementInferenceStep(name + T(" Residue")), features, T("TertiaryStructure")) {}
+    : Protein1DTargetInference(name, new ProteinResidueRefinementInferenceStep(name + T(" Residue")), features, T("TertiaryStructure")) {}
   
   ProteinTertiaryStructureRefinementInferenceStep() {}
 };

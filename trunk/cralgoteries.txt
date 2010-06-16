@@ -1,5 +1,3 @@
-* Remove InferenceVisitor
-
 
 Library:
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
@@ -7,7 +5,8 @@ Library:
  * Remove static ContinuousFunction code
  * Remove "featureGenerator" keyword
  * Remove translator
-
+ * Serialisation XML (?)
+ 
 Inference:
  * ParallelInferenceBatchLearner
  * Atomic MultiClass machines (MultiLinear, Ranking...)
@@ -17,11 +16,6 @@ Proteins:
  * ContactMap prediction
  * ParallelProteinInference
 
-Explorer:
- * Arbres d'inférence avec vu détaillé sur le coté
- * Arbres pour les features generators 
- * Protein viewer
- 
 ======
 
 FeatureGenerator:
