@@ -17,20 +17,34 @@ ObjectContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0
 {
   if (fileOrDirectory.isDirectory())
   {
-    ObjectStreamPtr proteinsStream = directoryObjectStream(fileOrDirectory, T("*.protein"));
-    ObjectContainerPtr res = proteinsStream->load(maxCount)->randomize();
-    for (size_t i = 0; i < res->size(); ++i)
-      res->getAndCast<Protein>(i)->computeMissingFields();
+    ObjectContainerPtr res = directoryObjectStream(fileOrDirectory, T("*.protein"))
+      ->load(maxCount)
+      ->randomize()
+      ->apply(new ProteinToInputOutputPairFunction());
+
+    ObjectContainerPtr resPair = directoryObjectStream(fileOrDirectory, T("*.proteinPair"))
+      ->load(maxCount - res->size())
+      ->randomize()
+      ->apply(new ComputeMissingFieldsOfProteinPairFunction());
+
     return res;
   }
   else
   {
     ProteinPtr protein = Protein::createFromFile(fileOrDirectory);
-    if (!protein)
+    if (protein)
+    {
+      VectorObjectContainerPtr voc = new VectorObjectContainer();
+      voc->append(protein);
+      voc->apply(new ProteinToInputOutputPairFunction());
+      return voc;
+    }
+    ObjectPairPtr proteinPair = ObjectPair::createFromFile(fileOrDirectory);
+    if (!proteinPair)
       return ObjectContainerPtr();
-    protein->computeMissingFields();
     VectorObjectContainerPtr voc = new VectorObjectContainer();
-    voc->append(protein);
+    voc->append(proteinPair);
+    voc->apply(new ComputeMissingFieldsOfProteinPairFunction());
     return voc;
   }
 }
@@ -178,7 +192,7 @@ int main(int argc, char** argv)
     if (mode == T("AllSavePair"))
       inferenceContext->appendCallback(new SaveProteinPairInferenceCallback(outputDirectory, T("proteinPair")));
     std::cout << "Making predictions..." << std::endl;
-    inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
+    inferenceContext->runWithSupervisedExamples(inference, proteins);
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else if (mode == T("StepByStep"))
@@ -199,16 +213,15 @@ int main(int argc, char** argv)
         decoratedInference = inference;
       }
       
-      inferenceContext->runWithSupervisedExamples(decoratedInference, proteins->apply(new ProteinToInputOutputPairFunction()));
+      inferenceContext->runWithSupervisedExamples(decoratedInference, proteins);
       std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
   }
   else if (mode == T("AllSave") || mode == T("AllSavePair"))
   {
     std::cout << "Making predictions..." << std::endl;
-    inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
+    inferenceContext->runWithSupervisedExamples(inference, proteins);
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
-    
   }
   else
   {
