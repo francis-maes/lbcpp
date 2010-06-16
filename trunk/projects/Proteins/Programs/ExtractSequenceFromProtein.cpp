@@ -29,10 +29,13 @@ int main(int argc, char** argv)
   for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
   {
     ProteinPtr protein = Protein::createFromFile(*proteinFiles[i]);
-    File outputFile = outputDirectory.getChildFile(proteinFiles[i]->getFileNameWithoutExtension() + T(".seq"));
+    File outputFile = outputDirectory.getChildFile(proteinFiles[i]->getFileNameWithoutExtension() + T(".seq"));//T(".protein"));//
     
     std::cout << "Extracting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
-    
+/*
+    if (protein->getLength() < 50)
+      protein->saveToFile(outputFile);
+*/    
     OutputStream* o = outputFile.createOutputStream();
     *o << protein->getAminoAcidSequence()->toString();
     delete o;

@@ -50,7 +50,42 @@ public:
     {
       File f = directory.getChildFile(output->getName() + T(".") + extension);
       std::cout << "Save " << f.getFileName() << "." << std::endl;
+
       output->saveToFile(f);
+    }
+  }
+
+private:
+  File directory;
+  String extension;
+};
+
+class OverrideProteinOutputInferenceCallback : public InferenceCallback
+{
+public:
+  OverrideProteinOutputInferenceCallback(const File& directory, const String& extension)
+    : directory(directory), extension(extension) {}
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 1)
+    {
+      File f = directory.getChildFile(output->getName() + T(".") + extension);
+      std::cout << "Override " << f.getFileName() << "." << std::endl;
+
+      ProteinPtr toSave = supervision.dynamicCast<Protein>()->clone();
+      jassert(toSave);
+
+      ProteinPtr toAdd = output.dynamicCast<Protein>();
+      jassert(toAdd);
+
+      std::vector<String> keys = toAdd->getKeys();
+      for (size_t i = 0; i < keys.size(); ++i)
+        toSave->setObject(toAdd->getObject(keys[i]));
+
+      toSave->computeMissingFields();
+
+      toSave->saveToFile(f);
     }
   }
 
@@ -76,8 +111,8 @@ int main(int argc, char** argv)
   if (argc < 4)
   {
     std::cerr << "Usage: " << argv[0] << " modelDirectory proteinFileOrDirectory mode [param]" << std::endl;
-    std::cerr << "Possible values for 'mode': All StepByStep or AllSave" << std::endl;
-    std::cerr << "Param is only for mode AllSave and is the output directory" << std::endl;
+    std::cerr << "Possible values for 'mode': All StepByStep AllSave or AllOverride" << std::endl;
+    std::cerr << "Param is only for mode AllSave and AllOverride and is the output directory" << std::endl;
     return 1;
   }
 
@@ -93,7 +128,7 @@ int main(int argc, char** argv)
   }
 
   File outputDirectory;
-  if (mode == T("AllSave"))
+  if (mode == T("AllSave") || mode == T("AllOverride"))
   {
     if (argc > 4)
       outputDirectory = cwd.getChildFile(argv[4]);
@@ -131,10 +166,12 @@ int main(int argc, char** argv)
   inferenceContext->appendCallback(new PrintDotForEachExampleInferenceCallback());
   InferenceResultCachePtr cache = new InferenceResultCache();
 
-  if (mode == T("All") || mode == T("AllSave"))
+  if (mode == T("All") || mode == T("AllSave") || mode == T("AllOverride"))
   {
     if (mode == T("AllSave"))
       inferenceContext->appendCallback(new SaveOutputInferenceCallback(outputDirectory, T("protein")));
+    if (mode == T("AllOverride"))
+      inferenceContext->appendCallback(new OverrideProteinOutputInferenceCallback(outputDirectory, T("protein")));
     std::cout << "Making predictions..." << std::endl;
     inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
@@ -161,7 +198,7 @@ int main(int argc, char** argv)
       std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
   }
-  else if (mode == T("AllSave"))
+  else if (mode == T("AllSave") || mode == T("AllOverride"))
   {
     std::cout << "Making predictions..." << std::endl;
     inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
