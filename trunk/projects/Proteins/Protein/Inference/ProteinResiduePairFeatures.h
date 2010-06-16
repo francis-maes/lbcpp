@@ -26,11 +26,13 @@ public:
 typedef ReferenceCountedObjectPtr<ProteinResiduePairFeatures> ProteinResiduePairFeaturesPtr;
 
 extern ProteinResiduePairFeaturesPtr proteinUnitResiduePairFeature();
-extern ProteinResiduePairFeaturesPtr separationLengthResiduePairFeatures(size_t intervalsPerLog10 = 5);
 extern ProteinResiduePairFeaturesPtr proteinPointResiduePairFeatures(ProteinResidueFeaturesPtr pointFeatureGenerator);
 extern ProteinResiduePairFeaturesPtr proteinGlobalToResiduePairFeatures(ProteinGlobalFeaturesPtr globalFeatures);
 extern ProteinResiduePairFeaturesPtr proteinCentralCompositionResiduePairFeatures(const String& sequenceName);
 extern ProteinResiduePairFeaturesPtr proteinPositionIndexResiduePairFeature();
+
+extern ProteinResiduePairFeaturesPtr separationLengthResiduePairFeatures(size_t intervalsPerLog10 = 5);
+extern ProteinResiduePairFeaturesPtr separationDistanceResiduePairFeatures(size_t intervalsPerLog10 = 2);
 
 enum ResiduePairConjunctionType
 {
