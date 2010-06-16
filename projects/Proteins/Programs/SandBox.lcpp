@@ -12,10 +12,10 @@
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Evaluation/ProteinStatisticsCalculator.h"
 #include "Protein/SecondaryStructureDictionary.h"
-#include "Protein/Inference/Protein1DInferenceStep.h"
-#include "Protein/Inference/ProteinBackboneBondSequenceInferenceStep.h"
-#include "Protein/Inference/ProteinContactMapInferenceStep.h"
-#include "Protein/Inference/ProteinTertiaryStructureInferenceStep.h"
+#include "Protein/Inference/Protein1DTargetInference.h"
+#include "Protein/Inference/ProteinBackboneBondSequenceInference.h"
+#include "Protein/Inference/ProteinContactMapInference.h"
+#include "Protein/Inference/ProteinTertiaryStructureInference.h"
 #include "Protein/Inference/ProteinInference.h"
 #include <fstream>
 using namespace lbcpp;
@@ -130,20 +130,19 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-  File workingDirectory(T("/Users/francis/tmp"));
-  // ("C:\\Projets\\LBC++\\projects\\temp\\")
+  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  //File workingDirectory(T("/Users/francis/tmp"));
 
   File smallPDBDirectory = workingDirectory.getChildFile(T("SmallPDB"));
   //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
   
-  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
-  smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
-//  smallPDBProteins->saveToFile(workingDirectory.getChildFile(T("SmallPDB.container")));
+//  ObjectContainerPtr smallPDBProteins = loadProteins(smallPDBDirectory.getChildFile(T("protein")), 7);
+//  smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
   
-/*  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
-        smallPDBDirectory.getChildFile(T("proteinWithSS3DR")),
-        smallPDBDirectory.getChildFile(T("protein")))->load(7);
-*/
+  ObjectContainerPtr smallPDBProteins = directoriesObjectPairStream(
+        smallPDBDirectory.getChildFile(T("smallProteinWithSS3DR")),
+        smallPDBDirectory.getChildFile(T("protein")))->load();
+
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
   ObjectContainerPtr testingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->fold(0,7) : smallPDBProteins;
@@ -155,37 +154,54 @@ int main(int argc, char** argv)
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
+  //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
+  //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   /*featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 5, 5, true));
   */
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
+  //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
-  
-  // Output one feature vector
-/*  FeatureGeneratorPtr features = featureFunction->compute(trainingData->getAndCast<ObjectPair>(0)->getSecond(), 2);
-  jassert(features);
-  features->toSparseVector()->saveToFile(workingDirectory.getChildFile(T("features.data")));
-  return 0;*/
+
+  CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
+  pairFeatureFunction->addSubFeatures(proteinUnitResiduePairFeature());
+  pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
 
   ProteinInferencePtr proteinInference = new ProteinInference();
 //  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
   for (size_t i = 0; i < 2; ++i)
   {
-    proteinInference->appendInference(
-      new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
-              createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
-//    continue;
-    proteinInference->appendInference(
-      new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
-                             createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),
-                             featureFunction, T("SecondaryStructureSequence")));
-/*      proteinInference->appendInference(
+    if (false)
+    {
+      proteinInference->appendInference(
+        new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
+                createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
+    }
+
+    if (false)
+    {
+      proteinInference->appendInference(
+        new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
+                               createMultiClassClassifier(SecondaryStructureDictionary::getInstance()),
+                               featureFunction, T("SecondaryStructureSequence")));
+    }
+
+    if (false)
+    {
+      proteinInference->appendInference(
         new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i),
                              binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR"))),
                              featureFunction,
-                             T("DisorderProbabilitySequence"), T("DisorderSequence")));*/
+                             T("DisorderProbabilitySequence"), T("DisorderSequence")));
+    }
+
+    if (true)
+    {
+      proteinInference->appendInference(
+        new ProteinContactMapInference(T("CM Pass ") + lbcpp::toString(i),
+                            binaryLabelToProbabilityInference(T("CM-prob"), createBinaryClassifier(T("CM"))),
+                            pairFeatureFunction,
+                            T("ResidueResidueContactMatrix8Ca")));
+    }
   }
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
@@ -205,6 +221,6 @@ int main(int argc, char** argv)
   //learner = vectorSequentialInferenceBatchLearner(stepLearners);
   
   learningContext->train(learner, proteinInference, trainingData);
-  proteinInference->saveToFile(workingDirectory.getChildFile(T("NewStyle.inference")));
+  proteinInference->saveToFile(workingDirectory.getChildFile(T("Models//NewStyle.inference")));
   return 0;
 }

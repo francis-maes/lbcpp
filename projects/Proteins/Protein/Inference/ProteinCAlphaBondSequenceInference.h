@@ -8,7 +8,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_STEP_CALPHA_BOND_SEQUENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_STEP_CALPHA_BOND_SEQUENCE_H_
 
-# include "Protein1DInferenceStep.h"
+# include "Protein1DTargetInference.h"
 
 namespace lbcpp
 {
@@ -51,11 +51,11 @@ public:
   }
 };
 
-class ProteinCAlphaBondSequenceInferenceStep : public Protein1DInferenceStep
+class ProteinCAlphaBondSequenceInferenceStep : public Protein1DTargetInference
 {
 public:
   ProteinCAlphaBondSequenceInferenceStep(const String& name, ProteinResidueFeaturesPtr features, InferencePtr angleInference, InferencePtr dihedralInference)
-    : Protein1DInferenceStep(name, new ProteinCAlphaBondInferenceStep(name + T(" Bond"), angleInference, dihedralInference), features, T("CAlphaBondSequence")) {}
+    : Protein1DTargetInference(name, new ProteinCAlphaBondInferenceStep(name + T(" Bond"), angleInference, dihedralInference), features, T("CAlphaBondSequence")) {}
   
   ProteinCAlphaBondSequenceInferenceStep() {}
   

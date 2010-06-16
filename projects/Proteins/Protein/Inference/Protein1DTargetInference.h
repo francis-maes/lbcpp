@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_
 # define LBCPP_PROTEIN_INFERENCE_STEP_SEQUENCE_H_
 
-# include "ProteinInferenceStepHelper.h"
+# include "ProteinTargetInferenceHelper.h"
 
 namespace lbcpp
 {
@@ -21,13 +21,13 @@ namespace lbcpp
 // SubInference:
 //   Input: Features
 //   Output, Supervision: Sequence elements
-class Protein1DInferenceStep : public SharedParallelInference, public ProteinResidueRelatedInferenceStepHelper
+class Protein1DTargetInference : public SharedParallelInference, public ProteinResidueRelatedInferenceStepHelper
 {
 public:
-  Protein1DInferenceStep(const String& name, InferencePtr subInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
+  Protein1DTargetInference(const String& name, InferencePtr subInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
     : SharedParallelInference(name, subInference), ProteinResidueRelatedInferenceStepHelper(targetName, features, supervisionName) {}
   
-  Protein1DInferenceStep() {}
+  Protein1DTargetInference() {}
   
   virtual size_t getNumSubInferences(ProteinPtr protein) const
     {return protein->getLength();}
@@ -83,13 +83,13 @@ protected:
   }
 };
   
-typedef ReferenceCountedObjectPtr<Protein1DInferenceStep> Protein1DInferenceStepPtr;
+typedef ReferenceCountedObjectPtr<Protein1DTargetInference> Protein1DTargetInferencePtr;
 
-class ProteinSequenceLabelingInferenceStep : public Protein1DInferenceStep
+class ProteinSequenceLabelingInferenceStep : public Protein1DTargetInference
 {
 public:
   ProteinSequenceLabelingInferenceStep(const String& name, InferencePtr classificationInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
-    : Protein1DInferenceStep(name, classificationInference, features, targetName, supervisionName)
+    : Protein1DTargetInference(name, classificationInference, features, targetName, supervisionName)
   {
     classificationInference->setName(getName() + T(" Classif"));
   }
@@ -153,11 +153,11 @@ public:
   FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t scoreIndex) const;
 };
 
-class PSSMPredictionInferenceStep : public Protein1DInferenceStep
+class PSSMPredictionInferenceStep : public Protein1DTargetInference
 {
 public:
   PSSMPredictionInferenceStep(const String& name, ProteinResidueFeaturesPtr features)
-    : Protein1DInferenceStep(name, new PSSMRowPredictionInferenceStep(), features, T("PositionSpecificScoringMatrix")) {}
+    : Protein1DTargetInference(name, new PSSMRowPredictionInferenceStep(), features, T("PositionSpecificScoringMatrix")) {}
   PSSMPredictionInferenceStep() {}
 };
 */
