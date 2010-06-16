@@ -143,7 +143,10 @@ private:
     if (labelSequence)
     {
       g.setFont(12);
-      g.drawText(labelSequence->getString(index), x, y, w, h, Justification::centred, true);
+      String res = labelSequence->getString(index);
+      if (labelSequence->getDictionary() == BinaryClassificationDictionary::getInstance())
+        res = (res == T("positive")) ? T("+") : T("-");
+      g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
     }
     

@@ -329,8 +329,8 @@ int main(int argc, char** argv)
   arguments.insert(new FileArgument(T("TestingProteinsDirectory"), testingProteinsDirectory, true, true));
   arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
   arguments.insert(new StringArgument(T("Output"), output));
-  arguments.insert(new DoubleArgument(T("LearningRate"), defaultLearningRate));
-  arguments.insert(new IntegerArgument(T("LearningStep"), defaultLearningStep));
+  //arguments.insert(new DoubleArgument(T("LearningRate"), defaultLearningRate));
+  //arguments.insert(new IntegerArgument(T("LearningStep"), defaultLearningStep));
   arguments.insert(new DoubleArgument(T("Regularizer"), regularizer));
   arguments.insert(new BooleanArgument(T("SaveInference"), saveInference));
   arguments.insert(new FileArgument(T("InputInference"), inputInference, true, true));
@@ -417,8 +417,7 @@ int main(int argc, char** argv)
   
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 
-  //featureFunction->addSubFeatures(multiSequenceConjunctionFeatures());
-
+  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures());
 
   //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
   //featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
