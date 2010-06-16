@@ -315,6 +315,7 @@ int main(int argc, char** argv)
   enum {numFolds = 7};
 
   File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
+  
   File testingProteinsDirectory;
   int numProteinsToLoad = 0;
   std::vector<String> targets;
@@ -361,6 +362,16 @@ int main(int argc, char** argv)
     ->randomize()
     ->apply(new ProteinToInputOutputPairFunction());
 
+  ObjectContainerPtr trainingDataPair = directoryObjectStream(proteinsDirectory, T("*.proteinPair"))
+    ->load(numProteinsToLoad - trainingData->size())
+    ->randomize()
+    ->apply(new ComputeMissingFieldsOfProteinPairFunction());
+
+  trainingData = append(trainingData, trainingDataPair);
+  
+/*  for (size_t i = 0; i < trainingData->size(); ++i)
+    trainingData->get(i)->saveToFile(proteinsDirectory.getChildFile(trainingData->get(i)->getName() + T(".proteinPair")));
+*/
   ObjectContainerPtr testingData;
   if (testingProteinsDirectory == File::nonexistent)
   {
@@ -372,6 +383,12 @@ int main(int argc, char** argv)
     testingData = directoryObjectStream(testingProteinsDirectory, T("*.protein"))
       ->load()
       ->apply(new ProteinToInputOutputPairFunction());
+    
+    ObjectContainerPtr testingDataPair = directoryObjectStream(testingProteinsDirectory, T("*.proteinPair"))
+      ->load()
+      ->apply(new ComputeMissingFieldsOfProteinPairFunction());
+    
+    testingData = append(testingData, testingDataPair);
   }
 
   std::cout << trainingData->size() << " Training Proteins & "
