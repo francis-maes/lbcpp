@@ -47,7 +47,7 @@ class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, publ
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
 
- virtual void objectSelectedCallback(ObjectPtr object);
+  virtual void objectSelectedCallback(ObjectPtr object);
 
   // MenuBarModel
   virtual const StringArray getMenuBarNames();

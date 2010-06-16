@@ -154,14 +154,14 @@ void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
     ++counters.first;
 }
 
-double ROCAnalyse::findBestThreshold(double& bestF1Score) const
+double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score) const
 {
   size_t truePositives = numPositives;
   size_t falsePositives = numNegatives;
 
-  bestF1Score = 0.0;
-  double bestThreshold = 0.5;
-  std::cout << "=========" << std::endl;
+  bestF1Score = -DBL_MAX;
+  double bestThreshold = 0.0;
+  //std::cout << "=========" << std::endl;
   for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
     size_t falseNegatives = numPositives - truePositives;
@@ -173,6 +173,30 @@ double ROCAnalyse::findBestThreshold(double& bestF1Score) const
     {
       bestF1Score = f1;
       bestThreshold = it->first;
+    }
+    falsePositives -= it->second.first;
+    truePositives -= it->second.second;
+  }
+  return bestThreshold;
+}
+
+double ROCAnalyse::findThresholdMaximisingRecallGivenPrecision(double minimumPrecision, double& bestRecall) const
+{
+  size_t truePositives = numPositives;
+  size_t falsePositives = numNegatives;
+
+  bestRecall = 0.0;
+  double bestThreshold = 0.0;
+  //std::cout << "=========" << std::endl;
+  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  {
+    size_t falseNegatives = numPositives - truePositives;
+    double recall = truePositives / (double)numPositives;
+    double precision = truePositives / (double)(truePositives + falsePositives);
+    if (precision >= minimumPrecision)
+    {
+      if (recall > bestRecall)
+        bestRecall = recall, bestThreshold = it->first;
     }
     falsePositives -= it->second.first;
     truePositives -= it->second.second;

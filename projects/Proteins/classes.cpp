@@ -71,6 +71,8 @@ void declareProteinClasses()
       LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
 
     LBCPP_DECLARE_CLASS(ProteinContactMapInference);
+      LBCPP_DECLARE_CLASS(ContactMapScoresInference);
+      LBCPP_DECLARE_CLASS(ContactMapScoresToProbabilitiesInference);
 
     LBCPP_DECLARE_CLASS(ProteinTertiaryStructureRefinementInferenceStep);
       LBCPP_DECLARE_CLASS(ProteinResidueRefinementInferenceStep);

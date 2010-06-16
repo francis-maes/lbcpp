@@ -335,4 +335,5 @@ void declareProteinResiduePairFeaturesClasses()
   LBCPP_DECLARE_CLASS(SeparationLengthProteinResiduePairFeatures);
   LBCPP_DECLARE_CLASS(ProteinCentralCompositionResiduePairFeatures);
   LBCPP_DECLARE_CLASS(SeparationDistanceResiduePairFeatures);
+  LBCPP_DECLARE_CLASS(ConjunctionResiduePairFeatures);
 }
