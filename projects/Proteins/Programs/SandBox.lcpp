@@ -35,6 +35,7 @@ public:
     if (stack->getDepth() == 1)
     {
       startingTime = Time::getMillisecondCounter();
+      bestTrainContactMap = bestTestContactMap = 0.0;
     }
     else if (stack->getDepth() == 2)
     {
@@ -64,14 +65,27 @@ public:
       ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
       validationContext->appendCallback(evaluation);
       validationContext->runWithSupervisedExamples(inference, trainingData);
-      std::cout << "Train: " << evaluation->toString() << std::endl;
+      processResults(evaluation, true);
       validationContext->runWithSupervisedExamples(inference, testingData);
-      std::cout << "Test: " << evaluation->toString() << std::endl;
+      processResults(evaluation, false);
     }
     else if (stack->getDepth() == 1)
     {
+      std::cout << "Best train: " << bestTrainContactMap << " test: " << bestTestContactMap << std::endl;
       std::cout << "Bye." << std::endl;
     }
+  }
+
+  void processResults(ProteinEvaluationCallbackPtr evaluation, bool isTrainingData)
+  {
+    EvaluatorPtr contactMapEvaluator = evaluation->getEvaluatorForTarget(T("ResidueResidueContactMatrix8Ca"));
+    jassert(contactMapEvaluator);
+    std::cout << (isTrainingData ? "Train: " : "Test: ") << contactMapEvaluator->toString() << std::endl;
+      
+    std::vector< std::pair<String, double> > scores;
+    contactMapEvaluator->getScores(scores);
+    for (size_t i = 0; i < scores.size(); ++i)
+      std::cout << scores[i].first << ": " << scores[i].second << std::endl;
   }
 
 private:
@@ -79,6 +93,11 @@ private:
   ObjectContainerPtr trainingData, testingData;
   size_t iterationNumber;
   juce::uint32 startingTime;
+
+  double bestTrainContactMap, bestTestContactMap;
+
+  void updateBestScore(double score, double& bestScore)
+    {if (score > bestScore) bestScore = score;}
 };
 
 ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
@@ -100,7 +119,7 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 
 InferenceOnlineLearnerPtr createOnlineLearner(double initialLearningRate = 1.0)
 {
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/*logicalOr(
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(25);/*logicalOr(
     maxIterationsStoppingCriterion(100),  
     maxIterationsWithoutImprovementStoppingCriterion(1));*/
   return gradientDescentInferenceOnlineLearner(
@@ -153,7 +172,7 @@ int main(int argc, char** argv)
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 8, 8, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 8, 8, true));
+  //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 5, 5, true));
   //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
   //featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
   /*featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 5, 5, true));
@@ -164,11 +183,16 @@ int main(int argc, char** argv)
 
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
   pairFeatureFunction->addSubFeatures(proteinUnitResiduePairFeature());
-  pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures());
+  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, proteinUnitResiduePairFeature()));
+  //pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(5)));
+  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, proteinPointResiduePairFeatures(featureFunction)));
+  //pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("PositionSpecificScoringMatrix")));
+  //pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures(1));
+//  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(2)));
 
   ProteinInferencePtr proteinInference = new ProteinInference();
 //  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
-  for (size_t i = 0; i < 2; ++i)
+  for (size_t i = 0; i < 1; ++i)
   {
     if (false)
     {

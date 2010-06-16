@@ -65,6 +65,12 @@ String RegressionErrorEvaluator::toString() const
       + T(" (") + lbcpp::toString(count) + T(" examples)");
 }
 
+void RegressionErrorEvaluator::getScores(std::vector< std::pair<String, double> >& res) const
+{
+  res.push_back(std::make_pair(T("RMSE"), -getRMSE()));
+  res.push_back(std::make_pair(T("AbsE"), -absoluteError->getMean()));
+}
+
 double RegressionErrorEvaluator::getRMSE() const
 {
   return sqrt(squaredError->getMean());
@@ -125,6 +131,9 @@ double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
   return mccDeno ? (mccNo / sqrt(mccDeno)) : mccNo;
 }
 
+double BinaryClassificationConfusionMatrix::computeAccuracy() const
+  {return (truePositive + trueNegative) / (double)totalCount;}
+
 void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const
 {
   precision = (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;
@@ -138,7 +147,11 @@ void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& pr
 void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
 {
   isPositive ? ++numPositives : ++numNegatives;
-  predictedScores.insert(std::make_pair(predictedScore, isPositive));
+  std::pair<size_t, size_t>& counters = predictedScores[predictedScore];
+  if (isPositive)
+    ++counters.second;
+  else
+    ++counters.first;
 }
 
 double ROCAnalyse::findBestThreshold(double& bestF1Score) const
@@ -148,20 +161,78 @@ double ROCAnalyse::findBestThreshold(double& bestF1Score) const
 
   bestF1Score = 0.0;
   double bestThreshold = 0.5;
-  jassert(predictedScores.size() == (numPositives + numNegatives));
-  for (std::multimap<double, bool>::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  std::cout << "=========" << std::endl;
+  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
     size_t falseNegatives = numPositives - truePositives;
+    double recall = truePositives / (double)numPositives;
+    double precision = truePositives / (double)(truePositives + falsePositives);
     double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
+    //std::cout << "(x >= " << it->first << ") ==> prec = " << precision << " recall = " << recall << " f1 = " << f1 << std::endl;
     if (f1 > bestF1Score)
     {
       bestF1Score = f1;
       bestThreshold = it->first;
     }
-    if (it->second)
-      --truePositives;
-    else
-      --falsePositives;
+    falsePositives -= it->second.first;
+    truePositives -= it->second.second;
   }
   return bestThreshold;
+}
+
+void ROCAnalyse::getScores(std::vector< std::pair<String, double> >& res) const
+{
+  size_t truePositives = numPositives;
+  size_t falsePositives = numNegatives;
+
+  double bestF1Score = 0.0;
+  double bestPrecAt10 = 0.0, bestPrecAt25 = 0.0, bestPrecAt50 = 0.0, bestPrecAt75 = 0.0, bestPrecAt90 = 0.0;
+  double bestRecAt10 = 0.0, bestRecAt25 = 0.0, bestRecAt50 = 0.0, bestRecAt75 = 0.0, bestRecAt90 = 0.0;
+
+  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  {
+    size_t falseNegatives = numPositives - truePositives;
+    double recall = truePositives / (double)numPositives;
+    double precision = truePositives / (double)(truePositives + falsePositives);
+    double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
+
+    bestF1Score = juce::jmax(f1, bestF1Score);
+    
+    if (recall >= 0.1)
+      bestPrecAt10 = juce::jmax(bestPrecAt10, precision);
+    if (recall >= 0.25)
+      bestPrecAt25 = juce::jmax(bestPrecAt25, precision);
+    if (recall >= 0.5)
+      bestPrecAt50 = juce::jmax(bestPrecAt50, precision);
+    if (recall >= 0.75)
+      bestPrecAt75 = juce::jmax(bestPrecAt75, precision);
+    if (recall >= 0.9)
+      bestPrecAt90 = juce::jmax(bestPrecAt90, precision);
+    
+    if (precision >= 0.1)
+      bestRecAt10 = juce::jmax(bestRecAt10, recall);
+    if (precision >= 0.25)
+      bestRecAt25 = juce::jmax(bestRecAt25, recall);
+    if (precision >= 0.5)
+      bestRecAt50 = juce::jmax(bestRecAt50, recall);
+    if (precision >= 0.75)
+      bestRecAt75 = juce::jmax(bestRecAt75, recall);
+    if (precision >= 0.9)
+      bestRecAt90 = juce::jmax(bestRecAt90, recall);
+
+    falsePositives -= it->second.first;
+    truePositives -= it->second.second;
+  }
+
+  res.push_back(std::make_pair(T("F1"), bestF1Score));
+  res.push_back(std::make_pair(T("Prec@10"), bestPrecAt10));
+  res.push_back(std::make_pair(T("Prec@25"), bestPrecAt25));
+  res.push_back(std::make_pair(T("Prec@50"), bestPrecAt50));
+  res.push_back(std::make_pair(T("Prec@75"), bestPrecAt75));
+  res.push_back(std::make_pair(T("Prec@90"), bestPrecAt90));
+  res.push_back(std::make_pair(T("Rec@10"), bestRecAt10));
+  res.push_back(std::make_pair(T("Rec@25"), bestRecAt25));
+  res.push_back(std::make_pair(T("Rec@50"), bestRecAt50));
+  res.push_back(std::make_pair(T("Rec@75"), bestRecAt75));
+  res.push_back(std::make_pair(T("Rec@90"), bestRecAt90));
 }

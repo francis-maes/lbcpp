@@ -22,6 +22,8 @@ public:
   Evaluator() {}
 
   virtual void addPrediction(ObjectPtr predicted, ObjectPtr correct) = 0;
+
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const = 0;
   virtual double getDefaultScore() const = 0;
 };
 
@@ -37,6 +39,8 @@ public:
   virtual void addDelta(double delta);
 
   virtual String toString() const;
+
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const;
 
   virtual double getDefaultScore() const
     {return -getRMSE();}
@@ -79,6 +83,7 @@ public:
   void addPrediction(bool predicted, bool correct);
 
   double computeMatthewsCorrelation() const;
+  double computeAccuracy() const;
   void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const;
 
   size_t getSampleCount() const
@@ -112,6 +117,8 @@ public:
   void addPrediction(double predictedScore, bool isPositive);
   double findBestThreshold(double& bestF1Score) const;
 
+  void getScores(std::vector< std::pair<String, double> >& res) const;
+
   size_t getSampleCount() const
     {return predictedScores.size();}
 
@@ -119,7 +126,7 @@ public:
     {predictedScores.clear(); numPositives = numNegatives = 0;}
 
 private:
-  std::multimap<double, bool> predictedScores;
+  std::map<double, std::pair<size_t, size_t> > predictedScores;
   size_t numPositives, numNegatives;
 };
 

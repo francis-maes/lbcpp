@@ -43,6 +43,9 @@ public:
         regressionEvaluator->addPrediction(new Scalar(predicted->getScore(i, j)), new Scalar(correct->getScore(i, j)));
   }
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {regressionEvaluator->getScores(res);}
+
 protected:
   RegressionErrorEvaluatorPtr regressionEvaluator;
 };

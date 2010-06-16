@@ -32,6 +32,18 @@ public:
     confusionMatrix.addPrediction(predicted->getIndex() == 1, correct->getIndex() == 1);
   }
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  {
+    double precision = 0.0, recall = 0.0, f1 = 0.0, mcc = 0.0, accuracy = 0.0;
+
+    if (confusionMatrix.getSampleCount())
+    {
+      confusionMatrix.computePrecisionRecallAndF1(precision, recall, f1);
+      mcc = confusionMatrix.computeMatthewsCorrelation();
+      accuracy = confusionMatrix.computeAccuracy();
+    }
+  }
+
   virtual String toString() const
   {
     if (!confusionMatrix.getSampleCount())
@@ -91,6 +103,9 @@ public:
     roc.findBestThreshold(bestF1);
     return bestF1;
   }
+
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {roc.getScores(res);}
 
 private:
   ROCAnalyse roc;
