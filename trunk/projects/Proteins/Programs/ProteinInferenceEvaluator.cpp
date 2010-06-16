@@ -29,24 +29,25 @@ ObjectContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0
 
     return res;
   }
-  else
+
+  if (fileOrDirectory.getFileExtension() == T(".protein")) 
   {
-    ProteinPtr protein = Protein::createFromFile(fileOrDirectory);
-    if (protein)
-    {
-      VectorObjectContainerPtr voc = new VectorObjectContainer();
-      voc->append(protein);
-      voc->apply(new ProteinToInputOutputPairFunction());
-      return voc;
-    }
-    ObjectPairPtr proteinPair = ObjectPair::createFromFile(fileOrDirectory);
-    if (!proteinPair)
-      return ObjectContainerPtr();
-    VectorObjectContainerPtr voc = new VectorObjectContainer();
-    voc->append(proteinPair);
-    voc->apply(new ComputeMissingFieldsOfProteinPairFunction());
-    return voc;
+    ObjectContainerPtr res = directoryObjectStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
+    ->load()
+    ->apply(new ProteinToInputOutputPairFunction());
+    if (res->size())
+      return res;
   }
+  
+  if (fileOrDirectory.getFileExtension() == T(".proteinPair"))
+  {
+    ObjectContainerPtr res = directoryObjectStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
+    ->load()
+    ->apply(new ComputeMissingFieldsOfProteinPairFunction());
+    if (res->size())
+      return res;
+  }
+  return ObjectContainerPtr();
 }
 
 InferencePtr addBreakToInference(InferencePtr inference, InferencePtr lastStepBeforeBreak)
