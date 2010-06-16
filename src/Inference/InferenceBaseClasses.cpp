@@ -31,12 +31,9 @@ bool ParameterizedInference::load(InputStream& istr)
 
 void ParameterizedInference::save(OutputStream& ostr) const
 {
-  jassert(parameters && parameters->getDictionary());
   Inference::save(ostr);
   lbcpp::write(ostr, parameters);
 }
-
-
 
 /*
 ** SequentialInference

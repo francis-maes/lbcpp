@@ -157,8 +157,10 @@ private:
           residue->setAminoAcid((AminoAcidDictionary::Type)aminoAcids->getIndex(i));
       }
 
-      // when a tertiary structure is predicted, update the backbone bond representation automatically
+      // when a tertiary structure is predicted, update backbone bond and calpha trace automatically
       res->setObject(tertiaryStructure->makeBackbone());
+      res->setObject(tertiaryStructure->makeCAlphaTrace());
+      return res;
     }
 
     // when a backbone is predicted, update the tertiary structure automatically
@@ -169,7 +171,10 @@ private:
 
     ProteinBackboneBondSequencePtr backbone = newObject.dynamicCast<ProteinBackboneBondSequence>();
     if (backbone)
+    {
       res->setObject(tertiaryStructure = ProteinTertiaryStructure::createFromBackbone(aminoAcids, backbone));
+      res->setObject(tertiaryStructure->makeCAlphaTrace());
+    }
   
     // when a c-alpha trace is predicted, update the tertiary structure automatically
     if (calphaTrace)

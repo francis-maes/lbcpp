@@ -56,6 +56,36 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   if (res)
     return res;
 
+  if (object.dynamicCast<FileObject>())
+  {
+    FileObjectPtr fileObject = object.staticCast<FileObject>();
+    FileObject::Type type = fileObject->getType();
+    switch (type)
+    {
+    case FileObject::directory:
+      return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(object, name));
+
+    case FileObject::classDirectory:
+    case FileObject::classFile:
+      {
+        ObjectPtr object = Object::createFromFile(fileObject->getFile());
+        if (object)
+          return createComponentForObjectImpl(object, name);
+        else if (type == FileObject::classDirectory)
+          return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(object, name));
+        else
+          return new HexadecimalFileObjectComponent(object, name);
+      }
+
+    case FileObject::textFile:
+      return new StringComponent(object);
+    case FileObject::binaryFile:
+      return new HexadecimalFileObjectComponent(fileObject, name);
+    default:
+      jassert(false); return NULL;
+    };
+  }
+
   if (object.dynamicCast<FeatureGenerator>())
     return new FeatureGeneratorComponent(object.dynamicCast<FeatureGenerator>(), name);
 

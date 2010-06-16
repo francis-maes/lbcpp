@@ -287,6 +287,44 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinPositionIndexResiduePairFeature()
   {return new ProteinPositionIndicesResiduePairFeature();}
 
 /*
+** SeparationDistanceResiduePairFeatures
+*/
+class SeparationDistanceResiduePairFeatures : public ProteinResiduePairFeatures
+{
+public:
+  SeparationDistanceResiduePairFeatures(size_t intervalsPerLog10 = 2)
+    : ProteinResiduePairFeatures(), intervalsPerLog10(intervalsPerLog10) {}
+
+  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  {
+    CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
+    if (calphaTrace && calphaTrace->hasPosition(firstPosition) && calphaTrace->hasPosition(secondPosition))
+    {
+      Vector3 delta = (calphaTrace->getPosition(firstPosition) - calphaTrace->getPosition(secondPosition));
+      featureCall(0) numberLogFeatures(delta.l2norm(), intervalsPerLog10)->toSparseVector();
+    }
+    else
+      featureSense(T("N/A"));
+  }
+
+  virtual String getName() const
+    {return T("separationDistance");}
+
+private:
+  size_t intervalsPerLog10;
+
+  virtual bool load(InputStream& istr)
+    {return ProteinResiduePairFeatures::load(istr) && lbcpp::read(istr, intervalsPerLog10);}
+
+  virtual void save(OutputStream& ostr) const
+    {ProteinResiduePairFeatures::save(ostr); lbcpp::write(ostr, intervalsPerLog10);}
+};
+
+ProteinResiduePairFeaturesPtr lbcpp::separationDistanceResiduePairFeatures(size_t intervalsPerLog10)
+  {return new SeparationDistanceResiduePairFeatures(intervalsPerLog10);}
+
+
+/*
 ** Classes
 */
 void declareProteinResiduePairFeaturesClasses()
@@ -296,4 +334,5 @@ void declareProteinResiduePairFeaturesClasses()
   LBCPP_DECLARE_CLASS(ProteinPointResiduePairFeatures);
   LBCPP_DECLARE_CLASS(SeparationLengthProteinResiduePairFeatures);
   LBCPP_DECLARE_CLASS(ProteinCentralCompositionResiduePairFeatures);
+  LBCPP_DECLARE_CLASS(SeparationDistanceResiduePairFeatures);
 }

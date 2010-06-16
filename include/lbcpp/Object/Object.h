@@ -76,6 +76,8 @@ public:
   */
   static void declare(const String& className, Constructor constructor);
 
+  static bool doClassNameExists(const String& className);
+
   /** Creates dynamically an object of class @a className.
   **
   ** The class @a className must be declared with Object::declare()

@@ -31,6 +31,12 @@ public:
     }
   }
 
+  bool doClassNameExists(const String& className) const
+  {
+    ScopedLock _(lock);
+    return constructors.find(className) != constructors.end();
+  }
+
   Object* create(const String& className)
   {
     ScopedLock _(lock);
@@ -73,6 +79,9 @@ String Object::getClassName() const
 
 void Object::declare(const String& className, Constructor constructor)
   {getObjectFactoryInstance().declare(className, constructor);}
+
+bool Object::doClassNameExists(const String& className)
+  {return getObjectFactoryInstance().doClassNameExists(className);}
 
 /*
 ** Create and load

@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_CONTACT_MAP_STEP_H_
 
 # include "Protein2DTargetInference.h"
+# include <algorithm>
 
 namespace lbcpp
 {

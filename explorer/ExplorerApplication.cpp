@@ -9,6 +9,7 @@
 #include "Utilities/SplittedLayout.h"
 #include "ProcessManager/ProcessManager.h"
 #include "ProcessManager/RecentProcesses.h"
+#include "Components/ObjectBrowser.h" // for FileObject
 #include "ExplorerConfiguration.h"
 using namespace lbcpp;
 
@@ -190,7 +191,15 @@ public:
     if (object)
       contentTabs->addObject(object, file.getFileNameWithoutExtension());
   }
-  
+
+  ObjectPtr loadObject(const File& file)
+  {
+    if (file.isDirectory() && !file.getChildFile(T(".classFile")).exists())
+      return ObjectPtr(new FileObject(file));
+    else
+      return Object::createFromFile(file);
+  }
+
   juce_UseDebuggingNewOperator
 
 private:
