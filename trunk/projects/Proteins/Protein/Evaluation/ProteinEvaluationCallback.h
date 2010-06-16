@@ -37,6 +37,13 @@ public:
   virtual double getDefaultScore() const
     {return angleEvaluator->getDefaultScore() + dihedralEvaluator->getDefaultScore();}
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  {
+    res.push_back(std::make_pair(T("Length"), -lengthEvaluator->getRMSE()));
+    res.push_back(std::make_pair(T("Angle"), -angleEvaluator->getRMSE()));
+    res.push_back(std::make_pair(T("Dihedral"), -dihedralEvaluator->getRMSE()));
+  }
+
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
     BondCoordinatesSequencePtr predicted = predictedObject.dynamicCast<BondCoordinatesSequence>();
@@ -94,6 +101,15 @@ public:
   virtual double getDefaultScore() const
     {return lengthEvaluator->getDefaultScore() + angleEvaluator->getDefaultScore() +
       ((phiEvaluator->getDefaultScore() + psiEvaluator->getDefaultScore() + omegaEvaluator->getDefaultScore()) / 3.0);}
+
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  {
+    res.push_back(std::make_pair(T("Backbone length"), -lengthEvaluator->getRMSE()));
+    res.push_back(std::make_pair(T("Angle"), -angleEvaluator->getRMSE()));
+    res.push_back(std::make_pair(T("Phi"), -phiEvaluator->getRMSE()));
+    res.push_back(std::make_pair(T("Psi"), -psiEvaluator->getRMSE()));
+    res.push_back(std::make_pair(T("Omega"), -omegaEvaluator->getRMSE()));
+  }
 
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
@@ -165,7 +181,10 @@ public:
 
   virtual double getDefaultScore() const
     {return -calphaRMSE->getMean();}
-
+ 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {res.push_back(std::make_pair(T("C-Alpha RMSE"), -calphaRMSE->getMean()));}
+ 
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
     ProteinTertiaryStructurePtr predicted = predictedObject.dynamicCast<ProteinTertiaryStructure>();
@@ -202,6 +221,12 @@ public:
 
   virtual double getDefaultScore() const
     {return rocEvaluator->getDefaultScore();}
+
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  {
+    classificationEvaluator->getScores(res);
+    rocEvaluator->getScores(res);
+  }
 
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
@@ -323,6 +348,9 @@ public:
   virtual double getDefaultScore() const
     {return tertiaryStructureEvaluator->getDefaultScore();}
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {} // FIXME
+
 protected:
   size_t numProteins;
 
@@ -367,6 +395,9 @@ public:
         evaluator->addPrediction(output, supervision);
     }
   }
+
+  EvaluatorPtr getEvaluatorForTarget(const String& targetName)
+    {return evaluator->getEvaluatorForTarget(targetName);}
 
   double getDefaultScoreForTarget(const String& targetName)
   {

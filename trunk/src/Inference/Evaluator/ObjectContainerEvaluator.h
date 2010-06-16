@@ -27,6 +27,9 @@ public:
   virtual double getDefaultScore() const
     {return objectEvaluator->getDefaultScore();}
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {objectEvaluator->getScores(res);}
+
   virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
   {
     ObjectContainerPtr predicted = predictedObject.dynamicCast<ObjectContainer>();

@@ -29,9 +29,11 @@ int main()
     {
       ProteinPtr protein = inputProteins->nextAndCast<Protein>();
       jassert(protein);
-      std::cout << protein->getName() << ": " << protein->getLength() << " amino acids" << std::endl;
       if (protein->getLength() < 50)
+      {
+        std::cout << protein->getName() << ": " << protein->getLength() << " amino acids" << std::endl;
         protein->saveToFile(outputDirectory.getChildFile(protein->getName() + T(".protein")));
+      }
     }
   }
   return 0;

@@ -107,6 +107,9 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinPointResiduePairFeatures(ProteinResi
 class SeparationLengthProteinResiduePairFeatures : public ProteinResiduePairFeatures
 {
 public:
+  SeparationLengthProteinResiduePairFeatures(size_t intervalsPerLog10 = 5)
+    : intervalsPerLog10(intervalsPerLog10) {}
+
   virtual String toString() const
     {return T("SeparationLength");}
 
@@ -120,16 +123,23 @@ public:
       featuresPerLength.resize(delta + 1);
     FeatureGeneratorPtr& res = featuresPerLength[delta];
     if (!res)
-      res = numberLogFeatures((double)delta, 5)->toSparseVector();
+      res = numberLogFeatures((double)delta, intervalsPerLog10)->toSparseVector();
     return res;
   }
 
 private:
+  size_t intervalsPerLog10;
   std::vector<FeatureGeneratorPtr> featuresPerLength;
+
+  virtual bool load(InputStream& istr)
+    {return ProteinResiduePairFeatures::load(istr) && lbcpp::read(istr, intervalsPerLog10);}
+
+  virtual void save(OutputStream& ostr) const
+    {ProteinResiduePairFeatures::save(ostr); lbcpp::write(ostr, intervalsPerLog10);}
 };
 
-ProteinResiduePairFeaturesPtr lbcpp::separationLengthResiduePairFeatures()
-  {return new SeparationLengthProteinResiduePairFeatures();}
+ProteinResiduePairFeaturesPtr lbcpp::separationLengthResiduePairFeatures(size_t intervalsPerLog10)
+  {return new SeparationLengthProteinResiduePairFeatures(intervalsPerLog10);}
 
 /*
 ** ProteinCentralCompositionResiduePairFeatures

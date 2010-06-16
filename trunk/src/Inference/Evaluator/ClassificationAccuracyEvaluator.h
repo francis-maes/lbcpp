@@ -42,6 +42,9 @@ public:
   virtual double getDefaultScore() const
     {return accuracy->getMean();}
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {res.push_back(std::make_pair(T("Acc"), accuracy->getMean()));}
+  
 protected:
   ScalarVariableMeanPtr accuracy;
 };
