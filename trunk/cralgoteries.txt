@@ -1,11 +1,13 @@
 
 Library:
+ * DecoratorInference: do not override the run() function (maybe put Inference::run() into protected..); callback functions (prepareSubInference, finalizeSubInference)
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
  * Remove old LearningMachine code
  * Remove static ContinuousFunction code
  * Remove "featureGenerator" keyword
  * Remove translator
  * Serialisation XML (?)
+ * Execution multi-thread
  
 Inference:
  * ParallelInferenceBatchLearner

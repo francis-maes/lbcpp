@@ -6,9 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "ProcessManagerComponent.h"
+#include "../Utilities/ComponentWithPreferedSize.h"
 using namespace lbcpp;
 
-class ProcessConsoleComponent : public Component
+class ProcessConsoleComponent : public Component, public ComponentWithPreferedSize
 {
 public:
   ProcessConsoleComponent(ProcessPtr process, ProcessConsoleSettingsPtr settings)
@@ -17,13 +18,13 @@ public:
 
   void updateContent()
   {
-    int dh = getDesiredHeight();
+    int dh = getPreferedHeight(getWidth(), getHeight());
     if (getHeight() < dh)
       setSize(getWidth(), dh);
     repaint();
   }
 
-  int getDesiredHeight() const
+  virtual int getPreferedHeight(int availableWidth, int availableHeight) const
   {
     int numLines = 0;
     for (size_t i = 0; i < process->getProcessOutput().size(); ++i)
@@ -72,14 +73,12 @@ ProcessComponent::ProcessComponent(ProcessPtr process, ProcessConsoleSettingsPtr
   properties->addProperty(T("Arguments"), process->getArguments());
   properties->addProperty(T("Working Directory"), process->getWorkingDirectory().getFullPathName());
 
-  addAndMakeVisible(viewport = new Viewport());
+  console = new ProcessConsoleComponent(process, settings);
+  addAndMakeVisible(viewport = new ViewportComponent(console, true, false));
   if (settings)
     addAndMakeVisible(consoleTools = settings->createComponent());
   else
     consoleTools = NULL;
-  console = new ProcessConsoleComponent(process, settings);
-  viewport->setViewedComponent(console);
-  viewport->setScrollBarsShown(true, false);
 }
 
 ProcessComponent::~ProcessComponent()
@@ -92,8 +91,10 @@ void ProcessComponent::resized()
 
   properties->setBounds(0, 0, getWidth(), propertiesHeight);
   viewport->setBounds(0, propertiesHeight, getWidth(), getHeight() - propertiesHeight - consoleToolsHeight);
+  int w = viewport->getMaximumVisibleWidth();
+  int h = viewport->getMaximumVisibleHeight();
   if (console)
-    console->setSize(viewport->getWidth(), juce::jmax(console->getDesiredHeight(), viewport->getHeight()));
+    console->setSize(viewport->getWidth(), juce::jmax(console->getPreferedHeight(w, h), viewport->getHeight()));
   if (consoleTools)
     consoleTools->setBounds(0, getHeight() - consoleToolsHeight, getWidth(), consoleToolsHeight);
 }

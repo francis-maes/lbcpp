@@ -101,6 +101,8 @@ const PopupMenu ProcessManagerComponent::getMenuForIndex(int topLevelMenuIndex, 
   menu.addItem(1, T("New Process"));
   menu.addItem(2, T("Clear Finished Process Lists"));
   menu.addItem(3, T("Kill all Processes"));
+  menu.addSeparator();
+  menu.addItem(4, T("Clear Recent Processes Information"));
   return menu;
 }
 
@@ -136,6 +138,10 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   case 3:
     processManager->killAllRunningProcesses();
     updateProcessLists();
+    break;
+
+  case 4:
+    RecentProcesses::getInstance()->clear();
     break;
   };
 }

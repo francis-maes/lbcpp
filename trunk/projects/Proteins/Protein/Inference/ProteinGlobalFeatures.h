@@ -26,8 +26,34 @@ public:
 typedef ReferenceCountedObjectPtr<ProteinGlobalFeatures> ProteinGlobalFeaturesPtr;
 
 // numberLogFeatures(length)
+extern ProteinGlobalFeaturesPtr proteinUnitResidueGlobalFeature();
 extern ProteinGlobalFeaturesPtr proteinLengthFeatures(size_t numIntervalsPerLog10 = 3);
 extern ProteinGlobalFeaturesPtr proteinGlobalCompositionFeatures(const String& sequenceName);
+
+class CompositeProteinGlobalFeatures : public ProteinGlobalFeatures
+{
+public:
+  void addSubFeatures(ProteinGlobalFeaturesPtr subFeatures)
+    {subFeatureFunctions.push_back(subFeatures);}
+
+  virtual String toString() const;
+
+  virtual FeatureGeneratorPtr compute(ProteinPtr protein);
+
+  size_t getNumSubFeatureFunctions() const
+    {return subFeatureFunctions.size();}
+
+  ProteinGlobalFeaturesPtr getSubFeatureFunction(size_t i) const
+    {jassert(i < subFeatureFunctions.size()); return subFeatureFunctions[i];}
+
+protected:
+  std::vector<ProteinGlobalFeaturesPtr> subFeatureFunctions;
+  
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+};
+
+typedef ReferenceCountedObjectPtr<CompositeProteinGlobalFeatures> CompositeProteinGlobalFeaturesPtr;
 
 }; /* namespace lbcpp */
 

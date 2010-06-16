@@ -92,7 +92,7 @@ public:
       return String::empty;
 
     double bestF1;
-    double bestThreshold = roc.findBestThreshold(bestF1);
+    double bestThreshold = roc.findThresholdMaximisingF1(bestF1);
 
     return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
   }
@@ -100,7 +100,7 @@ public:
   virtual double getDefaultScore() const
   {
     double bestF1;
-    roc.findBestThreshold(bestF1);
+    roc.findThresholdMaximisingF1(bestF1);
     return bestF1;
   }
 

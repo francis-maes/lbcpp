@@ -39,6 +39,9 @@ public:
   void addRecentExecutable(const File& file);
   void addRecent(const File& executable, const String& arguments, const File& workingDirectory);
 
+  void clear()
+    {v.clear();}
+
 protected:
   struct RecentExecutable
   {

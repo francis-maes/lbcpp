@@ -101,6 +101,7 @@ class StaticSequentialInference : public SequentialInference
 public:
   StaticSequentialInference(const String& name)
     : SequentialInference(name) {}
+  StaticSequentialInference() {}
 
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
@@ -113,6 +114,7 @@ class VectorSequentialInference : public StaticSequentialInference
 public:
   VectorSequentialInference(const String& name)
     : StaticSequentialInference(name) {}
+  VectorSequentialInference() {}
 
   virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
     {return subInferences.get(0);}

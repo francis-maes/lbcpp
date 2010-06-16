@@ -13,6 +13,53 @@
 using namespace lbcpp;
 
 /*
+** CompositeProteinGlobalFeatures
+*/
+featureGenerator CompositeProteinGlobalFeatures::compute(ProteinPtr protein)
+{
+  for (size_t i = 0; i < this->getNumSubFeatureFunctions(); ++i)
+  {
+    ProteinGlobalFeaturesPtr subFunction = this->getSubFeatureFunction(i);
+    FeatureGeneratorPtr fg = subFunction->compute(protein);
+    if (fg)
+      featureCall(subFunction->getName()) fg;
+  }
+}
+
+String CompositeProteinGlobalFeatures::toString() const
+{
+  String res = T("Composite:\n");
+  for (size_t i = 0; i < subFeatureFunctions.size(); ++i)
+    res += subFeatureFunctions[i]->toString() + T("\n");
+  return res;
+}
+
+bool CompositeProteinGlobalFeatures::load(InputStream& istr)
+  {return lbcpp::read(istr, subFeatureFunctions);}
+
+void CompositeProteinGlobalFeatures::save(OutputStream& ostr) const
+  {lbcpp::write(ostr, subFeatureFunctions);}
+
+/*
+** ProteinUnitGlobalFeature
+*/
+class ProteinUnitGlobalFeature : public ProteinGlobalFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinPtr protein)
+    {featureSense(0);}
+
+  virtual String toString() const
+    {return T("unit");}
+
+  virtual String getName() const
+    {return T("unit");}
+};
+
+ProteinGlobalFeaturesPtr lbcpp::proteinUnitResidueGlobalFeature()
+  {return new ProteinUnitGlobalFeature();}
+
+/*
 ** LengthProteinResidueFeatures
 */
 class LengthProteinGlobalFeatures : public ProteinGlobalFeatures
@@ -168,6 +215,8 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinGlobalToResiduePairFeatures(ProteinG
 */
 void declareProteinGlobalFeaturesClasses()
 {
+  LBCPP_DECLARE_CLASS(CompositeProteinGlobalFeatures);
+  LBCPP_DECLARE_CLASS(ProteinUnitGlobalFeature);
   LBCPP_DECLARE_CLASS(LengthProteinGlobalFeatures);
   LBCPP_DECLARE_CLASS(ProteinGlobalCompositionFeatures);
   LBCPP_DECLARE_CLASS(ProteinGlobalToResidueFeatures);
