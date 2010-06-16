@@ -60,10 +60,10 @@ private:
   String extension;
 };
 
-class OverrideProteinOutputInferenceCallback : public InferenceCallback
+class SaveProteinPairInferenceCallback : public InferenceCallback
 {
 public:
-  OverrideProteinOutputInferenceCallback(const File& directory, const String& extension)
+  SaveProteinPairInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -71,21 +71,26 @@ public:
     if (stack->getDepth() == 1)
     {
       File f = directory.getChildFile(output->getName() + T(".") + extension);
-      std::cout << "Override " << f.getFileName() << "." << std::endl;
+      std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
 
-      ProteinPtr toSave = supervision.dynamicCast<Protein>()->clone();
-      jassert(toSave);
+      ProteinPtr inputProtein = input.dynamicCast<Protein>()->clone();
+      jassert(inputProtein);
 
-      ProteinPtr toAdd = output.dynamicCast<Protein>();
-      jassert(toAdd);
+      ProteinPtr outputProtein = output.dynamicCast<Protein>();
+      jassert(outputProtein);
+      
 
-      std::vector<String> keys = toAdd->getKeys();
+      std::vector<String> keys = outputProtein->getKeys();
       for (size_t i = 0; i < keys.size(); ++i)
-        toSave->setObject(toAdd->getObject(keys[i]));
+        inputProtein->setObject(outputProtein->getObject(keys[i]));
 
-      toSave->computeMissingFields();
+      inputProtein->computeMissingFields();
+      
+      ProteinPtr supervisionProtein = supervision.dynamicCast<Protein>();
+      jassert(supervisionProtein);
+      supervisionProtein->computeMissingFields();
 
-      toSave->saveToFile(f);
+      ObjectPairPtr(new ObjectPair(inputProtein, supervision))->saveToFile(f);
     }
   }
 
@@ -111,8 +116,8 @@ int main(int argc, char** argv)
   if (argc < 4)
   {
     std::cerr << "Usage: " << argv[0] << " modelDirectory proteinFileOrDirectory mode [param]" << std::endl;
-    std::cerr << "Possible values for 'mode': All StepByStep AllSave or AllOverride" << std::endl;
-    std::cerr << "Param is only for mode AllSave and AllOverride and is the output directory" << std::endl;
+    std::cerr << "Possible values for 'mode': All StepByStep AllSave or AllSavePair" << std::endl;
+    std::cerr << "Param is only for mode AllSave and AllSavePair and is the output directory" << std::endl;
     return 1;
   }
 
@@ -128,7 +133,7 @@ int main(int argc, char** argv)
   }
 
   File outputDirectory;
-  if (mode == T("AllSave") || mode == T("AllOverride"))
+  if (mode == T("AllSave") || mode == T("AllSavePair"))
   {
     if (argc > 4)
       outputDirectory = cwd.getChildFile(argv[4]);
@@ -166,12 +171,12 @@ int main(int argc, char** argv)
   inferenceContext->appendCallback(new PrintDotForEachExampleInferenceCallback());
   InferenceResultCachePtr cache = new InferenceResultCache();
 
-  if (mode == T("All") || mode == T("AllSave") || mode == T("AllOverride"))
+  if (mode == T("All") || mode == T("AllSave") || mode == T("AllSavePair"))
   {
     if (mode == T("AllSave"))
       inferenceContext->appendCallback(new SaveOutputInferenceCallback(outputDirectory, T("protein")));
-    if (mode == T("AllOverride"))
-      inferenceContext->appendCallback(new OverrideProteinOutputInferenceCallback(outputDirectory, T("protein")));
+    if (mode == T("AllSavePair"))
+      inferenceContext->appendCallback(new SaveProteinPairInferenceCallback(outputDirectory, T("proteinPair")));
     std::cout << "Making predictions..." << std::endl;
     inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
@@ -198,7 +203,7 @@ int main(int argc, char** argv)
       std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
   }
-  else if (mode == T("AllSave") || mode == T("AllOverride"))
+  else if (mode == T("AllSave") || mode == T("AllSavePair"))
   {
     std::cout << "Making predictions..." << std::endl;
     inferenceContext->runWithSupervisedExamples(inference, proteins->apply(new ProteinToInputOutputPairFunction()));

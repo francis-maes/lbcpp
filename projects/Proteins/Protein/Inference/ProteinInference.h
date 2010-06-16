@@ -35,6 +35,25 @@ public:
     return new ObjectPair(protein->getName(), inputProtein, protein);
   }
 };
+  
+class ComputeMissingFieldsOfProteinPairFunction : public ObjectFunction
+{
+public:
+  virtual String getName() const
+    {return T("ComputeMissingFieldsOfProteinPair");}
+  
+  virtual String getOutputClassName(const String& inputClassName) const
+    {return T("ObjectPair");}
+  
+  virtual ObjectPtr function(ObjectPtr input) const
+  {
+    ObjectPairPtr proteinPair = input.dynamicCast<ObjectPair>();
+    jassert(proteinPair);
+    proteinPair->getFirst().dynamicCast<Protein>()->computeMissingFields();
+    proteinPair->getSecond().dynamicCast<Protein>()->computeMissingFields();
+    return input;
+  }
+};
 
 // Prototype:
 //   Input: Protein
