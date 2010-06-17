@@ -9,7 +9,7 @@
 #include "Utilities/SplittedLayout.h"
 #include "ProcessManager/ProcessManager.h"
 #include "ProcessManager/RecentProcesses.h"
-#include "Components/ObjectBrowser.h" // for FileObject
+#include "Components/FileObjectComponent.h" // for FileObject
 #include "ExplorerConfiguration.h"
 using namespace lbcpp;
 

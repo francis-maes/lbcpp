@@ -12,6 +12,7 @@
 #include "TableComponent.h"
 #include "TreeComponent.h"
 #include "StringToObjectMapTabbedComponent.h"
+#include "FileObjectComponent.h"
 #include "ObjectBrowser.h"
 #include "../Proteins/ProteinComponent.h"
 using namespace lbcpp;

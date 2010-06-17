@@ -22,6 +22,7 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/ObjectGraphComponent.h
   Components/StringToObjectMapTabbedComponent.h
   Components/ObjectContainerNameListComponent.h
+  Components/FileObjectComponent.h
   Components/ObjectBrowser.h
   Components/ObjectComponents.cpp
 )
