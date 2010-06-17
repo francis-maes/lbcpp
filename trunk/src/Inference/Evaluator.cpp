@@ -165,8 +165,6 @@ double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score) const
   for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
     size_t falseNegatives = numPositives - truePositives;
-    double recall = truePositives / (double)numPositives;
-    double precision = truePositives / (double)(truePositives + falsePositives);
     double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
     //std::cout << "(x >= " << it->first << ") ==> prec = " << precision << " recall = " << recall << " f1 = " << f1 << std::endl;
     if (f1 > bestF1Score)
@@ -190,7 +188,6 @@ double ROCAnalyse::findThresholdMaximisingRecallGivenPrecision(double minimumPre
   //std::cout << "=========" << std::endl;
   for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
-    size_t falseNegatives = numPositives - truePositives;
     double recall = truePositives / (double)numPositives;
     double precision = truePositives / (double)(truePositives + falsePositives);
     if (precision >= minimumPrecision)
