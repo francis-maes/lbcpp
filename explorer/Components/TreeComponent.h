@@ -23,7 +23,8 @@ public:
     : SimpleTreeViewItem(name, NULL, true),
       object(object), component(NULL), selector(selector)
   {
-    object->getChildrenObjects(subObjects);
+    if (object)
+      object->getChildrenObjects(subObjects);
     mightContainSubItemsFlag = subObjects.size() > 0;
   }
 

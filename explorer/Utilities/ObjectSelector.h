@@ -19,7 +19,8 @@ class ObjectSelectorCallback
 public:
   virtual ~ObjectSelectorCallback() {}
 
- virtual void objectSelectedCallback(ObjectPtr object) = 0;
+  virtual void objectSelectedCallback(ObjectPtr object) = 0; // old
+  virtual void selectionChangedCallback(const std::vector<ObjectPtr>& selectedObjects) {} // new
 };
 
 class ObjectSelector
@@ -32,6 +33,12 @@ public:
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
       callbacks[i]->objectSelectedCallback(object);
+  }
+
+  void sendSelectionChanged(const std::vector<ObjectPtr>& selectedObjects)
+  {
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i]->selectionChangedCallback(selectedObjects);
   }
 
 protected:

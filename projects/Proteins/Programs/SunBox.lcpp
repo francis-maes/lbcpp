@@ -279,8 +279,6 @@ private:
   double bestTestingScore;
 };
 
-static double defaultLearningRate = 1.0;
-static int defaultLearningStep = 10000;
 static int stoppingIteration = 20;
 static double regularizer = 0.0;
 

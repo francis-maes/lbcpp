@@ -117,7 +117,9 @@ public:
       {
         PopupMenu openRecentFilesMenu;
         for (size_t i = 0; i < configuration->getNumRecentFiles(); ++i)
-          openRecentFilesMenu.addItem(100 + i, configuration->getRecentFile(i).getFileName());
+          openRecentFilesMenu.addItem(101 + i, configuration->getRecentFile(i).getFileName());
+        openRecentFilesMenu.addSeparator();
+        openRecentFilesMenu.addItem(100, T("Clear Menu"));
         menu.addSubMenu(T("Open Recent File"), openRecentFilesMenu);
       }
 
@@ -161,12 +163,14 @@ public:
           loadObjectFromFile(result);
         }
       }
-      else if (menuItemID >= 100)
+      else if (menuItemID >= 101)
       {
-        size_t recentFileId = menuItemID - 100;
+        size_t recentFileId = menuItemID - 101;
         jassert(recentFileId < configuration->getNumRecentFiles());
         loadObjectFromFile(configuration->getRecentFile(recentFileId));
       }
+      else if (menuItemID == 100)
+        configuration->clearRecentFiles();
       else if (menuItemID == 3)
         contentTabs->closeCurrentTab();
       else if (menuItemID == 4)
@@ -271,11 +275,4 @@ private:
 // START_JUCE_APPLICATION(ExplorerApplication)
 // pb de link ...
 int main(int argc, char* argv[])
-{
-  /*
-  #include "Utilities/SshConnection.h"
-  SshConnection ssh(T("jbecker"), T("@lphaBrav0"), T("nic3.ulg.ac.be"), 22);
-  ssh.test(T("echo OK"));
-  */
-  return JUCEApplication::main (argc, argv, new ExplorerApplication());
-}
+  {return JUCEApplication::main (argc, argv, new ExplorerApplication());}

@@ -18,6 +18,9 @@ Proteins:
  * ContactMap prediction
  * ParallelProteinInference
 
+Explorer:
+ * finir selection multiple
+
 ======
 
 FeatureGenerator:

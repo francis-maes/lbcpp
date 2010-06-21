@@ -40,6 +40,9 @@ public:
     {jassert(index < recentFiles.size()); return recentFiles[index];}
 
   void addRecentFile(const File& file);
+  
+  void clearRecentFiles()
+    {recentFiles.clear();}
 
 protected:
   virtual bool load(InputStream& istr);
