@@ -43,7 +43,7 @@ public:
     marginLeft = 100,
     marginRight = 5,
     elementWidth = 20,
-    elementHeight = 20,
+    elementHeight = 23,
     marginVertical = 20,
   };
 
@@ -111,12 +111,16 @@ private:
         }
         else
           g.drawText(sequences[i].first, 0, y, marginLeft - 5, elementHeight, Justification::centredRight, true);
+          
         paintSequenceInterval(g, begin, end, x1, y, seq[j].first, seq[j].second);
         y += elementHeight;
+
+        if (j < seq.size() - 1)
+          paintInterSequenceInterval(g, begin, end, x1, y, seq[j].second, seq[j + 1].second); 
       }
     }
   }
-  
+
   void paintSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y1, const String& versionName, ObjectContainerPtr sequence)
   {
     int y2 = y1 + elementHeight;
@@ -129,8 +133,19 @@ private:
     for (size_t i = begin; i < end; ++i)
     {
       g.setColour(Colours::black);
-      g.drawLine((float)x, (float)y1, (float)x, (float)(y2 + 1));
-      paintSequenceElement(g, x + 1, y1 + 1, elementHeight - 1, elementWidth - 1, sequence, i);
+      ObjectPtr object1 = i > 0 ? sequence->get(i - 1) : ObjectPtr();
+      ObjectPtr object2 = sequence->get(i);
+      
+      if (object1 && object2 && object1->toString() == object2->toString())
+      {
+        g.setColour(Colours::lightgrey);
+        g.drawLine((float)x, (float)(y1 + 1), (float)x, (float)y2);
+        g.setColour(Colours::black);
+      }
+      else
+        g.drawLine((float)x, (float)(y1 + 1), (float)x, (float)y2);
+      
+      paintSequenceElement(g, x + 1, y1 + 1, elementWidth - 1, elementHeight - 1, sequence, i);
       x += elementWidth;
     }
     g.setColour(Colours::black);
@@ -142,9 +157,10 @@ private:
     LabelSequencePtr labelSequence = sequence.dynamicCast<LabelSequence>();
     if (labelSequence)
     {
-      g.setFont(12);
+      bool isBinary = labelSequence->getDictionary() == BinaryClassificationDictionary::getInstance();
+      g.setFont(isBinary ? 14 : 12);
       String res = labelSequence->getString(index);
-      if (labelSequence->getDictionary() == BinaryClassificationDictionary::getInstance())
+      if (isBinary)
         res = (res == T("positive")) ? T("+") : T("-");
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
@@ -158,7 +174,7 @@ private:
       {
         g.setColour(Colours::red);
         double value = juce::jlimit(0.0, 1.0, scalarSequence->getValue(index));
-        g.fillRect(x, y + (int)(h * (1 - value)), w, (int)(h * value));
+        g.fillRect(x, y + (int)(h * (1 - value)), w, (int)(h * value + 1));
         str = String(scalarSequence->getValue(index), 2);
       }
       g.setColour(Colours::black);
@@ -179,7 +195,32 @@ private:
       }
     }
   }
-  
+
+  void paintInterSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y, ObjectContainerPtr sequence1, ObjectContainerPtr sequence2)
+  {
+    for (size_t i = begin; i < end; ++i)
+    {
+      ObjectPtr object1 = sequence1->get(i);
+      ObjectPtr object2 = sequence2->get(i);
+      if (object1 && object2)
+      {
+        float x = (float)(x1 + (i - begin) * elementWidth + elementWidth / 2);
+        if (object1->toString() == object2->toString())
+        {
+          g.setColour(Colours::lightgreen);
+          enum {lineSize = 3};
+          g.drawLine(x, (float)(y - lineSize), x, (float)(y + lineSize + 1), 2);
+        }
+        else
+        {
+          g.setColour(Colours::red);
+          enum {crossSize = 4};
+          g.drawLine(x - crossSize, (float)(y - crossSize), x + crossSize + 1, (float)(y + crossSize + 1));
+          g.drawLine(x - crossSize, (float)(y + crossSize), x + crossSize + 1, (float)(y - crossSize - 1));
+        }
+      }
+    }
+  }
 };
 
 }; /* namespace lbcpp */

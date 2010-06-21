@@ -73,8 +73,11 @@ void StaticParallelInference::getChildrenObjects(std::vector< std::pair<String, 
   for (size_t i = 0; i < subObjects.size(); ++i)
   {
     InferencePtr subInference = getSubInference(i);
-    subObjects[i].first = subInference->getName();
-    subObjects[i].second = subInference;
+    if (subInference)
+    {
+      subObjects[i].first = subInference->getName();
+      subObjects[i].second = subInference;
+    }
   }
 }
 

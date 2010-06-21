@@ -212,13 +212,13 @@ public:
     addObjectNameIfExists(T("Primary structure"), T("AminoAcidSequence"), proteins, sequenceNames);
     addObjectNameIfExists(T("PSSM"), T("PositionSpecificScoringMatrix"), proteins, sequenceNames);
     addObjectNameIfExists(T("Secondary structure 3"), T("SecondaryStructureSequence"), proteins, sequenceNames);
-    addObjectNameIfExists(T("Secondary structure 3 prob"), T("SecondaryStructureProbabilities"), proteins, sequenceNames);
+    addObjectNameIfExists(T("Secondary structure 3 Probabilities"), T("SecondaryStructureProbabilities"), proteins, sequenceNames);
     addObjectNameIfExists(T("Secondary structure 8"), T("DSSPSecondaryStructureSequence"), proteins, sequenceNames);
     addObjectNameIfExists(T("Solvent accesibility"), T("NormalizedSolventAccessibilitySequence"), proteins, sequenceNames);
     addObjectNameIfExists(T("Solvent accesibility 20%"), T("SolventAccessibilityThreshold20"), proteins, sequenceNames);    
     addObjectNameIfExists(T("Solvent accesibility 25%"), T("SolventAccessibilityThreshold25"), proteins, sequenceNames);    
     addObjectNameIfExists(T("Disorder region"), T("DisorderSequence"), proteins, sequenceNames);
-    addObjectNameIfExists(T("Disorder region prob"), T("DisorderProbabilitySequence"), proteins, sequenceNames);
+    addObjectNameIfExists(T("Disorder region Probabilities"), T("DisorderProbabilitySequence"), proteins, sequenceNames);
     addObjectNameIfExists(T("Structural alphabet"), T("StructuralAlphabetSequence"), proteins, sequenceNames);
 
     MultiProtein1DConfigurationPtr configuration = new MultiProtein1DConfiguration(proteinNames, sequenceNames);
