@@ -310,7 +310,7 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-  enum {numFolds = 7};
+  enum {numFolds = 5};
 
   File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
   
@@ -321,6 +321,7 @@ int main(int argc, char** argv)
   File inputInference;
   bool saveInference = false;
   bool isTestVersion = false;
+  String multiTaskFeatures;
   
   ArgumentSet arguments;
   arguments.insert(new FileArgument(T("ProteinsDirectory"), proteinsDirectory, true, true));
@@ -334,6 +335,7 @@ int main(int argc, char** argv)
   arguments.insert(new BooleanArgument(T("SaveInference"), saveInference));
   arguments.insert(new FileArgument(T("InputInference"), inputInference, true, true));
   arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
+  arguments.insert(new StringArgument(T("MultiTaskFeatures"), multiTaskFeatures));
   
   
   if (!arguments.parse(argv, 1, argc-1))
@@ -396,45 +398,49 @@ int main(int argc, char** argv)
   ** Creation of features function
   */
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
+/*  
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 5, 5, true));
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
+*/
+//  featureFunction->addSubFeatures(proteinUnitResidueFeature());
   
-  featureFunction->addSubFeatures(proteinUnitResidueFeature());
-  
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 9, 9, true));
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 9, 9, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
   //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
   
-  featureFunction->addSubFeatures(proteinPositionFeatures());
+//  featureFunction->addSubFeatures(proteinPositionFeatures());
   
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 9, 9, true));
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 9, 9, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
 
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), 20, 20, true));
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), 80, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), 80, true));
 
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 11, 11, true));
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
-  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
-
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 10, 10, true));
-  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
-  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
-
-
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 10, 10, true));
-  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
-
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 10, 10, true));
-  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
- 
-  //featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), 0, true));
-  
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
-  
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
-
-  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures());
-
-  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 11, 11, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
+//  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
+//
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 10, 10, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
+//  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
+//
+//
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 10, 10, true));
+//  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
+//
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 10, 10, true));
+//  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
+// 
+//  //featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), 0, true));
+//  
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
+//  
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
+//
+////  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures(multiTaskFeatures));
+//
+//  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
   //featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
 
   /*

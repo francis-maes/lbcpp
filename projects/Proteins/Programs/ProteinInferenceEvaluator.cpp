@@ -27,6 +27,8 @@ ObjectContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0
       ->randomize()
       ->apply(new ComputeMissingFieldsOfProteinPairFunction());
 
+    res = append(res, resPair);
+
     return res;
   }
 

@@ -276,7 +276,9 @@ ProteinResidueFeaturesPtr lbcpp::proteinSequenceEntropyFeatures(const String& se
 */
 class MultiSequenceConjunctionProteinResidueFeatures : public ProteinResidueFeatures {
 public:
-  MultiSequenceConjunctionProteinResidueFeatures() {}
+  MultiSequenceConjunctionProteinResidueFeatures(const String& multiTaskFeatures = String::empty, size_t windowLength = 5)
+    : multiTaskFeatures(multiTaskFeatures)
+    {}
   
   virtual String toString() const
     {return T("MutiSequence");}
@@ -286,64 +288,87 @@ public:
   
   virtual featureGenerator compute(ProteinPtr protein, size_t position)
   {
-    enum {windowLength = 5};
+    if (multiTaskFeatures == String::empty || multiTaskFeatures == T("-"))
+      return;
 
     size_t begin = juce::jlimit(0, (int)protein->getLength() -1, (int)(position - windowLength));
     size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + windowLength));
 
     std::vector<LabelSequencePtr> sequences = protein->getLabelSequences();
     const size_t sequencesSize = sequences.size();
-
     String res;
     for (size_t pos = begin; pos <= end; ++pos) // Windowed
     {
       size_t i, j;
+      if (multiTaskFeatures.contains(T("AllVertical")))
+      {
+        /* Conjunction: Vertical over all sequences */
+        for (i = 0; i < sequencesSize; ++i)
+          res += sequences[i]->getName() + sequences[i]->elementToString(pos);
+        featureScope("stconj_fv")
+          featureScope(binarizeIntegerAroundZero(pos - position))
+            featureSense(res);
+      }
 
-      /* Conjunction: Vertical over all sequences */
-      for (i = 0; i < sequencesSize; ++i)
-        res += sequences[i]->getName() + sequences[i]->elementToString(pos);
-      featureScope("stconj_fv")
-        featureScope(binarizeIntegerAroundZero(pos - position))
-          featureSense(res);
+      if (multiTaskFeatures.contains(T("VerticalBy2")))
+      {
+        /* Conjunction: Vertical 2-by-2 sequences */
+        for (i = 0; sequencesSize && i < sequencesSize - 1; ++i)
+          for (j = i + 1; j < sequencesSize; ++j)
+            featureScope("stconj_2v")
+              featureScope(binarizeIntegerAroundZero(pos - position))
+                featureSense(sequences[i]->getName()
+              + sequences[i]->elementToString(pos)
+              + sequences[j]->getName()
+              + sequences[j]->elementToString(pos));
+      }
 
-      /* Conjunction: Vertical 2-by-2 sequences */
-      for (i = 0; sequencesSize && i < sequencesSize - 1; ++i)
-        for (j = i + 1; j < sequencesSize; ++j)
-          featureScope("stconj_2v")
+      if (multiTaskFeatures.contains(T("HorizontalBy2")))
+      {
+        /* Conjunction: Horizontal 2-by-2 sequences */
+        for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
+          featureScope("stconj_2h")
             featureScope(binarizeIntegerAroundZero(pos - position))
               featureSense(sequences[i]->getName()
             + sequences[i]->elementToString(pos)
-            + sequences[j]->getName()
-            + sequences[j]->elementToString(pos));
-  
-      /* Conjunction: Right-Down-Oblic 2-by-2 */
-      for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
-        for (j = i + 1; j < sequencesSize; ++j)
-          featureScope("stconj_2ro")
-            featureScope(binarizeIntegerAroundZero(pos - position))
-              featureSense(sequences[i]->getName()
-            + sequences[i]->elementToString(pos)
-            + sequences[j]->getName()
-            + sequences[j]->elementToString(pos + 1));
-      
-      /* Conjunction: Left-Down-Oblic 2-by-2 */
-      for (i = 0; pos != 0 && i < sequencesSize; ++i)
-        for (j = i + 1; j < sequencesSize; ++j)
-          featureScope("stconj_2lo")
-            featureScope(binarizeIntegerAroundZero(pos - position))
-              featureSense(sequences[i]->getName()
-            + sequences[i]->elementToString(pos)
-            + sequences[j]->getName()
-            + sequences[j]->elementToString(pos - 1));
+            + sequences[i]->elementToString(pos + 1));
+      }
+
+      if (multiTaskFeatures.contains(T("OblicBy2")))
+      {
+        /* Conjunction: Right-Down-Oblic 2-by-2 */
+        for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
+          for (j = i + 1; j < sequencesSize; ++j)
+            featureScope("stconj_2ro")
+              featureScope(binarizeIntegerAroundZero(pos - position))
+                featureSense(sequences[i]->getName()
+              + sequences[i]->elementToString(pos)
+              + sequences[j]->getName()
+              + sequences[j]->elementToString(pos + 1));
+        
+        /* Conjunction: Left-Down-Oblic 2-by-2 */
+        for (i = 0; pos != 0 && i < sequencesSize; ++i)
+          for (j = i + 1; j < sequencesSize; ++j)
+            featureScope("stconj_2lo")
+              featureScope(binarizeIntegerAroundZero(pos - position))
+                featureSense(sequences[i]->getName()
+              + sequences[i]->elementToString(pos)
+              + sequences[j]->getName()
+              + sequences[j]->elementToString(pos - 1));
+      }
     }
   }
+
 private:
+  String multiTaskFeatures;
+  size_t windowLength;
+
   inline size_t binarizeIntegerAroundZero(int value) const
     {return value < 0 ? 0 : 1;}
 };
 
-ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures()
-  {return ProteinResidueFeaturesPtr(new MultiSequenceConjunctionProteinResidueFeatures());}
+ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures(const String& multiTaskFeatures, size_t windowLength)
+  {return ProteinResidueFeaturesPtr(new MultiSequenceConjunctionProteinResidueFeatures(multiTaskFeatures, windowLength));}
 
 /*
 ** Misc
