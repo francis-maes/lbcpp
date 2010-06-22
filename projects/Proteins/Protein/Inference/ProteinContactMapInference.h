@@ -108,11 +108,12 @@ public:
 
       if (atLeastOneContact)
       {
-        double recall;
-        bestThreshold = roc.findThresholdMaximisingRecallGivenPrecision(0.5, recall);
-        if (recall)
+        double f1, precision, recall;
+        //bestThreshold = roc.findThresholdMaximisingRecallGivenPrecision(0.5, recall);
+        bestThreshold = roc.findThresholdMaximisingF1(f1, precision, recall);
+        if (f1)
         {
-          //std::cout << "Best-Threshold: " << bestThreshold << " => Recall = " << String(recall * 100, 2) << "%" << std::endl;
+          //std::cout << "Best-Threshold: " << bestThreshold << " => F1 = " << String(f1 * 100, 2) << "%" << std::endl;
           subSupervision = new Scalar(bestThreshold);
         }
       }
@@ -134,6 +135,7 @@ public:
           static const double temperature = 1.0;
           double score = scoresContactMap->getScore(i, j) - threshold;
           double probability = 1.0 / (1.0 + exp(-score * temperature));
+          //std::cout << scoresContactMap->getScore(i, j)  << " threshold = " << threshold << " ==> " << probability << std::endl;
           res->setScore(i, j, probability);
         }
     return res;

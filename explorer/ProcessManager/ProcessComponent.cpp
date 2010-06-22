@@ -29,7 +29,7 @@ public:
     int numLines = 0;
     for (size_t i = 0; i < process->getProcessOutput().size(); ++i)
     {
-      bool display;
+      bool display = true;
       settings->getColourForLine(process->getProcessOutput()[i], display);
       if (display)
         ++numLines;
@@ -44,7 +44,7 @@ public:
     for (size_t i = 0; i < process->getProcessOutput().size(); ++i)
     {
       String line = process->getProcessOutput()[i];
-      bool display;
+      bool display = true;
       g.setColour(settings->getColourForLine(line, display));
       if (display)
       {

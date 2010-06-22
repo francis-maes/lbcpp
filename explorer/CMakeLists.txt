@@ -41,6 +41,8 @@ SET(EXPLORER_PROCESS_MANAGER_SOURCES
 
 SET(EXPLORER_PROTEINS_SOURCES
   Proteins/MultiSequenceComponent.h
+  Proteins/MultiProtein1DComponent.h
+  Proteins/MultiProtein2DComponent.h
   Proteins/ProteinComponent.h
 )
 
