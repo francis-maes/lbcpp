@@ -89,7 +89,7 @@ protected:
   {
     jassert(isNumberValid(weight));
     assertScopeNumberIsValid(scopeNumber);
-    if (weight)
+    if (weight && featureGenerator)
       _this().featureCall(dictionary, scopeNumber, featureGenerator, weight);
   }
 };

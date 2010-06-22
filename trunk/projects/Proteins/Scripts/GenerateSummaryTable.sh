@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #----- CONSTANTS -------------#
-TARGETS="SS3 SS8 SA DR BBB StAl"
+TARGETS="SS3 SS8 SA DR StAl"
+MULTITASK_TARGETS="SS3 SS8 SA DR BBB StAl"
 _MINUS_INF=-10000;
 
 #----- GLOBAL VARIABLES -----#
@@ -96,7 +97,7 @@ function MultiTask
 {
   # Get all combinaison of order $i
   combinaisons=""
-  for combi in `python CombinaisonGenerator.py ${TARGETS}`
+  for combi in `python CombinaisonGenerator.py ${MULTITASK_TARGETS}`
   do
     if [ `echo ${combi} | grep -o '-' | wc -l` -eq $1 ]
     then
@@ -118,8 +119,9 @@ function MultiTask
       else
         fileName=`OrderTarget "${combi}-${task}"`
         targetName=`FullTargetName ${task}`
-        value=`cat ${prefix}${fileName}.*.$targetName | grep "^4" | cut -f 3`
-        value=${value:0:6}
+        value=`cat ${prefix}${fileName}.*..$targetName | grep "^4" | cut -f 3`
+        value=`echo "${value} * 100" | bc`
+        value=${value:0:4}
         if [ -z $value ]
         then
           value="N/A"
@@ -158,7 +160,12 @@ echo "\author{Francis Maes, Julien Becker}"
 echo "\maketitle"
 echo "\begin{longtable}{l||cccccc}"
 echo "   & \multicolumn{6}{c}{{\bf Target}} \\\\"
-echo "  {\bf Method} & SS3 & SS8 & SA & DR & BBB & StAl \\\\ \hline \hline \endhead"
+echo -n "  {\bf Method}"
+for target in ${TARGETS}
+do
+  echo -n " & ${target}"
+done
+echo "\\\\ \hline \hline \endhead"
 echo "  \hline \multicolumn{7}{r}{{Continued on next page}} \\ \endfoot"
 echo "  \endlastfoot"
 echo "  \hline \hline"
@@ -169,16 +176,18 @@ for task in $TARGETS
 do
   echo -n " & "
   targetName=`FullTargetName ${task}`
-  value=`cat ${prefix}${task}.*.${targetName} | grep "^0" | cut -f 3`
+  value=`cat ${prefix}${task}.*..${targetName} | grep "^0" | cut -f 3`
 
   setCurrentScore ${task} $value
   if [ -z $value ]
   then
     value="N/A"
     setCurrentScore ${task} $_MINUS_INF
+  else
+    value=`echo "${value} * 100" | bc`
   fi
 
-  echo -n ${value:0:6}
+  echo -n ${value:0:4}
 done
 echo " \\\\"
 echo "  \hline \hline"
@@ -194,8 +203,9 @@ do
   do
     echo -n " & "
     targetName=`FullTargetName ${task}`
-    value=`cat ${prefix}${task}.*.${targetName} | grep "^${pass}" | cut -f 3`
-    value=${value:0:6}
+    value=`cat ${prefix}${task}.*..${targetName} | grep "^${pass}" | cut -f 3`
+    value=`echo "${value} * 100" | bc`
+    value=${value:0:4}
     if [ -z $value ]
     then
       value="N/A"
