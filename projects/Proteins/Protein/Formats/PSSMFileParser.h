@@ -26,7 +26,7 @@ public:
   virtual void parseBegin()
   {
     currentPosition = -3;
-    pssm = new ScoreVectorSequence(name, AminoAcidDictionary::getInstance(), aminoAcidSequence->size(), AminoAcidDictionary::numAminoAcids + 2);
+    pssm = new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), AminoAcidDictionary::getInstance(), aminoAcidSequence->size(), AminoAcidDictionary::numAminoAcids + 2);
   }
 
   virtual bool parseLine(const String& line)
