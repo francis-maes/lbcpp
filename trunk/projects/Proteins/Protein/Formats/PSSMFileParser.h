@@ -26,7 +26,7 @@ public:
   virtual void parseBegin()
   {
     currentPosition = -3;
-    pssm = new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), AminoAcidDictionary::getInstance(), aminoAcidSequence->size());
+    pssm = new ScoreVectorSequence(name, AminoAcidDictionary::getInstance(), aminoAcidSequence->size(), AminoAcidDictionary::numAminoAcids + 2);
   }
 
   virtual bool parseLine(const String& line)
@@ -73,6 +73,7 @@ public:
       return false;
     }
 
+    double scores[AminoAcidDictionary::numAminoAcids];
     for (size_t i = 0; i < (size_t)AminoAcidDictionary::numAminoAcids; ++i)
     {
       int begin = 10 + i * 3;
@@ -89,8 +90,14 @@ public:
         Object::error(T("PSSMFileParser::parseLine"), T("Unknown amino acid: ") + aminoAcidsIndex[i]);
         return false;
       }
-      pssm->setScore(currentPosition, index, normalize(scoreI));
+      scores[index] = normalize(scoreI);
+      pssm->setScore(currentPosition, index, scores[index]);
     }
+
+    String gapScore = line.substring(153, 157).trim();
+    pssm->setScore(currentPosition, 20, gapScore.getDoubleValue());
+    
+    pssm->setScore(currentPosition, 21, entropy(scores));
 
     ++currentPosition;
     return true;
@@ -108,8 +115,17 @@ protected:
   std::vector<String> aminoAcidsIndex;
   int currentPosition;
   
-  inline double normalize(int score) const
+  double normalize(int score) const
     {return (score <= -5.0) ? 0.0 : (score >= 5.0) ? 1.0 : 0.5 + 0.1 * score;}
+  
+  double entropy(double values[AminoAcidDictionary::numAminoAcids]) const
+  {
+    double res = 0;
+    for (size_t i = 0; i < AminoAcidDictionary::numAminoAcids; ++i)
+      if (values[i])
+        res -= values[i] * log2(values[i]);
+    return res;
+  } 
 };
 
 }; /* namespace lbcpp */

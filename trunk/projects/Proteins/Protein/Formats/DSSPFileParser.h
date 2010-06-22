@@ -348,7 +348,7 @@ public:
     ** Amino Acid
     */
     size_t aminoAcidCode = AminoAcidDictionary::getTypeFromOneLetterCode(line.substring(13, 14).trim().getLastCharacter());
-    if (aminoAcidCode != aminoAcidSequence->getIndex(residueNumber))
+    if (aminoAcidCode != (size_t)aminoAcidSequence->getIndex(residueNumber))
     {
       Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + lbcpp::toString(aminoAcidCode));
       return false;

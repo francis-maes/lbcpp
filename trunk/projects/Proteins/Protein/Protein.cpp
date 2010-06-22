@@ -425,7 +425,7 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
   if (name == T("AminoAcidSequence"))
     return new LabelSequence(name, AminoAcidDictionary::getInstance(), n);
   else if (name == T("PositionSpecificScoringMatrix"))
-    return new ScoreVectorSequence(name, AminoAcidDictionary::getInstance(), n, AminoAcidDictionary::numAminoAcids);
+    return new ScoreVectorSequence(name, AminoAcidDictionary::getInstance(), n, AminoAcidDictionary::numAminoAcids + 2);
   else if (name == T("SecondaryStructureSequence"))
     return new LabelSequence(name, SecondaryStructureDictionary::getInstance(), n);
   else if (name == T("SecondaryStructureProbabilities"))
