@@ -154,7 +154,7 @@ void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
     ++counters.first;
 }
 
-double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score) const
+double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score, double& precision, double& recall) const
 {
   size_t truePositives = numPositives;
   size_t falsePositives = numNegatives;
@@ -171,6 +171,8 @@ double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score) const
     {
       bestF1Score = f1;
       bestThreshold = it->first;
+      recall = truePositives / (double)numPositives;
+      precision = truePositives / (double)(truePositives + falsePositives);
     }
     falsePositives -= it->second.first;
     truePositives -= it->second.second;

@@ -38,6 +38,7 @@ public:
       // top-level learning is beginning
       startingTime = Time::getMillisecondCounter();
       bestTrainContactMap = bestTestContactMap = 0.0;
+      iterationNumber = 0;
     }
     else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
     {
@@ -131,7 +132,7 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 
 InferenceOnlineLearnerPtr createOnlineLearner(const String& name, double initialLearningRate = 1.0)
 {
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/*logicalOr(
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
     maxIterationsStoppingCriterion(100),  
     maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -170,8 +171,8 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  //File workingDirectory(T("/Users/francis/tmp"));
+//  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  File workingDirectory(T("/Users/francis/tmp"));
 
   //File smallPDBDirectory = workingDirectory.getChildFile(T("SmallPDB"));
   //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));
@@ -183,7 +184,7 @@ int main(int argc, char** argv)
         smallPDBDirectory.getChildFile(T("smallProteinWithSS3DR")),
         smallPDBDirectory.getChildFile(T("protein")))->load();*/
 
-  ObjectContainerPtr smallPDBProteins = loadProteins(workingDirectory.getChildFile(T("L50DBC")));
+  ObjectContainerPtr smallPDBProteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
@@ -221,10 +222,13 @@ int main(int argc, char** argv)
   CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
   pairFeatureFunction->addSubFeatures(proteinUnitResiduePairFeature());
   pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, proteinUnitResiduePairFeature()));
-  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationDistanceResiduePairFeatures(4)));
+//  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationDistanceResiduePairFeatures(4)));
   pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(4)));
   pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
   pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
+
+  // structure:
+  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, contactMapResiduePairFeatures(T("ResidueResidueContactMatrix8Ca"), 10)));
 
   //pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(5)));
   //pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, proteinPointResiduePairFeatures(featureFunction)));
@@ -232,13 +236,14 @@ int main(int argc, char** argv)
   //pairFeatureFunction->addSubFeatures(separationLengthResiduePairFeatures(1));
 //  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(2)));
 
-  ProteinInferencePtr proteinInference = new ProteinInference();
-  proteinInference->appendInference(Inference::createFromFile(workingDirectory.getChildFile(T("Models//BBB.inference"))));
+//  ProteinInferencePtr proteinInference = new ProteinInference();
+//  proteinInference->appendInference(Inference::createFromFile(workingDirectory.getChildFile(T("Models//BBB.inference"))));
 //  proteinInference->appendInference(Inference::createFromFile(workingDirectory.getChildFile(T("Models//CM_CO.inference"))));
 
   ProteinInferencePtr learnedProteinInference = new ProteinInference();
 //  proteinInference->setPDBDebugDirectory(File(T("C:\\Projets\\LBC++\\projects\\temp\\pdbs")));
-  for (size_t i = 0; i < 1; ++i)
+  learnedProteinInference->setProteinDebugDirectory(workingDirectory.getChildFile(T("ProteinDebug")));
+  for (size_t i = 0; i < 5; ++i)
   {
     if (false)
     {
@@ -275,31 +280,23 @@ int main(int argc, char** argv)
                             T("ResidueResidueContactMatrix8Ca")));
     }
   }
-  proteinInference->appendInference(learnedProteinInference);
+//  proteinInference->appendInference(learnedProteinInference);
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
-  learningContext->appendCallback(new MyInferenceCallback(proteinInference, trainingData, testingData));
+  learningContext->appendCallback(new MyInferenceCallback(learnedProteinInference, trainingData, testingData));
 
-  InferenceBatchLearnerPtr learner;
-  // Exemple 1) Pour tout apprendre en global:
-  // learner = simulationInferenceBatchLearner();
-
-  // Exemple 2) Pour tout appendre en step by step:
-  //learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
-
-  // Exemple 3) Pour n'apprendre que le deuxieme step:
-  //             stepLearners[0] reste vide (on suppose que le premier step ‡ dÈja ÈtÈ appris)
-
-  std::vector<InferenceBatchLearnerPtr> contactMapLearners(2);
+/*  std::vector<InferenceBatchLearnerPtr> contactMapLearners(2);
   contactMapLearners[0] = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());;
-  contactMapLearners[1] = simulationInferenceBatchLearner();
+  contactMapLearners[1] = simulationInferenceBatchLearner();*/
 
-  std::vector<InferenceBatchLearnerPtr> stepLearners(2);
-  stepLearners[1] = vectorSequentialInferenceBatchLearner(contactMapLearners);
+/*  std::vector<InferenceBatchLearnerPtr> stepLearners(2);
+  stepLearners[0] = simulationInferenceBatchLearner(); //vectorSequentialInferenceBatchLearner(contactMapLearners);
+  stepLearners[1] = simulationInferenceBatchLearner(); //vectorSequentialInferenceBatchLearner(contactMapLearners);
 
-  learner = vectorSequentialInferenceBatchLearner(stepLearners);
+  InferenceBatchLearnerPtr learner = vectorSequentialInferenceBatchLearner(stepLearners);*/
+  InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
   
-  learningContext->train(learner, proteinInference, trainingData);
-  learnedProteinInference->saveToFile(workingDirectory.getChildFile(T("Models//CM.inference")));
+  learningContext->train(learner, learnedProteinInference, trainingData);
+  learnedProteinInference->saveToFile(workingDirectory.getChildFile(T("Models//CM-5Pass.inference")));
   return 0;
 }

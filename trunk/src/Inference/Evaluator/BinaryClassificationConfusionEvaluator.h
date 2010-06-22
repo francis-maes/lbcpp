@@ -91,16 +91,17 @@ public:
     if (!roc.getSampleCount())
       return String::empty;
 
-    double bestF1;
-    double bestThreshold = roc.findThresholdMaximisingF1(bestF1);
+    double bestF1, precision, recall;
+    double bestThreshold = roc.findThresholdMaximisingF1(bestF1, precision, recall);
 
-    return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
+    return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% prec = ") + String(precision * 100, 2) +
+            T("% recall = ") + String(recall * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
   }
 
   virtual double getDefaultScore() const
   {
-    double bestF1;
-    roc.findThresholdMaximisingF1(bestF1);
+    double bestF1, precision, recall;
+    roc.findThresholdMaximisingF1(bestF1, precision, recall);
     return bestF1;
   }
 

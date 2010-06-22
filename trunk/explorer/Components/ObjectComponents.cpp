@@ -27,8 +27,8 @@ public:
   virtual void objectSelectedCallback(ObjectPtr selected)
   {
     FeatureGeneratorPtr featureGenerator = selected.dynamicCast<FeatureGenerator>();
-    jassert(featureGenerator);
-    ObjectSelectorAndContentComponent::objectSelectedCallback(featureGenerator->toTable());
+    jassert(!selected || featureGenerator);
+    ObjectSelectorAndContentComponent::objectSelectedCallback(featureGenerator ? (ObjectPtr)featureGenerator->toTable() : ObjectPtr());
   }
 };
 

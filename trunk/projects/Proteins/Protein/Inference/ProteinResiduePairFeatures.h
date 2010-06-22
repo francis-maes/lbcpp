@@ -33,6 +33,8 @@ extern ProteinResiduePairFeaturesPtr proteinPositionIndexResiduePairFeature();
 
 extern ProteinResiduePairFeaturesPtr separationLengthResiduePairFeatures(size_t intervalsPerLog10 = 5);
 extern ProteinResiduePairFeaturesPtr separationDistanceResiduePairFeatures(size_t intervalsPerLog10 = 2);
+extern ProteinResiduePairFeaturesPtr contactMapResiduePairFeatures(const String& contactMapName, size_t size = 5);
+
 
 enum ResiduePairConjunctionType
 {

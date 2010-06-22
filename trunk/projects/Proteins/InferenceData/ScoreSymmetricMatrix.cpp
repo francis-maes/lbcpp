@@ -39,7 +39,7 @@ ScoreSymmetricMatrixPtr ScoreSymmetricMatrix::makeProbabilityMatrix(const String
 
 static inline String scoreToStringFixedSize(double value, int fixedSize)
 {
-  String str(value, 1);
+  String str(value, 3);
   while (str.length() < fixedSize)
     str += T(" ");
   return str;

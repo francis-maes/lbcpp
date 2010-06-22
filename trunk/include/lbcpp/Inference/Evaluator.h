@@ -115,7 +115,7 @@ public:
   ROCAnalyse() : numPositives(0), numNegatives(0) {}
 
   void addPrediction(double predictedScore, bool isPositive);
-  double findThresholdMaximisingF1(double& bestF1Score) const;
+  double findThresholdMaximisingF1(double& bestF1Score, double& precision, double& recall) const;
   double findThresholdMaximisingRecallGivenPrecision(double minimumPrecision, double& recall) const;
 
   void getScores(std::vector< std::pair<String, double> >& res) const;

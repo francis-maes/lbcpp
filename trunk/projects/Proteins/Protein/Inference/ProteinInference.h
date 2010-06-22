@@ -78,8 +78,10 @@ public:
       ProteinPtr correctProtein = state->getSupervision().dynamicCast<Protein>();
       jassert(correctProtein);
       correctProtein->computeMissingFields();
-      if (pdbDebugDirectory.exists() && correctProtein && correctProtein->getTertiaryStructure())
+      if (pdbDebugDirectory.exists() && correctProtein->getTertiaryStructure())
         correctProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.pdb")));
+      if (proteinDebugDirectory.exists())
+        correctProtein->saveToFile(proteinDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.protein")));
     }
     return state->getInput();
   }
@@ -97,59 +99,26 @@ public:
       workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
         (workingProtein->getName() + T("_pred") + lbcpp::toString(state->getCurrentStepNumber()) + T(".pdb")));
 
+    if (proteinDebugDirectory.exists())
+      workingProtein->saveToFile(proteinDebugDirectory.getChildFile
+        (workingProtein->getName() + T("_pred") + lbcpp::toString(state->getCurrentStepNumber()) + T(".protein")));
+
     return workingProtein;
   }
 
   void setPDBDebugDirectory(const File& directory)
     {pdbDebugDirectory = directory;}
-
-#if 0
-  // child inference are all of the form
-  // Protein -> Protein sub object
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    
+  void setProteinDebugDirectory(const File& directory)
   {
-    // working proteins
-    ProteinPtr workingProtein = input.dynamicCast<Protein>();
-    jassert(workingProtein);
-    
-    // supervision
-    ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
-    if (correctProtein)
-      correctProtein->computeMissingFields();
-    
-    /*std::cout << "Input protein = " << lbcpp::toString(workingProtein->getKeys()) << std::endl;
-    if (correctProtein)
-      std::cout << "Correct protein = " << lbcpp::toString(correctProtein->getKeys()) << std::endl;*/
-    
-    if (pdbDebugDirectory.exists() && correctProtein && correctProtein->getTertiaryStructure())
-      correctProtein->saveToPDBFile(pdbDebugDirectory.getChildFile(correctProtein->getName() + T("_correct.pdb")));
-
-    // main inference loop
-    for (size_t i = 0; i < subInferences.size(); ++i)
-    {
-      InferencePtr inferenceStep = subInferences.get(i);
-
-      ObjectPtr inferenceOutput = context->runInference(inferenceStep, workingProtein, correctProtein, returnCode);
-      jassert(inferenceOutput);
-      //std::cout << "INFERED: " << inferenceOutput->toString() << std::endl;
-      workingProtein = addObjectToProtein(workingProtein, inferenceOutput, correctProtein);
-      
-      if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
-        workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
-          (workingProtein->getName() + T("_pred") + lbcpp::toString(i) + T(".pdb")));
-
-      if (returnCode != finishedReturnCode)
-        break;
-    }
-
-    // return the last version of the working protein
-    jassert(workingProtein);
-    return workingProtein;
+    proteinDebugDirectory = directory;
+    if (!directory.exists())
+      directory.createDirectory();
   }
-#endif // 0
 
 private:
   File pdbDebugDirectory;
+  File proteinDebugDirectory;
 
   static ProteinPtr addObjectToProtein(ProteinPtr workingProtein, ObjectPtr newObject, ProteinPtr correctProtein)
   {
