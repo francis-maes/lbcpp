@@ -35,9 +35,8 @@ protected:
     {return finishedReturnCode;}
 };
 
-extern InferenceBatchLearnerPtr simulationInferenceBatchLearner();
-extern InferenceBatchLearnerPtr sharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner);
-extern InferenceBatchLearnerPtr vectorSequentialInferenceBatchLearner(const std::vector<InferenceBatchLearnerPtr>& subLearners);
+extern InferenceBatchLearnerPtr simulationInferenceLearner();
+extern InferenceBatchLearnerPtr sequentialInferenceLearner();
 
 }; /* namespace lbcpp */
 

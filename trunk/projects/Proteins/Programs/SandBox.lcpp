@@ -70,10 +70,14 @@ public:
       InferenceContextPtr validationContext = singleThreadedInferenceContext();
       ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
       validationContext->appendCallback(evaluation);
-      validationContext->runWithSupervisedExamples(inference, trainingData);
+      
+      runOnSupervisedExamplesInference(inference)->run(inferenceContext, trainingData, ObjectPtr(), returnCode);
       processResults(evaluation, true);
-      validationContext->runWithSupervisedExamples(inference, testingData);
-      processResults(evaluation, false);
+      
+      evaluation->reset();
+
+      runOnSupervisedExamplesInference(inference)->run(inferenceContext, testingData, ObjectPtr(), returnCode);
+      processResults(evaluation, false);      
     }
     else if (stack->getDepth() == 1)
     {
@@ -228,7 +232,7 @@ int main(int argc, char** argv)
   pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
 
   // structure:
-  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, contactMapResiduePairFeatures(T("ResidueResidueContactMatrix8Ca"), 10)));
+  pairFeatureFunction->addSubFeatures(/*conjunctionResiduePairFeatures(aaResiduePairConjunction,*/ contactMapResiduePairFeatures(T("ResidueResidueContactMatrix8Ca"), 10));
 
   //pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(5)));
   //pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, proteinPointResiduePairFeatures(featureFunction)));
@@ -275,28 +279,13 @@ int main(int argc, char** argv)
         new ProteinContactMapInference(T("CM Pass ") + lbcpp::toString(i),
                             createBinaryClassifier(T("CM")),
                             pairFeatureFunction,
-                            createLeastSquaresRegressor(T("CM-Threshold")),
-                            proteinUnitResidueGlobalFeature(),
                             T("ResidueResidueContactMatrix8Ca")));
     }
   }
-//  proteinInference->appendInference(learnedProteinInference);
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
   learningContext->appendCallback(new MyInferenceCallback(learnedProteinInference, trainingData, testingData));
-
-/*  std::vector<InferenceBatchLearnerPtr> contactMapLearners(2);
-  contactMapLearners[0] = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());;
-  contactMapLearners[1] = simulationInferenceBatchLearner();*/
-
-/*  std::vector<InferenceBatchLearnerPtr> stepLearners(2);
-  stepLearners[0] = simulationInferenceBatchLearner(); //vectorSequentialInferenceBatchLearner(contactMapLearners);
-  stepLearners[1] = simulationInferenceBatchLearner(); //vectorSequentialInferenceBatchLearner(contactMapLearners);
-
-  InferenceBatchLearnerPtr learner = vectorSequentialInferenceBatchLearner(stepLearners);*/
-  InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
-  
-  learningContext->train(learner, learnedProteinInference, trainingData);
+  learningContext->train(learnedProteinInference, trainingData);
   learnedProteinInference->saveToFile(workingDirectory.getChildFile(T("Models//CM-5Pass.inference")));
   return 0;
 }

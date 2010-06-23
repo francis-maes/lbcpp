@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
 
 /*

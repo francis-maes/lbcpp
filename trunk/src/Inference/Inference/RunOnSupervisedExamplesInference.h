@@ -16,6 +16,9 @@
 namespace lbcpp
 {
  
+// Input: (Input, Supervision) ObjectContainer
+// Supervision: None
+// Output: None
 class RunOnSupervisedExamplesInference : public ParallelInference
 {
 public:

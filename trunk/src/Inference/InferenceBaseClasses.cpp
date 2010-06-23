@@ -21,7 +21,8 @@ ObjectPtr ParameterizedInference::clone() const
   ParameterizedInferencePtr res = createAndCast<ParameterizedInference>(getClassName());
   jassert(res);
   res->parameters = parameters ? parameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
-  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->onlineLearner = onlineLearner ? onlineLearner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->batchLearner = batchLearner;
   res->name = name;
   return res;
 }
@@ -134,7 +135,8 @@ ObjectPtr DecoratorInference::clone() const
 {
   DecoratorInferencePtr res = createAndCast<DecoratorInference>(getClassName());
   res->decorated = decorated->clone().dynamicCast<Inference>();
-  res->learner = learner ? learner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->onlineLearner = onlineLearner ? onlineLearner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
+  res->batchLearner = batchLearner;
   res->name = name;
   return res;
 }

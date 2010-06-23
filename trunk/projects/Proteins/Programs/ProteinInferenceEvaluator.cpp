@@ -63,7 +63,7 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    if (stack->getDepth() == 1)
+    if (stack->getDepth() == 2)
     {
       File f = directory.getChildFile(output->getName() + T(".") + extension);
       std::cout << "Save " << f.getFileName() << "." << std::endl;
@@ -85,7 +85,7 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
-    if (stack->getDepth() == 1)
+    if (stack->getDepth() == 2)
     {
       File f = directory.getChildFile(output->getName() + T(".") + extension);
       std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
@@ -195,7 +195,9 @@ int main(int argc, char** argv)
     if (mode == T("AllSavePair"))
       inferenceContext->appendCallback(new SaveProteinPairInferenceCallback(outputDirectory, T("proteinPair")));
     std::cout << "Making predictions..." << std::endl;
-    inferenceContext->runWithSupervisedExamples(inference, proteins);
+
+    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+    runOnSupervisedExamplesInference(inference)->run(inferenceContext, proteins, ObjectPtr(), returnCode);
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else if (mode == T("StepByStep"))
@@ -216,15 +218,10 @@ int main(int argc, char** argv)
         decoratedInference = inference;
       }
       
-      inferenceContext->runWithSupervisedExamples(decoratedInference, proteins);
+      Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+      runOnSupervisedExamplesInference(decoratedInference)->run(inferenceContext, proteins, ObjectPtr(), returnCode);
       std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
-  }
-  else if (mode == T("AllSave") || mode == T("AllSavePair"))
-  {
-    std::cout << "Making predictions..." << std::endl;
-    inferenceContext->runWithSupervisedExamples(inference, proteins);
-    std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else
   {

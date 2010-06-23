@@ -24,15 +24,10 @@ public:
   virtual ObjectPtr runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
   virtual ObjectPtr runParallelInference(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
   
-  virtual ReturnCode train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples);
+  virtual ReturnCode train(InferencePtr inference, ObjectContainerPtr examples);
 
   virtual SequentialInferenceStatePtr makeSequentialInferenceInitialState(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
   virtual void makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, ObjectPtr subOutput, ReturnCode& returnCode);
-
-
-  // old:
-  virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
-  virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples) = 0;
 
   /*
   ** Inference Callbacks
@@ -42,8 +37,6 @@ public:
   void clearCallbacks();
 
 protected:
-  void callStartInferences(size_t count);
-  void callFinishInferences();
   void callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode);
   void callPostInference(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
     
