@@ -47,12 +47,12 @@ public:
     valine,           // V  -  Val
     
     // 3 ambiguous amino acids
-    asparagineOrAsparticAcid,
-    glutamineOrGlutamicAcid,
-    lecineOrIsoleucine,
+    asparagineOrAsparticAcid, // B (gap)
+    glutamineOrGlutamicAcid,  // Z (entropy)
+    lecineOrIsoleucine,       // J
 
     // unspecified or unknown amino acid
-    unknown
+    unknown                   // X
   };
 
   enum
