@@ -197,7 +197,7 @@ int main(int argc, char** argv)
     std::cout << "Making predictions..." << std::endl;
 
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    runOnSupervisedExamplesInference(inference)->run(inferenceContext, proteins, ObjectPtr(), returnCode);
+    inferenceContext->runInference(runOnSupervisedExamplesInference(inference), proteins, ObjectPtr(), returnCode);
     std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else if (mode == T("StepByStep"))
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
       }
       
       Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      runOnSupervisedExamplesInference(decoratedInference)->run(inferenceContext, proteins, ObjectPtr(), returnCode);
+      inferenceContext->runInference(runOnSupervisedExamplesInference(decoratedInference), proteins, ObjectPtr(), returnCode);
       std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
   }

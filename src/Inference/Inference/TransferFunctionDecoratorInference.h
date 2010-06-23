@@ -21,7 +21,7 @@ public:
     : DecoratorInference(name, regressionStep), transferFunction(transferFunction) {}
   TransferFunctionDecoratorInference() {}
   
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     if (supervision)
     {
@@ -29,16 +29,18 @@ public:
       jassert(loss);
       supervision = transferFunction->composeWith(loss);
     }
-    ObjectPtr result = DecoratorInference::run(context, input, supervision, returnCode);
-    if (result)
-    {
-      ScalarPtr scalarResult = result.dynamicCast<Scalar>();
-      jassert(scalarResult);
-      result = new Scalar(transferFunction->compute(scalarResult->getValue()));
-    }
-    return result;
+    return std::make_pair(input, supervision);
   }
-
+    
+  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  {
+    if (!subInferenceOutput)
+      return ObjectPtr();
+    ScalarPtr scalarResult = subInferenceOutput.dynamicCast<Scalar>();
+    jassert(scalarResult);
+    return new Scalar(transferFunction->compute(scalarResult->getValue()));
+  }
+  
 protected:
   ScalarFunctionPtr transferFunction;
 

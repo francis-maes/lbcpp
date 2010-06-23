@@ -59,11 +59,11 @@ public:
     InferenceContextPtr validationContext = singleThreadedInferenceContext();
 
     validationContext->appendCallback(trainingEvaluation);
-    runOnSupervisedExamplesInference(inference)->run(validationContext, trainingData, ObjectPtr(), returnCode);
+    validationContext->runInference(runOnSupervisedExamplesInference(inference), trainingData, ObjectPtr(), returnCode);
     validationContext->removeCallback(trainingEvaluation);
 
     validationContext->appendCallback(testingEvaluation);
-    runOnSupervisedExamplesInference(inference)->run(validationContext, testingData, ObjectPtr(), returnCode);
+    validationContext->runInference(runOnSupervisedExamplesInference(inference), testingData, ObjectPtr(), returnCode);
   }
   
   String getTarget() const

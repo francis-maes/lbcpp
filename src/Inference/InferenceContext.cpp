@@ -18,10 +18,8 @@ using namespace lbcpp;
 /*
 ** InferenceContext
 */
-ObjectPtr InferenceContext::runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-{
-  return inference->run(InferenceContextPtr(this), input, supervision, returnCode);
-}
+ObjectPtr InferenceContext::callRunInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {return inference->run(InferenceContextPtr(this), input, supervision, returnCode);}
 
 SequentialInferenceStatePtr InferenceContext::makeSequentialInferenceInitialState(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
@@ -51,6 +49,26 @@ void InferenceContext::makeSequentialInferenceNextState(SequentialInferencePtr i
   state->incrementStepNumber();
 }
 
+ObjectPtr InferenceContext::runDecoratorInference(DecoratorInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+{
+  std::pair<ObjectPtr, ObjectPtr> inputAndSupervision = inference->prepareSubInference(input, supervision, returnCode);
+  if (returnCode != Inference::finishedReturnCode)
+    return ObjectPtr();
+  
+  InferencePtr subInference = inference->getSubInference();
+  if (!subInference)
+  {
+    returnCode = Inference::errorReturnCode;
+    return ObjectPtr();
+  }
+  
+  ObjectPtr subOutput = runInference(subInference, inputAndSupervision.first, inputAndSupervision.second, returnCode);
+  if (returnCode != Inference::finishedReturnCode)
+    return ObjectPtr();
+  
+  return inference->finalizeSubInference(input, supervision, subOutput, returnCode);
+}
+
 ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = makeSequentialInferenceInitialState(inference, input, supervision, returnCode);
@@ -58,11 +76,11 @@ ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr infere
     return ObjectPtr();
   while (!state->isFinal())
   {
-    ObjectPairPtr currentInputAndSupervision = inference->prepareSubInference(state, returnCode);
+    std::pair<ObjectPtr, ObjectPtr> currentInputAndSupervision = inference->prepareSubInference(state, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return state->getCurrentObject();
 
-    ObjectPtr subOutput = runInference(state->getCurrentSubInference(), currentInputAndSupervision->getFirst(), currentInputAndSupervision->getSecond(), returnCode);
+    ObjectPtr subOutput = runInference(state->getCurrentSubInference(), currentInputAndSupervision.first, currentInputAndSupervision.second, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return state->getCurrentObject();
 
@@ -144,7 +162,7 @@ public:
     if (returnCode == Inference::canceledReturnCode)
       {jassert(output);}
     else if (!output)
-      output = InferenceContext::runInference(inference, input, supervision, returnCode);  
+      output = callRunInference(inference, input, supervision, returnCode);  
 
     callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();

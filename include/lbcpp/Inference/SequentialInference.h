@@ -73,8 +73,8 @@ public:
 
   virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
 
-  virtual ObjectPairPtr prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
-    {return new ObjectPair(state->getCurrentObject(), state->getSupervision());}
+  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+    {return std::make_pair(state->getCurrentObject(), state->getSupervision());}
   
   virtual ObjectPtr finalizeSubInference(SequentialInferenceStatePtr state, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
     {return subInferenceOutput;}

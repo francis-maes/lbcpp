@@ -23,6 +23,23 @@ public:
     : Inference(name), decorated(decorated) {}
   DecoratorInference() {}
  
+  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return std::make_pair(input, supervision);}
+    
+  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+    {return subInferenceOutput;}
+ 
+  /*
+  ** Inference
+  */
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return context->runDecoratorInference(DecoratorInferencePtr(this), input, supervision, returnCode);}
+
+  InferencePtr getSubInference() const
+    {return decorated;}
+
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
+ 
   /*
   ** Object
   */
@@ -30,16 +47,6 @@ public:
   virtual bool loadFromFile(const File& file);
   virtual bool saveToFile(const File& file) const;
   virtual ObjectPtr clone() const;
-
-  /*
-  ** Inference
-  */
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-
-  InferencePtr getDecoratedInference() const
-    {return decorated;}
-
-  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 
 protected:
   InferencePtr decorated;
