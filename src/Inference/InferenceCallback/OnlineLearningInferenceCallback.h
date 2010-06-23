@@ -24,9 +24,9 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
     InferencePtr inference = stack->getCurrentInference();
-    if (inference->getLearner() && supervision)
+    if (inference->getOnlineLearner() && supervision)
     {
-      InferenceOnlineLearnerPtr learner = inference->getLearner();
+      InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
       {
         learners[inference] = learner;

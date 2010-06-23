@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinTargetInferenceHelper.h   | A base class for simplying      |
+| Filename: ProteinTargetInferenceHelper.h | A base class for simplying      |
 | Author  : Francis Maes                   |  protein InferenceSteps         |
 | Started : 23/04/2010 12:59               |                                 |
 `------------------------------------------/                                 |
@@ -28,6 +28,9 @@ public:
 
   void setTargetName(const String& targetName)
     {this->targetName = targetName;}
+    
+  String getSupervisionName() const
+    {return supervisionName;}
 
 protected:
   String targetName;

@@ -73,23 +73,15 @@ ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr infere
   return inference->finalizeInference(state, returnCode);
 }
 
-Inference::ReturnCode InferenceContext::train(InferenceBatchLearnerPtr learner, InferencePtr inference, ObjectContainerPtr examples)
+Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
+  InferenceBatchLearnerPtr learner = inference->getBatchLearner();
+  jassert(learner);
+  if (!learner)
+    return Inference::errorReturnCode;
   runInference(learner, inference, examples, res);
   return res;
-}
-
-void InferenceContext::callStartInferences(size_t count)
-{
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->startInferencesCallback(count);
-}
-
-void InferenceContext::callFinishInferences()
-{
-  for (int i = (int)callbacks.size() - 1; i >= 0; --i)
-    callbacks[i]->finishInferencesCallback();
 }
 
 void InferenceContext::callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
@@ -125,9 +117,6 @@ class DefaultInferenceContext : public InferenceContext
 public:
   virtual String getName() const
     {return getClassName();}
-
-  virtual ReturnCode runWithUnsupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
-    {return runWithSupervisedExamples(inference, examples->apply(new ObjectToObjectPairFunction(true, false)));}
 };
 
 /*
@@ -138,24 +127,6 @@ class SingleThreadedInferenceContext : public DefaultInferenceContext
 public:
   SingleThreadedInferenceContext()
     : stack(new InferenceStack()) {}
-
-  virtual ReturnCode runWithSupervisedExamples(InferencePtr inference, ObjectContainerPtr examples)
-  {
-    callStartInferences(examples->size());
-    
-    ReturnCode returnCode = Inference::finishedReturnCode;
-    for (size_t i = 0; i < examples->size(); ++i)
-    {
-      ObjectPairPtr example = examples->get(i).dynamicCast<ObjectPair>();
-      jassert(example);
-      runInference(inference, example->getFirst(), example->getSecond(), returnCode);
-      if (returnCode == Inference::errorReturnCode)
-        break;
-      returnCode = Inference::finishedReturnCode;
-    }
-    callFinishInferences();
-    return returnCode;
-  }
 
   virtual ObjectPtr runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {

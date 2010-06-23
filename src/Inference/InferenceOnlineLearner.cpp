@@ -97,11 +97,8 @@ void declareInferenceOnlineLearnerClasses()
 #include "InferenceBatchLearner/SimulationInferenceBatchLearner.h"
 #include "InferenceBatchLearner/SequentialInferenceBatchLearner.h"
 
-InferenceBatchLearnerPtr lbcpp::simulationInferenceBatchLearner()
+InferenceBatchLearnerPtr lbcpp::simulationInferenceLearner()
   {return new SimulationInferenceBatchLearner();}
 
-InferenceBatchLearnerPtr lbcpp::sharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner)
-  {return new SharedSequentialInferenceBatchLearner(subLearner);}
-
-InferenceBatchLearnerPtr lbcpp::vectorSequentialInferenceBatchLearner(const std::vector<InferenceBatchLearnerPtr>& subLearners)
-  {return new VectorSequentialInferenceBatchLearner(subLearners);}
+InferenceBatchLearnerPtr lbcpp::sequentialInferenceLearner()
+  {return new SequentialInferenceBatchLearner();}

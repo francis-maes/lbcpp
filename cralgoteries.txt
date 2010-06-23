@@ -15,11 +15,7 @@ Inference:
  * Apprentissage avec couche cachée
  
 Proteins: 
- * ContactMap prediction
  * ParallelProteinInference
-
-Explorer:
- * finir selection multiple
 
 ======
 

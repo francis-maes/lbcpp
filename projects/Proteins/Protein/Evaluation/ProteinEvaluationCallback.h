@@ -379,15 +379,21 @@ typedef ReferenceCountedObjectPtr<ProteinEvaluator> ProteinEvaluatorPtr;
 class ProteinEvaluationCallback : public InferenceCallback
 {
 public:
-  virtual void startInferencesCallback(size_t count)
-    {evaluator = new ProteinEvaluator();}
-
+  ProteinEvaluationCallback()
+    {reset();}
+    
   virtual String toString() const
     {return evaluator ? evaluator->toString() : T("N/A");}
+
+  void reset()
+    {evaluator = new ProteinEvaluator();}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
+      jassert(stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"));
+      
+    if (stack->getDepth() == 2)
     {
       // top-level inference is finished
       jassert((!output || output.dynamicCast<Protein>()) && (!supervision || supervision.dynamicCast<Protein>()));

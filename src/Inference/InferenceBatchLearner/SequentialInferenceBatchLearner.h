@@ -18,8 +18,6 @@ namespace lbcpp
 class SequentialInferenceBatchLearner : public InferenceBatchLearner
 {
 public:
-  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t stepNumber) const = 0;
- 
   virtual ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
   {
     size_t numTrainingExamples = trainingData->size();
@@ -43,8 +41,6 @@ public:
     size_t stepNumber = 0;
     while (true)
     {
-      InferenceBatchLearnerPtr subLearner = getSubLearner(inference, stepNumber);
-
       // make sub-training data 
       VectorObjectContainerPtr subTrainingData = new VectorObjectContainer();
       subTrainingData->resize(numTrainingExamples);
@@ -56,17 +52,17 @@ public:
         subTrainingData->set(i, subExample);
       }
 
-      // apply sub-learner if it exists
-      if (subLearner)
-      {
-        jassert(currentStates.size());
-        InferencePtr subInference = currentStates[0]->getCurrentSubInference();
+      // get sub-inference and sub-learner
+      InferencePtr subInference = currentStates[0]->getCurrentSubInference();
 #ifdef JUCE_DEBUG
-        for (size_t i = 1; i < currentStates.size(); ++i)
-          jassert(currentStates[i]->getCurrentSubInference() == subInference);
+      for (size_t i = 1; i < currentStates.size(); ++i)
+        jassert(currentStates[i]->getCurrentSubInference() == subInference);
 #endif // JUCE_DEBUG
 
-        ReturnCode res = context->train(subLearner, subInference, subTrainingData);
+      // apply sub-learner if it exists
+      if (subInference->getBatchLearner())
+      {
+        ReturnCode res = context->train(subInference, subTrainingData);
         if (res != finishedReturnCode)
           return res;
       }
@@ -89,32 +85,6 @@ public:
       ++stepNumber;
     }
   }
-};
-
-class SharedSequentialInferenceBatchLearner : public SequentialInferenceBatchLearner
-{
-public:
-  SharedSequentialInferenceBatchLearner(InferenceBatchLearnerPtr subLearner)
-    : subLearner(subLearner) {}
-
-  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t stepNumber) const
-    {return subLearner;}
-
-protected:
-  InferenceBatchLearnerPtr subLearner;
-};
-
-class VectorSequentialInferenceBatchLearner : public SequentialInferenceBatchLearner
-{
-public:
-  VectorSequentialInferenceBatchLearner(const std::vector<InferenceBatchLearnerPtr>& subLearners)
-    : subLearners(subLearners) {}
-
-  virtual InferenceBatchLearnerPtr getSubLearner(SequentialInferencePtr inference, size_t stepNumber) const
-    {jassert(stepNumber < subLearners.size()); return subLearners[stepNumber];}
-
-protected:
-  std::vector<InferenceBatchLearnerPtr> subLearners;
 };
 
 }; /* namespace lbcpp */

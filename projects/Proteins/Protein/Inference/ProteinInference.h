@@ -69,7 +69,7 @@ class ProteinInference : public VectorSequentialInference
 {
 public:
   ProteinInference() : VectorSequentialInference(T("Protein"))
-    {}
+    {setBatchLearner(sequentialInferenceLearner());}
 
   virtual ObjectPtr prepareInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
   {

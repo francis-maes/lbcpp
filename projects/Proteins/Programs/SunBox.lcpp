@@ -59,12 +59,11 @@ public:
     InferenceContextPtr validationContext = singleThreadedInferenceContext();
 
     validationContext->appendCallback(trainingEvaluation);
-    validationContext->runWithSupervisedExamples(inference, trainingData);
-
+    runOnSupervisedExamplesInference(inference)->run(validationContext, trainingData, ObjectPtr(), returnCode);
     validationContext->removeCallback(trainingEvaluation);
 
     validationContext->appendCallback(testingEvaluation);
-    validationContext->runWithSupervisedExamples(inference, testingData);
+    runOnSupervisedExamplesInference(inference)->run(validationContext, testingData, ObjectPtr(), returnCode);
   }
   
   String getTarget() const
@@ -504,11 +503,11 @@ int main(int argc, char** argv)
     }
   }
   
-  InferenceBatchLearnerPtr learner;
+  //InferenceBatchLearnerPtr learner;
   
   if (inputInference != File::nonexistent)
   {
-    std::vector<InferenceBatchLearnerPtr> stepLearners(proteinInference->getNumSubInferences());
+   // std::vector<InferenceBatchLearnerPtr> stepLearners(proteinInference->getNumSubInferences());
     std::cout << "Loading inference ..." << std::endl;
 
     size_t i = 0;
@@ -524,18 +523,16 @@ int main(int argc, char** argv)
       proteinInference->setSubInference(i, inference);
       std::cout << "Inference " << f.getFileName().quoted() << " loaded !" << std::endl;
     }
-    // set a learner for the reminder inferences
+    /* set a learner for the reminder inferences
     for (; i < proteinInference->getNumSubInferences(); ++i)
     {
-      stepLearners[i] = simulationInferenceBatchLearner();
+      stepLearners[i] = simulationInferenceLearner();
     }
 
-    learner = vectorSequentialInferenceBatchLearner(stepLearners);
-  } else {
-    learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
-  }
-
-  //InferenceBatchLearnerPtr learner = sharedSequentialInferenceBatchLearner(simulationInferenceBatchLearner());
+    learner = vectorSequentialInferenceBatchLearner(stepLearners);*/
+  }/* else {
+    learner = sharedSequentialInferenceBatchLearner(simulationInferenceLearner());
+  }*/
 
   InferenceContextPtr learningContext = singleThreadedInferenceContext();
   EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
@@ -548,7 +545,7 @@ int main(int argc, char** argv)
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("TertiaryStructure"), T("BackboneBondSequence")));
   learningContext->appendCallback(evaluationCallback); // must be the last callback
 
-  learningContext->train(learner, proteinInference, trainingData);
+  learningContext->train(proteinInference, trainingData);
 
   if (saveInference)
     proteinInference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output));

@@ -371,9 +371,9 @@ public:
     {
       i += di;
       j += dj;
-      featureScope(iteration + 1)
+      featureScope(iteration)
       {
-        if (i >= 0 && j >= 0 && i < n && j < n)
+/*        if (i >= 0 && j >= 0 && i < n && j < n)
         {
           if (matrix->hasScore(i, j))
             featureSense("A", matrix->getScore(i, j));
@@ -381,7 +381,19 @@ public:
             featureSense("N/A");
         }
         else
-          featureSense("OOB");
+          featureSense("OOB");*/
+        if (i >= 0 && j >= 0 && i < n && j < n)
+        {
+          if (matrix->hasScore(i, j))
+          {
+            size_t discretized = (size_t)(juce::jmax(0.0, matrix->getScore(i, j)) * 5);
+            featureSense(2 + discretized);
+          }
+          else
+            featureSense(1);
+        }
+        else
+          featureSense(0);
       }
     }
   }

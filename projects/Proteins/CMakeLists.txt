@@ -65,6 +65,7 @@ SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
   Protein/Inference/ProteinTertiaryStructureInference.h
   Protein/Inference/Protein2DTargetInference.h
   Protein/Inference/ProteinContactMapInference.h
+  Protein/Inference/ProteinContactMapInference.cpp
   Protein/Inference/ProteinInference.h
 )
 

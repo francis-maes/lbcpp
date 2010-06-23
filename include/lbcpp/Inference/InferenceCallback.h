@@ -20,12 +20,6 @@ class InferenceCallback : public Object
 public:
   typedef Inference::ReturnCode ReturnCode;
 
-  virtual void startInferencesCallback(size_t count)
-    {}
-
-  virtual void finishInferencesCallback()
-    {}
-
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
   // the function may also set a returnCode != Inference::finishedReturnCode to skip the inference step
@@ -46,7 +40,6 @@ public:
     : inference(inference), learner(learner) {}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
-  virtual void finishInferencesCallback();
 
 private:
   InferencePtr inference;

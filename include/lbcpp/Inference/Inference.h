@@ -38,20 +38,25 @@ public:
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
   /*
-  ** Learner
+  ** Learners
   */
-  InferenceOnlineLearnerPtr getLearner() const
-    {return learner;}
+  InferenceOnlineLearnerPtr getOnlineLearner() const
+    {return onlineLearner;}
 
-  void setLearner(InferenceOnlineLearnerPtr learner)
-    {this->learner = learner;}
+  void setOnlineLearner(InferenceOnlineLearnerPtr learner)
+    {this->onlineLearner = learner;}
+
+  InferenceBatchLearnerPtr getBatchLearner() const
+    {return batchLearner;}
+    
+  void setBatchLearner(InferenceBatchLearnerPtr batchLearner)
+    {this->batchLearner = batchLearner;}
 
 protected:
   friend class InferenceContext;
 
-  InferenceOnlineLearnerPtr learner;
-
-  // todo: save learner
+  InferenceOnlineLearnerPtr onlineLearner;
+  InferenceBatchLearnerPtr batchLearner;
 };
 
 // Atomic

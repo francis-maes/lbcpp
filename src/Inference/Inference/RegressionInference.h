@@ -43,7 +43,7 @@ class SquareRegressionInference : public RegressionInference
 public:
   SquareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
-    {decorated->setLearner(learner);}
+    {decorated->setOnlineLearner(learner);}
 
   SquareRegressionInference() {}
   
@@ -56,7 +56,7 @@ class AngleRegressionInference : public RegressionInference
 public:
   AngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
-    {decorated->setLearner(learner);}
+    {decorated->setOnlineLearner(learner);}
 
   AngleRegressionInference() {}
   
@@ -69,7 +69,7 @@ class AbsoluteRegressionInference : public RegressionInference
 public:
   AbsoluteRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
     : RegressionInference(name, linearScalarInference(name))
-    {decorated->setLearner(learner);}
+    {decorated->setOnlineLearner(learner);}
 
   AbsoluteRegressionInference() {}
   
