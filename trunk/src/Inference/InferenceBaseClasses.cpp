@@ -141,17 +141,6 @@ ObjectPtr DecoratorInference::clone() const
   return res;
 }
 
-ObjectPtr DecoratorInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-{
-  if (decorated)
-    return context->runInference(decorated, input, supervision, returnCode);
-  else
-  {
-    returnCode = Inference::errorReturnCode;
-    return ObjectPtr();
-  }
-}
-
 void DecoratorInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
 {
   subObjects.resize(1);

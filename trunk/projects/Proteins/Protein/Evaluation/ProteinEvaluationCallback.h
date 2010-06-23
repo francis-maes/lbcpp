@@ -395,7 +395,6 @@ public:
       
     if (stack->getDepth() == 2)
     {
-      // top-level inference is finished
       jassert((!output || output.dynamicCast<Protein>()) && (!supervision || supervision.dynamicCast<Protein>()));
       if (output && supervision)
         evaluator->addPrediction(output, supervision);

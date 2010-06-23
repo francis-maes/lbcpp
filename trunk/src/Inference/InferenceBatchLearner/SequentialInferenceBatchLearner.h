@@ -46,10 +46,10 @@ public:
       subTrainingData->resize(numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
       {
-        ObjectPairPtr subExample = inference->prepareSubInference(currentStates[i], returnCode);
+        std::pair<ObjectPtr, ObjectPtr> subExample = inference->prepareSubInference(currentStates[i], returnCode);
         if (returnCode != finishedReturnCode)
           return returnCode;
-        subTrainingData->set(i, subExample);
+        subTrainingData->set(i, new ObjectPair(subExample.first, subExample.second));
       }
 
       // get sub-inference and sub-learner

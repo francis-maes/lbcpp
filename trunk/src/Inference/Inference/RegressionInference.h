@@ -28,13 +28,13 @@ public:
     DecoratorInference::setName(name);
     decorated->setName(name + T(" score"));
   }
-  
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+
+  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
     ScalarPtr target = supervision.dynamicCast<Scalar>();
     jassert(!supervision || target);
     ScalarFunctionPtr lossFunction = target ? getLoss(target->getValue()) : ScalarFunctionPtr();
-    return DecoratorInference::run(context, input, lossFunction, returnCode);
+    return std::make_pair(input, lossFunction);
   }
 };
 

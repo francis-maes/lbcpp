@@ -29,11 +29,10 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    FeatureDictionaryPtr labelDictionary = BinaryClassificationDictionary::getInstance();
     LabelPtr correctLabel = supervision.dynamicCast<Label>();
-    jassert(!supervision || (correctLabel && correctLabel->getDictionary() == labelDictionary));
+    jassert(!supervision || (correctLabel && correctLabel->getDictionary() == BinaryClassificationDictionary::getInstance()));
     ScalarFunctionPtr lossFunction;
     if (correctLabel)
     {
@@ -42,14 +41,17 @@ public:
         *f = getLoss(correctLabel->getIndex());
       lossFunction = *f;
     }
-
-    ObjectPtr res = DecoratorInference::run(context, input, lossFunction, returnCode);
-    if (!res)
-      return res;
-    ScalarPtr scalar = res.dynamicCast<Scalar>();
+    return std::make_pair(input, lossFunction);
+  }
+    
+  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  {
+    if (!subInferenceOutput)
+      return ObjectPtr();
+    ScalarPtr scalar = subInferenceOutput.dynamicCast<Scalar>();
     jassert(scalar);
     double value = scalar->getValue();
-    return new Label(labelDictionary, value > 0 ? 1 : 0, fabs(value));
+    return new Label(BinaryClassificationDictionary::getInstance(), value > 0 ? 1 : 0, fabs(value));
   }
 
 protected:

@@ -71,12 +71,12 @@ public:
       ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
       validationContext->appendCallback(evaluation);
       
-      runOnSupervisedExamplesInference(inference)->run(inferenceContext, trainingData, ObjectPtr(), returnCode);
+      validationContext->runInference(runOnSupervisedExamplesInference(inference), trainingData, ObjectPtr(), returnCode);
       processResults(evaluation, true);
       
       evaluation->reset();
 
-      runOnSupervisedExamplesInference(inference)->run(inferenceContext, testingData, ObjectPtr(), returnCode);
+      validationContext->runInference(runOnSupervisedExamplesInference(inference), testingData, ObjectPtr(), returnCode);
       processResults(evaluation, false);      
     }
     else if (stack->getDepth() == 1)

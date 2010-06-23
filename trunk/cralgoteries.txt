@@ -1,6 +1,6 @@
 
 Library:
- * DecoratorInference: do not override the run() function (maybe put Inference::run() into protected..); callback functions (prepareSubInference, finalizeSubInference)
+ * InferenceContext::runSubInference -> protected (inherit BatchLearners from appropriate Inference base classes)
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
  * Remove old LearningMachine code
  * Remove static ContinuousFunction code

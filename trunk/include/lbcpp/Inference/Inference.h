@@ -35,8 +35,6 @@ public:
   virtual void beginRunSession() {}
   virtual void endRunSession() {}
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
-
   /*
   ** Learners
   */
@@ -54,6 +52,8 @@ public:
 
 protected:
   friend class InferenceContext;
+
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferenceBatchLearnerPtr batchLearner;
