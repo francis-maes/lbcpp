@@ -19,23 +19,25 @@ namespace lbcpp
 class ObjectTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  ObjectTreeViewItem(ObjectPtr object, const String& name, ObjectSelector& selector)
+  ObjectTreeViewItem(ObjectPtr object, const String& name)
     : SimpleTreeViewItem(name, NULL, true),
-      object(object), component(NULL), selector(selector)
+      object(object), component(NULL)
   {
     if (object)
       object->getChildrenObjects(subObjects);
     mightContainSubItemsFlag = subObjects.size() > 0;
   }
 
-  virtual void itemSelectionChanged(bool isNowSelected)
-    {if (isNowSelected) selector.sendObjectSelected(object);}
-
+  virtual void itemSelectionChanged(bool isNowSelected);
+  
   virtual void createSubItems()
   {
     for (size_t i = 0; i < subObjects.size(); ++i)
-      addSubItem(new ObjectTreeViewItem(subObjects[i].second, subObjects[i].first, selector));
+      addSubItem(new ObjectTreeViewItem(subObjects[i].second, subObjects[i].first));
   }
+
+  ObjectPtr getObject() const
+    {return object;}
   
   juce_UseDebuggingNewOperator
 
@@ -43,19 +45,20 @@ protected:
   ObjectPtr object;
   Component* component;
   std::vector< std::pair<String, ObjectPtr> > subObjects;
-  ObjectSelector& selector;
 };
 
-class ObjectTreeComponent : public juce::TreeView, public ObjectSelector
+class ObjectTreeComponent : public juce::TreeView, public ObjectSelector, public juce::Timer
 {
 public:
   ObjectTreeComponent(ObjectPtr object, const String& name) 
-    : object(object), name(name), root(NULL)
+    : object(object), name(name), root(NULL), isSelectionUpToDate(false)
   {
     setRootItemVisible(true);
     setWantsKeyboardFocus(true);
+    setMultiSelectEnabled(true);
     buildTree();
     root->setSelected(true, true);
+    startTimer(100);  
   }
 
   virtual ~ObjectTreeComponent()
@@ -82,7 +85,7 @@ public:
 
   void buildTree()
   {
-    root = new ObjectTreeViewItem(object, name, *this);
+    root = new ObjectTreeViewItem(object, name);
     setRootItem(root);
     root->setOpen(true);
   }
@@ -92,6 +95,26 @@ public:
     g.fillAll(Colours::white);
     juce::TreeView::paint(g);
   }
+  
+  virtual void timerCallback()
+  {
+    if (!isSelectionUpToDate)
+    {
+      std::vector<ObjectPtr> selectedObjects;
+      selectedObjects.reserve(getNumSelectedItems());
+      for (int i = 0; i < getNumSelectedItems(); ++i)
+      {
+        ObjectTreeViewItem* item = dynamic_cast<ObjectTreeViewItem* >(getSelectedItem(i));
+        if (item && item->getObject())
+          selectedObjects.push_back(item->getObject());
+      }
+      sendSelectionChanged(selectedObjects);
+      isSelectionUpToDate = true;
+    }
+  }
+  
+  void invalidateSelection()
+    {isSelectionUpToDate = false;}
 
   juce_UseDebuggingNewOperator
 
@@ -99,8 +122,17 @@ protected:
   ObjectPtr object;
   String name;
   ObjectTreeViewItem* root;
+  bool isSelectionUpToDate;
 };
 
+
+inline void ObjectTreeViewItem::itemSelectionChanged(bool isNowSelected)
+{
+  ObjectTreeComponent* owner = dynamic_cast<ObjectTreeComponent* >(getOwnerView());
+  jassert(owner);
+  owner->invalidateSelection();
+}
+  
 }; /* namespace lbcpp */
 
 #endif // !EXPLORER_COMPONENTS_TABLE_H_
