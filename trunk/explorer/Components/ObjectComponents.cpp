@@ -24,11 +24,19 @@ public:
     : ObjectSelectorAndContentComponent(featureGenerator, new ObjectTreeComponent(featureGenerator, name))
     {}
 
-  virtual void objectSelectedCallback(ObjectPtr selected)
+  virtual void selectionChangedCallback(const std::vector<ObjectPtr>& selectedObjects)
   {
-    FeatureGeneratorPtr featureGenerator = selected.dynamicCast<FeatureGenerator>();
-    jassert(!selected || featureGenerator);
-    ObjectSelectorAndContentComponent::objectSelectedCallback(featureGenerator ? (ObjectPtr)featureGenerator->toTable() : ObjectPtr());
+    std::vector<ObjectPtr> objects;
+    objects.reserve(selectedObjects.size());
+    for (size_t i = 0; i < selectedObjects.size(); ++i)
+    {
+      FeatureGeneratorPtr featureGenerator = selectedObjects[i].dynamicCast<FeatureGenerator>();
+      if (featureGenerator)
+        objects.push_back(featureGenerator->toTable());
+      else
+        objects.push_back(selectedObjects[i]);
+    }
+    ObjectSelectorAndContentComponent::selectionChangedCallback(objects);
   }
 };
 
@@ -38,13 +46,6 @@ public:
   InferenceComponent(InferencePtr inference, const String& name = String::empty)
     : ObjectSelectorAndContentComponent(inference, new ObjectTreeComponent(inference, name))
     {}
-/*
-  virtual void objectSelectedCallback(ObjectPtr selected)
-  {
-    InferencePtr subInference = selected.dynamicCast<Inference>();
-    jassert(subInference);
-    ObjectSelectorAndContentComponent::objectSelectedCallback(subInference->toString());
-  }*/
 };
 
 Component* createComponentForObjectImpl(ObjectPtr object, const String& explicitName)
@@ -111,21 +112,69 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
         pair->getSecond().dynamicCast<Protein>())
     {
       std::vector<std::pair<String, ProteinPtr> > proteins;
-      proteins.push_back(std::make_pair(T("Input"), pair->getFirst().dynamicCast<Protein>()));
+      proteins.push_back(std::make_pair(T("Prediction"), pair->getFirst().dynamicCast<Protein>()));
       proteins.push_back(std::make_pair(T("Supervision"), pair->getSecond().dynamicCast<Protein>()));
       return new MultiProteinComponent(proteins);
     }
   }
 
   if (object.dynamicCast<ObjectContainer>())
+  {
+    ObjectContainerPtr container = object.staticCast<ObjectContainer>();
+    bool areClassFiles = true;
+    size_t proteinSize = 0;
+    std::vector< std::pair<String, ProteinPtr> > proteins;
+    for (size_t i = 0; i < container->size(); ++i)
+    {
+      ObjectPtr object = container->get(i);
+      
+      ProteinPtr protein = object.dynamicCast<Protein>();
+      if (!protein || (proteinSize && protein->getLength() != proteinSize))
+      {
+        proteinSize = 0;
+        break;
+      }
+      else
+      {
+        proteinSize = protein->getLength();
+        proteins.push_back(std::make_pair(protein->getName(), protein));
+      }
+      
+      FileObjectPtr fileObject = object.dynamicCast<FileObject>();
+      areClassFiles &= fileObject && (fileObject->getType() == FileObject::classFile);
+    }
+    if (proteinSize)
+      // container of proteins => multi protein component
+      return new MultiProteinComponent(proteins);
+    else if (areClassFiles)
+    {
+      // container of file objects => container of loaded objects
+      VectorObjectContainerPtr objects = new VectorObjectContainer();
+      objects->setName(container->getName());
+      for (size_t i = 0; i < container->size(); ++i)
+      {
+        FileObjectPtr fileObject = container->getAndCast<FileObject>(i);
+        ObjectPtr object = Object::createFromFile(fileObject->getFile());
+        if (object)
+        {
+          NameableObjectPtr nameableObject = object.dynamicCast<NameableObject>();
+          if (nameableObject)
+            nameableObject->setName(fileObject->getFile().getFileNameWithoutExtension());
+          objects->append(object);
+        }
+      }
+      return createComponentForObjectImpl(objects, explicitName);
+    }
+
+    // default for ObjectContainer
     return new ObjectSelectorAndContentComponent(object, new ObjectContainerNameListComponent(object.dynamicCast<ObjectContainer>()));
+  }
 
   if (object.dynamicCast<Table>())
     return new TableComponent(object.dynamicCast<Table>());
 
   if (object.dynamicCast<StringToObjectMap>())
     return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
-
 
   //ObjectGraphPtr graph = object->toGraph();
   //if (topLevelComponent && graph)
@@ -145,5 +194,16 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, const String& expli
     if (selector)
       res = new ObjectBrowser(selector);
   }
+  return res;
+}
+
+ObjectPtr lbcpp::createMultiSelectionObject(const std::vector<ObjectPtr>& objects)
+{
+  if (objects.empty())
+    return ObjectPtr();
+  if (objects.size() == 1)
+    return objects[0];
+  VectorObjectContainerPtr res = new VectorObjectContainer(objects);
+  res->setName(T("MultiSelection"));
   return res;
 }

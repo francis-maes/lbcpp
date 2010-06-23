@@ -56,8 +56,15 @@ public:
     selector->setBounds(selector->getX(), propertiesHeight, selector->getWidth(), getHeight() - propertiesHeight);
   }
 
-  virtual void objectSelectedCallback(ObjectPtr object)
-    {if (object != this->object) content->setObject(object);}
+  virtual void selectionChangedCallback(const std::vector<ObjectPtr>& selectedObjects)
+  {
+    std::vector<ObjectPtr> objects;
+    objects.reserve(selectedObjects.size());
+    for (size_t i = 0; i < selectedObjects.size(); ++i)
+      if (selectedObjects[i] != object) // it is not possible to select the root effect
+        objects.push_back(selectedObjects[i]);
+    content->setObject(createMultiSelectionObject(objects));
+  }
 
   enum {selectorPreferedWidth = 200};
 

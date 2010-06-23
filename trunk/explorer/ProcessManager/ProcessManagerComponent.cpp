@@ -42,7 +42,6 @@ public:
       if (index >= 0)
       {
         c->selectRow(index);
-        //selector.sendObjectSelected(process);
         return;
       }
     }
@@ -146,16 +145,19 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   };
 }
 
-void ProcessManagerComponent::objectSelectedCallback(ObjectPtr object)
+void ProcessManagerComponent::selectionChangedCallback(const std::vector<ObjectPtr>& selectedObjects)
 {
-  ProcessPtr process = object.dynamicCast<Process>();
-  jassert(process);
-  RecentProcessesPtr recents = RecentProcesses::getInstance();
-  ProcessConsoleSettingsPtr settings = recents->getExecutableConsoleSettings(process->getExecutableFile());
-  if (settings)
-    changeSecondComponent(process->createComponent(settings));
+  if (selectedObjects.size() == 1)
+  {
+    ObjectPtr object = selectedObjects[0];
+    ProcessPtr process = object.dynamicCast<Process>();
+    jassert(process);
+    RecentProcessesPtr recents = RecentProcesses::getInstance();
+    ProcessConsoleSettingsPtr settings = recents->getExecutableConsoleSettings(process->getExecutableFile());
+    if (settings)
+      changeSecondComponent(process->createComponent(settings));
+  }
 }
-
 
 juce::Component* ProcessManager::createComponent() const
   {return new ProcessManagerComponent(ProcessManagerPtr(const_cast<ProcessManager* >(this)));}

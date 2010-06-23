@@ -23,16 +23,24 @@ class ObjectContainerNameListComponent : public juce::ListBox, public ObjectSele
 {
 public:
   ObjectContainerNameListComponent(ObjectContainerPtr container)
-    : juce::ListBox(container->getName(), new Model(this, container)), container(container) {}
+    : juce::ListBox(container->getName(), new Model(this, container)), container(container)
+    {setMultipleSelectionEnabled(true);}
   
   virtual ~ObjectContainerNameListComponent()
     {delete getModel();}
 
   void selectedRowsChanged()
   {
-    int row = getSelectedRow();
-    if (row >= 0)
-      sendObjectSelected(container->get(row));
+    std::vector<ObjectPtr> selectedObjects;
+    selectedObjects.reserve(getNumSelectedRows());
+    for (int i = 0; i < getNumSelectedRows(); ++i)
+    {
+      int rowNumber = getSelectedRow(i);
+      ObjectPtr object = container->get(rowNumber);
+      if (object)
+        selectedObjects.push_back(object);
+    }
+    sendSelectionChanged(selectedObjects);
   }
 
   struct Model : public juce::ListBoxModel
