@@ -36,8 +36,21 @@ using juce::InputStream;
 using juce::OutputStream;
 using juce::Time;
 
+namespace lbcpp
+{
+#ifdef LBCPP_MULTI_THREAD
 using juce::CriticalSection;
 using juce::ScopedLock;
+#else
+class CriticalSection {};
+class ScopedLock
+{
+public:
+  ScopedLock(const CriticalSection& cs) {}
+};
+}; /* namespace lbcpp */
+
+#endif // LBCPP_MULTI_THREAD
 
 #endif // !LBCPP_COMMON_H_
 

@@ -36,6 +36,8 @@ namespace lbcpp
 
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
+class Class;
+typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 class ObjectGraph;
 typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class Table;
@@ -60,36 +62,11 @@ public:
   */
   virtual ~Object() {}
 
-  /** Pointer to a function that create objects
-  */
-  typedef Object* (*Constructor)();
+  ClassPtr getClass() const;
+  String getClassName() const;
 
-  /** Declares a class to enable dynamic creation of this class.
-  **
-  ** Objects rely internally on an Object factory that keeps a trace of classes
-  ** that can be created dynamically. This function registers a new class
-  ** to this ObjectFactory.
-  **
-  ** @param className : class name.
-  ** @param constructor : class constructor.
-  ** @see Object::create
-  */
-  static void declare(const String& className, Constructor constructor);
+  static ObjectPtr create(const String& className);
 
-  static bool doClassNameExists(const String& className);
-
-  /** Creates dynamically an object of class @a className.
-  **
-  ** The class @a className must be declared with Object::declare()
-  ** before being able to instantiate it dynamically.
-  **
-  ** @param className : class name.
-  **
-  ** @return an instance of @a className object.
-  ** @see Object::declare
-  */
-  static Object* create(const String& className);
-  
   template<class T>
   static ReferenceCountedObjectPtr<T> createAndCast(const String& className)
     {return checkCast<T>(T("Object::createAndCast"), create(className));}
@@ -137,13 +114,6 @@ public:
   template<class T>
   static ReferenceCountedObjectPtr<T> createFromFileAndCast(const File& file)
     {return checkCast<T>(T("Object::createFromFileAndCast"), createFromFile(file));}
-
-  /**
-  ** Class name getter.
-  **
-  ** @return class name.
-  */
-  String getClassName() const;
 
   /**
   ** Name getter.
@@ -264,27 +234,6 @@ protected:
   template<class T>
   friend struct ObjectTraits;
 
-  /** Checks if a cast is valid and throw an error if not.
-  **
-  ** @param where : a description of the caller function
-  ** that will be used in case of an error.
-  ** @param object : to object to cast.
-  ** @return false is the loading fails, true otherwise. If loading fails,
-  ** load() is responsible for declaring an error to the ErrorManager.
-  */
-  template<class T>
-  static ReferenceCountedObjectPtr<T> checkCast(const String& where, ObjectPtr object)
-  {
-    ReferenceCountedObjectPtr<T> res;
-    if (object)
-    {
-      res = object.dynamicCast<T>();
-      if (!res)
-        error(where, T("Could not cast object into '") + lbcpp::toString(typeid(*res)) + T("'"));
-    }
-    return res;
-  }
-
   /**
   ** Override this function to load the object from a C++ stream.
   **
@@ -342,15 +291,6 @@ typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
 */
 inline ObjectPtr loadObject(const File& file)
   {return Object::createFromFile(file);}
-
-template<class Type>
-struct ClassDeclarator
-{
-  ClassDeclarator()           {Object::declare(toString(typeid(Type)), construct);}
-  static Object* construct()  {return new Type();}
-};
-
-#define LBCPP_DECLARE_CLASS(Name) lbcpp::ClassDeclarator<Name> __##Name##decl__
 
 template<class T>
 struct ObjectPtrTraits

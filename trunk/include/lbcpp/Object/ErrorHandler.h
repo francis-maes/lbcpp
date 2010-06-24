@@ -105,6 +105,28 @@ private:
   static ErrorHandler* instance;
 };
 
+/** Checks if a cast is valid and throw an error if not.
+**
+** @param where : a description of the caller function
+** that will be used in case of an error.
+** @param object : to object to cast.
+** @return false is the loading fails, true otherwise. If loading fails,
+** load() is responsible for declaring an error to the ErrorManager.
+*/
+template<class T>
+inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCountedObjectPtr<ReferenceCountedObject> object)
+{
+  ReferenceCountedObjectPtr<T> res;
+  if (object)
+  {
+    res = object.dynamicCast<T>();
+    if (!res)
+      ErrorHandler::error(where, T("Could not cast object into '") + lbcpp::toString(typeid(*res)) + T("'"));
+  }
+  return res;
+}
+
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_ERROR_HANDLER_H_

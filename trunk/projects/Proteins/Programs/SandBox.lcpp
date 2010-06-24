@@ -175,8 +175,8 @@ int main(int argc, char** argv)
 {
   declareProteinClasses();
   
-//  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  File workingDirectory(T("/Users/francis/tmp"));
+  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  //File workingDirectory(T("/Users/francis/tmp"));
 
   //File smallPDBDirectory = workingDirectory.getChildFile(T("SmallPDB"));
   //File smallPDBDirectory(T("/Users/francis/tmp/SmallPDB"));

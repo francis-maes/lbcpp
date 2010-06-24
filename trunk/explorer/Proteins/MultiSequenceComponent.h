@@ -158,7 +158,7 @@ private:
     if (labelSequence)
     {
       bool isBinary = labelSequence->getDictionary() == BinaryClassificationDictionary::getInstance();
-      g.setFont(isBinary ? 14 : 12);
+      g.setFont(isBinary ? 14.f : 12.f);
       String res = labelSequence->getString(index);
       if (isBinary)
         res = (res == T("positive")) ? T("+") : T("-");

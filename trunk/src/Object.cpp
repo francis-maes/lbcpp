@@ -7,88 +7,24 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Object/Object.h>
-#include <map>
+#include <lbcpp/Object/Class.h>
 #include <fstream>
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
 
-class ObjectFactory
-{
-public:
-  void declare(const String& className, Object::Constructor constructor)
-  {
-    ScopedLock _(lock);
-
-    if (className.isEmpty())
-      Object::error(T("Object::declare"), T("Empty class name"));
-    else if (constructors.find(className) != constructors.end())
-      Object::error(T("Object::declare"), T("Class '") + className + T("' is already declared."));
-    else
-    {
-      //std::cout << "Object::declare " << className << std::endl;
-      constructors[className] = constructor;
-    }
-  }
-
-  bool doClassNameExists(const String& className) const
-  {
-    ScopedLock _(lock);
-    return constructors.find(className) != constructors.end();
-  }
-
-  Object* create(const String& className)
-  {
-    ScopedLock _(lock);
-
-    // check that lbc++ core classes have been declared
-    if (constructors.find(T("SparseVector")) == constructors.end())
-      declareLBCppCoreClasses();
-      
-    if (className.isEmpty())
-    {
-      Object::error(T("Object::create"), T("Empty class name"));
-      return NULL;
-    }
-    ObjectConstructorMap::const_iterator it = constructors.find(className);
-    if (it == constructors.end())
-    {
-      Object::error(T("Object::create"), T("Could not find class '") + className + T("'"));
-      return NULL;
-    }
-    Object* res = it->second();
-    jassert(res);
-    return res;
-  }
-
-private:
-  typedef std::map<String, Object::Constructor> ObjectConstructorMap;
-
-  ObjectConstructorMap constructors;
-  CriticalSection lock;
-};
-
-inline ObjectFactory& getObjectFactoryInstance()
-{
-  static ObjectFactory instance;
-  return instance;
-}
-
 String Object::getClassName() const
   {return lbcpp::toString(typeid(*this));}
 
-void Object::declare(const String& className, Constructor constructor)
-  {getObjectFactoryInstance().declare(className, constructor);}
+ClassPtr Object::getClass() const
+  {return Class::get(getClassName());}
 
-bool Object::doClassNameExists(const String& className)
-  {return getObjectFactoryInstance().doClassNameExists(className);}
+ObjectPtr Object::create(const String& className)
+  {return Class::createInstance(className);}
 
 /*
 ** Create and load
 */
-Object* Object::create(const String& className)
-  {return getObjectFactoryInstance().create(className);}
-
 ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
 {
   String className;
@@ -99,7 +35,7 @@ ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
   }
   if (className == T("__null__"))
     return ObjectPtr();
-  ObjectPtr res(create(className));
+  ObjectPtr res = create(className);
   if (res && doLoading && !res->load(istr))
     error(T("Object::create"), T("Could not load object of class ") + className);
   return res;

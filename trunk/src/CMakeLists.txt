@@ -8,6 +8,7 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ReferenceCountedObject.h
   ../include/lbcpp/Object/ErrorHandler.h  
   ../include/lbcpp/Object/Object.h
+  ../include/lbcpp/Object/Class.h
   ../include/lbcpp/Object/ObjectStream.h
   ../include/lbcpp/Object/ObjectContainer.h
   ../include/lbcpp/Object/ObjectPair.h
@@ -19,6 +20,7 @@ SET(LBCPP_OBJECT_HEADERS
 
 SET(LBCPP_OBJECT_SOURCES
   Object.cpp
+  Class.cpp
   ObjectStream.cpp
   ObjectContainer.cpp
   ObjectConsumer.cpp

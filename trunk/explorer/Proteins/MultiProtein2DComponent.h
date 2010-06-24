@@ -86,9 +86,9 @@ public:
   
   virtual void resized()
   {
-    protein1->setBoundsRelative(0, 0, 0.333, 1.0);
-    protein2->setBoundsRelative(0.333, 0, 0.333, 1.0);
-    map->setBoundsRelative(0.666, 0, 0.333, 1.0);
+    protein1->setBoundsRelative(0, 0, 0.333f, 1.f);
+    protein2->setBoundsRelative(0.333f, 0, 0.333f, 1.f);
+    map->setBoundsRelative(0.666f, 0, 0.333f, 1.f);
   }
 
   virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)
