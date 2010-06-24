@@ -140,7 +140,7 @@ private:
       size_t n = aminoAcids->size();
       for (size_t i = 0; i < n; ++i)
       {
-        ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+        ProteinResidueAtomsPtr residue = tertiaryStructure->getResidue(i);
         if (residue)
           residue->setAminoAcid((AminoAcidDictionary::Type)aminoAcids->getIndex(i));
       }

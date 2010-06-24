@@ -59,7 +59,7 @@ public:
     if (tertiaryStructure)
       for (size_t i = 0; i < tertiaryStructure->size(); ++i)
       {
-        ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+        ProteinResidueAtomsPtr residue = tertiaryStructure->getResidue(i);
         if (residue)
           numAtoms += residue->getNumAtoms();
       }
@@ -81,7 +81,7 @@ public:
   /*
       for (size_t i = 0; i < tertiaryStructure->size(); ++i)
     {
-      ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+      ProteinResidueAtomsPtr residue = tertiaryStructure->getResidue(i);
 
       Vector3 nitrogen = residue->getNitrogenAtom()->getPosition();
       Vector3 calpha = residue->getCAlphaAtom()->getPosition();
@@ -89,7 +89,7 @@ public:
 
       nCalphaLength.push((calpha - nitrogen).l2norm());
       calphaCLength.push((carbon - calpha).l2norm());
-      ProteinResiduePtr nextResidue = i < tertiaryStructure->size() - 1 ? tertiaryStructure->getResidue(i + 1) : ProteinResiduePtr();
+      ProteinResidueAtomsPtr nextResidue = i < tertiaryStructure->size() - 1 ? tertiaryStructure->getResidue(i + 1) : ProteinResidueAtomsPtr();
       if (nextResidue)
       {
         Vector3 nextNitrogen = nextResidue->getNitrogenAtom()->getPosition();

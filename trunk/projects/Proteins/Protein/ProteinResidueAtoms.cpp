@@ -1,11 +1,11 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinResidue.cpp             | Protein Residue                 |
+| Filename: ProteinResidueAtoms.cpp        | Protein Residue Atoms           |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 15:22               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "ProteinResidue.h"
+#include "ProteinResidueAtoms.h"
 using namespace lbcpp;
 
 /*
@@ -34,9 +34,9 @@ void ProteinAtom::save(OutputStream& ostr) const
 }
 
 /*
-** ProteinResidue
+** ProteinResidueAtoms
 */
-String ProteinResidue::toString() const
+String ProteinResidueAtoms::toString() const
 {
   String res = T("Residue ") + AminoAcidDictionary::getThreeLettersCode(aminoAcid) + T(":");
   if (atoms.size())
@@ -50,7 +50,7 @@ String ProteinResidue::toString() const
   return res;
 }
 
-ProteinAtomPtr ProteinResidue::findAtomByName(const String& name) const
+ProteinAtomPtr ProteinResidueAtoms::findAtomByName(const String& name) const
 {
   for (size_t i = 0; i < atoms.size(); ++i)
     if (atoms[i]->getName() == name)
@@ -58,31 +58,31 @@ ProteinAtomPtr ProteinResidue::findAtomByName(const String& name) const
   return ProteinAtomPtr();
 }  
 
-double ProteinResidue::getDistanceBetweenAtoms(const String& name1, const String& name2) const
+double ProteinResidueAtoms::getDistanceBetweenAtoms(const String& name1, const String& name2) const
 {
   ProteinAtomPtr a1 = findAtomByName(name1);
   ProteinAtomPtr a2 = findAtomByName(name2);
   return a1 && a2 ? (a1->getPosition() - a2->getPosition()).l2norm() : DBL_MAX;
 }
 
-double ProteinResidue::getDistanceBetweenAtoms(const String& name1, ProteinResiduePtr residue2, const String& name2) const
+double ProteinResidueAtoms::getDistanceBetweenAtoms(const String& name1, ProteinResidueAtomsPtr residue2, const String& name2) const
 {
   ProteinAtomPtr a1 = findAtomByName(name1);
   ProteinAtomPtr a2 = residue2->findAtomByName(name2);
   return a1 && a2 ? (a1->getPosition() - a2->getPosition()).l2norm() : DBL_MAX;
 }
 
-ProteinAtomPtr ProteinResidue::checkAndGetCBetaOrCAlphaAtom() const
+ProteinAtomPtr ProteinResidueAtoms::checkAndGetCBetaOrCAlphaAtom() const
 {
   if (isCBetaAtomMissing())
   {
-    Object::error(T("ProteinResidue::checkAndGetCBetaOrCAlphaAtom"),
+    Object::error(T("ProteinResidueAtoms::checkAndGetCBetaOrCAlphaAtom"),
       T("No C-beta atom in residue ") + AminoAcidDictionary::getThreeLettersCode(getAminoAcid()));
     return ProteinAtomPtr();
   }
   if (!hasCAlphaAtom())
   {
-    Object::error(T("ProteinResidue::checkAndGetCBetaOrCAlphaAtom"),
+    Object::error(T("ProteinResidueAtoms::checkAndGetCBetaOrCAlphaAtom"),
       T("No C-alpha atom in residue ") + AminoAcidDictionary::getThreeLettersCode(getAminoAcid()));
     return ProteinAtomPtr();
   }
@@ -93,7 +93,7 @@ ProteinAtomPtr ProteinResidue::checkAndGetCBetaOrCAlphaAtom() const
   return atom;
 }
 
-void ProteinResidue::applyAffineTransform(const Matrix4& affineTransform) const
+void ProteinResidueAtoms::applyAffineTransform(const Matrix4& affineTransform) const
 {
   jassert(affineTransform.isAffine());
   for (size_t i = 0; i < atoms.size(); ++i)
@@ -104,21 +104,21 @@ void ProteinResidue::applyAffineTransform(const Matrix4& affineTransform) const
   }
 }
 
-bool ProteinResidue::load(InputStream& istr)
+bool ProteinResidueAtoms::load(InputStream& istr)
 {
   int aminoAcidType;
   if (!lbcpp::read(istr, aminoAcidType))
     return false;
   if (aminoAcidType < 0 || aminoAcidType >= AminoAcidDictionary::unknown)
   {
-    Object::error(T("ProteinResidue::load"), T("Invalid amino acid type ") + lbcpp::toString(aminoAcidType));
+    Object::error(T("ProteinResidueAtoms::load"), T("Invalid amino acid type ") + lbcpp::toString(aminoAcidType));
     return false;
   }
   aminoAcid = (AminoAcidDictionary::Type)aminoAcidType;
   return lbcpp::read(istr, atoms);
 }
 
-void ProteinResidue::save(OutputStream& ostr) const
+void ProteinResidueAtoms::save(OutputStream& ostr) const
 {
   lbcpp::write(ostr, (int)aminoAcid);
   lbcpp::write(ostr, atoms);

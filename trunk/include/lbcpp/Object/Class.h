@@ -35,8 +35,8 @@ namespace lbcpp
 class Class : public NameableObject
 {
 public:
-  Class(const String& className)
-    : NameableObject(className) {}
+  Class(const String& className, ClassPtr baseClass)
+    : NameableObject(className), baseClass(baseClass) {}
 
   static void declare(ClassPtr classInstance);
   static ClassPtr get(const String& className);
@@ -64,14 +64,14 @@ public:
   */
   typedef ObjectPtr (*DefaultConstructor)();
 
-  virtual DefaultConstructor getDefaultConstructor() const
-    {return NULL;}
+  DefaultConstructor getDefaultConstructor() const
+    {return defaultConstructor;}
 
   /*
   ** Base class
   */
-  virtual ClassPtr getBaseClass() const
-    {return ClassPtr();}
+  ClassPtr getBaseClass() const
+    {return baseClass;}
 
   /*
   ** Variables
@@ -82,31 +82,145 @@ public:
   int findVariable(const String& name) const;
 
 protected:
+  DefaultConstructor defaultConstructor;
+  ClassPtr baseClass;
   std::vector< std::pair<ClassPtr, String> > variables;
   CriticalSection variablesLock;
 
   void addVariable(ClassPtr type, const String& name);
+  void addVariable(const String& typeName, const String& name)
+    {addVariable(Class::get(typeName), name);}
 };
 
+/*
+** The top-level base class
+*/
+class ObjectClass : public Class
+{
+public:
+  ObjectClass() : Class(T("Object"), ClassPtr()) {}
+
+  static ClassPtr getInstance()
+    {static ClassPtr res = Class::get(T("Object")); return res;}
+};
+
+/*
+** Builtin-types
+*/
+class IntegerClass : public Class
+{
+public:
+  IntegerClass() : Class(T("Integer"), ObjectClass::getInstance()) {}
+
+  static ClassPtr getInstance()
+    {static ClassPtr res = Class::get(T("Integer")); return res;}
+};
+
+class DoubleClass : public Class
+{
+public:
+  DoubleClass() : Class(T("Double"), ObjectClass::getInstance()) {}
+  
+  static ClassPtr getInstance()
+    {static ClassPtr res = Class::get(T("Double")); return res;}
+};
+
+class StringClass : public Class
+{
+public:
+  StringClass() : Class(T("String"), ObjectClass::getInstance()) {}
+  
+  static ClassPtr getInstance()
+    {static ClassPtr res = Class::get(T("String")); return res;}
+};
+
+/*
+** Enumeration
+*/
+class Enumeration : public Class
+{
+public:
+  Enumeration(const String& name)
+    : Class(name, ObjectClass::getInstance()) {}
+
+  virtual size_t getNumElements() const = 0;
+  virtual String getElementName(size_t index) const = 0;
+
+  virtual ClassPtr getBaseClass() const
+    {return IntegerClass::getInstance();}
+};
+
+typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
+
+class StaticEnumeration : public Enumeration
+{
+public:
+  StaticEnumeration(const String& name, const juce::tchar** elements)
+    : Enumeration(name), elements(elements)
+  {
+    for (numElements = 0; elements[numElements]; ++numElements)
+      ;
+  }
+  
+  virtual size_t getNumElements() const
+    {return numElements;}
+
+  virtual String getElementName(size_t index) const
+    {jassert(index < numElements); return elements[index];}
+
+private:
+  const juce::tchar** elements;
+  size_t numElements;
+};
+
+/*
+** Collection
+*/
+class Collection : public Class
+{
+public:
+  Collection(const String& name) : Class(name, ObjectClass::getInstance()) {}
+
+  virtual size_t getNumElements() const = 0;
+  virtual ObjectPtr getElement(size_t index) const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<Collection> CollectionPtr;
+
+class VectorBasedCollection : public Collection
+{
+public:
+  VectorBasedCollection(const String& name)
+    : Collection(name)
+    {}
+
+  virtual size_t getNumElements() const
+    {return objects.size();}
+
+  virtual ObjectPtr getElement(size_t index) const
+    {jassert(index < objects.size()); return objects[index];}
+
+protected:
+  void addElement(ObjectPtr object)
+    {objects.push_back(object);}
+
+private:
+  std::vector<ObjectPtr> objects;
+};
+
+/*
+** Minimalistic C++ classes Wrapper
+*/
 template<class Type>
 class DefaultClass_ : public Class
 {
 public:
-  DefaultClass_(ClassPtr baseClass = ClassPtr())
-    : Class(lbcpp::toString(typeid(Type))), baseClass(baseClass)
-    {}
+  DefaultClass_(ClassPtr baseClass = ObjectClass::getInstance())
+    : Class(lbcpp::toString(typeid(Type)), baseClass)
+    {Class::defaultConstructor = defaultCtor;}
 
-  virtual DefaultConstructor getDefaultConstructor() const
-    {return defaultConstructor;}
-
-  static ObjectPtr defaultConstructor()
+  static ObjectPtr defaultCtor()
     {return ObjectPtr(new Type());}
-  
-  virtual ClassPtr getBaseClass() const
-    {return baseClass;}
-
-protected:
-  ClassPtr baseClass;
 };
 
 #define LBCPP_DECLARE_CLASS(Name) lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>()))

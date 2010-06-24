@@ -40,10 +40,7 @@ public:
 
   ObjectPtr createInstance(const String& className) const
   {
-    // check that lbc++ core classes have been declared
-    if (!get(T("SparseVector")))
-      declareLBCppCoreClasses();
-    
+    ensureStandardClassesAreLoaded();
     if (className.isEmpty())
     {
       Object::error(T("ClassManager::create"), T("Empty class name"));
@@ -71,6 +68,12 @@ private:
 
   CriticalSection classesLock;
   ClassMap classes;
+
+  void ensureStandardClassesAreLoaded() const
+  {
+    if (!get(T("SparseVector")))
+      declareLBCppCoreClasses();
+  }
 };
 
 inline ClassManager& getClassManagerInstance()
@@ -135,4 +138,12 @@ void Class::addVariable(ClassPtr type, const String& name)
     Object::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
   else
     variables.push_back(std::make_pair(type, name));
+}
+
+void declareClassClasses()
+{
+  Class::declare(new ObjectClass());
+  Class::declare(new IntegerClass());
+  Class::declare(new DoubleClass());
+  Class::declare(new StringClass());
 }

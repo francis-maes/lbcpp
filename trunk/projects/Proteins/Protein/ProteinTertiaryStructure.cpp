@@ -14,7 +14,7 @@ ProteinTertiaryStructure::ProteinTertiaryStructure(size_t numResidues)
 
 void ProteinTertiaryStructure::set(size_t index, ObjectPtr object)
 {
-  ProteinResiduePtr residue = object.dynamicCast<ProteinResidue>();
+  ProteinResidueAtomsPtr residue = object.dynamicCast<ProteinResidueAtoms>();
   jassert(residue);
   jassert(index < residues.size());
   residues[index] = residue;
@@ -32,7 +32,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(Labe
     if (position.exists())
     {
       // create a residue with a single Ca atom
-      ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
+      ProteinResidueAtomsPtr residue = new ProteinResidueAtoms((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
       ProteinAtomPtr atom = new ProteinAtom(T("CA"), T("C"));
       atom->setPosition(position);
       residue->addAtom(atom);
@@ -55,7 +55,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromBackbone(LabelSe
     ProteinBackboneBondPtr backboneResidue = backbone->getBond(i); 
     if (!backboneResidue->exists())
       continue;
-    ProteinResiduePtr residue = new ProteinResidue((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
+    ProteinResidueAtomsPtr residue = new ProteinResidueAtoms((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i));
     
     if (previousBondExists)
       residue->addAtom(new ProteinAtom(T("N"), T("N"), matrix.getTranslation()));
@@ -105,7 +105,7 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::makeCAlphaTrace() cons
   CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = getResidue(i);
+    ProteinResidueAtomsPtr residue = getResidue(i);
     if (!residue)
       continue; // FIXME: CartesianCoordinatesSequencePtr must support NULL values
     ProteinAtomPtr atom = residue->getCAlphaAtom();
@@ -126,7 +126,7 @@ CartesianCoordinatesSequencePtr ProteinTertiaryStructure::makeCBetaTrace() const
   CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(T("CAlphaTrace"), n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = getResidue(i);
+    ProteinResidueAtomsPtr residue = getResidue(i);
     ProteinAtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : ProteinAtomPtr();
     if (!atom)
       return CartesianCoordinatesSequencePtr();
@@ -143,7 +143,7 @@ ProteinBackboneBondSequencePtr ProteinTertiaryStructure::makeBackbone() const
   CartesianCoordinatesSequencePtr backbone = new CartesianCoordinatesSequence(T("Backbone"), 3 * n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = residues[i];
+    ProteinResidueAtomsPtr residue = residues[i];
     if (residue)
     {
       size_t j = i * 3;
@@ -204,7 +204,7 @@ ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCAlphaDistanceMatrix() con
   std::vector<Vector3> positions(n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = getResidue(i);
+    ProteinResidueAtomsPtr residue = getResidue(i);
     ProteinAtomPtr atom = residue ? residue->getCAlphaAtom() : ProteinAtomPtr();
     if (atom)
       positions[i] = atom->getPosition();
@@ -218,7 +218,7 @@ ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() cons
   std::vector<Vector3> positions(n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = getResidue(i);
+    ProteinResidueAtomsPtr residue = getResidue(i);
     ProteinAtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : ProteinAtomPtr();
     if (atom)
       positions[i] = atom->getPosition();
@@ -230,7 +230,7 @@ bool ProteinTertiaryStructure::hasCompleteBackbone() const
 {
   for (size_t i = 0; i < residues.size(); ++i)
   {
-    ProteinResiduePtr residue = residues[i];
+    ProteinResidueAtomsPtr residue = residues[i];
     if (residue && !residue->hasCompleteBackbone())
       return false;
   }
@@ -241,7 +241,7 @@ bool ProteinTertiaryStructure::hasBackboneAndCBetaAtoms() const
 {
   for (size_t i = 0; i < residues.size(); ++i)
   {
-    ProteinResiduePtr residue = residues[i];
+    ProteinResidueAtomsPtr residue = residues[i];
     if (residue && (!residue->hasCompleteBackbone() || residue->isCBetaAtomMissing()))
       return false;
   }
@@ -252,7 +252,7 @@ bool ProteinTertiaryStructure::hasCAlphaAtoms() const
 {
   for (size_t i = 0; i < residues.size(); ++i)
   {
-    ProteinResiduePtr residue = residues[i];
+    ProteinResidueAtomsPtr residue = residues[i];
     if (residue && !residue->hasCAlphaAtom())
       return false;
   }
@@ -265,7 +265,7 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
   for (size_t i = 0; i < residues.size(); ++i)
   {
     String position = T(" at position ") + lbcpp::toString(i + 1);
-    ProteinResiduePtr residue = residues[i];
+    ProteinResidueAtomsPtr residue = residues[i];
     if (!residue)
       continue;
 
@@ -274,7 +274,7 @@ bool ProteinTertiaryStructure::isConsistent(String& failureReason) const
       failureReason += T("Empty residue") + position + T("\n");
       res = false;
     }
-    ProteinResiduePtr nextResidue = i < residues.size() - 1 ? residues[i + 1] : ProteinResiduePtr();
+    ProteinResidueAtomsPtr nextResidue = i < residues.size() - 1 ? residues[i + 1] : ProteinResidueAtomsPtr();
     
     if (residue->hasCompleteBackbone())
     {
@@ -310,7 +310,7 @@ void ProteinTertiaryStructure::pruneResiduesThatDoNotHaveCompleteBackbone()
     if (residues[i] && (!residues[i]->hasCompleteBackbone() || residues[i]->isCBetaAtomMissing()))
     {
       std::cout << "Prune incomplete residue " << i << std::endl;
-      residues[i] = ProteinResiduePtr();
+      residues[i] = ProteinResidueAtomsPtr();
     }
 }
 
@@ -333,8 +333,8 @@ Matrix4 ProteinTertiaryStructure::superposeCAlphaAtoms(ProteinTertiaryStructureP
   pointPairs.reserve(n);
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue1 = getResidue(i);
-    ProteinResiduePtr residue2 = targetStructure->getResidue(i);
+    ProteinResidueAtomsPtr residue1 = getResidue(i);
+    ProteinResidueAtomsPtr residue2 = targetStructure->getResidue(i);
     if (!residue1 || !residue2)
       continue;
     Vector3 position1 = residue1->getAtomPosition(T("CA"));
@@ -356,8 +356,8 @@ double ProteinTertiaryStructure::computeCAlphaAtomsRMSE(ProteinTertiaryStructure
   double error = 0.0;
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue1 = getResidue(i);
-    ProteinResiduePtr residue2 = targetStructure->getResidue(i);
+    ProteinResidueAtomsPtr residue1 = getResidue(i);
+    ProteinResidueAtomsPtr residue2 = targetStructure->getResidue(i);
     if (!residue1 || !residue2)
       continue;
     Vector3 position1 = residue1->getAtomPosition(T("CA"));
@@ -378,8 +378,31 @@ void ProteinTertiaryStructure::applyAffineTransform(const Matrix4& affineTransfo
   size_t n = size();
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = getResidue(i);
+    ProteinResidueAtomsPtr residue = getResidue(i);
     if (residue)
       residue->applyAffineTransform(affineTransform);
   }
+}
+
+bool ProteinTertiaryStructure::load(InputStream& istr)
+{
+  size_t numResidues;
+  if (!Sequence::load(istr) || !lbcpp::read(istr, numResidues))
+    return false;
+
+  // compatibility loading: ProteinResidueAtoms was initially called ProteinResidue
+  residues.clear();
+  residues.reserve(numResidues);
+  for (size_t i = 0; i < numResidues; ++i)
+  {
+    String className;
+    if (!lbcpp::read(istr, className))
+      return false;
+    jassert(className == T("ProteinResidue") || className == T("ProteinResidueAtoms"));
+    ProteinResidueAtomsPtr residue = new ProteinResidueAtoms();
+    if (!residue->load(istr))
+      return false;
+    residues.push_back(residue);
+  }
+  return true;
 }

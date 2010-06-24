@@ -32,7 +32,7 @@ public:
     size_t atomNumber = 1;
     for (size_t i = 0; i < tertiaryStructure->size(); ++i)
     {
-      ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+      ProteinResidueAtomsPtr residue = tertiaryStructure->getResidue(i);
       for (size_t j = 0; j < residue->getNumAtoms(); ++j)
         printAtom(residue, residue->getAtom(j), i + 1, atomNumber++);
     }
@@ -41,7 +41,7 @@ public:
   }
 
 
-  void printAtom(ProteinResiduePtr residue, ProteinAtomPtr atom, size_t residueNumber, size_t atomNumber)
+  void printAtom(ProteinResidueAtomsPtr residue, ProteinAtomPtr atom, size_t residueNumber, size_t atomNumber)
   {
     String line = PDBFileGenerator::makeAtomLine(atomNumber, atom->getName(), residue->getName(),
                   String::empty, residueNumber, atom->getX(), atom->getY(), atom->getZ(),

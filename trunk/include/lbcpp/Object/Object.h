@@ -43,6 +43,9 @@ typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class Table;
 typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
+class ObjectVisitor;
+typedef ReferenceCountedObjectPtr<ObjectVisitor> ObjectVisitorPtr;
+
 /*!
 ** @class Object
 ** @brief Object is the base class of nearly all classes of LBC++ library.
@@ -174,6 +177,9 @@ public:
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
     {}
 
+  virtual void accept(ObjectVisitorPtr visitor)
+    {}
+
   /**
   ** Clones and cast the current object.
   **
@@ -279,6 +285,16 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
+
+class ObjectVisitor : public Object
+{
+public:
+  virtual void visitVariable(size_t variableNumber, bool value) = 0;
+  virtual void visitVariable(size_t variableNumber, int value) = 0;
+  virtual void visitVariable(size_t variableNumber, double value) = 0;
+  virtual void visitVariable(size_t variableNumber, const String& value) = 0;
+  virtual void visitVariable(size_t variableNumber, ObjectPtr value) = 0;
+};
 
 /**
 ** Loads an object from the file @a filename.

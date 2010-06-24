@@ -14,7 +14,7 @@
 # include "../InferenceData/BondCoordinatesSequence.h"
 # include "../InferenceData/ScoreSymmetricMatrix.h"
 # include "AminoAcidDictionary.h"
-# include "ProteinResidue.h"
+# include "ProteinResidueAtoms.h"
 # include "ProteinBackboneBondSequence.h"
 
 namespace lbcpp
@@ -56,16 +56,16 @@ public:
   virtual FeatureGeneratorPtr entropyFeatures(size_t begin, size_t end) const
     {return FeatureGeneratorPtr();} // todo
 
-  ProteinResiduePtr getResidue(size_t index) const
+  ProteinResidueAtomsPtr getResidue(size_t index) const
     {jassert(index < residues.size()); return residues[index];}
 
-  ProteinResiduePtr getLastResidue() const
-    {return residues.size() ? residues.back() : ProteinResiduePtr();}
+  ProteinResidueAtomsPtr getLastResidue() const
+    {return residues.size() ? residues.back() : ProteinResidueAtomsPtr();}
 
-  void setResidue(size_t index, ProteinResiduePtr residue)
+  void setResidue(size_t index, ProteinResidueAtomsPtr residue)
     {jassert(index < residues.size()); residues[index] = residue;}
 
-  void append(ProteinResiduePtr residue)
+  void append(ProteinResidueAtomsPtr residue)
     {residues.push_back(residue);}
 
   bool hasCompleteBackbone() const;
@@ -82,11 +82,9 @@ public:
   void applyAffineTransform(const Matrix4& affineTransform) const;
 
 private:
-  std::vector<ProteinResiduePtr> residues;
+  std::vector<ProteinResidueAtomsPtr> residues;
 
-  virtual bool load(InputStream& istr)
-    {return Sequence::load(istr) && lbcpp::read(istr, residues);}
-
+  virtual bool load(InputStream& istr);
   virtual void save(OutputStream& ostr) const
     {Sequence::save(ostr); lbcpp::write(ostr, residues);}
 };

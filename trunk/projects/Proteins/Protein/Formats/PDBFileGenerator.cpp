@@ -48,7 +48,7 @@ void PDBFileGenerator::consume(ObjectPtr object)
   size_t atomNumber = 1;
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResiduePtr residue = tertiaryStructure->getResidue(i);
+    ProteinResidueAtomsPtr residue = tertiaryStructure->getResidue(i);
     if (residue)
       for (size_t j = 0; j < residue->getNumAtoms(); ++j)
       {
