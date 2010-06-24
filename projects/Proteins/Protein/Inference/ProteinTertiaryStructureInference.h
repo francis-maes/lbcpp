@@ -42,7 +42,7 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
   {
-    ProteinResiduePtr residue = supervision.dynamicCast<ProteinResidue>();
+    ProteinResidueAtomsPtr residue = supervision.dynamicCast<ProteinResidueAtoms>();
     jassert(residue || !supervision);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
@@ -66,7 +66,7 @@ public:
 
   virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    ProteinResiduePtr res = new ProteinResidue();
+    ProteinResidueAtomsPtr res = new ProteinResidueAtoms();
     res->addAtom(new ProteinAtom(T("N"), T("N")));
     res->addAtom(new ProteinAtom(T("CA"), T("C")));
     res->addAtom(new ProteinAtom(T("C"), T("C")));
@@ -81,7 +81,7 @@ public:
 
   virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
   {
-    ProteinResiduePtr residue = output.dynamicCast<ProteinResidue>();
+    ProteinResidueAtomsPtr residue = output.dynamicCast<ProteinResidueAtoms>();
     ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
     jassert(residue && prediction);
     ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));

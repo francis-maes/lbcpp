@@ -31,7 +31,7 @@ protected:
   struct Chain
   {
     ProteinPtr protein;
-    std::vector< std::vector<ProteinResiduePtr> > tertiaryStructureBlocks;
+    std::vector< std::vector<ProteinResidueAtomsPtr> > tertiaryStructureBlocks;
   };
 
   String proteinName;
@@ -68,10 +68,10 @@ protected:
   Chain* getChain(const String& line, int column);
   bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
 
-  ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResiduePtr> >& tertiaryStructureBlocks);
+  ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResidueAtomsPtr> >& tertiaryStructureBlocks);
   LabelSequencePtr finalizeDisorderSequence(ProteinPtr protein);
 
-  bool checkResidueConsistency(ProteinResiduePtr residue);
+  bool checkResidueConsistency(ProteinResidueAtomsPtr residue);
 };
 
 }; /* namespace lbcpp */

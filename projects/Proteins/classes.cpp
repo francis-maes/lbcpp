@@ -31,6 +31,7 @@ using namespace lbcpp;
 extern void declareProteinGlobalFeaturesClasses();
 extern void declareProteinResidueFeaturesClasses();
 extern void declareProteinResiduePairFeaturesClasses();
+extern void declareAminoAcidClasses();
 
 void declareProteinClasses()
 {
@@ -49,7 +50,7 @@ void declareProteinClasses()
   LBCPP_DECLARE_CLASS(ProteinBackboneBond);
   LBCPP_DECLARE_CLASS(ProteinBackboneBondSequence);
   LBCPP_DECLARE_CLASS(ProteinAtom);
-  LBCPP_DECLARE_CLASS(ProteinResidue);
+  LBCPP_DECLARE_CLASS(ProteinResidueAtoms);
   LBCPP_DECLARE_CLASS(ProteinTertiaryStructure);
 
   LBCPP_DECLARE_CLASS(Protein);
@@ -81,4 +82,7 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(DSSPSecondaryStructureDictionary);
   LBCPP_DECLARE_DICTIONARY(AminoAcidPropertyDictionary);
   LBCPP_DECLARE_DICTIONARY(StructuralAlphabetDictionary);
+
+  // new:
+  declareAminoAcidClasses();
 }

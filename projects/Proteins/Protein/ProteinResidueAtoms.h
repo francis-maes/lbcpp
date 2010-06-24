@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinResidue.h               | Protein Residue                 |
+| Filename: ProteinResidueAtoms.h          | Protein Residue Atoms           |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 15:21               |                                 |
 `------------------------------------------/                                 |
@@ -81,15 +81,15 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ProteinAtom> ProteinAtomPtr;
 
-class ProteinResidue;
-typedef ReferenceCountedObjectPtr<ProteinResidue> ProteinResiduePtr;
+class ProteinResidueAtoms;
+typedef ReferenceCountedObjectPtr<ProteinResidueAtoms> ProteinResidueAtomsPtr;
 
-class ProteinResidue : public Object
+class ProteinResidueAtoms : public Object
 {
 public:
-  ProteinResidue(AminoAcidDictionary::Type aminoAcid)
+  ProteinResidueAtoms(AminoAcidDictionary::Type aminoAcid)
     : aminoAcid(aminoAcid) {}
-  ProteinResidue()
+  ProteinResidueAtoms()
     : aminoAcid(AminoAcidDictionary::unknown) {}
 
   virtual String toString() const;
@@ -134,7 +134,7 @@ public:
     {ProteinAtomPtr atom = findAtomByName(name); return atom ? atom->getPosition() : Vector3();}
 
   double getDistanceBetweenAtoms(const String& name1, const String& name2) const;
-  double getDistanceBetweenAtoms(const String& name1, ProteinResiduePtr residue2, const String& name2) const;
+  double getDistanceBetweenAtoms(const String& name1, ProteinResidueAtomsPtr residue2, const String& name2) const;
 
   bool hasCAlphaAtom() const
     {return getCAlphaAtom();}
@@ -154,12 +154,12 @@ public:
 
   FeatureGeneratorPtr positionFeatures() const;
 
+  virtual bool load(InputStream& istr);
+  virtual void save(OutputStream& ostr) const;
+
 protected:
   AminoAcidDictionary::Type aminoAcid;
   std::vector<ProteinAtomPtr> atoms;
-
-  virtual bool load(InputStream& istr);
-  virtual void save(OutputStream& ostr) const;
 };
 
 }; /* namespace lbcpp */

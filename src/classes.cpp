@@ -9,12 +9,16 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
+extern void declareClassClasses();
+
 extern void declareObjectContainerClasses();
 extern void declareObjectStreamClasses();
 
 // Object
 void declareObjectRelatedClasses()
 {
+  declareClassClasses();
+
   LBCPP_DECLARE_CLASS(StringToObjectMap);
   declareObjectContainerClasses();
   declareObjectStreamClasses();

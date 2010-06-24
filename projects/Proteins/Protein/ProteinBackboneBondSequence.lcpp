@@ -67,7 +67,7 @@ featureGenerator ProteinAtom::positionFeatures() const
   }
 }
 
-featureGenerator ProteinResidue::positionFeatures() const
+featureGenerator ProteinResidueAtoms::positionFeatures() const
 {
   for (size_t i = 0; i < this->getNumAtoms(); ++i)
   {
@@ -78,7 +78,7 @@ featureGenerator ProteinResidue::positionFeatures() const
 
 featureGenerator ProteinTertiaryStructure::elementFeatures(size_t position) const
 {
-  ProteinResiduePtr residue = this->getResidue(position);
+  ProteinResidueAtomsPtr residue = this->getResidue(position);
   if (residue)
     featureCall((size_t)residue->getAminoAcid()) residue->positionFeatures();
   else
