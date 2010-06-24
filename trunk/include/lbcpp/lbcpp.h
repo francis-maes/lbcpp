@@ -53,6 +53,9 @@
 # include "FeatureGenerator/DenseVector.h"
 # include "FeatureGenerator/ContinuousFunction.h"
 # include "FeatureGenerator/Optimizer.h"
+# include "FeatureGenerator/impl/DoubleVector.hpp"
+# include "FeatureGenerator/impl/FeatureGenerator.hpp"
+# include "FeatureGenerator/impl/FeatureGeneratorDefaultImplementations.hpp"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceStack.h"
@@ -66,7 +69,5 @@
 # include "Inference/InferenceBatchLearner.h"
 # include "Inference/InferenceResultCache.h"
 # include "Inference/Evaluator.h"
-
-# include "impl/impl.h"
 
 #endif // !LBCPP_LBCPP_H_

@@ -9,8 +9,8 @@
 #include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
 #include <lbcpp/Object/ObjectGraph.h>
 #include <lbcpp/Object/Table.h>
-#include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
-#include <lbcpp/impl/Bridge/DoubleVector.hpp>
+#include <lbcpp/FeatureGenerator/impl/FeatureGeneratorDefaultImplementations.hpp>
+#include <lbcpp/FeatureGenerator/impl/DoubleVector.hpp>
 
 #include "FeatureGenerator/EmptyFeatureGenerator.h"
 #include "FeatureGenerator/UnitFeatureGenerator.h"

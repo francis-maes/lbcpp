@@ -43,8 +43,7 @@ bool CppOutputFile::write(PTree::Node* node, CRInputFile& sourceFile, bool addSo
   std::string preprocessorBegin =
     "#ifndef " + dblInclusionMacroName + "\n" +
     "# define " + dblInclusionMacroName + "\n" +
-    "# include <lbcpp/lbcpp.h>\n" +
-    "# include <lbcpp/impl/impl.h>\n\n";
+    "# include <lbcpp/lbcpp.h>\n\n";
   sourceFile.addChunk(sourceFile.getFirstLineOfCode() - 1, preprocessorBegin);
   sourceFile.prettyPrint(node, *ostr, addSourceLineNumbers);
   (*ostr) << "\n#endif // !" + dblInclusionMacroName << std::endl;

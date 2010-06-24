@@ -10,7 +10,7 @@
 # define LBCPP_FEATURE_GENERATOR_EXPLICIT_LINEAR_COMBINATION_H_
 
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
-# include <lbcpp/impl/Bridge/FeatureGeneratorDefaultImplementations.hpp>
+# include <lbcpp/FeatureGenerator/impl/FeatureGeneratorDefaultImplementations.hpp>
 
 namespace lbcpp
 {

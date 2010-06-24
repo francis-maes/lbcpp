@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include <lbcpp/impl/impl.h>
 using namespace lbcpp;
 
 #include "InferenceData/LabelSequence.h"
