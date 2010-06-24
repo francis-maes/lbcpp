@@ -54,14 +54,14 @@ static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
   LabelSequencePtr aa = protein->getAminoAcidSequence();
   if (position < 0)
     *o << AminoAcidDictionary::unknown + 1;
-  else if (position >= protein->getLength())
+  else if (position >= (int)protein->getLength())
     *o << AminoAcidDictionary::unknown + 2;
   else
     *o << aa->getIndex(position);
   *o << " ";
 
   ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
-  if (position < 0 || position >= protein->getLength())
+  if (position < 0 || position >= (int)protein->getLength())
     for (size_t i = 0; i < pssm->getNumScores(); ++i)
       *o << "0 ";
   else
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
       continue;
     }
     ++nbValidProteins;
-    for (int j = 0; j < protein->getLength(); ++j)
+    for (int j = 0; j < (int)protein->getLength(); ++j)
     {
       int ss3Value = ss3->getIndex(j);
       if (ss3Value == -1)

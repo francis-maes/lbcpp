@@ -70,7 +70,7 @@ public:
         beforeZero += data[i];
     if (indexOfZero < 0)
       return textFile;
-    if (Object::doClassNameExists(beforeZero))
+    if (Class::doClassNameExists(beforeZero))
       return classFile;
     return binaryFile;
   }
