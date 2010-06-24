@@ -30,7 +30,7 @@ public:
       if (output)
         *output = 0;
       if (gradient)
-        *gradient = FeatureGeneratorPtr();
+        *gradient = emptyFeatureGenerator();
     }
     else
     {

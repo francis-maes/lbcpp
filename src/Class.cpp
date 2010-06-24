@@ -15,8 +15,11 @@ extern void declareLBCppCoreClasses();
 class ClassManager
 {
 public:
+  ClassManager() : standardClassesAreDeclared(false) {}
+
   void declare(ClassPtr classInstance)
   {
+    ensureStandardClassesAreLoaded();
     if (!classInstance || classInstance->getName().isEmpty())
       Object::error(T("ClassManager::declare"), T("Empty class name"));
 
@@ -40,7 +43,7 @@ public:
 
   ObjectPtr createInstance(const String& className) const
   {
-    ensureStandardClassesAreLoaded();
+    const_cast<ClassManager* >(this)->ensureStandardClassesAreLoaded();
     if (className.isEmpty())
     {
       Object::error(T("ClassManager::create"), T("Empty class name"));
@@ -69,10 +72,15 @@ private:
   CriticalSection classesLock;
   ClassMap classes;
 
-  void ensureStandardClassesAreLoaded() const
+  bool standardClassesAreDeclared;
+
+  void ensureStandardClassesAreLoaded()
   {
-    if (!get(T("SparseVector")))
+    if (!standardClassesAreDeclared)
+    {
+      standardClassesAreDeclared = true;
       declareLBCppCoreClasses();
+    }
   }
 };
 

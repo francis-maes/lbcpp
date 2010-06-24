@@ -398,10 +398,14 @@ bool ProteinTertiaryStructure::load(InputStream& istr)
     String className;
     if (!lbcpp::read(istr, className))
       return false;
-    jassert(className == T("ProteinResidue") || className == T("ProteinResidueAtoms"));
-    ProteinResidueAtomsPtr residue = new ProteinResidueAtoms();
-    if (!residue->load(istr))
-      return false;
+    ProteinResidueAtomsPtr residue;
+    if (className != T("__null__"))
+    {
+      jassert(className == T("ProteinResidue") || className == T("ProteinResidueAtoms"));
+      residue = new ProteinResidueAtoms();
+      if (!residue->load(istr))
+        return false;
+    }
     residues.push_back(residue);
   }
   return true;
