@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/FeatureGenerator/SparseVector.h>
-#include <lbcpp/impl/Bridge/DoubleVector.hpp>
+#include <lbcpp/FeatureGenerator/impl/DoubleVector.hpp>
 #include "DoubleVectorHelpers.hpp" 
 using namespace lbcpp;
 
