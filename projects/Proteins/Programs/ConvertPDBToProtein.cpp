@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-bool convertPDBToProtein(const File& inputFile, const File& outputFile)
+bool convert(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
   ProteinPtr protein = Protein::createFromPDB(inputFile, false);
@@ -25,27 +25,11 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
   if (output.isDirectory())
   {
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
+    protein->saveToPDBFile(outputFile.getChildFile(inputFile.getFileNameWithoutExtension() + T(".pdb")));
   }
   protein->saveToFile(output);
   return true;
 }
-
-bool convertProteinToPDB(const File& inputFile, const File& outputFile)
-{
-  std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromFile(inputFile);
-  if (!protein)
-    return false;
-  
-  File output = outputFile;
-  if (output.isDirectory())
-  {
-    output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".pdb"));
-  }
-  protein->saveToPDBFile(output);
-  return true;
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -68,7 +52,6 @@ int main(int argc, char* argv[])
   }
 
   juce::OwnedArray<File> inputFiles;
-  bool convertToPDB = false;
   if (input.isDirectory())
   {
     if (output.exists() && !output.isDirectory())
@@ -82,29 +65,16 @@ int main(int argc, char* argv[])
       return 2;    
     }
     input.findChildFiles(inputFiles, File::findFiles, false, T("*.pdb"));
-    
-    if (!inputFiles.size())
-    {
-      input.findChildFiles(inputFiles, File::findFiles, false, T("*.protein"));
-      convertToPDB = true;
-    }
-    
   }
   else
-  {
-    if (input.getFileExtension() == T(".protein"))
-      convertToPDB = true;
     inputFiles.add(new File(input));
-  }
+
   std::vector<File> errors;
   for (int i = 0; i < inputFiles.size(); ++i)
   {
     if (inputFiles.size() > 1)
       std::cout << (i+1) << " / " << inputFiles.size() << ", ";
-
-    if (convertToPDB && !convertProteinToPDB(*inputFiles[i], output))
-        errors.push_back(*inputFiles[i]);
-    else if (!convertToPDB && !convertPDBToProtein(*inputFiles[i], output))
+    if (!convert(*inputFiles[i], output))
       errors.push_back(*inputFiles[i]);
   }
 
