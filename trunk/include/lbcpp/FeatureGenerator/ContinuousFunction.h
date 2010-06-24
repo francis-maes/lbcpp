@@ -29,7 +29,6 @@
 
 # include "SparseVector.h"
 # include "DenseVector.h"
-# include "../LearningExample.h"
 
 namespace lbcpp
 {
@@ -173,24 +172,6 @@ inline ScalarFunctionPtr dihedralAngleSquareLoss(double target)
 extern BinaryClassificationLossFunctionPtr hingeLoss(size_t correctClass, double margin = 1);
 extern BinaryClassificationLossFunctionPtr logBinomialLoss(size_t correctClass);
 
-
-/**
-** @class ScalarLossFunction
-** @brief \f$ f : \text{example}\times R  \to  R  \f$
-**
-*/
-class ScalarLossFunction : public ScalarFunction
-{
-public:
-  /**
-  **
-  **
-  ** @param learningExample
-  */
-  virtual void setLearningExample(const LearningExample& learningExample) = 0;
-};
-
-
 /**
 ** @class ScalarVectorFunction
 ** @brief \f$ f :  R^n \to  R  \f$
@@ -199,6 +180,8 @@ public:
 class ScalarVectorFunction : public ContinuousFunction
 {
 public:
+  ScalarVectorFunctionPtr multiplyByScalar(double scalar) const;
+
   /**
   ** Computes f(@a input).
   **
@@ -255,194 +238,14 @@ public:
   ** @return
   */
   bool checkDerivativeWrtDirection(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction);
-
-  /**
-  ** Returns \f$ g :  R \to R  \f$
-  ** with \f$ g(x) = f(\text{parameters} + x * \text{direction}) \f$
-  **
-  ** @param parameters
-  ** @param direction
-  **
-  ** @return
-  */
-  ScalarFunctionPtr lineFunction(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction) const;
 };
 
 
 extern ScalarVectorFunctionPtr sum(ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2);
-extern ScalarVectorFunctionPtr sumOfSquaresFunction(double weight = 1.0);
+extern ScalarVectorFunctionPtr sumOfSquaresFunction();
 
-/**
-** @class VectorLossFunctionm
-** @brief \f$ f : \text{example}\times R^n \to  R  \f$
-**
-*/
-class VectorLossFunction : public ScalarVectorFunction
-{
-public:
-  /**
-  **
-  **
-  ** @param learningExample
-  */
-  virtual void setLearningExample(const LearningExample& learningExample) = 0;
-};
-
-
-/**
-** @class CRAlgorithm
-** @brief \f$ f : \text{params}\times\text{features}\to R \f$
-**
-*/
-class ScalarArchitecture : public ContinuousFunction
-{
-public:
-  ScalarArchitecture() : dotProductCache(NULL) {}
-
-  // The two following functions create functions that take parameters as inputs and compute the loss associated to these parameters
-  ScalarVectorFunctionPtr makeExampleLoss(FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction) const;
-  ScalarVectorFunctionPtr makeEmpiricalRisk(ObjectContainerPtr examples) const;
-
-  /**
-  **
-  **
-  ** @param inputDictionary
-  **
-  ** @return
-  */
-  virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const = 0;
-
-  /**
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
-  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-  {
-    DenseVectorPtr res = new DenseVector(getParametersDictionary(inputDictionary));
-    if (initializeRandomly)
-      res->initializeRandomly();
-    return res;
-  }
-
-  /**
-  **
-  **
-  ** @param parameters
-  ** @param input
-  **
-  ** @return
-  */
-  virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
-
-  /**
-  **
-  **
-  ** @param parameters
-  ** @param input : function argument.
-  ** @param output : result container.
-  ** @param gradientWrtParameters
-  ** @param gradientWrtInput
-  */
-  virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-      double* output,
-      FeatureGeneratorPtr* gradientWrtParameters,
-      FeatureGeneratorPtr* gradientWrtInput) const = 0;
-
-  FeatureGenerator::DotProductCache* dotProductCache;
-
-};
-
-extern ScalarArchitecturePtr linearArchitecture();
-
-
-/**
-** @class VectorArchitecture
-** @brief \f$ f : \text{params}\times\text{features}\to R^n\f$
-**
-*/
-class VectorArchitecture : public ContinuousFunction
-{
-public:
-  // todo: non-derivable vector architectures
-  /**
-  **
-  **
-  ** @param inputDictionary
-  **
-  ** @return
-  */
-  virtual FeatureDictionaryPtr getParametersDictionary(FeatureDictionaryPtr inputDictionary) const = 0;
-
-  /**
-  **
-  **
-  ** @param inputDictionary
-  ** @param initializeRandomly
-  **
-  ** @return
-  */
-  DenseVectorPtr createInitialParameters(FeatureDictionaryPtr inputDictionary, bool initializeRandomly) const
-  {
-    DenseVectorPtr res = new DenseVector(getParametersDictionary(inputDictionary));
-    if (initializeRandomly)
-      res->initializeRandomly();
-    return res;
-  }
-
-  /**
-  **
-  **
-  ** @param parameters
-  ** @param input
-  **
-  ** @return
-  */
-  virtual FeatureGeneratorPtr compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input) const = 0;
-
-  /**
-  **
-  **
-  ** @param parameters
-  ** @param input
-  ** @param outputNumber
-  **
-  ** @return
-  */
-  virtual double compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input, size_t outputNumber) const = 0;
-
-  /**
-  **
-  **
-  ** @param parameters
-  ** @param input
-  ** @param outputNumber
-  ** @param output
-  ** @param gradientWrtParameters
-  ** @param gradientWrtInput
-  */
-  virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-                size_t outputNumber, double* output,
-                FeatureGeneratorPtr* gradientWrtParameters,
-                FeatureGeneratorPtr* gradientWrtInput) const = 0;
-
-  /**
-  **
-  **
-  ** @param parameters
-  ** @param input
-  ** @param output
-  ** @param gradientsWrtParameters
-  ** @param gradientsWrtInput
-  */
-  virtual void compute(const DenseVectorPtr parameters, const FeatureGeneratorPtr input,
-      FeatureGeneratorPtr* output,
-      FeatureGeneratorPtr* gradientsWrtParameters,
-      FeatureGeneratorPtr* gradientsWrtInput) const = 0;
-};
+inline ScalarVectorFunctionPtr sumOfSquaresFunction(double weight)
+  {return sumOfSquaresFunction()->multiplyByScalar(weight);}
 
 }; /* namespace lbcpp */
 

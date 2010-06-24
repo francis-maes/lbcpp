@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+  /*
 class RegressionExamplesParser : public LearningDataObjectParser
 {
 public:
@@ -32,7 +33,7 @@ public:
     setResult(new RegressionExample(x, y));
     return true;
   }
-};
+};*/
 
 }; /* namespace lbcpp */
 

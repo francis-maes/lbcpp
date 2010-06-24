@@ -10,7 +10,6 @@
 #include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/FeatureGenerator/SparseVector.h>
 #include <lbcpp/FeatureGenerator/DenseVector.h>
-#include <lbcpp/LearningExample.h>
 
 #include "ObjectStream/ApplyFunctionObjectStream.h"
 #include "ObjectStream/ClassificationExamplesParser.h"
@@ -196,7 +195,7 @@ bool LearningDataObjectParser::parseFeatureIdentifier(const String& identifier, 
   return true;
 }
 
-
+/*
 ObjectStreamPtr lbcpp::classificationExamplesParser(
           const File& file, FeatureDictionaryPtr features, FeatureDictionaryPtr labels)
 {
@@ -215,6 +214,7 @@ ObjectStreamPtr lbcpp::classificationExamplesSyntheticGenerator(size_t numFeatur
   jassert(numClasses >= 2);
   return new ClassificationExamplesSyntheticGenerator(numFeatures, numClasses);
 }
+*/
 
 /*
 ** DirectoryObjectStream

@@ -357,3 +357,19 @@ void FeatureDictionaryManager::addDictionary(FeatureDictionaryPtr dictionary)
   jassert(dictionaries.find(name) == dictionaries.end());
   dictionaries[name] = dictionary;
 }
+
+/*
+** BinaryClassificationDictionary
+*/
+FeatureDictionaryPtr BinaryClassificationDictionary::getInstance()
+{
+  static FeatureDictionaryPtr instance = new BinaryClassificationDictionary();
+  return instance;
+}
+
+BinaryClassificationDictionary::BinaryClassificationDictionary()
+  : FeatureDictionary(T("BinaryClassification"), new StringDictionary(T("BinaryClassification features")), StringDictionaryPtr())
+{
+  addFeature(T("negative"));
+  addFeature(T("positive"));
+}

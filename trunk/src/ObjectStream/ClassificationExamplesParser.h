@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+/*
 class ClassificationExamplesParser : public LearningDataObjectParser
 {
 public:
@@ -35,7 +35,7 @@ public:
   
 private:
   FeatureDictionaryPtr labels;
-};
+};*/
 
 }; /* namespace lbcpp */
 

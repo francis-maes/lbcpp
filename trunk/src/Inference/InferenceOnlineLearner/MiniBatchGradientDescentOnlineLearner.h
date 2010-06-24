@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_MINI_BATCH_GRADIENT_DESCENT_LEARNING_CALLBACK_H_
 
 # include "GradientDescentOnlineLearner.h"
+# include <lbcpp/FeatureGenerator/SparseVector.h>
 
 namespace lbcpp
 {

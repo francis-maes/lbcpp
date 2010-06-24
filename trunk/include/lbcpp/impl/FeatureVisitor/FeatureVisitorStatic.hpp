@@ -11,10 +11,33 @@
 
 # include "../../FeatureGenerator/FeatureGenerator.h"
 # include "../../FeatureGenerator/EditableFeatureGenerator.h"
-# include "../Object.hpp"
+# include <lbcpp/FeatureGenerator/FeatureVisitor.h>
 
 namespace lbcpp {
 namespace impl {
+
+template<class ExactType>
+struct Object
+{
+  String toString() const {return "";}
+  String getName() const {return "";}
+  
+  void save(OutputStream& ostr) const {}
+  bool load(InputStream& istr) {return true;}
+
+  static void error(const String& where, const String& what)
+    {ErrorHandler::error(where, what);}
+    
+  static void warning(const String& where, const String& what)
+    {ErrorHandler::warning(where, what);}
+
+protected:
+  ExactType& _this()
+    {return *(ExactType* )this;}
+
+  const ExactType& _this() const
+    {return *(const ExactType* )this;}
+};
 
 template<class ExactType>
 struct FeatureVisitor : public Object<ExactType>
@@ -26,7 +49,8 @@ struct FeatureVisitor : public Object<ExactType>
     {}
   void featureLeave()
     {}
-  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight);
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
+    {jassert(false);}
 
   /*
   ** Conversion functions
@@ -170,6 +194,32 @@ protected:
 private:
   std::vector< std::pair<VectorPtr, double> > currentVectorStack;
 };
+
+template<class ImplementationType>
+class StaticToDynamicFeatureVisitor : public lbcpp::FeatureVisitor
+{
+public:
+  StaticToDynamicFeatureVisitor(ImplementationType& impl)
+    : impl(impl)  {}
+
+  virtual bool featureEnter(FeatureDictionaryPtr dictionary, size_t index, FeatureDictionaryPtr subDictionary, double weight)
+    {return impl.featureEnter(dictionary, index, subDictionary, weight);}
+    
+  virtual void featureSense(FeatureDictionaryPtr dictionary, size_t index, double value)
+    {impl.featureSense(dictionary, index, value);}
+
+  virtual void featureCall(FeatureDictionaryPtr dictionary, size_t index, FeatureGeneratorPtr featureGenerator, double weight)
+    {impl.featureCall(dictionary, index, featureGenerator, weight);}
+
+  virtual void featureLeave()
+    {impl.featureLeave();}
+        
+  ImplementationType& impl;
+};
+
+template<class ExactType>
+inline FeatureVisitorPtr staticToDynamic(impl::FeatureVisitor<ExactType>& implementation)
+  {return FeatureVisitorPtr(new StaticToDynamicFeatureVisitor<ExactType>(static_cast<ExactType& >(implementation)));}
 
 }; /* namespace lbcpp */
 }; /* namespace impl */

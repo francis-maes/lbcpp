@@ -9,8 +9,6 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-extern void declareGradientBasedLearners();
-extern void declareGradientBasedLearningMachines();
 extern void declareObjectContainerClasses();
 extern void declareObjectStreamClasses();
 
@@ -43,14 +41,10 @@ void declareFeatureGenerators()
   LBCPP_DECLARE_CLASS(FeatureDictionary);
 
   LBCPP_DECLARE_CLASS(Label);
+  LBCPP_DECLARE_CLASS(Scalar);
   LBCPP_DECLARE_CLASS(SparseVector);
   LBCPP_DECLARE_CLASS(DenseVector);
 }
-
-// CRAlgorithm
-extern void declareChooseFunctions();
-extern void declarePolicies();
-extern void declareCRAlgorithmLearners();
 
 // Inference
 extern void declareInferenceClasses();
@@ -69,13 +63,7 @@ void declareLBCppCoreClasses()
   declareOptimizers();
   
   LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
-  declareGradientBasedLearners();
-  declareGradientBasedLearningMachines();
   
-  declareChooseFunctions();
-  declarePolicies();
-  declareCRAlgorithmLearners();
-
   declareInferenceClasses();
   declareInferenceCallbackClasses();
   declareInferenceOnlineLearnerClasses();

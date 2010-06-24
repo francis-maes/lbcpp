@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+/*
 class ClassificationExamplesSyntheticGenerator : public ObjectStream
 {
 public:
@@ -67,6 +67,7 @@ private:
     return res;
   }
 };
+*/
 
 }; /* namespace lbcpp */
 

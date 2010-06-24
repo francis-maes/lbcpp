@@ -1,25 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AbsoluteLossFunction.hpp       | Absolute regression loss        |
+| Filename: AbsFunction.h                  | Absolute value function         |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/03/2009 13:03               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_IMPL_FUNCTION_ABSOLUTE_LOSS_H_
-# define LBCPP_CORE_IMPL_FUNCTION_ABSOLUTE_LOSS_H_
+#ifndef LBCPP_SCALAR_FUNCTION_ABSOLUTE_H_
+# define LBCPP_SCALAR_FUNCTION_ABSOLUTE_H_
 
-# include "LossFunctions.hpp"
+# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
-namespace lbcpp {
-namespace impl {
+namespace lbcpp
+{
 
 // f(x) = abs(x)
-struct AbsoluteScalarFunction : public ScalarFunction<AbsoluteScalarFunction>
+class AbsFunction : public ScalarFunction
 {
-  enum {isDerivable = false};
+public:
+  virtual bool isDerivable() const
+    {return false;}
 
-  void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
   {
     if (output)
       *output = fabs(input);
@@ -42,12 +44,7 @@ struct AbsoluteScalarFunction : public ScalarFunction<AbsoluteScalarFunction>
     }
   }
 };
-inline AbsoluteScalarFunction absFunction()
-  {return AbsoluteScalarFunction();}
 
-STATIC_REGRESSION_LOSS_FUNCTION(absoluteLoss, AbsoluteLoss, AbsoluteScalarFunction);
-
-}; /* namespace impl */
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_IMPL_FUNCTION_ABSOLUTE_LOSS_H_
+#endif // !LBCPP_SCALAR_FUNCTION_ABSOLUTE_H_

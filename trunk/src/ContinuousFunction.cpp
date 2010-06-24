@@ -7,15 +7,16 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/FeatureGenerator/ContinuousFunction.h>
-#include <lbcpp/impl/impl.h>
 #include <lbcpp/Object/ObjectPair.h>
 
 #include "ContinuousFunction/MiscScalarFunctions.h"
 #include "ContinuousFunction/BinarySumScalarVectorFunction.h"
-#include "ContinuousFunction/ScalarArchitectureExampleLossFunction.h"
-#include "ContinuousFunction/ScalarArchitectureEmpiricalRiskFunction.h"
 #include "ContinuousFunction/HingeLossFunction.h"
 #include "ContinuousFunction/LogBinomialLossFunction.h"
+#include "ContinuousFunction/SquareFunction.h"
+#include "ContinuousFunction/AbsFunction.h"
+#include "ContinuousFunction/MultiplyByScalarVectorFunction.h"
+#include "ContinuousFunction/SumOfSquaresScalarVectorFunction.h"
 using namespace lbcpp;
 
 /*
@@ -52,10 +53,10 @@ ScalarFunctionPtr lbcpp::addConstantScalarFunction(double constant)
   {return new AddConstantScalarFunction(constant);}
 
 ScalarFunctionPtr lbcpp::squareFunction()
-  {return impl::staticToDynamic(impl::squareFunction());}
+  {return new SquareFunction();}
 
 ScalarFunctionPtr lbcpp::absFunction()
-  {return impl::staticToDynamic(impl::absFunction());}
+  {return new AbsFunction();}
 
 ScalarFunctionPtr lbcpp::sum(ScalarFunctionPtr function, double constant)
   {return new ScalarFunctionPlusConstant(function, constant);}
@@ -138,55 +139,16 @@ bool ScalarVectorFunction::checkDerivativeWrtDirection(const FeatureGeneratorPtr
   return fabs(numericalDerivative - analyticDerivative) < 0.00001;
 }
 
-class VectorFunctionLineScalarFunction
-  : public impl::StaticToDynamicScalarFunction< impl::VectorLineScalarFunction< impl::DynamicToStaticScalarVectorFunction > >
+ScalarVectorFunctionPtr ScalarVectorFunction::multiplyByScalar(double scalar) const
 {
-public:
-  typedef impl::StaticToDynamicScalarFunction< impl::VectorLineScalarFunction< impl::DynamicToStaticScalarVectorFunction > > BaseClass;
-  
-  VectorFunctionLineScalarFunction(ScalarVectorFunctionPtr function, const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction)
-    : BaseClass(impl::vectorLineScalarFunction(impl::dynamicToStatic(function), parameters, direction)) {}
-};
-
-ScalarFunctionPtr ScalarVectorFunction::lineFunction(const FeatureGeneratorPtr parameters, const FeatureGeneratorPtr direction) const
-{
-  return new VectorFunctionLineScalarFunction(const_cast<ScalarVectorFunction* >(this), parameters, direction);
+  ScalarVectorFunctionPtr pthis(const_cast<ScalarVectorFunction* >(this));
+  return scalar == 1.0
+    ? pthis
+    : new MultiplyByScalarVectorFunction(pthis, scalar);
 }
 
-class SumOfSquaresScalarVectorFunction
-  : public impl::StaticToDynamicScalarVectorFunction<impl::SumOfSquaresScalarVectorFunction>
-{
-public:
-  typedef impl::StaticToDynamicScalarVectorFunction<impl::SumOfSquaresScalarVectorFunction> BaseClass;
-  
-  SumOfSquaresScalarVectorFunction() 
-    : BaseClass(impl::sumOfSquares()) {}
-};
-
-class WeightedSumOfSquaresScalarVectorFunction 
-  : public impl::StaticToDynamicScalarVectorFunction<
-      impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication
-    >
-{
-public:
-  typedef impl::StaticToDynamicScalarVectorFunction<
-      impl::ScalarVectorFunctionScalarConstantPair<impl::SumOfSquaresScalarVectorFunction, void>::Multiplication
-    > BaseClass;
-    
-  WeightedSumOfSquaresScalarVectorFunction(double weight = 1.0)
-    : BaseClass(BaseClass::ImplementationType(impl::sumOfSquares(), weight)) {}
-};
-
-ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction(double weight)
-{
-  if (weight == 1)
-    return new SumOfSquaresScalarVectorFunction();
-  return new WeightedSumOfSquaresScalarVectorFunction(weight);
-    
-//  return weight != 1.0 ? 
-//    ? impl::staticToDynamic(impl::multiply(impl::sumOfSquares(), impl::constant(weight)))
-//    : impl::staticToDynamic(impl::sumOfSquares());
-}
+ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction()
+  {return new SumOfSquaresScalarVectorFunction();}
 
 ScalarVectorFunctionPtr lbcpp::sum(ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2)
 {
@@ -197,25 +159,14 @@ ScalarVectorFunctionPtr lbcpp::sum(ScalarVectorFunctionPtr f1, ScalarVectorFunct
 }
 
 /*
-** ScalarArchitecture
-*/
-ScalarArchitecturePtr lbcpp::linearArchitecture()
-  {return impl::staticToDynamic(impl::linearArchitecture());}
-
-ScalarVectorFunctionPtr ScalarArchitecture::makeExampleLoss(FeatureGeneratorPtr input, ScalarFunctionPtr lossFunction) const
-  {return new ScalarArchitectureExampleLossVectorFunction(ScalarArchitecturePtr(const_cast<ScalarArchitecture* >(this)), input, lossFunction);}
-
-ScalarVectorFunctionPtr ScalarArchitecture::makeEmpiricalRisk(ObjectContainerPtr examples) const
-  {return new ScalarArchitectureEmpiricalRiskVectorFunction(ScalarArchitecturePtr(const_cast<ScalarArchitecture* >(this)), examples);}
-
-/*
 ** Serializable classes declaration
 */
 void declareContinuousFunctions()
 {
-  LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction);
-  LBCPP_DECLARE_CLASS(WeightedSumOfSquaresScalarVectorFunction);
   LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction);
   LBCPP_DECLARE_CLASS(HingeLossFunction);
   LBCPP_DECLARE_CLASS(LogBinomialLossFunction);
+  LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction);
+  LBCPP_DECLARE_CLASS(AbsFunction);
+  LBCPP_DECLARE_CLASS(SquareFunction);
 }

@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/ParameterizedInference.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
 namespace lbcpp
 {
