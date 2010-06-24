@@ -328,7 +328,22 @@ private:
 
 #define LBCPP_DECLARE_DICTIONARY(ClassName) \
   lbcpp::FeatureDictionaryManager::getInstance().addDictionary(ClassName::getInstance())
-  
+
+class BinaryClassificationDictionary : public FeatureDictionary
+{
+public:
+  static FeatureDictionaryPtr getInstance();
+
+  enum Type
+  {
+    negative = 0,
+    positive,
+  };
+
+private:
+  BinaryClassificationDictionary();
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_STRING_DICTIONARY_H_

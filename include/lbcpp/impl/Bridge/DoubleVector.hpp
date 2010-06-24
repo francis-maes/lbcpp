@@ -10,9 +10,6 @@
 # define LBCPP_STATIC_DOUBLE_VECTOR_HPP_
 
 # include "FeatureGenerator.hpp"
-# include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
-# include "../../FeatureGenerator/SparseVector.h"
-# include "../../FeatureGenerator/DenseVector.h"
 
 namespace lbcpp
 {

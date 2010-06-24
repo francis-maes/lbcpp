@@ -9,7 +9,6 @@
 #ifndef LBCPP_FEATURE_GENERATOR_DEFAULT_IMPLEMENTATIONS_HPP_
 # define LBCPP_FEATURE_GENERATOR_DEFAULT_IMPLEMENTATIONS_HPP_
 
-# include "../FeatureVisitor/FeatureVisitorStaticToDynamic.hpp"
 # include "../FeatureVisitor/FeatureVisitorDynamicToStatic.hpp"
 # include "../FeatureVisitor/CreateVectorVisitor.hpp"
 # include "../FeatureVisitor/UnaryOperationVisitor.hpp"

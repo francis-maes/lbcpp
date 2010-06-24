@@ -80,7 +80,7 @@ protected:
 
 extern ObjectConsumerPtr objectSaveToFileConsumer(const File& directory, const String& extension);
 extern ObjectConsumerPtr vectorObjectContainerFiller(VectorObjectContainerPtr container);
-extern ObjectConsumerPtr classificationExamplesPrinter(const File& file, StringDictionaryPtr labels);
+//extern ObjectConsumerPtr classificationExamplesPrinter(const File& file, StringDictionaryPtr labels);
 
 }; /* namespace lbcpp */
 

@@ -14,7 +14,6 @@
 # include "InferenceCallback.h"
 # include "../FeatureGenerator/FeatureGenerator.h"
 # include "../FeatureGenerator/DenseVector.h"
-# include "../LearningMachine.h"
 # include "../Object/ObjectPair.h"
 
 namespace lbcpp

@@ -10,7 +10,6 @@
 #include <lbcpp/Object/ObjectStream.h>
 #include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/FeatureGenerator/FeatureVisitor.h>
-#include <lbcpp/LearningExample.h>
 #include <fstream>
 using namespace lbcpp;
 
@@ -130,6 +129,7 @@ void LearningDataObjectPrinter::printFeatureList(FeatureGeneratorPtr features, S
   visitor->finalize();
 }
 
+#if 0
 /*
 ** ClassificationExamplesPrinter
 */
@@ -157,6 +157,7 @@ ObjectConsumerPtr lbcpp::classificationExamplesPrinter(const File& file, StringD
   jassert(labels);
   return new ClassificationExamplesPrinter(file, labels);
 }
+#endif // 0
 
 /*
 ** ObjectSaveToFileConsumer

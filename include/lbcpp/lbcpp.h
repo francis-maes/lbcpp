@@ -40,10 +40,6 @@
 # include "Object/Table.h"
 # include "Object/StringToObjectMap.h"
 
-# include "LearningExample.h"
-# include "LearningMachine.h"
-# include "GradientBasedLearningMachine.h"
-
 # include "Utilities/IterationFunction.h"
 # include "Utilities/RandomGenerator.h"
 # include "Utilities/RandomVariable.h"
@@ -57,13 +53,6 @@
 # include "FeatureGenerator/DenseVector.h"
 # include "FeatureGenerator/ContinuousFunction.h"
 # include "FeatureGenerator/Optimizer.h"
-
-# include "CRAlgorithm/CRAlgorithmScope.h"
-# include "CRAlgorithm/Choose.h"
-# include "CRAlgorithm/Callback.h"
-# include "CRAlgorithm/Policy.h"
-# include "CRAlgorithm/CRAlgorithm.h"
-# include "CRAlgorithm/CRAlgorithmLearner.h"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceStack.h"

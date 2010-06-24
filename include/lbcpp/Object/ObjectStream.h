@@ -245,8 +245,8 @@ public:
 **
 ** @return a new ObjectStream containing classification examples.
 */
-extern ObjectStreamPtr classificationExamplesParser(const File& file,
-                                FeatureDictionaryPtr features, FeatureDictionaryPtr labels);
+//extern ObjectStreamPtr classificationExamplesParser(const File& file,
+ //                               FeatureDictionaryPtr features, FeatureDictionaryPtr labels);
 
 /**
 ** Creates a synthetic generator of linearly separable classification
@@ -267,7 +267,7 @@ extern ObjectStreamPtr classificationExamplesParser(const File& file,
 ** @return a new ObjectStream containing classification examples.
 ** @see ObjectStream::next
 */
-extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses);
+//extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatures, size_t numClasses);
 
 
 /**
@@ -309,7 +309,7 @@ extern ObjectStreamPtr classificationExamplesSyntheticGenerator(size_t numFeatur
 **  @see classificationExamplesParser
 **
 */
-extern ObjectStreamPtr regressionExamplesParser(const File& file, FeatureDictionaryPtr features);
+//extern ObjectStreamPtr regressionExamplesParser(const File& file, FeatureDictionaryPtr features);
 
 
 /**
