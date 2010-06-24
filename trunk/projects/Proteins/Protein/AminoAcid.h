@@ -67,6 +67,8 @@ public:
   String getThreeLettersCode() const;
   AminoAcidCategory1 getCategory1() const;
 
+  virtual String getName() const
+    {return getThreeLettersCode();}
 
   virtual String toString() const
     {String res; res += getOneLetterCode(); return res;}

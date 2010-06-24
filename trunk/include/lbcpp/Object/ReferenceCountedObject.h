@@ -87,6 +87,7 @@ protected:
   friend class ReferenceCountedObjectPtr; /*!< */
   template<class T>
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
+  friend class Variant;
 
   size_t refCount;              /*!< The object's reference count */
 

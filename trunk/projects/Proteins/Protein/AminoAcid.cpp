@@ -85,10 +85,10 @@ AminoAcidCategory1 AminoAcid::getCategory1() const
 */
 namespace lbcpp {
 
-class AminoAcidClass : public VectorBasedCollection
+class AminoAcidClass : public Collection
 {
 public:
-  AminoAcidClass() : VectorBasedCollection(T("AminoAcid"))
+  AminoAcidClass() : Collection(T("AminoAcid"))
   {
     addVariable(T("AminoAcidType"), T("type"));
     addVariable(StringClass::getInstance(), T("oneLetterCode"));
@@ -104,7 +104,7 @@ public:
 
 void declareAminoAcidClasses()
 {
-  Class::declare(new StaticEnumeration(T("AminoAcidType"), aminoAcidTypeStrings));
-  Class::declare(new StaticEnumeration(T("AminoAcidCategory1"), aminoAcidCategory1Strings));
+  Class::declare(new Enumeration(T("AminoAcidType"), aminoAcidTypeStrings));
+  Class::declare(new Enumeration(T("AminoAcidCategory1"), aminoAcidCategory1Strings));
   Class::declare(new AminoAcidClass());
 }
