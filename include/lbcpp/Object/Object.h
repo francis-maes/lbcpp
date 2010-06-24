@@ -294,6 +294,10 @@ public:
   virtual void visitVariable(size_t variableNumber, double value) = 0;
   virtual void visitVariable(size_t variableNumber, const String& value) = 0;
   virtual void visitVariable(size_t variableNumber, ObjectPtr value) = 0;
+
+  template<class T>
+  void visitVariable(size_t variableNumber, ReferenceCountedObjectPtr<T> value)
+    {visitVariable(variableNumber, (ObjectPtr)value);}
 };
 
 /**

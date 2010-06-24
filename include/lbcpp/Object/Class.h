@@ -104,31 +104,54 @@ public:
     {static ClassPtr res = Class::get(T("Object")); return res;}
 };
 
+class BuiltinTypeClass : public Class
+{
+public:
+  BuiltinTypeClass(const String& name, ClassPtr baseClass = ClassPtr())
+    : Class(name, baseClass ? baseClass : ObjectClass::getInstance()) {}
+};
+
 /*
 ** Builtin-types
 */
-class IntegerClass : public Class
+class BooleanClass : public BuiltinTypeClass
 {
 public:
-  IntegerClass() : Class(T("Integer"), ObjectClass::getInstance()) {}
+  BooleanClass() : BuiltinTypeClass(T("Boolean")) {}
+  
+  static ClassPtr getInstance()
+    {static ClassPtr res = Class::get(T("Boolean")); return res;}
+};
+
+class IntegerClass : public BuiltinTypeClass
+{
+public:
+  IntegerClass(const String& className, ClassPtr baseClass)
+    : BuiltinTypeClass(className, baseClass) {}
+  IntegerClass() : BuiltinTypeClass(T("Integer")) {}
 
   static ClassPtr getInstance()
     {static ClassPtr res = Class::get(T("Integer")); return res;}
+
+  virtual String toString(int value) const
+    {return lbcpp::toString(value);}
 };
 
-class DoubleClass : public Class
+typedef ReferenceCountedObjectPtr<IntegerClass> IntegerClassPtr;
+
+class DoubleClass : public BuiltinTypeClass
 {
 public:
-  DoubleClass() : Class(T("Double"), ObjectClass::getInstance()) {}
+  DoubleClass() : BuiltinTypeClass(T("Double")) {}
   
   static ClassPtr getInstance()
     {static ClassPtr res = Class::get(T("Double")); return res;}
 };
 
-class StringClass : public Class
+class StringClass : public BuiltinTypeClass
 {
 public:
-  StringClass() : Class(T("String"), ObjectClass::getInstance()) {}
+  StringClass() : BuiltinTypeClass(T("String")) {}
   
   static ClassPtr getInstance()
     {static ClassPtr res = Class::get(T("String")); return res;}
@@ -137,67 +160,60 @@ public:
 /*
 ** Enumeration
 */
-class Enumeration : public Class
-{
-public:
-  Enumeration(const String& name)
-    : Class(name, ObjectClass::getInstance()) {}
-
-  virtual size_t getNumElements() const = 0;
-  virtual String getElementName(size_t index) const = 0;
-
-  virtual ClassPtr getBaseClass() const
-    {return IntegerClass::getInstance();}
-};
-
+class Enumeration;
 typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 
-class StaticEnumeration : public Enumeration
+class Enumeration : public IntegerClass
 {
 public:
-  StaticEnumeration(const String& name, const juce::tchar** elements)
-    : Enumeration(name), elements(elements)
+  Enumeration(const String& name, const juce::tchar** elements)
+    : IntegerClass(name, IntegerClass::getInstance())
   {
-    for (numElements = 0; elements[numElements]; ++numElements)
-      ;
+    for (size_t index = 0; elements[index]; ++index)
+      addElement(elements[index]);
   }
-  
-  virtual size_t getNumElements() const
-    {return numElements;}
 
-  virtual String getElementName(size_t index) const
-    {jassert(index < numElements); return elements[index];}
+  Enumeration(const String& name)
+    : IntegerClass(name, IntegerClass::getInstance()) {}
+
+  static EnumerationPtr get(const String& className)
+    {return checkCast<Enumeration>(T("Enumeration::get"), Class::get(className));}
+
+  virtual String toString(int value) const
+    {return value >= 0 && value < (int)getNumElements() ? getElementName(value) : T("N/A");}
+
+  size_t getNumElements() const
+    {return elements.size();}
+
+  String getElementName(size_t index) const
+    {jassert(index < elements.size()); return elements[index];}
+
+protected:
+  void addElement(const String& elementName);
 
 private:
-  const juce::tchar** elements;
-  size_t numElements;
+  std::vector<String> elements;
 };
 
 /*
 ** Collection
 */
+class Collection;
+typedef ReferenceCountedObjectPtr<Collection> CollectionPtr;
+
 class Collection : public Class
 {
 public:
-  Collection(const String& name) : Class(name, ObjectClass::getInstance()) {}
+  Collection(const String& name)
+    : Class(name, ObjectClass::getInstance()) {}
 
-  virtual size_t getNumElements() const = 0;
-  virtual ObjectPtr getElement(size_t index) const = 0;
-};
+  static CollectionPtr get(const String& className)
+    {return checkCast<Collection>(T("Collection::get"), Class::get(className));}
 
-typedef ReferenceCountedObjectPtr<Collection> CollectionPtr;
-
-class VectorBasedCollection : public Collection
-{
-public:
-  VectorBasedCollection(const String& name)
-    : Collection(name)
-    {}
-
-  virtual size_t getNumElements() const
+  size_t getNumElements() const
     {return objects.size();}
 
-  virtual ObjectPtr getElement(size_t index) const
+  ObjectPtr getElement(size_t index) const
     {jassert(index < objects.size()); return objects[index];}
 
 protected:

@@ -148,6 +148,20 @@ void Class::addVariable(ClassPtr type, const String& name)
     variables.push_back(std::make_pair(type, name));
 }
 
+/*
+** Enumeration
+*/
+void Enumeration::addElement(const String& elementName)
+{
+  for (size_t i = 0; i < elements.size(); ++i)
+    if (elements[i] == elementName)
+    {
+      Object::error(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
+      return;
+    }
+  elements.push_back(elementName);
+}
+
 void declareClassClasses()
 {
   Class::declare(new ObjectClass());
