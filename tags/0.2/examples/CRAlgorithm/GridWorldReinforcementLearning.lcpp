@@ -1,0 +1,156 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: GridWorldReinforcementLe...lcpp| An example to illustrate        |
+| Author  : Francis Maes                   |  reinforcement learning in a    |
+| Started : 16/06/2009 19:59               |  simple grid world problem      |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include <lbcpp/lbcpp.h>
+using namespace lbcpp;
+
+/*
+** Abstract definition of the GridWorldEnvironment:
+**  there are four possible directions and the environment defines a "move" function
+*/
+enum Direction {left, right, top, bottom};
+
+class GridWorldEnvironment
+{
+public:
+  virtual ~GridWorldEnvironment() {}
+  
+  // updates the coordinates (x,y) given direction,
+  //  computes a reward associated to this move
+  //  and returns true if a final state has been reached.
+  virtual bool move(Direction direction, int& x, int& y, double& reward) = 0;
+  
+  // This one is necessary because GridWorldEnvironment is referenced from a CR-algorithm below.
+  // This function enables the LBC++ translator to generate a "toString()" function for the CR-algorithm.
+  friend std::ostream& operator <<(std::ostream& ostr, const GridWorldEnvironment& environment)
+    {return ostr << "GridWorldEnvironment";}
+};
+
+/*
+** The following CR-algorithm defines the GridWorld reinforcement learning problem
+*/
+crAlgorithm void gridWorld(GridWorldEnvironment& environment, int x, int y)
+{
+  std::vector<Direction> directions;
+  directions.push_back(left);
+  directions.push_back(right);
+  directions.push_back(top);
+  directions.push_back(bottom);
+
+  bool isFinalState = false;
+  while (!isFinalState)
+  {
+    chooseFunction featureGenerator actionFeatures(Direction direction) {
+      featureScope(x) featureScope(y) featureSense(direction);
+    }
+    
+    Direction direction = choose<Direction>(directions, actionFeatures);
+    double r;
+    isFinalState = environment.move(direction, x, y, r);
+    reward (r);
+  }
+}
+
+/*
+** One possible grid world environment where:
+**    - the world has size width x height
+**    - there are no walls and moves are deterministic
+**    - there is one final state at position (rewardX, rewardY)
+**    - each move incurs a cost of 1.0, except moves that lead to the
+**        final state which are associated to a reward of 100.0 
+*/
+class MyGridWorldEnvironment : public GridWorldEnvironment
+{
+public:
+  MyGridWorldEnvironment(int width, int height, int rewardX, int rewardY)
+    : width(width), height(height), rewardX(rewardX), rewardY(rewardY) {}
+    
+  virtual bool move(Direction direction, int& x, int& y, double& reward)
+  {
+    static const int dx[] = {-1, +1, 0, 0};
+    static const int dy[] = {0, 0, -1, +1};
+    x += dx[direction];
+    y += dy[direction];
+    if (x < 0) x = 0;
+    else if (x >= width) x = width - 1;
+    if (y < 0) y = 0;
+    else if (y >= height) y = height - 1;
+    if (x == rewardX && y == rewardY)
+    {
+      reward = 100.0;
+      return true;
+    }
+    else
+    {
+      reward = -1;
+      return false;
+    }
+  }
+
+  int getWidth() const
+    {return width;}
+
+  int getHeight() const
+    {return height;}
+  
+private:
+  int width, height;
+  int rewardX, rewardY;
+};
+
+/*
+** A stream of CRAlgorithm instances where the initial position is sampled uniformly
+*/
+class MyGridWorldInstancesStream : public ObjectStream
+{
+public:
+  MyGridWorldInstancesStream() : environment(10, 10, 3, 4) {}
+
+  virtual String getContentClassName() const
+    {return T("CRAlgorithm");}
+
+  virtual ObjectPtr next()
+  {
+    int x = RandomGenerator::getInstance().sampleInt(environment.getWidth());
+    int y = RandomGenerator::getInstance().sampleInt(environment.getHeight());
+    return gridWorld(environment, x, y);
+  }
+
+private:
+  MyGridWorldEnvironment environment;  
+};
+
+int main(int argc, char* argv[])
+{
+  /*
+  ** Sample 100 random initial gridworld states
+  */
+  ObjectContainerPtr gridWorldCRAlgorithms = (new MyGridWorldInstancesStream())->load(100);
+  
+  /*
+  ** Create the Sarsa-zero learner with the following parameters:
+  **   - the default regressor (linear least-square regression with stochastic descent)
+  **   - the epsilon-greedy sampling strategy with 10% noise
+  **   - a maximum of 10 training iterations
+  */
+  CRAlgorithmLearnerPtr learner = sarsaLearner(RegressorPtr(), 0.95,
+                                          predictedEpsilonGreedy, constantIterationFunction(0.1),
+                                          maxIterationsStoppingCriterion(10));
+  
+  /*
+  ** Learn a policy for the gridworld problem
+  */
+  learner->trainBatch(gridWorldCRAlgorithms, consoleProgressCallback());
+  
+  /*
+  ** Save the resulting policy
+  */
+  File policyFile = File::getCurrentWorkingDirectory().getChildFile("gridworld.policy");
+  learner->getPolicy()->saveToFile(policyFile);
+  return 0;
+}

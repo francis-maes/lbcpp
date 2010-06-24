@@ -103,7 +103,11 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   }
 
   if (object.dynamicCast<Protein>())
-    return new ProteinComponent(object.dynamicCast<Protein>(), name);
+  {
+    ProteinPtr protein = object.staticCast<Protein>();
+    protein->computeMissingFields();
+    return new ProteinComponent(protein, name);
+  }
 
   if (object.dynamicCast<ObjectPair>())
   {

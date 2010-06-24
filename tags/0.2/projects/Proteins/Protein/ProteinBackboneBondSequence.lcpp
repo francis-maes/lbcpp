@@ -1,0 +1,86 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ProteinBackboneBondSequence.lcpp| Protein Backbone Bonds         |
+| Author  : Francis Maes                   |                                 |
+| Started : 23/04/2010 13:14               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "Protein/ProteinBackboneBondSequence.h"
+#include "InferenceData/CommonFeatureGenerators.h"
+using namespace lbcpp;
+
+featureGenerator recursiveConjunctionFeatures(SparseVectorPtr vector, FeatureGeneratorPtr subFeatures)
+{
+  typedef std::vector<std::pair<size_t, double> > FeatureVector;
+  typedef std::vector<std::pair<size_t, SparseVectorPtr> > SubVectorVector;
+
+  const FeatureVector& vectorFeatures = vector->getValues();
+  if (vectorFeatures.size())
+  {
+    featureScope(0)
+      for (size_t i = 0; i < vectorFeatures.size(); ++i)
+        featureCall(vectorFeatures[i].first, vectorFeatures[i].second) subFeatures;
+  }
+  
+  const SubVectorVector& vectorSubVectors = vector->getSubVectors();
+  if (vectorSubVectors.size())
+  {
+    featureScope(1)
+      for (size_t i = 0; i < vectorSubVectors.size(); ++i)
+      {
+        size_t index = vectorSubVectors[i].first;
+        featureCall(index) recursiveConjunctionFeatures(vectorSubVectors[i].second, subFeatures);
+      }
+  }
+}
+
+FeatureGeneratorPtr conjunction(FeatureGeneratorPtr f1, FeatureGeneratorPtr f2)
+  {return recursiveConjunctionFeatures(f1->toSparseVector(), f2);}
+
+featureGenerator ProteinBackboneBondSequence::elementFeatures(size_t position) const
+{
+  DihedralAngle phi = this->getPhi(position);
+  if (phi.exists())
+    featureCall(0) multiScaleDihedralAngleFeatures(phi, 1, 2, 4);
+
+  DihedralAngle psi = this->getPsi(position);
+  if (psi.exists())
+    featureCall(1) multiScaleDihedralAngleFeatures(psi, 1, 2, 4);
+
+  DihedralAngle omega = this->getOmega(position);
+  if (omega.exists())
+    featureCall(2) multiScaleDihedralAngleFeatures(omega, 1, 2, 4);
+}
+
+// TODO: ranger
+#include "Protein/ProteinTertiaryStructure.h"
+
+featureGenerator ProteinAtom::positionFeatures() const
+{
+  Vector3 p = this->getPosition();
+  if (p.exists())
+  {
+    featureSense(0, p.getX());
+    featureSense(1, p.getY());
+    featureSense(2, p.getX());
+  }
+}
+
+featureGenerator ProteinResidue::positionFeatures() const
+{
+  for (size_t i = 0; i < this->getNumAtoms(); ++i)
+  {
+    ProteinAtomPtr atom = this->getAtom(i);
+    featureCall(atom->getName()) atom->positionFeatures();
+  }
+}
+
+featureGenerator ProteinTertiaryStructure::elementFeatures(size_t position) const
+{
+  ProteinResiduePtr residue = this->getResidue(position);
+  if (residue)
+    featureCall((size_t)residue->getAminoAcid()) residue->positionFeatures();
+  else
+    featureSense("none");
+}

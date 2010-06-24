@@ -1,0 +1,192 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: LabeledContentGraph.lh         | A labeled graph of content      |
+| Author  : Francis Maes                   |  elements                       |
+| Started : 18/02/2009 21:21               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "ContentGraph.lh"
+#include "LabelSequence.lh"
+
+namespace lbcpp
+{
+
+class LabeledContentGraph;
+typedef ReferenceCountedObjectPtr<LabeledContentGraph> LabeledContentGraphPtr;
+
+class LabeledContentGraph : public Object
+{
+public:
+  LabeledContentGraph(const LabeledContentGraph& other)
+    : graph(other.graph), labels(other.labels) {}
+  
+  LabeledContentGraph(ContentGraphPtr graph, LabelSequencePtr labels)
+    : graph(graph), labels(labels) {}
+      
+  LabeledContentGraph(StringDictionaryPtr labelsDictionary)
+    : graph(new ContentGraph()), labels(new LabelSequence(labelsDictionary)) {}
+  ~LabeledContentGraph();
+
+  /*
+  ** Accessors
+  */
+  size_t getNumNodes() const
+    {return graph->getNumNodes();}
+
+  FeatureGeneratorPtr getNode(size_t index) const
+    {return graph->getNode(index);}
+
+  size_t getNumSuccessors(size_t nodeIndex) const
+    {return graph->getNumSuccessors(nodeIndex);}
+    
+  size_t getSuccessor(size_t nodeIndex, size_t successorIndex) const
+    {return graph->getSuccessor(nodeIndex, successorIndex);}
+
+  size_t getNumPredecessors(size_t nodeIndex) const
+    {return graph->getNumPredecessors(nodeIndex);}
+  
+  size_t getPredecessor(size_t nodeIndex, size_t predecessorIndex) const
+    {return graph->getPredecessor(nodeIndex, predecessorIndex);}
+
+  size_t getNumLinks() const
+    {return graph->getNumLinks();}
+  
+  ContentGraphPtr getContentGraph() const
+    {return graph;}
+
+  bool hasLabels() const
+    {return labels->size() > 0;}
+
+  LabelSequencePtr getLabels() const
+    {return labels;}
+    
+  void setLabels(LabelSequencePtr labels)
+    {this->labels = labels;}
+    
+  size_t getLabel(size_t index) const
+    {return labels->get(index);}
+    
+  StringDictionaryPtr getLabelDictionary() const
+    {return labels->getLabelDictionary();}
+
+  /*
+  ** Feature Generators
+  */
+  featureGenerator nodeFeatures(size_t nodeIndex, size_t numPredecessors, size_t numSuccessors, bool includeCurrentLabel)
+  {
+    // Content
+    featureCall graph->contentFeatures(nodeIndex);
+    
+    // Structural Features
+    if (numPredecessors)
+      featureCall("predecessors") structuralFeaturesRec(nodeIndex, nodeIndex, 0, numPredecessors, true);
+    if (numSuccessors)
+      featureCall("successors") structuralFeaturesRec(nodeIndex, nodeIndex, 0, numSuccessors, false);
+
+    // Current Label
+    if (includeCurrentLabel)
+      featureCall("currentLabel") labels->labelFeature((int)nodeIndex);
+  }
+  
+  featureGenerator neighborhoodLabelsFrequencyFeatures(size_t nodeIndex)
+  {
+    size_t numLabels = getLabelDictionary()->getNumElements();
+    std::vector<size_t> predecessorLabels(numLabels + 1, 0);
+    std::vector<size_t> successorLabels(numLabels + 1, 0);
+    size_t n, i;
+    
+    n = graph->getNumPredecessors(nodeIndex);
+    for (i = 0; i < n; ++i)
+      predecessorLabels[getLabel(graph->getPredecessor(nodeIndex, i))]++;
+    n = graph->getNumSuccessors(nodeIndex);
+    for (i = 0; i < n; ++i)
+      successorLabels[getLabel(graph->getSuccessor(nodeIndex, i))]++;
+    
+    featureScope(0) {
+      for (i = 0; i <= numLabels; ++i)
+        if (predecessorLabels[i])
+          featureSense(i, (double)predecessorLabels[i]);
+    }
+    featureScope(1) {
+      for (i = 0; i <= numLabels; ++i)
+        if (successorLabels[i])
+          featureSense(i, (double)successorLabels[i]);      
+    }
+  }
+  
+  featureGenerator nodeAndNeighborhoodLabelsFrequencyFeatures(size_t nodeIndex)
+  {
+    featureCall(0) getNode(nodeIndex);
+    featureCall(1) inline neighborhoodLabelsFrequencyFeatures(nodeIndex);
+  }
+  
+  featureGenerator structuralFeaturesRec(size_t initialNode, size_t node, size_t recursion, size_t count, bool isPredecessors)
+  {
+    if (initialNode == node && recursion > 0) return;
+    
+    if (recursion > 0)
+        featureCall(recursion) labels->labelFeature((int)node);
+        
+    if (recursion < count)
+    {
+      if (isPredecessors)
+      {
+        size_t n = graph->getNumPredecessors(node);
+        for (size_t i = 0; i < n; ++i)
+          featureCall structuralFeaturesRec(initialNode, graph->getPredecessor(node, i), recursion + 1, count, true);
+      }
+      else
+      {
+        size_t n = graph->getNumSuccessors(node);
+        for (size_t i = 0; i < n; ++i)
+          featureCall structuralFeaturesRec(initialNode, graph->getSuccessor(node, i), recursion + 1, count, false);
+      }
+    }
+  }
+  
+  /*
+  ** Modifiers
+  */
+  size_t addNode(FeatureGeneratorPtr content, size_t label)
+    {size_t res = graph->addNode(content); labels->append(label); return res;}
+  
+  void addLink(size_t sourceNode, size_t targetNode)
+    {graph->addLink(sourceNode, targetNode);}
+  
+  void reserveNodes(size_t count)
+    {graph->reserveNodes(count); labels->reserve(count);}
+    
+  void setLabel(size_t index, size_t label)
+    {jassert(index < getNumNodes() && label < getLabelDictionary()->getNumElements()); labels->set(index, label);}
+
+  /*
+  ** Streaming operator
+  */
+  friend std::ostream& operator <<(std::ostream& ostr, const LabeledContentGraph& graph)
+    {return ostr << "graph = " << lbcpp::toString(graph.graph) << ", labels = " << lbcpp::toString(graph.labels);}
+
+public:
+  /*
+  ** High-level utilities
+  */
+  static LabeledContentGraphPtr parseGetoorGraph(const File& contentFile, const File& linkFile, FeatureDictionaryPtr features, StringDictionaryPtr labels, size_t maxNodes = 0);
+
+  struct LabelsFold
+  {
+    LabeledContentGraphPtr graph;
+    size_t foldBegin;
+    size_t foldEnd;
+  };
+  void makeFolds(size_t numFolds, bool removeTrainTestLinks, std::vector<LabeledContentGraphPtr>& trainGraphs, std::vector<LabelsFold>& testGraphs);
+
+  std::pair<LabeledContentGraphPtr, LabelsFold> makeFold(size_t testBegin, size_t testEnd, bool removeTrainTestLinks);
+
+  LabeledContentGraphPtr randomizeOrder() const;
+
+private:
+  ContentGraphPtr graph;
+  LabelSequencePtr labels;
+};
+
+}; /* namespace lbcpp */

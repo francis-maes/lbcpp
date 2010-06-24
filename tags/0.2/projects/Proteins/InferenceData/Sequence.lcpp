@@ -1,0 +1,266 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Sequence.lcpp                  | Sequence base class             |
+| Author  : Francis Maes                   |                                 |
+| Started : 11/04/2010 12:32               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "InferenceData/Sequence.h"
+#include "InferenceData/LabelSequence.h"
+#include "InferenceData/ScoreVectorSequence.h"
+#include "InferenceData/AccumulatedScoresMatrix.h"
+#include "InferenceData/CommonFeatureGenerators.h"
+using namespace lbcpp;
+
+/*
+** Sequence
+*/
+String Sequence::toString() const
+{
+  size_t l = size();
+  String res;
+  for (size_t i = 0; i < l; ++i)
+    res += elementToString(i);
+  return res;
+}
+
+featureGenerator Sequence::possiblyOutOfBoundsElementFeatures(int position) const
+{
+  if (position < 0)
+    featureSense("before");
+  else if (position < (int)this->size())
+  {
+    FeatureGeneratorPtr fg = this->elementFeatures((size_t)position);
+    if (fg)
+      featureCall("in") fg;
+    else
+      featureSense("undefined");
+  }
+  else
+    featureSense("after");
+}
+
+featureGenerator Sequence::windowFeatures(size_t position, size_t numPrevs, size_t numNexts, bool includeCurrent) const
+{
+  featureScope("previous")
+  {
+    for (size_t i = 0; i < numPrevs; ++i)
+      featureCall(i)
+        this->possiblyOutOfBoundsElementFeatures((int)position - (int)i - 1);
+  }
+
+  if (includeCurrent)
+    featureCall("current")
+      this->elementFeatures(position);
+
+  featureScope("nexts")
+  {
+    for (size_t i = 0; i < numNexts; ++i)
+      featureCall(i)
+        this->possiblyOutOfBoundsElementFeatures((int)(position + i + 1));
+  }
+}
+
+featureGenerator Sequence::possiblyOutOfBoundsFrequencyFeatures(int begin, int end) const
+{
+  jassert(begin <= end);
+  int totalCount = end - begin;
+  if (!totalCount)
+    return;
+
+  int length = this->size();
+  int beforeCount = juce::jlimit(0, totalCount, -begin);
+  int afterCount = juce::jlimit(0, totalCount, end - length);
+  size_t insideBegin = (size_t)juce::jlimit(0, length, begin);
+  size_t insideEnd = (size_t)juce::jlimit(0, length, end);
+  jassert(insideEnd >= insideBegin);
+  double invCount = 1.0 / (double)totalCount;
+
+  if (beforeCount)
+    featureSense("before", beforeCount * invCount);
+  if (insideEnd > insideBegin)
+    featureCall("inside", invCount) this->sumFeatures(insideBegin, insideEnd);
+  if (afterCount)
+    featureSense("after", afterCount * invCount);
+}
+
+featureGenerator Sequence::symetricFrequencyFeatures(size_t position, size_t size, bool includeCurrent) const
+{
+  int begin = (int)position - (int)size;
+  int end = (int)position;
+  if (includeCurrent)
+    ++end;
+  featureCall("before") this->possiblyOutOfBoundsFrequencyFeatures(begin, end);
+  begin = (int)position;
+  if (!includeCurrent)
+    ++begin;
+  end = (int)(position + size + 1);
+  featureCall("after") this->possiblyOutOfBoundsFrequencyFeatures(begin, end);
+}
+
+featureGenerator Sequence::multiScaleSymetricFrequencyFeatures(size_t position, size_t smallestSize, size_t sizeFactor, size_t numScales, bool includeCurrent) const
+{
+  size_t currentSize = smallestSize;
+  for (size_t i = 0; i < numScales; ++i)
+  {
+    featureCall(i) this->symetricFrequencyFeatures(position, currentSize, includeCurrent);
+    currentSize *= sizeFactor;
+  }
+}
+
+/*
+** AccumulatedScoresMatrix
+*/
+featureGenerator AccumulatedScoresMatrix::sumFeatures(size_t begin, size_t end) const
+{
+  jassert(begin <= this->getLength() && end <= this->getLength() && begin <= end);
+  if (begin == end || !end)
+    return;
+  std::vector<double> accumulatorsBegin;
+  if (begin > 0)
+    accumulatorsBegin = this->getAccumulatedScores(begin - 1);
+  jassert(end > 0);
+  const std::vector<double>& accumulatorsEnd = this->getAccumulatedScores(end - 1);
+  
+  for (size_t i = 0; i < accumulatorsEnd.size(); ++i)
+  {
+    double beginSum = i < accumulatorsBegin.size() ? accumulatorsBegin[i] : 0;
+    double endSum = accumulatorsEnd[i];
+    if (endSum != beginSum)
+    {
+      double weight = endSum - beginSum;
+      if (i == 0)
+        featureSense(T("N/A"), weight);
+      else
+      {
+        LabelPtr label = new Label(this->getDictionary(), i - 1);
+        featureCall(T("A"), weight) label;
+      }
+    }
+  }
+}
+
+featureGenerator AccumulatedScoresMatrix::entropyFeatures(size_t begin, size_t end) const
+{
+  jassert(begin <= this->getLength() && end < this->getLength() && begin <= end);
+  if (begin == end || !end)
+    return;
+  const std::vector<double> accumulatorsBegin = this->getAccumulatedScores(begin);
+  const std::vector<double>& accumulatorsEnd = this->getAccumulatedScores(end);
+  
+  double entropy = 0.0;
+  for (size_t i = 0; i < accumulatorsEnd.size(); ++i)
+  {
+    double probability = (accumulatorsEnd[i] - accumulatorsBegin[i]) / (end - begin + 1);
+    if (probability > 0.001)
+      entropy -= probability * log2(probability);
+  }
+  featureCall(T("entropy")) numberLogFeatures(entropy);
+}
+
+/*
+** LabelSequence
+*/
+static String segmentFeatureName(FeatureDictionaryPtr dictionary, int segmentCode, int length)
+{
+  if (segmentCode == -3)
+    return T(">>");
+  if (segmentCode == -2)
+    return T("<<");
+  if (segmentCode == -1)
+    return T("_");
+
+  String res = dictionary->getFeature((size_t)segmentCode);
+  if (length < 5)
+    res += String(length);
+  else if (length < 10)
+    res += T("[5-10[");
+  else if (length < 20)
+    res += T("[10-20[");
+  else if (length < 50)
+    res += T("[20-50[");
+  else if (length < 100)
+    res += T("[50-100[");
+  else if (length < 200)
+    res += T("[100-200[");
+  else if (length < 500)
+    res += T("[200-500[");
+  else
+    res += T("[500-oo[");
+  return res;
+}
+
+static int getSegmentCode(const LabelSequence& sequence, int position)
+{
+  if (position < 0)
+    return -3;
+  else if (position >= (int)sequence.size())
+    return -2;
+  else
+    return sequence.hasObject(position) ? (int)sequence.getIndex(position) : -1;
+}
+
+String LabelSequence::getSegmentConjunctionFeatureName(size_t beginPosition, size_t segmentCount, bool forward) const
+{
+  int delta = forward ? 1 : -1;
+  int n = (int)this->size();
+  jassert(beginPosition < this->size());
+  int pos = (int)beginPosition;
+  int currentCode = getSegmentCode(*this, pos);
+  int currentCodeFirstPos = pos;
+
+  String featureName;
+  for (size_t i = 0; i < segmentCount; ++i)
+  {
+    while (pos >= 0 && pos < n && getSegmentCode(*this, pos) == currentCode)
+      pos += delta;
+    
+    featureName += segmentFeatureName(this->getDictionary(), currentCode, abs(pos - currentCodeFirstPos));
+    if (currentCode <= -2)
+      break;
+
+    currentCode = getSegmentCode(*this, pos);
+    currentCodeFirstPos = pos;
+  }
+  return featureName;
+}
+
+featureGenerator LabelSequence::bidirectionalSegmentConjunctionFeatures(size_t position, size_t segmentCount) const
+{
+  String before = this->getSegmentConjunctionFeatureName(position, segmentCount, false);
+  String after = this->getSegmentConjunctionFeatureName(position, segmentCount, true);
+  featureScope(0) featureSense(before);
+  featureScope(1) featureSense(after);
+  featureScope(2) featureSense(before + T("---") + after);
+}
+
+featureGenerator LabelSequence::segmentFeatures(size_t beginPosition, size_t segmentCount, bool forward) const
+{
+  int delta = forward ? 1 : -1;
+  int n = (int)this->size();
+  jassert(beginPosition < this->size());
+  int pos = (int)beginPosition;
+  int currentCode = getSegmentCode(*this, pos);
+  int currentCodeFirstPos = pos;
+
+  for (size_t i = 0; i < segmentCount; ++i)
+  {
+    while (pos >= 0 && pos < n && getSegmentCode(*this, pos) == currentCode)
+      pos += delta;
+    
+    String name = segmentFeatureName(this->getDictionary(), currentCode, abs(pos - currentCodeFirstPos));
+    featureScope(i) featureSense(name);
+    if (currentCode <= -2)
+      break;
+
+    currentCode = getSegmentCode(*this, pos);
+    currentCodeFirstPos = pos;
+  }
+}
+
+featureGenerator LabelSequence::bidirectionalSegmentFeatures(size_t beginPosition, size_t segmentCount) const
+{
+  featureCall(0) this->segmentFeatures(beginPosition, segmentCount, false);
+  featureCall(1) this->segmentFeatures(beginPosition, segmentCount, true);
+}

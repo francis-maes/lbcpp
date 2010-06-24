@@ -1,0 +1,73 @@
+
+Library:
+ * InferenceContext::runSubInference -> protected (inherit BatchLearners from appropriate Inference base classes)
+ * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
+ * Remove old LearningMachine code
+ * Remove static ContinuousFunction code
+ * Remove "featureGenerator" keyword
+ * Remove translator
+ * Serialisation XML (?)
+ * Execution multi-thread
+ 
+Inference:
+ * ParallelInferenceBatchLearner
+ * Atomic MultiClass machines (MultiLinear, Ranking...)
+ * Apprentissage avec couche cachée
+ 
+Proteins: 
+ * ParallelProteinInference
+
+======
+
+FeatureGenerator:
+  * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar
+
+ContinuousFunctions:
+  * Implementation optimisŽes pour Sparse vs Sparse et Dense vs Dense
+  * Faire sauter impl::constant et ScalarConstant
+  * ScalarDerivableArchitecturesDotProduct
+  * TransferArchitecture
+  * Gerer le gradientDirection/derivativeDirection partout
+  * L1-norm
+
+Optimizers:
+  * LBFGS: Utiliser un LinearCombinationFeatureGenerator pour "direction"
+
+
+==================
+ LC++ translator
+==================
+
+* gerer appel de chooseFunction depuis un autre chooseFunction ou depuis le corps du cr-algo
+
+* ChooseArgumentsClass: generer des StateDescriptionFUnction et ActionDescriptionFunction si il n'existent pas
+
+* PrettyPrinter: if-else: sauter a la ligne pour les deux blocs
+* variable statique dans les cr-algos ?
+* reference en variable locale dans un CR-algo => transformer en pointeur
+* crAlgorithm: chooses inside if/switch/while/do/for/try/cases
+* Faire le tri des local-scope concernŽe par les choose et n'inclure que ceux la dans la classe CR-algorithm gŽnŽrŽe
+     => pas besoin de faire des ctor de copie et des toString pour tout le monde comme ca
+* remettre policyRun
+* Generer un operateur de stream dans chaque classe, si il n'existe pas
+* cralgo-cpp: Mettre un reward par default equivalent a la premiere actionValue de chaque choose
+
+* BUG: "featureCall inline v[index];" avec v[index] = SparseVectorPtr fait planter le translator
+* BUG: plusieurs "for (size_t i)" successif => "symbol i multiply defined"
+
+* BUG: for (size_t i) dans une chooseFunction => la resolution du i passe mal
+* BUG: Une struct qui ne se finit pas par ; dans une classe => fait peter le assert(prototype) de synopsis
+* BUG: => faire marcher "size_t nodeIndex = choose<size_t>(closedNodes, nodeValues);
+    SearchNode& node = searchSpace.get(nodeIndex);"
+
+ERREURS/WARNINGS:
+  * Warning is le resultat d'un featureGenerator ou d'un crAlgorithm n'est pas utilise. Proposer l'utilisation de 'featureCall' ou 'crAlgorithmCall'.
+  * Message d'erreur si le type d'un choice dans featureGenerator ou actionValue ne match pas le type du choose correspondant
+  * Warning dans le compilo si le resultat du choose n'est pas utilise
+  * Error: "using local variable in cr-algorithm reference", si on a un "cralgo void toto(int& i)" et qu'on appelle "int i; return toto(i);" 
+  * Si on instancie une classe dont le compiler connait la definition, checker qu'il y a bien un operator de stream
+
+GROS:
+ * clarifier les CRAlgoVisitor
+ * crAlgorithmCall
+ * gestion des options
