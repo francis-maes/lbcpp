@@ -181,11 +181,20 @@ ProteinContactMapInference::ProteinContactMapInference(const String& name, Infer
   appendInference(probabilitiesInference);
 }
 
-std::pair<Variable, Variable> ProteinContactMapInference::prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+SequentialInferenceStatePtr ProteinContactMapInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  if (state->getCurrentStepNumber() == 0)
-    return std::make_pair(state->getInput(), state->getSupervision());
-  else
-    // the second sub-inference receives both the protein and the predicted contactmap scores
-    return std::make_pair(ObjectPtr(new ObjectPair(state->getInput(), state->getCurrentObject())), state->getSupervision());
+  jassert(subInferences.size() == 2);
+  SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
+  state->setSubInference(subInferences.get(0), input, supervision);
+  return state;
+}
+
+bool ProteinContactMapInference::updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+{
+  if (state->getStepNumber() == 0)
+  {
+    state->setSubInference(subInferences.get(1), ObjectPtr(new ObjectPair(state->getInput(), state->getSubOutput())), state->getSupervision());
+    return true;
+  }   
+  return false;
 }

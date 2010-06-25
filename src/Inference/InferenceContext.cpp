@@ -21,34 +21,6 @@ using namespace lbcpp;
 Variable InferenceContext::callRunInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {return inference->run(InferenceContextPtr(this), input, supervision, returnCode);}
 
-SequentialInferenceStatePtr InferenceContext::makeSequentialInferenceInitialState(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-{
-  SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
-
-  state->setCurrentObject(inference->prepareInference(state, returnCode));
-  if (returnCode != Inference::finishedReturnCode)
-    return SequentialInferenceStatePtr();
-
-  state->setCurrentSubInference(inference->getInitialSubInference(state, returnCode));
-  if (returnCode != Inference::finishedReturnCode)
-    return SequentialInferenceStatePtr();
-
-  return state;
-}
-
-void InferenceContext::makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, const Variable& subOutput, ReturnCode& returnCode)
-{
-  state->setCurrentObject(inference->finalizeSubInference(state, subOutput, returnCode));
-  if (returnCode != Inference::finishedReturnCode)
-    return;
-
-  state->setCurrentSubInference(inference->getNextSubInference(state, returnCode));
-  if (returnCode != Inference::finishedReturnCode)
-    return;
-
-  state->incrementStepNumber();
-}
-
 Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   std::pair<Variable, Variable> inputAndSupervision = inference->prepareSubInference(input, supervision, returnCode);
@@ -71,24 +43,29 @@ Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference
 
 Variable InferenceContext::runSequentialInference(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  SequentialInferenceStatePtr state = makeSequentialInferenceInitialState(inference, input, supervision, returnCode);
+  InferenceContextPtr pthis(this);
+
+  SequentialInferenceStatePtr state = inference->prepareInference(pthis, input, supervision, returnCode);
   if (!state)
     return ObjectPtr();
-  while (!state->isFinal())
+  while (true)
   {
-    std::pair<Variable, Variable> currentInputAndSupervision = inference->prepareSubInference(state, returnCode);
+    Variable subOutput = runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return state->getCurrentObject();
+      return state->getUserVariable();
 
-    Variable subOutput = runInference(state->getCurrentSubInference(), currentInputAndSupervision.first, currentInputAndSupervision.second, returnCode);
+    state->setSubOutput(subOutput);
+    bool res = inference->updateInference(pthis, state, returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return state->getCurrentObject();
+      return state->getUserVariable();
 
-    makeSequentialInferenceNextState(inference, state, subOutput, returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return state->getCurrentObject();
+    if (!res)
+    {
+      state->setFinalState();
+      break;
+    }
   }
-  return inference->finalizeInference(state, returnCode);
+  return inference->finalizeInference(pthis, state, returnCode);
 }
 
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examples)
