@@ -59,6 +59,10 @@ protected:
   InferencePtr batchLearner;
 };
 
+/*
+** Numerical Inference
+*/
+
 // Atomic
 extern InferencePtr linearScalarInference(const String& name);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
@@ -75,6 +79,11 @@ extern InferencePtr dihedralAngleRegressionInference(InferenceOnlineLearnerPtr l
 
 // MultiClass Classification
 extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
+
+/*
+** Decision Tree Inference
+*/
+extern InferencePtr multiClassExtraTreeInference(const String& name);
 
 // Misc
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);

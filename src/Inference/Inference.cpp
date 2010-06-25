@@ -122,6 +122,11 @@ InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, Fea
 InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
   {return new RunOnSupervisedExamplesInference(inference);}
 
+#include "ExtraTreeInference/ExtraTreeInference.h"
+
+InferencePtr lbcpp::multiClassExtraTreeInference(const String& name)
+  {return new ExtraTreeInference(name);}
+
 void declareInferenceClasses()
 {
   LBCPP_DECLARE_CLASS(LinearInference);
