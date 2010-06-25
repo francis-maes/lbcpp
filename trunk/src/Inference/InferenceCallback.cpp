@@ -63,7 +63,7 @@ void InferenceResultCache::add(InferencePtr inference, ObjectPtr input, ObjectPt
 /*
 ** InferenceOnlineLearnerCallback
 */
-void InferenceOnlineLearnerCallback::postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+void InferenceOnlineLearnerCallback::postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   if (inference == stack->getCurrentInference() && supervision && output)
     learner->stepFinishedCallback(inference, input, supervision, output);

@@ -30,7 +30,7 @@ public:
   }
   OneAgainstAllClassificationInference() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(subInferences.size());
@@ -42,16 +42,16 @@ public:
       size_t correct = correctLabel->getIndex();
       for (size_t i = 0; i < subInferences.size(); ++i)
         res->addSubInference(subInferences.get(i), input,
-            new Label(BinaryClassificationDictionary::getInstance(), i == correct ? 1 : 0));
+            Variable(new Label(BinaryClassificationDictionary::getInstance(), i == correct ? 1 : 0)));
     }
     else
       for (size_t i = 0; i < subInferences.size(); ++i)
-        res->addSubInference(subInferences.get(i), input, ObjectPtr());
+        res->addSubInference(subInferences.get(i), input, Variable());
 
     return res;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     double bestScore = -DBL_MAX;
     int bestClass = -1;
@@ -69,8 +69,8 @@ public:
         bestClass = -1;
     }
     if (bestClass < 0)
-      return ObjectPtr();
-    return new Label(dictionary, (size_t)bestClass);
+      return Variable();
+    return Variable(new Label(dictionary, (size_t)bestClass));
   }
 
 private:

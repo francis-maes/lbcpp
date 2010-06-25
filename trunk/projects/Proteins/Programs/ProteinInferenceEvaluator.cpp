@@ -61,14 +61,14 @@ public:
   SaveOutputInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
-      File f = directory.getChildFile(output->getName() + T(".") + extension);
+      ObjectPtr object = output.getObject();
+      File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save " << f.getFileName() << "." << std::endl;
-
-      output->saveToFile(f);
+      object->saveToFile(f);
     }
   }
 
@@ -83,17 +83,18 @@ public:
   SaveProteinPairInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
-      File f = directory.getChildFile(output->getName() + T(".") + extension);
+      ObjectPtr object = output.getObject();
+      File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
 
       ProteinPtr inputProtein = input.dynamicCast<Protein>()->clone();
       jassert(inputProtein);
 
-      ProteinPtr outputProtein = output.dynamicCast<Protein>();
+      ProteinPtr outputProtein = object.dynamicCast<Protein>();
       jassert(outputProtein);
       
 
@@ -119,7 +120,7 @@ private:
 class PrintDotForEachExampleInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
       std::cout << "." << std::flush;

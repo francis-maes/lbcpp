@@ -32,6 +32,7 @@
 
 # include "Object/Object.h"
 # include "Object/Class.h"
+# include "Object/Variable.h"
 # include "Object/ObjectContainer.h"
 # include "Object/ObjectStream.h"
 # include "Object/ObjectConsumer.h"

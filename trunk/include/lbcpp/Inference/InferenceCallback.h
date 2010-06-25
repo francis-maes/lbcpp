@@ -23,10 +23,10 @@ public:
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
   // the function may also set a returnCode != Inference::finishedReturnCode to skip the inference step
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
     {}
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {}
 };
 
@@ -39,7 +39,7 @@ public:
   InferenceOnlineLearnerCallback(InferencePtr inference, InferenceOnlineLearnerPtr learner)
     : inference(inference), learner(learner) {}
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
 
 private:
   InferencePtr inference;

@@ -40,7 +40,7 @@ public:
     return backboneAtomNames[index];
   }
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ProteinResidueAtomsPtr residue = supervision.dynamicCast<ProteinResidueAtoms>();
     jassert(residue || !supervision);
@@ -56,15 +56,15 @@ public:
         {
           Vector3 position = atom->getPosition();
           double target = (j == 0 ? position.getX() : (j == 1 ? position.getY() : position.getZ()));
-          res->addSubInference(subInferences[i], input, new Scalar(target));
+          res->addSubInference(subInferences[i], input, Variable(new Scalar(target))); // FIXME
         }
         else
-          res->addSubInference(subInferences[i], input, ObjectPtr());
+          res->addSubInference(subInferences[i], input, Variable());
     }
     return res;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     ProteinResidueAtomsPtr res = new ProteinResidueAtoms();
     res->addAtom(new ProteinAtom(T("N"), T("N")));

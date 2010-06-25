@@ -1,4 +1,9 @@
 
+ 1- reparer SandBox
+ 2- unifier ParallelInference/SequentialInference/DecoratorInference callbacks
+ 3- utiliser des doubles pour la regression
+ 4- utiliser des bool et des doubles pour la classification binaire
+
 Library:
  * InferenceContext::runSubInference -> protected (inherit BatchLearners from appropriate Inference base classes)
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers

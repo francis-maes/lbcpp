@@ -21,7 +21,7 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
 {
 }
 
-void GradientDescentOnlineLearner::stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+void GradientDescentOnlineLearner::stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
   jassert(features);
@@ -53,10 +53,10 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
   std::cout << std::endl;
 }
 
-FeatureGeneratorPtr GradientDescentOnlineLearner::getExampleGradient(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+FeatureGeneratorPtr GradientDescentOnlineLearner::getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   double exampleLossValue;
-  FeatureGeneratorPtr gradient = getParameterizedInference(inference)->getExampleGradient(input, supervision, predictedOutput, exampleLossValue);
+  FeatureGeneratorPtr gradient = getParameterizedInference(inference)->getExampleGradient(input, supervision, prediction, exampleLossValue);
   lossValue.push(exampleLossValue);
   return gradient;
 }
@@ -92,15 +92,15 @@ void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inf, Feature
     parameters->ensureDictionary(gradient->getDictionary());
 
   gradient->addWeightedTo(parameters, -computeLearningRate() * weight);
-  //std::cout << "gradient: " << gradient->l2norm() << " learning rate: " << computeLearningRate() * weight << " parameters: " << getParameters()->l2norm() << std::endl;
+  //std::cout << "gradient: " << gradient->l2norm() << " learning rate: " << computeLearningRate() * weight << " parameters: " << parameters->l2norm() << std::endl;
   inference->validateParametersChange();
 }
 
-void GradientDescentOnlineLearner::applyExample(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+void GradientDescentOnlineLearner::applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   //std::cout << "e" << std::flush;
   ++epoch;
-  gradientDescentStep(inference, getExampleGradient(inference, input, supervision, predictedOutput));
+  gradientDescentStep(inference, getExampleGradient(inference, input, supervision, prediction));
   checkRegularizerAfterStep(inference);
 }
 

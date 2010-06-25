@@ -22,18 +22,18 @@ public:
   CacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
     : cache(cache), parentStep(parentStep) {}
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (!output && stack->getParentInference() == parentStep)
-      output = cache->get(stack->getCurrentInference(), input);
+      output = Variable(cache->get(stack->getCurrentInference(), input.getObject()));
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getParentInference() == parentStep && returnCode == Inference::finishedReturnCode)
     {
-      cache->add(stack->getCurrentInference(), input, output);
-      jassert(cache->get(stack->getCurrentInference(), input));
+      cache->add(stack->getCurrentInference(), input.getObject(), output.getObject());
+      jassert(cache->get(stack->getCurrentInference(), input.getObject()));
     }
   }
 

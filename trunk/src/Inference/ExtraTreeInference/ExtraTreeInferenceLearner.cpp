@@ -18,7 +18,7 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting) {}
 
-ObjectPtr SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
   jassert(inferenceAndTrainingData);
@@ -97,15 +97,15 @@ ExtraTreeInferenceLearner::ExtraTreeInferenceLearner(size_t numTrees, size_t num
   : SharedParallelInference(T("ExtraTreeInferenceLearner"),
       new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting)), numTrees(numTrees) {}
 
-ParallelInferenceStatePtr ExtraTreeInferenceLearner::prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+ParallelInferenceStatePtr ExtraTreeInferenceLearner::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
   for (size_t i = 0; i < numTrees; ++i)
-    res->addSubInference(subInference, input, ObjectPtr());
+    res->addSubInference(subInference, input, Variable());
   return res;
 }
 
-ObjectPtr ExtraTreeInferenceLearner::finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+Variable ExtraTreeInferenceLearner::finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
 {
   ExtraTreeInferencePtr learnedInference = state->getInput().dynamicCast<ObjectPair>()->getFirst().dynamicCast<ExtraTreeInference>();
   jassert(learnedInference); 
@@ -115,7 +115,7 @@ ObjectPtr ExtraTreeInferenceLearner::finalizeInference(InferenceContextPtr conte
     jassert(decisionTree);
     learnedInference->addTree(decisionTree);
   }
-  return ObjectPtr();
+  return Variable();
 }
 
 ExtraTreeInference::ExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)

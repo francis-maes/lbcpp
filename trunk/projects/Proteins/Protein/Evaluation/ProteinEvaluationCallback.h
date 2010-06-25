@@ -388,7 +388,7 @@ public:
   void reset()
     {evaluator = new ProteinEvaluator();}
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
       jassert(stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"));

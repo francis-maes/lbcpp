@@ -36,13 +36,13 @@ public:
     , trainingData(trainingData), testingData(testingData)
     , trainingEvaluation(new ProteinEvaluationCallback()), testingEvaluation(new ProteinEvaluationCallback) {}
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
 //    std::cout << "Depth: " << stack->getDepth() << std::endl;
 //    std::cout << "Current Inference ClassName: " << stack->getCurrentInference()->getClassName() << std::endl;
   }
     
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     typedef ReferenceCountedObjectPtr<ProteinTargetInferenceHelper> ProteinTargetInferenceHelperPtr;
     ProteinTargetInferenceHelperPtr helper = stack->getCurrentInference().dynamicCast<ProteinTargetInferenceHelper>();
@@ -106,7 +106,7 @@ public:
   StandardOutputInferenceCallback(EvaluationInferenceCallbackPtr evaluation)
     : evaluation(evaluation), iterationNumber(0), startingTime(Time::getMillisecondCounter()) {}
   
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
@@ -127,7 +127,7 @@ public:
     }
   }
   
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference()->getClassName() == T("RunOnSupervisedExamplesInference"))
     {
@@ -160,7 +160,7 @@ public:
       delete iter->second;
   }
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
@@ -169,7 +169,7 @@ public:
     }
   }
   
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference()->getClassName() == T("SimulationInferenceBatchLearner"))
     {
@@ -226,7 +226,7 @@ public:
   virtual ~GnuPlotInferenceCallback()
     {delete oStream;}
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
@@ -235,7 +235,7 @@ public:
     }
   }
   
-  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference()->getClassName() == T("SimulationInferenceBatchLearner") && evaluation->getTarget() == relatedTarget)
     {

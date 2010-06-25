@@ -227,19 +227,33 @@ private:
 /*
 ** Minimalistic C++ classes Wrapper
 */
+
 template<class Type>
-class DefaultClass_ : public Class
+class DefaultAbstractClass_ : public Class
+{
+public:
+  DefaultAbstractClass_(ClassPtr baseClass = ObjectClass::getInstance())
+    : Class(lbcpp::toString(typeid(Type)), baseClass)
+    {}
+};
+
+template<class Type>
+class DefaultClass_ : public DefaultAbstractClass_<Type>
 {
 public:
   DefaultClass_(ClassPtr baseClass = ObjectClass::getInstance())
-    : Class(lbcpp::toString(typeid(Type)), baseClass)
+    : DefaultAbstractClass_<Type>(baseClass)
     {Class::defaultConstructor = defaultCtor;}
 
   static ObjectPtr defaultCtor()
     {return ObjectPtr(new Type());}
 };
 
-#define LBCPP_DECLARE_CLASS(Name) lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>()))
+#define LBCPP_DECLARE_ABSTRACT_CLASS(Name, BaseClass) \
+  lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultAbstractClass_<Name>(lbcpp::Class::get(#BaseClass))))
+
+#define LBCPP_DECLARE_CLASS(Name) \
+  lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>()))
 
 }; /* namespace lbcpp */
 

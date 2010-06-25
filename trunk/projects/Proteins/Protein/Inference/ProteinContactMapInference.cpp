@@ -65,7 +65,7 @@ ContactMapScoresToProbabilitiesInference::ContactMapScoresToProbabilitiesInferen
   : Inference(name), ProteinTargetInferenceHelper(targetName), threshold(0.0)
   {}
 
-ObjectPtr ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+Variable ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   ObjectPairPtr inputProteinAndContactMap = input.dynamicCast<ObjectPair>();
   jassert(inputProteinAndContactMap);
@@ -96,7 +96,7 @@ ObjectPtr ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr cont
 class ContactMapScoresToProbabilitiesInferenceBatchLearner : public Inference
 {
 protected:
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
     jassert(inferenceAndTrainingData);
@@ -181,11 +181,11 @@ ProteinContactMapInference::ProteinContactMapInference(const String& name, Infer
   appendInference(probabilitiesInference);
 }
 
-std::pair<ObjectPtr, ObjectPtr> ProteinContactMapInference::prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+std::pair<Variable, Variable> ProteinContactMapInference::prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
 {
   if (state->getCurrentStepNumber() == 0)
     return std::make_pair(state->getInput(), state->getSupervision());
   else
     // the second sub-inference receives both the protein and the predicted contactmap scores
-    return std::make_pair(new ObjectPair(state->getInput(), state->getCurrentObject()), state->getSupervision());
+    return std::make_pair(ObjectPtr(new ObjectPair(state->getInput(), state->getCurrentObject())), state->getSupervision());
 }

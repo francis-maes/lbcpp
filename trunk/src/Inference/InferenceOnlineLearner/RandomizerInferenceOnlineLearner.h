@@ -23,9 +23,9 @@ public:
   RandomizerInferenceOnlineLearner()
     : randomizationFrequency(never) {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    examples.push_back(Example(input, supervision, predictedOutput));
+    examples.push_back(Example(input, supervision, prediction));
     if (randomizationFrequency >= perStepMiniBatch)
     {
       int miniBatchSize = randomizationFrequency - perStepMiniBatch;
@@ -60,12 +60,12 @@ private:
 
   struct Example
   {
-    Example(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
-      : input(input), supervision(supervision), predictedOutput(predictedOutput) {}
+    Example(const Variable& input, const Variable& supervision, const Variable& prediction)
+      : input(input), supervision(supervision), prediction(prediction) {}
 
-    ObjectPtr input;
-    ObjectPtr supervision;
-    ObjectPtr predictedOutput;
+    Variable input;
+    Variable supervision;
+    Variable prediction;
   };
 
   std::vector<Example> examples;
@@ -79,8 +79,8 @@ private:
     RandomGenerator::getInstance().sampleOrder(examples.size(), order);
     for (size_t i = 0; i < order.size(); ++i)
     {
-      Example& example = examples[order[i]];
-      targetLearningCallback->stepFinishedCallback(inference, example.input, example.supervision, example.predictedOutput);
+      const Example& example = examples[order[i]];
+      targetLearningCallback->stepFinishedCallback(inference, example.input, example.supervision, example.prediction);
     }
     examples.clear();
   }

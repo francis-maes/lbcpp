@@ -24,16 +24,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-/*!
-**@file   ReferenceCountedObject.h
-**@author Francis MAES
-**@date   Sat Jun 13 17:50:17 2009
-**
-**@brief  #FIXME: all
-**
-**
-*/
-
 #ifndef LBCPP_REFERENCE_COUNTED_OBJECT_H_
 # define LBCPP_REFERENCE_COUNTED_OBJECT_H_
 
@@ -87,7 +77,7 @@ protected:
   friend class ReferenceCountedObjectPtr; /*!< */
   template<class T>
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
-  friend class Variant;
+  friend class Variable;
 
   size_t refCount;              /*!< The object's reference count */
 

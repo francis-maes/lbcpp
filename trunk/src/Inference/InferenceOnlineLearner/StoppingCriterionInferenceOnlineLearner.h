@@ -26,11 +26,11 @@ public:
 
   StoppingCriterionInferenceOnlineLearner() : criterionTestFrequency(never), learningStopped(false), bestScore(-DBL_MAX), epoch(0) {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     if (!learningStopped)
     {
-      learner->stepFinishedCallback(inference, input, supervision, predictedOutput);
+      learner->stepFinishedCallback(inference, input, supervision, prediction);
 
       ++epoch;
       if (criterionTestFrequency == perStep)

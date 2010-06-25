@@ -21,7 +21,7 @@ public:
     : DecoratorInference(name, decorated), callback(callback) {}
   CallbackBasedDecoratorInference() {}
  
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     jassert(callback);
     context->appendCallback(callback);

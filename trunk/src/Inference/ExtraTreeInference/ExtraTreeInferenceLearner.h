@@ -27,7 +27,7 @@ protected:
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   BinaryDecisionTreePtr sampleTree(ExtraTreeInferencePtr inference, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData);
 
@@ -60,8 +60,8 @@ public:
         jassert(example->getFirst()->getClass() == inputClass);
         jassert(example->getSecond()->getClass() == supervisionClass);
       }
-      this->examples[i].first = VariantUnion(example->getFirst());
-      this->examples[i].second = VariantUnion(example->getSecond());
+      this->examples[i].first = VariableValue(example->getFirst());
+      this->examples[i].second = VariableValue(example->getSecond());
     }
   }
   TrainingDataContainer(ClassPtr inputClass, ClassPtr supervisionClass, size_t sizeToReserve)
@@ -81,8 +81,8 @@ public:
       examples[index].second.toObject(supervisionClass));
   }
 
-  //Variant getInput(size_t index) const
-  //  {return Variant(inputClass, examples[index]);}
+  //Variable getInput(size_t index) const
+  //  {return Variable(inputClass, examples[index]);}
 
   void clear()
   {
@@ -97,7 +97,7 @@ public:
 private:
   ClassPtr inputClass;
   ClassPtr supervisionClass;
-  std::vector< std::pair< VariantUnion, VariantUnion > > examples;
+  std::vector< std::pair< VariableValue, VariableValue > > examples;
 };
 
 class ExtraTreeInferenceLearner : public SharedParallelInference
@@ -105,8 +105,8 @@ class ExtraTreeInferenceLearner : public SharedParallelInference
 public:
   ExtraTreeInferenceLearner(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
 
 private:
   size_t numTrees;

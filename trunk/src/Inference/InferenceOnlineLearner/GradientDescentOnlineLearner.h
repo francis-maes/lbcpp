@@ -23,7 +23,7 @@ public:
                                 UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
   GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never) {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(InferencePtr inference);
   virtual void passFinishedCallback(InferencePtr inference);
   virtual double getCurrentLossEstimate() const
@@ -44,9 +44,9 @@ protected:
   ScalarVariableMean lossValue;
   size_t lastApplyRegularizerEpoch;
 
-  FeatureGeneratorPtr getExampleGradient(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
+  FeatureGeneratorPtr getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
-  void applyExample(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput);
+  void applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   void applyRegularizer(InferencePtr inference);
   void checkRegularizerAfterStep(InferencePtr inference);
   void gradientDescentStep(InferencePtr inference, FeatureGeneratorPtr gradient, double weight = 1.0);

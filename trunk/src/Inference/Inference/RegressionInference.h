@@ -29,7 +29,7 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ScalarPtr target = supervision.dynamicCast<Scalar>();
     jassert(!supervision || target);

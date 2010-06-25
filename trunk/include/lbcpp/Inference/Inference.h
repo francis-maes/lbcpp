@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_STEP_H_
 
 # include "predeclarations.h"
+# include "../Object/Variable.h"
 # include "../ObjectPredeclarations.h"
 
 namespace lbcpp
@@ -53,7 +54,8 @@ public:
 protected:
   friend class InferenceContext;
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return Variable(run(context, input.getObject(), supervision.getObject(), returnCode));}
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
@@ -89,6 +91,9 @@ extern InferencePtr multiClassExtraTreeInference(const String& name);
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
 extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
 
+/*
+** InferenceVector
+*/
 class InferenceVector
 {
 public:
@@ -120,6 +125,28 @@ public:
 protected:
   std::vector<InferencePtr> v;
 };
+
+/*
+** InferenceState
+*/
+class InferenceState : public Object
+{
+public:
+  InferenceState(const Variable& input, const Variable& supervision)
+    : input(input), supervision(supervision) {}
+
+  const Variable& getInput() const
+    {return input;}
+
+  const Variable& getSupervision() const
+    {return supervision;}
+
+protected:
+  Variable input;
+  Variable supervision;
+};
+
+typedef ReferenceCountedObjectPtr<InferenceState> InferenceStatePtr;
 
 }; /* namespace lbcpp */
 

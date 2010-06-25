@@ -86,7 +86,7 @@ public:
     return state->getInput();
   }
   
-  virtual ObjectPtr finalizeSubInference(SequentialInferenceStatePtr state, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  virtual Variable finalizeSubInference(SequentialInferenceStatePtr state, const Variable& subInferenceOutput, ReturnCode& returnCode) const
   {
     if (!subInferenceOutput)
       return state->getCurrentObject(); // skip empty predictions

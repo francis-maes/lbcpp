@@ -39,7 +39,7 @@ public:
     perStepMiniBatch1000 = perStepMiniBatch + 1000,
   };
 
-  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput) = 0;
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
   virtual void episodeFinishedCallback(InferencePtr inference) = 0;
   virtual void passFinishedCallback(InferencePtr inference) = 0;
 

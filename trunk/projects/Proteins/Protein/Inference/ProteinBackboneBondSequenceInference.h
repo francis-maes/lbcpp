@@ -76,7 +76,7 @@ public:
 
   ProteinBackboneBondInferenceStep() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
 
@@ -93,7 +93,7 @@ public:
     return res;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     ProteinBackboneBondPtr res = new ProteinBackboneBond();
     bool hasAtLeastOnePrediction = false;
@@ -107,7 +107,7 @@ public:
         hasAtLeastOnePrediction = true;
       }
     }
-    return hasAtLeastOnePrediction ? res : ProteinBackboneBondPtr();
+    return hasAtLeastOnePrediction ? Variable(res) : Variable();
   }
 
 private:

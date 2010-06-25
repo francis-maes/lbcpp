@@ -28,7 +28,7 @@ public:
   ParameterizedInference(const String& name) : Inference(name) {}
   ParameterizedInference() {}
 
-  virtual FeatureGeneratorPtr getExampleGradient(ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput, double& exampleLossValue) = 0;
+  virtual FeatureGeneratorPtr getExampleGradient(const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue) = 0;
 
   DenseVectorPtr getParameters() const
     {return parameters;}

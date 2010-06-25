@@ -21,24 +21,24 @@ public:
     : DecoratorInference(name, regressionStep), transferFunction(transferFunction) {}
   TransferFunctionDecoratorInference() {}
   
-  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     if (supervision)
     {
       ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
       jassert(loss);
-      supervision = transferFunction->composeWith(loss);
+      return std::make_pair(input, transferFunction->composeWith(loss));
     }
     return std::make_pair(input, supervision);
   }
     
-  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
   {
     if (!subInferenceOutput)
-      return ObjectPtr();
+      return Variable();
     ScalarPtr scalarResult = subInferenceOutput.dynamicCast<Scalar>();
     jassert(scalarResult);
-    return new Scalar(transferFunction->compute(scalarResult->getValue()));
+    return ObjectPtr(new Scalar(transferFunction->compute(scalarResult->getValue())));
   }
   
 protected:

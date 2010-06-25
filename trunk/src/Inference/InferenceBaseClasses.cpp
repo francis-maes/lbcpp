@@ -85,10 +85,10 @@ void StaticParallelInference::getChildrenObjects(std::vector< std::pair<String, 
 SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
   : StaticParallelInference(name), subInference(subInference) {}
 
-ObjectPtr SharedParallelInference::run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+Variable SharedParallelInference::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   subInference->beginRunSession();
-  ObjectPtr res = ParallelInference::run(context, input, supervision, returnCode);
+  Variable res = ParallelInference::run(context, input, supervision, returnCode);
   subInference->endRunSession();
   return res;
 }

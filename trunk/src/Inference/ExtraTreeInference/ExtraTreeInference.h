@@ -29,7 +29,7 @@ public:
 protected:
   std::vector<BinaryDecisionTreePtr> trees;
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     return ObjectPtr();
   }

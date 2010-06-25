@@ -29,7 +29,7 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     LabelPtr correctLabel = supervision.dynamicCast<Label>();
     jassert(!supervision || (correctLabel && correctLabel->getDictionary() == BinaryClassificationDictionary::getInstance()));
@@ -44,14 +44,14 @@ public:
     return std::make_pair(input, lossFunction);
   }
     
-  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
   {
     if (!subInferenceOutput)
-      return ObjectPtr();
+      return Variable();
     ScalarPtr scalar = subInferenceOutput.dynamicCast<Scalar>();
     jassert(scalar);
     double value = scalar->getValue();
-    return new Label(BinaryClassificationDictionary::getInstance(), value > 0 ? 1 : 0, fabs(value));
+    return ObjectPtr(new Label(BinaryClassificationDictionary::getInstance(), value > 0 ? 1 : 0, fabs(value)));
   }
 
 protected:

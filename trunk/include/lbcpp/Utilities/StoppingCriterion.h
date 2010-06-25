@@ -53,18 +53,6 @@ public:
   ** @return
   */
   virtual bool shouldOptimizerStop(double value) = 0;
-
-
-  /*!
-  **
-  **
-  ** @param policy
-  ** @param examples
-  **
-  ** @return
-  */
-  virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr policy, ObjectContainerPtr examples)
-    {return false;}
 };
 
 extern StoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);

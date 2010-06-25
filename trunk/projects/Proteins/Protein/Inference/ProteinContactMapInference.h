@@ -31,7 +31,7 @@ public:
   ContactMapScoresToProbabilitiesInference(const String& name, const String& targetName);
   ContactMapScoresToProbabilitiesInference() {}
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
   
   void setThreshold(double threshold)
     {this->threshold = threshold;}
@@ -55,7 +55,7 @@ public:
   ProteinContactMapInference(const String& name, InferencePtr scoreInference, ProteinResiduePairFeaturesPtr scoreFeatures, const String& targetName);
   ProteinContactMapInference() {}
 
-  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const;
+  virtual std::pair<Variable, Variable> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const;
 };
 
 }; /* namespace lbcpp */
