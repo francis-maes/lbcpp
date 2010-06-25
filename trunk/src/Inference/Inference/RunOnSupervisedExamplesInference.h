@@ -63,7 +63,7 @@ public:
     for (size_t i = 0; i < examples->size(); ++i)
     {
       ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
-      res->addSubInference(currentStates[i]->getCurrentSubInference(), example->getFirst(), example->getSecond());
+      res->addSubInference(currentStates[i]->getSubInference(), example->getFirst(), example->getSecond());
     }
     return res;
   }
@@ -72,7 +72,9 @@ public:
   {
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
-      context->makeSequentialInferenceNextState(inference, currentStates[i], state->getSubOutput(i), returnCode);
+      currentStates[i]->setSubOutput(state->getSubOutput(i));
+      if (!inference->updateInference(context, currentStates[i], returnCode))
+        currentStates[i]->setFinalState();
       if (returnCode != finishedReturnCode)
         break;
     }

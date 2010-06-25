@@ -32,7 +32,7 @@ public:
     {
       ObjectPairPtr example = trainingData->getAndCast<ObjectPair>(i);
       jassert(example);
-      SequentialInferenceStatePtr state = context->makeSequentialInferenceInitialState(inference, example->getFirst(), example->getSecond(), returnCode);
+      SequentialInferenceStatePtr state = inference->prepareInference(context, example->getFirst(), example->getSecond(), returnCode);
       if (returnCode != finishedReturnCode)
         return returnCode;
       currentStates[i] = state;
@@ -46,17 +46,17 @@ public:
       subTrainingData->resize(numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
       {
-        std::pair<Variable, Variable> subExample = inference->prepareSubInference(currentStates[i], returnCode);
-        if (returnCode != finishedReturnCode)
-          return returnCode;
-        subTrainingData->set(i, new ObjectPair(subExample.first, subExample.second));
+//        std::pair<Variable, Variable> subExample = inference->prepareSubInference(currentStates[i], returnCode);
+        //if (returnCode != finishedReturnCode)
+        //  return returnCode;
+        subTrainingData->set(i, new ObjectPair(currentStates[i]->getSubInput(), currentStates[i]->getSubSupervision()));
       }
 
       // get sub-inference and sub-learner
-      InferencePtr subInference = currentStates[0]->getCurrentSubInference();
+      InferencePtr subInference = currentStates[0]->getSubInference();
 #ifdef JUCE_DEBUG
       for (size_t i = 1; i < currentStates.size(); ++i)
-        jassert(currentStates[i]->getCurrentSubInference() == subInference);
+        jassert(currentStates[i]->getSubInference() == subInference);
 #endif // JUCE_DEBUG
 
       // apply sub-learner if it exists

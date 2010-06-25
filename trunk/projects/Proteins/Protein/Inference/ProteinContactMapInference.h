@@ -55,7 +55,8 @@ public:
   ProteinContactMapInference(const String& name, InferencePtr scoreInference, ProteinResiduePairFeaturesPtr scoreFeatures, const String& targetName);
   ProteinContactMapInference() {}
 
-  virtual std::pair<Variable, Variable> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const;
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
 };
 
 }; /* namespace lbcpp */

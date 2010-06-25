@@ -21,33 +21,56 @@ class SequentialInferenceState : public InferenceState
 {
 public:
   SequentialInferenceState(const Variable& input, const Variable& supervision)
-    : InferenceState(input, supervision), stepNumber(0) {}
+    : InferenceState(input, supervision), stepNumber(-1) {}
 
-  const Variable& getCurrentObject() const
-    {return currentObject;}
+  void setSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
+  {
+    this->subInference = subInference;
+    this->subInput = subInput;
+    this->subSupervision = subSupervision;
+    incrementStepNumber();
+  }
 
-  void setCurrentObject(const Variable& object)
-    {currentObject = object;}
+  void setFinalState()
+    {setSubInference(InferencePtr(), Variable(), Variable());}
 
-  size_t getCurrentStepNumber() const
+  InferencePtr getSubInference() const
+    {return subInference;}
+
+  Variable getSubInput() const
+    {return subInput;}
+
+  Variable getSubSupervision() const
+    {return subSupervision;}
+
+  void setSubOutput(const Variable& subOutput)
+    {this->subOutput = subOutput;}
+
+  Variable getSubOutput() const
+    {return subOutput;}
+
+  void setUserVariable(const Variable& variable)
+    {userVariable = variable;}
+
+  Variable getUserVariable() const
+    {return userVariable;}
+
+  bool isFinal() const
+    {return !subInference;}
+
+  int getStepNumber() const
     {return stepNumber;}
 
   void incrementStepNumber()
     {++stepNumber;}
 
-  InferencePtr getCurrentSubInference() const
-    {return subInference;}
-
-  void setCurrentSubInference(InferencePtr subInference)
-    {this->subInference = subInference;}
-
-  bool isFinal() const
-    {return !subInference;}
-
 private:
-  Variable currentObject;
-  size_t stepNumber;
+  int stepNumber;
   InferencePtr subInference;
+  Variable subInput;
+  Variable subSupervision;
+  Variable subOutput;
+  Variable userVariable;
 };
 typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceStatePtr;
 
@@ -60,21 +83,13 @@ public:
   /*
   ** Abstract
   */
-  virtual ObjectPtr prepareInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
-    {return state->getInput();}
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
-  virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
+  // returns false if the final state is reached
+  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
-  virtual std::pair<Variable, Variable> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
-    {return std::make_pair(state->getCurrentObject(), state->getSupervision());}
-  
-  virtual Variable finalizeSubInference(SequentialInferenceStatePtr state, const Variable& subInferenceOutput, ReturnCode& returnCode) const
-    {return subInferenceOutput;}
-
-  virtual InferencePtr getNextSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
-
-  virtual Variable finalizeInference(SequentialInferenceStatePtr finalState, ReturnCode& returnCode) const
-    {return finalState->getCurrentObject();}
+  virtual Variable finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+    {return finalState->getSubOutput();}
 
   /*
   ** Object
@@ -109,16 +124,36 @@ public:
     : StaticSequentialInference(name) {}
   VectorSequentialInference() {}
 
-  virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
-    {return subInferences.get(0);}
-
-  virtual InferencePtr getNextSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    size_t index = state->getCurrentStepNumber();
-    jassert(state->getCurrentSubInference() == subInferences.get(index));
-    ++index;
-    return index < subInferences.size() ? subInferences.get(index) : InferencePtr();
+    SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
+    state->setUserVariable(input);
+    if (subInferences.size())
+      prepareSubInference(context, state, 0, returnCode);
+    return state;
   }
+
+  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    int index = state->getStepNumber(); 
+    jassert(index >= 0);
+    finalizeSubInference(context, state, (size_t)index, returnCode);
+    jassert(state->getSubInference() == subInferences.get(index));
+    ++index;
+    if (index < (int)subInferences.size())
+    {
+      prepareSubInference(context, state, (size_t)index, returnCode);
+      return true;
+    }
+    else
+      return false;
+  }
+
+  virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+    {state->setUserVariable(state->getSubOutput());}
+
+  virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+    {state->setSubInference(subInferences.get(index), state->getSubOutput(), state->getSupervision());}
 
   virtual size_t getNumSubInferences() const
     {return subInferences.size();}

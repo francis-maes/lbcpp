@@ -24,9 +24,6 @@ public:
 
   virtual ReturnCode train(InferencePtr inference, ObjectContainerPtr examples);
 
-  virtual SequentialInferenceStatePtr makeSequentialInferenceInitialState(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual void makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, const Variable& subOutput, ReturnCode& returnCode);
-
   /*
   ** Inference Callbacks
   */

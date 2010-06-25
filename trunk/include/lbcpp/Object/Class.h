@@ -238,11 +238,11 @@ public:
 };
 
 template<class Type>
-class DefaultClass_ : public DefaultAbstractClass_<Type>
+class DefaultClass_ : public Class
 {
 public:
   DefaultClass_(ClassPtr baseClass = ObjectClass::getInstance())
-    : DefaultAbstractClass_<Type>(baseClass)
+    : Class(lbcpp::toString(typeid(Type)), baseClass)
     {Class::defaultConstructor = defaultCtor;}
 
   static ObjectPtr defaultCtor()

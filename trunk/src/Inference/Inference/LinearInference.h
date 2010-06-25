@@ -69,7 +69,7 @@ public:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     if (!parameters)
-      return ObjectPtr();
+      return Variable();
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     jassert(features);
     return new Scalar(features->dotProduct(parameters, dotProductCache));
