@@ -77,7 +77,7 @@ protected:
   friend class ReferenceCountedObjectPtr; /*!< */
   template<class T>
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
-  friend class Variable;
+  friend struct VariableValue;
 
   size_t refCount;              /*!< The object's reference count */
 
