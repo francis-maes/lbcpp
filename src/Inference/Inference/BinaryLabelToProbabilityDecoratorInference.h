@@ -21,15 +21,15 @@ public:
     : DecoratorInference(name, binaryClassifier), temperature(temperature) {}
   BinaryLabelToProbabilityDecoratorInference() {}
 
-  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
   {
     if (!subInferenceOutput)
-      return ObjectPtr();
+      return Variable();
     LabelPtr label = subInferenceOutput.dynamicCast<Label>();
     jassert(label && label->getDictionary() == BinaryClassificationDictionary::getInstance());
     double score = label->getIndex() == 1 ? label->getScore() : -label->getScore();
     double probability = 1.0 / (1.0 + exp(-score * temperature));
-    return new Scalar(probability);
+    return ObjectPtr(new Scalar(probability));
   }
 
 protected:

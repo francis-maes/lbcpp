@@ -26,10 +26,10 @@ public:
 
   BatchGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, predictedOutput);
-    FeatureGeneratorPtr exampleGradient = getExampleGradient(inference, input, supervision, predictedOutput);
+    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+    FeatureGeneratorPtr exampleGradient = getExampleGradient(inference, input, supervision, prediction);
     if (!gradientSum)
       gradientSum = new DenseVector(exampleGradient->getDictionary());
     exampleGradient->addTo(gradientSum);

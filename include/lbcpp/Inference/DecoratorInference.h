@@ -23,16 +23,16 @@ public:
     : Inference(name), decorated(decorated) {}
   DecoratorInference() {}
  
-  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return std::make_pair(input, supervision);}
     
-  virtual ObjectPtr finalizeSubInference(ObjectPtr input, ObjectPtr supervision, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
     {return subInferenceOutput;}
  
   /*
   ** Inference
   */
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runDecoratorInference(DecoratorInferencePtr(this), input, supervision, returnCode);}
 
   InferencePtr getSubInference() const

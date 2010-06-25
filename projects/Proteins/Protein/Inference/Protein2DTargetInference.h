@@ -39,7 +39,7 @@ public:
 
   typedef ReferenceCountedObjectPtr<State> StatePtr;
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ProteinPtr protein = input.dynamicCast<Protein>();
     jassert(protein);
@@ -61,7 +61,7 @@ public:
     return state;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr s, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr s, ReturnCode& returnCode)
   {
     StatePtr state = s.dynamicCast<State>();
     jassert(state);
@@ -79,7 +79,7 @@ public:
         hasAtLeastOnePrediction = true;
       }
     }
-    return hasAtLeastOnePrediction ? res : ObjectPtr();
+    return hasAtLeastOnePrediction ? Variable(res) : Variable();
   }
 
 protected:   

@@ -49,10 +49,10 @@ class DefaultErrorHandler : public ErrorHandler
 {
 public:
   virtual void errorMessage(const String& where, const String& what)
-    {std::cerr << "Error in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}  
+    {std::cerr << "Error in '" << (const char* )where << "': " << (const char* )what << "." << std::endl; jassert(false);}
     
   virtual void warningMessage(const String& where, const String& what)
-    {std::cerr << "Warning in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}  
+    {std::cerr << "Warning in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}
 };
 
 static DefaultErrorHandler defaultErrorHandler;

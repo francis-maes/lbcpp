@@ -35,7 +35,7 @@ public:
   virtual size_t getNumSubInferences(ProteinPtr protein) const
     {return protein->getLength();}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ProteinPtr protein = input.dynamicCast<Protein>();
     jassert(protein);
@@ -53,7 +53,7 @@ public:
     return res;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     ProteinPtr protein = state->getInput().dynamicCast<Protein>();
     jassert(protein);    
@@ -69,7 +69,7 @@ public:
         hasAtLeastOnePrediction = true;
       }
     }
-    return hasAtLeastOnePrediction ? res : ObjectContainerPtr();
+    return hasAtLeastOnePrediction ? Variable(res) : Variable();
   }
 
 protected:
@@ -112,7 +112,7 @@ public:
   virtual size_t getNumSubInferences() const = 0;
   virtual FeatureGeneratorPtr getInputFeatures(ObjectPtr input, size_t index) const = 0;
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ObjectContainerPtr container = input.dynamicCast<ObjectContainer>();
     jassert(container);
@@ -127,7 +127,7 @@ public:
     return res;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     DenseVectorPtr res = new DenseVector(outputDictionary, n);

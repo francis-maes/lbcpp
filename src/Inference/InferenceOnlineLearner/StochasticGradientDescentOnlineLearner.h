@@ -24,10 +24,10 @@ public:
 
   StochasticGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ObjectPtr predictedOutput)
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, predictedOutput);
-    applyExample(inference, input, supervision, predictedOutput);
+    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+    applyExample(inference, input, supervision, prediction);
   }
 };
 

@@ -24,7 +24,7 @@ public:
   }
   ProteinCAlphaBondInferenceStep() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     BondCoordinatesObjectPtr bond = supervision.dynamicCast<BondCoordinatesObject>();
     jassert(bond || !supervision);
@@ -37,7 +37,7 @@ public:
     return res;
   }
 
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     BondCoordinates bond;
     bond.setLength(3.8);
@@ -47,7 +47,7 @@ public:
       bond.setThetaAngle(juce::jlimit(0.8, 2.9, theta->getValue()));
     if (dihedral)
       bond.setPhiDihedralAngle(dihedral->getValue());
-    return new BondCoordinatesObject(bond);
+    return ObjectPtr(new BondCoordinatesObject(bond));
   }
 };
 

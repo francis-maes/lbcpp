@@ -17,7 +17,12 @@ String Object::getClassName() const
   {return lbcpp::toString(typeid(*this));}
 
 ClassPtr Object::getClass() const
-  {return Class::get(getClassName());}
+{
+  ClassPtr res = Class::get(getClassName());
+  if (!res)
+    Object::error(T("Object::getClass"), T("Could not find objects class, className = ") + getClassName());
+  return res;
+}
 
 ObjectPtr Object::create(const String& className)
   {return Class::createInstance(className);}

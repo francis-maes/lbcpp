@@ -34,7 +34,7 @@ public:
   }
 
 protected:
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
     jassert(inferenceAndTrainingData);

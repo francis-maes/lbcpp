@@ -29,9 +29,6 @@ public:
   virtual bool shouldOptimizerStop(double)
     {return shouldStop();}
 
-  virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr, ObjectContainerPtr)
-    {return shouldStop();}
-
   virtual void save(OutputStream& ostr) const
     {write(ostr, maxIterations);}
 
@@ -144,12 +141,6 @@ public:
     return false;
   }
 
-  virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr policy, ObjectContainerPtr examples)
-  {
-    jassert(false); // not implemented
-    return false;
-  }
-
   virtual void save(OutputStream& ostr) const
     {write(ostr, tolerance);}
 
@@ -193,13 +184,6 @@ public:
     return t1 || t2;
   }
 
-  virtual bool shouldCRAlgorithmLearnerStop(PolicyPtr policy, ObjectContainerPtr examples)
-  {
-    bool t1 = criterion1->shouldCRAlgorithmLearnerStop(policy, examples);
-    bool t2 = criterion2->shouldCRAlgorithmLearnerStop(policy, examples);
-    return t1 || t2;
-  }
-  
   virtual void save(OutputStream& ostr) const
     {write(ostr, criterion1); write(ostr, criterion2);}
 

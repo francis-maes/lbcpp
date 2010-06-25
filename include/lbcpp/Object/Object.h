@@ -65,7 +65,7 @@ public:
   */
   virtual ~Object() {}
 
-  ClassPtr getClass() const;
+  virtual ClassPtr getClass() const;
   String getClassName() const;
 
   static ObjectPtr create(const String& className);

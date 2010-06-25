@@ -17,22 +17,16 @@
 namespace lbcpp
 {
 
-class SequentialInferenceState : public Object
+class SequentialInferenceState : public InferenceState
 {
 public:
-  SequentialInferenceState(ObjectPtr input, ObjectPtr supervision)
-    : input(input), supervision(supervision), stepNumber(0) {}
+  SequentialInferenceState(const Variable& input, const Variable& supervision)
+    : InferenceState(input, supervision), stepNumber(0) {}
 
-  ObjectPtr getInput() const
-    {return input;}
-
-  ObjectPtr getSupervision() const
-    {return supervision;}
-
-  ObjectPtr getCurrentObject() const
+  const Variable& getCurrentObject() const
     {return currentObject;}
 
-  void setCurrentObject(ObjectPtr object)
+  void setCurrentObject(const Variable& object)
     {currentObject = object;}
 
   size_t getCurrentStepNumber() const
@@ -51,9 +45,7 @@ public:
     {return !subInference;}
 
 private:
-  ObjectPtr input;
-  ObjectPtr supervision;
-  ObjectPtr currentObject;
+  Variable currentObject;
   size_t stepNumber;
   InferencePtr subInference;
 };
@@ -73,15 +65,15 @@ public:
 
   virtual InferencePtr getInitialSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
 
-  virtual std::pair<ObjectPtr, ObjectPtr> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
+  virtual std::pair<Variable, Variable> prepareSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const
     {return std::make_pair(state->getCurrentObject(), state->getSupervision());}
   
-  virtual ObjectPtr finalizeSubInference(SequentialInferenceStatePtr state, ObjectPtr subInferenceOutput, ReturnCode& returnCode) const
+  virtual Variable finalizeSubInference(SequentialInferenceStatePtr state, const Variable& subInferenceOutput, ReturnCode& returnCode) const
     {return subInferenceOutput;}
 
   virtual InferencePtr getNextSubInference(SequentialInferenceStatePtr state, ReturnCode& returnCode) const = 0;
 
-  virtual ObjectPtr finalizeInference(SequentialInferenceStatePtr finalState, ReturnCode& returnCode) const
+  virtual Variable finalizeInference(SequentialInferenceStatePtr finalState, ReturnCode& returnCode) const
     {return finalState->getCurrentObject();}
 
   /*
@@ -93,7 +85,7 @@ protected:
   /*
   ** Inference
   */
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
 };
 

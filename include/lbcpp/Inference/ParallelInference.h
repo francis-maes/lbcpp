@@ -16,55 +16,46 @@
 namespace lbcpp
 {
 
-class ParallelInferenceState : public Object
+class ParallelInferenceState : public InferenceState
 {
 public:
-  ParallelInferenceState(ObjectPtr input, ObjectPtr supervision)
-    : input(input), supervision(supervision) {}
+  ParallelInferenceState(const Variable& input, const Variable& supervision)
+    : InferenceState(input, supervision) {}
 
   void reserve(size_t size)
     {subInferences.reserve(size);}
 
-  ObjectPtr getInput() const
-    {return input;}
-
-  ObjectPtr getSupervision() const
-    {return supervision;}
-
   size_t getNumSubInferences() const
     {return subInferences.size();}
 
-  void addSubInference(InferencePtr subInference, ObjectPtr subInput, ObjectPtr subSupervision)
+  void addSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
     {subInferences.push_back(SubInference(subInference, subInput, subSupervision));}
 
   InferencePtr getSubInference(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index].inference;}
 
-  ObjectPtr getSubInput(size_t index) const
+  const Variable& getSubInput(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index].input;}
 
-  ObjectPtr getSubSupervision(size_t index) const
+  const Variable& getSubSupervision(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index].supervision;}
 
-  ObjectPtr getSubOutput(size_t index) const
+  const Variable& getSubOutput(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index].output;}
 
-  void setSubOutput(size_t index, ObjectPtr subOutput)
+  void setSubOutput(size_t index, const Variable& subOutput)
     {jassert(index < subInferences.size()); subInferences[index].output = subOutput;}
 
 private:
-  ObjectPtr input;
-  ObjectPtr supervision;
-
   struct SubInference
   {
-    SubInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision)
+    SubInference(InferencePtr inference, const Variable& input, const Variable& supervision)
       : inference(inference), input(input), supervision(supervision) {}
 
     InferencePtr inference;
-    ObjectPtr input;
-    ObjectPtr supervision;
-    ObjectPtr output;
+    Variable input;
+    Variable supervision;
+    Variable output;
   };
 
   std::vector<SubInference> subInferences;
@@ -78,11 +69,11 @@ public:
   ParallelInference(const String& name) : Inference(name) {}
   ParallelInference() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
-  virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
 protected:
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 };
 
@@ -146,7 +137,7 @@ public:
   /*
   ** Inference
   */
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   /*
   ** Object

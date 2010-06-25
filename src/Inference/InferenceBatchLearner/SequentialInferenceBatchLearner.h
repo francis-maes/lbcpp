@@ -46,7 +46,7 @@ public:
       subTrainingData->resize(numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
       {
-        std::pair<ObjectPtr, ObjectPtr> subExample = inference->prepareSubInference(currentStates[i], returnCode);
+        std::pair<Variable, Variable> subExample = inference->prepareSubInference(currentStates[i], returnCode);
         if (returnCode != finishedReturnCode)
           return returnCode;
         subTrainingData->set(i, new ObjectPair(subExample.first, subExample.second));
@@ -87,7 +87,7 @@ public:
   }
 
 protected:
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
     jassert(inferenceAndTrainingData);

@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
   std::cout << "Making predictions ..." << std::endl;
 
   Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode);
+  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode).dynamicCast<Protein>();
   if (returnCode != Inference::finishedReturnCode)
   {
     std::cerr << "Invalid return code in inference" << std::endl;

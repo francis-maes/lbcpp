@@ -20,12 +20,12 @@ class InferenceContext : public Object
 public:
   typedef Inference::ReturnCode ReturnCode;
 
-  virtual ObjectPtr runInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+  virtual Variable runInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   virtual ReturnCode train(InferencePtr inference, ObjectContainerPtr examples);
 
-  virtual SequentialInferenceStatePtr makeSequentialInferenceInitialState(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  virtual void makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, ObjectPtr subOutput, ReturnCode& returnCode);
+  virtual SequentialInferenceStatePtr makeSequentialInferenceInitialState(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual void makeSequentialInferenceNextState(SequentialInferencePtr inference, SequentialInferenceStatePtr state, const Variable& subOutput, ReturnCode& returnCode);
 
   /*
   ** Inference Callbacks
@@ -39,13 +39,13 @@ protected:
   friend class SequentialInference;
   friend class ParallelInference;
   
-  virtual ObjectPtr runDecoratorInference(DecoratorInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  virtual ObjectPtr runSequentialInference(SequentialInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  virtual ObjectPtr runParallelInference(ParallelInferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
+  virtual Variable runDecoratorInference(DecoratorInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable runSequentialInference(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
   
-  ObjectPtr callRunInference(InferencePtr inference, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode);
-  void callPreInference(InferenceStackPtr stack, ObjectPtr& input, ObjectPtr& supervision, ObjectPtr& output, ReturnCode& returnCode);
-  void callPostInference(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode);
+  Variable callRunInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
+  void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
     
 private:
   std::vector<InferenceCallbackPtr> callbacks;
