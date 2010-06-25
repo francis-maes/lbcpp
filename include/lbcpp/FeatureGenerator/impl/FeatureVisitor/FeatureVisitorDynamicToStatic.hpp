@@ -9,7 +9,7 @@
 #ifndef LBCPP_FEATURE_VISITOR_DYNAMIC_TO_STATIC_H_
 # define LBCPP_FEATURE_VISITOR_DYNAMIC_TO_STATIC_H_
 
-# include "FeatureVisitorStatic.hpp"
+# include "../FeatureVisitorStatic.hpp"
 
 namespace lbcpp {
 namespace impl {

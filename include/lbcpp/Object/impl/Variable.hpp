@@ -131,7 +131,7 @@ inline Variable::Variable(ObjectPtr object)
 
 template<class T>
 inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? object->getClass() : ObjectPtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(const Variable& otherVariant)
   {*this = otherVariant;}
