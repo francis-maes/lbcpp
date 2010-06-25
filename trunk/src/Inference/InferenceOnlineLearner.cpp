@@ -97,8 +97,8 @@ void declareInferenceOnlineLearnerClasses()
 #include "InferenceBatchLearner/SimulationInferenceBatchLearner.h"
 #include "InferenceBatchLearner/SequentialInferenceBatchLearner.h"
 
-InferenceBatchLearnerPtr lbcpp::simulationInferenceLearner()
+InferencePtr lbcpp::simulationInferenceLearner()
   {return new SimulationInferenceBatchLearner();}
 
-InferenceBatchLearnerPtr lbcpp::sequentialInferenceLearner()
+InferencePtr lbcpp::sequentialInferenceLearner()
   {return new SequentialInferenceBatchLearner();}

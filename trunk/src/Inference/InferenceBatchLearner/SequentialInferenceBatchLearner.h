@@ -15,10 +15,10 @@
 namespace lbcpp
 {
 
-class SequentialInferenceBatchLearner : public InferenceBatchLearner
+class SequentialInferenceBatchLearner : public Inference
 {
 public:
-  virtual ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
   {
     size_t numTrainingExamples = trainingData->size();
 
@@ -84,6 +84,18 @@ public:
 
       ++stepNumber;
     }
+  }
+
+protected:
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
+    jassert(inferenceAndTrainingData);
+    InferencePtr inference = inferenceAndTrainingData->getFirst().dynamicCast<Inference>();
+    ObjectContainerPtr trainingData = inferenceAndTrainingData->getSecond().dynamicCast<ObjectContainer>();
+    jassert(inference && trainingData);
+    returnCode = train(context, inference, trainingData);
+    return ObjectPtr();
   }
 };
 

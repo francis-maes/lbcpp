@@ -85,15 +85,16 @@ public:
     {return finalState->getCurrentObject();}
 
   /*
+  ** Object
+  */
+  virtual String toString() const;
+
+protected:
+  /*
   ** Inference
   */
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
     {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
-
-  /*
-  ** Object
-  */
-  virtual String toString() const;
 };
 
 class StaticSequentialInference : public SequentialInference

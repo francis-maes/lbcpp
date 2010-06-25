@@ -78,11 +78,12 @@ public:
   ParallelInference(const String& name) : Inference(name) {}
   ParallelInference() {}
 
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-    {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
-
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
   virtual ObjectPtr finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
+
+protected:
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+    {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 };
 
 class StaticParallelInference : public ParallelInference

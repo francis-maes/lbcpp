@@ -44,10 +44,10 @@ public:
   void setOnlineLearner(InferenceOnlineLearnerPtr learner)
     {this->onlineLearner = learner;}
 
-  InferenceBatchLearnerPtr getBatchLearner() const
+  InferencePtr getBatchLearner() const
     {return batchLearner;}
     
-  void setBatchLearner(InferenceBatchLearnerPtr batchLearner)
+  void setBatchLearner(InferencePtr batchLearner)
     {this->batchLearner = batchLearner;}
 
 protected:
@@ -56,7 +56,7 @@ protected:
   virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
-  InferenceBatchLearnerPtr batchLearner;
+  InferencePtr batchLearner;
 };
 
 // Atomic
