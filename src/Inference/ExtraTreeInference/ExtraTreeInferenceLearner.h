@@ -76,9 +76,10 @@ public:
 
   virtual ObjectPtr get(size_t index) const
   {
+    jassert(false);
     jassert(index < examples.size());
-    return new ObjectPair(examples[index].first.toObject(inputClass), 
-      examples[index].second.toObject(supervisionClass));
+    return ObjectPtr();/*new ObjectPair(examples[index].first.toObject(inputClass), 
+      examples[index].second.toObject(supervisionClass));*/
   }
 
   //Variable getInput(size_t index) const
