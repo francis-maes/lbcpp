@@ -94,11 +94,11 @@ ObjectPtr InferenceContext::runSequentialInference(SequentialInferencePtr infere
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
-  InferenceBatchLearnerPtr learner = inference->getBatchLearner();
+  InferencePtr learner = inference->getBatchLearner();
   jassert(learner);
   if (!learner)
     return Inference::errorReturnCode;
-  runInference(learner, inference, examples, res);
+  runInference(learner, new ObjectPair(inference, examples), ObjectPtr(), res);
   return res;
 }
 

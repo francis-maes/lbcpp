@@ -15,28 +15,11 @@
 namespace lbcpp
 {
 
-// Input: Inference
-// Supervision: (input, supervision) object pair container
-// Output: None
-class InferenceBatchLearner : public Inference
-{
-public:
-  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
-  {
-    InferencePtr inference = input.dynamicCast<Inference>();
-    ObjectContainerPtr trainingData = supervision.dynamicCast<ObjectContainer>();
-    jassert(inference && trainingData);
-    returnCode = train(context, inference, trainingData);
-    return ObjectPtr();
-  }
-
-protected:
-  virtual ReturnCode train(InferenceContextPtr context, InferencePtr inference, ObjectContainerPtr trainingData)
-    {return finishedReturnCode;}
-};
-
-extern InferenceBatchLearnerPtr simulationInferenceLearner();
-extern InferenceBatchLearnerPtr sequentialInferenceLearner();
+// Input: (Inference, trainingData) pair; trainingData = container of (input, supervision) pairs
+// Supervision: None
+// Output: None (side-effect on input Inference)
+extern InferencePtr simulationInferenceLearner();
+extern InferencePtr sequentialInferenceLearner();
 
 }; /* namespace lbcpp */
 

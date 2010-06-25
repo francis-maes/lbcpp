@@ -93,10 +93,21 @@ ObjectPtr ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr cont
 /*
 ** ContactMapScoresToProbabilitiesInferenceBatchLearner
 */
-class ContactMapScoresToProbabilitiesInferenceBatchLearner : public InferenceBatchLearner
+class ContactMapScoresToProbabilitiesInferenceBatchLearner : public Inference
 {
 protected:
-  virtual ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
+  virtual ObjectPtr run(InferenceContextPtr context, ObjectPtr input, ObjectPtr supervision, ReturnCode& returnCode)
+  {
+    ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
+    jassert(inferenceAndTrainingData);
+    InferencePtr inference = inferenceAndTrainingData->getFirst().dynamicCast<Inference>();
+    ObjectContainerPtr trainingData = inferenceAndTrainingData->getSecond().dynamicCast<ObjectContainer>();
+    jassert(inference && trainingData);
+    returnCode = train(context, inference, trainingData);
+    return ObjectPtr();
+  }
+
+  ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
   {
     std::cout << "LOOKING FOR BEST THRESHOLD ..... " << std::endl;
     ContactMapScoresToProbabilitiesInferencePtr inference = inf.dynamicCast<ContactMapScoresToProbabilitiesInference>();
