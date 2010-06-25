@@ -35,81 +35,27 @@ namespace lbcpp
 
 struct VariableValue
 {
-  VariableValue(bool boolValue)
-    {u.boolValue = boolValue;}
-  VariableValue(int intValue)
-    {u.intValue = intValue;} 
-  VariableValue(double doubleValue)
-    {u.doubleValue = doubleValue;}
-  VariableValue(const String& stringValue)
-    {u.stringValue = new String(stringValue);}
+  VariableValue(bool boolValue);
+  VariableValue(int intValue);
+  VariableValue(double doubleValue);
+  VariableValue(const String& stringValue);
 
   template<class T>
-  VariableValue(ReferenceCountedObjectPtr<T> objectValue)
-  {
-    u.objectValue = objectValue.get();
-    if (objectValue)
-      objectValue->incrementReferenceCounter();
-  }
-  VariableValue(const VariableValue& other)
-    {memcpy(this, &other, sizeof (VariableValue));}
-  VariableValue()
-    {memset(this, 0, sizeof (VariableValue));}
+  VariableValue(ReferenceCountedObjectPtr<T> objectValue);
+  VariableValue(const VariableValue& other);
+  VariableValue();
 
-  void clear(ClassPtr type)
-  {
-    if (type)
-    {
-      if (type.isInstanceOf<StringClass>())
-        clearString();
-      else if (!type.isInstanceOf<BuiltinTypeClass>())
-        clearObject();
-    }
-  }
+  void clear(ClassPtr type);
 
-  void clearObject()
-  {
-    if (u.objectValue)
-    {
-      u.objectValue->decrementReferenceCounter();
-      u.objectValue = NULL;
-    }
-  }
+  void clearObject();
+  void clearString();
 
-  void clearString()
-  {
-    delete u.stringValue;
-    u.stringValue = NULL;
-  }
-
-  bool getBoolean() const
-    {return u.boolValue;}
-
-  int getInteger() const
-    {return u.intValue;}
-
-  double getDouble() const
-    {return u.doubleValue;}
-
-  const String& getString() const
-    {return *u.stringValue;}
-
-  ObjectPtr getObject() const
-    {return u.objectValue ? ObjectPtr(u.objectValue) : ObjectPtr();}
-
-  Object* getObjectPointer() const
-    {return u.objectValue ? u.objectValue : NULL;}
-
-  ObjectPtr toObject(ClassPtr type) const
-  {
-    if (type.isInstanceOf<BuiltinTypeClass>())
-    {
-      jassert(false);
-      return ObjectPtr();
-    }
-    else
-      return getObject();
-  }
+  bool getBoolean() const;
+  int getInteger() const;
+  double getDouble() const;
+  const String& getString() const;
+  ObjectPtr getObject() const;
+  Object* getObjectPointer() const;
 
 private:
   union
@@ -125,114 +71,49 @@ private:
 class Variable
 {
 public:
-  Variable(ClassPtr type, bool boolValue)
-    : type(type), value(boolValue) {jassert(isBoolean());}
-  Variable(ClassPtr type, int intValue)
-    : type(type), value(intValue) {jassert(isInteger());} 
-  Variable(ClassPtr type, double doubleValue)
-    : type(type), value(doubleValue) {jassert(isDouble());}
-  Variable(double doubleValue)
-    : type(DoubleClass::getInstance()), value(doubleValue) {}
-  Variable(ClassPtr type, const String& stringValue)
-    : type(type), value(stringValue) {jassert(isString());}
-  Variable(ClassPtr type, ObjectPtr objectValue)
-    : type(type), value(objectValue) {jassert(isObject());}
-  Variable(ObjectPtr object)
-    : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
+  Variable(ClassPtr type, bool boolValue);
+  Variable(ClassPtr type, int intValue);
+  Variable(ClassPtr type, double doubleValue);
+  Variable(double doubleValue);
+  Variable(ClassPtr type, const String& stringValue);
+  Variable(ClassPtr type, ObjectPtr objectValue);
+  Variable(ObjectPtr object);
+
   template<class T>
-  Variable(ReferenceCountedObjectPtr<T> object)
-    : type(object ? object->getClass() : ObjectPtr()), value(object) {jassert(type || !object);}
-  Variable(const Variable& otherVariant)
-    {*this = otherVariant;}
+  Variable(ReferenceCountedObjectPtr<T> object);
+  Variable(const Variable& otherVariant);
   Variable() {}
   
-  ~Variable()
-    {clear();}
+  ~Variable();
 
-  void clear()
-    {value.clear(type); type = ClassPtr();}
+  void clear();
 
-  Variable& operator =(const Variable& otherVariant)
-  {
-    clear();
-    type = otherVariant.getType();
-    if (isNil())
-      return *this;
-    else if (isBoolean())
-      value = VariableValue(otherVariant.getBoolean());
-    else if (isInteger())
-      value = VariableValue(otherVariant.getInteger());
-    else if (isDouble())
-      value = VariableValue(otherVariant.getDouble());
-    else if (isString())
-      value = VariableValue(otherVariant.getString());
-    else if (isObject())
-      value = VariableValue(otherVariant.getObject());
-    else
-    {
-      Object::error(T("Variable::operator ="), T("Unrecognized type of variant"));
-      jassert(false);
-    }
-    return *this;
-  }
+  Variable& operator =(const Variable& otherVariant);
 
-  ClassPtr getType() const
-    {return type;}
+  ClassPtr getType() const;
 
-  operator bool() const
-    {return type;}
+  operator bool() const;
+  operator ObjectPtr() const;
 
-  operator ObjectPtr() const
-    {return isNil() ? ObjectPtr() : getObject();}
+  bool isNil() const;
 
-  bool isNil() const
-    {return !type;}
+  bool isBoolean() const;
+  bool getBoolean() const;
 
-  bool isBoolean() const
-    {return type && type.isInstanceOf<BooleanClass>();}
+  bool isInteger() const;
+  int getInteger() const;
 
-  bool getBoolean() const
-    {jassert(isBoolean()); return value.getBoolean();}
+  bool isDouble() const;
+  double getDouble() const;
 
-  bool isInteger() const
-    {return type && type.isInstanceOf<IntegerClass>();}
+  bool isString() const;
+  String getString() const;
 
-  int getInteger() const
-    {jassert(isInteger()); return value.getInteger();}
-
-  bool isDouble() const
-    {return type && type.isInstanceOf<DoubleClass>();}
-
-  double getDouble() const
-    {jassert(isDouble()); return value.getDouble();}
-
-  bool isString() const
-    {return type && type.isInstanceOf<StringClass>();}
-
-  String getString() const
-    {jassert(isString()); return value.getString();}
-
-  bool isObject() const
-    {return type && !type.isInstanceOf<BuiltinTypeClass>();}
-
-  ObjectPtr getObject() const
-    {jassert(isObject()); return value.getObject();}
+  bool isObject() const;
+  ObjectPtr getObject() const;
 
   template<class O>
-  inline ReferenceCountedObjectPtr<O> dynamicCast() const
-  {
-    if (isNil())
-      return ReferenceCountedObjectPtr<O>();
-    jassert(isObject());
-    Object* ptr = value.getObjectPointer();
-    if (ptr)
-    {
-      O* res = dynamic_cast<O* >(ptr);
-      if (res)
-        return ReferenceCountedObjectPtr<O>(res);
-    }
-    return ReferenceCountedObjectPtr<O>();
-  }
+  ReferenceCountedObjectPtr<O> dynamicCast() const;
 
 private:
   ClassPtr type;
@@ -240,5 +121,7 @@ private:
 };
 
 }; /* namespace lbcpp */
+
+# include "impl/Variable.hpp"
 
 #endif // !LBCPP_OBJECT_VARIABLE_H_
