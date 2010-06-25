@@ -47,22 +47,13 @@ public:
     }
   }
 
-  double getScalar(ObjectPtr object) const
-  {
-    if (!object)
-      return 0.0;
-    ScalarPtr scalar = object.dynamicCast<Scalar>();
-    jassert(scalar);
-    return scalar->getValue();
-  }
-
   virtual FeatureGeneratorPtr getExampleGradient(const Variable& input, const Variable& supervision, const Variable& prediction, double& lossValue)
   {
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
     jassert(features && lossFunction);
     double lossDerivative;
-    lossFunction->compute(getScalar(prediction), &lossValue, &lossDerivative);
+    lossFunction->compute(prediction ? prediction.getDouble() : 0.0, &lossValue, &lossDerivative);
     return multiplyByScalar(features, lossDerivative);  
   }
 
@@ -72,7 +63,7 @@ public:
       return Variable();
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     jassert(features);
-    return ObjectPtr(new Scalar(features->dotProduct(parameters, dotProductCache)));
+    return Variable(features->dotProduct(parameters, dotProductCache));
   }
 
 private:

@@ -301,11 +301,11 @@ ObjectContainerPtr lbcpp::append(ObjectContainerPtr left, ObjectContainerPtr rig
 
 void declareObjectContainerClasses()
 {
-  LBCPP_DECLARE_CLASS(VectorObjectContainer);
-  LBCPP_DECLARE_CLASS(ApplyFunctionObjectContainer);
-  LBCPP_DECLARE_CLASS(RangeObjectContainer);
-  LBCPP_DECLARE_CLASS(ExcludeRangeObjectContainer);
-  LBCPP_DECLARE_CLASS(DuplicatedObjectContainer);
-  LBCPP_DECLARE_CLASS(RandomizedObjectContainer);
-  LBCPP_DECLARE_CLASS(ObjectPair);
+  LBCPP_DECLARE_CLASS_LEGACY(VectorObjectContainer);
+  LBCPP_DECLARE_CLASS_LEGACY(ApplyFunctionObjectContainer);
+  LBCPP_DECLARE_CLASS_LEGACY(RangeObjectContainer);
+  LBCPP_DECLARE_CLASS_LEGACY(ExcludeRangeObjectContainer);
+  LBCPP_DECLARE_CLASS_LEGACY(DuplicatedObjectContainer);
+  LBCPP_DECLARE_CLASS_LEGACY(RandomizedObjectContainer);
+  LBCPP_DECLARE_CLASS_LEGACY(ObjectPair);
 }

@@ -56,7 +56,7 @@ VectorOptimizerPtr lbcpp::lbfgsOptimizer()
 */
 void declareOptimizers()
 {
-  LBCPP_DECLARE_CLASS(RPropOptimizer);
-  LBCPP_DECLARE_CLASS(GradientDescentOptimizer);
-  LBCPP_DECLARE_CLASS(LBFGSOptimizer);
+  LBCPP_DECLARE_CLASS_LEGACY(RPropOptimizer);
+  LBCPP_DECLARE_CLASS_LEGACY(GradientDescentOptimizer);
+  LBCPP_DECLARE_CLASS_LEGACY(LBFGSOptimizer);
 }

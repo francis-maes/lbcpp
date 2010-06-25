@@ -206,8 +206,8 @@ StoppingCriterionPtr lbcpp::logicalOr(StoppingCriterionPtr criterion1, StoppingC
 */
 void declareStoppingCriterions()
 {
-  LBCPP_DECLARE_CLASS(MaxIterationsStoppingCriterion);
-  LBCPP_DECLARE_CLASS(MaxIterationsWithoutImprovementStoppingCriterion);
-  LBCPP_DECLARE_CLASS(AverageImprovementStoppingCriterion);
-  LBCPP_DECLARE_CLASS(LogicalOrStoppingCriterion);
+  LBCPP_DECLARE_CLASS_LEGACY(MaxIterationsStoppingCriterion);
+  LBCPP_DECLARE_CLASS_LEGACY(MaxIterationsWithoutImprovementStoppingCriterion);
+  LBCPP_DECLARE_CLASS_LEGACY(AverageImprovementStoppingCriterion);
+  LBCPP_DECLARE_CLASS_LEGACY(LogicalOrStoppingCriterion);
 }

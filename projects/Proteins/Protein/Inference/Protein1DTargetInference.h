@@ -62,10 +62,15 @@ public:
     bool hasAtLeastOnePrediction = false;
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
-      ObjectPtr subOutput = state->getSubOutput(i);
+      Variable subOutput = state->getSubOutput(i);
       if (subOutput)
       {
-        res->set(i, subOutput);
+        if (subOutput.isObject())
+          res->set(i, subOutput);
+        else if (subOutput.isDouble())
+          res->set(i, new Scalar(subOutput.getDouble())); // FIXME! 
+        else
+          jassert(false);
         hasAtLeastOnePrediction = true;
       }
     }

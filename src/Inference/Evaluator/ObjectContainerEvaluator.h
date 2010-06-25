@@ -30,7 +30,7 @@ public:
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {objectEvaluator->getScores(res);}
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     ObjectContainerPtr predicted = predictedObject.dynamicCast<ObjectContainer>();
     ObjectContainerPtr correct = correctObject.dynamicCast<ObjectContainer>();

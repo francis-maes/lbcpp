@@ -19,6 +19,7 @@ class ScalarFunctionComposition : public ScalarFunction
 public:
   ScalarFunctionComposition(ScalarFunctionPtr f1, ScalarFunctionPtr f2)
     : f1(f1), f2(f2) {}
+  ScalarFunctionComposition() {}
 
   virtual bool isDerivable() const
     {return f1->isDerivable() && f2->isDerivable();}
@@ -35,6 +36,55 @@ public:
 private:
   ScalarFunctionPtr f1;
   ScalarFunctionPtr f2;
+
+  virtual bool load(InputStream& istr)
+    {return ScalarFunction::load(istr) && lbcpp::read(istr, f1) && lbcpp::read(istr, f2);}
+
+  virtual void save(OutputStream& ostr) const
+    {ScalarFunction::save(ostr); lbcpp::write(ostr, f1); lbcpp::write(ostr, f2);}
+};
+
+class MultiplyByScalarFunction : public ScalarFunction
+{
+public:
+  MultiplyByScalarFunction(ScalarFunctionPtr function, double scalar)
+    : function(function), scalar(scalar) {}
+  MultiplyByScalarFunction() : scalar(0.0) {}
+
+  virtual bool isDerivable() const
+    {return function->isDerivable();}
+
+  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  {
+    if (scalar == 0.0)
+    {
+      if (output) *output = 0.0;
+      if (derivative) *derivative = 0.0;
+    }
+    else if (scalar == 1.0)
+      function->compute(input, output, derivativeDirection, derivative);
+    else
+    {
+      double dd;
+      if (derivativeDirection)
+        dd = *derivativeDirection * (scalar < 0.0 ? -1.0 : 1.0);
+      function->compute(input, output, derivativeDirection ? &dd : NULL, derivative);
+      if (output)
+        *output *= scalar;
+      if (derivative)
+        *derivative *= scalar;
+    }
+  }
+
+protected:
+  ScalarFunctionPtr function;
+  double scalar;
+
+  virtual bool load(InputStream& istr)
+    {return ScalarFunction::load(istr) && lbcpp::read(istr, function) && lbcpp::read(istr, scalar);}
+
+  virtual void save(OutputStream& ostr) const
+    {ScalarFunction::save(ostr); lbcpp::write(ostr, function); lbcpp::write(ostr, scalar);}
 };
 
 class AddConstantScalarFunction : public ScalarFunction

@@ -224,12 +224,12 @@ public:
     declareLBCppCoreClasses();
     declareProteinClasses();
 
-    LBCPP_DECLARE_CLASS(ExplorerConfiguration);
+    LBCPP_DECLARE_CLASS_LEGACY(ExplorerConfiguration);
 
-    LBCPP_DECLARE_CLASS(ExplorerRecentFiles);
-    LBCPP_DECLARE_CLASS(RecentProcesses);
-    LBCPP_DECLARE_CLASS(ProcessConsoleSettings);
-    LBCPP_DECLARE_CLASS(ProcessConsoleFilter);
+    LBCPP_DECLARE_CLASS_LEGACY(ExplorerRecentFiles);
+    LBCPP_DECLARE_CLASS_LEGACY(RecentProcesses);
+    LBCPP_DECLARE_CLASS_LEGACY(ProcessConsoleSettings);
+    LBCPP_DECLARE_CLASS_LEGACY(ProcessConsoleFilter);
 
     theCommandManager = new ApplicationCommandManager();
 

@@ -32,14 +32,8 @@ public:
     return std::make_pair(input, supervision);
   }
     
-  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
-  {
-    if (!subInferenceOutput)
-      return Variable();
-    ScalarPtr scalarResult = subInferenceOutput.dynamicCast<Scalar>();
-    jassert(scalarResult);
-    return ObjectPtr(new Scalar(transferFunction->compute(scalarResult->getValue())));
-  }
+  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subOutput, ReturnCode& returnCode) const
+    {return subOutput ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();}
   
 protected:
   ScalarFunctionPtr transferFunction;

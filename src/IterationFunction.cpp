@@ -72,6 +72,6 @@ IterationFunctionPtr lbcpp::invLinearIterationFunction(double initialValue, size
 */
 void declareIterationFunctions()
 {
-  LBCPP_DECLARE_CLASS(ConstantIterationFunction);
-  LBCPP_DECLARE_CLASS(InvLinearIterationFunction);
+  LBCPP_DECLARE_CLASS_LEGACY(ConstantIterationFunction);
+  LBCPP_DECLARE_CLASS_LEGACY(InvLinearIterationFunction);
 }

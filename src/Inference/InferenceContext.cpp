@@ -161,7 +161,7 @@ public:
       if (subInference)
       {
         returnCode = Inference::finishedReturnCode;
-        ObjectPtr subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        Variable subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
           Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");

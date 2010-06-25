@@ -56,7 +56,7 @@ public:
         {
           Vector3 position = atom->getPosition();
           double target = (j == 0 ? position.getX() : (j == 1 ? position.getY() : position.getZ()));
-          res->addSubInference(subInferences[i], input, Variable(new Scalar(target))); // FIXME
+          res->addSubInference(subInferences[i], input, Variable(target));
         }
         else
           res->addSubInference(subInferences[i], input, Variable());
@@ -79,20 +79,19 @@ public:
     return res;
   }
 
-  virtual void setSubOutput(ObjectPtr output, size_t index, ObjectPtr subOutput) const
+  virtual void setSubOutput(ObjectPtr output, size_t index, const Variable& subOutput) const
   {
     ProteinResidueAtomsPtr residue = output.dynamicCast<ProteinResidueAtoms>();
-    ScalarPtr prediction = subOutput.dynamicCast<Scalar>();
-    jassert(residue && prediction);
+    jassert(residue && subOutput);
     ProteinAtomPtr atom = residue->findAtomByName(getBackboneAtomName(index / 3));
     jassert(atom);
     index %= 3;
     if (index == 0)
-      atom->getPosition().setX(prediction->getValue());
+      atom->getPosition().setX(subOutput.getDouble());
     else if (index == 1)
-      atom->getPosition().setY(prediction->getValue());
+      atom->getPosition().setY(subOutput.getDouble());
     else if (index == 2)
-      atom->getPosition().setZ(prediction->getValue());
+      atom->getPosition().setZ(subOutput.getDouble());
   }*/
 };
 

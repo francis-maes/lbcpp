@@ -388,13 +388,13 @@ featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr inpu
 */
 void declareProteinResidueFeaturesClasses()
 {
-  LBCPP_DECLARE_CLASS(ProteinUnitResidueFeature);
-  LBCPP_DECLARE_CLASS(ProteinPositionIndexResidueFeature);
-  LBCPP_DECLARE_CLASS(PositionProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(SequenceWindowProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(FrequencyWindowProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(SegmentConjunctionProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(SequenceEntropyProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(CompositeProteinResidueFeatures);
-  LBCPP_DECLARE_CLASS(MultiSequenceConjunctionProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinUnitResidueFeature);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinPositionIndexResidueFeature);
+  LBCPP_DECLARE_CLASS_LEGACY(PositionProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SequenceWindowProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(FrequencyWindowProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SegmentConjunctionProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SequenceEntropyProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(CompositeProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(MultiSequenceConjunctionProteinResidueFeatures);
 }

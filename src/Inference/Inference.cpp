@@ -83,7 +83,6 @@ bool InferenceVector::loadFromDirectory(const File& file)
 #include "Inference/CallbackBasedDecoratorInference.h"
 #include "Inference/TransferFunctionDecoratorInference.h"
 #include "Inference/BinaryClassificationInference.h"
-#include "Inference/BinaryLabelToProbabilityDecoratorInference.h"
 #include "Inference/RegressionInference.h"
 #include "Inference/OneAgainstAllClassificationInference.h"
 
@@ -103,9 +102,6 @@ InferencePtr lbcpp::binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, 
 
 InferencePtr lbcpp::binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new BinaryLogisticRegressionInference(learner, name);}
-
-InferencePtr lbcpp::binaryLabelToProbabilityInference(const String& name, InferencePtr binaryClassifier, double temperature)
-  {return new BinaryLabelToProbabilityDecoratorInference(name, binaryClassifier, temperature);}
 
 InferencePtr lbcpp::squareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new SquareRegressionInference(learner, name);}
@@ -129,18 +125,17 @@ InferencePtr lbcpp::multiClassExtraTreeInference(const String& name)
 
 void declareInferenceClasses()
 {
-  LBCPP_DECLARE_CLASS(LinearInference);
+  LBCPP_DECLARE_CLASS_LEGACY(LinearInference);
 
-  LBCPP_DECLARE_CLASS(BinaryLinearSVMInference);
-  LBCPP_DECLARE_CLASS(BinaryLogisticRegressionInference);
-  LBCPP_DECLARE_CLASS(BinaryLabelToProbabilityDecoratorInference);
+  LBCPP_DECLARE_CLASS_LEGACY(BinaryLinearSVMInference);
+  LBCPP_DECLARE_CLASS_LEGACY(BinaryLogisticRegressionInference);
   
-  LBCPP_DECLARE_CLASS(SquareRegressionInference);
-  LBCPP_DECLARE_CLASS(AbsoluteRegressionInference);
-  LBCPP_DECLARE_CLASS(AngleRegressionInference);
+  LBCPP_DECLARE_CLASS_LEGACY(SquareRegressionInference);
+  LBCPP_DECLARE_CLASS_LEGACY(AbsoluteRegressionInference);
+  LBCPP_DECLARE_CLASS_LEGACY(AngleRegressionInference);
 
-  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference);
+  LBCPP_DECLARE_CLASS_LEGACY(OneAgainstAllClassificationInference);
 
-  LBCPP_DECLARE_CLASS(TransferFunctionDecoratorInference);
-  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference);
+  LBCPP_DECLARE_CLASS_LEGACY(TransferFunctionDecoratorInference);
+  LBCPP_DECLARE_CLASS_LEGACY(CallbackBasedDecoratorInference);
 }

@@ -9,7 +9,7 @@
 #ifndef LBCPP_EVALUATOR_H_
 # define LBCPP_EVALUATOR_H_
 
-# include <lbcpp/Object/Object.h>
+# include <lbcpp/Object/Variable.h>
 # include <lbcpp/Utilities/RandomVariable.h>
 
 namespace lbcpp
@@ -21,7 +21,7 @@ public:
   Evaluator(const String& name) : NameableObject(name) {}
   Evaluator() {}
 
-  virtual void addPrediction(ObjectPtr predicted, ObjectPtr correct) = 0;
+  virtual void addPrediction(const Variable& predicted, const Variable& correct) = 0;
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const = 0;
   virtual double getDefaultScore() const = 0;
@@ -35,7 +35,7 @@ public:
   RegressionErrorEvaluator(const String& name);
   RegressionErrorEvaluator() {}
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject);
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject);
   virtual void addDelta(double delta);
 
   virtual String toString() const;

@@ -31,9 +31,9 @@ public:
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->addSubInference(subInferences.get(0), input, bond && bond->getValue().hasThetaAngle()
-      ? ObjectPtr(new Scalar(bond->getValue().getThetaAngle())) : ObjectPtr());
+      ? Variable(bond->getValue().getThetaAngle()) : Variable());
     res->addSubInference(subInferences.get(1), input, bond && bond->getValue().hasPhiDihedralAngle()
-      ? ObjectPtr(new Scalar(bond->getValue().getPhiDihedralAngle())) : ObjectPtr());
+      ? Variable(bond->getValue().getPhiDihedralAngle()) : Variable());
     return res;
   }
 
@@ -41,12 +41,12 @@ public:
   {
     BondCoordinates bond;
     bond.setLength(3.8);
-    ScalarPtr theta = state->getSubOutput(0).dynamicCast<Scalar>();
-    ScalarPtr dihedral = state->getSubOutput(1).dynamicCast<Scalar>();
+    Variable theta = state->getSubOutput(0);
+    Variable dihedral = state->getSubOutput(1);
     if (theta)
-      bond.setThetaAngle(juce::jlimit(0.8, 2.9, theta->getValue()));
+      bond.setThetaAngle(juce::jlimit(0.8, 2.9, theta.getDouble()));
     if (dihedral)
-      bond.setPhiDihedralAngle(dihedral->getValue());
+      bond.setPhiDihedralAngle(dihedral.getDouble());
     return ObjectPtr(new BondCoordinatesObject(bond));
   }
 };

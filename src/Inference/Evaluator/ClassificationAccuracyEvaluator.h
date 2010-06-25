@@ -21,7 +21,7 @@ public:
   ClassificationAccuracyEvaluator(const String& name) : Evaluator(name), accuracy(new ScalarVariableMean()) {}
   ClassificationAccuracyEvaluator() {}
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     LabelPtr predicted = predictedObject.dynamicCast<Label>();
     LabelPtr correct = correctObject.dynamicCast<Label>();

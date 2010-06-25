@@ -43,10 +43,10 @@ public:
     else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
     {
       // simulation-based learning is beginning
-      InferencePtr learnedInference = input.dynamicCast<Inference>();
-      if (learnedInference)
+      ObjectPairPtr inferenceAndExamples = input.dynamicCast<ObjectPair>();
+      if (inferenceAndExamples)
       {
-        String inferenceName = learnedInference->getName();
+        String inferenceName = inferenceAndExamples->getFirst()->getName();
         std::cout << std::endl << "=====================================================" << std::endl;
         std::cout << "======= " << inferenceName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
         std::cout << "=====================================================" << std::endl;
@@ -136,7 +136,7 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 
 InferenceOnlineLearnerPtr createOnlineLearner(const String& name, double initialLearningRate = 1.0)
 {
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/*logicalOr(
     maxIterationsStoppingCriterion(100),  
     maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
         smallPDBDirectory.getChildFile(T("smallProteinWithSS3DR")),
         smallPDBDirectory.getChildFile(T("protein")))->load();*/
 
-  ObjectContainerPtr smallPDBProteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
+  ObjectContainerPtr smallPDBProteins = loadProteins(workingDirectory.getChildFile(T("L50DB")), 7);
   smallPDBProteins = smallPDBProteins->apply(new ProteinToInputOutputPairFunction());
 
   ObjectContainerPtr trainingData = smallPDBProteins->size() >= 7 ? smallPDBProteins->invFold(0,7) : smallPDBProteins;
@@ -249,14 +249,16 @@ int main(int argc, char** argv)
   learnedProteinInference->setProteinDebugDirectory(workingDirectory.getChildFile(T("ProteinDebug")));
   for (size_t i = 0; i < 5; ++i)
   {
-    if (false)
+    if (true)
     {
       learnedProteinInference->appendInference(
-        new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
-                createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
+        new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i),
+                             createBinaryClassifier(T("DR")),
+                             featureFunction,
+                             T("DisorderProbabilitySequence"), T("DisorderSequence")));
     }
 
-    if (false)
+    if (true)
     {
       learnedProteinInference->appendInference(
         new ProteinSequenceLabelingInferenceStep(T("SS3 Pass ") + lbcpp::toString(i),
@@ -264,13 +266,11 @@ int main(int argc, char** argv)
                                featureFunction, T("SecondaryStructureSequence")));
     }
 
-    if (false)
+    if (true)
     {
       learnedProteinInference->appendInference(
-        new ProteinSequenceLabelingInferenceStep(T("DR Pass ") + lbcpp::toString(i),
-                             binaryLabelToProbabilityInference(T("DR-prob"), createBinaryClassifier(T("DR"))),
-                             featureFunction,
-                             T("DisorderProbabilitySequence"), T("DisorderSequence")));
+        new ProteinBackboneBondSequenceInferenceStep(T("BBB Pass ") + lbcpp::toString(i), featureFunction,
+                createLeastSquaresRegressor(), createLeastSquaresRegressor(), createDihedralRegressor()));
     }
 
     if (true)

@@ -41,12 +41,10 @@ RegressionErrorEvaluator::RegressionErrorEvaluator(const String& name)
 {
 }
   
-void RegressionErrorEvaluator::addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+void RegressionErrorEvaluator::addPrediction(const Variable& predicted, const Variable& correct)
 {
-  ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
-  ScalarPtr correct = correctObject.dynamicCast<Scalar>();
   if (predicted && correct)
-    addDelta(predicted->getValue() - correct->getValue());
+    addDelta(predicted.getDouble() - correct.getDouble());
 }
 
 void RegressionErrorEvaluator::addDelta(double delta)

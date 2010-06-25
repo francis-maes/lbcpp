@@ -477,7 +477,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("DR")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("DR_Pass_") + lbcpp::toString(i)
-          , binaryLabelToProbabilityInference(T("DR-prob"), binaryLinearSVMInference(createOnlineLearner(50.0, 1000000), T("DR")))
+          , binaryLinearSVMInference(createOnlineLearner(50.0, 1000000), T("DR"))
           , featureFunction
           , T("DisorderProbabilitySequence")
           , T("DisorderSequence"));

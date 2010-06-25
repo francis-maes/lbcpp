@@ -36,26 +36,12 @@ ObjectPtr ContactMapScoresInference::getSubSupervision(ObjectPtr supervisionObje
   return new Label(BinaryClassificationDictionary::getInstance(), contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0);
 }
 
-void ContactMapScoresInference::setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const
+void ContactMapScoresInference::setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const
 {
   ScoreSymmetricMatrixPtr contactMap = output.dynamicCast<ScoreSymmetricMatrix>();
   jassert(contactMap);
-  double contactScore = 0.5;
-  LabelPtr prediction = subOutput.dynamicCast<Label>();
-  if (prediction)
-  {
-    jassert(prediction->getDictionary() == BinaryClassificationDictionary::getInstance());
-    contactScore = prediction->getIndex() == 1 ? prediction->getScore() : -prediction->getScore();
-  }
-  else
-  {
-    ScalarPtr scalar = subOutput.dynamicCast<Scalar>();
-    if (scalar)
-      contactScore = scalar->getValue();
-    else
-      return;
-  }
-  contactMap->setScore(firstPosition, secondPosition, contactScore);
+  if (subOutput)
+    contactMap->setScore(firstPosition, secondPosition, subOutput.getDouble());
 }
 
 /*

@@ -26,7 +26,7 @@ public:
   virtual double getDefaultScore() const
     {return regressionEvaluator->getDefaultScore();}
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     ScoreVectorSequencePtr predicted = predictedObject.dynamicCast<ScoreVectorSequence>();
     ScoreVectorSequencePtr correct = correctObject.dynamicCast<ScoreVectorSequence>();
@@ -40,7 +40,7 @@ public:
     jassert(correct->size() == n);
     for (size_t i = 0; i < n; ++i)
       for (size_t j = 0; j < s; ++j)
-        regressionEvaluator->addPrediction(new Scalar(predicted->getScore(i, j)), new Scalar(correct->getScore(i, j)));
+        regressionEvaluator->addPrediction(predicted->getScore(i, j), correct->getScore(i, j));
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const

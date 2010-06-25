@@ -286,6 +286,6 @@ ObjectStreamPtr ObjectStream::apply(ObjectFunctionPtr function)
 
 void declareObjectStreamClasses()
 {
-  LBCPP_DECLARE_CLASS(DirectoryObjectStream);
-  LBCPP_DECLARE_CLASS(DirectoriesObjectPairStream);
+  LBCPP_DECLARE_CLASS_LEGACY(DirectoryObjectStream);
+  LBCPP_DECLARE_CLASS_LEGACY(DirectoriesObjectPairStream);
 }

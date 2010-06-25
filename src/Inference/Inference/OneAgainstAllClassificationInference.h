@@ -42,7 +42,7 @@ public:
       size_t correct = correctLabel->getIndex();
       for (size_t i = 0; i < subInferences.size(); ++i)
         res->addSubInference(subInferences.get(i), input,
-            Variable(new Label(BinaryClassificationDictionary::getInstance(), i == correct ? 1 : 0)));
+            LabelPtr(new Label(BinaryClassificationDictionary::getInstance(), i == correct ? 1 : 0)));
     }
     else
       for (size_t i = 0; i < subInferences.size(); ++i)
@@ -57,12 +57,11 @@ public:
     int bestClass = -1;
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
-      LabelPtr prediction = state->getSubOutput(i).dynamicCast<Label>();
+      Variable prediction = state->getSubOutput(i);
       if (!prediction)
         continue;
-      double score = prediction->getScore();
-      if (prediction->getIndex() == 0)
-        score = -score;
+
+      double score = prediction.getDouble();
       if (score > bestScore)
         bestScore = score, bestClass = (int)i;
       else if (score == bestScore)
@@ -70,7 +69,7 @@ public:
     }
     if (bestClass < 0)
       return Variable();
-    return Variable(new Label(dictionary, (size_t)bestClass));
+    return LabelPtr(new Label(dictionary, (size_t)bestClass));
   }
 
 private:

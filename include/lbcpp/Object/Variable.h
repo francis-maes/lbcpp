@@ -42,6 +42,7 @@ struct VariableValue
 
   template<class T>
   VariableValue(ReferenceCountedObjectPtr<T> objectValue);
+  VariableValue(Object* objectValue);
   VariableValue(const VariableValue& other);
   VariableValue();
 
@@ -71,13 +72,12 @@ private:
 class Variable
 {
 public:
-  Variable(ClassPtr type, bool boolValue);
-  Variable(ClassPtr type, int intValue);
-  Variable(ClassPtr type, double doubleValue);
-  Variable(double doubleValue);
-  Variable(ClassPtr type, const String& stringValue);
-  Variable(ClassPtr type, ObjectPtr objectValue);
+  Variable(bool boolValue, ClassPtr type = BooleanClass::getInstance());
+  Variable(int intValue, ClassPtr type = IntegerClass::getInstance());
+  Variable(double doubleValue, ClassPtr type = DoubleClass::getInstance());
+  Variable(const String& stringValue, ClassPtr type = StringClass::getInstance());
   Variable(ObjectPtr object);
+  Variable(Object* object);
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T> object);
