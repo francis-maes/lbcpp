@@ -27,7 +27,7 @@ public:
   
   virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const = 0;
   virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const = 0;
-  virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const = 0;
+  virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const = 0;
 
   struct State : public ParallelInferenceState
   {
@@ -72,7 +72,7 @@ public:
     for (size_t i = 0; i < state->subInferenceIndices.size(); ++i)
     {
       std::pair<size_t, size_t> ij = state->subInferenceIndices[i];
-      ObjectPtr subOutput = state->getSubOutput(i);
+      Variable subOutput = state->getSubOutput(i);
       if (subOutput)
       {
         setSubOutput(res, ij.first, ij.second, subOutput);

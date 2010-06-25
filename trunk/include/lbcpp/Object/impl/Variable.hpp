@@ -47,6 +47,13 @@ inline VariableValue::VariableValue(double doubleValue)
 inline VariableValue::VariableValue(const String& stringValue)
   {u.stringValue = new String(stringValue);}
 
+inline VariableValue::VariableValue(Object* objectValue)
+{
+  u.objectValue = objectValue;
+  if (objectValue)
+    objectValue->incrementReferenceCounter();
+}
+
 template<class T>
 inline VariableValue::VariableValue(ReferenceCountedObjectPtr<T> objectValue)
 {
@@ -108,25 +115,22 @@ inline Object* VariableValue::getObjectPointer() const
 /*
 ** Variable
 */
-inline Variable::Variable(ClassPtr type, bool boolValue)
+inline Variable::Variable(bool boolValue, ClassPtr type)
   : type(type), value(boolValue) {jassert(isBoolean());}
 
-inline Variable::Variable(ClassPtr type, int intValue)
+inline Variable::Variable(int intValue, ClassPtr type)
   : type(type), value(intValue) {jassert(isInteger());} 
 
-inline Variable::Variable(ClassPtr type, double doubleValue)
+inline Variable::Variable(double doubleValue, ClassPtr type)
   : type(type), value(doubleValue) {jassert(isDouble());}
 
-inline Variable::Variable(double doubleValue)
-  : type(DoubleClass::getInstance()), value(doubleValue) {}
-
-inline Variable::Variable(ClassPtr type, const String& stringValue)
+inline Variable::Variable(const String& stringValue, ClassPtr type)
   : type(type), value(stringValue) {jassert(isString());}
 
-inline Variable::Variable(ClassPtr type, ObjectPtr objectValue)
-  : type(type), value(objectValue) {jassert(isObject());}
-
 inline Variable::Variable(ObjectPtr object)
+  : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
+
+inline Variable::Variable(Object* object)
   : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
 
 template<class T>

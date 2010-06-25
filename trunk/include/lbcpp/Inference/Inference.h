@@ -72,7 +72,6 @@ extern InferencePtr transferFunctionDecoratorInference(const String& name, Infer
 // Binary Classification
 extern InferencePtr binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr binaryLabelToProbabilityInference(const String& name, InferencePtr binaryClassifier, double temperature = 1.0);
 
 // Regression
 extern InferencePtr squareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));

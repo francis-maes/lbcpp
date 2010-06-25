@@ -158,7 +158,6 @@ SET(LBCPP_INFERENCE_SOURCES
 SET(LBCPP_INFERENCE_INFERENCE_SOURCES
   Inference/Inference/LinearInference.h
   Inference/Inference/BinaryClassificationInference.h
-  Inference/Inference/BinaryLabelToProbabilityDecoratorInference.h
   Inference/Inference/OneAgainstAllClassificationInference.h
   Inference/Inference/TransferFunctionDecoratorInference.h
   Inference/Inference/CallbackBasedDecoratorInference.h

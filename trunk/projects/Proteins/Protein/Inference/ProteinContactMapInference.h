@@ -22,7 +22,7 @@ public:
 
   virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const;
   virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const;
-  virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, ObjectPtr subOutput) const;
+  virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const;
 };
 
 class ContactMapScoresToProbabilitiesInference : public Inference, public ProteinTargetInferenceHelper

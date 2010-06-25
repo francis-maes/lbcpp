@@ -215,10 +215,10 @@ ProteinResiduePairFeaturesPtr lbcpp::proteinGlobalToResiduePairFeatures(ProteinG
 */
 void declareProteinGlobalFeaturesClasses()
 {
-  LBCPP_DECLARE_CLASS(CompositeProteinGlobalFeatures);
-  LBCPP_DECLARE_CLASS(ProteinUnitGlobalFeature);
-  LBCPP_DECLARE_CLASS(LengthProteinGlobalFeatures);
-  LBCPP_DECLARE_CLASS(ProteinGlobalCompositionFeatures);
-  LBCPP_DECLARE_CLASS(ProteinGlobalToResidueFeatures);
-  LBCPP_DECLARE_CLASS(ProteinGlobalToResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(CompositeProteinGlobalFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinUnitGlobalFeature);
+  LBCPP_DECLARE_CLASS_LEGACY(LengthProteinGlobalFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinGlobalCompositionFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinGlobalToResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinGlobalToResiduePairFeatures);
 }

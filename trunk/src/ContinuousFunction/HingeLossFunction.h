@@ -19,8 +19,8 @@ class HingeLossFunction : public BinaryClassificationLossFunction
 {
 public:
   // correctClass: 0 = negative, 1 = positive
-  HingeLossFunction(size_t correctClass, double margin)
-    : BinaryClassificationLossFunction(correctClass), margin(margin) {}
+  HingeLossFunction(bool isPositive, double margin)
+    : BinaryClassificationLossFunction(isPositive), margin(margin) {}
   HingeLossFunction() : margin(0.0) {}
 
   virtual bool isDerivable() const

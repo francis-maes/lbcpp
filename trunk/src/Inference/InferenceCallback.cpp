@@ -73,5 +73,5 @@ void InferenceOnlineLearnerCallback::postInferenceCallback(InferenceStackPtr sta
 
 void declareInferenceCallbackClasses()
 {
-  LBCPP_DECLARE_CLASS(CancelAfterStepCallback);
+  LBCPP_DECLARE_CLASS_LEGACY(CancelAfterStepCallback);
 }

@@ -30,12 +30,7 @@ public:
   }
 
   virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    ScalarPtr target = supervision.dynamicCast<Scalar>();
-    jassert(!supervision || target);
-    ScalarFunctionPtr lossFunction = target ? getLoss(target->getValue()) : ScalarFunctionPtr();
-    return std::make_pair(input, lossFunction);
-  }
+    {return std::make_pair(input, supervision ? getLoss(supervision.getDouble()) : ScalarFunctionPtr());}
 };
 
 class SquareRegressionInference : public RegressionInference

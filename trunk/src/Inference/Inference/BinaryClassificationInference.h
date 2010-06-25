@@ -21,7 +21,7 @@ public:
     : DecoratorInference(name, scoreInference) {}
   BinaryClassificationInference() {}
 
-  virtual ScalarFunctionPtr getLoss(size_t correctLabel) const = 0;
+  virtual ScalarFunctionPtr getLoss(bool isPositive) const = 0;
 
   virtual void setName(const String& name)
   {
@@ -31,27 +31,48 @@ public:
 
   virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    LabelPtr correctLabel = supervision.dynamicCast<Label>();
-    jassert(!supervision || (correctLabel && correctLabel->getDictionary() == BinaryClassificationDictionary::getInstance()));
     ScalarFunctionPtr lossFunction;
-    if (correctLabel)
+    if (supervision)
     {
-      ScalarFunctionPtr* f = correctLabel->getIndex() ? &positiveLoss : &negativeLoss;
+      double supervisionValue;
+      if (supervision.isBoolean())
+        supervisionValue = supervision.getBoolean() ? 1.0 : -1.0;
+      else if (supervision.isInteger())
+        supervisionValue = supervision.getInteger() > 0 ? 1.0 : -1.0;
+      else if (supervision.isDouble())
+        supervisionValue = supervision.getDouble();
+      else if (supervision.isObject())
+      {
+        // tmp: the class Label will disappear soon
+        LabelPtr correctLabel = supervision.dynamicCast<Label>();
+        jassert(correctLabel && correctLabel->getDictionary() == BinaryClassificationDictionary::getInstance());
+        supervisionValue = correctLabel->getIndex() ? 1.0 : -1.0;
+      }
+      else
+        jassert(false);
+
+      bool isPositive = supervisionValue > 0.0;
+      ScalarFunctionPtr* f = isPositive ? &positiveLoss : &negativeLoss;
       if (!*f)
-        *f = getLoss(correctLabel->getIndex());
+        *f = getLoss(isPositive);
       lossFunction = *f;
+
+      if (supervisionValue < 0)
+        supervisionValue = -supervisionValue;
+      if (supervisionValue != 1.0)
+        lossFunction = lossFunction->multiplyByScalar(supervisionValue);
     }
+
     return std::make_pair(input, lossFunction);
   }
     
   virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
   {
+    static const double temperature = 1.0;
     if (!subInferenceOutput)
       return Variable();
-    ScalarPtr scalar = subInferenceOutput.dynamicCast<Scalar>();
-    jassert(scalar);
-    double value = scalar->getValue();
-    return ObjectPtr(new Label(BinaryClassificationDictionary::getInstance(), value > 0 ? 1 : 0, fabs(value)));
+    double score = subInferenceOutput.getDouble();
+    return 1.0 / (1.0 + exp(-score * temperature));
   }
 
 protected:
@@ -67,8 +88,8 @@ public:
     {decorated->setOnlineLearner(learner);}
   BinaryLinearSVMInference() {}
 
-  virtual ScalarFunctionPtr getLoss(size_t correctLabel) const
-    {return hingeLoss(correctLabel);}
+  virtual ScalarFunctionPtr getLoss(bool isPositive) const
+    {return hingeLoss(isPositive ? 1 : 0);}
 };
 
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
@@ -79,8 +100,8 @@ public:
     {decorated->setOnlineLearner(learner);}
   BinaryLogisticRegressionInference() {}
 
-  virtual ScalarFunctionPtr getLoss(size_t correctLabel) const
-    {return logBinomialLoss(correctLabel);}
+  virtual ScalarFunctionPtr getLoss(bool isPositive) const
+    {return logBinomialLoss(isPositive ? 1 : 0);}
 };
 
 }; /* namespace lbcpp */

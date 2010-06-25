@@ -19,7 +19,7 @@ void declareObjectRelatedClasses()
 {
   declareClassClasses();
 
-  LBCPP_DECLARE_CLASS(StringToObjectMap);
+  LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
   declareObjectContainerClasses();
   declareObjectStreamClasses();
 }
@@ -30,9 +30,9 @@ extern void declareStoppingCriterions();
 
 void declareRandomVariableStatistics()
 {
-  LBCPP_DECLARE_CLASS(ScalarVariableMean);
-  LBCPP_DECLARE_CLASS(ScalarVariableMeanAndVariance);
-  LBCPP_DECLARE_CLASS(ScalarVariableStatistics);
+  LBCPP_DECLARE_CLASS_LEGACY(ScalarVariableMean);
+  LBCPP_DECLARE_CLASS_LEGACY(ScalarVariableMeanAndVariance);
+  LBCPP_DECLARE_CLASS_LEGACY(ScalarVariableStatistics);
 }
 
 // FeatureGenerator
@@ -41,15 +41,15 @@ extern void declareOptimizers();
 
 void declareFeatureGenerators()
 {
-  LBCPP_DECLARE_CLASS(StringDictionary);
-  LBCPP_DECLARE_CLASS(FeatureDictionary);
+  LBCPP_DECLARE_CLASS_LEGACY(StringDictionary);
+  LBCPP_DECLARE_CLASS_LEGACY(FeatureDictionary);
 
   LBCPP_DECLARE_ABSTRACT_CLASS(FeatureGenerator, Object);
 
-  LBCPP_DECLARE_CLASS(Label);
-  LBCPP_DECLARE_CLASS(Scalar);
-  LBCPP_DECLARE_CLASS(SparseVector);
-  LBCPP_DECLARE_CLASS(DenseVector);
+  LBCPP_DECLARE_CLASS_LEGACY(Label);
+  LBCPP_DECLARE_CLASS_LEGACY(Scalar);
+  LBCPP_DECLARE_CLASS_LEGACY(SparseVector);
+  LBCPP_DECLARE_CLASS_LEGACY(DenseVector);
 }
 
 // Inference

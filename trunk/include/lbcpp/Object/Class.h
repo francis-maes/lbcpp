@@ -252,7 +252,10 @@ public:
 #define LBCPP_DECLARE_ABSTRACT_CLASS(Name, BaseClass) \
   lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultAbstractClass_<Name>(lbcpp::Class::get(#BaseClass))))
 
-#define LBCPP_DECLARE_CLASS(Name) \
+#define LBCPP_DECLARE_CLASS(Name, BaseClass) \
+  lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>(lbcpp::Class::get(#BaseClass))))
+
+#define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>()))
 
 }; /* namespace lbcpp */

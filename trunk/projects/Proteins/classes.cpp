@@ -36,46 +36,46 @@ extern void declareAminoAcidClasses();
 void declareProteinClasses()
 {
   // Data
-  LBCPP_DECLARE_CLASS(LabelSequence);
-  LBCPP_DECLARE_CLASS(ScalarSequence);
-  LBCPP_DECLARE_CLASS(ScoreVectorSequence);
-  LBCPP_DECLARE_CLASS(ScoreSymmetricMatrix);
-  LBCPP_DECLARE_CLASS(BondCoordinatesSequence);
-  LBCPP_DECLARE_CLASS(CartesianCoordinatesSequence);
+  LBCPP_DECLARE_CLASS_LEGACY(LabelSequence);
+  LBCPP_DECLARE_CLASS_LEGACY(ScalarSequence);
+  LBCPP_DECLARE_CLASS_LEGACY(ScoreVectorSequence);
+  LBCPP_DECLARE_CLASS_LEGACY(ScoreSymmetricMatrix);
+  LBCPP_DECLARE_CLASS_LEGACY(BondCoordinatesSequence);
+  LBCPP_DECLARE_CLASS_LEGACY(CartesianCoordinatesSequence);
 
   declareProteinGlobalFeaturesClasses();
   declareProteinResidueFeaturesClasses();
   declareProteinResiduePairFeaturesClasses();
   
-  LBCPP_DECLARE_CLASS(ProteinBackboneBond);
-  LBCPP_DECLARE_CLASS(ProteinBackboneBondSequence);
-  LBCPP_DECLARE_CLASS(ProteinAtom);
-  LBCPP_DECLARE_CLASS(ProteinResidueAtoms);
-  LBCPP_DECLARE_CLASS(ProteinTertiaryStructure);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinBackboneBond);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinBackboneBondSequence);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinAtom);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinResidueAtoms);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinTertiaryStructure);
 
-  LBCPP_DECLARE_CLASS(Protein);
+  LBCPP_DECLARE_CLASS_LEGACY(Protein);
 
-  LBCPP_DECLARE_CLASS(ProteinToInputOutputPairFunction);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinToInputOutputPairFunction);
 
-  LBCPP_DECLARE_CLASS(ProteinInference);
-    LBCPP_DECLARE_CLASS(ProteinSequenceLabelingInferenceStep);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinInference);
+    LBCPP_DECLARE_CLASS_LEGACY(ProteinSequenceLabelingInferenceStep);
     
-//    LBCPP_DECLARE_CLASS(PSSMPredictionInferenceStep);
-//      LBCPP_DECLARE_CLASS(PSSMRowPredictionInferenceStep);
+//    LBCPP_DECLARE_CLASS_LEGACY(PSSMPredictionInferenceStep);
+//      LBCPP_DECLARE_CLASS_LEGACY(PSSMRowPredictionInferenceStep);
 
-    LBCPP_DECLARE_CLASS(ProteinCAlphaBondSequenceInferenceStep);
-      LBCPP_DECLARE_CLASS(ProteinCAlphaBondInferenceStep);
+    LBCPP_DECLARE_CLASS_LEGACY(ProteinCAlphaBondSequenceInferenceStep);
+      LBCPP_DECLARE_CLASS_LEGACY(ProteinCAlphaBondInferenceStep);
 
-    LBCPP_DECLARE_CLASS(ProteinBackboneBondSequenceInferenceStep);
-      LBCPP_DECLARE_CLASS(ScaledSigmoidScalarFunction);
-      LBCPP_DECLARE_CLASS(ProteinBackboneBondInferenceStep);
+    LBCPP_DECLARE_CLASS_LEGACY(ProteinBackboneBondSequenceInferenceStep);
+      LBCPP_DECLARE_CLASS_LEGACY(ScaledSigmoidScalarFunction);
+      LBCPP_DECLARE_CLASS_LEGACY(ProteinBackboneBondInferenceStep);
 
-    LBCPP_DECLARE_CLASS(ProteinContactMapInference);
-      LBCPP_DECLARE_CLASS(ContactMapScoresInference);
-      LBCPP_DECLARE_CLASS(ContactMapScoresToProbabilitiesInference);
+    LBCPP_DECLARE_CLASS_LEGACY(ProteinContactMapInference);
+      LBCPP_DECLARE_CLASS_LEGACY(ContactMapScoresInference);
+      LBCPP_DECLARE_CLASS_LEGACY(ContactMapScoresToProbabilitiesInference);
 
-    LBCPP_DECLARE_CLASS(ProteinTertiaryStructureRefinementInferenceStep);
-      LBCPP_DECLARE_CLASS(ProteinResidueRefinementInferenceStep);
+    LBCPP_DECLARE_CLASS_LEGACY(ProteinTertiaryStructureRefinementInferenceStep);
+      LBCPP_DECLARE_CLASS_LEGACY(ProteinResidueRefinementInferenceStep);
 
   LBCPP_DECLARE_DICTIONARY(AminoAcidDictionary);
   LBCPP_DECLARE_DICTIONARY(SecondaryStructureDictionary);

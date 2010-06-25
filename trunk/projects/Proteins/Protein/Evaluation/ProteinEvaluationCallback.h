@@ -44,7 +44,7 @@ public:
     res.push_back(std::make_pair(T("Dihedral"), -dihedralEvaluator->getRMSE()));
   }
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     BondCoordinatesSequencePtr predicted = predictedObject.dynamicCast<BondCoordinatesSequence>();
     BondCoordinatesSequencePtr correct = correctObject.dynamicCast<BondCoordinatesSequence>();
@@ -111,7 +111,7 @@ public:
     res.push_back(std::make_pair(T("Omega"), -omegaEvaluator->getRMSE()));
   }
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     ProteinBackboneBondSequencePtr predicted = predictedObject.dynamicCast<ProteinBackboneBondSequence>();
     ProteinBackboneBondSequencePtr correct = correctObject.dynamicCast<ProteinBackboneBondSequence>();
@@ -185,7 +185,7 @@ public:
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {res.push_back(std::make_pair(T("C-Alpha RMSE"), -calphaRMSE->getMean()));}
  
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     ProteinTertiaryStructurePtr predicted = predictedObject.dynamicCast<ProteinTertiaryStructure>();
     ProteinTertiaryStructurePtr correct = correctObject.dynamicCast<ProteinTertiaryStructure>();
@@ -228,7 +228,7 @@ public:
     rocEvaluator->getScores(res);
   }
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     ScoreSymmetricMatrixPtr predicted = predictedObject.dynamicCast<ScoreSymmetricMatrix>();
     ScoreSymmetricMatrixPtr correct = correctObject.dynamicCast<ScoreSymmetricMatrix>();
@@ -244,7 +244,7 @@ public:
         {
           LabelPtr correctLabel = new Label(BinaryClassificationDictionary::getInstance(), correct->getScore(i, j) > 0.5);
           classificationEvaluator->addPrediction(new Label(BinaryClassificationDictionary::getInstance(), predicted->getScore(i, j) > 0.5), correctLabel);
-          rocEvaluator->addPrediction(new Scalar(predicted->getScore(i, j)), correctLabel);
+          rocEvaluator->addPrediction(predicted->getScore(i, j), correctLabel);
         }
       }
   }
@@ -295,7 +295,7 @@ public:
     return res;
   }
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     ProteinPtr predicted = predictedObject.dynamicCast<Protein>();
     ProteinPtr correct = correctObject.dynamicCast<Protein>();

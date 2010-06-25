@@ -88,7 +88,7 @@ public:
     {
       bool targetExists = false;
       double target = bond ? getTarget(bond, i, targetExists) : 0.0;
-      res->addSubInference(subInferences[i], input, targetExists ? ObjectPtr(new Scalar(target)) : ObjectPtr());
+      res->addSubInference(subInferences[i], input, targetExists ? Variable(target) : Variable());
     }
     return res;
   }
@@ -99,11 +99,11 @@ public:
     bool hasAtLeastOnePrediction = false;
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
-      ScalarPtr prediction = state->getSubOutput(i).dynamicCast<Scalar>();
+      Variable prediction = state->getSubOutput(i);
       if (prediction)
       {
         bool targetExists;
-        getTarget(res, i, targetExists) = prediction->getValue();
+        getTarget(res, i, targetExists) = prediction.getDouble();
         hasAtLeastOnePrediction = true;
       }
     }

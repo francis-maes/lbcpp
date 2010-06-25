@@ -87,11 +87,11 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFre
 
 void declareInferenceOnlineLearnerClasses()
 {
-  LBCPP_DECLARE_CLASS(StochasticGradientDescentOnlineLearner);
-  LBCPP_DECLARE_CLASS(MiniBatchGradientDescentOnlineLearner);
-  LBCPP_DECLARE_CLASS(BatchGradientDescentOnlineLearner);
-  LBCPP_DECLARE_CLASS(RandomizerInferenceOnlineLearner);
-  LBCPP_DECLARE_CLASS(StoppingCriterionInferenceOnlineLearner);
+  LBCPP_DECLARE_CLASS_LEGACY(StochasticGradientDescentOnlineLearner);
+  LBCPP_DECLARE_CLASS_LEGACY(MiniBatchGradientDescentOnlineLearner);
+  LBCPP_DECLARE_CLASS_LEGACY(BatchGradientDescentOnlineLearner);
+  LBCPP_DECLARE_CLASS_LEGACY(RandomizerInferenceOnlineLearner);
+  LBCPP_DECLARE_CLASS_LEGACY(StoppingCriterionInferenceOnlineLearner);
 }
 
 #include "InferenceBatchLearner/SimulationInferenceBatchLearner.h"

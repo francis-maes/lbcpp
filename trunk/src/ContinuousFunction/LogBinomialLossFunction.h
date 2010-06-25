@@ -18,8 +18,8 @@ namespace lbcpp
 class LogBinomialLossFunction : public BinaryClassificationLossFunction
 {
 public:
-  LogBinomialLossFunction(size_t correctClass)
-    : BinaryClassificationLossFunction(correctClass) {}
+  LogBinomialLossFunction(bool isPositive)
+    : BinaryClassificationLossFunction(isPositive) {}
   LogBinomialLossFunction() {}
 
   virtual bool isDerivable() const

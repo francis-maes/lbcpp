@@ -22,7 +22,7 @@ public:
     : Evaluator(name) {}
   BinaryClassificationConfusionEvaluator() {}
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
     LabelPtr predicted = predictedObject.dynamicCast<Label>();
     LabelPtr correct = correctObject.dynamicCast<Label>();
@@ -77,13 +77,14 @@ public:
     : Evaluator(name)  {}
   ROCAnalysisEvaluator() {}
 
-  virtual void addPrediction(ObjectPtr predictedObject, ObjectPtr correctObject)
+  virtual void addPrediction(const Variable& predicted, const Variable& correctObject)
   {
-    ScalarPtr predicted = predictedObject.dynamicCast<Scalar>();
+    if (!predicted)
+      return;
     LabelPtr correct = correctObject.dynamicCast<Label>();
     if (!predicted || !correct)
       return;
-    roc.addPrediction(predicted->getValue(), correct->getIndex() == 1);
+    roc.addPrediction(predicted.getDouble(), correct->getIndex() == 1);
   }
  
   virtual String toString() const

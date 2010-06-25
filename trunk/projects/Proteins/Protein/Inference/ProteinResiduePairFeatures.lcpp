@@ -417,12 +417,12 @@ ProteinResiduePairFeaturesPtr lbcpp::contactMapResiduePairFeatures(const String&
 */
 void declareProteinResiduePairFeaturesClasses()
 {
-  LBCPP_DECLARE_CLASS(ProteinUnitResiduePairFeature);
-  LBCPP_DECLARE_CLASS(CompositeProteinResiduePairFeatures);
-  LBCPP_DECLARE_CLASS(ProteinPointResiduePairFeatures);
-  LBCPP_DECLARE_CLASS(SeparationLengthProteinResiduePairFeatures);
-  LBCPP_DECLARE_CLASS(ProteinCentralCompositionResiduePairFeatures);
-  LBCPP_DECLARE_CLASS(SeparationDistanceResiduePairFeatures);
-  LBCPP_DECLARE_CLASS(ConjunctionResiduePairFeatures);
-  LBCPP_DECLARE_CLASS(ContactMapResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinUnitResiduePairFeature);
+  LBCPP_DECLARE_CLASS_LEGACY(CompositeProteinResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinPointResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SeparationLengthProteinResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinCentralCompositionResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SeparationDistanceResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ConjunctionResiduePairFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(ContactMapResiduePairFeatures);
 }
