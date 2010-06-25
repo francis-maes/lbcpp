@@ -9,7 +9,7 @@
 #ifndef LBCPP_FEATURE_VISITOR_STRING_DESCRIPTION_HPP_
 # define LBCPP_FEATURE_VISITOR_STRING_DESCRIPTION_HPP_
 
-# include "FeatureVisitorStatic.hpp"
+# include "../FeatureVisitorStatic.hpp"
 
 namespace lbcpp {
 namespace impl {

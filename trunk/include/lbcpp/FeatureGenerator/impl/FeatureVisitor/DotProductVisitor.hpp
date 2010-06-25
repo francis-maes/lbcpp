@@ -9,8 +9,8 @@
 #ifndef LBCPP_FEATURE_VISITOR_DOT_PRODUCT_HPP_
 # define LBCPP_FEATURE_VISITOR_DOT_PRODUCT_HPP_
 
-# include "FeatureVisitorStatic.hpp"
-# include "../../FeatureGenerator/DenseVector.h"
+# include "../FeatureVisitorStatic.hpp"
+# include <lbcpp/FeatureGenerator/DenseVector.h>
 
 namespace lbcpp {
 namespace impl {

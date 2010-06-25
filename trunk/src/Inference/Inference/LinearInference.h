@@ -72,7 +72,7 @@ public:
       return Variable();
     FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
     jassert(features);
-    return new Scalar(features->dotProduct(parameters, dotProductCache));
+    return ObjectPtr(new Scalar(features->dotProduct(parameters, dotProductCache)));
   }
 
 private:
