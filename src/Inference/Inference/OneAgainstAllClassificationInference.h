@@ -17,14 +17,14 @@ namespace lbcpp
 class OneAgainstAllClassificationInference : public VectorStaticParallelInference
 {
 public:
-  OneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel)
-    : VectorStaticParallelInference(name), dictionary(labelsDictionary)
+  OneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
+    : VectorStaticParallelInference(name), classes(classes)
   {
-    subInferences.resize(dictionary->getNumFeatures());
+    subInferences.resize(classes->getNumElements());
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
       InferencePtr subInference = binaryClassifierModel->cloneAndCast<BinaryClassificationInference>();
-      subInference->setName(dictionary->getFeature(i));
+      subInference->setName(classes->getElementName(i));
       subInferences.set(i, subInference);
     }
   }
@@ -35,19 +35,22 @@ public:
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(subInferences.size());
 
+    int correctClass = -1;
     if (supervision)
     {
-      LabelPtr correctLabel = supervision.dynamicCast<Label>();
-      jassert(correctLabel);
-      size_t correct = correctLabel->getIndex();
-      for (size_t i = 0; i < subInferences.size(); ++i)
-        res->addSubInference(subInferences.get(i), input,
-            LabelPtr(new Label(BinaryClassificationDictionary::getInstance(), i == correct ? 1 : 0)));
+      if (supervision.isInteger())
+        correctClass = supervision.getInteger();
+      else if (supervision.isObject())
+      {
+        LabelPtr label = supervision.dynamicCast<Label>();
+        jassert(label);
+        correctClass = (int)label->getIndex();
+      }
+      else
+        jassert(false);
     }
-    else
-      for (size_t i = 0; i < subInferences.size(); ++i)
-        res->addSubInference(subInferences.get(i), input, Variable());
-
+    for (size_t i = 0; i < subInferences.size(); ++i)
+      res->addSubInference(subInferences.get(i), input, correctClass >= 0 ? Variable(i == (size_t)correctClass) : Variable());
     return res;
   }
 
@@ -69,22 +72,22 @@ public:
     }
     if (bestClass < 0)
       return Variable();
-    return LabelPtr(new Label(dictionary, (size_t)bestClass));
+    return Variable(bestClass, classes);
   }
 
 private:
-  FeatureDictionaryPtr dictionary;
+  EnumerationPtr classes;
 
   virtual bool load(InputStream& istr)
   {
-    if (!VectorStaticParallelInference::load(istr))
+    String classesName;
+    if (!VectorStaticParallelInference::load(istr) || !lbcpp::read(istr, classesName))
       return false;
-    dictionary = FeatureDictionaryManager::getInstance().readDictionaryNameAndGet(istr);
-    return dictionary != FeatureDictionaryPtr();
+    return (classes = Enumeration::get(classesName)) != EnumerationPtr();
   }
 
   virtual void save(OutputStream& ostr) const
-    {VectorStaticParallelInference::save(ostr); lbcpp::write(ostr, dictionary->getName());}
+    {VectorStaticParallelInference::save(ostr); lbcpp::write(ostr, classes->getName());}
 };
 
 }; /* namespace lbcpp */

@@ -12,6 +12,9 @@ using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
 
+/*
+** ClassManager
+*/
 class ClassManager
 {
 public:
@@ -90,6 +93,9 @@ inline ClassManager& getClassManagerInstance()
   return instance;
 }
 
+/*
+** Class
+*/
 void Class::declare(ClassPtr classInstance)
   {getClassManagerInstance().declare(classInstance);}
 
@@ -151,6 +157,29 @@ void Class::addVariable(ClassPtr type, const String& name)
 /*
 ** Enumeration
 */
+Enumeration::Enumeration(const String& name, const juce::tchar** elements)
+  : IntegerClass(name, IntegerClass::getInstance())
+{
+  for (size_t index = 0; elements[index]; ++index)
+    addElement(elements[index]);
+}
+
+Enumeration::Enumeration(const String& name, const String& elementChars)
+  : IntegerClass(name, IntegerClass::getInstance())
+{
+  for (int i = 0; i < elementChars.length(); ++i)
+  {
+    String str;
+    str += elementChars[i];
+    addElement(str);
+  }
+}
+
+Enumeration::Enumeration(const String& name)
+  : IntegerClass(name, IntegerClass::getInstance())
+{
+}
+
 void Enumeration::addElement(const String& elementName)
 {
   for (size_t i = 0; i < elements.size(); ++i)
@@ -164,8 +193,9 @@ void Enumeration::addElement(const String& elementName)
 
 void declareClassClasses()
 {
-  Class::declare(new ObjectClass());
+  Class::declare(new BooleanClass());
   Class::declare(new IntegerClass());
   Class::declare(new DoubleClass());
   Class::declare(new StringClass());
+  Class::declare(new ObjectClass());
 }

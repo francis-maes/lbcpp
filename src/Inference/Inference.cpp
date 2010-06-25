@@ -112,8 +112,8 @@ InferencePtr lbcpp::absoluteRegressionInference(InferenceOnlineLearnerPtr learne
 InferencePtr lbcpp::dihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new AngleRegressionInference(learner, name);}
 
-InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel)
-  {return new OneAgainstAllClassificationInference(name, labelsDictionary, binaryClassifierModel);}
+InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
+  {return new OneAgainstAllClassificationInference(name, classes, binaryClassifierModel);}
 
 InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
   {return new RunOnSupervisedExamplesInference(inference);}

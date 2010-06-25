@@ -166,15 +166,9 @@ typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 class Enumeration : public IntegerClass
 {
 public:
-  Enumeration(const String& name, const juce::tchar** elements)
-    : IntegerClass(name, IntegerClass::getInstance())
-  {
-    for (size_t index = 0; elements[index]; ++index)
-      addElement(elements[index]);
-  }
-
-  Enumeration(const String& name)
-    : IntegerClass(name, IntegerClass::getInstance()) {}
+  Enumeration(const String& name, const juce::tchar** elements);
+  Enumeration(const String& name, const String& elementChars);
+  Enumeration(const String& name);
 
   static EnumerationPtr get(const String& className)
     {return checkCast<Enumeration>(T("Enumeration::get"), Class::get(className));}

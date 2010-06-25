@@ -293,10 +293,12 @@ InferenceOnlineLearnerPtr createOnlineLearner(double learningRate, size_t learni
     InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
 }
 
-InferencePtr createMultiClassClassifier(FeatureDictionaryPtr dictionary, double learningRate, size_t learningStep)
+InferencePtr createMultiClassClassifier(const String& outputEnumerationName, double learningRate, size_t learningStep)
 {
+  EnumerationPtr enumeration = Enumeration::get(outputEnumerationName);
+  jassert(enumeration);
   InferencePtr binaryClassifier = binaryLinearSVMInference(createOnlineLearner(learningRate, learningStep));
-  return oneAgainstAllClassificationInference(T("MultiClass"), dictionary, binaryClassifier);
+  return oneAgainstAllClassificationInference(T("MultiClass"), enumeration, binaryClassifier);
 }
 
 InferencePtr createLeastSquaresRegressor(double learningRate, size_t learningStep, const String& name = T("Unnamed"))
@@ -453,7 +455,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("SS3")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS3_Pass_") + lbcpp::toString(i)
-          , createMultiClassClassifier(SecondaryStructureDictionary::getInstance(), 0.5, 5000)
+          , createMultiClassClassifier(T("SecondaryStructureElement"), 0.5, 5000)
           , featureFunction, T("SecondaryStructureSequence"));
       proteinInference->appendInference(step);
     }
@@ -461,7 +463,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("SS8")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("SS8_Pass_") + lbcpp::toString(i)
-          , createMultiClassClassifier(DSSPSecondaryStructureDictionary::getInstance(), 0.5, 5000)
+          , createMultiClassClassifier(T("DSSPSecondaryStructureElement"), 0.5, 5000)
           , featureFunction, T("DSSPSecondaryStructureSequence"));
       proteinInference->appendInference(step);
     }
@@ -497,7 +499,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("StAl")))
     {
       step = new ProteinSequenceLabelingInferenceStep(T("StAl_Pass_") + lbcpp::toString(i)
-          , createMultiClassClassifier(StructuralAlphabetDictionary::getInstance(), 0.03, 1000)
+          , createMultiClassClassifier(T("StructuralAlphabetElement"), 0.03, 1000)
           , featureFunction, T("StructuralAlphabetSequence"));
       proteinInference->appendInference(step);
     }
