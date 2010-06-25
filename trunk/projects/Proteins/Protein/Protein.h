@@ -15,6 +15,8 @@
 # include "../InferenceData/CartesianCoordinatesSequence.h"
 # include "../InferenceData/BondCoordinatesSequence.h"
 # include "../InferenceData/ScoreSymmetricMatrix.h"
+# include "AminoAcid.h"
+# include "SecondaryStructure.h"
 # include "ProteinTertiaryStructure.h"
 
 namespace lbcpp

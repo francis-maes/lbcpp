@@ -9,25 +9,6 @@
 #include "AminoAcid.h"
 using namespace lbcpp;
 
-static const juce::tchar* aminoAcidTypeStrings[] = {
-  // 20 amino acids
-  T("Alanine"), T("Asparagine"), T("Aspartic Acid"), T("Cysteine"),
-  T("Glutamic Acid"), T("Glutamine"), T("Glycine"), T("Histidine"), T("Isoleucine"),
-  T("Leucine"), T("Lysine"), T("Methionine"), T("Phenylalanine"), T("Proline"),
-  T("Serine"), T("Threonine"), T("Tryptophan"), T("Tyrosine"), T("Valine"),
-
-  // 3 ambiguous amino acids
-  T("Asparagine or Aspartic Acid"),
-  T("Glutamine or Glutamic Acid"),
-  T("Lecine or Isoleucine"),
-
-  NULL
-};
-
-static const juce::tchar* aminoAcidCategory1Strings[] = {
-  T("Non Polar"), T("Polar"), T("Acidic"), T("Basic"), NULL
-};
-
 /*
 ** AminoAcid
 */
@@ -101,6 +82,25 @@ public:
 };
 
 }; /* namespace lbcpp */
+
+static const juce::tchar* aminoAcidTypeStrings[] = {
+  // 20 amino acids
+  T("Alanine"), T("Asparagine"), T("Aspartic Acid"), T("Cysteine"),
+  T("Glutamic Acid"), T("Glutamine"), T("Glycine"), T("Histidine"), T("Isoleucine"),
+  T("Leucine"), T("Lysine"), T("Methionine"), T("Phenylalanine"), T("Proline"),
+  T("Serine"), T("Threonine"), T("Tryptophan"), T("Tyrosine"), T("Valine"),
+
+  // 3 ambiguous amino acids
+  T("Asparagine or Aspartic Acid"),
+  T("Glutamine or Glutamic Acid"),
+  T("Lecine or Isoleucine"),
+
+  NULL
+};
+
+static const juce::tchar* aminoAcidCategory1Strings[] = {
+  T("Non Polar"), T("Polar"), T("Acidic"), T("Basic"), NULL
+};
 
 void declareAminoAcidClasses()
 {

@@ -79,7 +79,7 @@ extern InferencePtr absoluteRegressionInference(InferenceOnlineLearnerPtr learne
 extern InferencePtr dihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
 // MultiClass Classification
-extern InferencePtr oneAgainstAllClassificationInference(const String& name, FeatureDictionaryPtr labelsDictionary, InferencePtr binaryClassifierModel);
+extern InferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
 
 /*
 ** Decision Tree Inference

@@ -68,7 +68,14 @@ public:
         if (subOutput.isObject())
           res->set(i, subOutput);
         else if (subOutput.isDouble())
-          res->set(i, new Scalar(subOutput.getDouble())); // FIXME! 
+          res->set(i, new Scalar(subOutput.getDouble())); // tmp: data structures must be updated
+        else if (subOutput.isInteger())
+        {
+          // tmp: data structures must be updated
+          LabelSequencePtr labelSequence = res.dynamicCast<LabelSequence>();
+          jassert(labelSequence);
+          res->set(i, new Label(labelSequence->getDictionary(), subOutput.getInteger()));
+        }
         else
           jassert(false);
         hasAtLeastOnePrediction = true;

@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+// old
 class SecondaryStructureDictionary : public FeatureDictionary
 {
 public:

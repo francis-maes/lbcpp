@@ -41,12 +41,19 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
 )
 
 SET(LBCPP_PROTEIN_SOURCES
+# new:
   Protein/AminoAcid.h
   Protein/AminoAcid.cpp
+  Protein/SecondaryStructure.h
+  Protein/SecondaryStructure.cpp
+  
+# old:
   Protein/AminoAcidDictionary.h
   Protein/AminoAcidDictionary.cpp
   Protein/SecondaryStructureDictionary.h
   Protein/SecondaryStructureDictionary.cpp
+  
+# -
   Protein/ProteinBackboneBondSequence.h
   Protein/ProteinResidueAtoms.h
   Protein/ProteinResidueAtoms.cpp
