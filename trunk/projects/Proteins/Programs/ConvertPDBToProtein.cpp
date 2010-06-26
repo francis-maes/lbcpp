@@ -49,6 +49,7 @@ bool convertProteinToPDB(const File& inputFile, const File& outputFile)
 
 int main(int argc, char* argv[])
 {
+  lbcpp::initialize();
   declareProteinClasses();
 
   if (argc < 3)

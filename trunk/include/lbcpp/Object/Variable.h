@@ -46,7 +46,7 @@ public:
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T> object);
-  Variable(const Variable& otherVariant);
+  Variable(const Variable& other);
   Variable() {}
 
   static Variable pair(const Variable& variable1, const Variable& variable2);
@@ -55,7 +55,7 @@ public:
 
   void clear();
 
-  Variable& operator =(const Variable& otherVariant);
+  Variable& operator =(const Variable& other);
 
   ClassPtr getType() const;
 
@@ -90,6 +90,9 @@ public:
 
   size_t size() const;
   Variable operator [](size_t index) const;
+
+  friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
+    {return ostr << variable.toString();}
 
 private:
   ClassPtr type;

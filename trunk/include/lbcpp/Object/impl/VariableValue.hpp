@@ -32,47 +32,77 @@ namespace lbcpp
 
 struct VariableValue
 {
-  VariableValue(bool boolValue);
-  VariableValue(int intValue);
-  VariableValue(double doubleValue);
-  VariableValue(const String& stringValue);
+  VariableValue(bool boolValue)
+    {u.boolValue = boolValue;}
+
+  VariableValue(int intValue)
+    {u.intValue = intValue;} 
+
+  VariableValue(double doubleValue)
+    {u.doubleValue = doubleValue;}
+
+  VariableValue(const String& stringValue)
+    {u.stringValue = new String(stringValue);}
 
   template<class T>
   VariableValue(ReferenceCountedObjectPtr<T> objectValue);
-  VariableValue(Object* objectValue);
+  VariableValue(Object* objectValue)
+    {u.objectValue = NULL; setObject(objectValue);}
   
-  VariableValue(char* rawData);
+  VariableValue(char* rawData)
+    {u.rawDataValue = rawData;}
 
-  VariableValue(const VariableValue& other);
-  VariableValue();
+  VariableValue(const VariableValue& other)
+    {memcpy(this, &other, sizeof (VariableValue));}
+
+  VariableValue()
+    {memset(this, 0, sizeof (VariableValue));}
 
   void clearObject();
   void clearString();
   void clearRawData();
 
-  bool getBoolean() const;
+  bool getBoolean() const
+    {return u.boolValue;}
+
   void setBoolean(bool value)
     {u.boolValue = value;}
   
-  int getInteger() const;
+  int getInteger() const
+    {return u.intValue;}
+
   void setInteger(int value)
     {u.intValue = value;}
 
-  double getDouble() const;
+  double getDouble() const
+    {return u.doubleValue;}
+
   void setDouble(double value)
     {u.doubleValue = value;}
 
-  const String& getString() const;
+  const String& getString() const
+    {return *u.stringValue;}
+
   void setString(const String& str)
     {jassert(!u.stringValue); u.stringValue = new String(str);}
 
-  ObjectPtr getObject() const;
-  Object* getObjectPointer() const;
+  ObjectPtr getObject() const
+    {return u.objectValue ? ObjectPtr(u.objectValue) : ObjectPtr();}
+
+  Object* getObjectPointer() const
+    {return u.objectValue ? u.objectValue : NULL;}
+
   void setObject(Object* pointer)
     {jassert(!u.objectValue); u.objectValue = pointer; if (pointer) pointer->incrementReferenceCounter();}
 
-  char* getRawData() const;
+  const char* getRawData() const
+    {return u.rawDataValue;}
   
+  char* getRawData()
+    {return u.rawDataValue;}
+
+  void setRawData(char* data)
+    {jassert(!u.rawDataValue); u.rawDataValue = data;}
 
 private:
   union
@@ -86,24 +116,6 @@ private:
   } u;
 };
 
-inline VariableValue::VariableValue(bool boolValue)
-  {u.boolValue = boolValue;}
-
-inline VariableValue::VariableValue(int intValue)
-  {u.intValue = intValue;} 
-
-inline VariableValue::VariableValue(double doubleValue)
-  {u.doubleValue = doubleValue;}
-
-inline VariableValue::VariableValue(const String& stringValue)
-  {u.stringValue = new String(stringValue);}
-
-inline VariableValue::VariableValue(char* rawData)
-  {u.rawDataValue = rawData;}
-
-inline VariableValue::VariableValue(Object* objectValue)
-  {u.objectValue = NULL; setObject(objectValue);}
-
 template<class T>
 inline VariableValue::VariableValue(ReferenceCountedObjectPtr<T> objectValue)
 {
@@ -111,12 +123,6 @@ inline VariableValue::VariableValue(ReferenceCountedObjectPtr<T> objectValue)
   if (objectValue)
     objectValue->incrementReferenceCounter();
 }
-
-inline VariableValue::VariableValue(const VariableValue& other)
-  {memcpy(this, &other, sizeof (VariableValue));}
-
-inline VariableValue::VariableValue()
-  {memset(this, 0, sizeof (VariableValue));}
 
 inline void VariableValue::clearObject()
 {
@@ -138,30 +144,13 @@ inline void VariableValue::clearString()
 
 inline void VariableValue::clearRawData()
 {
-  delete [] u.rawDataValue;
-  u.rawDataValue = NULL;
+  if (u.rawDataValue)
+  {
+    delete [] u.rawDataValue;
+    u.rawDataValue = NULL;
+  }
 }
 
-inline bool VariableValue::getBoolean() const
-  {return u.boolValue;}
-
-inline int VariableValue::getInteger() const
-  {return u.intValue;}
-
-inline double VariableValue::getDouble() const
-  {return u.doubleValue;}
-
-inline const String& VariableValue::getString() const
-  {return *u.stringValue;}
-
-inline ObjectPtr VariableValue::getObject() const
-  {return u.objectValue ? ObjectPtr(u.objectValue) : ObjectPtr();}
-
-inline Object* VariableValue::getObjectPointer() const
-  {return u.objectValue ? u.objectValue : NULL;}
-
-inline char* VariableValue::getRawData() const
-  {return u.rawDataValue;}
 
 }; /* namespace lbcpp */
 

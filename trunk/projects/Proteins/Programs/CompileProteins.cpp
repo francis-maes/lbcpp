@@ -122,6 +122,7 @@ void compileProteins(const File& mainInputDirectory, const std::vector<File>& ot
 
 int main(int argc, char* argv[])
 {
+  lbcpp::initialize();
   declareProteinClasses();
 
   if (argc < 4)

@@ -151,6 +151,7 @@ void computePSSMsAndDSSPs(const File& inputDirectory, const File& pssmOutputDire
 
 int main(int argc, char* argv[])
 {
+  lbcpp::initialize();
   declareProteinClasses();
   juce::initialiseJuce_NonGUI();
 

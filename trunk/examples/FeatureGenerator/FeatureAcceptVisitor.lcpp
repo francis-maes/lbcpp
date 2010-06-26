@@ -45,6 +45,7 @@ public:
 
 int main(int argc, char* argv[])
 {
+  lbcpp::initialize();
   FeatureVisitorPtr featureVisitor = new MyFeatureVisitor();
   FeatureGeneratorPtr featureGenerator = myFeatureGenerator();
   

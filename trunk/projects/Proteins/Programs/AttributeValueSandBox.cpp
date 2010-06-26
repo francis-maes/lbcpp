@@ -271,19 +271,25 @@ public:
 
 /////////////////////////////////////////
 
+extern void declareClassClasses();
+
+extern void declareLBCppCoreClasses();
+
 int main(int argc, char** argv)
 {
+  lbcpp::initialize();
   declareProteinClasses();
   Class::declare(new ProteinResidueClass());
   Class::declare(new ProteinResidueInputAttributesClass(8));
 
 
   Variable container = Variable::pair(16.64, 51);
-  std::cout << "pair: " << container.toString() << " size: " << container.size() << std::endl;
+  std::cout << "pair: " << container << " size: " << container.size() << std::endl;
   for (size_t i = 0; i < container.size(); ++i)
-    std::cout << "  elt " << i << " = " << container[0].toString() << "( type = " << container[0].getType()->getName() << ")" << std::endl;
+    std::cout << "  elt " << i << " = " << container[i].toString() << " (type = " << container[i].getType()->getName() << ")" << std::endl;
   Variable containerCopy = container;
-  std::cout << "container copy: " << containerCopy << " equals: " << (container == containerCopy) << std::endl;
+  std::cout << "container copy: " << containerCopy << " (type = "
+    << containerCopy.getType()->getName() << " equals: " << Variable(container == containerCopy) << std::endl;
   return 0;
 
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
