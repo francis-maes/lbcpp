@@ -1,7 +1,5 @@
-- split des classes
 - implementer les Class::get/setSubVariable, unifier avec les CppClasses
-- implementer pleinement les tuples
-- implementer les tableau de taille fixe
+- implementer les tableau de taille fixe -> utiliser pour stocker dans les proteines
 
 Variable:
  * support native de tableau, flags "fixedSize" et "fixedElementType"

@@ -167,3 +167,11 @@ bool Object::saveToDirectory(const File& directory) const
 
 Variable Object::getVariable(size_t index) const
   {jassert(false); return Variable();}
+
+void Object::accept(ObjectVisitorPtr visitor)
+{
+  ClassPtr type = getClass();
+  size_t n = type->getNumStaticVariables();
+  for (size_t i = 0; i < n; ++i)
+    visitor->visit(i, getVariable(i));
+}

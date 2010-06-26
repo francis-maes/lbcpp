@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_AMINO_ACID_H_
 # define LBCPP_PROTEINS_AMINO_ACID_H_
 
-# include <lbcpp/Object/Class.h>
+# include <lbcpp/Object/Variable.h>
 
 namespace lbcpp
 {
@@ -46,6 +46,8 @@ enum AminoAcidType
   totalNumAminoAcids,
 };
 
+extern EnumerationPtr aminoAcidTypeEnumeration();
+
 enum AminoAcidCategory1
 {
   nonPolarCategory,
@@ -53,6 +55,8 @@ enum AminoAcidCategory1
   acidicCategory,
   basicCategory,
 };
+
+extern EnumerationPtr aminoAcidCategory1Enumeration();
 
 class AminoAcid : public Object
 {
@@ -73,7 +77,7 @@ public:
   virtual String toString() const
     {String res; res += getOneLetterCode(); return res;}
 
-  virtual void accept(ObjectVisitorPtr visitor);
+  virtual Variable getVariable(size_t index) const;
 
 private:
   friend class AminoAcidClass;

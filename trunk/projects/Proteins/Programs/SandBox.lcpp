@@ -175,6 +175,7 @@ InferencePtr createDihedralRegressor(const String& name = T("Unnamed"))
 
 int main(int argc, char** argv)
 {
+  lbcpp::initialize();
   declareProteinClasses();
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));

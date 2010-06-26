@@ -27,12 +27,16 @@ const juce::tchar* AminoAcid::threeLettersCodes[] =
   NULL
 };
 
-void AminoAcid::accept(ObjectVisitorPtr visitor)
+Variable AminoAcid::getVariable(size_t index) const
 {
-  visitor->visitVariable(0, (int)type);
-  visitor->visitVariable(1, toString());
-  visitor->visitVariable(2, getThreeLettersCode());
-  visitor->visitVariable(3, (int)getCategory1());
+  switch (index)
+  {
+  case 0: return (int)type;
+  case 1: return toString();
+  case 2: return getThreeLettersCode();
+  case 3: return (int)getCategory1();
+  };
+  return Variable();
 }
 
 juce::tchar AminoAcid::getOneLetterCode() const
@@ -71,10 +75,10 @@ class AminoAcidClass : public Collection
 public:
   AminoAcidClass() : Collection(T("AminoAcid"))
   {
-    addVariable(T("AminoAcidType"), T("type"));
+    addVariable(aminoAcidTypeEnumeration(), T("type"));
     addVariable(stringClass(), T("oneLetterCode"));
     addVariable(stringClass(), T("threeLettersCode"));
-    addVariable(T("AminoAcidCategory1"), T("category1"));
+    addVariable(aminoAcidCategory1Enumeration(), T("category1"));
 
     for (size_t i = 0; i < (size_t)totalNumAminoAcids; ++i)
       addElement(new AminoAcid((AminoAcidType)i));
@@ -98,9 +102,15 @@ static const juce::tchar* aminoAcidTypeStrings[] = {
   NULL
 };
 
+EnumerationPtr lbcpp::aminoAcidTypeEnumeration()
+  {static EnumerationPtr res = Enumeration::get(T("AminoAcidType")); return res;}
+
 static const juce::tchar* aminoAcidCategory1Strings[] = {
   T("Non Polar"), T("Polar"), T("Acidic"), T("Basic"), NULL
 };
+
+EnumerationPtr lbcpp::aminoAcidCategory1Enumeration()
+  {static EnumerationPtr res = Enumeration::get(T("AminoAcidCategory1")); return res;}
 
 void declareAminoAcidClasses()
 {
