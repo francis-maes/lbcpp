@@ -68,6 +68,7 @@ void displayObjectIfExists(ProteinPtr protein, const String& objectName)
 
 int main(int argc, char* argv[])
 {
+  lbcpp::initialize();
   declareProteinClasses();
 
   if (argc < 3)

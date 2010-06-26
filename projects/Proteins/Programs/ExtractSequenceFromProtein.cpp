@@ -13,6 +13,7 @@ extern void declareProteinClasses();
 #ifdef SEQUENCE
 int main(int argc, char** argv)
 {
+  lbcpp::initialize();
   declareProteinClasses();
   
   File proteinDirectory;
@@ -71,6 +72,7 @@ static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
 
 int main(int argc, char** argv)
 {
+  lbcpp::initialize();
   declareProteinClasses();
 
   size_t nbValidProteins = 0;

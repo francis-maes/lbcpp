@@ -221,7 +221,7 @@ public:
   virtual void initialise(const String& commandLine)
   {    
     ErrorHandler::setInstance(explorerErrorHandler);
-    declareLBCppCoreClasses();
+    lbcpp::initialize();
     declareProteinClasses();
 
     LBCPP_DECLARE_CLASS_LEGACY(ExplorerConfiguration);

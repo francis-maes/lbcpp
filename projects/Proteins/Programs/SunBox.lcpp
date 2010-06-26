@@ -309,6 +309,7 @@ InferencePtr createDihedralRegressor(double learningRate, size_t learningStep, c
 
 int main(int argc, char** argv)
 {
+  lbcpp::initialize();
   declareProteinClasses();
   
   enum {numFolds = 5};

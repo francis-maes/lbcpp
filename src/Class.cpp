@@ -23,7 +23,6 @@ public:
 
   void declare(ClassPtr classInstance)
   {
-    ensureStandardClassesAreLoaded();
     if (!classInstance || classInstance->getName().isEmpty())
       Object::error(T("ClassManager::declare"), T("Empty class name"));
 
@@ -47,7 +46,6 @@ public:
 
   ObjectPtr createInstance(const String& className) const
   {
-    const_cast<ClassManager* >(this)->ensureStandardClassesAreLoaded();
     if (className.isEmpty())
     {
       Object::error(T("ClassManager::create"), T("Empty class name"));
@@ -70,14 +68,6 @@ public:
     return defaultConstructor();
   }
 
-private:
-  typedef std::map<String, ClassPtr> ClassMap;
-
-  CriticalSection classesLock;
-  ClassMap classes;
-
-  bool standardClassesAreDeclared;
-
   void ensureStandardClassesAreLoaded()
   {
     if (!standardClassesAreDeclared)
@@ -86,6 +76,14 @@ private:
       declareLBCppCoreClasses();
     }
   }
+
+private:
+  typedef std::map<String, ClassPtr> ClassMap;
+
+  CriticalSection classesLock;
+  ClassMap classes;
+
+  bool standardClassesAreDeclared;
 };
 
 inline ClassManager& getClassManagerInstance()
@@ -93,6 +91,10 @@ inline ClassManager& getClassManagerInstance()
   static ClassManager instance;
   return instance;
 }
+
+void lbcpp::initialize()
+  {getClassManagerInstance().ensureStandardClassesAreLoaded();}
+
 
 /*
 ** Class

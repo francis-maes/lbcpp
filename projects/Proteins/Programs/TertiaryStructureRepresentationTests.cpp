@@ -19,6 +19,7 @@ void printConfidenceInterval(ScalarVariableStatistics& stats)
 
 int main()
 {
+  lbcpp::initialize();
   declareProteinClasses();
 
   {

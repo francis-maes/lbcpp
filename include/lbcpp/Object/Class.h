@@ -33,6 +33,8 @@
 namespace lbcpp
 {
 
+extern void initialize();
+
 class Class : public NameableObject
 {
 public:
@@ -97,7 +99,7 @@ public:
   virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
   virtual String getSubVariableName(const VariableValue& value, size_t index) const
     {jassert(false); return String::empty;}
-  virtual void setSubVariable(const VariableValue& value, size_t index, const VariableValue& subValue) const
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
     {jassert(false);}
   
   /*

@@ -17,8 +17,6 @@ extern void declareObjectStreamClasses();
 // Object
 void declareObjectRelatedClasses()
 {
-  declareClassClasses();
-
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
   declareObjectContainerClasses();
   declareObjectStreamClasses();
@@ -59,6 +57,8 @@ extern void declareInferenceOnlineLearnerClasses();
 
 void declareLBCppCoreClasses()
 {
+  declareClassClasses();
+
   declareRandomVariableStatistics();
   declareFeatureGenerators();
   declareObjectRelatedClasses();

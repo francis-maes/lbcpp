@@ -38,9 +38,6 @@ class TupleClass : public RawDataBuiltinTypeClass
 public:
   TupleClass(const String& name, size_t size)
     : RawDataBuiltinTypeClass(name), size(size) {}
-  
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return size;}
 
   static char* allocateMemory(size_t size)
   {
@@ -48,12 +45,59 @@ public:
     memset(res, 0, sizeof (Variable) * size);
     return res;
   }
+  
+  virtual String toString(const VariableValue& value) const
+  {
+    const Variable* data = (const Variable* )value.getRawData();
+    String res;
+    for (size_t i = 0; i < size; ++i)
+    {
+      if (i == 0)
+        res = T("(");
+      else
+        res += T(", ");
+      res += data[i].toString();
+    }
+    return res + T(")");
+  }
 
-  //virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
+  virtual void copy(VariableValue& dest, const VariableValue& source) const
+  {
+    const Variable* sourceData = (const Variable* )source.getRawData();
+    Variable* destData = (Variable* )allocateMemory(size);
+    for (size_t i = 0; i < size; ++i)
+      destData[i] = sourceData[i];
+    dest.setRawData((char* )destData);
+  }
+  
+  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
+  {
+    const Variable* data1 = (const Variable* )value1.getRawData();
+    const Variable* data2 = (const Variable* )value2.getRawData();
+    for (size_t i = 0; i < size; ++i)
+      if (data1[i] != data2[i])
+        return false;
+    return true;
+  }
+  
+  virtual size_t getNumSubVariables(const VariableValue& value) const
+    {return size;}
+
   virtual String getSubVariableName(const VariableValue& value, size_t index) const
-    {jassert(false); return String::empty;}
-  virtual void setSubVariable(const VariableValue& value, size_t index, const VariableValue& subValue) const
-    {jassert(false);}
+    {return T("[") + String((int)index) + T("]");}
+
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
+  {
+    jassert(index < size);
+    return ((const Variable* )value.getRawData())[index];
+  }
+
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {
+    jassert(index < size);
+    Variable* data = (Variable* )value.getRawData();
+    data[index] = subValue;
+  }
   
 protected:
   size_t size;
@@ -74,10 +118,19 @@ public:
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
   {
-    jassert(false);
-    //dest = allocate(source[0], source[1]);
+    Variable* sourceData = (Variable* )source.getRawData();
+    Variable* destData = (Variable* )allocateMemory(size);
+    destData[0] = sourceData[0];
+    destData[1] = sourceData[1];
+    dest.setRawData((char* )destData);
   }
-
+  
+  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
+  {
+    Variable* data1 = (Variable* )value1.getRawData();
+    Variable* data2 = (Variable* )value2.getRawData();
+    return data1[0] == data2[0] && data1[1] == data2[1];
+  }
 };
 
 class VariableVectorClass : public RawDataBuiltinTypeClass

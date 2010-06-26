@@ -9,6 +9,7 @@ extern void declareProteinClasses();
 
 int main(int argc, char** argv)
 {
+  lbcpp::initialize();
   declareProteinClasses();
   
   File pdbDirectoryFile;
