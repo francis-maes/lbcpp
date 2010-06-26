@@ -80,10 +80,13 @@ public:
     return true;
   }
   
-  virtual size_t getNumSubVariables(const VariableValue& value) const
+  virtual size_t getNumStaticVariables() const
     {return size;}
 
-  virtual String getSubVariableName(const VariableValue& value, size_t index) const
+  virtual ClassPtr getStaticVariableType(size_t index) const
+    {return ClassPtr();}
+
+  virtual String getStaticVariableName(size_t index) const
     {return T("[") + String((int)index) + T("]");}
 
   virtual Variable getSubVariable(const VariableValue& value, size_t index) const
@@ -98,7 +101,7 @@ public:
     Variable* data = (Variable* )value.getRawData();
     data[index] = subValue;
   }
-  
+
 protected:
   size_t size;
 };

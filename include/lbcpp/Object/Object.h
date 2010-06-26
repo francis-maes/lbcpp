@@ -183,8 +183,7 @@ public:
   virtual void setVariable(size_t index, const Variable& value)
     {jassert(false);}
 
-  virtual void accept(ObjectVisitorPtr visitor)
-    {}
+  virtual void accept(ObjectVisitorPtr visitor);
 
   /**
   ** Clones and cast the current object.
@@ -295,15 +294,7 @@ typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
 class ObjectVisitor : public Object
 {
 public:
-  virtual void visitVariable(size_t variableNumber, bool value) = 0;
-  virtual void visitVariable(size_t variableNumber, int value) = 0;
-  virtual void visitVariable(size_t variableNumber, double value) = 0;
-  virtual void visitVariable(size_t variableNumber, const String& value) = 0;
-  virtual void visitVariable(size_t variableNumber, ObjectPtr value) = 0;
-
-  template<class T>
-  void visitVariable(size_t variableNumber, ReferenceCountedObjectPtr<T> value)
-    {visitVariable(variableNumber, (ObjectPtr)value);}
+  virtual void visit(size_t variableNumber, const Variable& value) = 0;
 };
 
 /**

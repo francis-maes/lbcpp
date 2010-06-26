@@ -29,13 +29,19 @@ public:
     anobjectVariable,
   };
 
-  virtual void accept(ObjectVisitorPtr visitor)
+  virtual Variable getVariable(size_t index) const
   {
-    visitor->visitVariable(anintVariable, 51);
-    visitor->visitVariable(adoubleVariable, 16.64);
-    visitor->visitVariable(astringVariable, T("Hello world"));
-    visitor->visitVariable(anobjectVariable, ObjectPtr(this));
+    switch (index)
+    {
+    case anintVariable: return 51;
+    case adoubleVariable: return 16.64;
+    case astringVariable: return T("Hello World");
+    case anobjectVariable: return Variable(const_cast<A* >(this));
+    };
   }
+
+  virtual void setVariable(size_t index, const Variable& value)
+    {jassert(false);}
 };
 
 typedef ReferenceCountedObjectPtr<A> APtr;
@@ -60,38 +66,19 @@ public:
   PrintObjectVisitor(ObjectPtr object, std::ostream& ostr, int maxDepth = -1)
     : currentClasses(1, object->getClass()), ostr(ostr), maxDepth(maxDepth) {jassert(currentClasses[0]);}
   
-  virtual void visitVariable(size_t variableNumber, bool value)
-    {printVariable(variableNumber, lbcpp::toString(value));}
-
-  virtual void visitVariable(size_t variableNumber, int value)
+  virtual void visit(size_t variableNumber, const Variable& value)
   {
-    ClassPtr currentClass = currentClasses.back();
-    jassert(currentClass);
-    IntegerClassPtr variableClass = currentClass->getVariableType(variableNumber);
-    jassert(variableClass);
-    printVariable(variableNumber, variableClass->toString(value));
-  }
-
-  virtual void visitVariable(size_t variableNumber, double value)
-    {printVariable(variableNumber, lbcpp::toString(value));}
-
-  virtual void visitVariable(size_t variableNumber, const String& value)
-    {printVariable(variableNumber, lbcpp::toString(value));}
-
-  virtual void visitVariable(size_t variableNumber, ObjectPtr value)
-  {
-    if (value)
+    printVariable(variableNumber, value.toString());
+    if (value.isObject())
     {
-      printVariable(variableNumber, value->getName());// + T(" (") + String((juce::int64)value.get()) + T(")"));
-      if (maxDepth < 0 || (int)currentClasses.size() < maxDepth)
+      ObjectPtr object = value.getObject();
+      if (object && (maxDepth < 0 || (int)currentClasses.size() < maxDepth))
       {
-        currentClasses.push_back(value->getClass());
-        value->accept(ObjectVisitorPtr(this));
+        currentClasses.push_back(object->getClass());
+        object->accept(ObjectVisitorPtr(this));
         currentClasses.pop_back();
       }
     }
-    else
-      printVariable(variableNumber, T("<null>"));
   }
 
   static void print(ObjectPtr object, std::ostream& ostr, int maxDepth = -1)
@@ -110,8 +97,8 @@ protected:
     for (size_t i = 0; i < currentClasses.size() - 1; ++i)
       ostr << "  ";
     ostr << "[" << variableNumber << "] "
-      << currentClass->getVariableType(variableNumber)->getName() << " "
-      << currentClass->getVariableName(variableNumber) << " = "
+      << currentClass->getStaticVariableType(variableNumber)->getName() << " "
+      << currentClass->getStaticVariableName(variableNumber) << " = "
       << valueAsString << std::endl;
   }
 };
@@ -149,8 +136,6 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   return res;
 }
 
-///
-
 class ProteinResidue;
 typedef ReferenceCountedObjectPtr<ProteinResidue> ProteinResiduePtr;
 
@@ -166,11 +151,15 @@ public:
   AminoAcidType getAminoAcidType() const
     {jassert(aminoAcid); return aminoAcid->getType();}
 
-  virtual void accept(ObjectVisitorPtr visitor)
+  virtual Variable getVariable(size_t index) const
   {
-    visitor->visitVariable(0, (ObjectPtr)aminoAcid);
-    visitor->visitVariable(1, (ObjectPtr)previous);
-    visitor->visitVariable(2, (ObjectPtr)next);
+    switch (index)
+    {
+    case 0: return aminoAcid;
+    case 1: return previous;
+    case 2: return next;
+    };
+    return Variable();
   }
 
   void setNext(ProteinResiduePtr next)
@@ -191,10 +180,10 @@ private:
   ProteinResiduePtr next;
 };
 
-class ProteinResidueClass : public Class
+class ProteinResidueClass : public ObjectClass
 {
 public:
-  ProteinResidueClass() : Class(T("ProteinResidue"), objectClass())
+  ProteinResidueClass() : ObjectClass(T("ProteinResidue"), objectClass())
   {
     addVariable(AminoAcid::getCollection(), T("aminoAcid"));
     addVariable(ClassPtr(this), T("previous"));
@@ -235,18 +224,24 @@ public:
   ProteinResidueInputAttributes(ProteinResiduePtr residue, size_t windowSize)
     : residue(residue), windowSize(windowSize) {}
 
+  virtual Variable getVariable(size_t index) const
+  {
+    // FIXM
+    return Variable();
+  }
+
   virtual void accept(ObjectVisitorPtr visitor)
   {
     size_t index = 0;
-    visitor->visitVariable(index++, residue->getAminoAcidType());
+    visitor->visit(index++, Variable(residue->getAminoAcidType(), aminoAcidTypeEnumeration()));
 
     ProteinResiduePtr prev = residue->getPrevious();
     for (size_t i = 0; prev && i < windowSize; ++i, prev = prev->getPrevious())
-      visitor->visitVariable(1 + i, prev->getAminoAcidType());
+      visitor->visit(1 + i, Variable(prev->getAminoAcidType(), aminoAcidTypeEnumeration()));
 
     ProteinResiduePtr next = residue->getNext();
     for (size_t i = 0; next && i < windowSize; ++i, next = next->getNext())
-      visitor->visitVariable(1 + windowSize + i, next->getAminoAcidType());
+      visitor->visit(1 + windowSize + i, Variable(next->getAminoAcidType(), aminoAcidTypeEnumeration()));
   }
 
 private:
@@ -254,26 +249,21 @@ private:
   size_t windowSize;
 };
 
-class ProteinResidueInputAttributesClass : public Class
+class ProteinResidueInputAttributesClass : public ObjectClass
 {
 public:
   ProteinResidueInputAttributesClass(size_t windowSize)
-    : Class(T("ProteinResidueInputAttributes"), objectClass())
+    : ObjectClass(T("ProteinResidueInputAttributes"), objectClass())
   {
-    EnumerationPtr aminoAcidTypeEnumeration = Enumeration::get(T("AminoAcidType"));
-    addVariable(aminoAcidTypeEnumeration, T("AA[i]"));
+    addVariable(aminoAcidTypeEnumeration(), T("AA[i]"));
     for (size_t i = 0; i < windowSize; ++i)
-      addVariable(aminoAcidTypeEnumeration, T("AA[i - ") + lbcpp::toString(i + 1) + T("]"));
+      addVariable(aminoAcidTypeEnumeration(), T("AA[i - ") + lbcpp::toString(i + 1) + T("]"));
     for (size_t i = 0; i < windowSize; ++i)
-      addVariable(aminoAcidTypeEnumeration, T("AA[i + ") + lbcpp::toString(i + 1) + T("]"));
+      addVariable(aminoAcidTypeEnumeration(), T("AA[i + ") + lbcpp::toString(i + 1) + T("]"));
   }
 };
 
 /////////////////////////////////////////
-
-extern void declareClassClasses();
-
-extern void declareLBCppCoreClasses();
 
 int main(int argc, char** argv)
 {
@@ -282,7 +272,6 @@ int main(int argc, char** argv)
   Class::declare(new ProteinResidueClass());
   Class::declare(new ProteinResidueInputAttributesClass(8));
 
-
   Variable container = Variable::pair(16.64, 51);
   std::cout << "pair: " << container << " size: " << container.size() << std::endl;
   for (size_t i = 0; i < container.size(); ++i)
@@ -290,7 +279,6 @@ int main(int argc, char** argv)
   Variable containerCopy = container;
   std::cout << "container copy: " << containerCopy << " (type = "
     << containerCopy.getType()->getName() << " equals: " << Variable(container == containerCopy) << std::endl;
-  return 0;
 
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   ObjectContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));

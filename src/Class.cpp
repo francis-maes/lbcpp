@@ -102,7 +102,7 @@ void lbcpp::initialize()
 bool Class::inheritsFrom(ClassPtr baseClass) const
 {
   jassert(this && baseClass.get());
-  return this == baseClass.get() || this->baseClass->inheritsFrom(baseClass);
+  return this == baseClass.get() || (this->baseClass && this->baseClass->inheritsFrom(baseClass));
 }
 
 Variable Class::getSubVariable(const VariableValue& value, size_t index) const
@@ -120,30 +120,30 @@ ObjectPtr Class::createInstance(const String& className)
 bool Class::doClassNameExists(const String& className)
   {return get(className) != ClassPtr();}
 
-std::vector< std::pair<ClassPtr, String> > variables;
-  CriticalSection variablesLock;
-
-size_t Class::getNumVariables() const
+/*
+** ObjectClass
+*/
+size_t ObjectClass::getNumStaticVariables() const
 {
   ScopedLock _(variablesLock);
   return variables.size();
 }
 
-ClassPtr Class::getVariableType(size_t index) const
+ClassPtr ObjectClass::getStaticVariableType(size_t index) const
 {
   ScopedLock _(variablesLock);
   jassert(index < variables.size());
   return variables[index].first;
 }
 
-const String& Class::getVariableName(size_t index) const
+String ObjectClass::getStaticVariableName(size_t index) const
 {
   ScopedLock _(variablesLock);
   jassert(index < variables.size());
   return variables[index].second;
 }
 
-int Class::findVariable(const String& name) const
+int ObjectClass::findStaticVariable(const String& name) const
 {
   ScopedLock _(variablesLock);
   for (size_t i = 0; i < variables.size(); ++i)
@@ -152,7 +152,7 @@ int Class::findVariable(const String& name) const
   return -1;
 }
 
-void Class::addVariable(ClassPtr type, const String& name)
+void ObjectClass::addVariable(ClassPtr type, const String& name)
 {
   if (!type || name.isEmpty())
   {
@@ -160,11 +160,17 @@ void Class::addVariable(ClassPtr type, const String& name)
     return;
   }
   ScopedLock _(variablesLock);
-  if (findVariable(name) >= 0)
+  if (findStaticVariable(name) >= 0)
     Object::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
   else
     variables.push_back(std::make_pair(type, name));
 }
+
+Variable ObjectClass::getSubVariable(const VariableValue& value, size_t index) const
+  {return value.getObject()->getVariable(index);}
+
+void ObjectClass::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {value.getObject()->setVariable(index, subValue);}
 
 /*
 ** Enumeration

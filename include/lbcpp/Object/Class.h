@@ -93,32 +93,35 @@ public:
   virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
     {jassert(false); return false;}
 
+  /*
+  ** Static Variables
+  */
+  virtual size_t getNumStaticVariables() const
+    {return 0;}
+
+  virtual ClassPtr getStaticVariableType(size_t index) const
+    {jassert(false); return ClassPtr();}
+
+  virtual String getStaticVariableName(size_t index) const
+    {jassert(false); return String::empty;}
+
+  /*
+  ** Dynamic Variables
+  */
   virtual size_t getNumSubVariables(const VariableValue& value) const
-    {jassert(false); return 0;}
+    {return getNumStaticVariables();}
+
+  virtual String getSubVariableName(const VariableValue& value, size_t index) const
+    {return getStaticVariableName(index);}
 
   virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
-  virtual String getSubVariableName(const VariableValue& value, size_t index) const
-    {jassert(false); return String::empty;}
+
   virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
     {jassert(false);}
-  
-  /*
-  ** Sub-Variables
-  */
-  size_t getNumVariables() const;
-  ClassPtr getVariableType(size_t index) const;
-  const String& getVariableName(size_t index) const;
-  int findVariable(const String& name) const;
 
 protected:
   DefaultConstructor defaultConstructor;
   ClassPtr baseClass;
-  std::vector< std::pair<ClassPtr, String> > variables;
-  CriticalSection variablesLock;
-
-  void addVariable(ClassPtr type, const String& name);
-  void addVariable(const String& typeName, const String& name)
-    {addVariable(Class::get(typeName), name);}
 };
 
 /*
@@ -230,6 +233,23 @@ public:
 
   virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
     {return value1.getObject() == value2.getObject();}
+
+  virtual size_t getNumStaticVariables() const;
+  virtual ClassPtr getStaticVariableType(size_t index) const;
+  virtual String getStaticVariableName(size_t index) const;
+
+  int findStaticVariable(const String& name) const;
+
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
+
+protected:
+  CriticalSection variablesLock;
+  std::vector< std::pair<ClassPtr, String> > variables;
+
+  void addVariable(ClassPtr type, const String& name);
+  void addVariable(const String& typeName, const String& name)
+    {addVariable(Class::get(typeName), name);}
 };
 
 extern ClassPtr objectClass();
