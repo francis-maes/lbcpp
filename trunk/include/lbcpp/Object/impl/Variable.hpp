@@ -32,89 +32,6 @@
 namespace lbcpp
 {
 
-/*
-** VariableValue
-*/
-inline VariableValue::VariableValue(bool boolValue)
-  {u.boolValue = boolValue;}
-
-inline VariableValue::VariableValue(int intValue)
-  {u.intValue = intValue;} 
-
-inline VariableValue::VariableValue(double doubleValue)
-  {u.doubleValue = doubleValue;}
-
-inline VariableValue::VariableValue(const String& stringValue)
-  {u.stringValue = new String(stringValue);}
-
-inline VariableValue::VariableValue(Object* objectValue)
-{
-  u.objectValue = objectValue;
-  if (objectValue)
-    objectValue->incrementReferenceCounter();
-}
-
-template<class T>
-inline VariableValue::VariableValue(ReferenceCountedObjectPtr<T> objectValue)
-{
-  u.objectValue = objectValue.get();
-  if (objectValue)
-    objectValue->incrementReferenceCounter();
-}
-
-inline VariableValue::VariableValue(const VariableValue& other)
-  {memcpy(this, &other, sizeof (VariableValue));}
-
-inline VariableValue::VariableValue()
-  {memset(this, 0, sizeof (VariableValue));}
-
-inline void VariableValue::clear(ClassPtr type)
-{
-  if (type)
-  {
-    if (type.isInstanceOf<StringClass>())
-      clearString();
-    else if (!type.isInstanceOf<BuiltinTypeClass>())
-      clearObject();
-  }
-}
-
-inline void VariableValue::clearObject()
-{
-  if (u.objectValue)
-  {
-    u.objectValue->decrementReferenceCounter();
-    u.objectValue = NULL;
-  }
-}
-
-inline void VariableValue::clearString()
-{
-  delete u.stringValue;
-  u.stringValue = NULL;
-}
-
-inline bool VariableValue::getBoolean() const
-  {return u.boolValue;}
-
-inline int VariableValue::getInteger() const
-  {return u.intValue;}
-
-inline double VariableValue::getDouble() const
-  {return u.doubleValue;}
-
-inline const String& VariableValue::getString() const
-  {return *u.stringValue;}
-
-inline ObjectPtr VariableValue::getObject() const
-  {return u.objectValue ? ObjectPtr(u.objectValue) : ObjectPtr();}
-
-inline Object* VariableValue::getObjectPointer() const
-  {return u.objectValue ? u.objectValue : NULL;}
-
-/*
-** Variable
-*/
 inline Variable::Variable(bool boolValue, ClassPtr type)
   : type(type), value(boolValue) {jassert(isBoolean());}
 
@@ -143,30 +60,25 @@ inline Variable::Variable(const Variable& otherVariant)
 inline Variable::~Variable()
   {clear();}
 
+inline Variable Variable::pair(const Variable& variable1, const Variable& variable2)
+  {return Variable(VariablePairClass::getInstance(), VariablePairClass::allocate(variable1, variable2));}
+
 inline void Variable::clear()
-  {value.clear(type); type = ClassPtr();}
+{
+  if (type)
+  {
+    type->destroy(value);
+    type = ClassPtr();
+  }
+}
 
 inline Variable& Variable::operator =(const Variable& otherVariant)
 {
   clear();
-  type = otherVariant.getType();
-  if (isNil())
-    return *this;
-  else if (isBoolean())
-    value = VariableValue(otherVariant.getBoolean());
-  else if (isInteger())
-    value = VariableValue(otherVariant.getInteger());
-  else if (isDouble())
-    value = VariableValue(otherVariant.getDouble());
-  else if (isString())
-    value = VariableValue(otherVariant.getString());
-  else if (isObject())
-    value = VariableValue(otherVariant.getObject());
-  else
-  {
-    Object::error(T("Variable::operator ="), T("Unrecognized type of variant"));
-    jassert(false);
-  }
+  if (type != otherVariant.type)
+    type = otherVariant.type;
+  if (type)
+    type->copy(value, otherVariant.value);
   return *this;
 }
 
@@ -207,7 +119,7 @@ inline String Variable::getString() const
   {jassert(isString()); return value.getString();}
 
 inline bool Variable::isObject() const
-  {return type && !type.isInstanceOf<BuiltinTypeClass>();}
+  {return type && type.isInstanceOf<CppObjectClass>();}
 
 inline ObjectPtr Variable::getObject() const
   {jassert(isObject()); return value.getObject();}
@@ -227,6 +139,23 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
   }
   return ReferenceCountedObjectPtr<O>();
 }
+
+inline String Variable::toString() const
+  {return type ? type->toString(value) : T("Nil");}
+
+inline bool Variable::equals(const Variable& otherValue) const
+{
+  if (type)
+    return otherValue.getType() == type && type->equals(value, otherValue.value);
+  else
+    return !otherValue.getType();
+}
+
+inline size_t Variable::size() const
+  {return type ? type->getNumSubVariables(value) : 0;}
+
+inline Variable Variable::operator [](size_t index) const
+  {return type ? type->getSubVariable(value, index) : Variable();}
 
 }; /* namespace lbcpp */
 

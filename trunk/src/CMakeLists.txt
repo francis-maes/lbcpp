@@ -18,6 +18,7 @@ SET(LBCPP_OBJECT_HEADERS
 )
 
 SET(LBCPP_OBJECT_IMPL_HEADERS
+  ../include/lbcpp/Object/impl/VariableValue.hpp
   ../include/lbcpp/Object/impl/Variable.hpp
 )
 
