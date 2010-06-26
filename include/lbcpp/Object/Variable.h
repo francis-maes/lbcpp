@@ -36,10 +36,10 @@ namespace lbcpp
 class Variable
 {
 public:
-  Variable(bool boolValue, ClassPtr type = BooleanClass::getInstance());
-  Variable(int intValue, ClassPtr type = IntegerClass::getInstance());
-  Variable(double doubleValue, ClassPtr type = DoubleClass::getInstance());
-  Variable(const String& stringValue, ClassPtr type = StringClass::getInstance());
+  Variable(bool boolValue, ClassPtr type = booleanClass());
+  Variable(int intValue, ClassPtr type = integerClass());
+  Variable(double doubleValue, ClassPtr type = doubleClass());
+  Variable(const String& stringValue, ClassPtr type = stringClass());
   Variable(ObjectPtr object);
   Variable(Object* object);
   Variable(ClassPtr type, const VariableValue& value) : type(type), value(value) {}

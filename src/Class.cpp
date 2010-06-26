@@ -97,6 +97,12 @@ inline ClassManager& getClassManagerInstance()
 /*
 ** Class
 */
+bool Class::inheritsFrom(ClassPtr baseClass) const
+{
+  jassert(this && baseClass.get());
+  return this == baseClass.get() || this->baseClass->inheritsFrom(baseClass);
+}
+
 Variable Class::getSubVariable(const VariableValue& value, size_t index) const
   {jassert(false); return Variable();}
 
@@ -162,15 +168,17 @@ void Class::addVariable(ClassPtr type, const String& name)
 ** Enumeration
 */
 Enumeration::Enumeration(const String& name, const juce::tchar** elements)
-  : IntegerClass(name, IntegerClass::getInstance())
+  : IntegerClass(name)
 {
+  baseClass = integerClass();
   for (size_t index = 0; elements[index]; ++index)
     addElement(elements[index]);
 }
 
 Enumeration::Enumeration(const String& name, const String& elementChars)
-  : IntegerClass(name, IntegerClass::getInstance())
+  : IntegerClass(name)
 {
+  baseClass = integerClass();
   for (int i = 0; i < elementChars.length(); ++i)
   {
     String str;
@@ -180,8 +188,9 @@ Enumeration::Enumeration(const String& name, const String& elementChars)
 }
 
 Enumeration::Enumeration(const String& name)
-  : IntegerClass(name, IntegerClass::getInstance())
+  : IntegerClass(name)
 {
+  baseClass = integerClass();
 }
 
 void Enumeration::addElement(const String& elementName)
@@ -195,30 +204,42 @@ void Enumeration::addElement(const String& elementName)
   elements.push_back(elementName);
 }
 
-/*
-** VariablePairClass
-*/
-VariableValue VariablePairClass::allocate(const Variable& variable1, const Variable& variable2)
-{
-  char* data = new char[sizeof (Variable) * 2];
-  memset(data, 0, sizeof (Variable) * 2);
-  ((Variable* )data)[0] = variable1;
-  ((Variable* )data)[1] = variable2;
-  return data;
-}
-void VariablePairClass::copy(VariableValue& dest, const VariableValue& source) const
-{
-  jassert(false);
-  //dest = allocate(source[0], source[1]);
-}
+#include "Class/BooleanClass.h"
+#include "Class/IntegerClass.h"
+#include "Class/DoubleClass.h"
+#include "Class/StringClass.h"
+#include "Class/TupleClass.h"
 
+#define DECLARE_CLASS_SINGLETON_ACCESSOR(AccessorName, ClassName) \
+  ClassPtr lbcpp::AccessorName() { \
+      static ClassPtr res; \
+      if (!res) {res = Class::get(ClassName); jassert(res);} \
+      return res; }
+
+DECLARE_CLASS_SINGLETON_ACCESSOR(topLevelClass, T("Variable"));
+
+DECLARE_CLASS_SINGLETON_ACCESSOR(booleanClass, T("Boolean"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(integerClass, T("Integer"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(doubleClass, T("Double"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(stringClass, T("String"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(pairClass, T("Pair"));
+
+DECLARE_CLASS_SINGLETON_ACCESSOR(objectClass, T("Object"));
+
+Variable Variable::pair(const Variable& variable1, const Variable& variable2)
+{
+  return Variable(pairClass(), PairClass::allocate(variable1, variable2));
+}
 
 void declareClassClasses()
 {
+  Class::declare(new TopLevelClass());
+
   Class::declare(new BooleanClass());
   Class::declare(new IntegerClass());
   Class::declare(new DoubleClass());
   Class::declare(new StringClass());
+  Class::declare(new PairClass());
+
   Class::declare(new ObjectClass());
-  Class::declare(new VariablePairClass());
 }

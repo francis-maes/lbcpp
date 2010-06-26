@@ -72,8 +72,8 @@ public:
   AminoAcidClass() : Collection(T("AminoAcid"))
   {
     addVariable(T("AminoAcidType"), T("type"));
-    addVariable(StringClass::getInstance(), T("oneLetterCode"));
-    addVariable(StringClass::getInstance(), T("threeLettersCode"));
+    addVariable(stringClass(), T("oneLetterCode"));
+    addVariable(stringClass(), T("threeLettersCode"));
     addVariable(T("AminoAcidCategory1"), T("category1"));
 
     for (size_t i = 0; i < (size_t)totalNumAminoAcids; ++i)

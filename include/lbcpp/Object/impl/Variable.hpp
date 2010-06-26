@@ -60,9 +60,6 @@ inline Variable::Variable(const Variable& otherVariant)
 inline Variable::~Variable()
   {clear();}
 
-inline Variable Variable::pair(const Variable& variable1, const Variable& variable2)
-  {return Variable(VariablePairClass::getInstance(), VariablePairClass::allocate(variable1, variable2));}
-
 inline void Variable::clear()
 {
   if (type)
@@ -95,31 +92,31 @@ inline bool Variable::isNil() const
   {return !type;}
 
 inline bool Variable::isBoolean() const
-  {return type && type.isInstanceOf<BooleanClass>();}
+  {return type && type->inheritsFrom(booleanClass());}
 
 inline bool Variable::getBoolean() const
   {jassert(isBoolean()); return value.getBoolean();}
 
 inline bool Variable::isInteger() const
-  {return type && type.isInstanceOf<IntegerClass>();}
+  {return type && type->inheritsFrom(integerClass());}
 
 inline int Variable::getInteger() const
   {jassert(isInteger()); return value.getInteger();}
 
 inline bool Variable::isDouble() const
-  {return type && type.isInstanceOf<DoubleClass>();}
+  {return type && type->inheritsFrom(doubleClass());}
 
 inline double Variable::getDouble() const
   {jassert(isDouble()); return value.getDouble();}
 
 inline bool Variable::isString() const
-  {return type && type.isInstanceOf<StringClass>();}
+  {return type && type->inheritsFrom(stringClass());}
 
 inline String Variable::getString() const
   {jassert(isString()); return value.getString();}
 
 inline bool Variable::isObject() const
-  {return type && type.isInstanceOf<CppObjectClass>();}
+  {return type && type->inheritsFrom(objectClass());}
 
 inline ObjectPtr Variable::getObject() const
   {jassert(isObject()); return value.getObject();}

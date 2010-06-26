@@ -43,12 +43,12 @@ typedef ReferenceCountedObjectPtr<A> APtr;
 class AClass : public DefaultClass_<A>
 {
 public:
-  AClass() : DefaultClass_<A>(ObjectClass::getInstance())
+  AClass() : DefaultClass_<A>(objectClass())
   {
-    addVariable(IntegerClass::getInstance(), T("anint"));
-    addVariable(DoubleClass::getInstance(), T("adouble"));
-    addVariable(StringClass::getInstance(), T("astring"));
-    addVariable(ObjectClass::getInstance(), T("anobject"));
+    addVariable(integerClass(), T("anint"));
+    addVariable(doubleClass(), T("adouble"));
+    addVariable(stringClass(), T("astring"));
+    addVariable(objectClass(), T("anobject"));
   }
 };
 
@@ -194,16 +194,12 @@ private:
 class ProteinResidueClass : public Class
 {
 public:
-  ProteinResidueClass() : Class(T("ProteinResidue"), ObjectClass::getInstance())
+  ProteinResidueClass() : Class(T("ProteinResidue"), objectClass())
   {
     addVariable(AminoAcid::getCollection(), T("aminoAcid"));
     addVariable(ClassPtr(this), T("previous"));
     addVariable(ClassPtr(this), T("next"));
   }
-  
-  virtual ClassPtr getBaseClass() const
-    {return ObjectClass::getInstance();}
-
 };
 
 void createResidues(ProteinPtr protein, std::vector<ProteinResiduePtr>& res)
@@ -262,7 +258,7 @@ class ProteinResidueInputAttributesClass : public Class
 {
 public:
   ProteinResidueInputAttributesClass(size_t windowSize)
-    : Class(T("ProteinResidueInputAttributes"), ObjectClass::getInstance())
+    : Class(T("ProteinResidueInputAttributes"), objectClass())
   {
     EnumerationPtr aminoAcidTypeEnumeration = Enumeration::get(T("AminoAcidType"));
     addVariable(aminoAcidTypeEnumeration, T("AA[i]"));
