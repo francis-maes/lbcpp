@@ -29,7 +29,7 @@ int main(int argc, char** argv)
   FASTAFileParser fastaParser(fastaFile);
   while (true)
   {
-    ProteinPtr protein = fastaParser.next();
+    ProteinObjectPtr protein = fastaParser.next();
     if (!protein)
       break;
     

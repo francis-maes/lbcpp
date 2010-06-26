@@ -42,15 +42,16 @@ public:
   Variable(const String& stringValue, ClassPtr type = stringClass());
   Variable(ObjectPtr object);
   Variable(Object* object);
-  Variable(ClassPtr type, const VariableValue& value) : type(type), value(value) {}
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T> object);
   Variable(const Variable& other);
   Variable() {}
-
+  
   static Variable pair(const Variable& variable1, const Variable& variable2);
-
+  static Variable copyFrom(ClassPtr type, const VariableValue& value);
+  void copyTo(VariableValue& dest) const;
+    
   ~Variable();
 
   void clear();
@@ -95,6 +96,8 @@ public:
     {return ostr << variable.toString();}
 
 private:
+  Variable(ClassPtr type, const VariableValue& value) : type(type), value(value) {}
+
   ClassPtr type;
   VariableValue value;
 };

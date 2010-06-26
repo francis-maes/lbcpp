@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_PSSM_FILE_PARSER_H_
 # define LBCPP_PROTEIN_PSSM_FILE_PARSER_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AttributeValueSandBox.lcpp     | Attribute Value Representation  |
+| Filename: AttributeValueSandBox.cpp      | Attribute Value Representation  |
 | Author  : Francis Maes                   |                                 |
 | Started : 24/06/2010 11:09               |                                 |
 `------------------------------------------/                                 |
@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "Protein/Protein.h"
-#include "Protein/AminoAcid.h"
+#include "Protein/ProteinObject.h"
+#include "Protein/Data/Protein.h"
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
@@ -129,69 +129,16 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 #endif
   for (size_t i = 0; i < res->size(); ++i)
   {
-    ProteinPtr protein = res->getAndCast<Protein>(i);
+    ProteinObjectPtr protein = res->getAndCast<ProteinObject>(i);
     jassert(protein);
     protein->computeMissingFields();
   }
   return res;
 }
 
-class ProteinResidue;
-typedef ReferenceCountedObjectPtr<ProteinResidue> ProteinResiduePtr;
 
-class ProteinResidue : public NameableObject
-{
-public:
-  ProteinResidue(const String& name, AminoAcidPtr aminoAcid)
-    : NameableObject(name), aminoAcid(aminoAcid) {}
 
-  AminoAcidPtr getAminoAcid() const
-    {return aminoAcid;}
-
-  AminoAcidType getAminoAcidType() const
-    {jassert(aminoAcid); return aminoAcid->getType();}
-
-  virtual Variable getVariable(size_t index) const
-  {
-    switch (index)
-    {
-    case 0: return aminoAcid;
-    case 1: return previous;
-    case 2: return next;
-    };
-    return Variable();
-  }
-
-  void setNext(ProteinResiduePtr next)
-    {this->next = next; next->previous = ProteinResiduePtr(this);}
-
-  ProteinResiduePtr getPrevious() const
-    {return previous;}
-
-  ProteinResiduePtr getNext() const
-    {return next;}
-
-  void clear()
-    {previous = next = ProteinResiduePtr();}
-
-private:
-  AminoAcidPtr aminoAcid;
-  ProteinResiduePtr previous;
-  ProteinResiduePtr next;
-};
-
-class ProteinResidueClass : public ObjectClass
-{
-public:
-  ProteinResidueClass() : ObjectClass(T("ProteinResidue"), objectClass())
-  {
-    addVariable(AminoAcid::getCollection(), T("aminoAcid"));
-    addVariable(ClassPtr(this), T("previous"));
-    addVariable(ClassPtr(this), T("next"));
-  }
-};
-
-void createResidues(ProteinPtr protein, std::vector<ProteinResiduePtr>& res)
+void createResidues(ProteinObjectPtr protein, std::vector<ResiduePtr>& res)
 {
   LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
   jassert(aminoAcidSequence);
@@ -209,7 +156,7 @@ void createResidues(ProteinPtr protein, std::vector<ProteinResiduePtr>& res)
       if (index < AminoAcidDictionary::unknown)
         aminoAcid = aminoAcidCollection->getElement(index);
     }
-    ProteinResiduePtr residue = new ProteinResidue(protein->getName() + T("(") + lbcpp::toString(i) + T(")"), aminoAcid);
+    ResiduePtr residue = new Residue(protein->getName() + T("(") + lbcpp::toString(i) + T(")"), aminoAcid);
     if (i > 0)
       res.back()->setNext(residue);
     res.push_back(residue);
@@ -221,7 +168,7 @@ void createResidues(ProteinPtr protein, std::vector<ProteinResiduePtr>& res)
 class ProteinResidueInputAttributes : public Object
 {
 public:
-  ProteinResidueInputAttributes(ProteinResiduePtr residue, size_t windowSize)
+  ProteinResidueInputAttributes(ResiduePtr residue, size_t windowSize)
     : residue(residue), windowSize(windowSize) {}
 
   virtual Variable getVariable(size_t index) const
@@ -235,17 +182,17 @@ public:
     size_t index = 0;
     visitor->visit(index++, Variable(residue->getAminoAcidType(), aminoAcidTypeEnumeration()));
 
-    ProteinResiduePtr prev = residue->getPrevious();
+    ResiduePtr prev = residue->getPrevious();
     for (size_t i = 0; prev && i < windowSize; ++i, prev = prev->getPrevious())
       visitor->visit(1 + i, Variable(prev->getAminoAcidType(), aminoAcidTypeEnumeration()));
 
-    ProteinResiduePtr next = residue->getNext();
+    ResiduePtr next = residue->getNext();
     for (size_t i = 0; next && i < windowSize; ++i, next = next->getNext())
       visitor->visit(1 + windowSize + i, Variable(next->getAminoAcidType(), aminoAcidTypeEnumeration()));
   }
 
 private:
-  ProteinResiduePtr residue;
+  ResiduePtr residue;
   size_t windowSize;
 };
 
@@ -269,7 +216,6 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  Class::declare(new ProteinResidueClass());
   Class::declare(new ProteinResidueInputAttributesClass(8));
 
   Variable container = Variable::pair(16.64, 51);
@@ -286,16 +232,16 @@ int main(int argc, char** argv)
   VectorObjectContainerPtr secondaryStructureExamples = new VectorObjectContainer();
   for (size_t i = 0; i < proteins->size(); ++i)
   {
-    ProteinPtr protein = proteins->getAndCast<Protein>(i);
+    ProteinObjectPtr protein = proteins->getAndCast<ProteinObject>(i);
     jassert(protein);
     LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
     jassert(secondaryStructure);
 
-    std::vector<ProteinResiduePtr> residues;
+    std::vector<ResiduePtr> residues;
     createResidues(protein, residues);
     for (size_t position = 0; position < residues.size(); ++position)
     {
-      ProteinResiduePtr residue = residues[position];
+      ResiduePtr residue = residues[position];
 
       /*std::cout << "========" << position << "==========" << std::endl;
       PrintObjectVisitor::print(residue, std::cout, 2);

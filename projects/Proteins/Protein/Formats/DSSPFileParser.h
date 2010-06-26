@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_DSSP_FILE_PARSER_H_
 # define LBCPP_PROTEIN_DSSP_FILE_PARSER_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 # include "../SecondaryStructureDictionary.h"
 
 namespace lbcpp
@@ -201,7 +201,7 @@ public:
     return true;
   }
 
-  void makeImage(ProteinPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
+  void makeImage(ProteinObjectPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
   {
     std::map<int, int> betaMapping;
     for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
@@ -234,7 +234,7 @@ public:
   }
 #endif // 0
 
-  ProteinBetaBridgesPtr build(ProteinPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
+  ProteinBetaBridgesPtr build(ProteinObjectPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
   {
     if (!betaBridgePartners.size())
       return ProteinBetaBridgesPtr();
@@ -279,7 +279,7 @@ private:
 class DSSPFileParser : public TextObjectParser
 {
 public:
-  DSSPFileParser(const File& file, ProteinPtr protein)
+  DSSPFileParser(const File& file, ProteinObjectPtr protein)
     : TextObjectParser(file), protein(protein)//, firstResidueNumber(-1)
   {
     jassert(protein->getAminoAcidSequence());
@@ -511,7 +511,7 @@ public:
   }
   
 protected:
-  ProteinPtr protein;
+  ProteinObjectPtr protein;
   LabelSequencePtr aminoAcidSequence;
   LabelSequencePtr dsspSecondaryStructureSequence;
   ScalarSequencePtr solventAccesibilitySequence;

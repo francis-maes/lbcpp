@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinSequenceLabelingInfe...h| Protein Sequence Labeling       |
+| Filename: ProteinSequenceLabelingInfe...h| ProteinObject Sequence Labeling       |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 21:26               |                                 |
 `------------------------------------------/                                 |
@@ -15,7 +15,7 @@ namespace lbcpp
 {
 
 // Inference:
-//   Input, Supervision: Protein
+//   Input, Supervision: ProteinObject
 //   Output: a class inherited from Sequence
 //
 // SubInference:
@@ -32,14 +32,14 @@ public:
   
   Protein1DTargetInference() {}
   
-  virtual size_t getNumSubInferences(ProteinPtr protein) const
+  virtual size_t getNumSubInferences(ProteinObjectPtr protein) const
     {return protein->getLength();}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ProteinPtr protein = input.dynamicCast<Protein>();
+    ProteinObjectPtr protein = input.dynamicCast<ProteinObject>();
     jassert(protein);
-    ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    ProteinObjectPtr correctProtein = supervision.dynamicCast<ProteinObject>();
     jassert(correctProtein || !supervision);
     ObjectContainerPtr objects;
     if (correctProtein)
@@ -55,7 +55,7 @@ public:
 
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    ProteinPtr protein = state->getInput().dynamicCast<Protein>();
+    ProteinObjectPtr protein = state->getInput().dynamicCast<ProteinObject>();
     jassert(protein);    
     ObjectContainerPtr res = protein->createEmptyObject(targetName).dynamicCast<ObjectContainer>();
     jassert(res);

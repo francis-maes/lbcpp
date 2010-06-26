@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Protein.h                      | Protein                         |
+| Filename: ProteinObject.h                | ProteinObject                   |
 | Author  : Francis Maes                   |                                 |
 | Started : 27/03/2010 12:23               |                                 |
 `------------------------------------------/                                 |
@@ -15,29 +15,29 @@
 # include "../InferenceData/CartesianCoordinatesSequence.h"
 # include "../InferenceData/BondCoordinatesSequence.h"
 # include "../InferenceData/ScoreSymmetricMatrix.h"
-# include "AminoAcid.h"
-# include "SecondaryStructure.h"
+# include "Data/AminoAcid.h"
+# include "Data/SecondaryStructure.h"
 # include "ProteinTertiaryStructure.h"
 
 namespace lbcpp
 {
 
-class Protein;
-typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
+class ProteinObject;
+typedef ReferenceCountedObjectPtr<ProteinObject> ProteinObjectPtr;
 
-class Protein : public StringToObjectMap
+class ProteinObject : public StringToObjectMap
 {
 public:
-  Protein(const String& name)
+  ProteinObject(const String& name)
     : StringToObjectMap(name), versionNumber(0) {}
-  Protein() : versionNumber(0) {}
+  ProteinObject() : versionNumber(0) {}
 
-  static ProteinPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
-  static ProteinPtr createFromFASTA(const File& fastaFile);
-  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
+  static ProteinObjectPtr createFromAminoAcidSequence(const String& name, const String& aminoAcidSequence);
+  static ProteinObjectPtr createFromFASTA(const File& fastaFile);
+  static ProteinObjectPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
   
-  static ProteinPtr createFromFile(const File& proteinFile)
-    {return Object::createFromFileAndCast<Protein>(proteinFile);}
+  static ProteinObjectPtr createFromFile(const File& proteinFile)
+    {return Object::createFromFileAndCast<ProteinObject>(proteinFile);}
 
   void saveToFASTAFile(const File& fastaFile);
   void saveToPDBFile(const File& pdbFile);

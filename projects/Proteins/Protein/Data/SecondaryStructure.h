@@ -21,6 +21,8 @@ enum SecondaryStructureElement
   other  // I, T, S or C
 };
 
+extern EnumerationPtr secondaryStructureElementEnumeration();
+
 enum DSSPSecondaryStructureElement
 {
   threeTurnHelix = 0,        // G
@@ -33,10 +35,14 @@ enum DSSPSecondaryStructureElement
   coil                       // C -
 };
 
+extern EnumerationPtr dsspSecondaryStructureElementEnumeration();
+
 /*enum StructuralAlphabetElement
 {
   A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, a
 };*/
+
+extern EnumerationPtr structuralAlphaElementEnumeration();
 
 }; /* namespace lbcpp */
 

@@ -1,7 +1,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../Programs/ArgumentSet.h"
-#include "Protein/Protein.h"
+#include "Protein/ProteinObject.h"
 
 using namespace lbcpp;
 
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
   
   for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
   {
-    ProteinPtr protein = Protein::createFromFile(*proteinFiles[i]);
+    ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
     File outputFile = outputDirectory.getChildFile(proteinFiles[i]->getFileNameWithoutExtension() + T(".seq"));
     
     std::cout << "Extracting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef FEATURES
-static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
+static void generateFeatures(ProteinObjectPtr protein, int position, OutputStream* o)
 {
   LabelSequencePtr aa = protein->getAminoAcidSequence();
   if (position < 0)
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     std::cout << "Extracting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
     std::cout.flush();
 
-    ProteinPtr protein = Protein::createFromFile(*proteinFiles[i]);
+    ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
     protein->computeMissingFields();
 
     LabelSequencePtr ss3 = protein->getSecondaryStructureSequence();

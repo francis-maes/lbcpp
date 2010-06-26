@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinContactMapInference.cpp | Protein Contact Map Inference   |
+| Filename: ProteinContactMapInference.cpp | ProteinObject Contact Map Inference   |
 | Author  : Francis Maes                   |                                 |
 | Started : 23/06/2010 15:24               |                                 |
 `------------------------------------------/                                 |
@@ -16,7 +16,7 @@ ContactMapScoresInference::ContactMapScoresInference(const String& name, Inferen
   : Protein2DTargetInference(name, scoreInference, features, targetName)
   {}
 
-void ContactMapScoresInference::computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const
+void ContactMapScoresInference::computeSubStepIndices(ProteinObjectPtr protein, std::vector< std::pair<size_t, size_t> >& res) const
 {
   size_t n = protein->getLength();
   res.reserve(n * (n - 5) / 2);
@@ -55,7 +55,7 @@ Variable ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr conte
 {
   ObjectPairPtr inputProteinAndContactMap = input.dynamicCast<ObjectPair>();
   jassert(inputProteinAndContactMap);
-  ProteinPtr inputProtein = inputProteinAndContactMap->getFirst().dynamicCast<Protein>();
+  ProteinObjectPtr inputProtein = inputProteinAndContactMap->getFirst().dynamicCast<ProteinObject>();
   ScoreSymmetricMatrixPtr scoresContactMap = inputProteinAndContactMap->getSecond().dynamicCast<ScoreSymmetricMatrix>();
   jassert(inputProtein);
   if (!scoresContactMap)
@@ -132,7 +132,7 @@ protected:
         continue;
       
       // supervision: get correct protein and correct contact map
-      ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+      ProteinObjectPtr correctProtein = supervision.dynamicCast<ProteinObject>();
       jassert(correctProtein);
       ScoreSymmetricMatrixPtr supervisionContactMap = correctProtein->getObject(supervisionObjectName);
       jassert(supervisionContactMap && supervisionContactMap->getDimension() == scoresContactMap->getDimension());

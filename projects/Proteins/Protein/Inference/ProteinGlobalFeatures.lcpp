@@ -15,7 +15,7 @@ using namespace lbcpp;
 /*
 ** CompositeProteinGlobalFeatures
 */
-featureGenerator CompositeProteinGlobalFeatures::compute(ProteinPtr protein)
+featureGenerator CompositeProteinGlobalFeatures::compute(ProteinObjectPtr protein)
 {
   for (size_t i = 0; i < this->getNumSubFeatureFunctions(); ++i)
   {
@@ -46,7 +46,7 @@ void CompositeProteinGlobalFeatures::save(OutputStream& ostr) const
 class ProteinUnitGlobalFeature : public ProteinGlobalFeatures
 {
 public:
-  virtual featureGenerator compute(ProteinPtr protein)
+  virtual featureGenerator compute(ProteinObjectPtr protein)
     {featureSense(0);}
 
   virtual String toString() const
@@ -69,7 +69,7 @@ public:
     : numIntervalsPerLog10(numIntervalsPerLog10) {}
   LengthProteinGlobalFeatures() {}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein)
     {return numberLogFeatures((double)protein->getLength(), numIntervalsPerLog10);}
 
   virtual String toString() const
@@ -100,7 +100,7 @@ public:
   ProteinGlobalCompositionFeatures(const String& sequenceName) : sequenceName(sequenceName) {}
   ProteinGlobalCompositionFeatures() {}
 
-  virtual featureGenerator compute(ProteinPtr protein)
+  virtual featureGenerator compute(ProteinObjectPtr protein)
   {
     SequencePtr sequence = protein->getObject(sequenceName);
     if (sequence)
@@ -143,7 +143,7 @@ public:
   virtual String toString() const
     {return globalFeatures->toString();}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
   {
     if (currentProtein != protein)
     {
@@ -154,7 +154,7 @@ public:
   }
 
 protected:
-  ProteinPtr currentProtein;
+  ProteinObjectPtr currentProtein;
   SparseVectorPtr currentProteinFeatures;
   ProteinGlobalFeaturesPtr globalFeatures;
 
@@ -185,7 +185,7 @@ public:
   virtual String toString() const
     {return globalFeatures->toString();}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t, size_t)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t, size_t)
   {
     if (currentProtein != protein)
     {
@@ -196,7 +196,7 @@ public:
   }
 
 protected:
-  ProteinPtr currentProtein;
+  ProteinObjectPtr currentProtein;
   SparseVectorPtr currentProteinFeatures;
   ProteinGlobalFeaturesPtr globalFeatures;
 

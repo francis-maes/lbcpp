@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Protein.h"
+#include "../Protein/ProteinObject.h"
 #include "../Protein/AminoAcidDictionary.h"
 #include "../Protein/SecondaryStructureDictionary.h"
 using namespace lbcpp;
@@ -28,7 +28,7 @@ int main()
     ObjectStreamPtr inputProteins = directoryObjectStream(inputDirectory, T("*.protein"));
     while (!inputProteins->isExhausted())
     {
-      ProteinPtr protein = inputProteins->nextAndCast<Protein>();
+      ProteinObjectPtr protein = inputProteins->nextAndCast<ProteinObject>();
       jassert(protein);
       if (protein->getLength() < 50)
       {
@@ -43,7 +43,7 @@ int main()
   File inputFile(T("C:\\Projets\\LBC++\\projects\\temp\\1E4T_correct.pdb"));
   File outputFile(T("C:\\Projets\\LBC++\\projects\\temp\\1E4T_pouet.pdb"));
 
-  ProteinPtr protein = Protein::createFromPDB(inputFile);
+  ProteinObjectPtr protein = ProteinObject::createFromPDB(inputFile);
   jassert(protein);
   LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
   ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
@@ -67,8 +67,8 @@ int main()
 
   for (size_t index = 0; index < proteins->size(); ++index)
   {
-    ProteinPtr protein = proteins->getAndCast<Protein>(index);
-    std::cout << "Protein " << protein->getName() << std::endl;
+    ProteinObjectPtr protein = proteins->getAndCast<ProteinObject>(index);
+    std::cout << "ProteinObject " << protein->getName() << std::endl;
     protein->computeMissingFields();
     CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
     BondCoordinatesSequencePtr calphaTraceBonds = new BondCoordinatesSequence(T("yo"), calphaTrace);
@@ -104,8 +104,8 @@ int main()
 
   for (size_t index = 0; index < proteins->size(); ++index)
   {
-    ProteinPtr protein = proteins->getAndCast<Protein>(index);
-    std::cout << "Protein " << protein->getName() << std::endl;
+    ProteinObjectPtr protein = proteins->getAndCast<ProteinObject>(index);
+    std::cout << "ProteinObject " << protein->getName() << std::endl;
 
     ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
     jassert(tertiaryStructure);

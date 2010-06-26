@@ -25,13 +25,13 @@ public:
   
   Protein2DTargetInference() {}
   
-  virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const = 0;
+  virtual void computeSubStepIndices(ProteinObjectPtr protein, std::vector< std::pair<size_t, size_t> >& res) const = 0;
   virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const = 0;
   virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const = 0;
 
   struct State : public ParallelInferenceState
   {
-    State(ProteinPtr input, ProteinPtr supervision)
+    State(ProteinObjectPtr input, ProteinObjectPtr supervision)
       : ParallelInferenceState(input, supervision) {}
 
     std::vector< std::pair<size_t, size_t> > subInferenceIndices;
@@ -41,9 +41,9 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ProteinPtr protein = input.dynamicCast<Protein>();
+    ProteinObjectPtr protein = input.dynamicCast<ProteinObject>();
     jassert(protein);
-    ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+    ProteinObjectPtr correctProtein = supervision.dynamicCast<ProteinObject>();
     jassert(correctProtein || !supervision);
 
     StatePtr state = new State(protein, correctProtein);
@@ -65,7 +65,7 @@ public:
   {
     StatePtr state = s.dynamicCast<State>();
     jassert(state);
-    ProteinPtr protein = state->getInput().dynamicCast<Protein>();
+    ProteinObjectPtr protein = state->getInput().dynamicCast<ProteinObject>();
     jassert(protein);    
     ObjectPtr res = protein->createEmptyObject(targetName);
     bool hasAtLeastOnePrediction = false;

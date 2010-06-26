@@ -12,6 +12,9 @@ static const juce::tchar* secondaryStructureElementStrings[] = {
   T("Helix"), T("Sheet"), T("Other"), NULL
 };
 
+EnumerationPtr lbcpp::secondaryStructureElementEnumeration()
+  {static EnumerationPtr res = Enumeration::get(T("SecondaryStructureElement")); return res;}
+
 static const juce::tchar* dsspSecondaryStructureElementStrings[] = {
   T("Three Turn Helix"),
   T("Alpha Helix"),
@@ -24,6 +27,11 @@ static const juce::tchar* dsspSecondaryStructureElementStrings[] = {
   NULL
 };
 
+EnumerationPtr lbcpp::dsspSecondaryStructureElementEnumeration()
+  {static EnumerationPtr res = Enumeration::get(T("DSSPSecondaryStructureElement")); return res;}
+
+EnumerationPtr lbcpp::structuralAlphaElementEnumeration()
+  {static EnumerationPtr res = Enumeration::get(T("StructuralAlphabetElement")); return res;}
 
 void declareSecondaryStructureClasses()
 {

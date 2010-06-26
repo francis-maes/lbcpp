@@ -25,10 +25,10 @@ public:
 
   virtual ObjectPtr function(ObjectPtr input) const
   {
-    ProteinPtr protein = input.dynamicCast<Protein>();
+    ProteinObjectPtr protein = input.dynamicCast<ProteinObject>();
     jassert(protein);
     protein->computeMissingFields();
-    ProteinPtr inputProtein = new Protein(protein->getName());
+    ProteinObjectPtr inputProtein = new ProteinObject(protein->getName());
     inputProtein->setObject(protein->getAminoAcidSequence());
     inputProtein->setObject(protein->getPositionSpecificScoringMatrix());
     inputProtein->setObject(protein->getReducedAminoAcidAlphabetSequence());
@@ -49,33 +49,33 @@ public:
   {
     ObjectPairPtr proteinPair = input.dynamicCast<ObjectPair>();
     jassert(proteinPair);
-    proteinPair->getFirst().dynamicCast<Protein>()->computeMissingFields();
-    proteinPair->getSecond().dynamicCast<Protein>()->computeMissingFields();
+    proteinPair->getFirst().dynamicCast<ProteinObject>()->computeMissingFields();
+    proteinPair->getSecond().dynamicCast<ProteinObject>()->computeMissingFields();
     return input;
   }
 };
 
 // Prototype:
-//   Input: Protein
-//   Supervision: Protein
-//   Output: Protein
+//   Input: ProteinObject
+//   Supervision: ProteinObject
+//   Output: ProteinObject
 
 // Sub-inferences prototype:
-//   Input: Protein
-//   Supervision: Protein
-//   Output: Protein Object or Protein
+//   Input: ProteinObject
+//   Supervision: ProteinObject
+//   Output: ProteinObject Object or ProteinObject
 
 class ProteinInference : public VectorSequentialInference
 {
 public:
-  ProteinInference() : VectorSequentialInference(T("Protein"))
+  ProteinInference() : VectorSequentialInference(T("ProteinObject"))
     {setBatchLearner(sequentialInferenceLearner());}
 
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     if (supervision)
     {
-      ProteinPtr correctProtein = supervision.dynamicCast<Protein>();
+      ProteinObjectPtr correctProtein = supervision.dynamicCast<ProteinObject>();
       jassert(correctProtein);
       correctProtein->computeMissingFields();
       if (pdbDebugDirectory.exists() && correctProtein->getTertiaryStructure())
@@ -96,9 +96,9 @@ public:
   {
     if (state->getSubOutput())
     {
-      ProteinPtr workingProtein = state->getUserVariable().dynamicCast<Protein>();
+      ProteinObjectPtr workingProtein = state->getUserVariable().dynamicCast<ProteinObject>();
       jassert(workingProtein);
-      workingProtein = addObjectToProtein(workingProtein, state->getSubOutput(), state->getSupervision().dynamicCast<Protein>());
+      workingProtein = addObjectToProtein(workingProtein, state->getSubOutput(), state->getSupervision().dynamicCast<ProteinObject>());
 
       if (pdbDebugDirectory.exists() &&  workingProtein->getTertiaryStructure())
         workingProtein->saveToPDBFile(pdbDebugDirectory.getChildFile
@@ -129,13 +129,13 @@ private:
   File pdbDebugDirectory;
   File proteinDebugDirectory;
 
-  static ProteinPtr addObjectToProtein(ProteinPtr workingProtein, ObjectPtr newObject, ProteinPtr correctProtein)
+  static ProteinObjectPtr addObjectToProtein(ProteinObjectPtr workingProtein, ObjectPtr newObject, ProteinObjectPtr correctProtein)
   {
-    if (newObject.dynamicCast<Protein>())
-      return newObject.dynamicCast<Protein>(); // when a whole protein is predicted, it replaces the current protein
+    if (newObject.dynamicCast<ProteinObject>())
+      return newObject.dynamicCast<ProteinObject>(); // when a whole protein is predicted, it replaces the current protein
 
     // we have to clone the protein, so that feature generators to may be called later keep the correct versions of their input objects
-    ProteinPtr res = workingProtein->clone();
+    ProteinObjectPtr res = workingProtein->clone();
     res->setObject(newObject);
     res->setVersionNumber(workingProtein->getVersionNumber() + 1);
 

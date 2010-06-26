@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_FORMATS_FASTA_FILE_PARSER_H_
 # define LBCPP_PROTEINS_FORMATS_FASTA_FILE_PARSER_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {
@@ -51,7 +51,7 @@ private:
   void flush()
   {
     if (currentName.isNotEmpty() && currentAminoAcidSequence.isNotEmpty())
-      setResult(Protein::createFromAminoAcidSequence(currentName, currentAminoAcidSequence));
+      setResult(ProteinObject::createFromAminoAcidSequence(currentName, currentAminoAcidSequence));
     currentName = String::empty;
     currentAminoAcidSequence = String::empty;
   }

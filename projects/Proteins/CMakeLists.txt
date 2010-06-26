@@ -40,27 +40,29 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/kdtree_lib.c
 )
 
-SET(LBCPP_PROTEIN_SOURCES
-# new:
-  Protein/AminoAcid.h
-  Protein/AminoAcid.cpp
-  Protein/SecondaryStructure.h
-  Protein/SecondaryStructure.cpp
-  
-# old:
+SET(LBCPP_PROTEIN_DATA_SOURCES
+  Protein/Data/AminoAcid.h
+  Protein/Data/AminoAcid.cpp
+  Protein/Data/SecondaryStructure.h
+  Protein/Data/SecondaryStructure.cpp
+  Protein/Data/Residue.h
+  Protein/Data/Residue.cpp
+  Protein/Data/Protein.h
+  Protein/Data/Protein.cpp
+)
+
+SET(LBCPP_PROTEIN_OLD_DATA_SOURCES
   Protein/AminoAcidDictionary.h
   Protein/AminoAcidDictionary.cpp
   Protein/SecondaryStructureDictionary.h
   Protein/SecondaryStructureDictionary.cpp
-  
-# -
   Protein/ProteinBackboneBondSequence.h
   Protein/ProteinResidueAtoms.h
   Protein/ProteinResidueAtoms.cpp
   Protein/ProteinTertiaryStructure.h
   Protein/ProteinTertiaryStructure.cpp
-  Protein/Protein.h
-  Protein/Protein.cpp
+  Protein/ProteinObject.h
+  Protein/ProteinObject.cpp
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
@@ -103,7 +105,8 @@ SET(LBCPP_PROTEIN_FORMATS_SOURCES
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_INFERENCE_DATA_SOURCES}
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
-  ${LBCPP_PROTEIN_SOURCES}
+  ${LBCPP_PROTEIN_DATA_SOURCES}
+  ${LBCPP_PROTEIN_OLD_DATA_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES}
   ${LBCPP_PROTEIN_EVALUATION_SOURCES}
   ${LBCPP_PROTEIN_FORMATS_SOURCES}
@@ -118,11 +121,14 @@ SET(PROTEINS_SOURCES
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
-SOURCE_GROUP(GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
-SOURCE_GROUP(ProteinData FILES ${LBCPP_PROTEIN_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
-SOURCE_GROUP(ProteinInference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinGlobalFeatures.lcpp Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
-SOURCE_GROUP(ProteinEvaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
-SOURCE_GROUP(ProteinFormats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
+
+SOURCE_SUB_GROUP(Protein "Data (New)" FILES ${LBCPP_PROTEIN_DATA_SOURCES})
+SOURCE_SUB_GROUP(Protein "Data (Old)" FILES ${LBCPP_PROTEIN_OLD_DATA_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
+SOURCE_SUB_GROUP2(Protein "Data (Old)" GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
+
+SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinGlobalFeatures.lcpp Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
+SOURCE_SUB_GROUP(Protein Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
+SOURCE_SUB_GROUP(Protein Formats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

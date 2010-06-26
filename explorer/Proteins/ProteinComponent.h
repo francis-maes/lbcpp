@@ -18,10 +18,10 @@ namespace lbcpp
 class MultiProteinComponent : public TabbedComponent
 {
 public:
-  MultiProteinComponent(const std::vector< std::pair<String, ProteinPtr> >& proteins)
+  MultiProteinComponent(const std::vector< std::pair<String, ProteinObjectPtr> >& proteins)
     : TabbedComponent(TabbedButtonBar::TabsAtBottom), proteins(proteins)
   {
-    std::vector<ProteinPtr> proteinObjects(proteins.size());
+    std::vector<ProteinObjectPtr> proteinObjects(proteins.size());
     std::vector<String> proteinNames(proteins.size());
     for (size_t i = 0; i < proteinNames.size(); ++i)
     {
@@ -47,7 +47,7 @@ public:
       addObjectNameIfExists(T("Structural alphabet"), T("StructuralAlphabetSequence"), proteins, sequenceNames);
 
       MultiProtein1DConfigurationPtr configuration = new MultiProtein1DConfiguration(proteinNames, sequenceNames);
-      addTab(T("Protein 1D"), Colours::white, new MultiProtein1DComponent(proteinObjects, configuration), true);
+      addTab(T("ProteinObject 1D"), Colours::white, new MultiProtein1DComponent(proteinObjects, configuration), true);
     }
     
     /*
@@ -59,16 +59,16 @@ public:
       addObjectNameIfExists(T("Cb 8 angstrom"), T("ResidueResidueContactMatrix8Cb"), proteins, mapNames);
       
       MultiProtein2DConfigurationPtr configuration = new MultiProtein2DConfiguration(proteinNames, mapNames);
-      addTab(T("Protein 2D"), Colours::white, new MultiProtein2DComponent(proteinObjects, configuration), true);
+      addTab(T("ProteinObject 2D"), Colours::white, new MultiProtein2DComponent(proteinObjects, configuration), true);
     }
   }
     
   juce_UseDebuggingNewOperator
 
 private:
-  std::vector< std::pair<String, ProteinPtr> > proteins;
+  std::vector< std::pair<String, ProteinObjectPtr> > proteins;
 
-  void addObjectNameIfExists(const String& friendlyName, const String& name, const std::vector< std::pair<String, ProteinPtr> >& proteins, std::vector< std::pair<String, String> >& res)
+  void addObjectNameIfExists(const String& friendlyName, const String& name, const std::vector< std::pair<String, ProteinObjectPtr> >& proteins, std::vector< std::pair<String, String> >& res)
   {
     for (size_t i = 0; i < proteins.size(); ++i)
       if (proteins[i].second->getObject(name))
@@ -82,8 +82,8 @@ private:
 class ProteinComponent : public MultiProteinComponent
 {
 public:
-  ProteinComponent(ProteinPtr protein, const String& name)
-    : MultiProteinComponent(std::vector< std::pair<String, ProteinPtr> >(1, std::make_pair(name, protein))) {}
+  ProteinComponent(ProteinObjectPtr protein, const String& name)
+    : MultiProteinComponent(std::vector< std::pair<String, ProteinObjectPtr> >(1, std::make_pair(name, protein))) {}
 };
 
 }; /* namespace lbcpp */

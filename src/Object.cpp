@@ -25,7 +25,12 @@ ClassPtr Object::getClass() const
 }
 
 ObjectPtr Object::create(const String& className)
-  {return Class::createInstance(className);}
+{
+  String name = className;
+  if (name == T("Protein"))
+    name = T("ProteinObject"); // tmp
+  return Class::createInstance(name);
+}
 
 /*
 ** Create and load

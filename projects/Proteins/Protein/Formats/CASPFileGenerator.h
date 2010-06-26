@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 # define LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {
@@ -20,7 +20,7 @@ public:
   CASPFileGenerator(const File& file, const String& method);
 
   virtual String getFormatSpecificationCode() const = 0;
-  virtual void printPredictionData(ProteinPtr protein) = 0;
+  virtual void printPredictionData(ProteinObjectPtr protein) = 0;
 
   virtual void consume(ObjectPtr object);
 

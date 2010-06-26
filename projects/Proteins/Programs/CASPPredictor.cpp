@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Protein.h"
+#include "../Protein/ProteinObject.h"
 #include "../Protein/AminoAcidDictionary.h"
 #include "../Protein/SecondaryStructureDictionary.h"
 #include "../Protein/Formats/CASPFileGenerator.h"
@@ -18,7 +18,7 @@ using namespace lbcpp;
 extern void declareProteinClasses();
 
 #if 0
-void addDefaultPredictions(ProteinPtr protein)
+void addDefaultPredictions(ProteinObjectPtr protein)
 {
   size_t n = protein->getLength();
 
@@ -59,7 +59,7 @@ void addDefaultPredictions(ProteinPtr protein)
 }
 #endif // 0
 
-void displayObjectIfExists(ProteinPtr protein, const String& objectName)
+void displayObjectIfExists(ProteinObjectPtr protein, const String& objectName)
 {
   ObjectPtr object = protein->getObject(objectName);
   if (object)
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
   String outputBaseName = fastaFile.getFileNameWithoutExtension();
   
   std::cout << "FASTA File: " << fastaFile.getFullPathName() << " PSSM File: " << pssmFile.getFullPathName() << std::endl;
-  ProteinPtr protein = Protein::createFromFASTA(fastaFile);
+  ProteinObjectPtr protein = ProteinObject::createFromFASTA(fastaFile);
   if (!protein)
   {
     std::cerr << "Could not load FASTA file" << std::endl;
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
   std::cout << "Making predictions ..." << std::endl;
 
   Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode).dynamicCast<Protein>();
+  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode).dynamicCast<ProteinObject>();
   if (returnCode != Inference::finishedReturnCode)
   {
     std::cerr << "Invalid return code in inference" << std::endl;

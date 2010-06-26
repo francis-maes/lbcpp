@@ -17,6 +17,10 @@ extern void declareObjectStreamClasses();
 // Object
 void declareObjectRelatedClasses()
 {
+  LBCPP_DECLARE_ABSTRACT_CLASS(VariableContainer, Object);
+  LBCPP_DECLARE_CLASS(Vector, VariableContainer);
+  LBCPP_DECLARE_CLASS(SymmetricMatrix, VariableContainer);
+
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
   declareObjectContainerClasses();
   declareObjectStreamClasses();

@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Protein.h"
+#include "../Protein/ProteinObject.h"
 #include "../Protein/Formats/PSSMFileParser.h"
 #include "../Protein/Formats/DSSPFileParser.h"
 using namespace lbcpp;
@@ -35,7 +35,7 @@ File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDi
   return *res[0];
 }
 
-bool loadPSSMFile(ProteinPtr protein, const File& pssmFile)
+bool loadPSSMFile(ProteinObjectPtr protein, const File& pssmFile)
 {
   LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
   jassert(aminoAcidSequence);
@@ -46,10 +46,10 @@ bool loadPSSMFile(ProteinPtr protein, const File& pssmFile)
   return true;
 }
 
-bool loadDSSPFile(ProteinPtr protein, const File& dsspFile)
+bool loadDSSPFile(ProteinObjectPtr protein, const File& dsspFile)
   {return ObjectStreamPtr(new DSSPFileParser(dsspFile, protein))->next();}
 
-bool loadProteinRelatedFile(ProteinPtr protein, const File& file)
+bool loadProteinRelatedFile(ProteinObjectPtr protein, const File& file)
 {
   String ext = file.getFileExtension();
   if (ext == T(".pssm"))
@@ -78,7 +78,7 @@ bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile)
     return false;
   }
 
-  ProteinPtr protein = Protein::createFromFile(inputFiles[proteinIndex]);
+  ProteinObjectPtr protein = ProteinObject::createFromFile(inputFiles[proteinIndex]);
   if (!protein)
   {
     Object::error(T("compileProtein"), T("Could not load protein"));

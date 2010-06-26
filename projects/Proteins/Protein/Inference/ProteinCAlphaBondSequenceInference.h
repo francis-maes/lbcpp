@@ -59,7 +59,7 @@ public:
   
   ProteinCAlphaBondSequenceInferenceStep() {}
   
-  virtual size_t getNumSubInferences(ProteinPtr protein) const
+  virtual size_t getNumSubInferences(ProteinObjectPtr protein) const
     {size_t n = protein->getLength(); jassert(n > 0); return n - 1;}
 };
 

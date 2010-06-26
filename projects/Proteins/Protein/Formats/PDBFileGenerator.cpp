@@ -14,7 +14,7 @@ PDBFileGenerator::PDBFileGenerator(const File& file)
 
 void PDBFileGenerator::consume(ObjectPtr object)
 {
-  ProteinPtr protein = object.dynamicCast<Protein>();
+  ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
   jassert(protein);
   size_t n = protein->getLength();
 

@@ -91,10 +91,10 @@ public:
       File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
 
-      ProteinPtr inputProtein = input.dynamicCast<Protein>()->clone();
+      ProteinObjectPtr inputProtein = input.dynamicCast<ProteinObject>()->clone();
       jassert(inputProtein);
 
-      ProteinPtr outputProtein = object.dynamicCast<Protein>();
+      ProteinObjectPtr outputProtein = object.dynamicCast<ProteinObject>();
       jassert(outputProtein);
       
 
@@ -104,7 +104,7 @@ public:
 
       inputProtein->computeMissingFields();
       
-      ProteinPtr supervisionProtein = supervision.dynamicCast<Protein>();
+      ProteinObjectPtr supervisionProtein = supervision.dynamicCast<ProteinObject>();
       jassert(supervisionProtein);
       supervisionProtein->computeMissingFields();
 

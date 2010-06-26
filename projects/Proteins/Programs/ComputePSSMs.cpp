@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ComputePSSMs.cpp               | Compute Protein PSSMs           |
+| Filename: ComputePSSMs.cpp               | Compute ProteinObject PSSMs           |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 14:28               |                                 |
 `------------------------------------------/                                 |
@@ -8,7 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../../juce/ConsoleProcess.h"
-#include "../Protein/Protein.h"
+#include "../Protein/ProteinObject.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -71,7 +71,7 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinPtr protein = Protein::createFromFile(inputFile);
+    ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
     if (!protein)
       return jobHasFinished;
     
@@ -99,7 +99,7 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinPtr protein = Protein::createFromFile(inputFile);
+    ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
     if (!protein)
       return jobHasFinished;
     

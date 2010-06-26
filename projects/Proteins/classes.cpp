@@ -16,7 +16,7 @@ using namespace lbcpp;
 #include "InferenceData/BondCoordinatesSequence.h"
 
 #include "Protein/ProteinTertiaryStructure.h"
-#include "Protein/Protein.h"
+#include "Protein/ProteinObject.h"
 #include "Protein/AminoAcidDictionary.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
@@ -35,6 +35,8 @@ extern void declareProteinResiduePairFeaturesClasses();
 // new:
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
+extern void declareResidueClasses();
+extern void declareProteinClass();
 
 void declareProteinClasses()
 {
@@ -56,7 +58,7 @@ void declareProteinClasses()
   LBCPP_DECLARE_CLASS_LEGACY(ProteinResidueAtoms);
   LBCPP_DECLARE_CLASS_LEGACY(ProteinTertiaryStructure);
 
-  LBCPP_DECLARE_CLASS_LEGACY(Protein);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinObject);
 
   LBCPP_DECLARE_CLASS_LEGACY(ProteinToInputOutputPairFunction);
 
@@ -89,5 +91,7 @@ void declareProteinClasses()
   // new:
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
+  declareResidueClasses();
+  declareProteinClass();
   // -
 }

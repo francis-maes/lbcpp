@@ -13,7 +13,7 @@ using namespace lbcpp;
 /*
 ** CompositeProteinResidueFeatures
 */
-featureGenerator CompositeProteinResidueFeatures::compute(ProteinPtr protein, size_t position)
+featureGenerator CompositeProteinResidueFeatures::compute(ProteinObjectPtr protein, size_t position)
 {
   for (size_t i = 0; i < this->getNumSubFeatureFunctions(); ++i)
   {
@@ -44,7 +44,7 @@ void CompositeProteinResidueFeatures::save(OutputStream& ostr) const
 class ProteinUnitResidueFeature : public ProteinResidueFeatures
 {
 public:
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
     {featureSense(0);}
 
   virtual String toString() const
@@ -63,7 +63,7 @@ ProteinResidueFeaturesPtr lbcpp::proteinUnitResidueFeature()
 class ProteinPositionIndexResidueFeature : public ProteinResidueFeatures
 {
 public:
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
     {featureSense(position);}
 
   virtual String toString() const
@@ -86,7 +86,7 @@ public:
     : numIntervalsInCoarsestScale(numIntervalsInCoarsestScale), intervalRatio(intervalRatio), numScales(numScales) {}
   PositionProteinResidueFeatures() {}
 
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
   {
     size_t n = protein->getLength();
     jassert(n);
@@ -128,7 +128,7 @@ public:
   virtual String getName() const
     {return sequenceName + T(" window");}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
   {
     SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
     if (!sequence)
@@ -169,7 +169,7 @@ public:
   virtual String getName() const
     {return sequenceName + T(" frequency window");}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
   {
     SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
     if (!sequence)
@@ -206,7 +206,7 @@ public:
   virtual String getName() const
     {return sequenceName + T(" segmentconj");}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
   {
     LabelSequencePtr sequence = protein->getObject(sequenceName).dynamicCast<LabelSequence>();
     if (sequence)
@@ -245,7 +245,7 @@ public:
   virtual String getName() const
     {return sequenceName + T(" entropy");}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t position)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
   {
     size_t begin = juce::jlimit(0, (int)protein->getLength(), (int)(position - numPrevsAndNexts));
     size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + numPrevsAndNexts));
@@ -286,7 +286,7 @@ public:
   virtual String getName() const
     {return T("MultiSequence conjunction");}
   
-  virtual featureGenerator compute(ProteinPtr protein, size_t position)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
   {
     if (multiTaskFeatures == String::empty || multiTaskFeatures == T("-"))
       return;

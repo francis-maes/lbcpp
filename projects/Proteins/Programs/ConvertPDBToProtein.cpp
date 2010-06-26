@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ConvertPDBToProtein.cpp        | Convert PDB to Protein          |
+| Filename: ConvertPDBToProtein.cpp        | Convert PDB to ProteinObject          |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/04/2010 11:20               |                                 |
 `------------------------------------------/                                 |
@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Protein.h"
+#include "../Protein/ProteinObject.h"
 #include "../Protein/AminoAcidDictionary.h"
 #include "../Protein/SecondaryStructureDictionary.h"
 using namespace lbcpp;
@@ -17,7 +17,7 @@ extern void declareProteinClasses();
 bool convertPDBToProtein(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromPDB(inputFile, false);
+  ProteinObjectPtr protein = ProteinObject::createFromPDB(inputFile, false);
   if (!protein)
     return false;
  
@@ -33,7 +33,7 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
 bool convertProteinToPDB(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromFile(inputFile);
+  ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
   if (!protein)
     return false;
   

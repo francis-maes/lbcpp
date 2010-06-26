@@ -238,6 +238,14 @@ Variable Variable::pair(const Variable& variable1, const Variable& variable2)
 {
   return Variable(pairClass(), PairClass::allocate(variable1, variable2));
 }
+Variable Variable::copyFrom(ClassPtr type, const VariableValue& value)
+{
+  Variable res;
+  res.type = type;
+  if (type)
+    type->copy(res.value, value);
+  return res;
+}
 
 void declareClassClasses()
 {
