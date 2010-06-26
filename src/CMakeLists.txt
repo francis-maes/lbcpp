@@ -155,14 +155,29 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/Evaluator.cpp
 )
 
-SET(LBCPP_INFERENCE_INFERENCE_SOURCES
-  Inference/Inference/LinearInference.h
-  Inference/Inference/BinaryClassificationInference.h
-  Inference/Inference/OneAgainstAllClassificationInference.h
-  Inference/Inference/TransferFunctionDecoratorInference.h
-  Inference/Inference/CallbackBasedDecoratorInference.h
-  Inference/Inference/RunOnSupervisedExamplesInference.h
-  Inference/Inference/RegressionInference.h
+SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
+  Inference/NumericalInference/LinearInference.h
+  Inference/NumericalInference/BinaryClassificationInference.h
+  Inference/NumericalInference/TransferFunctionDecoratorInference.h
+  Inference/NumericalInference/RegressionInference.h
+)
+
+SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
+  Inference/DecisionTreeInference/BinaryDecisionTree.h
+  Inference/DecisionTreeInference/ExtraTreeInference.h
+  Inference/DecisionTreeInference/ExtraTreeInferenceLearner.h
+  Inference/DecisionTreeInference/ExtraTreeInferenceLearner.cpp
+)
+
+SET(LBCPP_INFERENCE_REDUCTION_SOURCES
+  Inference/ReductionInference/OneAgainstAllClassificationInference.h
+)
+
+SET(LBCPP_INFERENCE_META_SOURCES
+  Inference/MetaInference/CallbackBasedDecoratorInference.h
+  Inference/MetaInference/RunOnSupervisedExamplesInference.h
+  Inference/MetaInference/SimulationInferenceBatchLearner.h
+  Inference/MetaInference/SequentialInferenceBatchLearner.h
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
@@ -181,11 +196,6 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h
 )
 
-SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
-  Inference/InferenceBatchLearner/SimulationInferenceBatchLearner.h
-  Inference/InferenceBatchLearner/SequentialInferenceBatchLearner.h
-)
-
 SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
   Inference/Evaluator/ObjectContainerEvaluator.h
   Inference/Evaluator/BinaryClassificationConfusionEvaluator.h
@@ -193,12 +203,6 @@ SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
   Inference/Evaluator/RegressionErrorEvaluator.h
 )
 
-SET(LBCPP_INFERENCE_EXTRA_TREE_SOURCES
-  Inference/ExtraTreeInference/BinaryDecisionTree.h
-  Inference/ExtraTreeInference/ExtraTreeInference.h
-  Inference/ExtraTreeInference/ExtraTreeInferenceLearner.h
-  Inference/ExtraTreeInference/ExtraTreeInferenceLearner.cpp
-)
 
 
 ##### CORE ####
@@ -236,7 +240,11 @@ SET(LBCPP_CORE
   ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_EVALUATOR_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
-    ${LBCPP_INFERENCE_EXTRA_TREE_SOURCES}
+    ${LBCPP_INFERENCE_NUMERICAL_SOURCES}
+    ${LBCPP_INFERENCE_DECISION_TREE_SOURCES}
+    ${LBCPP_INFERENCE_REDUCTION_SOURCES}
+    ${LBCPP_INFERENCE_META_SOURCES}
+    
   ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES}
   classes.cpp
 )
@@ -257,8 +265,10 @@ SOURCE_SUB_GROUP(FeatureGenerator ContinuousFunction FILES ${LBCPP_CORE_CONTINUO
 SOURCE_SUB_GROUP(FeatureGenerator Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
-SOURCE_SUB_GROUP(Inference Inference FILES ${LBCPP_INFERENCE_INFERENCE_SOURCES})
-SOURCE_SUB_GROUP2(Inference Inference ExtraTree FILES ${LBCPP_INFERENCE_EXTRA_TREE_SOURCES})
+SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})
+SOURCE_SUB_GROUP(Inference DecisionTreeInference FILES ${LBCPP_INFERENCE_DECISION_TREE_SOURCES})
+SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
+SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})

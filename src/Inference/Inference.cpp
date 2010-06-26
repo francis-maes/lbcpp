@@ -79,14 +79,17 @@ bool InferenceVector::loadFromDirectory(const File& file)
 }
 
 
-#include "Inference/LinearInference.h"
-#include "Inference/CallbackBasedDecoratorInference.h"
-#include "Inference/TransferFunctionDecoratorInference.h"
-#include "Inference/BinaryClassificationInference.h"
-#include "Inference/RegressionInference.h"
-#include "Inference/OneAgainstAllClassificationInference.h"
+#include "NumericalInference/LinearInference.h"
+#include "NumericalInference/TransferFunctionDecoratorInference.h"
+#include "NumericalInference/BinaryClassificationInference.h"
+#include "NumericalInference/RegressionInference.h"
 
-#include "Inference/RunOnSupervisedExamplesInference.h"
+#include "DecisionTreeInference/ExtraTreeInference.h"
+
+#include "ReductionInference/OneAgainstAllClassificationInference.h"
+
+#include "MetaInference/CallbackBasedDecoratorInference.h"
+#include "MetaInference/RunOnSupervisedExamplesInference.h"
 
 InferencePtr lbcpp::linearScalarInference(const String& name)
   {return new LinearInference(name);}
@@ -117,8 +120,6 @@ InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, Enu
 
 InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
   {return new RunOnSupervisedExamplesInference(inference);}
-
-#include "ExtraTreeInference/ExtraTreeInference.h"
 
 InferencePtr lbcpp::multiClassExtraTreeInference(const String& name)
   {return new ExtraTreeInference(name);}

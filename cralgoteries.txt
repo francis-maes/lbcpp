@@ -1,17 +1,20 @@
+Variable:
+ * support native de tableau, flags "fixedSize" et "fixedElementType"
+    * Class::getNumTemplateArguments(), Class::getTemplateArgument()
+    * TemplateClass pour le tableau
+ * remplacer les LabelSequence par des variables tableau
+ * ajouter une variable tableau pour les "residues"
 
- 1- reparer SandBox
- 2- unifier ParallelInference/SequentialInference/DecoratorInference callbacks
- 3- utiliser des doubles pour la regression
- 4- utiliser des bool et des doubles pour la classification binaire
-
+ExtraTrees:
+ * Utiliser pleins des Variables tableau
+ * coder le ParallelInferenceBatchLearner puis l'utiliser pour apprendre les ExtraTree
+ * ExtraTree: classe de base ParallelVoteInference
+ 
 Library:
- * InferenceContext::runSubInference -> protected (inherit BatchLearners from appropriate Inference base classes)
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
- * Remove old LearningMachine code
- * Remove static ContinuousFunction code
  * Remove "featureGenerator" keyword
  * Remove translator
- * Serialisation XML (?)
+ * Serialisation XML
  * Execution multi-thread
  
 Inference:
