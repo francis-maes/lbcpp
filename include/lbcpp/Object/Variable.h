@@ -33,42 +33,6 @@
 namespace lbcpp
 {
 
-struct VariableValue
-{
-  VariableValue(bool boolValue);
-  VariableValue(int intValue);
-  VariableValue(double doubleValue);
-  VariableValue(const String& stringValue);
-
-  template<class T>
-  VariableValue(ReferenceCountedObjectPtr<T> objectValue);
-  VariableValue(Object* objectValue);
-  VariableValue(const VariableValue& other);
-  VariableValue();
-
-  void clear(ClassPtr type);
-
-  void clearObject();
-  void clearString();
-
-  bool getBoolean() const;
-  int getInteger() const;
-  double getDouble() const;
-  const String& getString() const;
-  ObjectPtr getObject() const;
-  Object* getObjectPointer() const;
-
-private:
-  union
-  {
-    bool boolValue;
-    int intValue;
-    double doubleValue;
-    String* stringValue;
-    Object* objectValue;
-  } u;
-};
-
 class Variable
 {
 public:
@@ -78,12 +42,15 @@ public:
   Variable(const String& stringValue, ClassPtr type = StringClass::getInstance());
   Variable(ObjectPtr object);
   Variable(Object* object);
+  Variable(ClassPtr type, const VariableValue& value) : type(type), value(value) {}
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T> object);
   Variable(const Variable& otherVariant);
   Variable() {}
-  
+
+  static Variable pair(const Variable& variable1, const Variable& variable2);
+
   ~Variable();
 
   void clear();
@@ -114,6 +81,15 @@ public:
 
   template<class O>
   ReferenceCountedObjectPtr<O> dynamicCast() const;
+
+  /*
+  ** Operations
+  */
+  String toString() const;
+  bool equals(const Variable& otherValue) const;
+
+  size_t size() const;
+  Variable operator [](size_t index) const;
 
 private:
   ClassPtr type;

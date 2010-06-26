@@ -41,66 +41,6 @@ protected:
   size_t sampleTreeRecursively(ExtraTreeInferencePtr inference, BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
 };
 
-class TrainingDataContainer : public ObjectContainer
-{
-public:
-  TrainingDataContainer(ObjectContainerPtr examples)
-  {
-    this->examples.resize(examples->size());
-    for (size_t i = 0; i < this->examples.size(); ++i)
-    {
-      ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
-      if (i == 0)
-      {
-        inputClass = example->getFirst()->getClass();
-        supervisionClass = example->getSecond()->getClass();
-      }
-      else
-      {
-        jassert(example->getFirst()->getClass() == inputClass);
-        jassert(example->getSecond()->getClass() == supervisionClass);
-      }
-      this->examples[i].first = VariableValue(example->getFirst());
-      this->examples[i].second = VariableValue(example->getSecond());
-    }
-  }
-  TrainingDataContainer(ClassPtr inputClass, ClassPtr supervisionClass, size_t sizeToReserve)
-    : inputClass(inputClass), supervisionClass(supervisionClass)
-        {examples.reserve(sizeToReserve);}
-
-  virtual ~TrainingDataContainer()
-    {clear();}
-
-  virtual size_t size() const
-    {return examples.size();}
-
-  virtual ObjectPtr get(size_t index) const
-  {
-    jassert(false);
-    jassert(index < examples.size());
-    return ObjectPtr();/*new ObjectPair(examples[index].first.toObject(inputClass), 
-      examples[index].second.toObject(supervisionClass));*/
-  }
-
-  //Variable getInput(size_t index) const
-  //  {return Variable(inputClass, examples[index]);}
-
-  void clear()
-  {
-    for (size_t i = 0; i < examples.size(); ++i)
-    {
-      examples[i].first.clear(inputClass);
-      examples[i].second.clear(supervisionClass);
-    }
-    examples.clear();
-  }
-
-private:
-  ClassPtr inputClass;
-  ClassPtr supervisionClass;
-  std::vector< std::pair< VariableValue, VariableValue > > examples;
-};
-
 class ExtraTreeInferenceLearner : public SharedParallelInference
 {
 public:

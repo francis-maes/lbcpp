@@ -78,27 +78,19 @@ bool InferenceVector::loadFromDirectory(const File& file)
   return true;
 }
 
-
+/*
+** Numerical
+*/
 #include "NumericalInference/LinearInference.h"
 #include "NumericalInference/TransferFunctionDecoratorInference.h"
 #include "NumericalInference/BinaryClassificationInference.h"
 #include "NumericalInference/RegressionInference.h"
-
-#include "DecisionTreeInference/ExtraTreeInference.h"
-
-#include "ReductionInference/OneAgainstAllClassificationInference.h"
-
-#include "MetaInference/CallbackBasedDecoratorInference.h"
-#include "MetaInference/RunOnSupervisedExamplesInference.h"
 
 InferencePtr lbcpp::linearScalarInference(const String& name)
   {return new LinearInference(name);}
 
 InferencePtr lbcpp::transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction)
   {return new TransferFunctionDecoratorInference(name, decoratedInference, transferFunction);}
-
-InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
-  {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
 InferencePtr lbcpp::binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new BinaryLinearSVMInference(learner, name);}
@@ -115,28 +107,83 @@ InferencePtr lbcpp::absoluteRegressionInference(InferenceOnlineLearnerPtr learne
 InferencePtr lbcpp::dihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new AngleRegressionInference(learner, name);}
 
-InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
-  {return new OneAgainstAllClassificationInference(name, classes, binaryClassifierModel);}
-
-InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
-  {return new RunOnSupervisedExamplesInference(inference);}
+/*
+** Decision Tree
+*/
+#include "DecisionTreeInference/ExtraTreeInference.h"
 
 InferencePtr lbcpp::multiClassExtraTreeInference(const String& name)
   {return new ExtraTreeInference(name);}
 
+/*
+** Reduction
+*/
+#include "ReductionInference/OneAgainstAllClassificationInference.h"
+
+InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
+  {return new OneAgainstAllClassificationInference(name, classes, binaryClassifierModel);}
+
+/*
+** Meta Inference
+*/
+#include "MetaInference/CallbackBasedDecoratorInference.h"
+#include "MetaInference/RunOnSupervisedExamplesInference.h"
+#include "MetaInference/SimulationInferenceBatchLearner.h"
+#include "MetaInference/SequentialInferenceBatchLearner.h"
+
+InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
+  {return new RunOnSupervisedExamplesInference(inference);}
+
+InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
+  {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
+
+InferencePtr lbcpp::simulationInferenceLearner()
+  {return new SimulationInferenceBatchLearner();}
+
+InferencePtr lbcpp::sequentialInferenceLearner()
+  {return new SequentialInferenceBatchLearner();}
+
+
 void declareInferenceClasses()
 {
-  LBCPP_DECLARE_CLASS_LEGACY(LinearInference);
-
-  LBCPP_DECLARE_CLASS_LEGACY(BinaryLinearSVMInference);
-  LBCPP_DECLARE_CLASS_LEGACY(BinaryLogisticRegressionInference);
+  /*
+  ** Base classes
+  */
+  LBCPP_DECLARE_ABSTRACT_CLASS(Inference, Object);
+    LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
+    LBCPP_DECLARE_ABSTRACT_CLASS(ParallelInference, Inference);
+      LBCPP_DECLARE_ABSTRACT_CLASS(StaticParallelInference, ParallelInference);
+    LBCPP_DECLARE_ABSTRACT_CLASS(SequentialInference, Inference);
   
-  LBCPP_DECLARE_CLASS_LEGACY(SquareRegressionInference);
-  LBCPP_DECLARE_CLASS_LEGACY(AbsoluteRegressionInference);
-  LBCPP_DECLARE_CLASS_LEGACY(AngleRegressionInference);
+  /*
+  ** Numerical
+  */
+  LBCPP_DECLARE_ABSTRACT_CLASS(ParameterizedInference, Inference);
+    LBCPP_DECLARE_CLASS(LinearInference, ParameterizedInference);
 
-  LBCPP_DECLARE_CLASS_LEGACY(OneAgainstAllClassificationInference);
+    LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationInference, DecoratorInference);
+      LBCPP_DECLARE_CLASS(BinaryLinearSVMInference, BinaryClassificationInference);
+      LBCPP_DECLARE_CLASS(BinaryLogisticRegressionInference, BinaryClassificationInference);
 
-  LBCPP_DECLARE_CLASS_LEGACY(TransferFunctionDecoratorInference);
-  LBCPP_DECLARE_CLASS_LEGACY(CallbackBasedDecoratorInference);
+    LBCPP_DECLARE_ABSTRACT_CLASS(RegressionInference, DecoratorInference);
+      LBCPP_DECLARE_CLASS(SquareRegressionInference, RegressionInference);
+      LBCPP_DECLARE_CLASS(AbsoluteRegressionInference, RegressionInference);
+      LBCPP_DECLARE_CLASS(AngleRegressionInference, RegressionInference);
+
+    LBCPP_DECLARE_CLASS(TransferFunctionDecoratorInference, DecoratorInference);
+
+  /*
+  ** Decision Tree
+  */
+  LBCPP_DECLARE_CLASS(BinaryDecisionTree, Object);
+
+  /*
+  ** Reduction
+  */
+  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, StaticParallelInference);
+  
+  /*
+  ** Meta
+  */
+  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, DecoratorInference);
 }

@@ -1,3 +1,8 @@
+- split des classes
+- implementer les Class::get/setSubVariable, unifier avec les CppClasses
+- implementer pleinement les tuples
+- implementer les tableau de taille fixe
+
 Variable:
  * support native de tableau, flags "fixedSize" et "fixedElementType"
     * Class::getNumTemplateArguments(), Class::getTemplateArgument()

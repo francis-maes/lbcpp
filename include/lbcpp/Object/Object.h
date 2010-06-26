@@ -34,6 +34,8 @@
 namespace lbcpp
 {
 
+class Variable;
+
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 class Class;
@@ -176,6 +178,10 @@ public:
 
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
     {}
+
+  virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(size_t index, const Variable& value)
+    {jassert(false);}
 
   virtual void accept(ObjectVisitorPtr visitor)
     {}

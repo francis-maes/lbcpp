@@ -93,12 +93,3 @@ void declareInferenceOnlineLearnerClasses()
   LBCPP_DECLARE_CLASS_LEGACY(RandomizerInferenceOnlineLearner);
   LBCPP_DECLARE_CLASS_LEGACY(StoppingCriterionInferenceOnlineLearner);
 }
-
-#include "InferenceBatchLearner/SimulationInferenceBatchLearner.h"
-#include "InferenceBatchLearner/SequentialInferenceBatchLearner.h"
-
-InferencePtr lbcpp::simulationInferenceLearner()
-  {return new SimulationInferenceBatchLearner();}
-
-InferencePtr lbcpp::sequentialInferenceLearner()
-  {return new SequentialInferenceBatchLearner();}

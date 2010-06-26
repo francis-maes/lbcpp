@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/InferenceCallback.h>
 # include <lbcpp/Inference/InferenceStack.h>
+# include <lbcpp/Inference/InferenceOnlineLearner.h>
 
 namespace lbcpp
 {

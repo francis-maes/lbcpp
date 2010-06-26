@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Object/Class.h>
+#include <lbcpp/Object/Variable.h>
 #include <map>
 using namespace lbcpp;
 
@@ -96,6 +97,9 @@ inline ClassManager& getClassManagerInstance()
 /*
 ** Class
 */
+Variable Class::getSubVariable(const VariableValue& value, size_t index) const
+  {jassert(false); return Variable();}
+
 void Class::declare(ClassPtr classInstance)
   {getClassManagerInstance().declare(classInstance);}
 
@@ -191,6 +195,24 @@ void Enumeration::addElement(const String& elementName)
   elements.push_back(elementName);
 }
 
+/*
+** VariablePairClass
+*/
+VariableValue VariablePairClass::allocate(const Variable& variable1, const Variable& variable2)
+{
+  char* data = new char[sizeof (Variable) * 2];
+  memset(data, 0, sizeof (Variable) * 2);
+  ((Variable* )data)[0] = variable1;
+  ((Variable* )data)[1] = variable2;
+  return data;
+}
+void VariablePairClass::copy(VariableValue& dest, const VariableValue& source) const
+{
+  jassert(false);
+  //dest = allocate(source[0], source[1]);
+}
+
+
 void declareClassClasses()
 {
   Class::declare(new BooleanClass());
@@ -198,4 +220,5 @@ void declareClassClasses()
   Class::declare(new DoubleClass());
   Class::declare(new StringClass());
   Class::declare(new ObjectClass());
+  Class::declare(new VariablePairClass());
 }

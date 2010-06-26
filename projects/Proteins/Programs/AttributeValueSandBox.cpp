@@ -281,6 +281,15 @@ int main(int argc, char** argv)
   Class::declare(new ProteinResidueClass());
   Class::declare(new ProteinResidueInputAttributesClass(8));
 
+
+  Variable container = Variable::pair(16.64, 51);
+  std::cout << "pair: " << container.toString() << " size: " << container.size() << std::endl;
+  for (size_t i = 0; i < container.size(); ++i)
+    std::cout << "  elt " << i << " = " << container[0].toString() << "( type = " << container[0].getType()->getName() << ")" << std::endl;
+  Variable containerCopy = container;
+  std::cout << "container copy: " << containerCopy << " equals: " << (container == containerCopy) << std::endl;
+  return 0;
+
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   ObjectContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
   

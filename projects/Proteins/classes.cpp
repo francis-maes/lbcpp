@@ -38,11 +38,6 @@ extern void declareSecondaryStructureClasses();
 
 void declareProteinClasses()
 {
-  // new:
-  declareAminoAcidClasses();
-  declareSecondaryStructureClasses();
-  // -
-
   // Data
   LBCPP_DECLARE_CLASS_LEGACY(LabelSequence);
   LBCPP_DECLARE_CLASS_LEGACY(ScalarSequence);
@@ -90,4 +85,9 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(DSSPSecondaryStructureDictionary);
   LBCPP_DECLARE_DICTIONARY(AminoAcidPropertyDictionary);
   LBCPP_DECLARE_DICTIONARY(StructuralAlphabetDictionary);
+
+  // new:
+  declareAminoAcidClasses();
+  declareSecondaryStructureClasses();
+  // -
 }

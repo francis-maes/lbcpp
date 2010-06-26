@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Object/Object.h>
-#include <lbcpp/Object/Class.h>
+#include <lbcpp/Object/Variable.h>
 #include <fstream>
 using namespace lbcpp;
 
@@ -164,3 +164,6 @@ bool Object::saveToDirectory(const File& directory) const
   }
   return Object::saveToFile(directory.getChildFile(T(".classFile")));
 }
+
+Variable Object::getVariable(size_t index) const
+  {jassert(false); return Variable();}
