@@ -74,6 +74,8 @@ public:
   ClassPtr getBaseClass() const
     {return baseClass;}
 
+  bool inheritsFrom(ClassPtr baseClass) const;
+
   /*
   ** Operations
   */
@@ -120,58 +122,37 @@ protected:
 /*
 ** The top-level base class
 */
-class ObjectClass : public Class
+class TopLevelClass : public Class
 {
 public:
-  ObjectClass() : Class(T("Object"), ClassPtr()) {}
-
-  static ClassPtr getInstance()
-    {static ClassPtr res = Class::get(T("Object")); return res;}
+  TopLevelClass() : Class(T("Variable"), ClassPtr()) {}
 };
+
+extern ClassPtr topLevelClass();
 
 class BuiltinTypeClass : public Class
 {
 public:
-  BuiltinTypeClass(const String& name, ClassPtr baseClass = ClassPtr())
-    : Class(name, baseClass ? baseClass : ObjectClass::getInstance()) {}
+  BuiltinTypeClass(const String& name)
+    : Class(name, topLevelClass()) {}
 };
+
+extern ClassPtr booleanClass();
+extern ClassPtr integerClass();
+extern ClassPtr doubleClass();
+extern ClassPtr stringClass();
+
+extern ClassPtr pairClass();
 
 /*
-** Builtin-types
+** Integer
 */
-class BooleanClass : public BuiltinTypeClass
-{
-public:
-  BooleanClass() : BuiltinTypeClass(T("Boolean")) {}
-  
-  static ClassPtr getInstance()
-    {static ClassPtr res = Class::get(T("Boolean")); return res;}
-
-  virtual void destroy(VariableValue& value) const
-    {}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setBoolean(source.getBoolean());}
-
-  virtual String toString(const VariableValue& value) const
-    {return value.getBoolean() ? T("True") : T("False");}
-
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getBoolean() == value2.getBoolean();}
-
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return 0;}
-};
-
 class IntegerClass : public BuiltinTypeClass
 {
 public:
-  IntegerClass(const String& className, ClassPtr baseClass)
-    : BuiltinTypeClass(className, baseClass) {}
+  IntegerClass(const String& className)
+    : BuiltinTypeClass(className) {}
   IntegerClass() : BuiltinTypeClass(T("Integer")) {}
-
-  static ClassPtr getInstance()
-    {static ClassPtr res = Class::get(T("Integer")); return res;}
 
   virtual void destroy(VariableValue& value) const
     {}
@@ -190,121 +171,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<IntegerClass> IntegerClassPtr;
-
-class DoubleClass : public BuiltinTypeClass
-{
-public:
-  DoubleClass() : BuiltinTypeClass(T("Double")) {}
-
-  static ClassPtr getInstance()
-    {static ClassPtr res = Class::get(T("Double")); return res;}
-
-  virtual void destroy(VariableValue& value) const
-    {}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setDouble(source.getDouble());}
-
-  virtual String toString(const VariableValue& value) const
-    {return String(value.getDouble());}
-
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getDouble() == value2.getDouble();}
-
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return 0;}
-};
-
-class StringClass : public BuiltinTypeClass
-{
-public:
-  StringClass() : BuiltinTypeClass(T("String")) {}
-  
-  static ClassPtr getInstance()
-    {static ClassPtr res = Class::get(T("String")); return res;}
-
-  virtual void destroy(VariableValue& value) const
-    {value.clearString();}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setString(source.getString());}
-
-  virtual String toString(const VariableValue& value) const
-    {return value.getString().quoted();}
-
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getString() == value2.getString();}
-
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return 0;}
-};
-
-/*
-** Raw Data Builtin Type
-*/
-class RawDataBuiltinTypeClass : public BuiltinTypeClass
-{
-public:
-  RawDataBuiltinTypeClass(const String& name)
-    : BuiltinTypeClass(name) {}
-
-  virtual void destroy(VariableValue& value) const
-    {value.clearRawData();}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-  {
-    jassert(false);
-  }
-  virtual String toString(const VariableValue& value) const
-  {
-    jassert(false); 
-    return T("");
-  }
-
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {jassert(false); return false;}
-};
-
-class VariableTupleClass : public RawDataBuiltinTypeClass
-{
-public:
-  VariableTupleClass(const String& name, size_t size)
-    : RawDataBuiltinTypeClass(name), size(size) {}
-  
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return size;}
-  //virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
-  virtual String getSubVariableName(const VariableValue& value, size_t index) const
-    {jassert(false); return String::empty;}
-  virtual void setSubVariable(const VariableValue& value, size_t index, const VariableValue& subValue) const
-    {jassert(false);}
-  
-protected:
-  size_t size;
-};
-
-class VariablePairClass : public VariableTupleClass
-{
-public:
-  VariablePairClass() : VariableTupleClass(T("VariablePair"), 2) {}
-
-  static ClassPtr getInstance()
-    {static ClassPtr res = Class::get(T("VariablePair")); return res;}
-
-  static VariableValue allocate(const Variable& variable1, const Variable& variable2);
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const;
-};
-
-class VariableVectorClass : public RawDataBuiltinTypeClass
-{
-public:
-  VariableVectorClass(ClassPtr elementsClass)
-    : RawDataBuiltinTypeClass(T("VariableVector<") + elementsClass->getName() + T(">")), elementsClass(elementsClass) {}
-
-private:
-  ClassPtr elementsClass;
-};
 
 /*
 ** Enumeration
@@ -342,13 +208,14 @@ private:
 };
 
 /*
-** CppObjectClass
+** ObjectClass
 */
-class CppObjectClass : public Class
+class ObjectClass : public Class
 {
 public:
-  CppObjectClass(const String& name, ClassPtr baseClass)
+  ObjectClass(const String& name, ClassPtr baseClass)
     : Class(name, baseClass) {}
+  ObjectClass() : Class(T("Object"), topLevelClass()) {}
 
   virtual void destroy(VariableValue& value) const
     {value.clearObject();}
@@ -363,17 +230,19 @@ public:
     {return value1.getObject() == value2.getObject();}
 };
 
+extern ClassPtr objectClass();
+
 /*
 ** Collection
 */
 class Collection;
 typedef ReferenceCountedObjectPtr<Collection> CollectionPtr;
 
-class Collection : public CppObjectClass
+class Collection : public ObjectClass
 {
 public:
   Collection(const String& name)
-    : CppObjectClass(name, ObjectClass::getInstance()) {}
+    : ObjectClass(name, objectClass()) {}
 
   static CollectionPtr get(const String& className)
     {return checkCast<Collection>(T("Collection::get"), Class::get(className));}
@@ -396,20 +265,20 @@ private:
 ** Minimalistic C++ classes Wrapper
 */
 template<class Type>
-class DefaultAbstractClass_ : public CppObjectClass
+class DefaultAbstractClass_ : public ObjectClass
 {
 public:
-  DefaultAbstractClass_(ClassPtr baseClass = ObjectClass::getInstance())
-    : CppObjectClass(lbcpp::toString(typeid(Type)), baseClass)
+  DefaultAbstractClass_(ClassPtr baseClass)
+    : ObjectClass(lbcpp::toString(typeid(Type)), baseClass)
     {}
 };
 
 template<class Type>
-class DefaultClass_ : public CppObjectClass
+class DefaultClass_ : public ObjectClass
 {
 public:
-  DefaultClass_(ClassPtr baseClass = ObjectClass::getInstance())
-    : CppObjectClass(lbcpp::toString(typeid(Type)), baseClass)
+  DefaultClass_(ClassPtr baseClass)
+    : ObjectClass(lbcpp::toString(typeid(Type)), baseClass)
     {Class::defaultConstructor = defaultCtor;}
 
   static ObjectPtr defaultCtor()
@@ -423,7 +292,7 @@ public:
   lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>(lbcpp::Class::get(#BaseClass))))
 
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
-  lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>()))
+  lbcpp::Class::declare(lbcpp::ClassPtr(new lbcpp::DefaultClass_<Name>(objectClass())))
 
 }; /* namespace lbcpp */
 
