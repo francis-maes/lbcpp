@@ -25,6 +25,7 @@ SET(LBCPP_OBJECT_IMPL_HEADERS
 SET(LBCPP_OBJECT_SOURCES
   Object.cpp
   Class.cpp
+  Vector.cpp
   ObjectStream.cpp
   ObjectContainer.cpp
   ObjectConsumer.cpp

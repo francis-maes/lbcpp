@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinResidueAtoms.h          | Protein Residue Atoms           |
+| Filename: ProteinResidueAtoms.h          | ProteinObject Residue Atoms           |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 15:21               |                                 |
 `------------------------------------------/                                 |

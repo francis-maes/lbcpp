@@ -23,7 +23,7 @@ public:
   virtual String getFormatSpecificationCode() const
     {return T("TS");}
 
-  virtual void printPredictionData(ProteinPtr protein)
+  virtual void printPredictionData(ProteinObjectPtr protein)
   {
     printRecord(T("PARENT"), T("N/A"));
 

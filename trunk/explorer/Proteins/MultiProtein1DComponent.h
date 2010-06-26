@@ -11,7 +11,7 @@
 
 # include "MultiSequenceComponent.h"
 # include "../Utilities/SplittedLayout.h"
-# include "../../projects/Proteins/Protein/Protein.h"
+# include "../../projects/Proteins/Protein/ProteinObject.h"
 
 namespace lbcpp
 {
@@ -155,7 +155,7 @@ private:
 class MultiProtein1DComponent : public SplittedLayout, public juce::ChangeListener
 {
 public:
-  MultiProtein1DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
+  MultiProtein1DComponent(const std::vector<ProteinObjectPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
     : SplittedLayout(new MultiProtein1DConfigurationComponent(configuration), new ViewportComponent(NULL, true, false), 0.16, SplittedLayout::typicalVertical),
       proteins(proteins), configuration(configuration)
   {
@@ -187,7 +187,7 @@ public:
   }
   
 protected:
-  std::vector<ProteinPtr> proteins;
+  std::vector<ProteinObjectPtr> proteins;
   MultiProtein1DConfigurationPtr configuration;
 
   ViewportComponent* getViewport() const

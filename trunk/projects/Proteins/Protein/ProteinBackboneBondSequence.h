@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinBackboneBondSequence.h  | Protein Backbone Bonds          |
+| Filename: ProteinBackboneBondSequence.h  | ProteinObject Backbone Bonds          |
 | Author  : Francis Maes                   |                                 |
 | Started : 23/04/2010 13:13               |                                 |
 `------------------------------------------/                                 |

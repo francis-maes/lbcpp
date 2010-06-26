@@ -102,9 +102,9 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
       return new InferenceComponent(object.dynamicCast<Inference>(), name);
   }
 
-  if (object.dynamicCast<Protein>())
+  if (object.dynamicCast<ProteinObject>())
   {
-    ProteinPtr protein = object.staticCast<Protein>();
+    ProteinObjectPtr protein = object.staticCast<ProteinObject>();
     protein->computeMissingFields();
     return new ProteinComponent(protein, name);
   }
@@ -112,12 +112,12 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   if (object.dynamicCast<ObjectPair>())
   {
     ObjectPairPtr pair = object.dynamicCast<ObjectPair>();
-    if (pair->getFirst().dynamicCast<Protein>() && 
-        pair->getSecond().dynamicCast<Protein>())
+    if (pair->getFirst().dynamicCast<ProteinObject>() && 
+        pair->getSecond().dynamicCast<ProteinObject>())
     {
-      std::vector<std::pair<String, ProteinPtr> > proteins;
-      proteins.push_back(std::make_pair(T("Prediction"), pair->getFirst().dynamicCast<Protein>()));
-      proteins.push_back(std::make_pair(T("Supervision"), pair->getSecond().dynamicCast<Protein>()));
+      std::vector<std::pair<String, ProteinObjectPtr> > proteins;
+      proteins.push_back(std::make_pair(T("Prediction"), pair->getFirst().dynamicCast<ProteinObject>()));
+      proteins.push_back(std::make_pair(T("Supervision"), pair->getSecond().dynamicCast<ProteinObject>()));
       return new MultiProteinComponent(proteins);
     }
   }
@@ -127,12 +127,12 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
     ObjectContainerPtr container = object.staticCast<ObjectContainer>();
     bool areClassFiles = true;
     size_t proteinSize = 0;
-    std::vector< std::pair<String, ProteinPtr> > proteins;
+    std::vector< std::pair<String, ProteinObjectPtr> > proteins;
     for (size_t i = 0; i < container->size(); ++i)
     {
       ObjectPtr object = container->get(i);
       
-      ProteinPtr protein = object.dynamicCast<Protein>();
+      ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
       if (!protein || (proteinSize && protein->getLength() != proteinSize))
       {
         proteinSize = 0;

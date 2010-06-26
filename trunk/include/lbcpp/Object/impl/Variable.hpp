@@ -69,6 +69,15 @@ inline void Variable::clear()
   }
 }
 
+inline void Variable::copyTo(VariableValue& dest) const
+{
+  if (type)
+  {
+    type->destroy(dest);
+    type->copy(dest, value);
+  }
+}
+
 inline Variable& Variable::operator =(const Variable& otherVariant)
 {
   clear();

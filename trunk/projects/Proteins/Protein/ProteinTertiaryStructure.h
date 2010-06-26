@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinTertiaryStructure.h     | Protein Tertiary Structure      |
+| Filename: ProteinTertiaryStructure.h     | ProteinObject Tertiary Structure      |
 | Author  : Francis Maes                   |                                 |
 | Started : 18/04/2010 16:42               |                                 |
 `------------------------------------------/                                 |

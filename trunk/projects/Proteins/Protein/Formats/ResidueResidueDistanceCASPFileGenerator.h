@@ -23,7 +23,7 @@ public:
   virtual String getFormatSpecificationCode() const
     {return T("RR");}
 
-  virtual void printPredictionData(ProteinPtr protein)
+  virtual void printPredictionData(ProteinObjectPtr protein)
   {
     size_t n = protein->getLength();
 

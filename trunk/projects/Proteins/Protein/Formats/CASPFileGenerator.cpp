@@ -19,7 +19,7 @@ CASPFileGenerator::CASPFileGenerator(const File& file, const String& method)
 
 void CASPFileGenerator::consume(ObjectPtr object)
 {
-  ProteinPtr protein = object.dynamicCast<Protein>();
+  ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
   jassert(protein);
 
   printRecord(T("PFRMAT"), getFormatSpecificationCode());

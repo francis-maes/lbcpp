@@ -11,7 +11,7 @@
 
 #include "Programs/ArgumentSet.h"
 
-#include "Protein/Protein.h"
+#include "Protein/ProteinObject.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
 #include "Protein/Inference/ProteinBackboneBondSequenceInference.h"

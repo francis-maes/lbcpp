@@ -14,7 +14,7 @@ using namespace lbcpp;
 /*
 ** CompositeProteinResiduePairFeatures
 */
-featureGenerator CompositeProteinResiduePairFeatures::compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+featureGenerator CompositeProteinResiduePairFeatures::compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
 {
   for (size_t i = 0; i < this->getNumSubFeatureFunctions(); ++i)
   {
@@ -45,7 +45,7 @@ void CompositeProteinResiduePairFeatures::save(OutputStream& ostr) const
 class ProteinUnitResiduePairFeature : public ProteinResiduePairFeatures
 {
 public:
-  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
     {featureSense(0);}
 
   virtual String toString() const
@@ -68,7 +68,7 @@ public:
     : pointFeatureGenerator(pointFeatureGenerator) {}
   ProteinPointResiduePairFeatures() {}
 
-  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
   {   
     featureCall(0) getFeatures(protein, firstPosition);
     featureCall(1) getFeatures(protein, secondPosition);
@@ -79,7 +79,7 @@ public:
 
 protected:
   ProteinResidueFeaturesPtr pointFeatureGenerator;
-  ProteinPtr currentProtein;
+  ProteinObjectPtr currentProtein;
   std::vector<SparseVectorPtr> pointFeatures;
 
   virtual bool load(InputStream& istr)
@@ -88,7 +88,7 @@ protected:
   virtual void save(OutputStream& ostr) const
     {ProteinResiduePairFeatures::save(ostr); lbcpp::write(ostr, pointFeatureGenerator);}
 
-  FeatureGeneratorPtr getFeatures(ProteinPtr protein, size_t position)
+  FeatureGeneratorPtr getFeatures(ProteinObjectPtr protein, size_t position)
   {
     if (currentProtein != protein)
     {
@@ -117,7 +117,7 @@ public:
   virtual String getName() const
     {return T("SeparationLength");}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
   {
     size_t delta = (size_t)abs((int)firstPosition - (int)secondPosition);
     if (featuresPerLength.size() <= delta)
@@ -159,7 +159,7 @@ public:
   virtual String getName() const
     {return sequenceName + T(" central composition");}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
   {
     if (firstPosition > secondPosition)
       {size_t tmp = firstPosition; firstPosition = secondPosition; secondPosition = tmp;}
@@ -209,7 +209,7 @@ public:
   virtual String getName() const
     {return baseFeatures->getName() + T(" ") + getConjunctionTypeName();}
 
-  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
   {
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
     size_t n = aminoAcidSequence->size();
@@ -274,7 +274,7 @@ ProteinResiduePairFeaturesPtr lbcpp::conjunctionResiduePairFeatures(ResiduePairC
 class ProteinPositionIndicesResiduePairFeature : public ProteinResiduePairFeatures
 {
 public:
-  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
     {featureScope(firstPosition) featureSense(secondPosition);}
 
   virtual String getName() const
@@ -296,7 +296,7 @@ public:
   SeparationDistanceResiduePairFeatures(size_t intervalsPerLog10 = 2)
     : ProteinResiduePairFeatures(), intervalsPerLog10(intervalsPerLog10) {}
 
-  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
   {
     CartesianCoordinatesSequencePtr calphaTrace = protein->getCAlphaTrace();
     if (calphaTrace)
@@ -340,7 +340,7 @@ public:
   virtual String getName() const
     {return contactMapName + T(" contactMap");}
 
-  virtual featureGenerator compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition)
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition)
   {
     ObjectPtr object = protein->getObject(contactMapName);
     if (!object)

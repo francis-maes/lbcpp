@@ -1,4 +1,3 @@
-- implementer les Class::get/setSubVariable, unifier avec les CppClasses
 - implementer les tableau de taille fixe -> utiliser pour stocker dans les proteines
 
 Variable:

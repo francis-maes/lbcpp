@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_FORMATS_PDB_FILE_PARSER_H_
 # define LBCPP_PROTEIN_FORMATS_PDB_FILE_PARSER_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {
@@ -23,14 +23,14 @@ public:
   virtual bool parseLine(const String& line);
   virtual bool parseEnd();
 
-  std::vector<ProteinPtr> getAllChains() const;
+  std::vector<ProteinObjectPtr> getAllChains() const;
 
 protected:
   bool beTolerant;
 
   struct Chain
   {
-    ProteinPtr protein;
+    ProteinObjectPtr protein;
     std::vector< std::vector<ProteinResidueAtomsPtr> > tertiaryStructureBlocks;
   };
 
@@ -68,8 +68,8 @@ protected:
   Chain* getChain(const String& line, int column);
   bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
 
-  ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResidueAtomsPtr> >& tertiaryStructureBlocks);
-  LabelSequencePtr finalizeDisorderSequence(ProteinPtr protein);
+  ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinObjectPtr protein, const std::vector< std::vector<ProteinResidueAtomsPtr> >& tertiaryStructureBlocks);
+  LabelSequencePtr finalizeDisorderSequence(ProteinObjectPtr protein);
 
   bool checkResidueConsistency(ProteinResidueAtomsPtr residue);
 };

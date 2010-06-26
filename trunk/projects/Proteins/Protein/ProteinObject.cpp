@@ -1,11 +1,11 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Protein.cpp                    | Protein                         |
+| Filename: ProteinObject.cpp              | ProteinObject                         |
 | Author  : Francis Maes                   |                                 |
 | Started : 17/04/2010 14:29               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "Protein.h"
+#include "ProteinObject.h"
 #include "AminoAcidDictionary.h"
 #include "SecondaryStructureDictionary.h"
 #include "Formats/FASTAFileParser.h"
@@ -15,9 +15,9 @@
 
 using namespace lbcpp;
 
-ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)
+ProteinObjectPtr ProteinObject::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)
 {
-  ProteinPtr res = new Protein(name);
+  ProteinObjectPtr res = new ProteinObject(name);
   FeatureDictionaryPtr aminoAcidDictionary = AminoAcidDictionary::getInstance();
   LabelSequencePtr aminoAcidSequence = new LabelSequence(T("AminoAcidSequence"), aminoAcidDictionary, aminoAcidString.length());
   for (size_t i = 0; i < aminoAcidSequence->size(); ++i)
@@ -27,8 +27,8 @@ ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String
     int index = aminoAcidDictionary->getFeatures()->getIndex(aa);
     if (index < 0)
     {
-      Object::error(T("Protein::createFromAminoAcidSequence"), T("Unknown amino acid: ") + aa);
-      return ProteinPtr();
+      Object::error(T("ProteinObject::createFromAminoAcidSequence"), T("Unknown amino acid: ") + aa);
+      return ProteinObjectPtr();
     }
     aminoAcidSequence->setIndex(i, (size_t)index);
   }
@@ -36,21 +36,21 @@ ProteinPtr Protein::createFromAminoAcidSequence(const String& name, const String
   return res;
 }
 
-ProteinPtr Protein::createFromFASTA(const File& fastaFile)
+ProteinObjectPtr ProteinObject::createFromFASTA(const File& fastaFile)
 {
   ObjectStreamPtr parser(new FASTAFileParser(fastaFile));
-  return parser->nextAndCast<Protein>();
+  return parser->nextAndCast<ProteinObject>();
 }
 
-ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
+ProteinObjectPtr ProteinObject::createFromPDB(const File& pdbFile, bool beTolerant)
 {
   ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant));
   if (!parser->next())
-    return ProteinPtr();
+    return ProteinObjectPtr();
 
-  std::vector<ProteinPtr> proteins = parser->getAllChains();
+  std::vector<ProteinObjectPtr> proteins = parser->getAllChains();
   jassert(proteins.size());
-  ProteinPtr res = proteins[0];
+  ProteinObjectPtr res = proteins[0];
   if (proteins.size() > 1)
   {
     size_t chainSize = proteins[0]->getLength();
@@ -59,8 +59,8 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
       {
         for (size_t j = 0; j < proteins.size(); ++j)
           std::cerr << "Chain Size: " << proteins[j]->getLength() << std::endl;
-        Object::error(T("Protein::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
-        return ProteinPtr();
+        Object::error(T("ProteinObject::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
+        return ProteinObjectPtr();
       }
   }
 
@@ -71,13 +71,13 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
   return res;
 }
 
-void Protein::saveToPDBFile(const File& pdbFile)
-  {ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));}
+void ProteinObject::saveToPDBFile(const File& pdbFile)
+  {ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinObjectPtr(this));}
 
-void Protein::saveToFASTAFile(const File& fastaFile)
-  {ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinPtr(this));}
+void ProteinObject::saveToFASTAFile(const File& fastaFile)
+  {ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinObjectPtr(this));}
 
-void Protein::computeMissingFields()
+void ProteinObject::computeMissingFields()
 {
   LabelSequencePtr aminoAcidSequence = getAminoAcidSequence();
   if (!aminoAcidSequence)
@@ -127,7 +127,7 @@ void Protein::computeMissingFields()
     AminoAcidDictionary::isoleucine,
     AminoAcidDictionary::unknown
   };
-  // Lynne Reed Murphy et al. - Simplified amino  acid alphabets for protein fold recognition and implications for folding - Protein Engineering 2000
+  // Lynne Reed Murphy et al. - Simplified amino  acid alphabets for protein fold recognition and implications for folding - ProteinObject Engineering 2000
   // Three groups
   static const AminoAcidDictionary::Type alphabetModel2[AminoAcidDictionary::unknown + 1] = {
     AminoAcidDictionary::alanine,          // A  -  Ala
@@ -418,7 +418,7 @@ void Protein::computeMissingFields()
   }
 }
 
-ObjectPtr Protein::createEmptyObject(const String& name) const
+ObjectPtr ProteinObject::createEmptyObject(const String& name) const
 {
   size_t n = getLength();
 
@@ -467,73 +467,73 @@ ObjectPtr Protein::createEmptyObject(const String& name) const
   }
 }
 
-size_t Protein::getLength() const
+size_t ProteinObject::getLength() const
   {return getAminoAcidSequence()->size();}
 
-LabelSequencePtr Protein::getAminoAcidSequence() const
+LabelSequencePtr ProteinObject::getAminoAcidSequence() const
   {return getObject(T("AminoAcidSequence"));}
 
-ScoreVectorSequencePtr Protein::getPositionSpecificScoringMatrix() const
+ScoreVectorSequencePtr ProteinObject::getPositionSpecificScoringMatrix() const
   {return getObject(T("PositionSpecificScoringMatrix"));}
 
-ScoreVectorSequencePtr Protein::getAminoAcidProperty() const
+ScoreVectorSequencePtr ProteinObject::getAminoAcidProperty() const
   {return getObject(T("AminoAcidProperty"));}
 
-LabelSequencePtr Protein::getSecondaryStructureSequence() const
+LabelSequencePtr ProteinObject::getSecondaryStructureSequence() const
   {return getObject(T("SecondaryStructureSequence"));}
 
-LabelSequencePtr Protein::getReducedAminoAcidAlphabetSequence() const
+LabelSequencePtr ProteinObject::getReducedAminoAcidAlphabetSequence() const
   {return getObject(T("ReducedAminoAcidAlphabetSequence"));}
 
-LabelSequencePtr Protein::getStructuralAlphabetSequence() const
+LabelSequencePtr ProteinObject::getStructuralAlphabetSequence() const
   {return getObject(T("StructuralAlphabetSequence"));}
 
-ScoreVectorSequencePtr Protein::getSecondaryStructureProbabilities() const
+ScoreVectorSequencePtr ProteinObject::getSecondaryStructureProbabilities() const
   {return getObject(T("SecondaryStructureProbabilities"));}
 
-LabelSequencePtr Protein::getDSSPSecondaryStructureSequence() const
+LabelSequencePtr ProteinObject::getDSSPSecondaryStructureSequence() const
   {return getObject(T("DSSPSecondaryStructureSequence"));}
 
-ScoreVectorSequencePtr Protein::getDSSPSecondaryStructureProbabilities() const
+ScoreVectorSequencePtr ProteinObject::getDSSPSecondaryStructureProbabilities() const
   {return getObject(T("DSSPSecondaryStructureProbabilities"));}
 
-ScalarSequencePtr Protein::getNormalizedSolventAccessibilitySequence() const
+ScalarSequencePtr ProteinObject::getNormalizedSolventAccessibilitySequence() const
   {return getObject(T("NormalizedSolventAccessibilitySequence"));}
 
-LabelSequencePtr Protein::getSolventAccessibilityThreshold20() const
+LabelSequencePtr ProteinObject::getSolventAccessibilityThreshold20() const
   {return getObject(T("SolventAccessibilityThreshold20"));}
 
-LabelSequencePtr Protein::getDisorderSequence() const
+LabelSequencePtr ProteinObject::getDisorderSequence() const
   {return getObject(T("DisorderSequence"));}
 
-ScalarSequencePtr Protein::getDisorderProbabilitySequence() const
+ScalarSequencePtr ProteinObject::getDisorderProbabilitySequence() const
   {return getObject(T("DisorderProbabilitySequence"));}
 
-ScoreSymmetricMatrixPtr Protein::getResidueResidueContactMatrix8Ca() const
+ScoreSymmetricMatrixPtr ProteinObject::getResidueResidueContactMatrix8Ca() const
   {return getObject(T("ResidueResidueContactMatrix8Ca"));}
 
-ScoreSymmetricMatrixPtr Protein::getResidueResidueDistanceMatrixCa() const
+ScoreSymmetricMatrixPtr ProteinObject::getResidueResidueDistanceMatrixCa() const
   {return getObject(T("ResidueResidueDistanceMatrixCa"));}
 
-ScoreSymmetricMatrixPtr Protein::getResidueResidueContactMatrix8Cb() const
+ScoreSymmetricMatrixPtr ProteinObject::getResidueResidueContactMatrix8Cb() const
   {return getObject(T("ResidueResidueContactMatrix8Cb"));}
 
-ScoreSymmetricMatrixPtr Protein::getResidueResidueDistanceMatrixCb() const
+ScoreSymmetricMatrixPtr ProteinObject::getResidueResidueDistanceMatrixCb() const
   {return getObject(T("ResidueResidueDistanceMatrixCb"));}
 
-CartesianCoordinatesSequencePtr Protein::getCAlphaTrace() const
+CartesianCoordinatesSequencePtr ProteinObject::getCAlphaTrace() const
   {return getObject(T("CAlphaTrace"));}
 
-BondCoordinatesSequencePtr Protein::getCAlphaBondSequence() const
+BondCoordinatesSequencePtr ProteinObject::getCAlphaBondSequence() const
   {return getObject(T("CAlphaBondSequence"));}
 
-ProteinBackboneBondSequencePtr Protein::getBackboneBondSequence() const
+ProteinBackboneBondSequencePtr ProteinObject::getBackboneBondSequence() const
   {return getObject(T("BackboneBondSequence"));}
 
-ProteinTertiaryStructurePtr Protein::getTertiaryStructure() const
+ProteinTertiaryStructurePtr ProteinObject::getTertiaryStructure() const
   {return getObject(T("TertiaryStructure"));}
 
-void Protein::computePropertiesFrom(const std::vector< ScalarSequencePtr >& aaindex)
+void ProteinObject::computePropertiesFrom(const std::vector< ScalarSequencePtr >& aaindex)
 {
   ScoreVectorSequencePtr properties = new ScoreVectorSequence(T("AminoAcidProperty"), AminoAcidPropertyDictionary::getInstance(), getLength(), aaindex.size());
   LabelSequencePtr sequence = getAminoAcidSequence();
@@ -580,27 +580,27 @@ void Protein::computePropertiesFrom(const std::vector< ScalarSequencePtr >& aain
   */
 }
 
-bool Protein::load(InputStream& istr)
+bool ProteinObject::load(InputStream& istr)
 {
   int versionNumber;
   if (!lbcpp::read(istr, versionNumber))
     return false;
   if (versionNumber != 101)
   {
-    Object::error(T("Protein::load"), T("Unrecognized version number"));
+    Object::error(T("ProteinObject::load"), T("Unrecognized version number"));
     return false;
   }
   return StringToObjectMap::load(istr);
 }
 
-void Protein::save(OutputStream& ostr) const
+void ProteinObject::save(OutputStream& ostr) const
 {
   int versionNumber = 101;
   lbcpp::write(ostr, versionNumber);
   StringToObjectMap::save(ostr);
 }
 
-std::vector<LabelSequencePtr>& Protein::getLabelSequences()
+std::vector<LabelSequencePtr>& ProteinObject::getLabelSequences()
 {
   sequences.clear();
 //  sequences.push_back(getAminoAcidSequence());

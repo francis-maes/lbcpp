@@ -78,7 +78,7 @@ bool PDBFileParser::parseHeaderLine(const String& line)
 bool PDBFileParser::parseExpDataLine(const String& line)
 {
   experimentData = getSubString(line, 11, 79).trim();
-  std::cout << "Protein " << proteinName << " Experiment " << experimentData << std::endl;
+  std::cout << "ProteinObject " << proteinName << " Experiment " << experimentData << std::endl;
   return true;
 }
 
@@ -93,7 +93,7 @@ bool PDBFileParser::parseRemarkLine(const String& line)
     {
       static const double highestTolerableResolution = 2.5;
       double resolution = remark.substring(b, n).trim().getDoubleValue();
-      std::cout << "Protein " << proteinName << " Resolution " << resolution << std::endl;
+      std::cout << "ProteinObject " << proteinName << " Resolution " << resolution << std::endl;
       if (!beTolerant && resolution > highestTolerableResolution)
       {
         Object::error(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + lbcpp::toString(resolution) + T(" is not precise enough"));
@@ -154,11 +154,11 @@ bool PDBFileParser::parseSeqResLine(const String& line)
 
   // create protein if not done yet
   Chain& chain = chains[chainID];
-  ProteinPtr protein = chain.protein;
+  ProteinObjectPtr protein = chain.protein;
   if (!protein)
   {
     jassert(serialNumber == 1);
-    chain.protein = protein = new Protein(proteinName);
+    chain.protein = protein = new ProteinObject(proteinName);
     aminoAcidSequence = new LabelSequence(T("AminoAcidSequence"), AminoAcidDictionary::getInstance());
     protein->setObject(aminoAcidSequence);
     currentSeqResSerialNumber = serialNumber;
@@ -232,7 +232,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
 
   // retrieve/create protein from chain id
   Chain* chain = getChain(line, 22);
-  ProteinPtr protein;
+  ProteinObjectPtr protein;
   if (chain)
     protein = chain->protein;
   else
@@ -246,7 +246,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
       return true; // skip this chain
 
     chain = &chains[chainId]; // create a new chain
-    protein = (chain->protein = new Protein(proteinName));
+    protein = (chain->protein = new ProteinObject(proteinName));
   }
 
   // parse residue sequence number and insertion code
@@ -345,7 +345,7 @@ bool PDBFileParser::parseTerLine(const String& line)
   Chain* chain = getChain(line, 22);
   if (!chain)
     return true; // skip this chain
-  ProteinPtr protein = chain->protein;
+  ProteinObjectPtr protein = chain->protein;
   jassert(protein);
 
   if (!chain->tertiaryStructureBlocks.size())
@@ -432,7 +432,7 @@ bool PDBFileParser::checkResidueConsistency(ProteinResidueAtomsPtr residue)
   return true;
 }
 
-ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ProteinResidueAtomsPtr> >& tertiaryStructureBlocks)
+ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinObjectPtr protein, const std::vector< std::vector<ProteinResidueAtomsPtr> >& tertiaryStructureBlocks)
 {
   if (!tertiaryStructureBlocks.size())
   {
@@ -507,7 +507,7 @@ ProteinTertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPt
   return tertiaryStructure;
 }
 
-LabelSequencePtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
+LabelSequencePtr PDBFileParser::finalizeDisorderSequence(ProteinObjectPtr protein)
 {
   if (experimentData != T("X-RAY DIFFRACTION"))
     return LabelSequencePtr(); // for the moment, disorder regions are only determined for X-ray diffraction models
@@ -554,7 +554,7 @@ bool PDBFileParser::parseEnd()
 
   for (ChainMap::const_iterator it = chains.begin(); it != chains.end(); ++it)
   {
-    ProteinPtr protein = it->second.protein;
+    ProteinObjectPtr protein = it->second.protein;
     ProteinTertiaryStructurePtr tertiaryStructure = finalizeChain(it->first, protein, it->second.tertiaryStructureBlocks);
     if (!tertiaryStructure)
       return false;
@@ -569,9 +569,9 @@ bool PDBFileParser::parseEnd()
   return true;
 }
 
-std::vector<ProteinPtr> PDBFileParser::getAllChains() const
+std::vector<ProteinObjectPtr> PDBFileParser::getAllChains() const
 {
-  std::vector<ProteinPtr> res;
+  std::vector<ProteinObjectPtr> res;
   res.reserve(chains.size());
   for (ChainMap::const_iterator it = chains.begin(); it != chains.end(); ++it)
     res.push_back(it->second.protein);

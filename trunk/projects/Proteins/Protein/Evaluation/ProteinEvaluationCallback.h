@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 # define LBCPP_PROTEIN_INFERENCE_EVALUATION_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 # include "ScoreVectorSequenceErrorEvaluator.h"
 
 namespace lbcpp
@@ -261,7 +261,7 @@ class ProteinEvaluator : public Evaluator
 {
 public:
   ProteinEvaluator() :
-    Evaluator(T("Protein")), numProteins(0),
+    Evaluator(T("ProteinObject")), numProteins(0),
     pssmEvaluator(scoreVectorSequenceRegressionErrorEvaluator(T("PSSM"))),
     secondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS3"))),
     dsspSecondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS8"))),
@@ -297,8 +297,8 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    ProteinPtr predicted = predictedObject.dynamicCast<Protein>();
-    ProteinPtr correct = correctObject.dynamicCast<Protein>();
+    ProteinObjectPtr predicted = predictedObject.dynamicCast<ProteinObject>();
+    ProteinObjectPtr correct = correctObject.dynamicCast<ProteinObject>();
     if (!predicted || !correct)
       return;
 
@@ -395,7 +395,7 @@ public:
       
     if (stack->getDepth() == 2)
     {
-      jassert((!output || output.dynamicCast<Protein>()) && (!supervision || supervision.dynamicCast<Protein>()));
+      jassert((!output || output.dynamicCast<ProteinObject>()) && (!supervision || supervision.dynamicCast<ProteinObject>()));
       if (output && supervision)
         evaluator->addPrediction(output, supervision);
     }

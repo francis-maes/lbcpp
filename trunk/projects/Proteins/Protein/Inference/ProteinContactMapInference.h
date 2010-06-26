@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinContactMapInference.h   | Protein Contact Map Inference   |
+| Filename: ProteinContactMapInference.h   | ProteinObject Contact Map Inference   |
 | Author  : Francis Maes                   |                                 |
 | Started : 28/04/2010 11:46               |                                 |
 `------------------------------------------/                                 |
@@ -20,7 +20,7 @@ public:
   ContactMapScoresInference(const String& name, InferencePtr scoreInference, ProteinResiduePairFeaturesPtr features, const String& targetName);
   ContactMapScoresInference() {}
 
-  virtual void computeSubStepIndices(ProteinPtr protein, std::vector< std::pair<size_t, size_t> >& res) const;
+  virtual void computeSubStepIndices(ProteinObjectPtr protein, std::vector< std::pair<size_t, size_t> >& res) const;
   virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const;
   virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const;
 };

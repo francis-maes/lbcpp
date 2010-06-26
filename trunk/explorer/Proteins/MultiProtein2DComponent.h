@@ -10,7 +10,7 @@
 # define EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 
 # include "../Utilities/SplittedLayout.h"
-# include "../../projects/Proteins/Protein/Protein.h"
+# include "../../projects/Proteins/Protein/ProteinObject.h"
 
 namespace lbcpp
 {
@@ -111,7 +111,7 @@ private:
 
   juce::ComboBox* createProteinComboBox()
   {
-    juce::ComboBox* res = new juce::ComboBox(T("Protein"));
+    juce::ComboBox* res = new juce::ComboBox(T("ProteinObject"));
     for (size_t i = 0; i < configuration->getNumProteins(); ++i)
       res->addItem(configuration->getProteinName(i), i + 1);
     res->addListener(this);
@@ -217,7 +217,7 @@ private:
 class MultiProtein2DComponent : public Component, public juce::ChangeListener
 {
 public:
-  MultiProtein2DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
+  MultiProtein2DComponent(const std::vector<ProteinObjectPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
     : proteins(proteins), configuration(configuration)
   {
     addAndMakeVisible(configurationComponent = new MultiProtein2DConfigurationComponent(configuration));
@@ -248,7 +248,7 @@ protected:
   MultiProtein2DConfigurationComponent* configurationComponent;
   ViewportComponent* viewport;
   
-  std::vector<ProteinPtr> proteins;
+  std::vector<ProteinObjectPtr> proteins;
   MultiProtein2DConfigurationPtr configuration;
 
   ScoreSymmetricMatrixPtr getMap(int proteinNumber) const

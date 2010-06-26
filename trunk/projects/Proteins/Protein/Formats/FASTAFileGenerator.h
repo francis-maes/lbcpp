@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_FORMATS_FASTA_FILE_GENERATOR_H_
 # define LBCPP_PROTEINS_FORMATS_FASTA_FILE_GENERATOR_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {
@@ -22,7 +22,7 @@ public:
 
   virtual void consume(ObjectPtr object)
   {
-    ProteinPtr protein = object.dynamicCast<Protein>();
+    ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
     jassert(protein);
     print(T(">") + protein->getName(), true);
     LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();

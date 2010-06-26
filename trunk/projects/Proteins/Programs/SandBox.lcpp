@@ -127,7 +127,7 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 #endif
   for (size_t i = 0; i < res->size(); ++i)
   {
-    ProteinPtr protein = res->getAndCast<Protein>(i);
+    ProteinObjectPtr protein = res->getAndCast<ProteinObject>(i);
     jassert(protein);
     protein->computeMissingFields();
   }

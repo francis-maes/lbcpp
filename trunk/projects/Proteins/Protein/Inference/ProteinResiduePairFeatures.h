@@ -20,7 +20,7 @@ public:
   virtual String getName() const
     {return getClassName();}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition) = 0;
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinResiduePairFeatures> ProteinResiduePairFeaturesPtr;
@@ -53,7 +53,7 @@ public:
 
   virtual String toString() const;
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein, size_t firstPosition, size_t secondPosition);
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t firstPosition, size_t secondPosition);
 
   size_t getNumSubFeatureFunctions() const
     {return subFeatureFunctions.size();}

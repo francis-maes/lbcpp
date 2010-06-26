@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Protein.h"
+#include "../Protein/ProteinObject.h"
 #include "../Protein/Formats/CASPFileGenerator.h"
 using namespace lbcpp;
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
   File pdbFile = cwd.getChildFile(argv[1]);
   std::cout << "Input PDB File: " << pdbFile.getFullPathName() << std::endl;
 
-  ProteinPtr protein = Protein::createFromPDB(pdbFile);
+  ProteinObjectPtr protein = ProteinObject::createFromPDB(pdbFile);
   if (!protein)
   {
     std::cerr << "Could not load pdb file" << std::endl;

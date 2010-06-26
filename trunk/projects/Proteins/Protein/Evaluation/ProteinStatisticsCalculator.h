@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_EVALUATION_STATISTICS_CALCULATOR_H_
 # define LBCPP_PROTEIN_EVALUATION_STATISTICS_CALCULATOR_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {
@@ -18,12 +18,12 @@ class ProteinStatisticsCalculator : public ObjectConsumer
 {
 public:
   ProteinStatisticsCalculator() : numProteins(0),
-    aminoAcidsPerProtein(T("Amino Acids / Protein")),
-    secondaryStructureElementsPerProtein(T("Secondary Structure / Protein")),
-    dsspElementsPerProtein(T("DSSP Secondary Structure / Protein")),
-    solventAccesibilityElementsPerProtein(T("Solvent Accesibility / Protein")),
-    atomsPerProtein(T("Atoms / Protein")),
-    residuesPerProtein(T("Residues / Protein")),
+    aminoAcidsPerProtein(T("Amino Acids / ProteinObject")),
+    secondaryStructureElementsPerProtein(T("Secondary Structure / ProteinObject")),
+    dsspElementsPerProtein(T("DSSP Secondary Structure / ProteinObject")),
+    solventAccesibilityElementsPerProtein(T("Solvent Accesibility / ProteinObject")),
+    atomsPerProtein(T("Atoms / ProteinObject")),
+    residuesPerProtein(T("Residues / ProteinObject")),
     nCalphaLength(T("N--CA length")),
     calphaCLength(T("CA--C length")), 
     cnLength(T("C--N length")),
@@ -42,7 +42,7 @@ public:
 
   virtual void consume(ObjectPtr object)
   {
-    ProteinPtr protein = object.dynamicCast<Protein>();
+    ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
     jassert(protein);
 
     ++numProteins;

@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_GLOBAL_FEATURES_H_
 # define LBCPP_PROTEIN_INFERENCE_GLOBAL_FEATURES_H_
 
-# include "../Protein.h"
+# include "../ProteinObject.h"
 
 namespace lbcpp
 {
@@ -20,7 +20,7 @@ public:
   virtual String getName() const
     {return getClassName();}
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein) = 0;
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinGlobalFeatures> ProteinGlobalFeaturesPtr;
@@ -38,7 +38,7 @@ public:
 
   virtual String toString() const;
 
-  virtual FeatureGeneratorPtr compute(ProteinPtr protein);
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein);
 
   size_t getNumSubFeatureFunctions() const
     {return subFeatureFunctions.size();}

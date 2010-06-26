@@ -135,7 +135,7 @@ private:
   }
 };
 
-// Input, Supervision: Protein
+// Input, Supervision: ProteinObject
 // Output: BackbondBondSequence
 class ProteinBackboneBondSequenceInferenceStep : public Protein1DTargetInference
 {
