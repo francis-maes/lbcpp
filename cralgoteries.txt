@@ -1,14 +1,6 @@
-- implementer les tableau de taille fixe -> utiliser pour stocker dans les proteines
-
-Variable:
- * support native de tableau, flags "fixedSize" et "fixedElementType"
-    * Class::getNumTemplateArguments(), Class::getTemplateArgument()
-    * TemplateClass pour le tableau
- * remplacer les LabelSequence par des variables tableau
- * ajouter une variable tableau pour les "residues"
+- checker que le Tupple::destroy(VariableValue) appele bien destroy() sur ses fils
 
 ExtraTrees:
- * Utiliser pleins des Variables tableau
  * coder le ParallelInferenceBatchLearner puis l'utiliser pour apprendre les ExtraTree
  * ExtraTree: classe de base ParallelVoteInference
  
