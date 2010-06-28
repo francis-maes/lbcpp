@@ -126,7 +126,6 @@ inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCoun
   return res;
 }
 
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_ERROR_HANDLER_H_

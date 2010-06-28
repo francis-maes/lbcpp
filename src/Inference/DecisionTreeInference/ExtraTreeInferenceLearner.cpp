@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Object/ObjectPair.h>
+#include <lbcpp/Inference/Inference.h>
 #include "ExtraTreeInferenceLearner.h"
 using namespace lbcpp;
 
@@ -73,8 +74,9 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExtraTreeInferencePtr inf
   for (++it; it != indices.end(); ++it)
   {
     ObjectPtr output = trainingData->getAndCast<ObjectPair>(*it)->getSecond();
-    if (!inference->areOutputObjectsEqual(firstOutput, output))
-      return false;
+    // FIXME
+    //if (!inference->areOutputObjectsEqual(firstOutput, output))
+    //  return false;
   }
   return true;
 }
@@ -90,36 +92,15 @@ size_t SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExtraTreeInference
   return 0; // FIXME    
 }
 
-/*
-** ExtraTreeInferenceLearner
-*/
-ExtraTreeInferenceLearner::ExtraTreeInferenceLearner(size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  : SharedParallelInference(T("ExtraTreeInferenceLearner"),
-      new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting)), numTrees(numTrees) {}
-
-ParallelInferenceStatePtr ExtraTreeInferenceLearner::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+ExtraTreeInference::ExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+  : ParallelVoteInference(name)
 {
-  ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-  for (size_t i = 0; i < numTrees; ++i)
-    res->addSubInference(subInference, input, Variable());
-  return res;
-}
-
-Variable ExtraTreeInferenceLearner::finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
-{
-  ExtraTreeInferencePtr learnedInference = state->getInput().dynamicCast<ObjectPair>()->getFirst().dynamicCast<ExtraTreeInference>();
-  jassert(learnedInference); 
+  InferencePtr baseLearner = new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting);
+  subInferences.resize(numTrees);
   for (size_t i = 0; i < numTrees; ++i)
   {
-    BinaryDecisionTreePtr decisionTree = state->getSubOutput(i).dynamicCast<BinaryDecisionTree>();
-    jassert(decisionTree);
-    learnedInference->addTree(decisionTree);
+    subInferences[i] = new SingleExtraTreeInference(name);
+    subInferences[i]->setBatchLearner(baseLearner);
   }
-  return Variable();
-}
-
-ExtraTreeInference::ExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  : Inference(name)
-{
-  setBatchLearner(new ExtraTreeInferenceLearner(numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting));
+  setBatchLearner(parallelInferenceLearner());
 }

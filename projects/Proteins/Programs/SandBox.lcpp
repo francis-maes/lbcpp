@@ -43,10 +43,9 @@ public:
     else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
     {
       // simulation-based learning is beginning
-      ObjectPairPtr inferenceAndExamples = input.dynamicCast<ObjectPair>();
-      if (inferenceAndExamples)
+      if (input.getType()->inheritsFrom(pairClass()))
       {
-        String inferenceName = inferenceAndExamples->getFirst()->getName();
+        String inferenceName = input[0].getObject()->getName();
         std::cout << std::endl << "=====================================================" << std::endl;
         std::cout << "======= " << inferenceName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
         std::cout << "=====================================================" << std::endl;

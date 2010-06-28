@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_SIMULATION_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_SIMULATION_H_
 
-# include <lbcpp/Inference/InferenceBatchLearner.h>
+# include <lbcpp/Inference/Inference.h>
 # include <lbcpp/Object/ObjectPair.h>
 # include "../InferenceCallback/OnlineLearningInferenceCallback.h"
 
@@ -19,7 +19,7 @@ namespace lbcpp
 class SimulationInferenceBatchLearner : public Inference
 {
 public:
-  ReturnCode train(InferenceContextPtr context, InferencePtr inference, ObjectContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inference, VariableContainerPtr trainingData)
   {
     ReturnCode returnCode = Inference::finishedReturnCode;
     
@@ -36,10 +36,8 @@ public:
 protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
-    jassert(inferenceAndTrainingData);
-    InferencePtr inference = inferenceAndTrainingData->getFirst().dynamicCast<Inference>();
-    ObjectContainerPtr trainingData = inferenceAndTrainingData->getSecond().dynamicCast<ObjectContainer>();
+    InferencePtr inference = input[0].getObjectAndCast<Inference>();
+    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
     jassert(inference && trainingData);
     returnCode = train(context, inference, trainingData);
     return ObjectPtr();

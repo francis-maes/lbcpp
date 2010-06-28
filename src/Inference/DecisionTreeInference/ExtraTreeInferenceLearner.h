@@ -41,18 +41,6 @@ protected:
   size_t sampleTreeRecursively(ExtraTreeInferencePtr inference, BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
 };
 
-class ExtraTreeInferenceLearner : public SharedParallelInference
-{
-public:
-  ExtraTreeInferenceLearner(size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
-
-private:
-  size_t numTrees;
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_EXTRA_TREE_LEARNER_H_

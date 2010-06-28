@@ -10,9 +10,9 @@
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
-#include <lbcpp/Inference/InferenceBatchLearner.h>
 #include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Object/ObjectPair.h>
+#include <lbcpp/Object/VariableContainer.h>
 using namespace lbcpp;
 
 /*
@@ -68,14 +68,60 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
   return inference->finalizeInference(pthis, state, returnCode);
 }
 
-Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examples)
+Inference::ReturnCode InferenceContext::train(InferencePtr inference, VariableContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
   InferencePtr learner = inference->getBatchLearner();
   jassert(learner);
   if (!learner)
     return Inference::errorReturnCode;
-  runInference(learner, ObjectPtr(new ObjectPair(inference, examples)), Variable(), res);
+  runInference(learner, Variable::pair(inference, examples), Variable(), res);
+  return res;
+}
+
+// temp: compatibility with ObjectContainer
+class ObjectPairToVariableContainer : public VariableContainer
+{
+public:
+  ObjectPairToVariableContainer() {}
+  ObjectPairToVariableContainer(ObjectContainerPtr container)
+    : container(container) {}
+
+  virtual size_t size() const
+    {return container->size();}
+
+  virtual Variable getVariable(size_t index) const
+  {
+    ObjectPairPtr pair = container->getAndCast<ObjectPair>(index);
+    return pair ? Variable::pair(pair->getFirst(), pair->getSecond()) : Variable();
+  }
+  
+  virtual void setVariable(size_t index, const Variable& value)
+    {jassert(false);}
+
+private:
+  ObjectContainerPtr container;
+};
+
+// tmp
+VariableContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples)
+{
+  static bool firstTime = true;
+  if (firstTime)
+    {LBCPP_DECLARE_CLASS(ObjectPairToVariableContainer, VariableContainer); firstTime = false;}
+  return new ObjectPairToVariableContainer(examples);
+}
+
+Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examplesContainer)
+{
+  ReturnCode res = Inference::finishedReturnCode;
+  InferencePtr learner = inference->getBatchLearner();
+  jassert(learner);
+  if (!learner)
+    return Inference::errorReturnCode;
+
+  VariableContainerPtr examples = convertOldStyleExamplesToNewStyle(examplesContainer);
+  runInference(learner, Variable::pair(inference, examples), Variable(), res);
   return res;
 }
 

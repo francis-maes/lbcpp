@@ -45,6 +45,11 @@ typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 class FeatureDictionary;
 typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
 
+// new
+class VariableContainer;
+typedef ReferenceCountedObjectPtr<VariableContainer> VariableContainerPtr;
+
+
 // object stream
 class ObjectStream;
 typedef ReferenceCountedObjectPtr<ObjectStream> ObjectStreamPtr;

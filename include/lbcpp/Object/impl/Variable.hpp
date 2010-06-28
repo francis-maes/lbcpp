@@ -146,6 +146,18 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
   return ReferenceCountedObjectPtr<O>();
 }
 
+template<class O>
+inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
+{
+  if (isObject())
+    return checkCast<O>(T("Variable::getObjectAndCast"), getObject());
+  else
+  {
+    Object::error(T("Variable::getObjectAndCast"), T("This variable is not an object"));
+    return ReferenceCountedObjectPtr<O>();
+  }
+}
+
 inline String Variable::toString() const
   {return type ? type->toString(value) : T("Nil");}
 

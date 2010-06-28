@@ -17,7 +17,11 @@ namespace lbcpp
 class Vector : public VariableContainer
 {
 public:
-  Vector(ClassPtr type = topLevelClass()) : type(type) {}
+  Vector(ClassPtr type = topLevelClass(), size_t initialSize = 0) : type(type)
+  {
+    if (initialSize)
+      values.resize(initialSize, VariableValue());
+  }
 
   virtual ~Vector()
     {clear();}
