@@ -22,7 +22,7 @@ qsub << EOF
 #$ -cwd
 
 #$ -N ${name}
-./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${name} Targets "${target}" NumProteinsToLoad ${nbProt} ${other}
+./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${name} Targets "${target}" NumProteinsToLoad ${nbProt} ${other} StoppingIteration 10
 EOF
 
 }
@@ -50,16 +50,32 @@ nbProt="140"
 
 #exit
 
-#for multitask in `python CombinaisonGenerator.py AllVertical VerticalBy2 OblicBy2 HorizontalBy2` -
-#do
-multitask="-"
-prefix="exp_Multi-Debug_${multitask}"
-database="PredictedDB/protein/SS3-SS8-SA-DR-BBB"
-nbProt="10"
-target="(SS3)1"
-other="MultiTaskFeatures $multitask"
-#other="$other SaveInference"
-launch
-#done
+#nbProt="500"
+#target="(SS3)10"
+#other="$other SaveInference IsExperimentalMode"
+#
+#prefix="exp2OldPSSM"
+#database="PredictedDB/supervision500/"
+#launch
+#
+#prefix="exp2NewNormPSSM"
+#database="PredictedDB/newSupervision500/"
+#launch
+#
+#exit
 
+#for multitask in `python CombinaisonGenerator.py VerticalBy2 OblicBy2 HorizontalBy2` -
+for multitask in OblicBy2
+do
+for targ in SS3
+do
+prefix="exp_MultiNoStAl_${multitask}"
+database="PredictedDB/protein/SS3-SS8-SA-DR-BBB"
+nbProt="500"
+target="(${targ})1"
+other="MultiTaskFeatures $multitask"
+other="$other SaveInference IsExperimentalMode"
+launch
+done
+done
 

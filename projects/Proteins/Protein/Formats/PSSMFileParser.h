@@ -97,7 +97,7 @@ public:
     String gapScore = line.substring(153, 157).trim();
     pssm->setScore(currentPosition, 20, gapScore.getDoubleValue());
     
-    pssm->setScore(currentPosition, 21, entropy(scores));
+    pssm->setScore(currentPosition, 21, entropy(scores) / 10);
 
     ++currentPosition;
     return true;

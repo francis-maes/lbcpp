@@ -98,7 +98,7 @@ public:
   /*
   ** List of existing sequences
   */
-  std::vector<LabelSequencePtr>& getLabelSequences();
+  void getLabelSequences(std::vector<LabelSequencePtr>& results);
   
   /*
   ** Compute some information
@@ -116,9 +116,6 @@ protected:
 
   virtual bool load(InputStream& istr);
   virtual void save(OutputStream& ostr) const;
-
-private:
-  std::vector<LabelSequencePtr> sequences;
 };
 
 }; /* namespace lbcpp */

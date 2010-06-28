@@ -600,31 +600,28 @@ void ProteinObject::save(OutputStream& ostr) const
   StringToObjectMap::save(ostr);
 }
 
-std::vector<LabelSequencePtr>& ProteinObject::getLabelSequences()
+void ProteinObject::getLabelSequences(std::vector<LabelSequencePtr>& results)
 {
-  sequences.clear();
-//  sequences.push_back(getAminoAcidSequence());
+  results.push_back(getAminoAcidSequence());
   
   SequencePtr toAdd;
-  toAdd = getStructuralAlphabetSequence();
-  if (toAdd)
-    sequences.push_back(toAdd);
+//  toAdd = getStructuralAlphabetSequence();
+//  if (toAdd)
+//    results.push_back(toAdd);
   
   toAdd = getSecondaryStructureSequence();
   if (toAdd)
-    sequences.push_back(toAdd);
+    results.push_back(toAdd);
   
   toAdd = getDSSPSecondaryStructureSequence();
   if (toAdd)
-    sequences.push_back(toAdd);
+    results.push_back(toAdd);
   
   toAdd = getSolventAccessibilityThreshold20();
   if (toAdd)
-    sequences.push_back(toAdd);
+    results.push_back(toAdd);
   
   toAdd = getDisorderSequence();
   if (toAdd)
-    sequences.push_back(toAdd);
-  
-  return sequences;
+    results.push_back(toAdd);
 }

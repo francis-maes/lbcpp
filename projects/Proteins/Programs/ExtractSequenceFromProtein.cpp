@@ -8,7 +8,8 @@ using namespace lbcpp;
 extern void declareProteinClasses();
 
 //#define SEQUENCE
-#define FEATURES
+//#define FEATURES
+#define SHOW_PSSM
 
 #ifdef SEQUENCE
 int main(int argc, char** argv)
@@ -45,6 +46,34 @@ int main(int argc, char** argv)
     std::cout << "OK" << std::endl;
   }
   
+  return 0;
+}
+#endif
+
+#ifdef SHOW_PSSM
+int main(int argc, char** argv)
+{
+  declareProteinClasses();
+
+  File inputFile;
+
+  ArgumentSet arguments;
+  arguments.insert(new FileArgument(T("input"), inputFile), true);
+
+  if (!arguments.parse(argv, 1, argc-1)) {
+    std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
+    return 1;
+  }
+
+  ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
+  if (!protein)
+  {
+    std::cout << "Invalid protein !" << std::endl;
+    return 1;
+  }
+
+  std::cout << protein->getPositionSpecificScoringMatrix()->toString() << std::endl;
+
   return 0;
 }
 #endif
