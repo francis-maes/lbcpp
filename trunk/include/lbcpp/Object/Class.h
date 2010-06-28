@@ -148,6 +148,7 @@ extern ClassPtr doubleClass();
 extern ClassPtr stringClass();
 
 extern ClassPtr pairClass();
+extern ClassPtr pairClass(ClassPtr firstClass, ClassPtr secondClass);
 
 /*
 ** Integer

@@ -29,16 +29,16 @@ protected:
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
-  BinaryDecisionTreePtr sampleTree(ExtraTreeInferencePtr inference, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData);
+  BinaryDecisionTreePtr sampleTree(ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData);
 
-  bool isAttributeConstant(size_t attributeNumber, ObjectContainerPtr trainingData, const std::set<size_t>& indices) const
+  bool isAttributeConstant(size_t attributeNumber, VariableContainerPtr trainingData, const std::set<size_t>& indices) const
   {
     // FIXME
     return false;
   }
 
-  bool shouldCreateLeaf(ExtraTreeInferencePtr inference, ObjectContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes) const;
-  size_t sampleTreeRecursively(ExtraTreeInferencePtr inference, BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
+  bool shouldCreateLeaf(VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes) const;
+  size_t sampleTreeRecursively(BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
 };
 
 }; /* namespace lbcpp */

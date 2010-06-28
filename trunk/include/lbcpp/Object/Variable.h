@@ -94,6 +94,9 @@ public:
   bool operator ==(const Variable& otherVariable) const
     {return equals(otherVariable);}
 
+  bool operator !=(const Variable& otherVariable) const
+    {return !equals(otherVariable);}
+
   size_t size() const;
   Variable operator [](size_t index) const;
 

@@ -48,7 +48,10 @@ typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
 // new
 class VariableContainer;
 typedef ReferenceCountedObjectPtr<VariableContainer> VariableContainerPtr;
-
+class Vector;
+typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
+class SymmetricMatrix;
+typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
 
 // object stream
 class ObjectStream;

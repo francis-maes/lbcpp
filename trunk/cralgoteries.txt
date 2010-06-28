@@ -1,8 +1,5 @@
 
-ExtraTrees:
- * utiliser le ParallelInferenceBatchLearner
- * ExtraTree: classe de base ParallelVoteInference
- 
+
 Library:
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
  * Remove "featureGenerator" keyword

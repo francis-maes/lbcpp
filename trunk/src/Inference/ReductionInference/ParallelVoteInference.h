@@ -19,6 +19,7 @@ class ParallelVoteInference : public VectorStaticParallelInference
 public:
   ParallelVoteInference(const String& name)
     : VectorStaticParallelInference(name) {}
+  ParallelVoteInference() {}
  
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {

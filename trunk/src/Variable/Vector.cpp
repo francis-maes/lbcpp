@@ -8,7 +8,7 @@
 #include <lbcpp/Object/Vector.h>
 using namespace lbcpp;
 
-size_t Vector::size() const
+size_t Vector::getNumVariables() const
   {return values.size();}
 
 Variable Vector::getVariable(size_t index) const

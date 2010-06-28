@@ -10,6 +10,7 @@
 using namespace lbcpp;
 
 extern void declareClassClasses();
+extern void declareVariableContainerClasses();
 
 extern void declareObjectContainerClasses();
 extern void declareObjectStreamClasses();
@@ -17,9 +18,7 @@ extern void declareObjectStreamClasses();
 // Object
 void declareObjectRelatedClasses()
 {
-  LBCPP_DECLARE_ABSTRACT_CLASS(VariableContainer, Object);
-  LBCPP_DECLARE_CLASS(Vector, VariableContainer);
-  LBCPP_DECLARE_CLASS(SymmetricMatrix, VariableContainer);
+  declareVariableContainerClasses();
 
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
   declareObjectContainerClasses();

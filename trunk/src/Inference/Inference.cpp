@@ -155,8 +155,15 @@ void declareInferenceClasses()
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
     LBCPP_DECLARE_ABSTRACT_CLASS(ParallelInference, Inference);
       LBCPP_DECLARE_ABSTRACT_CLASS(StaticParallelInference, ParallelInference);
+        LBCPP_DECLARE_ABSTRACT_CLASS(VectorStaticParallelInference, StaticParallelInference);
     LBCPP_DECLARE_ABSTRACT_CLASS(SequentialInference, Inference);
   
+  /*
+  ** Reduction
+  */
+  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, VectorStaticParallelInference);
+  LBCPP_DECLARE_CLASS(ParallelVoteInference, VectorStaticParallelInference);
+
   /*
   ** Numerical
   */
@@ -178,11 +185,8 @@ void declareInferenceClasses()
   ** Decision Tree
   */
   LBCPP_DECLARE_CLASS(BinaryDecisionTree, Object);
-
-  /*
-  ** Reduction
-  */
-  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, StaticParallelInference);
+  LBCPP_DECLARE_CLASS(BinaryDecisionTreeInference, Inference);
+  LBCPP_DECLARE_CLASS(ExtraTreeInference, ParallelVoteInference);
   
   /*
   ** Meta

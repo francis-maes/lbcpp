@@ -17,8 +17,11 @@ namespace lbcpp
 class Vector : public VariableContainer
 {
 public:
-  Vector(ClassPtr type = topLevelClass(), size_t initialSize = 0) : type(type)
+  Vector() {}
+
+  Vector(ClassPtr type, size_t initialSize = 0) : type(type)
   {
+    jassert(type != topLevelClass());
     if (initialSize)
       values.resize(initialSize, VariableValue());
   }
@@ -26,10 +29,10 @@ public:
   virtual ~Vector()
     {clear();}
 
-  ClassPtr getType() const
+  virtual ClassPtr getStaticType() const
     {return type;}
 
-  virtual size_t size() const;
+  virtual size_t getNumVariables() const;
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
 
@@ -42,13 +45,40 @@ public:
 private:
   ClassPtr type;
   std::vector<VariableValue> values;
-
+  
   bool checkType(const Variable& value) const;
 };
 
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
 extern ClassPtr vectorClass(ClassPtr elementsClass);
+
+class DynamicTypeVector : public VariableContainer
+{
+public:
+  DynamicTypeVector() {}
+
+  virtual size_t getNumVariables() const
+    {return variables.size();}
+
+  virtual Variable getVariable(size_t index) const
+    {jassert(index < variables.size()); return variables[index];}
+
+  virtual void setVariable(size_t index, const Variable& value)
+    {jassert(index < variables.size()); variables[index] = value;}
+
+  void reserve(size_t size)
+    {variables.reserve(size);}
+
+  void clear()
+    {variables.clear();}
+
+  void append(const Variable& value)
+    {variables.push_back(value);}
+
+private:
+  std::vector<Variable> variables;
+};
 
 }; /* namespace lbcpp */
 

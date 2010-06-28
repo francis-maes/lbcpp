@@ -212,11 +212,11 @@ void Enumeration::addElement(const String& elementName)
   elements.push_back(elementName);
 }
 
-#include "Class/BooleanClass.h"
-#include "Class/IntegerClass.h"
-#include "Class/DoubleClass.h"
-#include "Class/StringClass.h"
-#include "Class/TupleClass.h"
+#include "../Class/BooleanClass.h"
+#include "../Class/IntegerClass.h"
+#include "../Class/DoubleClass.h"
+#include "../Class/StringClass.h"
+#include "../Class/TupleClass.h"
 
 #define DECLARE_CLASS_SINGLETON_ACCESSOR(AccessorName, ClassName) \
   ClassPtr lbcpp::AccessorName() { \
@@ -233,6 +233,9 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(stringClass, T("String"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(pairClass, T("Pair"));
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(objectClass, T("Object"));
+
+ClassPtr lbcpp::pairClass(ClassPtr firstClass, ClassPtr secondClass)
+  {return pairClass();} // FIXME
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
 {

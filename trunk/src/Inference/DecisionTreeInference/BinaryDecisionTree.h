@@ -15,7 +15,6 @@
 namespace lbcpp 
 {
 
-
 class BinaryDecisionTree : public Object
 {
 public:
@@ -29,12 +28,37 @@ public:
     return res;
   }
 
+  Variable makePrediction(const Variable& input, size_t nodeIndex = 0) const;
+
 protected:
+  ClassPtr inputClass;
+  ClassPtr leavesClass;
+
   struct Node
   {
-    size_t indexOfLeftChild;
-    size_t splitVariable;
-    VariableValue splitArgument;
+    bool isInternalNode() const
+      {return splitVariable >= 0;}
+
+    bool isLeaf() const
+      {return splitVariable < 0;}
+
+    Variable getLeafValue() const
+      {jassert(isLeaf()); return argument;}
+
+    bool test(const Variable& variable) const
+    {
+      jassert(isInternalNode());
+      jassert(splitVariable >= 0 && splitVariable < (int)variable.size());
+      return variable[splitVariable] == argument; // TMP ! todo: elaborated SplitFunction
+    }
+
+    size_t getChildNodeIndex(const Variable& variable) const
+      {return indexOfLeftChild + (test(variable) ? 1 : 0);}
+
+  private:
+    int splitVariable; // internal nodes: >= 0, leafs: =-1
+    Variable argument; // internal nodes: split argument, leafs: answer value
+    size_t indexOfLeftChild; // only for internal nodes
   };
   std::vector<Node> nodes;
 };

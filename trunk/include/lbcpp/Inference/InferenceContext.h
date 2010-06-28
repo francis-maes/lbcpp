@@ -15,6 +15,9 @@
 namespace lbcpp
 {
 
+class Evaluator;
+typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
+
 class InferenceContext : public Object
 {
 public:
@@ -24,6 +27,7 @@ public:
 
   // new
   ReturnCode train(InferencePtr inference, VariableContainerPtr examples);
+  ReturnCode evaluate(InferencePtr inference, VariableContainerPtr examples, EvaluatorPtr evaluator);
 
   // old 
   ReturnCode train(InferencePtr inference, ObjectContainerPtr examples);
