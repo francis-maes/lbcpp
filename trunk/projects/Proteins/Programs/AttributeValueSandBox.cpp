@@ -15,51 +15,6 @@ extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
 
 
-class A : public Object
-{
-public:
-  virtual String toString() const
-    {return T("Hello A");}
-
-  enum
-  {
-    anintVariable = 0,
-    adoubleVariable,
-    astringVariable,
-    anobjectVariable,
-  };
-
-  virtual Variable getVariable(size_t index) const
-  {
-    switch (index)
-    {
-    case anintVariable: return 51;
-    case adoubleVariable: return 16.64;
-    case astringVariable: return T("Hello World");
-    case anobjectVariable: return Variable(const_cast<A* >(this));
-    };
-  }
-
-  virtual void setVariable(size_t index, const Variable& value)
-    {jassert(false);}
-};
-
-typedef ReferenceCountedObjectPtr<A> APtr;
-
-class AClass : public DefaultClass_<A>
-{
-public:
-  AClass() : DefaultClass_<A>(objectClass())
-  {
-    addVariable(integerClass(), T("anint"));
-    addVariable(doubleClass(), T("adouble"));
-    addVariable(stringClass(), T("astring"));
-    addVariable(objectClass(), T("anobject"));
-  }
-};
-
-////////////////////////////
-
 class PrintObjectVisitor : public ObjectVisitor
 {
 public:
@@ -102,22 +57,6 @@ protected:
       << valueAsString << std::endl;
   }
 };
-/*
-int main(int argc, char** argv)
-{
-  Class::declare(new ObjectClass());
-  Class::declare(new IntegerClass());
-  Class::declare(new DoubleClass());
-  Class::declare(new StringClass());
-  Class::declare(new AClass());
-
-  APtr a = Class::createInstanceAndCast<A>(T("A"));
-  a->accept(new PrintObjectVisitor(std::cout));
-  return 0;
-}
-*/
-
-////////////////////////////////////////////
 
 ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
@@ -135,8 +74,6 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   }
   return res;
 }
-
-
 
 void createResidues(ProteinObjectPtr protein, std::vector<ResiduePtr>& res)
 {
@@ -173,7 +110,7 @@ public:
 
   virtual Variable getVariable(size_t index) const
   {
-    // FIXM
+    // FIXME
     return Variable();
   }
 

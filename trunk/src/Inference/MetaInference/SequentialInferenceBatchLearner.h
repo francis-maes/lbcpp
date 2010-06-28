@@ -9,7 +9,8 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_SEQUENTIAL_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_SEQUENTIAL_H_
 
-# include <lbcpp/Inference/InferenceBatchLearner.h>
+# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Object/Vector.h>
 # include "RunOnSupervisedExamplesInference.h"
 
 namespace lbcpp
@@ -18,7 +19,7 @@ namespace lbcpp
 class SequentialInferenceBatchLearner : public Inference
 {
 public:
-  ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inf, VariableContainerPtr trainingData)
   {
     size_t numTrainingExamples = trainingData->size();
 
@@ -30,9 +31,9 @@ public:
     std::vector<SequentialInferenceStatePtr> currentStates(numTrainingExamples);
     for (size_t i = 0; i < numTrainingExamples; ++i)
     {
-      ObjectPairPtr example = trainingData->getAndCast<ObjectPair>(i);
+      Variable example = trainingData->getVariable(i);
       jassert(example);
-      SequentialInferenceStatePtr state = inference->prepareInference(context, example->getFirst(), example->getSecond(), returnCode);
+      SequentialInferenceStatePtr state = inference->prepareInference(context, example[0], example[1], returnCode);
       if (returnCode != finishedReturnCode)
         return returnCode;
       currentStates[i] = state;
@@ -42,15 +43,9 @@ public:
     while (true)
     {
       // make sub-training data 
-      VectorObjectContainerPtr subTrainingData = new VectorObjectContainer();
-      subTrainingData->resize(numTrainingExamples);
+      VariableContainerPtr subTrainingData = new Vector(pairClass(), numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
-      {
-//        std::pair<Variable, Variable> subExample = inference->prepareSubInference(currentStates[i], returnCode);
-        //if (returnCode != finishedReturnCode)
-        //  return returnCode;
-        subTrainingData->set(i, new ObjectPair(currentStates[i]->getSubInput(), currentStates[i]->getSubSupervision()));
-      }
+        subTrainingData->setVariable(i, Variable::pair(currentStates[i]->getSubInput(), currentStates[i]->getSubSupervision()));
 
       // get sub-inference and sub-learner
       InferencePtr subInference = currentStates[0]->getSubInference();
@@ -89,10 +84,8 @@ public:
 protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
-    jassert(inferenceAndTrainingData);
-    InferencePtr inference = inferenceAndTrainingData->getFirst().dynamicCast<Inference>();
-    ObjectContainerPtr trainingData = inferenceAndTrainingData->getSecond().dynamicCast<ObjectContainer>();
+    SequentialInferencePtr inference = input[0].getObjectAndCast<SequentialInference>();
+    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
     jassert(inference && trainingData);
     returnCode = train(context, inference, trainingData);
     return ObjectPtr();

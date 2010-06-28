@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/Inference.h>
-#include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
 
 /*
@@ -130,6 +129,7 @@ InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, Enu
 #include "MetaInference/RunOnSupervisedExamplesInference.h"
 #include "MetaInference/SimulationInferenceBatchLearner.h"
 #include "MetaInference/SequentialInferenceBatchLearner.h"
+#include "MetaInference/ParallelInferenceBatchLearner.h"
 
 InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
   {return new RunOnSupervisedExamplesInference(inference);}
@@ -143,6 +143,8 @@ InferencePtr lbcpp::simulationInferenceLearner()
 InferencePtr lbcpp::sequentialInferenceLearner()
   {return new SequentialInferenceBatchLearner();}
 
+InferencePtr lbcpp::parallelInferenceLearner()
+  {return new ParallelInferenceBatchLearner();}
 
 void declareInferenceClasses()
 {
@@ -185,5 +187,8 @@ void declareInferenceClasses()
   /*
   ** Meta
   */
-  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, DecoratorInference);
+  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, DecoratorInference);  
+  LBCPP_DECLARE_CLASS(SimulationInferenceBatchLearner, Inference);
+  LBCPP_DECLARE_CLASS(SequentialInferenceBatchLearner, Inference);
+  LBCPP_DECLARE_CLASS(ParallelInferenceBatchLearner, ParallelInference);
 }

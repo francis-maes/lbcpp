@@ -1,6 +1,6 @@
 
 ExtraTrees:
- * coder le ParallelInferenceBatchLearner puis l'utiliser pour apprendre les ExtraTree
+ * utiliser le ParallelInferenceBatchLearner
  * ExtraTree: classe de base ParallelVoteInference
  
 Library:

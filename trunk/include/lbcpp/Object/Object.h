@@ -67,8 +67,22 @@ public:
   */
   virtual ~Object() {}
 
+  /*
+  ** Introspection
+  */
   virtual ClassPtr getClass() const;
   String getClassName() const;
+
+  virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(size_t index, const Variable& value)
+    {jassert(false);} 
+  
+  virtual void accept(ObjectVisitorPtr visitor);
+
+  /*
+  ** Dynamic creation
+  **  deprecated functions, call directly the methods of Class
+  */
 
   static ObjectPtr create(const String& className);
 
@@ -176,14 +190,9 @@ public:
   virtual ObjectPtr clone() const
     {jassert(false); return ObjectPtr();}
 
+  // tmp
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
     {}
-
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value)
-    {jassert(false);}
-
-  virtual void accept(ObjectVisitorPtr visitor);
 
   /**
   ** Clones and cast the current object.

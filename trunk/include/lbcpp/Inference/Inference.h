@@ -11,6 +11,7 @@
 
 # include "predeclarations.h"
 # include "../Object/Variable.h"
+# include "../Object/VariableContainer.h"
 # include "../ObjectPredeclarations.h"
 
 namespace lbcpp
@@ -84,6 +85,16 @@ extern InferencePtr oneAgainstAllClassificationInference(const String& name, Enu
 ** Decision Tree Inference
 */
 extern InferencePtr multiClassExtraTreeInference(const String& name);
+
+/*
+** Meta Inference
+*/
+// Input: (Inference, trainingData) pair; trainingData = container of (input, supervision) pairs
+// Supervision: None
+// Output: None (side-effect on input Inference)
+extern InferencePtr simulationInferenceLearner();
+extern InferencePtr sequentialInferenceLearner();
+extern InferencePtr parallelInferenceLearner();
 
 // Misc
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);

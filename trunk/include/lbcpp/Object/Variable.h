@@ -79,6 +79,8 @@ public:
 
   bool isObject() const;
   ObjectPtr getObject() const;
+  template<class O>
+  ReferenceCountedObjectPtr<O> getObjectAndCast() const;
 
   template<class O>
   ReferenceCountedObjectPtr<O> dynamicCast() const;

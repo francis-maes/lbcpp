@@ -72,7 +72,6 @@
 # include "Inference/SequentialInference.h"
 # include "Inference/ParallelInference.h"
 # include "Inference/InferenceOnlineLearner.h"
-# include "Inference/InferenceBatchLearner.h"
 # include "Inference/InferenceResultCache.h"
 # include "Inference/Evaluator.h"
 

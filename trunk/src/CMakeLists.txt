@@ -153,7 +153,6 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
   ../include/lbcpp/Inference/InferenceOnlineLearner.h
-  ../include/lbcpp/Inference/InferenceBatchLearner.h
   ../include/lbcpp/Inference/InferenceResultCache.h
   ../include/lbcpp/Inference/Evaluator.h
 )
@@ -183,6 +182,7 @@ SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
 
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
+  Inference/ReductionInference/ParallelVoteInference.h
 )
 
 SET(LBCPP_INFERENCE_META_SOURCES
@@ -190,6 +190,7 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/RunOnSupervisedExamplesInference.h
   Inference/MetaInference/SimulationInferenceBatchLearner.h
   Inference/MetaInference/SequentialInferenceBatchLearner.h
+  Inference/MetaInference/ParallelInferenceBatchLearner.h
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES

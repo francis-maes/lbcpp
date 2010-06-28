@@ -13,9 +13,13 @@
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/Object/ObjectPair.h>
 
+// tmp
+extern VariableContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples);
+
 namespace lbcpp
 {
  
+  
 // Input: (Input, Supervision) ObjectContainer
 // Supervision: None
 // Output: None
@@ -27,15 +31,21 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ObjectContainerPtr examples = input.dynamicCast<ObjectContainer>();
+    VariableContainerPtr examples = input.dynamicCast<VariableContainer>();
+    if (!examples)
+    {
+      ObjectContainerPtr oldStyleExamples = input.dynamicCast<ObjectContainer>();
+      jassert(oldStyleExamples);
+      examples = convertOldStyleExamplesToNewStyle(oldStyleExamples);
+    }
     jassert(examples);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(examples->size());
     for (size_t i = 0; i < examples->size(); ++i)
     {
-      ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
-      res->addSubInference(inference, example->getFirst(), example->getSecond());
+      Variable example = examples->getVariable(i);
+      res->addSubInference(inference, example[0], example[1]);
     }
     return res;
   }
@@ -55,15 +65,15 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ObjectContainerPtr examples = input.dynamicCast<ObjectContainer>();
+    VariableContainerPtr examples = input.dynamicCast<VariableContainer>();
     jassert(examples);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(examples->size());
     for (size_t i = 0; i < examples->size(); ++i)
     {
-      ObjectPairPtr example = examples->getAndCast<ObjectPair>(i);
-      res->addSubInference(currentStates[i]->getSubInference(), example->getFirst(), example->getSecond());
+      Variable example = examples->getVariable(i);
+      res->addSubInference(currentStates[i]->getSubInference(), example[0], example[1]);
     }
     return res;
   }
