@@ -149,15 +149,16 @@ private:
 class GlobalGnuPlotInferenceCallback : public InferenceCallback
 {
 public:
-  GlobalGnuPlotInferenceCallback(EvaluationInferenceCallbackPtr evaluation, const String& prefix)
-    : evaluation(evaluation), prefix(prefix)
-    , startingTime(Time::getMillisecondCounter())
+  GlobalGnuPlotInferenceCallback(EvaluationInferenceCallbackPtr evaluation, const String& prefix, bool saveIterationScores = false)
+    : evaluation(evaluation), prefix(prefix), saveIterationScores(saveIterationScores)
+    , startingTime(Time::getMillisecondCounter()), iteration(0), oIteration(NULL)
     , bestTraininScore(-DBL_MAX), bestTestingScore(-DBL_MAX) {}
   
   virtual ~GlobalGnuPlotInferenceCallback()
   {
     for (std::map< String, OutputStream* >::const_iterator iter = oStream.begin(); iter != oStream.end(); iter++)
       delete iter->second;
+    delete oIteration;
   }
 
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
@@ -166,6 +167,10 @@ public:
     {
       bestTraininScore = -DBL_MAX;
       bestTestingScore = -DBL_MAX;
+      iteration = 0;
+      iterationStartingTime = Time::getMillisecondCounter();
+      delete oIteration;
+      oIteration = NULL;
     }
   }
   
@@ -198,16 +203,38 @@ public:
         bestTraininScore = evaluation->getTrainingScore();
         bestTestingScore = evaluation->getTestingScore();
       }
+
+      if (saveIterationScores)
+      {
+        if (!iteration)
+        {
+          const String target = evaluation->getTarget();
+          File dst = File::getCurrentWorkingDirectory().getChildFile(prefix + T(".") + target + T(".") +  lbcpp::toString(passes[target]));
+          dst.deleteFile();
+          oIteration = dst.createOutputStream();
+        }
+        *oIteration << (int) iteration << '\t'
+        << evaluation->getTrainingScore() << '\t'
+        << evaluation->getTestingScore() << '\t'
+        << (juce::Time::getMillisecondCounter() - iterationStartingTime) / 1000. << '\n';
+        oIteration->flush();
+        ++iteration;
+      }
     }
   }
 
 private:
   EvaluationInferenceCallbackPtr evaluation;
   const String prefix;
+  bool saveIterationScores;
   juce::uint32 startingTime;
   
   std::map< String, OutputStream* > oStream;
   std::map< String, size_t > passes;
+
+  size_t iteration;
+  OutputStream* oIteration;
+  juce::uint32 iterationStartingTime;
 
   double bestTraininScore;
   double bestTestingScore;
@@ -278,11 +305,42 @@ private:
   double bestTestingScore;
 };
 
+class SaveInferenceCallback : public InferenceCallback
+{
+public:
+  SaveInferenceCallback(const InferencePtr inference, const String& prefix)
+    : inference(inference), prefix(prefix)
+    {}
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, ObjectPtr input, ObjectPtr supervision, ObjectPtr& output, ReturnCode& returnCode)
+  {
+    if (stack->getCurrentInference()->getClassName() != T("SimulationInferenceBatchLearner"))
+      return;
+    std::cout << "------- Saving inference -------" << std::endl;
+    inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(prefix));
+  }
+
+private:
+  InferencePtr inference;
+  String prefix;
+};
+
+
 static int stoppingIteration = 20;
 static double regularizer = 0.0;
+static bool isExperimentalMode = false;
 
 InferenceOnlineLearnerPtr createOnlineLearner(double learningRate, size_t learningStep)
 {
+  if (isExperimentalMode)
+  {
+    return gradientDescentInferenceOnlineLearner(
+      InferenceOnlineLearner::never,                                                 // randomization
+      InferenceOnlineLearner::perStep, constantIterationFunction(1.0), true, // learning steps
+      InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(regularizer),         // regularizer
+      InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(stoppingIteration), true);                     // stopping criterion
+  }
+
   StoppingCriterionPtr stoppingCriterion = logicalOr(
     maxIterationsStoppingCriterion(stoppingIteration),
     maxIterationsWithoutImprovementStoppingCriterion(3));
@@ -338,7 +396,8 @@ int main(int argc, char** argv)
   arguments.insert(new FileArgument(T("InputInference"), inputInference, true, true));
   arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
   arguments.insert(new StringArgument(T("MultiTaskFeatures"), multiTaskFeatures));
-  
+  arguments.insert(new IntegerArgument(T("StoppingIteration"), stoppingIteration));
+  arguments.insert(new BooleanArgument(T("IsExperimentalMode"), isExperimentalMode));
   
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -399,27 +458,28 @@ int main(int argc, char** argv)
   /*
   ** Creation of features function
   */
+std::cout << "Simple feature: Unit, Seq. Win. 10, PSSM Win. 10, MultiTask" << std::endl;
   CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
 /*  
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 5, 5, true));
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
 */
-//  featureFunction->addSubFeatures(proteinUnitResidueFeature());
-  
-//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 9, 9, true));
+  featureFunction->addSubFeatures(proteinUnitResidueFeature());
+
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 10, 10, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
-  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
-  
+////featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
+//
 //  featureFunction->addSubFeatures(proteinPositionFeatures());
-  
+//
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 9, 9, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
-
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), 20, 20, true));
+//
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), 20, 20, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), 80, true));
-
-//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 11, 11, true));
+//
+  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 10, 10, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
 //  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
 //
@@ -440,10 +500,10 @@ int main(int argc, char** argv)
 //  
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 //
-////  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures(multiTaskFeatures));
+  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures(multiTaskFeatures, 5));
 //
 //  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
-  //featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
+//  //featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
 
   /*
   ** Creation of the inference
@@ -541,17 +601,15 @@ int main(int argc, char** argv)
   EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
 
   learningContext->appendCallback(new StandardOutputInferenceCallback(evaluationCallback));
-  learningContext->appendCallback(new GlobalGnuPlotInferenceCallback(evaluationCallback, output));
+  learningContext->appendCallback(new GlobalGnuPlotInferenceCallback(evaluationCallback, output, isExperimentalMode));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence")));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("ResidueResidueContactMatrix8Ca"), T("BackboneBondSequence")));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("StructuralAlphabetSequence"), T("BackboneBondSequence")));
   learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("TertiaryStructure"), T("BackboneBondSequence")));
   learningContext->appendCallback(evaluationCallback); // must be the last callback
-
-  learningContext->train(proteinInference, trainingData);
-
   if (saveInference)
-    proteinInference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output));
+    learningContext->appendCallback(new SaveInferenceCallback(proteinInference, output));
+  learningContext->train(proteinInference, trainingData);
 
   return 0;
 }

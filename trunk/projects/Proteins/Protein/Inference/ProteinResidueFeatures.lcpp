@@ -274,10 +274,18 @@ ProteinResidueFeaturesPtr lbcpp::proteinSequenceEntropyFeatures(const String& se
 /*
 ** MultiSequenceConjunctionProteinResidueFeatures
 */
+
+#include "Protein/AminoAcidDictionary.h"
+#include "Protein/SecondaryStructureDictionary.h"
+
 class MultiSequenceConjunctionProteinResidueFeatures : public ProteinResidueFeatures {
 public:
-  MultiSequenceConjunctionProteinResidueFeatures(const String& multiTaskFeatures = String::empty, size_t windowLength = 5)
-    : multiTaskFeatures(multiTaskFeatures)
+  MultiSequenceConjunctionProteinResidueFeatures()
+    : multiTaskFeatures(String::empty), windowLength(5)
+    {}
+
+  MultiSequenceConjunctionProteinResidueFeatures(const String& multiTaskFeatures, size_t windowLength)
+    : multiTaskFeatures(multiTaskFeatures), windowLength(windowLength)
     {}
   
   virtual String toString() const
@@ -291,80 +299,186 @@ public:
     if (multiTaskFeatures == String::empty || multiTaskFeatures == T("-"))
       return;
 
-    size_t begin = juce::jlimit(0, (int)protein->getLength() -1, (int)(position - windowLength));
-    size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + windowLength));
+    std::vector<LabelSequencePtr> sequences;
+    protein->getLabelSequences(sequences);
 
-    std::vector<LabelSequencePtr> sequences = protein->getLabelSequences();
-    const size_t sequencesSize = sequences.size();
-    String res;
-    for (size_t pos = begin; pos <= end; ++pos) // Windowed
+    const size_t nbSequences = sequences.size();
+    const size_t n = protein->getLength();
+
+    if (!nbSequences)
+      return;
+
+    size_t sequencesID[nbSequences];
+    for (size_t i = 0; i < nbSequences; ++i)
+      sequencesID[i] = getIdentifier(sequences[i]);
+
+    if (multiTaskFeatures.contains(T("VerticalBy2")) && nbSequences > 1)
     {
-      size_t i, j;
-      if (multiTaskFeatures.contains(T("AllVertical")))
+      featureScope("VerticalBy2")
       {
-        /* Conjunction: Vertical over all sequences */
-        for (i = 0; i < sequencesSize; ++i)
-          res += sequences[i]->getName() + sequences[i]->elementToString(pos);
-        featureScope("stconj_fv")
-          featureScope(binarizeIntegerAroundZero(pos - position))
-            featureSense(res);
-      }
-
-      if (multiTaskFeatures.contains(T("VerticalBy2")))
-      {
-        /* Conjunction: Vertical 2-by-2 sequences */
-        for (i = 0; sequencesSize && i < sequencesSize - 1; ++i)
-          for (j = i + 1; j < sequencesSize; ++j)
-            featureScope("stconj_2v")
-              featureScope(binarizeIntegerAroundZero(pos - position))
-                featureSense(sequences[i]->getName()
-              + sequences[i]->elementToString(pos)
-              + sequences[j]->getName()
-              + sequences[j]->elementToString(pos));
-      }
-
-      if (multiTaskFeatures.contains(T("HorizontalBy2")))
-      {
-        /* Conjunction: Horizontal 2-by-2 sequences */
-        for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
-          featureScope("stconj_2h")
-            featureScope(binarizeIntegerAroundZero(pos - position))
-              featureSense(sequences[i]->getName()
-            + sequences[i]->elementToString(pos)
-            + sequences[i]->elementToString(pos + 1));
-      }
-
-      if (multiTaskFeatures.contains(T("OblicBy2")))
-      {
-        /* Conjunction: Right-Down-Oblic 2-by-2 */
-        for (i = 0; pos != protein->getLength() - 1 && i < sequencesSize; ++i)
-          for (j = i + 1; j < sequencesSize; ++j)
-            featureScope("stconj_2ro")
-              featureScope(binarizeIntegerAroundZero(pos - position))
-                featureSense(sequences[i]->getName()
-              + sequences[i]->elementToString(pos)
-              + sequences[j]->getName()
-              + sequences[j]->elementToString(pos + 1));
-        
-        /* Conjunction: Left-Down-Oblic 2-by-2 */
-        for (i = 0; pos != 0 && i < sequencesSize; ++i)
-          for (j = i + 1; j < sequencesSize; ++j)
-            featureScope("stconj_2lo")
-              featureScope(binarizeIntegerAroundZero(pos - position))
-                featureSense(sequences[i]->getName()
-              + sequences[i]->elementToString(pos)
-              + sequences[j]->getName()
-              + sequences[j]->elementToString(pos - 1));
+        for (int shift = -windowLength; shift <= (int)windowLength; ++shift)
+        {
+          const int index = (int)position + shift;
+          featureScope(shift + windowLength)
+          {
+            if (index < 0)
+              featureSense("before");
+            else if (index < n)
+            {
+              for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                featureScope(sequencesID[s1])
+                featureScope(sequences[s1]->getIndex(index))
+                for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                  featureScope(sequencesID[s2])
+                  featureSense(sequences[s2]->getIndex(index));
+            }
+            else
+              featureSense("after");
+          }
+        }
       }
     }
+  
+    if (multiTaskFeatures.contains(T("HorizontalBy2")))
+    {
+      featureScope("HorizontalBy2")
+      {
+        for (int shift = -windowLength; shift <= (int)windowLength; ++shift)
+        {
+          const int index = (int)position + shift;
+          featureScope(shift + windowLength)
+          {
+            if (index < 0)
+              featureSense("before");
+            else if (index < n - 1)
+            {
+              for (size_t s = 0; s < nbSequences; ++s)
+                featureScope(sequencesID[s])
+                featureScope(sequences[s]->getIndex(index))
+                featureSense(sequences[s]->getIndex(index+1));
+            }
+            else
+              featureSense("after");
+          }
+        }
+      }
+    }
+
+    if (multiTaskFeatures.contains(T("OblicBy2")) && nbSequences > 1)
+    {
+      featureScope("OblicBy2")
+      {
+        for (int shift = -windowLength; shift <= (int)windowLength; ++shift)
+        {
+          const int index = (int)position + shift;
+          featureScope(shift + windowLength)
+          {
+            featureScope("TopLeft")
+            {
+              if (index <= 0)
+                featureSense("before");
+              else if (index < n)
+              {
+                for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                  for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                    featureScope(sequencesID[s1])
+                    featureScope(sequencesID[s2])
+                    featureScope(sequences[s1]->getIndex(index-1))
+                    featureSense(sequences[s2]->getIndex(index));
+              }
+              else
+                featureSense("after");
+            }
+
+            featureScope("TopRight")
+            {
+              if (index < 0)
+                featureSense("before");
+               else if (index < n - 1)
+               {
+                 for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                   for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                     featureScope(sequencesID[s1])
+                     featureScope(sequencesID[s2])
+                     featureScope(sequences[s1]->getIndex(index+1))
+                     featureSense(sequences[s2]->getIndex(index));
+               }
+               else
+                 featureSense("after");
+            }
+
+            featureScope("BottomLeft")
+            {
+              if (index <= 0)
+                featureSense("before");
+              else if (index < n)
+              {
+                for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                  for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                    featureScope(sequencesID[s1])
+                    featureScope(sequencesID[s2])
+                    featureScope(sequences[s1]->getIndex(index))
+                    featureSense(sequences[s2]->getIndex(index-1));
+              }
+              else
+                featureSense("after");
+            }
+
+            featureScope("BottomRight")
+            {
+              if (index < 0)
+                featureSense("before");
+               else if (index < n - 1)
+               {
+                 for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                   for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                     featureScope(sequencesID[s1])
+                     featureScope(sequencesID[s2])
+                     featureScope(sequences[s1]->getIndex(index))
+                     featureSense(sequences[s2]->getIndex(index+1));
+               }
+               else
+                 featureSense("after");
+            }
+          }  
+        }  
+      }
+    }
+
   }
 
 private:
   String multiTaskFeatures;
   size_t windowLength;
 
-  inline size_t binarizeIntegerAroundZero(int value) const
-    {return value < 0 ? 0 : 1;}
+  size_t getIdentifier(LabelSequencePtr sequence)
+  {
+    if (sequence->getDictionary() == AminoAcidDictionary::getInstance())
+      return 0;
+
+    if (sequence->getDictionary() == SecondaryStructureDictionary::getInstance())
+      return 1;
+    
+    if (sequence->getDictionary() == DSSPSecondaryStructureDictionary::getInstance())
+      return 2;
+
+    if (sequence->getDictionary() == StructuralAlphabetDictionary::getInstance())
+      return 3;
+
+    if (sequence->getDictionary() == BinaryClassificationDictionary::getInstance())
+    {
+      if (sequence->getName() == T("DisorderSequence"))
+        return 4;
+
+      if (sequence->getName() == T("SolventAccessibilityThreshold"))
+        return 5;
+
+      jassert(false);
+    }
+
+    jassert(false);
+    return 6;
+  }
 };
 
 ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures(const String& multiTaskFeatures, size_t windowLength)

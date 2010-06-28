@@ -36,7 +36,7 @@ extern ProteinResidueFeaturesPtr proteinSequenceWindowFeatures(const String& seq
 extern ProteinResidueFeaturesPtr proteinFrequencyWindowFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent);
 extern ProteinResidueFeaturesPtr proteinSegmentConjunctionFeatures(const String& sequenceName, size_t numSegmentsPerSide);
 extern ProteinResidueFeaturesPtr proteinSequenceEntropyFeatures(const String& sequenceName, size_t numPrevsAndNexts);
-extern ProteinResidueFeaturesPtr multiSequenceConjunctionFeatures(const String& multiTaskFeatures = String::empty, size_t windowLength = 5);
+extern ProteinResidueFeaturesPtr multiSequenceConjunctionFeatures(const String& multiTaskFeatures, size_t windowLength);
   
 class CompositeProteinResidueFeatures : public ProteinResidueFeatures
 {
