@@ -29,7 +29,7 @@ public:
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
 
-  size_t reserve(size_t size)
+  void reserve(size_t size)
     {values.reserve(size);}
 
   void clear();

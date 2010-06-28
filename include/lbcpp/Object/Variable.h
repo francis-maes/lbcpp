@@ -88,6 +88,9 @@ public:
   */
   String toString() const;
   bool equals(const Variable& otherValue) const;
+  
+  bool operator ==(const Variable& otherVariable) const
+    {return equals(otherVariable);}
 
   size_t size() const;
   Variable operator [](size_t index) const;

@@ -19,7 +19,9 @@ namespace lbcpp
 class Protein : public NameableObject
 {
 public:
-  
+  VectorPtr getPrimaryStructure() const
+    {return primaryStructure;}
+
 protected:
   VectorPtr primaryStructure;
   VectorPtr secondaryStructure;

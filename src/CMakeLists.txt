@@ -8,6 +8,9 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/Object.h
   ../include/lbcpp/Object/Class.h
   ../include/lbcpp/Object/Variable.h
+  ../include/lbcpp/Object/VariableContainer.h
+  ../include/lbcpp/Object/Vector.h
+  ../include/lbcpp/Object/SymmetricMatrix.h
   ../include/lbcpp/Object/ObjectStream.h
   ../include/lbcpp/Object/ObjectContainer.h
   ../include/lbcpp/Object/ObjectPair.h
