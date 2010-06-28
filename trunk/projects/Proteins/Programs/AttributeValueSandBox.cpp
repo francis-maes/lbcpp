@@ -218,6 +218,9 @@ int main(int argc, char** argv)
   declareProteinClasses();
   Class::declare(new ProteinResidueInputAttributesClass(8));
 
+  Variable myEnumValue(asparticAcid, aminoAcidTypeEnumeration());
+  std::cout << myEnumValue << std::endl;
+
   Variable container = Variable::pair(16.64, 51);
   std::cout << "pair: " << container << " size: " << container.size() << std::endl;
   for (size_t i = 0; i < container.size(); ++i)
@@ -225,7 +228,9 @@ int main(int argc, char** argv)
   Variable containerCopy = container;
   std::cout << "container copy: " << containerCopy << " (type = "
     << containerCopy.getType()->getName() << " equals: " << Variable(container == containerCopy) << std::endl;
-
+  
+  return 0;
+  
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   ObjectContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
   

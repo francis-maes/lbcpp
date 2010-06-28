@@ -89,7 +89,7 @@ public:
 
 static const juce::tchar* aminoAcidTypeStrings[] = {
   // 20 amino acids
-  T("Alanine"), T("Asparagine"), T("Aspartic Acid"), T("Cysteine"),
+  T("Alanine"), T("Arginine"), T("Asparagine"), T("Aspartic Acid"), T("Cysteine"),
   T("Glutamic Acid"), T("Glutamine"), T("Glycine"), T("Histidine"), T("Isoleucine"),
   T("Leucine"), T("Lysine"), T("Methionine"), T("Phenylalanine"), T("Proline"),
   T("Serine"), T("Threonine"), T("Tryptophan"), T("Tyrosine"), T("Valine"),

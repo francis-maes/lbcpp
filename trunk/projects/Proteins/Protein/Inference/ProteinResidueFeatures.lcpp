@@ -323,7 +323,7 @@ public:
           {
             if (index < 0)
               featureSense("before");
-            else if (index < n)
+            else if (index < (int)n)
             {
               for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
                 featureScope(sequencesID[s1])
@@ -350,7 +350,7 @@ public:
           {
             if (index < 0)
               featureSense("before");
-            else if (index < n - 1)
+            else if (index < (int)n - 1)
             {
               for (size_t s = 0; s < nbSequences; ++s)
                 featureScope(sequencesID[s])
@@ -377,7 +377,7 @@ public:
             {
               if (index <= 0)
                 featureSense("before");
-              else if (index < n)
+              else if (index < (int)n)
               {
                 for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
                   for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
@@ -394,7 +394,7 @@ public:
             {
               if (index < 0)
                 featureSense("before");
-               else if (index < n - 1)
+               else if (index < (int)n - 1)
                {
                  for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
                    for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
@@ -411,7 +411,7 @@ public:
             {
               if (index <= 0)
                 featureSense("before");
-              else if (index < n)
+              else if (index < (int)n)
               {
                 for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
                   for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
@@ -428,7 +428,7 @@ public:
             {
               if (index < 0)
                 featureSense("before");
-               else if (index < n - 1)
+               else if (index < (int)n - 1)
                {
                  for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
                    for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)

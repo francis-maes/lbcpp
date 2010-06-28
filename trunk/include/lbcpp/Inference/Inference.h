@@ -54,8 +54,7 @@ public:
 protected:
   friend class InferenceContext;
 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return Variable(run(context, input.getObject(), supervision.getObject(), returnCode));}
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
