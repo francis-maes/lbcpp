@@ -39,19 +39,6 @@ public:
 
   virtual void destroy(VariableValue& value) const
     {value.clearRawData();}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-  {
-    jassert(false);
-  }
-  virtual String toString(const VariableValue& value) const
-  {
-    jassert(false); 
-    return T("");
-  }
-
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {jassert(false); return false;}
 };
 
 }; /* namespace lbcpp */

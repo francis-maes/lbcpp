@@ -46,6 +46,14 @@ public:
     return res;
   }
   
+  virtual void destroy(VariableValue& value) const
+  {
+    Variable* data = (Variable* )value.getRawData();
+    for (size_t i = 0; i < size; ++i)
+      data[i] = Variable();
+    RawDataBuiltinTypeClass::destroy(value);
+  }
+
   virtual String toString(const VariableValue& value) const
   {
     const Variable* data = (const Variable* )value.getRawData();

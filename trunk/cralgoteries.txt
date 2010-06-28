@@ -1,4 +1,3 @@
-- checker que le Tupple::destroy(VariableValue) appele bien destroy() sur ses fils
 
 ExtraTrees:
  * coder le ParallelInferenceBatchLearner puis l'utiliser pour apprendre les ExtraTree
