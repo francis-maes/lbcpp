@@ -308,7 +308,7 @@ public:
     if (!nbSequences)
       return;
 
-    size_t sequencesID[nbSequences];
+    std::vector<size_t> sequencesID(nbSequences);
     for (size_t i = 0; i < nbSequences; ++i)
       sequencesID[i] = getIdentifier(sequences[i]);
 
@@ -316,7 +316,7 @@ public:
     {
       featureScope("VerticalBy2")
       {
-        for (int shift = -windowLength; shift <= (int)windowLength; ++shift)
+        for (int shift = -(int)windowLength; shift <= (int)windowLength; ++shift)
         {
           const int index = (int)position + shift;
           featureScope(shift + windowLength)
@@ -343,7 +343,7 @@ public:
     {
       featureScope("HorizontalBy2")
       {
-        for (int shift = -windowLength; shift <= (int)windowLength; ++shift)
+        for (int shift = -(int)windowLength; shift <= (int)windowLength; ++shift)
         {
           const int index = (int)position + shift;
           featureScope(shift + windowLength)
@@ -368,7 +368,7 @@ public:
     {
       featureScope("OblicBy2")
       {
-        for (int shift = -windowLength; shift <= (int)windowLength; ++shift)
+        for (int shift = -(int)windowLength; shift <= (int)windowLength; ++shift)
         {
           const int index = (int)position + shift;
           featureScope(shift + windowLength)
