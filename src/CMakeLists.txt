@@ -26,15 +26,19 @@ SET(LBCPP_OBJECT_IMPL_HEADERS
 )
 
 SET(LBCPP_OBJECT_SOURCES
-  Object.cpp
-  Class.cpp
-  Vector.cpp
   ObjectStream.cpp
   ObjectContainer.cpp
   ObjectConsumer.cpp
   ObjectGraph.cpp
   Table.cpp
 )
+
+SET(LBCPP_VARIABLE_SOURCES
+  Variable/Object.cpp
+  Variable/Class.cpp
+  Variable/VariableContainer.cpp
+  Variable/Vector.cpp
+)  
 
 SET(LBCPP_OBJECT_CLASS_SOURCES
   Class/BooleanClass.h
@@ -175,6 +179,7 @@ SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
 
 SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
   Inference/DecisionTreeInference/BinaryDecisionTree.h
+  Inference/DecisionTreeInference/BinaryDecisionTree.cpp
   Inference/DecisionTreeInference/ExtraTreeInference.h
   Inference/DecisionTreeInference/ExtraTreeInferenceLearner.h
   Inference/DecisionTreeInference/ExtraTreeInferenceLearner.cpp
@@ -234,6 +239,7 @@ SET(LBCPP_CORE
   ${LBCPP_OBJECT_HEADERS}
   ${LBCPP_OBJECT_IMPL_HEADERS}
   ${LBCPP_OBJECT_SOURCES}
+  ${LBCPP_VARIABLE_SOURCES}
   ${LBCPP_OBJECT_CLASS_SOURCES}
   ${LBCPP_CORE_OBJECT_STREAM_SOURCES}
   
@@ -266,6 +272,7 @@ SET(LBCPP_CORE
 SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
 
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
+SOURCE_SUB_GROUP(Object Core FILES ${LBCPP_VARIABLE_SOURCES})
 SOURCE_SUB_GROUP(Object impl FILES ${LBCPP_OBJECT_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Object Class FILES ${LBCPP_OBJECT_CLASS_SOURCES})
 SOURCE_SUB_GROUP(Object ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})

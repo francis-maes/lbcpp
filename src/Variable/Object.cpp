@@ -24,6 +24,27 @@ ClassPtr Object::getClass() const
   return res;
 }
 
+size_t Object::getNumVariables() const
+{
+  ClassPtr type = getClass();
+  jassert(type);
+  VariableValue value(const_cast<Object* >(this));
+  size_t res = type->getNumSubVariables(value);
+  value.clearObject();
+  return res;
+}
+
+Variable Object::getVariable(size_t index) const
+  {jassert(false); return Variable();}
+
+void Object::accept(ObjectVisitorPtr visitor)
+{
+  ClassPtr type = getClass();
+  size_t n = type->getNumStaticVariables();
+  for (size_t i = 0; i < n; ++i)
+    visitor->visit(i, getVariable(i));
+}
+
 ObjectPtr Object::create(const String& className)
 {
   String name = className;
@@ -168,15 +189,4 @@ bool Object::saveToDirectory(const File& directory) const
     return false;
   }
   return Object::saveToFile(directory.getChildFile(T(".classFile")));
-}
-
-Variable Object::getVariable(size_t index) const
-  {jassert(false); return Variable();}
-
-void Object::accept(ObjectVisitorPtr visitor)
-{
-  ClassPtr type = getClass();
-  size_t n = type->getNumStaticVariables();
-  for (size_t i = 0; i < n; ++i)
-    visitor->visit(i, getVariable(i));
 }

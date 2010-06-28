@@ -79,6 +79,34 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, VariableCo
   return res;
 }
 
+#include <lbcpp/Inference/Evaluator.h>
+
+class EvaluationInferenceCallback : public InferenceCallback
+{
+public:
+  EvaluationInferenceCallback(EvaluatorPtr evaluator)
+    : evaluator(evaluator) {}
+
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 1 && output && supervision)
+      evaluator->addPrediction(output, supervision);
+  }
+
+private:
+  EvaluatorPtr evaluator;
+};
+
+Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, VariableContainerPtr examples, EvaluatorPtr evaluator)
+{
+  ReturnCode res = Inference::finishedReturnCode;
+  InferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(evaluator);
+  appendCallback(evaluationCallback);
+  runInference(runOnSupervisedExamplesInference(inference), examples, Variable(), res);
+  removeCallback(evaluationCallback);
+  return res;
+}
+
 // temp: compatibility with ObjectContainer
 class ObjectPairToVariableContainer : public VariableContainer
 {
@@ -87,7 +115,7 @@ public:
   ObjectPairToVariableContainer(ObjectContainerPtr container)
     : container(container) {}
 
-  virtual size_t size() const
+  virtual size_t getNumVariables() const
     {return container->size();}
 
   virtual Variable getVariable(size_t index) const

@@ -21,29 +21,45 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
 
 Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
-  jassert(inferenceAndTrainingData);
-  ExtraTreeInferencePtr inference = inferenceAndTrainingData->getFirst().dynamicCast<ExtraTreeInference>();
-  ObjectContainerPtr trainingData = inferenceAndTrainingData->getSecond().dynamicCast<ObjectContainer>();
+  BinaryDecisionTreeInferencePtr inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
+  VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
   jassert(inference && trainingData);
 
-  ObjectPairPtr firstExample = trainingData->getAndCast<ObjectPair>(0);
+  Variable firstExample = trainingData->getVariable(0);
   jassert(firstExample);
-  ClassPtr inputClass = firstExample->getFirst()->getClass();
-  ClassPtr outputClass = firstExample->getSecond()->getClass();
+  ClassPtr inputClass = firstExample[0].getType();
+  ClassPtr outputClass = firstExample[1].getType();
 #ifdef JUCE_DEBUG
   for (size_t i = 1; i < trainingData->size(); ++i)
   {
-    ObjectPairPtr example = trainingData->getAndCast<ObjectPair>(i);
-    jassert(example->getFirst()->getClass() == inputClass);
-    jassert(example->getSecond()->getClass() == outputClass);
+    Variable example = trainingData->getVariable(i);
+    jassert(example[0].getType() == inputClass);
+    jassert(example[1].getType() == outputClass);
   }
 #endif // JUCE_DEBUG
 
-  return sampleTree(inference, inputClass, outputClass, trainingData);
+  BinaryDecisionTreePtr tree = sampleTree(inputClass, outputClass, trainingData);
+  if (tree)
+    inference->setTree(tree);
+  return Variable();
 }
 
-BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExtraTreeInferencePtr inference, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData)
+bool isVariableConstant(size_t index1, size_t index2, VariableContainerPtr trainingData)
+{
+  size_t n = trainingData->size();
+  if (n <= 1)
+    return true;
+  Variable refValue = trainingData->getVariable(0)[index1][index2];
+  for (size_t i = 1; i < n; ++i)
+  {
+    Variable otherValue = trainingData->getVariable(i)[index1][index2];
+    if (refValue != otherValue)
+      return false;
+  }
+  return true;
+}
+
+BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData)
 {
   size_t n = trainingData->size();
   if (!n)
@@ -51,39 +67,38 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExtraTreeInfer
 
   BinaryDecisionTreePtr res = new BinaryDecisionTree();
   res->reserveNodes(n);
+
+  std::set<size_t> nonConstantVariables;
+  size_t numVariables = inputClass->getNumStaticVariables();
+  for (size_t i = 0; i < numVariables; ++i)
+    if (!isVariableConstant(0, i, trainingData))
+      nonConstantVariables.insert(i);
+  
   std::set<size_t> indices;
-  
-  std::set<size_t> nonConstantAttributes;
-  
   for (size_t i = 0; i < n; ++i)
-  {
     indices.insert(i);
-  }
-  
-  // todo: fill nonConstantAttributes
-  sampleTreeRecursively(inference, res, inputClass, outputClass, trainingData, indices, nonConstantAttributes);
+  sampleTreeRecursively(res, inputClass, outputClass, trainingData, indices, nonConstantVariables);
   return res;
 }
 
-bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExtraTreeInferencePtr inference, ObjectContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes) const
+bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantVariables) const
 {
-  if (indices.empty() || indices.size() < numAttributeSamplesPerSplit || nonConstantAttributes.empty())
+  if (indices.empty() || indices.size() < numAttributeSamplesPerSplit || nonConstantVariables.empty())
     return true;
   std::set<size_t>::const_iterator it = indices.begin();
-  ObjectPtr firstOutput = trainingData->getAndCast<ObjectPair>(*it)->getSecond();
+  Variable firstOutput = trainingData->getVariable(*it)[1];
   for (++it; it != indices.end(); ++it)
   {
-    ObjectPtr output = trainingData->getAndCast<ObjectPair>(*it)->getSecond();
-    // FIXME
-    //if (!inference->areOutputObjectsEqual(firstOutput, output))
-    //  return false;
+    Variable output = trainingData->getVariable(*it)[1];
+    if (output != firstOutput)
+      return false;
   }
   return true;
 }
 
-size_t SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExtraTreeInferencePtr inference, BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, ObjectContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes)
+size_t SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes)
 {
-  if (shouldCreateLeaf(inference, trainingData, indices, nonConstantAttributes))
+  if (shouldCreateLeaf(trainingData, indices, nonConstantAttributes))
   {
   }
   else
@@ -99,8 +114,9 @@ ExtraTreeInference::ExtraTreeInference(const String& name, size_t numTrees, size
   subInferences.resize(numTrees);
   for (size_t i = 0; i < numTrees; ++i)
   {
-    subInferences[i] = new SingleExtraTreeInference(name);
-    subInferences[i]->setBatchLearner(baseLearner);
+    InferencePtr treeInference = new BinaryDecisionTreeInference(name);
+    treeInference->setBatchLearner(baseLearner);
+    subInferences.set(i, treeInference);
   }
   setBatchLearner(parallelInferenceLearner());
 }

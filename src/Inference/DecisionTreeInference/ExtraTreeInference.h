@@ -15,27 +15,34 @@
 namespace lbcpp 
 {
 
-class SingleExtraTreeInference : public Inference
+class BinaryDecisionTreeInference : public Inference
 {
 public:
-  SingleExtraTreeInference(const String& name)
+  BinaryDecisionTreeInference(const String& name)
     : Inference(name) {}
-  SingleExtraTreeInference()
+  BinaryDecisionTreeInference()
     {}
+
+  BinaryDecisionTreePtr getTree() const
+    {return tree;}
+
+  void setTree(BinaryDecisionTreePtr tree)
+    {this->tree = tree;}
 
 protected:
   BinaryDecisionTreePtr tree;
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    return Variable();
-  }
+    {return tree ? tree->makePrediction(input) : Variable();}
 };
+
+typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTreeInferencePtr;
 
 class ExtraTreeInference : public ParallelVoteInference
 {
 public:
   ExtraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+  ExtraTreeInference() {}
 };
 
 typedef ReferenceCountedObjectPtr<ExtraTreeInference> ExtraTreeInferencePtr;
