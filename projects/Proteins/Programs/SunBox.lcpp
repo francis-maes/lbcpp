@@ -14,9 +14,13 @@
 #include "Protein/ProteinObject.h"
 #include "Protein/SecondaryStructureDictionary.h"
 
+#include "InferenceData/CommonFeatureGenerators.h"
+
 #include "Protein/Inference/ProteinBackboneBondSequenceInference.h"
 #include "Protein/Inference/ProteinInference.h"
 #include "Protein/Inference/Protein1DTargetInference.h"
+#include "Protein/Inference/ProteinContactMapInference.h"
+#include "Protein/Inference/ProteinGlobalFeatures.h"
 
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 
@@ -110,10 +114,9 @@ public:
   {
     if (stack->getDepth() == 2)
     {
-      InferencePtr learnedInference = input.dynamicCast<Inference>();
-      if (learnedInference)
+      if (input.getType()->inheritsFrom(pairClass()))
       {
-        String inferenceName = learnedInference->getName();
+        String inferenceName = input[0].getObject()->getName();
         std::cout << std::endl << "=====================================================" << std::endl;
         std::cout << "======= LEARNING PASS " << inferenceName << " ========== " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
         std::cout << "=====================================================" << std::endl;
@@ -416,7 +419,6 @@ int main(int argc, char** argv)
   std::cout << arguments;
   std::cout << "*-----------------------------" << std::endl;
 
-  // TODO Allows use of already learned proteins
   // TODO Randomize *before* loading
   ObjectContainerPtr trainingData = directoryObjectStream(proteinsDirectory, T("*.protein"))
     ->load(numProteinsToLoad)
@@ -459,51 +461,73 @@ int main(int argc, char** argv)
   ** Creation of features function
   */
 std::cout << "Simple feature: Unit, Seq. Win. 10, PSSM Win. 10, MultiTask" << std::endl;
-  CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
-/*  
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 5, 5, true));
-  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 5, 5, true));
-*/
-  featureFunction->addSubFeatures(proteinUnitResidueFeature());
 
+  /*
+  ** Global features
+  */
+  CompositeProteinGlobalFeaturesPtr globalFeatureFunction = new CompositeProteinGlobalFeatures();
+  globalFeatureFunction->addSubFeatures(proteinLengthFeatures());
+  globalFeatureFunction->addSubFeatures(proteinGlobalCompositionFeatures(T("AminoAcidSequence")));
+  globalFeatureFunction->addSubFeatures(proteinGlobalCompositionFeatures(T("PositionSpecificScoringMatrix")));
+
+  /*
+  ** Local features
+  */
+  CompositeProteinResidueFeaturesPtr featureFunction = new CompositeProteinResidueFeatures();
+  /***** Input features *****/
+  featureFunction->addSubFeatures(proteinUnitResidueFeature());
+//  featureFunction->addSubFeatures(proteinPositionFeatures());
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("AminoAcidSequence"), 10, 10, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidSequence"), 50, true));
 ////featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("AminoAcidSequence"), 10));
-//
-//  featureFunction->addSubFeatures(proteinPositionFeatures());
-//
-//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 9, 9, true));
-//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
-//
-//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), 20, 20, true));
-//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), 80, true));
-//
+
   featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("PositionSpecificScoringMatrix"), 10, 10, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("PositionSpecificScoringMatrix"), 150, true));
 //  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("PositionSpecificScoringMatrix"), 10));
-//
+
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 9, 9, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("ReducedAminoAcidAlphabetSequence"), 50, true));
+// 
+//  //featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), 0, true));
+
+  /***** Structural features *****/
+//  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("StructuralAlphabetSequence"), 20, 20, true));
+//  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("StructuralAlphabetSequence"), 80, true));
+
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SecondaryStructureSequence"), 10, 10, true));
 //  featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("SecondaryStructureSequence"), 100, true));
 //  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SecondaryStructureSequence"), 10));
-//
 //
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DSSPSecondaryStructureSequence"), 10, 10, true));
 //  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("DSSPSecondaryStructureSequence"), 10));
 //
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("SolventAccessibilityThreshold20"), 10, 10, true));
 //  //featureFunction->addSubFeatures(proteinSequenceEntropyFeatures(T("SolventAccessibilityThreshold20"), 10));
-// 
-//  //featureFunction->addSubFeatures(proteinFrequencyWindowFeatures(T("AminoAcidProperty"), 0, true));
+
 //  
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("DisorderProbabilitySequence"), 5, 5, true));
 //  
 //  featureFunction->addSubFeatures(proteinSequenceWindowFeatures(T("BackboneBondSequence"), 5, 5, true));
 //
-  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures(multiTaskFeatures, 5));
+//  featureFunction->addSubFeatures(multiSequenceConjunctionFeatures(multiTaskFeatures, 5));
 //
 //  //featureFunction->addSubFeatures(proteinSegmentConjunctionFeatures(T("SecondaryStructureSequence"), 2));
 //  //featureFunction->addSubFeatures(proteinGlobalToResidueFeatures(proteinLengthFeatures()));
+
+  /*
+  ** Pair features
+  */
+  CompositeProteinResiduePairFeaturesPtr pairFeatureFunction = new CompositeProteinResiduePairFeatures();
+  /***** Input features *****/
+  pairFeatureFunction->addSubFeatures(proteinUnitResiduePairFeature());
+  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, proteinUnitResiduePairFeature()));
+//  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationDistanceResiduePairFeatures(4)));
+  pairFeatureFunction->addSubFeatures(conjunctionResiduePairFeatures(aaResiduePairConjunction, separationLengthResiduePairFeatures(4)));
+  pairFeatureFunction->addSubFeatures(proteinPointResiduePairFeatures(featureFunction));
+  pairFeatureFunction->addSubFeatures(proteinCentralCompositionResiduePairFeatures(T("AminoAcidSequence")));
+
+  /***** Structural features *****/
+  pairFeatureFunction->addSubFeatures(contactMapResiduePairFeatures(T("ResidueResidueContactMatrix8Ca"), 10));
 
   /*
   ** Creation of the inference
@@ -563,6 +587,15 @@ std::cout << "Simple feature: Unit, Seq. Win. 10, PSSM Win. 10, MultiTask" << st
           , createMultiClassClassifier(T("StructuralAlphabetElement"), 0.03, 1000)
           , featureFunction, T("StructuralAlphabetSequence"));
       proteinInference->appendInference(step);
+    }
+    
+    if (targets[i].contains(T("CM")))
+    {
+      proteinInference->appendInference(
+        new ProteinContactMapInference(T("CM_Pass_") + lbcpp::toString(i),
+                            binaryLinearSVMInference(createOnlineLearner(50.0, 1000000), T("CM")),
+                            pairFeatureFunction,
+                            T("ResidueResidueContactMatrix8Ca")));
     }
   }
   

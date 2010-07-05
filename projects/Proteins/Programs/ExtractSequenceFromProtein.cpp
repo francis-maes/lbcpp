@@ -9,7 +9,8 @@ extern void declareProteinClasses();
 
 //#define SEQUENCE
 //#define FEATURES
-#define SHOW_PSSM
+//#define SHOW_PSSM
+#define LENGTH_SELECTION
 
 #ifdef SEQUENCE
 int main(int argc, char** argv)
@@ -45,6 +46,55 @@ int main(int argc, char** argv)
     
     std::cout << "OK" << std::endl;
   }
+  
+  return 0;
+}
+#endif
+
+#ifdef LENGTH_SELECTION
+int main(int argc, char** argv)
+{
+  lbcpp::initialize();
+  declareProteinClasses();
+  
+  File proteinDirectory;
+  File outputDirectory;
+  int minimumLength = 0;
+  int maximumLength = 50;
+  
+  ArgumentSet arguments;
+  arguments.insert(new FileArgument(T("proteinDirectory"), proteinDirectory, true, true), true);
+  arguments.insert(new FileArgument(T("outputDirectory"), outputDirectory, true, true), true);
+  arguments.insert(new IntegerArgument(T("minimumLength"), minimumLength));
+  arguments.insert(new IntegerArgument(T("maximumLength"), maximumLength));
+  
+  if (!arguments.parse(argv, 1, argc-1)) {
+    std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
+    return 1;
+  }
+  
+  juce::OwnedArray<File> proteinFiles;
+  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.protein"));
+  
+  File outputFile = outputDirectory.getChildFile(T("L") + lbcpp::toString(minimumLength) + T("-") + lbcpp::toString(maximumLength) + T("DB"));
+  outputFile.deleteFile();
+  OutputStream* o = outputFile.createOutputStream();
+  
+  for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
+  {
+    ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
+
+    if (minimumLength > protein->getLength() ||  maximumLength < protein->getLength())
+      continue;
+
+    
+    std::cout << "Selecting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
+
+    *o << protein->getName() << '\t' << lbcpp::toString(protein->getLength()) << '\n';
+    
+    std::cout << "OK" << std::endl;
+  }
+  delete o;
   
   return 0;
 }

@@ -84,16 +84,16 @@ class ContactMapScoresToProbabilitiesInferenceBatchLearner : public Inference
 protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ObjectPairPtr inferenceAndTrainingData = input.dynamicCast<ObjectPair>();
-    jassert(inferenceAndTrainingData);
-    InferencePtr inference = inferenceAndTrainingData->getFirst().dynamicCast<Inference>();
-    ObjectContainerPtr trainingData = inferenceAndTrainingData->getSecond().dynamicCast<ObjectContainer>();
+    jassert(input.getType()->inheritsFrom(pairClass()));
+
+    InferencePtr inference = input[0].getObject().dynamicCast<Inference>();
+    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
     jassert(inference && trainingData);
     returnCode = train(context, inference, trainingData);
     return ObjectPtr();
   }
 
-  ReturnCode train(InferenceContextPtr context, InferencePtr inf, ObjectContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inf, VariableContainerPtr trainingData)
   {
     std::cout << "LOOKING FOR BEST THRESHOLD ..... " << std::endl;
     ContactMapScoresToProbabilitiesInferencePtr inference = inf.dynamicCast<ContactMapScoresToProbabilitiesInference>();
@@ -113,19 +113,19 @@ protected:
     return roc.findThresholdMaximisingF1(f1, precision, recall);
   }
   
-  void fillROCAnalyse(ROCAnalyse& roc, const String& supervisionObjectName, ObjectContainerPtr trainingData)
+  void fillROCAnalyse(ROCAnalyse& roc, const String& supervisionObjectName, VariableContainerPtr trainingData)
   {
-    for (size_t exampleNumber = 0; exampleNumber < trainingData->size(); ++exampleNumber)
+    for (size_t exampleNumber = 0; exampleNumber < trainingData->getNumVariables(); ++exampleNumber)
     {
       // get input and supervision
-      ObjectPairPtr inputAndSupervision = trainingData->getAndCast<ObjectPair>(exampleNumber);
+      Variable inputAndSupervision = trainingData->getVariable(exampleNumber);
       jassert(inputAndSupervision);
-      ObjectPtr supervision = inputAndSupervision->getSecond();
+      ObjectPtr supervision = inputAndSupervision[1].getObject();
       if (!supervision)
         continue;
       
       // input: get predicted scores contact map
-      ObjectPairPtr inputProteinAndContactMap = inputAndSupervision->getFirst().dynamicCast<ObjectPair>();
+      ObjectPairPtr inputProteinAndContactMap = inputAndSupervision[0].getObjectAndCast<ObjectPair>();
       jassert(inputProteinAndContactMap);
       ScoreSymmetricMatrixPtr scoresContactMap = inputProteinAndContactMap->getSecond().dynamicCast<ScoreSymmetricMatrix>();
       if (!scoresContactMap)
