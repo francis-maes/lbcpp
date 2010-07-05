@@ -13,7 +13,7 @@ function launch {
   sleep 2
 
 qsub << EOF
-#$ -l h_vmem=3G
+#$ -l h_vmem=12G
 #$ -l h_rt=${expected_time}:00:00
 
 #$ -m eas
@@ -22,7 +22,7 @@ qsub << EOF
 #$ -cwd
 
 #$ -N ${name}
-./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${name} Targets "${target}" NumProteinsToLoad ${nbProt} ${other} StoppingIteration 10
+./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${name} Targets "${target}" NumProteinsToLoad ${nbProt} ${other}
 EOF
 
 }
@@ -64,12 +64,22 @@ nbProt="140"
 #
 #exit
 
+prefix="exp_CM_201-1000_MP"
+#database="L50DB/protein"
+database="L201-1000DB"
+target="(CM)10"
+nbProt="1000"
+other="IsExperimentalMode SaveInference StoppingIteration 10"
+launch
+
+exit
+
 #for multitask in `python CombinaisonGenerator.py VerticalBy2 OblicBy2 HorizontalBy2` -
-for multitask in OblicBy2
+for multitask in OblicBy2 -
 do
 for targ in SS3
 do
-prefix="exp_MultiNoStAl_${multitask}"
+prefix="exp_MultiSimple-SS3_${multitask}"
 database="PredictedDB/protein/SS3-SS8-SA-DR-BBB"
 nbProt="500"
 target="(${targ})1"
