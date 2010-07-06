@@ -81,14 +81,17 @@ public:
     dest.setRawData((char* )destData);
   }
   
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
   {
     const Variable* data1 = (const Variable* )value1.getRawData();
     const Variable* data2 = (const Variable* )value2.getRawData();
     for (size_t i = 0; i < size; ++i)
-      if (data1[i] != data2[i])
-        return false;
-    return true;
+    {
+      int res = data1[i].compare(data2[i]);
+      if (res != 0)
+        return res;
+    }
+    return 0;
   }
   
   virtual size_t getNumStaticVariables() const
@@ -139,11 +142,12 @@ public:
     dest.setRawData((char* )destData);
   }
   
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
   {
     Variable* data1 = (Variable* )value1.getRawData();
     Variable* data2 = (Variable* )value2.getRawData();
-    return data1[0] == data2[0] && data1[1] == data2[1];
+    int res = data1[0].compare(data2[0]);
+    return res ? res : data1[1].compare(data2[1]);
   }
 };
 

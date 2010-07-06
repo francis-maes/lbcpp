@@ -76,7 +76,7 @@ public:
   TypePtr getBaseClass() const
     {return baseClass;}
 
-  bool inheritsFrom(TypePtr baseClass) const;
+  bool inheritsFrom(TypePtr baseType) const;
 
   /*
   ** Operations
@@ -90,7 +90,7 @@ public:
   virtual String toString(const VariableValue& value) const
     {jassert(false); return String::empty;}
 
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {jassert(false); return false;}
 
   /*
@@ -172,8 +172,8 @@ public:
   virtual String toString(const VariableValue& value) const
     {return String(value.getInteger());}
 
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getInteger() == value2.getInteger();}
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+    {return value1.getInteger() - value2.getInteger();}
 
   virtual size_t getNumSubVariables(const VariableValue& value) const
     {return 0;}
@@ -233,8 +233,16 @@ public:
   virtual String toString(const VariableValue& value) const
     {return value.getObject()->toString();}
 
-  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getObject() == value2.getObject();}
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+  {
+    ObjectPtr object1 = value1.getObject();
+    ObjectPtr object2 = value2.getObject();
+    if (!object1)
+      return object2 ? -1 : 0;
+    if (!object2)
+      return 1;
+    return object1->compare(object2);
+  }
 
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;

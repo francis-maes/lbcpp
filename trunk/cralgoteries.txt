@@ -1,4 +1,8 @@
 * ExtraTree
+  - Compute Score
+  - BinaryDecisionTree: getSplitPredicate(TypePtr variableType, Variable splitArgument)
+  - BinaryDecisionTree: compute split score
+
 * Rajouter les PSSM dans le nouveau format
 * VectorInference
 * NewProteinInference
@@ -17,7 +21,6 @@ Library:
  * Execution multi-thread
  
 Inference:
- * ParallelInferenceBatchLearner
  * Atomic MultiClass machines (MultiLinear, Ranking...)
  * Apprentissage avec couche cachée
  

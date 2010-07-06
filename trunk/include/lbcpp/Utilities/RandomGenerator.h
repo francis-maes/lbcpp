@@ -300,6 +300,16 @@ public:
       swap(res[i], res[sampleSize(i + 1)]);
   }
 
+  inline void sampleSubset(const std::vector<size_t>& elements, size_t subsetSize, std::vector<size_t>& res)
+  {
+    jassert(subsetSize < elements.size());
+    std::vector<size_t> order;
+    sampleOrder(elements.size(), order);
+    res.resize(subsetSize);
+    for (size_t i = 0; i < res.size(); ++i)
+      res[i] = elements[order[i]];
+  }
+
 private:
   long long seed;               /*!< RandomGenerator seed. */
 

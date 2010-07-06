@@ -170,10 +170,21 @@ inline String Variable::toString() const
 
 inline bool Variable::equals(const Variable& otherValue) const
 {
-  if (type)
-    return otherValue.getType() == type && type->equals(value, otherValue.value);
-  else
-    return !otherValue.getType();
+  TypePtr type2 = otherValue.getType();
+  return type == type2 && (!type || type->compare(value, otherValue.value) == 0);
+}
+
+inline int Variable::compare(const Variable& otherValue) const
+{
+  TypePtr type2 = otherValue.getType();
+  if (type != type2)
+    return getTypeName().compare(otherValue.getTypeName());
+  if (!type)
+  {
+    jassert(!type2);
+    return 0;
+  }
+  return type->compare(value, otherValue.value);
 }
 
 inline size_t Variable::size() const

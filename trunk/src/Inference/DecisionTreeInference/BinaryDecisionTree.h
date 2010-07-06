@@ -21,12 +21,14 @@ public:
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
 
+  size_t allocateNodes(size_t count)
+    {size_t res = nodes.size(); nodes.resize(res + count); return res;}
+
   void createLeaf(size_t index, const Variable& value)
-  {
-    if (index >= nodes.size())
-      nodes.resize(index + 1);
-    nodes[index].setLeaf(value);
-  }
+    {jassert(index < nodes.size()); nodes[index].setLeaf(value);}
+
+  void createInternalNode(size_t index, size_t splitVariable, const Variable& splitArgument, size_t indexOfLeftChild)
+    {jassert(index < nodes.size()); nodes[index].setInternalNode(splitVariable, splitArgument, indexOfLeftChild);}
 
   Variable makePrediction(const Variable& input, size_t nodeIndex = 0) const;
 
@@ -60,6 +62,9 @@ protected:
 
     void setLeaf(const Variable& value)
       {splitVariable = -1; argument = value; indexOfLeftChild = 0;}
+
+    void setInternalNode(size_t splitVariable, const Variable& splitArgument, size_t indexOfLeftChild)
+      {this->splitVariable = (int)splitVariable; argument = splitArgument; this->indexOfLeftChild = indexOfLeftChild;}
 
   private:
     int splitVariable; // internal nodes: >= 0, leafs: =-1
