@@ -91,6 +91,7 @@ public:
   ** Operations
   */
   String toString() const;
+  int compare(const Variable& otherValue) const;
   bool equals(const Variable& otherValue) const;
   
   bool operator ==(const Variable& otherVariable) const
@@ -98,6 +99,18 @@ public:
 
   bool operator !=(const Variable& otherVariable) const
     {return !equals(otherVariable);}
+
+  bool operator <(const Variable& otherVariable) const
+    {return compare(otherVariable) < 0;}
+
+  bool operator <=(const Variable& otherVariable) const
+    {return compare(otherVariable) <= 0;}
+
+  bool operator >=(const Variable& otherVariable) const
+    {return compare(otherVariable) >= 0;}
+
+  bool operator >(const Variable& otherVariable) const
+    {return compare(otherVariable) > 0;}
 
   size_t size() const;
   Variable operator [](size_t index) const;

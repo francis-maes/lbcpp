@@ -32,6 +32,8 @@ public:
   VectorPtr toVector() const;
 
 public:
+  VariableContainerPtr subset(const std::vector<size_t>& indices) const;
+
   /**
   ** Creates a randomized version of a dataset.
   **

@@ -13,7 +13,7 @@ using namespace lbcpp;
 VectorPtr VariableContainer::toVector() const
 {
   size_t n = getNumVariables();
-  VectorPtr res = new Vector(topLevelType(), n);
+  VectorPtr res = new Vector(getStaticType(), n);
   for (size_t i = 0; i < n; ++i)
     res->setVariable(i, getVariable(i));
   return res;
@@ -32,35 +32,41 @@ String VariableContainer::toString() const
   return res + T("]");
 }
 
-class RandomizedVariableContainer : public DecoratorVariableContainer
+class SubsetVariableContainer : public DecoratorVariableContainer
 {
 public:
-  RandomizedVariableContainer(VariableContainerPtr target)
-    : DecoratorVariableContainer(target)
-    {lbcpp::RandomGenerator::getInstance().sampleOrder(target->size(), order);}
+  SubsetVariableContainer(VariableContainerPtr target, const std::vector<size_t>& indices = std::vector<size_t>())
+    : DecoratorVariableContainer(target), indices(indices) {}
    
-  RandomizedVariableContainer() {}
+  SubsetVariableContainer() {}
+
+  virtual size_t getNumVariables() const
+    {return indices.size();}
 
   virtual Variable getVariable(size_t index) const
-  {
-    jassert(order.size() == target->size() && index < order.size());
-    return target->getVariable(order[index]);
-  }
+    {jassert(index < indices.size()); return target->getVariable(indices[index]);}
 
 protected:
   virtual bool load(InputStream& istr)
-    {return DecoratorVariableContainer::load(istr) && lbcpp::read(istr, order);}
+    {return DecoratorVariableContainer::load(istr) && lbcpp::read(istr, indices);}
 
   virtual void save(OutputStream& ostr) const
-    {DecoratorVariableContainer::save(ostr); lbcpp::write(ostr, order);}  
+    {DecoratorVariableContainer::save(ostr); lbcpp::write(ostr, indices);}  
 
 private:
-  std::vector<size_t> order;
+  std::vector<size_t> indices;
 };
+
+VariableContainerPtr VariableContainer::subset(const std::vector<size_t>& indices) const
+  {return new SubsetVariableContainer(const_cast<VariableContainer* >(this), indices);}
 
 // Creates a randomized version of a dataset.
 VariableContainerPtr VariableContainer::randomize() const
-  {return new RandomizedVariableContainer(const_cast<VariableContainer* >(this));}
+{
+  std::vector<size_t> indices;
+  lbcpp::RandomGenerator::getInstance().sampleOrder(size(), indices);
+  return subset(indices);
+}
 
 class DuplicatedVariableContainer : public DecoratorVariableContainer
 {
@@ -190,6 +196,7 @@ void declareVariableContainerClasses()
   LBCPP_DECLARE_ABSTRACT_CLASS(VariableContainer, Object);
 
     LBCPP_DECLARE_CLASS(Vector, VariableContainer);
+    LBCPP_DECLARE_CLASS(BooleanVector, VariableContainer);
     LBCPP_DECLARE_CLASS(DynamicTypeVector, VariableContainer);
     LBCPP_DECLARE_CLASS(SymmetricMatrix, VariableContainer);
 
@@ -198,5 +205,5 @@ void declareVariableContainerClasses()
       LBCPP_DECLARE_CLASS(RangeVariableContainer, DecoratorVariableContainer);
       LBCPP_DECLARE_CLASS(ExcludeRangeVariableContainer, DecoratorVariableContainer);
       LBCPP_DECLARE_CLASS(DuplicatedVariableContainer, DecoratorVariableContainer);
-      LBCPP_DECLARE_CLASS(RandomizedVariableContainer, DecoratorVariableContainer);
+      LBCPP_DECLARE_CLASS(SubsetVariableContainer, DecoratorVariableContainer);
 }

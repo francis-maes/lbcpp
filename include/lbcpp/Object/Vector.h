@@ -53,6 +53,48 @@ typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
 extern ClassPtr vectorClass(TypePtr elementsType);
 
+class BooleanVector : public VariableContainer
+{
+public:
+  BooleanVector(size_t initialSize = 0)
+    : v(initialSize, false) {}
+
+  virtual String toString() const
+  {
+    String res = T("[");
+    for (size_t i = 0; i < v.size(); ++i)
+      res += v[i] ? '+' : '-';
+    res += T("]");
+    return res;
+  }
+
+  virtual TypePtr getStaticType() const
+    {return booleanType();}
+
+  virtual size_t getNumVariables() const
+    {return v.size();}
+
+  virtual Variable getVariable(size_t index) const
+    {jassert(index < v.size()); return v[index];}
+
+  virtual void setVariable(size_t index, const Variable& value)
+  {
+    if (checkInheritance(value, booleanType()))
+      v[index] = value.getBoolean();
+  }
+
+  void set(size_t index, bool value)
+    {jassert(index < v.size()); v[index] = value;}
+
+  bool get(size_t index) const
+    {jassert(index < v.size()); return v[index];}
+
+protected:
+  std::vector<bool> v;
+};
+
+typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;
+
 class DynamicTypeVector : public VariableContainer
 {
 public:

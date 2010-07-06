@@ -191,6 +191,9 @@ public:
   virtual ObjectPtr clone() const
     {jassert(false); return ObjectPtr();}
 
+  virtual int compare(ObjectPtr otherObject) const
+    {return (int)(this - otherObject.get());}
+
   // tmp
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
     {}
