@@ -21,7 +21,7 @@ public:
   ContactMapScoresInference() {}
 
   virtual void computeSubStepIndices(ProteinObjectPtr protein, std::vector< std::pair<size_t, size_t> >& res) const;
-  virtual ObjectPtr getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const;
+  virtual Variable getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const;
   virtual void setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const;
 };
 

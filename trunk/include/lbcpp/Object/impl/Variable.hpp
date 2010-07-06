@@ -153,7 +153,8 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
     return checkCast<O>(T("Variable::getObjectAndCast"), getObject());
   else
   {
-    Object::error(T("Variable::getObjectAndCast"), T("This variable is not an object"));
+    if (!isNil())
+      Object::error(T("Variable::getObjectAndCast"), T("This variable is not an object"));
     return ReferenceCountedObjectPtr<O>();
   }
 }

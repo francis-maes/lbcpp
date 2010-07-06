@@ -25,15 +25,15 @@ void ContactMapScoresInference::computeSubStepIndices(ProteinObjectPtr protein, 
       res.push_back(std::make_pair(i, j));
 }
 
-ObjectPtr ContactMapScoresInference::getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const
+Variable ContactMapScoresInference::getSubSupervision(ObjectPtr supervisionObject, size_t firstPosition, size_t secondPosition) const
 {
   if (!supervisionObject)
-    return ObjectPtr();
+    return Variable();
   ScoreSymmetricMatrixPtr contactMap = supervisionObject.dynamicCast<ScoreSymmetricMatrix>();
   jassert(contactMap);
   if (!contactMap || !contactMap->hasScore(firstPosition, secondPosition))
-    return ObjectPtr();
-  return new Label(BinaryClassificationDictionary::getInstance(), contactMap->getScore(firstPosition, secondPosition) > 0.5 ? 1 : 0);
+    return Variable();
+  return contactMap->getScore(firstPosition, secondPosition) > 0.5;
 }
 
 void ContactMapScoresInference::setSubOutput(ObjectPtr output, size_t firstPosition, size_t secondPosition, const Variable& subOutput) const
@@ -51,15 +51,15 @@ ContactMapScoresToProbabilitiesInference::ContactMapScoresToProbabilitiesInferen
   : Inference(name), ProteinTargetInferenceHelper(targetName), threshold(0.0)
   {}
 
+// Input: (input protein, predicted CM scores) pair
 Variable ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  ObjectPairPtr inputProteinAndContactMap = input.dynamicCast<ObjectPair>();
-  jassert(inputProteinAndContactMap);
-  ProteinObjectPtr inputProtein = inputProteinAndContactMap->getFirst().dynamicCast<ProteinObject>();
-  ScoreSymmetricMatrixPtr scoresContactMap = inputProteinAndContactMap->getSecond().dynamicCast<ScoreSymmetricMatrix>();
+  jassert(input.size() == 2);
+  ProteinObjectPtr inputProtein = input[0].getObjectAndCast<ProteinObject>();
+  ScoreSymmetricMatrixPtr scoresContactMap = input[1].getObjectAndCast<ScoreSymmetricMatrix>();
   jassert(inputProtein);
   if (!scoresContactMap)
-    return ObjectPtr();
+    return Variable();
 
   ScoreSymmetricMatrixPtr res = inputProtein->createEmptyObject(targetName);
   size_t n = scoresContactMap->getDimension();
@@ -120,20 +120,18 @@ protected:
       // get input and supervision
       Variable inputAndSupervision = trainingData->getVariable(exampleNumber);
       jassert(inputAndSupervision);
-      ObjectPtr supervision = inputAndSupervision[1].getObject();
-      if (!supervision)
+      ProteinObjectPtr correctProtein = inputAndSupervision[1].getObjectAndCast<ProteinObject>();
+      if (!correctProtein)
         continue;
       
       // input: get predicted scores contact map
-      ObjectPairPtr inputProteinAndContactMap = inputAndSupervision[0].getObjectAndCast<ObjectPair>();
-      jassert(inputProteinAndContactMap);
-      ScoreSymmetricMatrixPtr scoresContactMap = inputProteinAndContactMap->getSecond().dynamicCast<ScoreSymmetricMatrix>();
+      Variable inputProteinAndContactMap = inputAndSupervision[0];
+      jassert(inputProteinAndContactMap.size() == 2);
+      ScoreSymmetricMatrixPtr scoresContactMap = inputProteinAndContactMap[1].getObjectAndCast<ScoreSymmetricMatrix>();
       if (!scoresContactMap)
         continue;
       
       // supervision: get correct protein and correct contact map
-      ProteinObjectPtr correctProtein = supervision.dynamicCast<ProteinObject>();
-      jassert(correctProtein);
       ScoreSymmetricMatrixPtr supervisionContactMap = correctProtein->getObject(supervisionObjectName);
       jassert(supervisionContactMap && supervisionContactMap->getDimension() == scoresContactMap->getDimension());
     
@@ -179,7 +177,7 @@ bool ProteinContactMapInference::updateInference(InferenceContextPtr context, Se
 {
   if (state->getStepNumber() == 0)
   {
-    state->setSubInference(subInferences.get(1), ObjectPtr(new ObjectPair(state->getInput(), state->getSubOutput())), state->getSupervision());
+    state->setSubInference(subInferences.get(1), Variable::pair(state->getInput(), state->getSubOutput()), state->getSupervision());
     return true;
   }   
   return false;
