@@ -64,9 +64,6 @@ public:
   AminoAcidType getType() const
     {return type;}
 
-  static CollectionPtr getCollection()
-    {return Class::get(T("AminoAcid"));}
-
   juce::tchar getOneLetterCode() const;
   String getThreeLettersCode() const;
   AminoAcidCategory1 getCategory1() const;
@@ -94,6 +91,8 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<AminoAcid> AminoAcidPtr;
+
+extern CollectionPtr aminoAcidCollection();
 
 }; /* namespace lbcpp */
 

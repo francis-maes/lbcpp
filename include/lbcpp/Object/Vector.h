@@ -51,7 +51,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
-extern TypePtr vectorClass(TypePtr elementsClass);
+extern ClassPtr vectorClass(TypePtr elementsType);
 
 class DynamicTypeVector : public VariableContainer
 {

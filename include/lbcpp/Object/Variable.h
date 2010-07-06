@@ -59,6 +59,7 @@ public:
   Variable& operator =(const Variable& other);
 
   TypePtr getType() const;
+  String getTypeName() const;
 
   operator bool() const;
   operator ObjectPtr() const;

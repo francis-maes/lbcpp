@@ -17,12 +17,16 @@ namespace lbcpp
 
 class Residue;
 typedef ReferenceCountedObjectPtr<Residue> ResiduePtr;
+class Protein;
+typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 
-class Residue : public NameableObject
+class Residue : public Object
 {
 public:
-  Residue(const String& name, AminoAcidPtr aminoAcid)
-    : NameableObject(name), aminoAcid(aminoAcid) {}
+  Residue(ProteinPtr protein, size_t position);
+
+  virtual String toString() const;
+  virtual Variable getVariable(size_t index) const;
 
   AminoAcidPtr getAminoAcid() const
     {return aminoAcid;}
@@ -30,25 +34,20 @@ public:
   AminoAcidType getAminoAcidType() const
     {jassert(aminoAcid); return aminoAcid->getType();}
 
-  virtual Variable getVariable(size_t index) const;
-
-  void setNext(ResiduePtr next)
-    {this->next = next; next->previous = ResiduePtr(this);}
-
-  ResiduePtr getPrevious() const
-    {return previous;}
-
-  ResiduePtr getNext() const
-    {return next;}
+  ResiduePtr getPrevious() const;
+  ResiduePtr getNext() const;
 
   void clear()
-    {previous = next = ResiduePtr();}
+    {protein = ProteinPtr();}
 
 private:
+  ProteinPtr protein;
+  size_t position;
+
   AminoAcidPtr aminoAcid;
-  ResiduePtr previous;
-  ResiduePtr next;
 };
+
+extern ClassPtr residueClass();
 
 }; /* namespace lbcpp */
 

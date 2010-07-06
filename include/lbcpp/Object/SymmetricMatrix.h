@@ -33,6 +33,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
 
+extern ClassPtr symmetricMatrixClass(TypePtr elementsType);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_SYMMETRIC_MATRIX_H_

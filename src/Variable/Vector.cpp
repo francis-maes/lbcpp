@@ -43,13 +43,19 @@ bool Vector::checkType(const Variable& value) const
 {
   if (!value.getType()->inheritsFrom(type))
   {
-    Object::error(T("VectorBasedVariableContainer::checkType"), T("Invalid type"));
+    Object::error(T("Vector::checkType"), T("Invalid type, Expected ") + type->getName() + T(" found ") + value.getTypeName());
     return false;
   }
   return true;
 }
 
-TypePtr lbcpp::vectorClass(TypePtr elementsClass)
+ClassPtr lbcpp::vectorClass(TypePtr elementsType)
 {
-  return Type::get(T("Vector"));
+  return Class::get(T("Vector"));
 }
+
+
+// todo: ranger
+#include <lbcpp/Object/SymmetricMatrix.h>
+ClassPtr lbcpp::symmetricMatrixClass(TypePtr elementsType)
+  {return Class::get(T("SymmetricMatrix"));}
