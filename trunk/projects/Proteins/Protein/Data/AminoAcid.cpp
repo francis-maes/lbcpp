@@ -112,6 +112,12 @@ static const juce::tchar* aminoAcidCategory1Strings[] = {
 EnumerationPtr lbcpp::aminoAcidCategory1Enumeration()
   {static EnumerationPtr res = Enumeration::get(T("AminoAcidCategory1")); return res;}
 
+CollectionPtr lbcpp::aminoAcidCollection()
+{
+  static CollectionPtr res = Collection::get(T("AminoAcid"));
+  return res;
+}
+
 void declareAminoAcidClasses()
 {
   Class::declare(new Enumeration(T("AminoAcidType"), aminoAcidTypeStrings));

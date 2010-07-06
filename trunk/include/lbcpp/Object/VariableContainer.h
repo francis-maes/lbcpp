@@ -27,6 +27,8 @@ public:
   virtual TypePtr getStaticType() const
     {return topLevelType();}
 
+  virtual String toString() const;
+
   VectorPtr toVector() const;
 
 public:

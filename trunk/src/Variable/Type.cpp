@@ -229,10 +229,14 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(topLevelType, T("Variable"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(booleanType, T("Boolean"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(integerType, T("Integer"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(doubleType, T("Double"));
+  DECLARE_CLASS_SINGLETON_ACCESSOR(probabilityType, T("Probability"));
+  DECLARE_CLASS_SINGLETON_ACCESSOR(angstromDistanceType, T("AngstromDistance"));
+
 DECLARE_CLASS_SINGLETON_ACCESSOR(stringType, T("String"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(pairType, T("Pair"));
 
-DECLARE_CLASS_SINGLETON_ACCESSOR(objectClass, T("Object"));
+ClassPtr lbcpp::objectClass()
+  {static ClassPtr res = Class::get(T("Object")); return res;}
 
 TypePtr lbcpp::pairType(TypePtr firstClass, TypePtr secondClass)
   {return pairType();} // FIXME
@@ -257,6 +261,9 @@ void declareClassClasses()
   Type::declare(new BooleanType());
   Type::declare(new IntegerType());
   Type::declare(new DoubleType());
+    Type::declare(new ProbabilityType());
+    Type::declare(new AngstromDistanceType());
+
   Type::declare(new StringType());
   Type::declare(new PairType());
 

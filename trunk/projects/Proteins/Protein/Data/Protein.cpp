@@ -17,19 +17,67 @@ public:
     addVariable(vectorClass(secondaryStructureElementEnumeration()), T("secondaryStructure"));
     addVariable(vectorClass(dsspSecondaryStructureElementEnumeration()), T("dsspSecondaryStructure"));
 
-    //addVariable(vectorClass(probabilityClass()), T("solventAccesibility"));
-    //addVariable(vectorClass(probabilityClass()), T("solventAccesibilityAt20p"));
+    addVariable(vectorClass(probabilityType()), T("solventAccesibility"));
+    addVariable(vectorClass(probabilityType()), T("solventAccesibilityAt20p"));
     addVariable(vectorClass(booleanType()), T("disorderRegions"));
-    //addVariable(vectorClass(probabilityClass()), T("disorderRegionProbabilities"));
+    addVariable(vectorClass(probabilityType()), T("disorderRegionProbabilities"));
 
-    /*addVariable(symmetricMatrixClass(probabilityClass()), T("contactMap8Ca"));
-    addVariable(symmetricMatrixClass(probabilityClass()), T("contactMap8Cb"));
-    addVariable(symmetricMatrixClass(angstromDistanceClass()), T("distanceMapCa"));
-    addVariable(symmetricMatrixClass(angstromDistanceClass()), T("distanceMapCb"));*/
+    addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Ca"));
+    addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Cb"));
+    addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCa"));
+    addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCb"));
+
+    addVariable(vectorClass(residueClass()), T("residues"));
   }
 };
 
 void declareProteinClass()
 {
   Class::declare(new ProteinClass());
+}
+
+extern ClassPtr lbcpp::proteinClass()
+  {static ClassPtr res = Class::get(T("Protein")); return res;}
+
+///////////////////
+
+Variable Protein::getVariable(size_t index) const
+{
+  switch (index)
+  {
+  case 0: return primaryStructure;
+  case 1: return secondaryStructure;
+  case 2: return dsspSecondaryStructure;
+  case 3: return solventAccessibility;
+  case 4: return solventAccessibilityAt20p;
+  case 5: return disorderRegions;
+  case 6: return disorderRegionProbabilities;
+  case 7: return contactMap8Ca;
+  case 8: return contactMap8Cb;
+  case 9: return distanceMapCa;
+  case 10: return distanceMapCb;
+  case 11: return residues;
+  };
+  jassert(false);
+  return Variable();
+}
+
+void Protein::computeMissingVariables()
+{
+  if (primaryStructure)
+  {
+    if (!residues)
+      residues = createResidues();
+  }
+}
+
+VectorPtr Protein::createResidues() const
+{
+  jassert(primaryStructure);
+  size_t n = getLength();
+  VectorPtr res = new Vector(residueClass(), n);
+  ProteinPtr pthis(const_cast<Protein* >(this));
+  for (size_t i = 0; i < n; ++i)
+    res->setVariable(i, new Residue(pthis, i));
+  return res;
 }

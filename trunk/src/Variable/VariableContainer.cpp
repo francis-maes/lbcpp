@@ -12,11 +12,24 @@ using namespace lbcpp;
 
 VectorPtr VariableContainer::toVector() const
 {
-  size_t n = size();
+  size_t n = getNumVariables();
   VectorPtr res = new Vector(topLevelType(), n);
   for (size_t i = 0; i < n; ++i)
     res->setVariable(i, getVariable(i));
   return res;
+}
+
+String VariableContainer::toString() const
+{
+  String res = T("[");
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    res += getVariable(i).toString();
+    if (i < (n - 1))
+      res += T(", ");
+  }
+  return res + T("]");
 }
 
 class RandomizedVariableContainer : public DecoratorVariableContainer

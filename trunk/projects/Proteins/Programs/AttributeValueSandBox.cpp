@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "Protein/ProteinObject.h"
-#include "Protein/Data/Protein.h"
+#include "Protein/ProteinObject.h" // old
+#include "Protein/Data/Protein.h" // new
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
@@ -23,7 +23,7 @@ public:
   
   virtual void visit(size_t variableNumber, const Variable& value)
   {
-    printVariable(variableNumber, value.toString());
+    printVariable(variableNumber, value);
     if (value.isObject())
     {
       ObjectPtr object = value.getObject();
@@ -45,16 +45,16 @@ protected:
   std::ostream& ostr;
   int maxDepth;
 
-  void printVariable(size_t variableNumber, const String& valueAsString)
+  void printVariable(size_t variableNumber, const Variable& value)
   {
     TypePtr currentClass = currentClasses.back();
     jassert(currentClass);
     for (size_t i = 0; i < currentClasses.size() - 1; ++i)
       ostr << "  ";
-    ostr << "[" << variableNumber << "] "
-      << currentClass->getStaticVariableType(variableNumber)->getName() << " "
-      << currentClass->getStaticVariableName(variableNumber) << " = "
-      << valueAsString << std::endl;
+    ostr << "[" << variableNumber << "] " << value.getTypeName();
+    if (currentClass && variableNumber < currentClass->getNumStaticVariables())
+      ostr << " " << currentClass->getStaticVariableName(variableNumber);
+    ostr << " = " << value.toString() << std::endl;
   }
 };
 
@@ -75,32 +75,49 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   return res;
 }
 
-void createResidues(ProteinObjectPtr protein, std::vector<ResiduePtr>& res)
+///////////////
+
+static VectorPtr convertLabelSequence(LabelSequencePtr sequence, EnumerationPtr targetType)
 {
-  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-  jassert(aminoAcidSequence);
-  size_t n = aminoAcidSequence->size();
-  res.reserve(res.size() + n);
-
-  CollectionPtr aminoAcidCollection = AminoAcid::getCollection();
-
+  if (!sequence)
+    return VectorPtr();
+  size_t n = sequence->size();
+  VectorPtr res = new Vector(targetType, n);
   for (size_t i = 0; i < n; ++i)
-  {
-    AminoAcidPtr aminoAcid;
-    if (aminoAcidSequence->hasObject(i))
-    {
-      size_t index = aminoAcidSequence->getIndex(i);
-      if (index < AminoAcidDictionary::unknown)
-        aminoAcid = aminoAcidCollection->getElement(index);
-    }
-    ResiduePtr residue = new Residue(protein->getName() + T("(") + lbcpp::toString(i) + T(")"), aminoAcid);
-    if (i > 0)
-      res.back()->setNext(residue);
-    res.push_back(residue);
-  }
+    if (sequence->hasObject(i))
+      res->setVariable(i, Variable((int)sequence->getIndex(i), targetType));
+  return res;
 }
 
-/////////////////////////////////////////
+// FIXME: support for empty labels (empty variable values in Vectors)
+
+ProteinPtr convertProtein(ProteinObjectPtr protein)
+{
+  ProteinPtr res = new Protein(protein->getName());
+  res->setPrimaryStructure(convertLabelSequence(protein->getAminoAcidSequence(), aminoAcidTypeEnumeration()));
+  res->setSecondaryStructure(convertLabelSequence(protein->getSecondaryStructureSequence(), secondaryStructureElementEnumeration()));
+  res->setDSSPSecondaryStructure(convertLabelSequence(protein->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureElementEnumeration()));
+  // FIXME: the rest ...
+
+  res->computeMissingVariables();
+  return res;
+}
+
+VectorPtr convertProteins(ObjectContainerPtr oldStyleProteins)
+{
+  VectorPtr proteins = new Vector(proteinClass(), oldStyleProteins->size());
+  for (size_t i = 0; i < proteins->size(); ++i)
+  {
+    ProteinObjectPtr oldStyleProtein = oldStyleProteins->getAndCast<ProteinObject>(i);
+    jassert(oldStyleProtein);
+    ProteinPtr protein = convertProtein(oldStyleProtein);
+    jassert(protein);
+    proteins->setVariable(i, protein);
+  }
+  return proteins;
+}
+
+///////////////
 
 class ProteinResidueInputAttributes : public Object
 {
@@ -120,7 +137,7 @@ public:
   }
 
   virtual Variable getVariable(size_t index) const
-    {return variables[index];}
+    {jassert(index < variables.size()); return variables[index];}
 
 private:
   ResiduePtr residue;
@@ -163,28 +180,23 @@ int main(int argc, char** argv)
   
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  ObjectContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
+  ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
   
-  VectorPtr secondaryStructureExamples = new Vector(pairType(
+  /*VectorPtr secondaryStructureExamples = new Vector(pairType(
       Class::get(T("ProteinResidueInputAttributes")),
       secondaryStructureElementEnumeration()));
-
+*/
+    /*
+    
   for (size_t i = 0; i < proteins->size(); ++i)
   {
-    ProteinObjectPtr protein = proteins->getAndCast<ProteinObject>(i);
-    jassert(protein);
-    LabelSequencePtr secondaryStructure = protein->getSecondaryStructureSequence();
-    jassert(secondaryStructure);
-
-    std::vector<ResiduePtr> residues;
-    createResidues(protein, residues);
     for (size_t position = 0; position < residues.size(); ++position)
     {
       ResiduePtr residue = residues[position];
 
       /*std::cout << "========" << position << "==========" << std::endl;
       PrintObjectVisitor::print(residue, std::cout, 2);
-      std::cout << std::endl;*/
+      std::cout << std::endl;*
       
       if (secondaryStructure->hasObject(position))
       {
@@ -194,10 +206,12 @@ int main(int argc, char** argv)
         secondaryStructureExamples->append(Variable::pair(input, output));
       }
     }
-  }
-  std::cout << secondaryStructureExamples->size() << " secondary structure examples" << std::endl;
-  PrintObjectVisitor::print(secondaryStructureExamples->getVariable(10)[0], std::cout, 2);
+  }*/
 
+  VectorPtr proteins = convertProteins(oldStyleProteins);
+  std::cout << proteins->size() << " proteins" << std::endl;
+  PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 3);
+/*
   InferencePtr inference = multiClassExtraTreeInference(T("SS3"));
   InferenceContextPtr context = singleThreadedInferenceContext();
 
@@ -216,7 +230,7 @@ int main(int argc, char** argv)
   evaluator = classificationAccuracyEvaluator(T("SS3"));
   context->evaluate(inference, testingData, evaluator);
   std::cout << "Test: " << evaluator->toString();
+  */
 
-  // todo: evaluate on train and on test
   return 0;
 }

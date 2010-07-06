@@ -36,6 +36,8 @@ class DoubleType : public BuiltinType
 {
 public:
   DoubleType() : BuiltinType(T("Double")) {}
+  DoubleType(const String& name, TypePtr baseType)
+    : BuiltinType(name, baseType) {}
 
   virtual void destroy(VariableValue& value) const
     {}
@@ -51,6 +53,26 @@ public:
 
   virtual size_t getNumSubVariables(const VariableValue& value) const
     {return 0;}
+};
+
+class ProbabilityType : public DoubleType
+{
+public:
+  ProbabilityType()
+    : DoubleType(T("Probability"), doubleType()) {}
+
+  virtual String toString(const VariableValue& value) const
+    {return String(value.getDouble() * 100, 2) + T("%");}
+};
+
+class AngstromDistanceType : public DoubleType
+{
+public:
+  AngstromDistanceType()
+    : DoubleType(T("AngstromDistance"), doubleType()) {}
+
+  virtual String toString(const VariableValue& value) const
+    {return DoubleType::toString(value) + T(" A");}
 };
 
 }; /* namespace lbcpp */

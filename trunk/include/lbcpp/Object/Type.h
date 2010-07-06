@@ -138,13 +138,16 @@ extern TypePtr topLevelType();
 class BuiltinType : public Type
 {
 public:
-  BuiltinType(const String& name)
-    : Type(name, topLevelType()) {}
+  BuiltinType(const String& name, TypePtr baseType = topLevelType())
+    : Type(name, baseType) {}
 };
 
 extern TypePtr booleanType();
 extern TypePtr integerType();
 extern TypePtr doubleType();
+  extern TypePtr probabilityType();
+  extern TypePtr angstromDistanceType(); // todo: move
+
 extern TypePtr stringType();
 
 extern TypePtr pairType();
@@ -251,7 +254,9 @@ protected:
     {addVariable(Type::get(typeName), name);}
 };
 
-extern TypePtr objectClass();
+typedef ReferenceCountedObjectPtr<Class> ClassPtr;
+
+extern ClassPtr objectClass();
 
 /*
 ** Collection

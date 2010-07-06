@@ -39,8 +39,7 @@ Variable Object::getVariable(size_t index) const
 
 void Object::accept(ObjectVisitorPtr visitor)
 {
-  TypePtr type = getClass();
-  size_t n = type->getNumStaticVariables();
+  size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
     visitor->visit(i, getVariable(i));
 }

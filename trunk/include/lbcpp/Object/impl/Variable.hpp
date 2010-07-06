@@ -91,6 +91,9 @@ inline Variable& Variable::operator =(const Variable& otherVariant)
 inline TypePtr Variable::getType() const
   {return type;}
 
+inline String Variable::getTypeName() const
+  {return type ? type->getName() : T("Nil");}
+
 inline Variable::operator bool() const
   {return type;}
 
