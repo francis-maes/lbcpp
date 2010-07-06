@@ -32,27 +32,27 @@
 namespace lbcpp
 {
 
-inline Variable::Variable(bool boolValue, ClassPtr type)
+inline Variable::Variable(bool boolValue, TypePtr type)
   : type(type), value(boolValue) {jassert(isBoolean());}
 
-inline Variable::Variable(int intValue, ClassPtr type)
+inline Variable::Variable(int intValue, TypePtr type)
   : type(type), value(intValue) {jassert(isInteger());} 
 
-inline Variable::Variable(double doubleValue, ClassPtr type)
+inline Variable::Variable(double doubleValue, TypePtr type)
   : type(type), value(doubleValue) {jassert(isDouble());}
 
-inline Variable::Variable(const String& stringValue, ClassPtr type)
+inline Variable::Variable(const String& stringValue, TypePtr type)
   : type(type), value(stringValue) {jassert(isString());}
 
 inline Variable::Variable(ObjectPtr object)
-  : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
-  : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
 
 template<class T>
 inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? object->getClass() : ClassPtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(const Variable& otherVariant)
   {*this = otherVariant;}
@@ -65,7 +65,7 @@ inline void Variable::clear()
   if (type)
   {
     type->destroy(value);
-    type = ClassPtr();
+    type = TypePtr();
   }
 }
 
@@ -88,7 +88,7 @@ inline Variable& Variable::operator =(const Variable& otherVariant)
   return *this;
 }
 
-inline ClassPtr Variable::getType() const
+inline TypePtr Variable::getType() const
   {return type;}
 
 inline Variable::operator bool() const
@@ -101,25 +101,25 @@ inline bool Variable::isNil() const
   {return !type;}
 
 inline bool Variable::isBoolean() const
-  {return type && type->inheritsFrom(booleanClass());}
+  {return type && type->inheritsFrom(booleanType());}
 
 inline bool Variable::getBoolean() const
   {jassert(isBoolean()); return value.getBoolean();}
 
 inline bool Variable::isInteger() const
-  {return type && type->inheritsFrom(integerClass());}
+  {return type && type->inheritsFrom(integerType());}
 
 inline int Variable::getInteger() const
   {jassert(isInteger()); return value.getInteger();}
 
 inline bool Variable::isDouble() const
-  {return type && type->inheritsFrom(doubleClass());}
+  {return type && type->inheritsFrom(doubleType());}
 
 inline double Variable::getDouble() const
   {jassert(isDouble()); return value.getDouble();}
 
 inline bool Variable::isString() const
-  {return type && type->inheritsFrom(stringClass());}
+  {return type && type->inheritsFrom(stringType());}
 
 inline String Variable::getString() const
   {jassert(isString()); return value.getString();}

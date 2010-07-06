@@ -84,7 +84,7 @@ class ContactMapScoresToProbabilitiesInferenceBatchLearner : public Inference
 protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    jassert(input.getType()->inheritsFrom(pairClass()));
+    jassert(input.getType()->inheritsFrom(pairType()));
 
     InferencePtr inference = input[0].getObject().dynamicCast<Inference>();
     VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();

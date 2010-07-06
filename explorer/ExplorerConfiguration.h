@@ -65,9 +65,9 @@ public:
   static void save()
     {getInstance()->saveToFile(getConfigurationFile());}
 
-  template<class Type>
-  static ReferenceCountedObjectPtr<Type>& getAndCast(const String& name)
-    {return *(ReferenceCountedObjectPtr<Type>* )&(getInstance()->getObjects()[name]);}
+  template<class TT>
+  static ReferenceCountedObjectPtr<TT>& getAndCast(const String& name)
+    {return *(ReferenceCountedObjectPtr<TT>* )&(getInstance()->getObjects()[name]);}
 };
 
 }; /* namespace lbcpp */

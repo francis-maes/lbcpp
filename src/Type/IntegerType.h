@@ -17,15 +17,15 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: IntegerClass.h                 | Integer class                   |
+| Filename: IntegerType.h                  | Integer type                    |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/06/2010 15:29               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CLASS_INTEGER_H_
-# define LBCPP_OBJECT_CLASS_INTEGER_H_
+#ifndef LBCPP_OBJECT_TYPE_INTEGER_H_
+# define LBCPP_OBJECT_TYPE_INTEGER_H_
 
 # include <lbcpp/Object/Variable.h>
 
@@ -36,4 +36,4 @@ namespace lbcpp
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CLASS_INTEGER_H_
+#endif // !LBCPP_OBJECT_TYPE_INTEGER_H_

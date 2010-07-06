@@ -28,7 +28,7 @@
 # define LBCPP_OBJECT_VARIABLE_H_
 
 # include "Object.h"
-# include "Class.h"
+# include "Type.h"
 
 namespace lbcpp
 {
@@ -36,10 +36,10 @@ namespace lbcpp
 class Variable
 {
 public:
-  Variable(bool boolValue, ClassPtr type = booleanClass());
-  Variable(int intValue, ClassPtr type = integerClass());
-  Variable(double doubleValue, ClassPtr type = doubleClass());
-  Variable(const String& stringValue, ClassPtr type = stringClass());
+  Variable(bool boolValue, TypePtr type = booleanType());
+  Variable(int intValue, TypePtr type = integerType());
+  Variable(double doubleValue, TypePtr type = doubleType());
+  Variable(const String& stringValue, TypePtr type = stringType());
   Variable(ObjectPtr object);
   Variable(Object* object);
 
@@ -49,7 +49,7 @@ public:
   Variable() {}
   
   static Variable pair(const Variable& variable1, const Variable& variable2);
-  static Variable copyFrom(ClassPtr type, const VariableValue& value);
+  static Variable copyFrom(TypePtr type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;
     
   ~Variable();
@@ -58,7 +58,7 @@ public:
 
   Variable& operator =(const Variable& other);
 
-  ClassPtr getType() const;
+  TypePtr getType() const;
 
   operator bool() const;
   operator ObjectPtr() const;
@@ -104,9 +104,9 @@ public:
     {return ostr << variable.toString();}
 
 private:
-  Variable(ClassPtr type, const VariableValue& value) : type(type), value(value) {}
+  Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}
 
-  ClassPtr type;
+  TypePtr type;
   VariableValue value;
 };
 

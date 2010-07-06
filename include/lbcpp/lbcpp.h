@@ -31,7 +31,7 @@
 # include "ContainerTraits.h"
 
 # include "Object/Object.h"
-# include "Object/Class.h"
+# include "Object/Type.h"
 
 # include "Object/Variable.h"
 # include "Object/Vector.h"

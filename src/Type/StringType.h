@@ -15,38 +15,39 @@
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 /*-----------------------------------------.---------------------------------.
-| Filename: BooleanClass.h                 | Boolean class                   |
+| Filename: StringType.h                   | String type                     |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/06/2010 15:29               |                                 |
+| Started : 26/06/2010 15:28               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CLASS_BOOLEAN_H_
-# define LBCPP_OBJECT_CLASS_BOOLEAN_H_
+#ifndef LBCPP_OBJECT_TYPE_STRING_H_
+# define LBCPP_OBJECT_TYPE_STRING_H_
 
 # include <lbcpp/Object/Variable.h>
 
 namespace lbcpp
 {
 
-class BooleanClass : public BuiltinTypeClass
+class StringType : public BuiltinType
 {
 public:
-  BooleanClass() : BuiltinTypeClass(T("Boolean")) {}
+  StringType() : BuiltinType(T("String")) {}
 
   virtual void destroy(VariableValue& value) const
-    {}
+    {value.clearString();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setBoolean(source.getBoolean());}
+    {dest.setString(source.getString());}
 
   virtual String toString(const VariableValue& value) const
-    {return value.getBoolean() ? T("True") : T("False");}
+    {return value.getString().quoted();}
 
   virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getBoolean() == value2.getBoolean();}
+    {return value1.getString() == value2.getString();}
 
   virtual size_t getNumSubVariables(const VariableValue& value) const
     {return 0;}
@@ -54,4 +55,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CLASS_BOOLEAN_H_
+#endif // !LBCPP_OBJECT_TYPE_STRING_H_

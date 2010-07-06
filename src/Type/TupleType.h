@@ -17,27 +17,27 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: TupleClass.h                   | Tuple classes                   |
+| Filename: TupleType.h                    | Tuple types                     |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/06/2010 15:27               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CLASS_TUPLE_H_
-# define LBCPP_OBJECT_CLASS_TUPLE_H_
+#ifndef LBCPP_OBJECT_TYPE_TUPLE_H_
+# define LBCPP_OBJECT_TYPE_TUPLE_H_
 
 # include <lbcpp/Object/Variable.h>
-# include "BuiltinTypeClass.h"
+# include "BuiltinType.h"
 
 namespace lbcpp
 {
 
-class TupleClass : public RawDataBuiltinTypeClass
+class TupleType : public RawDataBuiltinType
 {
 public:
-  TupleClass(const String& name, size_t size)
-    : RawDataBuiltinTypeClass(name), size(size) {}
+  TupleType(const String& name, size_t size)
+    : RawDataBuiltinType(name), size(size) {}
 
   static char* allocateMemory(size_t size)
   {
@@ -53,7 +53,7 @@ public:
     {
       for (size_t i = 0; i < size; ++i)
         data[i] = Variable();
-      RawDataBuiltinTypeClass::destroy(value);
+      RawDataBuiltinType::destroy(value);
     }
   }
 
@@ -94,8 +94,8 @@ public:
   virtual size_t getNumStaticVariables() const
     {return size;}
 
-  virtual ClassPtr getStaticVariableType(size_t index) const
-    {return ClassPtr();}
+  virtual TypePtr getStaticVariableType(size_t index) const
+    {return TypePtr();}
 
   virtual String getStaticVariableName(size_t index) const
     {return T("[") + String((int)index) + T("]");}
@@ -117,10 +117,10 @@ protected:
   size_t size;
 };
 
-class PairClass : public TupleClass
+class PairType : public TupleType
 {
 public:
-  PairClass() : TupleClass(T("Pair"), 2) {}
+  PairType() : TupleType(T("Pair"), 2) {}
 
   static VariableValue allocate(const Variable& variable1, const Variable& variable2)
   {
@@ -147,16 +147,6 @@ public:
   }
 };
 
-class VariableVectorClass : public RawDataBuiltinTypeClass
-{
-public:
-  VariableVectorClass(ClassPtr elementsClass)
-    : RawDataBuiltinTypeClass(T("VariableVector<") + elementsClass->getName() + T(">")), elementsClass(elementsClass) {}
-
-private:
-  ClassPtr elementsClass;
-};
-
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CLASS_TUPLE_H_
+#endif // !LBCPP_OBJECT_TYPE_TUPLE_H_

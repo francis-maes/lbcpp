@@ -27,8 +27,8 @@ public:
   StaticToDynamicFeatureGenerator(const ImplementationType& impl)
     : impl(impl) {}
     
-  virtual ClassPtr getClass() const
-    {return Class::get(T("FeatureGenerator"));}
+  virtual TypePtr getClass() const
+    {return Type::get(T("FeatureGenerator"));}
 
   virtual String getName() const
     {return ImplementationType::getName();}

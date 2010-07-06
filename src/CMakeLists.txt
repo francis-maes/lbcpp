@@ -6,7 +6,7 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ReferenceCountedObject.h
   ../include/lbcpp/Object/ErrorHandler.h  
   ../include/lbcpp/Object/Object.h
-  ../include/lbcpp/Object/Class.h
+  ../include/lbcpp/Object/Type.h
   ../include/lbcpp/Object/Variable.h
   ../include/lbcpp/Object/VariableContainer.h
   ../include/lbcpp/Object/Vector.h
@@ -35,17 +35,17 @@ SET(LBCPP_OBJECT_SOURCES
 
 SET(LBCPP_VARIABLE_SOURCES
   Variable/Object.cpp
-  Variable/Class.cpp
+  Variable/Type.cpp
   Variable/VariableContainer.cpp
   Variable/Vector.cpp
 )  
 
-SET(LBCPP_OBJECT_CLASS_SOURCES
-  Class/BooleanClass.h
-  Class/IntegerClass.h
-  Class/DoubleClass.h
-  Class/StringClass.h
-  Class/TupleClass.h
+SET(LBCPP_OBJECT_TYPE_SOURCES
+  Type/BooleanType.h
+  Type/IntegerType.h
+  Type/DoubleType.h
+  Type/StringType.h
+  Type/TupleType.h
 )
 
 SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
@@ -240,7 +240,7 @@ SET(LBCPP_CORE
   ${LBCPP_OBJECT_IMPL_HEADERS}
   ${LBCPP_OBJECT_SOURCES}
   ${LBCPP_VARIABLE_SOURCES}
-  ${LBCPP_OBJECT_CLASS_SOURCES}
+  ${LBCPP_OBJECT_TYPE_SOURCES}
   ${LBCPP_CORE_OBJECT_STREAM_SOURCES}
   
 
@@ -274,7 +274,7 @@ SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Object Core FILES ${LBCPP_VARIABLE_SOURCES})
 SOURCE_SUB_GROUP(Object impl FILES ${LBCPP_OBJECT_IMPL_HEADERS})
-SOURCE_SUB_GROUP(Object Class FILES ${LBCPP_OBJECT_CLASS_SOURCES})
+SOURCE_SUB_GROUP(Object Type FILES ${LBCPP_OBJECT_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Object ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
 
 SOURCE_GROUP(Utilities FILES ${LBCPP_UTILITIES_HEADERS} ${LBCPP_UTILITIES_SOURCES})

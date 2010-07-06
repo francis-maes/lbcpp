@@ -27,8 +27,8 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
 
   Variable firstExample = trainingData->getVariable(0);
   jassert(firstExample);
-  ClassPtr inputClass = firstExample[0].getType();
-  ClassPtr outputClass = firstExample[1].getType();
+  TypePtr inputClass = firstExample[0].getType();
+  TypePtr outputClass = firstExample[1].getType();
 #ifdef JUCE_DEBUG
   for (size_t i = 1; i < trainingData->size(); ++i)
   {
@@ -59,7 +59,7 @@ bool isVariableConstant(size_t index1, size_t index2, VariableContainerPtr train
   return true;
 }
 
-BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData)
+BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData)
 {
   size_t n = trainingData->size();
   if (!n)
@@ -96,7 +96,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trai
   return true;
 }
 
-size_t SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes)
+size_t SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes)
 {
   if (shouldCreateLeaf(trainingData, indices, nonConstantAttributes))
   {

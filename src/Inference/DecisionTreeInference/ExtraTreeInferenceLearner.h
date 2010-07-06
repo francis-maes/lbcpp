@@ -29,7 +29,7 @@ protected:
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
-  BinaryDecisionTreePtr sampleTree(ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData);
+  BinaryDecisionTreePtr sampleTree(TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData);
 
   bool isAttributeConstant(size_t attributeNumber, VariableContainerPtr trainingData, const std::set<size_t>& indices) const
   {
@@ -38,7 +38,7 @@ protected:
   }
 
   bool shouldCreateLeaf(VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes) const;
-  size_t sampleTreeRecursively(BinaryDecisionTreePtr tree, ClassPtr inputClass, ClassPtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
+  size_t sampleTreeRecursively(BinaryDecisionTreePtr tree, TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
 };
 
 }; /* namespace lbcpp */

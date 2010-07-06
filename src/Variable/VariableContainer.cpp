@@ -13,7 +13,7 @@ using namespace lbcpp;
 VectorPtr VariableContainer::toVector() const
 {
   size_t n = size();
-  VectorPtr res = new Vector(topLevelClass(), n);
+  VectorPtr res = new Vector(topLevelType(), n);
   for (size_t i = 0; i < n; ++i)
     res->setVariable(i, getVariable(i));
   return res;

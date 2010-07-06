@@ -15,32 +15,44 @@
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 /*-----------------------------------------.---------------------------------.
-| Filename: BuiltinTypeClass.h             | BuiltinType classes             |
+| Filename: DoubleType.h                   | Double type                     |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/06/2010 15:57               |                                 |
+| Started : 26/06/2010 15:29               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CLASS_BUILTIN_H_
-# define LBCPP_OBJECT_CLASS_BUILTIN_H_
+#ifndef LBCPP_OBJECT_TYPE_DOUBLE_H_
+# define LBCPP_OBJECT_TYPE_DOUBLE_H_
 
 # include <lbcpp/Object/Variable.h>
 
 namespace lbcpp
 {
 
-class RawDataBuiltinTypeClass : public BuiltinTypeClass
+class DoubleType : public BuiltinType
 {
 public:
-  RawDataBuiltinTypeClass(const String& name)
-    : BuiltinTypeClass(name) {}
+  DoubleType() : BuiltinType(T("Double")) {}
 
   virtual void destroy(VariableValue& value) const
-    {value.clearRawData();}
+    {}
+
+  virtual void copy(VariableValue& dest, const VariableValue& source) const
+    {dest.setDouble(source.getDouble());}
+
+  virtual String toString(const VariableValue& value) const
+    {return String(value.getDouble());}
+
+  virtual bool equals(const VariableValue& value1, const VariableValue& value2) const
+    {return value1.getDouble() == value2.getDouble();}
+
+  virtual size_t getNumSubVariables(const VariableValue& value) const
+    {return 0;}
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CLASS_BUILTIN_H_
+#endif // !LBCPP_OBJECT_TYPE_DOUBLE_H_

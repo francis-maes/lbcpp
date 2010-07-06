@@ -49,7 +49,7 @@ bool Vector::checkType(const Variable& value) const
   return true;
 }
 
-ClassPtr lbcpp::vectorClass(ClassPtr elementsClass)
+TypePtr lbcpp::vectorClass(TypePtr elementsClass)
 {
-  return Class::get(T("Vector"));
+  return Type::get(T("Vector"));
 }
