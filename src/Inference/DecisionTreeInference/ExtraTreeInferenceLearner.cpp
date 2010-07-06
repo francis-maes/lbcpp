@@ -6,8 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Object/ObjectPair.h>
 #include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Object/Predicate.h>
+#include <lbcpp/Object/ProbabilityDistribution.h>
 #include "ExtraTreeInferenceLearner.h"
 using namespace lbcpp;
 
@@ -24,6 +25,8 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   BinaryDecisionTreeInferencePtr inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
   VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
   jassert(inference && trainingData);
+  if (!trainingData->size())
+    return Variable();
 
   Variable firstExample = trainingData->getVariable(0);
   jassert(firstExample);
@@ -44,19 +47,90 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   return Variable();
 }
 
-bool isVariableConstant(size_t index1, size_t index2, VariableContainerPtr trainingData)
+static bool isVariableConstant(VariableContainerPtr container, const std::vector<size_t>& indices, size_t index1, int index2, Variable& value)
 {
-  size_t n = trainingData->size();
+  size_t n = indices.size();
   if (n <= 1)
     return true;
-  Variable refValue = trainingData->getVariable(0)[index1][index2];
+  value = container->getVariable(indices[0])[index1];
+  if (index2 >= 0)
+    value = value[(size_t)index2];
   for (size_t i = 1; i < n; ++i)
   {
-    Variable otherValue = trainingData->getVariable(i)[index1][index2];
-    if (refValue != otherValue)
+    Variable otherValue = container->getVariable(indices[i])[index1];
+    if (index2 >= 0)
+      otherValue = otherValue[(size_t)index2];
+
+    if (value != otherValue)
       return false;
   }
   return true;
+}
+
+static bool isInputVariableConstant(VariableContainerPtr trainingData, const std::vector<size_t>& indices, size_t variableIndex, Variable& value)
+  {return isVariableConstant(trainingData, indices, 0, variableIndex, value);}
+
+static bool isOutputConstant(VariableContainerPtr trainingData, const std::vector<size_t>& indices, Variable& value)
+  {return isVariableConstant(trainingData, indices, 1, -1, value);}
+
+Variable SingleExtraTreeInferenceLearner::createOutputDistribution(TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& examples) const
+{
+  EnumerationPtr enumeration = outputType.dynamicCast<Enumeration>();
+  if (enumeration)
+  {
+    DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(enumeration);
+    for (size_t i = 0; i < examples.size(); ++i)
+      res->increment(trainingData->getVariable(examples[i])[1]);
+    return res;
+  }
+  else
+  {
+    // Not Implemented
+    jassert(false);
+    return Variable();
+  }
+}
+
+bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trainingData, const std::vector<size_t>& examples, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
+{
+  jassert(examples.size());
+
+  if (examples.size() < numAttributeSamplesPerSplit || variables.empty())
+  {
+    if (examples.size() == 1)
+      leafValue = trainingData->getVariable(examples[0])[1];
+    else
+      leafValue = createOutputDistribution(outputType, trainingData, examples);
+    return true;
+  }
+  return isOutputConstant(trainingData, examples, leafValue);
+}
+
+void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& examples, const std::vector<size_t>& variables)
+{
+  // update "non constant variables" set
+  std::vector<size_t> nonConstantVariables;
+  nonConstantVariables.reserve(variables.size());
+  for (size_t i = 0; i < variables.size(); ++i)
+  {
+    Variable value;
+    if (!isInputVariableConstant(trainingData, examples, variables[i], value))
+      nonConstantVariables.push_back(variables[i]);
+  }
+  
+  Variable leafValue;
+  if (shouldCreateLeaf(trainingData, examples, nonConstantVariables, outputType, leafValue))
+    tree->createLeaf(nodeIndex, leafValue);
+  else
+  {
+    size_t leftChildIndex = tree->getNumNodes() + 1;
+    size_t rightChildIndex = leftChildIndex + 1;
+
+
+
+    //tree->createInternalNode(nodeIndex, 
+    // TODO: createInternalNode
+  }
 }
 
 BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData)
@@ -68,44 +142,19 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputC
   BinaryDecisionTreePtr res = new BinaryDecisionTree();
   res->reserveNodes(n);
 
-  std::set<size_t> nonConstantVariables;
   size_t numVariables = inputClass->getNumStaticVariables();
+  std::vector<size_t> nonConstantVariables(numVariables);
   for (size_t i = 0; i < numVariables; ++i)
-    if (!isVariableConstant(0, i, trainingData))
-      nonConstantVariables.insert(i);
+    nonConstantVariables[i] = i;
   
-  std::set<size_t> indices;
+  std::vector<size_t> indices(n);
   for (size_t i = 0; i < n; ++i)
-    indices.insert(i);
-  sampleTreeRecursively(res, inputClass, outputClass, trainingData, indices, nonConstantVariables);
+    indices[i] = i;
+  sampleTreeRecursively(res, 0, inputClass, outputClass, trainingData, indices, nonConstantVariables);
   return res;
 }
 
-bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantVariables) const
-{
-  if (indices.empty() || indices.size() < numAttributeSamplesPerSplit || nonConstantVariables.empty())
-    return true;
-  std::set<size_t>::const_iterator it = indices.begin();
-  Variable firstOutput = trainingData->getVariable(*it)[1];
-  for (++it; it != indices.end(); ++it)
-  {
-    Variable output = trainingData->getVariable(*it)[1];
-    if (output != firstOutput)
-      return false;
-  }
-  return true;
-}
-
-size_t SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes)
-{
-  if (shouldCreateLeaf(trainingData, indices, nonConstantAttributes))
-  {
-  }
-  else
-  {
-  }
-  return 0; // FIXME    
-}
+//////////////////////////
 
 ExtraTreeInference::ExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
   : ParallelVoteInference(name)

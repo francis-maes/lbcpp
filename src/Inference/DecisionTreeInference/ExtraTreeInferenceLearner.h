@@ -31,14 +31,9 @@ protected:
 
   BinaryDecisionTreePtr sampleTree(TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData);
 
-  bool isAttributeConstant(size_t attributeNumber, VariableContainerPtr trainingData, const std::set<size_t>& indices) const
-  {
-    // FIXME
-    return false;
-  }
-
-  bool shouldCreateLeaf(VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes) const;
-  size_t sampleTreeRecursively(BinaryDecisionTreePtr tree, TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData, const std::set<size_t>& indices, const std::set<size_t>& nonConstantAttributes);
+  void sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& examples, const std::vector<size_t>& variables);
+  bool shouldCreateLeaf(VariableContainerPtr trainingData, const std::vector<size_t>& examples, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
+  Variable createOutputDistribution(TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& examples) const;
 };
 
 }; /* namespace lbcpp */

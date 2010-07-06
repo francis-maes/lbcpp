@@ -38,6 +38,9 @@ inline Variable::Variable(bool boolValue, TypePtr type)
 inline Variable::Variable(int intValue, TypePtr type)
   : type(type), value(intValue) {jassert(isInteger());} 
 
+inline Variable::Variable(size_t intValue, TypePtr type)
+  : type(type), value((int)intValue) {jassert(isInteger());} 
+
 inline Variable::Variable(double doubleValue, TypePtr type)
   : type(type), value(doubleValue) {jassert(isDouble());}
 
@@ -178,6 +181,9 @@ inline size_t Variable::size() const
 
 inline Variable Variable::operator [](size_t index) const
   {return type ? type->getSubVariable(value, index) : Variable();}
+
+inline bool checkInheritance(const Variable& variable, TypePtr baseType)
+  {return checkInheritance(variable.getType(), baseType);}
 
 }; /* namespace lbcpp */
 

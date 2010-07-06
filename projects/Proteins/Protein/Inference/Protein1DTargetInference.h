@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinSequenceLabelingInfe...h| ProteinObject Sequence Labeling       |
+| Filename: ProteinSequenceLabelingInfe...h| ProteinObject Sequence Labeling |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 21:26               |                                 |
 `------------------------------------------/                                 |

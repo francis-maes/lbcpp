@@ -320,6 +320,16 @@ public:
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
 
+inline bool checkInheritance(TypePtr type, TypePtr baseType)
+{
+  if (!type || !type->inheritsFrom(baseType))
+  {
+    Object::error(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName() + T(" found ") + (type ? type->getName() : T("Nil")));
+    return false;
+  }
+  return true;
+}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_CLASS_H_

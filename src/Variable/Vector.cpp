@@ -40,14 +40,7 @@ void Vector::append(const Variable& value)
 }
 
 bool Vector::checkType(const Variable& value) const
-{
-  if (!value.getType()->inheritsFrom(type))
-  {
-    Object::error(T("Vector::checkType"), T("Invalid type, Expected ") + type->getName() + T(" found ") + value.getTypeName());
-    return false;
-  }
-  return true;
-}
+  {return checkInheritance(value, type);}
 
 ClassPtr lbcpp::vectorClass(TypePtr elementsType)
 {

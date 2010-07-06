@@ -30,7 +30,7 @@ public:
     {return primaryStructure ? primaryStructure->size() : 0;}
 
   /*
-  ** Low level representations
+  ** Primary Structure
   */
   VectorPtr getPrimaryStructure() const
     {return primaryStructure;}
@@ -38,15 +38,27 @@ public:
   void setPrimaryStructure(VectorPtr primaryStructure)
     {this->primaryStructure = primaryStructure;}
 
+  /*
+  ** Secondary Structure
+  */
   void setSecondaryStructure(VectorPtr secondaryStructure)
     {this->secondaryStructure = secondaryStructure;}
+
+  VectorPtr getSecondaryStructure() const
+    {return secondaryStructure;}
 
   void setDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
     {this->dsspSecondaryStructure = dsspSecondaryStructure;}
 
+  VectorPtr getDSSPSecondaryStructure() const
+    {return dsspSecondaryStructure;}
+
   /*
   ** High level representation: residues graph
   */
+  void createResidues();
+  void clearResidues();
+
   VectorPtr getResidues() const
     {return residues;}
 
@@ -59,8 +71,6 @@ public:
   void computeMissingVariables();
 
 protected:
-  VectorPtr createResidues() const;
-
   VectorPtr primaryStructure;
   VectorPtr secondaryStructure;
   VectorPtr dsspSecondaryStructure;
