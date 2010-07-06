@@ -172,6 +172,45 @@ Variable Class::getSubVariable(const VariableValue& value, size_t index) const
 void Class::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
   {value.getObject()->setVariable(index, subValue);}
 
+int Class::compare(const VariableValue& value1, const VariableValue& value2) const
+{
+  ObjectPtr object1 = value1.getObject();
+  ObjectPtr object2 = value2.getObject();
+  if (!object1)
+    return object2 ? -1 : 0;
+  if (!object2)
+    return 1;
+  return object1->compare(object2);
+}
+
+TypePtr Class::multiplyByScalar(VariableValue& value, double scalar)
+{
+  ObjectPtr object = value.getObject();
+  if (object && scalar != 1.0)
+  {
+    object = object->multiplyByScalar(scalar);
+    value.clearObject();
+    value.setObject(object);
+    return object->getClass();
+  }
+  else
+    return TypePtr(this);
+}
+
+TypePtr Class::addWeighted(VariableValue& target, const Variable& source, double weight)
+{
+  ObjectPtr object = target.getObject();
+  if (object && weight != 0.0)
+  {
+    object = object->addWeighted(source, weight);
+    target.clearObject();
+    target.setObject(object);
+    return object->getClass();
+  }
+  else
+    return TypePtr(this);
+}
+
 /*
 ** Enumeration
 */
@@ -210,6 +249,17 @@ void Enumeration::addElement(const String& elementName)
       return;
     }
   elements.push_back(elementName);
+}
+
+#include <lbcpp/Object/ProbabilityDistribution.h>
+
+TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
+{
+  DiscreteProbabilityDistributionPtr distribution = new DiscreteProbabilityDistribution(EnumerationPtr(this));
+  distribution->setVariable((size_t)value.getInteger(), scalar);
+  value.clearBuiltin();
+  value.setObject(distribution);
+  return distribution->getClass();
 }
 
 #include "../Type/BooleanType.h"

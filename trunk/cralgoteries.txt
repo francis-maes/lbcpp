@@ -1,17 +1,12 @@
 * ExtraTree
   - Compute Score
-  - BinaryDecisionTree: getSplitPredicate(TypePtr variableType, Variable splitArgument)
-  - BinaryDecisionTree: compute split score
+  - Rajouter les PSSM dans le nouveau format
+  - Prediction de la structure secondaire avec des inferences sur les nouvelles proteins (VectorInference et NewProteinInference)
 
-* Rajouter les PSSM dans le nouveau format
-* VectorInference
-* NewProteinInference
+* VariableValue avec valeurs manquantes
+* Introspection sur les classes templates => utiliser dans SingleExtraTreeInferenceLearner::run
 
-En Cours:
- * VariableValue avec valeurs manquantes
- * Introspection sur les classes templates => utiliser dans SingleExtraTreeInferenceLearner::run
- 
-
+=========== 
 
 Library:
  * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
@@ -27,7 +22,7 @@ Inference:
 Proteins: 
  * ParallelProteinInference
 
-======
+===========
 
 FeatureGenerator:
   * Dans EditableFeatureGenerator, mettre en virtuel addWeighted et multiplyByScalar

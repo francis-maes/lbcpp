@@ -11,6 +11,7 @@
 
 # include <lbcpp/Object/Object.h>
 # include <lbcpp/Object/Variable.h>
+# include <lbcpp/Object/Predicate.h>
 
 namespace lbcpp 
 {
@@ -35,6 +36,8 @@ public:
   size_t getNumNodes() const
     {return nodes.size();}
 
+  static PredicatePtr getSplitPredicate(const Variable& splitArgument);
+
 protected:
   TypePtr inputClass;
   TypePtr leavesClass;
@@ -50,12 +53,7 @@ protected:
     Variable getLeafValue() const
       {jassert(isLeaf()); return argument;}
 
-    bool test(const Variable& variable) const
-    {
-      jassert(isInternalNode());
-      jassert(splitVariable >= 0 && splitVariable < (int)variable.size());
-      return variable[splitVariable] == argument; // TMP ! todo: elaborated SplitFunction
-    }
+    bool test(const Variable& variable) const;
 
     size_t getChildNodeIndex(const Variable& variable) const
       {return indexOfLeftChild + (test(variable) ? 1 : 0);}

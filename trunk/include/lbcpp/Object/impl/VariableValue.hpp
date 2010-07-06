@@ -58,6 +58,7 @@ struct VariableValue
   VariableValue()
     {memset(this, 0, sizeof (VariableValue));}
 
+  void clearBuiltin();
   void clearObject();
   void clearString();
   void clearRawData();
@@ -94,6 +95,9 @@ struct VariableValue
 
   void setObject(Object* pointer)
     {jassert(!u.objectValue); u.objectValue = pointer; if (pointer) pointer->incrementReferenceCounter();}
+  
+  void setObject(ObjectPtr pointer)
+    {setObject(pointer.get());}
 
   const char* getRawData() const
     {return u.rawDataValue;}
@@ -123,6 +127,9 @@ inline VariableValue::VariableValue(ReferenceCountedObjectPtr<T> objectValue)
   if (objectValue)
     objectValue->incrementReferenceCounter();
 }
+
+inline void VariableValue::clearBuiltin()
+  {memset(this, 0, sizeof (*this));}
 
 inline void VariableValue::clearObject()
 {

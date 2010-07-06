@@ -81,16 +81,6 @@ inline void Variable::copyTo(VariableValue& dest) const
   }
 }
 
-inline Variable& Variable::operator =(const Variable& otherVariant)
-{
-  clear();
-  if (type != otherVariant.type)
-    type = otherVariant.type;
-  if (type)
-    type->copy(value, otherVariant.value);
-  return *this;
-}
-
 inline TypePtr Variable::getType() const
   {return type;}
 
@@ -117,6 +107,9 @@ inline bool Variable::isInteger() const
 
 inline int Variable::getInteger() const
   {jassert(isInteger()); return value.getInteger();}
+
+inline bool Variable::isEnumeration() const
+  {return type && type.dynamicCast<Enumeration>();}
 
 inline bool Variable::isDouble() const
   {return type && type->inheritsFrom(doubleType());}
@@ -193,8 +186,39 @@ inline size_t Variable::size() const
 inline Variable Variable::operator [](size_t index) const
   {return type ? type->getSubVariable(value, index) : Variable();}
 
+inline Variable& Variable::operator =(const Variable& otherVariant)
+{
+  clear();
+  if (type != otherVariant.type)
+    type = otherVariant.type;
+  if (type)
+    type->copy(value, otherVariant.value);
+  return *this;
+}
+
+inline void Variable::multiplyByScalar(double scalar)
+{
+  if (isNil() || scalar == 1.0)
+    return;
+  if (scalar == 0.0)
+    clear();
+  else
+    type = type->multiplyByScalar(value, scalar);
+}
+
+inline void Variable::addWeighted(const Variable& other, double weight)
+{
+  if (isNil())
+  {
+    *this = other;
+    multiplyByScalar(weight);
+  }
+  else
+    type = type->addWeighted(value, other, weight);
+}
+
 inline bool checkInheritance(const Variable& variable, TypePtr baseType)
-  {return checkInheritance(variable.getType(), baseType);}
+  {return variable.isNil() || checkInheritance(variable.getType(), baseType);}
 
 }; /* namespace lbcpp */
 

@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/Evaluator.h>
 # include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
+# include <lbcpp/Object/ProbabilityDistribution.h>
 
 namespace lbcpp
 {
@@ -23,12 +24,31 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    LabelPtr predicted = predictedObject.dynamicCast<Label>();
-    LabelPtr correct = correctObject.dynamicCast<Label>();
-    if (!predicted || !correct)
-      return;
-    jassert(predicted->getDictionary() == correct->getDictionary());
-    accuracy->push(predicted->getIndex() == correct->getIndex() ? 1.0 : 0.0);
+    if (correctObject.isEnumeration())
+    {
+      // new:
+      if (predictedObject.isEnumeration())
+      {
+        jassert(predictedObject.getType() == correctObject.getType());
+        accuracy->push(predictedObject.getInteger() == correctObject.getInteger());
+      }
+      else
+      {
+        DiscreteProbabilityDistributionPtr distribution = predictedObject.getObjectAndCast<DiscreteProbabilityDistribution>();
+        jassert(distribution);
+        accuracy->push(distribution->compute(correctObject));
+      }
+    }
+    else
+    {
+      // old:
+      LabelPtr predicted = predictedObject.dynamicCast<Label>();
+      LabelPtr correct = correctObject.dynamicCast<Label>();
+      if (!predicted || !correct)
+        return;
+      jassert(predicted->getDictionary() == correct->getDictionary());
+      accuracy->push(predicted->getIndex() == correct->getIndex() ? 1.0 : 0.0);
+    }
   }
   
   virtual String toString() const

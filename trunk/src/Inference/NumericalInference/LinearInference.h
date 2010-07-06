@@ -54,7 +54,7 @@ public:
     jassert(features && lossFunction);
     double lossDerivative;
     lossFunction->compute(prediction ? prediction.getDouble() : 0.0, &lossValue, &lossDerivative);
-    return multiplyByScalar(features, lossDerivative);  
+    return lbcpp::multiplyByScalar(features, lossDerivative);  
   }
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

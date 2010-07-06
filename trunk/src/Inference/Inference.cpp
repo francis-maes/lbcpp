@@ -111,8 +111,8 @@ InferencePtr lbcpp::dihedralAngleRegressionInference(InferenceOnlineLearnerPtr l
 */
 #include "DecisionTreeInference/ExtraTreeInference.h"
 
-InferencePtr lbcpp::multiClassExtraTreeInference(const String& name)
-  {return new ExtraTreeInference(name);}
+InferencePtr lbcpp::extraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+  {return new ExtraTreeInference(name, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
 /*
 ** Reduction

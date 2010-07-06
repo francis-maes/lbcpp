@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = multiClassExtraTreeInference(T("SS3"));
+  InferencePtr inference = extraTreeInference(T("SS3"), 200, 1);
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 

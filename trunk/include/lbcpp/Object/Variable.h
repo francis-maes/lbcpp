@@ -57,8 +57,6 @@ public:
 
   void clear();
 
-  Variable& operator =(const Variable& other);
-
   TypePtr getType() const;
   String getTypeName() const;
 
@@ -72,6 +70,8 @@ public:
 
   bool isInteger() const;
   int getInteger() const;
+
+  bool isEnumeration() const;
 
   bool isDouble() const;
   double getDouble() const;
@@ -88,7 +88,7 @@ public:
   ReferenceCountedObjectPtr<O> dynamicCast() const;
 
   /*
-  ** Operations
+  ** Const Operations
   */
   String toString() const;
   int compare(const Variable& otherValue) const;
@@ -117,6 +117,25 @@ public:
 
   friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
     {return ostr << variable.toString();}
+
+  /*
+  ** Non-const operations
+  */
+  Variable& operator =(const Variable& other);
+  void multiplyByScalar(double scalar);
+  void addWeighted(const Variable& other, double weight);
+
+  Variable& operator *=(double scalar)
+    {multiplyByScalar(scalar); return *this;}
+
+  Variable& operator /=(double scalar)
+    {jassert(scalar); multiplyByScalar(1.0 / scalar); return *this;}
+  
+  Variable& operator +=(const Variable& other)
+    {addWeighted(other, 1.0); return *this;}
+
+  Variable& operator -=(const Variable& other)
+    {addWeighted(other, -1.0); return *this;}
 
 private:
   Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}

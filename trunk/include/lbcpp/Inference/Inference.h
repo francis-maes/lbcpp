@@ -84,8 +84,8 @@ extern InferencePtr oneAgainstAllClassificationInference(const String& name, Enu
 /*
 ** Decision Tree Inference
 */
-extern InferencePtr multiClassExtraTreeInference(const String& name);
-
+extern InferencePtr extraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+ 
 /*
 ** Meta Inference
 */

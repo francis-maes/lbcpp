@@ -58,7 +58,7 @@ public:
 class ScalarFunction : public ContinuousFunction
 {
 public:
-  ScalarFunctionPtr multiplyByScalar(double scalar) const;
+  virtual ObjectPtr multiplyByScalar(double scalar);
   ScalarFunctionPtr composeWith(ScalarFunctionPtr postFunction) const;
 
   /**
@@ -182,7 +182,7 @@ extern BinaryClassificationLossFunctionPtr logBinomialLoss(bool isPositive);
 class ScalarVectorFunction : public ContinuousFunction
 {
 public:
-  ScalarVectorFunctionPtr multiplyByScalar(double scalar) const;
+  virtual ObjectPtr multiplyByScalar(double scalar);
 
   /**
   ** Computes f(@a input).

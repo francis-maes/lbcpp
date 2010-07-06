@@ -87,6 +87,12 @@ public:
   virtual void copy(VariableValue& dest, const VariableValue& source) const
     {jassert(false);}
 
+  virtual TypePtr multiplyByScalar(VariableValue& value, double scalar)
+    {jassert(false); return TypePtr(this);}
+
+  virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight)
+    {jassert(false); return TypePtr(this);}
+
   virtual String toString(const VariableValue& value) const
     {jassert(false); return String::empty;}
 
@@ -207,6 +213,8 @@ public:
   String getElementName(size_t index) const
     {jassert(index < elements.size()); return elements[index];}
 
+  virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
+
 protected:
   void addElement(const String& elementName);
 
@@ -233,16 +241,9 @@ public:
   virtual String toString(const VariableValue& value) const
     {return value.getObject()->toString();}
 
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-  {
-    ObjectPtr object1 = value1.getObject();
-    ObjectPtr object2 = value2.getObject();
-    if (!object1)
-      return object2 ? -1 : 0;
-    if (!object2)
-      return 1;
-    return object1->compare(object2);
-  }
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
+  virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
+  virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
 
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;
@@ -332,7 +333,7 @@ inline bool checkInheritance(TypePtr type, TypePtr baseType)
 {
   if (!type || !type->inheritsFrom(baseType))
   {
-    Object::error(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName() + T(" found ") + (type ? type->getName() : T("Nil")));
+    Object::error(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
     return false;
   }
   return true;
