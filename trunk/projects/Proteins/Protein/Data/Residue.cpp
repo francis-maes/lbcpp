@@ -19,14 +19,14 @@ Variable Residue::getVariable(size_t index) const
   return Variable();
 }
 
-class ResidueClass : public ObjectClass
+class ResidueClass : public Class
 {
 public:
-  ResidueClass() : ObjectClass(T("Residue"), objectClass())
+  ResidueClass() : Class(T("Residue"), objectClass())
   {
     addVariable(AminoAcid::getCollection(), T("aminoAcid"));
-    addVariable(ClassPtr(this), T("previous"));
-    addVariable(ClassPtr(this), T("next"));
+    addVariable(TypePtr(this), T("previous"));
+    addVariable(TypePtr(this), T("next"));
   }
 };
 

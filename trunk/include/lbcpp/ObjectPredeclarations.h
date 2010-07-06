@@ -28,7 +28,7 @@
 # define LBCPP_OBJECT_PREDECLARATIONS_H_
 
 # include "Object/Object.h"
-# include "Object/Class.h"
+# include "Object/Type.h"
 
 namespace lbcpp
 {

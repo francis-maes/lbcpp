@@ -31,8 +31,8 @@ public:
   Variable makePrediction(const Variable& input, size_t nodeIndex = 0) const;
 
 protected:
-  ClassPtr inputClass;
-  ClassPtr leavesClass;
+  TypePtr inputClass;
+  TypePtr leavesClass;
 
   struct Node
   {

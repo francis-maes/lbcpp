@@ -40,14 +40,14 @@ public:
     {object->accept(new PrintObjectVisitor(object, ostr, maxDepth));}
 
 protected:
-  std::vector<ClassPtr> currentClasses;
-  ClassPtr type;
+  std::vector<TypePtr> currentClasses;
+  TypePtr type;
   std::ostream& ostr;
   int maxDepth;
 
   void printVariable(size_t variableNumber, const String& valueAsString)
   {
-    ClassPtr currentClass = currentClasses.back();
+    TypePtr currentClass = currentClasses.back();
     jassert(currentClass);
     for (size_t i = 0; i < currentClasses.size() - 1; ++i)
       ostr << "  ";
@@ -128,11 +128,11 @@ private:
   std::vector<Variable> variables;
 };
 
-class ProteinResidueInputAttributesClass : public ObjectClass
+class ProteinResidueInputAttributesClass : public Class
 {
 public:
   ProteinResidueInputAttributesClass(size_t windowSize)
-    : ObjectClass(T("ProteinResidueInputAttributes"), objectClass())
+    : Class(T("ProteinResidueInputAttributes"), objectClass())
   {
     addVariable(aminoAcidTypeEnumeration(), T("AA[i]"));
     for (size_t i = 0; i < windowSize; ++i)
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   ObjectContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
   
-  VectorPtr secondaryStructureExamples = new Vector(pairClass(
+  VectorPtr secondaryStructureExamples = new Vector(pairType(
       Class::get(T("ProteinResidueInputAttributes")),
       secondaryStructureElementEnumeration()));
 

@@ -43,7 +43,7 @@ public:
     while (true)
     {
       // make sub-training data 
-      VariableContainerPtr subTrainingData = new Vector(pairClass(), numTrainingExamples);
+      VariableContainerPtr subTrainingData = new Vector(pairType(), numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
         subTrainingData->setVariable(i, Variable::pair(currentStates[i]->getSubInput(), currentStates[i]->getSubSupervision()));
 

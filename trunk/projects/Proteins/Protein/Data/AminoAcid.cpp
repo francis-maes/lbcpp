@@ -76,8 +76,8 @@ public:
   AminoAcidClass() : Collection(T("AminoAcid"))
   {
     addVariable(aminoAcidTypeEnumeration(), T("type"));
-    addVariable(stringClass(), T("oneLetterCode"));
-    addVariable(stringClass(), T("threeLettersCode"));
+    addVariable(stringType(), T("oneLetterCode"));
+    addVariable(stringType(), T("threeLettersCode"));
     addVariable(aminoAcidCategory1Enumeration(), T("category1"));
 
     for (size_t i = 0; i < (size_t)totalNumAminoAcids; ++i)

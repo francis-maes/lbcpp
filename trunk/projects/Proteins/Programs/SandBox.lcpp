@@ -43,7 +43,7 @@ public:
     else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
     {
       // simulation-based learning is beginning
-      if (input.getType()->inheritsFrom(pairClass()))
+      if (input.getType()->inheritsFrom(pairType()))
       {
         String inferenceName = input[0].getObject()->getName();
         std::cout << std::endl << "=====================================================" << std::endl;

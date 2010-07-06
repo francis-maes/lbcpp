@@ -18,7 +18,7 @@ namespace lbcpp
 class SymmetricMatrix : public VariableContainer 
 {
 public:
-  SymmetricMatrix(ClassPtr contentType) 
+  SymmetricMatrix(TypePtr contentType) 
     : dimension(0), values(contentType) {}
 
   SymmetricMatrix() {}

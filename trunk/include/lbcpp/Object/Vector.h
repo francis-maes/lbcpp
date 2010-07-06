@@ -19,9 +19,9 @@ class Vector : public VariableContainer
 public:
   Vector() {}
 
-  Vector(ClassPtr type, size_t initialSize = 0) : type(type)
+  Vector(TypePtr type, size_t initialSize = 0) : type(type)
   {
-    jassert(type != topLevelClass());
+    jassert(type != topLevelType());
     if (initialSize)
       values.resize(initialSize, VariableValue());
   }
@@ -29,7 +29,7 @@ public:
   virtual ~Vector()
     {clear();}
 
-  virtual ClassPtr getStaticType() const
+  virtual TypePtr getStaticType() const
     {return type;}
 
   virtual size_t getNumVariables() const;
@@ -43,7 +43,7 @@ public:
   void append(const Variable& value);
 
 private:
-  ClassPtr type;
+  TypePtr type;
   std::vector<VariableValue> values;
   
   bool checkType(const Variable& value) const;
@@ -51,7 +51,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
-extern ClassPtr vectorClass(ClassPtr elementsClass);
+extern TypePtr vectorClass(TypePtr elementsClass);
 
 class DynamicTypeVector : public VariableContainer
 {

@@ -8,10 +8,10 @@
 #include "Protein.h"
 using namespace lbcpp;
 
-class ProteinClass : public ObjectClass
+class ProteinClass : public Class
 {
 public:
-  ProteinClass() : ObjectClass(T("Protein"), objectClass())
+  ProteinClass() : Class(T("Protein"), objectClass())
   {
     addVariable(vectorClass(aminoAcidTypeEnumeration()), T("primaryStructure"));
     addVariable(vectorClass(secondaryStructureElementEnumeration()), T("secondaryStructure"));
@@ -19,7 +19,7 @@ public:
 
     //addVariable(vectorClass(probabilityClass()), T("solventAccesibility"));
     //addVariable(vectorClass(probabilityClass()), T("solventAccesibilityAt20p"));
-    addVariable(vectorClass(booleanClass()), T("disorderRegions"));
+    addVariable(vectorClass(booleanType()), T("disorderRegions"));
     //addVariable(vectorClass(probabilityClass()), T("disorderRegionProbabilities"));
 
     /*addVariable(symmetricMatrixClass(probabilityClass()), T("contactMap8Ca"));

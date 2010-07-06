@@ -38,8 +38,8 @@ class Variable;
 
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
-class Class;
-typedef ReferenceCountedObjectPtr<Class> ClassPtr;
+class Type;
+typedef ReferenceCountedObjectPtr<Type> TypePtr;
 class ObjectGraph;
 typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class Table;
@@ -70,7 +70,7 @@ public:
   /*
   ** Introspection
   */
-  virtual ClassPtr getClass() const;
+  virtual TypePtr getClass() const;
   String getClassName() const;
 
   virtual size_t getNumVariables() const;
@@ -82,7 +82,7 @@ public:
 
   /*
   ** Dynamic creation
-  **  deprecated functions, call directly the methods of Class
+  **  deprecated functions, call directly the methods of Type
   */
 
   static ObjectPtr create(const String& className);

@@ -24,8 +24,8 @@ public:
   size_t size() const
     {return getNumVariables();}
 
-  virtual ClassPtr getStaticType() const
-    {return topLevelClass();}
+  virtual TypePtr getStaticType() const
+    {return topLevelType();}
 
   VectorPtr toVector() const;
 
@@ -173,7 +173,7 @@ public:
   virtual size_t getNumVariables() const
     {return target->getNumVariables();}
 
-  virtual ClassPtr getStaticType() const
+  virtual TypePtr getStaticType() const
     {return target->getStaticType();}
 
   /**

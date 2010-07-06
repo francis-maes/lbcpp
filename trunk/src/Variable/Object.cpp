@@ -16,9 +16,9 @@ extern void declareLBCppCoreClasses();
 String Object::getClassName() const
   {return lbcpp::toString(typeid(*this));}
 
-ClassPtr Object::getClass() const
+TypePtr Object::getClass() const
 {
-  ClassPtr res = Class::get(getClassName());
+  TypePtr res = Type::get(getClassName());
   if (!res)
     Object::error(T("Object::getClass"), T("Could not find objects class, className = ") + getClassName());
   return res;
@@ -26,7 +26,7 @@ ClassPtr Object::getClass() const
 
 size_t Object::getNumVariables() const
 {
-  ClassPtr type = getClass();
+  TypePtr type = getClass();
   jassert(type);
   VariableValue value(const_cast<Object* >(this));
   size_t res = type->getNumSubVariables(value);
@@ -39,7 +39,7 @@ Variable Object::getVariable(size_t index) const
 
 void Object::accept(ObjectVisitorPtr visitor)
 {
-  ClassPtr type = getClass();
+  TypePtr type = getClass();
   size_t n = type->getNumStaticVariables();
   for (size_t i = 0; i < n; ++i)
     visitor->visit(i, getVariable(i));
@@ -50,7 +50,7 @@ ObjectPtr Object::create(const String& className)
   String name = className;
   if (name == T("Protein"))
     name = T("ProteinObject"); // tmp
-  return Class::createInstance(name);
+  return Type::createInstance(name);
 }
 
 /*
@@ -130,7 +130,7 @@ bool Object::loadFromFile(const File& file)
   }
   if (className != getClassName())
   {
-    error(T("Object::loadFromFile"), T("Class name mismatch"));
+    error(T("Object::loadFromFile"), T("Type name mismatch"));
     delete inputStream;
     return false;
   }
