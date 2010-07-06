@@ -84,7 +84,7 @@ int main(int argc, char** argv)
   {
     ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
 
-    if (minimumLength > protein->getLength() ||  maximumLength < protein->getLength())
+    if (minimumLength > (int)protein->getLength() ||  maximumLength < (int)protein->getLength())
       continue;
 
     

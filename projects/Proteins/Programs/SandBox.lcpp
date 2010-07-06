@@ -135,7 +135,7 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 
 InferenceOnlineLearnerPtr createOnlineLearner(const String& name, double initialLearningRate = 1.0)
 {
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/*logicalOr(
     maxIterationsStoppingCriterion(100),  
     maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
