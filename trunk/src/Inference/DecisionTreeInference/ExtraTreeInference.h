@@ -33,7 +33,7 @@ protected:
   BinaryDecisionTreePtr tree;
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return tree ? tree->makePrediction(input) : Variable();}
+    {return tree && tree->getNumNodes() ? tree->makePrediction(input) : Variable();}
 };
 
 typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTreeInferencePtr;

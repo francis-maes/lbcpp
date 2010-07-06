@@ -128,12 +128,12 @@ public:
     variables.push_back(Variable(residue->getAminoAcidType(), aminoAcidTypeEnumeration()));
 
     ResiduePtr prev = residue->getPrevious();
-    for (size_t i = 0; prev && i < windowSize; ++i, prev = prev->getPrevious())
-      variables.push_back(Variable(prev->getAminoAcidType(), aminoAcidTypeEnumeration()));
+    for (size_t i = 0; i < windowSize; ++i, prev = prev ? prev->getPrevious() : ResiduePtr())
+      variables.push_back(prev ? Variable(prev->getAminoAcidType(), aminoAcidTypeEnumeration()) : Variable());
 
     ResiduePtr next = residue->getNext();
-    for (size_t i = 0; next && i < windowSize; ++i, next = next->getNext())
-      variables.push_back(Variable(next->getAminoAcidType(), aminoAcidTypeEnumeration()));
+    for (size_t i = 0; i < windowSize; ++i, next = next ? next->getNext() : ResiduePtr())
+      variables.push_back(next ? Variable(next->getAminoAcidType(), aminoAcidTypeEnumeration()) : Variable());
   }
 
   virtual Variable getVariable(size_t index) const
@@ -167,6 +167,7 @@ int main(int argc, char** argv)
   declareProteinClasses();
   Class::declare(new ProteinResidueInputAttributesClass(8));
 
+  /*
   Variable myEnumValue(asparticAcid, aminoAcidTypeEnumeration());
   std::cout << myEnumValue << std::endl;
 
@@ -177,60 +178,51 @@ int main(int argc, char** argv)
   Variable containerCopy = container;
   std::cout << "container copy: " << containerCopy << " (type = "
     << containerCopy.getType()->getName() << " equals: " << Variable(container == containerCopy) << std::endl;
-  
+  */
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
   
-  /*VectorPtr secondaryStructureExamples = new Vector(pairType(
-      Class::get(T("ProteinResidueInputAttributes")),
-      secondaryStructureElementEnumeration()));
-*/
-    /*
-    
-  for (size_t i = 0; i < proteins->size(); ++i)
-  {
-    for (size_t position = 0; position < residues.size(); ++position)
-    {
-      ResiduePtr residue = residues[position];
-
-      /*std::cout << "========" << position << "==========" << std::endl;
-      PrintObjectVisitor::print(residue, std::cout, 2);
-      std::cout << std::endl;*
-      
-      if (secondaryStructure->hasObject(position))
-      {
-        Variable input(new ProteinResidueInputAttributes(residue, 8));
-        Variable output((int)secondaryStructure->getIndex(position), secondaryStructureElementEnumeration());
-
-        secondaryStructureExamples->append(Variable::pair(input, output));
-      }
-    }
-  }*/
-
+  // convert proteins
   VectorPtr proteins = convertProteins(oldStyleProteins);
   std::cout << proteins->size() << " proteins" << std::endl;
-  PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 3);
-/*
-  InferencePtr inference = multiClassExtraTreeInference(T("SS3"));
-  InferenceContextPtr context = singleThreadedInferenceContext();
+  //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 3);
 
+  // make secondary structure classification examples
+  VectorPtr secondaryStructureExamples = new Vector(pairType(
+      Class::get(T("ProteinResidueInputAttributes")),
+      secondaryStructureElementEnumeration()));
+  for (size_t i = 0; i < proteins->size(); ++i)
+  {
+    ProteinPtr protein = proteins->getVariable(i).getObjectAndCast<Protein>();
+    jassert(protein);
+    size_t n = protein->getLength();
+    VectorPtr secondaryStructure = protein->getSecondaryStructure();
+    for (size_t j = 0; j < n; ++j)
+    {
+      Variable input(new ProteinResidueInputAttributes(protein->getResidue(j), 8));
+      Variable output = secondaryStructure->getVariable(j);
+      secondaryStructureExamples->append(Variable::pair(input, output));
+    }
+  }
+
+  // make train and test set
   VariableContainerPtr trainingData = secondaryStructureExamples->fold(0, 2);
   VariableContainerPtr testingData = secondaryStructureExamples->fold(1, 2);
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
+
+  // train
+  InferencePtr inference = multiClassExtraTreeInference(T("SS3"));
+  InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 
-  Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  context->runInference(runOnSupervisedExamplesInference(inference), trainingData, Variable(), returnCode);
-  
+  // evaluate
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("SS3"));
   context->evaluate(inference, trainingData, evaluator);
-  std::cout << "Train: " << evaluator->toString();
+  std::cout << "Train: " << evaluator->toString() << std::endl;
 
   evaluator = classificationAccuracyEvaluator(T("SS3"));
   context->evaluate(inference, testingData, evaluator);
-  std::cout << "Test: " << evaluator->toString();
-  */
-
+  std::cout << "Test: " << evaluator->toString() << std::endl;
   return 0;
 }

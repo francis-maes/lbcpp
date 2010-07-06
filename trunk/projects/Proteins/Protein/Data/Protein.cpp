@@ -67,17 +67,26 @@ void Protein::computeMissingVariables()
   if (primaryStructure)
   {
     if (!residues)
-      residues = createResidues();
+      createResidues();
   }
 }
 
-VectorPtr Protein::createResidues() const
+void Protein::createResidues()
 {
   jassert(primaryStructure);
   size_t n = getLength();
-  VectorPtr res = new Vector(residueClass(), n);
+  residues = new Vector(residueClass(), n);
   ProteinPtr pthis(const_cast<Protein* >(this));
   for (size_t i = 0; i < n; ++i)
-    res->setVariable(i, new Residue(pthis, i));
-  return res;
+    residues->setVariable(i, new Residue(pthis, i));
+}
+
+void Protein::clearResidues()
+{
+  if (residues)
+  {
+    size_t n = residues->size();
+    for (size_t i = 0; i < n; ++i)
+      residues->getVariable(i).getObjectAndCast<Residue>()->clear();
+  }
 }

@@ -9,8 +9,11 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
+// new
 extern void declareClassClasses();
 extern void declareVariableContainerClasses();
+extern void declarePredicateClasses();
+// -
 
 extern void declareObjectContainerClasses();
 extern void declareObjectStreamClasses();
@@ -18,7 +21,10 @@ extern void declareObjectStreamClasses();
 // Object
 void declareObjectRelatedClasses()
 {
+  // new
   declareVariableContainerClasses();
+  declarePredicateClasses();
+  // -
 
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
   declareObjectContainerClasses();

@@ -21,14 +21,17 @@ public:
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
 
-  size_t addNode()
+  void createLeaf(size_t index, const Variable& value)
   {
-    size_t res = nodes.size();
-    nodes.push_back(Node()); // FIXME
-    return res;
+    if (index >= nodes.size())
+      nodes.resize(index + 1);
+    nodes[index].setLeaf(value);
   }
 
   Variable makePrediction(const Variable& input, size_t nodeIndex = 0) const;
+
+  size_t getNumNodes() const
+    {return nodes.size();}
 
 protected:
   TypePtr inputClass;
@@ -54,6 +57,9 @@ protected:
 
     size_t getChildNodeIndex(const Variable& variable) const
       {return indexOfLeftChild + (test(variable) ? 1 : 0);}
+
+    void setLeaf(const Variable& value)
+      {splitVariable = -1; argument = value; indexOfLeftChild = 0;}
 
   private:
     int splitVariable; // internal nodes: >= 0, leafs: =-1

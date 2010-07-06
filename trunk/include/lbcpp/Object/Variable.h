@@ -37,6 +37,7 @@ class Variable
 {
 public:
   Variable(bool boolValue, TypePtr type = booleanType());
+  Variable(size_t intValue, TypePtr type = integerType());
   Variable(int intValue, TypePtr type = integerType());
   Variable(double doubleValue, TypePtr type = doubleType());
   Variable(const String& stringValue, TypePtr type = stringType());

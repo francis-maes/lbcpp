@@ -1,3 +1,12 @@
+* ExtraTree
+* Rajouter les PSSM dans le nouveau format
+* VectorInference
+* NewProteinInference
+
+En Cours:
+ * VariableValue avec valeurs manquantes
+ * Introspection sur les classes templates => utiliser dans SingleExtraTreeInferenceLearner::run
+ 
 
 
 Library:

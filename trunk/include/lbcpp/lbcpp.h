@@ -37,6 +37,8 @@
 # include "Object/Vector.h"
 # include "Object/Matrix.h"
 # include "Object/SymmetricMatrix.h"
+# include "Object/Predicate.h"
+# include "Object/ProbabilityDistribution.h"
 
 # include "Object/ObjectContainer.h"
 # include "Object/ObjectStream.h"
