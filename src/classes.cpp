@@ -13,6 +13,7 @@ using namespace lbcpp;
 extern void declareClassClasses();
 extern void declareVariableContainerClasses();
 extern void declarePredicateClasses();
+extern void declareProbabilityDistributionClasses();
 // -
 
 extern void declareObjectContainerClasses();
@@ -24,6 +25,7 @@ void declareObjectRelatedClasses()
   // new
   declareVariableContainerClasses();
   declarePredicateClasses();
+  declareProbabilityDistributionClasses();
   // -
 
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);

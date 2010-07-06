@@ -89,7 +89,7 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    if (stack->getDepth() == 1 && output && supervision)
+    if (stack->getDepth() == 2 && output && supervision)
       evaluator->addPrediction(output, supervision);
   }
 

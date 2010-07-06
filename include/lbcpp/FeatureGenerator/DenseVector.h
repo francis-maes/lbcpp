@@ -252,7 +252,7 @@ public:
   **
   ** @param scalar : scalar value.
   */
-  void multiplyByScalar(double scalar);
+  virtual ObjectPtr multiplyByScalar(double scalar);
 
   /**
   ** Randomly initializes the dense vector.

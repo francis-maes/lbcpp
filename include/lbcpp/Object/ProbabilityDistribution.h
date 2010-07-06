@@ -27,6 +27,7 @@ class DiscreteProbabilityDistribution : public Object
 {
 public:
   DiscreteProbabilityDistribution(EnumerationPtr enumeration);
+  DiscreteProbabilityDistribution() : sum(0.0) {}
 
   virtual double compute(const Variable& value) const;
 
@@ -40,10 +41,14 @@ public:
     {return values.size();}
 
   virtual Variable getVariable(size_t index) const
-    {jassert(index < values.size()); return sum ? values[index] / sum : 0.0;}
+    {jassert(index < values.size()); return values[index];}
 
   virtual void setVariable(size_t index, const Variable& value);
+
   void increment(const Variable& value);
+
+  virtual ObjectPtr multiplyByScalar(double scalar);
+  virtual ObjectPtr addWeighted(const Variable& value, double weight);
 
 private:
   EnumerationPtr enumeration;

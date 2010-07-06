@@ -206,7 +206,7 @@ public:
   **
   ** @param scalar : scalar value.
   */
-  void multiplyByScalar(double scalar);
+  virtual ObjectPtr multiplyByScalar(double scalar);
 
   /**
   ** Adds a weighted feature generator.

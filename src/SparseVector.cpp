@@ -127,16 +127,18 @@ SparseVectorPtr SparseVector::getSubVector(const String& name) const
   return index >= 0 ? getSubVector((size_t)index) : SparseVectorPtr();
 }
 
-void SparseVector::multiplyByScalar(double scalar)
+ObjectPtr SparseVector::multiplyByScalar(double scalar)
 {
   if (scalar == 0)
-    {clear(); return;}
-  else if (scalar == 1)
-    return;
-  for (size_t i = 0; i < values.size(); ++i)
-    values[i].second *= scalar;
-  for (size_t i = 0 ; i < subVectors.size(); ++i)
-    subVectors[i].second->multiplyByScalar(scalar);
+    clear();
+  else
+  {
+    for (size_t i = 0; i < values.size(); ++i)
+      values[i].second *= scalar;
+    for (size_t i = 0 ; i < subVectors.size(); ++i)
+      subVectors[i].second->multiplyByScalar(scalar);
+  }
+  return ObjectPtr(this);
 }
 
 bool SparseVector::load(InputStream& istr)

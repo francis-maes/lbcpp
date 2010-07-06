@@ -44,7 +44,10 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
 
   BinaryDecisionTreePtr tree = sampleTree(inputClass, outputClass, trainingData);
   if (tree)
+  {
+    std::cout << "Finished learning tree, numNodes = " << tree->getNumNodes() << std::endl;
     inference->setTree(tree);
+  }
   return Variable();
 }
 
@@ -79,7 +82,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trai
   size_t n = trainingData->size();
   jassert(n);
 
-  if (n < numAttributeSamplesPerSplit || variables.empty())
+  if (n < minimumSizeForSplitting || variables.empty())
   {
     if (n == 1)
       leafValue = trainingData->getVariable(0)[1];
@@ -111,7 +114,7 @@ Variable SingleExtraTreeInferenceLearner::createOutputDistribution(TypePtr outpu
 ///////////////////////////////////// 
 
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
-double sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr trainingData, size_t variableIndex)
+Variable sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr trainingData, size_t variableIndex)
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
   size_t n = trainingData->size();
@@ -126,50 +129,61 @@ double sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr traini
   return RandomGenerator::getInstance().sampleDouble(minValue, maxValue);
 }
 
-class BelongsToMaskPredicate : public Predicate
-{
-public:
-  BelongsToMaskPredicate(BooleanVectorPtr mask)
-    : mask(mask) {}
 
-  virtual bool compute(const Variable& value) const
-  {
-    if (!checkInheritance(value, integerType()))
-      return false;
-    size_t i = (size_t)value.getInteger();
-    return i < mask->size() && mask->get(i);
- }
-
-private:
-  BooleanVectorPtr mask;
-};
-
-BooleanVectorPtr sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumeration, VariableContainerPtr trainingData, size_t variableIndex)
+Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumeration, VariableContainerPtr trainingData, size_t variableIndex)
 {
   size_t n = enumeration->getNumElements();
-  std::vector<bool> doValueAppear(n, false);
+
+  // enumerate possible values
+  std::set<size_t> possibleValues;
   for (size_t i = 0; i < trainingData->size(); ++i)
   {
     Variable value = trainingData->getVariable(i)[0][variableIndex];
-    if (!value.isNil())
-      doValueAppear[value.getInteger()] = true;
+    if (value.isNil())
+      possibleValues.insert(n);
+    else
+      possibleValues.insert((size_t)value.getInteger()); // we use this special index to denote the "Nil" value
+  }
+  jassert(possibleValues.size() >= 2);
+
+  // convert from std::set to std::vector
+  std::vector<size_t> possibleValuesVector;
+  possibleValuesVector.reserve(possibleValues.size());
+  for (std::set<size_t>::const_iterator it = possibleValues.begin(); it != possibleValues.end(); ++it)
+    possibleValuesVector.push_back(*it);
+
+  // sample selected values
+  std::set<size_t> selectedValues;
+  random.sampleSubset(possibleValuesVector, possibleValues.size() / 2, selectedValues);
+
+  // create mask
+  BooleanVectorPtr mask = new BooleanVector(n + 1);
+  size_t numBits = 0;
+  for (size_t i = 0; i < mask->size(); ++i)
+  {
+    bool bitValue;
+    if (possibleValues.find(i) == possibleValues.end())
+      bitValue = random.sampleBool(); // 50% probability for values that do not appear in the training data
+    else
+      bitValue = (selectedValues.find(i) != selectedValues.end()); // true for selected values
+    mask->set(i, bitValue);
   }
 
-  BooleanVectorPtr mask = new BooleanVector(n);
-  for (size_t numTries = 0; numTries < 10; ++numTries)
+#ifdef JUCE_DEBUG
+  PredicatePtr predicate = BinaryDecisionTree::getSplitPredicate(mask);
+  size_t numPos = 0, numNeg = 0;
+  for (size_t i = 0; i < trainingData->size(); ++i)
   {
-    size_t numBits = 0;
-    for (size_t i = 0; i < n; ++i)
-    {
-      bool b = random.sampleBool();
-      mask->set(i, b);
-      if (b && doValueAppear[i])
-        ++numBits;
-    }
-    if (numBits != 0 && numBits != doValueAppear.size())
-      return mask;
-  }  
-  jassert(false);
+    Variable inputOutputPair = trainingData->getVariable(i);
+    if (predicate->compute(inputOutputPair[0][variableIndex]))
+      ++numPos;
+    else
+      ++numNeg;
+  }
+  //std::cout << "Mask: " << mask->toString() << " " << trainingData->size() << " => " << numPos << " + " << numNeg << std::endl;
+  jassert(numPos && numNeg);
+#endif // JUCE_DEBUG
+
   return mask;
 }
 
@@ -178,27 +192,38 @@ PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingD
   TypePtr variableType = inputType->getStaticVariableType(variableIndex);
   if (variableType->inheritsFrom(doubleType()))
   {
-    double cutPoint = sampleNumericalSplit(random, trainingData, variableIndex);
-    splitArgument = cutPoint;
-    return lessThanPredicate(cutPoint);
+    splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
+    return BinaryDecisionTree::getSplitPredicate(splitArgument);
   }
 
   EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
   if (enumeration)
   {
-    BooleanVectorPtr mask = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
-    splitArgument = mask;
-    return new BelongsToMaskPredicate(mask);
+    splitArgument = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
+    return BinaryDecisionTree::getSplitPredicate(splitArgument);
   }
 
   jassert(false);
   return PredicatePtr();
 }
 ///////////////////////////////////// Split Scoring  /////////////////////
-double computeSplitScore(VariableContainerPtr examples, PredicatePtr predicate, VariableContainerPtr& negativeExamples, VariableContainerPtr& positiveExamples)
+double computeSplitScore(VariableContainerPtr examples, size_t variableIndex, PredicatePtr predicate, VariableContainerPtr& negativeExamples, VariableContainerPtr& positiveExamples)
 {
-  
-  return 0.0;
+  VectorPtr neg = new Vector(examples->getStaticType());
+  VectorPtr pos = new Vector(examples->getStaticType());
+  for (size_t i = 0; i < examples->size(); ++i)
+  {
+    Variable inputOutputPair = examples->getVariable(i);
+    if (predicate->compute(inputOutputPair[0][variableIndex]))
+      pos->append(inputOutputPair);
+    else
+      neg->append(inputOutputPair);
+  }
+  jassert(pos->size() && neg->size());
+  negativeExamples = neg;
+  positiveExamples = pos;
+
+  return RandomGenerator::getInstance().sampleDouble(); // FIXME
 }
 
 ///////////////////////////////////// 
@@ -243,7 +268,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     Variable splitArgument;
     PredicatePtr splitPredicate = sampleSplit(random, trainingData, inputType, splitVariables[i], splitArgument);
     VariableContainerPtr negativeExamples, positiveExamples;
-    double splitScore = computeSplitScore(trainingData, splitPredicate, negativeExamples, positiveExamples);
+    double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
     if (splitScore > bestSplitScore)
     {
       bestSplitPredicate = splitPredicate;

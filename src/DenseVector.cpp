@@ -155,22 +155,22 @@ double DenseVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
-void DenseVector::multiplyByScalar(double scalar)
+ObjectPtr DenseVector::multiplyByScalar(double scalar)
 {
   if (scalar == 0)
-    {clear(); return;}
-  else if (scalar == 1)
-    return;
-
-  // todo: operation class
-  for (size_t i = 0; i < values.size(); ++i)
-    values[i] *= scalar;
-  for (size_t i = 0; i < subVectors.size(); ++i)
+    clear();
+  else
   {
-    DenseVectorPtr subVector = subVectors[i];
-    if (subVector)
-      subVector->multiplyByScalar(scalar);
+    for (size_t i = 0; i < values.size(); ++i)
+      values[i] *= scalar;
+    for (size_t i = 0; i < subVectors.size(); ++i)
+    {
+      DenseVectorPtr subVector = subVectors[i];
+      if (subVector)
+        subVector->multiplyByScalar(scalar);
+    }
   }
+  return ObjectPtr(this);
 }
 
 double DenseVector::denseDotProduct(const DenseVectorPtr otherVector) const

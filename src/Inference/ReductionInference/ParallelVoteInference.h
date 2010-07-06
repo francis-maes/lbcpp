@@ -32,12 +32,13 @@ public:
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
+    if (!n)
+      return Variable();
+    Variable res;
+    double weight = 1.0 / (double)n;
     for (size_t i = 0; i < n; ++i)
-    {
-      Variable subOutput = state->getSubOutput(i);
-      // FIXME
-    }
-    return Variable();
+      res.addWeighted(state->getSubOutput(i), weight);
+    return res;
   }
 };
 

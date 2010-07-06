@@ -194,6 +194,13 @@ public:
   virtual int compare(ObjectPtr otherObject) const
     {return (int)(this - otherObject.get());}
 
+  virtual ObjectPtr multiplyByScalar(double scalar)
+    {jassert(false); return ObjectPtr(this);}
+  
+  virtual ObjectPtr addWeighted(const Variable& value, double weight)
+    {jassert(false); return ObjectPtr(this);}
+
+
   // tmp
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
     {}

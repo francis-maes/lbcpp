@@ -46,7 +46,7 @@ double ScalarFunction::computeDerivative(double input, double direction) const
 void ScalarFunction::compute(double input, double* output, double* derivative) const
   {compute(input, output, NULL, derivative);}
 
-ScalarFunctionPtr ScalarFunction::multiplyByScalar(double scalar) const
+ObjectPtr ScalarFunction::multiplyByScalar(double scalar)
   {return new MultiplyByScalarFunction(ScalarFunctionPtr(const_cast<ScalarFunction* >(this)), scalar);}
 
 ScalarFunctionPtr ScalarFunction::composeWith(ScalarFunctionPtr postFunction) const
@@ -138,12 +138,12 @@ bool ScalarVectorFunction::checkDerivativeWrtDirection(const FeatureGeneratorPtr
   return fabs(numericalDerivative - analyticDerivative) < 0.00001;
 }
 
-ScalarVectorFunctionPtr ScalarVectorFunction::multiplyByScalar(double scalar) const
+ObjectPtr ScalarVectorFunction::multiplyByScalar(double scalar)
 {
   ScalarVectorFunctionPtr pthis(const_cast<ScalarVectorFunction* >(this));
   return scalar == 1.0
-    ? pthis
-    : new MultiplyByScalarVectorFunction(pthis, scalar);
+    ? ObjectPtr(pthis)
+    : ObjectPtr(new MultiplyByScalarVectorFunction(pthis, scalar));
 }
 
 ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction()

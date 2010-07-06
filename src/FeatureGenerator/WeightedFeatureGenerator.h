@@ -71,13 +71,13 @@ public:
     {return exists() ? featureGenerator->getNumSubGenerators() : 0;}
     
   virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
-    {return exists() ? multiplyByScalar(featureGenerator->getSubGenerator(num), weight) : emptyFeatureGenerator();}
+    {return exists() ? lbcpp::multiplyByScalar(featureGenerator->getSubGenerator(num), weight) : emptyFeatureGenerator();}
 
   virtual size_t getSubGeneratorIndex(size_t num) const
     {return exists() ? featureGenerator->getSubGeneratorIndex(num) : (size_t)-1;}
 
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
-    {return exists() ? multiplyByScalar(featureGenerator->getSubGeneratorWithIndex(index), weight) : emptyFeatureGenerator();}
+    {return exists() ? lbcpp::multiplyByScalar(featureGenerator->getSubGeneratorWithIndex(index), weight) : emptyFeatureGenerator();}
 
   virtual String toString() const
     {return lbcpp::toString(weight) + " * " + featureGenerator->toString();}
