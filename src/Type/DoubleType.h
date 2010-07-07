@@ -42,6 +42,17 @@ public:
   virtual VariableValue create() const
     {return VariableValue(0.0);}
 
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+  {
+    String v = value.trim().toLowerCase();
+    if (!v.containsOnly(T("0123456789e.-")))
+    {
+      callback.errorMessage(T("DoubleType::createFromString"), T("Could not read double value ") + value.quoted());
+      return getMissingValue();
+    }
+    return VariableValue(v.getDoubleValue());
+  }
+
   virtual void destroy(VariableValue& value) const
     {value.clearBuiltin();}
 

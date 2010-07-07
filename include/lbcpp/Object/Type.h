@@ -87,7 +87,17 @@ public:
   /*
   ** Operations
   */
+  virtual VariableValue getMissingValue() const;
+  bool isMissingValue(const VariableValue& value) const;
+
   virtual VariableValue create() const = 0;
+
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+    {callback.errorMessage(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
+
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
+  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
+
   virtual void destroy(VariableValue& value) const = 0;
   virtual void copy(VariableValue& dest, const VariableValue& source) const = 0;
   virtual String toString(const VariableValue& value) const = 0;
@@ -145,6 +155,7 @@ class BuiltinType : public Type
 public:
   BuiltinType(const String& name, TypePtr baseType = topLevelType())
     : Type(name, baseType) {}
+
 };
 
 extern TypePtr booleanType();
@@ -168,11 +179,21 @@ public:
     : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
-  virtual void destroy(VariableValue& value) const
-    {value.clearBuiltin();}
-
   virtual VariableValue create() const
     {return VariableValue(0);}
+
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+  {
+    if (!value.trim().containsOnly(T("0123456789")))
+    {
+      callback.errorMessage(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
+      return getMissingValue();
+    }
+    return VariableValue(value.getIntValue());
+  }
+
+  virtual void destroy(VariableValue& value) const
+    {value.clearBuiltin();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
     {dest.setInteger(source.getInteger());}
@@ -203,11 +224,11 @@ public:
   static EnumerationPtr get(const String& className)
     {return checkCast<Enumeration>(T("Enumeration::get"), Type::get(className));}
 
-  virtual String toString(const VariableValue& value) const
-  {
-    int val = value.getInteger();
-    return val >= 0 && val < (int)getNumElements() ? getElementName(val) : T("N/A");
-  }
+  virtual VariableValue getMissingValue() const
+    {return VariableValue(getNumElements());}
+
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
+  virtual String toString(const VariableValue& value) const;
 
   size_t getNumElements() const
     {return elements.size();}
@@ -236,8 +257,14 @@ public:
     : Type(name, baseClass) {}
   Class() : Type(T("Object"), topLevelType()) {}
 
+  virtual VariableValue getMissingValue() const
+    {return VariableValue();}
+
   virtual VariableValue create() const
     {jassert(false); return VariableValue();}
+
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
+  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const
     {value.clearObject();}
@@ -251,28 +278,37 @@ public:
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
   virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
-
-  virtual size_t getNumStaticVariables() const;
-  virtual TypePtr getStaticVariableType(size_t index) const;
-  virtual String getStaticVariableName(size_t index) const;
-
-  int findStaticVariable(const String& name) const;
-
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
-
-protected:
-  CriticalSection variablesLock;
-  std::vector< std::pair<TypePtr, String> > variables;
-
-  void addVariable(TypePtr type, const String& name);
-  void addVariable(const String& typeName, const String& name)
-    {addVariable(Type::get(typeName), name);}
 };
 
 typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 
 extern ClassPtr objectClass();
+
+class DynamicClass : public Class
+{
+public:
+  DynamicClass(const String& name, TypePtr baseClass = objectClass())
+    : Class(name, baseClass) {}
+
+  virtual size_t getNumStaticVariables() const;
+  virtual TypePtr getStaticVariableType(size_t index) const;
+  virtual String getStaticVariableName(size_t index) const;
+
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
+
+  int findStaticVariable(const String& name) const;
+
+  void addVariable(TypePtr type, const String& name);
+  void addVariable(const String& typeName, const String& name)
+    {addVariable(Type::get(typeName), name);}
+
+protected:
+  CriticalSection variablesLock;
+  std::vector< std::pair<TypePtr, String> > variables;
+};
+
+typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
 /*
 ** Collection
@@ -280,11 +316,11 @@ extern ClassPtr objectClass();
 class Collection;
 typedef ReferenceCountedObjectPtr<Collection> CollectionPtr;
 
-class Collection : public Class
+class Collection : public DynamicClass
 {
 public:
   Collection(const String& name)
-    : Class(name, objectClass()) {}
+    : DynamicClass(name, objectClass()) {}
 
   static CollectionPtr get(const String& className)
     {return checkCast<Collection>(T("Collection::get"), Type::get(className));}

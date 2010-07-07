@@ -97,10 +97,13 @@ protected:
 
 typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;
 
-class DynamicTypeVector : public VariableContainer
+class DynamicObject : public VariableContainer
 {
 public:
-  DynamicTypeVector() {}
+  DynamicObject(ClassPtr type = objectClass()) : type(type) {}
+
+  virtual TypePtr getClass() const
+    {return type;}
 
   virtual size_t getNumVariables() const
     {return variables.size();}
@@ -111,18 +114,21 @@ public:
   virtual void setVariable(size_t index, const Variable& value)
     {jassert(index < variables.size()); variables[index] = value;}
 
-  void reserve(size_t size)
+  void reserveVariables(size_t size)
     {variables.reserve(size);}
 
-  void clear()
+  void clearVariables()
     {variables.clear();}
 
-  void append(const Variable& value)
+  void appendVariable(const Variable& value)
     {variables.push_back(value);}
 
 private:
+  ClassPtr type;
   std::vector<Variable> variables;
 };
+
+typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
 
 }; /* namespace lbcpp */
 

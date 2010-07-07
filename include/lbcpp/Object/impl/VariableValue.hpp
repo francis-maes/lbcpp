@@ -35,6 +35,9 @@ struct VariableValue
   VariableValue(bool boolValue)
     {u.boolValue = boolValue;}
 
+  VariableValue(size_t intValue)
+    {u.intValue = (int)intValue;}
+
   VariableValue(int intValue)
     {u.intValue = intValue;} 
 

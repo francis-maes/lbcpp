@@ -35,10 +35,10 @@ Variable Residue::getVariable(size_t index) const
   return Variable();
 }
 
-class ResidueClass : public Class
+class ResidueClass : public DynamicClass
 {
 public:
-  ResidueClass() : Class(T("Residue"), objectClass())
+  ResidueClass() : DynamicClass(T("Residue"))
   {
     addVariable(aminoAcidCollection(), T("aminoAcid"));
     addVariable(TypePtr(this), T("previous"));

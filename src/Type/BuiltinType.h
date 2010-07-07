@@ -37,6 +37,9 @@ public:
   RawDataBuiltinType(const String& name)
     : BuiltinType(name) {}
 
+  virtual VariableValue getMissingValue() const
+    {return VariableValue();}
+
   virtual void destroy(VariableValue& value) const
     {value.clearRawData();}
 };

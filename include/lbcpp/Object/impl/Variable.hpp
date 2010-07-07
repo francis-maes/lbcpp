@@ -77,6 +77,29 @@ inline void Variable::clear()
 inline Variable Variable::create(TypePtr type)
   {return Variable(type, type->create());}
 
+inline Variable Variable::createMissingValue(TypePtr type)
+  {return Variable(type, type->getMissingValue());}
+
+inline Variable Variable::createFromString(TypePtr type, const String& str, ErrorHandler& callback)
+{
+  String failureReason;
+  VariableValue value = type->createFromString(str, callback);
+  return type->isMissingValue(value) ? Variable() : Variable(type, value);
+}
+
+inline Variable Variable::createFromXml(XmlElement* xml, ErrorHandler& callback)
+{
+  String typeName = xml->getStringAttribute(T("type"));
+  TypePtr type = Type::get(typeName);
+  if (!type)
+  {
+    callback.errorMessage(T("Variable::createFromXml"), T("Could not find type ") + typeName.quoted());
+    return Variable();
+  }
+  VariableValue value = type->createFromXml(xml, callback);
+  return type->isMissingValue(value) ? Variable() : Variable(type, value);
+}
+
 inline void Variable::copyTo(VariableValue& dest) const
 {
   type->destroy(dest);
@@ -90,13 +113,16 @@ inline String Variable::getTypeName() const
   {return type->getName();}
 
 inline Variable::operator bool() const
-  {return !isNil();}
+  {return !isNil() && !isMissingValue();}
 
 inline Variable::operator ObjectPtr() const
   {return isNil() ? ObjectPtr() : getObject();}
 
+inline bool Variable::isMissingValue() const
+  {return type != nilType() || type->isMissingValue(value);}
+
 inline bool Variable::isNil() const
-  {return getType() == nilType();}
+  {return type == nilType();}
 
 inline bool Variable::isBoolean() const
   {return type->inheritsFrom(booleanType());}
@@ -162,6 +188,29 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
 
 inline String Variable::toString() const
   {return type->toString(value);}
+
+inline XmlElement* Variable::toXml(const String& tagName) const
+{
+  XmlElement* res = new XmlElement(tagName);
+  res->setAttribute(T("type"), getTypeName());
+  type->saveToXml(res, value);
+  return res;
+}
+
+inline bool Variable::saveToFile(const File& file, ErrorHandler& callback) const
+{
+  XmlElement* xml = toXml();
+  if (!xml)
+  {
+    callback.errorMessage(T("Variable::saveToFile"), T("Could not generate xml for file ") + file.getFullPathName());
+    return false;
+  }
+  bool ok = xml->writeToFile(file, String::empty);
+  if (!ok)
+    callback.errorMessage(T("Variable::saveToFile"), T("Could not write file ") + file.getFullPathName());
+  delete xml;
+  return ok;
+}
 
 inline bool Variable::equals(const Variable& otherValue) const
 {

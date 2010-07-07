@@ -8,10 +8,10 @@
 #include "Protein.h"
 using namespace lbcpp;
 
-class ProteinClass : public Class
+class ProteinClass : public DynamicClass
 {
 public:
-  ProteinClass() : Class(T("Protein"), objectClass())
+  ProteinClass() : DynamicClass(T("Protein"))
   {
     addVariable(vectorClass(aminoAcidTypeEnumeration()), T("primaryStructure"));
     addVariable(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())), T("positionSpecificScoringMatrix"));
@@ -69,8 +69,8 @@ void Protein::computeMissingVariables()
 {
   if (primaryStructure)
   {
-    if (!residues)
-      createResidues();
+    //if (!residues)
+    //  createResidues();
   }
 }
 
