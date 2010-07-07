@@ -37,7 +37,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   BinaryDecisionTreePtr tree = sampleTree(inputType, outputType, trainingData);
   if (tree)
   {
-    std::cout << "Finished learning tree, numNodes = " << tree->getNumNodes() << std::endl;
+    std::cout << "Tree: numAttributes = " << inputType->getNumStaticVariables() << " numExamples = " << trainingData->size() << " numNodes = " << tree->getNumNodes() << std::endl;
     inference->setTree(tree);
   }
   return Variable();
@@ -215,12 +215,15 @@ static double computeClassificationSplitScore(VariableContainerPtr examples, Var
 
   BernoulliDistributionPtr splitDistribution = new BernoulliDistribution(positiveExamples->size() / (double)examples->size());
 
-  double informationGain = priorDistribution->computeEntropy()
+  double classificationEntropy = priorDistribution->computeEntropy();
+  
+  double informationGain = classificationEntropy
     - splitDistribution->getProbabilityOfTrue() * positiveDistribution->computeEntropy() 
     - splitDistribution->getProbabilityOfFalse() * negativeDistribution->computeEntropy(); 
-  double classificationEntropy = priorDistribution->computeEntropy();
+
   double splitEntropy = splitDistribution->computeEntropy();
-  jassert(splitEntropy > 0 || classificationEntropy > 0);
+
+  jassert(splitEntropy + classificationEntropy != 0);
   return 2.0 * informationGain / (splitEntropy + classificationEntropy);
 }
 
@@ -293,7 +296,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
     if (splitScore > bestSplitScore)
     {
-      std::cout << "Predicate: " << splitPredicate->toString() << " => score = " << splitScore << std::endl;
+      //std::cout << "Predicate: " << splitPredicate->toString() << " => score = " << splitScore << std::endl;
       bestSplitPredicate = splitPredicate;
       bestSplitVariable = splitVariables[i];
       bestSplitArgument = splitArgument;

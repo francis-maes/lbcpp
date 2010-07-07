@@ -14,49 +14,41 @@ using namespace lbcpp;
 extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
 
-
-class PrintObjectVisitor : public ObjectVisitor
+void printVariableLine(const Variable& value, std::ostream& ostr, size_t variableNumber, const String& name, int currentDepth)
 {
-public:
-  PrintObjectVisitor(ObjectPtr object, std::ostream& ostr, int maxDepth = -1)
-    : currentClasses(1, object->getClass()), ostr(ostr), maxDepth(maxDepth) {jassert(currentClasses[0]);}
-  
-  virtual void visit(size_t variableNumber, const Variable& value)
+  for (int i = 0; i < currentDepth; ++i)
+    ostr << "  ";
+  if (variableNumber != (size_t)-1)
+    ostr << "[" << variableNumber << "] ";
+  ostr << value.getTypeName();
+  if (name.isNotEmpty())
+    ostr << " " << name;
+  String v = value.toString();
+  if (v.length() > 30)
+    v = v.substring(0, 30) + T("...");
+  ostr << " = " << v << std::endl;
+}
+
+void printVariablesRecursively(const Variable& variable, std::ostream& ostr, int maxDepth, int currentDepth)
+{
+  if (maxDepth >= 0 && currentDepth >= maxDepth)
+    return;
+  TypePtr type = variable.getType();
+  for (size_t i = 0; i < variable.size(); ++i)
   {
-    printVariable(variableNumber, value);
-    if (value.isObject())
-    {
-      ObjectPtr object = value.getObject();
-      if (object && (maxDepth < 0 || (int)currentClasses.size() < maxDepth))
-      {
-        currentClasses.push_back(object->getClass());
-        object->accept(ObjectVisitorPtr(this));
-        currentClasses.pop_back();
-      }
-    }
+    String name;
+    if (i < type->getNumStaticVariables())
+      name = type->getStaticVariableName(i);
+    printVariableLine(variable[i], ostr, i, name, currentDepth);
+    printVariablesRecursively(variable[i], ostr, maxDepth, currentDepth + 1);
   }
+}
 
-  static void print(ObjectPtr object, std::ostream& ostr, int maxDepth = -1)
-    {object->accept(new PrintObjectVisitor(object, ostr, maxDepth));}
-
-protected:
-  std::vector<TypePtr> currentClasses;
-  TypePtr type;
-  std::ostream& ostr;
-  int maxDepth;
-
-  void printVariable(size_t variableNumber, const Variable& value)
-  {
-    TypePtr currentClass = currentClasses.back();
-    jassert(currentClass);
-    for (size_t i = 0; i < currentClasses.size() - 1; ++i)
-      ostr << "  ";
-    ostr << "[" << variableNumber << "] " << value.getTypeName();
-    if (currentClass && variableNumber < currentClass->getNumStaticVariables())
-      ostr << " " << currentClass->getStaticVariableName(variableNumber);
-    ostr << " = " << value.toString() << std::endl;
-  }
-};
+void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = -1)
+{
+  printVariableLine(variable, ostr, (size_t)-1, String::empty, 0);
+  printVariablesRecursively(variable, ostr, maxDepth, 1);
+}
 
 ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
@@ -179,7 +171,7 @@ public:
     {
       index -= windowSize;
       size_t position = index / 20;
-      Variable var = getVariable(positionSpecificScoringMatrix, index - windowSize);
+      Variable var = getVariable(positionSpecificScoringMatrix, position);
       return var ? var[index % 20] : Variable();
     }
   }
@@ -217,7 +209,7 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  Class::declare(new ProteinResidueInputAttributesClass(16));
+  Class::declare(new ProteinResidueInputAttributesClass(13));
 
   /*
   Variable myEnumValue(asparticAcid, aminoAcidTypeEnumeration());
@@ -253,19 +245,22 @@ int main(int argc, char** argv)
     VectorPtr secondaryStructure = protein->getSecondaryStructure();
     for (size_t j = 0; j < n; ++j)
     {
-      Variable input(new ProteinResidueInputAttributes(protein, j, 16));
+      Variable input(new ProteinResidueInputAttributes(protein, j, 13));
       Variable output = secondaryStructure->getVariable(j);
       secondaryStructureExamples->append(Variable::pair(input, output));
     }
   }
 
+  printVariable(secondaryStructureExamples->getVariable(10), std::cout, 3);
+
   // make train and test set
-  VariableContainerPtr trainingData = secondaryStructureExamples->fold(0, 2);
-  VariableContainerPtr testingData = secondaryStructureExamples->fold(1, 2);
+  VariableContainerPtr data = secondaryStructureExamples->randomize();
+  VariableContainerPtr trainingData = data->fold(0, 2);
+  VariableContainerPtr testingData = data->fold(1, 2);
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = extraTreeInference(T("SS3"), 10, 100);
+  InferencePtr inference = extraTreeInference(T("SS3"), 2, 15);
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 
