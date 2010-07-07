@@ -169,7 +169,7 @@ public:
   IntegerType() : BuiltinType(T("Integer")) {}
 
   virtual void destroy(VariableValue& value) const
-    {}
+    {value.clearBuiltin();}
 
   virtual VariableValue create() const
     {return VariableValue(0);}

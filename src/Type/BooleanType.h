@@ -40,7 +40,7 @@ public:
     {return VariableValue(false);}
 
   virtual void destroy(VariableValue& value) const
-    {}
+    {value.clearBuiltin();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
     {dest.setBoolean(source.getBoolean());}

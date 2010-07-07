@@ -17,11 +17,34 @@ namespace lbcpp
 class ProbabilityDistribution : public Object
 {
 public:
+  virtual double computeEntropy() const = 0;
   virtual double compute(const Variable& value) const = 0;
   virtual Variable sample(RandomGenerator& random) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProbabilityDistribution> ProbabilityDistributionPtr;
+
+class BernoulliDistribution : public ProbabilityDistribution
+{
+public:
+  BernoulliDistribution(double pTrue) : pTrue(pTrue), pFalse(1.0 - pTrue) {}
+  BernoulliDistribution() : pTrue(0.0), pFalse(0.0) {}
+
+  double getProbabilityOfTrue() const
+    {return pTrue ? pTrue / (pTrue + pFalse) : 0.0;}
+
+  double getProbabilityOfFalse() const
+    {return 1.0 - getProbabilityOfTrue();}
+
+  virtual double compute(const Variable& value) const;
+  virtual Variable sample(RandomGenerator& random) const;
+  virtual double computeEntropy() const;
+
+protected:
+  double pTrue, pFalse;
+};
+
+typedef ReferenceCountedObjectPtr<BernoulliDistribution> BernoulliDistributionPtr;
 
 class DiscreteProbabilityDistribution : public ProbabilityDistribution
 {
@@ -33,8 +56,8 @@ public:
   virtual String toString() const;
 
   virtual double compute(const Variable& value) const;
-
   virtual Variable sample(RandomGenerator& random) const;
+  virtual double computeEntropy() const;
 
   EnumerationPtr getEnumeration() const
     {return enumeration;}
