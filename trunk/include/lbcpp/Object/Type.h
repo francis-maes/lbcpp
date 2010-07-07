@@ -202,7 +202,7 @@ public:
     {return String(value.getInteger());}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getInteger() - value2.getInteger();}
+    {return (int)(value1.getInteger() - value2.getInteger());}
 
   virtual size_t getNumSubVariables(const VariableValue& value) const
     {return 0;}
@@ -225,7 +225,7 @@ public:
     {return checkCast<Enumeration>(T("Enumeration::get"), Type::get(className));}
 
   virtual VariableValue getMissingValue() const
-    {return VariableValue(getNumElements());}
+    {return VariableValue((juce::int64)getNumElements());}
 
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
   virtual String toString(const VariableValue& value) const;
@@ -276,6 +276,10 @@ public:
     {return value.getObject()->toString();}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
+
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
+
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
   virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
 };
@@ -293,9 +297,6 @@ public:
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;
   virtual String getStaticVariableName(size_t index) const;
-
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
 
   int findStaticVariable(const String& name) const;
 

@@ -119,7 +119,7 @@ inline Variable::operator ObjectPtr() const
   {return isNil() ? ObjectPtr() : getObject();}
 
 inline bool Variable::isMissingValue() const
-  {return type != nilType() || type->isMissingValue(value);}
+  {return type != nilType() && type->isMissingValue(value);}
 
 inline bool Variable::isNil() const
   {return type == nilType();}
@@ -134,7 +134,7 @@ inline bool Variable::isInteger() const
   {return type->inheritsFrom(integerType());}
 
 inline int Variable::getInteger() const
-  {jassert(isInteger()); return value.getInteger();}
+  {jassert(isInteger()); return (int)value.getInteger();}
 
 inline bool Variable::isEnumeration() const
   {return type.dynamicCast<Enumeration>();}

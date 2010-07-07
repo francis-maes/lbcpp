@@ -122,10 +122,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
   for (size_t i = 0; i < trainingData->size(); ++i)
   {
     Variable value = trainingData->getVariable(i)[0][variableIndex];
-    if (value.isNil())
-      possibleValues.insert(n);
-    else
-      possibleValues.insert((size_t)value.getInteger()); // we use this special index to denote the "Nil" value
+    possibleValues.insert((size_t)value.getInteger());
   }
   jassert(possibleValues.size() >= 2);
 
@@ -188,8 +185,11 @@ PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingD
     else
       ++numNeg;
   }
-  //std::cout << "Predicate: " << predicate->toString() << " " << trainingData->size() << " => " << numPos << " + " << numNeg << std::endl;
-  jassert(numPos && numNeg);
+  if (!numPos || !numNeg)
+  {
+    std::cout << "Predicate: " << predicate->toString() << " " << trainingData->size() << " => " << numPos << " + " << numNeg << std::endl;
+    jassert(false);
+  }
 #endif // JUCE_DEBUG
 
   return predicate;

@@ -23,8 +23,8 @@ TypePtr Object::getClass() const
 {
   String className = lbcpp::toString(typeid(*this));
   TypePtr res = Type::get(className);
-  if (!res)
-    Object::error(T("Object::getClass"), T("Could not find class ") + className.quoted());
+  //if (!res)
+  //  Object::error(T("Object::getClass"), T("Could not find class ") + className.quoted());
   return res;
 }
 

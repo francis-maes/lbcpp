@@ -29,6 +29,8 @@ public:
   RunOnSupervisedExamplesInference(InferencePtr inference)
     : ParallelInference(T("RunOnSupervisedExamples")), inference(inference) {}
 
+  RunOnSupervisedExamplesInference() {}
+
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     VariableContainerPtr examples = input.dynamicCast<VariableContainer>();
