@@ -14,6 +14,8 @@ public:
   ProteinClass() : Class(T("Protein"), objectClass())
   {
     addVariable(vectorClass(aminoAcidTypeEnumeration()), T("primaryStructure"));
+    addVariable(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())), T("positionSpecificScoringMatrix"));
+
     addVariable(vectorClass(secondaryStructureElementEnumeration()), T("secondaryStructure"));
     addVariable(vectorClass(dsspSecondaryStructureElementEnumeration()), T("dsspSecondaryStructure"));
 
@@ -46,17 +48,18 @@ Variable Protein::getVariable(size_t index) const
   switch (index)
   {
   case 0: return primaryStructure;
-  case 1: return secondaryStructure;
-  case 2: return dsspSecondaryStructure;
-  case 3: return solventAccessibility;
-  case 4: return solventAccessibilityAt20p;
-  case 5: return disorderRegions;
-  case 6: return disorderRegionProbabilities;
-  case 7: return contactMap8Ca;
-  case 8: return contactMap8Cb;
-  case 9: return distanceMapCa;
-  case 10: return distanceMapCb;
-  case 11: return residues;
+  case 1: return positionSpecificScoringMatrix;
+  case 2: return secondaryStructure;
+  case 3: return dsspSecondaryStructure;
+  case 4: return solventAccessibility;
+  case 5: return solventAccessibilityAt20p;
+  case 6: return disorderRegions;
+  case 7: return disorderRegionProbabilities;
+  case 8: return contactMap8Ca;
+  case 9: return contactMap8Cb;
+  case 10: return distanceMapCa;
+  case 11: return distanceMapCb;
+  case 12: return residues;
   };
   jassert(false);
   return Variable();

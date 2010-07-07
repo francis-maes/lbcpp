@@ -58,7 +58,11 @@ inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
   : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(const Variable& otherVariant)
+  : type(nilType()), value()
   {*this = otherVariant;}
+
+inline Variable::Variable()
+  : type(nilType()), value() {}
 
 inline Variable::~Variable()
   {clear();}
@@ -66,65 +70,63 @@ inline Variable::~Variable()
 inline void Variable::clear()
 {
   if (type)
-  {
     type->destroy(value);
-    type = TypePtr();
-  }
+  type = nilType();
 }
+
+inline Variable Variable::create(TypePtr type)
+  {return Variable(type, type->create());}
 
 inline void Variable::copyTo(VariableValue& dest) const
 {
-  if (type)
-  {
-    type->destroy(dest);
-    type->copy(dest, value);
-  }
+  type->destroy(dest);
+  type->copy(dest, value);
 }
 
 inline TypePtr Variable::getType() const
   {return type;}
 
 inline String Variable::getTypeName() const
-  {return type ? type->getName() : T("Nil");}
+  {return type->getName();}
 
 inline Variable::operator bool() const
-  {return type;}
+  {return !isNil();}
 
 inline Variable::operator ObjectPtr() const
   {return isNil() ? ObjectPtr() : getObject();}
 
 inline bool Variable::isNil() const
-  {return !type;}
+  {return getType() == nilType();}
 
 inline bool Variable::isBoolean() const
-  {return type && type->inheritsFrom(booleanType());}
+  {return type->inheritsFrom(booleanType());}
 
 inline bool Variable::getBoolean() const
   {jassert(isBoolean()); return value.getBoolean();}
 
 inline bool Variable::isInteger() const
-  {return type && type->inheritsFrom(integerType());}
+  {return type->inheritsFrom(integerType());}
 
 inline int Variable::getInteger() const
   {jassert(isInteger()); return value.getInteger();}
 
 inline bool Variable::isEnumeration() const
-  {return type && type.dynamicCast<Enumeration>();}
+  {return type.dynamicCast<Enumeration>();}
 
 inline bool Variable::isDouble() const
-  {return type && type->inheritsFrom(doubleType());}
+  {return type->inheritsFrom(doubleType());}
 
 inline double Variable::getDouble() const
   {jassert(isDouble()); return value.getDouble();}
 
 inline bool Variable::isString() const
-  {return type && type->inheritsFrom(stringType());}
+  {return type->inheritsFrom(stringType());}
 
 inline String Variable::getString() const
   {jassert(isString()); return value.getString();}
 
 inline bool Variable::isObject() const
-  {return type && type->inheritsFrom(objectClass());}
+  {return type->inheritsFrom(objectClass());}
 
 inline ObjectPtr Variable::getObject() const
   {jassert(isObject()); return value.getObject();}
@@ -159,40 +161,41 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
 }
 
 inline String Variable::toString() const
-  {return type ? type->toString(value) : T("Nil");}
+  {return type->toString(value);}
 
 inline bool Variable::equals(const Variable& otherValue) const
 {
   TypePtr type2 = otherValue.getType();
-  return type == type2 && (!type || type->compare(value, otherValue.value) == 0);
+  return type == type2 && type->compare(value, otherValue.value) == 0;
 }
 
 inline int Variable::compare(const Variable& otherValue) const
 {
   TypePtr type2 = otherValue.getType();
   if (type != type2)
-    return getTypeName().compare(otherValue.getTypeName());
-  if (!type)
   {
-    jassert(!type2);
-    return 0;
+    if (type->inheritsFrom(type2))
+      return type2->compare(value, otherValue.value);
+    else if (type2->inheritsFrom(type))
+      return type->compare(value, otherValue.value);
+    else
+      return getTypeName().compare(otherValue.getTypeName());
   }
   return type->compare(value, otherValue.value);
 }
 
 inline size_t Variable::size() const
-  {return type ? type->getNumSubVariables(value) : 0;}
+  {return type->getNumSubVariables(value);}
 
 inline Variable Variable::operator [](size_t index) const
-  {return type ? type->getSubVariable(value, index) : Variable();}
+  {return type->getSubVariable(value, index);}
 
 inline Variable& Variable::operator =(const Variable& otherVariant)
 {
   clear();
   if (type != otherVariant.type)
     type = otherVariant.type;
-  if (type)
-    type->copy(value, otherVariant.value);
+  type->copy(value, otherVariant.value);
   return *this;
 }
 

@@ -11,6 +11,7 @@
 
 # include <lbcpp/Object/Vector.h>
 # include <lbcpp/Object/SymmetricMatrix.h>
+# include <lbcpp/Object/ProbabilityDistribution.h>
 # include "Residue.h"
 
 namespace lbcpp
@@ -37,6 +38,12 @@ public:
 
   void setPrimaryStructure(VectorPtr primaryStructure)
     {this->primaryStructure = primaryStructure;}
+
+  VectorPtr getPositionSpecificScoringMatrix() const
+    {return positionSpecificScoringMatrix;}
+
+  void setPositionSpecificScoringMatrix(VectorPtr pssm)
+    {positionSpecificScoringMatrix = pssm;}
 
   /*
   ** Secondary Structure
@@ -72,6 +79,8 @@ public:
 
 protected:
   VectorPtr primaryStructure;
+  VectorPtr positionSpecificScoringMatrix;
+
   VectorPtr secondaryStructure;
   VectorPtr dsspSecondaryStructure;
   VectorPtr solventAccessibility;

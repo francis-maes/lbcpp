@@ -17,9 +17,9 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: IntegerType.h                  | Integer type                    |
+| Filename: TopLevelType.h                 | Top Level Type                  |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/06/2010 15:29               |                                 |
+| Started : 07/07/2010 11:09               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -32,7 +32,48 @@
 namespace lbcpp
 {
 
-  // FIXME
+class TopLevelType : public Type
+{
+public:
+  TopLevelType()
+    : Type(T("Variable"), TypePtr()) {}
+
+  virtual VariableValue create() const
+    {jassert(false); return VariableValue();}
+
+  virtual void destroy(VariableValue& value) const
+    {jassert(false);}
+
+  virtual void copy(VariableValue& dest, const VariableValue& source) const
+    {jassert(false);}
+
+  virtual String toString(const VariableValue& value) const
+    {jassert(false); return String::empty;}
+
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+    {jassert(false); return false;}
+};
+
+class NilType : public Type
+{
+public:
+  NilType() : Type(T("Nil"), topLevelType()) {}
+
+  virtual VariableValue create() const
+    {return VariableValue();}
+
+  virtual void destroy(VariableValue& value) const
+    {}
+
+  virtual void copy(VariableValue& dest, const VariableValue& source) const
+    {dest = VariableValue();}
+
+  virtual String toString(const VariableValue& value) const
+    {return T("Nil");}
+
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+    {return 0;}
+};
 
 }; /* namespace lbcpp */
 

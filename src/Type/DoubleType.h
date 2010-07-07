@@ -39,6 +39,9 @@ public:
   DoubleType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
+  virtual VariableValue create() const
+    {return VariableValue(0.0);}
+
   virtual void destroy(VariableValue& value) const
     {}
 

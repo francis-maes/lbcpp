@@ -23,16 +23,17 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProbabilityDistribution> ProbabilityDistributionPtr;
 
-class DiscreteProbabilityDistribution : public Object
+class DiscreteProbabilityDistribution : public ProbabilityDistribution
 {
 public:
   DiscreteProbabilityDistribution(EnumerationPtr enumeration);
   DiscreteProbabilityDistribution() : sum(0.0) {}
 
+  virtual TypePtr getClass() const;
+
   virtual double compute(const Variable& value) const;
 
-  virtual Variable sample(RandomGenerator& random) const
-    {return random.sampleWithProbabilities(values, sum);}
+  virtual Variable sample(RandomGenerator& random) const;
 
   EnumerationPtr getEnumeration() const
     {return enumeration;}
@@ -40,9 +41,7 @@ public:
   virtual size_t getNumVariables() const
     {return values.size();}
 
-  virtual Variable getVariable(size_t index) const
-    {jassert(index < values.size()); return values[index];}
-
+  virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
 
   void increment(const Variable& value);
@@ -57,6 +56,8 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<DiscreteProbabilityDistribution> DiscreteProbabilityDistributionPtr;
+
+extern ClassPtr discreteProbabilityDistributionClass(EnumerationPtr enumeration);
 
 }; /* namespace lbcpp */
 

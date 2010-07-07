@@ -89,12 +89,34 @@ static VectorPtr convertLabelSequence(LabelSequencePtr sequence, EnumerationPtr 
   return res;
 }
 
+static VectorPtr convertScoreVectorSequence(ScoreVectorSequencePtr sequence, EnumerationPtr targetType)
+{
+  if (!sequence)
+    return VectorPtr();
+
+  size_t n = sequence->size();
+  size_t numScores = sequence->getNumScores();
+
+  VectorPtr res = new Vector(discreteProbabilityDistributionClass(targetType), n);
+  for (size_t i = 0; i < n; ++i)
+    if (sequence->hasObject(i))
+    {
+      DiscreteProbabilityDistributionPtr distribution = new DiscreteProbabilityDistribution(targetType);
+      for (size_t j = 0; j < numScores; ++j)
+        distribution->setVariable(j, sequence->getScore(i, j));
+      res->setVariable(i, distribution);
+    }
+  return res;
+}
+
 // FIXME: support for empty labels (empty variable values in Vectors)
 
 ProteinPtr convertProtein(ProteinObjectPtr protein)
 {
   ProteinPtr res = new Protein(protein->getName());
   res->setPrimaryStructure(convertLabelSequence(protein->getAminoAcidSequence(), aminoAcidTypeEnumeration()));
+  res->setPositionSpecificScoringMatrix(convertScoreVectorSequence(protein->getPositionSpecificScoringMatrix(), aminoAcidTypeEnumeration()));
+
   res->setSecondaryStructure(convertLabelSequence(protein->getSecondaryStructureSequence(), secondaryStructureElementEnumeration()));
   res->setDSSPSecondaryStructure(convertLabelSequence(protein->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureElementEnumeration()));
   // FIXME: the rest ...
@@ -118,31 +140,55 @@ VectorPtr convertProteins(ObjectContainerPtr oldStyleProteins)
 }
 
 ///////////////
+/*
+class VectorWindowAttributes : public Object
+{
+public:
+  VectorWindowAttributes(size_t proteinVariableIndex, size_t size)
+    : proteinVariableIndex(proteinVariableIndex), size(size) {}
+
+protected:
+  size_t proteinVariableIndex;
+  size_t size;
+};*/
 
 class ProteinResidueInputAttributes : public Object
 {
 public:
-  ProteinResidueInputAttributes(ResiduePtr residue, size_t windowSize)
-    : residue(residue), windowSize(windowSize)
+  ProteinResidueInputAttributes(ProteinPtr protein, size_t position, size_t windowSize)
+    : position(position), windowSize(windowSize)
   {
-    variables.push_back(Variable(residue->getAminoAcidType(), aminoAcidTypeEnumeration()));
+    primaryStructure = protein->getPrimaryStructure();
+    positionSpecificScoringMatrix = protein->getPositionSpecificScoringMatrix();
+  }
 
-    ResiduePtr prev = residue->getPrevious();
-    for (size_t i = 0; i < windowSize; ++i, prev = prev ? prev->getPrevious() : ResiduePtr())
-      variables.push_back(prev ? Variable(prev->getAminoAcidType(), aminoAcidTypeEnumeration()) : Variable());
-
-    ResiduePtr next = residue->getNext();
-    for (size_t i = 0; i < windowSize; ++i, next = next ? next->getNext() : ResiduePtr())
-      variables.push_back(next ? Variable(next->getAminoAcidType(), aminoAcidTypeEnumeration()) : Variable());
+  virtual Variable getVariable(VectorPtr vector, size_t index) const
+  {
+    int targetPosition = (int)position - (int)(windowSize / 2) + (int)index;
+    if (targetPosition >= 0 && targetPosition < (int)vector->size())
+      return vector->getVariable(targetPosition);
+    else
+      return Variable();
   }
 
   virtual Variable getVariable(size_t index) const
-    {jassert(index < variables.size()); return variables[index];}
+  {
+    if (index < windowSize)
+      return getVariable(primaryStructure, index);
+    else
+    {
+      index -= windowSize;
+      size_t position = index / 20;
+      Variable var = getVariable(positionSpecificScoringMatrix, index - windowSize);
+      return var ? var[index % 20] : Variable();
+    }
+  }
 
 private:
-  ResiduePtr residue;
+  VectorPtr primaryStructure;
+  VectorPtr positionSpecificScoringMatrix;
+  size_t position;
   size_t windowSize;
-  std::vector<Variable> variables;
 };
 
 class ProteinResidueInputAttributesClass : public Class
@@ -151,11 +197,17 @@ public:
   ProteinResidueInputAttributesClass(size_t windowSize)
     : Class(T("ProteinResidueInputAttributes"), objectClass())
   {
-    addVariable(aminoAcidTypeEnumeration(), T("AA[i]"));
     for (size_t i = 0; i < windowSize; ++i)
-      addVariable(aminoAcidTypeEnumeration(), T("AA[i - ") + lbcpp::toString(i + 1) + T("]"));
+    {
+      int offset = (int)i - (int)(windowSize / 2);
+      addVariable(aminoAcidTypeEnumeration(), T("AA[") + String(offset) + T("]"));
+    }
     for (size_t i = 0; i < windowSize; ++i)
-      addVariable(aminoAcidTypeEnumeration(), T("AA[i + ") + lbcpp::toString(i + 1) + T("]"));
+    {
+      int offset = (int)i - (int)(windowSize / 2);
+      for (size_t j = 0; j < 20; ++j)
+        addVariable(probabilityType(), T("PSSM[") + String(offset) + T("][") + String((int)j) + T("]"));
+    }
   }
 };
 
@@ -200,7 +252,7 @@ int main(int argc, char** argv)
     VectorPtr secondaryStructure = protein->getSecondaryStructure();
     for (size_t j = 0; j < n; ++j)
     {
-      Variable input(new ProteinResidueInputAttributes(protein->getResidue(j), 8));
+      Variable input(new ProteinResidueInputAttributes(protein, j, 8));
       Variable output = secondaryStructure->getVariable(j);
       secondaryStructureExamples->append(Variable::pair(input, output));
     }
@@ -212,7 +264,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = extraTreeInference(T("SS3"), 200, 1);
+  InferencePtr inference = extraTreeInference(T("SS3"), 5, 1, 20);
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 

@@ -36,6 +36,9 @@ class BooleanType : public BuiltinType
 public:
   BooleanType() : BuiltinType(T("Boolean")) {}
 
+  virtual VariableValue create() const
+    {return VariableValue(false);}
+
   virtual void destroy(VariableValue& value) const
     {}
 

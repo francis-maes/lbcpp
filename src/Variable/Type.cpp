@@ -16,6 +16,8 @@ extern void declareLBCppCoreClasses();
 /*
 ** TypeManager
 */
+namespace lbcpp {
+
 class TypeManager
 {
 public:
@@ -44,28 +46,54 @@ public:
     return it == types.end() ? TypePtr() : it->second;
   }
 
-  ObjectPtr createInstance(const String& className) const
+  TypePtr get(const String& typeName, TypePtr argument1, TypePtr argument2 = TypePtr(), TypePtr argument3 = TypePtr()) const
   {
-    if (className.isEmpty())
+    TemplateTypeKey key;
+    key.first = typeName;
+    key.second.push_back(argument1);
+    if (argument2) key.second.push_back(argument2);
+    if (argument3) key.second.push_back(argument3);
+    
+    ScopedLock _(typesLock);
+    TemplateTypeMap::const_iterator it = templateTypes.find(key);
+    if (it != templateTypes.end())
+      return it->second;
+
+    TypePtr type = get(typeName);
+    if (!type)
     {
-      Object::error(T("TypeManager::create"), T("Empty class name"));
-      return ObjectPtr();
+      Object::error(T("TypeManager::get"), T("Could not find type '") + typeName + T("'"));
+      return TypePtr();
+    }
+    TypePtr specializedType = type->cloneAndCast<Type>();
+    if (!specializedType)
+    {
+      Object::error(T("TypeManager::get"), T("Could not specialize template type '") + typeName + T("'"));
+      return TypePtr();
+    }
+    for (size_t i = 0; i < key.second.size(); ++i)
+      specializedType->setTemplateArgument(i, key.second[i]);
+    specializedType->setBaseClass(type);
+    specializedType->setName(makeTemplateClassName(typeName, key.second));
+    const_cast<TypeManager* >(this)->templateTypes[key] = specializedType;
+    return specializedType;
+  }
+
+  Variable createInstance(const String& typeName) const
+  {
+    if (typeName.isEmpty())
+    {
+      Object::error(T("TypeManager::create"), T("Empty type name"));
+      return Variable();
     }
 
-    TypePtr cl = get(className);
-    if (!cl)
+    TypePtr type = get(typeName);
+    if (!type)
     {
-      Object::error(T("TypeManager::create"), T("Could not find class '") + className + T("'"));
-      return ObjectPtr();
+      Object::error(T("TypeManager::create"), T("Could not find type '") + typeName + T("'"));
+      return Variable();
     }
-
-    Type::DefaultConstructor defaultConstructor = cl->getDefaultConstructor();
-    if (!defaultConstructor)
-    {
-      Object::error(T("TypeManager::create"), T("Class '") + className + T("' has no default constructor"));
-      return ObjectPtr();
-    }
-    return defaultConstructor();
+    return Variable::create(type);
   }
 
   void ensureStandardClassesAreLoaded()
@@ -79,12 +107,33 @@ public:
 
 private:
   typedef std::map<String, TypePtr> TypeMap;
+  typedef std::pair<String, std::vector<TypePtr> > TemplateTypeKey;
+  typedef std::map<TemplateTypeKey, TypePtr> TemplateTypeMap;
 
   CriticalSection typesLock;
   TypeMap types;
+  TemplateTypeMap templateTypes;
 
   bool standardTypesAreDeclared;
+
+  static String makeTemplateClassName(const String& typeName, const std::vector<TypePtr>& arguments)
+  {
+    jassert(arguments.size());
+    String res;
+    for (size_t i = 0; i < arguments.size(); ++i)
+    {
+      if (i == 0)
+        res = typeName + T("<");
+      else
+        res += T(", ");
+      res += arguments[i]->getName();
+    }
+    res += T(">");
+    return res;
+  }
 };
+
+}; /* namespace lbcpp */
 
 inline TypeManager& getClassManagerInstance()
 {
@@ -111,11 +160,17 @@ Variable Type::getSubVariable(const VariableValue& value, size_t index) const
 void Type::declare(TypePtr classInstance)
   {getClassManagerInstance().declare(classInstance);}
 
-TypePtr Type::get(const String& className)
-  {return getClassManagerInstance().get(className);}
+TypePtr Type::get(const String& typeName)
+  {return getClassManagerInstance().get(typeName);}
 
-ObjectPtr Type::createInstance(const String& className)
-  {return getClassManagerInstance().createInstance(className);}
+TypePtr Type::get(const String& typeName, TypePtr argument)
+  {return getClassManagerInstance().get(typeName, argument);}
+
+TypePtr Type::get(const String& typeName, TypePtr argument1, TypePtr argument2)
+  {return getClassManagerInstance().get(typeName, argument1, argument2);}
+
+Variable Type::createInstance(const String& typeName)
+  {return getClassManagerInstance().createInstance(typeName);}
 
 bool Type::doClassNameExists(const String& className)
   {return get(className) != TypePtr();}
@@ -215,17 +270,15 @@ TypePtr Class::addWeighted(VariableValue& target, const Variable& source, double
 ** Enumeration
 */
 Enumeration::Enumeration(const String& name, const juce::tchar** elements)
-  : IntegerType(name)
+  : IntegerType(name, enumerationType())
 {
-  baseClass = integerType();
   for (size_t index = 0; elements[index]; ++index)
     addElement(elements[index]);
 }
 
 Enumeration::Enumeration(const String& name, const String& elementChars)
-  : IntegerType(name)
+  : IntegerType(name, enumerationType())
 {
-  baseClass = integerType();
   for (int i = 0; i < elementChars.length(); ++i)
   {
     String str;
@@ -235,9 +288,8 @@ Enumeration::Enumeration(const String& name, const String& elementChars)
 }
 
 Enumeration::Enumeration(const String& name)
-  : IntegerType(name)
+  : IntegerType(name, enumerationType())
 {
-  baseClass = integerType();
 }
 
 void Enumeration::addElement(const String& elementName)
@@ -262,19 +314,57 @@ TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
   return distribution->getClass();
 }
 
+/*
+** TypeCache
+*/
+TypeCache::TypeCache(const String& typeName)
+{
+  type = Type::get(typeName);
+  if (!type)
+    Object::error(T("TypeCache()"), T("Could not find type ") + typeName.quoted());
+}
+
+TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
+{
+  std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument);
+  if (it == m.end())
+  {
+    TypePtr res = Type::get(typeName, argument);
+    m[argument] = res;
+    return res;
+  }
+  else
+    return it->second;
+}
+
+TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
+{
+  std::pair<TypePtr, TypePtr> key(argument1, argument2);
+  std::map<std::pair<TypePtr, TypePtr>, TypePtr>::const_iterator it = m.find(key);
+  if (it == m.end())
+  {
+    TypePtr res = Type::get(typeName, argument1, argument2);
+    m[key] = res;
+    return res;
+  }
+  else
+    return it->second;
+}
+
+/*
+** Type Declarations
+*/
+#include "../Type/TopLevelType.h"
 #include "../Type/BooleanType.h"
-#include "../Type/IntegerType.h"
 #include "../Type/DoubleType.h"
 #include "../Type/StringType.h"
 #include "../Type/TupleType.h"
 
 #define DECLARE_CLASS_SINGLETON_ACCESSOR(AccessorName, ClassName) \
-  TypePtr lbcpp::AccessorName() { \
-      static TypePtr res; \
-      if (!res) {res = Type::get(ClassName); jassert(res);} \
-      return res; }
+  TypePtr lbcpp::AccessorName() { static TypeCache cache(ClassName); return cache(); }
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(topLevelType, T("Variable"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(nilType, T("Nil"));
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(booleanType, T("Boolean"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(integerType, T("Integer"));
@@ -285,31 +375,22 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(doubleType, T("Double"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(stringType, T("String"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(pairType, T("Pair"));
 
+DECLARE_CLASS_SINGLETON_ACCESSOR(enumerationType, T("Enumeration"));
+
 ClassPtr lbcpp::objectClass()
-  {static ClassPtr res = Class::get(T("Object")); return res;}
+  {static TypeCache cache(T("Object")); return cache();}
 
 TypePtr lbcpp::pairType(TypePtr firstClass, TypePtr secondClass)
-  {return pairType();} // FIXME
-
-Variable Variable::pair(const Variable& variable1, const Variable& variable2)
-{
-  return Variable(pairType(), PairType::allocate(variable1, variable2));
-}
-Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
-{
-  Variable res;
-  res.type = type;
-  if (type)
-    type->copy(res.value, value);
-  return res;
-}
+  {static BinaryTemplateTypeCache cache(T("Pair")); return cache(firstClass, secondClass);}
 
 void declareClassClasses()
 {
   Type::declare(new TopLevelType());
+    Type::declare(new NilType());
 
   Type::declare(new BooleanType());
   Type::declare(new IntegerType());
+    Type::declare(new IntegerType(T("Enumeration"), integerType()));
   Type::declare(new DoubleType());
     Type::declare(new ProbabilityType());
     Type::declare(new AngstromDistanceType());
@@ -318,4 +399,19 @@ void declareClassClasses()
   Type::declare(new PairType());
 
   Type::declare(new Class());
+}
+
+/*
+** Variable
+*/
+Variable Variable::pair(const Variable& variable1, const Variable& variable2)
+  {return Variable(pairType(variable1.getType(), variable2.getType()), PairType::allocate(variable1, variable2));}
+
+Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
+{
+  Variable res;
+  res.type = type;
+  if (type)
+    type->copy(res.value, value);
+  return res;
 }

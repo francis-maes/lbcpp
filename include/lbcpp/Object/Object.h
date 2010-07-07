@@ -71,7 +71,7 @@ public:
   ** Introspection
   */
   virtual TypePtr getClass() const;
-  String getClassName() const;
+  virtual String getClassName() const;
 
   virtual size_t getNumVariables() const;
   virtual Variable getVariable(size_t index) const;
@@ -188,8 +188,8 @@ public:
   ** @return a copy of the current object or ObjectPtr() if
   ** the clone() operation is undefined for this object.
   */
-  virtual ObjectPtr clone() const
-    {jassert(false); return ObjectPtr();}
+  virtual ObjectPtr clone() const;
+  virtual void clone(ObjectPtr target) const;
 
   virtual int compare(ObjectPtr otherObject) const
     {return (int)(this - otherObject.get());}

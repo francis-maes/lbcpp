@@ -42,13 +42,20 @@ void Vector::append(const Variable& value)
 bool Vector::checkType(const Variable& value) const
   {return checkInheritance(value, type);}
 
+TypePtr Vector::getClass() const
+  {return vectorClass(type);}
+
 ClassPtr lbcpp::vectorClass(TypePtr elementsType)
 {
-  return Class::get(T("Vector"));
+  static UnaryTemplateTypeCache cache(T("Vector"));
+  return cache(elementsType);
 }
 
 
 // todo: ranger
 #include <lbcpp/Object/SymmetricMatrix.h>
 ClassPtr lbcpp::symmetricMatrixClass(TypePtr elementsType)
-  {return Class::get(T("SymmetricMatrix"));}
+{
+  static UnaryTemplateTypeCache cache(T("SymmetricMatrix"));
+  return cache(elementsType);
+}
