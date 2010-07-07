@@ -160,7 +160,7 @@ public:
     if (targetPosition >= 0 && targetPosition < (int)vector->size())
       return vector->getVariable(targetPosition);
     else
-      return Variable();
+      return Variable::createMissingValue(vector->getStaticType());
   }
 
   virtual Variable getVariable(size_t index) const
@@ -172,7 +172,7 @@ public:
       index -= windowSize;
       size_t position = index / 20;
       Variable var = getVariable(positionSpecificScoringMatrix, position);
-      return var ? var[index % 20] : Variable();
+      return var ? var[index % 20] : Variable::createMissingValue(probabilityType());
     }
   }
 
@@ -353,8 +353,8 @@ int main(int argc, char** argv)
   VectorPtr proteins = convertProteins(oldStyleProteins);
   oldStyleProteins = ObjectContainerPtr();
   std::cout << proteins->size() << " proteins" << std::endl;
-  proteins->getVariable(0).saveToFile(workingDirectory.getChildFile(T("NewProt.xml")));
-  return 0;
+  //proteins->getVariable(0).saveToFile(workingDirectory.getChildFile(T("NewProt.xml")));
+  //return 0;
   //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);
 
   // make secondary structure classification examples

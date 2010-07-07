@@ -36,10 +36,13 @@ struct VariableValue
     {u.boolValue = boolValue;}
 
   VariableValue(size_t intValue)
-    {u.intValue = (int)intValue;}
+    {u.intValue = (juce::int64)intValue;}
 
   VariableValue(int intValue)
-    {u.intValue = intValue;} 
+    {u.intValue = (juce::int64)intValue;} 
+
+  VariableValue(juce::int64 intValue)
+    {u.intValue = intValue;}
 
   VariableValue(double doubleValue)
     {u.doubleValue = doubleValue;}
@@ -72,11 +75,14 @@ struct VariableValue
   void setBoolean(bool value)
     {u.boolValue = value;}
   
-  int getInteger() const
+  juce::int64 getInteger() const
     {return u.intValue;}
 
-  void setInteger(int value)
+  void setInteger(juce::int64 value)
     {u.intValue = value;}
+
+  void setInteger(int value)
+    {u.intValue = (int)value;}
 
   double getDouble() const
     {return u.doubleValue;}
@@ -115,7 +121,7 @@ private:
   union
   {
     bool boolValue;
-    int intValue;
+    juce::int64 intValue;
     double doubleValue;
     String* stringValue;
     Object* objectValue;

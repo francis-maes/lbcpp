@@ -179,15 +179,13 @@ VariableValue Type::getMissingValue() const
 {
   jassert(sizeof (VariableValue) == 8);
   static const juce::int64 missing = 0x0FEEFEEEFEEEFEEE;
-  jassert(sizeof (double) == 8);
-  jassert(sizeof (juce::int64) == 8);
-  return VariableValue(*(double* )&missing);
+  return VariableValue(missing);
 }
 
 bool Type::isMissingValue(const VariableValue& value) const
 {
   VariableValue missing = getMissingValue();
-  return memcmp(&missing, &value, sizeof (VariableValue)) == 0;
+  return value.getInteger() == missing.getInteger();
 }
 
 VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
@@ -264,6 +262,12 @@ void Class::saveToXml(XmlElement* xml, const VariableValue& value) const
     object->saveToXml(xml);
 }
 
+Variable Class::getSubVariable(const VariableValue& value, size_t index) const
+  {return value.getObject()->getVariable(index);}
+
+void Class::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {value.getObject()->setVariable(index, subValue);}
+
 /*
 ** DynamicClass
 */
@@ -300,12 +304,6 @@ void DynamicClass::addVariable(TypePtr type, const String& name)
   else
     variables.push_back(std::make_pair(type, name));
 }
-
-Variable DynamicClass::getSubVariable(const VariableValue& value, size_t index) const
-  {return value.getObject()->getVariable(index);}
-
-void DynamicClass::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-  {value.getObject()->setVariable(index, subValue);}
 
 int DynamicClass::findStaticVariable(const String& name) const
 {
@@ -368,8 +366,8 @@ VariableValue Enumeration::createFromString(const String& value, ErrorHandler& c
 
 String Enumeration::toString(const VariableValue& value) const
 {
-  int val = value.getInteger();
-  return val >= 0 && val < (int)getNumElements() ? getElementName(val) : T("Nil");
+  juce::int64 val = value.getInteger();
+  return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Nil");
 }
 
 TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)

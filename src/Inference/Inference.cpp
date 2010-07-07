@@ -195,4 +195,7 @@ void declareInferenceClasses()
   LBCPP_DECLARE_CLASS(SimulationInferenceBatchLearner, Inference);
   LBCPP_DECLARE_CLASS(SequentialInferenceBatchLearner, Inference);
   LBCPP_DECLARE_CLASS(ParallelInferenceBatchLearner, ParallelInference);
+  
+  LBCPP_DECLARE_CLASS(RunOnSupervisedExamplesInference, ParallelInference);
+  LBCPP_DECLARE_ABSTRACT_CLASS(RunSequentialInferenceStepOnExamples, ParallelInference);
 }
