@@ -20,17 +20,7 @@ VectorPtr VariableContainer::toVector() const
 }
 
 String VariableContainer::toString() const
-{
-  String res = T("[");
-  size_t n = getNumVariables();
-  for (size_t i = 0; i < n; ++i)
-  {
-    res += getVariable(i).toString();
-    if (i < (n - 1))
-      res += T(", ");
-  }
-  return res + T("]");
-}
+  {return T("[") + variablesToString(T(", ")) + T("]");}
 
 class SubsetVariableContainer : public DecoratorVariableContainer
 {

@@ -35,7 +35,6 @@ protected:
 
   void sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& variables);
   bool shouldCreateLeaf(VariableContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
-  Variable createOutputDistribution(TypePtr outputType, VariableContainerPtr trainingData) const;
 };
 
 }; /* namespace lbcpp */

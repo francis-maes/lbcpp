@@ -48,6 +48,19 @@ void Object::accept(ObjectVisitorPtr visitor)
     visitor->visit(i, getVariable(i));
 }
 
+String Object::variablesToString(const String& separator) const
+{
+  String res;
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    res += getVariable(i).toString();
+    if (i < n - 1)
+      res += separator;
+  }
+  return res;
+}
+
 ObjectPtr Object::create(const String& className)
 {
   String name = className;
