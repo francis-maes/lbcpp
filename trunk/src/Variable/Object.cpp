@@ -14,13 +14,17 @@ using namespace lbcpp;
 extern void declareLBCppCoreClasses();
 
 String Object::getClassName() const
-  {return lbcpp::toString(typeid(*this));}
+{
+  TypePtr type = getClass();
+  return type ? type->getName() : lbcpp::toString(typeid(*this));
+}
 
 TypePtr Object::getClass() const
 {
-  TypePtr res = Type::get(getClassName());
+  String className = lbcpp::toString(typeid(*this));
+  TypePtr res = Type::get(className);
   if (!res)
-    Object::error(T("Object::getClass"), T("Could not find objects class, className = ") + getClassName());
+    Object::error(T("Object::getClass"), T("Could not find class ") + className.quoted());
   return res;
 }
 
@@ -188,4 +192,22 @@ bool Object::saveToDirectory(const File& directory) const
     return false;
   }
   return Object::saveToFile(directory.getChildFile(T(".classFile")));
+}
+
+/*
+** Clone
+*/
+ObjectPtr Object::clone() const
+{
+  Variable variable(getClass());
+  ObjectPtr res = variable.getObject();
+  clone(res);
+  return res;
+}
+
+void Object::clone(ObjectPtr target) const
+{
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+    target->setVariable(i, getVariable(i));
 }

@@ -42,33 +42,24 @@ public:
     : NameableObject(className), baseClass(baseClass) {}
 
   static void declare(TypePtr classInstance);
-  static TypePtr get(const String& className);
+  static TypePtr get(const String& typeName);
+  static TypePtr get(const String& typeName, TypePtr argument);
+  static TypePtr get(const String& typeName, TypePtr argument1, TypePtr argument2);
+
   static bool doClassNameExists(const String& className);
   
-  /** Creates dynamically an object of class @a className.
+  /** Creates dynamically an object of type @a typeName.
   **
-  ** The class @a className must be declared with Type::declare()
+  ** The type @a typeName must be declared with Type::declare()
   ** and must have a default constructor before being able
   ** to instantiate it dynamically.
   **
-  ** @param className : class name.
+  ** @param typeName : type name.
   **
-  ** @return an instance of @a className object.
-  ** @see Object::declare
+  ** @return an instance of @a typeName object.
+  ** @see Type::declare
   */
-  static ObjectPtr createInstance(const String& className);
-
-  template<class T>
-  static ReferenceCountedObjectPtr<T> createInstanceAndCast(const String& className)
-    {return checkCast<T>(T("Type::createInstanceAndCast"), create(className));}
-
-  /*
-  ** Default Constructor
-  */
-  typedef ObjectPtr (*DefaultConstructor)();
-
-  DefaultConstructor getDefaultConstructor() const
-    {return defaultConstructor;}
+  static Variable createInstance(const String& typeName);
 
   /*
   ** Base class
@@ -76,28 +67,37 @@ public:
   TypePtr getBaseClass() const
     {return baseClass;}
 
+  void setBaseClass(TypePtr baseClass)
+    {this->baseClass = baseClass;}
+
+  /*
+  ** Template Arguments
+  */
+  size_t getNumTemplateArguments() const
+    {return templateArguments.size();}
+
+  TypePtr getTemplateArgument(size_t index) const
+    {jassert(index < templateArguments.size()); return templateArguments[index];}
+  
+  void setTemplateArgument(size_t index, TypePtr type)
+    {jassert(index < templateArguments.size()); templateArguments[index] = type;}
+
   bool inheritsFrom(TypePtr baseType) const;
 
   /*
   ** Operations
   */
-  virtual void destroy(VariableValue& value) const
-    {jassert(false);}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {jassert(false);}
+  virtual VariableValue create() const = 0;
+  virtual void destroy(VariableValue& value) const = 0;
+  virtual void copy(VariableValue& dest, const VariableValue& source) const = 0;
+  virtual String toString(const VariableValue& value) const = 0;
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const = 0;
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar)
     {jassert(false); return TypePtr(this);}
 
   virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight)
     {jassert(false); return TypePtr(this);}
-
-  virtual String toString(const VariableValue& value) const
-    {jassert(false); return String::empty;}
-
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {jassert(false); return false;}
 
   /*
   ** Static Variables
@@ -125,21 +125,20 @@ public:
   virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
     {jassert(false);}
 
-protected:
-  DefaultConstructor defaultConstructor;
-  TypePtr baseClass;
-};
+  virtual void clone(ObjectPtr target) const
+  {
+    TypePtr targetType = target.staticCast<Type>();
+    targetType->baseClass = baseClass;
+    targetType->templateArguments = templateArguments;
+  }
 
-/*
-** The top-level base class
-*/
-class TopLevelType : public Type
-{
-public:
-  TopLevelType() : Type(T("Variable"), TypePtr()) {}
+protected:
+  TypePtr baseClass;
+  std::vector<TypePtr> templateArguments;
 };
 
 extern TypePtr topLevelType();
+extern TypePtr nilType();
 
 class BuiltinType : public Type
 {
@@ -165,12 +164,15 @@ extern TypePtr pairType(TypePtr firstClass, TypePtr secondClass);
 class IntegerType : public BuiltinType
 {
 public:
-  IntegerType(const String& className)
-    : BuiltinType(className) {}
+  IntegerType(const String& className, TypePtr baseType)
+    : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
   virtual void destroy(VariableValue& value) const
     {}
+
+  virtual VariableValue create() const
+    {return VariableValue(0);}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
     {dest.setInteger(source.getInteger());}
@@ -222,6 +224,8 @@ private:
   std::vector<String> elements;
 };
 
+extern TypePtr enumerationType();
+
 /*
 ** Class
 */
@@ -231,6 +235,9 @@ public:
   Class(const String& name, TypePtr baseClass)
     : Type(name, baseClass) {}
   Class() : Type(T("Object"), topLevelType()) {}
+
+  virtual VariableValue create() const
+    {jassert(false); return VariableValue();}
 
   virtual void destroy(VariableValue& value) const
     {value.clearObject();}
@@ -306,18 +313,34 @@ public:
   DefaultAbstractClass_(TypePtr baseClass)
     : Class(lbcpp::toString(typeid(TT)), baseClass)
     {}
+
+  virtual VariableValue create() const
+  {
+    Object::error(T("AbstractClass::create"), T("Cannot instantiate abstract classes"));
+    return VariableValue(0);
+  }
 };
 
 template<class TT>
 class DefaultClass_ : public Class
 {
 public:
-  DefaultClass_(TypePtr baseClass)
+  DefaultClass_(TypePtr baseClass, size_t numTemplateArguments = 0)
     : Class(lbcpp::toString(typeid(TT)), baseClass)
-    {Type::defaultConstructor = defaultCtor;}
+  {
+    if (numTemplateArguments)
+      templateArguments.resize(numTemplateArguments, topLevelType());
+  }
 
-  static ObjectPtr defaultCtor()
-    {return ObjectPtr(new TT());}
+  virtual VariableValue create() const
+    {return new TT();}
+
+  virtual ObjectPtr clone() const
+  {
+    ClassPtr res(new DefaultClass_<TT>(baseClass));
+    Type::clone(res);
+    return res;
+  }
 };
 
 #define LBCPP_DECLARE_ABSTRACT_CLASS(Name, BaseClass) \
@@ -325,6 +348,9 @@ public:
 
 #define LBCPP_DECLARE_CLASS(Name, BaseClass) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass))))
+
+#define LBCPP_DECLARE_TEMPLATE_CLASS(Name, NumTemplateArguments, BaseClass) \
+  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass), NumTemplateArguments)))
 
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
@@ -338,6 +364,47 @@ inline bool checkInheritance(TypePtr type, TypePtr baseType)
   }
   return true;
 }
+
+/*
+** TypeCache
+*/
+class TypeCache
+{
+public:
+  TypeCache(const String& typeName);
+
+  TypePtr operator ()()
+    {return type;}
+
+protected:
+  TypePtr type;
+};
+
+class UnaryTemplateTypeCache
+{
+public:
+  UnaryTemplateTypeCache(const String& typeName)
+    : typeName(typeName) {}
+
+  TypePtr operator ()(TypePtr argument);
+
+private:
+  String typeName;
+  std::map<TypePtr, TypePtr> m;
+};
+
+class BinaryTemplateTypeCache
+{
+public:
+  BinaryTemplateTypeCache(const String& typeName)
+    : typeName(typeName) {}
+
+  TypePtr operator ()(TypePtr argument1, TypePtr argument2);
+
+private:
+  String typeName;
+  std::map<std::pair<TypePtr, TypePtr>, TypePtr> m;
+};
 
 }; /* namespace lbcpp */
 

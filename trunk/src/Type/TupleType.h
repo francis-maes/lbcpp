@@ -37,7 +37,10 @@ class TupleType : public RawDataBuiltinType
 {
 public:
   TupleType(const String& name, size_t size)
-    : RawDataBuiltinType(name), size(size) {}
+    : RawDataBuiltinType(name), size(size)
+  {
+    templateArguments.resize(size, topLevelType());
+  }
 
   static char* allocateMemory(size_t size)
   {
@@ -125,6 +128,9 @@ class PairType : public TupleType
 public:
   PairType() : TupleType(T("Pair"), 2) {}
 
+  virtual VariableValue create() const
+    {return allocate(Variable(), Variable());}
+
   static VariableValue allocate(const Variable& variable1, const Variable& variable2)
   {
     char* data = allocateMemory(2);
@@ -148,6 +154,13 @@ public:
     Variable* data2 = (Variable* )value2.getRawData();
     int res = data1[0].compare(data2[0]);
     return res ? res : data1[1].compare(data2[1]);
+  }
+
+  virtual ObjectPtr clone() const
+  {
+    TypePtr res(new PairType());
+    Type::clone(res);
+    return res;
   }
 };
 

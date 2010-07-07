@@ -29,6 +29,8 @@ public:
   virtual ~Vector()
     {clear();}
 
+  virtual TypePtr getClass() const;
+
   virtual TypePtr getStaticType() const
     {return type;}
 

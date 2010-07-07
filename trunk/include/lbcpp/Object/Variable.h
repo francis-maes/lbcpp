@@ -47,8 +47,9 @@ public:
   template<class T>
   Variable(ReferenceCountedObjectPtr<T> object);
   Variable(const Variable& other);
-  Variable() {}
+  Variable();
   
+  static Variable create(TypePtr type);
   static Variable pair(const Variable& variable1, const Variable& variable2);
   static Variable copyFrom(TypePtr type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;

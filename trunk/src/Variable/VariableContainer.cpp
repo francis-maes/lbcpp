@@ -195,10 +195,10 @@ void declareVariableContainerClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(VariableContainer, Object);
 
-    LBCPP_DECLARE_CLASS(Vector, VariableContainer);
+    LBCPP_DECLARE_TEMPLATE_CLASS(Vector, 1, VariableContainer);
     LBCPP_DECLARE_CLASS(BooleanVector, VariableContainer);
     LBCPP_DECLARE_CLASS(DynamicTypeVector, VariableContainer);
-    LBCPP_DECLARE_CLASS(SymmetricMatrix, VariableContainer);
+    LBCPP_DECLARE_TEMPLATE_CLASS(SymmetricMatrix, 1, VariableContainer);
 
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorVariableContainer, VariableContainer);
 

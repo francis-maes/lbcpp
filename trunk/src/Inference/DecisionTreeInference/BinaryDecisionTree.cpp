@@ -47,7 +47,7 @@ private:
 PredicatePtr BinaryDecisionTree::getSplitPredicate(const Variable& argument)
 {
   if (argument.isDouble())
-    return lessThanPredicate(argument.getDouble());
+    return lessThanOrEqualToPredicate(argument.getDouble());
 
   jassert(argument.isObject());
 

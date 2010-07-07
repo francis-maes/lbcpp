@@ -118,17 +118,24 @@ Variable sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr trai
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
   size_t n = trainingData->size();
+  //std::cout << "NumericalSplit: ";
   for (size_t i = 0; i < n; ++i)
   {
-    double value = trainingData->getVariable(i)[variableIndex].getDouble();
+    Variable variable = trainingData->getVariable(i)[0][variableIndex];
+    if (variable.isNil())
+      continue;
+    double value = variable.getDouble();
     if (value < minValue)
       minValue = value;
     if (value > maxValue)
       maxValue = value;
+    //std::cout << variable << " ";
   }
-  return RandomGenerator::getInstance().sampleDouble(minValue, maxValue);
+  jassert(minValue != DBL_MAX && maxValue != -DBL_MAX);
+  double res = RandomGenerator::getInstance().sampleDouble(minValue, maxValue);
+  //std::cout << " => " << res << std::endl;
+  return res;
 }
-
 
 Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumeration, VariableContainerPtr trainingData, size_t variableIndex)
 {
@@ -168,9 +175,34 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
       bitValue = (selectedValues.find(i) != selectedValues.end()); // true for selected values
     mask->set(i, bitValue);
   }
+  return mask;
+}
+
+PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
+{
+  TypePtr variableType = inputType->getStaticVariableType(variableIndex);
+  if (variableType->inheritsFrom(doubleType()))
+  {
+    splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
+  }
+  else if (variableType->inheritsFrom(enumerationType()))
+  {
+    EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
+    splitArgument = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
+  }
+  else if (variableType->inheritsFrom(discreteProbabilityDistributionClass(topLevelType())))
+  {
+    jassert(false);
+  }
+  else
+  {
+    jassert(false);
+    return PredicatePtr();
+  }
+  
+  PredicatePtr predicate = BinaryDecisionTree::getSplitPredicate(splitArgument);
 
 #ifdef JUCE_DEBUG
-  PredicatePtr predicate = BinaryDecisionTree::getSplitPredicate(mask);
   size_t numPos = 0, numNeg = 0;
   for (size_t i = 0; i < trainingData->size(); ++i)
   {
@@ -184,27 +216,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
   jassert(numPos && numNeg);
 #endif // JUCE_DEBUG
 
-  return mask;
-}
-
-PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
-{
-  TypePtr variableType = inputType->getStaticVariableType(variableIndex);
-  if (variableType->inheritsFrom(doubleType()))
-  {
-    splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
-    return BinaryDecisionTree::getSplitPredicate(splitArgument);
-  }
-
-  EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
-  if (enumeration)
-  {
-    splitArgument = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
-    return BinaryDecisionTree::getSplitPredicate(splitArgument);
-  }
-
-  jassert(false);
-  return PredicatePtr();
+  return predicate;
 }
 ///////////////////////////////////// Split Scoring  /////////////////////
 double computeSplitScore(VariableContainerPtr examples, size_t variableIndex, PredicatePtr predicate, VariableContainerPtr& negativeExamples, VariableContainerPtr& positiveExamples)

@@ -37,6 +37,9 @@ class StringType : public BuiltinType
 public:
   StringType() : BuiltinType(T("String")) {}
 
+  virtual VariableValue create() const
+    {return VariableValue(String::empty);}
+
   virtual void destroy(VariableValue& value) const
     {value.clearString();}
 

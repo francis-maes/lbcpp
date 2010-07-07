@@ -13,14 +13,28 @@ using namespace lbcpp;
 ** DiscreteProbabilityDistribution
 */
 DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr enumeration)
-  : enumeration(enumeration), values(enumeration->getNumElements(), 0.0), sum(0.0) {}
+  : enumeration(enumeration), values(enumeration->getNumElements() + 1, 0.0), sum(0.0) {}
+
+TypePtr DiscreteProbabilityDistribution::getClass() const
+  {return discreteProbabilityDistributionClass(enumeration);}
+
+Variable DiscreteProbabilityDistribution::sample(RandomGenerator& random) const
+{
+  int res = random.sampleWithProbabilities(values, sum);
+  if (res >= 0 && res < (int)enumeration->getNumElements())
+    return Variable(res, enumeration);
+  else
+    return Variable();
+}
 
 double DiscreteProbabilityDistribution::compute(const Variable& value) const
 {
+  if (value.isNil())
+    return sum ? values.back() / sum : 0.0;
   if (!checkInheritance(value, enumeration))
     return 0.0;
   int index = value.getInteger();
-  jassert(index >= 0 && index < (int)values.size());
+  jassert(index >= 0 && index < (int)enumeration->getNumElements());
   return sum ? values[index] / sum : 0.0;
 }
 
@@ -32,9 +46,17 @@ void DiscreteProbabilityDistribution::setVariable(size_t index, const Variable& 
   sum += values[index];
 }
 
+Variable DiscreteProbabilityDistribution::getVariable(size_t index) const
+  {jassert(index < values.size()); return Variable(values[index], probabilityType());}
+
 void DiscreteProbabilityDistribution::increment(const Variable& value)
 {
-  if (checkInheritance(value, enumeration))
+  if (value.isNil())
+  {
+    ++values.back();
+    ++sum;
+  }
+  else if (checkInheritance(value, enumeration))
   {
     ++(values[value.getInteger()]);
     ++sum;
@@ -54,6 +76,11 @@ ObjectPtr DiscreteProbabilityDistribution::multiplyByScalar(double scalar)
 
 ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, double weight)
 {
+  if (value.isNil())
+  {
+    values.back() += weight;
+    sum += weight;
+  }
   if (value.getType() == enumeration)
   {
     values[(size_t)value.getInteger()] += weight;
@@ -72,8 +99,14 @@ ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, do
   return ObjectPtr(this);
 }
 
+ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
+{
+  static UnaryTemplateTypeCache cache(T("DiscreteProbabilityDistribution"));
+  return cache(enumeration);
+}
+
 void declareProbabilityDistributionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(ProbabilityDistribution, Object);
-    LBCPP_DECLARE_CLASS(DiscreteProbabilityDistribution, ProbabilityDistribution);
+    LBCPP_DECLARE_TEMPLATE_CLASS(DiscreteProbabilityDistribution, 1, ProbabilityDistribution);
 }

@@ -48,8 +48,9 @@ SET(LBCPP_VARIABLE_SOURCES
 )  
 
 SET(LBCPP_OBJECT_TYPE_SOURCES
+  Type/TopLevelType.h
+  Type/BuiltinType.h
   Type/BooleanType.h
-  Type/IntegerType.h
   Type/DoubleType.h
   Type/StringType.h
   Type/TupleType.h
