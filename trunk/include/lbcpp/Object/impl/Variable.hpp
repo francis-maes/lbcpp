@@ -48,14 +48,14 @@ inline Variable::Variable(const String& stringValue, TypePtr type)
   : type(type), value(stringValue) {jassert(isString());}
 
 inline Variable::Variable(ObjectPtr object)
-  : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
-  : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 template<class T>
 inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? object->getClass() : TypePtr()), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(const Variable& otherVariant)
   : type(nilType()), value()

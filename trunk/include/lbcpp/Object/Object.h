@@ -282,6 +282,9 @@ protected:
   */
   virtual void save(OutputStream& ostr) const
     {}
+
+  // utilities
+  String variablesToString(const String& separator) const;
 };
 
 class NameableObject : public Object

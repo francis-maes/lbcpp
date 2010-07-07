@@ -30,6 +30,7 @@ public:
   DiscreteProbabilityDistribution() : sum(0.0) {}
 
   virtual TypePtr getClass() const;
+  virtual String toString() const;
 
   virtual double compute(const Variable& value) const;
 

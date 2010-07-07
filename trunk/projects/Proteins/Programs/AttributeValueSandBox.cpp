@@ -238,7 +238,7 @@ int main(int argc, char** argv)
   // convert proteins
   VectorPtr proteins = convertProteins(oldStyleProteins);
   std::cout << proteins->size() << " proteins" << std::endl;
-  //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 3);
+  //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);
 
   // make secondary structure classification examples
   VectorPtr secondaryStructureExamples = new Vector(pairType(
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = extraTreeInference(T("SS3"), 5, 1, 20);
+  InferencePtr inference = extraTreeInference(T("SS3"), 5, 1);
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 

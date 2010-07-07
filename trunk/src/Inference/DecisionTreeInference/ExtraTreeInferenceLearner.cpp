@@ -28,21 +28,13 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   jassert(inference && trainingData);
   if (!trainingData->size())
     return Variable();
+  
+  TypePtr trainingDataType = trainingData->getStaticType();
+  jassert(trainingDataType->getNumTemplateArguments() == 2);
+  TypePtr inputType = trainingDataType->getTemplateArgument(0);
+  TypePtr outputType = trainingDataType->getTemplateArgument(1);
 
-  Variable firstExample = trainingData->getVariable(0);
-  jassert(firstExample);
-  TypePtr inputClass = firstExample[0].getType();
-  TypePtr outputClass = firstExample[1].getType();
-#ifdef JUCE_DEBUG
-  for (size_t i = 1; i < trainingData->size(); ++i)
-  {
-    Variable example = trainingData->getVariable(i);
-    jassert(example[0].getType() == inputClass);
-    jassert(example[1].getType() == outputClass);
-  }
-#endif // JUCE_DEBUG
-
-  BinaryDecisionTreePtr tree = sampleTree(inputClass, outputClass, trainingData);
+  BinaryDecisionTreePtr tree = sampleTree(inputType, outputType, trainingData);
   if (tree)
   {
     std::cout << "Finished learning tree, numNodes = " << tree->getNumNodes() << std::endl;
@@ -87,32 +79,16 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trai
     if (n == 1)
       leafValue = trainingData->getVariable(0)[1];
     else
-      leafValue = createOutputDistribution(outputType, trainingData);
+    {
+      jassert(n > 1);
+      double weight = 1.0 / (double)n;
+      for (size_t i = 0; i < n; ++i)
+        leafValue.addWeighted(trainingData->getVariable(i)[1], weight);
+    }
     return true;
   }
   return isOutputConstant(trainingData, leafValue);
 }
-///////////////////////////////////// Create Output Distribution
-Variable SingleExtraTreeInferenceLearner::createOutputDistribution(TypePtr outputType, VariableContainerPtr trainingData) const
-{
-  EnumerationPtr enumeration = outputType.dynamicCast<Enumeration>();
-  if (enumeration)
-  {
-    DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(enumeration);
-    for (size_t i = 0; i < trainingData->size(); ++i)
-      res->increment(trainingData->getVariable(i)[1]);
-    return res;
-  }
-  else
-  {
-    // Not Implemented
-    jassert(false);
-    return Variable();
-  }
-}
-
-///////////////////////////////////// 
-
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
 Variable sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr trainingData, size_t variableIndex)
 {
@@ -212,7 +188,7 @@ PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingD
     else
       ++numNeg;
   }
-  //std::cout << "Mask: " << mask->toString() << " " << trainingData->size() << " => " << numPos << " + " << numNeg << std::endl;
+  //std::cout << "Predicate: " << predicate->toString() << " " << trainingData->size() << " => " << numPos << " + " << numNeg << std::endl;
   jassert(numPos && numNeg);
 #endif // JUCE_DEBUG
 

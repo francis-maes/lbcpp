@@ -18,6 +18,9 @@ DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr 
 TypePtr DiscreteProbabilityDistribution::getClass() const
   {return discreteProbabilityDistributionClass(enumeration);}
 
+String DiscreteProbabilityDistribution::toString() const
+  {return T("[") + variablesToString(T(", ")) + T("]");}
+
 Variable DiscreteProbabilityDistribution::sample(RandomGenerator& random) const
 {
   int res = random.sampleWithProbabilities(values, sum);
