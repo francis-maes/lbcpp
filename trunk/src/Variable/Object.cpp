@@ -239,9 +239,7 @@ XmlElement* Object::variableToXml(size_t index) const
       value = Variable::createMissingValue(staticType);
     else
       jassert(value.getType()->inheritsFrom(staticType));
-    XmlElement* res = value.toXml(T("static"));
-    res->setAttribute(T("name"), type->getStaticVariableName(index));
-    return res;
+    return value.toXml(T("static"), type->getStaticVariableName(index));
   }
   else
   {

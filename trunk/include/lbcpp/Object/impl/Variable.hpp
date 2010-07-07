@@ -189,10 +189,12 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
 inline String Variable::toString() const
   {return type->toString(value);}
 
-inline XmlElement* Variable::toXml(const String& tagName) const
+inline XmlElement* Variable::toXml(const String& tagName, const String& name) const
 {
   XmlElement* res = new XmlElement(tagName);
   res->setAttribute(T("type"), getTypeName());
+  if (name.isNotEmpty())
+    res->setAttribute(T("name"), name);
   type->saveToXml(res, value);
   return res;
 }

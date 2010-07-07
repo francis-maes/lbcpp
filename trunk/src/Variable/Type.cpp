@@ -317,20 +317,22 @@ int DynamicClass::findStaticVariable(const String& name) const
 /*
 ** Enumeration
 */
-Enumeration::Enumeration(const String& name, const juce::tchar** elements)
-  : IntegerType(name, enumerationType())
+Enumeration::Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
+  : IntegerType(name, enumerationType()), oneLetterCodes(oneLetterCodes)
 {
+  jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
   for (size_t index = 0; elements[index]; ++index)
     addElement(elements[index]);
 }
 
-Enumeration::Enumeration(const String& name, const String& elementChars)
-  : IntegerType(name, enumerationType())
+Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
+  : IntegerType(name, enumerationType()), oneLetterCodes(oneLetterCodes)
 {
-  for (int i = 0; i < elementChars.length(); ++i)
+  jassert(!oneLetterCodes.containsChar('_'));
+  for (int i = 0; i < oneLetterCodes.length(); ++i)
   {
     String str;
-    str += elementChars[i];
+    str += oneLetterCodes[i];
     addElement(str);
   }
 }

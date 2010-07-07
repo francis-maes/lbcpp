@@ -217,8 +217,8 @@ typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 class Enumeration : public IntegerType
 {
 public:
-  Enumeration(const String& name, const juce::tchar** elements);
-  Enumeration(const String& name, const String& elementChars);
+  Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
+  Enumeration(const String& name, const String& oneLetterCodes);
   Enumeration(const String& name);
 
   static EnumerationPtr get(const String& className)
@@ -236,6 +236,15 @@ public:
   String getElementName(size_t index) const
     {jassert(index < elements.size()); return elements[index];}
 
+  bool hasOneLetterCodes() const
+    {return oneLetterCodes.isNotEmpty();}
+
+  juce::tchar getOneLetterCode(size_t index) const
+    {jassert((int)index < oneLetterCodes.length()); return oneLetterCodes[index];}
+
+  String getOneLetterCodes() const
+    {return oneLetterCodes;}
+
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
 
 protected:
@@ -243,6 +252,7 @@ protected:
 
 private:
   std::vector<String> elements;
+  String oneLetterCodes;
 };
 
 extern TypePtr enumerationType();

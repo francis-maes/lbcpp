@@ -45,6 +45,34 @@ bool Vector::checkType(const Variable& value) const
 TypePtr Vector::getClass() const
   {return vectorClass(type);}
 
+void Vector::saveToXml(XmlElement* xml) const
+{
+  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+  if (enumeration && enumeration->hasOneLetterCodes())
+  {
+    String value;
+    String oneLetterCodes = enumeration->getOneLetterCodes();
+    for (size_t i = 0; i < getNumVariables(); ++i)
+    {
+      Variable variable = getVariable(i);
+      if (variable.isMissingValue())
+        value += '_';
+      else
+        value += oneLetterCodes[variable.getInteger()];
+    }
+    xml->addTextElement(value);
+    return;
+  }
+
+  VariableContainer::saveToXml(xml);
+}
+
+bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+{
+  callback.error(T("Vector::loadFromXml"), T("Not Implemented"));
+  return false;
+}
+
 ClassPtr lbcpp::vectorClass(TypePtr elementsType)
 {
   static UnaryTemplateTypeCache cache(T("Vector"));

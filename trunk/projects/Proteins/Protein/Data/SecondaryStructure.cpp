@@ -35,7 +35,7 @@ EnumerationPtr lbcpp::structuralAlphaElementEnumeration()
 
 void declareSecondaryStructureClasses()
 {
-  Class::declare(new Enumeration(T("SecondaryStructureElement"), secondaryStructureElementStrings));
-  Class::declare(new Enumeration(T("DSSPSecondaryStructureElement"), dsspSecondaryStructureElementStrings));
+  Class::declare(new Enumeration(T("SecondaryStructureElement"), secondaryStructureElementStrings, T("HEC")));
+  Class::declare(new Enumeration(T("DSSPSecondaryStructureElement"), dsspSecondaryStructureElementStrings, T("GHITEBSC")));
   Class::declare(new Enumeration(T("StructuralAlphabetElement"), T("ABCDEFGHIJKLMNOPQRSTUVWXYZa")));
 }
