@@ -23,7 +23,7 @@ public:
   {
     jassert(type != topLevelType());
     if (initialSize)
-      values.resize(initialSize, VariableValue());
+      values.resize(initialSize, type->getMissingValue());
   }
 
   virtual ~Vector()
@@ -37,6 +37,8 @@ public:
   virtual size_t getNumVariables() const;
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
+  virtual void saveToXml(XmlElement* xml) const;
+  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
   void reserve(size_t size)
     {values.reserve(size);}

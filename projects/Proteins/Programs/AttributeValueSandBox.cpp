@@ -353,8 +353,8 @@ int main(int argc, char** argv)
   VectorPtr proteins = convertProteins(oldStyleProteins);
   oldStyleProteins = ObjectContainerPtr();
   std::cout << proteins->size() << " proteins" << std::endl;
-  //proteins->getVariable(0).saveToFile(workingDirectory.getChildFile(T("NewProt.xml")));
-  //return 0;
+  proteins->getVariable(0).saveToFile(workingDirectory.getChildFile(T("NewProt.xml")));
+  return 0;
   //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);
 
   // make secondary structure classification examples

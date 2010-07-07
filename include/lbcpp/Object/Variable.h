@@ -98,7 +98,7 @@ public:
   ** Const Operations
   */
   String toString() const;
-  XmlElement* toXml(const String& tagName = T("var")) const;
+  XmlElement* toXml(const String& tagName = T("var"), const String& name = String::empty) const;
 
   bool saveToFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance()) const;
 
