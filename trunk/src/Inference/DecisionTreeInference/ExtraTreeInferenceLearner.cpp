@@ -195,6 +195,35 @@ PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingD
   return predicate;
 }
 ///////////////////////////////////// Split Scoring  /////////////////////
+
+DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(VariableContainerPtr examples)
+{
+  if (!examples->size())
+    return DiscreteProbabilityDistributionPtr();
+  DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(examples->getStaticType()->getTemplateArgument(1));
+  size_t n = examples->size();
+  for (size_t i = 0; i < n; ++i)
+    res->increment(examples->getVariable(i)[1]);
+  return res;
+}
+
+static double computeClassificationSplitScore(VariableContainerPtr examples, VariableContainerPtr negativeExamples, VariableContainerPtr positiveExamples)
+{
+  DiscreteProbabilityDistributionPtr priorDistribution = computeDiscreteOutputDistribution(examples);
+  DiscreteProbabilityDistributionPtr negativeDistribution = computeDiscreteOutputDistribution(negativeExamples);
+  DiscreteProbabilityDistributionPtr positiveDistribution = computeDiscreteOutputDistribution(positiveExamples);
+
+  BernoulliDistributionPtr splitDistribution = new BernoulliDistribution(positiveExamples->size() / (double)examples->size());
+
+  double informationGain = priorDistribution->computeEntropy()
+    - splitDistribution->getProbabilityOfTrue() * positiveDistribution->computeEntropy() 
+    - splitDistribution->getProbabilityOfFalse() * negativeDistribution->computeEntropy(); 
+  double classificationEntropy = priorDistribution->computeEntropy();
+  double splitEntropy = splitDistribution->computeEntropy();
+  jassert(splitEntropy > 0 || classificationEntropy > 0);
+  return 2.0 * informationGain / (splitEntropy + classificationEntropy);
+}
+
 double computeSplitScore(VariableContainerPtr examples, size_t variableIndex, PredicatePtr predicate, VariableContainerPtr& negativeExamples, VariableContainerPtr& positiveExamples)
 {
   VectorPtr neg = new Vector(examples->getStaticType());
@@ -211,7 +240,12 @@ double computeSplitScore(VariableContainerPtr examples, size_t variableIndex, Pr
   negativeExamples = neg;
   positiveExamples = pos;
 
-  return RandomGenerator::getInstance().sampleDouble(); // FIXME
+  TypePtr outputType = examples->getStaticType()->getTemplateArgument(1);
+  if (outputType->inheritsFrom(enumerationType()))
+    return computeClassificationSplitScore(examples, negativeExamples, positiveExamples);
+
+  jassert(false);
+  return 0.0;
 }
 
 ///////////////////////////////////// 
@@ -259,11 +293,13 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
     if (splitScore > bestSplitScore)
     {
+      std::cout << "Predicate: " << splitPredicate->toString() << " => score = " << splitScore << std::endl;
       bestSplitPredicate = splitPredicate;
       bestSplitVariable = splitVariables[i];
       bestSplitArgument = splitArgument;
       bestNegativeExamples = negativeExamples;
       bestPositiveExamples = positiveExamples;
+      bestSplitScore = splitScore;
     }
   }
 

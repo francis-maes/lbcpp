@@ -10,6 +10,31 @@
 using namespace lbcpp;
 
 /*
+** BernoulliDistribution
+*/
+double BernoulliDistribution::compute(const Variable& value) const
+{
+  if (!value.isNil() && checkInheritance(value, booleanType()))
+    return value.getBoolean() ? getProbabilityOfTrue() : getProbabilityOfFalse();
+  return 0.0;
+}
+
+Variable BernoulliDistribution::sample(RandomGenerator& random) const
+  {return random.sampleBool(getProbabilityOfTrue());}
+  
+double BernoulliDistribution::computeEntropy() const
+{
+  double p = getProbabilityOfTrue();
+  double res = 0.0;
+  if (p)
+    res -= p * log2(p);
+  p = 1.0 - p;
+  if (p)
+    res -= p * log2(p);
+  return res;
+}
+
+/*
 ** DiscreteProbabilityDistribution
 */
 DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr enumeration)
@@ -39,6 +64,20 @@ double DiscreteProbabilityDistribution::compute(const Variable& value) const
   int index = value.getInteger();
   jassert(index >= 0 && index < (int)enumeration->getNumElements());
   return sum ? values[index] / sum : 0.0;
+}
+
+double DiscreteProbabilityDistribution::computeEntropy() const
+{
+  if (!sum)
+    return 0.0;
+  double res = 0.0;
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i])
+    {
+      double p = values[i] / sum;
+      res -= p * log2(p);
+    }
+  return res;
 }
 
 void DiscreteProbabilityDistribution::setVariable(size_t index, const Variable& value)

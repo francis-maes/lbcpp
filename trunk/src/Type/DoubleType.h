@@ -43,7 +43,7 @@ public:
     {return VariableValue(0.0);}
 
   virtual void destroy(VariableValue& value) const
-    {}
+    {value.clearBuiltin();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
     {dest.setDouble(source.getDouble());}

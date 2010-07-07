@@ -217,7 +217,7 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  Class::declare(new ProteinResidueInputAttributesClass(8));
+  Class::declare(new ProteinResidueInputAttributesClass(16));
 
   /*
   Variable myEnumValue(asparticAcid, aminoAcidTypeEnumeration());
@@ -233,10 +233,11 @@ int main(int argc, char** argv)
   */
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("L50DB")));
+  ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\protein")));
   
   // convert proteins
   VectorPtr proteins = convertProteins(oldStyleProteins);
+  oldStyleProteins = ObjectContainerPtr();
   std::cout << proteins->size() << " proteins" << std::endl;
   //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);
 
@@ -252,7 +253,7 @@ int main(int argc, char** argv)
     VectorPtr secondaryStructure = protein->getSecondaryStructure();
     for (size_t j = 0; j < n; ++j)
     {
-      Variable input(new ProteinResidueInputAttributes(protein, j, 8));
+      Variable input(new ProteinResidueInputAttributes(protein, j, 16));
       Variable output = secondaryStructure->getVariable(j);
       secondaryStructureExamples->append(Variable::pair(input, output));
     }
@@ -264,7 +265,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = extraTreeInference(T("SS3"), 5, 1);
+  InferencePtr inference = extraTreeInference(T("SS3"), 10, 100);
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 
