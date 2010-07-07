@@ -183,11 +183,11 @@ private:
   size_t windowSize;
 };
 
-class ProteinResidueInputAttributesClass : public Class
+class ProteinResidueInputAttributesClass : public DynamicClass
 {
 public:
   ProteinResidueInputAttributesClass(size_t windowSize)
-    : Class(T("ProteinResidueInputAttributes"), objectClass())
+    : DynamicClass(T("ProteinResidueInputAttributes"), objectClass())
   {
     for (size_t i = 0; i < windowSize; ++i)
     {
@@ -201,6 +201,128 @@ public:
         addVariable(probabilityType(), T("PSSM[") + String(offset) + T("][") + String((int)j) + T("]"));
     }
   }
+};
+
+//////////////////////////////////////////
+
+class Function : public Object
+{
+public:
+  virtual TypePtr getInputType() const = 0;
+  virtual TypePtr getOutputType(TypePtr inputType) const = 0;
+  virtual Variable compute(const Variable& input) const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
+
+class AddVariablesToDynamicObjectVisitor : public ObjectVisitor
+{
+public:
+  AddVariablesToDynamicObjectVisitor(DynamicObjectPtr target)
+    : target(target) {}
+
+  virtual void visit(size_t variableNumber, const Variable& value)
+    {target->setVariable(variableNumber, value);}
+
+private:
+  DynamicObjectPtr target;
+};
+
+class Representation : public Function
+{
+public:
+  virtual void getStaticVariables(DynamicClassPtr res) const = 0;
+  virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const = 0;
+  
+  // Function
+  virtual TypePtr getOutputType(TypePtr inputType) const
+  {
+    const_cast<Representation* >(this)->ensureTypeIsComputed();
+    return type;
+  }
+
+  virtual Variable compute(const Variable& input) const
+  {
+    const_cast<Representation* >(this)->ensureTypeIsComputed();
+    DynamicObjectPtr res = new DynamicObject(type);
+    compute(input, ObjectVisitorPtr(new AddVariablesToDynamicObjectVisitor(res)));
+    return res;
+  }
+
+private:
+  DynamicClassPtr type;
+
+  void ensureTypeIsComputed()
+  {
+    if (type)
+      return;
+    type = new DynamicClass(getClassName() + T("Class"));
+    getStaticVariables(type);
+  }
+};
+
+typedef ReferenceCountedObjectPtr<Representation> RepresentationPtr;
+
+class DecoratorRepresentation : public Representation
+{
+public:
+  DecoratorRepresentation(RepresentationPtr decorated)
+    : decorated(decorated) {}
+
+  virtual void getStaticVariables(DynamicClassPtr res) const
+    {decorated->getStaticVariables(res);}
+
+  virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const
+    {decorated->compute(input, visitor);}
+
+protected:
+  RepresentationPtr decorated;
+};
+
+class VectorWindowRepresentation : public Representation
+{
+public:
+  VectorWindowRepresentation(const String& vectorName, TypePtr vectorType, size_t windowSize)
+    : vectorName(vectorName), vectorType(vectorType), windowSize(windowSize) {}
+
+  virtual TypePtr getInputType() const
+    {return pairType(vectorType, integerType());}
+
+  virtual void getStaticVariables(DynamicClassPtr res) const
+  {
+    TypePtr type = vectorType->getTemplateArgument(0);
+    jassert(type);
+    int relativePosition = -(int)(windowSize / 2);
+    for (size_t i = 0; i < windowSize; ++i)
+      res->addVariable(type, vectorName + T("[") + String(relativePosition++) + T("]"));
+  }
+
+  virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const
+  {
+    VariableContainerPtr container = input[0].getObjectAndCast<VariableContainer>();
+    int position = input[1].getInteger() - (int)(windowSize / 2);
+    for (size_t i = 0; i < windowSize; ++i, ++position)
+    {
+      if (position >= 0 && position < (int)container->size())
+        visitor->visit(i, container->getVariable(position));
+      else
+        visitor->visit(i, Variable());
+    }
+  }
+
+protected:
+  String vectorName;
+  TypePtr vectorType;
+  size_t windowSize;
+};
+
+class CompositeRepresentation : public Representation
+{
+public:
+
+protected:
+  std::vector<RepresentationPtr> subRepresentations;
+  std::map<size_t, size_t> subIndexToIndexMap;
 };
 
 /////////////////////////////////////////
@@ -231,6 +353,8 @@ int main(int argc, char** argv)
   VectorPtr proteins = convertProteins(oldStyleProteins);
   oldStyleProteins = ObjectContainerPtr();
   std::cout << proteins->size() << " proteins" << std::endl;
+  proteins->getVariable(0).saveToFile(workingDirectory.getChildFile(T("NewProt.xml")));
+  return 0;
   //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);
 
   // make secondary structure classification examples

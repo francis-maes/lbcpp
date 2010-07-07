@@ -31,10 +31,10 @@ Variable AminoAcid::getVariable(size_t index) const
 {
   switch (index)
   {
-  case 0: return (int)type;
+  case 0: return Variable((int)type, aminoAcidTypeEnumeration());
   case 1: return toString();
   case 2: return getThreeLettersCode();
-  case 3: return (int)getCategory1();
+  case 3: return Variable((int)getCategory1(), aminoAcidCategory1Enumeration());
   };
   return Variable();
 }

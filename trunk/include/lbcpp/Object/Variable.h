@@ -50,6 +50,10 @@ public:
   Variable();
   
   static Variable create(TypePtr type);
+  static Variable createMissingValue(TypePtr type);
+  static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback);
+  static Variable createFromXml(XmlElement* xml, ErrorHandler& callback);
+
   static Variable pair(const Variable& variable1, const Variable& variable2);
   static Variable copyFrom(TypePtr type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;
@@ -63,6 +67,8 @@ public:
 
   operator bool() const;
   operator ObjectPtr() const;
+
+  bool isMissingValue() const;
 
   bool isNil() const;
 
@@ -92,6 +98,10 @@ public:
   ** Const Operations
   */
   String toString() const;
+  XmlElement* toXml(const String& tagName = T("var")) const;
+
+  bool saveToFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance()) const;
+
   int compare(const Variable& otherValue) const;
   bool equals(const Variable& otherValue) const;
   

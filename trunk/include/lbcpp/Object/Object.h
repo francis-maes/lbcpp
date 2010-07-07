@@ -200,6 +200,9 @@ public:
   virtual ObjectPtr addWeighted(const Variable& value, double weight)
     {jassert(false); return ObjectPtr(this);}
 
+  // XML Serialisation
+  virtual void saveToXml(XmlElement* xml) const;
+  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
   // tmp
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
@@ -285,6 +288,7 @@ protected:
 
   // utilities
   String variablesToString(const String& separator) const;
+  XmlElement* variableToXml(size_t index) const;
 };
 
 class NameableObject : public Object

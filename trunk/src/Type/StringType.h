@@ -37,6 +37,9 @@ class StringType : public BuiltinType
 public:
   StringType() : BuiltinType(T("String")) {}
 
+  virtual VariableValue getMissingValue() const
+    {return VariableValue();}
+
   virtual VariableValue create() const
     {return VariableValue(String::empty);}
 

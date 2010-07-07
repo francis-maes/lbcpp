@@ -224,3 +224,41 @@ void Object::clone(ObjectPtr target) const
   for (size_t i = 0; i < n; ++i)
     target->setVariable(i, getVariable(i));
 }
+
+/*
+** XML Serialisation
+*/
+XmlElement* Object::variableToXml(size_t index) const
+{
+  ClassPtr type = getClass();
+  Variable value = getVariable(index);
+  if (index < type->getNumStaticVariables())
+  {
+    TypePtr staticType = type->getStaticVariableType(index);
+    if (value.isNil())
+      value = Variable::createMissingValue(staticType);
+    else
+      jassert(value.getType()->inheritsFrom(staticType));
+    XmlElement* res = value.toXml(T("static"));
+    res->setAttribute(T("name"), type->getStaticVariableName(index));
+    return res;
+  }
+  else
+  {
+    XmlElement* res = value.toXml(T("dynamic"));
+    res->setAttribute(T("index"), (int)(index - type->getNumStaticVariables()));
+    return res;
+  }
+}
+
+void Object::saveToXml(XmlElement* xml) const
+{
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+    xml->addChildElement(variableToXml(i));
+}
+
+bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+{
+  return true;
+}

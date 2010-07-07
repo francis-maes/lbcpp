@@ -175,58 +175,38 @@ Variable Type::createInstance(const String& typeName)
 bool Type::doClassNameExists(const String& className)
   {return get(className) != TypePtr();}
 
+VariableValue Type::getMissingValue() const
+{
+  jassert(sizeof (VariableValue) == 8);
+  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEE;
+  jassert(sizeof (double) == 8);
+  jassert(sizeof (juce::int64) == 8);
+  return VariableValue(*(double* )&missing);
+}
+
+bool Type::isMissingValue(const VariableValue& value) const
+{
+  VariableValue missing = getMissingValue();
+  return memcmp(&missing, &value, sizeof (VariableValue)) == 0;
+}
+
+VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
+{
+  if (xml->hasAttribute(T("value")))
+    return createFromString(xml->getStringAttribute(T("value")), callback);
+  else
+    return getMissingValue();
+}
+
+void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
+{
+  if (!isMissingValue(value))
+    xml->setAttribute(T("value"), toString(value));
+}
+
 /*
 ** Class
 */
-size_t Class::getNumStaticVariables() const
-{
-  ScopedLock _(variablesLock);
-  return variables.size();
-}
-
-TypePtr Class::getStaticVariableType(size_t index) const
-{
-  ScopedLock _(variablesLock);
-  jassert(index < variables.size());
-  return variables[index].first;
-}
-
-String Class::getStaticVariableName(size_t index) const
-{
-  ScopedLock _(variablesLock);
-  jassert(index < variables.size());
-  return variables[index].second;
-}
-
-int Class::findStaticVariable(const String& name) const
-{
-  ScopedLock _(variablesLock);
-  for (size_t i = 0; i < variables.size(); ++i)
-    if (variables[i].second == name)
-      return (int)i;
-  return -1;
-}
-
-void Class::addVariable(TypePtr type, const String& name)
-{
-  if (!type || name.isEmpty())
-  {
-    Object::error(T("Class::addVariable"), T("Invalid type or name"));
-    return;
-  }
-  ScopedLock _(variablesLock);
-  if (findStaticVariable(name) >= 0)
-    Object::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
-  else
-    variables.push_back(std::make_pair(type, name));
-}
-
-Variable Class::getSubVariable(const VariableValue& value, size_t index) const
-  {return value.getObject()->getVariable(index);}
-
-void Class::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-  {value.getObject()->setVariable(index, subValue);}
-
 int Class::compare(const VariableValue& value1, const VariableValue& value2) const
 {
   ObjectPtr object1 = value1.getObject();
@@ -264,6 +244,76 @@ TypePtr Class::addWeighted(VariableValue& target, const Variable& source, double
   }
   else
     return TypePtr(this);
+}
+
+VariableValue Class::createFromXml(XmlElement* xml, ErrorHandler& callback) const
+{
+  VariableValue res = create();
+  if (isMissingValue(res))
+  {
+    callback.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
+    return getMissingValue();
+  }
+  return res.getObject()->loadFromXml(xml, callback) ? res : getMissingValue();
+}
+
+void Class::saveToXml(XmlElement* xml, const VariableValue& value) const
+{
+  ObjectPtr object = value.getObject();
+  if (object)
+    object->saveToXml(xml);
+}
+
+/*
+** DynamicClass
+*/
+size_t DynamicClass::getNumStaticVariables() const
+{
+  ScopedLock _(variablesLock);
+  return variables.size();
+}
+
+TypePtr DynamicClass::getStaticVariableType(size_t index) const
+{
+  ScopedLock _(variablesLock);
+  jassert(index < variables.size());
+  return variables[index].first;
+}
+
+String DynamicClass::getStaticVariableName(size_t index) const
+{
+  ScopedLock _(variablesLock);
+  jassert(index < variables.size());
+  return variables[index].second;
+}
+
+void DynamicClass::addVariable(TypePtr type, const String& name)
+{
+  if (!type || name.isEmpty())
+  {
+    Object::error(T("Class::addVariable"), T("Invalid type or name"));
+    return;
+  }
+  ScopedLock _(variablesLock);
+  if (findStaticVariable(name) >= 0)
+    Object::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
+  else
+    variables.push_back(std::make_pair(type, name));
+}
+
+Variable DynamicClass::getSubVariable(const VariableValue& value, size_t index) const
+  {return value.getObject()->getVariable(index);}
+
+void DynamicClass::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {value.getObject()->setVariable(index, subValue);}
+
+int DynamicClass::findStaticVariable(const String& name) const
+{
+  ScopedLock _(variablesLock);
+  for (size_t i = 0; i < variables.size(); ++i)
+    if (variables[i].second == name)
+      return (int)i;
+  return -1;
 }
 
 /*
@@ -304,6 +354,23 @@ void Enumeration::addElement(const String& elementName)
 }
 
 #include <lbcpp/Object/ProbabilityDistribution.h>
+ 
+VariableValue Enumeration::createFromString(const String& value, ErrorHandler& callback) const
+{
+  String str = value.trim();
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    if (str == getElementName(i))
+      return VariableValue(i);
+  callback.errorMessage(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
+  return getMissingValue();
+}
+
+String Enumeration::toString(const VariableValue& value) const
+{
+  int val = value.getInteger();
+  return val >= 0 && val < (int)getNumElements() ? getElementName(val) : T("Nil");
+}
 
 TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
 {

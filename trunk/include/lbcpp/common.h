@@ -35,6 +35,7 @@ using juce::File;
 using juce::InputStream;
 using juce::OutputStream;
 using juce::Time;
+using juce::XmlElement;
 
 namespace lbcpp
 {

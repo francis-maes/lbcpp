@@ -147,6 +147,7 @@ public:
   VariableContainerPtr invRange(size_t begin, size_t end) const;
 };
 
+extern ClassPtr variableContainerClass();
 
 /**
 ** @class DecoratorVariableContainer

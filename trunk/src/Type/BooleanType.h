@@ -36,6 +36,20 @@ class BooleanType : public BuiltinType
 public:
   BooleanType() : BuiltinType(T("Boolean")) {}
 
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+  {
+    String v = value.trim().toLowerCase();
+    if (v == T("true"))
+      return VariableValue(true);
+    else if (v == T("false"))
+      return VariableValue(false);
+    else
+    {
+      callback.errorMessage(T("BooleanType::createFromString"), T("Could not read boolean value ") + value.quoted());
+      return getMissingValue();
+    }
+  }
+
   virtual VariableValue create() const
     {return VariableValue(false);}
 
