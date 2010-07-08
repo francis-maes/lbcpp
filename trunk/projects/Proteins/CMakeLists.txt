@@ -45,8 +45,6 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Protein/Data/AminoAcid.cpp
   Protein/Data/SecondaryStructure.h
   Protein/Data/SecondaryStructure.cpp
-  Protein/Data/Residue.h
-  Protein/Data/Residue.cpp
   Protein/Data/Protein.h
   Protein/Data/Protein.cpp
 )

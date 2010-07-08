@@ -35,7 +35,6 @@ extern void declareProteinResiduePairFeaturesClasses();
 // new:
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
-extern void declareResidueClasses();
 extern void declareProteinClass();
 
 void declareProteinClasses()
@@ -91,7 +90,6 @@ void declareProteinClasses()
   // new:
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
-  declareResidueClasses();
   declareProteinClass();
   // -
 }

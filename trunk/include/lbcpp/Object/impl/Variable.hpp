@@ -77,28 +77,8 @@ inline void Variable::clear()
 inline Variable Variable::create(TypePtr type)
   {return Variable(type, type->create());}
 
-inline Variable Variable::createMissingValue(TypePtr type)
+inline Variable Variable::missingValue(TypePtr type)
   {return Variable(type, type->getMissingValue());}
-
-inline Variable Variable::createFromString(TypePtr type, const String& str, ErrorHandler& callback)
-{
-  String failureReason;
-  VariableValue value = type->createFromString(str, callback);
-  return type->isMissingValue(value) ? Variable() : Variable(type, value);
-}
-
-inline Variable Variable::createFromXml(XmlElement* xml, ErrorHandler& callback)
-{
-  String typeName = xml->getStringAttribute(T("type"));
-  TypePtr type = Type::get(typeName);
-  if (!type)
-  {
-    callback.errorMessage(T("Variable::createFromXml"), T("Could not find type ") + typeName.quoted());
-    return Variable();
-  }
-  VariableValue value = type->createFromXml(xml, callback);
-  return type->isMissingValue(value) ? Variable() : Variable(type, value);
-}
 
 inline void Variable::copyTo(VariableValue& dest) const
 {
@@ -187,52 +167,12 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
 }
 
 inline String Variable::toString() const
-  {return type->toString(value);}
-
-inline XmlElement* Variable::toXml(const String& tagName, const String& name) const
-{
-  XmlElement* res = new XmlElement(tagName);
-  res->setAttribute(T("type"), getTypeName());
-  if (name.isNotEmpty())
-    res->setAttribute(T("name"), name);
-  type->saveToXml(res, value);
-  return res;
-}
-
-inline bool Variable::saveToFile(const File& file, ErrorHandler& callback) const
-{
-  XmlElement* xml = toXml();
-  if (!xml)
-  {
-    callback.errorMessage(T("Variable::saveToFile"), T("Could not generate xml for file ") + file.getFullPathName());
-    return false;
-  }
-  bool ok = xml->writeToFile(file, String::empty);
-  if (!ok)
-    callback.errorMessage(T("Variable::saveToFile"), T("Could not write file ") + file.getFullPathName());
-  delete xml;
-  return ok;
-}
+  {return type->isMissingValue(value) ? T("Missing") : type->toString(value);}
 
 inline bool Variable::equals(const Variable& otherValue) const
 {
   TypePtr type2 = otherValue.getType();
   return type == type2 && type->compare(value, otherValue.value) == 0;
-}
-
-inline int Variable::compare(const Variable& otherValue) const
-{
-  TypePtr type2 = otherValue.getType();
-  if (type != type2)
-  {
-    if (type->inheritsFrom(type2))
-      return type2->compare(value, otherValue.value);
-    else if (type2->inheritsFrom(type))
-      return type->compare(value, otherValue.value);
-    else
-      return getTypeName().compare(otherValue.getTypeName());
-  }
-  return type->compare(value, otherValue.value);
 }
 
 inline size_t Variable::size() const

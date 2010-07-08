@@ -62,6 +62,7 @@ public:
 
   virtual String toString(const VariableValue& value) const
   {
+    jassert(!isMissingValue(value));
     const Variable* data = (const Variable* )value.getRawData();
     String res;
     for (size_t i = 0; i < size; ++i)

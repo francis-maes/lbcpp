@@ -60,7 +60,7 @@ public:
     {dest.setBoolean(source.getBoolean());}
 
   virtual String toString(const VariableValue& value) const
-    {return value.getBoolean() ? T("True") : T("False");}
+    {jassert(!isMissingValue(value)); return value.getBoolean() ? T("True") : T("False");}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return (value1.getBoolean() ? 1 : 0) - (value2.getBoolean() ? 1 : 0);}

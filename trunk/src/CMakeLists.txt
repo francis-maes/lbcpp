@@ -39,6 +39,7 @@ SET(LBCPP_OBJECT_SOURCES
 )
 
 SET(LBCPP_VARIABLE_SOURCES
+  Variable/Variable.cpp
   Variable/Object.cpp
   Variable/Type.cpp
   Variable/VariableContainer.cpp

@@ -50,9 +50,10 @@ public:
   Variable();
   
   static Variable create(TypePtr type);
-  static Variable createMissingValue(TypePtr type);
   static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback);
   static Variable createFromXml(XmlElement* xml, ErrorHandler& callback);
+
+  static Variable missingValue(TypePtr type);
 
   static Variable pair(const Variable& variable1, const Variable& variable2);
   static Variable copyFrom(TypePtr type, const VariableValue& value);

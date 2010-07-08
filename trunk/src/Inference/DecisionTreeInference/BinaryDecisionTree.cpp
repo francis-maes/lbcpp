@@ -34,8 +34,6 @@ public:
         return false;
       size_t i = (size_t)value.getInteger();
       jassert(i < mask->size() - 1);
-      if (value)
-        {int j = 51;}
       return mask->get(i);
     }
     else
