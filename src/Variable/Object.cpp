@@ -236,7 +236,7 @@ XmlElement* Object::variableToXml(size_t index) const
   {
     TypePtr staticType = type->getStaticVariableType(index);
     if (value.isNil())
-      value = Variable::createMissingValue(staticType);
+      value = Variable::missingValue(staticType);
     else
       jassert(value.getType()->inheritsFrom(staticType));
     return value.toXml(T("static"), type->getStaticVariableName(index));

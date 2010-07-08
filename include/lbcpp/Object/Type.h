@@ -88,7 +88,7 @@ public:
   ** Operations
   */
   virtual VariableValue getMissingValue() const;
-  bool isMissingValue(const VariableValue& value) const;
+  virtual bool isMissingValue(const VariableValue& value) const;
 
   virtual VariableValue create() const = 0;
 
@@ -267,6 +267,9 @@ public:
     : Type(name, baseClass) {}
   Class() : Type(T("Object"), topLevelType()) {}
 
+  virtual bool isMissingValue(const VariableValue& value) const
+    {return !value.getObject();}
+    
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 

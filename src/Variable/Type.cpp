@@ -178,7 +178,7 @@ bool Type::doClassNameExists(const String& className)
 VariableValue Type::getMissingValue() const
 {
   jassert(sizeof (VariableValue) == 8);
-  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEE;
+  static const juce::int64 missing = 0x0FEEFEEEFEEEFEEELL;
   return VariableValue(missing);
 }
 
@@ -198,8 +198,8 @@ VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
 
 void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
 {
-  if (!isMissingValue(value))
-    xml->setAttribute(T("value"), toString(value));
+  jassert(!isMissingValue(value));
+  xml->addTextElement(toString(value));
 }
 
 /*
@@ -258,8 +258,8 @@ VariableValue Class::createFromXml(XmlElement* xml, ErrorHandler& callback) cons
 void Class::saveToXml(XmlElement* xml, const VariableValue& value) const
 {
   ObjectPtr object = value.getObject();
-  if (object)
-    object->saveToXml(xml);
+  jassert(object);
+  object->saveToXml(xml);
 }
 
 Variable Class::getSubVariable(const VariableValue& value, size_t index) const
@@ -466,19 +466,4 @@ void declareClassClasses()
   Type::declare(new PairType());
 
   Type::declare(new Class());
-}
-
-/*
-** Variable
-*/
-Variable Variable::pair(const Variable& variable1, const Variable& variable2)
-  {return Variable(pairType(variable1.getType(), variable2.getType()), PairType::allocate(variable1, variable2));}
-
-Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
-{
-  Variable res;
-  res.type = type;
-  if (type)
-    type->copy(res.value, value);
-  return res;
 }

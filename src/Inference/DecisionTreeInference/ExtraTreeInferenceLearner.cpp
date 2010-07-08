@@ -138,7 +138,6 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
 
   // create mask
   BooleanVectorPtr mask = new BooleanVector(n + 1);
-  size_t numBits = 0;
   for (size_t i = 0; i < mask->size(); ++i)
   {
     bool bitValue;

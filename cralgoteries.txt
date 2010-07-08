@@ -1,14 +1,12 @@
-o VariableValue avec valeurs manquantes
-
 * Finir la serialisation XML
 * Conversion des anciennes proteins en nouvelles proteins
 * Visualisation de l'introspection dans l'explorer
-
+-
 * Faire les "RepresentationFunction"
 * Faire le pont Attribut/Valeur => Feature Generator
-
+-
 * Voir pourquoi les ExtraTree marchent moyen
-
+-
 * Bascule des anciennes ProteinInference vers les nouvelles ProteinInference
 
 =========== 

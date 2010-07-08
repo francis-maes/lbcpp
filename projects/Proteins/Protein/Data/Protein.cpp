@@ -28,8 +28,6 @@ public:
     addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Cb"));
     addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCa"));
     addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCb"));
-
-    addVariable(vectorClass(residueClass()), T("residues"));
   }
 };
 
@@ -59,7 +57,6 @@ Variable Protein::getVariable(size_t index) const
   case 9: return contactMap8Cb;
   case 10: return distanceMapCa;
   case 11: return distanceMapCb;
-  case 12: return residues;
   };
   jassert(false);
   return Variable();
@@ -69,27 +66,5 @@ void Protein::computeMissingVariables()
 {
   if (primaryStructure)
   {
-    //if (!residues)
-    //  createResidues();
-  }
-}
-
-void Protein::createResidues()
-{
-  jassert(primaryStructure);
-  size_t n = getLength();
-  residues = new Vector(residueClass(), n);
-  ProteinPtr pthis(const_cast<Protein* >(this));
-  for (size_t i = 0; i < n; ++i)
-    residues->setVariable(i, new Residue(pthis, i));
-}
-
-void Protein::clearResidues()
-{
-  if (residues)
-  {
-    size_t n = residues->size();
-    for (size_t i = 0; i < n; ++i)
-      residues->getVariable(i).getObjectAndCast<Residue>()->clear();
   }
 }

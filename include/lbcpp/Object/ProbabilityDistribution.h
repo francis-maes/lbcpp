@@ -52,23 +52,29 @@ public:
   DiscreteProbabilityDistribution(EnumerationPtr enumeration);
   DiscreteProbabilityDistribution() : sum(0.0) {}
 
-  virtual TypePtr getClass() const;
-  virtual String toString() const;
-
-  virtual double compute(const Variable& value) const;
-  virtual Variable sample(RandomGenerator& random) const;
-  virtual double computeEntropy() const;
-
+  // DiscreteProbabilityDistribution
   EnumerationPtr getEnumeration() const
     {return enumeration;}
 
   virtual size_t getNumVariables() const
     {return values.size();}
 
+  void increment(const Variable& value);
+
+  // ProbabilityDistribution
+  virtual double compute(const Variable& value) const;
+  virtual Variable sample(RandomGenerator& random) const;
+  virtual double computeEntropy() const;
+
+  // Object
+  virtual TypePtr getClass() const;
+  virtual String toString() const;
+
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
 
-  void increment(const Variable& value);
+  virtual void saveToXml(XmlElement* xml) const;
+  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
   virtual ObjectPtr multiplyByScalar(double scalar);
   virtual ObjectPtr addWeighted(const Variable& value, double weight);

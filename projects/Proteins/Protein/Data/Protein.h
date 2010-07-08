@@ -12,7 +12,9 @@
 # include <lbcpp/Object/Vector.h>
 # include <lbcpp/Object/SymmetricMatrix.h>
 # include <lbcpp/Object/ProbabilityDistribution.h>
-# include "Residue.h"
+
+# include "AminoAcid.h"
+# include "SecondaryStructure.h"
 
 namespace lbcpp
 {
@@ -61,18 +63,6 @@ public:
     {return dsspSecondaryStructure;}
 
   /*
-  ** High level representation: residues graph
-  */
-  void createResidues();
-  void clearResidues();
-
-  VectorPtr getResidues() const
-    {return residues;}
-
-  ResiduePtr getResidue(size_t index) const
-    {return residues ? residues->getVariable(index).getObjectAndCast<Residue>() : ResiduePtr();}
-
-  /*
   ** Compute Missing Variables
   */
   void computeMissingVariables();
@@ -92,10 +82,9 @@ protected:
   SymmetricMatrixPtr contactMap8Cb;
   SymmetricMatrixPtr distanceMapCa;
   SymmetricMatrixPtr distanceMapCb;
-
-  VectorPtr residues;
 };
 
+typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 extern ClassPtr proteinClass();
 
 }; /* namespace lbcpp */

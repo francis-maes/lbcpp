@@ -44,7 +44,24 @@ TypePtr DiscreteProbabilityDistribution::getClass() const
   {return discreteProbabilityDistributionClass(enumeration);}
 
 String DiscreteProbabilityDistribution::toString() const
-  {return T("[") + variablesToString(T(", ")) + T("]");}
+{
+  String str;
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i])
+    {
+      if (str.isNotEmpty())
+        str += ' ';
+      if (i == values.size() - 1)
+        str += '_';
+      else if (enumeration->hasOneLetterCodes())
+        str += enumeration->getOneLetterCode(i);
+      else
+        str += enumeration->getElementName(i);
+      str += ' ';
+      str += String(values[i]);
+    }
+  return str;
+}
 
 Variable DiscreteProbabilityDistribution::sample(RandomGenerator& random) const
 {
@@ -139,6 +156,27 @@ ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, do
   else
     jassert(false);
   return ObjectPtr(this);
+}
+
+void DiscreteProbabilityDistribution::saveToXml(XmlElement* xml) const
+  {xml->addTextElement(toString());}
+
+bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+{
+  String str = xml->getText();
+  if (str.isEmpty())
+  {
+    callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromXml"), T("Missing text"));
+    return false;
+  }
+  
+  StringArray tokens;
+  tokens.addTokens(str, true);
+  for (int i = 0; i < tokens.size(); ++i)
+    std::cout << tokens[i] << " "; 
+  std::cout << std::endl;
+  jassert(false); // not implemented
+  return false;
 }
 
 ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
