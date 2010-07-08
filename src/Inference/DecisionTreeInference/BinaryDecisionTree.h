@@ -37,11 +37,10 @@ public:
     {return nodes.size();}
 
   static PredicatePtr getSplitPredicate(const Variable& splitArgument);
+  
+  String toString() const;
 
 protected:
-  TypePtr inputClass;
-  TypePtr leavesClass;
-
   struct Node
   {
     bool isInternalNode() const
@@ -64,12 +63,23 @@ protected:
     void setInternalNode(size_t splitVariable, const Variable& splitArgument, size_t indexOfLeftChild)
       {this->splitVariable = (int)splitVariable; argument = splitArgument; this->indexOfLeftChild = indexOfLeftChild;}
 
+    size_t getIndexOfLeftChild() const
+      {jassert(isInternalNode()); return indexOfLeftChild;}
+    
+    size_t getIndexOfRightChild() const
+      {jassert(isInternalNode()); return indexOfLeftChild + 1;}
+    
+    String toString() const;
+    
   private:
     int splitVariable; // internal nodes: >= 0, leafs: =-1
     Variable argument; // internal nodes: split argument, leafs: answer value
     size_t indexOfLeftChild; // only for internal nodes
   };
   std::vector<Node> nodes;
+
+private:
+  String toStringRecursive(size_t nodeIndex = 0, String indent = String::empty) const;
 };
 
 typedef ReferenceCountedObjectPtr<BinaryDecisionTree> BinaryDecisionTreePtr;

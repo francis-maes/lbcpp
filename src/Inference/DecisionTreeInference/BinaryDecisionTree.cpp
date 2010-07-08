@@ -69,3 +69,38 @@ bool BinaryDecisionTree::Node::test(const Variable& variable) const
   jassert(splitVariable >= 0 && splitVariable < (int)variable.size());
   return getSplitPredicate(argument)->compute(variable[splitVariable]);
 }
+
+String BinaryDecisionTree::toString() const
+{
+  jassert(nodes.size());
+  return T("BinaryDecisionTree ") + lbcpp::toString(nodes.size()) + T(" nodes\n") + toStringRecursive(); 
+}
+
+String BinaryDecisionTree::Node::toString() const
+{
+  if (isLeaf())
+    return T("Value: ") + argument.toString();
+  else
+  {
+    PredicatePtr predicate = getSplitPredicate(argument);
+    jassert(predicate);
+    return T("SplitVariable ") + String(splitVariable)
+      + T(" Predicate = ") + predicate->toString();
+  }
+}
+
+String BinaryDecisionTree::toStringRecursive(size_t index, String indent) const
+{
+  jassert(index >= 0);
+  const Node currentNode = nodes[index];
+  
+  String res = indent + lbcpp::toString(index) + T(" ") + currentNode.toString() + T("\n");
+  if (currentNode.isLeaf())
+    return res;
+  
+  indent = indent.replaceCharacter('-', ' ') + T("|- ");
+  return res
+       + toStringRecursive(currentNode.getIndexOfLeftChild(), indent)
+       + toStringRecursive(currentNode.getIndexOfRightChild(), indent);
+} 
+
