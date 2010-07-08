@@ -48,14 +48,14 @@ inline Variable::Variable(const String& stringValue, TypePtr type)
   : type(type), value(stringValue) {jassert(isString());}
 
 inline Variable::Variable(ObjectPtr object)
-  : type(object ? object->getClass() : nilType()), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
-  : type(object ? object->getClass() : nilType()), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 template<class T>
 inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? object->getClass() : nilType()), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(const Variable& otherVariant)
   : type(nilType()), value()
@@ -211,8 +211,8 @@ inline void Variable::addWeighted(const Variable& other, double weight)
     type = type->addWeighted(value, other, weight);
 }
 
-inline bool checkInheritance(const Variable& variable, TypePtr baseType)
-  {return variable.isNil() || checkInheritance(variable.getType(), baseType);}
+inline bool checkInheritance(const Variable& variable, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
+  {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
 
 }; /* namespace lbcpp */
 

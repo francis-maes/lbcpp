@@ -18,6 +18,10 @@ namespace lbcpp
 class VariableContainer : public Object
 {
 public:
+  VariableContainer(ClassPtr thisClass)
+    : Object(thisClass) {}
+  VariableContainer() {}
+
   bool empty() const
     {return getNumVariables() == 0;}
 

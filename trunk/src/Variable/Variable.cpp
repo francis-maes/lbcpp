@@ -30,21 +30,53 @@ Variable Variable::createFromString(TypePtr type, const String& str, ErrorHandle
 
 Variable Variable::createFromXml(XmlElement* xml, ErrorHandler& callback)
 {
-  String typeName = xml->getStringAttribute(T("type"));
-  TypePtr type = Type::get(typeName);
+  String typeName = xml->getStringAttribute(T("type")).replaceCharacters(T("[]"), T("<>"));
+  TypePtr type = Type::parseAndGet(typeName, callback);
   if (!type)
   {
     callback.errorMessage(T("Variable::createFromXml"), T("Could not find type ") + typeName.quoted());
     return Variable();
   }
-  VariableValue value = type->createFromXml(xml, callback);
-  return type->isMissingValue(value) ? Variable() : Variable(type, value);
+  if (xml->getStringAttribute(T("missing")) == T("true"))
+    return missingValue(type);
+
+  return Variable(type, type->createFromXml(xml, callback));
+}
+
+Variable Variable::createFromFile(const File& file, ErrorHandler& callback)
+{
+  if (file.isDirectory())
+  {
+    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" is a directory"));
+    return Variable();
+  }
+  
+  if (!file.existsAsFile())
+  {
+    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" does not exists"));
+    return Variable();
+  }
+
+  juce::XmlDocument document(file);
+  
+  XmlElement* xml = document.getDocumentElement();
+  String lastParseError = document.getLastParseError();
+  if (!xml)
+  {
+    callback.errorMessage(T("Variable::createFromFile"), lastParseError);
+    return Variable();
+  }
+  if (lastParseError.isNotEmpty())
+    callback.warningMessage(T("Variable::createFromFile"), lastParseError);
+  Variable res = createFromXml(xml, callback);
+  delete xml;
+  return res;
 }
 
 XmlElement* Variable::toXml(const String& tagName, const String& name) const
 {
   XmlElement* res = new XmlElement(tagName);
-  res->setAttribute(T("type"), getTypeName());
+  res->setAttribute(T("type"), getTypeName().replaceCharacters(T("<>"), T("[]")));
   if (name.isNotEmpty())
     res->setAttribute(T("name"), name);
   if (type->isMissingValue(value))

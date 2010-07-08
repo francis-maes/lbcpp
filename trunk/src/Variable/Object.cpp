@@ -19,13 +19,11 @@ String Object::getClassName() const
   return type ? type->getName() : lbcpp::toString(typeid(*this));
 }
 
-TypePtr Object::getClass() const
+ClassPtr Object::getClass() const
 {
-  String className = lbcpp::toString(typeid(*this));
-  TypePtr res = Type::get(className);
-  //if (!res)
-  //  Object::error(T("Object::getClass"), T("Could not find class ") + className.quoted());
-  return res;
+  if (!thisClass)
+    const_cast<Object* >(this)->thisClass = Class::get(lbcpp::toString(typeid(*this)));
+  return thisClass;
 }
 
 size_t Object::getNumVariables() const
@@ -258,5 +256,81 @@ void Object::saveToXml(XmlElement* xml) const
 
 bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 {
+  ClassPtr thisClass = getClass();
+  
+  for (XmlElement* child = xml->getFirstChildElement(); child; child = child->getNextElement())
+  {
+    if (child->getTagName() == T("static"))
+    {
+      String name = child->getStringAttribute(T("name"));
+      if (name.isEmpty())
+      {
+        callback.errorMessage(T("Object::loadFromXml"), T("Could not find variable name"));
+        return false;
+      }
+      int variableNumber = thisClass->findStaticVariable(name);
+      if (variableNumber < 0)
+      {
+        callback.errorMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
+        return false;
+      }
+      Variable value = Variable::createFromXml(child, callback);
+      if (value && !checkInheritance(value, thisClass->getStaticVariableType(variableNumber)))
+        return false;
+      setVariable((size_t)variableNumber, value);
+    }
+    else if (child->getTagName() == T("dynamic"))
+    {
+      int index = child->getIntAttribute(T("index"), -1);
+      if (index < 0)
+      {
+        callback.errorMessage(T("Object::loadFromXml"), T("Invalid index for dynamic variable: ") + String(index));
+        return false;
+      }
+      Variable value = Variable::createFromXml(child, callback);
+      setVariable((size_t)(thisClass->getNumStaticVariables() + index), value);
+    }
+    else
+      callback.warningMessage(T("Object::loadFromXml"), T("Unexpected tag ") + child->getTagName().quoted());
+  }
   return true;
+}
+
+bool Object::loadFromString(const String& str, ErrorHandler& callback)
+{
+  callback.errorMessage(T("Object::loadFromString"), T("Not implemented"));
+  return false;
+}
+
+/*
+** NameableObject
+*/
+Variable NameableObject::getVariable(size_t index) const
+{
+  jassert(index == 0);
+  return name;
+}
+
+void NameableObject::setVariable(size_t index, const Variable& value)
+{
+  jassert(index == 0);
+  if (checkInheritance(value, stringType()))
+    name = value.getString();
+}
+
+class NameableObjectClass : public DynamicClass
+{
+public:
+  NameableObjectClass() : DynamicClass(T("NameableObject"), objectClass())
+  {
+    addVariable(stringType(), T("name"));
+  }
+};
+
+ClassPtr lbcpp::nameableObjectClass()
+  {static TypeCache cache(T("NameableObject")); return cache();}
+
+void declareObjectClasses()
+{
+  Class::declare(new NameableObjectClass());
 }

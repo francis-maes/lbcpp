@@ -45,6 +45,7 @@ public:
   static TypePtr get(const String& typeName);
   static TypePtr get(const String& typeName, TypePtr argument);
   static TypePtr get(const String& typeName, TypePtr argument1, TypePtr argument2);
+  static TypePtr parseAndGet(const String& typeName, ErrorHandler& callback);
 
   static bool doClassNameExists(const String& className);
   
@@ -120,6 +121,8 @@ public:
 
   virtual String getStaticVariableName(size_t index) const
     {jassert(false); return String::empty;}
+
+  virtual int findStaticVariable(const String& name) const;
 
   /*
   ** Dynamic Variables
@@ -236,6 +239,8 @@ public:
   String getElementName(size_t index) const
     {jassert(index < elements.size()); return elements[index];}
 
+  int findElement(const String& name) const;
+
   bool hasOneLetterCodes() const
     {return oneLetterCodes.isNotEmpty();}
 
@@ -273,9 +278,8 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual VariableValue create() const
-    {jassert(false); return VariableValue();}
-
+  virtual VariableValue create() const;
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
 
@@ -304,14 +308,13 @@ extern ClassPtr objectClass();
 class DynamicClass : public Class
 {
 public:
-  DynamicClass(const String& name, TypePtr baseClass = objectClass())
-    : Class(name, baseClass) {}
+  DynamicClass(const String& name, TypePtr baseClass = objectClass());
 
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;
   virtual String getStaticVariableName(size_t index) const;
 
-  int findStaticVariable(const String& name) const;
+  virtual int findStaticVariable(const String& name) const;
 
   void addVariable(TypePtr type, const String& name);
   void addVariable(const String& typeName, const String& name)
@@ -405,11 +408,12 @@ public:
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
 
-inline bool checkInheritance(TypePtr type, TypePtr baseType)
+inline bool checkInheritance(TypePtr type, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
 {
+  jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))
   {
-    Object::error(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
+    callback.errorMessage(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
     return false;
   }
   return true;

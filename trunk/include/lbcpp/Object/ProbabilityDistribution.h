@@ -17,6 +17,9 @@ namespace lbcpp
 class ProbabilityDistribution : public Object
 {
 public:
+  ProbabilityDistribution(ClassPtr thisClass) : Object(thisClass) {}
+  ProbabilityDistribution() : Object() {}
+  
   virtual double computeEntropy() const = 0;
   virtual double compute(const Variable& value) const = 0;
   virtual Variable sample(RandomGenerator& random) const = 0;
@@ -54,7 +57,7 @@ public:
 
   // DiscreteProbabilityDistribution
   EnumerationPtr getEnumeration() const
-    {return enumeration;}
+    {return getClass()->getTemplateArgument(0).dynamicCast<Enumeration>();}
 
   virtual size_t getNumVariables() const
     {return values.size();}
@@ -67,7 +70,6 @@ public:
   virtual double computeEntropy() const;
 
   // Object
-  virtual TypePtr getClass() const;
   virtual String toString() const;
 
   virtual Variable getVariable(size_t index) const;
@@ -75,12 +77,12 @@ public:
 
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromString(const String& str, ErrorHandler& callback);
 
   virtual ObjectPtr multiplyByScalar(double scalar);
   virtual ObjectPtr addWeighted(const Variable& value, double weight);
 
 private:
-  EnumerationPtr enumeration;
   std::vector<double> values;
   double sum;
 };

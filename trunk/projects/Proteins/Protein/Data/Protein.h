@@ -28,6 +28,7 @@ public:
   Protein() {}
 
   virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(size_t index, const Variable& value);
 
   size_t getLength() const
     {return primaryStructure ? primaryStructure->size() : 0;}

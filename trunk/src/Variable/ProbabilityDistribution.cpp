@@ -38,13 +38,11 @@ double BernoulliDistribution::computeEntropy() const
 ** DiscreteProbabilityDistribution
 */
 DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr enumeration)
-  : enumeration(enumeration), values(enumeration->getNumElements() + 1, 0.0), sum(0.0) {}
-
-TypePtr DiscreteProbabilityDistribution::getClass() const
-  {return discreteProbabilityDistributionClass(enumeration);}
+  : ProbabilityDistribution(discreteProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), sum(0.0) {}
 
 String DiscreteProbabilityDistribution::toString() const
 {
+  EnumerationPtr enumeration = getEnumeration();
   String str;
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i])
@@ -65,6 +63,7 @@ String DiscreteProbabilityDistribution::toString() const
 
 Variable DiscreteProbabilityDistribution::sample(RandomGenerator& random) const
 {
+  EnumerationPtr enumeration = getEnumeration();
   int res = random.sampleWithProbabilities(values, sum);
   if (res >= 0 && res < (int)enumeration->getNumElements())
     return Variable(res, enumeration);
@@ -76,6 +75,7 @@ double DiscreteProbabilityDistribution::compute(const Variable& value) const
 {
   if (value.isNil())
     return sum ? values.back() / sum : 0.0;
+  EnumerationPtr enumeration = getEnumeration();
   if (!checkInheritance(value, enumeration))
     return 0.0;
   int index = value.getInteger();
@@ -115,7 +115,7 @@ void DiscreteProbabilityDistribution::increment(const Variable& value)
     ++values.back();
     ++sum;
   }
-  else if (checkInheritance(value, enumeration))
+  else if (checkInheritance(value, getEnumeration()))
   {
     ++(values[value.getInteger()]);
     ++sum;
@@ -140,7 +140,7 @@ ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, do
     values.back() += weight;
     sum += weight;
   }
-  if (value.getType() == enumeration)
+  if (value.getType() == getEnumeration())
   {
     values[(size_t)value.getInteger()] += weight;
     sum += weight;
@@ -161,23 +161,58 @@ ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, do
 void DiscreteProbabilityDistribution::saveToXml(XmlElement* xml) const
   {xml->addTextElement(toString());}
 
-bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool DiscreteProbabilityDistribution::loadFromString(const String& str, ErrorHandler& callback)
 {
-  String str = xml->getText();
-  if (str.isEmpty())
-  {
-    callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromXml"), T("Missing text"));
-    return false;
-  }
+  EnumerationPtr enumeration = getEnumeration();
+  jassert(enumeration);
+  values.resize(enumeration->getNumElements() + 1, 0.0);
+  sum = 0.0;
   
   StringArray tokens;
   tokens.addTokens(str, true);
-  for (int i = 0; i < tokens.size(); ++i)
-    std::cout << tokens[i] << " "; 
-  std::cout << std::endl;
-  jassert(false); // not implemented
-  return false;
+  if (tokens.size() % 2 == 1)
+  {
+    callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromString"), T("Invalid number of arguments in ") + str.quoted());
+    return false;
+  }
+  
+  for (int i = 0; i < tokens.size() - 1; i += 2)
+  {
+    String indexString = tokens[i];
+    double value = tokens[i+1].getDoubleValue();
+    int index;
+    if (enumeration->hasOneLetterCodes() && indexString.length() == 1)
+    {
+      if (indexString[0] == '_')
+        index = (int)enumeration->getNumElements();
+      else
+      {
+        index = enumeration->getOneLetterCodes().indexOfChar(indexString[0]);
+        if (index < 0)
+        {
+          callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromString"), T("Could not find one-letter code ") + indexString.quoted());
+          return false;
+        }
+      }
+    }
+    else
+    {
+      index = enumeration->findElement(indexString);
+      if (index < 0)
+      {
+        callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromString"), T("Could not find element ") + indexString.quoted());
+        return false;
+      }
+    }
+    jassert(index >= 0 && index < (int)values.size());
+    values[index] = value;
+    sum += value;
+  }
+  return true;
 }
+
+bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+  {return loadFromString(xml->getAllSubText(), callback);}
 
 ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
 {
