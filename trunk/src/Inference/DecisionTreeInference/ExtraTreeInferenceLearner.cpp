@@ -39,6 +39,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   {
     std::cout << "Tree: numAttributes = " << inputType->getNumStaticVariables() << " numExamples = " << trainingData->size() << " numNodes = " << tree->getNumNodes() << std::endl;
     inference->setTree(tree);
+    std::cout << tree->toString() << std::endl;
   }
   return Variable();
 }
