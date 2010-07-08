@@ -11,6 +11,7 @@ using namespace lbcpp;
 
 // new
 extern void declareClassClasses();
+extern void declareObjectClasses();
 extern void declareVariableContainerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
@@ -23,6 +24,7 @@ extern void declareObjectStreamClasses();
 void declareObjectRelatedClasses()
 {
   // new
+  declareObjectClasses();
   declareVariableContainerClasses();
   declarePredicateClasses();
   declareProbabilityDistributionClasses();

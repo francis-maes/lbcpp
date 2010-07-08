@@ -9,6 +9,10 @@
 -
 * Bascule des anciennes ProteinInference vers les nouvelles ProteinInference
 
+
+* ParallelVoteLearner (comme le ParallelLearner en plus optimisé parce qu'on partage le dataset)
+* ParallelLearner / SequentialLearner: flag "transmitUnsupervisedExamplesToChildLearners"
+
 =========== 
 
 Library:

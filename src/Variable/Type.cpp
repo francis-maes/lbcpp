@@ -48,11 +48,15 @@ public:
 
   TypePtr get(const String& typeName, TypePtr argument1, TypePtr argument2 = TypePtr(), TypePtr argument3 = TypePtr()) const
   {
-    TemplateTypeKey key;
-    key.first = typeName;
-    key.second.push_back(argument1);
-    if (argument2) key.second.push_back(argument2);
-    if (argument3) key.second.push_back(argument3);
+    std::vector<TypePtr> arguments(1, argument1);
+    if (argument2) arguments.push_back(argument2);
+    if (argument3) arguments.push_back(argument3);
+    return get(typeName, arguments);
+  }
+
+  TypePtr get(const String& typeName, const std::vector<TypePtr>& arguments) const
+  {
+    TemplateTypeKey key(typeName, arguments);
     
     ScopedLock _(typesLock);
     TemplateTypeMap::const_iterator it = templateTypes.find(key);
@@ -77,6 +81,34 @@ public:
     specializedType->setName(makeTemplateClassName(typeName, key.second));
     const_cast<TypeManager* >(this)->templateTypes[key] = specializedType;
     return specializedType;
+  }
+
+  TypePtr parseAndGet(const String& typeName, ErrorHandler& callback) const
+  {
+    int b = typeName.indexOfChar('<');
+    int e = typeName.lastIndexOfChar('>');
+    if ((b >= 0) != (e >= 0))
+    {
+      callback.errorMessage(T("TypeManager::parseAndGet"), T("Invalid type syntax: ") + typeName.quoted());
+      return TypePtr();
+    }
+    if (b < 0 && e < 0)
+      return get(typeName);
+    String baseName = typeName.substring(0, b);
+    String arguments = typeName.substring(b + 1, e);
+    StringArray tokens;
+    tokens.addTokens(arguments, T(","), T("<>"));
+    std::vector<TypePtr> typeArguments(tokens.size());
+    std::cout << "Parsing " << arguments << ": ";
+    for (int i = 0; i < tokens.size(); ++i)
+    {
+      std::cout << tokens[i].quoted() << " " << std::flush;
+      typeArguments[i] = parseAndGet(tokens[i], callback);
+      if (!typeArguments[i])
+        return TypePtr();
+    } 
+    std::cout << std::endl;
+    return get(baseName, typeArguments);
   }
 
   Variable createInstance(const String& typeName) const
@@ -169,6 +201,9 @@ TypePtr Type::get(const String& typeName, TypePtr argument)
 TypePtr Type::get(const String& typeName, TypePtr argument1, TypePtr argument2)
   {return getClassManagerInstance().get(typeName, argument1, argument2);}
 
+TypePtr Type::parseAndGet(const String& typeName, ErrorHandler& callback)
+  {return getClassManagerInstance().parseAndGet(typeName, callback);}
+
 Variable Type::createInstance(const String& typeName)
   {return getClassManagerInstance().createInstance(typeName);}
 
@@ -189,17 +224,21 @@ bool Type::isMissingValue(const VariableValue& value) const
 }
 
 VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
-{
-  if (xml->hasAttribute(T("value")))
-    return createFromString(xml->getStringAttribute(T("value")), callback);
-  else
-    return getMissingValue();
-}
+  {return createFromString(xml->getAllSubText(), callback);}
 
 void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
 {
   jassert(!isMissingValue(value));
   xml->addTextElement(toString(value));
+}
+
+int Type::findStaticVariable(const String& name) const
+{
+  size_t n = getNumStaticVariables();
+  for (size_t i = 0; i < n; ++i)
+    if (getStaticVariableName(i) == name)
+      return (int)i;
+  return -1;
 }
 
 /*
@@ -244,6 +283,24 @@ TypePtr Class::addWeighted(VariableValue& target, const Variable& source, double
     return TypePtr(this);
 }
 
+VariableValue Class::create() const
+{
+  ErrorHandler::error(T("Class::create"), getName() + T(" has no default constructor"));
+  return VariableValue();
+}
+
+VariableValue Class::createFromString(const String& value, ErrorHandler& callback) const
+{
+  VariableValue res = create();
+  if (isMissingValue(res))
+  {
+    callback.errorMessage(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
+    return getMissingValue();
+  }
+  res.getObject()->thisClass = ClassPtr(const_cast<Class* >(this));
+  return res.getObject()->loadFromString(value, callback) ? res : getMissingValue();
+}
+
 VariableValue Class::createFromXml(XmlElement* xml, ErrorHandler& callback) const
 {
   VariableValue res = create();
@@ -252,6 +309,7 @@ VariableValue Class::createFromXml(XmlElement* xml, ErrorHandler& callback) cons
     callback.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
     return getMissingValue();
   }
+  res.getObject()->thisClass = ClassPtr(const_cast<Class* >(this));
   return res.getObject()->loadFromXml(xml, callback) ? res : getMissingValue();
 }
 
@@ -271,14 +329,25 @@ void Class::setSubVariable(const VariableValue& value, size_t index, const Varia
 /*
 ** DynamicClass
 */
+DynamicClass::DynamicClass(const String& name, TypePtr baseClass)
+  : Class(name, baseClass)
+{
+}
+
 size_t DynamicClass::getNumStaticVariables() const
 {
+  size_t n = baseClass->getNumStaticVariables();
   ScopedLock _(variablesLock);
-  return variables.size();
+  return n + variables.size();
 }
 
 TypePtr DynamicClass::getStaticVariableType(size_t index) const
 {
+  size_t n = baseClass->getNumStaticVariables();
+  if (index < n)
+    return baseClass->getStaticVariableType(index);
+  index -= n;
+  
   ScopedLock _(variablesLock);
   jassert(index < variables.size());
   return variables[index].first;
@@ -286,6 +355,11 @@ TypePtr DynamicClass::getStaticVariableType(size_t index) const
 
 String DynamicClass::getStaticVariableName(size_t index) const
 {
+  size_t n = baseClass->getNumStaticVariables();
+  if (index < n)
+    return baseClass->getStaticVariableName(index);
+  index -= n;
+  
   ScopedLock _(variablesLock);
   jassert(index < variables.size());
   return variables[index].second;
@@ -310,8 +384,8 @@ int DynamicClass::findStaticVariable(const String& name) const
   ScopedLock _(variablesLock);
   for (size_t i = 0; i < variables.size(); ++i)
     if (variables[i].second == name)
-      return (int)i;
-  return -1;
+      return (int)(i + baseClass->getNumStaticVariables());
+  return baseClass->findStaticVariable(name);
 }
 
 /*
@@ -344,14 +418,22 @@ Enumeration::Enumeration(const String& name)
 
 void Enumeration::addElement(const String& elementName)
 {
-  for (size_t i = 0; i < elements.size(); ++i)
-    if (elements[i] == elementName)
-    {
-      Object::error(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
-      return;
-    }
+  if (findElement(elementName) >= 0)
+  {
+    Object::error(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
+    return;
+  }
   elements.push_back(elementName);
 }
+
+int Enumeration::findElement(const String& name) const
+{
+  for (size_t i = 0; i < elements.size(); ++i)
+    if (elements[i] == name)
+      return (int)i;
+  return -1;
+}
+
 
 #include <lbcpp/Object/ProbabilityDistribution.h>
  

@@ -121,7 +121,7 @@ inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCoun
   {
     res = object.dynamicCast<T>();
     if (!res)
-      ErrorHandler::error(where, T("Could not cast object into '") + lbcpp::toString(typeid(T)) + T("'"));
+      ErrorHandler::error(where, T("Could not cast object from '") + lbcpp::toString(typeid(*object)) + T("' to '") + lbcpp::toString(typeid(T)) + T("'"));
   }
   return res;
 }

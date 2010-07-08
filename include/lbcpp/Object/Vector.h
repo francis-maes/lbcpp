@@ -17,22 +17,14 @@ namespace lbcpp
 class Vector : public VariableContainer
 {
 public:
+  Vector(TypePtr elementsType, size_t initialSize = 0);
   Vector() {}
-
-  Vector(TypePtr type, size_t initialSize = 0) : type(type)
-  {
-    jassert(type != topLevelType());
-    if (initialSize)
-      values.resize(initialSize, type->getMissingValue());
-  }
 
   virtual ~Vector()
     {clear();}
 
-  virtual TypePtr getClass() const;
-
   virtual TypePtr getStaticType() const
-    {return type;}
+    {return thisClass->getTemplateArgument(0);}
 
   virtual size_t getNumVariables() const;
   virtual Variable getVariable(size_t index) const;
@@ -47,7 +39,6 @@ public:
   void append(const Variable& value);
 
 private:
-  TypePtr type;
   std::vector<VariableValue> values;
   
   bool checkType(const Variable& value) const;
@@ -104,7 +95,7 @@ class DynamicObject : public VariableContainer
 public:
   DynamicObject(ClassPtr type = objectClass()) : type(type) {}
 
-  virtual TypePtr getClass() const
+  virtual ClassPtr getClass() const
     {return type;}
 
   virtual size_t getNumVariables() const

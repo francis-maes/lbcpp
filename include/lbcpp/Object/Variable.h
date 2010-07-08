@@ -50,8 +50,9 @@ public:
   Variable();
   
   static Variable create(TypePtr type);
-  static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback);
-  static Variable createFromXml(XmlElement* xml, ErrorHandler& callback);
+  static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback = ErrorHandler::getInstance());
+  static Variable createFromXml(XmlElement* xml, ErrorHandler& callback = ErrorHandler::getInstance());
+  static Variable createFromFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
 
   static Variable missingValue(TypePtr type);
 

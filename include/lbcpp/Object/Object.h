@@ -40,6 +40,8 @@ class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 class Type;
 typedef ReferenceCountedObjectPtr<Type> TypePtr;
+class Class;
+typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 class ObjectGraph;
 typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class Table;
@@ -62,6 +64,10 @@ typedef ReferenceCountedObjectPtr<ObjectVisitor> ObjectVisitorPtr;
 class Object : public ReferenceCountedObject
 {
 public:
+  Object(ClassPtr thisClass)
+    : thisClass(thisClass) {}
+  Object() {}
+  
   /**
   ** Destructor.
   */
@@ -70,8 +76,8 @@ public:
   /*
   ** Introspection
   */
-  virtual TypePtr getClass() const;
-  virtual String getClassName() const;
+  ClassPtr getClass() const;
+  String getClassName() const;
 
   virtual size_t getNumVariables() const;
   virtual Variable getVariable(size_t index) const;
@@ -203,6 +209,7 @@ public:
   // XML Serialisation
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromString(const String& str, ErrorHandler& callback);
 
   // tmp
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
@@ -262,6 +269,10 @@ public:
     {return NULL;}
 
 protected:
+  friend class Class;
+  
+  ClassPtr thisClass;
+  
   bool loadFromDirectory(const File& directory);
   bool saveToDirectory(const File& directory) const;
 
@@ -306,6 +317,9 @@ public:
   virtual void setName(const String& name)
     {this->name = name;}
 
+  virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(size_t index, const Variable& value);
+
 protected:
   String name;
 
@@ -315,6 +329,8 @@ protected:
   virtual void save(OutputStream& ostr) const
     {lbcpp::write(ostr, name);}
 };
+
+extern ClassPtr nameableObjectClass();
 
 typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
 
