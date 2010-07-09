@@ -18,17 +18,23 @@ namespace lbcpp
 class SymmetricMatrix : public VariableContainer 
 {
 public:
-  SymmetricMatrix(TypePtr contentType) 
-    : dimension(0), values(contentType) {}
+  SymmetricMatrix(TypePtr contentType, size_t initialSize = 0) 
+    : dimension(0), values(new Vector(contentType)) {}
 
   SymmetricMatrix() {}
 
   size_t size() const
     {return dimension;}
   
+  void setValue(size_t i, size_t j, const Variable& value)
+    {}
+
+  Variable getValue(size_t i, size_t j) const
+    {return Variable();}
+
 private:
+  VectorPtr values;
   size_t dimension;
-  Vector values;
 };
 
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;

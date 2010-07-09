@@ -38,6 +38,9 @@ extern void declareCartesianPositionVectorClasses();
 
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
+extern void declareAtomClasses();
+extern void declareResidueClasses();
+extern void declareTertiaryStructureClasses();
 extern void declareProteinClass();
 
 void declareProteinClasses()
@@ -96,6 +99,11 @@ void declareProteinClasses()
 
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
+
+  declareAtomClasses();
+  declareResidueClasses();
+  declareTertiaryStructureClasses();
+
   declareProteinClass();
   // -
 }

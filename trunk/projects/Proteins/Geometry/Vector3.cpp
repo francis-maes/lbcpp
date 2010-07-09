@@ -16,14 +16,8 @@ namespace impl {
 */
 Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
 {
-  // not tested
-  if (!str.startsWithChar('(') || !str.endsWithChar(')'))
-  {
-    callback.errorMessage(T("Vector3::fromString"), T("Invalid format: ") + str.quoted());
-    return Vector3();
-  }
   StringArray tokens;
-  tokens.addTokens(str.substring(1, str.length() - 1), T(", "), NULL);
+  tokens.addTokens(str.substring(1, str.length() - 1), T(" "), NULL);
   if (tokens.size() != 3)
   {
     callback.errorMessage(T("Vector3::fromString"), T("Invalid format: ") + str.quoted());
@@ -33,6 +27,28 @@ Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
 }
 
 }; /* namespace impl */
+
+Variable Vector3::getVariable(size_t index) const
+{
+  switch (index)
+  {
+  case 0: return value.getX() == DBL_MAX ? Variable(value.getX()) : Variable::missingValue(doubleType());
+  case 1: return value.getY() == DBL_MAX ? Variable(value.getY()) : Variable::missingValue(doubleType());
+  case 2: return value.getZ() == DBL_MAX ? Variable(value.getZ()) : Variable::missingValue(doubleType());
+  default: jassert(false); return Variable();
+  };
+}
+
+void Vector3::setVariable(size_t index, const Variable& v)
+{
+  switch (index)
+  {
+  case 0: value.x = v.getDouble(); break;
+  case 1: value.y = v.getDouble(); break;
+  case 2: value.z = v.getDouble(); break;
+  default: jassert(false);
+  };
+}
 
 class Vector3Class : public DynamicClass
 {

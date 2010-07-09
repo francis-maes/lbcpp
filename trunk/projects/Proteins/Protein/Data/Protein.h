@@ -15,7 +15,7 @@
 
 # include "AminoAcid.h"
 # include "SecondaryStructure.h"
-# include "CartesianPositionVector.h"
+# include "TertiaryStructure.h"
 
 namespace lbcpp
 {
@@ -109,6 +109,12 @@ public:
   void setCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
     {this->calphaTrace = calphaTrace;}
 
+  TertiaryStructurePtr getTertiaryStructure() const
+    {return tertiaryStructure;}
+
+  void setTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
+    {this->tertiaryStructure = tertiaryStructure;}
+
   /*
   ** Compute Missing Variables
   */
@@ -137,6 +143,7 @@ protected:
 
   // 3D
   CartesianPositionVectorPtr calphaTrace;
+  TertiaryStructurePtr tertiaryStructure;
 };
 
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;

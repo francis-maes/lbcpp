@@ -35,6 +35,13 @@ public:
 
   VectorPtr toVector() const;
 
+  ObjectPtr getObject(size_t index) const
+    {return getVariable(index).getObject();}
+
+  template<class T>
+  ReferenceCountedObjectPtr<T> getObjectAndCast(size_t index) const
+    {return getVariable(index).getObjectAndCast<T>();}
+
 public:
   VariableContainerPtr subset(const std::vector<size_t>& indices) const;
 

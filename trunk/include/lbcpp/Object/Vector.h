@@ -38,7 +38,7 @@ public:
   void clear();
   void append(const Variable& value);
 
-private:
+protected:
   std::vector<VariableValue> values;
   
   bool checkType(const Variable& value) const;
@@ -89,6 +89,57 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;
+
+template<class ImplementationType, class ObjectType>
+class BuiltinVector : public VariableContainer
+{
+public:
+  BuiltinVector(size_t initialSize, const ImplementationType& defaultValue)
+    : values(initialSize, defaultValue) {}
+  BuiltinVector(const std::vector<ImplementationType>& values)
+    : values(values) {}
+  BuiltinVector() {}
+
+  virtual TypePtr getStaticType() const
+    {return thisClass->getTemplateArgument(0);}
+
+  virtual size_t getNumVariables() const
+    {return values.size();}
+
+  virtual Variable getVariable(size_t index) const
+  {
+    if (values[index].exists())
+      return ObjectPtr(new ObjectType(values[index]));
+    else
+      return Variable::missingValue(getStaticType());
+  }
+
+  virtual void setVariable(size_t index, const Variable& value)
+  {
+    ReferenceCountedObjectPtr<ObjectType> v = value.getObjectAndCast<ObjectType>();
+    if (v)
+      values[index] = ImplementationType();
+    else
+      values[index] = v->getValue();
+  }
+
+  virtual void saveToXml(XmlElement* xml) const
+    {jassert(false);}
+  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback)
+    {jassert(false); return false;}
+
+  void reserve(size_t size)
+    {values.reserve(size);}
+
+  void clear()
+    {values.clear();}
+
+  void append(const ImplementationType& value)
+    {values.push_back(value);}
+
+protected:
+  std::vector<ImplementationType> values;
+};
 
 class DynamicObject : public VariableContainer
 {

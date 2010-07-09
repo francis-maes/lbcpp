@@ -48,6 +48,12 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Protein/Data/SecondaryStructure.cpp
   Protein/Data/CartesianPositionVector.h
   Protein/Data/CartesianPositionVector.cpp
+  Protein/Data/Atom.h
+  Protein/Data/Atom.cpp
+  Protein/Data/Residue.h
+  Protein/Data/Residue.cpp
+  Protein/Data/TertiaryStructure.h
+  Protein/Data/TertiaryStructure.cpp
   Protein/Data/Protein.h
   Protein/Data/Protein.cpp
 )
