@@ -18,6 +18,7 @@ public:
 
     addVariable(vectorClass(secondaryStructureElementEnumeration()), T("secondaryStructure"));
     addVariable(vectorClass(dsspSecondaryStructureElementEnumeration()), T("dsspSecondaryStructure"));
+    addVariable(vectorClass(structuralAlphaElementEnumeration()), T("structuralAlphabetSequence"));
 
     addVariable(vectorClass(probabilityType()), T("solventAccesibility"));
     addVariable(vectorClass(probabilityType()), T("solventAccesibilityAt20p"));
@@ -27,6 +28,8 @@ public:
     addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Cb"));
     addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCa"));
     addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCb"));
+
+    addVariable(cartesianPositionVectorClass(), T("calphaTrace"));
   }
 
   virtual VariableValue create() const
@@ -70,13 +73,15 @@ Variable Protein::getVariable(size_t index) const
   case 1: return positionSpecificScoringMatrix;
   case 2: return secondaryStructure;
   case 3: return dsspSecondaryStructure;
-  case 4: return solventAccessibility;
-  case 5: return solventAccessibilityAt20p;
-  case 6: return disorderRegions;
-  case 7: return contactMap8Ca;
-  case 8: return contactMap8Cb;
-  case 9: return distanceMapCa;
-  case 10: return distanceMapCb;
+  case 4: return structuralAlphabetSequence;
+  case 5: return solventAccessibility;
+  case 6: return solventAccessibilityAt20p;
+  case 7: return disorderRegions;
+  case 8: return contactMap8Ca;
+  case 9: return contactMap8Cb;
+  case 10: return distanceMapCa;
+  case 11: return distanceMapCb;
+  case 12: return calphaTrace;
   };
   jassert(false);
   return Variable();
@@ -97,13 +102,15 @@ void Protein::setVariable(size_t index, const Variable& value)
   case 1: positionSpecificScoringMatrix = value.getObjectAndCast<Vector>(); break;
   case 2: secondaryStructure = value.getObjectAndCast<Vector>(); break;
   case 3: dsspSecondaryStructure = value.getObjectAndCast<Vector>(); break;
-  case 4: solventAccessibility = value.getObjectAndCast<Vector>(); break;
-  case 5: solventAccessibilityAt20p = value.getObjectAndCast<Vector>(); break;
-  case 6: disorderRegions = value.getObjectAndCast<Vector>(); break;
-  case 7: contactMap8Ca = value.getObjectAndCast<SymmetricMatrix>(); break;
-  case 8: contactMap8Cb = value.getObjectAndCast<SymmetricMatrix>(); break;
-  case 9: distanceMapCa = value.getObjectAndCast<SymmetricMatrix>(); break;
-  case 10: distanceMapCb = value.getObjectAndCast<SymmetricMatrix>(); break;
+  case 4: structuralAlphabetSequence = value.getObjectAndCast<Vector>(); break;
+  case 5: solventAccessibility = value.getObjectAndCast<Vector>(); break;
+  case 6: solventAccessibilityAt20p = value.getObjectAndCast<Vector>(); break;
+  case 7: disorderRegions = value.getObjectAndCast<Vector>(); break;
+  case 8: contactMap8Ca = value.getObjectAndCast<SymmetricMatrix>(); break;
+  case 9: contactMap8Cb = value.getObjectAndCast<SymmetricMatrix>(); break;
+  case 10: distanceMapCa = value.getObjectAndCast<SymmetricMatrix>(); break;
+  case 11: distanceMapCb = value.getObjectAndCast<SymmetricMatrix>(); break;
+  case 12: calphaTrace = value.getObjectAndCast<CartesianPositionVector>(); break;
   default: jassert(false);
   };
 }

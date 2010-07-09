@@ -15,6 +15,7 @@
 
 # include "AminoAcid.h"
 # include "SecondaryStructure.h"
+# include "CartesianPositionVector.h"
 
 namespace lbcpp
 {
@@ -63,6 +64,12 @@ public:
   VectorPtr getDSSPSecondaryStructure() const
     {return dsspSecondaryStructure;}
 
+  void setStructuralAlphabetSequence(VectorPtr structuralAlphabetSequence)
+    {this->structuralAlphabetSequence = structuralAlphabetSequence;}
+
+  VectorPtr getStructuralAlphabetSequence() const
+    {return structuralAlphabetSequence;}
+
   /*
   ** Solvent Accesibility
   */
@@ -94,24 +101,42 @@ public:
   void setContactMap(SymmetricMatrixPtr contactMap, double threshold = 8, bool betweenCBetaAtoms = false);
 
   /*
+  ** Tertiary Structure
+  */
+  CartesianPositionVectorPtr getCAlphaTrace() const
+    {return calphaTrace;}
+
+  void setCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
+    {this->calphaTrace = calphaTrace;}
+
+  /*
   ** Compute Missing Variables
   */
   void computeMissingVariables();
 
 protected:
+  // input
   VectorPtr primaryStructure;
   VectorPtr positionSpecificScoringMatrix;
 
+  // 1D
   VectorPtr secondaryStructure;
   VectorPtr dsspSecondaryStructure;
+  VectorPtr structuralAlphabetSequence;
+
   VectorPtr solventAccessibility;
   VectorPtr solventAccessibilityAt20p;
+
   VectorPtr disorderRegions;
 
+  // 2D
   SymmetricMatrixPtr contactMap8Ca;
   SymmetricMatrixPtr contactMap8Cb;
   SymmetricMatrixPtr distanceMapCa;
   SymmetricMatrixPtr distanceMapCb;
+
+  // 3D
+  CartesianPositionVectorPtr calphaTrace;
 };
 
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;

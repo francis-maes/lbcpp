@@ -30,7 +30,9 @@ public:
     {return x != DBL_MAX || y != DBL_MAX || z != DBL_MAX;}
 
   String toString() const
-    {return T("(") + lbcpp::toString(x) + T(", ") + lbcpp::toString(y) + T(", ") + lbcpp::toString(z) + T(")");}
+    {return T("(") + String(x) + T(", ") + String(y) + T(", ") + String(z) + T(")");}
+
+  static Vector3 fromString(const String& str, ErrorHandler& callback);
 
   double getX() const
     {return x;}
@@ -195,6 +197,8 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<Vector3Object> Vector3ObjectPtr;
+
+extern ClassPtr vector3Class();
 
 class Vector3KDTree : public Object
 {
