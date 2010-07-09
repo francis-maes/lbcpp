@@ -101,7 +101,41 @@ static VectorPtr convertScoreVectorSequence(ScoreVectorSequencePtr sequence, Enu
   return res;
 }
 
-// FIXME: support for empty labels (empty variable values in Vectors)
+static VectorPtr convertScalarSequenceToProbabilityVector(ScalarSequencePtr sequence)
+{
+  if (!sequence)
+    return VectorPtr();
+  size_t n = sequence->size();
+
+  VectorPtr res = new Vector(probabilityType(), n);
+  for (size_t i = 0; i < n; ++i)
+    if (sequence->hasValue(i))
+    {
+      double value = sequence->getValue(i);
+      jassert(value >= 0 && value <= 1);
+      res->setVariable(i, Variable(value, probabilityType()));
+    }
+  return res;
+}
+
+static VectorPtr convertBinaryLabelSequenceToProbabilityVector(LabelSequencePtr sequence)
+{
+  if (!sequence)
+    return VectorPtr();
+
+  jassert(sequence->getDictionary() == BinaryClassificationDictionary::getInstance());
+  size_t n = sequence->size();
+
+  VectorPtr res = new Vector(probabilityType(), n);
+  for (size_t i = 0; i < n; ++i)
+    if (sequence->hasObject(i))
+    {
+      size_t value = sequence->getIndex(i);
+      jassert(value == 0 || value == 1);
+      res->setVariable(i, Variable(value ? 1.0 : 0.0, probabilityType()));
+    }
+  return res;
+}
 
 ProteinPtr convertProtein(ProteinObjectPtr protein)
 {
@@ -111,6 +145,16 @@ ProteinPtr convertProtein(ProteinObjectPtr protein)
 
   res->setSecondaryStructure(convertLabelSequence(protein->getSecondaryStructureSequence(), secondaryStructureElementEnumeration()));
   res->setDSSPSecondaryStructure(convertLabelSequence(protein->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureElementEnumeration()));
+
+  res->setSolventAccessibility(convertScalarSequenceToProbabilityVector(protein->getNormalizedSolventAccessibilitySequence()));
+  res->setSolventAccessibilityAt20p(convertBinaryLabelSequenceToProbabilityVector(protein->getSolventAccessibilityThreshold20()));
+
+  if (protein->getDisorderProbabilitySequence())
+    res->setDisorderRegions(convertScalarSequenceToProbabilityVector(protein->getDisorderProbabilitySequence()));
+  else
+    res->setDisorderRegions(convertBinaryLabelSequenceToProbabilityVector(protein->getDisorderSequence()));
+
+
   // FIXME: the rest ...
 
   res->computeMissingVariables();
@@ -347,8 +391,8 @@ int main(int argc, char** argv)
     << containerCopy.getType()->getName() << " equals: " << Variable(container == containerCopy) << std::endl;
   */
   
-//  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  File workingDirectory(T("/Users/francis/tmp"));
+  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  //File workingDirectory(T("/Users/francis/tmp"));
   ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\protein")));
   
   // convert proteins

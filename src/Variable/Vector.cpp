@@ -53,20 +53,39 @@ bool Vector::checkType(const Variable& value) const
 
 void Vector::saveToXml(XmlElement* xml) const
 {
+  size_t n = getNumVariables();
+
   TypePtr type = getStaticType();
-  xml->setAttribute(T("size"), (int)size());
+  xml->setAttribute(T("size"), (int)n);
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
   {
     String value;
     String oneLetterCodes = enumeration->getOneLetterCodes();
-    for (size_t i = 0; i < getNumVariables(); ++i)
+    for (size_t i = 0; i < n; ++i)
     {
       Variable variable = getVariable(i);
       if (variable.isMissingValue())
         value += '_';
       else
         value += oneLetterCodes[variable.getInteger()];
+    }
+    xml->addTextElement(value);
+    return;
+  }
+
+  if (type->inheritsFrom(doubleType()))
+  {
+    String value;
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable variable = getVariable(i);
+      if (variable.isMissingValue())
+        value += '_';
+      else
+        value += String(variable.getDouble());
+      if (i < n - 1)
+        value += ' ';
     }
     xml->addTextElement(value);
     return;
@@ -110,6 +129,27 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
         values[i] = enumeration->getMissingValue();
       }
     }
+    return true;
+  }
+
+  if (type->inheritsFrom(doubleType()))
+  {
+    String text = xml->getAllSubText().trim();
+    StringArray tokens;
+    tokens.addTokens(text, T(" \t\r\n"), NULL);
+    if (tokens.size() != size)
+    {
+      callback.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(tokens.size()));
+      return false;
+    }
+    for (size_t i = 0; i < values.size(); ++i)
+      if (tokens[i] != T("_"))
+      {
+        Variable value = Variable::createFromString(doubleType(), tokens[i], callback);
+        if (!value)
+          return false;
+        values[i] = value.getDouble();
+      }
     return true;
   }
 

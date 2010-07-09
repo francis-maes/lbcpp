@@ -64,6 +64,36 @@ public:
     {return dsspSecondaryStructure;}
 
   /*
+  ** Solvent Accesibility
+  */
+  void setSolventAccessibility(VectorPtr solventAccessibility)
+    {this->solventAccessibility = solventAccessibility;}
+
+  VectorPtr getSolventAccessibility() const
+    {return solventAccessibility;}
+
+  void setSolventAccessibilityAt20p(VectorPtr solventAccessibilityAt20p)
+    {this->solventAccessibilityAt20p = solventAccessibilityAt20p;}
+
+  VectorPtr getSolventAccessibilityAt20p() const
+    {return solventAccessibilityAt20p;}
+
+  /*
+  ** Disorder regions
+  */
+  void setDisorderRegions(VectorPtr disorderRegions)
+    {this->disorderRegions = disorderRegions;}
+
+  VectorPtr getDisorderRegions() const
+    {return disorderRegions;}
+
+  /*
+  ** Contact maps
+  */
+  SymmetricMatrixPtr getContactMap(double threshold = 8, bool betweenCBetaAtoms = false) const;
+  void setContactMap(SymmetricMatrixPtr contactMap, double threshold = 8, bool betweenCBetaAtoms = false);
+
+  /*
   ** Compute Missing Variables
   */
   void computeMissingVariables();
@@ -77,7 +107,6 @@ protected:
   VectorPtr solventAccessibility;
   VectorPtr solventAccessibilityAt20p;
   VectorPtr disorderRegions;
-  VectorPtr disorderRegionProbabilities;
 
   SymmetricMatrixPtr contactMap8Ca;
   SymmetricMatrixPtr contactMap8Cb;
