@@ -150,6 +150,41 @@ CartesianPositionVectorPtr convertCartesianPositionVector(CartesianCoordinatesSe
   return res;
 }
 
+AtomPtr convertAtom(ProteinAtomPtr atom)
+{
+  if (!atom)
+    return AtomPtr();
+
+  AtomPtr res = new Atom(atom->getName(), atom->getElementSymbol(), atom->getPosition());
+  res->setOccupancy(res->getOccupancy());
+  res->setTemperatureFactor(res->getTemperatureFactor());
+  return res;
+}
+
+ResiduePtr convertResidue(ProteinResidueAtomsPtr residue)
+{
+  if (!residue)
+    return ResiduePtr();
+
+  size_t n = residue->getNumAtoms();
+  ResiduePtr res = new Residue((AminoAcidType)residue->getAminoAcid());
+  for (size_t i = 0; i < n; ++i)
+    res->addAtom(convertAtom(residue->getAtom(i)));
+  return res;
+}
+
+TertiaryStructurePtr convertTertiaryStructure(ProteinTertiaryStructurePtr tertiaryStructure)
+{
+  if (!tertiaryStructure)
+    return TertiaryStructurePtr();
+
+  size_t n = tertiaryStructure->size();
+  TertiaryStructurePtr res = new TertiaryStructure(n);
+  for (size_t i = 0; i < n; ++i)
+    res->setResidue(i, convertResidue(tertiaryStructure->getResidue(i)));
+  return res;
+}
+
 ProteinPtr convertProtein(ProteinObjectPtr protein)
 {
   ProteinPtr res = new Protein(protein->getName());
@@ -169,10 +204,9 @@ ProteinPtr convertProtein(ProteinObjectPtr protein)
     res->setDisorderRegions(convertBinaryLabelSequenceToProbabilityVector(protein->getDisorderSequence()));
 
   res->setCAlphaTrace(convertCartesianPositionVector(protein->getCAlphaTrace()));
+  res->setTertiaryStructure(convertTertiaryStructure(protein->getTertiaryStructure()));
 
-  // FIXME: tertiary structure
-
-  res->computeMissingVariables();
+  //res->computeMissingVariables();
   return res;
 }
 

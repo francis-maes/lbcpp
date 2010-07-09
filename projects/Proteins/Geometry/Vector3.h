@@ -33,7 +33,7 @@ public:
     {return x != DBL_MAX || y != DBL_MAX || z != DBL_MAX;}
 
   String toString() const
-    {return T("(") + String(x) + T(", ") + String(y) + T(", ") + String(z) + T(")");}
+    {return String(x) + T(" ") + String(y) + T(" ") + String(z);}
 
   static Vector3 fromString(const String& str, ErrorHandler& callback);
 
@@ -154,7 +154,6 @@ public:
   bool operator !=(const Vector3& otherVector) const
     {return x != otherVector.x || y != otherVector.y || z != otherVector.z;}
 
-private:
   double x, y, z;
 };
 
@@ -191,12 +190,18 @@ public:
   Vector3(const impl::Vector3& value) : value(value) {}
   Vector3() {}
 
+  virtual String toString() const
+    {return value.toString();}
+
   impl::Vector3 getValue() const
     {return value;}
 
   impl::Vector3& getValue()
     {return value;}
 
+  virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(size_t index, const Variable& value);
+    
 private:
   impl::Vector3 value;
 };

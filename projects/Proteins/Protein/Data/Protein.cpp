@@ -30,6 +30,7 @@ public:
     addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCb"));
 
     addVariable(cartesianPositionVectorClass(), T("calphaTrace"));
+    addVariable(tertiaryStructureClass(), T("tertiaryStructure"));
   }
 
   virtual VariableValue create() const
@@ -82,6 +83,7 @@ Variable Protein::getVariable(size_t index) const
   case 10: return distanceMapCa;
   case 11: return distanceMapCb;
   case 12: return calphaTrace;
+  case 13: return tertiaryStructure;
   };
   jassert(false);
   return Variable();
@@ -111,6 +113,7 @@ void Protein::setVariable(size_t index, const Variable& value)
   case 10: distanceMapCa = value.getObjectAndCast<SymmetricMatrix>(); break;
   case 11: distanceMapCb = value.getObjectAndCast<SymmetricMatrix>(); break;
   case 12: calphaTrace = value.getObjectAndCast<CartesianPositionVector>(); break;
+  case 13: tertiaryStructure = value.getObjectAndCast<TertiaryStructure>(); break;
   default: jassert(false);
   };
 }
