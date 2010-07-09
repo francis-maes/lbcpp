@@ -7,8 +7,9 @@
                                `--------------------------------------------*/
 #include "Matrix4.h"
 #include "Matrix3.h"
-using namespace lbcpp;
-using namespace lbcpp::impl;
+
+namespace lbcpp {
+namespace impl {
 
 const Matrix4 Matrix4::zero = Matrix4(
       0.0, 0.0, 0.0, 0.0,
@@ -94,3 +95,6 @@ Matrix4 Matrix4::findAffineTransformToSuperposePoints(const std::vector< std::pa
   if (succeeded) *succeeded = true;
   return Matrix4(rotation, translation);
 }
+
+}; /* namespace impl */
+}; /* namespace lbcpp */

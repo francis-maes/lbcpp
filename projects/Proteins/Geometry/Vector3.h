@@ -185,11 +185,11 @@ struct Traits<impl::Vector3>
   }
 };
 
-class Vector3Object : public Object
+class Vector3 : public Object
 {
 public:
-  Vector3Object(const impl::Vector3& value) : value(value) {}
-  Vector3Object() {}
+  Vector3(const impl::Vector3& value) : value(value) {}
+  Vector3() {}
 
   impl::Vector3 getValue() const
     {return value;}
@@ -201,7 +201,7 @@ private:
   impl::Vector3 value;
 };
 
-typedef ReferenceCountedObjectPtr<Vector3Object> Vector3ObjectPtr;
+typedef ReferenceCountedObjectPtr<Vector3> Vector3Ptr;
 
 extern ClassPtr vector3Class();
 

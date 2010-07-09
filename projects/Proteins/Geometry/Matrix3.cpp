@@ -7,8 +7,9 @@
                                `--------------------------------------------*/
 
 #include "Matrix3.h"
-using namespace lbcpp;
-using namespace lbcpp::impl;
+
+namespace lbcpp {
+namespace impl {
 
 const Matrix3 Matrix3::zero = Matrix3(
       0.0, 0.0, 0.0,
@@ -292,3 +293,6 @@ convergence:
 	free(e);
 	return retval;
 }
+
+}; /* namespace impl */
+}; /* namespace lbcpp */
