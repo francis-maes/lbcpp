@@ -146,6 +146,20 @@ static TertiaryStructurePtr convertTertiaryStructure(ProteinTertiaryStructurePtr
   return res;
 }
 
+static SymmetricMatrixPtr convertScoreSymmetricMatrix(ScoreSymmetricMatrixPtr matrix, TypePtr elementsType)
+{
+  if (!matrix)
+    return SymmetricMatrixPtr();
+
+  size_t n = matrix->getDimension();
+  SymmetricMatrixPtr res = new SymmetricMatrix(elementsType, n);
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = 0; j <= i; ++j)
+      if (matrix->hasScore(i, j))
+        res->setElement(i, j, Variable(matrix->getScore(i, j), elementsType));
+  return res;
+}
+
 static ProteinPtr convertProtein(ProteinObjectPtr protein)
 {
   ProteinPtr res = new Protein(protein->getName());
@@ -163,6 +177,11 @@ static ProteinPtr convertProtein(ProteinObjectPtr protein)
     res->setDisorderRegions(convertScalarSequenceToProbabilityVector(protein->getDisorderProbabilitySequence()));
   else
     res->setDisorderRegions(convertBinaryLabelSequenceToProbabilityVector(protein->getDisorderSequence()));
+
+  res->setContactMap(convertScoreSymmetricMatrix(protein->getResidueResidueContactMatrix8Ca(), probabilityType()), 8.0, false);
+  res->setContactMap(convertScoreSymmetricMatrix(protein->getResidueResidueContactMatrix8Cb(), probabilityType()), 8.0, true);
+  res->setDistanceMap(convertScoreSymmetricMatrix(protein->getResidueResidueDistanceMatrixCa(), angstromDistanceType()), false);
+  res->setDistanceMap(convertScoreSymmetricMatrix(protein->getResidueResidueDistanceMatrixCb(), angstromDistanceType()), true);
 
   res->setCAlphaTrace(convertCartesianPositionVector(protein->getCAlphaTrace()));
   res->setTertiaryStructure(convertTertiaryStructure(protein->getTertiaryStructure()));

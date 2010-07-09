@@ -164,6 +164,7 @@ public:
   ** @return the current object (string form).
   */
   virtual String toString() const;
+  virtual String getShortSummary() const;
 
   /**
   ** Converts the current object to a graph.

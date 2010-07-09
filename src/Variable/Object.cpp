@@ -83,6 +83,13 @@ String Object::toString() const
   return res;
 }
 
+String Object::getShortSummary() const
+{
+  String str = toString();
+  return str.containsChar('\n') ? String::empty : str;
+}
+
+
 String Object::variablesToString(const String& separator) const
 {
   String res;

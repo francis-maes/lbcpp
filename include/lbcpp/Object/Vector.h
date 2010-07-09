@@ -25,8 +25,8 @@ public:
 
   virtual String toString() const;
 
-  virtual TypePtr getStaticType() const
-    {return thisClass->getTemplateArgument(0);}
+  virtual TypePtr getElementsType() const
+    {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
   virtual size_t getNumVariables() const;
   virtual Variable getVariable(size_t index) const;
@@ -65,7 +65,7 @@ public:
     return res;
   }
 
-  virtual TypePtr getStaticType() const
+  virtual TypePtr getElementsType() const
     {return booleanType();}
 
   virtual size_t getNumVariables() const
@@ -102,7 +102,7 @@ public:
     : values(values) {}
   BuiltinVector() {}
 
-  virtual TypePtr getStaticType() const
+  virtual TypePtr getElementsType() const
     {return thisClass->getTemplateArgument(0);}
 
   virtual size_t getNumVariables() const
@@ -113,7 +113,7 @@ public:
     if (values[index].exists())
       return ObjectPtr(new ObjectType(values[index]));
     else
-      return Variable::missingValue(getStaticType());
+      return Variable::missingValue(getElementsType());
   }
 
   virtual void setVariable(size_t index, const Variable& value)
@@ -150,6 +150,9 @@ public:
 
   virtual ClassPtr getClass() const
     {return type;}
+
+  virtual TypePtr getElementsType() const
+    {return topLevelType();}
 
   virtual size_t getNumVariables() const
     {return variables.size();}

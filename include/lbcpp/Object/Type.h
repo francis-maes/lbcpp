@@ -102,6 +102,8 @@ public:
   virtual void destroy(VariableValue& value) const = 0;
   virtual void copy(VariableValue& dest, const VariableValue& source) const = 0;
   virtual String toString(const VariableValue& value) const = 0;
+  virtual String getShortSummary(const VariableValue& value) const
+    {return toString(value);}
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const = 0;
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar)
@@ -291,6 +293,8 @@ public:
 
   virtual String toString(const VariableValue& value) const
     {return value.getObject()->toString();}
+  virtual String getShortSummary(const VariableValue& value) const
+    {return value.getObject()->getShortSummary();}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 

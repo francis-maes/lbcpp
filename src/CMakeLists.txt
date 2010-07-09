@@ -45,6 +45,7 @@ SET(LBCPP_VARIABLE_SOURCES
   Variable/Type.cpp
   Variable/Container.cpp
   Variable/Vector.cpp
+  Variable/SymmetricMatrix.cpp
   Variable/Predicate.cpp
   Variable/ProbabilityDistribution.cpp
 )  

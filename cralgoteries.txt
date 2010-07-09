@@ -1,17 +1,15 @@
-* Finir la serialisation XML
-* Conversion des anciennes proteins en nouvelles proteins
-* Visualisation de l'introspection dans l'explorer
--
-* Faire les "RepresentationFunction"
-* Faire le pont Attribut/Valeur => Feature Generator
--
-* Voir pourquoi les ExtraTree marchent moyen
--
-* Bascule des anciennes ProteinInference vers les nouvelles ProteinInference
 
+* SymmetricMatrix et convertContactMap / convertDistanceMap
+* Faire les "RepresentationFunction", Faire le pont Attribut/Valeur => Feature Generator
+* Utiliser les nouvelles structures de données dans les ProteinInference
 
-* ParallelVoteLearner (comme le ParallelLearner en plus optimisŽ parce qu'on partage le dataset)
-* ParallelLearner / SequentialLearner: flag "transmitUnsupervisedExamplesToChildLearners"
+Julien:
+ * Voir pourquoi les ExtraTree marchent moyen
+ * Utilies les nouvelles structures de données dans l'explorer et dans les formats de proteines
+
+Inference:
+ * ParallelVoteLearner (comme le ParallelLearner en plus optimisŽ parce qu'on partage le dataset)
+ * ParallelLearner / SequentialLearner: flag "transmitUnsupervisedExamplesToChildLearners"
 
 =========== 
 

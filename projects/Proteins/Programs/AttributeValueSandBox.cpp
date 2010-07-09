@@ -78,7 +78,7 @@ public:
     if (targetPosition >= 0 && targetPosition < (int)vector->size())
       return vector->getVariable(targetPosition);
     else
-      return Variable::missingValue(vector->getStaticType());
+      return Variable::missingValue(vector->getElementsType());
   }
 
   virtual Variable getVariable(size_t index) const

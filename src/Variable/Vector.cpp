@@ -20,7 +20,7 @@ size_t Vector::getNumVariables() const
   {return values.size();}
 
 Variable Vector::getVariable(size_t index) const
-  {jassert(index < values.size()); return Variable::copyFrom(getStaticType(), values[index]);}
+  {jassert(index < values.size()); return Variable::copyFrom(getElementsType(), values[index]);}
 
 void Vector::setVariable(size_t index, const Variable& value)
 {
@@ -33,7 +33,7 @@ void Vector::setVariable(size_t index, const Variable& value)
 
 void Vector::clear()
 {
-  TypePtr type = getStaticType();
+  TypePtr type = getElementsType();
   for (size_t i = 0; i < values.size(); ++i)
     type->destroy(values[i]);
   values.clear();
@@ -49,11 +49,11 @@ void Vector::append(const Variable& value)
 }
 
 bool Vector::checkType(const Variable& value) const
-  {return checkInheritance(value, getStaticType());}
+  {return checkInheritance(value, getElementsType());}
 
 String Vector::toString() const
 {
-  TypePtr type = getStaticType();
+  TypePtr type = getElementsType();
   size_t n = size();
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
@@ -94,8 +94,16 @@ void Vector::saveToXml(XmlElement* xml) const
 {
   size_t n = getNumVariables();
 
-  TypePtr type = getStaticType();
+  TypePtr type = getElementsType();
   xml->setAttribute(T("size"), (int)n);
+
+  if (n > 1000 && (type->inheritsFrom(integerType()) || type->inheritsFrom(doubleType()) || type->inheritsFrom(booleanType())))
+  {
+    juce::MemoryBlock block(&values[0], sizeof (VariableValue) * values.size());
+    xml->setAttribute(T("binary"), T("true"));
+    xml->addTextElement(block.toBase64Encoding());
+    return;
+  }
 
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType()))
@@ -106,7 +114,7 @@ void Vector::saveToXml(XmlElement* xml) const
 
 bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 {
-  TypePtr type = getStaticType();
+  TypePtr type = getElementsType();
   jassert(type);
   int size = xml->getIntAttribute(T("size"), -1);
   if (size < 0)
@@ -115,6 +123,31 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
     return false;
   }
   values.resize(size, type->getMissingValue());
+
+  if (xml->getBoolAttribute(T("binary")))
+  {
+    if (!type->inheritsFrom(integerType()) && !type->inheritsFrom(doubleType()) && !type->inheritsFrom(booleanType()))
+    {
+      callback.errorMessage(T("Vector::loadFromXml"), T("Unexpected type for binary encoding"));
+      return false;
+    }
+
+    juce::MemoryBlock block;
+    if (!block.fromBase64Encoding(xml->getAllSubText().trim()))
+    {
+      callback.errorMessage(T("Vector::loadFromXml"), T("Could not decode base 64"));
+      return false;
+    }
+
+    if (block.getSize() != sizeof (VariableValue) * values.size())
+    {
+      callback.errorMessage(T("Vector::loadFromXml"), T("Invalid data size: found ") + String(block.getSize())
+        + T(" expected ") + String((int)sizeof (VariableValue) * values.size()));
+      return false;
+    }
+    memcpy(&values[0], block.getData(), block.getSize());
+    return true;
+  }
 
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
@@ -170,14 +203,5 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 ClassPtr lbcpp::vectorClass(TypePtr elementsType)
 {
   static UnaryTemplateTypeCache cache(T("Vector"));
-  return cache(elementsType);
-}
-
-
-// todo: ranger
-#include <lbcpp/Object/SymmetricMatrix.h>
-ClassPtr lbcpp::symmetricMatrixClass(TypePtr elementsType)
-{
-  static UnaryTemplateTypeCache cache(T("SymmetricMatrix"));
   return cache(elementsType);
 }

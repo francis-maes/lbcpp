@@ -139,8 +139,10 @@ class VariableTreeViewItem : public SimpleTreeViewItem
 public:
   VariableTreeViewItem(const String& name, const Variable& variable)
     : SimpleTreeViewItem(name, NULL, true),
-      variable(variable), typeName(variable.getTypeName()), stringValue(variable.toString()), component(NULL)
+      variable(variable), typeName(variable.getTypeName()), component(NULL)
   {
+    shortSummary = variable.getShortSummary();
+
     size_t n = variable.size();
     subVariables.resize(n);
     for (size_t i = 0; i < n; ++i)
@@ -186,10 +188,10 @@ public:
     g.drawText(getUniqueName(), x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
     x1 += typeAndNameLength;
 
-    if (!stringValue.contains(T("\n")))
+    if (shortSummary.isNotEmpty())
     {
       g.setFont(Font(12));
-      g.drawText(stringValue, x1, 0, width - x1 - 2, height, Justification::centredLeft, true);
+      g.drawText(shortSummary, x1, 0, width - x1 - 2, height, Justification::centredLeft, true);
     }
   }
 
@@ -198,7 +200,7 @@ public:
 protected:
   Variable variable;
   String typeName;
-  String stringValue;
+  String shortSummary;
   Component* component;
 
   std::vector< std::pair<String, Variable> > subVariables;

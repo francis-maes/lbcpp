@@ -27,7 +27,7 @@ public:
     : BaseClass(positions) {}
   CartesianPositionVector() {}
 
-  virtual TypePtr getStaticType() const
+  virtual TypePtr getElementsType() const
     {return vector3Class();}
 
   bool hasPosition(size_t index) const

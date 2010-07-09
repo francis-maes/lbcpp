@@ -28,8 +28,7 @@ public:
   size_t size() const
     {return getNumVariables();}
 
-  virtual TypePtr getStaticType() const
-    {return topLevelType();}
+  virtual TypePtr getElementsType() const = 0;
 
   virtual String toString() const;
 
@@ -43,7 +42,7 @@ public:
     {return getVariable(index).getObjectAndCast<T>();}
 
   virtual TypePtr getVariableType(size_t index) const
-    {return getStaticType();}
+    {return getElementsType();}
 
   virtual String getVariableName(size_t index) const
     {return String((int)index);}
@@ -195,8 +194,8 @@ public:
   virtual size_t getNumVariables() const
     {return target->getNumVariables();}
 
-  virtual TypePtr getStaticType() const
-    {return target->getStaticType();}
+  virtual TypePtr getElementsType() const
+    {return target->getElementsType();}
 
   /**
   ** Gets an element.

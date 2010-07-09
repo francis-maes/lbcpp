@@ -80,7 +80,11 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
       }
 
     case FileObject::textFile:
-      return new StringComponent(object);
+      {
+        Variable variable = Variable::createFromFile(fileObject->getFile());
+        return variable ? (Component* )new VariableTreeComponent(variable, name) : (Component* )new StringComponent(object);
+      }
+
     case FileObject::binaryFile:
       return new HexadecimalFileObjectComponent(fileObject, name);
     default:

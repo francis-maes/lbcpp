@@ -180,7 +180,7 @@ inline SymmetricMatrixPtr makeDistanceMatrix(const std::vector<impl::Vector3>& p
   SymmetricMatrixPtr res = new SymmetricMatrix(angstromDistanceType(), n);
   for (size_t i = 0; i < n; ++i)
   {
-    res->setValue(i, i, Variable(0.0, angstromDistanceType()));
+    res->setElement(i, i, Variable(0.0, angstromDistanceType()));
     impl::Vector3 position1 = positions[i];
     if (!position1.exists())
       continue;
@@ -188,7 +188,7 @@ inline SymmetricMatrixPtr makeDistanceMatrix(const std::vector<impl::Vector3>& p
     {
       impl::Vector3 position2 = positions[j];
       if (position2.exists())
-        res->setValue(i, j, Variable((position1 - position2).l2norm(), angstromDistanceType()));
+        res->setElement(i, j, Variable((position1 - position2).l2norm(), angstromDistanceType()));
     }
   }
   return res;
