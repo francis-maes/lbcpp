@@ -217,7 +217,7 @@ public:
 
   virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const
   {
-    VariableContainerPtr container = input[0].getObjectAndCast<VariableContainer>();
+    ContainerPtr container = input[0].getObjectAndCast<Container>();
     int position = input[1].getInteger() - (int)(windowSize / 2);
     for (size_t i = 0; i < windowSize; ++i, ++position)
     {
@@ -298,9 +298,9 @@ int main(int argc, char** argv)
   printVariable(secondaryStructureExamples->getVariable(10), std::cout, 3);
 
   // make train and test set
-  VariableContainerPtr data = secondaryStructureExamples->randomize();
-  VariableContainerPtr trainingData = data->fold(0, 2);
-  VariableContainerPtr testingData = data->fold(1, 2);
+  ContainerPtr data = secondaryStructureExamples->randomize();
+  ContainerPtr trainingData = data->fold(0, 2);
+  ContainerPtr testingData = data->fold(1, 2);
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train

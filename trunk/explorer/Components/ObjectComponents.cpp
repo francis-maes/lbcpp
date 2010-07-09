@@ -65,7 +65,7 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
     switch (type)
     {
     case FileObject::directory:
-      return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(object, name));
+      return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
 
     case FileObject::classDirectory:
     case FileObject::classFile:
@@ -74,7 +74,7 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
         if (object)
           return createComponentForObjectImpl(object, name);
         else if (type == FileObject::classDirectory)
-          return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(object, name));
+          return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
         else
           return new HexadecimalFileObjectComponent(object, name);
       }
@@ -186,7 +186,9 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   TablePtr table = object->toTable();
   if (table)
     return new TableComponent(table);
-  return new StringComponent(object);
+
+  return new VariableTreeComponent(object, name);
+//  return new StringComponent(object);
 }
 
 Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName, bool topLevelComponent)

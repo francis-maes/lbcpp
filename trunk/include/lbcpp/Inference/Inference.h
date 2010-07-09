@@ -11,7 +11,7 @@
 
 # include "predeclarations.h"
 # include "../Object/Variable.h"
-# include "../Object/VariableContainer.h"
+# include "../Object/Container.h"
 # include "../ObjectPredeclarations.h"
 
 namespace lbcpp

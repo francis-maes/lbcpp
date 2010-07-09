@@ -46,8 +46,8 @@ class FeatureDictionary;
 typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
 
 // new
-class VariableContainer;
-typedef ReferenceCountedObjectPtr<VariableContainer> VariableContainerPtr;
+class Container;
+typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
 class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 class SymmetricMatrix;

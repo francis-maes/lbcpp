@@ -19,7 +19,7 @@ namespace lbcpp
 class SimulationInferenceBatchLearner : public Inference
 {
 public:
-  ReturnCode train(InferenceContextPtr context, InferencePtr inference, VariableContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inference, ContainerPtr trainingData)
   {
     ReturnCode returnCode = Inference::finishedReturnCode;
     
@@ -37,7 +37,7 @@ protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     InferencePtr inference = input[0].getObjectAndCast<Inference>();
-    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
+    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
     jassert(inference && trainingData);
     returnCode = train(context, inference, trainingData);
     return ObjectPtr();

@@ -9,12 +9,12 @@
 #ifndef LBCPP_OBJECT_VECTOR_H_
 # define LBCPP_OBJECT_VECTOR_H_
 
-# include "VariableContainer.h"
+# include "Container.h"
 
 namespace lbcpp
 {
 
-class Vector : public VariableContainer
+class Vector : public Container
 {
 public:
   Vector(TypePtr elementsType, size_t initialSize = 0);
@@ -48,7 +48,7 @@ typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
 extern ClassPtr vectorClass(TypePtr elementsType);
 
-class BooleanVector : public VariableContainer
+class BooleanVector : public Container
 {
 public:
   BooleanVector(size_t initialSize = 0)
@@ -91,7 +91,7 @@ protected:
 typedef ReferenceCountedObjectPtr<BooleanVector> BooleanVectorPtr;
 
 template<class ImplementationType, class ObjectType>
-class BuiltinVector : public VariableContainer
+class BuiltinVector : public Container
 {
 public:
   BuiltinVector(size_t initialSize, const ImplementationType& defaultValue)
@@ -141,7 +141,7 @@ protected:
   std::vector<ImplementationType> values;
 };
 
-class DynamicObject : public VariableContainer
+class DynamicObject : public Container
 {
 public:
   DynamicObject(ClassPtr type = objectClass()) : type(type) {}
@@ -151,6 +151,9 @@ public:
 
   virtual size_t getNumVariables() const
     {return variables.size();}
+
+  virtual TypePtr getVariableType(size_t index) const
+    {jassert(index < variables.size()); return variables[index].getType();}
 
   virtual Variable getVariable(size_t index) const
     {jassert(index < variables.size()); return variables[index];}

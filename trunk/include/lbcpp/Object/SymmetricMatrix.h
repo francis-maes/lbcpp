@@ -15,7 +15,7 @@ namespace lbcpp
 {
 
 // matrix = container of rows, row = container of Variables
-class SymmetricMatrix : public VariableContainer 
+class SymmetricMatrix : public Container 
 {
 public:
   SymmetricMatrix(TypePtr contentType, size_t initialSize = 0) 

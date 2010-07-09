@@ -31,10 +31,10 @@ protected:
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
-  BinaryDecisionTreePtr sampleTree(TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData);
+  BinaryDecisionTreePtr sampleTree(TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData);
 
-  void sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& variables);
-  bool shouldCreateLeaf(VariableContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
+  void sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, ContainerPtr trainingData, const std::vector<size_t>& variables);
+  bool shouldCreateLeaf(ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
 };
 
 }; /* namespace lbcpp */

@@ -87,13 +87,13 @@ protected:
     jassert(input.getType()->inheritsFrom(pairType()));
 
     InferencePtr inference = input[0].getObject().dynamicCast<Inference>();
-    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
+    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
     jassert(inference && trainingData);
     returnCode = train(context, inference, trainingData);
     return ObjectPtr();
   }
 
-  ReturnCode train(InferenceContextPtr context, InferencePtr inf, VariableContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inf, ContainerPtr trainingData)
   {
     std::cout << "LOOKING FOR BEST THRESHOLD ..... " << std::endl;
     ContactMapScoresToProbabilitiesInferencePtr inference = inf.dynamicCast<ContactMapScoresToProbabilitiesInference>();
@@ -113,7 +113,7 @@ protected:
     return roc.findThresholdMaximisingF1(f1, precision, recall);
   }
   
-  void fillROCAnalyse(ROCAnalyse& roc, const String& supervisionObjectName, VariableContainerPtr trainingData)
+  void fillROCAnalyse(ROCAnalyse& roc, const String& supervisionObjectName, ContainerPtr trainingData)
   {
     for (size_t exampleNumber = 0; exampleNumber < trainingData->getNumVariables(); ++exampleNumber)
     {

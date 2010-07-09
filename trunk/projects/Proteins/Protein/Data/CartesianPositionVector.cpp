@@ -115,5 +115,5 @@ ClassPtr lbcpp::cartesianPositionVectorClass()
 
 void declareCartesianPositionVectorClasses()
 {
-  LBCPP_DECLARE_CLASS(CartesianPositionVector, VariableContainer);
+  LBCPP_DECLARE_CLASS(CartesianPositionVector, Container);
 }

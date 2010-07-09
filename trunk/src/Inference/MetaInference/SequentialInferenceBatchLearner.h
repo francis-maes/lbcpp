@@ -19,7 +19,7 @@ namespace lbcpp
 class SequentialInferenceBatchLearner : public Inference
 {
 public:
-  ReturnCode train(InferenceContextPtr context, InferencePtr inf, VariableContainerPtr trainingData)
+  ReturnCode train(InferenceContextPtr context, InferencePtr inf, ContainerPtr trainingData)
   {
     size_t numTrainingExamples = trainingData->size();
 
@@ -43,7 +43,7 @@ public:
     while (true)
     {
       // make sub-training data 
-      VariableContainerPtr subTrainingData = new Vector(pairType(), numTrainingExamples);
+      ContainerPtr subTrainingData = new Vector(pairType(), numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
         subTrainingData->setVariable(i, Variable::pair(currentStates[i]->getSubInput(), currentStates[i]->getSubSupervision()));
 
@@ -85,7 +85,7 @@ protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     SequentialInferencePtr inference = input[0].getObjectAndCast<SequentialInference>();
-    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
+    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
     jassert(inference && trainingData);
     returnCode = train(context, inference, trainingData);
     return ObjectPtr();

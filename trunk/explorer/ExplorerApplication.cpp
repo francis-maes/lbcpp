@@ -198,10 +198,19 @@ public:
 
   ObjectPtr loadObject(const File& file)
   {
-    if (file.isDirectory() && !file.getChildFile(T(".classFile")).exists())
-      return ObjectPtr(new FileObject(file));
-    else
+    FileObjectPtr fileObject = new FileObject(file);
+    switch (fileObject->getType())
+    {
+    case FileObject::textFile:
+      return Variable::createFromFile(file).getObject(); // XML !
+
+    case FileObject::classFile:
+    case FileObject::classDirectory:
       return Object::createFromFile(file);
+
+    default:
+      return fileObject;
+    }
   }
 
   juce_UseDebuggingNewOperator
