@@ -99,15 +99,12 @@ public:
     StringArray tokens;
     tokens.addTokens(arguments, T(","), T("<>"));
     std::vector<TypePtr> typeArguments(tokens.size());
-    std::cout << "Parsing " << arguments << ": ";
     for (int i = 0; i < tokens.size(); ++i)
     {
-      std::cout << tokens[i].quoted() << " " << std::flush;
       typeArguments[i] = parseAndGet(tokens[i], callback);
       if (!typeArguments[i])
         return TypePtr();
     } 
-    std::cout << std::endl;
     return get(baseName, typeArguments);
   }
 
