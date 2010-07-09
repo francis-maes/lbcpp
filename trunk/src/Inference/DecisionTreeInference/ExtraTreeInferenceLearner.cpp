@@ -29,7 +29,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   if (!trainingData->size())
     return Variable();
   
-  TypePtr trainingDataType = trainingData->getStaticType();
+  TypePtr trainingDataType = trainingData->getElementsType();
   jassert(trainingDataType->getNumTemplateArguments() == 2);
   TypePtr inputType = trainingDataType->getTemplateArgument(0);
   TypePtr outputType = trainingDataType->getTemplateArgument(1);
@@ -200,7 +200,7 @@ DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPt
 {
   if (!examples->size())
     return DiscreteProbabilityDistributionPtr();
-  DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(examples->getStaticType()->getTemplateArgument(1));
+  DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(examples->getElementsType()->getTemplateArgument(1));
   size_t n = examples->size();
   for (size_t i = 0; i < n; ++i)
     res->increment(examples->getVariable(i)[1]);
@@ -229,8 +229,8 @@ static double computeClassificationSplitScore(ContainerPtr examples, ContainerPt
 
 double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicatePtr predicate, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples)
 {
-  VectorPtr neg = new Vector(examples->getStaticType());
-  VectorPtr pos = new Vector(examples->getStaticType());
+  VectorPtr neg = new Vector(examples->getElementsType());
+  VectorPtr pos = new Vector(examples->getElementsType());
   for (size_t i = 0; i < examples->size(); ++i)
   {
     Variable inputOutputPair = examples->getVariable(i);
@@ -243,7 +243,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   negativeExamples = neg;
   positiveExamples = pos;
 
-  TypePtr outputType = examples->getStaticType()->getTemplateArgument(1);
+  TypePtr outputType = examples->getElementsType()->getTemplateArgument(1);
   if (outputType->inheritsFrom(enumerationType()))
     return computeClassificationSplitScore(examples, negativeExamples, positiveExamples);
 

@@ -115,6 +115,9 @@ public:
   ObjectPairToContainer(ObjectContainerPtr container)
     : container(container) {}
 
+  virtual TypePtr getElementsType() const
+    {return pairType(objectClass(), objectClass());}
+
   virtual size_t getNumVariables() const
     {return container->size();}
 

@@ -13,7 +13,7 @@ using namespace lbcpp;
 VectorPtr Container::toVector() const
 {
   size_t n = getNumVariables();
-  VectorPtr res = new Vector(getStaticType(), n);
+  VectorPtr res = new Vector(getElementsType(), n);
   for (size_t i = 0; i < n; ++i)
     res->setVariable(i, getVariable(i));
   return res;
@@ -192,6 +192,7 @@ void declareContainerClasses()
     LBCPP_DECLARE_CLASS(BooleanVector, Container);
     LBCPP_DECLARE_CLASS(DynamicObject, Container);
     LBCPP_DECLARE_TEMPLATE_CLASS(SymmetricMatrix, 1, Container);
+      LBCPP_DECLARE_TEMPLATE_CLASS(SymmetricMatrixRow, 1, Container);
 
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorContainer, Container);
 

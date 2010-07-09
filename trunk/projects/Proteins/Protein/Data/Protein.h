@@ -94,10 +94,13 @@ public:
     {return disorderRegions;}
 
   /*
-  ** Contact maps
+  ** Contact maps / Distance maps
   */
   SymmetricMatrixPtr getContactMap(double threshold = 8, bool betweenCBetaAtoms = false) const;
   void setContactMap(SymmetricMatrixPtr contactMap, double threshold = 8, bool betweenCBetaAtoms = false);
+
+  SymmetricMatrixPtr getDistanceMap(bool betweenCBetaAtoms = false) const;
+  void setDistanceMap(SymmetricMatrixPtr contactMap, bool betweenCBetaAtoms = false);
 
   /*
   ** Tertiary Structure
