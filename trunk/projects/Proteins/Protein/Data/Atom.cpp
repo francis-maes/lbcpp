@@ -11,28 +11,30 @@ using namespace lbcpp;
 
 String Atom::toString() const
 {
-  return getName() + T(" ") + position.toString() + T(" ")
+  return getName() + T(" ") + position->toString() + T(" ")
     + lbcpp::toString(occupancy) + T(" ") + lbcpp::toString(temperatureFactor);
 }
 
-void Atom::saveToXml(XmlElement* xml) const
+VariableReference Atom::getVariableReference(size_t index)
 {
-  xml->setAttribute(T("name"), name);
-  xml->setAttribute(T("elementSymbol"), elementSymbol);
-  xml->setAttribute(T("position"), position.toString());
-  xml->setAttribute(T("occupancy"), occupancy);
-  xml->setAttribute(T("temperatureFactor"), temperatureFactor);
+  if (index == 0)
+    return NameableObject::getVariableReference(index);
+  --index;
+  switch (index)
+  {
+  case 0: return elementSymbol;
+  case 1: return position;
+  case 2: return occupancy;
+  case 3: return temperatureFactor;
+  default: jassert(false); return VariableReference();
+  };
 }
 
+void Atom::saveToXml(XmlElement* xml) const
+  {saveVariablesToXmlAttributes(xml);}
+
 bool Atom::loadFromXml(XmlElement* xml, ErrorHandler& callback)
-{
-  name = xml->getStringAttribute(T("name"));
-  elementSymbol = xml->getStringAttribute(T("elementSymbol"));
-  position = impl::Vector3::fromString(xml->getStringAttribute(T("position")), callback);
-  occupancy = xml->getDoubleAttribute(T("occupancy"));
-  temperatureFactor = xml->getDoubleAttribute(T("temperatureFactor"));
-  return true;
-}
+  {return loadVariablesFromXmlAttributes(xml, callback);}
 
 ClassPtr lbcpp::atomClass()
   {static TypeCache cache(T("Atom")); return cache();}
@@ -42,6 +44,10 @@ class AtomClass : public DynamicClass
 public:
   AtomClass() : DynamicClass(T("Atom"), objectClass())
   {
+    addVariable(stringType(), T("elementSymbol"));
+    addVariable(vector3Class(), T("position"));
+    addVariable(doubleType(), T("occupancy"));
+    addVariable(doubleType(), T("temperatureFactor"));
   }
 
   virtual VariableValue create() const

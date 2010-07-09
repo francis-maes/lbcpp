@@ -29,7 +29,7 @@ TertiaryStructurePtr TertiaryStructure::createFromCAlphaTrace(VectorPtr primaryS
       // create a residue with a single Ca atom
       ResiduePtr residue = new Residue((AminoAcidType)primaryStructure->getVariable(i).getInteger());
       AtomPtr atom = new Atom(T("CA"), T("C"));
-      atom->setPosition(position);
+      atom->setPosition(new Vector3(position));
       residue->addAtom(atom);
       res->setResidue(i, residue);
     }
@@ -202,8 +202,8 @@ SymmetricMatrixPtr TertiaryStructure::makeCAlphaDistanceMatrix() const
   {
     ResiduePtr residue = getResidue(i);
     AtomPtr atom = residue ? residue->getCAlphaAtom() : AtomPtr();
-    if (atom)
-      positions[i] = atom->getPosition();
+    if (atom && atom->getPosition())
+      positions[i] = atom->getPosition()->getValue();
   }
   return makeDistanceMatrix(positions);
 }
@@ -216,8 +216,8 @@ SymmetricMatrixPtr TertiaryStructure::makeCBetaDistanceMatrix() const
   {
     ResiduePtr residue = getResidue(i);
     AtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : AtomPtr();
-    if (atom)
-      positions[i] = atom->getPosition();
+    if (atom && atom->getPosition())
+      positions[i] = atom->getPosition()->getValue();
   }
   return makeDistanceMatrix(positions);
 }

@@ -17,39 +17,36 @@ namespace lbcpp
 class Atom : public NameableObject
 {
 public:
-  Atom(const String& name, const String& elementSymbol, const impl::Vector3& position = impl::Vector3())
+  Atom(const String& name, const String& elementSymbol, Vector3Ptr position = Vector3Ptr())
     : NameableObject(name), elementSymbol(elementSymbol), position(position), occupancy(0.0), temperatureFactor(0.0) {}
   Atom() {}
 
   String getElementSymbol() const
     {return elementSymbol;}
 
-  const impl::Vector3& getPosition() const
-    {return position;}
-  
-  impl::Vector3& getPosition()
+  Vector3Ptr getPosition() const
     {return position;}
 
-  void setPosition(const impl::Vector3& position)
+  void setPosition(Vector3Ptr position)
     {this->position = position;}
 
   double getX() const
-    {return position.getX();}
+    {return position->getX();}
 
   void setX(double value)
-    {position.setX(value);}
+    {position->setX(value);}
 
   double getY() const
-    {return position.getY();}
+    {return position->getY();}
 
   void setY(double value)
-    {position.setY(value);}
+    {position->setY(value);}
 
   double getZ() const
-    {return position.getZ();}
+    {return position->getZ();}
 
   void setZ(double value)
-    {position.setZ(value);}
+    {position->setZ(value);}
 
   void setOccupancy(double occupancy)
     {this->occupancy = occupancy;}
@@ -70,9 +67,11 @@ public:
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
+  virtual VariableReference getVariableReference(size_t index);
+
 protected:
   String elementSymbol;
-  impl::Vector3 position;
+  Vector3Ptr position;
   double occupancy;
   double temperatureFactor;
 };

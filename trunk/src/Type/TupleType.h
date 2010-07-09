@@ -120,6 +120,27 @@ public:
     data[index] = subValue;
   }
 
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
+  {
+    Variable* data = (Variable* )allocateMemory(size);
+    if (xml->getNumChildElements() != size)
+    {
+      callback.errorMessage(T("PairType::createFromXml"), T("Invalid number of child elements"));
+      return getMissingValue();
+    }
+    size_t i = 0;
+    for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
+      data[i++] = Variable::createFromXml(elt);
+    return VariableValue((char* )data);
+  }
+
+  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
+  {
+    Variable* data = (Variable* )value.getRawData();
+    for (size_t i = 0; i < size; ++i)
+      xml->addChildElement(data[i].toXml());
+  }
+
 protected:
   size_t size;
 };

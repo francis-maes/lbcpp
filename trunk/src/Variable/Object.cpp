@@ -36,14 +36,54 @@ size_t Object::getNumVariables() const
   return res;
 }
 
+TypePtr Object::getVariableType(size_t index) const
+{
+  return getClass()->getStaticVariableType(index);
+}
+
+String Object::getVariableName(size_t index) const
+{
+  return getClass()->getStaticVariableName(index);
+}
+
 Variable Object::getVariable(size_t index) const
-  {jassert(false); return Variable();}
+{
+  VariableReference ref = const_cast<Object* >(this)->getVariableReference(index);
+  return ref.get(getVariableType(index));
+}
+
+void Object::setVariable(size_t index, const Variable& value)
+{
+  VariableReference ref = getVariableReference(index);
+  ref.set(value);
+}
+
+VariableReference Object::getVariableReference(size_t index)
+  {jassert(false); return VariableReference();}
 
 void Object::accept(ObjectVisitorPtr visitor)
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
     visitor->visit(i, getVariable(i));
+}
+
+/*
+** to string
+*/
+String Object::toString() const
+{
+  String res = T("{");
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    String name = getVariableName(i);
+    res += name + T(" = ") + getVariable(i).toString();
+    if (i < n - 1)
+      res += T(", ");
+  }
+  res += T("}");
+  return res;
 }
 
 String Object::variablesToString(const String& separator) const
@@ -296,6 +336,31 @@ bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   return true;
 }
 
+void Object::saveVariablesToXmlAttributes(XmlElement* xml) const
+{
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+    xml->setAttribute(getVariableName(i), getVariable(i).toString());
+}
+
+bool Object::loadVariablesFromXmlAttributes(XmlElement* xml, ErrorHandler& callback)
+{
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    String name = getVariableName(i);
+    if (xml->hasAttribute(name))
+    {
+      Variable var = Variable::createFromString(getVariableType(i), xml->getStringAttribute(name), callback);
+      if (!var.isMissingValue())
+        setVariable(i, var);
+    }
+    else
+      callback.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
+  }
+  return true;
+}
+
 bool Object::loadFromString(const String& str, ErrorHandler& callback)
 {
   callback.errorMessage(T("Object::loadFromString"), T("Not implemented"));
@@ -305,18 +370,8 @@ bool Object::loadFromString(const String& str, ErrorHandler& callback)
 /*
 ** NameableObject
 */
-Variable NameableObject::getVariable(size_t index) const
-{
-  jassert(index == 0);
-  return name;
-}
-
-void NameableObject::setVariable(size_t index, const Variable& value)
-{
-  jassert(index == 0);
-  if (checkInheritance(value, stringType()))
-    name = value.getString();
-}
+VariableReference NameableObject::getVariableReference(size_t index)
+  {jassert(index == 0); return name;}
 
 class NameableObjectClass : public DynamicClass
 {

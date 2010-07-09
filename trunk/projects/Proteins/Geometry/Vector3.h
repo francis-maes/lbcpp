@@ -199,6 +199,24 @@ public:
   impl::Vector3& getValue()
     {return value;}
 
+  double getX() const
+    {return value.x;}
+
+  void setX(double x)
+    {value.x = x;}
+
+  double getY() const
+    {return value.y;}
+
+  void setY(double y)
+    {value.y = y;}
+
+  double getZ() const
+    {return value.z;}
+
+  void setZ(double z)
+    {value.z = z;}
+
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
     

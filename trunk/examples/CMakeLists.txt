@@ -13,5 +13,6 @@ ENDMACRO(ADD_LBCPP_EXAMPLE)
 
 ADD_CPP_EXAMPLE(Misc UserTypeTraits)
 ADD_CPP_EXAMPLE(Misc MissingValues)
+ADD_CPP_EXAMPLE(Misc SimpleIntrospection)
 
 ADD_LBCPP_EXAMPLE(FeatureGenerator FeatureAcceptVisitor)

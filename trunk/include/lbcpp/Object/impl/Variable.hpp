@@ -35,6 +35,9 @@ namespace lbcpp
 inline Variable::Variable(bool boolValue, TypePtr type)
   : type(type), value(boolValue) {jassert(isBoolean());}
 
+inline Variable::Variable(juce::int64 intValue, TypePtr type)
+  : type(type), value((int)intValue) {jassert(isInteger());}
+
 inline Variable::Variable(int intValue, TypePtr type)
   : type(type), value(intValue) {jassert(isInteger());} 
 

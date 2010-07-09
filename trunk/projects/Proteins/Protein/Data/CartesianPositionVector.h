@@ -39,6 +39,9 @@ public:
   impl::Vector3 getPositionChecked(int index) const
     {return index >= 0 && index < (int)values.size() ? values[index] : impl::Vector3();}
 
+  void setPosition(size_t index, Vector3Ptr position)
+    {values[index] = position ? position->getValue() : impl::Vector3();}
+
   void setPosition(size_t index, const impl::Vector3& position)
     {values[index] = position;}
 
