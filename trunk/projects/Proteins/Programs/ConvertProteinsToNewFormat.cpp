@@ -171,16 +171,23 @@ static ProteinPtr convertProtein(ProteinObjectPtr protein)
   return res;
 }
 
-static VectorPtr convertProteins(ObjectContainerPtr oldStyleProteins)
+static VectorPtr convertProteins(ObjectContainerPtr oldStyleProteins, const File& outputDirectory)
 {
   VectorPtr proteins = new Vector(proteinClass(), oldStyleProteins->size());
   for (size_t i = 0; i < proteins->size(); ++i)
   {
     ProteinObjectPtr oldStyleProtein = oldStyleProteins->getAndCast<ProteinObject>(i);
+    if (!oldStyleProtein)
+      continue;
+
+    std::cout << "[" << i << "] Converting protein " << oldStyleProtein->getName() << "..." << std::flush;
     jassert(oldStyleProtein);
     ProteinPtr protein = convertProtein(oldStyleProtein);
     jassert(protein);
     proteins->setVariable(i, protein);
+    std::cout << " saving... " << protein->getName() << std::flush;
+    Variable(protein).saveToFile(outputDirectory.getChildFile(protein->getName() + T(".xml")));
+    std::cout << " ok" << std::endl;
   }
   return proteins;
 }
@@ -188,22 +195,28 @@ static VectorPtr convertProteins(ObjectContainerPtr oldStyleProteins)
 
 int main(int argc, char** argv)
 {
+  if (argc < 3)
+  {
+    std::cerr << "Usage: " << argv[0] << " inputDirectory outputDirectory" << std::endl;
+    return 1;
+  }
+  File workingDirectory = File::getCurrentWorkingDirectory();
+  File inputDirectory = workingDirectory.getChildFile(argv[1]);
+  if (!inputDirectory.isDirectory())
+  {
+    std::cerr << argv[1] << " is not a directory." << std::endl;
+    return 1;
+  }
+  File outputDirectory = workingDirectory.getChildFile(argv[2]);
+  if (!outputDirectory.exists())
+    outputDirectory.createDirectory();
+
   lbcpp::initialize();
   declareProteinClasses();
-
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  //File workingDirectory(T("/Users/francis/tmp"));
-  ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\protein")));
+  ObjectContainerPtr oldStyleProteins = loadProteins(inputDirectory);
+  std::cout << oldStyleProteins->size() << " proteins" << std::endl;
   
   // convert proteins
-  VectorPtr proteins = convertProteins(oldStyleProteins);
-  oldStyleProteins = ObjectContainerPtr();
-  std::cout << proteins->size() << " proteins" << std::endl;
-  proteins->getVariable(0).saveToFile(workingDirectory.getChildFile(T("NewProt.xml")));
-  
-  Variable loadedProtein = Variable::createFromFile(workingDirectory.getChildFile(T("NewProt.xml")));
-  std::cout << "Loaded protein: " << loadedProtein << std::endl;
-  loadedProtein.saveToFile(workingDirectory.getChildFile(T("NewProt2.xml")));
-  
+  convertProteins(oldStyleProteins, outputDirectory);
   return 0;
 }

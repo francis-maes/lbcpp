@@ -20,7 +20,7 @@ VectorPtr Container::toVector() const
 }
 
 String Container::toString() const
-  {return T("[") + variablesToString(T(", ")) + T("]");}
+  {return T("[") + variablesToString(T(",\n  ")) + T("]");}
 
 class SubsetContainer : public DecoratorContainer
 {

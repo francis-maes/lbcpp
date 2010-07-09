@@ -51,12 +51,10 @@ void Vector::append(const Variable& value)
 bool Vector::checkType(const Variable& value) const
   {return checkInheritance(value, getStaticType());}
 
-void Vector::saveToXml(XmlElement* xml) const
+String Vector::toString() const
 {
-  size_t n = getNumVariables();
-
   TypePtr type = getStaticType();
-  xml->setAttribute(T("size"), (int)n);
+  size_t n = size();
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
   {
@@ -70,8 +68,7 @@ void Vector::saveToXml(XmlElement* xml) const
       else
         value += oneLetterCodes[variable.getInteger()];
     }
-    xml->addTextElement(value);
-    return;
+    return value;
   }
 
   if (type->inheritsFrom(doubleType()))
@@ -87,11 +84,24 @@ void Vector::saveToXml(XmlElement* xml) const
       if (i < n - 1)
         value += ' ';
     }
-    xml->addTextElement(value);
-    return;
+    return value;
   }
 
-  Container::saveToXml(xml);
+  return Container::toString();
+}
+
+void Vector::saveToXml(XmlElement* xml) const
+{
+  size_t n = getNumVariables();
+
+  TypePtr type = getStaticType();
+  xml->setAttribute(T("size"), (int)n);
+
+  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+  if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType()))
+    xml->addTextElement(toString());
+  else
+    Container::saveToXml(xml);
 }
 
 bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
