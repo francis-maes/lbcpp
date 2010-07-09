@@ -33,12 +33,12 @@ public:
   virtual ObjectPtr get(size_t index) const
   {
     impl::Vector3 p = getPosition(index);
-    return p.exists() ? new Vector3Object(p) : ObjectPtr();
+    return p.exists() ? new Vector3(p) : ObjectPtr();
   }
 
   virtual void set(size_t index, ObjectPtr object)
   {
-    Vector3ObjectPtr v3o = object.dynamicCast<Vector3Object>();
+    Vector3Ptr v3o = object.dynamicCast<Vector3>();
     jassert(v3o);
     setPosition(index, v3o->getValue());
   }

@@ -7,7 +7,9 @@
                                `--------------------------------------------*/
 #include "Vector3.h"
 using namespace lbcpp;
-using namespace lbcpp::impl;
+
+namespace lbcpp {
+namespace impl {
 
 /*
 ** Vector3
@@ -30,6 +32,24 @@ Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
   return Vector3(tokens[0].getDoubleValue(), tokens[1].getDoubleValue(), tokens[2].getDoubleValue());
 }
 
+}; /* namespace impl */
+
+class Vector3Class : public DynamicClass
+{
+public:
+  Vector3Class()
+    : DynamicClass(T("Vector3"), objectClass())
+  {
+    addVariable(doubleType(), T("x"));
+    addVariable(doubleType(), T("y"));
+    addVariable(doubleType(), T("z"));
+  }
+};
+
+ClassPtr vector3Class()
+  {static TypeCache cache(T("Vector3")); return cache();}
+
+}; /* namespace lbcpp */
 
 /*
 ** Vector3KDTree
@@ -45,13 +65,13 @@ Vector3KDTree::~Vector3KDTree()
     kd_free(tree);
 }
 
-void Vector3KDTree::insert(size_t index, const Vector3& position)
+void Vector3KDTree::insert(size_t index, const impl::Vector3& position)
 {
   jassert(position.exists());
   kd_insert3(tree, position.getX(), position.getY(), position.getZ(), (void*)index);
 }
 
-void Vector3KDTree::findPointsInSphere(const Vector3& center, double radius, std::vector<size_t>& results)
+void Vector3KDTree::findPointsInSphere(const impl::Vector3& center, double radius, std::vector<size_t>& results)
 {
   jassert(center.exists());
   struct kdres* res = kd_nearest_range3(tree, center.getX(), center.getY(), center.getZ(), radius);
@@ -63,4 +83,10 @@ void Vector3KDTree::findPointsInSphere(const Vector3& center, double radius, std
     kd_res_next(res);
   }
   kd_res_free(res);
+}
+
+
+void declareVector3Classes()
+{
+  Class::declare(new Vector3Class());
 }

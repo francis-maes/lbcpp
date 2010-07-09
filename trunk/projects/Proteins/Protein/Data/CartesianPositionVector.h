@@ -67,10 +67,10 @@ protected:
   std::vector<ImplementationType> values;
 };
 
-class CartesianPositionVector : public BuiltinVector<impl::Vector3, Vector3Object>
+class CartesianPositionVector : public BuiltinVector<impl::Vector3, Vector3>
 {
 public:
-  typedef BuiltinVector<impl::Vector3, Vector3Object> BaseClass;
+  typedef BuiltinVector<impl::Vector3, Vector3> BaseClass;
 
   CartesianPositionVector(size_t length, const impl::Vector3& defaultValue = impl::Vector3())
     : BaseClass(length, defaultValue) {}

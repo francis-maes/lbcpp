@@ -365,10 +365,10 @@ void ProteinObject::computeMissingFields()
     
     for (size_t i = 3; i < calphaTrace->size(); ++i)
     {
-      Vector3ObjectPtr v3o_a = static_cast<Vector3ObjectPtr>(calphaTrace->get(i - 3));
-      Vector3ObjectPtr v3o_b = static_cast<Vector3ObjectPtr>(calphaTrace->get(i - 2));
-      Vector3ObjectPtr v3o_c = static_cast<Vector3ObjectPtr>(calphaTrace->get(i - 1));
-      Vector3ObjectPtr v3o_d = static_cast<Vector3ObjectPtr>(calphaTrace->get(i));
+      Vector3Ptr v3o_a = static_cast<Vector3Ptr>(calphaTrace->get(i - 3));
+      Vector3Ptr v3o_b = static_cast<Vector3Ptr>(calphaTrace->get(i - 2));
+      Vector3Ptr v3o_c = static_cast<Vector3Ptr>(calphaTrace->get(i - 1));
+      Vector3Ptr v3o_d = static_cast<Vector3Ptr>(calphaTrace->get(i));
       
       if (!v3o_a || !v3o_b || !v3o_c || !v3o_d)
         continue;

@@ -8,7 +8,9 @@
 
 #include "BondCoordinatesSequence.h"
 using namespace lbcpp;
-using namespace lbcpp::impl;
+
+namespace lbcpp {
+namespace impl {
 /*
 ** BondCoordinates
 */
@@ -50,6 +52,9 @@ String BondCoordinates::toString() const
     lbcpp::toString(phi) + T(")");
 }
 
+}; /* namespace impl */
+}; /* namespace lbcpp */
+
 /*
 ** BondCoordinatesSequence
 */
@@ -63,13 +68,13 @@ BondCoordinatesSequence::BondCoordinatesSequence(const String& name, CartesianCo
   
   resize(n - 1);
 
-  Vector3 A;
-  Vector3 B = cartesianCoordinates->getPositionChecked(0);
-  Vector3 C = cartesianCoordinates->getPositionChecked(1);
+  impl::Vector3 A;
+  impl::Vector3 B = cartesianCoordinates->getPositionChecked(0);
+  impl::Vector3 C = cartesianCoordinates->getPositionChecked(1);
   for (size_t i = 0; i < n - 1; ++i)
   {
-    Vector3 D = cartesianCoordinates->getPositionChecked(i + 2);
-    setCoordinates(i, BondCoordinates(A.exists() ? &A : NULL, 
+    impl::Vector3 D = cartesianCoordinates->getPositionChecked(i + 2);
+    setCoordinates(i, impl::BondCoordinates(A.exists() ? &A : NULL, 
                                 B.exists() ? &B : NULL, 
                                 C.exists() ? &C : NULL, 
                                 D.exists() ? &D : NULL));
@@ -84,12 +89,12 @@ BondCoordinatesSequence::BondCoordinatesSequence(const String& name, size_t leng
 {
 }
 
-CartesianCoordinatesSequencePtr BondCoordinatesSequence::makeCartesianCoordinates(const String& name, const Matrix4& initialMatrix)
+CartesianCoordinatesSequencePtr BondCoordinatesSequence::makeCartesianCoordinates(const String& name, const impl::Matrix4& initialMatrix)
 {
   size_t n = size() + 1;
 
   CartesianCoordinatesSequencePtr res = new CartesianCoordinatesSequence(name, n);
-  Matrix4 matrix(initialMatrix);
+  impl::Matrix4 matrix(initialMatrix);
   res->setPosition(0, matrix.getTranslation());
   for (size_t i = 1; i < n; ++i)
   {
