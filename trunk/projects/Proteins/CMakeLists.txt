@@ -32,6 +32,7 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/DihedralAngle.h
   Geometry/Vector3.h
+  Geometry/Vector3.cpp
   Geometry/Matrix3.h
   Geometry/Matrix3.cpp  
   Geometry/Matrix4.h
@@ -45,6 +46,8 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Protein/Data/AminoAcid.cpp
   Protein/Data/SecondaryStructure.h
   Protein/Data/SecondaryStructure.cpp
+  Protein/Data/CartesianPositionVector.h
+  Protein/Data/CartesianPositionVector.cpp
   Protein/Data/Protein.h
   Protein/Data/Protein.cpp
 )

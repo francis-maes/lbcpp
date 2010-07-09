@@ -137,6 +137,19 @@ static VectorPtr convertBinaryLabelSequenceToProbabilityVector(LabelSequencePtr 
   return res;
 }
 
+CartesianPositionVectorPtr convertCartesianPositionVector(CartesianCoordinatesSequencePtr sequence)
+{
+  if (!sequence)
+    return CartesianPositionVectorPtr();
+
+  size_t n = sequence->size();
+  CartesianPositionVectorPtr res = new CartesianPositionVector(n);
+  for (size_t i = 0; i < n; ++i)
+    if (sequence->hasObject(i))
+      res->setPosition(i, sequence->getPosition(i));
+  return res;
+}
+
 ProteinPtr convertProtein(ProteinObjectPtr protein)
 {
   ProteinPtr res = new Protein(protein->getName());
@@ -145,6 +158,7 @@ ProteinPtr convertProtein(ProteinObjectPtr protein)
 
   res->setSecondaryStructure(convertLabelSequence(protein->getSecondaryStructureSequence(), secondaryStructureElementEnumeration()));
   res->setDSSPSecondaryStructure(convertLabelSequence(protein->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureElementEnumeration()));
+  res->setStructuralAlphabetSequence(convertLabelSequence(protein->getStructuralAlphabetSequence(), structuralAlphaElementEnumeration()));
 
   res->setSolventAccessibility(convertScalarSequenceToProbabilityVector(protein->getNormalizedSolventAccessibilitySequence()));
   res->setSolventAccessibilityAt20p(convertBinaryLabelSequenceToProbabilityVector(protein->getSolventAccessibilityThreshold20()));
@@ -154,8 +168,9 @@ ProteinPtr convertProtein(ProteinObjectPtr protein)
   else
     res->setDisorderRegions(convertBinaryLabelSequenceToProbabilityVector(protein->getDisorderSequence()));
 
+  res->setCAlphaTrace(convertCartesianPositionVector(protein->getCAlphaTrace()));
 
-  // FIXME: the rest ...
+  // FIXME: tertiary structure
 
   res->computeMissingVariables();
   return res;

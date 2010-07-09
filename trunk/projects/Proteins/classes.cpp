@@ -33,6 +33,8 @@ extern void declareProteinResidueFeaturesClasses();
 extern void declareProteinResiduePairFeaturesClasses();
 
 // new:
+extern void declareCartesianPositionVectorClasses();
+
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
 extern void declareProteinClass();
@@ -88,6 +90,8 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(StructuralAlphabetDictionary);
 
   // new:
+  declareCartesianPositionVectorClasses();
+
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
   declareProteinClass();
