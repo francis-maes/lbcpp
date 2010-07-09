@@ -9,25 +9,25 @@
 #include "CartesianPositionVector.h"
 using namespace lbcpp;
 
-void CartesianPositionVector::movePosition(size_t index, const Vector3& delta)
+void CartesianPositionVector::movePosition(size_t index, const impl::Vector3& delta)
 {
-  Vector3 v = getPosition(index);
+  impl::Vector3 v = getPosition(index);
   jassert(v.exists());
   v += delta;
   setPosition(index, v);
 }
 
-void CartesianPositionVector::applyAffineTransform(const Matrix4& affineTransform)
+void CartesianPositionVector::applyAffineTransform(const impl::Matrix4& affineTransform)
 {
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i].exists())
       values[i] = affineTransform.transformAffine(values[i]);
 }
 
-Vector3 CartesianPositionVector::getGravityCenter() const
+impl::Vector3 CartesianPositionVector::getGravityCenter() const
 {
   // todo: cache
-  Vector3 sum = 0;
+  impl::Vector3 sum = 0;
   size_t count = 0;
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i].exists())
@@ -65,7 +65,7 @@ bool CartesianPositionVector::loadFromXml(XmlElement* xml, ErrorHandler& callbac
     callback.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Invalid size: ") + String(size));
     return false;
   }
-  values.resize(size, Vector3());
+  values.resize(size, impl::Vector3());
 
   String text = xml->getAllSubText();
   StringArray tokens;
@@ -96,7 +96,7 @@ bool CartesianPositionVector::loadFromXml(XmlElement* xml, ErrorHandler& callbac
                   + T(" ") + (i + 2 < trueTokens.size() ? trueTokens[i + 2].quoted() : T("N/A")));
         return false;
       }
-      values[index++] = Vector3(trueTokens[i].getDoubleValue(), trueTokens[i + 1].getDoubleValue(), trueTokens[i + 2].getDoubleValue());
+      values[index++] = impl::Vector3(trueTokens[i].getDoubleValue(), trueTokens[i + 1].getDoubleValue(), trueTokens[i + 2].getDoubleValue());
       i += 2;
     }
   }

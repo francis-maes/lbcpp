@@ -77,9 +77,9 @@ public:
   void pruneResiduesThatDoNotHaveCompleteBackbone();
   size_t getNumSpecifiedResidues() const;
 
-  Matrix4 superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const;
+  impl::Matrix4 superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const;
   double computeCAlphaAtomsRMSE(ProteinTertiaryStructurePtr targetStructure) const;
-  void applyAffineTransform(const Matrix4& affineTransform) const;
+  void applyAffineTransform(const impl::Matrix4& affineTransform) const;
 
 private:
   std::vector<ProteinResidueAtomsPtr> residues;

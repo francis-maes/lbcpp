@@ -16,14 +16,14 @@
 namespace lbcpp
 {
 
-class CartesianCoordinatesSequence : public BuiltinVectorBasedSequence<Vector3>
+class CartesianCoordinatesSequence : public BuiltinVectorBasedSequence<impl::Vector3>
 {
 public:
-  typedef BuiltinVectorBasedSequence<Vector3> BaseClass;
+  typedef BuiltinVectorBasedSequence<impl::Vector3> BaseClass;
 
-  CartesianCoordinatesSequence(const String& name, size_t length, const Vector3& defaultValue = Vector3())
+  CartesianCoordinatesSequence(const String& name, size_t length, const impl::Vector3& defaultValue = impl::Vector3())
     : BaseClass(name, length, defaultValue) {}
-  CartesianCoordinatesSequence(const String& name, const std::vector<Vector3>& positions)
+  CartesianCoordinatesSequence(const String& name, const std::vector<impl::Vector3>& positions)
     : BaseClass(name, positions) {}
   CartesianCoordinatesSequence() {}
 
@@ -32,7 +32,7 @@ public:
 
   virtual ObjectPtr get(size_t index) const
   {
-    Vector3 p = getPosition(index);
+    impl::Vector3 p = getPosition(index);
     return p.exists() ? new Vector3Object(p) : ObjectPtr();
   }
 
@@ -46,32 +46,32 @@ public:
   bool hasPosition(size_t index) const
     {return hasObject(index);}
 
-  Vector3 getPosition(size_t index) const
+  impl::Vector3 getPosition(size_t index) const
     {return getElement(index);}
 
-  Vector3 getPositionChecked(int index) const
-    {return index >= 0 && index < (int)elements.size() ? elements[index] : Vector3();}
+  impl::Vector3 getPositionChecked(int index) const
+    {return index >= 0 && index < (int)elements.size() ? elements[index] : impl::Vector3();}
 
-  void setPosition(size_t index, const Vector3& position)
+  void setPosition(size_t index, const impl::Vector3& position)
     {setElement(index, position);}
 
   void clearPosition(size_t index)
-    {setElement(index, Vector3());}
+    {setElement(index, impl::Vector3());}
 
-  void movePosition(size_t index, const Vector3& delta)
-    {Vector3 v = getPosition(index); jassert(v.exists()); v += delta; setPosition(index, v);}
+  void movePosition(size_t index, const impl::Vector3& delta)
+    {impl::Vector3 v = getPosition(index); jassert(v.exists()); v += delta; setPosition(index, v);}
 
-  void applyAffineTransform(const Matrix4& affineTransform)
+  void applyAffineTransform(const impl::Matrix4& affineTransform)
   {
     for (size_t i = 0; i < elements.size(); ++i)
       if (elements[i].exists())
         setElement(i, affineTransform.transformAffine(getElement(i)));
   }
 
-  Vector3 getGravityCenter() const
+  impl::Vector3 getGravityCenter() const
   {
     // todo: cache
-    Vector3 sum = 0;
+    impl::Vector3 sum = 0;
     size_t count = 0;
     for (size_t i = 0; i < elements.size(); ++i)
       if (elements[i].exists())
@@ -82,7 +82,7 @@ public:
     return count ? sum / (double)count : sum;
   }
 
-  std::vector<Vector3>& getVectorOfPositions()
+  std::vector<impl::Vector3>& getVectorOfPositions()
     {return elements;}
 };
 

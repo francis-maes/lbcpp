@@ -39,7 +39,7 @@ public:
 
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    BondCoordinates bond;
+    impl::BondCoordinates bond;
     bond.setLength(3.8);
     Variable theta = state->getSubOutput(0);
     Variable dihedral = state->getSubOutput(1);

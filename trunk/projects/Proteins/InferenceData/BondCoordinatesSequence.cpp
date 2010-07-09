@@ -8,7 +8,7 @@
 
 #include "BondCoordinatesSequence.h"
 using namespace lbcpp;
-
+using namespace lbcpp::impl;
 /*
 ** BondCoordinates
 */

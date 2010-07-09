@@ -55,8 +55,8 @@ public:
     jassert(n == correct->size());
     for (size_t i = 0; i < n; ++i)
     {
-      BondCoordinates p = predicted->getCoordinates(i);
-      BondCoordinates c = correct->getCoordinates(i);
+      impl::BondCoordinates p = predicted->getCoordinates(i);
+      impl::BondCoordinates c = correct->getCoordinates(i);
       if (!p.exists() && !c.exists())
         continue;
      
@@ -149,7 +149,7 @@ public:
     }
   }
 
-  void addBondPrediction(const BondCoordinates& predicted, const BondCoordinates& correct)
+  void addBondPrediction(const impl::BondCoordinates& predicted, const impl::BondCoordinates& correct)
   {
     if (predicted.hasLength() && correct.hasLength())
       lengthEvaluator->addDelta(predicted.getLength() - correct.getLength());

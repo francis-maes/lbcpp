@@ -14,6 +14,8 @@
 
 namespace lbcpp
 {
+namespace impl
+{
 
 class Matrix4
 {
@@ -183,21 +185,23 @@ inline Vector3 operator *(const Vector3& v, const Matrix4& mat)
   return res;
 }
 
-template<>
-struct Traits<Matrix4>
-{
-  typedef Matrix4 Type;
+}; /* namespace impl */
 
-  static inline String toString(const Matrix4& value)
+template<>
+struct Traits<impl::Matrix4>
+{
+  typedef impl::Matrix4 Type;
+
+  static inline String toString(const impl::Matrix4& value)
     {return value.toString();}
 
-  static inline void write(OutputStream& ostr, const Matrix4& value)
+  static inline void write(OutputStream& ostr, const impl::Matrix4& value)
   {
     for (size_t i = 0; i < 16; ++i)
       lbcpp::write(ostr, value._m[i]);
   }
 
-  static inline bool read(InputStream& istr, Matrix4& res)
+  static inline bool read(InputStream& istr, impl::Matrix4& res)
   {
     for (size_t i = 0; i < 16; ++i)
     if (!lbcpp::read(istr, res._m[i]))

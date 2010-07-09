@@ -373,16 +373,16 @@ void ProteinObject::computeMissingFields()
       if (!v3o_a || !v3o_b || !v3o_c || !v3o_d)
         continue;
       
-      Vector3 a = v3o_a->getValue();
-      Vector3 b = v3o_b->getValue();
-      Vector3 c = v3o_c->getValue();
-      Vector3 d = v3o_d->getValue();
+      impl::Vector3 a = v3o_a->getValue();
+      impl::Vector3 b = v3o_b->getValue();
+      impl::Vector3 c = v3o_c->getValue();
+      impl::Vector3 d = v3o_d->getValue();
       
       double d1 = (a - c).l2norm();
       double d2 = (a - d).l2norm();
       double d3 = (b - d).l2norm();
       
-      Vector3 normalVector =  (b - a).crossProduct(c - a);
+      impl::Vector3 normalVector =  (b - a).crossProduct(c - a);
       
       double d4 = (normalVector.dotProduct(d) - normalVector.dotProduct(a)) / normalVector.l2norm();
       

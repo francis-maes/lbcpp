@@ -76,7 +76,7 @@ public:
   /*
   ** Introspection
   */
-  ClassPtr getClass() const;
+  virtual ClassPtr getClass() const;
   String getClassName() const;
 
   virtual size_t getNumVariables() const;

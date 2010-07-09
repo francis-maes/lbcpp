@@ -329,7 +329,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
       !getDouble(line, 55, 60, occupancy) ||
       !getDouble(line, 61, 66, temperatureFactor))
     return false;
-  atom->setPosition(Vector3(x, y, z));
+  atom->setPosition(impl::Vector3(x, y, z));
   atom->setOccupancy(occupancy);
   atom->setTemperatureFactor(temperatureFactor);
   residue->addAtom(atom);

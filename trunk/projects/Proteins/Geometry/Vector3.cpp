@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "Vector3.h"
 using namespace lbcpp;
+using namespace lbcpp::impl;
 
 /*
 ** Vector3

@@ -16,6 +16,9 @@
 namespace lbcpp
 {
 
+namespace impl
+{
+
 class BondCoordinates
 {
 public:
@@ -90,29 +93,31 @@ private:
   DihedralAngle phi;
 };
 
-template<>
-struct Traits<BondCoordinates>
-{
-  typedef BondCoordinates Type;
+}; /* namespace impl */
 
-  static inline String toString(const BondCoordinates& value)
+template<>
+struct Traits<impl::BondCoordinates>
+{
+  typedef impl::BondCoordinates Type;
+
+  static inline String toString(const impl::BondCoordinates& value)
     {return value.toString();}
 
-  static inline void write(OutputStream& ostr, const BondCoordinates& value)
+  static inline void write(OutputStream& ostr, const impl::BondCoordinates& value)
   {
     lbcpp::write(ostr, value.getLength());
     lbcpp::write(ostr, value.getThetaAngle());
     lbcpp::write(ostr, value.getPhiDihedralAngle());
   }
 
-  static inline bool read(InputStream& istr, BondCoordinates& res)
+  static inline bool read(InputStream& istr, impl::BondCoordinates& res)
   {
     double length;
-    Angle theta;
-    DihedralAngle phi;
+    impl::Angle theta;
+    impl::DihedralAngle phi;
     if (!lbcpp::read(istr, length) || !lbcpp::read(istr, theta) || !lbcpp::read(istr, phi))
       return false;
-    res = BondCoordinates(length, theta, phi);
+    res = impl::BondCoordinates(length, theta, phi);
     return true;
   }
 };
@@ -120,41 +125,41 @@ struct Traits<BondCoordinates>
 class BondCoordinatesObject : public Object
 {
 public:
-  BondCoordinatesObject(const BondCoordinates& value) : value(value) {}
+  BondCoordinatesObject(const impl::BondCoordinates& value) : value(value) {}
   BondCoordinatesObject() {}
 
-  BondCoordinates getValue() const
+  impl::BondCoordinates getValue() const
     {return value;}
 
-  BondCoordinates& getValue()
+  impl::BondCoordinates& getValue()
     {return value;}
 
-  void setValue(const BondCoordinates& coordinates)
+  void setValue(const impl::BondCoordinates& coordinates)
     {value = coordinates;}
 
 private:
-  BondCoordinates value;
+  impl::BondCoordinates value;
 };
 
 typedef ReferenceCountedObjectPtr<BondCoordinatesObject> BondCoordinatesObjectPtr;
 
-class BondCoordinatesSequence : public BuiltinVectorBasedSequence<BondCoordinates>
+class BondCoordinatesSequence : public BuiltinVectorBasedSequence<impl::BondCoordinates>
 {
 public:
-  typedef BuiltinVectorBasedSequence<BondCoordinates> BaseClass;
+  typedef BuiltinVectorBasedSequence<impl::BondCoordinates> BaseClass;
 
   BondCoordinatesSequence(const String& name, CartesianCoordinatesSequencePtr cartesianCoordinates);
   BondCoordinatesSequence(const String& name, size_t length = 0);
   BondCoordinatesSequence() {}  
 
-  CartesianCoordinatesSequencePtr makeCartesianCoordinates(const String& name, const Matrix4& initialMatrix = Matrix4::identity);
+  CartesianCoordinatesSequencePtr makeCartesianCoordinates(const String& name, const impl::Matrix4& initialMatrix = impl::Matrix4::identity);
 
   virtual bool hasObject(size_t position) const
     {return BaseClass::getElement(position).exists();}
   
   virtual ObjectPtr get(size_t index) const
   {
-    BondCoordinates p = getCoordinates(index);
+    impl::BondCoordinates p = getCoordinates(index);
     return p.exists() ? new BondCoordinatesObject(p) : ObjectPtr();
   }
 
@@ -168,14 +173,14 @@ public:
   bool hasCoordinates(size_t position) const
     {return BaseClass::hasObject(position);}
 
-  BondCoordinates getCoordinates(size_t position) const
+  impl::BondCoordinates getCoordinates(size_t position) const
     {return BaseClass::getElement(position);}
 
-  void setCoordinates(size_t position, const BondCoordinates& coordinates)
+  void setCoordinates(size_t position, const impl::BondCoordinates& coordinates)
     {BaseClass::setElement(position, coordinates);}
 
   void clearCoordinates(size_t position)
-    {BaseClass::setElement(position, BondCoordinates());}
+    {BaseClass::setElement(position, impl::BondCoordinates());}
 };
 
 typedef ReferenceCountedObjectPtr<BondCoordinatesSequence> BondCoordinatesSequencePtr;

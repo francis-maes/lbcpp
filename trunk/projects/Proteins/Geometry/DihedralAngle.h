@@ -14,6 +14,9 @@
 namespace lbcpp
 {
 
+namespace impl
+{
+
 class Angle
 {
 public:
@@ -34,27 +37,6 @@ public:
 
 private:
   double angle;
-};
-
-template<>
-struct Traits<Angle>
-{
-  typedef Angle Type;
-
-  static inline String toString(const Angle& value)
-    {return String((double)value * 180 / M_PI, 1);}
-
-  static inline void write(OutputStream& ostr, const Angle& value)
-    {lbcpp::write(ostr, (double)value);}
-
-  static inline bool read(InputStream& istr, Angle& res)
-  {
-    double value;
-    if (!lbcpp::read(istr, value))
-      return false;
-    res = value;
-    return true;
-  }
 };
 
 class DihedralAngle
@@ -100,18 +82,42 @@ private:
 
 typedef std::pair<DihedralAngle, DihedralAngle> DihedralAnglesPair;
 
-template<>
-struct Traits<DihedralAngle>
-{
-  typedef DihedralAngle Type;
+}; /* namespace impl */
 
-  static inline String toString(const DihedralAngle& value)
+
+template<>
+struct Traits<impl::Angle>
+{
+  typedef impl::Angle Type;
+
+  static inline String toString(const impl::Angle& value)
     {return String((double)value * 180 / M_PI, 1);}
 
-  static inline void write(OutputStream& ostr, const DihedralAngle& value)
+  static inline void write(OutputStream& ostr, const impl::Angle& value)
     {lbcpp::write(ostr, (double)value);}
 
-  static inline bool read(InputStream& istr, DihedralAngle& res)
+  static inline bool read(InputStream& istr, impl::Angle& res)
+  {
+    double value;
+    if (!lbcpp::read(istr, value))
+      return false;
+    res = value;
+    return true;
+  }
+};
+
+template<>
+struct Traits<impl::DihedralAngle>
+{
+  typedef impl::DihedralAngle Type;
+
+  static inline String toString(const impl::DihedralAngle& value)
+    {return String((double)value * 180 / M_PI, 1);}
+
+  static inline void write(OutputStream& ostr, const impl::DihedralAngle& value)
+    {lbcpp::write(ostr, (double)value);}
+
+  static inline bool read(InputStream& istr, impl::DihedralAngle& res)
   {
     double value;
     if (!lbcpp::read(istr, value))
