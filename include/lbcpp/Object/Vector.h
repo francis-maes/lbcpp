@@ -23,6 +23,8 @@ public:
   virtual ~Vector()
     {clear();}
 
+  virtual String toString() const;
+
   virtual TypePtr getStaticType() const
     {return thisClass->getTemplateArgument(0);}
 
