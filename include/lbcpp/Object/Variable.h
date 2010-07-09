@@ -38,6 +38,7 @@ class Variable
 public:
   Variable(bool boolValue, TypePtr type = booleanType());
   Variable(size_t intValue, TypePtr type = integerType());
+  Variable(juce::int64 intValue, TypePtr type = integerType());
   Variable(int intValue, TypePtr type = integerType());
   Variable(double doubleValue, TypePtr type = doubleType());
   Variable(const String& stringValue, TypePtr type = stringType());
@@ -160,5 +161,6 @@ private:
 }; /* namespace lbcpp */
 
 # include "impl/Variable.hpp"
+# include "impl/VariableReference.hpp"
 
 #endif // !LBCPP_OBJECT_VARIABLE_H_

@@ -101,7 +101,7 @@ public:
     std::vector<TypePtr> typeArguments(tokens.size());
     for (int i = 0; i < tokens.size(); ++i)
     {
-      typeArguments[i] = parseAndGet(tokens[i], callback);
+      typeArguments[i] = parseAndGet(tokens[i].trim(), callback);
       if (!typeArguments[i])
         return TypePtr();
     } 

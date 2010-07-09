@@ -62,8 +62,8 @@ public:
 
   AtomPtr findAtomByName(const String& name) const;
   
-  impl::Vector3 getAtomPosition(const String& name) const
-    {AtomPtr atom = findAtomByName(name); return atom ? atom->getPosition() : impl::Vector3();}
+  Vector3Ptr getAtomPosition(const String& name) const
+    {AtomPtr atom = findAtomByName(name); return atom ? atom->getPosition() : Vector3Ptr();}
 
   Variable getDistanceBetweenAtoms(const String& name1, const String& name2) const;
   Variable getDistanceBetweenAtoms(const String& name1, ResiduePtr residue2, const String& name2) const;
@@ -87,19 +87,7 @@ public:
   // Object
   virtual String toString() const;
 
-  virtual Variable getVariable(size_t index) const
-  {
-    if (index == 0) return Variable(aminoAcidType, aminoAcidTypeEnumeration());
-    if (index == 1) return atoms;
-    jassert(false); return Variable();
-  }
-
-  virtual void setVariable(size_t index, const Variable& var)
-  {
-    if (index == 0) aminoAcidType = (AminoAcidType)var.getInteger();
-    else if (index == 1) atoms = var.getObjectAndCast<Vector>();
-    else jassert(false);
-  }
+  virtual VariableReference getVariableReference(size_t index);
 
 protected:
   AminoAcidType aminoAcidType;

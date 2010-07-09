@@ -28,6 +28,7 @@ SET(LBCPP_OBJECT_HEADERS_NEW
 SET(LBCPP_OBJECT_IMPL_HEADERS
   ../include/lbcpp/Object/impl/VariableValue.hpp
   ../include/lbcpp/Object/impl/Variable.hpp
+  ../include/lbcpp/Object/impl/VariableReference.hpp
 )
 
 SET(LBCPP_OBJECT_SOURCES

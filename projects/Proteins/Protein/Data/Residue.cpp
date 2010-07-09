@@ -39,7 +39,7 @@ Variable Residue::getDistanceBetweenAtoms(const String& name1, const String& nam
   AtomPtr a1 = findAtomByName(name1);
   AtomPtr a2 = findAtomByName(name2);
   return a1 && a2
-    ? Variable((a1->getPosition() - a2->getPosition()).l2norm(), angstromDistanceType())
+    ? Variable((a1->getPosition()->getValue() - a2->getPosition()->getValue()).l2norm(), angstromDistanceType())
     : Variable::missingValue(angstromDistanceType());
 }
 
@@ -48,7 +48,7 @@ Variable Residue::getDistanceBetweenAtoms(const String& name1, ResiduePtr residu
   AtomPtr a1 = findAtomByName(name1);
   AtomPtr a2 = residue2->findAtomByName(name2);
   return a1 && a2
-    ? Variable((a1->getPosition() - a2->getPosition()).l2norm(), angstromDistanceType())
+    ? Variable((a1->getPosition()->getValue() - a2->getPosition()->getValue()).l2norm(), angstromDistanceType())
     : Variable::missingValue(angstromDistanceType());
 }
 
@@ -79,10 +79,16 @@ void Residue::applyAffineTransform(const impl::Matrix4& affineTransform) const
   for (size_t i = 0; i < atoms->size(); ++i)
   {
     AtomPtr atom = atoms->getObjectAndCast<Atom>(i);
-    impl::Vector3 position = atom->getPosition();
-    if (position.exists())
-      atom->setPosition(affineTransform.transformAffine(position));
+    if (atom->getPosition())
+      atom->setPosition(new Vector3(affineTransform.transformAffine(atom->getPosition()->getValue())));
   }
+}
+
+VariableReference Residue::getVariableReference(size_t index)
+{
+  if (index == 0) return (int&)aminoAcidType;
+  if (index == 1) return atoms;
+  jassert(false); return VariableReference();
 }
 
 class ResidueClass : public DynamicClass

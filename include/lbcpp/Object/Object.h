@@ -35,6 +35,7 @@ namespace lbcpp
 {
 
 class Variable;
+class VariableReference;
 
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
@@ -80,10 +81,13 @@ public:
   String getClassName() const;
 
   virtual size_t getNumVariables() const;
+  virtual TypePtr getVariableType(size_t index) const;
+  virtual String getVariableName(size_t index) const;
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value)
-    {jassert(false);} 
+  virtual void setVariable(size_t index, const Variable& value);
   
+  virtual VariableReference getVariableReference(size_t index);
+
   virtual void accept(ObjectVisitorPtr visitor);
 
   /*
@@ -159,8 +163,7 @@ public:
   **
   ** @return the current object (string form).
   */
-  virtual String toString() const
-    {return getClassName() + T("::toString() unimplemented");}
+  virtual String toString() const;
 
   /**
   ** Converts the current object to a graph.
@@ -300,6 +303,8 @@ protected:
   // utilities
   String variablesToString(const String& separator) const;
   XmlElement* variableToXml(size_t index) const;
+  void saveVariablesToXmlAttributes(XmlElement* xml) const;
+  bool loadVariablesFromXmlAttributes(XmlElement* xml, ErrorHandler& callback);
 };
 
 class NameableObject : public Object
@@ -317,8 +322,7 @@ public:
   virtual void setName(const String& name)
     {this->name = name;}
 
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
+  virtual VariableReference getVariableReference(size_t index);
 
 protected:
   String name;
