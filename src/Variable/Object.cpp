@@ -30,10 +30,7 @@ size_t Object::getNumVariables() const
 {
   TypePtr type = getClass();
   jassert(type);
-  VariableValue value(const_cast<Object* >(this));
-  size_t res = type->getNumSubVariables(value);
-  value.clearObject();
-  return res;
+  return type->getNumStaticVariables();
 }
 
 TypePtr Object::getVariableType(size_t index) const

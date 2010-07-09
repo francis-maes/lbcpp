@@ -22,7 +22,7 @@ public:
   {
     StaticParallelInferencePtr inference = input[0].getObjectAndCast<StaticParallelInference>();
     size_t n = inference->getNumSubInferences();
-    VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
+    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
 
     // Compute sub-inferences for each example
     // Compute input and supervision types for each sub-inference

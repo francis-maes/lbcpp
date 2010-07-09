@@ -42,7 +42,7 @@ ClassPtr lbcpp::atomClass()
 class AtomClass : public DynamicClass
 {
 public:
-  AtomClass() : DynamicClass(T("Atom"), objectClass())
+  AtomClass() : DynamicClass(T("Atom"), nameableObjectClass())
   {
     addVariable(stringType(), T("elementSymbol"));
     addVariable(vector3Class(), T("position"));

@@ -214,6 +214,15 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, ErrorHan
 bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   {return loadFromString(xml->getAllSubText(), callback);}
 
+size_t DiscreteProbabilityDistribution::getNumVariables() const
+  {return values.size();}
+
+TypePtr DiscreteProbabilityDistribution::getVariableType(size_t index) const
+  {return probabilityType();}
+
+String DiscreteProbabilityDistribution::getVariableName(size_t index) const
+  {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+
 ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
 {
   static UnaryTemplateTypeCache cache(T("DiscreteProbabilityDistribution"));

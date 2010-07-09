@@ -14,7 +14,7 @@
 # include <lbcpp/Object/ObjectPair.h>
 
 // tmp
-extern VariableContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples);
+extern ContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples);
 
 namespace lbcpp
 {
@@ -33,7 +33,7 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    VariableContainerPtr examples = input.dynamicCast<VariableContainer>();
+    ContainerPtr examples = input.dynamicCast<Container>();
     if (!examples)
     {
       ObjectContainerPtr oldStyleExamples = input.dynamicCast<ObjectContainer>();
@@ -67,7 +67,7 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    VariableContainerPtr examples = input.dynamicCast<VariableContainer>();
+    ContainerPtr examples = input.dynamicCast<Container>();
     jassert(examples);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);

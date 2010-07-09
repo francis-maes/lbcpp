@@ -190,9 +190,6 @@ public:
   Vector3(const impl::Vector3& value) : value(value) {}
   Vector3() {}
 
-  virtual String toString() const
-    {return value.toString();}
-
   impl::Vector3 getValue() const
     {return value;}
 
@@ -217,9 +214,14 @@ public:
   void setZ(double z)
     {value.z = z;}
 
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
-    
+  // Object
+  virtual String toString() const
+    {return value.toString();}
+
+  virtual VariableReference getVariableReference(size_t index);
+  virtual bool loadFromString(const String& str, ErrorHandler& callback)
+    {value = impl::Vector3::fromString(str, callback); return true;}
+
 private:
   impl::Vector3 value;
 };

@@ -24,7 +24,7 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
 Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   BinaryDecisionTreeInferencePtr inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
-  VariableContainerPtr trainingData = input[1].getObjectAndCast<VariableContainer>();
+  ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
   jassert(inference && trainingData);
   if (!trainingData->size())
     return Variable();
@@ -44,7 +44,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   return Variable();
 }
 
-static bool isVariableConstant(VariableContainerPtr container, size_t index1, int index2, Variable& value)
+static bool isVariableConstant(ContainerPtr container, size_t index1, int index2, Variable& value)
 {
   size_t n = container->size();
   if (n <= 1)
@@ -64,13 +64,13 @@ static bool isVariableConstant(VariableContainerPtr container, size_t index1, in
   return true;
 }
 
-static bool isInputVariableConstant(VariableContainerPtr trainingData, size_t variableIndex, Variable& value)
+static bool isInputVariableConstant(ContainerPtr trainingData, size_t variableIndex, Variable& value)
   {return isVariableConstant(trainingData, 0, variableIndex, value);}
 
-static bool isOutputConstant(VariableContainerPtr trainingData, Variable& value)
+static bool isOutputConstant(ContainerPtr trainingData, Variable& value)
   {return isVariableConstant(trainingData, 1, -1, value);}
 
-bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
+bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
 {
   size_t n = trainingData->size();
   jassert(n);
@@ -91,7 +91,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(VariableContainerPtr trai
   return isOutputConstant(trainingData, leafValue);
 }
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
-Variable sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr trainingData, size_t variableIndex)
+Variable sampleNumericalSplit(RandomGenerator& random, ContainerPtr trainingData, size_t variableIndex)
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
   size_t n = trainingData->size();
@@ -114,7 +114,7 @@ Variable sampleNumericalSplit(RandomGenerator& random, VariableContainerPtr trai
   return res;
 }
 
-Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumeration, VariableContainerPtr trainingData, size_t variableIndex)
+Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumeration, ContainerPtr trainingData, size_t variableIndex)
 {
   size_t n = enumeration->getNumElements();
 
@@ -151,7 +151,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
   return mask;
 }
 
-PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
+PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
 {
   TypePtr variableType = inputType->getStaticVariableType(variableIndex);
   if (variableType->inheritsFrom(doubleType()))
@@ -196,7 +196,7 @@ PredicatePtr sampleSplit(RandomGenerator& random, VariableContainerPtr trainingD
 }
 ///////////////////////////////////// Split Scoring  /////////////////////
 
-DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(VariableContainerPtr examples)
+DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPtr examples)
 {
   if (!examples->size())
     return DiscreteProbabilityDistributionPtr();
@@ -207,7 +207,7 @@ DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(VariableCon
   return res;
 }
 
-static double computeClassificationSplitScore(VariableContainerPtr examples, VariableContainerPtr negativeExamples, VariableContainerPtr positiveExamples)
+static double computeClassificationSplitScore(ContainerPtr examples, ContainerPtr negativeExamples, ContainerPtr positiveExamples)
 {
   DiscreteProbabilityDistributionPtr priorDistribution = computeDiscreteOutputDistribution(examples);
   DiscreteProbabilityDistributionPtr negativeDistribution = computeDiscreteOutputDistribution(negativeExamples);
@@ -227,7 +227,7 @@ static double computeClassificationSplitScore(VariableContainerPtr examples, Var
   return 2.0 * informationGain / (splitEntropy + classificationEntropy);
 }
 
-double computeSplitScore(VariableContainerPtr examples, size_t variableIndex, PredicatePtr predicate, VariableContainerPtr& negativeExamples, VariableContainerPtr& positiveExamples)
+double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicatePtr predicate, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples)
 {
   VectorPtr neg = new Vector(examples->getStaticType());
   VectorPtr pos = new Vector(examples->getStaticType());
@@ -253,7 +253,7 @@ double computeSplitScore(VariableContainerPtr examples, size_t variableIndex, Pr
 
 ///////////////////////////////////// 
 
-void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, VariableContainerPtr trainingData, const std::vector<size_t>& variables)
+void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, ContainerPtr trainingData, const std::vector<size_t>& variables)
 {
   jassert(trainingData->size());
 
@@ -287,12 +287,12 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
   size_t bestSplitVariable;
   Variable bestSplitArgument;
   double bestSplitScore = -DBL_MAX;
-  VariableContainerPtr bestNegativeExamples, bestPositiveExamples;
+  ContainerPtr bestNegativeExamples, bestPositiveExamples;
   for (size_t i = 0; i < K; ++i)
   {
     Variable splitArgument;
     PredicatePtr splitPredicate = sampleSplit(random, trainingData, inputType, splitVariables[i], splitArgument);
-    VariableContainerPtr negativeExamples, positiveExamples;
+    ContainerPtr negativeExamples, positiveExamples;
     double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
     if (splitScore > bestSplitScore)
     {
@@ -319,7 +319,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
   sampleTreeRecursively(tree, leftChildIndex + 1, inputType, outputType, bestPositiveExamples, nonConstantVariables);
 }
 
-BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputClass, TypePtr outputClass, VariableContainerPtr trainingData)
+BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData)
 {
   size_t n = trainingData->size();
   if (!n)

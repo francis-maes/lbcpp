@@ -12,7 +12,7 @@
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Object/ObjectPair.h>
-#include <lbcpp/Object/VariableContainer.h>
+#include <lbcpp/Object/Container.h>
 using namespace lbcpp;
 
 /*
@@ -68,7 +68,7 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
   return inference->finalizeInference(pthis, state, returnCode);
 }
 
-Inference::ReturnCode InferenceContext::train(InferencePtr inference, VariableContainerPtr examples)
+Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
   InferencePtr learner = inference->getBatchLearner();
@@ -97,7 +97,7 @@ private:
   EvaluatorPtr evaluator;
 };
 
-Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, VariableContainerPtr examples, EvaluatorPtr evaluator)
+Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator)
 {
   ReturnCode res = Inference::finishedReturnCode;
   InferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(evaluator);
@@ -108,11 +108,11 @@ Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, Variabl
 }
 
 // temp: compatibility with ObjectContainer
-class ObjectPairToVariableContainer : public VariableContainer
+class ObjectPairToContainer : public Container
 {
 public:
-  ObjectPairToVariableContainer() {}
-  ObjectPairToVariableContainer(ObjectContainerPtr container)
+  ObjectPairToContainer() {}
+  ObjectPairToContainer(ObjectContainerPtr container)
     : container(container) {}
 
   virtual size_t getNumVariables() const
@@ -132,12 +132,12 @@ private:
 };
 
 // tmp
-VariableContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples)
+ContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples)
 {
   static bool firstTime = true;
   if (firstTime)
-    {LBCPP_DECLARE_CLASS(ObjectPairToVariableContainer, VariableContainer); firstTime = false;}
-  return new ObjectPairToVariableContainer(examples);
+    {LBCPP_DECLARE_CLASS(ObjectPairToContainer, Container); firstTime = false;}
+  return new ObjectPairToContainer(examples);
 }
 
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examplesContainer)
@@ -148,7 +148,7 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectCont
   if (!learner)
     return Inference::errorReturnCode;
 
-  VariableContainerPtr examples = convertOldStyleExamplesToNewStyle(examplesContainer);
+  ContainerPtr examples = convertOldStyleExamplesToNewStyle(examplesContainer);
   runInference(learner, Variable::pair(inference, examples), Variable(), res);
   return res;
 }

@@ -9,7 +9,7 @@
 using namespace lbcpp;
 
 Vector::Vector(TypePtr elementsType, size_t initialSize)
-  : VariableContainer(vectorClass(elementsType))
+  : Container(vectorClass(elementsType))
 {
   jassert(elementsType != topLevelType());
   if (initialSize)
@@ -91,7 +91,7 @@ void Vector::saveToXml(XmlElement* xml) const
     return;
   }
 
-  VariableContainer::saveToXml(xml);
+  Container::saveToXml(xml);
 }
 
 bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
@@ -154,7 +154,7 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   }
 
   // default implementation  
-  return VariableContainer::loadFromXml(xml, callback);
+  return Container::loadFromXml(xml, callback);
 }
 
 ClassPtr lbcpp::vectorClass(TypePtr elementsType)

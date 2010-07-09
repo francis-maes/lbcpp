@@ -28,25 +28,14 @@ Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
 
 }; /* namespace impl */
 
-Variable Vector3::getVariable(size_t index) const
+VariableReference Vector3::getVariableReference(size_t index)
 {
   switch (index)
   {
-  case 0: return value.getX() == DBL_MAX ? Variable(value.getX()) : Variable::missingValue(doubleType());
-  case 1: return value.getY() == DBL_MAX ? Variable(value.getY()) : Variable::missingValue(doubleType());
-  case 2: return value.getZ() == DBL_MAX ? Variable(value.getZ()) : Variable::missingValue(doubleType());
-  default: jassert(false); return Variable();
-  };
-}
-
-void Vector3::setVariable(size_t index, const Variable& v)
-{
-  switch (index)
-  {
-  case 0: value.x = v.getDouble(); break;
-  case 1: value.y = v.getDouble(); break;
-  case 2: value.z = v.getDouble(); break;
-  default: jassert(false);
+  case 0: return value.x;
+  case 1: return value.y;
+  case 2: return value.z;
+  default: jassert(false); return VariableReference();
   };
 }
 
@@ -60,6 +49,9 @@ public:
     addVariable(doubleType(), T("y"));
     addVariable(doubleType(), T("z"));
   }
+
+  virtual VariableValue create() const
+    {return new Vector3();}
 };
 
 ClassPtr vector3Class()

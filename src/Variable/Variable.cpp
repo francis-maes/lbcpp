@@ -9,6 +9,9 @@
 #include "../Type/TupleType.h"
 using namespace lbcpp;
 
+String Variable::getVariableName(size_t index) const
+  {return type->getSubVariableName(value, index);}
+
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
   {return Variable(pairType(variable1.getType(), variable2.getType()), PairType::allocate(variable1, variable2));}
 

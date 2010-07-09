@@ -237,7 +237,7 @@ int Type::findStaticVariable(const String& name) const
       return (int)i;
   return -1;
 }
-
+  
 /*
 ** Class
 */
@@ -322,6 +322,15 @@ Variable Class::getSubVariable(const VariableValue& value, size_t index) const
 
 void Class::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
   {value.getObject()->setVariable(index, subValue);}
+
+size_t Class::getNumSubVariables(const VariableValue& value) const
+{
+  ObjectPtr object = value.getObject();
+  return object ? object->getNumVariables() : 0;
+}
+
+String Class::getSubVariableName(const VariableValue& value, size_t index) const
+  {return value.getObject()->getVariableName(index);}
 
 /*
 ** DynamicClass

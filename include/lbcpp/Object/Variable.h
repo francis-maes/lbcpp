@@ -128,6 +128,7 @@ public:
 
   size_t size() const;
   Variable operator [](size_t index) const;
+  String getVariableName(size_t index) const;
 
   friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
     {return ostr << variable.toString();}

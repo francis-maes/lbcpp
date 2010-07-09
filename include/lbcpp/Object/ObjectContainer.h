@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CONTAINER_H_
-# define LBCPP_OBJECT_CONTAINER_H_
+#ifndef LBCPP_OBJECT_OLD_CONTAINER_H_
+# define LBCPP_OBJECT_OLD_CONTAINER_H_
 
 # include "../ObjectPredeclarations.h"
 
@@ -458,4 +458,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CONTAINER_H_
+#endif // !LBCPP_OBJECT_OLD_CONTAINER_H_
