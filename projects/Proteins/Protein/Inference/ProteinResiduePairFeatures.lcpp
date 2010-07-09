@@ -303,7 +303,7 @@ public:
     {
       if (calphaTrace->hasPosition(firstPosition) && calphaTrace->hasPosition(secondPosition))
       {
-        Vector3 delta = (calphaTrace->getPosition(firstPosition) - calphaTrace->getPosition(secondPosition));
+        impl::Vector3 delta = (calphaTrace->getPosition(firstPosition) - calphaTrace->getPosition(secondPosition));
         featureCall(0) numberLogFeatures(delta.l2norm(), intervalsPerLog10)->toSparseVector();
       }
       else

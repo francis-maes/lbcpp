@@ -93,12 +93,12 @@ ProteinAtomPtr ProteinResidueAtoms::checkAndGetCBetaOrCAlphaAtom() const
   return atom;
 }
 
-void ProteinResidueAtoms::applyAffineTransform(const Matrix4& affineTransform) const
+void ProteinResidueAtoms::applyAffineTransform(const impl::Matrix4& affineTransform) const
 {
   jassert(affineTransform.isAffine());
   for (size_t i = 0; i < atoms.size(); ++i)
   {
-    Vector3 position = atoms[i]->getPosition();
+    impl::Vector3 position = atoms[i]->getPosition();
     if (position.exists())
       atoms[i]->setPosition(affineTransform.transformAffine(position));
   }

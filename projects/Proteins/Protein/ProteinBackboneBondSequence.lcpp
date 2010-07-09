@@ -40,15 +40,15 @@ FeatureGeneratorPtr conjunction(FeatureGeneratorPtr f1, FeatureGeneratorPtr f2)
 
 featureGenerator ProteinBackboneBondSequence::elementFeatures(size_t position) const
 {
-  DihedralAngle phi = this->getPhi(position);
+  impl::DihedralAngle phi = this->getPhi(position);
   if (phi.exists())
     featureCall(0) multiScaleDihedralAngleFeatures(phi, 1, 2, 4);
 
-  DihedralAngle psi = this->getPsi(position);
+  impl::DihedralAngle psi = this->getPsi(position);
   if (psi.exists())
     featureCall(1) multiScaleDihedralAngleFeatures(psi, 1, 2, 4);
 
-  DihedralAngle omega = this->getOmega(position);
+  impl::DihedralAngle omega = this->getOmega(position);
   if (omega.exists())
     featureCall(2) multiScaleDihedralAngleFeatures(omega, 1, 2, 4);
 }
@@ -58,7 +58,7 @@ featureGenerator ProteinBackboneBondSequence::elementFeatures(size_t position) c
 
 featureGenerator ProteinAtom::positionFeatures() const
 {
-  Vector3 p = this->getPosition();
+  impl::Vector3 p = this->getPosition();
   if (p.exists())
   {
     featureSense(0, p.getX());

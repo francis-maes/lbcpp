@@ -19,7 +19,7 @@ namespace lbcpp
 class ProteinAtom : public NameableObject
 {
 public:
-  ProteinAtom(const String& name, const String& elementSymbol, const Vector3& position = Vector3())
+  ProteinAtom(const String& name, const String& elementSymbol, const impl::Vector3& position = impl::Vector3())
     : NameableObject(name), elementSymbol(elementSymbol), position(position), occupancy(0.0), temperatureFactor(0.0) {}
   ProteinAtom() {}
 
@@ -28,13 +28,13 @@ public:
   String getElementSymbol() const
     {return elementSymbol;}
 
-  const Vector3& getPosition() const
+  const impl::Vector3& getPosition() const
     {return position;}
   
-  Vector3& getPosition()
+  impl::Vector3& getPosition()
     {return position;}
 
-  void setPosition(const Vector3& position)
+  void setPosition(const impl::Vector3& position)
     {this->position = position;}
 
   double getX() const
@@ -71,7 +71,7 @@ public:
 
 protected:
   String elementSymbol;
-  Vector3 position;
+  impl::Vector3 position;
   double occupancy;
   double temperatureFactor;
 
@@ -130,8 +130,8 @@ public:
 
   ProteinAtomPtr findAtomByName(const String& name) const;
   
-  Vector3 getAtomPosition(const String& name) const
-    {ProteinAtomPtr atom = findAtomByName(name); return atom ? atom->getPosition() : Vector3();}
+  impl::Vector3 getAtomPosition(const String& name) const
+    {ProteinAtomPtr atom = findAtomByName(name); return atom ? atom->getPosition() : impl::Vector3();}
 
   double getDistanceBetweenAtoms(const String& name1, const String& name2) const;
   double getDistanceBetweenAtoms(const String& name1, ProteinResidueAtomsPtr residue2, const String& name2) const;
@@ -150,7 +150,7 @@ public:
 
   ProteinAtomPtr checkAndGetCBetaOrCAlphaAtom() const;
 
-  void applyAffineTransform(const Matrix4& affineTransform) const;
+  void applyAffineTransform(const impl::Matrix4& affineTransform) const;
 
   FeatureGeneratorPtr positionFeatures() const;
 

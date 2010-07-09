@@ -67,14 +67,14 @@ protected:
   std::vector<ImplementationType> values;
 };
 
-class CartesianPositionVector : public BuiltinVector<Vector3, Vector3Object>
+class CartesianPositionVector : public BuiltinVector<impl::Vector3, Vector3Object>
 {
 public:
-  typedef BuiltinVector<Vector3, Vector3Object> BaseClass;
+  typedef BuiltinVector<impl::Vector3, Vector3Object> BaseClass;
 
-  CartesianPositionVector(size_t length, const Vector3& defaultValue = Vector3())
+  CartesianPositionVector(size_t length, const impl::Vector3& defaultValue = impl::Vector3())
     : BaseClass(length, defaultValue) {}
-  CartesianPositionVector(const std::vector<Vector3>& positions)
+  CartesianPositionVector(const std::vector<impl::Vector3>& positions)
     : BaseClass(positions) {}
   CartesianPositionVector() {}
 
@@ -84,24 +84,24 @@ public:
   bool hasPosition(size_t index) const
     {return values[index].exists();}
 
-  Vector3 getPosition(size_t index) const
+  impl::Vector3 getPosition(size_t index) const
     {return values[index];}
 
-  Vector3 getPositionChecked(int index) const
-    {return index >= 0 && index < (int)values.size() ? values[index] : Vector3();}
+  impl::Vector3 getPositionChecked(int index) const
+    {return index >= 0 && index < (int)values.size() ? values[index] : impl::Vector3();}
 
-  void setPosition(size_t index, const Vector3& position)
+  void setPosition(size_t index, const impl::Vector3& position)
     {values[index] = position;}
 
   void clearPosition(size_t index)
-    {values[index] = Vector3();}
+    {values[index] = impl::Vector3();}
 
-  void movePosition(size_t index, const Vector3& delta);
-  void applyAffineTransform(const Matrix4& affineTransform);
+  void movePosition(size_t index, const impl::Vector3& delta);
+  void applyAffineTransform(const impl::Matrix4& affineTransform);
 
-  Vector3 getGravityCenter() const;
+  impl::Vector3 getGravityCenter() const;
 
-  std::vector<Vector3>& getVectorOfPositions()
+  std::vector<impl::Vector3>& getVectorOfPositions()
     {return values;}
 
   virtual void saveToXml(XmlElement* xml) const;

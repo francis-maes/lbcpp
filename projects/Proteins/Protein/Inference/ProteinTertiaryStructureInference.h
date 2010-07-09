@@ -54,7 +54,7 @@ public:
       for (size_t j = 0; j < 3; ++j)
         if (atom)
         {
-          Vector3 position = atom->getPosition();
+          impl::Vector3 position = atom->getPosition();
           double target = (j == 0 ? position.getX() : (j == 1 ? position.getY() : position.getZ()));
           res->addSubInference(subInferences[i], input, Variable(target));
         }

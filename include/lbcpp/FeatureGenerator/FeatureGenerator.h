@@ -430,6 +430,9 @@ public:
 
   // and also virtual FeatureGeneratorPtr getDictionary();
 
+  virtual ClassPtr getClass() const
+    {return Class::get(T("FeatureGenerator"));}
+
 public:
   /**
   ** @see FeatureGenerator::accept

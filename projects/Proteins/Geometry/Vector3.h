@@ -19,6 +19,9 @@ extern "C"
 namespace lbcpp
 {
 
+namespace impl
+{
+
 class Vector3
 {
 public:
@@ -155,22 +158,24 @@ private:
   double x, y, z;
 };
 
-template<>
-struct Traits<Vector3>
-{
-  typedef Vector3 Type;
+}; /* namespace impl */
 
-  static inline String toString(const Vector3& value)
+template<>
+struct Traits<impl::Vector3>
+{
+  typedef impl::Vector3 Type;
+
+  static inline String toString(const impl::Vector3& value)
     {return value.toString();}
 
-  static inline void write(OutputStream& ostr, const Vector3& value)
+  static inline void write(OutputStream& ostr, const impl::Vector3& value)
   {
     lbcpp::write(ostr, value.getX());
     lbcpp::write(ostr, value.getY());
     lbcpp::write(ostr, value.getZ());
   }
 
-  static inline bool read(InputStream& istr, Vector3& res)
+  static inline bool read(InputStream& istr, impl::Vector3& res)
   {
     double x, y, z;
     if (!lbcpp::read(istr, x) || !lbcpp::read(istr, y) || !lbcpp::read(istr, z))
@@ -183,17 +188,17 @@ struct Traits<Vector3>
 class Vector3Object : public Object
 {
 public:
-  Vector3Object(const Vector3& value) : value(value) {}
+  Vector3Object(const impl::Vector3& value) : value(value) {}
   Vector3Object() {}
 
-  Vector3 getValue() const
+  impl::Vector3 getValue() const
     {return value;}
 
-  Vector3& getValue()
+  impl::Vector3& getValue()
     {return value;}
 
 private:
-  Vector3 value;
+  impl::Vector3 value;
 };
 
 typedef ReferenceCountedObjectPtr<Vector3Object> Vector3ObjectPtr;
@@ -206,8 +211,8 @@ public:
   Vector3KDTree();
   virtual ~Vector3KDTree();
 
-  void insert(size_t index, const Vector3& position);
-  void findPointsInSphere(const Vector3& center, double radius, std::vector<size_t>& results);
+  void insert(size_t index, const impl::Vector3& position);
+  void findPointsInSphere(const impl::Vector3& center, double radius, std::vector<size_t>& results);
 
 private:
   struct kdtree* tree;

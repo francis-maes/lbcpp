@@ -74,7 +74,7 @@ int main()
     BondCoordinatesSequencePtr calphaTraceBonds = new BondCoordinatesSequence(T("yo"), calphaTrace);
     for (size_t i = 0; i < calphaTraceBonds->size(); ++i)
     {
-      BondCoordinates bond = calphaTraceBonds->getCoordinates(i);
+      impl::BondCoordinates bond = calphaTraceBonds->getCoordinates(i);
       if (bond.hasLength())
         cacaLength.push(bond.getLength());
       if (bond.hasThetaAngle())

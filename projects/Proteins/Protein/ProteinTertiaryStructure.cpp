@@ -28,7 +28,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromCAlphaTrace(Labe
   ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
   for (size_t i = 0; i < n; ++i)
   {
-    Vector3 position = trace->getPosition(i);
+    impl::Vector3 position = trace->getPosition(i);
     if (position.exists())
     {
       // create a residue with a single Ca atom
@@ -47,7 +47,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromBackbone(LabelSe
   size_t n = backbone->size();
   jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
 
-  Matrix4 matrix = Matrix4::identity;
+  impl::Matrix4 matrix = impl::Matrix4::identity;
   ProteinTertiaryStructurePtr res = new ProteinTertiaryStructure(n);
   bool previousBondExists = true;
   for (size_t i = 0; i < n; ++i)
@@ -60,7 +60,7 @@ ProteinTertiaryStructurePtr ProteinTertiaryStructure::createFromBackbone(LabelSe
     if (previousBondExists)
       residue->addAtom(new ProteinAtom(T("N"), T("N"), matrix.getTranslation()));
 
-    BondCoordinates bond = backboneResidue->getBond1();
+    impl::BondCoordinates bond = backboneResidue->getBond1();
     if (bond.exists())
     {
       bond.multiplyMatrix(matrix);
@@ -171,13 +171,13 @@ ProteinBackboneBondSequencePtr ProteinTertiaryStructure::makeBackbone() const
     ProteinBackboneBondPtr bond = new ProteinBackboneBond(
       bondCoordinates->getCoordinates(j),
       bondCoordinates->getCoordinates(j + 1),
-      j + 2 < bondCoordinates->size() ? bondCoordinates->getCoordinates(j + 2) : BondCoordinates());
+      j + 2 < bondCoordinates->size() ? bondCoordinates->getCoordinates(j + 2) : impl::BondCoordinates());
     res->set(i, bond);
   }
   return res;
 }
 
-inline ScoreSymmetricMatrixPtr makeDistanceMatrix(const String& name, const std::vector<Vector3>& positions)
+inline ScoreSymmetricMatrixPtr makeDistanceMatrix(const String& name, const std::vector<impl::Vector3>& positions)
 {
   size_t n = positions.size();
 
@@ -185,12 +185,12 @@ inline ScoreSymmetricMatrixPtr makeDistanceMatrix(const String& name, const std:
   for (size_t i = 0; i < n; ++i)
   {
     res->setScore(i, i, 0.0);
-    Vector3 position1 = positions[i];
+    impl::Vector3 position1 = positions[i];
     if (!position1.exists())
       continue;
     for (size_t j = i + 1; j < n; ++j)
     {
-      Vector3 position2 = positions[j];
+      impl::Vector3 position2 = positions[j];
       if (position2.exists())
         res->setScore(i, j, (position1 - position2).l2norm());
     }
@@ -201,7 +201,7 @@ inline ScoreSymmetricMatrixPtr makeDistanceMatrix(const String& name, const std:
 ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCAlphaDistanceMatrix() const
 {
   size_t n = size();
-  std::vector<Vector3> positions(n);
+  std::vector<impl::Vector3> positions(n);
   for (size_t i = 0; i < n; ++i)
   {
     ProteinResidueAtomsPtr residue = getResidue(i);
@@ -215,7 +215,7 @@ ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCAlphaDistanceMatrix() con
 ScoreSymmetricMatrixPtr ProteinTertiaryStructure::makeCBetaDistanceMatrix() const
 {
   size_t n = size();
-  std::vector<Vector3> positions(n);
+  std::vector<impl::Vector3> positions(n);
   for (size_t i = 0; i < n; ++i)
   {
     ProteinResidueAtomsPtr residue = getResidue(i);
@@ -323,13 +323,13 @@ size_t ProteinTertiaryStructure::getNumSpecifiedResidues() const
   return res;
 }
 
-Matrix4 ProteinTertiaryStructure::superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const
+impl::Matrix4 ProteinTertiaryStructure::superposeCAlphaAtoms(ProteinTertiaryStructurePtr targetStructure) const
 {
   jassert(targetStructure);
   size_t n = size();
   jassert(n && targetStructure->size() == n);
 
-  std::vector< std::pair<Vector3, Vector3> > pointPairs;
+  std::vector< std::pair<impl::Vector3, impl::Vector3> > pointPairs;
   pointPairs.reserve(n);
   for (size_t i = 0; i < n; ++i)
   {
@@ -337,19 +337,19 @@ Matrix4 ProteinTertiaryStructure::superposeCAlphaAtoms(ProteinTertiaryStructureP
     ProteinResidueAtomsPtr residue2 = targetStructure->getResidue(i);
     if (!residue1 || !residue2)
       continue;
-    Vector3 position1 = residue1->getAtomPosition(T("CA"));
-    Vector3 position2 = residue2->getAtomPosition(T("CA"));
+    impl::Vector3 position1 = residue1->getAtomPosition(T("CA"));
+    impl::Vector3 position2 = residue2->getAtomPosition(T("CA"));
     if (!position1.exists() || !position2.exists())
       continue;
     
     pointPairs.push_back(std::make_pair(position1, position2));
   }
-  return Matrix4::findAffineTransformToSuperposePoints(pointPairs);
+  return impl::Matrix4::findAffineTransformToSuperposePoints(pointPairs);
 }
 
 double ProteinTertiaryStructure::computeCAlphaAtomsRMSE(ProteinTertiaryStructurePtr targetStructure) const
 {
-  Matrix4 matrix = superposeCAlphaAtoms(targetStructure);
+  impl::Matrix4 matrix = superposeCAlphaAtoms(targetStructure);
 
   size_t n = size();
   size_t count = 0;
@@ -360,8 +360,8 @@ double ProteinTertiaryStructure::computeCAlphaAtomsRMSE(ProteinTertiaryStructure
     ProteinResidueAtomsPtr residue2 = targetStructure->getResidue(i);
     if (!residue1 || !residue2)
       continue;
-    Vector3 position1 = residue1->getAtomPosition(T("CA"));
-    Vector3 position2 = residue2->getAtomPosition(T("CA"));
+    impl::Vector3 position1 = residue1->getAtomPosition(T("CA"));
+    impl::Vector3 position2 = residue2->getAtomPosition(T("CA"));
     if (!position1.exists() || !position2.exists())
       continue;
     
@@ -372,7 +372,7 @@ double ProteinTertiaryStructure::computeCAlphaAtomsRMSE(ProteinTertiaryStructure
   return count ? sqrt(error / (double)count) : 0.0;
 }
 
-void ProteinTertiaryStructure::applyAffineTransform(const Matrix4& affineTransform) const
+void ProteinTertiaryStructure::applyAffineTransform(const impl::Matrix4& affineTransform) const
 {
   jassert(affineTransform.isAffine());
   size_t n = size();

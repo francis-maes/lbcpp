@@ -8,6 +8,7 @@
 #include "Matrix4.h"
 #include "Matrix3.h"
 using namespace lbcpp;
+using namespace lbcpp::impl;
 
 const Matrix4 Matrix4::zero = Matrix4(
       0.0, 0.0, 0.0, 0.0,

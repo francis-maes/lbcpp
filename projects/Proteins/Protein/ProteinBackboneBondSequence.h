@@ -21,7 +21,7 @@ typedef ReferenceCountedObjectPtr<ProteinBackboneBondSequence> ProteinBackboneBo
 class ProteinBackboneBond : public Object
 {
 public:
-  ProteinBackboneBond(const BondCoordinates& bond1, const BondCoordinates& bond2, const BondCoordinates& bond3)
+  ProteinBackboneBond(const impl::BondCoordinates& bond1, const impl::BondCoordinates& bond2, const impl::BondCoordinates& bond3)
     : bond1(bond1), bond2(bond2), bond3(bond3) {}
   ProteinBackboneBond() {}
 
@@ -30,40 +30,40 @@ public:
             T("Bond2: ") + bond2.toString() + T("\n") +
             T("Bond3: ") + bond3.toString() + T("\n");}
 
-  BondCoordinates getBond1() const
+  impl::BondCoordinates getBond1() const
     {return bond1;}
 
-  BondCoordinates& getBond1()
+  impl::BondCoordinates& getBond1()
     {return bond1;}
 
-  BondCoordinates getBond2() const
+  impl::BondCoordinates getBond2() const
     {return bond2;}
 
-  BondCoordinates& getBond2()
+  impl::BondCoordinates& getBond2()
     {return bond2;}
 
-  BondCoordinates getBond3() const
+  impl::BondCoordinates getBond3() const
     {return bond3;}
 
-  BondCoordinates& getBond3()
+  impl::BondCoordinates& getBond3()
     {return bond3;}
 
   bool exists() const
     {return bond1.exists() || bond2.exists() || bond3.exists();}
 
-  DihedralAngle getPhiAngle() const
+  impl::DihedralAngle getPhiAngle() const
     {return bond1.getPhiDihedralAngle();}
 
-  DihedralAngle getPsiAngle() const
+  impl::DihedralAngle getPsiAngle() const
     {return bond2.getPhiDihedralAngle();}
 
-  DihedralAngle getOmegaAngle() const
+  impl::DihedralAngle getOmegaAngle() const
     {return bond3.getPhiDihedralAngle();}
 
 private:
-  BondCoordinates bond1; // N--CA
-  BondCoordinates bond2; // CA--C
-  BondCoordinates bond3; // C--N
+  impl::BondCoordinates bond1; // N--CA
+  impl::BondCoordinates bond2; // CA--C
+  impl::BondCoordinates bond3; // C--N
 
   virtual bool load(InputStream& istr)
     {return bond1.load(istr) && bond2.load(istr) && bond3.load(istr);}
@@ -93,22 +93,22 @@ public:
 
   virtual FeatureGeneratorPtr elementFeatures(size_t position) const;
 
-  DihedralAngle getPhi(size_t index) const
+  impl::DihedralAngle getPhi(size_t index) const
   {
     ProteinBackboneBondPtr bond = getBond(index);
-    return bond ? bond->getPhiAngle().normalized() : DihedralAngle();
+    return bond ? bond->getPhiAngle().normalized() : impl::DihedralAngle();
   }
 
-  DihedralAngle getPsi(size_t index) const
+  impl::DihedralAngle getPsi(size_t index) const
   {
     ProteinBackboneBondPtr bond = getBond(index);
-    return bond ? bond->getPsiAngle().normalized() : DihedralAngle();
+    return bond ? bond->getPsiAngle().normalized() : impl::DihedralAngle();
   }
   
-  DihedralAngle getOmega(size_t index) const
+  impl::DihedralAngle getOmega(size_t index) const
   {
     ProteinBackboneBondPtr bond = getBond(index);
-    return bond ? bond->getOmegaAngle().normalized() : DihedralAngle();
+    return bond ? bond->getOmegaAngle().normalized() : impl::DihedralAngle();
   }
 };
 
