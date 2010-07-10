@@ -26,18 +26,19 @@ public:
   virtual String toString() const
     {return T("BelongsToMask(") + mask->toString() + T(")");}
 
-  virtual bool compute(const Variable& value) const
+  virtual TypePtr getInputType() const
+    {return integerType();}
+
+  virtual bool computePredicate(const Variable& value) const
   {
-    if (value)
-    {
-      if (!checkInheritance(value, integerType()))
-        return false;
-      size_t i = (size_t)value.getInteger();
-      jassert(i < mask->size() - 1);
-      return mask->get(i);
-    }
-    else
+    if (value.isMissingValue())
       return mask->get(mask->size() - 1);
+
+    if (!checkInheritance(value, integerType()))
+      return false;
+    size_t i = (size_t)value.getInteger();
+    jassert(i < mask->size() - 1);
+    return mask->get(i);
  }
 
 private:

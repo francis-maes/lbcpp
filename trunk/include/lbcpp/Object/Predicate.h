@@ -9,15 +9,27 @@
 #ifndef LBCPP_OBJECT_PREDICATE_H_
 # define LBCPP_OBJECT_PREDICATE_H_
 
-# include <lbcpp/Object/Variable.h>
+# include "Function.h"
 
 namespace lbcpp
 {
 
-class Predicate : public Object
+class Predicate : public Function
 {
 public:
-  virtual bool compute(const Variable& value) const = 0;
+  virtual bool computePredicate(const Variable& input) const = 0;
+
+  /*
+  ** Function
+  */
+  virtual TypePtr getInputType() const
+    {return topLevelType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return booleanType();}
+
+  virtual Variable compute(const Variable& input) const
+    {return computePredicate(input);}
 };
 
 typedef ReferenceCountedObjectPtr<Predicate> PredicatePtr;

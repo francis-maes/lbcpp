@@ -123,16 +123,6 @@ public:
 
 //////////////////////////////////////////
 
-class Function : public Object
-{
-public:
-  virtual TypePtr getInputType() const = 0;
-  virtual TypePtr getOutputType(TypePtr inputType) const = 0;
-  virtual Variable compute(const Variable& input) const = 0;
-};
-
-typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
-
 class AddVariablesToDynamicObjectVisitor : public ObjectVisitor
 {
 public:
@@ -250,20 +240,6 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
   Class::declare(new ProteinResidueInputAttributesClass(13));
-  
-
-  /*
-  Variable myEnumValue(asparticAcid, aminoAcidTypeEnumeration());
-  std::cout << myEnumValue << std::endl;
-
-  Variable container = Variable::pair(16.64, 51);
-  std::cout << "pair: " << container << " size: " << container.size() << std::endl;
-  for (size_t i = 0; i < container.size(); ++i)
-    std::cout << "  elt " << i << " = " << container[i].toString() << " (type = " << container[i].getType()->getName() << ")" << std::endl;
-  Variable containerCopy = container;
-  std::cout << "container copy: " << containerCopy << " (type = "
-    << containerCopy.getType()->getName() << " equals: " << Variable(container == containerCopy) << std::endl;
-  */
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));

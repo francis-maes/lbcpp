@@ -46,6 +46,10 @@ class FeatureDictionary;
 typedef ReferenceCountedObjectPtr<FeatureDictionary> FeatureDictionaryPtr;
 
 // new
+class Function;
+typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
+class Stream;
+typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
 class Container;
 typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
 class Vector;

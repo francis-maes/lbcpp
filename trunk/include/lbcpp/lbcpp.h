@@ -34,6 +34,8 @@
 # include "Object/Type.h"
 
 # include "Object/Variable.h"
+# include "Object/Function.h"
+# include "Object/Stream.h"
 # include "Object/Vector.h"
 # include "Object/Matrix.h"
 # include "Object/SymmetricMatrix.h"
