@@ -18,6 +18,7 @@ SET(LBCPP_OBJECT_HEADERS_NEW
   ../include/lbcpp/Object/Object.h
   ../include/lbcpp/Object/Type.h
   ../include/lbcpp/Object/Variable.h
+  ../include/lbcpp/Object/Function.h
   ../include/lbcpp/Object/Container.h
   ../include/lbcpp/Object/Vector.h
   ../include/lbcpp/Object/SymmetricMatrix.h
