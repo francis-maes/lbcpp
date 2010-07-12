@@ -39,6 +39,13 @@ Variable AminoAcid::getVariable(size_t index) const
   return Variable();
 }
 
+Variable getAminoAcidFromOneLetterCode(juce::tchar code)
+{
+  EnumerationPtr aminoAcidTypes = aminoAcidTypeEnumeration();
+  int index = aminoAcidTypes->getOneLetterCodes().indexOfChar(code);
+  return index >= 0 ? Variable(index, aminoAcidTypes) : Variable::missingValue(aminoAcidTypes);
+}
+
 juce::tchar AminoAcid::getOneLetterCode() const
 {
   jassert((int)type < oneLetterCodes.length());
