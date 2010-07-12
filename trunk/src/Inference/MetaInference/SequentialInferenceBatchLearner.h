@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_BATCH_LEARNER_SEQUENTIAL_H_
 
 # include <lbcpp/Inference/Inference.h>
-# include <lbcpp/Object/Vector.h>
+# include <lbcpp/Data/Vector.h>
 # include "RunOnSupervisedExamplesInference.h"
 
 namespace lbcpp

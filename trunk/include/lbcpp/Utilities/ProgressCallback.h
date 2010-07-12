@@ -28,7 +28,7 @@
 # define LBCPP_UTILITIES_PROGRESS_CALLBACK_H_
 
 # include "../common.h"
-# include "../Object/ReferenceCountedObject.h"
+# include "../Data/ReferenceCountedObject.h"
 
 namespace lbcpp
 {

@@ -29,7 +29,7 @@
 
 # include "../ContainerTraits.h"
 # include "ReferenceCountedObject.h"
-# include "ErrorHandler.h"
+# include "../Object/ErrorHandler.h"
 
 namespace lbcpp
 {

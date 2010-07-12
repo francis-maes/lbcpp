@@ -10,8 +10,8 @@
 # define LBCPP_INFERENCE_STEP_H_
 
 # include "predeclarations.h"
-# include "../Object/Variable.h"
-# include "../Object/Container.h"
+# include "../Data/Variable.h"
+# include "../Data/Container.h"
 # include "../ObjectPredeclarations.h"
 
 namespace lbcpp

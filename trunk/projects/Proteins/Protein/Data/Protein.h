@@ -9,9 +9,9 @@
 #ifndef LBCPP_PROTEINS_PROTEIN_H_
 # define LBCPP_PROTEINS_PROTEIN_H_
 
-# include <lbcpp/Object/Vector.h>
-# include <lbcpp/Object/SymmetricMatrix.h>
-# include <lbcpp/Object/ProbabilityDistribution.h>
+# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Data/SymmetricMatrix.h>
+# include <lbcpp/Data/ProbabilityDistribution.h>
 
 # include "AminoAcid.h"
 # include "SecondaryStructure.h"

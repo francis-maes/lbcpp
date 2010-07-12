@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/Evaluator.h>
 # include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
-# include <lbcpp/Object/ProbabilityDistribution.h>
+# include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp
 {
