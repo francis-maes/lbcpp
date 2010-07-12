@@ -1,3 +1,6 @@
+
+
+
 * Faire les "RepresentationFunction", Faire le pont Attribut/Valeur => Feature Generator
 * Utiliser les nouvelles structures de données dans les ProteinInference
 

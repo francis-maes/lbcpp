@@ -108,3 +108,18 @@ void Protein::computeMissingVariables()
   {
   }
 }
+
+Variable Protein::createEmptyTarget(size_t index) const
+{
+  size_t n = getLength();
+
+  switch (index)
+  {
+  case 2: return new Vector(secondaryStructureElementEnumeration(), n);
+  case 3: return new Vector(dsspSecondaryStructureElementEnumeration(), n);
+  case 4: return new Vector(structuralAlphaElementEnumeration(), n);
+
+  default:
+    jassert(false); return Variable();
+  }
+}

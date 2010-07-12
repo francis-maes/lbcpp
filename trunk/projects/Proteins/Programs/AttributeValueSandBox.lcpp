@@ -122,6 +122,10 @@ public:
 };
 
 //////////////////////////////////////////
+//////////////////////////////////////////
+//////// REPRESENTATION //////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
 
 class AddVariablesToDynamicObjectVisitor : public ObjectVisitor
 {
@@ -233,7 +237,216 @@ protected:
   std::map<size_t, size_t> subIndexToIndexMap;
 };
 
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////// FeatureGenerator ////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+
+featureGenerator enumerationFeatures(const Variable& value)
+{
+  jassert(value.isInteger());
+  featureSense(value.getInteger());
+}
+
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////// Inference ///////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+
+class SharedParallelContainerInference : public SharedParallelInference
+{
+public:
+  SharedParallelContainerInference(const String& name, InferencePtr subInference)
+    : SharedParallelInference(name, subInference)
+    {setBatchLearner(simulationInferenceLearner());}
+  
+  SharedParallelContainerInference() {}
+  
+  virtual size_t getNumSubInferences(const Variable& input) const = 0;
+  virtual ContainerPtr getSupervisionTargets(const Variable& supervision) const = 0;
+  virtual Variable getSubInput(const Variable& input, size_t index) const = 0;
+
+  virtual Variable createOutput(const Variable& input) const = 0;
+  virtual void addResultToOutput(Variable& output, size_t index, const Variable& subInferenceOutput) const = 0;
+
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    size_t n = getNumSubInferences(input);
+
+    ContainerPtr supervisionTargets;
+    if (supervision)
+    {
+      supervisionTargets = getSupervisionTargets(supervision);
+      jassert(supervisionTargets->size() == n);
+    }
+
+    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    res->reserve(n);
+    if (supervisionTargets)
+      for (size_t i = 0; i < n; ++i)
+        res->addSubInference(subInference, getSubInput(input, i), supervisionTargets->getVariable(i));
+    else
+      for (size_t i = 0; i < n; ++i)
+        res->addSubInference(subInference, getSubInput(input, i), Variable());
+    return res;
+  }
+
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    Variable res;
+    size_t n = state->getNumSubInferences();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable subOutput = state->getSubOutput(i);
+      if (subOutput)
+      {
+        if (!res)
+          res = createOutput(state->getInput());
+        addResultToOutput(res, i, subOutput);
+      }
+    }
+    return res;
+  }
+};
+
+class ProteinSequenceInference : public SharedParallelContainerInference
+{
+public:
+  ProteinSequenceInference(const String& targetName, InferencePtr elementInference, FunctionPtr representation)
+    : SharedParallelContainerInference(targetName, elementInference), representation(representation)
+  {
+    int index = proteinClass()->findStaticVariable(targetName);
+    jassert(index >= 0);
+    targetIndex = (size_t)index;
+  }
+
+  virtual size_t getNumSubInferences(const Variable& input) const
+    {return input.getObjectAndCast<Protein>()->getLength();}
+
+  virtual ContainerPtr getSupervisionTargets(const Variable& supervision) const
+    {return supervision[targetIndex].getObjectAndCast<Container>();}
+
+  virtual Variable getSubInput(const Variable& input, size_t index) const
+  {return representation->compute(Variable::pair(input[targetIndex], index));}
+
+  virtual Variable createOutput(const Variable& input) const
+    {return input.getObjectAndCast<Protein>()->createEmptyTarget(targetIndex);}
+
+  virtual void addResultToOutput(Variable& output, size_t index, const Variable& subInferenceOutput) const
+    {output.getObject()->setVariable(index, subInferenceOutput);}
+
+protected:
+  size_t targetIndex;
+  FunctionPtr representation;
+};
+
+class ProteinInferenceFactory
+{
+public:
+  ProteinInferenceFactory() : proteinClass(lbcpp::proteinClass()) {}
+
+  virtual InferencePtr createInference(const String& targetName) const
+    {return addToProteinInference(createTargetInference(targetName), targetName);}
+
+  virtual InferencePtr createTargetInference(const String& targetName) const
+  {
+    if (targetName == T("secondaryStructure") || targetName == T("dsspSecondaryStructure")
+          || targetName == T("structuralAlphabetSequence"))
+      return createSequenceLabelingInference(targetName);
+    jassert(false);
+    return InferencePtr();
+  }
+
+  virtual InferencePtr createSequenceLabelingInference(const String& targetName) const
+  {
+    TypePtr targetType = getTargetType(targetName);
+    EnumerationPtr elementsType = targetType->getTemplateArgument(0).dynamicCast<Enumeration>();
+    jassert(elementsType);
+    return InferencePtr(new ProteinSequenceInference(targetName,
+      createMultiClassClassifier(targetName, elementsType),
+      createRepresentation(targetName, true, false)));
+  }
+
+  virtual FunctionPtr createRepresentation(const String& targetName, bool is1DTarget, bool is2DTarget) const = 0;
+  virtual InferencePtr createBinaryClassifier(const String& targetName) const = 0;
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const = 0;
+
+protected:
+  ClassPtr proteinClass;
+
+  size_t getTargetIndex(const String& targetName) const
+  {
+    int targetIndex = proteinClass->findStaticVariable(targetName);
+    jassert(targetIndex >= 0);
+    return (size_t)targetIndex;
+  }
+
+  TypePtr getTargetType(const String& targetName) const
+    {return proteinClass->getStaticVariableType(getTargetIndex(targetName));}
+
+  InferencePtr addToProteinInference(InferencePtr targetInference, const String& targetName) const
+    {return postProcessInference(targetInference, setFieldFunction(getTargetIndex(targetName)));}
+};
+
+class ProteinSequentialInference : public VectorSequentialInference
+{
+public:
+  ProteinSequentialInference() : VectorSequentialInference(T("Protein")) {}
+};
+
 ///////////////////////////////////////// 
+
+class MyProteinInferenceFactory : public ProteinInferenceFactory
+{
+public:
+  virtual FunctionPtr createRepresentation(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  {
+    jassert(false); // FIXME
+    return FunctionPtr();
+  }
+  
+  virtual InferencePtr createBinaryClassifier(const String& targetName) const
+    {return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));}
+
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const
+  {
+    InferencePtr binaryClassifier = createBinaryClassifier(targetName);
+    return oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+  }
+
+protected:
+  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
+  {
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
+      maxIterationsStoppingCriterion(100),  
+      maxIterationsWithoutImprovementStoppingCriterion(1));*/
+
+    if (targetName.startsWith(T("contactMap")))
+      return gradientDescentInferenceOnlineLearner(
+        InferenceOnlineLearner::perEpisode,                                                 // randomization
+        InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
+        InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+        InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+    else
+      return gradientDescentInferenceOnlineLearner(
+        InferenceOnlineLearner::never,                                                 // randomization
+        InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
+        InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+        InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+  }
+};
+
+///////////////////////////////////////// 
+
+VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
+{
+#ifdef JUCE_DEBUG
+  if (!maxCount) maxCount = 7;
+#endif // JUCE_DEBUG
+  return directoryFileStream(directory)->apply(loadFromFileFunction())->load(maxCount);
+}
 
 int main(int argc, char** argv)
 {
@@ -243,12 +456,8 @@ int main(int argc, char** argv)
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
-  //ObjectContainerPtr oldStyleProteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\protein")));
-  
-  // convert proteins
-  VectorPtr proteins;// = convertProteins(oldStyleProteins);
-  //oldStyleProteins = ObjectContainerPtr();
-  return 0; // FIXME
+
+  VectorPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\protein")));
   std::cout << proteins->size() << " proteins" << std::endl;
 
   //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);

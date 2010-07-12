@@ -13,7 +13,7 @@ using namespace lbcpp;
 /*
 ** Stream
 */
-ContainerPtr Stream::load(size_t maximumCount)
+VectorPtr Stream::load(size_t maximumCount)
 {
   VectorPtr res = new Vector(getElementsType());
   while (maximumCount == 0 || res->size() < maximumCount)

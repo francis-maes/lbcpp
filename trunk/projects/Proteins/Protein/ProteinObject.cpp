@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinObject.cpp              | ProteinObject                         |
+| Filename: ProteinObject.cpp              | ProteinObject                   |
 | Author  : Francis Maes                   |                                 |
 | Started : 17/04/2010 14:29               |                                 |
 `------------------------------------------/                                 |

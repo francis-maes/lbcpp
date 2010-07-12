@@ -89,7 +89,9 @@ public:
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
   {
     // we keep the same input and supervision for sub-inferences
-    state->setSubInference(subInferences.get(index), state->getInput(), state->getSupervision());
+    ProteinObjectPtr workingProtein = state->getUserVariable().getObjectAndCast<ProteinObject>();
+    jassert(workingProtein);
+    state->setSubInference(subInferences.get(index), workingProtein, state->getSupervision());
   }
 
   virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
