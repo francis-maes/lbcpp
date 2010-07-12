@@ -9,9 +9,9 @@
 #ifndef LBCPP_INFERENCE_EXTRA_TREE_BINARY_DECISION_TREE_H_
 # define LBCPP_INFERENCE_EXTRA_TREE_BINARY_DECISION_TREE_H_
 
-# include <lbcpp/Object/Object.h>
-# include <lbcpp/Object/Variable.h>
-# include <lbcpp/Object/Predicate.h>
+# include <lbcpp/Data/Object.h>
+# include <lbcpp/Data/Variable.h>
+# include <lbcpp/Data/Predicate.h>
 
 namespace lbcpp 
 {

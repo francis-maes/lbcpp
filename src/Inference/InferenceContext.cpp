@@ -12,7 +12,7 @@
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Object/ObjectPair.h>
-#include <lbcpp/Object/Container.h>
+#include <lbcpp/Data/Container.h>
 using namespace lbcpp;
 
 /*

@@ -2,6 +2,56 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
 
 ##### OBJECT ####
 
+### new 
+SET(LBCPP_DATA_HEADERS
+  ../include/lbcpp/Data/ReferenceCountedObject.h
+  ../include/lbcpp/Data/Object.h
+  ../include/lbcpp/Data/Type.h
+  ../include/lbcpp/Data/Variable.h
+  ../include/lbcpp/Data/Function.h
+  ../include/lbcpp/Data/Stream.h
+  ../include/lbcpp/Data/Container.h
+  ../include/lbcpp/Data/Vector.h
+  ../include/lbcpp/Data/SymmetricMatrix.h
+  ../include/lbcpp/Data/Predicate.h
+  ../include/lbcpp/Data/ProbabilityDistribution.h
+)
+
+SET(LBCPP_DATA_IMPL_HEADERS
+  ../include/lbcpp/Data/impl/VariableValue.hpp
+  ../include/lbcpp/Data/impl/Variable.hpp
+  ../include/lbcpp/Data/impl/VariableReference.hpp
+)
+
+SET(LBCPP_DATA_SOURCES
+  Data/Variable.cpp
+  Data/Object.cpp
+  Data/Type.cpp
+  Data/Function.cpp
+  Data/Stream.cpp
+  Data/Container.cpp
+  Data/Vector.cpp
+  Data/SymmetricMatrix.cpp
+  Data/Predicate.cpp
+  Data/ProbabilityDistribution.cpp
+)  
+
+SET(LBCPP_DATA_TYPE_SOURCES
+  Data/Type/TopLevelType.h
+  Data/Type/BuiltinType.h
+  Data/Type/BooleanType.h
+  Data/Type/DoubleType.h
+  Data/Type/StringType.h
+  Data/Type/TupleType.h
+)
+
+SET(LBCPP_DATA_STREAM_SOURCES
+  Data/Stream/ApplyFunctionStream.h
+  Data/Stream/DirectoryFileStream.h
+)
+
+### old 
+
 SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ErrorHandler.h  
   ../include/lbcpp/Object/ObjectStream.h
@@ -13,54 +63,12 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/StringToObjectMap.h
 )
 
-SET(LBCPP_OBJECT_HEADERS_NEW
-  ../include/lbcpp/Object/ReferenceCountedObject.h
-  ../include/lbcpp/Object/Object.h
-  ../include/lbcpp/Object/Type.h
-  ../include/lbcpp/Object/Variable.h
-  ../include/lbcpp/Object/Function.h
-  ../include/lbcpp/Object/Stream.h
-  ../include/lbcpp/Object/Container.h
-  ../include/lbcpp/Object/Vector.h
-  ../include/lbcpp/Object/SymmetricMatrix.h
-  ../include/lbcpp/Object/Predicate.h
-  ../include/lbcpp/Object/ProbabilityDistribution.h
-)
-
-SET(LBCPP_OBJECT_IMPL_HEADERS
-  ../include/lbcpp/Object/impl/VariableValue.hpp
-  ../include/lbcpp/Object/impl/Variable.hpp
-  ../include/lbcpp/Object/impl/VariableReference.hpp
-)
-
 SET(LBCPP_OBJECT_SOURCES
   ObjectStream.cpp
   ObjectContainer.cpp
   ObjectConsumer.cpp
   ObjectGraph.cpp
   Table.cpp
-)
-
-SET(LBCPP_VARIABLE_SOURCES
-  Variable/Variable.cpp
-  Variable/Object.cpp
-  Variable/Type.cpp
-  Variable/Function.cpp
-  Variable/Stream.cpp
-  Variable/Container.cpp
-  Variable/Vector.cpp
-  Variable/SymmetricMatrix.cpp
-  Variable/Predicate.cpp
-  Variable/ProbabilityDistribution.cpp
-)  
-
-SET(LBCPP_OBJECT_TYPE_SOURCES
-  Type/TopLevelType.h
-  Type/BuiltinType.h
-  Type/BooleanType.h
-  Type/DoubleType.h
-  Type/StringType.h
-  Type/TupleType.h
 )
 
 SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
@@ -70,6 +78,8 @@ SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
   ObjectStream/RegressionExamplesParser.h
   ObjectStream/DirectoriesObjectPairStream.h
 )
+
+### ---
 
 ##### UTILITIES ####
 
@@ -250,17 +260,16 @@ SET(LBCPP_CORE_HEADERS
 
 SET(LBCPP_CORE
   ${LBCPP_CORE_HEADERS}
+
+  ${LBCPP_DATA_HEADERS}
+  ${LBCPP_DATA_IMPL_HEADERS}
+  ${LBCPP_DATA_SOURCES}
+  ${LBCPP_DATA_TYPE_SOURCES}
+  ${LBCPP_DATA_STREAM_SOURCES}
   
   ${LBCPP_OBJECT_HEADERS}
-  ${LBCPP_OBJECT_IMPL_HEADERS}
   ${LBCPP_OBJECT_SOURCES}
-  
-  ${LBCPP_VARIABLE_SOURCES}
-  ${LBCPP_OBJECT_HEADERS_NEW}
-  
-  ${LBCPP_OBJECT_TYPE_SOURCES}
   ${LBCPP_CORE_OBJECT_STREAM_SOURCES}
-  
 
   ${LBCPP_UTILITIES_SOURCES}
 
@@ -289,10 +298,12 @@ SET(LBCPP_CORE
 
 SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
 
+SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES} ${LBCPP_DATA_HEADERS})
+SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
+SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
+SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
+
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
-SOURCE_SUB_GROUP(Object Data FILES ${LBCPP_VARIABLE_SOURCES} ${LBCPP_OBJECT_HEADERS_NEW})
-SOURCE_SUB_GROUP(Object impl FILES ${LBCPP_OBJECT_IMPL_HEADERS})
-SOURCE_SUB_GROUP(Object Type FILES ${LBCPP_OBJECT_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Object ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
 
 SOURCE_GROUP(Utilities FILES ${LBCPP_UTILITIES_HEADERS} ${LBCPP_UTILITIES_SOURCES})

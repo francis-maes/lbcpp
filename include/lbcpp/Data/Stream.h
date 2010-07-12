@@ -130,32 +130,7 @@ public:
   StreamPtr apply(FunctionPtr function) const;
 };
 
-class DirectoryFileStream : public Stream
-{
-public:
-  DirectoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
-  DirectoryFileStream();
-
-  virtual TypePtr getElementsType() const
-    {return fileType();}
-
-  virtual bool rewind();
-  virtual bool isExhausted() const;
-  virtual Variable next();
-
-private:
-  File directory;
-  String wildCardPattern;
-  bool searchFilesRecursively;
-
-  juce::OwnedArray<File> files;
-  int nextFilePosition;
-
-  void initialize();
-};
-
-inline StreamPtr directoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
-  {return new DirectoryFileStream(directory, wildCardPattern, searchFilesRecursively);}
+StreamPtr directoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 
 }; /* namespace lbcpp */
 

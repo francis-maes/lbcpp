@@ -27,7 +27,7 @@
 #ifndef LBCPP_STRING_TO_OBJECT_MAP_H_
 # define LBCPP_STRING_TO_OBJECT_MAP_H_
 
-# include "Object.h"
+# include "../Data/Object.h"
 
 namespace lbcpp
 {

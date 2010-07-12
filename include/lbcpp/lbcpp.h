@@ -17,7 +17,7 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: lbcpp.h                         | global include file for lbcpp  |
+| Filename: lbcpp.h                        | global include file for lbcpp   |
 | Author  : Francis Maes                   |                                 |
 | Started : 04/01/2009 20:15               |                                 |
 `------------------------------------------/                                 |
@@ -30,18 +30,18 @@
 # include "Traits.h"
 # include "ContainerTraits.h"
 
-# include "Object/Object.h"
-# include "Object/Type.h"
+// new
+# include "Data/Object.h"
+# include "Data/Type.h"
+# include "Data/Variable.h"
+# include "Data/Function.h"
+# include "Data/Stream.h"
+# include "Data/Vector.h"
+# include "Data/SymmetricMatrix.h"
+# include "Data/Predicate.h"
+# include "Data/ProbabilityDistribution.h"
 
-# include "Object/Variable.h"
-# include "Object/Function.h"
-# include "Object/Stream.h"
-# include "Object/Vector.h"
-# include "Object/Matrix.h"
-# include "Object/SymmetricMatrix.h"
-# include "Object/Predicate.h"
-# include "Object/ProbabilityDistribution.h"
-
+// old
 # include "Object/ObjectContainer.h"
 # include "Object/ObjectStream.h"
 # include "Object/ObjectConsumer.h"
@@ -49,6 +49,7 @@
 # include "Object/ObjectGraph.h"
 # include "Object/Table.h"
 # include "Object/StringToObjectMap.h"
+// -
 
 # include "Utilities/IterationFunction.h"
 # include "Utilities/RandomGenerator.h"

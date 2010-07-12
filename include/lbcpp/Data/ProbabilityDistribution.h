@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 # define LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 
-# include <lbcpp/Object/Variable.h>
+# include <lbcpp/Data/Variable.h>
 
 namespace lbcpp
 {

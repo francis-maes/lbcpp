@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_AMINO_ACID_H_
 # define LBCPP_PROTEINS_AMINO_ACID_H_
 
-# include <lbcpp/Object/Variable.h>
+# include <lbcpp/Data/Variable.h>
 
 namespace lbcpp
 {
