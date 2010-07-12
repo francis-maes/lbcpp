@@ -123,7 +123,7 @@ public:
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
   {
     Variable* data = (Variable* )allocateMemory(size);
-    if (xml->getNumChildElements() != size)
+    if (xml->getNumChildElements() != (int)size)
     {
       callback.errorMessage(T("PairType::createFromXml"), T("Invalid number of child elements"));
       return getMissingValue();

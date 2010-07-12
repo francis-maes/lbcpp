@@ -56,8 +56,8 @@ public:
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
 private:
-  Vector values;
   size_t dimension;
+  Vector values;
 
   size_t getIndex(size_t i, size_t j) const;
 };

@@ -342,7 +342,7 @@ protected:
   FunctionPtr representation;
 };
 
-class ProteinInferenceFactory
+class ProteinInferenceFactory : public Object
 {
 public:
   ProteinInferenceFactory() : proteinClass(lbcpp::proteinClass()) {}
