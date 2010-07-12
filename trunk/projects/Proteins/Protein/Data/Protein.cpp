@@ -109,16 +109,25 @@ void Protein::computeMissingVariables()
   }
 }
 
+VectorPtr Protein::createEmptySecondaryStructure() const
+  {return new Vector(secondaryStructureElementEnumeration(), getLength());}
+
+VectorPtr Protein::createEmptyDSSPSecondaryStructure() const
+  {return new Vector(dsspSecondaryStructureElementEnumeration(), getLength());}
+
+VectorPtr Protein::createEmptySolventAccesibility() const
+  {return new Vector(probabilityType(), getLength());}
+
 Variable Protein::createEmptyTarget(size_t index) const
 {
   size_t n = getLength();
 
   switch (index)
   {
-  case 2: return new Vector(secondaryStructureElementEnumeration(), n);
-  case 3: return new Vector(dsspSecondaryStructureElementEnumeration(), n);
+  case 2: return createEmptySecondaryStructure();
+  case 3: return createEmptyDSSPSecondaryStructure();
   case 4: return new Vector(structuralAlphaElementEnumeration(), n);
-  case 5: return new Vector(probabilityType(), n);
+  case 5: return createEmptySolventAccesibility();
 
   default:
     jassert(false); return Variable();

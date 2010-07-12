@@ -56,6 +56,8 @@ class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 class SymmetricMatrix;
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
+class Representation;
+typedef ReferenceCountedObjectPtr<Representation> RepresentationPtr;
 
 // object stream
 class ObjectStream;

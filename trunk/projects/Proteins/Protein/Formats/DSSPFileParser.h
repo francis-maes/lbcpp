@@ -304,8 +304,8 @@ public:
       {
 //        aminoAcidSequence = protein->createEmptyObject(T("AminoAcidSequence"));
         
-        dsspSecondaryStructureSequence = protein->createEmptyTarget(proteinClass()->findStaticVariable(T("dsspSecondaryStructure")));
-        solventAccesibilitySequence = protein->createEmptyTarget(proteinClass()->findStaticVariable(T("solventAccesibility")));
+        dsspSecondaryStructureSequence = protein->createEmptyDSSPSecondaryStructure();
+        solventAccesibilitySequence = protein->createEmptySolventAccesibility();
         ++serialNumber;
       }
       return true;

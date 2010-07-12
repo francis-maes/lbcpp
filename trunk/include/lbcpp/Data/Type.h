@@ -38,8 +38,8 @@ extern void initialize();
 class Type : public NameableObject
 {
 public:
-  Type(const String& className, TypePtr baseClass)
-    : NameableObject(className), baseClass(baseClass) {}
+  Type(const String& className, TypePtr baseType)
+    : NameableObject(className), baseType(baseType) {}
 
   static void declare(TypePtr classInstance);
   static TypePtr get(const String& typeName);
@@ -65,11 +65,14 @@ public:
   /*
   ** Base class
   */
-  TypePtr getBaseClass() const
-    {return baseClass;}
+  TypePtr getBaseType() const
+    {return baseType;}
 
-  void setBaseClass(TypePtr baseClass)
-    {this->baseClass = baseClass;}
+  void setBaseType(TypePtr baseType)
+    {this->baseType = baseType;}
+
+  bool inheritsFrom(TypePtr baseType) const;
+  bool canBeCastedTo(TypePtr targetType) const;
 
   /*
   ** Template Arguments
@@ -82,8 +85,6 @@ public:
   
   void setTemplateArgument(size_t index, TypePtr type)
     {jassert(index < templateArguments.size()); templateArguments[index] = type;}
-
-  bool inheritsFrom(TypePtr baseType) const;
 
   /*
   ** Operations
@@ -140,15 +141,21 @@ public:
   virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
     {jassert(false);}
 
+  /*
+  ** Object
+  */
+  virtual String toString() const
+    {return getName();}
+
   virtual void clone(ObjectPtr target) const
   {
     TypePtr targetType = target.staticCast<Type>();
-    targetType->baseClass = baseClass;
+    targetType->baseType = baseType;
     targetType->templateArguments = templateArguments;
   }
 
 protected:
-  TypePtr baseClass;
+  TypePtr baseType;
   std::vector<TypePtr> templateArguments;
 };
 
@@ -279,6 +286,8 @@ public:
     : Type(name, baseClass) {}
   Class() : Type(T("Object"), topLevelType()) {}
 
+  virtual String toString() const;
+
   virtual bool isMissingValue(const VariableValue& value) const
     {return !value.getObject();}
     
@@ -401,7 +410,7 @@ public:
 
   virtual ObjectPtr clone() const
   {
-    ClassPtr res(new DefaultClass_<TT>(baseClass));
+    ClassPtr res(new DefaultClass_<TT>(baseType));
     Type::clone(res);
     return res;
   }

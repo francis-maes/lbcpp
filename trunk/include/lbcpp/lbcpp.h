@@ -40,6 +40,7 @@
 # include "Data/SymmetricMatrix.h"
 # include "Data/Predicate.h"
 # include "Data/ProbabilityDistribution.h"
+# include "Data/Representation.h"
 
 // old
 # include "Object/ObjectContainer.h"

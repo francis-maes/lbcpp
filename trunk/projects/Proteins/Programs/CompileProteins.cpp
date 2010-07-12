@@ -47,7 +47,7 @@ bool loadPSSMFile(ProteinObjectPtr protein, const File& pssmFile)
 }
 
 bool loadDSSPFile(ProteinObjectPtr protein, const File& dsspFile)
-  {return ObjectStreamPtr(new DSSPFileParser(dsspFile, protein))->next();}
+  {jassert(false); std::cerr << "FIXME!!" << std::endl; return false;}//ObjectStreamPtr(new DSSPFileParser(dsspFile, protein))->next();}
 
 bool loadProteinRelatedFile(ProteinObjectPtr protein, const File& file)
 {

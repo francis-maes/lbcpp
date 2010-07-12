@@ -77,7 +77,7 @@ public:
     }
     for (size_t i = 0; i < key.second.size(); ++i)
       specializedType->setTemplateArgument(i, key.second[i]);
-    specializedType->setBaseClass(type);
+    specializedType->setBaseType(type);
     specializedType->setName(makeTemplateClassName(typeName, key.second));
     const_cast<TypeManager* >(this)->templateTypes[key] = specializedType;
     return specializedType;
@@ -177,11 +177,33 @@ void lbcpp::initialize()
 /*
 ** Type
 */
-bool Type::inheritsFrom(TypePtr baseClass) const
+bool Type::inheritsFrom(TypePtr baseType) const
 {
-  jassert(this && baseClass.get());
-  return this == baseClass.get() || (this->baseClass && this->baseClass->inheritsFrom(baseClass));
+  jassert(this && baseType.get());
+  if (this == baseType.get())
+    return true;
+  if (!this->baseType)
+    return false;
+  if (this->baseType->inheritsFrom(baseType))
+    return true;
+
+  // FIXME: the check is not complete, TemplateClass should be distinguished from Class to properly check inheritance
+  size_t n = getNumTemplateArguments();
+  if (n > 0)
+  {
+    if (n != baseType->getNumTemplateArguments())
+      return false;
+    for (size_t i = 0; i < n; ++i)
+      if (!getTemplateArgument(i)->inheritsFrom(baseType->getTemplateArgument(i)))
+        return false;
+    return true;
+  }
+
+  return false;
 }
+
+bool Type::canBeCastedTo(TypePtr targetType) const
+  {return inheritsFrom(targetType);}
 
 Variable Type::getSubVariable(const VariableValue& value, size_t index) const
   {jassert(false); return Variable();}
@@ -241,6 +263,21 @@ int Type::findStaticVariable(const String& name) const
 /*
 ** Class
 */
+String Class::toString() const
+{
+  String res = getName();
+  res += T(" = {");
+  size_t n = getNumStaticVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    res += getStaticVariableType(i)->getName() + T(" ") + getStaticVariableName(i);
+    if (i < n - 1)
+      res += T(", ");
+  }
+  res += T("}");
+  return res;
+}
+
 int Class::compare(const VariableValue& value1, const VariableValue& value2) const
 {
   ObjectPtr object1 = value1.getObject();
@@ -342,16 +379,16 @@ DynamicClass::DynamicClass(const String& name, TypePtr baseClass)
 
 size_t DynamicClass::getNumStaticVariables() const
 {
-  size_t n = baseClass->getNumStaticVariables();
+  size_t n = baseType->getNumStaticVariables();
   ScopedLock _(variablesLock);
   return n + variables.size();
 }
 
 TypePtr DynamicClass::getStaticVariableType(size_t index) const
 {
-  size_t n = baseClass->getNumStaticVariables();
+  size_t n = baseType->getNumStaticVariables();
   if (index < n)
-    return baseClass->getStaticVariableType(index);
+    return baseType->getStaticVariableType(index);
   index -= n;
   
   ScopedLock _(variablesLock);
@@ -361,9 +398,9 @@ TypePtr DynamicClass::getStaticVariableType(size_t index) const
 
 String DynamicClass::getStaticVariableName(size_t index) const
 {
-  size_t n = baseClass->getNumStaticVariables();
+  size_t n = baseType->getNumStaticVariables();
   if (index < n)
-    return baseClass->getStaticVariableName(index);
+    return baseType->getStaticVariableName(index);
   index -= n;
   
   ScopedLock _(variablesLock);
@@ -390,8 +427,8 @@ int DynamicClass::findStaticVariable(const String& name) const
   ScopedLock _(variablesLock);
   for (size_t i = 0; i < variables.size(); ++i)
     if (variables[i].second == name)
-      return (int)(i + baseClass->getNumStaticVariables());
-  return baseClass->findStaticVariable(name);
+      return (int)(i + baseType->getNumStaticVariables());
+  return baseType->findStaticVariable(name);
 }
 
 /*

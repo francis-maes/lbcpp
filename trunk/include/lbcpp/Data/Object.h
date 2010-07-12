@@ -48,9 +48,6 @@ typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
 class Table;
 typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
-class ObjectVisitor;
-typedef ReferenceCountedObjectPtr<ObjectVisitor> ObjectVisitorPtr;
-
 /*!
 ** @class Object
 ** @brief Object is the base class of nearly all classes of LBC++ library.
@@ -87,8 +84,6 @@ public:
   virtual void setVariable(size_t index, const Variable& value);
   
   virtual VariableReference getVariableReference(size_t index);
-
-  virtual void accept(ObjectVisitorPtr visitor);
 
   /*
   ** Dynamic creation
@@ -302,7 +297,7 @@ protected:
     {}
 
   // utilities
-  String variablesToString(const String& separator) const;
+  String variablesToString(const String& separator, bool includeTypes = true) const;
   XmlElement* variableToXml(size_t index) const;
   void saveVariablesToXmlAttributes(XmlElement* xml) const;
   bool loadVariablesFromXmlAttributes(XmlElement* xml, ErrorHandler& callback);
@@ -338,12 +333,6 @@ protected:
 extern ClassPtr nameableObjectClass();
 
 typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
-
-class ObjectVisitor : public Object
-{
-public:
-  virtual void visit(size_t variableNumber, const Variable& value) = 0;
-};
 
 /**
 ** Loads an object from the file @a filename.

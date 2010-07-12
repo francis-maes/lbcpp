@@ -15,6 +15,7 @@ extern void declareObjectClasses();
 extern void declareContainerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
+extern void declareRepresentationClasses();
 // -
 
 extern void declareObjectContainerClasses();
@@ -28,6 +29,7 @@ void declareObjectRelatedClasses()
   declareContainerClasses();
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
+  declareRepresentationClasses();
   // -
 
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);

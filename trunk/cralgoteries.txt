@@ -1,8 +1,10 @@
+* flatten discrete probability distribution
+  -> try with decision trees
+   
+* use new Inference classes
+  -> try with linear machines
 
-
-
-* Faire les "RepresentationFunction", Faire le pont Attribut/Valeur => Feature Generator
-* Utiliser les nouvelles structures de données dans les ProteinInference
+* More targets, More representations, More features
 
 Julien:
  * Voir pourquoi les ExtraTree marchent moyen

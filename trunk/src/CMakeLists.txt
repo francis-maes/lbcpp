@@ -15,6 +15,7 @@ SET(LBCPP_DATA_HEADERS
   ../include/lbcpp/Data/SymmetricMatrix.h
   ../include/lbcpp/Data/Predicate.h
   ../include/lbcpp/Data/ProbabilityDistribution.h
+  ../include/lbcpp/Data/Representation.h
 )
 
 SET(LBCPP_DATA_IMPL_HEADERS
@@ -34,6 +35,7 @@ SET(LBCPP_DATA_SOURCES
   Data/SymmetricMatrix.cpp
   Data/Predicate.cpp
   Data/ProbabilityDistribution.cpp
+  Data/Representation.cpp
 )  
 
 SET(LBCPP_DATA_TYPE_SOURCES
@@ -48,6 +50,12 @@ SET(LBCPP_DATA_TYPE_SOURCES
 SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
+)
+
+SET(LBCPP_DATA_REPRESENTATION_SOURCES
+  Data/Representation/PreprocessRepresentation.h
+  Data/Representation/FlattenRepresentation.h
+  Data/Representation/VectorWindowRepresentation.h
 )
 
 ### old 
@@ -264,8 +272,9 @@ SET(LBCPP_CORE
   ${LBCPP_DATA_HEADERS}
   ${LBCPP_DATA_IMPL_HEADERS}
   ${LBCPP_DATA_SOURCES}
-  ${LBCPP_DATA_TYPE_SOURCES}
-  ${LBCPP_DATA_STREAM_SOURCES}
+    ${LBCPP_DATA_TYPE_SOURCES}
+    ${LBCPP_DATA_STREAM_SOURCES}
+    ${LBCPP_DATA_REPRESENTATION_SOURCES}
   
   ${LBCPP_OBJECT_HEADERS}
   ${LBCPP_OBJECT_SOURCES}
@@ -302,6 +311,7 @@ SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES} ${LBCPP_DATA_HEADERS})
 SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
+SOURCE_SUB_GROUP(Data Representation FILES ${LBCPP_DATA_REPRESENTATION_SOURCES})
 
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Object ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
