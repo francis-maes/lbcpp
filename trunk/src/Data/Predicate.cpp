@@ -83,7 +83,7 @@ class LessThanOrEqualToPredicate : public UnaryComparisonPredicate
 {
 public:
   LessThanOrEqualToPredicate(const Variable& operand)
-    : UnaryComparisonPredicate(operand) {}
+    : UnaryComparisonPredicate(operand) {jassert(operand);}
   LessThanOrEqualToPredicate() {}
 
   virtual String operatorToString() const

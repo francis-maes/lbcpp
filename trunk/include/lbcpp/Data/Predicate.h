@@ -17,7 +17,7 @@ namespace lbcpp
 class Predicate : public Function
 {
 public:
-  virtual bool computePredicate(const Variable& input, ErrorHandler& callback) const = 0;
+  virtual bool computePredicate(const Variable& input, ErrorHandler& callback = ErrorHandler::getInstance()) const = 0;
 
   /*
   ** Function

@@ -457,7 +457,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  VectorPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\protein")));
+  VectorPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")));
   std::cout << proteins->size() << " proteins" << std::endl;
 
   //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);

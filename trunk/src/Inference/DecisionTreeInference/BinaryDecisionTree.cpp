@@ -65,7 +65,7 @@ bool BinaryDecisionTree::Node::test(const Variable& variable) const
 {
   jassert(isInternalNode());
   jassert(splitVariable >= 0 && splitVariable < (int)variable.size());
-  return getSplitPredicate(argument)->compute(variable[splitVariable]);
+  return getSplitPredicate(argument)->computePredicate(variable[splitVariable]);
 }
 
 String BinaryDecisionTree::toString() const
