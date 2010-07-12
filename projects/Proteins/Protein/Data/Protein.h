@@ -30,6 +30,8 @@ public:
 
   virtual VariableReference getVariableReference(size_t index);
 
+  Variable createEmptyTarget(size_t index) const;
+
   size_t getLength() const
     {return primaryStructure ? primaryStructure->size() : 0;}
 

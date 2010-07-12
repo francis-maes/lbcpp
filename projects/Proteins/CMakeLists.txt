@@ -154,13 +154,16 @@ ADD_SINGLE_CPP_EXECUTABLE(ProteinInferenceEvaluator)
 ADD_SINGLE_CPP_EXECUTABLE(TertiaryStructureRepresentationTests)
 ADD_SINGLE_CPP_EXECUTABLE(ConvertCASPToValidPDB)
 ADD_SINGLE_CPP_EXECUTABLE(ExtractSequenceFromProtein)
-ADD_SINGLE_CPP_EXECUTABLE(AttributeValueSandBox)
 ADD_SINGLE_CPP_EXECUTABLE(ConvertProteinsToNewFormat)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_CREXECUTABLE(SandBox Programs/SandBox.lcpp)
 TARGET_LINK_LIBRARIES(SandBox proteins)
+
+ADD_CREXECUTABLE(AttributeValueSandBox Programs/AttributeValueSandBox.lcpp)
+TARGET_LINK_LIBRARIES(AttributeValueSandBox proteins)
+
 
 ADD_CRALGORITHM_SOURCES(Programs/SunBox.lcpp)
 SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})

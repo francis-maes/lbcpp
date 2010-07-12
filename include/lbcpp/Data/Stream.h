@@ -110,10 +110,10 @@ public:
   **
   ** @param maximumCount : number of item to load.
   **
-  ** @return an object container instance containing loaded items.
+  ** @return a Vector containing loaded items.
   ** @see Container
   */
-  ContainerPtr load(size_t maximumCount = 0);
+  VectorPtr load(size_t maximumCount = 0);
 
   /**
   ** Applies an Function to this stream.

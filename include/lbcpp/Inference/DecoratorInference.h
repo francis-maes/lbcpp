@@ -12,6 +12,7 @@
 # include "Inference.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
+# include "../Data/Function.h"
 
 namespace lbcpp
 {
@@ -51,6 +52,25 @@ public:
 protected:
   InferencePtr decorated;
 };
+
+class PostProcessInference : public DecoratorInference
+{
+public:
+  // postProcessingFunction: from (object,any) pair to object
+  PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
+    : DecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
+        postProcessingFunction(postProcessingFunction) {}
+  PostProcessInference() {}
+  
+  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
+  {return postProcessingFunction->compute(Variable::pair(input, subInferenceOutput));}
+
+protected:
+  FunctionPtr postProcessingFunction;
+};
+
+inline InferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction)
+  {return new PostProcessInference(inference, postProcessingFunction);}
 
 }; /* namespace lbcpp */
 

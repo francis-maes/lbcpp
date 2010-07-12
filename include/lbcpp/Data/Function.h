@@ -45,7 +45,8 @@ protected:
   virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const = 0;
 };
 
-FunctionPtr loadFromFileFunction(); // File -> Variable
+FunctionPtr loadFromFileFunction(); // File -> Object
+FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 
 }; /* namespace lbcpp */
 

@@ -153,6 +153,10 @@ protected:
 };
 
 extern TypePtr topLevelType();
+
+inline TypePtr anyType()
+  {return topLevelType();}
+
 extern TypePtr nilType();
 
 class BuiltinType : public Type
