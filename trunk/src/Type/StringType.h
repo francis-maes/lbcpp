@@ -35,6 +35,8 @@ namespace lbcpp
 class StringType : public BuiltinType
 {
 public:
+  StringType(const String& name, TypePtr baseType)
+    : BuiltinType(name, baseType) {}
   StringType() : BuiltinType(T("String")) {}
 
   virtual VariableValue getMissingValue() const
@@ -67,6 +69,12 @@ public:
 
   virtual size_t getNumSubVariables(const VariableValue& value) const
     {return 0;}
+};
+
+class FileType : public StringType
+{
+public:
+  FileType() : StringType(T("File"), stringType()) {}
 };
 
 }; /* namespace lbcpp */

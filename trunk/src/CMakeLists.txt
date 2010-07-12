@@ -19,6 +19,7 @@ SET(LBCPP_OBJECT_HEADERS_NEW
   ../include/lbcpp/Object/Type.h
   ../include/lbcpp/Object/Variable.h
   ../include/lbcpp/Object/Function.h
+  ../include/lbcpp/Object/Stream.h
   ../include/lbcpp/Object/Container.h
   ../include/lbcpp/Object/Vector.h
   ../include/lbcpp/Object/SymmetricMatrix.h
@@ -44,6 +45,8 @@ SET(LBCPP_VARIABLE_SOURCES
   Variable/Variable.cpp
   Variable/Object.cpp
   Variable/Type.cpp
+  Variable/Function.cpp
+  Variable/Stream.cpp
   Variable/Container.cpp
   Variable/Vector.cpp
   Variable/SymmetricMatrix.cpp

@@ -528,6 +528,7 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(doubleType, T("Double"));
   DECLARE_CLASS_SINGLETON_ACCESSOR(angstromDistanceType, T("AngstromDistance"));
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(stringType, T("String"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(fileType, T("File"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(pairType, T("Pair"));
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(enumerationType, T("Enumeration"));
@@ -551,6 +552,7 @@ void declareClassClasses()
     Type::declare(new AngstromDistanceType());
 
   Type::declare(new StringType());
+    Type::declare(new FileType());
   Type::declare(new PairType());
 
   Type::declare(new Class());

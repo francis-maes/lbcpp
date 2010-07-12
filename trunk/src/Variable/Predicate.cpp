@@ -31,8 +31,8 @@ public:
   virtual String toString() const
     {return T("(") + predicate1->toString() + T(" v ") + predicate2->toString() + T(")");}
 
-  virtual bool computePredicate(const Variable& value) const
-    {return predicate1->computePredicate(value) || predicate2->computePredicate(value);}
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+    {return predicate1->computePredicate(value, callback) || predicate2->computePredicate(value, callback);}
 };
 
 class LogicalAndPredicate : public BinaryPredicate
@@ -45,8 +45,8 @@ public:
   virtual String toString() const
     {return T("(") + predicate1->toString() + T(" ^ ") + predicate2->toString() + T(")");}
 
-  virtual bool computePredicate(const Variable& value) const
-    {return predicate1->computePredicate(value) && predicate2->computePredicate(value);}
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+    {return predicate1->computePredicate(value, callback) && predicate2->computePredicate(value, callback);}
 };
 
 class UnaryComparisonPredicate : public Predicate
@@ -75,7 +75,7 @@ public:
   virtual String operatorToString() const
     {return T("<");}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
     {return value < operand;}
 };
 
@@ -89,7 +89,7 @@ public:
   virtual String operatorToString() const
     {return T("<=");}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
     {return value <= operand;}
 };
 
@@ -103,7 +103,7 @@ public:
   virtual String operatorToString() const
     {return T("==");}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
     {return value == operand;}
 };
 
@@ -117,7 +117,7 @@ public:
   virtual String operatorToString() const
     {return T("!=");}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
     {return value != operand;}
 };
 
@@ -131,7 +131,7 @@ public:
   virtual String operatorToString() const
     {return T(">=");}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
     {return value >= operand;}
 };
 
@@ -145,7 +145,7 @@ public:
   virtual String operatorToString() const
     {return T(">");}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
     {return value > operand;}
 };
 
