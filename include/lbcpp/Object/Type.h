@@ -170,6 +170,7 @@ extern TypePtr doubleType();
   extern TypePtr angstromDistanceType(); // todo: move
 
 extern TypePtr stringType();
+  extern TypePtr fileType();
 
 extern TypePtr pairType();
 extern TypePtr pairType(TypePtr firstClass, TypePtr secondClass);

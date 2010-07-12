@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Object/Stream.h>
-#include <lbcpp/Object/Container.h>
+#include <lbcpp/Object/Vector.h>
 using namespace lbcpp;
 
 /*
@@ -41,6 +41,9 @@ bool Stream::iterate(size_t maximumCount)
   return true;
 }
 
+StreamPtr Stream::apply(FunctionPtr function) const
+  {return StreamPtr();}//new ApplyFunctionStream(this, function);}
+
 /*
 ** DirectoryFileStream
 */
@@ -69,17 +72,14 @@ Variable DirectoryFileStream::next()
 {
   if (isExhausted())
     return Variable();
-  while (nextFilePosition < files.size())
-  {
-    File file = *files[nextFilePosition];
-    ++nextFilePosition;
-    return new FileObject(file);
-  }
-  return Variable();
+  jassert(nextFilePosition < files.size());
+  File file = *files[nextFilePosition];
+  ++nextFilePosition;
+  return Variable(file.getFullPathName(), fileType());
 }
 
 void declareStreamClasses()
 {
-  LBCPP_DECLARE_ABSTRACT_CLASS(Stream);
+  LBCPP_DECLARE_ABSTRACT_CLASS(Stream, Object);
   LBCPP_DECLARE_CLASS(DirectoryFileStream, Stream);
 }

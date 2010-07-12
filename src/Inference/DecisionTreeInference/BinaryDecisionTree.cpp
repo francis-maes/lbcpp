@@ -29,13 +29,10 @@ public:
   virtual TypePtr getInputType() const
     {return integerType();}
 
-  virtual bool computePredicate(const Variable& value) const
+  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
   {
     if (value.isMissingValue())
       return mask->get(mask->size() - 1);
-
-    if (!checkInheritance(value, integerType()))
-      return false;
     size_t i = (size_t)value.getInteger();
     jassert(i < mask->size() - 1);
     return mask->get(i);

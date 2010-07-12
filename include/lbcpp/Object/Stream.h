@@ -127,10 +127,8 @@ public:
   ** @return a new object stream instance referring to this one.
   ** @see Function
   */
-  StreamPtr apply(FunctionPtr function);
+  StreamPtr apply(FunctionPtr function) const;
 };
-
-extern ClassPtr fileClass();
 
 class DirectoryFileStream : public Stream
 {
@@ -139,7 +137,7 @@ public:
   DirectoryFileStream();
 
   virtual TypePtr getElementsType() const
-    {return fileClass();}
+    {return fileType();}
 
   virtual bool rewind();
   virtual bool isExhausted() const;

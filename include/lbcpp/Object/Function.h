@@ -10,6 +10,7 @@
 # define LBCPP_VARIABLE_FUNCTION_H_
 
 # include "Variable.h"
+# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {
@@ -30,6 +31,10 @@ public:
   virtual TypePtr getInputType() const = 0;
   virtual TypePtr getOutputType(TypePtr inputType) const = 0;
 
+  Variable compute(const Variable& input, ErrorHandler& callback = ErrorHandler::getInstance()) const
+    {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
+
+protected:
   /**
   ** Computes the function
   **
@@ -37,8 +42,10 @@ public:
   **
   ** @return a variable of type getOutputType(inputType)
   */
-  virtual Variable compute(const Variable& input) const = 0;
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const = 0;
 };
+
+FunctionPtr loadFromFileFunction(); // File -> Variable
 
 }; /* namespace lbcpp */
 
