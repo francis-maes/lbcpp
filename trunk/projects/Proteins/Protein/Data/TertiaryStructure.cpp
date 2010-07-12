@@ -344,12 +344,12 @@ impl::Matrix4 TertiaryStructure::superposeCAlphaAtoms(TertiaryStructurePtr targe
     ResiduePtr residue2 = targetStructure->getResidue(i);
     if (!residue1 || !residue2)
       continue;
-    impl::Vector3 position1 = residue1->getAtomPosition(T("CA"));
-    impl::Vector3 position2 = residue2->getAtomPosition(T("CA"));
-    if (!position1.exists() || !position2.exists())
+    Vector3Ptr position1 = residue1->getAtomPosition(T("CA"));
+    Vector3Ptr position2 = residue2->getAtomPosition(T("CA"));
+    if (!position1 || !position2)
       continue;
     
-    pointPairs.push_back(std::make_pair(position1, position2));
+    pointPairs.push_back(std::make_pair(position1->getValue(), position2->getValue()));
   }
   return impl::Matrix4::findAffineTransformToSuperposePoints(pointPairs);
 }
@@ -367,12 +367,12 @@ double TertiaryStructure::computeCAlphaAtomsRMSE(TertiaryStructurePtr targetStru
     ResiduePtr residue2 = targetStructure->getResidue(i);
     if (!residue1 || !residue2)
       continue;
-    impl::Vector3 position1 = residue1->getAtomPosition(T("CA"));
-    impl::Vector3 position2 = residue2->getAtomPosition(T("CA"));
-    if (!position1.exists() || !position2.exists())
+    Vector3Ptr position1 = residue1->getAtomPosition(T("CA"));
+    Vector3Ptr position2 = residue2->getAtomPosition(T("CA"));
+    if (!position1 || !position2)
       continue;
     
-    double delta = (matrix.transformAffine(position1) - position2).l2norm();
+    double delta = (matrix.transformAffine(position1->getValue()) - position2->getValue()).l2norm();
     error += delta * delta;
     ++count;
   }

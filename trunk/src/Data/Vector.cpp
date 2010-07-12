@@ -139,10 +139,10 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
       return false;
     }
 
-    if (block.getSize() != sizeof (VariableValue) * values.size())
+    if (block.getSize() != (int)(sizeof (VariableValue) * values.size()))
     {
       callback.errorMessage(T("Vector::loadFromXml"), T("Invalid data size: found ") + String(block.getSize())
-        + T(" expected ") + String((int)sizeof (VariableValue) * values.size()));
+        + T(" expected ") + String((int)(sizeof (VariableValue) * values.size())));
       return false;
     }
     memcpy(&values[0], block.getData(), block.getSize());

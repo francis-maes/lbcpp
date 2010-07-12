@@ -72,7 +72,6 @@ int main(int argc, char** argv)
   Variable(a).saveToFile(file);
 
   APtr loadedA = Variable::createFromFile(file).getObjectAndCast<A>();
-  std::cout << loadedA << std::endl;
   std::cout << "LoadedA = " << std::endl << loadedA->toString() << std::endl;
   return 0;
 }
