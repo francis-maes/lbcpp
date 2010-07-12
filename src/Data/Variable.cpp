@@ -66,7 +66,8 @@ Variable Variable::createFromFile(const File& file, ErrorHandler& callback)
   String lastParseError = document.getLastParseError();
   if (!xml)
   {
-    callback.errorMessage(T("Variable::createFromFile"), lastParseError);
+    callback.errorMessage(T("Variable::createFromFile"),
+      lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
     return Variable();
   }
   if (lastParseError.isNotEmpty())

@@ -110,6 +110,7 @@ Variable sampleNumericalSplit(RandomGenerator& random, ContainerPtr trainingData
   }
   jassert(minValue != DBL_MAX && maxValue != -DBL_MAX);
   double res = RandomGenerator::getInstance().sampleDouble(minValue, maxValue);
+  jassert(res >= minValue && res < maxValue);
   //std::cout << " => " << res << std::endl;
   return res;
 }
@@ -180,7 +181,7 @@ PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, Typ
   for (size_t i = 0; i < trainingData->size(); ++i)
   {
     Variable inputOutputPair = trainingData->getVariable(i);
-    if (predicate->compute(inputOutputPair[0][variableIndex]))
+    if (predicate->computePredicate(inputOutputPair[0][variableIndex]))
       ++numPos;
     else
       ++numNeg;
@@ -234,7 +235,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   for (size_t i = 0; i < examples->size(); ++i)
   {
     Variable inputOutputPair = examples->getVariable(i);
-    if (predicate->compute(inputOutputPair[0][variableIndex]))
+    if (predicate->computePredicate(inputOutputPair[0][variableIndex]))
       pos->append(inputOutputPair);
     else
       neg->append(inputOutputPair);
