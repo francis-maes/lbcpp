@@ -27,7 +27,7 @@
 #ifndef LBCPP_OBJECT_ERROR_HANDLER_H_
 # define LBCPP_OBJECT_ERROR_HANDLER_H_
 
-# include "ReferenceCountedObject.h"
+# include "../Data/ReferenceCountedObject.h"
 
 namespace lbcpp
 {
