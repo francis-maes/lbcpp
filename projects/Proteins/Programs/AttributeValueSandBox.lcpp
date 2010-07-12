@@ -50,191 +50,12 @@ void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = 
 }
 
 ///////////////
-/*
-class VectorWindowAttributes : public Object
+
+class ResidueRepresentation : public CompositeRepresentation
 {
 public:
-  VectorWindowAttributes(size_t proteinVariableIndex, size_t size)
-    : proteinVariableIndex(proteinVariableIndex), size(size) {}
-
-protected:
-  size_t proteinVariableIndex;
-  size_t size;
-};*/
-
-class ProteinResidueInputAttributes : public Object
-{
-public:
-  ProteinResidueInputAttributes(ProteinPtr protein, size_t position, size_t windowSize)
-    : position(position), windowSize(windowSize)
-  {
-    primaryStructure = protein->getPrimaryStructure();
-    positionSpecificScoringMatrix = protein->getPositionSpecificScoringMatrix();
-  }
-
-  virtual Variable getVariable(VectorPtr vector, size_t index) const
-  {
-    int targetPosition = (int)position - (int)(windowSize / 2) + (int)index;
-    if (targetPosition >= 0 && targetPosition < (int)vector->size())
-      return vector->getVariable(targetPosition);
-    else
-      return Variable::missingValue(vector->getElementsType());
-  }
-
-  virtual Variable getVariable(size_t index) const
-  {
-    if (index < windowSize)
-      return getVariable(primaryStructure, index);
-    else
-    {
-      index -= windowSize;
-      size_t position = index / 20;
-      Variable var = getVariable(positionSpecificScoringMatrix, position);
-      return var ? var[index % 20] : Variable::missingValue(probabilityType());
-    }
-  }
-
-private:
-  VectorPtr primaryStructure;
-  VectorPtr positionSpecificScoringMatrix;
-  size_t position;
-  size_t windowSize;
-};
-
-class ProteinResidueInputAttributesClass : public DynamicClass
-{
-public:
-  ProteinResidueInputAttributesClass(size_t windowSize)
-    : DynamicClass(T("ProteinResidueInputAttributes"), objectClass())
-  {
-    for (size_t i = 0; i < windowSize; ++i)
-    {
-      int offset = (int)i - (int)(windowSize / 2);
-      addVariable(aminoAcidTypeEnumeration(), T("AA[") + String(offset) + T("]"));
-    }
-    for (size_t i = 0; i < windowSize; ++i)
-    {
-      int offset = (int)i - (int)(windowSize / 2);
-      for (size_t j = 0; j < 20; ++j)
-        addVariable(probabilityType(), T("PSSM[") + String(offset) + T("][") + String((int)j) + T("]"));
-    }
-  }
-};
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-//////// REPRESENTATION //////////////////
-//////////////////////////////////////////
-//////////////////////////////////////////
-
-class AddVariablesToDynamicObjectVisitor : public ObjectVisitor
-{
-public:
-  AddVariablesToDynamicObjectVisitor(DynamicObjectPtr target)
-    : target(target) {}
-
-  virtual void visit(size_t variableNumber, const Variable& value)
-    {target->setVariable(variableNumber, value);}
-
-private:
-  DynamicObjectPtr target;
-};
-
-class Representation : public Function
-{
-public:
-  virtual void getStaticVariables(DynamicClassPtr res) const = 0;
-  virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const = 0;
-  
-  // Function
-  virtual TypePtr getOutputType(TypePtr inputType) const
-  {
-    const_cast<Representation* >(this)->ensureTypeIsComputed();
-    return type;
-  }
-
-  virtual Variable compute(const Variable& input) const
-  {
-    const_cast<Representation* >(this)->ensureTypeIsComputed();
-    DynamicObjectPtr res = new DynamicObject(type);
-    compute(input, ObjectVisitorPtr(new AddVariablesToDynamicObjectVisitor(res)));
-    return res;
-  }
-
-private:
-  DynamicClassPtr type;
-
-  void ensureTypeIsComputed()
-  {
-    if (type)
-      return;
-    type = new DynamicClass(getClassName() + T("Class"));
-    getStaticVariables(type);
-  }
-};
-
-typedef ReferenceCountedObjectPtr<Representation> RepresentationPtr;
-
-class DecoratorRepresentation : public Representation
-{
-public:
-  DecoratorRepresentation(RepresentationPtr decorated)
-    : decorated(decorated) {}
-
-  virtual void getStaticVariables(DynamicClassPtr res) const
-    {decorated->getStaticVariables(res);}
-
-  virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const
-    {decorated->compute(input, visitor);}
-
-protected:
-  RepresentationPtr decorated;
-};
-
-class VectorWindowRepresentation : public Representation
-{
-public:
-  VectorWindowRepresentation(const String& vectorName, TypePtr vectorType, size_t windowSize)
-    : vectorName(vectorName), vectorType(vectorType), windowSize(windowSize) {}
-
   virtual TypePtr getInputType() const
-    {return pairType(vectorType, integerType());}
-
-  virtual void getStaticVariables(DynamicClassPtr res) const
-  {
-    TypePtr type = vectorType->getTemplateArgument(0);
-    jassert(type);
-    int relativePosition = -(int)(windowSize / 2);
-    for (size_t i = 0; i < windowSize; ++i)
-      res->addVariable(type, vectorName + T("[") + String(relativePosition++) + T("]"));
-  }
-
-  virtual void compute(const Variable& input, ObjectVisitorPtr visitor) const
-  {
-    ContainerPtr container = input[0].getObjectAndCast<Container>();
-    int position = input[1].getInteger() - (int)(windowSize / 2);
-    for (size_t i = 0; i < windowSize; ++i, ++position)
-    {
-      if (position >= 0 && position < (int)container->size())
-        visitor->visit(i, container->getVariable(position));
-      else
-        visitor->visit(i, Variable());
-    }
-  }
-
-protected:
-  String vectorName;
-  TypePtr vectorType;
-  size_t windowSize;
-};
-
-class CompositeRepresentation : public Representation
-{
-public:
-
-protected:
-  std::vector<RepresentationPtr> subRepresentations;
-  std::map<size_t, size_t> subIndexToIndexMap;
+    {return pairType(proteinClass(), integerType());}
 };
 
 //////////////////////////////////////////
@@ -342,6 +163,14 @@ protected:
   FunctionPtr representation;
 };
 
+class ProteinSequentialInference : public VectorSequentialInference
+{
+public:
+  ProteinSequentialInference() : VectorSequentialInference(T("Protein")) {}
+};
+
+///////////////////////////////////////// 
+
 class ProteinInferenceFactory : public Object
 {
 public:
@@ -390,10 +219,85 @@ protected:
     {return postProcessInference(targetInference, setFieldFunction(getTargetIndex(targetName)));}
 };
 
-class ProteinSequentialInference : public VectorSequentialInference
+
+///////////////////////////////////////// 
+
+bool canSubVariableBePruned(const Variable& subVariable)
+{
+  if (subVariable.getType()->inheritsFrom(probabilityType()))
+    return subVariable.getDouble() == 0.0;
+  return false;
+}
+
+featureGenerator variableFeatures(const Variable& variable)
+{
+  if (variable.isNil())
+  {
+    featureSense(T("Nil"));
+    return;
+  }
+  else if (variable.isMissingValue())
+  {
+    featureSense(T("Missing"));
+    return;
+  }
+  
+  TypePtr type = variable.getType();
+
+  if (variable.isEnumeration())
+  {
+    EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+    jassert(enumeration);
+    featureSense(enumeration->getElementName(variable.getInteger()));
+    return;
+  }
+
+  if (type->inheritsFrom(objectClass()))
+  {
+    ObjectPtr object = variable.getObject();
+    size_t n = object->getNumVariables(); 
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable subVariable = object->getVariable(i);
+      if (!canSubVariableBePruned(subVariable))
+        featureCall(object->getVariableName(i)) variableFeatures(subVariable);
+    }
+    return;
+  }
+
+  if (type == probabilityType())
+  {
+    featureSense(T("Value"), variable.getDouble());
+    return;
+  }
+
+  jassert(false);
+}
+
+FeatureGeneratorPtr representationToFeatures(RepresentationPtr representation, const Variable& input)
+{
+  size_t n = representation->getNumOutputVariables();
+  ObjectPtr object = representation->compute(input);
+  return variableFeatures(object);
+}
+
+class RepresentationToFeaturesFunction : public Function
 {
 public:
-  ProteinSequentialInference() : VectorSequentialInference(T("Protein")) {}
+  RepresentationToFeaturesFunction(RepresentationPtr representation)
+    : representation(representation) {}
+ 
+  virtual TypePtr getInputType() const
+    {return representation->getInputType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return Class::get(T("FeatureGenerator"));}
+
+protected:
+  RepresentationPtr representation;
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+    {return representationToFeatures(representation, input);}
 };
 
 ///////////////////////////////////////// 
@@ -401,12 +305,31 @@ public:
 class MyProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  RepresentationPtr createDiscreteProbabilityDistributionRepresentation(EnumerationPtr enumeration) const
+  {
+    return RepresentationPtr();
+  }
+
   virtual FunctionPtr createRepresentation(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
-    jassert(false); // FIXME
+    if (is1DTarget)
+    {
+      CompositeRepresentationPtr res = new ResidueRepresentation();
+
+      FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass->findStaticVariable(T("primaryStructure")));
+      FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass->findStaticVariable(T("positionSpecificScoringMatrix")));
+
+      res->addRepresentation(T("AA"), Representation::compose(selectPrimaryStructure,
+        vectorWindowRepresentation(aminoAcidTypeEnumeration(), 15)));
+      res->addRepresentation(T("PSSM"), Representation::compose(selectPSSM,
+        vectorWindowRepresentation(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+      return new RepresentationToFeaturesFunction(res);
+    }
+    jassert(false);
     return FunctionPtr();
   }
   
+public:
   virtual InferencePtr createBinaryClassifier(const String& targetName) const
     {return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));}
 
@@ -448,11 +371,30 @@ VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
   return directoryFileStream(directory)->apply(loadFromFileFunction())->load(maxCount);
 }
 
+// todo: Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
+TypePtr sequenceSeparationDistanceType()
+  {return integerType();} // FIXME
+
+class ProteinLengthRepresentation : public Representation
+{
+public:
+  virtual size_t getNumOutputVariables() const
+    {return 1;}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return sequenceSeparationDistanceType();}
+
+  virtual String getOutputVariableName(size_t index) const
+    {return T("proteinLength");}
+
+  virtual void computeRepresentation(const Variable& input, RepresentationCallbackPtr callback) const
+    {callback->sense(0, input.getObjectAndCast<Protein>()->getLength());}
+};
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  Class::declare(new ProteinResidueInputAttributesClass(13));
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
@@ -460,11 +402,28 @@ int main(int argc, char** argv)
   VectorPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")));
   std::cout << proteins->size() << " proteins" << std::endl;
 
-  //PrintObjectVisitor::print(proteins->getVariable(2), std::cout, 2);
+  //PrintRepresentationCallback::print(proteins->getVariable(2), std::cout, 2);
+
+  // make representation
+  CompositeRepresentationPtr representation = new ResidueRepresentation();
+
+  FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass()->findStaticVariable(T("primaryStructure")));
+  FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass()->findStaticVariable(T("positionSpecificScoringMatrix")));
+
+  representation->addRepresentation(T("AA"), Representation::compose(selectPrimaryStructure,
+    vectorWindowRepresentation(aminoAcidTypeEnumeration(), 15)));
+  representation->addRepresentation(T("PSSM"), Representation::compose(selectPSSM,
+    vectorWindowRepresentation(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+
+  std::cout << "Representation output class: " << representation->getOutputType()->toString() << std::endl;
+
+  RepresentationPtr flatRepresentation = representation->flatten();
+
+  std::cout << "Flat Representation output class: " << flatRepresentation->getOutputType()->toString() << std::endl;
 
   // make secondary structure classification examples
   VectorPtr secondaryStructureExamples = new Vector(pairType(
-      Class::get(T("ProteinResidueInputAttributes")),
+      flatRepresentation->getOutputType(),
       secondaryStructureElementEnumeration()));
   for (size_t i = 0; i < proteins->size(); ++i)
   {
@@ -474,13 +433,26 @@ int main(int argc, char** argv)
     VectorPtr secondaryStructure = protein->getSecondaryStructure();
     for (size_t j = 0; j < n; ++j)
     {
-      Variable input(new ProteinResidueInputAttributes(protein, j, 13));
+      Variable input = flatRepresentation->compute(Variable::pair(protein, j));
+      //std::cout << "Representation of : " << protein->getName() << " " << j << ": "
+      //    << std::endl << representation->compute(Variable::pair(protein, j)) << std::endl;
+      //std::cout << "    Flat : " << input << std::endl;
+      //printVariable(input, std::cout, 3);
+      //std::cout << std::endl << std::endl << std::endl;
       Variable output = secondaryStructure->getVariable(j);
       secondaryStructureExamples->append(Variable::pair(input, output));
     }
   }
 
-  printVariable(secondaryStructureExamples->getVariable(10), std::cout, 3);
+  {
+    Variable anExampleInput = secondaryStructureExamples->getVariable(10)[0];
+    printVariable(anExampleInput, std::cout, 3);
+    FeatureGeneratorPtr anExampleFeatures = variableFeatures(anExampleInput)->toSparseVector();
+    std::cout << "Features: " << anExampleFeatures->toString() << std::endl;
+  }
+  exit(0);
+
+  
 
   // make train and test set
   ContainerPtr data = secondaryStructureExamples->randomize();

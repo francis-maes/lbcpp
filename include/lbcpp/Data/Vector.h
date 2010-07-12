@@ -143,16 +143,14 @@ protected:
   std::vector<ImplementationType> values;
 };
 
-class DynamicObject : public Container
+class DynamicObject : public Object
 {
 public:
-  DynamicObject(ClassPtr type = objectClass()) : type(type) {}
+  DynamicObject(ClassPtr type = objectClass()) : Object(type)
+    {variables.resize(type->getNumStaticVariables());}
 
-  virtual ClassPtr getClass() const
-    {return type;}
-
-  virtual TypePtr getElementsType() const
-    {return topLevelType();}
+  virtual String toString() const
+    {return getClass()->getName() + T("{") + variablesToString(T(", ")) + T("}");}
 
   virtual size_t getNumVariables() const
     {return variables.size();}
@@ -176,7 +174,6 @@ public:
     {variables.push_back(value);}
 
 private:
-  ClassPtr type;
   std::vector<Variable> variables;
 };
 

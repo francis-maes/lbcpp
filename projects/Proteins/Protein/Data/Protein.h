@@ -59,12 +59,16 @@ public:
   VectorPtr getSecondaryStructure() const
     {return secondaryStructure;}
 
+  VectorPtr createEmptySecondaryStructure() const;
+
   void setDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
     {this->dsspSecondaryStructure = dsspSecondaryStructure;}
 
   VectorPtr getDSSPSecondaryStructure() const
     {return dsspSecondaryStructure;}
 
+  VectorPtr createEmptyDSSPSecondaryStructure() const;
+  
   void setStructuralAlphabetSequence(VectorPtr structuralAlphabetSequence)
     {this->structuralAlphabetSequence = structuralAlphabetSequence;}
 
@@ -79,6 +83,8 @@ public:
 
   VectorPtr getSolventAccessibility() const
     {return solventAccessibility;}
+
+  VectorPtr createEmptySolventAccesibility() const;
 
   void setSolventAccessibilityAt20p(VectorPtr solventAccessibilityAt20p)
     {this->solventAccessibilityAt20p = solventAccessibilityAt20p;}

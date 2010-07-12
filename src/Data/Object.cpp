@@ -58,13 +58,6 @@ void Object::setVariable(size_t index, const Variable& value)
 VariableReference Object::getVariableReference(size_t index)
   {jassert(false); return VariableReference();}
 
-void Object::accept(ObjectVisitorPtr visitor)
-{
-  size_t n = getNumVariables();
-  for (size_t i = 0; i < n; ++i)
-    visitor->visit(i, getVariable(i));
-}
-
 /*
 ** to string
 */
@@ -90,13 +83,16 @@ String Object::getShortSummary() const
 }
 
 
-String Object::variablesToString(const String& separator) const
+String Object::variablesToString(const String& separator, bool includeTypes) const
 {
   String res;
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    res += getVariable(i).toString();
+    Variable v = getVariable(i);
+    if (includeTypes && !v.isNil())
+      res += v.getTypeName() + T(" ");
+    res += v.toString();
     if (i < n - 1)
       res += separator;
   }
@@ -334,7 +330,7 @@ bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
       Variable value = Variable::createFromXml(child, callback);
       setVariable((size_t)(thisClass->getNumStaticVariables() + index), value);
     }
-    else
+    else if (child->getTagName().isNotEmpty())
       callback.warningMessage(T("Object::loadFromXml"), T("Unexpected tag ") + child->getTagName().quoted());
   }
   return true;

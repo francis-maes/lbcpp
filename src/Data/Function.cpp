@@ -31,7 +31,7 @@ FunctionPtr lbcpp::loadFromFileFunction()
 class SetFieldFunction : public Function
 {
 public:
-  SetFieldFunction(size_t fieldIndex)
+  SetFieldFunction(size_t fieldIndex = 0)
     : fieldIndex(fieldIndex) {}
 
   virtual TypePtr getInputType() const
@@ -57,8 +57,58 @@ protected:
 FunctionPtr lbcpp::setFieldFunction(size_t fieldIndex)
   {return new SetFieldFunction(fieldIndex);}
 
+class SelectPairFieldsFunction : public Function
+{
+public:
+  SelectPairFieldsFunction(int index1 = -1, int index2 = -1)
+    : index1(index1), index2(index2)
+    {}
+
+  virtual TypePtr getInputType() const
+    {return pairType(anyType(), anyType());}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+  {
+    return pairType(
+      getOutputTypeBase(inputType->getTemplateArgument(0), index1),
+      getOutputTypeBase(inputType->getTemplateArgument(1), index2));
+  }
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  {
+    Variable first = input[0];
+    if (index1 >= 0)
+      first = first[index1];
+    Variable second = input[1];
+    if (index2 >= 0)
+      second = second[index2];
+    return Variable::pair(first, second);
+  }
+
+private:
+  int index1, index2;
+
+  static TypePtr getOutputTypeBase(TypePtr inputType, int index)
+  {
+    if (index >= 0)
+    {
+      if ((size_t)index < inputType->getNumStaticVariables())
+        return inputType->getStaticVariableType((size_t)index);
+      else
+        return anyType();
+    }
+    else
+      return inputType;
+  }
+};
+
+FunctionPtr lbcpp::selectPairFieldsFunction(int index1, int index2)
+  {return new SelectPairFieldsFunction(index1, index2);}
+
 void declareFunctionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(Function, Object);
     LBCPP_DECLARE_CLASS(LoadFromXmlFunction, Function);
+    LBCPP_DECLARE_CLASS(SetFieldFunction, Function);
+    LBCPP_DECLARE_CLASS(SelectPairFieldsFunction, Function);
 }

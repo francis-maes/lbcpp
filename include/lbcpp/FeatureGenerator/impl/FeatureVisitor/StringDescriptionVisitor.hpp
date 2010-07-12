@@ -50,6 +50,11 @@ public:
     flushCurrentFeatures();
     --indent;
   }
+  
+  void featureCall(lbcpp::FeatureDictionaryPtr dictionary, size_t scopeNumber, lbcpp::FeatureGeneratorPtr featureGenerator, double weight)
+  {
+    jassert(false);
+  }
 
   void flushCurrentFeatures()
   {
