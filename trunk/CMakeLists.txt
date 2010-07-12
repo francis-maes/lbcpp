@@ -87,7 +87,7 @@ ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(projects)
 #ADD_SUBDIRECTORY(lbcpp-lib)
 
-OPTION(LBCPP_EXAMPLES "Include examples into the project" ON)
+OPTION(LBCPP_EXAMPLES "Include examples into the project" OFF)
 IF (LBCPP_EXAMPLES)
   ADD_SUBDIRECTORY(examples)
 ENDIF(LBCPP_EXAMPLES)

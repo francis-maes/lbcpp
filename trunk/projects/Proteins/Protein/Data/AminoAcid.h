@@ -92,6 +92,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<AminoAcid> AminoAcidPtr;
 
+Variable getAminoAcidFromOneLetterCode(juce::tchar code);
+  
 extern CollectionPtr aminoAcidCollection();
 
 }; /* namespace lbcpp */

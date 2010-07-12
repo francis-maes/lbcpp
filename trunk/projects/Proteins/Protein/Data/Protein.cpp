@@ -118,6 +118,7 @@ Variable Protein::createEmptyTarget(size_t index) const
   case 2: return new Vector(secondaryStructureElementEnumeration(), n);
   case 3: return new Vector(dsspSecondaryStructureElementEnumeration(), n);
   case 4: return new Vector(structuralAlphaElementEnumeration(), n);
+  case 5: return new Vector(probabilityType(), n);
 
   default:
     jassert(false); return Variable();
