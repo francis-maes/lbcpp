@@ -9,7 +9,6 @@
 #include "ProteinInferenceFactory.h"
 using namespace lbcpp;
 
-
 class SharedParallelContainerInference : public SharedParallelInference
 {
 public:
@@ -50,19 +49,20 @@ public:
 
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    Variable res;
     size_t n = state->getNumSubInferences();
+
+    Variable res = createOutput(state->getInput());
+    bool atLeastOnePrediction = false;
     for (size_t i = 0; i < n; ++i)
     {
       Variable subOutput = state->getSubOutput(i);
       if (subOutput)
       {
-        if (!res)
-          res = createOutput(state->getInput());
+        atLeastOnePrediction = true;
         addResultToOutput(res, i, subOutput);
       }
     }
-    return res;
+    return atLeastOnePrediction ? res : Variable::missingValue(res.getType());
   }
 };
 

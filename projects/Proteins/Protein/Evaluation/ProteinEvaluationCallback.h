@@ -256,6 +256,8 @@ protected:
 
 inline EvaluatorPtr scoreVectorSequenceRegressionErrorEvaluator(const String& name)
   {return new ScoreVectorSequenceRegressionEvaluator(name);}
+inline EvaluatorPtr oldSequenceLabelingAccuracyEvaluator(const String& name)
+  {return objectContainerEvaluator(name, classificationAccuracyEvaluator(name));}
 
 class ProteinEvaluator : public Evaluator
 {
@@ -263,16 +265,16 @@ public:
   ProteinEvaluator() :
     Evaluator(T("ProteinObject")), numProteins(0),
     pssmEvaluator(scoreVectorSequenceRegressionErrorEvaluator(T("PSSM"))),
-    secondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS3"))),
-    dsspSecondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS8"))),
-    solventAccesibility2StateEvaluator(sequenceLabelingAccuracyEvaluator(T("SA2"))),
+    secondaryStructureEvaluator(oldSequenceLabelingAccuracyEvaluator(T("SS3"))),
+    dsspSecondaryStructureEvaluator(oldSequenceLabelingAccuracyEvaluator(T("SS8"))),
+    solventAccesibility2StateEvaluator(oldSequenceLabelingAccuracyEvaluator(T("SA2"))),
     disorderEvaluator(binarySequenceLabelingConfusionEvaluator(T("DR"))),
     calphaBondsEvaluator(new BondCoordinatesSequenceEvaluator(T("CAB"))),
     backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
     tertiaryStructureEvaluator(new ProteinTertiaryStructureEvaluator(T("TS"))),
     calphaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRa"))),
     cbetaContactMapEvaluator(new ProteinContactMapEvaluator(T("RRb"))),
-    structuralAlphabetEvaluator(sequenceLabelingAccuracyEvaluator(T("StAl")))
+    structuralAlphabetEvaluator(oldSequenceLabelingAccuracyEvaluator(T("StAl")))
     {}
 
   virtual String toString() const

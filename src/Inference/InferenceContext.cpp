@@ -52,12 +52,12 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
   {
     Variable subOutput = runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return state->getUserVariable();
+      return state->getInput();
 
     state->setSubOutput(subOutput);
     bool res = inference->updateInference(pthis, state, returnCode);
     if (returnCode != Inference::finishedReturnCode)
-      return state->getUserVariable();
+      return state->getInput();
 
     if (!res)
     {

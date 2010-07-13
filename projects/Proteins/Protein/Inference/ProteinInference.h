@@ -89,16 +89,17 @@ public:
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
   {
     // we keep the same input and supervision for sub-inferences
-    ProteinObjectPtr workingProtein = state->getUserVariable().getObjectAndCast<ProteinObject>();
+    /*ProteinObjectPtr workingProtein = state->getUserVariable().getObjectAndCast<ProteinObject>();
     jassert(workingProtein);
-    state->setSubInference(subInferences.get(index), workingProtein, state->getSupervision());
+    state->setSubInference(subInferences.get(index), workingProtein, state->getSupervision());*/
+    jassert(false); 
   }
 
   virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
   {
     if (state->getSubOutput())
     {
-      ProteinObjectPtr workingProtein = state->getUserVariable().dynamicCast<ProteinObject>();
+/*      ProteinObjectPtr workingProtein = state->getUserVariable().dynamicCast<ProteinObject>();
       jassert(workingProtein);
       workingProtein = addObjectToProtein(workingProtein, state->getSubOutput(), state->getSupervision().dynamicCast<ProteinObject>());
 
@@ -110,12 +111,13 @@ public:
         workingProtein->saveToFile(proteinDebugDirectory.getChildFile
           (workingProtein->getName() + T("_pred") + lbcpp::toString(state->getStepNumber()) + T(".protein")));
 
-      state->setUserVariable(workingProtein);
+      state->setUserVariable(workingProtein);*/
+      jassert(false);
     }
   }
 
   virtual Variable finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
-    {return finalState->getUserVariable();} // the working protein
+  {jassert(false); return Variable();}//return finalState->getUserVariable();} // the working protein
 
   void setPDBDebugDirectory(const File& directory)
     {pdbDebugDirectory = directory;}

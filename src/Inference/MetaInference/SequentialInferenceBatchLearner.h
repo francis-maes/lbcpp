@@ -61,6 +61,12 @@ public:
 #endif // JUCE_DEBUG
 
       // apply sub-learner if it exists
+      
+      // tmp
+      if (!subInference->getBatchLearner())
+        subInference->setBatchLearner(simulationInferenceLearner());
+      // -
+
       if (subInference->getBatchLearner())
       {
         ReturnCode res = context->train(subInference, subTrainingData);

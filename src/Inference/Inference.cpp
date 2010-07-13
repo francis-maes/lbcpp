@@ -153,6 +153,7 @@ void declareInferenceClasses()
   */
   LBCPP_DECLARE_ABSTRACT_CLASS(Inference, Object);
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
+      LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);
     LBCPP_DECLARE_ABSTRACT_CLASS(ParallelInference, Inference);
       LBCPP_DECLARE_ABSTRACT_CLASS(StaticParallelInference, ParallelInference);
         LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelInference, StaticParallelInference);

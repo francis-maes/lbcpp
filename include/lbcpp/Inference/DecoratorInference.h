@@ -63,7 +63,7 @@ public:
   PostProcessInference() {}
   
   virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
-  {return postProcessingFunction->compute(Variable::pair(input, subInferenceOutput));}
+    {return postProcessingFunction->compute(Variable::pair(input, subInferenceOutput));}
 
 protected:
   FunctionPtr postProcessingFunction;

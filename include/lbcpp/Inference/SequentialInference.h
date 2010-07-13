@@ -49,12 +49,6 @@ public:
   Variable getSubOutput() const
     {return subOutput;}
 
-  void setUserVariable(const Variable& variable)
-    {userVariable = variable;}
-
-  Variable getUserVariable() const
-    {return userVariable;}
-
   bool isFinal() const
     {return !subInference;}
 
@@ -70,7 +64,6 @@ private:
   Variable subInput;
   Variable subSupervision;
   Variable subOutput;
-  Variable userVariable;
 };
 typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceStatePtr;
 
@@ -127,7 +120,6 @@ public:
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
-    state->setUserVariable(input);
     if (subInferences.size())
       prepareSubInference(context, state, 0, returnCode);
     return state;
@@ -150,7 +142,7 @@ public:
   }
 
   virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
-    {state->setUserVariable(state->getSubOutput());}
+    {}
 
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
     {state->setSubInference(subInferences.get(index), index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
