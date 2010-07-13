@@ -9,20 +9,20 @@
 #ifndef LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 # define LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 
-# include "../ProteinObject.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class CASPFileGenerator : public TextObjectPrinter
+class CASPFileGenerator : public TextPrinter
 {
 public:
   CASPFileGenerator(const File& file, const String& method);
 
   virtual String getFormatSpecificationCode() const = 0;
-  virtual void printPredictionData(ProteinObjectPtr protein) = 0;
+  virtual void printPredictionData(ProteinPtr protein) = 0;
 
-  virtual void consume(ObjectPtr object);
+  virtual void consume(const Variable& variable);
 
 protected:
   enum {maxColumns = 80};
@@ -34,9 +34,9 @@ protected:
   void printMultiLineRecordBase(const String& keyword, const String& text);
 };
 
-ObjectConsumerPtr caspTertiaryStructureFileGenerator(const File& file, const String& method);
-ObjectConsumerPtr caspResidueResidueDistanceFileGenerator(const File& file, const String& method);
-ObjectConsumerPtr caspOrderDisorderRegionFileGenerator(const File& file, const String& method);
+ConsumerPtr caspTertiaryStructureFileGenerator(const File& file, const String& method);
+ConsumerPtr caspResidueResidueDistanceFileGenerator(const File& file, const String& method);
+ConsumerPtr caspOrderDisorderRegionFileGenerator(const File& file, const String& method);
 
 }; /* namespace lbcpp */
 

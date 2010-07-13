@@ -15,11 +15,11 @@ using namespace lbcpp;
 ** CASPFileGenerator
 */
 CASPFileGenerator::CASPFileGenerator(const File& file, const String& method)
-  : TextObjectPrinter(file), method(method) {}
+  : TextPrinter(file), method(method) {}
 
-void CASPFileGenerator::consume(ObjectPtr object)
+void CASPFileGenerator::consume(const Variable& variable)
 {
-  ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
+  ProteinPtr protein = variable.getObjectAndCast<Protein>();
   jassert(protein);
 
   printRecord(T("PFRMAT"), getFormatSpecificationCode());
@@ -91,11 +91,11 @@ void CASPFileGenerator::printMultiLineRecordBase(const String& keyword, const St
 #include "ResidueResidueDistanceCASPFileGenerator.h"
 #include "TertiaryStructureCASPFileGenerator.h"
 
-ObjectConsumerPtr lbcpp::caspOrderDisorderRegionFileGenerator(const File& file, const String& method)
+ConsumerPtr lbcpp::caspOrderDisorderRegionFileGenerator(const File& file, const String& method)
   {return new OrderDisorderRegionCASPFileGenerator(file, method);}
 
-ObjectConsumerPtr lbcpp::caspResidueResidueDistanceFileGenerator(const File& file, const String& method)
+ConsumerPtr lbcpp::caspResidueResidueDistanceFileGenerator(const File& file, const String& method)
   {return new ResidueResidueDistanceCASPFileGenerator(file, method);}
 
-ObjectConsumerPtr lbcpp::caspTertiaryStructureFileGenerator(const File& file, const String& method)
+ConsumerPtr lbcpp::caspTertiaryStructureFileGenerator(const File& file, const String& method)
   {return new TertiaryStructureCASPFileGenerator(file, method);}

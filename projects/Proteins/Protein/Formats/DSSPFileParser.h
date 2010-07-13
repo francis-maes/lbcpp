@@ -25,9 +25,6 @@ public:
     primarySequence = protein->getPrimaryStructure();
     std::cout << "AA: " << primarySequence->toString() << std::endl;
   }
-  
-  virtual TypePtr getElementsType() const
-    {return vectorClass(dsspSecondaryStructureElementEnumeration());}
 
   virtual void parseBegin()
     {serialNumber = 0;}

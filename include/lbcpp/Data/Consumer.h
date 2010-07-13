@@ -35,8 +35,6 @@ namespace lbcpp
 class Consumer : public Object
 {
 public:
-  virtual TypePtr getInputType() const = 0;
-  
   virtual void consume(const Variable& variable) = 0;
   
   void consumeStream(StreamPtr stream, size_t maximumCount = 0);

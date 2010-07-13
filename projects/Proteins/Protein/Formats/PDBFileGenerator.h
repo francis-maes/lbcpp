@@ -18,9 +18,6 @@ class PDBFileGenerator : public TextPrinter
 {
 public:
   PDBFileGenerator(const File& file);
-  
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
 
   virtual void consume(const Variable& variable);
 
