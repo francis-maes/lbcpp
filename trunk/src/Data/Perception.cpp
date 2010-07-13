@@ -95,6 +95,9 @@ PerceptionPtr lbcpp::identityPerception(TypePtr type)
 PerceptionPtr lbcpp::windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception)
   {return new WindowPerception(elementsType, windowSize, subPerception);}
 
+ClassPtr lbcpp::perceptionClass()
+  {static TypeCache cache(T("Perception")); return cache();}
+
 void declarePerceptionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(Perception, Function);

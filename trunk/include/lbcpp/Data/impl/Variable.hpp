@@ -68,12 +68,11 @@ inline Variable::Variable()
   : type(nilType()), value() {}
 
 inline Variable::~Variable()
-  {clear();}
+  {type->destroy(value);}
 
 inline void Variable::clear()
 {
-  if (type)
-    type->destroy(value);
+  type->destroy(value);
   type = nilType();
 }
 

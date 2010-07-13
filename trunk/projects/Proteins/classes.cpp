@@ -28,20 +28,27 @@ using namespace lbcpp;
 #include "Protein/Inference/ProteinTertiaryStructureInference.h"
 #include "Protein/Inference/ProteinInference.h"
 
+// old
 extern void declareProteinGlobalFeaturesClasses();
 extern void declareProteinResidueFeaturesClasses();
 extern void declareProteinResiduePairFeaturesClasses();
 
-// new:
+// new
+
+// geometry
 extern void declareVector3Classes();
 extern void declareCartesianPositionVectorClasses();
 
+// data
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
 extern void declareAtomClasses();
 extern void declareResidueClasses();
 extern void declareTertiaryStructureClasses();
 extern void declareProteinClass();
+
+// inference
+extern void declareProteinInferenceClasses();
 
 void declareProteinClasses()
 {
@@ -94,16 +101,19 @@ void declareProteinClasses()
   LBCPP_DECLARE_DICTIONARY(StructuralAlphabetDictionary);
 
   // new:
+  // geometry
   declareVector3Classes();
   declareCartesianPositionVectorClasses();
 
+  // data
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
-
   declareAtomClasses();
   declareResidueClasses();
   declareTertiaryStructureClasses();
-
   declareProteinClass();
+
+  // inference
+  declareProteinInferenceClasses();
   // -
 }
