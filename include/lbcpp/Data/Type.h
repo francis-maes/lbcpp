@@ -385,7 +385,7 @@ class DefaultAbstractClass_ : public Class
 public:
   DefaultAbstractClass_(TypePtr baseClass)
     : Class(lbcpp::toString(typeid(TT)), baseClass)
-    {}
+    {jassert(baseClass);}
 
   virtual VariableValue create() const
   {
@@ -401,6 +401,7 @@ public:
   DefaultClass_(TypePtr baseClass, size_t numTemplateArguments = 0)
     : Class(lbcpp::toString(typeid(TT)), baseClass)
   {
+    jassert(baseClass);
     if (numTemplateArguments)
       templateArguments.resize(numTemplateArguments, topLevelType());
   }

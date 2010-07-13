@@ -31,10 +31,6 @@ public:
   virtual TypePtr getInputType() const = 0;
   virtual TypePtr getOutputType(TypePtr inputType) const = 0;
 
-  Variable compute(const Variable& input, ErrorHandler& callback = ErrorHandler::getInstance()) const
-    {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
-
-protected:
   /**
   ** Computes the function
   **
@@ -43,9 +39,12 @@ protected:
   ** @return a variable of type getOutputType(inputType)
   */
   virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const = 0;
+
+  Variable compute(const Variable& input, ErrorHandler& callback = ErrorHandler::getInstance()) const
+    {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
 };
 
-FunctionPtr loadFromFileFunction(); // File -> Object
+FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass()); // File -> Object
 FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 FunctionPtr selectPairFieldsFunction(int index1 = -1, int index2 = -1); 
 

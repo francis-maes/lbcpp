@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Container.cpp          | Base class for variable         |
+| Filename: Container.cpp                  | Base class for variable         |
 | Author  : Francis Maes                   |    containers                   |
 | Started : 28/06/2010 16:21               |                                 |
 `------------------------------------------/                                 |
@@ -8,6 +8,7 @@
 #include <lbcpp/Data/Container.h>
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
+#include <lbcpp/Data/Function.h>
 using namespace lbcpp;
 
 VectorPtr Container::toVector() const
@@ -21,6 +22,42 @@ VectorPtr Container::toVector() const
 
 String Container::toString() const
   {return T("[") + variablesToString(T(",\n  ")) + T("]");}
+
+class ApplyFunctionContainer : public DecoratorContainer
+{
+public:
+  ApplyFunctionContainer(ContainerPtr target, FunctionPtr function)
+    : DecoratorContainer(target), function(function)
+    {checkInheritance(target->getElementsType(), function->getInputType());}
+
+  ApplyFunctionContainer() {}
+    
+  virtual TypePtr getElementsType() const
+    {return function->getOutputType(target->getElementsType());}
+
+  virtual Variable getVariable(size_t index) const
+    {return function->compute(target->getVariable(index));}
+
+  virtual void setVariable(size_t index, const Variable& value) const
+    {jassert(false);}
+
+private:
+  FunctionPtr function;
+};
+
+ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
+{
+  if (lazyCompute)
+    return new ApplyFunctionContainer(const_cast<Container* >(this), function);
+  else
+  {
+    size_t n = size();
+    VectorPtr res = new Vector(function->getOutputType(getElementsType()), n);
+    for (size_t i = 0; i < n; ++i)
+      res->setVariable(i, function->compute(getVariable(i)));
+    return res;
+  }
+}
 
 class SubsetContainer : public DecoratorContainer
 {
@@ -196,6 +233,7 @@ void declareContainerClasses()
 
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorContainer, Container);
 
+      LBCPP_DECLARE_CLASS(ApplyFunctionContainer, DecoratorContainer);
       LBCPP_DECLARE_CLASS(RangeContainer, DecoratorContainer);
       LBCPP_DECLARE_CLASS(ExcludeRangeContainer, DecoratorContainer);
       LBCPP_DECLARE_CLASS(DuplicatedContainer, DecoratorContainer);

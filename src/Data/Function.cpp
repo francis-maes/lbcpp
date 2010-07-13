@@ -12,18 +12,29 @@ using namespace lbcpp;
 class LoadFromXmlFunction : public Function
 {
 public:
+  LoadFromXmlFunction(TypePtr expectedType = objectClass())
+    : expectedType(expectedType) {}
+
   virtual TypePtr getInputType() const
     {return fileType();}
 
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return objectClass();}
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return expectedType;}
 
   virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-    {File file(input.getString()); return Variable::createFromFile(file, callback);}
+  {
+    File file(input.getString());
+    Variable res = Variable::createFromFile(file, callback);
+    checkInheritance(res, expectedType);
+    return res;
+  }
+
+protected:
+  TypePtr expectedType;
 };
 
-FunctionPtr lbcpp::loadFromFileFunction()
-  {return new LoadFromXmlFunction();}
+FunctionPtr lbcpp::loadFromFileFunction(TypePtr expectedType)
+  {return new LoadFromXmlFunction(expectedType);}
 
 // Input: (a,b)
 // do: a[fieldIndex] = b

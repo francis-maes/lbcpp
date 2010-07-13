@@ -92,7 +92,7 @@ public:
   bool isObject() const;
   ObjectPtr getObject() const;
   template<class O>
-  ReferenceCountedObjectPtr<O> getObjectAndCast() const;
+  ReferenceCountedObjectPtr<O> getObjectAndCast(ErrorHandler& callback = ErrorHandler::getInstance()) const;
 
   template<class O>
   ReferenceCountedObjectPtr<O> dynamicCast() const;

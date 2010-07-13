@@ -51,6 +51,19 @@ public:
   ContainerPtr subset(const std::vector<size_t>& indices) const;
 
   /**
+  ** Applies a @a function to all item contained into the object container.
+  **
+  ** @param function : function to apply to the current object container.
+  ** @param lazyCompute : specify if the function is applicated
+  ** immediately on all container items (True), or at each call
+  ** to get() or getAndCast() (False).
+  **
+  ** @return an object container pointer.
+  ** @see Function
+  */
+  ContainerPtr apply(FunctionPtr function, bool lazyCompute = true) const;
+
+  /**
   ** Creates a randomized version of a dataset.
   **
   ** The randomization is lazy: only a mapping between old

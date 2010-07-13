@@ -157,16 +157,20 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 }
 
 template<class O>
-inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast() const
+inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(ErrorHandler& callback) const
 {
-  if (isObject())
-    return checkCast<O>(T("Variable::getObjectAndCast"), getObject());
-  else
+  ReferenceCountedObjectPtr<O> res;
+  if (isNil())
   {
-    if (!isNil())
-      Object::error(T("Variable::getObjectAndCast"), T("This variable is not an object"));
-    return ReferenceCountedObjectPtr<O>();
+    callback.errorMessage(T("Variable::getObjectAndCast"), T("Variable is nil"));
+    return res;
   }
+  if (!isObject())
+  {
+    callback.errorMessage(T("Variable::getObjectAndCast"), T("This variable is not an object"));
+    return res;
+  }
+  return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);
 }
 
 inline String Variable::toString() const
