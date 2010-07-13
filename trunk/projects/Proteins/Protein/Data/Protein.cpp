@@ -78,7 +78,7 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
 }
 
 void Protein::saveToPDBFile(const File& pdbFile)
-  {ConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));}
+  {ConsumerPtr(new PDBFileGenerator(pdbFile))->consume(this);}
 
 void Protein::setPrimaryStructure(const String& primaryStructure)
 {

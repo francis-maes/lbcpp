@@ -12,9 +12,9 @@ using namespace lbcpp;
 PDBFileGenerator::PDBFileGenerator(const File& file)
   : TextPrinter(file) {}
 
-void PDBFileGenerator::consume(ObjectPtr object)
+void PDBFileGenerator::consume(const Variable& variable)
 {
-  ProteinPtr protein = object.dynamicCast<Protein>();
+  ProteinPtr protein = variable.getObjectAndCast<Protein>();
   jassert(protein);
   size_t n = protein->getLength();
 

@@ -18,7 +18,7 @@ class PSSMFileParser : public TextParser
 {
 public:
   PSSMFileParser(const File& file, VectorPtr primaryStructure)
-    : TextParser(file), primarySequence(primaryStructure)
+    : TextParser(file), primaryStructure(primaryStructure)
     {}
   
   virtual TypePtr getElementsType() const
@@ -77,7 +77,7 @@ public:
 
     size_t numAminoAcids = aminoAcidTypeEnumeration()->getNumElements();
 
-    DiscreteProbabilityDistribution scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration());
+    DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration());
     for (size_t i = 0; i < numAminoAcids; ++i)
     {
       int begin = 10 + i * 3;
@@ -94,15 +94,14 @@ public:
         callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: ") + aminoAcidsIndex[i]);
         return false;
       }
-      scores.setVariable(index, normalize(scoreI));
+      scores->setVariable(index, normalize(scoreI));
     }
 
     String gapScore = line.substring(153, 157).trim();
-    scores.setVariable(20, gapScore.getDoubleValue());
-    scores.setVariable(21, scores.computeEntropy());
-#endif // 0
+    scores->setVariable(20, gapScore.getDoubleValue());
+    scores->setVariable(21, scores->computeEntropy());
 
-    pssm->setVariable(position, scores);
+    pssm->setVariable(currentPosition, scores);
 
     ++currentPosition;
     return true;
