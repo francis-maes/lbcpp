@@ -15,6 +15,7 @@ class ProteinClass : public DynamicClass
 public:
   ProteinClass() : DynamicClass(T("Protein"), nameableObjectClass())
   {
+    // base class: name
     addVariable(vectorClass(aminoAcidTypeEnumeration()), T("primaryStructure"));
     addVariable(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())), T("positionSpecificScoringMatrix"));
 
@@ -172,6 +173,11 @@ VectorPtr Protein::createEmptyDisorderRegions() const
 Variable Protein::createEmptyTarget(size_t index) const
 {
   size_t n = getLength();
+
+  // skip base class variables
+  size_t baseClassVariables = nameableObjectClass()->getNumStaticVariables();
+  jassert(index >= baseClassVariables)
+  index -= baseClassVariables;
 
   switch (index)
   {

@@ -94,7 +94,7 @@ bool canSubVariableBePruned(const Variable& subVariable)
   return false;
 }
 
-featureGenerator variableFeatures(const Variable& variable)
+featureGenerator variableFeatures(Variable variable)
 {
   if (variable.isNil())
   {
@@ -394,6 +394,103 @@ protected:
 
 ///////////////////////////////////////// 
 
+class MyInferenceCallback : public InferenceCallback
+{
+public:
+  MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
+    : inference(inference), trainingData(trainingData), testingData(testingData) {}
+
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+
+    if (stack->getDepth() == 1)
+    {
+      // top-level learning is beginning
+      startingTime = Time::getMillisecondCounter();
+      bestTrainContactMap = bestTestContactMap = 0.0;
+      iterationNumber = 0;
+    }
+    else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
+    {
+      // simulation-based learning is beginning
+      if (input.getType()->inheritsFrom(pairType()))
+      {
+        String inferenceName = input[0].getObject()->getName();
+        std::cout << std::endl << "=====================================================" << std::endl;
+        std::cout << "======= " << inferenceName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
+        std::cout << "=====================================================" << std::endl;
+      }
+      iterationNumber = 0;
+    }
+    else if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
+    {
+      // learning iteration is beginning
+      std::cout << std::endl << " ================== ITERATION " << ++iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
+    }
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+
+    if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
+    {
+      // end of learning iteration
+      std::cout << "End of learning iteration -- FIXME" << std::endl;
+      /*
+      InferenceContextPtr validationContext = singleThreadedInferenceContext();
+      ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
+      validationContext->appendCallback(evaluation);
+      
+      validationContext->runInference(runOnSupervisedExamplesInference(inference), trainingData, ObjectPtr(), returnCode);
+      processResults(evaluation, true);
+      
+      evaluation->reset();
+
+      validationContext->runInference(runOnSupervisedExamplesInference(inference), testingData, ObjectPtr(), returnCode);
+      processResults(evaluation, false);      */
+    }
+    else if (stack->getDepth() == 1)
+    {
+      // end of top-level learning
+      //std::cout << "Best train: " << bestTrainContactMap << " test: " << bestTestContactMap << std::endl;
+      std::cout << "Bye." << std::endl;
+    }
+  }
+#if 0
+  void processResults(ProteinEvaluationCallbackPtr evaluation, bool isTrainingData)
+  {
+    /*{
+      EvaluatorPtr bbbEvaluator = evaluation->getEvaluatorForTarget(T("BackboneBondSequence"));
+      jassert(bbbEvaluator);
+      std::cout << (isTrainingData ? "Train: " : "Test: ") << evaluation->toString() << std::endl;
+    }*/
+
+    EvaluatorPtr contactMapEvaluator = evaluation->getEvaluatorForTarget(T("ResidueResidueContactMatrix8Ca"));
+    jassert(contactMapEvaluator);
+    std::cout << (isTrainingData ? "Train: " : "Test: ") << contactMapEvaluator->toString() << std::endl;
+      
+    std::vector< std::pair<String, double> > scores;
+    contactMapEvaluator->getScores(scores);
+    for (size_t i = 0; i < scores.size(); ++i)
+      std::cout << scores[i].first << ": " << scores[i].second << std::endl;
+  }
+#endif // 0
+
+private:
+  InferencePtr inference;
+  ContainerPtr trainingData, testingData;
+  size_t iterationNumber;
+  juce::uint32 startingTime;
+
+  double bestTrainContactMap, bestTestContactMap;
+
+  void updateBestScore(double score, double& bestScore)
+    {if (score > bestScore) bestScore = score;}
+};
+///////////////////////////////////////// 
+
 VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
 #ifdef JUCE_DEBUG
@@ -448,10 +545,8 @@ int main(int argc, char** argv)
   inference->appendInference(factory->createTargetInference(T("secondaryStructure")));
 
   InferenceContextPtr context = singleThreadedInferenceContext();
+  context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
-  
-  // todo: evaluation
-
   return 0;
   //PrintPerceptionCallback::print(proteins->getVariable(2), std::cout, 2);
 
