@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_CASP_FILE_GENERATOR_H_
 
 # include "../Protein.h"
+# include <lbcpp/Data/Consumer.h>
 
 namespace lbcpp
 {

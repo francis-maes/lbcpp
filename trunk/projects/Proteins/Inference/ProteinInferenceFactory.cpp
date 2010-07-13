@@ -7,8 +7,11 @@
                                `--------------------------------------------*/
 
 #include "ProteinInferenceFactory.h"
+#include <lbcpp/Data/Function.h>
+#include <lbcpp/Inference/DecoratorInference.h>
 using namespace lbcpp;
 
+#include <lbcpp/Inference/ParallelInference.h>
 class SharedParallelContainerInference : public SharedParallelInference
 {
 public:

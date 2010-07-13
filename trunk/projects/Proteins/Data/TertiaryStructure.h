@@ -11,6 +11,8 @@
 
 # include "Residue.h"
 # include "CartesianPositionVector.h"
+# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Data/SymmetricMatrix.h>
 
 namespace lbcpp
 {

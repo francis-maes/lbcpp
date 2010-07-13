@@ -68,7 +68,7 @@ public:
 TypePtr sequenceSeparationDistanceType()
   {return integerType();} // FIXME
 
-class ProteinLengthRepresentation : public Perception
+class ProteinLengthPerception : public Perception
 {
 public:
   virtual size_t getNumOutputVariables() const

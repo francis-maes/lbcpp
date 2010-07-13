@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_GEOMETRY_VECTOR3_H_
 # define LBCPP_PROTEIN_GEOMETRY_VECTOR3_H_
 
-# include <lbcpp/lbcpp.h>
+# include <lbcpp/Data/Variable.h>
 
 extern "C"
 {

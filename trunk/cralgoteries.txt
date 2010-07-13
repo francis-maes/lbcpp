@@ -2,9 +2,6 @@
   * Move PostProcessInference inside
 * New DecoratorBatchLearner => use in decoratorInference
 
-* use new Inference classes
-  -> try with linear machines
-
 * More targets, More representations, More features
 
 Julien:

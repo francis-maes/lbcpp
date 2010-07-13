@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_H_
 
 # include "../Data/Protein.h"
+# include <lbcpp/Inference/SequentialInference.h>
 
 namespace lbcpp
 {
