@@ -48,8 +48,11 @@ void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = 
   printVariableLine(variable, ostr, (size_t)-1, String::empty, 0);
   printVariablesRecursively(variable, ostr, maxDepth, 1);
 }
-
-///////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////// Perception //////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
 
 class ResidueCompositePerception : public CompositePerception
 {
@@ -58,17 +61,110 @@ public:
     {return pairType(proteinClass(), integerType());}
 };
 
+// todo: Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
+TypePtr sequenceSeparationDistanceType()
+  {return integerType();} // FIXME
+
+class ProteinLengthRepresentation : public Perception
+{
+public:
+  virtual size_t getNumOutputVariables() const
+    {return 1;}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return sequenceSeparationDistanceType();}
+
+  virtual String getOutputVariableName(size_t index) const
+    {return T("proteinLength");}
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+    {callback->sense(0, input.getObjectAndCast<Protein>()->getLength());}
+};
+
 //////////////////////////////////////////
 //////////////////////////////////////////
-//////// FeatureGenerator ////////////////
+//// FeatureGenerators compatibility /////
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-featureGenerator enumerationFeatures(const Variable& value)
+bool canSubVariableBePruned(const Variable& subVariable)
 {
-  jassert(value.isInteger());
-  featureSense(value.getInteger());
+  if (subVariable.getType()->inheritsFrom(probabilityType()))
+    return subVariable.getDouble() == 0.0;
+  return false;
 }
+
+featureGenerator variableFeatures(const Variable& variable)
+{
+  if (variable.isNil())
+  {
+    featureSense(T("Nil"));
+    return;
+  }
+  else if (variable.isMissingValue())
+  {
+    featureSense(T("Missing"));
+    return;
+  }
+  
+  TypePtr type = variable.getType();
+
+  if (variable.isEnumeration())
+  {
+    EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+    jassert(enumeration);
+    featureSense(enumeration->getElementName(variable.getInteger()));
+    return;
+  }
+
+  if (type->inheritsFrom(objectClass()))
+  {
+    ObjectPtr object = variable.getObject();
+    size_t n = object->getNumVariables(); 
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable subVariable = object->getVariable(i);
+      if (!canSubVariableBePruned(subVariable))
+        featureCall(object->getVariableName(i)) variableFeatures(subVariable);
+    }
+    return;
+  }
+
+  if (type == probabilityType())
+  {
+    featureSense(T("Value"), variable.getDouble());
+    return;
+  }
+
+  jassert(false);
+}
+
+FeatureGeneratorPtr representationToFeatures(PerceptionPtr representation, const Variable& input)
+{
+  size_t n = representation->getNumOutputVariables();
+  ObjectPtr object = representation->compute(input);
+  return variableFeatures(object);
+}
+
+class RepresentationToFeaturesFunction : public Function
+{
+public:
+  RepresentationToFeaturesFunction(PerceptionPtr representation)
+    : representation(representation) {}
+ 
+  virtual TypePtr getInputType() const
+    {return representation->getInputType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return Class::get(T("FeatureGenerator"));}
+
+protected:
+  PerceptionPtr representation;
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+    {return representationToFeatures(representation, input);}
+};
+
 
 //////////////////////////////////////////
 //////////////////////////////////////////
@@ -150,7 +246,7 @@ public:
     {return supervision[targetIndex].getObjectAndCast<Container>();}
 
   virtual Variable getSubInput(const Variable& input, size_t index) const
-  {return representation->compute(Variable::pair(input[targetIndex], index));}
+    {return representation->compute(Variable::pair(input[targetIndex], index));}
 
   virtual Variable createOutput(const Variable& input) const
     {return input.getObjectAndCast<Protein>()->createEmptyTarget(targetIndex);}
@@ -169,6 +265,10 @@ public:
   ProteinSequentialInference() : VectorSequentialInference(T("Protein")) {}
 };
 
+typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
+
+///////////////////////////////////////// 
+///////////////////////////////////////// 
 ///////////////////////////////////////// 
 
 class ProteinInferenceFactory : public Object
@@ -219,88 +319,7 @@ protected:
     {return postProcessInference(targetInference, setFieldFunction(getTargetIndex(targetName)));}
 };
 
-
-///////////////////////////////////////// 
-
-bool canSubVariableBePruned(const Variable& subVariable)
-{
-  if (subVariable.getType()->inheritsFrom(probabilityType()))
-    return subVariable.getDouble() == 0.0;
-  return false;
-}
-
-featureGenerator variableFeatures(const Variable& variable)
-{
-  if (variable.isNil())
-  {
-    featureSense(T("Nil"));
-    return;
-  }
-  else if (variable.isMissingValue())
-  {
-    featureSense(T("Missing"));
-    return;
-  }
-  
-  TypePtr type = variable.getType();
-
-  if (variable.isEnumeration())
-  {
-    EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-    jassert(enumeration);
-    featureSense(enumeration->getElementName(variable.getInteger()));
-    return;
-  }
-
-  if (type->inheritsFrom(objectClass()))
-  {
-    ObjectPtr object = variable.getObject();
-    size_t n = object->getNumVariables(); 
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable subVariable = object->getVariable(i);
-      if (!canSubVariableBePruned(subVariable))
-        featureCall(object->getVariableName(i)) variableFeatures(subVariable);
-    }
-    return;
-  }
-
-  if (type == probabilityType())
-  {
-    featureSense(T("Value"), variable.getDouble());
-    return;
-  }
-
-  jassert(false);
-}
-
-FeatureGeneratorPtr representationToFeatures(PerceptionPtr representation, const Variable& input)
-{
-  size_t n = representation->getNumOutputVariables();
-  ObjectPtr object = representation->compute(input);
-  return variableFeatures(object);
-}
-
-class RepresentationToFeaturesFunction : public Function
-{
-public:
-  RepresentationToFeaturesFunction(PerceptionPtr representation)
-    : representation(representation) {}
- 
-  virtual TypePtr getInputType() const
-    {return representation->getInputType();}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return Class::get(T("FeatureGenerator"));}
-
-protected:
-  PerceptionPtr representation;
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-    {return representationToFeatures(representation, input);}
-};
-
-///////////////////////////////////////// 
+typedef ReferenceCountedObjectPtr<ProteinInferenceFactory> ProteinInferenceFactoryPtr;
 
 class MyProteinInferenceFactory : public ProteinInferenceFactory
 {
@@ -371,24 +390,26 @@ VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
   return directoryFileStream(directory)->apply(loadFromFileFunction())->load(maxCount);
 }
 
-// todo: Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
-TypePtr sequenceSeparationDistanceType()
-  {return integerType();} // FIXME
-
-class ProteinLengthRepresentation : public Perception
+class ProteinToInputOutputPairFunction : public Function
 {
 public:
-  virtual size_t getNumOutputVariables() const
-    {return 1;}
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
 
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return sequenceSeparationDistanceType();}
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return pairClass(proteinClass(), proteinClass());}
 
-  virtual String getOutputVariableName(size_t index) const
-    {return T("proteinLength");}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-    {callback->sense(0, input.getObjectAndCast<Protein>()->getLength());}
+protected:
+  virtual Variable computeFunction(const Variable& input) const
+  {
+    ProteinPtr protein = input.getObjectAndCast<Protein>();
+    jassert(protein);
+    protein->computeMissingFields();
+    ProteinPtr inputProtein = new Protein(protein->getName());
+    inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
+    inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
+    return Variable::pair(inputProtein, protein);
+  }
 };
 
 int main(int argc, char** argv)
@@ -402,7 +423,19 @@ int main(int argc, char** argv)
 
   VectorPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")));
   std::cout << proteins->size() << " proteins" << std::endl;
+  // todo: proteinToInputOutput function
 
+  ProteinInferenceFactoryPtr factory = new MyProteinInferenceFactory();
+
+  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->appendInference(factory->createTargetInference(T("secondaryStructure")));
+
+  InferenceContextPtr context = singleThreadedInferenceContext();
+  context->train(inference, proteins);
+
+  // todo: evaluation
+
+  return 0;
   //PrintPerceptionCallback::print(proteins->getVariable(2), std::cout, 2);
 
   // make representation
@@ -464,7 +497,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = extraTreeInference(T("SS3"), 2, 15);
+  InferencePtr inference = extraTreeInference(T("SS3"), 100, 15);
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->train(inference, trainingData);
 
