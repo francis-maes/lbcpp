@@ -34,6 +34,8 @@ public:
   static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
   
   void saveToPDBFile(const File& pdbFile);
+  void saveToXmlFile(const File& xmlFile) const
+    {Variable(const_cast<Protein* >(this)).saveToFile(xmlFile);}
 
   virtual VariableReference getVariableReference(size_t index);
 

@@ -9,6 +9,7 @@
 #include <lbcpp/lbcpp.h>
 #include "Data/Protein.h" 
 #include "Inference/ProteinInferenceFactory.h"
+#include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
@@ -142,7 +143,6 @@ featureGenerator variableFeatures(Variable variable)
 
 FeatureGeneratorPtr representationToFeatures(PerceptionPtr representation, const Variable& input)
 {
-  size_t n = representation->getNumOutputVariables();
   ObjectPtr object = representation->compute(input);
   return variableFeatures(object);
 }
@@ -173,11 +173,99 @@ protected:
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-class ProteinSequentialInference : public VectorSequentialInference
+
+// Prototype:
+//   Input: ProteinObject
+//   Supervision: ProteinObject
+//   Output: ProteinObject
+
+// Sub-inferences prototype:
+//   Input: ProteinObject
+//   Supervision: ProteinObject
+//   Output: ProteinObject Object or ProteinObject
+
+class ProteinInferenceHelper
+{
+public:
+  void setPDBDebugDirectory(const File& directory)
+    {pdbDebugDirectory = directory;}
+    
+  void setProteinDebugDirectory(const File& directory)
+  {
+    proteinDebugDirectory = directory;
+    if (!directory.exists())
+      directory.createDirectory();
+  }
+
+protected:
+  static ProteinPtr prepareInputProtein(const Variable& input)
+  {
+    ProteinPtr inputProtein = input.getObjectAndCast<Protein>();
+    jassert(inputProtein);
+    ProteinPtr workingProtein = inputProtein->cloneAndCast<Protein>();
+    jassert(workingProtein);
+    return workingProtein;
+  }
+
+  void prepareSupervisionProtein(ProteinPtr protein)
+  {
+    jassert(protein);
+    protein->computeMissingVariables();
+    if (pdbDebugDirectory.exists() && protein->getTertiaryStructure())
+      protein->saveToPDBFile(pdbDebugDirectory.getChildFile(protein->getName() + T("_correct.pdb")));
+    if (proteinDebugDirectory.exists())
+      protein->saveToXmlFile(proteinDebugDirectory.getChildFile(protein->getName() + T("_correct.xprot")));
+  }
+
+  void saveDebugFiles(ProteinPtr protein, size_t stepNumber)
+  {
+    String idx((int)stepNumber);
+
+     if (pdbDebugDirectory.exists() &&  protein->getTertiaryStructure())
+      protein->saveToPDBFile(pdbDebugDirectory.getChildFile
+        (protein->getName() + T("_pred") + idx + T(".pdb")));
+
+    if (proteinDebugDirectory.exists())
+      protein->saveToXmlFile(proteinDebugDirectory.getChildFile
+        (protein->getName() + T("_pred") + idx + T(".protein")));
+  }
+
+private:
+  File pdbDebugDirectory;
+  File proteinDebugDirectory;
+};
+
+class ProteinSequentialInference : public VectorSequentialInference, public ProteinInferenceHelper
 {
 public:
   ProteinSequentialInference() : VectorSequentialInference(T("Protein"))
     {setBatchLearner(sequentialInferenceLearner());}
+
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    if (supervision)
+      prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
+    return VectorSequentialInference::prepareInference(context, prepareInputProtein(input), supervision, returnCode);
+  }
+
+  virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  {
+    // we keep the same input and supervision for sub-inferences
+    state->setSubInference(subInferences.get(index), state->getInput(), state->getSupervision());
+  }
+
+  virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  {
+    if (state->getSubOutput())
+    {
+      ProteinPtr workingProtein = state->getInput().getObjectAndCast<Protein>();
+      jassert(workingProtein);
+      saveDebugFiles(workingProtein, state->getStepNumber());
+    }
+  }
+
+  virtual Variable finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+    {return finalState->getInput();} // the working protein
 };
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
@@ -262,6 +350,7 @@ public:
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
+    //std::cout << "preInferenceCallback: " << inferenceClassName << std::endl;
 
     if (stack->getDepth() == 1)
     {
@@ -292,23 +381,21 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
+    //std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
 
     if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
     {
       // end of learning iteration
-      std::cout << "End of learning iteration -- FIXME" << std::endl;
-      /*
+      std::cout << "Evaluating ... " << std::endl;
+      
       InferenceContextPtr validationContext = singleThreadedInferenceContext();
-      ProteinEvaluationCallbackPtr evaluation = new ProteinEvaluationCallback();
-      validationContext->appendCallback(evaluation);
+      ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+      validationContext->evaluate(inference, trainingData, evaluator);
+      processResults(evaluator, true);
       
-      validationContext->runInference(runOnSupervisedExamplesInference(inference), trainingData, ObjectPtr(), returnCode);
-      processResults(evaluation, true);
-      
-      evaluation->reset();
-
-      validationContext->runInference(runOnSupervisedExamplesInference(inference), testingData, ObjectPtr(), returnCode);
-      processResults(evaluation, false);      */
+      evaluator = new ProteinEvaluator();
+      validationContext->evaluate(inference, testingData, evaluator);
+      processResults(evaluator, false);
     }
     else if (stack->getDepth() == 1)
     {
@@ -317,15 +404,15 @@ public:
       std::cout << "Bye." << std::endl;
     }
   }
-#if 0
-  void processResults(ProteinEvaluationCallbackPtr evaluation, bool isTrainingData)
+
+  void processResults(ProteinEvaluatorPtr evaluator, bool isTrainingData)
   {
     /*{
       EvaluatorPtr bbbEvaluator = evaluation->getEvaluatorForTarget(T("BackboneBondSequence"));
       jassert(bbbEvaluator);
       std::cout << (isTrainingData ? "Train: " : "Test: ") << evaluation->toString() << std::endl;
     }*/
-
+/*
     EvaluatorPtr contactMapEvaluator = evaluation->getEvaluatorForTarget(T("ResidueResidueContactMatrix8Ca"));
     jassert(contactMapEvaluator);
     std::cout << (isTrainingData ? "Train: " : "Test: ") << contactMapEvaluator->toString() << std::endl;
@@ -333,9 +420,9 @@ public:
     std::vector< std::pair<String, double> > scores;
     contactMapEvaluator->getScores(scores);
     for (size_t i = 0; i < scores.size(); ++i)
-      std::cout << scores[i].first << ": " << scores[i].second << std::endl;
+      std::cout << scores[i].first << ": " << scores[i].second << std::endl;*/
+    std::cout << " == " << (isTrainingData ? "Training" : "Testing") << " Scores == " << std::endl << evaluator->toString() << std::endl;
   }
-#endif // 0
 
 private:
   InferencePtr inference;
@@ -401,7 +488,7 @@ int main(int argc, char** argv)
   ProteinInferenceFactoryPtr factory = new MyProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createTargetInference(T("secondaryStructure")));
+  inference->appendInference(factory->createInference(T("secondaryStructure")));
 
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));

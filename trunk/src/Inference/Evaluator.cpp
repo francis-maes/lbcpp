@@ -29,6 +29,11 @@ EvaluatorPtr lbcpp::regressionErrorEvaluator(const String& name)
 EvaluatorPtr lbcpp::dihedralRegressionErrorEvaluator(const String& name)
   {return new DihedralAngleRegressionErrorEvaluator(name);}
 
+// new
+EvaluatorPtr lbcpp::containerElementsEvaluator(const String& name, EvaluatorPtr elementEvaluator)
+  {return new ContainerElementsEvaluator(name, elementEvaluator);}
+
+// old
 EvaluatorPtr lbcpp::objectContainerEvaluator(const String& name, EvaluatorPtr objectEvaluator)
   {return new ObjectContainerEvaluator(name, objectEvaluator);}
 
