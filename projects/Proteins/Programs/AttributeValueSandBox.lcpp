@@ -9,6 +9,7 @@
 #include <lbcpp/lbcpp.h>
 #include "Data/Protein.h" 
 #include "Inference/ProteinInferenceFactory.h"
+#include "Inference/ProteinInference.h"
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
@@ -88,7 +89,33 @@ public:
 //// FeatureGenerators compatibility /////
 //////////////////////////////////////////
 //////////////////////////////////////////
+/*
+class FeatureGeneratorFactory : public Function
+{
+public:
+  virtual TypePtr getInput() const
+    {return perceptionClass();}
 
+  virtual TypePtr getOutput(TypePtr ) const
+    {return Class::get(T("FeatureGenerator"));}
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  {
+    PerceptionPtr perception = input.getObjectAndCast<Perception>(callback);
+    if (!perception)
+      return Variable();
+    
+    size_t n = perception->getNumOutputVariables();
+
+    CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator();
+    
+    res->appendSubGenerator(
+  }
+
+};
+
+
+*/
 bool canSubVariableBePruned(const Variable& subVariable)
 {
   if (subVariable.getType()->inheritsFrom(probabilityType()))
@@ -100,22 +127,28 @@ featureGenerator variableFeatures(Variable variable)
 {
   if (variable.isNil())
   {
-    featureSense(T("Nil"));
+    featureSense(0);
     return;
   }
   else if (variable.isMissingValue())
   {
-    featureSense(T("Missing"));
+    featureSense(2);
     return;
   }
   
   TypePtr type = variable.getType();
 
+  if (type == probabilityType())
+  {
+    featureSense(2, variable.getDouble());
+    return;
+  }
+
   if (variable.isEnumeration())
   {
     EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
     jassert(enumeration);
-    featureSense(enumeration->getElementName(variable.getInteger()));
+    featureSense(2 + variable.getInteger());
     return;
   }
 
@@ -127,14 +160,8 @@ featureGenerator variableFeatures(Variable variable)
     {
       Variable subVariable = object->getVariable(i);
       if (!canSubVariableBePruned(subVariable))
-        featureCall(object->getVariableName(i)) variableFeatures(subVariable);
+        featureCall(i) variableFeatures(subVariable);
     }
-    return;
-  }
-
-  if (type == probabilityType())
-  {
-    featureSense(T("Value"), variable.getDouble());
     return;
   }
 
@@ -173,107 +200,9 @@ protected:
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-
-// Prototype:
-//   Input: ProteinObject
-//   Supervision: ProteinObject
-//   Output: ProteinObject
-
-// Sub-inferences prototype:
-//   Input: ProteinObject
-//   Supervision: ProteinObject
-//   Output: ProteinObject Object or ProteinObject
-
-class ProteinInferenceHelper
-{
-public:
-  void setPDBDebugDirectory(const File& directory)
-    {pdbDebugDirectory = directory;}
-    
-  void setProteinDebugDirectory(const File& directory)
-  {
-    proteinDebugDirectory = directory;
-    if (!directory.exists())
-      directory.createDirectory();
-  }
-
-protected:
-  static ProteinPtr prepareInputProtein(const Variable& input)
-  {
-    ProteinPtr inputProtein = input.getObjectAndCast<Protein>();
-    jassert(inputProtein);
-    ProteinPtr workingProtein = inputProtein->cloneAndCast<Protein>();
-    jassert(workingProtein);
-    return workingProtein;
-  }
-
-  void prepareSupervisionProtein(ProteinPtr protein)
-  {
-    jassert(protein);
-    protein->computeMissingVariables();
-    if (pdbDebugDirectory.exists() && protein->getTertiaryStructure())
-      protein->saveToPDBFile(pdbDebugDirectory.getChildFile(protein->getName() + T("_correct.pdb")));
-    if (proteinDebugDirectory.exists())
-      protein->saveToXmlFile(proteinDebugDirectory.getChildFile(protein->getName() + T("_correct.xprot")));
-  }
-
-  void saveDebugFiles(ProteinPtr protein, size_t stepNumber)
-  {
-    String idx((int)stepNumber);
-
-     if (pdbDebugDirectory.exists() &&  protein->getTertiaryStructure())
-      protein->saveToPDBFile(pdbDebugDirectory.getChildFile
-        (protein->getName() + T("_pred") + idx + T(".pdb")));
-
-    if (proteinDebugDirectory.exists())
-      protein->saveToXmlFile(proteinDebugDirectory.getChildFile
-        (protein->getName() + T("_pred") + idx + T(".protein")));
-  }
-
-private:
-  File pdbDebugDirectory;
-  File proteinDebugDirectory;
-};
-
-class ProteinSequentialInference : public VectorSequentialInference, public ProteinInferenceHelper
-{
-public:
-  ProteinSequentialInference() : VectorSequentialInference(T("Protein"))
-    {setBatchLearner(sequentialInferenceLearner());}
-
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    if (supervision)
-      prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
-    return VectorSequentialInference::prepareInference(context, prepareInputProtein(input), supervision, returnCode);
-  }
-
-  virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
-  {
-    // we keep the same input and supervision for sub-inferences
-    state->setSubInference(subInferences.get(index), state->getInput(), state->getSupervision());
-  }
-
-  virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
-  {
-    if (state->getSubOutput())
-    {
-      ProteinPtr workingProtein = state->getInput().getObjectAndCast<Protein>();
-      jassert(workingProtein);
-      saveDebugFiles(workingProtein, state->getStepNumber());
-    }
-  }
-
-  virtual Variable finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
-    {return finalState->getInput();} // the working protein
-};
-
-typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
-
 void declareNewProteinInferenceClasses()
 {
   LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
-  LBCPP_DECLARE_CLASS(ProteinSequentialInference, VectorSequentialInference); 
 }
 
 ///////////////////////////////////////// 

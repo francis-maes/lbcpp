@@ -52,6 +52,8 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
+  Inference/ProteinInference.h
+  Inference/ProteinInference.cpp
   Inference/ProteinInferenceFactory.h
   Inference/ProteinInferenceFactory.cpp
 )

@@ -55,6 +55,8 @@ private:
   void ensureTypeIsComputed();
 };
 
+extern ClassPtr perceptionClass();
+
 class DecoratorPerception : public Perception
 {
 public:
