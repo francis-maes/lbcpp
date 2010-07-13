@@ -19,9 +19,9 @@ VectorPtr Stream::load(size_t maximumCount)
   while (maximumCount == 0 || res->size() < maximumCount)
   {
     Variable variable = next();
-    if (variable)
+    if (!variable.isNil())
       res->append(variable);
-    else
+    if (isExhausted())
       break;
   }
   return res;
