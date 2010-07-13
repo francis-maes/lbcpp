@@ -22,7 +22,7 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
   File output = outputFile;
   if (output.isDirectory())
   {
-    output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
+    output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".xml"));
   }
   Variable(protein).saveToFile(output);
   return true;
@@ -84,14 +84,14 @@ int main(int argc, char* argv[])
     
     if (!inputFiles.size())
     {
-      input.findChildFiles(inputFiles, File::findFiles, false, T("*.protein"));
+      input.findChildFiles(inputFiles, File::findFiles, false, T("*.xml"));
       convertToPDB = true;
     }
     
   }
   else
   {
-    if (input.getFileExtension() == T(".protein"))
+    if (input.getFileExtension() == T(".xml"))
       convertToPDB = true;
     inputFiles.add(new File(input));
   }

@@ -49,7 +49,7 @@ Variable AminoAcid::fromOneLetterCode(juce::tchar code)
 Variable AminoAcid::fromThreeLettersCode(const String& code)
 {
   for (size_t i = 0; i < 23; ++i)
-    if (code == threeLettersCodes[i])
+    if (code == String(threeLettersCodes[i]).toUpperCase())
       return Variable(i, aminoAcidTypeEnumeration());
   return Variable::missingValue(aminoAcidTypeEnumeration());
 }

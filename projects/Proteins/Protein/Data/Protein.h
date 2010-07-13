@@ -107,7 +107,7 @@ public:
   ** Disorder regions
   */
   void setDisorderRegions(VectorPtr disorderRegions)
-    {this->disorderRegions = disorderRegions;}
+  {jassert(disorderRegions->getElementsType() == probabilityType()); this->disorderRegions = disorderRegions;}
 
   VectorPtr getDisorderRegions() const
     {return disorderRegions;}

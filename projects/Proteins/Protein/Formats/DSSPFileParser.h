@@ -57,14 +57,14 @@ public:
 
     if (line.length() < 100)
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Line is not long enough"));
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Line is not long enough"));
       return false;
     }
 
     int newSerialNumber = line.substring(0, 5).trim().getIntValue();
     if (newSerialNumber != (int)serialNumber)
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Invalid serial number: ") + lbcpp::toString(newSerialNumber));
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid serial number: ") + lbcpp::toString(newSerialNumber));
       return false;
     }
     ++serialNumber;
@@ -83,7 +83,7 @@ public:
     
     if (residueNumber < 0 || residueNumber >= (int)n)
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + lbcpp::toString(residueNumber));
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + lbcpp::toString(residueNumber));
       return false;
     }
 
@@ -95,7 +95,7 @@ public:
     
     if (aminoAcidCode != expectedAminoAcid)
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + aminoAcidCode);
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + aminoAcidCode);
       return false;
     }
 //    aminoAcidSequence->setIndex((size_t)residueNumber, aminoAcidCode);
@@ -109,7 +109,7 @@ public:
     int secondaryStructureIndex = dsspSecondaryStructureElementEnumeration()->findElement(secondaryStructureCode);
     if (secondaryStructureIndex < 0)
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: ") + secondaryStructureCode);
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: ") + secondaryStructureCode);
       return false;
     }
     dsspSecondaryStructureSequence->setVariable((size_t)residueNumber, Variable(secondaryStructureIndex, dsspSecondaryStructureElementEnumeration()));
@@ -120,7 +120,7 @@ public:
     String solventAccesibilityString = line.substring(34, 38).trim();
     if (!solventAccesibilityString.containsOnly(T("0123456789")))
     {
-      Object::error(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccesibilityString);
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccesibilityString);
       return false;
     }
     int absoluteSolventAccesiblity = solventAccesibilityString.getIntValue();
@@ -148,7 +148,7 @@ public:
   {
     if (!serialNumber)
     {
-      Object::error(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
+      callback.errorMessage(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
       return false;
     }
     //std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
