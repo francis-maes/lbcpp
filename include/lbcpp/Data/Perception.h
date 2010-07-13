@@ -111,6 +111,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 
+PerceptionPtr identityPerception(TypePtr type);
 PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 
 }; /* namespace lbcpp */

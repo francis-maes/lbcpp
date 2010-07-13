@@ -147,7 +147,11 @@ class DynamicObject : public Object
 {
 public:
   DynamicObject(ClassPtr type = objectClass()) : Object(type)
-    {variables.resize(type->getNumStaticVariables());}
+  {
+    variables.resize(type->getNumStaticVariables());
+    for (size_t i = 0; i < variables.size(); ++i)
+      variables[i] = Variable::missingValue(type->getStaticVariableType(i));
+  }
 
   virtual String toString() const
     {return getClass()->getName() + T("{") + variablesToString(T(", ")) + T("}");}

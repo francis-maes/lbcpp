@@ -27,6 +27,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProbabilityDistribution> ProbabilityDistributionPtr;
 
+extern ClassPtr probabilityDistributionClass();
+
 class BernoulliDistribution : public ProbabilityDistribution
 {
 public:
@@ -69,9 +71,6 @@ public:
   // Object
   virtual String toString() const;
 
-  virtual size_t getNumVariables() const;
-  virtual TypePtr getVariableType(size_t index) const;
-  virtual String getVariableName(size_t index) const;
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
 

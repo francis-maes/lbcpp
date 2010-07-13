@@ -51,7 +51,7 @@ void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = 
 
 ///////////////
 
-class ResidueRepresentation : public CompositePerception
+class ResidueCompositePerception : public CompositePerception
 {
 public:
   virtual TypePtr getInputType() const
@@ -314,7 +314,7 @@ public:
   {
     if (is1DTarget)
     {
-      CompositePerceptionPtr res = new ResidueRepresentation();
+      CompositePerceptionPtr res = new ResidueCompositePerception();
 
       FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass->findStaticVariable(T("primaryStructure")));
       FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass->findStaticVariable(T("positionSpecificScoringMatrix")));
@@ -395,6 +395,7 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
+  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
@@ -405,25 +406,27 @@ int main(int argc, char** argv)
   //PrintPerceptionCallback::print(proteins->getVariable(2), std::cout, 2);
 
   // make representation
-  CompositePerceptionPtr representation = new ResidueRepresentation();
+  CompositePerceptionPtr perception = new ResidueCompositePerception();
+
+  TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
 
   FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass()->findStaticVariable(T("primaryStructure")));
   FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass()->findStaticVariable(T("positionSpecificScoringMatrix")));
 
-  representation->addPerception(T("AA"), Perception::compose(selectPrimaryStructure,
-    windowPerception(aminoAcidTypeEnumeration(), 15)));
-  representation->addPerception(T("PSSM"), Perception::compose(selectPSSM,
-    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+  perception->addPerception(T("AA"), Perception::compose(selectPrimaryStructure,
+    windowPerception(aminoAcidTypeEnumeration(), 3)));
+  perception->addPerception(T("PSSM"), Perception::compose(selectPSSM,
+    windowPerception(pssmRowType, 3, identityPerception(pssmRowType))));
 
-  std::cout << "Perception output class: " << representation->getOutputType()->toString() << std::endl;
+  //std::cout << "Perception output class: " << perception->getOutputType()->toString() << std::endl;
 
-  PerceptionPtr flatRepresentation = representation->flatten();
+  PerceptionPtr flatPerception = perception->flatten();
 
-  std::cout << "Flat Perception output class: " << flatRepresentation->getOutputType()->toString() << std::endl;
+  //std::cout << "Flat Perception output class: " << flatPerception->getOutputType()->toString() << std::endl;
 
   // make secondary structure classification examples
   VectorPtr secondaryStructureExamples = new Vector(pairType(
-      flatRepresentation->getOutputType(),
+      flatPerception->getOutputType(),
       secondaryStructureElementEnumeration()));
   for (size_t i = 0; i < proteins->size(); ++i)
   {
@@ -433,25 +436,25 @@ int main(int argc, char** argv)
     VectorPtr secondaryStructure = protein->getSecondaryStructure();
     for (size_t j = 0; j < n; ++j)
     {
-      Variable input = flatRepresentation->compute(Variable::pair(protein, j));
+      Variable input = flatPerception->compute(Variable::pair(protein, j));
       //std::cout << "Perception of : " << protein->getName() << " " << j << ": "
-      //    << std::endl << representation->compute(Variable::pair(protein, j)) << std::endl;
+      //    << std::endl << perception->compute(Variable::pair(protein, j)) << std::endl;
       //std::cout << "    Flat : " << input << std::endl;
-      //printVariable(input, std::cout, 3);
+      //printVariable(perception->compute(Variable::pair(protein, j)), std::cout);
       //std::cout << std::endl << std::endl << std::endl;
+      //printVariable(input, std::cout);
       Variable output = secondaryStructure->getVariable(j);
       secondaryStructureExamples->append(Variable::pair(input, output));
     }
   }
 
-  {
+  /*{
     Variable anExampleInput = secondaryStructureExamples->getVariable(10)[0];
     printVariable(anExampleInput, std::cout, 3);
     FeatureGeneratorPtr anExampleFeatures = variableFeatures(anExampleInput)->toSparseVector();
     std::cout << "Features: " << anExampleFeatures->toString() << std::endl;
-  }
-  exit(0);
-
+  }*/
+  //exit(0);
   
 
   // make train and test set

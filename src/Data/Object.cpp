@@ -63,7 +63,7 @@ VariableReference Object::getVariableReference(size_t index)
 */
 String Object::toString() const
 {
-  String res = T("{");
+  String res = getClassName() + T("{");
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
@@ -250,7 +250,8 @@ bool Object::saveToDirectory(const File& directory) const
 */
 ObjectPtr Object::clone() const
 {
-  Variable variable(getClass());
+  Variable variable = Variable::create(getClass());
+  jassert(variable);
   ObjectPtr res = variable.getObject();
   clone(res);
   return res;

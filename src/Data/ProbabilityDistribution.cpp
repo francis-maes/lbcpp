@@ -214,14 +214,40 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, ErrorHan
 bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   {return loadFromString(xml->getAllSubText(), callback);}
 
-size_t DiscreteProbabilityDistribution::getNumVariables() const
-  {return values.size();}
+class DiscreteProbabilityDistributionClass : public Class
+{
+public:
+  DiscreteProbabilityDistributionClass()
+    : Class(T("DiscreteProbabilityDistribution"), probabilityDistributionClass())
+  {
+    templateArguments.push_back(anyType());
+  }
 
-TypePtr DiscreteProbabilityDistribution::getVariableType(size_t index) const
-  {return probabilityType();}
+  EnumerationPtr getEnumeration() const
+    {return getTemplateArgument(0).staticCast<Enumeration>();}
 
-String DiscreteProbabilityDistribution::getVariableName(size_t index) const
-  {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+  virtual VariableValue create() const
+    {return new DiscreteProbabilityDistribution(getEnumeration());}
+
+  virtual size_t getNumStaticVariables() const
+    {return getEnumeration()->getNumElements() + 1;}
+
+  virtual TypePtr getStaticVariableType(size_t index) const
+    {return probabilityType();}
+
+  virtual String getStaticVariableName(size_t index) const
+    {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+
+  virtual ObjectPtr clone() const
+  {
+    ClassPtr res(new DiscreteProbabilityDistributionClass());
+    Type::clone(res);
+    return res;
+  }
+};
+
+ClassPtr lbcpp::probabilityDistributionClass()
+  {static TypeCache cache(T("ProbabilityDistribution")); return cache();}
 
 ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
 {
@@ -232,5 +258,5 @@ ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
 void declareProbabilityDistributionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(ProbabilityDistribution, Object);
-    LBCPP_DECLARE_TEMPLATE_CLASS(DiscreteProbabilityDistribution, 1, ProbabilityDistribution);
+    Class::declare(new DiscreteProbabilityDistributionClass());
 }
