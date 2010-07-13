@@ -64,7 +64,7 @@ bool PDBFileParser::parseLine(const String& line)
            keyword == T("NUMMDL") || keyword == T("MDLTYP") || keyword == T("SPRSDE"))
     return true; // skip line
 
-  Object::warning(T("PDBFileParser::parseLine"), T("Unknown keyword ") + keyword);
+  callback.warningMessage(T("PDBFileParser::parseLine"), T("Unknown keyword ") + keyword);
   return true;
 }
 
@@ -95,7 +95,7 @@ bool PDBFileParser::parseRemarkLine(const String& line)
       std::cout << "ProteinObject " << proteinName << " Resolution " << resolution << std::endl;
       if (!beTolerant && resolution > highestTolerableResolution)
       {
-        Object::error(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + lbcpp::toString(resolution) + T(" is not precise enough"));
+        callback.errorMessage(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + lbcpp::toString(resolution) + T(" is not precise enough"));
         return false;
       }
     }
@@ -107,7 +107,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
 {
   // parse serial number and chain id
   int serialNumber;
-  if (!getInteger(line, 8, 10, serialNumber))
+  if (!getInteger(line, 8, 10, serialNumber, callback))
     return false;
   char chainID;
   if (!getChainId(line, 12, chainID))
@@ -127,7 +127,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
       aminoAcidCodesLength = aminoAcidCode.length();
     else if (aminoAcidCodesLength != aminoAcidCode.length())
     {
-      Object::error(T("PDBFileParser::parseSeqResLine"), T("Not all the amino acids have the same code length"));
+      callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Not all the amino acids have the same code length"));
       return false;
     }
   }
@@ -139,11 +139,11 @@ bool PDBFileParser::parseSeqResLine(const String& line)
 
   // parse and check num residues
   int numResidues;
-  if (!getInteger(line, 14, 17, numResidues))
+  if (!getInteger(line, 14, 17, numResidues, callback))
     return false;
   if (numResidues <= 0)
   {
-    Object::error(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + lbcpp::toString(serialNumber));
+    callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + lbcpp::toString(serialNumber));
     return false;
   }
   if (numResidues < 10)
@@ -168,7 +168,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     ++currentSeqResSerialNumber;
     if (serialNumber != currentSeqResSerialNumber)
     {
-      Object::error(T("PDBFileParser::parseSeqResLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
+      callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
       return false;
     }
     primaryStructure = protein->getPrimaryStructure();
@@ -183,7 +183,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
       break;
     
     
-    AminoAcidPtr aminoAcid = AminoAcid::fromThreeLettersCode(aminoAcidCode).getObjectAndCast<AminoAcid>();
+    Variable aminoAcid = AminoAcid::fromThreeLettersCode(aminoAcidCode);
     if (!aminoAcid)
     {
       static const juce::tchar* hetResidueCodes[] = {T("NH2")};
@@ -198,7 +198,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
         continue;
       else
       {
-        Object::error(T("PDBFileParser::parseSeqResLine"), T("Unreconized amino acid code: ") + aminoAcidCode);
+        callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Unreconized amino acid code: ") + aminoAcidCode);
         return false;
       }
     }
@@ -210,11 +210,11 @@ bool PDBFileParser::parseSeqResLine(const String& line)
 bool PDBFileParser::parseModelLine(const String& line)
 {
   int modelSerialNumber;
-  if (!getInteger(line, 11, 14, modelSerialNumber))
+  if (!getInteger(line, 11, 14, modelSerialNumber, callback))
     return false;
   if (modelSerialNumber <= 0)
   {
-    Object::error(T("PDBFileParser::parseModelLine"), T("Invalid model serial number"));
+    callback.errorMessage(T("PDBFileParser::parseModelLine"), T("Invalid model serial number"));
     return false;
   }
   currentModelSerialNumber = modelSerialNumber;
@@ -252,7 +252,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   // parse residue sequence number and insertion code
   int residueSequenceNumber;
   char residueInsertionCode;
-  if (!getInteger(line, 23, 26, residueSequenceNumber) || !getChar(line, 27, residueInsertionCode))
+  if (!getInteger(line, 23, 26, residueSequenceNumber, callback) || !getChar(line, 27, residueInsertionCode, callback))
     return false;
 
   // create a tertiary structure block if not done yet
@@ -269,7 +269,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   {
     if (residueSequenceNumber < currentResidueSerialNumber)
     {
-      Object::error(T("PDBFileParser::parseAtomLine"), T("Residue sequence number are misordered"));
+      callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Residue sequence number are misordered"));
       return false;
     }
 
@@ -287,10 +287,10 @@ bool PDBFileParser::parseAtomLine(const String& line)
   }
 
   // check amino acid code
-  AminoAcidPtr aminoAcid = AminoAcid::fromThreeLettersCode(residueName).getObjectAndCast<AminoAcid>();
-  if (aminoAcid->isStandard())
+  Variable aminoAcid = AminoAcid::fromThreeLettersCode(residueName);
+  if (!aminoAcid || aminoAcid.getInteger() >= 20)
   {
-    Object::error(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + lbcpp::toString(residueName));
+    callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + lbcpp::toString(residueName));
     return false;
   }
 
@@ -301,9 +301,9 @@ bool PDBFileParser::parseAtomLine(const String& line)
   if (currentResidueIndex < tertiaryStructureBlock.size())
   {
     residue = tertiaryStructureBlock[currentResidueIndex];
-    if (residue->getAminoAcidType() != aminoAcid->getType())
+    if (residue->getAminoAcidType() != aminoAcid.getInteger())
     {
-      Object::error(T("PDBFileParser::parseAtomLine"), T("Unconsistent residue name: ") + lbcpp::toString(residueName));
+      callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Unconsistent residue name: ") + lbcpp::toString(residueName));
       return false;
     }
   }
@@ -311,7 +311,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   {
     if (tertiaryStructureBlock.size() && !checkResidueConsistency(tertiaryStructureBlock.back()))
       return false;
-    residue = new Residue(aminoAcid->getType());
+    residue = new Residue((AminoAcidType)aminoAcid.getInteger());
     tertiaryStructureBlock.push_back(residue);
   }
 
@@ -323,11 +323,11 @@ bool PDBFileParser::parseAtomLine(const String& line)
 
   // parse atom
   double x, y, z, occupancy, temperatureFactor;
-  if (!getDouble(line, 31, 38, x) ||
-      !getDouble(line, 39, 46, y) ||
-      !getDouble(line, 47, 54, z) ||
-      !getDouble(line, 55, 60, occupancy) ||
-      !getDouble(line, 61, 66, temperatureFactor))
+  if (!getDouble(line, 31, 38, x, callback) ||
+      !getDouble(line, 39, 46, y, callback) ||
+      !getDouble(line, 47, 54, z, callback) ||
+      !getDouble(line, 55, 60, occupancy, callback) ||
+      !getDouble(line, 61, 66, temperatureFactor, callback))
     return false;
   Vector3Ptr v = new Vector3();
   v->setX(x);
@@ -354,7 +354,7 @@ bool PDBFileParser::parseTerLine(const String& line)
 
   if (!chain->tertiaryStructureBlocks.size())
   {
-    Object::error(T("PDBFileParser::parseTerLine"), T("No tertiary structure"));
+    callback.errorMessage(T("PDBFileParser::parseTerLine"), T("No tertiary structure"));
     return false;
   }
  
@@ -399,13 +399,13 @@ PDBFileParser::Chain* PDBFileParser::getChain(const String& line, int column)
 bool PDBFileParser::parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn)
 {
   int serialNumber;
-  if (!getInteger(line, firstColumn, lastColumn, serialNumber))
+  if (!getInteger(line, firstColumn, lastColumn, serialNumber, callback))
     return false;
   ++currentAtomSerialNumber;
   currentAtomSerialNumber = serialNumber;
   if (serialNumber != currentAtomSerialNumber)
   {
-    Object::error(T("PDBFileParser::parseAtomLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
+    callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
     return false;
   }
   return true;
@@ -425,13 +425,13 @@ bool PDBFileParser::checkResidueConsistency(ResiduePtr residue)
 {
   if (!residue->getCAlphaAtom())
   {
-    Object::error(T("PDBFileParser::checkResidueConsistency"), T("Missing C-alpha atom in residue ") + residue->getName());
+    callback.errorMessage(T("PDBFileParser::checkResidueConsistency"), T("Missing C-alpha atom in residue ") + residue->getName());
     return false;
   }
   bool hasOnlyCAlpha = residue->getNumAtoms() == 1;
   if (!hasOnlyCAlpha && (!residue->getCarbonAtom() || !residue->getNitrogenAtom()))
   {
-    Object::error(T("PDBFileParser::checkResidueConsistency"), T("Missing carbon or nitrogen atom in residue ") + residue->getName());
+    callback.errorMessage(T("PDBFileParser::checkResidueConsistency"), T("Missing carbon or nitrogen atom in residue ") + residue->getName());
     return false;
   }
   return true;
@@ -441,7 +441,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
 {
   if (!tertiaryStructureBlocks.size())
   {
-    Object::error(T("PDBFileParser::finalizeChain"), T("No tertiary structure for chain ") + lbcpp::toString(chainId));
+    callback.errorMessage(T("PDBFileParser::finalizeChain"), T("No tertiary structure for chain ") + lbcpp::toString(chainId));
     return TertiaryStructurePtr();
   }
   
@@ -463,7 +463,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
       int index = primaryAminoAcids.indexOf(lastIndex, blockAminoAcids);
       if (index < 0)
       {
-        Object::error(T("PDBFileParser::finalizeChain"), T("Could not align tertiary structure block with primary structure"));
+        callback.errorMessage(T("PDBFileParser::finalizeChain"), T("Could not align tertiary structure block with primary structure"));
         return TertiaryStructurePtr();
       }
       const std::vector<ResiduePtr>& residues = tertiaryStructureBlocks[i];
@@ -478,7 +478,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
     // no specified primary sequence => create the primary sequence from the tertiary structure
     if (tertiaryStructureBlocks.size() > 1)
     {
-      Object::error(T("PDBFileParser::finalizeChain"), T("Non contiguous tertiary structure blocks without primary structure"));
+      callback.errorMessage(T("PDBFileParser::finalizeChain"), T("Non contiguous tertiary structure blocks without primary structure"));
       return TertiaryStructurePtr();
     }
     size_t n = tertiaryStructureBlocks[0].size();
@@ -494,7 +494,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
     tertiaryStructure->pruneResiduesThatDoNotHaveCompleteBackbone();
   if (!tertiaryStructure->getNumSpecifiedResidues())
   {
-    Object::error(T("PDBFileParser::finalizeChain"), T("Not any complete residue in tertiary structure"));
+    callback.errorMessage(T("PDBFileParser::finalizeChain"), T("Not any complete residue in tertiary structure"));
     return TertiaryStructurePtr();
   }
 
@@ -502,10 +502,10 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
   if (!tertiaryStructure->isConsistent(failureReason))
   {
     if (beTolerant)
-      Object::warning(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
+      callback.warningMessage(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
     else
     {
-      Object::error(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
+      callback.errorMessage(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
       return TertiaryStructurePtr();
     }
   }
@@ -526,26 +526,26 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
   // an element is in disorder if the associated residue is not defined
   VectorPtr res = protein->createEmptyDisorderRegions();
   for (size_t i = 0; i < n; ++i)
-    res->setVariable(i, tertiaryStructure->getResidue(i) == ResiduePtr());
+    res->setVariable(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType()));
 
   // remove disorder segments whose length is less than 4
   static const int minimumDisorderLength = 4;
   for (size_t i = 0; i < n; )
   {
-    if (res->getVariable(i).getBoolean())
+    if (res->getVariable(i).getDouble() == 1.0)
     {
       size_t j = i + 1;
-      while (j < n && res->getVariable(j).getBoolean()) ++j;
+      while (j < n && res->getVariable(j).getDouble() == 1.0) ++j;
       if ((j - i) < (size_t)minimumDisorderLength)
         for (size_t ii = i; ii < j; ++ii)
-          res->setVariable(ii, false);
+          res->setVariable(ii, Variable(0.0, probabilityType()));
       i = j;
     }
     else
       ++i;
   }
 
-  std::cout << "Disorder sequence: " << res->toString() << std::endl;
+  //std::cout << "Disorder sequence: " << res->toString() << std::endl;
   return res;
 }
 
@@ -553,7 +553,7 @@ bool PDBFileParser::parseEnd()
 {
   if (!chains.size())
   {
-    Object::error(T("PDBFileParser::parseEnd"), T("No chains in PDB file"));
+    callback.errorMessage(T("PDBFileParser::parseEnd"), T("No chains in PDB file"));
     return false;
   }
 
@@ -602,36 +602,36 @@ String PDBFileParser::getSubString(const String& line, int firstColumn, int last
   return str;
 }
 
-bool PDBFileParser::getChar(const String& line, int column, char& result)
+bool PDBFileParser::getChar(const String& line, int column, char& result, ErrorHandler& callback)
 {
   String str = getSubString(line, column, column);
   if (str[0] > 127)
   {
-    Object::error(T("PDBFileParser::getChar"), str + T(" is not a char"));
+    callback.errorMessage(T("PDBFileParser::getChar"), str + T(" is not a char"));
     return false;
   }
   result = (char)str[0];
   return true;
 }
 
-bool PDBFileParser::getInteger(const String& line, int firstColumn, int lastColumn, int& result)
+bool PDBFileParser::getInteger(const String& line, int firstColumn, int lastColumn, int& result, ErrorHandler& callback)
 {
   String str = getSubString(line, firstColumn, lastColumn).trim();
   if (!str.containsOnly(T("-0123456789")))
   {
-    Object::error(T("PDBFileParser::getInteger"), str + T(" is not an integer"));
+    callback.errorMessage(T("PDBFileParser::getInteger"), str + T(" is not an integer"));
     return false;
   }
   result = str.getIntValue();
   return true;
 }
 
-bool PDBFileParser::getDouble(const String& line, int firstColumn, int lastColumn, double& result)
+bool PDBFileParser::getDouble(const String& line, int firstColumn, int lastColumn, double& result, ErrorHandler& callback)
 {
   String str = getSubString(line, firstColumn, lastColumn).trim();
   if (!str.containsOnly(T("e.-0123456789")))
   {
-    Object::error(T("PDBFileParser::getDouble"), str + T(" is not an double"));
+    callback.errorMessage(T("PDBFileParser::getDouble"), str + T(" is not an double"));
     return false;
   }
   result = str.getDoubleValue();
@@ -640,16 +640,16 @@ bool PDBFileParser::getDouble(const String& line, int firstColumn, int lastColum
 
 bool PDBFileParser::getChainId(const String& line, int column, char& res) const
 {
-  if (!getChar(line, column, res))
+  if (!getChar(line, column, res, callback))
     return false;
   if (res == ' ' && chains.size() > 1)
   {
-    Object::error(T("PDBFileParser::getChainId"), T("Empty chain ID"));
+    callback.errorMessage(T("PDBFileParser::getChainId"), T("Empty chain ID"));
     return false;
   }
   if (res < 'A' && res > 'Z')
   {
-    Object::error(T("PDBFileParser::getChainId"), T("Invalid chain ID: ") + lbcpp::toString(res));
+    callback.errorMessage(T("PDBFileParser::getChainId"), T("Invalid chain ID: ") + lbcpp::toString(res));
     return false;
   }
   return true;

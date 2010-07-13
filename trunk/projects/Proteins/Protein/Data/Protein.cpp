@@ -167,7 +167,7 @@ VectorPtr Protein::createEmptySolventAccesibility() const
   {return new Vector(probabilityType(), getLength());}
 
 VectorPtr Protein::createEmptyDisorderRegions() const
-  {return new Vector(booleanType(), getLength());}
+  {return new Vector(probabilityType(), getLength());}
 
 Variable Protein::createEmptyTarget(size_t index) const
 {
