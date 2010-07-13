@@ -397,14 +397,14 @@ public:
     {return proteinClass();}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return pairClass(proteinClass(), proteinClass());}
+    {return pairType(proteinClass(), proteinClass());}
 
 protected:
   virtual Variable computeFunction(const Variable& input) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
-    protein->computeMissingFields();
+    protein->computeMissingVariables();
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
@@ -421,7 +421,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  VectorPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")));
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")));
   std::cout << proteins->size() << " proteins" << std::endl;
   // todo: proteinToInputOutput function
 
@@ -497,8 +497,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  InferencePtr inference = extraTreeInference(T("SS3"), 100, 15);
-  InferenceContextPtr context = singleThreadedInferenceContext();
+  inference = extraTreeInference(T("SS3"), 100, 15);
   context->train(inference, trainingData);
 
   // evaluate
