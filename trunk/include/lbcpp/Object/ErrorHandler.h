@@ -114,14 +114,14 @@ private:
 ** load() is responsible for declaring an error to the ErrorManager.
 */
 template<class T>
-inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCountedObjectPtr<ReferenceCountedObject> object)
+inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCountedObjectPtr<ReferenceCountedObject> object, ErrorHandler& callback = ErrorHandler::getInstance())
 {
   ReferenceCountedObjectPtr<T> res;
   if (object)
   {
     res = object.dynamicCast<T>();
     if (!res)
-      ErrorHandler::error(where, T("Could not cast object from '") + lbcpp::toString(typeid(*object)) + T("' to '") + lbcpp::toString(typeid(T)) + T("'"));
+      callback.errorMessage(where, T("Could not cast object from '") + lbcpp::toString(typeid(*object)) + T("' to '") + lbcpp::toString(typeid(T)) + T("'"));
   }
   return res;
 }

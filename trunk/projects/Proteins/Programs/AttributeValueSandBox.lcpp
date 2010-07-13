@@ -228,16 +228,17 @@ public:
   }
 };
 
-class ProteinSequenceInference : public SharedParallelContainerInference
+class SequenceProteinTargetInference : public SharedParallelContainerInference
 {
 public:
-  ProteinSequenceInference(const String& targetName, InferencePtr elementInference, FunctionPtr representation)
-    : SharedParallelContainerInference(targetName, elementInference), representation(representation)
+  SequenceProteinTargetInference(const String& targetName, InferencePtr elementInference, FunctionPtr perception)
+    : SharedParallelContainerInference(targetName, elementInference), perception(perception)
   {
     int index = proteinClass()->findStaticVariable(targetName);
     jassert(index >= 0);
     targetIndex = (size_t)index;
   }
+  SequenceProteinTargetInference() : targetIndex(0) {}
 
   virtual size_t getNumSubInferences(const Variable& input) const
     {return input.getObjectAndCast<Protein>()->getLength();}
@@ -246,7 +247,7 @@ public:
     {return supervision[targetIndex].getObjectAndCast<Container>();}
 
   virtual Variable getSubInput(const Variable& input, size_t index) const
-    {return representation->compute(Variable::pair(input[targetIndex], index));}
+    {return perception->compute(Variable::pair(input, index));}
 
   virtual Variable createOutput(const Variable& input) const
     {return input.getObjectAndCast<Protein>()->createEmptyTarget(targetIndex);}
@@ -256,16 +257,27 @@ public:
 
 protected:
   size_t targetIndex;
-  FunctionPtr representation;
+  FunctionPtr perception;
 };
 
 class ProteinSequentialInference : public VectorSequentialInference
 {
 public:
-  ProteinSequentialInference() : VectorSequentialInference(T("Protein")) {}
+  ProteinSequentialInference() : VectorSequentialInference(T("Protein"))
+    {setBatchLearner(sequentialInferenceLearner());}
 };
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
+
+void declareNewProteinInferenceClasses()
+{
+  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
+
+  LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelContainerInference, SharedParallelInference);
+    LBCPP_DECLARE_CLASS(SequenceProteinTargetInference, SharedParallelContainerInference);
+
+  LBCPP_DECLARE_CLASS(ProteinSequentialInference, VectorSequentialInference); 
+}
 
 ///////////////////////////////////////// 
 ///////////////////////////////////////// 
@@ -293,7 +305,7 @@ public:
     TypePtr targetType = getTargetType(targetName);
     EnumerationPtr elementsType = targetType->getTemplateArgument(0).dynamicCast<Enumeration>();
     jassert(elementsType);
-    return InferencePtr(new ProteinSequenceInference(targetName,
+    return InferencePtr(new SequenceProteinTargetInference(targetName,
       createMultiClassClassifier(targetName, elementsType),
       createRepresentation(targetName, true, false)));
   }
@@ -387,7 +399,7 @@ VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
 #ifdef JUCE_DEBUG
   if (!maxCount) maxCount = 7;
 #endif // JUCE_DEBUG
-  return directoryFileStream(directory)->apply(loadFromFileFunction())->load(maxCount);
+  return directoryFileStream(directory)->apply(loadFromFileFunction(proteinClass()))->load(maxCount);
 }
 
 class ProteinToInputOutputPairFunction : public Function
@@ -399,8 +411,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return pairType(proteinClass(), proteinClass());}
 
-protected:
-  virtual Variable computeFunction(const Variable& input) const
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
@@ -412,17 +423,23 @@ protected:
   }
 };
 
+FunctionPtr proteinToInputOutputPairFunction()
+  {return new ProteinToInputOutputPairFunction();}
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
+  declareNewProteinInferenceClasses();
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")));
-  std::cout << proteins->size() << " proteins" << std::endl;
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")))->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->fold(0, 2);
+  ContainerPtr testProteins = proteins->fold(1, 2);
+  std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
+
   // todo: proteinToInputOutput function
 
   ProteinInferenceFactoryPtr factory = new MyProteinInferenceFactory();
@@ -431,8 +448,8 @@ int main(int argc, char** argv)
   inference->appendInference(factory->createTargetInference(T("secondaryStructure")));
 
   InferenceContextPtr context = singleThreadedInferenceContext();
-  context->train(inference, proteins);
-
+  context->train(inference, trainProteins);
+  
   // todo: evaluation
 
   return 0;

@@ -155,8 +155,11 @@ void declareInferenceClasses()
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
     LBCPP_DECLARE_ABSTRACT_CLASS(ParallelInference, Inference);
       LBCPP_DECLARE_ABSTRACT_CLASS(StaticParallelInference, ParallelInference);
+        LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelInference, StaticParallelInference);
         LBCPP_DECLARE_ABSTRACT_CLASS(VectorStaticParallelInference, StaticParallelInference);
     LBCPP_DECLARE_ABSTRACT_CLASS(SequentialInference, Inference);
+      LBCPP_DECLARE_ABSTRACT_CLASS(StaticSequentialInference, SequentialInference);
+        LBCPP_DECLARE_CLASS(VectorSequentialInference, StaticSequentialInference);
   
   /*
   ** Reduction

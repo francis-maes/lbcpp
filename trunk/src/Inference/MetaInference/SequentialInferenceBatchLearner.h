@@ -32,10 +32,11 @@ public:
     for (size_t i = 0; i < numTrainingExamples; ++i)
     {
       Variable example = trainingData->getVariable(i);
-      jassert(example);
+      jassert(example && example.size() == 2 && example[0]);
       SequentialInferenceStatePtr state = inference->prepareInference(context, example[0], example[1], returnCode);
       if (returnCode != finishedReturnCode)
         return returnCode;
+      jassert(state->getSubInput());
       currentStates[i] = state;
     }
 
@@ -45,7 +46,12 @@ public:
       // make sub-training data 
       ContainerPtr subTrainingData = new Vector(pairType(), numTrainingExamples);
       for (size_t i = 0; i < numTrainingExamples; ++i)
-        subTrainingData->setVariable(i, Variable::pair(currentStates[i]->getSubInput(), currentStates[i]->getSubSupervision()));
+      {
+        Variable subInput = currentStates[i]->getSubInput();
+        Variable subSupervision = currentStates[i]->getSubSupervision();
+        jassert(subInput);
+        subTrainingData->setVariable(i, Variable::pair(subInput, subSupervision));
+      }
 
       // get sub-inference and sub-learner
       InferencePtr subInference = currentStates[0]->getSubInference();

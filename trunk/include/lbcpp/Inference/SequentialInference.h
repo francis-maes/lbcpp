@@ -153,7 +153,7 @@ public:
     {state->setUserVariable(state->getSubOutput());}
 
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
-    {state->setSubInference(subInferences.get(index), state->getSubOutput(), state->getSupervision());}
+    {state->setSubInference(subInferences.get(index), index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
 
   virtual size_t getNumSubInferences() const
     {return subInferences.size();}
