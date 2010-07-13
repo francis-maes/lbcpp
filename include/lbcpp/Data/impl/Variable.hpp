@@ -61,8 +61,8 @@ inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
   : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(const Variable& otherVariant)
-  : type(nilType()), value()
-  {*this = otherVariant;}
+  : type(otherVariant.getType())
+  {type->copy(value, otherVariant.value);}
 
 inline Variable::Variable()
   : type(nilType()), value() {}
@@ -71,10 +71,7 @@ inline Variable::~Variable()
   {type->destroy(value);}
 
 inline void Variable::clear()
-{
-  type->destroy(value);
-  type = nilType();
-}
+  {type->destroy(value); type = nilType();}
 
 inline Variable Variable::create(TypePtr type)
   {return Variable(type, type->create());}
@@ -83,10 +80,7 @@ inline Variable Variable::missingValue(TypePtr type)
   {return Variable(type, type->getMissingValue());}
 
 inline void Variable::copyTo(VariableValue& dest) const
-{
-  type->destroy(dest);
-  type->copy(dest, value);
-}
+  {type->destroy(dest); type->copy(dest, value);}
 
 inline TypePtr Variable::getType() const
   {return type;}
@@ -192,9 +186,9 @@ inline Variable Variable::operator [](size_t index) const
 
 inline Variable& Variable::operator =(const Variable& otherVariant)
 {
-  clear();
-  if (type != otherVariant.type)
-    type = otherVariant.type;
+  if (type) // type may be NULL when allocated from TupleType (which bypass the constructor of Variable)
+    clear();
+  type = otherVariant.type;
   type->copy(value, otherVariant.value);
   return *this;
 }

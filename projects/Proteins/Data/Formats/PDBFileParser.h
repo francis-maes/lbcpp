@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_FORMATS_PDB_FILE_PARSER_H_
 
 # include "../Protein.h"
+# include <lbcpp/Data/Stream.h>
 
 namespace lbcpp
 {
