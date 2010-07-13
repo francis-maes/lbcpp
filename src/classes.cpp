@@ -18,7 +18,7 @@ extern void declareStreamClasses();
 extern void declareConsumerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
-extern void declareRepresentationClasses();
+extern void declarePerceptionClasses();
 // -
 
 extern void declareObjectContainerClasses();
@@ -35,7 +35,7 @@ void declareObjectRelatedClasses()
   declareStreamClasses();
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
-  declareRepresentationClasses();
+  declarePerceptionClasses();
   // -
 
   LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
