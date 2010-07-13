@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_FORMATS_FASTA_FILE_GENERATOR_H_
 # define LBCPP_PROTEINS_FORMATS_FASTA_FILE_GENERATOR_H_
 
-# include "../Data/Protein.h"
+# include "../Protein.h"
 
 namespace lbcpp
 {
