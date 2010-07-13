@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Data/Protein.h"
+#include "../Data/Protein.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

@@ -8,11 +8,11 @@
 #include "ProteinObject.h"
 #include "AminoAcidDictionary.h"
 #include "SecondaryStructureDictionary.h"
-#include "Formats/FASTAFileParser.h"
+/*#include "Formats/FASTAFileParser.h"
 #include "Formats/FASTAFileGenerator.h"
 #include "Formats/PDBFileParser.h"
 #include "Formats/PDBFileGenerator.h"
-
+*/
 using namespace lbcpp;
 
 ProteinObjectPtr ProteinObject::createFromAminoAcidSequence(const String& name, const String& aminoAcidString)

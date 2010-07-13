@@ -8,7 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../Protein/ProteinObject.h"
-#include "../Protein/Formats/CASPFileGenerator.h"
+#include "../Data/Formats/CASPFileGenerator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

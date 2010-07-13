@@ -10,8 +10,8 @@
 # define LBCPP_PROTEINS_DATA_CARTESIAN_POSITION_VECTOR_H_
 
 # include <lbcpp/Data/Vector.h>
-# include "../../Geometry/Vector3.h"
-# include "../../Geometry/Matrix4.h"
+# include "../Geometry/Vector3.h"
+# include "../Geometry/Matrix4.h"
 
 namespace lbcpp
 {

@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_ATOM_H_
 # define LBCPP_PROTEIN_ATOM_H_
 
-# include "../../Geometry/Vector3.h"
+# include "../Geometry/Vector3.h"
 
 namespace lbcpp
 {

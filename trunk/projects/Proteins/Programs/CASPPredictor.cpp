@@ -10,9 +10,10 @@
 #include "../Protein/ProteinObject.h"
 #include "../Protein/AminoAcidDictionary.h"
 #include "../Protein/SecondaryStructureDictionary.h"
-#include "../Protein/Formats/CASPFileGenerator.h"
-#include "../Protein/Formats/PSSMFileParser.h"
 #include "../Protein/Inference/ProteinInference.h"
+
+#include "../Data/Formats/CASPFileGenerator.h"
+#include "../Data/Formats/PSSMFileParser.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();

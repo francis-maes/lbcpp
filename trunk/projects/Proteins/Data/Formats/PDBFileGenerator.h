@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
 # define LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
 
-# include "../Data/Protein.h"
+# include "../Protein.h"
 
 namespace lbcpp
 {

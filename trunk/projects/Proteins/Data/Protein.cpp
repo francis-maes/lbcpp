@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "Protein.h"
-#include "../Formats/PDBFileParser.h"
-#include "../Formats/PDBFileGenerator.h"
+#include "Formats/PDBFileParser.h"
+#include "Formats/PDBFileGenerator.h"
 using namespace lbcpp;
 
 class ProteinClass : public DynamicClass
