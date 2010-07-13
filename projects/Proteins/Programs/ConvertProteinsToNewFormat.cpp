@@ -8,7 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "Protein/ProteinObject.h" // old
-#include "Protein/Data/Protein.h" // new
+#include "Data/Protein.h" // new
 using namespace lbcpp;
 
 extern void declareProteinClasses();

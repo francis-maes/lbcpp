@@ -1,6 +1,6 @@
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/Formats/FASTAFileParser.h"
+#include "../Data/Formats/FASTAFileParser.h"
 #include "../Programs/ArgumentSet.h"
 
 using namespace lbcpp;

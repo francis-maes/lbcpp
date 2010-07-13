@@ -3,6 +3,69 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+
+### new
+SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
+  Geometry/DihedralAngle.h
+  Geometry/Vector3.h
+  Geometry/Vector3.cpp
+  Geometry/Matrix3.h
+  Geometry/Matrix3.cpp  
+  Geometry/Matrix4.h
+  Geometry/Matrix4.cpp
+  Geometry/kdtree_lib.h
+  Geometry/kdtree_lib.c
+)
+
+SET(LBCPP_PROTEIN_DATA_SOURCES
+  Data/AminoAcid.h
+  Data/AminoAcid.cpp
+  Data/SecondaryStructure.h
+  Data/SecondaryStructure.cpp
+  Data/CartesianPositionVector.h
+  Data/CartesianPositionVector.cpp
+  Data/Atom.h
+  Data/Atom.cpp
+  Data/Residue.h
+  Data/Residue.cpp
+  Data/TertiaryStructure.h
+  Data/TertiaryStructure.cpp
+  Data/Protein.h
+  Data/Protein.cpp
+)
+
+
+SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
+  Data/Formats/FASTAFileParser.h
+  Data/Formats/FASTAFileGenerator.h
+  Data/Formats/PDBFileParser.h
+  Data/Formats/PDBFileParser.cpp
+  Data/Formats/PDBFileGenerator.h
+  Data/Formats/PDBFileGenerator.cpp
+  Data/Formats/CASPFileGenerator.h
+  Data/Formats/CASPFileGenerator.cpp
+  Data/Formats/OrderDisorderRegionCASPFileGenerator.h
+  Data/Formats/ResidueResidueDistanceCASPFileGenerator.h
+  Data/Formats/TertiaryStructureCASPFileGenerator.h
+  Data/Formats/PSSMFileParser.h
+  Data/Formats/DSSPFileParser.h
+)
+
+SET(LBCPP_PROTEIN_INFERENCE_SOURCES
+  Inference/ProteinInferenceFactory.h
+  Inference/ProteinInferenceFactory.cpp
+)
+
+SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
+  Evaluator/TertiaryStructureEvaluator.h
+  Evaluator/ContactMapEvaluator.h
+  Evaluator/ProteinEvaluator.h
+)
+
+###
+### old
+###
+
 ADD_CRALGORITHM_SOURCES(
   InferenceData/CommonFeatureGenerators.lcpp
   InferenceData/Sequence.lcpp
@@ -11,6 +74,8 @@ ADD_CRALGORITHM_SOURCES(
   Protein/Inference/ProteinResidueFeatures.lcpp
   Protein/Inference/ProteinResiduePairFeatures.lcpp
 )
+
+
 
 SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/CommonFeatureGenerators.h
@@ -29,34 +94,6 @@ SET(LBCPP_INFERENCE_DATA_SOURCES
   InferenceData/ScoreSymmetricMatrix.cpp
 )
 
-SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
-  Geometry/DihedralAngle.h
-  Geometry/Vector3.h
-  Geometry/Vector3.cpp
-  Geometry/Matrix3.h
-  Geometry/Matrix3.cpp  
-  Geometry/Matrix4.h
-  Geometry/Matrix4.cpp
-  Geometry/kdtree_lib.h
-  Geometry/kdtree_lib.c
-)
-
-SET(LBCPP_PROTEIN_DATA_SOURCES
-  Protein/Data/AminoAcid.h
-  Protein/Data/AminoAcid.cpp
-  Protein/Data/SecondaryStructure.h
-  Protein/Data/SecondaryStructure.cpp
-  Protein/Data/CartesianPositionVector.h
-  Protein/Data/CartesianPositionVector.cpp
-  Protein/Data/Atom.h
-  Protein/Data/Atom.cpp
-  Protein/Data/Residue.h
-  Protein/Data/Residue.cpp
-  Protein/Data/TertiaryStructure.h
-  Protein/Data/TertiaryStructure.cpp
-  Protein/Data/Protein.h
-  Protein/Data/Protein.cpp
-)
 
 SET(LBCPP_PROTEIN_OLD_DATA_SOURCES
   Protein/AminoAcidDictionary.h
@@ -93,30 +130,21 @@ SET(LBCPP_PROTEIN_EVALUATION_SOURCES
   Protein/Evaluation/ProteinStatisticsCalculator.h
 )
 
-SET(LBCPP_PROTEIN_FORMATS_SOURCES
-  Protein/Formats/FASTAFileParser.h
-  Protein/Formats/FASTAFileGenerator.h
-  Protein/Formats/PDBFileParser.h
-  Protein/Formats/PDBFileParser.cpp
-  Protein/Formats/PDBFileGenerator.h
-  Protein/Formats/PDBFileGenerator.cpp
-  Protein/Formats/CASPFileGenerator.h
-  Protein/Formats/CASPFileGenerator.cpp
-  Protein/Formats/OrderDisorderRegionCASPFileGenerator.h
-  Protein/Formats/ResidueResidueDistanceCASPFileGenerator.h
-  Protein/Formats/TertiaryStructureCASPFileGenerator.h
-  Protein/Formats/PSSMFileParser.h
-  Protein/Formats/DSSPFileParser.h
-)
-
 SET(PROTEINS_CPP_SOURCES
-  ${LBCPP_INFERENCE_DATA_SOURCES}
+  # new 
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_PROTEIN_DATA_SOURCES}
+  ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES}
+  ${LBCPP_PROTEIN_INFERENCE_SOURCES}
+  ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
+    
+  # old
+  ${LBCPP_INFERENCE_DATA_SOURCES}
   ${LBCPP_PROTEIN_OLD_DATA_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES}
   ${LBCPP_PROTEIN_EVALUATION_SOURCES}
-  ${LBCPP_PROTEIN_FORMATS_SOURCES}
+  # -
+  
   classes.cpp
 )
 
@@ -129,13 +157,16 @@ SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
 
 SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 
-SOURCE_SUB_GROUP(Protein "Data (New)" FILES ${LBCPP_PROTEIN_DATA_SOURCES})
-SOURCE_SUB_GROUP(Protein "Data (Old)" FILES ${LBCPP_PROTEIN_OLD_DATA_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
-SOURCE_SUB_GROUP2(Protein "Data (Old)" GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
+SOURCE_GROUP(Data FILES ${LBCPP_PROTEIN_DATA_SOURCES})
+SOURCE_SUB_GROUP(Data Formats FILES ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES})
+SOURCE_GROUP(Inference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
+SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 
-SOURCE_SUB_GROUP(Protein Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinGlobalFeatures.lcpp Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
-SOURCE_SUB_GROUP(Protein Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
-SOURCE_SUB_GROUP(Protein Formats FILES ${LBCPP_PROTEIN_FORMATS_SOURCES})
+SOURCE_SUB_GROUP(Old Data FILES ${LBCPP_PROTEIN_OLD_DATA_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
+SOURCE_SUB_GROUP(Old GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
+
+SOURCE_SUB_GROUP(Old Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinGlobalFeatures.lcpp Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
+SOURCE_SUB_GROUP(Old Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)

@@ -11,7 +11,7 @@
 
 # include "AminoAcid.h"
 # include "Atom.h"
-# include "../../Geometry/Matrix4.h"
+# include "../Geometry/Matrix4.h"
 
 namespace lbcpp
 {

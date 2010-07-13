@@ -8,7 +8,6 @@
 
 #include "CASPFileGenerator.h"
 #include "PDBFileGenerator.h"
-#include "../SecondaryStructureDictionary.h"
 using namespace lbcpp;
 
 /*
