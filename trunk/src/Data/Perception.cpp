@@ -86,7 +86,11 @@ PerceptionPtr Perception::addPreprocessor(FunctionPtr preProcessingFunction) con
 PerceptionPtr Perception::flatten() const
   {return new FlattenPerception(PerceptionPtr(const_cast<Perception* >(this)));}
 
+#include "Perception/IdentityPerception.h"
 #include "Perception/WindowPerception.h"
+
+PerceptionPtr lbcpp::identityPerception(TypePtr type)
+  {return new IdentityPerception(type);}
 
 PerceptionPtr lbcpp::windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception)
   {return new WindowPerception(elementsType, windowSize, subPerception);}
@@ -94,8 +98,11 @@ PerceptionPtr lbcpp::windowPerception(TypePtr elementsType, size_t windowSize, P
 void declarePerceptionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(Perception, Function);
-    LBCPP_DECLARE_ABSTRACT_CLASS(CompositePerception, Perception);
+
+    LBCPP_DECLARE_CLASS(IdentityPerception, Perception);
     LBCPP_DECLARE_CLASS(WindowPerception, Perception);
+
+    LBCPP_DECLARE_ABSTRACT_CLASS(CompositePerception, Perception);
   
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorPerception, Perception);
       LBCPP_DECLARE_CLASS(PreprocessPerception, DecoratorPerception);

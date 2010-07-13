@@ -33,24 +33,6 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {jassert(index < outputVariables.size()); return outputVariables[index].second;}
 
-  struct FlattenCallback : public PerceptionCallback
-  {
-    FlattenCallback(PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const std::map<PerceptionPtr, size_t>& offsets)
-      : targetCallback(targetCallback), offsets(offsets)
-      {offset = offsets.find(targetRepresentation)->second;}
-
-    virtual void sense(size_t variableNumber, const Variable& value)
-      {targetCallback->sense(variableNumber + offset, value);}
-
-    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
-      {subPerception->computePerception(input, new FlattenCallback(subPerception, targetCallback, offsets));}
-
-  private:
-    PerceptionCallbackPtr targetCallback;
-    const std::map<PerceptionPtr, size_t>& offsets;
-    size_t offset;
-  };
-
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     PerceptionCallbackPtr decoratedVisitor(new FlattenCallback(decorated, callback, offsets));
@@ -59,26 +41,61 @@ public:
 
 private:
   std::vector< std::pair<TypePtr, String> > outputVariables;
-  std::map<PerceptionPtr, size_t> offsets;
+  std::map< std::vector<size_t> , size_t> offsets;
 
-  void precompute(PerceptionPtr representation, const String& fullName)
+  void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
   {
-    offsets[representation] = outputVariables.size();
-    size_t n = representation->getNumOutputVariables();
+    offsets[stack] = outputVariables.size();
+
+    size_t n = perception->getNumOutputVariables();
+    std::vector<size_t> newStack(stack);
+    newStack.push_back(0);
     for (size_t i = 0; i < n; ++i)
     {
       String name = fullName;
       if (name.isNotEmpty())
         name += '.';
-      name += representation->getOutputVariableName(i);
+      name += perception->getOutputVariableName(i);
 
-      PerceptionPtr subPerception = representation->getOutputVariableGenerator(i);
+      newStack.back() = i;
+
+      PerceptionPtr subPerception = perception->getOutputVariableGenerator(i);
       if (subPerception)
-        precompute(subPerception, name);
+        precompute(subPerception, name, newStack);
       else
-        outputVariables.push_back(std::make_pair(representation->getOutputVariableType(i), name));
+        outputVariables.push_back(std::make_pair(perception->getOutputVariableType(i), name));
     }
   }
+
+  struct FlattenCallback : public PerceptionCallback
+  {
+    FlattenCallback(PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const std::map< std::vector<size_t> , size_t>& offsets)
+      : targetCallback(targetCallback), offsets(offsets)
+      {updateOffset();}
+
+    virtual void sense(size_t variableNumber, const Variable& value)
+      {targetCallback->sense(variableNumber + offset, value);}
+
+    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    {
+      stack.push_back(variableNumber);
+      updateOffset();
+
+      subPerception->computePerception(input, PerceptionCallbackPtr(this));
+
+      stack.pop_back();
+      updateOffset();
+    }
+
+  private:
+    PerceptionCallbackPtr targetCallback;
+    const std::map< std::vector<size_t> , size_t>& offsets;
+    std::vector<size_t> stack;
+    size_t offset;
+
+    void updateOffset()
+      {offset = offsets.find(stack)->second;}
+  };
 };
 
 }; /* namespace lbcpp */
