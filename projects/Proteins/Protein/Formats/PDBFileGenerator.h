@@ -22,7 +22,7 @@ public:
   virtual TypePtr getInputType() const
     {return proteinClass();}
 
-  virtual void consume(ObjectPtr object);
+  virtual void consume(const Variable& variable);
 
   static String makeHeaderLine(const String& classification, const String& date, const String& idCode);
     
