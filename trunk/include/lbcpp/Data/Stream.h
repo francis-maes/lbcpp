@@ -148,7 +148,7 @@ public:
    **
    ** @return a TextObjectParser.
    */
-  TextParser(const File& file);
+  TextParser(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
   
   /**
    ** Constructor.
@@ -159,7 +159,7 @@ public:
    **
    ** @return a TextObjectParser.
    */
-  TextParser(InputStream* newInputStream);
+  TextParser(InputStream* newInputStream, ErrorHandler& callback = ErrorHandler::getInstance());
   
   /**
    ** Destructor.
@@ -222,6 +222,8 @@ public:
   virtual Variable next();
   
 protected:
+  ErrorHandler& callback;
+
   /**
    ** currentObject setter.
    **

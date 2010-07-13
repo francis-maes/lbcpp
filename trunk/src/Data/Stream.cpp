@@ -60,21 +60,21 @@ StreamPtr Stream::apply(FunctionPtr function) const
 /*
  ** TextParser
  */
-TextParser::TextParser(InputStream* newInputStream)
-: istr(newInputStream) {}
+TextParser::TextParser(InputStream* newInputStream, ErrorHandler& callback)
+  : istr(newInputStream), callback(callback) {}
 
-TextParser::TextParser(const File& file)
-: istr(NULL)
+TextParser::TextParser(const File& file, ErrorHandler& callback)
+  : istr(NULL), callback(callback)
 {
   if (file == File::nonexistent)
   {
-    Object::error(T("TextParser::parseFile"), T("No filename specified"));
+    callback.errorMessage(T("TextParser::parseFile"), T("No filename specified"));
     return;
   }
   InputStream* inputStream = file.createInputStream();
   if (!inputStream)
   {
-    Object::error(T("TextParser::parseFile"), T("Could not open file ") + file.getFullPathName());
+    callback.errorMessage(T("TextParser::parseFile"), T("Could not open file ") + file.getFullPathName());
     return;
   }
   
@@ -128,7 +128,7 @@ Variable TextParser::next()
     String line = istr->readNextLine();
     if (!parseLine(line))
     {
-      Object::error(T("TextParser::parse"), T("Could not parse line '") + line + T("'"));
+      callback.errorMessage(T("TextParser::parse"), T("Could not parse line '") + line + T("'"));
       delete istr;
       istr = NULL;
       return Variable();
@@ -138,7 +138,7 @@ Variable TextParser::next()
   }
   
   if (!parseEnd())
-    Object::error(T("TextParser::next"), T("Error in parse end"));
+    callback.errorMessage(T("TextParser::next"), T("Error in parse end"));
   delete istr;
   istr = NULL;
   return currentResult;

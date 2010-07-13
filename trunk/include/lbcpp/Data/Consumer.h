@@ -32,27 +32,22 @@
 namespace lbcpp
 {
   
-class Consumer : public Function
+class Consumer : public Object
 {
 public:
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return nilType();}
+  virtual TypePtr getInputType() const = 0;
   
   virtual void consume(const Variable& variable) = 0;
   
   void consumeStream(StreamPtr stream, size_t maximumCount = 0);
   void consumeContainer(ContainerPtr container);
-
-protected:
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-    {const_cast<Consumer* >(this)->consume(input); return Variable();}
 };
 
 class TextPrinter : public Consumer
 {
 public:
   TextPrinter(OutputStream* newOutputStream);
-  TextPrinter(const File& file);
+  TextPrinter(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
   
   virtual ~TextPrinter()
     {if (ostr) delete ostr;}
