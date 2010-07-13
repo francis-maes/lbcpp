@@ -56,8 +56,8 @@ class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 class SymmetricMatrix;
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
-class Representation;
-typedef ReferenceCountedObjectPtr<Representation> RepresentationPtr;
+class Perception;
+typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 class Consumer;
 typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
 
