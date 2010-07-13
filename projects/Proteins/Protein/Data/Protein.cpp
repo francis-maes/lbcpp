@@ -114,19 +114,14 @@ VariableReference Protein::getVariableReference(size_t index)
 
 void Protein::computeMissingVariables()
 {
+  // FIXME
   if (primaryStructure)
   {
   }
 }
 
 VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
-{
-  size_t n = getLength();
-  VectorPtr res = new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), n);
-  for (size_t i = 0; i < n; ++i)
-    res->setVariable(i, new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration()));
-  return res;
-}
+  {return new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), getLength());}
 
 VectorPtr Protein::createEmptySecondaryStructure() const
   {return new Vector(secondaryStructureElementEnumeration(), getLength());}

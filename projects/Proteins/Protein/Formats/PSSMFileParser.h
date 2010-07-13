@@ -29,6 +29,10 @@ public:
   virtual void parseBegin()
   {
     currentPosition = -3;
+
+    // FIXME: pssm = new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), n);
+    // ne pas créer de Protein pour ca
+
     ProteinPtr protein; // hmm ... not realy nice
     protein->setPrimaryStructure(primarySequence);
     pssm = protein->createEmptyPositionSpecificScoringMatrix();
@@ -47,7 +51,7 @@ public:
       tokenize(line, aminoAcidsIndex);
       if (aminoAcidsIndex.size() != 40)
       {
-        Object::error(T("PSSMFileParser::parseLine"), T("Could not recognize PSSM file format"));
+        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Could not recognize PSSM file format"));
         return false;
       }
       aminoAcidsIndex.resize(20);
@@ -60,25 +64,26 @@ public:
 
     if (line.length() < 73)
     {
-      Object::error(T("PSSMFileParser::parseLine"), T("The line is not long enough"));
+      callback.errorMessage(T("PSSMFileParser::parseLine"), T("The line is not long enough"));
       return false;
     }
 
     String serialNumber = line.substring(0, 5).trim();
     if (serialNumber.getIntValue() != currentPosition + 1)
     {
-      Object::error(T("PSSMFileParser::parseLine"), T("Invalid serial number ") + lbcpp::toString(serialNumber));
+      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Invalid serial number ") + lbcpp::toString(serialNumber));
       return false;
     }   
 
     String aminoAcid = line.substring(6, 7);
     if (AminoAcid::fromOneLetterCode(aminoAcid[0]) != primarySequence->getVariable(currentPosition))
     {
-      Object::error(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + lbcpp::toString(currentPosition));
+      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + lbcpp::toString(currentPosition));
       return false;
     }
 
     size_t numAminoAcids = aminoAcidTypeEnumeration()->getNumElements();
+#if 0 // FIXME: use DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration());
     double scores[numAminoAcids];
     for (size_t i = 0; i < numAminoAcids; ++i)
     {
@@ -86,14 +91,14 @@ public:
       String score = line.substring(begin, begin + 3).trim();
       if (!score.containsOnly(T("0123456789-")))
       {
-        Object::error(T("PSSMFileParser::parseLine"), T("Invalid score: ") + score);
+        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Invalid score: ") + score);
         return false;
       }
       int scoreI = score.getIntValue();
       int index = aminoAcidTypeEnumeration()->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
       if (index < 0)
       {
-        Object::error(T("PSSMFileParser::parseLine"), T("Unknown amino acid: ") + aminoAcidsIndex[i]);
+        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: ") + aminoAcidsIndex[i]);
         return false;
       }
       scores[index] = normalize(scoreI);
@@ -103,6 +108,7 @@ public:
     String gapScore = line.substring(153, 157).trim();
     setPssmScore(currentPosition, 20, gapScore.getDoubleValue());
     setPssmScore(currentPosition, 21, entropy(scores) / 10.);
+#endif // 0
 
     ++currentPosition;
     return true;

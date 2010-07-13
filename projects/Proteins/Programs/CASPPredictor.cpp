@@ -104,7 +104,8 @@ int main(int argc, char* argv[])
   LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
   std::cout << "Amino Acid Sequence: " << aminoAcidSequence->toString() << std::endl;
 
-  ScoreVectorSequencePtr pssm = (new PSSMFileParser(pssmFile, aminoAcidSequence))->nextAndCast<ScoreVectorSequence>();
+  // FIXME
+  ScoreVectorSequencePtr pssm;// = (new PSSMFileParser(pssmFile, aminoAcidSequence))->next().getObjectAndCast<ScoreVectorSequence>();
   if (!pssm || pssm->size() != aminoAcidSequence->size())
   {
     std::cerr << "Could not load PSSM file" << std::endl;
