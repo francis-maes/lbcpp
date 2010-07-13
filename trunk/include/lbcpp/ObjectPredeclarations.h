@@ -58,6 +58,8 @@ class SymmetricMatrix;
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
 class Representation;
 typedef ReferenceCountedObjectPtr<Representation> RepresentationPtr;
+class Consumer;
+typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
 
 // object stream
 class ObjectStream;

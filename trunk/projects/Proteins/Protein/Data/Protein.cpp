@@ -47,6 +47,16 @@ extern ClassPtr lbcpp::proteinClass()
 
 ///////////////////
 
+void Protein::setPrimaryStructure(const String& primaryStructure)
+{
+  jassert(!this->primaryStructure);
+  size_t n = primaryStructure.length();
+
+  this->primaryStructure = new Vector(aminoAcidTypeEnumeration(), n);
+  for (size_t i = 0; i < n; ++i)
+    this->primaryStructure->setVariable(i, AminoAcid::fromOneLetterCode(primaryStructure[i]));
+}
+
 SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAtoms) const
 {
   jassert(threshold == 8.0);
@@ -109,6 +119,15 @@ void Protein::computeMissingVariables()
   }
 }
 
+VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
+{
+  size_t n = getLength();
+  VectorPtr res = new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), n);
+  for (size_t i = 0; i < n; ++i)
+    res->setVariable(i, new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration()));
+  return res;
+}
+
 VectorPtr Protein::createEmptySecondaryStructure() const
   {return new Vector(secondaryStructureElementEnumeration(), getLength());}
 
@@ -118,12 +137,16 @@ VectorPtr Protein::createEmptyDSSPSecondaryStructure() const
 VectorPtr Protein::createEmptySolventAccesibility() const
   {return new Vector(probabilityType(), getLength());}
 
+VectorPtr Protein::createEmptyDisorderRegions() const
+  {return new Vector(booleanType(), getLength());}
+
 Variable Protein::createEmptyTarget(size_t index) const
 {
   size_t n = getLength();
 
   switch (index)
   {
+  case 1: return createEmptyPositionSpecificScoringMatrix();
   case 2: return createEmptySecondaryStructure();
   case 3: return createEmptyDSSPSecondaryStructure();
   case 4: return new Vector(structuralAlphaElementEnumeration(), n);

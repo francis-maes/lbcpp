@@ -9,29 +9,32 @@
 #ifndef LBCPP_PROTEIN_FORMATS_PDB_FILE_PARSER_H_
 # define LBCPP_PROTEIN_FORMATS_PDB_FILE_PARSER_H_
 
-# include "../ProteinObject.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class PDBFileParser : public TextObjectParser
+class PDBFileParser : public TextParser
 {
 public:
   PDBFileParser(const File& file, bool beTolerant);
   
+  virtual TypePtr getElementsType() const
+    {return proteinClass();}
+
   virtual void parseBegin();
   virtual bool parseLine(const String& line);
   virtual bool parseEnd();
 
-  std::vector<ProteinObjectPtr> getAllChains() const;
+  std::vector<ProteinPtr> getAllChains() const;
 
 protected:
   bool beTolerant;
 
   struct Chain
   {
-    ProteinObjectPtr protein;
-    std::vector< std::vector<ProteinResidueAtomsPtr> > tertiaryStructureBlocks;
+    ProteinPtr protein;
+    std::vector< std::vector<ResiduePtr> > tertiaryStructureBlocks;
   };
 
   String proteinName;
@@ -68,10 +71,10 @@ protected:
   Chain* getChain(const String& line, int column);
   bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
 
-  ProteinTertiaryStructurePtr finalizeChain(char chainId, ProteinObjectPtr protein, const std::vector< std::vector<ProteinResidueAtomsPtr> >& tertiaryStructureBlocks);
-  LabelSequencePtr finalizeDisorderSequence(ProteinObjectPtr protein);
+  TertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ResiduePtr> >& tertiaryStructureBlocks);
+  VectorPtr finalizeDisorderSequence(ProteinPtr protein);
 
-  bool checkResidueConsistency(ProteinResidueAtomsPtr residue);
+  bool checkResidueConsistency(ResiduePtr residue);
 };
 
 }; /* namespace lbcpp */

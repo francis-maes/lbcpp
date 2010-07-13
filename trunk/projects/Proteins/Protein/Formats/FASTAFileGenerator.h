@@ -9,26 +9,29 @@
 #ifndef LBCPP_PROTEINS_FORMATS_FASTA_FILE_GENERATOR_H_
 # define LBCPP_PROTEINS_FORMATS_FASTA_FILE_GENERATOR_H_
 
-# include "../ProteinObject.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class FASTAFileGenerator : public TextObjectPrinter
+class FASTAFileGenerator : public TextPrinter
 {
 public:
   FASTAFileGenerator(const File& file)
-    : TextObjectPrinter(file) {}
+    : TextPrinter(file) {}
+  
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
 
-  virtual void consume(ObjectPtr object)
+  virtual void consume(const Variable& object)
   {
-    ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
+    ProteinPtr protein = object.getObjectAndCast<Protein>();
     jassert(protein);
     print(T(">") + protein->getName(), true);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    jassert(aminoAcidSequence);
-    String aa = aminoAcidSequence->toString();
-    jassert((size_t) aa.length() == aminoAcidSequence->size());
+    VectorPtr primaryStructure = protein->getPrimaryStructure();
+    jassert(primaryStructure);
+    String aa = primaryStructure->toString();
+    jassert((size_t) aa.length() == primaryStructure->size());
     print(aa, true);
   }
 };

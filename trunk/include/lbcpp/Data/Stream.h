@@ -132,6 +132,125 @@ public:
 
 StreamPtr directoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 
+/**
+ ** @class TextObjectParser
+ ** @brief Text object parser.
+ **
+ ** Base class for parsing text files line by line.
+ */
+class TextParser : public Stream
+{
+public:
+  /**
+   ** Constructor.
+   **
+   ** @param filename : file name.
+   **
+   ** @return a TextObjectParser.
+   */
+  TextParser(const File& file);
+  
+  /**
+   ** Constructor.
+   **
+   ** @param newInputStream : an input stream.
+   ** The TextObjectParser is responsible for deleting this
+   ** stream, when no more used.
+   **
+   ** @return a TextObjectParser.
+   */
+  TextParser(InputStream* newInputStream);
+  
+  /**
+   ** Destructor.
+   */
+  virtual ~TextParser();
+  
+  virtual bool rewind()
+    {return istr->setPosition(0);}
+  
+  virtual bool isExhausted() const
+    {return istr == NULL;}
+  
+  /**
+   ** This function is called at the begging of parsing.
+   **
+   */
+  virtual void parseBegin()   {}
+  
+  /**
+   ** This function is called to process one line during parsing.
+   **
+   ** If an object has been fully loaded thanks to this line,
+   ** call setResult() to complete the parsing of this object.
+   **
+   ** @param line : text line.
+   **
+   ** @return False if parsing of the line failed. In this case
+   **  inherited class are responsible for throwing an error
+   **  to the ErrorManager.
+   ** @see setResult
+   */
+  virtual bool parseLine(const String& line) = 0;
+  
+  /**
+   ** This function is called at the end of the parsing.
+   **
+   ** This function may call setResult(), if an object
+   ** has been fully loaded thanks to the end of parsing.
+   **
+   ** @return False if end of parsing failed. In this case
+   **  inherited class are responsible for throwing an error
+   **  to the ErrorManager.
+   ** @see setResult
+   */
+  virtual bool parseEnd()     {return true;}
+  
+  /**
+   ** Loads the next object from the stream.
+   **
+   ** When called the first time next() calls parseBegin().
+   ** In order to load the next object from the stream, next()
+   ** calls parseLine() for each line to parse until
+   ** a result is set through a call to setResult(). This result
+   ** is then returned. When reaching end-of-file, this
+   ** function calls parseEnd().
+   **
+   ** @return a pointer on the next parsed object or Variable()
+   ** if there are no more object in the stream.
+   */
+  virtual Variable next();
+  
+protected:
+  /**
+   ** currentObject setter.
+   **
+   ** This function may be called by parseLine() and by parseEnd()
+   ** to transmit the lastly parsed object, which will be returned
+   ** by next().
+   **
+   ** @param object : object pointer.
+   */
+  void setResult(const Variable& result)
+    {currentResult = result;}
+  
+  /**
+   ** Tokenizes a line.
+   **
+   ** @param line : example text line.
+   ** @param columns : item container.
+   ** @param separators : item text separators (" " and "\t" by default).
+   */
+  static void tokenize(const String& line,
+                       std::vector< String >& columns,
+                       const juce::tchar* separators = T(" \t"));
+  
+private:
+  Variable currentResult;      /*!< The current Variable. */
+  InputStream* istr;           /*!< A pointer to the current stream. */
+};
+  
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_VARIABLE_STREAM_H_

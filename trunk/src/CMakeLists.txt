@@ -16,6 +16,7 @@ SET(LBCPP_DATA_HEADERS
   ../include/lbcpp/Data/Predicate.h
   ../include/lbcpp/Data/ProbabilityDistribution.h
   ../include/lbcpp/Data/Representation.h
+  ../include/lbcpp/Data/Consumer.h
 )
 
 SET(LBCPP_DATA_IMPL_HEADERS
@@ -36,6 +37,7 @@ SET(LBCPP_DATA_SOURCES
   Data/Predicate.cpp
   Data/ProbabilityDistribution.cpp
   Data/Representation.cpp
+  Data/Consumer.cpp
 )  
 
 SET(LBCPP_DATA_TYPE_SOURCES

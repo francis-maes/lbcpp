@@ -1,3 +1,5 @@
+* Function::computeFunction est const alors que Consumer::consume ne l'est pas => choisir
+
 * flatten discrete probability distribution
   -> try with decision trees
    

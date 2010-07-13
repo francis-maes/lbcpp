@@ -38,12 +38,17 @@ ProteinObjectPtr ProteinObject::createFromAminoAcidSequence(const String& name, 
 
 ProteinObjectPtr ProteinObject::createFromFASTA(const File& fastaFile)
 {
-  ObjectStreamPtr parser(new FASTAFileParser(fastaFile));
-  return parser->nextAndCast<ProteinObject>();
+  jassert(false);
+  return ProteinObjectPtr();
+ // ObjectStreamPtr parser(new FASTAFileParser(fastaFile));
+ // return parser->nextAndCast<ProteinObject>();
 }
 
 ProteinObjectPtr ProteinObject::createFromPDB(const File& pdbFile, bool beTolerant)
 {
+  jassert(false);
+  return ObjectPtr();
+/*
   ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant));
   if (!parser->next())
     return ProteinObjectPtr();
@@ -69,13 +74,14 @@ ProteinObjectPtr ProteinObject::createFromPDB(const File& pdbFile, bool beTolera
   ProteinTertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
   jassert(tertiaryStructure && tertiaryStructure->size() == aminoAcidSequence->size());
   return res;
+ */
 }
 
 void ProteinObject::saveToPDBFile(const File& pdbFile)
   {ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinObjectPtr(this));}
 
 void ProteinObject::saveToFASTAFile(const File& fastaFile)
-  {ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinObjectPtr(this));}
+  {jassert(false);}//ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinObjectPtr(this));}
 
 void ProteinObject::computeMissingFields()
 {

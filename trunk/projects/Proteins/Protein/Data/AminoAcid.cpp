@@ -39,11 +39,19 @@ Variable AminoAcid::getVariable(size_t index) const
   return Variable();
 }
 
-Variable getAminoAcidFromOneLetterCode(juce::tchar code)
+Variable AminoAcid::fromOneLetterCode(juce::tchar code)
 {
-  EnumerationPtr aminoAcidTypes = aminoAcidTypeEnumeration();
-  int index = aminoAcidTypes->getOneLetterCodes().indexOfChar(code);
-  return index >= 0 ? Variable(index, aminoAcidTypes) : Variable::missingValue(aminoAcidTypes);
+  int index = oneLetterCodes.indexOfChar(code);
+  return index >= 0 ? Variable(index, aminoAcidTypeEnumeration()) 
+    : Variable::missingValue(aminoAcidTypeEnumeration());
+}
+
+Variable AminoAcid::fromThreeLettersCode(const String& code)
+{
+  for (size_t i = 0; i < 23; ++i)
+    if (code == threeLettersCodes[i])
+      return Variable(i, aminoAcidTypeEnumeration());
+  return Variable::missingValue(aminoAcidTypeEnumeration());
 }
 
 juce::tchar AminoAcid::getOneLetterCode() const

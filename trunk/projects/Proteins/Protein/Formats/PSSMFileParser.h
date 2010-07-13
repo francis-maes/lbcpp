@@ -9,24 +9,29 @@
 #ifndef LBCPP_PROTEIN_PSSM_FILE_PARSER_H_
 # define LBCPP_PROTEIN_PSSM_FILE_PARSER_H_
 
-# include "../ProteinObject.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class PSSMFileParser : public TextObjectParser
+class PSSMFileParser : public TextParser
 {
 public:
-  PSSMFileParser(const File& file, LabelSequencePtr aminoAcidSequence)
-    : TextObjectParser(file), aminoAcidSequence(aminoAcidSequence)
+  PSSMFileParser(const File& file, VectorPtr primarySequence)
+    : TextParser(file), primarySequence(primarySequence)
   {
     //std::cout << "AA: " << aminoAcidSequence->toString() << std::endl;
   }
+  
+  virtual TypePtr getElementsType() const
+    {return vectorClass(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())));}
 
   virtual void parseBegin()
   {
     currentPosition = -3;
-    pssm = new ScoreVectorSequence(T("PositionSpecificScoringMatrix"), AminoAcidDictionary::getInstance(), aminoAcidSequence->size(), AminoAcidDictionary::numAminoAcids + 2);
+    ProteinPtr protein; // hmm ... not realy nice
+    protein->setPrimaryStructure(primarySequence);
+    pssm = protein->createEmptyPositionSpecificScoringMatrix();
   }
 
   virtual bool parseLine(const String& line)
@@ -50,7 +55,7 @@ public:
       return true;
     }
 
-    if (currentPosition >= (int)aminoAcidSequence->size())
+    if (currentPosition >= (int)primarySequence->size())
       return true; // skip
 
     if (line.length() < 73)
@@ -67,14 +72,15 @@ public:
     }   
 
     String aminoAcid = line.substring(6, 7);
-    if (aminoAcid != aminoAcidSequence->getString(currentPosition))
+    if (AminoAcid::fromOneLetterCode(aminoAcid[0]) != primarySequence->getVariable(currentPosition))
     {
       Object::error(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + lbcpp::toString(currentPosition));
       return false;
     }
 
-    double scores[AminoAcidDictionary::numAminoAcids];
-    for (size_t i = 0; i < (size_t)AminoAcidDictionary::numAminoAcids; ++i)
+    size_t numAminoAcids = aminoAcidTypeEnumeration()->getNumElements();
+    double scores[numAminoAcids];
+    for (size_t i = 0; i < numAminoAcids; ++i)
     {
       int begin = 10 + i * 3;
       String score = line.substring(begin, begin + 3).trim();
@@ -84,20 +90,19 @@ public:
         return false;
       }
       int scoreI = score.getIntValue();
-      int index = AminoAcidDictionary::getInstance()->getFeatures()->getIndex(aminoAcidsIndex[i]);
+      int index = aminoAcidTypeEnumeration()->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
       if (index < 0)
       {
         Object::error(T("PSSMFileParser::parseLine"), T("Unknown amino acid: ") + aminoAcidsIndex[i]);
         return false;
       }
       scores[index] = normalize(scoreI);
-      pssm->setScore(currentPosition, index, scores[index]);
+      setPssmScore(currentPosition, index, scores[index]);
     }
 
     String gapScore = line.substring(153, 157).trim();
-    pssm->setScore(currentPosition, 20, gapScore.getDoubleValue());
-    
-    pssm->setScore(currentPosition, 21, entropy(scores) / 10);
+    setPssmScore(currentPosition, 20, gapScore.getDoubleValue());
+    setPssmScore(currentPosition, 21, entropy(scores) / 10.);
 
     ++currentPosition;
     return true;
@@ -110,22 +115,27 @@ public:
   }
   
 protected:
-  LabelSequencePtr aminoAcidSequence;
-  ScoreVectorSequencePtr pssm;
+  VectorPtr primarySequence;
+  VectorPtr pssm;
   std::vector<String> aminoAcidsIndex;
   int currentPosition;
   
   double normalize(int score) const
     {return (score <= -5.0) ? 0.0 : (score >= 5.0) ? 1.0 : 0.5 + 0.1 * score;}
   
-  double entropy(double values[AminoAcidDictionary::numAminoAcids]) const
+  double entropy(double values[]) const
   {
     double res = 0;
-    for (size_t i = 0; i < AminoAcidDictionary::numAminoAcids; ++i)
+    for (size_t i = 0; i < aminoAcidTypeEnumeration()->getNumElements(); ++i)
       if (values[i])
         res -= values[i] * log2(values[i]);
     return res;
-  } 
+  }
+  
+  void setPssmScore(size_t position, size_t index, double value)
+  {
+    pssm->getVariable(position).getObjectAndCast<DiscreteProbabilityDistribution>()->setVariable(index, value);
+  }
 };
 
 }; /* namespace lbcpp */

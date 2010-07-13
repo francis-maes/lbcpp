@@ -36,6 +36,7 @@
 # include "Data/Variable.h"
 # include "Data/Function.h"
 # include "Data/Stream.h"
+# include "Data/Consumer.h"
 # include "Data/Vector.h"
 # include "Data/SymmetricMatrix.h"
 # include "Data/Predicate.h"

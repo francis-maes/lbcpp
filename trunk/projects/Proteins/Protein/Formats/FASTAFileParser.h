@@ -9,16 +9,19 @@
 #ifndef LBCPP_PROTEINS_FORMATS_FASTA_FILE_PARSER_H_
 # define LBCPP_PROTEINS_FORMATS_FASTA_FILE_PARSER_H_
 
-# include "../ProteinObject.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class FASTAFileParser : public TextObjectParser
+class FASTAFileParser : public TextParser
 {
 public:
   FASTAFileParser(const File& file)
-    : TextObjectParser(file) {}
+    : TextParser(file) {}
+  
+  virtual TypePtr getElementsType() const
+    {return proteinClass();}
   
   virtual void parseBegin()
     {}
@@ -43,7 +46,7 @@ public:
     flush();
     return true;
   }
-  
+
 private:
   String currentName;
   String currentAminoAcidSequence;
@@ -51,7 +54,11 @@ private:
   void flush()
   {
     if (currentName.isNotEmpty() && currentAminoAcidSequence.isNotEmpty())
-      setResult(ProteinObject::createFromAminoAcidSequence(currentName, currentAminoAcidSequence));
+    {
+      ProteinPtr res = new Protein(currentName);
+      res->setPrimaryStructure(currentAminoAcidSequence);
+      setResult(res);
+    }
     currentName = String::empty;
     currentAminoAcidSequence = String::empty;
   }

@@ -16,6 +16,7 @@
 namespace lbcpp
 {
 
+/*
 class ProteinBetaStrandBond : public Object
 {
 public:
@@ -222,20 +223,20 @@ public:
         double p = contactMap->getScore(i, j);
         image->setPixelAt(i, j, p ? juce::Colours::white : juce::Colours::black);
       }
-/*    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
+*//*    for (std::map<int, std::pair<int, int> >::const_iterator it = betaBridgePartners.begin(); it != betaBridgePartners.end(); ++it)
     {
       if (it->second.first)
         image->setPixelAt(betaMapping[it->first], betaMapping[it->second.first], juce::Colours::red);
       if (it->second.second)
         image->setPixelAt(betaMapping[it->first], betaMapping[it->second.second], juce::Colours::blue);
-    }*/
+    }*//*
 
     savePNG(*image, File(T("C:\\Projets\\LBC++\\projects\\temp\\SmallPDB\\pouet.png")));
     delete image;
   }
 #endif // 0
 
-  ProteinBetaBridgesPtr build(ProteinObjectPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
+  ProteinBetaBridgesPtr build(ProteinPtr protein, const std::map<int, std::pair<int, int> >& betaBridgePartners)
   {
     if (!betaBridgePartners.size())
       return ProteinBetaBridgesPtr();
@@ -276,17 +277,20 @@ public:
 private:
   std::map<size_t, LinkPair> betaLinks;
 };
-
-class DSSPFileParser : public TextObjectParser
+*/
+class DSSPFileParser : public TextParser
 {
 public:
   DSSPFileParser(const File& file, ProteinPtr protein)
-    : TextObjectParser(file), protein(protein)//, firstResidueNumber(-1)
+    : TextParser(file), protein(protein)//, firstResidueNumber(-1)
   {
     jassert(protein->getPrimaryStructure());
     primarySequence = protein->getPrimaryStructure();
     std::cout << "AA: " << primarySequence->toString() << std::endl;
   }
+  
+  virtual TypePtr getElementsType() const
+    {return vectorClass(dsspSecondaryStructureElementEnumeration());}
 
   virtual void parseBegin()
     {serialNumber = 0;}
@@ -404,6 +408,7 @@ public:
     /*
     ** Beta bridge partners
     */
+/*
 #if 0
     String bp1 = line.substring(25, 29).trim();
     String bp2 = line.substring(29, 33).trim();
@@ -423,6 +428,7 @@ public:
         betaBridgePartners[newSerialNumber] = std::make_pair(index1, index2);
     }
 #endif // 0
+*/
     return true;
   }
 /*
