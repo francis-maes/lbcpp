@@ -29,14 +29,14 @@ int main(int argc, char** argv)
   FASTAFileParser fastaParser(fastaFile);
   while (true)
   {
-    ProteinObjectPtr protein = fastaParser.next();
+    ProteinPtr protein = fastaParser.next().getObjectAndCast<Protein>();
     if (!protein)
       break;
     
     String name = protein->getName().substring(0, 5);
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
+    VectorPtr primaryStructure = protein->getPrimaryStructure();
 
-    std::cout << name << " > " << aminoAcidSequence->toString() << std::endl;
+    std::cout << name << " > " << primaryStructure->toString() << std::endl;
     File pdbFile = pdbDirectoryFile.getChildFile(name + T(".pdb"));
     if (!pdbFile.exists())
     {
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     enum {numResiduesPerLine = 13};
     size_t numResidues = 0;
     size_t numLine = 0;
-    for (size_t i = 0; i < aminoAcidSequence->size(); ++i)
+    for (size_t i = 0; i < primaryStructure->size(); ++i)
     {
       if (!numResidues)
       {
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
           *o << " ";
         *o << id << "    128  ";
       }
-      *o << AminoAcidDictionary::getThreeLettersCode((AminoAcidDictionary::Type) aminoAcidSequence->getIndex((int)i)).toUpperCase() << " ";
+      *o << primaryStructure->getObjectAndCast<AminoAcid>(i)->getThreeLettersCode().toUpperCase() << " ";
       
       ++numResidues;
       numResidues %= numResiduesPerLine;

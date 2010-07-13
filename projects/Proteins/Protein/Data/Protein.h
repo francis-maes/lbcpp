@@ -44,11 +44,15 @@ public:
   void setPrimaryStructure(VectorPtr primaryStructure)
     {this->primaryStructure = primaryStructure;}
 
+  void setPrimaryStructure(const String& primaryStructure);
+  
   VectorPtr getPositionSpecificScoringMatrix() const
     {return positionSpecificScoringMatrix;}
 
   void setPositionSpecificScoringMatrix(VectorPtr pssm)
     {positionSpecificScoringMatrix = pssm;}
+  
+  VectorPtr createEmptyPositionSpecificScoringMatrix() const;
 
   /*
   ** Secondary Structure
@@ -100,6 +104,8 @@ public:
 
   VectorPtr getDisorderRegions() const
     {return disorderRegions;}
+  
+  VectorPtr createEmptyDisorderRegions() const;
 
   /*
   ** Contact maps / Distance maps

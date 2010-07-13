@@ -27,7 +27,7 @@ public:
   static TertiaryStructurePtr createFromCAlphaTrace(VectorPtr primaryStructure, CartesianPositionVectorPtr trace);
   //static TertiaryStructurePtr createFromBackbone(VectorPtr primaryStructure, ProteinBackboneBondSequencePtr backbone);
 
-  VectorPtr makeAminoAcidSequence() const;
+  VectorPtr makePrimaryStructure() const;
   CartesianPositionVectorPtr makeCAlphaTrace() const;
   CartesianPositionVectorPtr makeCBetaTrace() const;
   //ProteinBackboneBondSequencePtr makeBackbone() const;

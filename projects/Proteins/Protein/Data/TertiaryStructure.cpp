@@ -85,7 +85,7 @@ TertiaryStructurePtr TertiaryStructure::createFromBackbone(LabelSequencePtr amin
 }
 */
 
-VectorPtr TertiaryStructure::makeAminoAcidSequence() const
+VectorPtr TertiaryStructure::makePrimaryStructure() const
 {
   size_t n = getNumResidues();
   jassert(n);

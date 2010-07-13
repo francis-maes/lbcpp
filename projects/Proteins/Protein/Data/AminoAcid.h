@@ -75,7 +75,14 @@ public:
     {String res; res += getOneLetterCode(); return res;}
 
   virtual Variable getVariable(size_t index) const;
+  
+  virtual bool isStandard() const
+    {return type < 20;}
 
+  static Variable fromOneLetterCode(juce::tchar code);
+  
+  static Variable fromThreeLettersCode(const String& code);
+  
 private:
   friend class AminoAcidClass;
 
@@ -91,8 +98,6 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<AminoAcid> AminoAcidPtr;
-
-Variable getAminoAcidFromOneLetterCode(juce::tchar code);
   
 extern CollectionPtr aminoAcidCollection();
 

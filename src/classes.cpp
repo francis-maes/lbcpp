@@ -12,7 +12,10 @@ using namespace lbcpp;
 // new
 extern void declareClassClasses();
 extern void declareObjectClasses();
+extern void declareFunctionClasses();
 extern void declareContainerClasses();
+extern void declareStreamClasses();
+extern void declareConsumerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
 extern void declareRepresentationClasses();
@@ -26,7 +29,10 @@ void declareObjectRelatedClasses()
 {
   // new
   declareObjectClasses();
+  declareFunctionClasses();
   declareContainerClasses();
+  declareConsumerClasses();
+  declareStreamClasses();
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
   declareRepresentationClasses();
