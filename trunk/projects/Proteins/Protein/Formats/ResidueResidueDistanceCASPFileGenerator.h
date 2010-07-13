@@ -23,21 +23,21 @@ public:
   virtual String getFormatSpecificationCode() const
     {return T("RR");}
 
-  virtual void printPredictionData(ProteinObjectPtr protein)
+  virtual void printPredictionData(ProteinPtr protein)
   {
     size_t n = protein->getLength();
 
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    printAminoAcidSequence(aminoAcidSequence);
+    VectorPtr primaryStructure = protein->getPrimaryStructure();
+    printPrimarySequence(primaryStructure);
     
-    ScoreSymmetricMatrixPtr residueResidueContactMatrix8Cb = protein->getResidueResidueContactMatrix8Cb();
+    SymmetricMatrixPtr residueResidueContactMatrix8Cb = protein->getContactMap(8, true);
     jassert(residueResidueContactMatrix8Cb && residueResidueContactMatrix8Cb->getDimension() == n);
     size_t lineCount = 0;
     for (size_t i = 0; i < n; ++i)
     {
       for (size_t j = i + 6; j < n; ++j)
       {
-        double probability = residueResidueContactMatrix8Cb->getScore(i, j);
+        double probability = residueResidueContactMatrix8Cb->getElement(i, j).getDouble();
         jassert(probability >= 0.0 && probability <= 1.0);
         print(lbcpp::toString(i + 1) + T(" ") + lbcpp::toString(j + 1) + T(" 0 8 ") + String(probability, 2), true);
         ++lineCount;
@@ -45,12 +45,12 @@ public:
     }
   }
 
-  void printAminoAcidSequence(LabelSequencePtr aminoAcidSequence)
+  void printPrimarySequence(VectorPtr primaryStructure)
   {
     enum {numAminoAcidsPerLine = 50};
 
     size_t begin = 0;
-    size_t length = aminoAcidSequence->size();
+    size_t length = primaryStructure->size();
     while (begin < length)
     {
       size_t end = begin + numAminoAcidsPerLine;
@@ -59,7 +59,7 @@ public:
 
       String line;
       for (size_t i = begin; i < end; ++i)
-        line += aminoAcidSequence->getString(i);
+        line += aminoAcidCollection()->getElement(primaryStructure->getVariable(i).getInteger()).dynamicCast<AminoAcid>()->getOneLetterCode();
       jassert(line.length() <= numAminoAcidsPerLine);
       print(line, true);
 

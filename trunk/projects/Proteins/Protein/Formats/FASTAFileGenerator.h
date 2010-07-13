@@ -19,9 +19,6 @@ class FASTAFileGenerator : public TextPrinter
 public:
   FASTAFileGenerator(const File& file)
     : TextPrinter(file) {}
-  
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
 
   virtual void consume(const Variable& object)
   {

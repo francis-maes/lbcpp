@@ -23,19 +23,20 @@ public:
   virtual String getFormatSpecificationCode() const
     {return T("DR");}
 
-  virtual void printPredictionData(ProteinObjectPtr protein)
+  virtual void printPredictionData(ProteinPtr protein)
   {
     size_t n = protein->getLength();
 
-    LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-    ScalarSequencePtr disorderProbabilitySequence = protein->getDisorderProbabilitySequence();
-    jassert(disorderProbabilitySequence);
+    VectorPtr primaryStructure = protein->getPrimaryStructure();
+    VectorPtr disorderRegions = protein->getDisorderRegions();
+    jassert(disorderRegions);
     
     for (size_t i = 0; i < n; ++i)
     {
-      double disorderProbability = disorderProbabilitySequence->getValue(i);
-      print(aminoAcidSequence->getString(i) + T(" ") + 
-        (disorderProbability > 0.5 ? T("D") : T("O")) + T(" ") + 
+      double disorderProbability = disorderRegions->getVariable(i).getDouble();
+      print(String(aminoAcidCollection()->getElement(primaryStructure->getVariable(i).getInteger()).dynamicCast<AminoAcid>()->getOneLetterCode())
+            + 
+        (disorderProbability > 0.5 ? T(" D") : T(" O")) + T("  ") + 
         String(disorderProbability, 2), true);
     }
   }
