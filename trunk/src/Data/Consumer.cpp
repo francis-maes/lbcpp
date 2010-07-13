@@ -35,7 +35,7 @@ void Consumer::consumeContainer(ContainerPtr container)
 }
 
 /*
- ** TextObjectPrinter
+ ** TextPrinter
  */
 TextPrinter::TextPrinter(OutputStream* newOutputStream)
   : ostr(newOutputStream) {}

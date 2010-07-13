@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "Protein.h"
+#include "../Formats/PDBFileParser.h"
 using namespace lbcpp;
 
 class ProteinClass : public DynamicClass
@@ -46,6 +47,38 @@ extern ClassPtr lbcpp::proteinClass()
   {static ClassPtr res = Class::get(T("Protein")); return res;}
 
 ///////////////////
+
+ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
+{
+  ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant));
+  if (!parser->next())
+    return ProteinPtr();
+  
+  std::vector<ProteinPtr> proteins = parser->getAllChains();
+  jassert(proteins.size());
+  ProteinPtr res = proteins[0];
+  if (proteins.size() > 1)
+  {
+    size_t chainSize = proteins[0]->getLength();
+    for (size_t i = 1; i < proteins.size(); ++i)
+      if (proteins[i]->getLength() != chainSize)
+      {
+        for (size_t j = 0; j < proteins.size(); ++j)
+          std::cerr << "Chain Size: " << proteins[j]->getLength() << std::endl;
+        Object::error(T("ProteinObject::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
+        return ProteinPtr();
+      }
+  }
+  
+  VectorPtr primaryStructure = res->getPrimaryStructure();
+  jassert(primaryStructure);
+  TertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
+  jassert(tertiaryStructure && tertiaryStructure->getNumResidues() == primaryStructure->getNumVariables());
+  return res;
+}
+
+void Protein::saveToPDBFile(const File& pdbFile)
+  {ConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinPtr(this));}
 
 void Protein::setPrimaryStructure(const String& primaryStructure)
 {
