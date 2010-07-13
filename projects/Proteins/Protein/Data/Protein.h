@@ -20,6 +20,9 @@
 namespace lbcpp
 {
 
+class Protein;
+typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
+  
 class Protein : public NameableObject
 {
 public:
@@ -27,6 +30,10 @@ public:
     : NameableObject(name) {}
 
   Protein() {}
+  
+  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
+  
+  void saveToPDBFile(const File& pdbFile);
 
   virtual VariableReference getVariableReference(size_t index);
 
@@ -162,7 +169,6 @@ protected:
   TertiaryStructurePtr tertiaryStructure;
 };
 
-typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 extern ClassPtr proteinClass();
 
 }; /* namespace lbcpp */

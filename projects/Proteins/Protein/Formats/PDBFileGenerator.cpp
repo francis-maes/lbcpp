@@ -10,17 +10,17 @@
 using namespace lbcpp;
 
 PDBFileGenerator::PDBFileGenerator(const File& file)
-  : TextObjectPrinter(file) {}
+  : TextPrinter(file) {}
 
 void PDBFileGenerator::consume(ObjectPtr object)
 {
-  ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
+  ProteinPtr protein = object.dynamicCast<Protein>();
   jassert(protein);
   size_t n = protein->getLength();
 
-  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-  jassert(aminoAcidSequence);
-  ProteinTertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
+  VectorPtr primaryStructure = protein->getPrimaryStructure();
+  jassert(primaryStructure);
+  TertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
   jassert(tertiaryStructure);
 
   /*
@@ -36,7 +36,7 @@ void PDBFileGenerator::consume(ObjectPtr object)
   */
   std::vector<String> residueNames(n);
   for (size_t i = 0; i < n; ++i)
-    residueNames[i] = AminoAcidDictionary::getThreeLettersCode((AminoAcidDictionary::Type)aminoAcidSequence->getIndex(i)).toUpperCase();
+    residueNames[i] = primaryStructure->getObjectAndCast<AminoAcid>(i)->getThreeLettersCode();
   size_t firstResidueIndex = 0;
   size_t seqResIndex = 1;
   while (firstResidueIndex < n)
@@ -48,11 +48,11 @@ void PDBFileGenerator::consume(ObjectPtr object)
   size_t atomNumber = 1;
   for (size_t i = 0; i < n; ++i)
   {
-    ProteinResidueAtomsPtr residue = tertiaryStructure->getResidue(i);
+    ResiduePtr residue = tertiaryStructure->getResidue(i);
     if (residue)
       for (size_t j = 0; j < residue->getNumAtoms(); ++j)
       {
-        ProteinAtomPtr atom = residue->getAtom(j);
+        AtomPtr atom = residue->getAtom(j);
         jassert(atom->getPosition().exists());
         jassert(isNumberValid(atom->getX()) && isNumberValid(atom->getY()) && isNumberValid(atom->getZ()));
         print(makeAtomLine(atomNumber++, atom->getName(), residue->getName(), String::empty,

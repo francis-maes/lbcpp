@@ -78,7 +78,7 @@ ProteinObjectPtr ProteinObject::createFromPDB(const File& pdbFile, bool beTolera
 }
 
 void ProteinObject::saveToPDBFile(const File& pdbFile)
-  {ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinObjectPtr(this));}
+{jassert(false);}//ObjectConsumerPtr(new PDBFileGenerator(pdbFile))->consume(ProteinObjectPtr(this));}
 
 void ProteinObject::saveToFASTAFile(const File& fastaFile)
   {jassert(false);}//ObjectConsumerPtr(new FASTAFileGenerator(fastaFile))->consume(ProteinObjectPtr(this));}

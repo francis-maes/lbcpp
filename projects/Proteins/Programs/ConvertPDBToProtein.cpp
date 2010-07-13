@@ -7,9 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/ProteinObject.h"
-#include "../Protein/AminoAcidDictionary.h"
-#include "../Protein/SecondaryStructureDictionary.h"
+#include "../Protein/Data/Protein.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -17,7 +15,7 @@ extern void declareProteinClasses();
 bool convertPDBToProtein(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinObjectPtr protein = ProteinObject::createFromPDB(inputFile, false);
+  ProteinPtr protein = Protein::createFromPDB(inputFile, false);
   if (!protein)
     return false;
  
@@ -26,14 +24,14 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
   {
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
   }
-  protein->saveToFile(output);
+  Variable(protein).saveToFile(output);
   return true;
 }
 
 bool convertProteinToPDB(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
+  ProteinPtr protein = Protein::createFromFile(inputFile);
   if (!protein)
     return false;
   

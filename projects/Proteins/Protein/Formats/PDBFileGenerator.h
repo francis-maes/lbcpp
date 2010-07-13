@@ -9,15 +9,18 @@
 #ifndef LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
 # define LBCPP_PROTEIN_FORMATS_PDB_FILE_GENERATOR_H_
 
-# include "../ProteinObject.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class PDBFileGenerator : public TextObjectPrinter
+class PDBFileGenerator : public TextPrinter
 {
 public:
   PDBFileGenerator(const File& file);
+  
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
 
   virtual void consume(ObjectPtr object);
 
