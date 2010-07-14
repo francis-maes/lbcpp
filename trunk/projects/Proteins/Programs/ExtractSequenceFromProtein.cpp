@@ -1,7 +1,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../Programs/ArgumentSet.h"
-#include "Protein/ProteinObject.h"
+#include "Data/Protein.h"
 
 using namespace lbcpp;
 
@@ -31,17 +31,17 @@ int main(int argc, char** argv)
   }
   
   juce::OwnedArray<File> proteinFiles;
-  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.protein"));
+  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.xml"));
   
   for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
   {
-    ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
+    ProteinPtr protein = Protein::createFromXmlFile(*proteinFiles[i]);
     File outputFile = outputDirectory.getChildFile(proteinFiles[i]->getFileNameWithoutExtension() + T(".seq"));
     
-    std::cout << "Extracting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
+    std::cout << "Extracting primary structure of " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
 
     OutputStream* o = outputFile.createOutputStream();
-    *o << protein->getAminoAcidSequence()->toString();
+    *o << protein->getPrimaryStructure()->toString();
     delete o;
     
     std::cout << "OK" << std::endl;
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
   }
   
   juce::OwnedArray<File> proteinFiles;
-  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.protein"));
+  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.xml"));
   
   File outputFile = outputDirectory.getChildFile(T("L") + lbcpp::toString(minimumLength) + T("-") + lbcpp::toString(maximumLength) + T("DB"));
   outputFile.deleteFile();
@@ -82,16 +82,14 @@ int main(int argc, char** argv)
   
   for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
   {
-    ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
+    ProteinPtr protein = Protein::createFromXmlFile(*proteinFiles[i]);
 
     if (minimumLength > (int)protein->getLength() ||  maximumLength < (int)protein->getLength())
       continue;
 
     
     std::cout << "Selecting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
-
     *o << protein->getName() << '\t' << lbcpp::toString(protein->getLength()) << '\n';
-    
     std::cout << "OK" << std::endl;
   }
   delete o;
@@ -115,7 +113,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
+  ProteinPtr protein = Protein::createFromXmlFile(inputFile);
   if (!protein)
   {
     std::cout << "Invalid protein !" << std::endl;
@@ -129,24 +127,24 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef FEATURES
-static void generateFeatures(ProteinObjectPtr protein, int position, OutputStream* o)
+static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
 {
-  LabelSequencePtr aa = protein->getAminoAcidSequence();
+  VectorPtr primaryStructure = protein->getPrimaryStructure();
   if (position < 0)
-    *o << AminoAcidDictionary::unknown + 1;
+    *o << Variable::missingValue(aminoAcidTypeEnumeration()).getInteger();
   else if (position >= (int)protein->getLength())
-    *o << AminoAcidDictionary::unknown + 2;
+    *o << Variable::missingValue(aminoAcidTypeEnumeration()).getInteger() + 1;
   else
-    *o << aa->getIndex(position);
+    *o << primaryStructure->getVariable(position).getInteger();
   *o << " ";
 
-  ScoreVectorSequencePtr pssm = protein->getPositionSpecificScoringMatrix();
+  VectorPtr pssm = protein->getPositionSpecificScoringMatrix();
   if (position < 0 || position >= (int)protein->getLength())
-    for (size_t i = 0; i < pssm->getNumScores(); ++i)
+    for (size_t i = 0; i < pssm->getNumVariables(); ++i)
       *o << "0 ";
   else
-    for (size_t i = 0; i < pssm->getNumScores(); ++i)
-      *o << pssm->getScore(position, i) << " ";
+    for (size_t i = 0; i < pssm->getNumVariables(); ++i)
+      *o << pssm->getObjectAndCast<DiscreteProbabilityDistribution>(position)->getVariable(i).getDouble() << " ";
 }
 
 int main(int argc, char** argv)
@@ -174,7 +172,7 @@ int main(int argc, char** argv)
   }
   
   juce::OwnedArray<File> proteinFiles;
-  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.protein"));
+  proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.xml"));
   nbProteins = proteinFiles.size();
 
   if (outputFile.exists())
@@ -186,10 +184,10 @@ int main(int argc, char** argv)
     std::cout << "Extracting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
     std::cout.flush();
 
-    ProteinObjectPtr protein = ProteinObject::createFromFile(*proteinFiles[i]);
+    ProteinPtr protein = Protein::createFromXmlFile(*proteinFiles[i]);
     protein->computeMissingFields();
 
-    LabelSequencePtr ss3 = protein->getSecondaryStructureSequence();
+    VectorPtr ss3 = protein->getSecondaryStructure();
     if (!ss3)
     {
       std::cout << "Skipped - No SS3 available" << std::endl;
@@ -198,7 +196,7 @@ int main(int argc, char** argv)
     ++nbValidProteins;
     for (int j = 0; j < (int)protein->getLength(); ++j)
     {
-      int ss3Value = ss3->getIndex(j);
+      int ss3Value = ss3->getVariable(j).getInteger();
       if (ss3Value == -1)
       {
         ++nbSkippedExamples;

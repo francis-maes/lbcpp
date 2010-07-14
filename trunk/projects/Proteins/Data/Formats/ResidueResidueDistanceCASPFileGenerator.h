@@ -59,7 +59,7 @@ public:
 
       String line;
       for (size_t i = begin; i < end; ++i)
-        line += aminoAcidCollection()->getElement(primaryStructure->getVariable(i).getInteger()).dynamicCast<AminoAcid>()->getOneLetterCode();
+        line += AminoAcid::toOneLetterCode((AminoAcidType)primaryStructure->getVariable(i).getInteger());
       jassert(line.length() <= numAminoAcidsPerLine);
       print(line, true);
 

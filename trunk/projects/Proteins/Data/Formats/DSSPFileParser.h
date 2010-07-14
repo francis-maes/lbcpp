@@ -80,7 +80,7 @@ public:
     */
     juce::tchar aminoAcidCode = line.substring(13, 14).trim().getLastCharacter();
     AminoAcidType aminoAcidType = (AminoAcidType)primarySequence->getVariable(residueNumber).getInteger();
-    juce::tchar expectedAminoAcid = AminoAcid::getOneLetterCode(aminoAcidType);
+    juce::tchar expectedAminoAcid = AminoAcid::toOneLetterCode(aminoAcidType);
 
     if (aminoAcidCode != expectedAminoAcid)
     {

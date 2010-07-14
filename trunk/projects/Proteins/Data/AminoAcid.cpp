@@ -51,7 +51,7 @@ Variable AminoAcid::fromOneLetterCode(juce::tchar code)
 Variable AminoAcid::fromThreeLettersCode(const String& code)
 {
   for (size_t i = 0; i < 23; ++i)
-    if (code == String(threeLettersCodes[i]).toUpperCase())
+    if (code.toUpperCase() == String(threeLettersCodes[i]).toUpperCase())
       return Variable(i, aminoAcidTypeEnumeration());
   return Variable::missingValue(aminoAcidTypeEnumeration());
 }
@@ -62,7 +62,7 @@ juce::tchar AminoAcid::getOneLetterCode() const
   return oneLetterCodes[type];
 }
 
-juce::tchar AminoAcid::getOneLetterCode(AminoAcidType type)
+juce::tchar AminoAcid::toOneLetterCode(AminoAcidType type)
 {
   jassert((int)type < oneLetterCodes.length());
   return oneLetterCodes[type];
@@ -72,6 +72,12 @@ String AminoAcid::getThreeLettersCode() const
 {
   jassert((size_t)type < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ));
   return threeLettersCodes[type];
+}
+
+String AminoAcid::toThreeLettersCode(AminoAcidType type)
+{
+  jassert((size_t)type < sizeof (threeLettersCodes) / sizeof (const juce::tchar* ));
+  return String(threeLettersCodes[type]);
 }
 
 AminoAcidCategory1 AminoAcid::getCategory1() const
