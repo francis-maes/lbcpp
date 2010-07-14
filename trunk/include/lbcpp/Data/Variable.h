@@ -67,6 +67,9 @@ public:
 
   TypePtr getType() const;
   String getTypeName() const;
+  
+  bool inheritsFrom(TypePtr baseType) const
+    {return getType()->inheritsFrom(baseType);}
 
   operator bool() const;
   operator ObjectPtr() const;

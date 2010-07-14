@@ -45,7 +45,8 @@ public:
   virtual VariableReference getVariableReference(size_t index);
 
   Variable createEmptyTarget(size_t index) const;
-
+  VectorPtr createEmptyProbabilitySequence() const;
+  
   size_t getLength() const
     {return primaryStructure ? primaryStructure->size() : 0;}
 
@@ -102,8 +103,6 @@ public:
   VectorPtr getSolventAccessibility() const
     {return solventAccessibility;}
 
-  VectorPtr createEmptySolventAccesibility() const;
-
   void setSolventAccessibilityAt20p(VectorPtr solventAccessibilityAt20p)
     {this->solventAccessibilityAt20p = solventAccessibilityAt20p;}
 
@@ -119,8 +118,6 @@ public:
   VectorPtr getDisorderRegions() const
     {return disorderRegions;}
   
-  VectorPtr createEmptyDisorderRegions() const;
-
   /*
   ** Contact maps / Distance maps
   */

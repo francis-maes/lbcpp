@@ -23,7 +23,7 @@ public:
     //pssmEvaluator(scoreVectorSequenceRegressionErrorEvaluator(T("PSSM"))),
     secondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS3"))),
     dsspSecondaryStructureEvaluator(sequenceLabelingAccuracyEvaluator(T("SS8"))),
-    solventAccesibility2StateEvaluator(sequenceLabelingAccuracyEvaluator(T("SA2"))),
+    solventAccesibility2StateEvaluator(binarySequenceLabelingConfusionEvaluator(T("SA2"))),
     disorderEvaluator(binarySequenceLabelingConfusionEvaluator(T("DR"))),
     //calphaBondsEvaluator(new BondCoordinatesSequenceEvaluator(T("CAB"))),
     //backboneBondEvaluator(new ProteinBackboneBondSequenceEvaluator(T("BBB"))),
@@ -67,7 +67,7 @@ public:
     //pssmEvaluator->addPrediction(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix());
     secondaryStructureEvaluator->addPrediction(predicted->getSecondaryStructure(), correct->getSecondaryStructure());
     dsspSecondaryStructureEvaluator->addPrediction(predicted->getDSSPSecondaryStructure(), correct->getDSSPSecondaryStructure());
-    solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibility(), correct->getSolventAccessibility());
+    solventAccesibility2StateEvaluator->addPrediction(predicted->getSolventAccessibilityAt20p(), correct->getSolventAccessibilityAt20p());
     disorderEvaluator->addPrediction(predicted->getDisorderRegions(), correct->getDisorderRegions());
     //calphaBondsEvaluator->addPrediction(predicted->getCAlphaBondSequence(), correct->getCAlphaBondSequence());
     //backboneBondEvaluator->addPrediction(predicted->getBackboneBondSequence(), correct->getBackboneBondSequence());

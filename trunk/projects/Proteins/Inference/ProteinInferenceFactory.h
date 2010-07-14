@@ -26,14 +26,18 @@ public:
   */
   virtual InferencePtr createInference(const String& targetName) const;
   virtual InferencePtr createTargetInference(const String& targetName) const;
-  virtual InferencePtr createSequenceLabelingInference(const String& targetName) const;
+  
+  virtual InferencePtr createLabelSequenceInference(const String& targetName) const;
+  virtual InferencePtr createProbabilitySequenceInference(const String& targetName) const;
 
   /*
   ** Perceptions
   */
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const;
-  virtual void createPrimaryStructureResiduePerception(CompositePerceptionPtr res) const;
-  virtual void createPositionSpecificScoringMatrixResiduePerception(CompositePerceptionPtr res) const;
+
+  virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const;
+  virtual PerceptionPtr createProbabilitySequencePerception(const String& targetName) const;
+  virtual PerceptionPtr createPositionSpecificScoringMatrixPerception() const;
 
   /*
   ** Low level inferences

@@ -39,19 +39,22 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     ContainerPtr container = input[0].getObjectAndCast<Container>();
-    int startPosition = input[1].getInteger() - (int)(windowSize / 2);
-    
-    for (size_t i = 0; i < windowSize; ++i)
+    if (container)
     {
-      int position = startPosition + (int)i;
-      Variable variable = position >= 0 && position < (int)container->size()
-          ? container->getVariable(position)
-          : Variable::missingValue(elementsType);
+      int startPosition = input[1].getInteger() - (int)(windowSize / 2);
+      
+      for (size_t i = 0; i < windowSize; ++i)
+      {
+        int position = startPosition + (int)i;
+        Variable variable = position >= 0 && position < (int)container->size()
+            ? container->getVariable(position)
+            : Variable::missingValue(elementsType);
 
-      if (decorated)
-        callback->sense(i, decorated, variable);
-      else
-        callback->sense(i, variable);
+        if (decorated)
+          callback->sense(i, decorated, variable);
+        else
+          callback->sense(i, variable);
+      }
     }
   }
 

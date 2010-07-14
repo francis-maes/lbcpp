@@ -44,7 +44,7 @@ public:
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
         dsspSecondaryStructureSequence = protein->createEmptyDSSPSecondaryStructure();
-        solventAccesibilitySequence = protein->createEmptySolventAccesibility();
+        solventAccesibilitySequence = protein->createEmptyProbabilitySequence();
         ++serialNumber;
       }
       return true;

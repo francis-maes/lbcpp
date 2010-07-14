@@ -257,7 +257,7 @@ protected:
 inline EvaluatorPtr scoreVectorSequenceRegressionErrorEvaluator(const String& name)
   {return new ScoreVectorSequenceRegressionEvaluator(name);}
 inline EvaluatorPtr oldSequenceLabelingAccuracyEvaluator(const String& name)
-  {return objectContainerEvaluator(name, classificationAccuracyEvaluator(name));}
+{return EvaluatorPtr();}
 
 class ProteinEvaluator : public Evaluator
 {
