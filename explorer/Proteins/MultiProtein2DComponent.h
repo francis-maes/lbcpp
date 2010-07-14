@@ -18,8 +18,8 @@ namespace lbcpp
 class MultiProtein2DConfiguration : public Object
 {
 public:
-  MultiProtein2DConfiguration(const std::vector<String>& proteinNames, const std::vector< std::pair<String, String> >& mapNames)
-    : protein1(proteinNames.size() > 0 ? 0 : -1), protein2(proteinNames.size() > 1 ? 1 : -1), currentMap(mapNames.size() > 0 ? 0 : -1), proteinNames(proteinNames), mapNames(mapNames)
+  MultiProtein2DConfiguration(const std::vector<String>& proteinNames, const std::vector< std::pair<String, size_t> >& mapIndex)
+    : protein1(proteinNames.size() > 0 ? 0 : -1), protein2(proteinNames.size() > 1 ? 1 : -1), currentMap(mapIndex.size() > 0 ? 0 : -1), proteinNames(proteinNames), mapIndex(mapIndex)
    {}
    
   /*
@@ -47,13 +47,13 @@ public:
   ** Contact Maps
   */
   size_t getNumMaps() const
-    {return mapNames.size();}
+    {return mapIndex.size();}
     
   String getMapFriendlyName(size_t index) const
-    {jassert(index < mapNames.size()); return mapNames[index].first;}
+    {jassert(index < mapIndex.size()); return mapIndex[index].first;}
 
-  String getMapName(size_t index) const
-    {jassert(index < mapNames.size()); return mapNames[index].second;}
+  size_t getMapIndex(size_t index) const
+    {jassert(index < mapIndex.size()); return mapIndex[index].second;}
   
   int getCurrentMap() const
     {return currentMap;}
@@ -65,7 +65,7 @@ protected:
   int protein1, protein2;
   int currentMap;
   std::vector< String > proteinNames;
-  std::vector< std::pair<String, String> > mapNames;
+  std::vector< std::pair<String, size_t> > mapIndex;
 };
 
 typedef ReferenceCountedObjectPtr<MultiProtein2DConfiguration> MultiProtein2DConfigurationPtr;
@@ -131,7 +131,7 @@ private:
 class ContactMapComponent : public Component, public ComponentWithPreferedSize
 {
 public:
-  ContactMapComponent(ScoreSymmetricMatrixPtr map1, ScoreSymmetricMatrixPtr map2)
+  ContactMapComponent(SymmetricMatrixPtr map1, SymmetricMatrixPtr map2)
     : map1(map1), map2(map2), n(0)
   {
     jassert(!map1 || !map2 || map1->getDimension() == map2->getDimension());
@@ -178,15 +178,15 @@ public:
   }
   
 private:
-  ScoreSymmetricMatrixPtr map1;
-  ScoreSymmetricMatrixPtr map2;
+  SymmetricMatrixPtr map1;
+  SymmetricMatrixPtr map2;
   size_t n;
   
-  static Colour selectColour(ScoreSymmetricMatrixPtr map, size_t i, size_t j)
+  static Colour selectColour(SymmetricMatrixPtr map, size_t i, size_t j)
   {
-    if (map->hasScore(i, j))
+    if (map->getElement(i, j))
     {
-      double probability = map->getScore(i, j);
+      double probability = map->getElement(i, j).getDouble();
       if (probability > 0.5)
       {
         // red
@@ -204,7 +204,7 @@ private:
       return Colours::lightgrey;
   }
   
-  void paintEntry(Graphics& g, int x1, int y1, int pixelsPerEntry, ScoreSymmetricMatrixPtr map, size_t i, size_t j)
+  void paintEntry(Graphics& g, int x1, int y1, int pixelsPerEntry, SymmetricMatrixPtr map, size_t i, size_t j)
   {
     if (map)
     {
@@ -217,7 +217,7 @@ private:
 class MultiProtein2DComponent : public Component, public juce::ChangeListener
 {
 public:
-  MultiProtein2DComponent(const std::vector<ProteinObjectPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
+  MultiProtein2DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
     : proteins(proteins), configuration(configuration)
   {
     addAndMakeVisible(configurationComponent = new MultiProtein2DConfigurationComponent(configuration));
@@ -231,8 +231,8 @@ public:
   
   virtual void changeListenerCallback(void* objectThatHasChanged)
   {
-    ScoreSymmetricMatrixPtr map1 = getMap(configuration->getProtein1());
-    ScoreSymmetricMatrixPtr map2 = getMap(configuration->getProtein2());
+    SymmetricMatrixPtr map1 = getMap(configuration->getProtein1());
+    SymmetricMatrixPtr map2 = getMap(configuration->getProtein2());
     viewport->setViewedComponent(new ContactMapComponent(map1, map2));
     viewport->resized();
   }
@@ -248,15 +248,15 @@ protected:
   MultiProtein2DConfigurationComponent* configurationComponent;
   ViewportComponent* viewport;
   
-  std::vector<ProteinObjectPtr> proteins;
+  std::vector<ProteinPtr> proteins;
   MultiProtein2DConfigurationPtr configuration;
 
-  ScoreSymmetricMatrixPtr getMap(int proteinNumber) const
+  SymmetricMatrixPtr getMap(int proteinNumber) const
   {
     int currentMap = configuration->getCurrentMap();
     return currentMap < 0 || proteinNumber < 0
-      ? ScoreSymmetricMatrixPtr()
-      : proteins[proteinNumber]->getObject(configuration->getMapName(currentMap)).dynamicCast<ScoreSymmetricMatrix>();
+      ? SymmetricMatrixPtr()
+      : proteins[proteinNumber]->getVariable(configuration->getMapIndex(currentMap)).getObjectAndCast<SymmetricMatrix>();
   }  
 };
 

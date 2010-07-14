@@ -11,7 +11,7 @@
 
 # include "MultiSequenceComponent.h"
 # include "../Utilities/SplittedLayout.h"
-# include "../../projects/Proteins/Protein/ProteinObject.h"
+# include "../../projects/Proteins/Data/Protein.h"
 
 namespace lbcpp
 {
@@ -19,16 +19,16 @@ namespace lbcpp
 class MultiProtein1DConfiguration : public Object
 {
 public:
-  MultiProtein1DConfiguration(const std::vector<String>& proteinNames, const std::vector< std::pair<String, String> >& sequenceNames)
+  MultiProtein1DConfiguration(const std::vector<String>& proteinNames, const std::vector< std::pair<String, size_t> >& sequenceIndex)
   {
-    proteins.resize(proteinNames.size());
+    proteins.resize(sequenceIndex.size());
     for (size_t i = 0; i < proteins.size(); ++i)
       proteins[i] = std::make_pair(proteinNames[i], true);
-    sequences.resize(sequenceNames.size());
+    sequences.resize(sequenceIndex.size());
     for (size_t i = 0; i < sequences.size(); ++i)
     {
-      sequences[i].name = sequenceNames[i].second;
-      sequences[i].friendlyName = sequenceNames[i].first;
+      sequences[i].index = sequenceIndex[i].second;
+      sequences[i].friendlyName = sequenceIndex[i].first;
       sequences[i].activated = true;
       sequences[i].colour = Colours::white;
     }
@@ -51,7 +51,7 @@ public:
 
   struct SequenceConfiguration
   {
-    String name;
+    size_t index;
     String friendlyName;
     bool activated;
     Colour colour;
@@ -60,8 +60,8 @@ public:
   SequenceConfiguration& getSequence(size_t index)
     {jassert(index < sequences.size()); return sequences[index];}
   
-  String getSequenceName(size_t index) const
-    {jassert(index < sequences.size()); return sequences[index].name;}
+  size_t getSequenceIndex(size_t index) const
+    {jassert(index < sequences.size()); return sequences[index].index;}
 
   String getSequenceFriendlyName(size_t index) const
     {jassert(index < sequences.size()); return sequences[index].friendlyName;}
@@ -155,7 +155,7 @@ private:
 class MultiProtein1DComponent : public SplittedLayout, public juce::ChangeListener
 {
 public:
-  MultiProtein1DComponent(const std::vector<ProteinObjectPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
+  MultiProtein1DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
     : SplittedLayout(new MultiProtein1DConfigurationComponent(configuration), new ViewportComponent(NULL, true, false), 0.16, SplittedLayout::typicalVertical),
       proteins(proteins), configuration(configuration)
   {
@@ -169,13 +169,13 @@ public:
     for (size_t i = 0; i < configuration->getNumSequences(); ++i)
       if (configuration->isSequenceEnabled(i))
       {
-        String sequenceName = configuration->getSequenceName(i);
+        int sequenceIndex = configuration->getSequenceIndex(i);
         String sequenceFriendlyName = configuration->getSequenceFriendlyName(i);
-        std::vector< std::pair<String, ObjectContainerPtr> > sequences;
+        std::vector< std::pair<String, ContainerPtr> > sequences;
         for (size_t j = 0; j < configuration->getNumProteins(); ++j)
           if (configuration->isProteinEnabled(j))
           {
-            ObjectContainerPtr sequence = proteins[j]->getObject(sequenceName).dynamicCast<ObjectContainer>();
+            ContainerPtr sequence = proteins[j]->getVariable(sequenceIndex).getObjectAndCast<Container>();
             if (sequence)
               sequences.push_back(std::make_pair(configuration->getProteinName(j), sequence));
           }
@@ -187,7 +187,7 @@ public:
   }
   
 protected:
-  std::vector<ProteinObjectPtr> proteins;
+  std::vector<ProteinPtr> proteins;
   MultiProtein1DConfigurationPtr configuration;
 
   ViewportComponent* getViewport() const

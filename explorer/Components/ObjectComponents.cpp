@@ -48,6 +48,22 @@ public:
     {}
 };
 
+Component* createComponentForVariable(const Variable& variable, const String& name)
+{
+  if (!variable)
+    return new StringComponent(variable);
+  
+  TypePtr type = variable.getType();
+  if (type->canBeCastedTo(proteinClass()))
+  {
+    ProteinPtr protein = variable.getObjectAndCast<Protein>();
+    protein->computeMissingVariables();
+    return new ProteinComponent(protein, name);
+  }
+
+  return new VariableTreeComponent(variable, name); 
+}
+
 Component* createComponentForObjectImpl(ObjectPtr object, const String& explicitName)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
@@ -80,9 +96,12 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
       }
 
     case FileObject::textFile:
+        return new StringComponent(object);
+
+    case FileObject::xmlFile:
       {
         Variable variable = Variable::createFromFile(fileObject->getFile());
-        return variable ? (Component* )new VariableTreeComponent(variable, name) : (Component* )new StringComponent(object);
+        return createComponentForVariable(variable, name);
       }
 
     case FileObject::binaryFile:
@@ -91,7 +110,11 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
       jassert(false); return NULL;
     };
   }
-
+  
+  if (Variable(object))
+    return createComponentForVariable(Variable(object), name);
+  
+/*
   if (object.dynamicCast<FeatureGenerator>())
     return new FeatureGeneratorComponent(object.dynamicCast<FeatureGenerator>(), name);
 
@@ -190,7 +213,7 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   TablePtr table = object->toTable();
   if (table)
     return new TableComponent(table);
-
+ */
   return new VariableTreeComponent(object, name);
 //  return new StringComponent(object);
 }

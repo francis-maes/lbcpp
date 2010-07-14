@@ -44,6 +44,7 @@ public:
     directory,
     classDirectory,
     nonexistent,
+    xmlFile
   };
 
   Type getType() const
@@ -69,7 +70,12 @@ public:
       else
         beforeZero += data[i];
     if (indexOfZero < 0)
+    {
+      juce::XmlDocument xml(file);
+      if (xml.getDocumentElement(true))
+        return xmlFile;
       return textFile;
+    }
     if (Class::doClassNameExists(beforeZero))
       return classFile;
     return binaryFile;

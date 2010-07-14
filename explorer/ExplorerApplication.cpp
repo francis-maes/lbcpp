@@ -202,8 +202,9 @@ public:
     switch (fileObject->getType())
     {
     case FileObject::textFile:
-      return Variable::createFromFile(file).getObject(); // XML !
-
+      return fileObject;
+    case FileObject::xmlFile:
+      return Variable::createFromFile(file).getObject();
     case FileObject::classFile:
     case FileObject::classDirectory:
       return Object::createFromFile(file);
