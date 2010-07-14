@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class BinaryClassificationInference : public DecoratorInference
+class BinaryClassificationInference : public StaticDecoratorInference
 {
 public:
   BinaryClassificationInference(const String& name, InferencePtr scoreInference)
-    : DecoratorInference(name, scoreInference) {}
+    : StaticDecoratorInference(name, scoreInference) {}
   BinaryClassificationInference() {}
 
   virtual ScalarFunctionPtr getLoss(bool isPositive) const = 0;
@@ -29,8 +29,9 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
+    DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     ScalarFunctionPtr lossFunction;
     if (supervision)
     {
@@ -63,12 +64,14 @@ public:
         lossFunction = lossFunction->multiplyByScalar(supervisionValue);
     }
 
-    return std::make_pair(input, lossFunction);
+    res->setSubInference(decorated, input, lossFunction);
+    return res;
   }
-    
-  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
+   
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
   {
     static const double temperature = 1.0;
+    Variable subInferenceOutput = finalState->getSubOutput();
     if (!subInferenceOutput)
       return Variable();
     double score = subInferenceOutput.getDouble();

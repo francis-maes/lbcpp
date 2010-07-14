@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class CallbackBasedDecoratorInference : public DecoratorInference
+class CallbackBasedDecoratorInference : public StaticDecoratorInference
 {
 public:
   CallbackBasedDecoratorInference(const String& name, InferencePtr decorated, InferenceCallbackPtr callback)
-    : DecoratorInference(name, decorated), callback(callback) {}
+    : StaticDecoratorInference(name, decorated), callback(callback) {}
   CallbackBasedDecoratorInference() {}
  
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

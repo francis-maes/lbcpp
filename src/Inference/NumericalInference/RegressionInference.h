@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class RegressionInference : public DecoratorInference
+class RegressionInference : public StaticDecoratorInference
 {
 public:
   RegressionInference(const String& name, InferencePtr scoreInference)
-    : DecoratorInference(name, scoreInference) {}
+    : StaticDecoratorInference(name, scoreInference) {}
   RegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const = 0;
@@ -29,8 +29,12 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return std::make_pair(input, supervision ? getLoss(supervision.getDouble()) : ScalarFunctionPtr());}
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
+    res->setSubInference(decorated, input, supervision ? getLoss(supervision.getDouble()) : ScalarFunctionPtr());
+    return res;
+  }
 };
 
 class SquareRegressionInference : public RegressionInference

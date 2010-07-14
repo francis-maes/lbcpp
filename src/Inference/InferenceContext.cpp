@@ -23,22 +23,23 @@ Variable InferenceContext::callRunInference(InferencePtr inference, const Variab
 
 Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  std::pair<Variable, Variable> inputAndSupervision = inference->prepareSubInference(input, supervision, returnCode);
+  InferenceContextPtr pthis(this);
+
+  DecoratorInferenceStatePtr state = inference->prepareInference(pthis, input, supervision, returnCode);
+  jassert(state);
   if (returnCode != Inference::finishedReturnCode)
     return Variable();
-  
-  InferencePtr subInference = inference->getSubInference();
-  if (!subInference)
+
+  InferencePtr subInference = state->getSubInference();
+  if (subInference)
   {
-    returnCode = Inference::errorReturnCode;
-    return Variable();
+    Variable subOutput = runInference(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return Variable();
+    state->setSubOutput(subOutput);
   }
   
-  Variable subOutput = runInference(subInference, inputAndSupervision.first, inputAndSupervision.second, returnCode);
-  if (returnCode != Inference::finishedReturnCode)
-    return Variable();
-  
-  return inference->finalizeSubInference(input, supervision, subOutput, returnCode);
+  return inference->finalizeInference(pthis, state, returnCode);
 }
 
 Variable InferenceContext::runSequentialInference(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

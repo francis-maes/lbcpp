@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SequentialInferenceBatchLea..h | A batch learner that            |
+| Filename: SequentialInferenceLearner.h   | A batch learner that            |
 | Author  : Francis Maes                   |  sequentially learns            |
 | Started : 26/05/2010 19:08               |  it sub-inferences              |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_BATCH_LEARNER_SEQUENTIAL_H_
-# define LBCPP_INFERENCE_BATCH_LEARNER_SEQUENTIAL_H_
+#ifndef LBCPP_INFERENCE_META_SEQUENTIAL_LEARNER_H_
+# define LBCPP_INFERENCE_META_SEQUENTIAL_LEARNER_H_
 
 # include <lbcpp/Inference/Inference.h>
 # include <lbcpp/Data/Vector.h>
@@ -16,7 +16,7 @@
 namespace lbcpp
 {
 
-class SequentialInferenceBatchLearner : public Inference
+class SequentialInferenceLearner : public Inference
 {
 public:
   ReturnCode train(InferenceContextPtr context, InferencePtr inf, ContainerPtr trainingData)
@@ -106,4 +106,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_BATCH_LEARNER_SEQUENTIAL_H_
+#endif // !LBCPP_INFERENCE_META_SEQUENTIAL_LEARNER_H_

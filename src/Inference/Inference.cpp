@@ -127,9 +127,10 @@ InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, Enu
 */
 #include "MetaInference/CallbackBasedDecoratorInference.h"
 #include "MetaInference/RunOnSupervisedExamplesInference.h"
-#include "MetaInference/SimulationInferenceBatchLearner.h"
-#include "MetaInference/SequentialInferenceBatchLearner.h"
-#include "MetaInference/ParallelInferenceBatchLearner.h"
+#include "MetaInference/SimulationInferenceLearner.h"
+#include "MetaInference/SequentialInferenceLearner.h"
+#include "MetaInference/ParallelInferenceLearner.h"
+#include "MetaInference/DecoratorInferenceLearner.h"
 
 InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
   {return new RunOnSupervisedExamplesInference(inference);}
@@ -138,26 +139,36 @@ InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, Inferenc
   {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
 InferencePtr lbcpp::simulationInferenceLearner()
-  {return new SimulationInferenceBatchLearner();}
+  {return new SimulationInferenceLearner();}
 
 InferencePtr lbcpp::sequentialInferenceLearner()
-  {return new SequentialInferenceBatchLearner();}
+  {return new SequentialInferenceLearner();}
 
 InferencePtr lbcpp::parallelInferenceLearner()
-  {return new ParallelInferenceBatchLearner();}
+  {return new ParallelInferenceLearner();}
 
+InferencePtr lbcpp::sharedParallelInferenceLearner()
+  {return new SharedParallelInferenceLearner();}
 
-class PostProcessInference : public DecoratorInference
+InferencePtr lbcpp::decoratorInferenceLearner()
+  {return new DecoratorInferenceLearner();}
+
+InferencePtr lbcpp::postProcessInferenceLearner()
+  {return new PostProcessInferenceLearner();}
+
+class PostProcessInference : public StaticDecoratorInference
 {
 public:
   // postProcessingFunction: from (object,any) pair to object
   PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
-    : DecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
-        postProcessingFunction(postProcessingFunction) {}
+    : StaticDecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
+        postProcessingFunction(postProcessingFunction)
+    {setBatchLearner(postProcessInferenceLearner());}
+
   PostProcessInference() {}
   
-  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
-    {return postProcessingFunction->compute(Variable::pair(input, subInferenceOutput));}
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+    {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
 
 protected:
   FunctionPtr postProcessingFunction;
@@ -173,7 +184,8 @@ void declareInferenceClasses()
   */
   LBCPP_DECLARE_ABSTRACT_CLASS(Inference, Object);
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
-      LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);
+      LBCPP_DECLARE_ABSTRACT_CLASS(StaticDecoratorInference, DecoratorInference);
+        LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);
     LBCPP_DECLARE_ABSTRACT_CLASS(ParallelInference, Inference);
       LBCPP_DECLARE_ABSTRACT_CLASS(StaticParallelInference, ParallelInference);
         LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelInference, StaticParallelInference);
@@ -194,16 +206,16 @@ void declareInferenceClasses()
   LBCPP_DECLARE_ABSTRACT_CLASS(ParameterizedInference, Inference);
     LBCPP_DECLARE_CLASS(LinearInference, ParameterizedInference);
 
-    LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationInference, DecoratorInference);
+    LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationInference, StaticDecoratorInference);
       LBCPP_DECLARE_CLASS(BinaryLinearSVMInference, BinaryClassificationInference);
       LBCPP_DECLARE_CLASS(BinaryLogisticRegressionInference, BinaryClassificationInference);
 
-    LBCPP_DECLARE_ABSTRACT_CLASS(RegressionInference, DecoratorInference);
+    LBCPP_DECLARE_ABSTRACT_CLASS(RegressionInference, StaticDecoratorInference);
       LBCPP_DECLARE_CLASS(SquareRegressionInference, RegressionInference);
       LBCPP_DECLARE_CLASS(AbsoluteRegressionInference, RegressionInference);
       LBCPP_DECLARE_CLASS(AngleRegressionInference, RegressionInference);
 
-    LBCPP_DECLARE_CLASS(TransferFunctionDecoratorInference, DecoratorInference);
+    LBCPP_DECLARE_CLASS(TransferFunctionDecoratorInference, StaticDecoratorInference);
 
   /*
   ** Decision Tree
@@ -215,10 +227,13 @@ void declareInferenceClasses()
   /*
   ** Meta
   */
-  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, DecoratorInference);  
-  LBCPP_DECLARE_CLASS(SimulationInferenceBatchLearner, Inference);
-  LBCPP_DECLARE_CLASS(SequentialInferenceBatchLearner, Inference);
-  LBCPP_DECLARE_CLASS(ParallelInferenceBatchLearner, ParallelInference);
+  LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, StaticDecoratorInference);  
+  LBCPP_DECLARE_CLASS(SimulationInferenceLearner, Inference);
+  LBCPP_DECLARE_CLASS(SequentialInferenceLearner, Inference);
+  LBCPP_DECLARE_CLASS(ParallelInferenceLearner, ParallelInference);
+  LBCPP_DECLARE_CLASS(SharedParallelInferenceLearner, DecoratorInference);
+  LBCPP_DECLARE_CLASS(DecoratorInferenceLearner, DecoratorInference);
+    LBCPP_DECLARE_CLASS(PostProcessInferenceLearner, DecoratorInferenceLearner);
   
   LBCPP_DECLARE_CLASS(RunOnSupervisedExamplesInference, ParallelInference);
   LBCPP_DECLARE_ABSTRACT_CLASS(RunSequentialInferenceStepOnExamples, ParallelInference);

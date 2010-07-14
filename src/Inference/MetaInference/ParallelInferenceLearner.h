@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ParallelInferenceBatchLearner.h| A batch learner that            |
+| Filename: ParallelInferenceLearner.h     | A batch learner that            |
 | Author  : Francis Maes                   |  parallely learns               |
 | Started : 26/05/2010 19:08               |  it sub-inferences              |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_BATCH_LEARNER_PARALLEL_H_
-# define LBCPP_INFERENCE_BATCH_LEARNER_PARALLEL_H_
+#ifndef LBCPP_INFERENCE_META_PARALLEL_LEARNER_H_
+# define LBCPP_INFERENCE_META_PARALLEL_LEARNER_H_
 
 # include <lbcpp/Inference/Inference.h>
 # include "RunOnSupervisedExamplesInference.h"
@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class ParallelInferenceBatchLearner : public ParallelInference
+class ParallelInferenceLearner : public ParallelInference
 {
 public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
@@ -74,6 +74,16 @@ public:
     {return Variable();}
 };
 
+class SharedParallelInferenceLearner : public DecoratorInference
+{
+public:
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    // FIXME
+    return new DecoratorInferenceState(input, supervision);
+  }
+};
+
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_BATCH_LEARNER_PARALLEL_H_
+#endif // !LBCPP_INFERENCE_META_PARALLEL_LEARNER_H_

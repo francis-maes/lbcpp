@@ -14,13 +14,27 @@
 namespace lbcpp
 {
 
-class TransferFunctionDecoratorInference : public DecoratorInference
+class TransferFunctionDecoratorInference : public StaticDecoratorInference
 {
 public:
   TransferFunctionDecoratorInference(const String& name, InferencePtr regressionStep, ScalarFunctionPtr transferFunction)
-    : DecoratorInference(name, regressionStep), transferFunction(transferFunction) {}
+    : StaticDecoratorInference(name, regressionStep), transferFunction(transferFunction) {}
   TransferFunctionDecoratorInference() {}
   
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
+    if (supervision)
+    {
+      ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+      jassert(loss);
+      res->setSubInference(decorated, input, transferFunction->composeWith(loss));
+    }
+    else
+      res->setSubInference(decorated, input, Variable());
+    return res;
+  }
+
   virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     if (supervision)
@@ -31,9 +45,12 @@ public:
     }
     return std::make_pair(input, supervision);
   }
-    
-  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subOutput, ReturnCode& returnCode) const
-    {return subOutput ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();}
+   
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+  {
+    Variable subOutput = finalState->getSubOutput();
+    return subOutput ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();
+  }
   
 protected:
   ScalarFunctionPtr transferFunction;

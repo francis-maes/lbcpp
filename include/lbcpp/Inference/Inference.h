@@ -100,6 +100,10 @@ extern InferencePtr extraTreeInference(const String& name, size_t numTrees = 100
 extern InferencePtr simulationInferenceLearner();
 extern InferencePtr sequentialInferenceLearner();
 extern InferencePtr parallelInferenceLearner();
+extern InferencePtr sharedParallelInferenceLearner();
+
+extern InferencePtr decoratorInferenceLearner();
+extern InferencePtr postProcessInferenceLearner();
 
 // Misc
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
