@@ -18,8 +18,8 @@ namespace lbcpp
 class PSSMFileParser : public TextParser
 {
 public:
-  PSSMFileParser(const File& file, VectorPtr primaryStructure)
-    : TextParser(file), primaryStructure(primaryStructure)
+  PSSMFileParser(const File& file, VectorPtr primaryStructure, ErrorHandler& callback = ErrorHandler::getInstance())
+    : TextParser(file, callback), primaryStructure(primaryStructure)
     {}
   
   virtual TypePtr getElementsType() const
@@ -48,7 +48,7 @@ public:
         callback.errorMessage(T("PSSMFileParser::parseLine"), T("Could not recognize PSSM file format"));
         return false;
       }
-      aminoAcidsIndex.resize(20);
+      aminoAcidsIndex.resize(AminoAcid::numStandardAminoAcid);
       ++currentPosition;
       return true;
     }
@@ -76,10 +76,8 @@ public:
       return false;
     }
 
-    size_t numAminoAcids = aminoAcidTypeEnumeration()->getNumElements();
-
     DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration());
-    for (size_t i = 0; i < numAminoAcids; ++i)
+    for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + i * 3;
       String score = line.substring(begin, begin + 3).trim();
@@ -92,7 +90,7 @@ public:
       int index = aminoAcidTypeEnumeration()->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
       if (index < 0)
       {
-        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: ") + aminoAcidsIndex[i]);
+        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
         return false;
       }
       scores->setVariable(index, normalize(scoreI));
@@ -100,7 +98,7 @@ public:
 
     String gapScore = line.substring(153, 157).trim();
     scores->setVariable(20, gapScore.getDoubleValue());
-    scores->setVariable(21, scores->computeEntropy());
+    scores->setVariable(21, scores->computeEntropy() / 10.0);
 
     pssm->setVariable(currentPosition, scores);
 

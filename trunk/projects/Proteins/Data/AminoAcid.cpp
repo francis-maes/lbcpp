@@ -12,6 +12,8 @@ using namespace lbcpp;
 /*
 ** AminoAcid
 */
+const size_t AminoAcid::numStandardAminoAcid = 20;
+
 const String AminoAcid::oneLetterCodes
   = T("ARNDCEQGHILKMFPSTWYVBZJ"); // X
 
@@ -55,6 +57,12 @@ Variable AminoAcid::fromThreeLettersCode(const String& code)
 }
 
 juce::tchar AminoAcid::getOneLetterCode() const
+{
+  jassert((int)type < oneLetterCodes.length());
+  return oneLetterCodes[type];
+}
+
+juce::tchar AminoAcid::getOneLetterCode(AminoAcidType type)
 {
   jassert((int)type < oneLetterCodes.length());
   return oneLetterCodes[type];

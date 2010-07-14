@@ -16,106 +16,106 @@ extern void declareProteinClasses();
 
 using juce::OwnedArray;
 
-File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDirectory)
+File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDirectory, ErrorHandler& callback)
 {
   OwnedArray<File> res;
   otherDirectory.findChildFiles(res, File::findFiles, false, inputFile.getFileNameWithoutExtension() + T(".*"));
   if (res.size() == 0)
   {
-    Object::error(T("findMatchingFileInOtherDirectory"),
+    callback.errorMessage(T("findMatchingFileInOtherDirectory"),
       T("Could not find matching of ") + inputFile.getFileNameWithoutExtension() + T(" in ") + otherDirectory.getFullPathName());
     return File::nonexistent;
   }
   if (res.size() > 1)
   {
-    Object::error(T("findMatchingFileInOtherDirectory"),
+    callback.errorMessage(T("findMatchingFileInOtherDirectory"),
       T("More of one matching files of ") + inputFile.getFileNameWithoutExtension() + T(" in ") + otherDirectory.getFullPathName());
     return File::nonexistent;
   }
   return *res[0];
 }
 
-bool loadPSSMFile(ProteinPtr protein, const File& pssmFile)
+bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, ErrorHandler& callback)
 {
   VectorPtr primaryStructure = protein->getPrimaryStructure();
   jassert(primaryStructure);
-  VectorPtr pssm = StreamPtr(new PSSMFileParser(pssmFile, primaryStructure))->next().getObjectAndCast<Vector>(); 
+  VectorPtr pssm = StreamPtr(new PSSMFileParser(pssmFile, primaryStructure, callback))->next().getObjectAndCast<Vector>(); 
   if (!pssm)
     return false;
   protein->setPositionSpecificScoringMatrix(pssm);
   return true;
 }
 
-bool loadDSSPFile(ProteinPtr protein, const File& dsspFile)
-  {jassert(false); std::cerr << "FIXME!!" << std::endl; return false;}//ObjectStreamPtr(new DSSPFileParser(dsspFile, protein))->next();}
+bool loadDSSPFile(ProteinPtr protein, const File& dsspFile, ErrorHandler& callback)
+  {StreamPtr(new DSSPFileParser(dsspFile, protein, callback))->next(); return true;}
 
-bool loadProteinRelatedFile(ProteinPtr protein, const File& file)
+bool loadProteinRelatedFile(ProteinPtr protein, const File& file, ErrorHandler& callback)
 {
   String ext = file.getFileExtension();
   if (ext == T(".pssm"))
-    return loadPSSMFile(protein, file);
+    return loadPSSMFile(protein, file, callback);
   else if (ext == T(".dssp"))
-    return loadDSSPFile(protein, file);
+    return loadDSSPFile(protein, file, callback);
   else
   {
-    Object::error(T("loadProteinRelatedFile"), T("Unrecognized extension: ") + ext);
+    callback.errorMessage(T("loadProteinRelatedFile"), T("Unrecognized extension: ") + ext);
     return false;
   }
 }
 
-bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile)
+bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile, ErrorHandler& callback)
 {
   std::cout << "Compile " << outputFile.getFileNameWithoutExtension() << "..." << std::endl;
 
   int proteinIndex = -1;
   for (size_t i = 0; i < inputFiles.size(); ++i)
-    if (inputFiles[i].getFileName().endsWith(T(".protein")))
+    if (inputFiles[i].getFileName().endsWith(T(".xml")))
       proteinIndex = (int)i;
 
   if (proteinIndex < 0)
   {
-    Object::error(T("compileProtein"), T("No input protein"));
+    callback.errorMessage(T("compileProtein"), T("No input protein"));
     return false;
   }
 
-  ProteinPtr protein = Protein::createFromFile(inputFiles[proteinIndex]);
+  ProteinPtr protein = Protein::createFromXmlFile(inputFiles[proteinIndex], callback);
   if (!protein)
   {
-    Object::error(T("compileProtein"), T("Could not load protein"));
+    callback.errorMessage(T("compileProtein"), T("Could not load protein"));
     return false;
   }
   
   for (size_t i = 0; i < inputFiles.size(); ++i)
     if (i != (size_t)proteinIndex)
-      if (!loadProteinRelatedFile(protein, inputFiles[i]))
+      if (!loadProteinRelatedFile(protein, inputFiles[i], callback))
         return false;
 
-  protein->saveToFile(outputFile);
+  protein->saveToXmlFile(outputFile);
   return true;
 }
 
-bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
+bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory, ErrorHandler& callback)
 {
   std::vector<File> inputFiles;
   inputFiles.push_back(inputFile);
   for (size_t i = 0; i < otherInputDirectories.size(); ++i)
   {
-    File f = findMatchingFileInOtherDirectory(inputFile, otherInputDirectories[i]);
+    File f = findMatchingFileInOtherDirectory(inputFile, otherInputDirectories[i], callback);
     if (!f.exists())
       return false;
     inputFiles.push_back(f);
   }
-  File outputFile = outputDirectory.getChildFile(inputFile.getFileNameWithoutExtension() + T(".protein"));
-  return compileProtein(inputFiles, outputFile);
+  File outputFile = outputDirectory.getChildFile(inputFile.getFileNameWithoutExtension() + T(".xml"));
+  return compileProtein(inputFiles, outputFile, callback);
 }
 
-void compileProteins(const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
+void compileProteins(const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory, ErrorHandler& callback)
 {
   OwnedArray<File> inputs;
-  mainInputDirectory.findChildFiles(inputs, File::findFiles, false, T("*.protein"));
+  mainInputDirectory.findChildFiles(inputs, File::findFiles, false, T("*.xml"));
   size_t numSuccess = 0;
   for (int i = 0; i < inputs.size(); ++i)
-    if (compileProtein(*inputs[i], otherInputDirectories, outputDirectory))
+    if (compileProtein(*inputs[i], otherInputDirectories, outputDirectory, callback))
       ++numSuccess;
   std::cout << "Succeed to compile " << numSuccess << " / " << inputs.size() << " proteins." << std::endl;
 }
@@ -164,6 +164,6 @@ int main(int argc, char* argv[])
     return 1;
   }
  
-  compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory);
+  compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory, ErrorHandler::getInstance());
   return 0;
 }
