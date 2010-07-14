@@ -115,21 +115,21 @@ InferencePtr lbcpp::dihedralAngleRegressionInference(InferenceOnlineLearnerPtr l
 inline InferencePtr extraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
   {return new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting);}
 
-InferencePtr lbcpp::regressionExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+InferencePtr lbcpp::regressionExtraTreeInference(const String& name, TypePtr inputType, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
-  InferencePtr decisionTreeModel = new RegressionBinaryDecisionTreeInference(name);
+  InferencePtr decisionTreeModel = new RegressionBinaryDecisionTreeInference(name, inputType);
   return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
 }
 
-InferencePtr lbcpp::binaryClassificationExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+InferencePtr lbcpp::binaryClassificationExtraTreeInference(const String& name, TypePtr inputType, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
-  InferencePtr decisionTreeModel = new BinaryClassificationBinaryDecisionTreeInference(name);
+  InferencePtr decisionTreeModel = new BinaryClassificationBinaryDecisionTreeInference(name, inputType);
   return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
 }
 
-InferencePtr lbcpp::classificationExtraTreeInference(const String& name, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+InferencePtr lbcpp::classificationExtraTreeInference(const String& name, TypePtr inputType, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
 {
-  InferencePtr decisionTreeModel = new ClassificationBinaryDecisionTreeInference(name, classes);
+  InferencePtr decisionTreeModel = new ClassificationBinaryDecisionTreeInference(name, inputType, classes);
   return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
 }
 
@@ -167,8 +167,8 @@ InferencePtr lbcpp::staticSequentialInferenceLearner()
 InferencePtr lbcpp::staticParallelInferenceLearner()
   {return new StaticParallelInferenceLearner();}
 
-InferencePtr lbcpp::sharedParallelInferenceLearner()
-  {return new SharedParallelInferenceLearner();}
+InferencePtr lbcpp::sharedParallelInferenceLearner(bool filterUnsupervisedExamples)
+  {return new SharedParallelInferenceLearner(filterUnsupervisedExamples);}
 
 InferencePtr lbcpp::parallelVoteInferenceLearner()
   {return new ParallelVoteInferenceLearner();}
@@ -238,7 +238,7 @@ void declareInferenceClasses()
   /*
   ** Base classes
   */
-  LBCPP_DECLARE_ABSTRACT_CLASS(Inference, Object);
+  LBCPP_DECLARE_ABSTRACT_CLASS(Inference, NameableObject);
     LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
       LBCPP_DECLARE_ABSTRACT_CLASS(StaticDecoratorInference, DecoratorInference);
         LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);

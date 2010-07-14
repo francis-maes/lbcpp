@@ -150,14 +150,12 @@ bool StaticDecoratorInference::saveToFile(const File& file) const
     decorated->saveToFile(file.getChildFile(T("decorated.inference")));
 }
 
-ObjectPtr StaticDecoratorInference::clone() const
+void StaticDecoratorInference::clone(ObjectPtr target) const
 {
-  StaticDecoratorInferencePtr res = createAndCast<StaticDecoratorInference>(getClassName());
-  res->decorated = decorated->clone().dynamicCast<Inference>();
-  res->onlineLearner = onlineLearner ? onlineLearner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
-  res->batchLearner = batchLearner;
-  res->name = name;
-  return res;
+  DecoratorInference::clone(target);
+  StaticDecoratorInferencePtr res = target.staticCast<StaticDecoratorInference>();
+  if (decorated)
+    res->decorated = decorated->cloneAndCast<Inference>();
 }
 
 void StaticDecoratorInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const

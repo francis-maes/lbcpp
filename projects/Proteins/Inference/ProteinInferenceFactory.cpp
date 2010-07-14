@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ProteinInferenceFactory.h"
-#include <lbcpp/Data/Function.h>
+#include <lbcpp/Data/Perception.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 using namespace lbcpp;
 
@@ -72,7 +72,7 @@ public:
 class SequenceProteinTargetInference : public SharedParallelContainerInference
 {
 public:
-  SequenceProteinTargetInference(const String& targetName, InferencePtr elementInference, FunctionPtr perception)
+  SequenceProteinTargetInference(const String& targetName, InferencePtr elementInference, PerceptionPtr perception)
     : SharedParallelContainerInference(targetName, elementInference), perception(perception)
   {
     int index = proteinClass()->findStaticVariable(targetName);
@@ -107,7 +107,7 @@ public:
 
 protected:
   size_t targetIndex;
-  FunctionPtr perception;
+  PerceptionPtr perception;
 };
 
 //////////////////////////////
@@ -136,9 +136,9 @@ InferencePtr ProteinInferenceFactory::createSequenceLabelingInference(const Stri
   TypePtr targetType = getTargetType(targetName);
   EnumerationPtr elementsType = targetType->getTemplateArgument(0).dynamicCast<Enumeration>();
   jassert(elementsType);
-  return InferencePtr(new SequenceProteinTargetInference(targetName,
-    createMultiClassClassifier(targetName, elementsType),
-    createPerception(targetName, true, false)));
+  PerceptionPtr perception = createPerception(targetName, true, false);
+  InferencePtr classifier = createMultiClassClassifier(targetName, perception->getOutputType(), elementsType);
+  return InferencePtr(new SequenceProteinTargetInference(targetName, classifier, perception));
 }
 
 size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const
@@ -153,3 +153,34 @@ TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
 
 InferencePtr ProteinInferenceFactory::addToProteinInference(InferencePtr targetInference, const String& targetName) const
   {return postProcessInference(targetInference, setFieldFunction(getTargetIndex(targetName)));}
+
+void ProteinInferenceFactory::createPrimaryStructureResiduePerception(CompositePerceptionPtr res) const
+  {res->addPerception(T("AA"), applyPerceptionOnProteinVariable(T("primaryStructure"), windowPerception(aminoAcidTypeEnumeration(), 15)));}
+
+void ProteinInferenceFactory::createPositionSpecificScoringMatrixResiduePerception(CompositePerceptionPtr res) const
+{
+  TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
+
+  PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
+  res->addPerception(T("PSSM"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
+    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
+}
+
+PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+{
+  if (is1DTarget)
+  {
+    CompositePerceptionPtr res = new ResidueCompositePerception();
+    createPrimaryStructureResiduePerception(res);
+    createPositionSpecificScoringMatrixResiduePerception(res);
+    return res;
+  }
+  jassert(false);
+  return PerceptionPtr();
+}
+
+PerceptionPtr ProteinInferenceFactory::applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const
+{
+   FunctionPtr selectVariableFunction = selectPairFieldsFunction(proteinClass->findStaticVariable(variableName));
+   return Perception::compose(selectVariableFunction, variablePerception);
+}

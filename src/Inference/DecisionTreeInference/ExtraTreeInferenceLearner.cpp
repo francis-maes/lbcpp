@@ -206,7 +206,11 @@ DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPt
   DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(examples->getElementsType()->getTemplateArgument(1));
   size_t n = examples->size();
   for (size_t i = 0; i < n; ++i)
-    res->increment(examples->getVariable(i)[1]);
+  {
+    Variable output = examples->getVariable(i)[1];
+    jassert(output);
+    res->increment(output);
+  }
   return res;
 }
 

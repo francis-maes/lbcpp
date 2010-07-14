@@ -19,10 +19,13 @@ namespace lbcpp
 class BinaryDecisionTreeInference : public Inference
 {
 public:
-  BinaryDecisionTreeInference(const String& name)
-    : Inference(name) {}
+  BinaryDecisionTreeInference(const String& name, TypePtr inputType)
+    : Inference(name), inputType(inputType) {}
   BinaryDecisionTreeInference()
     {}
+
+  virtual TypePtr getInputType() const
+    {return inputType;}
 
   BinaryDecisionTreePtr getTree() const
     {return tree;}
@@ -30,8 +33,18 @@ public:
   void setTree(BinaryDecisionTreePtr tree)
     {this->tree = tree;}
 
+  virtual void clone(ObjectPtr target) const
+  {
+    Inference::clone(target);
+    ReferenceCountedObjectPtr<BinaryDecisionTreeInference> res = target.staticCast<BinaryDecisionTreeInference>();
+    res->inputType = inputType;
+    if (tree)
+      res->tree = tree->clone();
+  }
+
 protected:
   BinaryDecisionTreePtr tree;
+  TypePtr inputType;
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return tree && tree->getNumNodes() ? tree->makePrediction(input) : Variable();}
@@ -42,12 +55,9 @@ typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTre
 class RegressionBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  RegressionBinaryDecisionTreeInference(const String& name)
-    : BinaryDecisionTreeInference(name) {}
+  RegressionBinaryDecisionTreeInference(const String& name, TypePtr inputType)
+    : BinaryDecisionTreeInference(name, inputType) {}
   RegressionBinaryDecisionTreeInference() {}
-
-  virtual TypePtr getInputType() const
-    {return objectClass();}
 
   virtual TypePtr getSupervisionType() const
     {return doubleType();}
@@ -59,12 +69,9 @@ public:
 class BinaryClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  BinaryClassificationBinaryDecisionTreeInference(const String& name)
-    : BinaryDecisionTreeInference(name) {}
+  BinaryClassificationBinaryDecisionTreeInference(const String& name, TypePtr inputType)
+    : BinaryDecisionTreeInference(name, inputType) {}
   BinaryClassificationBinaryDecisionTreeInference() {}
-
-  virtual TypePtr getInputType() const
-    {return objectClass();}
 
   virtual TypePtr getSupervisionType() const
     {return booleanType();}
@@ -76,15 +83,12 @@ public:
 class ClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  ClassificationBinaryDecisionTreeInference(const String& name, EnumerationPtr classes)
-    : BinaryDecisionTreeInference(name), classes(classes) {}
+  ClassificationBinaryDecisionTreeInference(const String& name, TypePtr inputType, EnumerationPtr classes)
+    : BinaryDecisionTreeInference(name, inputType), classes(classes) {}
   ClassificationBinaryDecisionTreeInference() {}
 
-  virtual TypePtr getInputType() const
-    {return objectClass();}
-
   virtual TypePtr getSupervisionType() const
-    {return sumType(classes, discreteProbabilityDistributionClass(classes));}
+    {return classes;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return discreteProbabilityDistributionClass(classes);}

@@ -58,12 +58,6 @@ void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = 
 //////////////////////////////////////////
 //////////////////////////////////////////
 
-class ResidueCompositePerception : public CompositePerception
-{
-public:
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), integerType());}
-};
 
 // todo: Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
 TypePtr sequenceSeparationDistanceType()
@@ -143,29 +137,29 @@ featureGenerator variableFeatures(Variable variable)
   jassert(false);
 }
 
-FeatureGeneratorPtr representationToFeatures(PerceptionPtr representation, const Variable& input)
+FeatureGeneratorPtr perceptionToFeatures(PerceptionPtr perception, const Variable& input)
 {
-  ObjectPtr object = representation->compute(input);
+  ObjectPtr object = perception->compute(input);
   return variableFeatures(object);
 }
 
-class RepresentationToFeaturesFunction : public Function
+class ConvertToFeaturesPerception : public CompositePerception
 {
 public:
-  RepresentationToFeaturesFunction(PerceptionPtr representation)
-    : representation(representation) {}
+  ConvertToFeaturesPerception(PerceptionPtr perception)
+    : perception(perception) {}
  
   virtual TypePtr getInputType() const
-    {return representation->getInputType();}
+    {return perception->getInputType();}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return Class::get(T("FeatureGenerator"));}
 
-protected:
-  PerceptionPtr representation;
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& handler) const
+    {return variableFeatures(input);}
 
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-    {return representationToFeatures(representation, input);}
+protected:
+  PerceptionPtr perception;
 };
 
 ///////////////////////////////////////// 
@@ -243,61 +237,35 @@ public:
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  virtual FunctionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
-    if (is1DTarget)
-    {
-      CompositePerceptionPtr res = new ResidueCompositePerception();
-
-      FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass->findStaticVariable(T("primaryStructure")));
-      FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass->findStaticVariable(T("positionSpecificScoringMatrix")));
-
-      res->addPerception(T("AA"), Perception::compose(selectPrimaryStructure,
-        windowPerception(aminoAcidTypeEnumeration(), 15)));
-      res->addPerception(T("PSSM"), Perception::compose(selectPSSM,
-        windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
-      return res->flatten();
-    }
-    jassert(false);
-    return FunctionPtr();
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+    return res ? res->flatten() : PerceptionPtr();
   }
 
-  virtual InferencePtr createBinaryClassifier(const String& targetName) const
-    {return binaryClassificationExtraTreeInference(targetName, 10, 10);}
+  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
+    {return binaryClassificationExtraTreeInference(targetName, inputType, 2, 3);}
 
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, classes, 10, 10);}
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
+    {return classificationExtraTreeInference(targetName, inputType, classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  virtual FunctionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
-    if (is1DTarget)
-    {
-      CompositePerceptionPtr res = new ResidueCompositePerception();
-
-      FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass->findStaticVariable(T("primaryStructure")));
-      FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass->findStaticVariable(T("positionSpecificScoringMatrix")));
-
-      res->addPerception(T("AA"), Perception::compose(selectPrimaryStructure,
-        windowPerception(aminoAcidTypeEnumeration(), 15)));
-      res->addPerception(T("PSSM"), Perception::compose(selectPSSM,
-        windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
-      return new RepresentationToFeaturesFunction(res);
-    }
-    jassert(false);
-    return FunctionPtr();
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+    return res ? PerceptionPtr(new ConvertToFeaturesPerception(res)) : PerceptionPtr();
   }
   
 public:
-  virtual InferencePtr createBinaryClassifier(const String& targetName) const
+  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
     {return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));}
 
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
   {
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName);
+    InferencePtr binaryClassifier = createBinaryClassifier(targetName, inputType);
     return oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
   }
 
@@ -336,10 +304,13 @@ public:
     String inferenceClassName = stack->getCurrentInference()->getClassName();
     if (inferenceClassName.contains(T("Learner")) && input.size() == 2)
     {
-      std::cout << "preInferenceCallback: " << inferenceClassName << " => " << input[0] << std::endl
-        << "  num examples: " << input[1].size() << std::endl
+      TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
+      jassert(trainingExamplesType->getNumTemplateArguments() == 2);
+      String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
+      std::cout << "=== Learning " << input[0].getObject()->getName() << " with " << input[1].size() << " " << inputTypeName << "(s) ===" << std::endl;
+/*        << "  num examples: " << input[1].size() << std::endl
         << "  static type: " << input[1].getTypeName() << std::endl
-        << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
+        << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;*/
     }
 
     if (stack->getDepth() == 1)
@@ -371,10 +342,10 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
-    if (inferenceClassName.contains(T("Learner")))
-      std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
+    //if (inferenceClassName.contains(T("Learner")))
+    //  std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
 
-    if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
+    if (inferenceClassName == T("RunOnSupervisedExamplesInference") || inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
     {
       // end of learning iteration
       std::cout << "Evaluating ... " << std::endl;
@@ -440,7 +411,6 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
@@ -528,7 +498,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  inference = classificationExtraTreeInference(T("SS3"), secondaryStructureElementEnumeration(), 100, 15);
+  inference = classificationExtraTreeInference(T("SS3"), flatPerception->getOutputType(), secondaryStructureElementEnumeration(), 100, 15);
   context->train(inference, trainingData);
 
   // evaluate
