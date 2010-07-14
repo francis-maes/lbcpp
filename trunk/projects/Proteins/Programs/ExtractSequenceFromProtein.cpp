@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   
   for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
   {
-    ProteinPtr protein = Protein::createFromXmlFile(*proteinFiles[i]);
+    ProteinPtr protein = Protein::createFromXml(*proteinFiles[i]);
     File outputFile = outputDirectory.getChildFile(proteinFiles[i]->getFileNameWithoutExtension() + T(".seq"));
     
     std::cout << "Extracting primary structure of " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
   
   for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
   {
-    ProteinPtr protein = Protein::createFromXmlFile(*proteinFiles[i]);
+    ProteinPtr protein = Protein::createFromXml(*proteinFiles[i]);
 
     if (minimumLength > (int)protein->getLength() ||  maximumLength < (int)protein->getLength())
       continue;
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  ProteinPtr protein = Protein::createFromXmlFile(inputFile);
+  ProteinPtr protein = Protein::createFromXml(inputFile);
   if (!protein)
   {
     std::cout << "Invalid protein !" << std::endl;
@@ -184,7 +184,7 @@ int main(int argc, char** argv)
     std::cout << "Extracting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
     std::cout.flush();
 
-    ProteinPtr protein = Protein::createFromXmlFile(*proteinFiles[i]);
+    ProteinPtr protein = Protein::createFromXml(*proteinFiles[i]);
     protein->computeMissingFields();
 
     VectorPtr ss3 = protein->getSecondaryStructure();

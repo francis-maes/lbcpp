@@ -78,7 +78,7 @@ bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile,
     return false;
   }
 
-  ProteinPtr protein = Protein::createFromXmlFile(inputFiles[proteinIndex], callback);
+  ProteinPtr protein = Protein::createFromXml(inputFiles[proteinIndex], callback);
   if (!protein)
   {
     callback.errorMessage(T("compileProtein"), T("Could not load protein"));

@@ -8,7 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "../../juce/ConsoleProcess.h"
-#include "../Protein/ProteinObject.h"
+#include "../Data/Protein.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -71,7 +71,7 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
+    ProteinPtr protein = Protein::createFromXml(inputFile);
     if (!protein)
       return jobHasFinished;
     
@@ -99,7 +99,7 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinObjectPtr protein = ProteinObject::createFromFile(inputFile);
+    ProteinPtr protein = Protein::createFromXml(inputFile);
     if (!protein)
       return jobHasFinished;
     
@@ -125,7 +125,7 @@ private:
 void computePSSMsAndDSSPs(const File& inputDirectory, const File& pssmOutputDirectory, const File& dsspOutputDirectory, int numCpus)
 {
   OwnedArray<File> inputFiles;
-  inputDirectory.findChildFiles(inputFiles, File::findFiles, false, T("*.protein"));
+  inputDirectory.findChildFiles(inputFiles, File::findFiles, false, T("*.xml"));
   
   ThreadPool threadPool(numCpus);
   for (int i = 0; i < inputFiles.size(); ++i)
