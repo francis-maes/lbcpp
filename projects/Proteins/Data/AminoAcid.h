@@ -61,6 +61,8 @@ extern EnumerationPtr aminoAcidCategory1Enumeration();
 class AminoAcid : public Object
 {
 public:
+  static const size_t numStandardAminoAcid;
+  
   AminoAcidType getType() const
     {return type;}
 
@@ -82,6 +84,8 @@ public:
   static Variable fromOneLetterCode(juce::tchar code);
   
   static Variable fromThreeLettersCode(const String& code);
+  
+  static juce::tchar getOneLetterCode(AminoAcidType type);
   
 private:
   friend class AminoAcidClass;
