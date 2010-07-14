@@ -29,9 +29,11 @@ int main(int argc, char** argv)
   FASTAFileParser fastaParser(fastaFile);
   while (true)
   {
-    ProteinPtr protein = fastaParser.next().getObjectAndCast<Protein>();
-    if (!protein)
+    Variable variable = fastaParser.next();
+    if (!variable)
       break;
+
+    ProteinPtr protein = variable.getObjectAndCast<Protein>();
     
     String name = protein->getName().substring(0, 5);
     VectorPtr primaryStructure = protein->getPrimaryStructure();
@@ -63,7 +65,7 @@ int main(int argc, char** argv)
           *o << " ";
         *o << id << "    128  ";
       }
-      *o << primaryStructure->getObjectAndCast<AminoAcid>(i)->getThreeLettersCode().toUpperCase() << " ";
+      *o << AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getVariable(i).getInteger()).toUpperCase() << " ";
       
       ++numResidues;
       numResidues %= numResiduesPerLine;

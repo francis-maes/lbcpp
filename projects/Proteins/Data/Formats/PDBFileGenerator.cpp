@@ -9,8 +9,8 @@
 #include "PDBFileGenerator.h"
 using namespace lbcpp;
 
-PDBFileGenerator::PDBFileGenerator(const File& file)
-  : TextPrinter(file) {}
+PDBFileGenerator::PDBFileGenerator(const File& file, ErrorHandler& callback)
+  : TextPrinter(file, callback) {}
 
 void PDBFileGenerator::consume(const Variable& variable)
 {

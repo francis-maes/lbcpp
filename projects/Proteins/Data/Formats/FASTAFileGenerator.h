@@ -18,8 +18,8 @@ namespace lbcpp
 class FASTAFileGenerator : public TextPrinter
 {
 public:
-  FASTAFileGenerator(const File& file)
-    : TextPrinter(file) {}
+  FASTAFileGenerator(const File& file, ErrorHandler& callback = ErrorHandler::getInstance())
+    : TextPrinter(file, callback) {}
 
   virtual void consume(const Variable& variable)
   {

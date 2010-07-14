@@ -31,7 +31,7 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
 bool convertProteinToPDB(const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromXmlFile(inputFile);
+  ProteinPtr protein = Protein::createFromXml(inputFile);
   if (!protein)
     return false;
   

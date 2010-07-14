@@ -18,7 +18,7 @@ namespace lbcpp
 class PDBFileGenerator : public TextPrinter
 {
 public:
-  PDBFileGenerator(const File& file);
+  PDBFileGenerator(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
 
   virtual void consume(const Variable& variable);
 
