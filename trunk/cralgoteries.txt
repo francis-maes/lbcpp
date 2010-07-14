@@ -1,21 +1,24 @@
-Data:
- * implement Protein::computeMissingVariables()
+ContactMaps:
+ * ContactMap inference
+   * Base class ProteinTargetInferenceHelper
+ * Residue pair perceptions
 
-Perception:
- * vector window to histogram
- * distribution entropy
+Perceptions:
+ * vector local histograms
+ * pssm distribution entropy
  * current position
  * global length
- * serialisation of Perceptions
- * residue pair perceptions
+
+Data:
+ * implement Protein::computeMissingVariables(), use minimal proteins when serialising
+
+Serialisation:
+ * Serialisation of Perceptions
+ * Serialisation of inferences
 
 Inference:
- * Vector<Probability> inference
- * Base class ProteinTargetInferenceHelper
- * ContactMap inference
- * Serialisation of inferences
+ * Clean Inference classes
  * ParallelProteinInference
-
 
 Julien:
  * Voir pourquoi les ExtraTree marchent moyen
