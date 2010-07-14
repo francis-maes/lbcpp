@@ -136,3 +136,36 @@ int Variable::compare(const Variable& otherValue) const
   }
   return type->compare(value, otherValue.value);
 }
+
+static void printVariableLine(const Variable& value, std::ostream& ostr, size_t variableNumber, const String& name, int currentDepth)
+{
+  for (int i = 0; i < currentDepth; ++i)
+    ostr << "  ";
+  if (variableNumber != (size_t)-1)
+    ostr << "[" << variableNumber << "] ";
+  ostr << value.getTypeName();
+  if (name.isNotEmpty())
+    ostr << " " << name;
+  String v = value.toString();
+  if (v.length() > 30)
+    v = v.substring(0, 30) + T("...");
+  ostr << " = " << v << std::endl;
+}
+
+static void printVariablesRecursively(const Variable& variable, std::ostream& ostr, int maxDepth, int currentDepth)
+{
+  if (maxDepth >= 0 && currentDepth >= maxDepth)
+    return;
+  TypePtr type = variable.getType();
+  for (size_t i = 0; i < variable.size(); ++i)
+  {
+    printVariableLine(variable[i], ostr, i, variable.getVariableName(i), currentDepth);
+    printVariablesRecursively(variable[i], ostr, maxDepth, currentDepth + 1);
+  }
+}
+
+void Variable::printRecursively(std::ostream& ostr, int maxDepth)
+{
+  printVariableLine(*this, ostr, (size_t)-1, String::empty, 0);
+  printVariablesRecursively(*this, ostr, maxDepth, 1);
+}

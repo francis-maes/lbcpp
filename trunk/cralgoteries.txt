@@ -1,6 +1,21 @@
- * BatchToOnlineInferenceLearner
+Data:
+ * implement Protein::computeMissingVariables()
 
-* More targets, More representations, More features
+Perception:
+ * vector window to histogram
+ * distribution entropy
+ * current position
+ * global length
+ * serialisation of Perceptions
+ * residue pair perceptions
+
+Inference:
+ * Vector<Probability> inference
+ * Base class ProteinTargetInferenceHelper
+ * ContactMap inference
+ * Serialisation of inferences
+ * ParallelProteinInference
+
 
 Julien:
  * Voir pourquoi les ExtraTree marchent moyen
@@ -9,19 +24,14 @@ Julien:
 =========== 
 
 Library:
- * Examples: TrainClassifierBatch, TrainClassifierStochastic with moult classifiers
  * Remove "featureGenerator" keyword
  * Remove translator
- * Serialisation XML
  * Execution multi-thread
  
 Inference:
  * Atomic MultiClass machines (MultiLinear, Ranking...)
  * Apprentissage avec couche cachée
  
-Proteins: 
- * ParallelProteinInference
-
 ===========
 
 FeatureGenerator:

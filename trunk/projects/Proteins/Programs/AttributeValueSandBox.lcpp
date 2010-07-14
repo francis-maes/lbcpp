@@ -10,232 +10,12 @@
 #include "Data/Protein.h" 
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
+#include "Perception/PerceptionToFeatures.h"
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
-
-void printVariableLine(const Variable& value, std::ostream& ostr, size_t variableNumber, const String& name, int currentDepth)
-{
-  for (int i = 0; i < currentDepth; ++i)
-    ostr << "  ";
-  if (variableNumber != (size_t)-1)
-    ostr << "[" << variableNumber << "] ";
-  ostr << value.getTypeName();
-  if (name.isNotEmpty())
-    ostr << " " << name;
-  String v = value.toString();
-  if (v.length() > 30)
-    v = v.substring(0, 30) + T("...");
-  ostr << " = " << v << std::endl;
-}
-
-void printVariablesRecursively(const Variable& variable, std::ostream& ostr, int maxDepth, int currentDepth)
-{
-  if (maxDepth >= 0 && currentDepth >= maxDepth)
-    return;
-  TypePtr type = variable.getType();
-  for (size_t i = 0; i < variable.size(); ++i)
-  {
-    String name;
-    if (i < type->getNumStaticVariables())
-      name = type->getStaticVariableName(i);
-    printVariableLine(variable[i], ostr, i, name, currentDepth);
-    printVariablesRecursively(variable[i], ostr, maxDepth, currentDepth + 1);
-  }
-}
-
-void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = -1)
-{
-  printVariableLine(variable, ostr, (size_t)-1, String::empty, 0);
-  printVariablesRecursively(variable, ostr, maxDepth, 1);
-}
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-//////// Perception //////////////////////
-//////////////////////////////////////////
-//////////////////////////////////////////
-
-
-// todo: Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
-TypePtr sequenceSeparationDistanceType()
-  {return integerType();} // FIXME
-
-class ProteinLengthPerception : public Perception
-{
-public:
-  virtual size_t getNumOutputVariables() const
-    {return 1;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return sequenceSeparationDistanceType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return T("proteinLength");}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-    {callback->sense(0, input.getObjectAndCast<Protein>()->getLength());}
-};
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-//// FeatureGenerators compatibility /////
-//////////////////////////////////////////
-//////////////////////////////////////////
-
-bool canSubVariableBePruned(const Variable& subVariable)
-{
-  if (subVariable.getType()->inheritsFrom(probabilityType()))
-    return subVariable.getDouble() == 0.0;
-  return false;
-}
-
-featureGenerator variableFeatures(Variable variable)
-{
-  if (variable.isNil())
-  {
-    featureSense(0);
-    return;
-  }
-  else if (variable.isMissingValue())
-  {
-    featureSense(2);
-    return;
-  }
-  
-  TypePtr type = variable.getType();
-
-  if (type == probabilityType())
-  {
-    featureSense(2, variable.getDouble());
-    return;
-  }
-
-  if (variable.isEnumeration())
-  {
-    EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-    jassert(enumeration);
-    featureSense(2 + variable.getInteger());
-    return;
-  }
-
-  if (type->inheritsFrom(objectClass()))
-  {
-    ObjectPtr object = variable.getObject();
-    size_t n = object->getNumVariables(); 
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable subVariable = object->getVariable(i);
-      if (!canSubVariableBePruned(subVariable))
-        featureCall(i) variableFeatures(subVariable);
-    }
-    return;
-  }
-
-  jassert(false);
-}
-
-FeatureGeneratorPtr perceptionToFeatures(PerceptionPtr perception, const Variable& input)
-{
-  ObjectPtr object = perception->compute(input);
-  return variableFeatures(object);
-}
-
-class ConvertToFeaturesPerception : public CompositePerception
-{
-public:
-  ConvertToFeaturesPerception(PerceptionPtr perception)
-    : perception(perception) {}
- 
-  virtual TypePtr getInputType() const
-    {return perception->getInputType();}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return Class::get(T("FeatureGenerator"));}
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& handler) const
-  {
-    Variable v = perception->computeFunction(input, handler);
-    return v ? variableFeatures(v) : Variable();
-  }
-
-protected:
-  PerceptionPtr perception;
-};
-
-///////////////////////////////////////// 
-///////////////////////////////////////// 
-///////////////////////////////////////// 
-
-class PerceptionModifier : public DecoratorPerception
-{
-public:
-  PerceptionModifier(PerceptionPtr target = PerceptionPtr()) : DecoratorPerception(target)
-    {callback.setStaticallyAllocated(); callback.owner = this;}
-
-  virtual TypePtr getModifiedType(size_t perceptionIndex, TypePtr perceptionType) const
-    {return perceptionType;}
-
-  virtual Variable getModifiedValue(size_t perceptionIndex, const Variable& value) const
-    {return value;}
-
-  virtual std::pair<PerceptionPtr, Variable> getModifiedValue(size_t perceptionIndex, PerceptionPtr subPerception, const Variable& input) const
-    {return std::make_pair(subPerception, input);}
-  
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return getModifiedType(index, decorated->getOutputVariableType(index));}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
-  {
-    ReferenceCountedObjectPtr<SubstituteCallback> callback(const_cast<SubstituteCallback* >(&callback));
-    callback->target = targetCallback;
-    decorated->computePerception(input, callback);
-  }
-
-private:
-  struct SubstituteCallback : public PerceptionCallback
-  {
-    PerceptionModifier* owner;
-    PerceptionCallbackPtr target;
-    
-    virtual void sense(size_t variableNumber, const Variable& value)
-      {target->sense(variableNumber, owner->getModifiedValue(variableNumber, value));}
-
-    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
-    {
-      std::pair<PerceptionPtr, Variable> p = owner->getModifiedValue(variableNumber, subPerception, input);
-      target->sense(variableNumber, p.first, p.second);
-    }
-  };
-
-  SubstituteCallback callback;
-};
-
-class PerceptionToFeaturesModifier : public PerceptionModifier
-{
-public:
-  virtual TypePtr getModifiedType(size_t perceptionIndex, TypePtr perceptionType) const
-  {
-    EnumerationPtr enumeration = perceptionType.dynamicCast<Enumeration>();
-    if (enumeration)
-    {
-      // ... 
-    }
-    return perceptionType;
-  }
-
-  virtual Variable getModifiedValue(size_t perceptionIndex, const Variable& value) const
-    {return value;}
-
-  virtual std::pair<PerceptionPtr, Variable> getModifiedValue(size_t perceptionIndex, PerceptionPtr subPerception, const Variable& input) const
-    {return std::make_pair(subPerception, input);}
-};
-
-///////////////////////////////////////// 
-///////////////////////////////////////// 
-///////////////////////////////////////// 
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
@@ -269,7 +49,9 @@ public:
   virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
   {
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, inputType);
-    return oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    //res->setBatchLearner(onlineToBatchInferenceLearner());
+    return res;
   }
 
 protected:
@@ -304,6 +86,13 @@ public:
 
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
+    if (stack->getDepth() == 1)
+    {
+      // top-level learning is beginning
+      startingTime = Time::getMillisecondCounter();
+      iterationNumber = 0;
+    }
+
     String inferenceClassName = stack->getCurrentInference()->getClassName();
     if (inferenceClassName.contains(T("Learner")) && input.size() == 2)
     {
@@ -314,38 +103,11 @@ public:
       //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
       //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
-
-    if (stack->getDepth() == 1)
-    {
-      // top-level learning is beginning
-      startingTime = Time::getMillisecondCounter();
-      bestTrainContactMap = bestTestContactMap = 0.0;
-      iterationNumber = 0;
-    }
-   /* else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
-    {
-      // simulation-based learning is beginning
-      if (input.getType()->inheritsFrom(pairType()))
-      {
-        String inferenceName = input[0].getObject()->getName();
-        std::cout << std::endl << "=====================================================" << std::endl;
-        std::cout << "======= " << inferenceName << " ==========" << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl;
-        std::cout << "=====================================================" << std::endl;
-      }
-      iterationNumber = 0;
-    }*/
-    else if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
-    {
-      // learning iteration is beginning
-      //std::cout << std::endl << " ================== ITERATION " << ++iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
-    }
   }
   
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
-    //if (inferenceClassName.contains(T("Learner")))
-    //  std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
 
     if (inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
     {
@@ -368,41 +130,18 @@ public:
     }
     else if (stack->getDepth() == 1)
     {
-      // end of top-level learning
-      //std::cout << "Best train: " << bestTrainContactMap << " test: " << bestTestContactMap << std::endl;
       std::cout << "Bye." << std::endl;
     }
   }
 
   void processResults(ProteinEvaluatorPtr evaluator, bool isTrainingData)
-  {
-    /*{
-      EvaluatorPtr bbbEvaluator = evaluation->getEvaluatorForTarget(T("BackboneBondSequence"));
-      jassert(bbbEvaluator);
-      std::cout << (isTrainingData ? "Train: " : "Test: ") << evaluation->toString() << std::endl;
-    }*/
-/*
-    EvaluatorPtr contactMapEvaluator = evaluation->getEvaluatorForTarget(T("ResidueResidueContactMatrix8Ca"));
-    jassert(contactMapEvaluator);
-    std::cout << (isTrainingData ? "Train: " : "Test: ") << contactMapEvaluator->toString() << std::endl;
-      
-    std::vector< std::pair<String, double> > scores;
-    contactMapEvaluator->getScores(scores);
-    for (size_t i = 0; i < scores.size(); ++i)
-      std::cout << scores[i].first << ": " << scores[i].second << std::endl;*/
-    std::cout << " == " << (isTrainingData ? "Training" : "Testing") << " Scores == " << std::endl << evaluator->toString() << std::endl;
-  }
+    {std::cout << " == " << (isTrainingData ? "Training" : "Testing") << " Scores == " << std::endl << evaluator->toString() << std::endl;}
 
 private:
   InferencePtr inference;
   ContainerPtr trainingData, testingData;
   size_t iterationNumber;
   juce::uint32 startingTime;
-
-  double bestTrainContactMap, bestTestContactMap;
-
-  void updateBestScore(double score, double& bestScore)
-    {if (score > bestScore) bestScore = score;}
 };
 ///////////////////////////////////////// 
 
@@ -423,18 +162,21 @@ int main(int argc, char** argv)
   //File workingDirectory(T("/Users/francis/tmp"));
 
   ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")))->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->fold(0, 2);
-  ContainerPtr testProteins = proteins->fold(1, 2);
+  ContainerPtr trainProteins = proteins->invFold(0, 7);
+  ContainerPtr testProteins = proteins->fold(0, 7);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
 
-  ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
-  //ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
+  //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
+  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInference(T("secondaryStructure")));
   inference->appendInference(factory->createInference(T("dsspSecondaryStructure")));
   inference->appendInference(factory->createInference(T("secondaryStructure")));
   inference->appendInference(factory->createInference(T("dsspSecondaryStructure")));
+
+  std::cout << "Inference: " << std::endl;
+  Variable(inference).printRecursively(std::cout);
 
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));

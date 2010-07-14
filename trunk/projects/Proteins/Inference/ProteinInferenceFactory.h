@@ -16,14 +16,6 @@
 namespace lbcpp
 {
 
-
-class ResidueCompositePerception : public CompositePerception
-{
-public:
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), integerType());}
-};
-
 class ProteinInferenceFactory : public Object
 {
 public:

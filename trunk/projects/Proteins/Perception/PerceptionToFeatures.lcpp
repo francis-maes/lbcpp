@@ -1,0 +1,73 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: PerceptionToFeatures.lcpp      | Transform a Perception into a   |
+| Author  : Francis Maes                   |   Feature Generator             |
+| Started : 14/07/2010 19:06               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "Perception/PerceptionToFeatures.h"
+namespace lbcpp
+{
+
+bool canSubVariableBePruned(const Variable& subVariable)
+{
+  if (subVariable.getType()->inheritsFrom(probabilityType()))
+    return subVariable.getDouble() == 0.0;
+  return false;
+}
+
+featureGenerator variableFeatures(Variable variable)
+{
+  if (variable.isNil())
+  {
+    featureSense(0);
+    return;
+  }
+  else if (variable.isMissingValue())
+  {
+    featureSense(2);
+    return;
+  }
+  
+  TypePtr type = variable.getType();
+
+  if (type == probabilityType())
+  {
+    featureSense(2, variable.getDouble());
+    return;
+  }
+
+  if (variable.isEnumeration())
+  {
+    EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+    jassert(enumeration);
+    featureSense(2 + variable.getInteger());
+    return;
+  }
+
+  if (type->inheritsFrom(objectClass()))
+  {
+    ObjectPtr object = variable.getObject();
+    size_t n = object->getNumVariables(); 
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable subVariable = object->getVariable(i);
+      if (!canSubVariableBePruned(subVariable))
+        featureCall(i) variableFeatures(subVariable);
+    }
+    return;
+  }
+
+  jassert(false);
+}
+
+}; /* namespace lbcpp */
+
+#include "Perception/ResiduePerception.h"
+using namespace lbcpp;
+
+void declareProteinPerceptionClasses()
+{
+  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
+}
