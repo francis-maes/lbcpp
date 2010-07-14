@@ -334,7 +334,8 @@ public:
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
-    //std::cout << "preInferenceCallback: " << inferenceClassName << std::endl;
+    if (inferenceClassName.contains(T("Learner")))
+      std::cout << "preInferenceCallback: " << inferenceClassName << std::endl;
 
     if (stack->getDepth() == 1)
     {
@@ -365,7 +366,8 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
-    //std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
+    if (inferenceClassName.contains(T("Learner")))
+      std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
 
     if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
     {
@@ -445,7 +447,8 @@ int main(int argc, char** argv)
 
   // todo: proteinToInputOutput function
 
-  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
+  ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
+  //ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInference(T("secondaryStructure")));

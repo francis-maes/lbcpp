@@ -1,22 +1,21 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SimulationInferenceBatchLea..h | A batch learner that relies on  |
+| Filename: SimulationInferenceLearner.h   | A batch learner that relies on  |
 | Author  : Francis Maes                   | entire-inference simulation     |
 | Started : 26/05/2010 19:06               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_BATCH_LEARNER_SIMULATION_H_
-# define LBCPP_INFERENCE_BATCH_LEARNER_SIMULATION_H_
+#ifndef LBCPP_INFERENCE_META_SIMULATION_LEARNER_H_
+# define LBCPP_INFERENCE_META_SIMULATION_LEARNER_H_
 
 # include <lbcpp/Inference/Inference.h>
-# include <lbcpp/Object/ObjectPair.h>
 # include "../InferenceCallback/OnlineLearningInferenceCallback.h"
 
 namespace lbcpp
 {
 
-class SimulationInferenceBatchLearner : public Inference
+class SimulationInferenceLearner : public Inference
 {
 public:
   ReturnCode train(InferenceContextPtr context, InferencePtr inference, ContainerPtr trainingData)
@@ -46,4 +45,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_BATCH_LEARNER_SIMULATION_H_
+#endif // !LBCPP_INFERENCE_META_SIMULATION_LEARNER_H_

@@ -83,7 +83,10 @@ void StaticParallelInference::getChildrenObjects(std::vector< std::pair<String, 
 }
 
 SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
-  : StaticParallelInference(name), subInference(subInference) {}
+  : StaticParallelInference(name), subInference(subInference)
+{
+  setBatchLearner(sharedParallelInferenceLearner());
+}
 
 Variable SharedParallelInference::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
@@ -114,10 +117,14 @@ bool SharedParallelInference::saveToFile(const File& file) const
 /*
 ** DecoratorInference
 */
-String DecoratorInference::toString() const
+DecoratorInference::DecoratorInference(const String& name)
+  : Inference(name)
+  {setBatchLearner(decoratorInferenceLearner());}
+
+String StaticDecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
 
-bool DecoratorInference::loadFromFile(const File& file)
+bool StaticDecoratorInference::loadFromFile(const File& file)
 {
   if (!loadFromDirectory(file))
     return false;
@@ -125,15 +132,15 @@ bool DecoratorInference::loadFromFile(const File& file)
   return decorated != InferencePtr();
 }
 
-bool DecoratorInference::saveToFile(const File& file) const
+bool StaticDecoratorInference::saveToFile(const File& file) const
 {
   return saveToDirectory(file) &&
     decorated->saveToFile(file.getChildFile(T("decorated.inference")));
 }
 
-ObjectPtr DecoratorInference::clone() const
+ObjectPtr StaticDecoratorInference::clone() const
 {
-  DecoratorInferencePtr res = createAndCast<DecoratorInference>(getClassName());
+  StaticDecoratorInferencePtr res = createAndCast<StaticDecoratorInference>(getClassName());
   res->decorated = decorated->clone().dynamicCast<Inference>();
   res->onlineLearner = onlineLearner ? onlineLearner->cloneAndCast<InferenceOnlineLearner>() : InferenceOnlineLearnerPtr();
   res->batchLearner = batchLearner;
@@ -141,7 +148,7 @@ ObjectPtr DecoratorInference::clone() const
   return res;
 }
 
-void DecoratorInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
+void StaticDecoratorInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
 {
   subObjects.resize(1);
   subObjects[0].first = decorated->getName();

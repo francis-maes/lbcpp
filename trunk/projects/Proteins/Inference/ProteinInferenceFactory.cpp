@@ -17,7 +17,7 @@ class SharedParallelContainerInference : public SharedParallelInference
 public:
   SharedParallelContainerInference(const String& name, InferencePtr subInference)
     : SharedParallelInference(name, subInference)
-    {setBatchLearner(simulationInferenceLearner());}
+    {}
   
   SharedParallelContainerInference() {}
   

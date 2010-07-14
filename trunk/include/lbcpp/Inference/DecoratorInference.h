@@ -17,30 +17,77 @@
 namespace lbcpp
 {
 
+class DecoratorInferenceState : public InferenceState
+{
+public:
+  DecoratorInferenceState(const Variable& input, const Variable& supervision)
+    : InferenceState(input, supervision) {}
+
+  void setSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
+  {
+    this->subInference = subInference;
+    this->subInput = subInput;
+    this->subSupervision = subSupervision;
+  }
+
+  InferencePtr getSubInference() const
+    {return subInference;}
+
+  Variable getSubInput() const
+    {return subInput;}
+
+  Variable getSubSupervision() const
+    {return subSupervision;}
+
+  void setSubOutput(const Variable& subOutput)
+    {this->subOutput = subOutput;}
+
+  Variable getSubOutput() const
+    {return subOutput;}
+
+protected:
+  Variable subInput;
+  Variable subSupervision;
+  Variable subOutput;
+  InferencePtr subInference;
+};
+
+typedef ReferenceCountedObjectPtr<DecoratorInferenceState> DecoratorInferenceStatePtr;
+
 class DecoratorInference : public Inference
 {
 public:
-  DecoratorInference(const String& name, InferencePtr decorated)
-    : Inference(name), decorated(decorated) {}
+  DecoratorInference(const String& name);
   DecoratorInference() {}
  
-  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return std::make_pair(input, supervision);}
-    
-  virtual Variable finalizeSubInference(const Variable& input, const Variable& supervision, const Variable& subInferenceOutput, ReturnCode& returnCode) const
-    {return subInferenceOutput;}
- 
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+    {return finalState->getSubOutput();}
+
   /*
   ** Inference
   */
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runDecoratorInference(DecoratorInferencePtr(this), input, supervision, returnCode);}
+};
+
+class StaticDecoratorInference : public DecoratorInference
+{
+public:
+  StaticDecoratorInference(const String& name, InferencePtr decorated)
+    : DecoratorInference(name), decorated(decorated) {}
+  StaticDecoratorInference() {}
+
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
+    res->setSubInference(decorated, input, supervision);
+    return res;
+  }
 
   InferencePtr getSubInference() const
     {return decorated;}
 
-  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
- 
   /*
   ** Object
   */
@@ -48,10 +95,13 @@ public:
   virtual bool loadFromFile(const File& file);
   virtual bool saveToFile(const File& file) const;
   virtual ObjectPtr clone() const;
-
+  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
+ 
 protected:
   InferencePtr decorated;
 };
+
+typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
 
 }; /* namespace lbcpp */
 
