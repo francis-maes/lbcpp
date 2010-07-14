@@ -18,62 +18,63 @@ namespace lbcpp
 class MultiProteinComponent : public TabbedComponent
 {
 public:
-  MultiProteinComponent(const std::vector< std::pair<String, ProteinObjectPtr> >& proteins)
-    : TabbedComponent(TabbedButtonBar::TabsAtBottom), proteins(proteins)
+  MultiProteinComponent(const std::vector< std::pair<String, ProteinPtr> >& proteinPairs)
+    : TabbedComponent(TabbedButtonBar::TabsAtBottom), proteinPairs(proteinPairs)
   {
-    std::vector<ProteinObjectPtr> proteinObjects(proteins.size());
-    std::vector<String> proteinNames(proteins.size());
+    std::vector<ProteinPtr> proteins(proteinPairs.size());
+    std::vector<String> proteinNames(proteinPairs.size());
     for (size_t i = 0; i < proteinNames.size(); ++i)
     {
-      proteinNames[i] = proteins[i].first;
-      proteinObjects[i] = proteins[i].second;
+      proteinNames[i] = proteinPairs[i].first;
+      proteins[i] = proteinPairs[i].second;
     }
 
     /*
     ** 1D
     */
     {
-      std::vector< std::pair<String, String> > sequenceNames;
-      addObjectNameIfExists(T("Primary structure"), T("AminoAcidSequence"), proteins, sequenceNames);
-      addObjectNameIfExists(T("PSSM"), T("PositionSpecificScoringMatrix"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Secondary structure 3"), T("SecondaryStructureSequence"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Secondary structure 3 Probabilities"), T("SecondaryStructureProbabilities"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Secondary structure 8"), T("DSSPSecondaryStructureSequence"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Solvent accesibility"), T("NormalizedSolventAccessibilitySequence"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Solvent accesibility 20%"), T("SolventAccessibilityThreshold20"), proteins, sequenceNames);    
-      addObjectNameIfExists(T("Solvent accesibility 25%"), T("SolventAccessibilityThreshold25"), proteins, sequenceNames);    
-      addObjectNameIfExists(T("Disorder region"), T("DisorderSequence"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Disorder region Probabilities"), T("DisorderProbabilitySequence"), proteins, sequenceNames);
-      addObjectNameIfExists(T("Structural alphabet"), T("StructuralAlphabetSequence"), proteins, sequenceNames);
+      std::vector< std::pair<String, size_t> > sequenceIndex;
+      // TODO use introspection :-D
+      addObjectNameIfExists(T("Primary structure"), T("primaryStructure"), proteinPairs, sequenceIndex);
+      addObjectNameIfExists(T("PSSM"), T("positionSpecificScoringMatrix"), proteinPairs, sequenceIndex);
+      addObjectNameIfExists(T("Secondary structure 3"), T("secondaryStructure"), proteinPairs, sequenceIndex);
+      addObjectNameIfExists(T("Secondary structure 8"), T("dsspSecondaryStructure"), proteinPairs, sequenceIndex);
+      addObjectNameIfExists(T("Solvent accesibility"), T("solventAccesibility"), proteinPairs, sequenceIndex);
+      addObjectNameIfExists(T("Solvent accesibility 20%"), T("solventAccesibilityAt20p"), proteinPairs, sequenceIndex);    
+      addObjectNameIfExists(T("Disorder region Probabilities"), T("disorderRegions"), proteinPairs, sequenceIndex);
+      addObjectNameIfExists(T("Structural alphabet"), T("structuralAlphabetSequence"), proteinPairs, sequenceIndex);
 
-      MultiProtein1DConfigurationPtr configuration = new MultiProtein1DConfiguration(proteinNames, sequenceNames);
-      addTab(T("ProteinObject 1D"), Colours::white, new MultiProtein1DComponent(proteinObjects, configuration), true);
+      MultiProtein1DConfigurationPtr configuration = new MultiProtein1DConfiguration(proteinNames, sequenceIndex);
+      addTab(T("Protein 1D"), Colours::white, new MultiProtein1DComponent(proteins, configuration), true);
     }
     
     /*
     ** 2D
     */
     {
-      std::vector< std::pair<String, String> > mapNames;
-      addObjectNameIfExists(T("Ca 8 angstrom"), T("ResidueResidueContactMatrix8Ca"), proteins, mapNames);
-      addObjectNameIfExists(T("Cb 8 angstrom"), T("ResidueResidueContactMatrix8Cb"), proteins, mapNames);
+      std::vector< std::pair<String, size_t> > mapIndex;
+      addObjectNameIfExists(T("Ca 8 angstrom"), T("contactMap8Ca"), proteinPairs, mapIndex);
+      addObjectNameIfExists(T("Cb 8 angstrom"), T("contactMap8Cb"), proteinPairs, mapIndex);
       
-      MultiProtein2DConfigurationPtr configuration = new MultiProtein2DConfiguration(proteinNames, mapNames);
-      addTab(T("ProteinObject 2D"), Colours::white, new MultiProtein2DComponent(proteinObjects, configuration), true);
+      MultiProtein2DConfigurationPtr configuration = new MultiProtein2DConfiguration(proteinNames, mapIndex);
+      addTab(T("Protein 2D"), Colours::white, new MultiProtein2DComponent(proteins, configuration), true);
     }
   }
     
   juce_UseDebuggingNewOperator
 
 private:
-  std::vector< std::pair<String, ProteinObjectPtr> > proteins;
+  std::vector< std::pair<String, ProteinPtr> > proteinPairs;
 
-  void addObjectNameIfExists(const String& friendlyName, const String& name, const std::vector< std::pair<String, ProteinObjectPtr> >& proteins, std::vector< std::pair<String, String> >& res)
+  void addObjectNameIfExists(const String& friendlyName, const String& name, const std::vector< std::pair<String, ProteinPtr> >& proteinPairs, std::vector< std::pair<String, size_t> >& res)
   {
-    for (size_t i = 0; i < proteins.size(); ++i)
-      if (proteins[i].second->getObject(name))
+    jassert(proteinClass()->findStaticVariable(name) != -1);
+    size_t variableIndex = proteinClass()->findStaticVariable(name) -1; // FIXME: -1 correspond to baseClass.staticVariable
+    std::cout << "Testing friendly name: " << friendlyName << " Index: " << variableIndex << std::endl;
+    for (size_t i = 0; i < proteinPairs.size(); ++i)
+      if (proteinPairs[i].second->getVariable(variableIndex))
       {
-        res.push_back(std::make_pair(friendlyName, name));
+        res.push_back(std::make_pair(friendlyName, variableIndex));
         return;
       }
   }  
@@ -82,8 +83,8 @@ private:
 class ProteinComponent : public MultiProteinComponent
 {
 public:
-  ProteinComponent(ProteinObjectPtr protein, const String& name)
-    : MultiProteinComponent(std::vector< std::pair<String, ProteinObjectPtr> >(1, std::make_pair(name, protein))) {}
+  ProteinComponent(ProteinPtr protein, const String& name)
+    : MultiProteinComponent(std::vector< std::pair<String, ProteinPtr> >(1, std::make_pair(name, protein))) {}
 };
 
 }; /* namespace lbcpp */

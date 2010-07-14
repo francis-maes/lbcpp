@@ -11,9 +11,7 @@
 
 # include "../Components/common.h"
 # include "../Utilities/ComponentWithPreferedSize.h"
-# include "../../projects/Proteins/InferenceData/LabelSequence.h"
-# include "../../projects/Proteins/InferenceData/ScalarSequence.h"
-# include "../../projects/Proteins/InferenceData/ScoreVectorSequence.h"
+# include "../../projects/Proteins/Data/AminoAcid.h"
 
 namespace lbcpp
 {
@@ -26,7 +24,7 @@ public:
   void clearSequences()
     {sequences.clear();}
 
-  void addSequenceGroup(const String& friendlyName, const std::vector< std::pair<String, ObjectContainerPtr> >& sequences)
+  void addSequenceGroup(const String& friendlyName, const std::vector< std::pair<String, ContainerPtr> >& sequences)
   {
     this->sequences.push_back(std::make_pair(friendlyName, sequences));
     numSequences += sequences.size();
@@ -76,7 +74,7 @@ public:
   }
 
 private:
-  std::vector< std::pair<String, std::vector< std::pair<String, ObjectContainerPtr> > > > sequences;
+  std::vector< std::pair<String, std::vector< std::pair<String, ContainerPtr> > > > sequences;
   size_t numSequences, longestSequence;
   
   void paintSequencesInterval(Graphics& g, size_t begin, size_t end, int x1, int y1)
@@ -98,7 +96,7 @@ private:
     int y = y1;
     for (size_t i = 0; i < sequences.size(); ++i)
     {
-      std::vector< std::pair<String, ObjectContainerPtr> >& seq = sequences[i].second;
+      std::vector< std::pair<String, ContainerPtr> >& seq = sequences[i].second;
       for (size_t j = 0; j < seq.size(); ++j)
       {
         g.setFont(9);
@@ -121,7 +119,7 @@ private:
     }
   }
 
-  void paintSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y1, const String& versionName, ObjectContainerPtr sequence)
+  void paintSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y1, const String& versionName, ContainerPtr sequence)
   {
     int y2 = y1 + elementHeight;
     
@@ -133,10 +131,10 @@ private:
     for (size_t i = begin; i < end; ++i)
     {
       g.setColour(Colours::black);
-      ObjectPtr object1 = i > 0 ? sequence->get(i - 1) : ObjectPtr();
-      ObjectPtr object2 = sequence->get(i);
+      Variable object1 = i > 0 ? sequence->getVariable(i - 1) : Variable();
+      Variable object2 = sequence->getVariable(i);
       
-      if (object1 && object2 && object1->toString() == object2->toString())
+      if (object1 && object2 && object1.toString() == object2.toString())
       {
         g.setColour(Colours::lightgrey);
         g.drawLine((float)x, (float)(y1 + 1), (float)x, (float)y2);
@@ -152,56 +150,57 @@ private:
     g.drawLine((float)x, (float)y1, (float)x, (float)(y2 + 1));
   }
 
-  void paintSequenceElement(Graphics& g, int x, int y, int w, int h, ObjectContainerPtr sequence, size_t index)
+  void paintSequenceElement(Graphics& g, int x, int y, int w, int h, ContainerPtr seq, size_t index)
   {
-    LabelSequencePtr labelSequence = sequence.dynamicCast<LabelSequence>();
-    if (labelSequence)
+    VectorPtr sequence = seq.dynamicCast<Vector>();
+    if (!sequence)
+      return;
+    
+    TypePtr type = sequence->getElementsType();
+    
+    if (type == enumerationType())
     {
-      bool isBinary = labelSequence->getDictionary() == BinaryClassificationDictionary::getInstance();
-      g.setFont(isBinary ? 14.f : 12.f);
-      String res = labelSequence->getString(index);
-      if (isBinary)
-        res = (res == T("positive")) ? T("+") : T("-");
+      g.setFont(12.f);
+      String res = sequence->getVariable(index).toString();
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
     }
-    
-    ScalarSequencePtr scalarSequence = sequence.dynamicCast<ScalarSequence>();
-    if (scalarSequence)
+    else if (type == probabilityType())
     {
       String str = T("?");
-      if (scalarSequence->hasValue(index))
+      if (sequence->getVariable(index))
       {
         g.setColour(Colours::red);
-        double value = juce::jlimit(0.0, 1.0, scalarSequence->getValue(index));
-        g.fillRect(x, y + (int)(h * (1 - value)), w, (int)(h * value + 1));
-        str = String(scalarSequence->getValue(index), 2);
+        double realValue = sequence->getVariable(index).getDouble();
+        double limitedValue = juce::jlimit(0.0, 1.0, realValue);
+        g.fillRect(x, y + (int)(h * (1 - limitedValue)), w, (int)(h * limitedValue + 1));
+        str = String(realValue, 2);
       }
       g.setColour(Colours::black);
       g.setFont(8);
       g.drawText(str, x, y, w, h, Justification::centred, true);
     }
-    
-    ScoreVectorSequencePtr scoreVectorSequence = sequence.dynamicCast<ScoreVectorSequence>();
-    if (scoreVectorSequence)
+    else if (type == discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))
     {
-      for (size_t i = 0; i < scoreVectorSequence->getNumScores(); ++i)
+      DiscreteProbabilityDistributionPtr probs = sequence->getObjectAndCast<DiscreteProbabilityDistribution>(index);
+      size_t numVariables = probs->getEnumeration()->getNumElements();
+      for (size_t i = 0; i < numVariables; ++i)
       {
-        juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - scoreVectorSequence->getScore(index, i)));
+        juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - sequence->getVariable(i).getDouble()));
         g.setColour(Colour(255, level, level));
-        int y1 = y + i * h / scoreVectorSequence->getNumScores();
-        int y2 = y + (i + 1) * h / scoreVectorSequence->getNumScores();
+        int y1 = y + i * h / numVariables;
+        int y2 = y + (i + 1) * h / numVariables;
         g.fillRect(x, y1, w, y2 - y1);
       }
     }
   }
 
-  void paintInterSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y, ObjectContainerPtr sequence1, ObjectContainerPtr sequence2)
+  void paintInterSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y, ContainerPtr sequence1, ContainerPtr sequence2)
   {
     for (size_t i = begin; i < end; ++i)
     {
-      ObjectPtr object1 = sequence1->get(i);
-      ObjectPtr object2 = sequence2->get(i);
+      ObjectPtr object1 = sequence1->getObject(i);
+      ObjectPtr object2 = sequence2->getObject(i);
       if (object1 && object2)
       {
         float x = (float)(x1 + (i - begin) * elementWidth + elementWidth / 2);

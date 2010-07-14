@@ -161,6 +161,29 @@ VariableReference Protein::getVariableReference(size_t index)
   return VariableReference();
 }
 
+Variable Protein::getVariable(size_t index)
+{
+  switch (index)
+  {
+    case 0: return primaryStructure;
+    case 1: return positionSpecificScoringMatrix;
+    case 2: return secondaryStructure;
+    case 3: return dsspSecondaryStructure;
+    case 4: return structuralAlphabetSequence;
+    case 5: return solventAccessibility;
+    case 6: return solventAccessibilityAt20p;
+    case 7: return disorderRegions;
+    case 8: return contactMap8Ca;
+    case 9: return contactMap8Cb;
+    case 10: return distanceMapCa;
+    case 11: return distanceMapCb;
+    case 12: return calphaTrace;
+    case 13: return tertiaryStructure;
+  };
+  jassert(false);
+  return Variable();
+}
+
 void Protein::computeMissingVariables()
 {
   // FIXME

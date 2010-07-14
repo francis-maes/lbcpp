@@ -43,6 +43,7 @@ public:
   void saveToFASTAFile(const File& fastaFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
 
   virtual VariableReference getVariableReference(size_t index);
+  virtual Variable getVariable(size_t index);
 
   Variable createEmptyTarget(size_t index) const;
   VectorPtr createEmptyProbabilitySequence() const;
