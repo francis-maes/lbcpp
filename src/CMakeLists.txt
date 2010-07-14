@@ -253,7 +253,7 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
 )
 
 SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
-  Inference/Evaluator/ObjectContainerEvaluator.h
+  Inference/Evaluator/ContainerElementsEvaluator.h
   Inference/Evaluator/BinaryClassificationConfusionEvaluator.h
   Inference/Evaluator/ClassificationAccuracyEvaluator.h
   Inference/Evaluator/RegressionErrorEvaluator.h

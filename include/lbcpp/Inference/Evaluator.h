@@ -64,16 +64,11 @@ extern EvaluatorPtr regressionErrorEvaluator(const String& name);
 extern EvaluatorPtr dihedralRegressionErrorEvaluator(const String& name);
 
 // Structured
-// new 
 extern EvaluatorPtr containerElementsEvaluator(const String& name, EvaluatorPtr elementEvaluator);
 inline EvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
   {return containerElementsEvaluator(name, classificationAccuracyEvaluator(name));}
-
-// old
-extern EvaluatorPtr objectContainerEvaluator(const String& name, EvaluatorPtr objectEvaluator);
-
 inline EvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
-  {return objectContainerEvaluator(name, binaryClassificationConfusionEvaluator(name));}
+  {return containerElementsEvaluator(name, binaryClassificationConfusionEvaluator(name));}
 
 class BinaryClassificationConfusionMatrix : public Object
 {

@@ -524,7 +524,7 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
   size_t n = tertiaryStructure->getNumResidues();
 
   // an element is in disorder if the associated residue is not defined
-  VectorPtr res = protein->createEmptyDisorderRegions();
+  VectorPtr res = protein->createEmptyProbabilitySequence();
   for (size_t i = 0; i < n; ++i)
     res->setVariable(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType()));
 

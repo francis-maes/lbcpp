@@ -39,7 +39,7 @@ public:
     if (supervision)
     {
       supervisionTargets = getSupervisionTargets(supervision);
-      jassert(supervisionTargets->size() == n);
+      jassert(!supervisionTargets || supervisionTargets->size() == n);
     }
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
@@ -141,18 +141,27 @@ InferencePtr ProteinInferenceFactory::createTargetInference(const String& target
 {
   if (targetName == T("secondaryStructure") || targetName == T("dsspSecondaryStructure")
         || targetName == T("structuralAlphabetSequence"))
-    return createSequenceLabelingInference(targetName);
+    return createLabelSequenceInference(targetName);
+  if (targetName == T("disorderRegions") || targetName == T("solventAccesibilityAt20p"))
+    return createProbabilitySequenceInference(targetName);
   jassert(false);
   return InferencePtr();
 }
 
-InferencePtr ProteinInferenceFactory::createSequenceLabelingInference(const String& targetName) const
+InferencePtr ProteinInferenceFactory::createLabelSequenceInference(const String& targetName) const
 {
   TypePtr targetType = getTargetType(targetName);
   EnumerationPtr elementsType = targetType->getTemplateArgument(0).dynamicCast<Enumeration>();
   jassert(elementsType);
   PerceptionPtr perception = createPerception(targetName, true, false);
   InferencePtr classifier = createMultiClassClassifier(targetName, perception->getOutputType(), elementsType);
+  return InferencePtr(new SequenceProteinTargetInference(targetName, classifier, perception));
+}
+
+InferencePtr ProteinInferenceFactory::createProbabilitySequenceInference(const String& targetName) const
+{
+  PerceptionPtr perception = createPerception(targetName, true, false);
+  InferencePtr classifier = createBinaryClassifier(targetName, perception->getOutputType());
   return InferencePtr(new SequenceProteinTargetInference(targetName, classifier, perception));
 }
 
@@ -169,16 +178,25 @@ TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
 InferencePtr ProteinInferenceFactory::addToProteinInference(InferencePtr targetInference, const String& targetName) const
   {return postProcessInference(targetInference, setFieldFunction(getTargetIndex(targetName)));}
 
-void ProteinInferenceFactory::createPrimaryStructureResiduePerception(CompositePerceptionPtr res) const
-  {res->addPerception(T("AA"), applyPerceptionOnProteinVariable(T("primaryStructure"), windowPerception(aminoAcidTypeEnumeration(), 15)));}
+PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const String& targetName) const
+{
+  TypePtr targetType = getTargetType(targetName);
+  return applyPerceptionOnProteinVariable(targetName,
+    windowPerception(targetType->getTemplateArgument(0), 15));
+}
 
-void ProteinInferenceFactory::createPositionSpecificScoringMatrixResiduePerception(CompositePerceptionPtr res) const
+PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const String& targetName) const
+{
+  return applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15));
+}
+
+PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPerception() const
 {
   TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
 
   PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
-  res->addPerception(T("PSSM"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
-    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
+  return applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
+    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception));
 }
 
 PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
@@ -186,8 +204,13 @@ PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName
   if (is1DTarget)
   {
     CompositePerceptionPtr res = new ResidueCompositePerception();
-    createPrimaryStructureResiduePerception(res);
-    createPositionSpecificScoringMatrixResiduePerception(res);
+    res->addPerception(T("AA"), createLabelSequencePerception(T("primaryStructure")));
+    res->addPerception(T("PSSM"), createPositionSpecificScoringMatrixPerception());
+    res->addPerception(T("SS3"), createLabelSequencePerception(T("secondaryStructure")));
+    res->addPerception(T("SS8"), createLabelSequencePerception(T("dsspSecondaryStructure")));
+    res->addPerception(T("SA20"), createProbabilitySequencePerception(T("solventAccesibilityAt20p")));
+    res->addPerception(T("DR"), createProbabilitySequencePerception(T("disorderRegions")));
+    res->addPerception(T("StAl"), createLabelSequencePerception(T("structuralAlphabetSequence")));
     return res;
   }
   jassert(false);

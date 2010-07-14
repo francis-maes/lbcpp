@@ -28,7 +28,7 @@ public:
     {return sumType(booleanType(), probabilityType());}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return doubleType();} // probabilityType ?
+    {return probabilityType();}
 
   virtual void setName(const String& name)
   {
@@ -42,20 +42,11 @@ public:
     ScalarFunctionPtr lossFunction;
     if (supervision)
     {
-      double supervisionValue;
+      double supervisionValue = 0.0;
       if (supervision.isBoolean())
         supervisionValue = supervision.getBoolean() ? 1.0 : -1.0;
-      else if (supervision.isInteger())
-        supervisionValue = supervision.getInteger() > 0 ? 1.0 : -1.0;
-      else if (supervision.isDouble())
-        supervisionValue = supervision.getDouble();
-      else if (supervision.isObject())
-      {
-        // tmp: the class Label will disappear soon
-        LabelPtr correctLabel = supervision.dynamicCast<Label>();
-        jassert(correctLabel && correctLabel->getDictionary() == BinaryClassificationDictionary::getInstance());
-        supervisionValue = correctLabel->getIndex() ? 1.0 : -1.0;
-      }
+      else if (supervision.inheritsFrom(probabilityType()))
+        supervisionValue = supervision.getDouble() * 2.0 - 1.0;
       else
         jassert(false);
 
@@ -82,7 +73,7 @@ public:
     if (!subInferenceOutput)
       return Variable();
     double score = subInferenceOutput.getDouble();
-    return 1.0 / (1.0 + exp(-score * temperature));
+    return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType());
   }
 
 protected:

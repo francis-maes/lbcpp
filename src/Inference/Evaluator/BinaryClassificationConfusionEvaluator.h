@@ -22,14 +22,28 @@ public:
     : Evaluator(name) {}
   BinaryClassificationConfusionEvaluator() {}
 
+  static bool convertToBoolean(const Variable& variable, bool& res)
+  {
+    if (!variable)
+      return false;
+
+    if (variable.isBoolean())
+      res = variable.getBoolean();
+    else if (variable.inheritsFrom(probabilityType()))
+      res = variable.getDouble() > 0.5;
+    else
+    {
+      jassert(false);
+      return false;
+    }
+    return true;
+  }
+
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    LabelPtr predicted = predictedObject.dynamicCast<Label>();
-    LabelPtr correct = correctObject.dynamicCast<Label>();
-    if (!predicted || !correct)
-      return;
-    jassert(predicted->getDictionary() == correct->getDictionary());
-    confusionMatrix.addPrediction(predicted->getIndex() == 1, correct->getIndex() == 1);
+    bool predicted, correct;
+    if (convertToBoolean(predictedObject, predicted) && convertToBoolean(correctObject, correct))
+      confusionMatrix.addPrediction(predicted, correct);
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
@@ -52,8 +66,11 @@ public:
     double precision, recall, f1score;
     confusionMatrix.computePrecisionRecallAndF1(precision, recall, f1score);
 
+    double accuracy = confusionMatrix.computeAccuracy();
+
     return getName() + T("\n") + confusionMatrix.toString()
-                     + T("P = ") + String(precision * 100.0, 2)
+                     + T("ACC = ") + String(accuracy * 100.0, 2)
+                     + T("% P = ") + String(precision * 100.0, 2)
                      + T("% R = ") + String(recall * 100.0, 2)
                      + T("% F1 = ") + String(f1score * 100.0, 2)
                      + T("% MCC = ") + String(confusionMatrix.computeMatthewsCorrelation(), 4);
