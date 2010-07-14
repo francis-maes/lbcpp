@@ -155,7 +155,7 @@ ProteinContactMapInference::ProteinContactMapInference(const String& name, Infer
   : VectorSequentialInference(name), ProteinTargetInferenceHelper(targetName)
 {
   InferencePtr scoresInference(new ContactMapScoresInference(name, scoreInference, scoreFeatures, targetName));
-  scoresInference->setBatchLearner(simulationInferenceLearner());
+  //scoresInference->setBatchLearner(simulationInferenceLearner());
   appendInference(scoresInference);
   
   InferencePtr probabilitiesInference(new ContactMapScoresToProbabilitiesInference(name + T("toProb"), targetName));

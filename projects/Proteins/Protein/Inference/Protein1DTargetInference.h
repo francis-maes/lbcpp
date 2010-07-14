@@ -27,7 +27,7 @@ public:
   Protein1DTargetInference(const String& name, InferencePtr subInference, ProteinResidueFeaturesPtr features, const String& targetName, const String& supervisionName = String::empty)
     : SharedParallelInference(name, subInference), ProteinResidueRelatedInferenceStepHelper(targetName, features, supervisionName)
   {
-    setBatchLearner(simulationInferenceLearner());
+    //setBatchLearner(simulationInferenceLearner());
   }
   
   Protein1DTargetInference() {}

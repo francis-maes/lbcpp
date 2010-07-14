@@ -1,19 +1,10 @@
-* Le BinaryDecisionInference::clone() utilisé dans le ParallelVoteInference n'est pas implémenté
-* Erreur de type dans les exemples qui arrivent au SingleExtraTreeInferenceLearner
-
-* Alex
-* Pb Xml Julien
-
+ * BatchToOnlineInferenceLearner
 
 * More targets, More representations, More features
 
 Julien:
  * Voir pourquoi les ExtraTree marchent moyen
  * Utilies les nouvelles structures de données dans l'explorer et dans les formats de proteines
-
-Inference:
- * ParallelVoteLearner (comme le ParallelLearner en plus optimisŽ parce qu'on partage le dataset)
- * ParallelLearner / SequentialLearner: flag "transmitUnsupervisedExamplesToChildLearners"
 
 =========== 
 

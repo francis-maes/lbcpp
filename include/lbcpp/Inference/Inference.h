@@ -122,11 +122,11 @@ extern InferencePtr parallelVoteInference(const String& name, size_t numVoters, 
 // Supervision: None
 // Output: None (side-effect on input Inference)
 extern InferencePtr dummyInferenceLearner();
-extern InferencePtr simulationInferenceLearner();
 extern InferencePtr staticSequentialInferenceLearner();
 extern InferencePtr staticParallelInferenceLearner();
 extern InferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
 extern InferencePtr parallelVoteInferenceLearner();
+extern InferencePtr onlineToBatchInferenceLearner();
 
 extern InferencePtr decoratorInferenceLearner();
 extern InferencePtr postProcessInferenceLearner();

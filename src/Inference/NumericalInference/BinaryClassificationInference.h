@@ -18,7 +18,8 @@ class BinaryClassificationInference : public StaticDecoratorInference
 {
 public:
   BinaryClassificationInference(const String& name, InferencePtr scoreInference)
-    : StaticDecoratorInference(name, scoreInference) {}
+    : StaticDecoratorInference(name, scoreInference)
+    {setBatchLearner(onlineToBatchInferenceLearner());}
   BinaryClassificationInference() {}
 
   virtual ScalarFunctionPtr getLoss(bool isPositive) const = 0;
