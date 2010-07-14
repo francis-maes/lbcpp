@@ -55,6 +55,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
 
+extern FunctionPtr proteinToInputOutputPairFunction();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_INFERENCE_H_

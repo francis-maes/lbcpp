@@ -1,7 +1,5 @@
-* New file DecoratorInference.cpp
-  * Move PostProcessInference inside
-* New DecoratorBatchLearner => use in decoratorInference
-
+* New DecoratorInferenceBatchLearner => use in decoratorInference
+* New SharedParallelInferenceBatchLearner => use in SharedParallelContainerInference
 * More targets, More representations, More features
 
 Julien:

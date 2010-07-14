@@ -37,7 +37,7 @@ FunctionPtr lbcpp::loadFromFileFunction(TypePtr expectedType)
   {return new LoadFromXmlFunction(expectedType);}
 
 // Input: (a,b)
-// do: a[fieldIndex] = b
+// do: a[fieldIndex] = b if fieldIndex, nothing otherwise
 // Output: a
 class SetFieldFunction : public Function
 {
@@ -57,9 +57,9 @@ protected:
   virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
   {
     ObjectPtr object = input[0].getObject();
-    if (object)
+    if (object && input[1])
       object->setVariable(fieldIndex, input[1]);
-    else
+    else if (!object)
       callback.warningMessage(T("SetFieldFunction::computeFunction"), T("Null object"));
     return input[0];
   }

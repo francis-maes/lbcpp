@@ -51,6 +51,7 @@ void printVariable(const Variable& variable, std::ostream& ostr, int maxDepth = 
   printVariableLine(variable, ostr, (size_t)-1, String::empty, 0);
   printVariablesRecursively(variable, ostr, maxDepth, 1);
 }
+
 //////////////////////////////////////////
 //////////////////////////////////////////
 //////// Perception //////////////////////
@@ -89,33 +90,7 @@ public:
 //// FeatureGenerators compatibility /////
 //////////////////////////////////////////
 //////////////////////////////////////////
-/*
-class FeatureGeneratorFactory : public Function
-{
-public:
-  virtual TypePtr getInput() const
-    {return perceptionClass();}
 
-  virtual TypePtr getOutput(TypePtr ) const
-    {return Class::get(T("FeatureGenerator"));}
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-  {
-    PerceptionPtr perception = input.getObjectAndCast<Perception>(callback);
-    if (!perception)
-      return Variable();
-    
-    size_t n = perception->getNumOutputVariables();
-
-    CompositeFeatureGeneratorPtr res = new CompositeFeatureGenerator();
-    
-    res->appendSubGenerator(
-  }
-
-};
-
-
-*/
 bool canSubVariableBePruned(const Variable& subVariable)
 {
   if (subVariable.getType()->inheritsFrom(probabilityType()))
@@ -193,30 +168,110 @@ protected:
     {return representationToFeatures(representation, input);}
 };
 
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-//////// Inference ///////////////////////
-//////////////////////////////////////////
-//////////////////////////////////////////
-
-void declareNewProteinInferenceClasses()
-{
-  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
-}
-
 ///////////////////////////////////////// 
 ///////////////////////////////////////// 
 ///////////////////////////////////////// 
 
-class MyProteinInferenceFactory : public ProteinInferenceFactory
+class PerceptionModifier : public DecoratorPerception
 {
 public:
-  PerceptionPtr createDiscreteProbabilityDistributionRepresentation(EnumerationPtr enumeration) const
+  PerceptionModifier(PerceptionPtr target = PerceptionPtr()) : DecoratorPerception(target)
+    {callback.setStaticallyAllocated(); callback.owner = this;}
+
+  virtual TypePtr getModifiedType(size_t perceptionIndex, TypePtr perceptionType) const
+    {return perceptionType;}
+
+  virtual Variable getModifiedValue(size_t perceptionIndex, const Variable& value) const
+    {return value;}
+
+  virtual std::pair<PerceptionPtr, Variable> getModifiedValue(size_t perceptionIndex, PerceptionPtr subPerception, const Variable& input) const
+    {return std::make_pair(subPerception, input);}
+  
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return getModifiedType(index, decorated->getOutputVariableType(index));}
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    return PerceptionPtr();
+    ReferenceCountedObjectPtr<SubstituteCallback> callback(const_cast<SubstituteCallback* >(&callback));
+    callback->target = targetCallback;
+    decorated->computePerception(input, callback);
   }
 
+private:
+  struct SubstituteCallback : public PerceptionCallback
+  {
+    PerceptionModifier* owner;
+    PerceptionCallbackPtr target;
+    
+    virtual void sense(size_t variableNumber, const Variable& value)
+      {target->sense(variableNumber, owner->getModifiedValue(variableNumber, value));}
+
+    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    {
+      std::pair<PerceptionPtr, Variable> p = owner->getModifiedValue(variableNumber, subPerception, input);
+      target->sense(variableNumber, p.first, p.second);
+    }
+  };
+
+  SubstituteCallback callback;
+};
+
+class PerceptionToFeaturesModifier : public PerceptionModifier
+{
+public:
+  virtual TypePtr getModifiedType(size_t perceptionIndex, TypePtr perceptionType) const
+  {
+    EnumerationPtr enumeration = perceptionType.dynamicCast<Enumeration>();
+    if (enumeration)
+    {
+      // ... 
+    }
+    return perceptionType;
+  }
+
+  virtual Variable getModifiedValue(size_t perceptionIndex, const Variable& value) const
+    {return value;}
+
+  virtual std::pair<PerceptionPtr, Variable> getModifiedValue(size_t perceptionIndex, PerceptionPtr subPerception, const Variable& input) const
+    {return std::make_pair(subPerception, input);}
+};
+
+///////////////////////////////////////// 
+///////////////////////////////////////// 
+///////////////////////////////////////// 
+
+class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
+{
+public:
+  virtual FunctionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  {
+    if (is1DTarget)
+    {
+      CompositePerceptionPtr res = new ResidueCompositePerception();
+
+      FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass->findStaticVariable(T("primaryStructure")));
+      FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass->findStaticVariable(T("positionSpecificScoringMatrix")));
+
+      res->addPerception(T("AA"), Perception::compose(selectPrimaryStructure,
+        windowPerception(aminoAcidTypeEnumeration(), 15)));
+      res->addPerception(T("PSSM"), Perception::compose(selectPSSM,
+        windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+      return res->flatten();
+    }
+    jassert(false);
+    return FunctionPtr();
+  }
+
+  virtual InferencePtr createBinaryClassifier(const String& targetName) const
+    {return extraTreeInference(targetName, 10, 10);}
+
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const
+    {return extraTreeInference(targetName, 10, 10);}
+};
+
+class NumericalProteinInferenceFactory : public ProteinInferenceFactory
+{
+public:
   virtual FunctionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     if (is1DTarget)
@@ -249,7 +304,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/*logicalOr(
       maxIterationsStoppingCriterion(100),  
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -374,35 +429,11 @@ VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
   return directoryFileStream(directory)->apply(loadFromFileFunction(proteinClass()))->load(maxCount);
 }
 
-class ProteinToInputOutputPairFunction : public Function
-{
-public:
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return pairType(proteinClass(), proteinClass());}
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-  {
-    ProteinPtr protein = input.getObjectAndCast<Protein>();
-    jassert(protein);
-    protein->computeMissingVariables();
-    ProteinPtr inputProtein = new Protein(protein->getName());
-    inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
-    inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
-    return Variable::pair(inputProtein, protein);
-  }
-};
-
-FunctionPtr proteinToInputOutputPairFunction()
-  {return new ProteinToInputOutputPairFunction();}
-
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  declareNewProteinInferenceClasses();
+  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
@@ -414,15 +445,20 @@ int main(int argc, char** argv)
 
   // todo: proteinToInputOutput function
 
-  ProteinInferenceFactoryPtr factory = new MyProteinInferenceFactory();
+  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInference(T("secondaryStructure")));
+  inference->appendInference(factory->createInference(T("dsspSecondaryStructure")));
+  inference->appendInference(factory->createInference(T("secondaryStructure")));
+  inference->appendInference(factory->createInference(T("dsspSecondaryStructure")));
 
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
   return 0;
+
+
   //PrintPerceptionCallback::print(proteins->getVariable(2), std::cout, 2);
 
   // make representation
