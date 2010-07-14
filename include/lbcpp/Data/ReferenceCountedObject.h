@@ -72,6 +72,9 @@ public:
   int getReferenceCount() const
     {return refCount;}
 
+  void setStaticallyAllocated()
+    {jassert(!refCount); ++refCount;}
+
 protected:
   template<class T>
   friend class ReferenceCountedObjectPtr; /*!< */

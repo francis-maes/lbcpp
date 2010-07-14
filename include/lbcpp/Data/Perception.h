@@ -78,8 +78,8 @@ public:
   virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
     {return decorated->getOutputVariableGenerator(index);}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr visitor) const
-    {decorated->computePerception(input, visitor);}
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+    {decorated->computePerception(input, callback);}
 
 protected:
   PerceptionPtr decorated;

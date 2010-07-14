@@ -62,6 +62,11 @@ protected:
 };
 
 /*
+** Decorator inference
+*/
+extern InferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
+
+/*
 ** Numerical Inference
 */
 

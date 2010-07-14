@@ -5,8 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
 #include "ProteinInference.h"
+#include <lbcpp/Data/Function.h>
 using namespace lbcpp;
 
 /*
@@ -89,6 +89,31 @@ void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr contex
 
 Variable ProteinSequentialInference::finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
   {return finalState->getInput();} // the working protein
+
+
+class ProteinToInputOutputPairFunction : public Function
+{
+public:
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return pairType(proteinClass(), proteinClass());}
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  {
+    ProteinPtr protein = input.getObjectAndCast<Protein>();
+    jassert(protein);
+    protein->computeMissingVariables();
+    ProteinPtr inputProtein = new Protein(protein->getName());
+    inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
+    inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
+    return Variable::pair(inputProtein, protein);
+  }
+};
+
+FunctionPtr lbcpp::proteinToInputOutputPairFunction()
+  {return new ProteinToInputOutputPairFunction();}
 
 void declareProteinInferenceClasses()
 {
