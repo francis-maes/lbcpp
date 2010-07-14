@@ -134,6 +134,8 @@ public:
   friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
     {return ostr << variable.toString();}
 
+  void printRecursively(std::ostream& ostr, int maxDepth = -1);
+
   /*
   ** Non-const operations
   */
