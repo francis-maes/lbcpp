@@ -34,9 +34,9 @@ public:
         learner->stepFinishedCallback(inference, input, supervision, output);
       }
     }
-    else if (stack->getGrandParentInference() == batchLearner)
+    else if (stack->getGrandGrandParentInference() == batchLearner)
       finishEpisode();
-    else if (stack->getParentInference() == batchLearner)
+    else if (stack->getGrandParentInference() == batchLearner)
       finishPass();
   }
 

@@ -18,7 +18,8 @@ class RegressionInference : public StaticDecoratorInference
 {
 public:
   RegressionInference(const String& name, InferencePtr scoreInference)
-    : StaticDecoratorInference(name, scoreInference) {}
+    : StaticDecoratorInference(name, scoreInference)
+    {setBatchLearner(onlineToBatchInferenceLearner());}
   RegressionInference() {}
   
   virtual TypePtr getSupervisionType() const

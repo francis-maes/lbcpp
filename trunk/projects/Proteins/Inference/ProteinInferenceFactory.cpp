@@ -78,8 +78,19 @@ public:
     int index = proteinClass()->findStaticVariable(targetName);
     jassert(index >= 0);
     targetIndex = (size_t)index;
+    outputType = proteinClass()->getStaticVariableType(targetIndex);
+
   }
   SequenceProteinTargetInference() : targetIndex(0) {}
+
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
+
+  virtual TypePtr getSupervisionType() const
+    {return outputType;}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return outputType;}
 
   virtual size_t getNumSubInferences(const Variable& input) const
     {return input.getObjectAndCast<Protein>()->getLength();}
@@ -108,6 +119,7 @@ public:
 protected:
   size_t targetIndex;
   PerceptionPtr perception;
+  TypePtr outputType;
 };
 
 //////////////////////////////

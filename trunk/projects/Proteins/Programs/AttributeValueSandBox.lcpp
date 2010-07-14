@@ -156,7 +156,10 @@ public:
     {return Class::get(T("FeatureGenerator"));}
 
   virtual Variable computeFunction(const Variable& input, ErrorHandler& handler) const
-    {return variableFeatures(input);}
+  {
+    Variable v = perception->computeFunction(input, handler);
+    return v ? variableFeatures(v) : Variable();
+  }
 
 protected:
   PerceptionPtr perception;
@@ -308,9 +311,8 @@ public:
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
       String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
       std::cout << "=== Learning " << input[0].getObject()->getName() << " with " << input[1].size() << " " << inputTypeName << "(s) ===" << std::endl;
-/*        << "  num examples: " << input[1].size() << std::endl
-        << "  static type: " << input[1].getTypeName() << std::endl
-        << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;*/
+      //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
+      //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
 
     if (stack->getDepth() == 1)
@@ -320,7 +322,7 @@ public:
       bestTrainContactMap = bestTestContactMap = 0.0;
       iterationNumber = 0;
     }
-    else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
+   /* else if (inferenceClassName == T("SimulationInferenceBatchLearner"))
     {
       // simulation-based learning is beginning
       if (input.getType()->inheritsFrom(pairType()))
@@ -331,11 +333,11 @@ public:
         std::cout << "=====================================================" << std::endl;
       }
       iterationNumber = 0;
-    }
+    }*/
     else if (inferenceClassName == T("RunOnSupervisedExamplesInference"))
     {
       // learning iteration is beginning
-      std::cout << std::endl << " ================== ITERATION " << ++iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
+      //std::cout << std::endl << " ================== ITERATION " << ++iterationNumber << " ================== " << (Time::getMillisecondCounter() - startingTime) / 1000.0 << " s" <<  std::endl;
     }
   }
   
@@ -345,10 +347,13 @@ public:
     //if (inferenceClassName.contains(T("Learner")))
     //  std::cout << "postInferenceCallback: " << inferenceClassName << std::endl;
 
-    if (inferenceClassName == T("RunOnSupervisedExamplesInference") || inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
     {
       // end of learning iteration
-      std::cout << "Evaluating ... " << std::endl;
+      std::cout << std::endl
+                << "=====================================================" << std::endl
+                << "================ EVALUATION =========================  " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl
+                << "=====================================================" << std::endl;
       
       InferenceContextPtr validationContext = singleThreadedInferenceContext();
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
@@ -358,6 +363,8 @@ public:
       evaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, testingData, evaluator);
       processResults(evaluator, false);
+
+      std::cout << "=====================================================" << std::endl << std::endl;
     }
     else if (stack->getDepth() == 1)
     {
@@ -420,8 +427,6 @@ int main(int argc, char** argv)
   ContainerPtr testProteins = proteins->fold(1, 2);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
 
-  // todo: proteinToInputOutput function
-
   ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   //ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
@@ -434,80 +439,5 @@ int main(int argc, char** argv)
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
-  return 0;
-
-
-  //PrintPerceptionCallback::print(proteins->getVariable(2), std::cout, 2);
-
-  // make representation
-  CompositePerceptionPtr perception = new ResidueCompositePerception();
-
-  TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
-
-  FunctionPtr selectPrimaryStructure = selectPairFieldsFunction(proteinClass()->findStaticVariable(T("primaryStructure")));
-  FunctionPtr selectPSSM = selectPairFieldsFunction(proteinClass()->findStaticVariable(T("positionSpecificScoringMatrix")));
-
-  perception->addPerception(T("AA"), Perception::compose(selectPrimaryStructure,
-    windowPerception(aminoAcidTypeEnumeration(), 3)));
-  perception->addPerception(T("PSSM"), Perception::compose(selectPSSM,
-    windowPerception(pssmRowType, 3, identityPerception(pssmRowType))));
-
-  //std::cout << "Perception output class: " << perception->getOutputType()->toString() << std::endl;
-
-  PerceptionPtr flatPerception = perception->flatten();
-
-  //std::cout << "Flat Perception output class: " << flatPerception->getOutputType()->toString() << std::endl;
-
-  // make secondary structure classification examples
-  VectorPtr secondaryStructureExamples = new Vector(pairType(
-      flatPerception->getOutputType(),
-      secondaryStructureElementEnumeration()));
-  for (size_t i = 0; i < proteins->size(); ++i)
-  {
-    ProteinPtr protein = proteins->getVariable(i).getObjectAndCast<Protein>();
-    jassert(protein);
-    size_t n = protein->getLength();
-    VectorPtr secondaryStructure = protein->getSecondaryStructure();
-    for (size_t j = 0; j < n; ++j)
-    {
-      Variable input = flatPerception->compute(Variable::pair(protein, j));
-      //std::cout << "Perception of : " << protein->getName() << " " << j << ": "
-      //    << std::endl << perception->compute(Variable::pair(protein, j)) << std::endl;
-      //std::cout << "    Flat : " << input << std::endl;
-      //printVariable(perception->compute(Variable::pair(protein, j)), std::cout);
-      //std::cout << std::endl << std::endl << std::endl;
-      //printVariable(input, std::cout);
-      Variable output = secondaryStructure->getVariable(j);
-      secondaryStructureExamples->append(Variable::pair(input, output));
-    }
-  }
-
-  /*{
-    Variable anExampleInput = secondaryStructureExamples->getVariable(10)[0];
-    printVariable(anExampleInput, std::cout, 3);
-    FeatureGeneratorPtr anExampleFeatures = variableFeatures(anExampleInput)->toSparseVector();
-    std::cout << "Features: " << anExampleFeatures->toString() << std::endl;
-  }*/
-  //exit(0);
-  
-
-  // make train and test set
-  ContainerPtr data = secondaryStructureExamples->randomize();
-  ContainerPtr trainingData = data->fold(0, 2);
-  ContainerPtr testingData = data->fold(1, 2);
-  std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
-
-  // train
-  inference = classificationExtraTreeInference(T("SS3"), flatPerception->getOutputType(), secondaryStructureElementEnumeration(), 100, 15);
-  context->train(inference, trainingData);
-
-  // evaluate
-  EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("SS3"));
-  context->evaluate(inference, trainingData, evaluator);
-  std::cout << "Train: " << evaluator->toString() << std::endl;
-
-  evaluator = classificationAccuracyEvaluator(T("SS3"));
-  context->evaluate(inference, testingData, evaluator);
-  std::cout << "Test: " << evaluator->toString() << std::endl;
   return 0;
 }

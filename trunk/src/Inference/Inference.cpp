@@ -149,17 +149,14 @@ InferencePtr lbcpp::parallelVoteInference(const String& name, size_t numVoters, 
 ** Meta Inference
 */
 #include "MetaInference/DummyInferenceLearner.h"
-#include "MetaInference/SimulationInferenceLearner.h"
 #include "MetaInference/StaticSequentialInferenceLearner.h"
 #include "MetaInference/StaticParallelInferenceLearner.h"
 #include "MetaInference/SharedParallelInferenceLearner.h"
 #include "MetaInference/DecoratorInferenceLearner.h"
+#include "MetaInference/OnlineToBatchInferenceLearner.h"
 
 InferencePtr lbcpp::dummyInferenceLearner()
   {return new DummyInferenceLearner();}
-
-InferencePtr lbcpp::simulationInferenceLearner()
-  {return new SimulationInferenceLearner();}
 
 InferencePtr lbcpp::staticSequentialInferenceLearner()
   {return new StaticSequentialInferenceLearner();}
@@ -178,6 +175,9 @@ InferencePtr lbcpp::decoratorInferenceLearner()
 
 InferencePtr lbcpp::postProcessInferenceLearner()
   {return new PostProcessInferenceLearner();}
+
+InferencePtr lbcpp::onlineToBatchInferenceLearner()
+  {return new OnlineToBatchInferenceLearner();}
 
 #include "MetaInference/CallbackBasedDecoratorInference.h"
 #include "MetaInference/RunOnSupervisedExamplesInference.h"
@@ -198,7 +198,10 @@ public:
     {setBatchLearner(postProcessInferenceLearner());}
 
   PostProcessInference() {}
-  
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return postProcessingFunction->getOutputType(pairType(inputType, decorated->getOutputType(inputType)));}
+
   virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
     {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
 
@@ -286,7 +289,7 @@ void declareInferenceClasses()
   ** Meta
   */
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, StaticDecoratorInference);  
-  LBCPP_DECLARE_CLASS(SimulationInferenceLearner, Inference);
+  LBCPP_DECLARE_CLASS(OnlineToBatchInferenceLearner, Inference);
   LBCPP_DECLARE_CLASS(StaticSequentialInferenceLearner, Inference);
   LBCPP_DECLARE_CLASS(StaticParallelInferenceLearner, ParallelInference);
     LBCPP_DECLARE_CLASS(ParallelVoteInferenceLearner, StaticParallelInferenceLearner);

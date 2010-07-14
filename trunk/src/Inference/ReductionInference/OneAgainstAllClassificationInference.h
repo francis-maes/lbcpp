@@ -18,7 +18,7 @@ class OneAgainstAllClassificationInference : public VectorStaticParallelInferenc
 {
 public:
   OneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
-    : VectorStaticParallelInference(name), classes(classes)
+    : VectorStaticParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
     subInferences.resize(classes->getNumElements());
     for (size_t i = 0; i < subInferences.size(); ++i)
@@ -29,6 +29,15 @@ public:
     }
   }
   OneAgainstAllClassificationInference() {}
+
+  virtual TypePtr getInputType() const
+    {return binaryClassifierModel->getInputType();}
+
+  virtual TypePtr getSupervisionType() const
+    {return classes;}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return classes;}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -77,6 +86,7 @@ public:
 
 private:
   EnumerationPtr classes;
+  InferencePtr binaryClassifierModel;
 
   virtual bool load(InputStream& istr)
   {
