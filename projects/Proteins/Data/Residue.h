@@ -29,6 +29,9 @@ public:
 
   virtual String getName() const
     {return Variable(aminoAcidType, aminoAcidTypeEnumeration()).toString();}
+  
+  virtual String getThreeLettersCodeName() const
+    {return AminoAcid::toThreeLettersCode(aminoAcidType);}
 
   AminoAcidType getAminoAcidType() const
     {return aminoAcidType;}

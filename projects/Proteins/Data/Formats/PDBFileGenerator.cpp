@@ -36,7 +36,7 @@ void PDBFileGenerator::consume(const Variable& variable)
   */
   std::vector<String> residueNames(n);
   for (size_t i = 0; i < n; ++i)
-    residueNames[i] = primaryStructure->getObjectAndCast<AminoAcid>(i)->getThreeLettersCode();
+    residueNames[i] = AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getVariable(i).getInteger()).toUpperCase();
   size_t firstResidueIndex = 0;
   size_t seqResIndex = 1;
   while (firstResidueIndex < n)
@@ -55,7 +55,7 @@ void PDBFileGenerator::consume(const Variable& variable)
         AtomPtr atom = residue->getAtom(j);
         jassert(atom->getPosition().exists());
         jassert(isNumberValid(atom->getX()) && isNumberValid(atom->getY()) && isNumberValid(atom->getZ()));
-        print(makeAtomLine(atomNumber++, atom->getName(), residue->getName(), String::empty,
+        print(makeAtomLine(atomNumber++, atom->getName(), residue->getThreeLettersCodeName(), String::empty,
           i + 1, atom->getX(), atom->getY(), atom->getZ(), atom->getOccupancy(), atom->getTemperatureFactor(),
           String::empty, atom->getElementSymbol(), String::empty), true);
       }

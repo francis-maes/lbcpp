@@ -37,10 +37,10 @@ public:
   SymmetricMatrixPtr makeCBetaDistanceMatrix() const;
 
   size_t getNumResidues() const
-    {return residues->size();}
+    {return residues->getNumVariables();}
 
   ResiduePtr getResidue(size_t index) const
-    {return residues->getObjectAndCast<Residue>(index);}
+    {jassert(index < getNumResidues()); return residues->getObjectAndCast<Residue>(index);}
 
   ResiduePtr getLastResidue() const
     {size_t n = residues->size(); return n ? residues->getObjectAndCast<Residue>(n - 1) : ResiduePtr();}

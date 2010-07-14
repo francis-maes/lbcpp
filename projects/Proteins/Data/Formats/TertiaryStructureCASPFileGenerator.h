@@ -33,6 +33,8 @@ public:
     for (size_t i = 0; i < tertiaryStructure->getNumResidues(); ++i)
     {
       ResiduePtr residue = tertiaryStructure->getResidue(i);
+      if (!residue) // FIXME
+        continue;
       for (size_t j = 0; j < residue->getNumAtoms(); ++j)
         printAtom(residue, residue->getAtom(j), i + 1, atomNumber++);
     }
@@ -43,7 +45,7 @@ public:
 
   void printAtom(ResiduePtr residue, AtomPtr atom, size_t residueNumber, size_t atomNumber)
   {
-    String line = PDBFileGenerator::makeAtomLine(atomNumber, atom->getName(), residue->getName(),
+    String line = PDBFileGenerator::makeAtomLine(atomNumber, atom->getName(), residue->getThreeLettersCodeName().toUpperCase(),
                   String::empty, residueNumber, atom->getX(), atom->getY(), atom->getZ(),
                       1.0, -1.0, String::empty, String::empty, String::empty);
     print(line, true);

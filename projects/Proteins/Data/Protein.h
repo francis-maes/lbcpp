@@ -31,7 +31,7 @@ public:
 
   Protein() {}
   
-  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true);
+  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true, ErrorHandler& callback = ErrorHandler::getInstance());
   
   void saveToPDBFile(const File& pdbFile);
   void saveToXmlFile(const File& xmlFile, ErrorHandler& callback = ErrorHandler::getInstance()) const

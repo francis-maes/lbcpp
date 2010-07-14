@@ -8,8 +8,8 @@
 #include "PDBFileParser.h"
 using namespace lbcpp;
 
-PDBFileParser::PDBFileParser(const File& file, bool beTolerant)
-  : TextParser(file), beTolerant(beTolerant)
+PDBFileParser::PDBFileParser(const File& file, bool beTolerant, ErrorHandler& callback)
+  : TextParser(file, callback), beTolerant(beTolerant)
   {}
 
 void PDBFileParser::parseBegin()
@@ -288,7 +288,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
 
   // check amino acid code
   Variable aminoAcid = AminoAcid::fromThreeLettersCode(residueName);
-  if (!aminoAcid || aminoAcid.getInteger() >= 20)
+  if (!aminoAcid || aminoAcid.getInteger() >= (int)AminoAcid::numStandardAminoAcid)
   {
     callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + lbcpp::toString(residueName));
     return false;

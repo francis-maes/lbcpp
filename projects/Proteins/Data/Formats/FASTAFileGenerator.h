@@ -21,9 +21,9 @@ public:
   FASTAFileGenerator(const File& file)
     : TextPrinter(file) {}
 
-  virtual void consume(const Variable& object)
+  virtual void consume(const Variable& variable)
   {
-    ProteinPtr protein = object.getObjectAndCast<Protein>();
+    ProteinPtr protein = variable.getObjectAndCast<Protein>();
     jassert(protein);
     print(T(">") + protein->getName(), true);
     VectorPtr primaryStructure = protein->getPrimaryStructure();

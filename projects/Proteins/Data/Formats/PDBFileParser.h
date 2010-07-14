@@ -18,7 +18,7 @@ namespace lbcpp
 class PDBFileParser : public TextParser
 {
 public:
-  PDBFileParser(const File& file, bool beTolerant);
+  PDBFileParser(const File& file, bool beTolerant, ErrorHandler& callback = ErrorHandler::getInstance());
   
   virtual TypePtr getElementsType() const
     {return proteinClass();}

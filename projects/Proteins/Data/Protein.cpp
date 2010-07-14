@@ -50,9 +50,9 @@ extern ClassPtr lbcpp::proteinClass()
 
 ///////////////////
 
-ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
+ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, ErrorHandler& callback)
 {
-  ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant));
+  ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant, callback));
   if (!parser->next())
     return ProteinPtr();
   
@@ -67,7 +67,7 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant)
       {
         for (size_t j = 0; j < proteins.size(); ++j)
           std::cerr << "Chain Size: " << proteins[j]->getLength() << std::endl;
-        Object::error(T("ProteinObject::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
+        callback.errorMessage(T("ProteinObject::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
         return ProteinPtr();
       }
   }

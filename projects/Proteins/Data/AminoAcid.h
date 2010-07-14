@@ -85,7 +85,9 @@ public:
   
   static Variable fromThreeLettersCode(const String& code);
   
-  static juce::tchar getOneLetterCode(AminoAcidType type);
+  static juce::tchar toOneLetterCode(AminoAcidType type);
+  
+  static String toThreeLettersCode(AminoAcidType type);
   
 private:
   friend class AminoAcidClass;
