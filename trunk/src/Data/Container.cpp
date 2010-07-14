@@ -218,7 +218,7 @@ ContainerPtr Container::invFold(size_t fold, size_t numFolds) const
   return invRange(begin, end);
 }
 
-ClassPtr lbcpp::variableContainerClass()
+ClassPtr lbcpp::containerClass()
   {static TypeCache cache(T("Container")); return cache();}
 
 void declareContainerClasses()

@@ -54,6 +54,12 @@ String SequentialInference::toString() const
   return res;
 }
 
+StaticSequentialInference::StaticSequentialInference(const String& name)
+  : SequentialInference(name)
+{
+  setBatchLearner(staticSequentialInferenceLearner());
+}
+
 void StaticSequentialInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
 {
   subObjects.resize(getNumSubInferences());
@@ -68,6 +74,12 @@ void StaticSequentialInference::getChildrenObjects(std::vector< std::pair<String
 /*
 ** ParallelInference
 */
+StaticParallelInference::StaticParallelInference(const String& name)
+  : ParallelInference(name)
+{
+  setBatchLearner(staticParallelInferenceLearner());
+}
+
 void StaticParallelInference::getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
 {
   subObjects.resize(getNumSubInferences());

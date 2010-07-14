@@ -29,6 +29,15 @@ public:
   virtual ~LinearInference()
     {clearDotProductCache();}
 
+  virtual TypePtr getInputType() const
+    {return Class::get(T("FeatureGenerator"));}
+
+  virtual TypePtr getSupervisionType() const
+    {return Class::get(T("ScalarFunction"));}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return doubleType();}
+
   virtual void beginRunSession()
     {clearDotProductCache(); if (parameters) dotProductCache = new FeatureGenerator::DotProductCache();}
 

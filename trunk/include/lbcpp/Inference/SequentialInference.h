@@ -97,11 +97,12 @@ protected:
     {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
 };
 
+extern ClassPtr sequentialInferenceClass();
+
 class StaticSequentialInference : public SequentialInference
 {
 public:
-  StaticSequentialInference(const String& name)
-    : SequentialInference(name) {}
+  StaticSequentialInference(const String& name);
   StaticSequentialInference() {}
 
   virtual size_t getNumSubInferences() const = 0;
@@ -109,6 +110,10 @@ public:
 
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 };
+
+typedef ReferenceCountedObjectPtr<StaticSequentialInference> StaticSequentialInferencePtr;
+
+extern ClassPtr staticSequentialInferenceClass();
 
 class VectorSequentialInference : public StaticSequentialInference
 {

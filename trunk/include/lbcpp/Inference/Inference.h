@@ -26,6 +26,15 @@ public:
   static InferencePtr createFromFile(const File& file)
     {return Object::createFromFileAndCast<Inference>(file);}
   
+  virtual TypePtr getInputType() const
+    {return anyType();}
+
+  virtual TypePtr getSupervisionType() const
+    {return anyType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return anyType();}
+
   enum ReturnCode
   {
     finishedReturnCode = 0,
@@ -61,6 +70,8 @@ protected:
   InferencePtr batchLearner;
 };
 
+extern ClassPtr inferenceClass();
+
 /*
 ** Decorator inference
 */
@@ -83,24 +94,31 @@ extern InferencePtr squareRegressionInference(InferenceOnlineLearnerPtr learner,
 extern InferencePtr absoluteRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr dihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
-// MultiClass Classification
-extern InferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
-
 /*
 ** Decision Tree Inference
 */
-extern InferencePtr extraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
- 
+extern InferencePtr regressionExtraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr binaryClassificationExtraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr classificationExtraTreeInference(const String& name, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+
+/*
+** Reduction
+*/
+extern InferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
+extern InferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
+
 /*
 ** Meta Inference
 */
 // Input: (Inference, trainingData) pair; trainingData = container of (input, supervision) pairs
 // Supervision: None
 // Output: None (side-effect on input Inference)
+extern InferencePtr dummyInferenceLearner();
 extern InferencePtr simulationInferenceLearner();
-extern InferencePtr sequentialInferenceLearner();
-extern InferencePtr parallelInferenceLearner();
+extern InferencePtr staticSequentialInferenceLearner();
+extern InferencePtr staticParallelInferenceLearner();
 extern InferencePtr sharedParallelInferenceLearner();
+extern InferencePtr parallelVoteInferenceLearner();
 
 extern InferencePtr decoratorInferenceLearner();
 extern InferencePtr postProcessInferenceLearner();

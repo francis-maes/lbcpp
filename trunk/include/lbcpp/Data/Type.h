@@ -186,6 +186,11 @@ extern TypePtr stringType();
 extern TypePtr pairType();
 extern TypePtr pairType(TypePtr firstClass, TypePtr secondClass);
 
+extern TypePtr sumType(TypePtr type1, TypePtr type2);
+extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3);
+extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3, TypePtr type4);
+extern TypePtr sumType(const std::vector<TypePtr>& types);
+
 /*
 ** Integer
 */

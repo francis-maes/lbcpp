@@ -71,12 +71,23 @@ public:
     {return context->runDecoratorInference(DecoratorInferencePtr(this), input, supervision, returnCode);}
 };
 
+extern ClassPtr decoratorInferenceClass();
+
 class StaticDecoratorInference : public DecoratorInference
 {
 public:
   StaticDecoratorInference(const String& name, InferencePtr decorated)
     : DecoratorInference(name), decorated(decorated) {}
   StaticDecoratorInference() {}
+
+  virtual TypePtr getInputType() const
+    {return decorated->getInputType();}
+
+  virtual TypePtr getSupervisionType() const
+    {return decorated->getSupervisionType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return decorated->getOutputType(inputType);}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -102,6 +113,8 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
+
+extern ClassPtr staticDecoratorInferenceClass();
 
 }; /* namespace lbcpp */
 

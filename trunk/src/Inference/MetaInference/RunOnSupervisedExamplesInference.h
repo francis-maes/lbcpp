@@ -31,6 +31,15 @@ public:
 
   RunOnSupervisedExamplesInference() {}
 
+  virtual TypePtr getInputType() const
+    {return containerClass();}
+
+  virtual TypePtr getSupervisionType() const
+    {return nilType();}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return nilType();}
+
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ContainerPtr examples = input.dynamicCast<Container>();

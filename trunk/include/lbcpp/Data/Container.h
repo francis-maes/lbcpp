@@ -176,7 +176,7 @@ public:
   ContainerPtr invRange(size_t begin, size_t end) const;
 };
 
-extern ClassPtr variableContainerClass();
+extern ClassPtr containerClass();
 
 /**
 ** @class DecoratorContainer

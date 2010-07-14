@@ -21,6 +21,9 @@ public:
     : StaticDecoratorInference(name, scoreInference) {}
   RegressionInference() {}
   
+  virtual TypePtr getSupervisionType() const
+    {return doubleType();}
+
   virtual ScalarFunctionPtr getLoss(double target) const = 0;
   
   virtual void setName(const String& name)

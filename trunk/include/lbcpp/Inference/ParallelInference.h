@@ -77,11 +77,12 @@ protected:
     {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 };
 
+extern ClassPtr parallelInferenceClass();
+
 class StaticParallelInference : public ParallelInference
 {
 public:
-  StaticParallelInference(const String& name)
-    : ParallelInference(name) {}
+  StaticParallelInference(const String& name);
   StaticParallelInference() {}
 
   virtual size_t getNumSubInferences() const = 0;
@@ -89,6 +90,8 @@ public:
 
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 };
+
+extern ClassPtr staticParallelInferenceClass();
 
 class VectorStaticParallelInference : public StaticParallelInference
 {
@@ -149,6 +152,8 @@ public:
 protected:
   InferencePtr subInference;
 };
+
+extern ClassPtr sharedParallelInferenceClass();
 
 }; /* namespace lbcpp */
 
