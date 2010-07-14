@@ -9,24 +9,45 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 # define LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 
+# include <lbcpp/Data/Perception.h>
 # include <lbcpp/Inference/Inference.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
+
+class ResidueCompositePerception : public CompositePerception
+{
+public:
+  virtual TypePtr getInputType() const
+    {return pairType(proteinClass(), integerType());}
+};
+
 class ProteinInferenceFactory : public Object
 {
 public:
   ProteinInferenceFactory();
 
+  /*
+  ** High level inferences
+  */
   virtual InferencePtr createInference(const String& targetName) const;
   virtual InferencePtr createTargetInference(const String& targetName) const;
   virtual InferencePtr createSequenceLabelingInference(const String& targetName) const;
 
-  virtual FunctionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const = 0;
-  virtual InferencePtr createBinaryClassifier(const String& targetName) const = 0;
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const = 0;
+  /*
+  ** Perceptions
+  */
+  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const;
+  virtual void createPrimaryStructureResiduePerception(CompositePerceptionPtr res) const;
+  virtual void createPositionSpecificScoringMatrixResiduePerception(CompositePerceptionPtr res) const;
+
+  /*
+  ** Low level inferences
+  */
+  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const = 0;
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const = 0;
 
 protected:
   ClassPtr proteinClass;
@@ -34,6 +55,8 @@ protected:
   size_t getTargetIndex(const String& targetName) const;
   TypePtr getTargetType(const String& targetName) const;
   InferencePtr addToProteinInference(InferencePtr targetInference, const String& targetName) const;
+
+  PerceptionPtr applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInferenceFactory> ProteinInferenceFactoryPtr;

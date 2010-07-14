@@ -85,18 +85,16 @@ ProteinPtr Protein::createFromXml(const File& file, ErrorHandler& callback)
   {return Variable::createFromFile(file, callback).getObjectAndCast<Protein>();}
 
 ProteinPtr Protein::createFromFASTA(const File& file, ErrorHandler& callback)
-{
-  return StreamPtr(new FASTAFileParser(file, callback))->next().getObjectAndCast<Protein>();
-}
+  {return StreamPtr(new FASTAFileParser(file, callback))->next().getObjectAndCast<Protein>(callback);}
 
-void Protein::saveToPDBFile(const File& pdbFile, ErrorHandler& callback)
-  {ConsumerPtr(new PDBFileGenerator(pdbFile, callback))->consume(ProteinPtr(this));}
+void Protein::saveToPDBFile(const File& pdbFile, ErrorHandler& callback) const
+  {ConsumerPtr(new PDBFileGenerator(pdbFile, callback))->consume(ProteinPtr(const_cast<Protein* >(this)));}
 
 void Protein::saveToXmlFile(const File& xmlFile, ErrorHandler& callback) const
   {Variable(const_cast<Protein* >(this)).saveToFile(xmlFile, callback);}
 
-void Protein::saveToFASTAFile(const File& fastaFile, ErrorHandler& callback)
-  {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(ProteinPtr(this));}
+void Protein::saveToFASTAFile(const File& fastaFile, ErrorHandler& callback) const
+  {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(ProteinPtr(const_cast<Protein* >(this)));}
 
 void Protein::setPrimaryStructure(const String& primaryStructure)
 {

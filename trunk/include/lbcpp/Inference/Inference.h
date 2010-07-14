@@ -61,6 +61,14 @@ public:
   void setBatchLearner(InferencePtr batchLearner)
     {this->batchLearner = batchLearner;}
 
+  virtual void clone(ObjectPtr target) const
+  {
+    NameableObject::clone(target);
+    InferencePtr res = target.staticCast<Inference>();
+    res->onlineLearner = onlineLearner;
+    res->batchLearner = batchLearner;
+  }
+
 protected:
   friend class InferenceContext;
 
@@ -97,9 +105,9 @@ extern InferencePtr dihedralAngleRegressionInference(InferenceOnlineLearnerPtr l
 /*
 ** Decision Tree Inference
 */
-extern InferencePtr regressionExtraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern InferencePtr binaryClassificationExtraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern InferencePtr classificationExtraTreeInference(const String& name, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr regressionExtraTreeInference(const String& name, TypePtr inputType, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr binaryClassificationExtraTreeInference(const String& name, TypePtr inputType, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr classificationExtraTreeInference(const String& name, TypePtr inputType, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
 
 /*
 ** Reduction
@@ -117,7 +125,7 @@ extern InferencePtr dummyInferenceLearner();
 extern InferencePtr simulationInferenceLearner();
 extern InferencePtr staticSequentialInferenceLearner();
 extern InferencePtr staticParallelInferenceLearner();
-extern InferencePtr sharedParallelInferenceLearner();
+extern InferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
 extern InferencePtr parallelVoteInferenceLearner();
 
 extern InferencePtr decoratorInferenceLearner();

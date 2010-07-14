@@ -206,7 +206,7 @@ bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
 
 Variable Type::getSubVariable(const VariableValue& value, size_t index) const
-  {jassert(false); return Variable();}
+  {return baseType ? baseType->getSubVariable(value, index) : Variable();}
 
 void Type::declare(TypePtr classInstance)
   {getClassManagerInstance().declare(classInstance);}

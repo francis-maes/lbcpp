@@ -50,6 +50,7 @@ extern void declareProteinClass();
 // inference
 extern void declareProteinInferenceClasses();
 
+#include "Inference/ProteinInferenceFactory.h" // tmp, perception
 void declareProteinClasses()
 {
   // Data
@@ -116,4 +117,7 @@ void declareProteinClasses()
   // inference
   declareProteinInferenceClasses();
   // -
+
+  // todo: ranger, perception
+  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
 }

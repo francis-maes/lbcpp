@@ -17,6 +17,9 @@ namespace lbcpp
 class SharedParallelInferenceLearner : public DecoratorInference
 {
 public:
+  SharedParallelInferenceLearner(bool filterUnsupervisedExamples = true)
+    : filterUnsupervisedExamples(filterUnsupervisedExamples) {}
+
   virtual TypePtr getInputType() const
     {return pairType(sharedParallelInferenceClass(), containerClass());}
 
@@ -46,6 +49,8 @@ public:
   }
 
 private:
+  bool filterUnsupervisedExamples;
+
   ContainerPtr computeSubTrainingData(InferenceContextPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     InferencePtr targetSubInference = targetInference->getSubInference();
@@ -61,7 +66,9 @@ private:
       for (size_t j = 0; j < state->getNumSubInferences(); ++j)
       {
         jassert(state->getSubInference(j) == targetSubInference);
-        res->append(Variable::pair(state->getSubInput(j), state->getSubSupervision(j)));
+        Variable subSupervision = state->getSubSupervision(j);
+        if (!filterUnsupervisedExamples || subSupervision)
+          res->append(Variable::pair(state->getSubInput(j), subSupervision));
       }
     }
     return res;

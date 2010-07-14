@@ -34,14 +34,13 @@ public:
   /*
   ** Save/Load operators
   */
-  
   static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true, ErrorHandler& callback = ErrorHandler::getInstance());
   static ProteinPtr createFromXml(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
   static ProteinPtr createFromFASTA(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
 
-  void saveToPDBFile(const File& pdbFile, ErrorHandler& callback = ErrorHandler::getInstance());
+  void saveToPDBFile(const File& pdbFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
   void saveToXmlFile(const File& xmlFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
-  void saveToFASTAFile(const File& fastaFile, ErrorHandler& callback = ErrorHandler::getInstance());
+  void saveToFASTAFile(const File& fastaFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
 
   virtual VariableReference getVariableReference(size_t index);
 

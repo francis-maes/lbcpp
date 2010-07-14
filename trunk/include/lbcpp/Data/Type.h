@@ -117,13 +117,13 @@ public:
   ** Static Variables
   */
   virtual size_t getNumStaticVariables() const
-    {return 0;}
+    {return baseType ? baseType->getNumStaticVariables() : 0;}
 
   virtual TypePtr getStaticVariableType(size_t index) const
-    {jassert(false); return TypePtr();}
+    {return baseType ? baseType->getStaticVariableType(index) : TypePtr();}
 
   virtual String getStaticVariableName(size_t index) const
-    {jassert(false); return String::empty;}
+    {return baseType ? baseType->getStaticVariableName(index) : String::empty;}
 
   virtual int findStaticVariable(const String& name) const;
 
@@ -139,7 +139,7 @@ public:
   virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
 
   virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-    {jassert(false);}
+    {if (baseType) baseType->setSubVariable(value, index, subValue);}
 
   /*
   ** Object
