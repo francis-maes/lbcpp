@@ -17,10 +17,31 @@ namespace lbcpp
 class ParallelVoteInference : public VectorStaticParallelInference
 {
 public:
-  ParallelVoteInference(const String& name)
-    : VectorStaticParallelInference(name) {}
+  ParallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner)
+    : VectorStaticParallelInference(name), voteInferenceModel(voteInferenceModel)
+  {
+    jassert(numVoters);
+    subInferences.resize(numVoters);
+    for (size_t i = 0; i < numVoters; ++i)
+    {
+      InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>();
+      voteInference->setBatchLearner(voterLearner);
+      subInferences.set(i, voteInference);
+    }
+    setBatchLearner(parallelVoteInferenceLearner());
+  }
+
   ParallelVoteInference() {}
  
+  virtual TypePtr getInputType() const
+    {return voteInferenceModel->getInputType();}
+
+  virtual TypePtr getSupervisionType() const
+    {return voteInferenceModel->getSupervisionType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return voteInferenceModel->getOutputType(inputType);}
+
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
@@ -40,6 +61,9 @@ public:
       res.addWeighted(state->getSubOutput(i), weight);
     return res;
   }
+
+protected:
+  InferencePtr voteInferenceModel;
 };
 
 typedef ReferenceCountedObjectPtr<ParallelVoteInference> ParallelVoteInferencePtr;

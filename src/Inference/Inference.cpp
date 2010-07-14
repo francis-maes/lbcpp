@@ -110,51 +110,83 @@ InferencePtr lbcpp::dihedralAngleRegressionInference(InferenceOnlineLearnerPtr l
 ** Decision Tree
 */
 #include "DecisionTreeInference/ExtraTreeInference.h"
+#include "DecisionTreeInference/ExtraTreeInferenceLearner.h"
 
-InferencePtr lbcpp::extraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  {return new ExtraTreeInference(name, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
+inline InferencePtr extraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+  {return new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting);}
+
+InferencePtr lbcpp::regressionExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+{
+  InferencePtr decisionTreeModel = new RegressionBinaryDecisionTreeInference(name);
+  return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
+}
+
+InferencePtr lbcpp::binaryClassificationExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+{
+  InferencePtr decisionTreeModel = new BinaryClassificationBinaryDecisionTreeInference(name);
+  return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
+}
+
+InferencePtr lbcpp::classificationExtraTreeInference(const String& name, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+{
+  InferencePtr decisionTreeModel = new ClassificationBinaryDecisionTreeInference(name, classes);
+  return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
+}
 
 /*
 ** Reduction
 */
 #include "ReductionInference/OneAgainstAllClassificationInference.h"
+#include "ReductionInference/ParallelVoteInference.h"
 
 InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
   {return new OneAgainstAllClassificationInference(name, classes, binaryClassifierModel);}
 
+InferencePtr lbcpp::parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner)
+  {return new ParallelVoteInference(name, numVoters, voteInferenceModel, voteLearner);}
+
 /*
 ** Meta Inference
 */
-#include "MetaInference/CallbackBasedDecoratorInference.h"
-#include "MetaInference/RunOnSupervisedExamplesInference.h"
+#include "MetaInference/DummyInferenceLearner.h"
 #include "MetaInference/SimulationInferenceLearner.h"
-#include "MetaInference/SequentialInferenceLearner.h"
-#include "MetaInference/ParallelInferenceLearner.h"
+#include "MetaInference/StaticSequentialInferenceLearner.h"
+#include "MetaInference/StaticParallelInferenceLearner.h"
+#include "MetaInference/SharedParallelInferenceLearner.h"
 #include "MetaInference/DecoratorInferenceLearner.h"
 
-InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
-  {return new RunOnSupervisedExamplesInference(inference);}
-
-InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
-  {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
+InferencePtr lbcpp::dummyInferenceLearner()
+  {return new DummyInferenceLearner();}
 
 InferencePtr lbcpp::simulationInferenceLearner()
   {return new SimulationInferenceLearner();}
 
-InferencePtr lbcpp::sequentialInferenceLearner()
-  {return new SequentialInferenceLearner();}
+InferencePtr lbcpp::staticSequentialInferenceLearner()
+  {return new StaticSequentialInferenceLearner();}
 
-InferencePtr lbcpp::parallelInferenceLearner()
-  {return new ParallelInferenceLearner();}
+InferencePtr lbcpp::staticParallelInferenceLearner()
+  {return new StaticParallelInferenceLearner();}
 
 InferencePtr lbcpp::sharedParallelInferenceLearner()
   {return new SharedParallelInferenceLearner();}
+
+InferencePtr lbcpp::parallelVoteInferenceLearner()
+  {return new ParallelVoteInferenceLearner();}
 
 InferencePtr lbcpp::decoratorInferenceLearner()
   {return new DecoratorInferenceLearner();}
 
 InferencePtr lbcpp::postProcessInferenceLearner()
   {return new PostProcessInferenceLearner();}
+
+#include "MetaInference/CallbackBasedDecoratorInference.h"
+#include "MetaInference/RunOnSupervisedExamplesInference.h"
+
+InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
+  {return new RunOnSupervisedExamplesInference(inference);}
+
+InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
+  {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
 class PostProcessInference : public StaticDecoratorInference
 {
@@ -176,6 +208,30 @@ protected:
 
 InferencePtr lbcpp::postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction)
   {return new PostProcessInference(inference, postProcessingFunction);}
+
+ClassPtr lbcpp::inferenceClass()
+  {static TypeCache cache(T("Inference")); return cache();}
+
+ClassPtr lbcpp::decoratorInferenceClass()
+  {static TypeCache cache(T("DecoratorInference")); return cache();}
+
+ClassPtr lbcpp::staticDecoratorInferenceClass()
+  {static TypeCache cache(T("StaticDecoratorInference")); return cache();}
+
+ClassPtr lbcpp::sequentialInferenceClass()
+  {static TypeCache cache(T("SequentialInference")); return cache();}
+
+ClassPtr lbcpp::staticSequentialInferenceClass()
+  {static TypeCache cache(T("StaticSequentialInference")); return cache();}
+
+ClassPtr lbcpp::parallelInferenceClass()
+  {static TypeCache cache(T("ParallelInference")); return cache();}
+
+ClassPtr lbcpp::staticParallelInferenceClass()
+  {static TypeCache cache(T("StaticParallelInference")); return cache();}
+
+ClassPtr lbcpp::sharedParallelInferenceClass()
+  {static TypeCache cache(T("SharedParallelInference")); return cache();}
 
 void declareInferenceClasses()
 {
@@ -222,15 +278,18 @@ void declareInferenceClasses()
   */
   LBCPP_DECLARE_CLASS(BinaryDecisionTree, Object);
   LBCPP_DECLARE_CLASS(BinaryDecisionTreeInference, Inference);
-  LBCPP_DECLARE_CLASS(ExtraTreeInference, ParallelVoteInference);
+    LBCPP_DECLARE_CLASS(RegressionBinaryDecisionTreeInference, BinaryDecisionTreeInference);
+    LBCPP_DECLARE_CLASS(BinaryClassificationBinaryDecisionTreeInference, BinaryDecisionTreeInference);
+    LBCPP_DECLARE_CLASS(ClassificationBinaryDecisionTreeInference, BinaryDecisionTreeInference);
   
   /*
   ** Meta
   */
   LBCPP_DECLARE_CLASS(CallbackBasedDecoratorInference, StaticDecoratorInference);  
   LBCPP_DECLARE_CLASS(SimulationInferenceLearner, Inference);
-  LBCPP_DECLARE_CLASS(SequentialInferenceLearner, Inference);
-  LBCPP_DECLARE_CLASS(ParallelInferenceLearner, ParallelInference);
+  LBCPP_DECLARE_CLASS(StaticSequentialInferenceLearner, Inference);
+  LBCPP_DECLARE_CLASS(StaticParallelInferenceLearner, ParallelInference);
+    LBCPP_DECLARE_CLASS(ParallelVoteInferenceLearner, StaticParallelInferenceLearner);
   LBCPP_DECLARE_CLASS(SharedParallelInferenceLearner, DecoratorInference);
   LBCPP_DECLARE_CLASS(DecoratorInferenceLearner, DecoratorInference);
     LBCPP_DECLARE_CLASS(PostProcessInferenceLearner, DecoratorInferenceLearner);

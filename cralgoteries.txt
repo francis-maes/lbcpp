@@ -1,5 +1,10 @@
-* New DecoratorInferenceBatchLearner => use in decoratorInference
-* New SharedParallelInferenceBatchLearner => use in SharedParallelContainerInference
+* Le BinaryDecisionInference::clone() utilisé dans le ParallelVoteInference n'est pas implémenté
+* Erreur de type dans les exemples qui arrivent au SingleExtraTreeInferenceLearner
+
+* Alex
+* Pb Xml Julien
+
+
 * More targets, More representations, More features
 
 Julien:

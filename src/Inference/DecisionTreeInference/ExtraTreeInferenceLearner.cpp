@@ -34,6 +34,8 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   TypePtr inputType = trainingDataType->getTemplateArgument(0);
   TypePtr outputType = trainingDataType->getTemplateArgument(1);
 
+  jassert(inputType->getNumStaticVariables());
+
   BinaryDecisionTreePtr tree = sampleTree(inputType, outputType, trainingData);
   if (tree)
   {
@@ -340,20 +342,4 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputC
   // sample tree recursively
   sampleTreeRecursively(res, nodeIndex, inputClass, outputClass, trainingData, variables);
   return res;
-}
-
-//////////////////////////
-
-ExtraTreeInference::ExtraTreeInference(const String& name, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  : ParallelVoteInference(name)
-{
-  InferencePtr baseLearner = new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting);
-  subInferences.resize(numTrees);
-  for (size_t i = 0; i < numTrees; ++i)
-  {
-    InferencePtr treeInference = new BinaryDecisionTreeInference(name);
-    treeInference->setBatchLearner(baseLearner);
-    subInferences.set(i, treeInference);
-  }
-  setBatchLearner(parallelInferenceLearner());
 }

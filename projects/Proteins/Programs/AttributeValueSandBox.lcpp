@@ -263,10 +263,10 @@ public:
   }
 
   virtual InferencePtr createBinaryClassifier(const String& targetName) const
-    {return extraTreeInference(targetName, 10, 10);}
+    {return binaryClassificationExtraTreeInference(targetName, 10, 10);}
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, EnumerationPtr classes) const
-    {return extraTreeInference(targetName, 10, 10);}
+    {return classificationExtraTreeInference(targetName, classes, 10, 10);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
@@ -334,8 +334,13 @@ public:
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceClassName = stack->getCurrentInference()->getClassName();
-    if (inferenceClassName.contains(T("Learner")))
-      std::cout << "preInferenceCallback: " << inferenceClassName << std::endl;
+    if (inferenceClassName.contains(T("Learner")) && input.size() == 2)
+    {
+      std::cout << "preInferenceCallback: " << inferenceClassName << " => " << input[0] << std::endl
+        << "  num examples: " << input[1].size() << std::endl
+        << "  static type: " << input[1].getTypeName() << std::endl
+        << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
+    }
 
     if (stack->getDepth() == 1)
     {
@@ -523,7 +528,7 @@ int main(int argc, char** argv)
   std::cout << "Training Data: " << trainingData->size() << " Testing Data: " << testingData->size() << std::endl;
 
   // train
-  inference = extraTreeInference(T("SS3"), 100, 15);
+  inference = classificationExtraTreeInference(T("SS3"), secondaryStructureElementEnumeration(), 100, 15);
   context->train(inference, trainingData);
 
   // evaluate

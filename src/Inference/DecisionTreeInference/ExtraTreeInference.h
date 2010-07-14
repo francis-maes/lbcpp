@@ -11,6 +11,7 @@
 
 # include "BinaryDecisionTree.h"
 # include "../ReductionInference/ParallelVoteInference.h"
+# include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp 
 {
@@ -38,10 +39,64 @@ protected:
 
 typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTreeInferencePtr;
 
+class RegressionBinaryDecisionTreeInference : public BinaryDecisionTreeInference
+{
+public:
+  RegressionBinaryDecisionTreeInference(const String& name)
+    : BinaryDecisionTreeInference(name) {}
+  RegressionBinaryDecisionTreeInference() {}
+
+  virtual TypePtr getInputType() const
+    {return objectClass();}
+
+  virtual TypePtr getSupervisionType() const
+    {return doubleType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return doubleType();}
+};
+
+class BinaryClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
+{
+public:
+  BinaryClassificationBinaryDecisionTreeInference(const String& name)
+    : BinaryDecisionTreeInference(name) {}
+  BinaryClassificationBinaryDecisionTreeInference() {}
+
+  virtual TypePtr getInputType() const
+    {return objectClass();}
+
+  virtual TypePtr getSupervisionType() const
+    {return booleanType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return booleanType();}
+};
+
+class ClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
+{
+public:
+  ClassificationBinaryDecisionTreeInference(const String& name, EnumerationPtr classes)
+    : BinaryDecisionTreeInference(name), classes(classes) {}
+  ClassificationBinaryDecisionTreeInference() {}
+
+  virtual TypePtr getInputType() const
+    {return objectClass();}
+
+  virtual TypePtr getSupervisionType() const
+    {return sumType(classes, discreteProbabilityDistributionClass(classes));}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return discreteProbabilityDistributionClass(classes);}
+
+protected:
+  EnumerationPtr classes;
+};
+
 class ExtraTreeInference : public ParallelVoteInference
 {
 public:
-  ExtraTreeInference(const String& name, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+  ExtraTreeInference(const String& name, BinaryDecisionTreeInferencePtr decisionTreeModel, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
   ExtraTreeInference() {}
 };
 

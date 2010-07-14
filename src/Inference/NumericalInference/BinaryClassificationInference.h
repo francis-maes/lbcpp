@@ -23,6 +23,12 @@ public:
 
   virtual ScalarFunctionPtr getLoss(bool isPositive) const = 0;
 
+  virtual TypePtr getSupervisionType() const
+    {return sumType(booleanType(), probabilityType());}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return doubleType();} // probabilityType ?
+
   virtual void setName(const String& name)
   {
     DecoratorInference::setName(name); 

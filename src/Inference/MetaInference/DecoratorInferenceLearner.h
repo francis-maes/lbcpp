@@ -18,6 +18,15 @@ namespace lbcpp
 class DecoratorInferenceLearner : public DecoratorInference
 {
 public:
+  virtual TypePtr getInputType() const
+    {return pairType(staticDecoratorInferenceClass(), containerClass());}
+
+  virtual TypePtr getSupervisionType() const
+    {return nilType();}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return nilType();}
+
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     StaticDecoratorInferencePtr targetInference = input[0].getObjectAndCast<StaticDecoratorInference>();
@@ -39,41 +48,8 @@ public:
   }
 
 protected:
-  class CommonTypeFinder
-  {
-  public:
-    void update(TypePtr newType)
-    {
-      if (!type)
-        type = newType;
-      else
-      {
-        if (newType->inheritsFrom(type))
-          return;
-        if (type->inheritsFrom(newType))
-          type = newType;
-        else
-        {
-          ErrorHandler::error(T("CommonTypeFinder"), T("No common type"));
-        }
-      }
-    }
-
-    void update(const Variable& variable)
-      {if (!variable.isNil()) update(variable.getType());}
-
-    TypePtr get() const
-      {return type;}
-
-  private:
-    TypePtr type;
-  };
-
   virtual ContainerPtr createSubTrainingData(InferenceContextPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
-    CommonTypeFinder subInputType;
-    CommonTypeFinder subSupervisionType;
-
     size_t n = trainingData->size();
     std::vector<Variable> subTrainingData;
     for (size_t i = 0; i < n; ++i)
@@ -84,14 +60,12 @@ protected:
       if (returnCode != Inference::finishedReturnCode)
         return ContainerPtr();
       
-      Variable subInput = state->getSubInput();
-      subInputType.update(subInput);
-      Variable subSupervision = state->getSubSupervision();
-      subSupervisionType.update(subSupervision);
-      subTrainingData.push_back(Variable::pair(subInput, subSupervision));
+      subTrainingData.push_back(Variable::pair(state->getSubInput(), state->getSubSupervision()));
     }
 
-    VectorPtr res = new Vector(pairType(subInputType.get(), subSupervisionType.get()), n);
+    InferencePtr targetSubInference = targetInference->getSubInference();
+
+    VectorPtr res = new Vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
     for (size_t i = 0; i < n; ++i)
       res->setVariable(i, subTrainingData[i]);
     return res;

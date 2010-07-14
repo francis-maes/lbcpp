@@ -17,7 +17,7 @@ namespace impl {
 Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
 {
   StringArray tokens;
-  tokens.addTokens(str.substring(1, str.length() - 1), T(" "), NULL);
+  tokens.addTokens(str, T(" "), NULL);
   if (tokens.size() != 3)
   {
     callback.errorMessage(T("Vector3::fromString"), T("Invalid format: ") + str.quoted());

@@ -94,7 +94,16 @@ public:
     {return input.getObjectAndCast<Protein>()->createEmptyTarget(targetIndex);}
 
   virtual void addResultToOutput(Variable& output, size_t index, const Variable& subInferenceOutput) const
-    {output.getObject()->setVariable(index, subInferenceOutput);}
+  {
+    Variable result = subInferenceOutput;
+    if (subInferenceOutput.isObject())
+    {
+      DiscreteProbabilityDistributionPtr distribution = subInferenceOutput.dynamicCast<DiscreteProbabilityDistribution>();
+      if (distribution)
+        result = distribution->sample(RandomGenerator::getInstance());
+    }
+    output.getObject()->setVariable(index, result);
+  }
 
 protected:
   size_t targetIndex;

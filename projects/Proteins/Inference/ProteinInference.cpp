@@ -62,7 +62,7 @@ void ProteinInferenceHelper::saveDebugFiles(ProteinPtr protein, size_t stepNumbe
 ** ProteinSequentialInference
 */
 ProteinSequentialInference::ProteinSequentialInference() : VectorSequentialInference(T("Protein"))
-  {setBatchLearner(sequentialInferenceLearner());}
+  {}
 
 SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {

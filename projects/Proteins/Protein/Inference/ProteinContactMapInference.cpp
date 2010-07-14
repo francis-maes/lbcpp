@@ -154,8 +154,6 @@ protected:
 ProteinContactMapInference::ProteinContactMapInference(const String& name, InferencePtr scoreInference, ProteinResiduePairFeaturesPtr scoreFeatures, const String& targetName)
   : VectorSequentialInference(name), ProteinTargetInferenceHelper(targetName)
 {
-  setBatchLearner(sequentialInferenceLearner());
-  
   InferencePtr scoresInference(new ContactMapScoresInference(name, scoreInference, scoreFeatures, targetName));
   scoresInference->setBatchLearner(simulationInferenceLearner());
   appendInference(scoresInference);

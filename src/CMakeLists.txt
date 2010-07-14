@@ -230,8 +230,9 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/CallbackBasedDecoratorInference.h
   Inference/MetaInference/RunOnSupervisedExamplesInference.h
   Inference/MetaInference/SimulationInferenceLearner.h
-  Inference/MetaInference/SequentialInferenceLearner.h
-  Inference/MetaInference/ParallelInferenceLearner.h
+  Inference/MetaInference/StaticSequentialInferenceLearner.h
+  Inference/MetaInference/StaticParallelInferenceLearner.h
+  Inference/MetaInference/SharedParallelInferenceLearner.h
   Inference/MetaInference/DecoratorInferenceLearner.h
 )
 
