@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ProteinInferenceFactory.h"
+#include "ProteinInference.h"
 #include "../Perception/ProteinPerception.h"
 #include "../Perception/ResiduePerception.h"
 #include "../Perception/ResiduePairPerception.h"
@@ -15,114 +16,19 @@
 using namespace lbcpp;
 
 #include <lbcpp/Inference/ParallelInference.h>
-class SharedParallelContainerInference : public SharedParallelInference
+# include "../../../src/Inference/ReductionInference/SharedParallelVectorInference.h"
+
+class ProteinVectorTargetInference : public SharedParallelVectorInference
 {
 public:
-  SharedParallelContainerInference(const String& name, InferencePtr subInference)
-    : SharedParallelInference(name, subInference)
+  ProteinVectorTargetInference(const String& targetName, PerceptionPtr perception, InferencePtr elementInference)
+    : SharedParallelVectorInference(targetName, perception, elementInference)
     {}
-  
-  SharedParallelContainerInference() {}
-  
-  virtual size_t getNumSubInferences(const Variable& input) const = 0;
-  virtual ContainerPtr getSupervisionTargets(const Variable& supervision) const = 0;
-  virtual Variable getSubInput(const Variable& input, size_t index) const = 0;
 
-  virtual Variable createOutput(const Variable& input) const = 0;
-  virtual void addResultToOutput(Variable& output, size_t index, const Variable& subInferenceOutput) const = 0;
+  ProteinVectorTargetInference() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    size_t n = getNumSubInferences(input);
-
-    ContainerPtr supervisionTargets;
-    if (supervision)
-    {
-      supervisionTargets = getSupervisionTargets(supervision);
-      jassert(!supervisionTargets || supervisionTargets->size() == n);
-    }
-
-    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    res->reserve(n);
-    if (supervisionTargets)
-      for (size_t i = 0; i < n; ++i)
-        res->addSubInference(subInference, getSubInput(input, i), supervisionTargets->getVariable(i));
-    else
-      for (size_t i = 0; i < n; ++i)
-        res->addSubInference(subInference, getSubInput(input, i), Variable());
-    return res;
-  }
-
-  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
-  {
-    size_t n = state->getNumSubInferences();
-
-    Variable res = createOutput(state->getInput());
-    bool atLeastOnePrediction = false;
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable subOutput = state->getSubOutput(i);
-      if (subOutput)
-      {
-        atLeastOnePrediction = true;
-        addResultToOutput(res, i, subOutput);
-      }
-    }
-    return atLeastOnePrediction ? res : Variable::missingValue(res.getType());
-  }
-};
-
-class SequenceProteinTargetInference : public SharedParallelContainerInference
-{
-public:
-  SequenceProteinTargetInference(const String& targetName, InferencePtr elementInference, PerceptionPtr perception)
-    : SharedParallelContainerInference(targetName, elementInference), perception(perception)
-  {
-    int index = proteinClass()->findStaticVariable(targetName);
-    jassert(index >= 0);
-    targetIndex = (size_t)index;
-    outputType = proteinClass()->getStaticVariableType(targetIndex);
-
-  }
-  SequenceProteinTargetInference() : targetIndex(0) {}
-
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual TypePtr getSupervisionType() const
-    {return outputType;}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return outputType;}
-
-  virtual size_t getNumSubInferences(const Variable& input) const
+  virtual size_t getOutputSize(const Variable& input) const
     {return input.getObjectAndCast<Protein>()->getLength();}
-
-  virtual ContainerPtr getSupervisionTargets(const Variable& supervision) const
-    {return supervision[targetIndex].getObjectAndCast<Container>();}
-
-  virtual Variable getSubInput(const Variable& input, size_t index) const
-    {return perception->compute(Variable::pair(input, index));}
-
-  virtual Variable createOutput(const Variable& input) const
-    {return input.getObjectAndCast<Protein>()->createEmptyTarget(targetIndex);}
-
-  virtual void addResultToOutput(Variable& output, size_t index, const Variable& subInferenceOutput) const
-  {
-    Variable result = subInferenceOutput;
-    if (subInferenceOutput.isObject())
-    {
-      DiscreteProbabilityDistributionPtr distribution = subInferenceOutput.dynamicCast<DiscreteProbabilityDistribution>();
-      if (distribution)
-        result = distribution->sample(RandomGenerator::getInstance());
-    }
-    output.getObject()->setVariable(index, result);
-  }
-
-protected:
-  size_t targetIndex;
-  PerceptionPtr perception;
-  TypePtr outputType;
 };
 
 //////////////////////////////
@@ -130,12 +36,12 @@ protected:
 ProteinInferenceFactory::ProteinInferenceFactory()
   : proteinClass(lbcpp::proteinClass())
 {
-  LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelContainerInference, SharedParallelInference);
-    LBCPP_DECLARE_CLASS(SequenceProteinTargetInference, SharedParallelContainerInference);
+  LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelVectorInference, SharedParallelInference);
+    LBCPP_DECLARE_CLASS(ProteinVectorTargetInference, SharedParallelVectorInference);
 }
 
-InferencePtr ProteinInferenceFactory::createInference(const String& targetName) const
-  {return addToProteinInference(createTargetInference(targetName), targetName);}
+InferencePtr ProteinInferenceFactory::createInferenceStep(const String& targetName) const
+  {return new ProteinInferenceStep(targetName, createTargetInference(targetName));}
 
 InferencePtr ProteinInferenceFactory::createTargetInference(const String& targetName) const
 {
@@ -155,14 +61,14 @@ InferencePtr ProteinInferenceFactory::createLabelSequenceInference(const String&
   jassert(elementsType);
   PerceptionPtr perception = createPerception(targetName, true, false);
   InferencePtr classifier = createMultiClassClassifier(targetName, perception->getOutputType(), elementsType);
-  return InferencePtr(new SequenceProteinTargetInference(targetName, classifier, perception));
+  return InferencePtr(new ProteinVectorTargetInference(targetName, perception, classifier));
 }
 
 InferencePtr ProteinInferenceFactory::createProbabilitySequenceInference(const String& targetName) const
 {
   PerceptionPtr perception = createPerception(targetName, true, false);
   InferencePtr classifier = createBinaryClassifier(targetName, perception->getOutputType());
-  return InferencePtr(new SequenceProteinTargetInference(targetName, classifier, perception));
+  return InferencePtr(new ProteinVectorTargetInference(targetName, perception, classifier));
 }
 
 size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const
@@ -174,9 +80,6 @@ size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const
 
 TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
   {return proteinClass->getStaticVariableType(getTargetIndex(targetName));}
-
-InferencePtr ProteinInferenceFactory::addToProteinInference(InferencePtr targetInference, const String& targetName) const
-  {return postProcessInference(targetInference, setFieldFunction(getTargetIndex(targetName)));}
 
 PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const String& targetName) const
 {

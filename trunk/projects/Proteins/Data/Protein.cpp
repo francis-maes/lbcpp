@@ -134,6 +134,36 @@ void Protein::setDistanceMap(SymmetricMatrixPtr distanceMap, bool betweenCBetaAt
     distanceMapCa = distanceMap;
 }
 
+String Protein::getTargetFriendlyName(size_t index)
+{
+  // skip base class variables
+  size_t baseClassVariables = nameableObjectClass()->getNumStaticVariables();
+  if (index < baseClassVariables)
+    return String::empty;
+  index -= baseClassVariables;
+
+  switch (index)
+  {
+  case 0: return T("Primary Structure");
+  case 1: return T("PSSM");
+  case 2: return T("Secondary Structure");
+  case 3: return T("DSSP Secondary Structure");
+  case 4: return T("Structural Alphabet");
+  case 5: return T("Solvent Accessibility");
+  case 6: return T("Solvent Accessibility at 20%"); 
+  case 7: return T("Disorder Regions");
+  case 8: return T("Contact Map C-alpha 8");
+  case 9: return T("Contact Map C-beta 8");
+  case 10: return T("Distance Map C-alpha");
+  case 11: return T("Distance Map C-beta");
+  case 12: return T("C-alpha Trace");
+  case 13: return T("Tertiary Structure");
+  default:
+    jassert(false); 
+    return String::empty;
+  }
+}
+
 VariableReference Protein::getVariableReference(size_t index)
 {
   size_t baseClassVariables = nameableObjectClass()->getNumStaticVariables();
@@ -159,29 +189,6 @@ VariableReference Protein::getVariableReference(size_t index)
   };
   jassert(false);
   return VariableReference();
-}
-
-Variable Protein::getVariable(size_t index)
-{
-  switch (index)
-  {
-    case 0: return primaryStructure;
-    case 1: return positionSpecificScoringMatrix;
-    case 2: return secondaryStructure;
-    case 3: return dsspSecondaryStructure;
-    case 4: return structuralAlphabetSequence;
-    case 5: return solventAccessibility;
-    case 6: return solventAccessibilityAt20p;
-    case 7: return disorderRegions;
-    case 8: return contactMap8Ca;
-    case 9: return contactMap8Cb;
-    case 10: return distanceMapCa;
-    case 11: return distanceMapCb;
-    case 12: return calphaTrace;
-    case 13: return tertiaryStructure;
-  };
-  jassert(false);
-  return Variable();
 }
 
 /*

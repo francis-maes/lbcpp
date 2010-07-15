@@ -170,17 +170,17 @@ int main(int argc, char** argv)
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInference(T("secondaryStructure")));
-  inference->appendInference(factory->createInference(T("secondaryStructure")));
-  //inference->appendInference(factory->createInference(T("structuralAlphabetSequence")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+//  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   /*
-  inference->appendInference(factory->createInference(T("disorderRegions")));
-  inference->appendInference(factory->createInference(T("disorderRegions")));
-  inference->appendInference(factory->createInference(T("secondaryStructure")));
-  inference->appendInference(factory->createInference(T("dsspSecondaryStructure")));
-  inference->appendInference(factory->createInference(T("secondaryStructure")));
-  inference->appendInference(factory->createInference(T("dsspSecondaryStructure")));
-  inference->appendInference(factory->createInference(T("disorderRegions")));*/
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));*/
   
 
   std::cout << "Inference: " << std::endl;

@@ -82,11 +82,9 @@ public:
     {return type < 20;}
 
   static Variable fromOneLetterCode(juce::tchar code);
-  
   static Variable fromThreeLettersCode(const String& code);
   
   static juce::tchar toOneLetterCode(AminoAcidType type);
-  
   static String toThreeLettersCode(AminoAcidType type);
   
 private:

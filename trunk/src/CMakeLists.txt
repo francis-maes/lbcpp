@@ -224,6 +224,7 @@ SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
+  Inference/ReductionInference/SharedParallelVectorInference.h
 )
 
 SET(LBCPP_INFERENCE_META_SOURCES

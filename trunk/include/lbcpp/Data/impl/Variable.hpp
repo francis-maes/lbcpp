@@ -58,7 +58,8 @@ inline Variable::Variable(Object* object)
 
 template<class T>
 inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType()), value(object)
+  {jassert(type || !object);} // this object's class has not been declared
 
 inline Variable::Variable(const Variable& otherVariant)
   : type(otherVariant.getType())
