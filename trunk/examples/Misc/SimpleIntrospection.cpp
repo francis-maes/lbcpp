@@ -15,22 +15,9 @@ public:
   A(bool b) : myBool(true), myInt(1664), myDouble(8.6), myString(T("yo")), myVariable(Variable::pair(51, 33)) {}
   A() {}
 
-  virtual VariableReference getVariableReference(size_t index)
-  {
-    switch (index)
-    {
-    case 0: return myBool;
-    case 1: return myInt;
-    case 2: return myDouble;
-    case 3: return myString;
-    case 4: return myObject;
-    case 5: return myVariable;
-    };
-    jassert(false);
-    return VariableReference();
-  }
-
 private:
+  friend class AClass;
+
   bool myBool;
   int myInt;
   double myDouble;
@@ -56,6 +43,15 @@ public:
 
   virtual VariableValue create() const
     {return new A();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(A)
+    LBCPP_DECLARE_VARIABLE(myBool);
+    LBCPP_DECLARE_VARIABLE(myInt);
+    LBCPP_DECLARE_VARIABLE(myDouble);
+    LBCPP_DECLARE_VARIABLE(myString);
+    LBCPP_DECLARE_VARIABLE(myObject);
+    LBCPP_DECLARE_VARIABLE(myVariable);
+  LBCPP_DECLARE_VARIABLE_END();
 };
 
 int main(int argc, char** argv)

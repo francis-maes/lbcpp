@@ -45,11 +45,11 @@ protected:
 
 // Input: Features
 // Output, Supervision: BackbondBond
-class ProteinBackboneBondInferenceStep : public VectorStaticParallelInference
+class ProteinBackboneBondInferenceStep : public VectorParallelInference
 {
 public:
   ProteinBackboneBondInferenceStep(const String& name, InferencePtr lengthRegressor, InferencePtr angleRegressor, InferencePtr dihedralRegressor)
-    : VectorStaticParallelInference(name)
+    : VectorParallelInference(name)
   {
     for (size_t i = 0; i < 3; ++i)
     {
@@ -59,15 +59,15 @@ public:
       
       regressor = lengthRegressor->cloneAndCast<Inference>();
       regressor->setName(namePrefix + T("Length"));
-      subInferences.append(regressor);
+      appendInference(regressor);
 
       regressor = angleRegressor->cloneAndCast<Inference>();
       regressor->setName(namePrefix + T("Angle"));
-      subInferences.append(regressor);
+      appendInference(regressor);
       
       regressor = dihedralRegressor->cloneAndCast<Inference>();
       regressor->setName(namePrefix + T("Dihedral"));
-      subInferences.append(regressor);
+      appendInference(regressor);
 
 //          static const double bondIntervals[] = {1.2, 1.8, 1.3, 2.0, 1.1, 1.9};
 //          static const double angleIntervals[] = {1.5, 2.5, 1.7, 2.4, 1.4, 2.5};
@@ -83,12 +83,12 @@ public:
     ProteinBackboneBondPtr bond = supervision.dynamicCast<ProteinBackboneBond>();
     jassert(bond || !supervision);
     
-    res->reserve(subInferences.size());
-    for (size_t i = 0; i < subInferences.size(); ++i)
+    res->reserve(subInferences->size());
+    for (size_t i = 0; i < subInferences->size(); ++i)
     {
       bool targetExists = false;
       double target = bond ? getTarget(bond, i, targetExists) : 0.0;
-      res->addSubInference(subInferences[i], input, targetExists ? Variable(target) : Variable());
+      res->addSubInference(getSubInference(i), input, targetExists ? Variable(target) : Variable());
     }
     return res;
   }

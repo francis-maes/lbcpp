@@ -45,18 +45,19 @@ String Object::getVariableName(size_t index) const
 
 Variable Object::getVariable(size_t index) const
 {
-  VariableReference ref = const_cast<Object* >(this)->getVariableReference(index);
-  return ref.get(getVariableType(index));
+  VariableValue pthis(const_cast<Object* >(this));
+  Variable res = getClass()->getSubVariable(pthis, index);
+  pthis.clearObject();
+  return res;
 }
 
 void Object::setVariable(size_t index, const Variable& value)
 {
-  VariableReference ref = getVariableReference(index);
-  ref.set(value);
+  VariableValue pthis(this);
+  getClass()->setSubVariable(pthis, index, value);
+  pthis.clearObject();
 }
 
-VariableReference Object::getVariableReference(size_t index)
-  {jassert(false); return VariableReference();}
 
 /*
 ** to string
@@ -368,11 +369,8 @@ bool Object::loadFromString(const String& str, ErrorHandler& callback)
   return false;
 }
 
-/*
-** NameableObject
-*/
-VariableReference NameableObject::getVariableReference(size_t index)
-  {jassert(index == 0); return name;}
+namespace lbcpp
+{
 
 class NameableObjectClass : public DynamicClass
 {
@@ -381,10 +379,16 @@ public:
   {
     addVariable(stringType(), T("name"));
   }
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(NameableObject)
+    LBCPP_DECLARE_VARIABLE(name);
+  LBCPP_DECLARE_VARIABLE_END();
 };
 
-ClassPtr lbcpp::nameableObjectClass()
+ClassPtr nameableObjectClass()
   {static TypeCache cache(T("NameableObject")); return cache();}
+
+}; /* namespace lbcpp */
 
 void declareObjectClasses()
 {

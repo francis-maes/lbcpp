@@ -26,11 +26,17 @@ typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceS
 class SequentialInference;
 typedef ReferenceCountedObjectPtr<SequentialInference> SequentialInferencePtr;
 
+class VectorSequentialInference;
+typedef ReferenceCountedObjectPtr<VectorSequentialInference> VectorSequentialInferencePtr;
+
 class ParallelInference;
 typedef ReferenceCountedObjectPtr<ParallelInference> ParallelInferencePtr;
 
 class StaticParallelInference;
 typedef ReferenceCountedObjectPtr<StaticParallelInference> StaticParallelInferencePtr;
+
+class VectorParallelInference;
+typedef ReferenceCountedObjectPtr<VectorParallelInference> VectorParallelInferencePtr;
 
 class SharedParallelInference;
 typedef ReferenceCountedObjectPtr<SharedParallelInference> SharedParallelInferencePtr;

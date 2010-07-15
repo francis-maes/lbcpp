@@ -218,11 +218,11 @@ public:
   virtual String toString() const
     {return value.toString();}
 
-  virtual VariableReference getVariableReference(size_t index);
   virtual bool loadFromString(const String& str, ErrorHandler& callback)
     {value = impl::Vector3::fromString(str, callback); return true;}
 
 private:
+  friend class Vector3Class;
   impl::Vector3 value;
 };
 

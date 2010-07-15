@@ -84,12 +84,8 @@ void Residue::applyAffineTransform(const impl::Matrix4& affineTransform) const
   }
 }
 
-VariableReference Residue::getVariableReference(size_t index)
+namespace lbcpp
 {
-  if (index == 0) return (int&)aminoAcidType;
-  if (index == 1) return atoms;
-  jassert(false); return VariableReference();
-}
 
 class ResidueClass : public DynamicClass
 {
@@ -102,10 +98,17 @@ public:
 
   virtual VariableValue create() const
     {return new Residue();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(Residue)
+    LBCPP_DECLARE_VARIABLE_CAST(aminoAcidType, int);
+    LBCPP_DECLARE_VARIABLE(atoms);
+  LBCPP_DECLARE_VARIABLE_END();
 };
 
-ClassPtr lbcpp::residueClass()
+ClassPtr residueClass()
   {static TypeCache cache(T("Residue")); return cache();}
+
+}; /* namespace lbcpp */
 
 void declareResidueClasses()
 {

@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/ParameterizedInference.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>

@@ -59,6 +59,8 @@ protected:
   DenseVectorPtr getParameters(InferencePtr inference) const;
 };
 
+extern ClassPtr inferenceOnlineLearnerClass();
+
 class UpdatableInferenceOnlineLearner : public InferenceOnlineLearner
 {
 public:

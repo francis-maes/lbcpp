@@ -42,8 +42,6 @@ public:
   void saveToXmlFile(const File& xmlFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
   void saveToFASTAFile(const File& fastaFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
 
-  virtual VariableReference getVariableReference(size_t index);
-
   Variable createEmptyTarget(size_t index) const;
   static String getTargetFriendlyName(size_t index);
   VectorPtr createEmptyProbabilitySequence() const;
@@ -151,6 +149,8 @@ public:
   void computeMissingVariables();
 
 protected:
+  friend class ProteinClass;
+
   // input
   VectorPtr primaryStructure;
   VectorPtr positionSpecificScoringMatrix;

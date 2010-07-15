@@ -15,21 +15,6 @@ String Atom::toString() const
     + lbcpp::toString(occupancy) + T(" ") + lbcpp::toString(temperatureFactor);
 }
 
-VariableReference Atom::getVariableReference(size_t index)
-{
-  if (index == 0)
-    return NameableObject::getVariableReference(index);
-  --index;
-  switch (index)
-  {
-  case 0: return elementSymbol;
-  case 1: return position;
-  case 2: return occupancy;
-  case 3: return temperatureFactor;
-  default: jassert(false); return VariableReference();
-  };
-}
-
 void Atom::saveToXml(XmlElement* xml) const
   {saveVariablesToXmlAttributes(xml);}
 
@@ -38,6 +23,9 @@ bool Atom::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 
 ClassPtr lbcpp::atomClass()
   {static TypeCache cache(T("Atom")); return cache();}
+
+namespace lbcpp
+{
 
 class AtomClass : public DynamicClass
 {
@@ -52,7 +40,16 @@ public:
 
   virtual VariableValue create() const
     {return new Atom();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(Atom)
+    LBCPP_DECLARE_VARIABLE(elementSymbol);
+    LBCPP_DECLARE_VARIABLE(position);
+    LBCPP_DECLARE_VARIABLE(occupancy);
+    LBCPP_DECLARE_VARIABLE(temperatureFactor);
+  LBCPP_DECLARE_VARIABLE_END()
 };
+
+}; /* namespace lbcpp */
 
 void declareAtomClasses()
 {

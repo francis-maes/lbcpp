@@ -74,7 +74,7 @@ SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(Inferen
 void ProteinSequentialInference::prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   // we keep the same input and supervision for sub-inferences
-  state->setSubInference(subInferences.get(index), state->getInput(), state->getSupervision());
+  state->setSubInference(getSubInference(index), state->getInput(), state->getSupervision());
 }
 
 void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)

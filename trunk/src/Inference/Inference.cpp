@@ -7,75 +7,39 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
 /*
-** InferenceVector
+** InferenceClass
 */
-int InferenceVector::find(InferencePtr inference) const
+namespace lbcpp 
 {
-  for (size_t i = 0; i < v.size(); ++i)
-    if (v[i] == inference)
-      return (int)i;
-  return -1;
-}
 
-File InferenceVector::getSubInferenceFile(size_t index, const File& directory) const
+class InferenceClass : public DynamicClass
 {
-  jassert(index < v.size());
-  InferencePtr step = v[index];
-  jassert(step);
-  return directory.getChildFile(lbcpp::toString(index) + T("_") + step->getName() + T(".inference"));
-}
-
-bool InferenceVector::saveToDirectory(const File& directory) const
-{
-  for (size_t i = 0; i < v.size(); ++i)
-    v[i]->saveToFile(getSubInferenceFile(i, directory));
-  return true;
-}
-
-bool InferenceVector::loadFromDirectory(const File& file)
-{
-  juce::OwnedArray<File> stepFiles;
-  file.findChildFiles(stepFiles, File::findFilesAndDirectories, false, T("*.inference"));
-  for (int i = 0; i < stepFiles.size(); ++i)
+public:
+  InferenceClass() : DynamicClass(T("Inference"), nameableObjectClass())
   {
-    File stepFile = *stepFiles[i];
-    String fileName = stepFile.getFileName();
-    int n = fileName.indexOfChar('_');
-    if (n < 0)
-    {
-      Object::error(T("VectorSequentialInference::loadFromFile"), T("Could not parse file name ") + fileName);
-      return false;
-    }
-    String numberString = fileName.substring(0, n);
-    if (!numberString.containsOnly(T("0123456789")))
-    {
-      Object::error(T("VectorSequentialInference::loadFromFile"), T("Could not parse file name ") + fileName);
-      return false;
-    }
-    int number = numberString.getIntValue();
-    if (number < 0)
-    {
-      Object::error(T("VectorSequentialInference::loadFromFile"), T("Invalid step number ") + fileName);
-      return false;
-    }
-    InferencePtr step = Object::createFromFileAndCast<Inference>(stepFile);
-    if (!step)
-      return false;
-    if (number >= (int)v.size())
-      v.resize(number + 1);
-    v[number] = step;
+    addVariable(inferenceOnlineLearnerClass(), T("onlineLearner"));
+    addVariable(TypePtr(this), T("batchLearner"));
   }
-  for (size_t i = 0; i < v.size(); ++i)
-    if (!v[i])
-    {
-      Object::error(T("VectorSequentialInference::loadFromFile"), T("Inference steps are not contiguous"));
-      return false;
-    }
-  return true;
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(Inference)
+    LBCPP_DECLARE_VARIABLE(onlineLearner);
+    LBCPP_DECLARE_VARIABLE(batchLearner);
+  LBCPP_DECLARE_VARIABLE_END()
+};
+
+}; /* namespace lbcpp */
+
+void Inference::clone(ObjectPtr target) const
+{
+  NameableObject::clone(target);
+  if (onlineLearner)
+    InferencePtr(target)->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
 }
+
 
 /*
 ** Numerical
@@ -197,76 +161,33 @@ InferencePtr lbcpp::runOnSupervisedExamplesInference(InferencePtr inference)
 InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback)
   {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
-class PostProcessInference : public StaticDecoratorInference
-{
-public:
-  // postProcessingFunction: from (object,any) pair to object
-  PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
-    : StaticDecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
-        postProcessingFunction(postProcessingFunction)
-    {setBatchLearner(postProcessInferenceLearner());}
-
-  PostProcessInference() {}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return postProcessingFunction->getOutputType(pairType(inputType, decorated->getOutputType(inputType)));}
-
-  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
-    {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
-
-protected:
-  FunctionPtr postProcessingFunction;
-};
-
-InferencePtr lbcpp::postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction)
-  {return new PostProcessInference(inference, postProcessingFunction);}
+//
 
 ClassPtr lbcpp::inferenceClass()
   {static TypeCache cache(T("Inference")); return cache();}
 
-ClassPtr lbcpp::decoratorInferenceClass()
-  {static TypeCache cache(T("DecoratorInference")); return cache();}
-
-ClassPtr lbcpp::staticDecoratorInferenceClass()
-  {static TypeCache cache(T("StaticDecoratorInference")); return cache();}
-
-ClassPtr lbcpp::sequentialInferenceClass()
-  {static TypeCache cache(T("SequentialInference")); return cache();}
-
-ClassPtr lbcpp::staticSequentialInferenceClass()
-  {static TypeCache cache(T("StaticSequentialInference")); return cache();}
-
-ClassPtr lbcpp::parallelInferenceClass()
-  {static TypeCache cache(T("ParallelInference")); return cache();}
-
-ClassPtr lbcpp::staticParallelInferenceClass()
-  {static TypeCache cache(T("StaticParallelInference")); return cache();}
-
-ClassPtr lbcpp::sharedParallelInferenceClass()
-  {static TypeCache cache(T("SharedParallelInference")); return cache();}
+extern void declareDecoratorInferenceClasses();
+extern void declareSequentialInferenceClasses();
+extern void declareParallelInferenceClasses();
 
 void declareInferenceClasses()
 {
+  
+
   /*
   ** Base classes
   */
-  LBCPP_DECLARE_ABSTRACT_CLASS(Inference, NameableObject);
-    LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
-      LBCPP_DECLARE_ABSTRACT_CLASS(StaticDecoratorInference, DecoratorInference);
-        LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);
-    LBCPP_DECLARE_ABSTRACT_CLASS(ParallelInference, Inference);
-      LBCPP_DECLARE_ABSTRACT_CLASS(StaticParallelInference, ParallelInference);
-        LBCPP_DECLARE_ABSTRACT_CLASS(SharedParallelInference, StaticParallelInference);
-        LBCPP_DECLARE_ABSTRACT_CLASS(VectorStaticParallelInference, StaticParallelInference);
-    LBCPP_DECLARE_ABSTRACT_CLASS(SequentialInference, Inference);
-      LBCPP_DECLARE_ABSTRACT_CLASS(StaticSequentialInference, SequentialInference);
-        LBCPP_DECLARE_CLASS(VectorSequentialInference, StaticSequentialInference);
+  Type::declare(new InferenceClass());
+    declareDecoratorInferenceClasses();
+    declareParallelInferenceClasses();
+    declareSequentialInferenceClasses();
+    
   
   /*
   ** Reduction
   */
-  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, VectorStaticParallelInference);
-  LBCPP_DECLARE_CLASS(ParallelVoteInference, VectorStaticParallelInference);
+  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, VectorParallelInference);
+  LBCPP_DECLARE_CLASS(ParallelVoteInference, VectorParallelInference);
   LBCPP_DECLARE_CLASS(SharedParallelVectorInference, SharedParallelInference);
 
   /*

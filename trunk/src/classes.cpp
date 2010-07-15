@@ -91,7 +91,8 @@ void declareLBCppCoreClasses()
   
   LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
   
+  declareInferenceOnlineLearnerClasses();
   declareInferenceClasses();
   declareInferenceCallbackClasses();
-  declareInferenceOnlineLearnerClasses();
+  
 }
