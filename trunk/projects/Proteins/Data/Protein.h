@@ -188,6 +188,7 @@ protected:
 };
 
 extern ClassPtr proteinClass();
+extern TypePtr sequenceSeparationDistanceType();
 
 extern FunctionPtr proteinLengthFunction();
 extern FunctionPtr proteinToInputOutputPairFunction();

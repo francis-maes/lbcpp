@@ -42,8 +42,11 @@ public:
     {return new Protein();}
 };
 
-extern ClassPtr lbcpp::proteinClass()
-  {static ClassPtr res = Class::get(T("Protein")); return res;}
+ClassPtr lbcpp::proteinClass()
+  {static TypeCache cache(T("Protein")); return cache();}
+
+TypePtr lbcpp::sequenceSeparationDistanceType()
+  {static TypeCache cache(T("SequenceSeparationDistance")); return cache();}
 
 ///////////////////
 
@@ -398,7 +401,7 @@ public:
     {return proteinClass();}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return integerType();}
+    {return sequenceSeparationDistanceType();}
 
   virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
   {
@@ -442,4 +445,5 @@ FunctionPtr lbcpp::proteinToInputOutputPairFunction()
 void declareProteinClass()
 {
   Class::declare(new ProteinClass());
+  Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
 }

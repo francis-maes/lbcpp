@@ -18,6 +18,25 @@ bool canSubVariableBePruned(const Variable& subVariable)
   return false;
 }
 
+static std::vector<FeatureGeneratorPtr> integerFeatures;
+
+FeatureGeneratorPtr computeIntegerFeatures(int value)
+  {return numberLogFeatures((double)value);}
+
+FeatureGeneratorPtr getIntegerFeatures(int value)
+{
+  if (value >= 0 && value < (int)integerFeatures.size())
+    return integerFeatures[value];
+  if (value >= 0 && (value < juce::jmax(2 * integerFeatures.size(), 1000)))
+  {
+    if (value >= (int)integerFeatures.size())
+      integerFeatures.resize(value + 1);
+    return (integerFeatures[value] = computeIntegerFeatures(value));
+  }
+  else
+    return computeIntegerFeatures(value);
+}
+
 featureGenerator variableFeatures(Variable variable)
 {
   if (variable.isNil())
@@ -62,7 +81,7 @@ featureGenerator variableFeatures(Variable variable)
 
   if (variable.isInteger())
   {
-    featureCall(0) numberLogFeatures((double)variable.getInteger());
+    featureCall(0) getIntegerFeatures(variable.getInteger());
     return;
   }
 

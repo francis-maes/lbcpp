@@ -88,12 +88,16 @@ PerceptionPtr Perception::flatten() const
 
 #include "Perception/IdentityPerception.h"
 #include "Perception/WindowPerception.h"
+#include "Perception/FunctionBasedPerception.h"
 
 PerceptionPtr lbcpp::identityPerception(TypePtr type)
   {return new IdentityPerception(type);}
 
 PerceptionPtr lbcpp::windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception)
   {return new WindowPerception(elementsType, windowSize, subPerception);}
+
+PerceptionPtr lbcpp::functionBasedPerception(FunctionPtr function)
+  {return new FunctionBasedPerception(function);}
 
 ClassPtr lbcpp::perceptionClass()
   {static TypeCache cache(T("Perception")); return cache();}
@@ -104,6 +108,7 @@ void declarePerceptionClasses()
 
     LBCPP_DECLARE_CLASS(IdentityPerception, Perception);
     LBCPP_DECLARE_CLASS(WindowPerception, Perception);
+    LBCPP_DECLARE_CLASS(FunctionBasedPerception, Perception);
 
     LBCPP_DECLARE_ABSTRACT_CLASS(CompositePerception, Perception);
   
