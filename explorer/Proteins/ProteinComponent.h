@@ -70,11 +70,9 @@ private:
   {
     jassert(proteinClass()->findStaticVariable(name) != -1);
     size_t variableIndex = proteinClass()->findStaticVariable(name) -1; // FIXME: -1 correspond to baseClass.staticVariable
-    std::cout << "Testing friendly name: " << friendlyName << " Index: " << variableIndex << std::endl;
     for (size_t i = 0; i < proteinPairs.size(); ++i)
       if (proteinPairs[i].second->getVariable(variableIndex))
       {
-        std::cout << "Accepted: " << friendlyName << std::endl;
         res.push_back(std::make_pair(friendlyName, variableIndex));
         return;
       }
