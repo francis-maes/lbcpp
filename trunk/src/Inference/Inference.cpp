@@ -91,6 +91,9 @@ InferencePtr lbcpp::linearScalarInference(const String& name)
 InferencePtr lbcpp::transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction)
   {return new TransferFunctionDecoratorInference(name, decoratedInference, transferFunction);}
 
+InferencePtr lbcpp::binaryLinearSVMInference(InferencePtr scoreInference)
+  {return new BinaryLinearSVMInference(scoreInference);}
+
 InferencePtr lbcpp::binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
   {return new BinaryLinearSVMInference(learner, name);}
 

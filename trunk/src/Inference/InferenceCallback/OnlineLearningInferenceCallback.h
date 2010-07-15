@@ -61,7 +61,7 @@ private:
     for (LearnersMap::const_iterator it = learners.begin(); it != learners.end(); ++it)
     {
       it->second->passFinishedCallback(it->first);
-      learningStopped &= it->second->isLearningStopped();
+      learningStopped &= !(it->second->wantsMoreIterations());
     }
     learners.clear();
   }

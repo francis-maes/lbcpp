@@ -75,4 +75,10 @@ featureGenerator variableFeatures(Variable variable)
   jassert(false); // conversion of this type to features is not implemented
 }
 
+featureGenerator topLevelVariableFeatures(Variable variable)
+{
+  featureSense("unit");
+  featureCall("variable") variableFeatures(variable);
+}
+
 }; /* namespace lbcpp */

@@ -44,6 +44,10 @@ public:
   virtual void passFinishedCallback(InferencePtr inference) = 0;
 
   virtual double getCurrentLossEstimate() const = 0;
+
+  virtual bool wantsMoreIterations() const
+    {return !isLearningStopped();}
+
   virtual bool isLearningStopped() const
     {return false;}
 
