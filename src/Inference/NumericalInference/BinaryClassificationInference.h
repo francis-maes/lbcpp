@@ -87,6 +87,9 @@ public:
   BinaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
     : BinaryClassificationInference(name, linearScalarInference(name))
     {decorated->setOnlineLearner(learner);}
+  BinaryLinearSVMInference(InferencePtr scoreInference)
+    : BinaryClassificationInference(scoreInference->getName(), scoreInference)
+    {}
   BinaryLinearSVMInference() {}
 
   virtual ScalarFunctionPtr getLoss(bool isPositive) const

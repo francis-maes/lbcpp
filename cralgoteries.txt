@@ -1,27 +1,19 @@
-
-ContactMaps:
- * ContactMap inference
- * Residue pair perceptions
-
-Perceptions:
- * vector local histograms
- * pssm distribution entropy
- * current position
- * global length
+ContactMap:
+ * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 
 Serialisation:
  * Serialisation of Perceptions
- * Serialisation of inferences
+ * Serialisation of Inferences
+
+Perceptions:
+ * Residue: current position, WindowHistogram
+ * ResiduePair: separation distance, SegmentHistogram
+ * Distribution: Entropy 
 
 Inference:
- * Clean Inference classes
  * ParallelProteinInference
 
 * Clarifier l'histoire des TemplateType
-
-Julien:
- * Voir pourquoi les ExtraTree marchent moyen
- * Utilies les nouvelles structures de données dans l'explorer et dans les formats de proteines
 
 =========== 
 

@@ -15,6 +15,7 @@ namespace lbcpp
 {
 
 extern FeatureGeneratorPtr variableFeatures(Variable variable);
+extern FeatureGeneratorPtr topLevelVariableFeatures(Variable variable);
 
 inline FeatureGeneratorPtr perceptionToFeatures(PerceptionPtr perception, const Variable& input)
   {return variableFeatures(perception->compute(input));}
@@ -32,10 +33,7 @@ public:
     {return Class::get(T("FeatureGenerator"));}
 
   virtual Variable computeFunction(const Variable& input, ErrorHandler& handler) const
-  {
-    Variable v = perception->computeFunction(input, handler);
-    return v ? variableFeatures(v) : Variable();
-  }
+    {return topLevelVariableFeatures(perception->computeFunction(input, handler));}
 
 protected:
   PerceptionPtr perception;

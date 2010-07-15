@@ -94,6 +94,7 @@ extern InferencePtr linearScalarInference(const String& name);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Binary Classification
+extern InferencePtr binaryLinearSVMInference(InferencePtr scoreInference);
 extern InferencePtr binaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr binaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 

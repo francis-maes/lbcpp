@@ -17,6 +17,153 @@ using namespace lbcpp;
 extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
 
+class AddBiasInference : public StaticDecoratorInference
+{
+public:
+  AddBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0);
+  AddBiasInference() {}
+/*
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
+    if (supervision)
+    {
+      ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+      jassert(loss);
+      res->setSubInference(decorated, input, addConstantScalarFunction(bias)->composeWith(loss));
+    }
+    else
+      res->setSubInference(decorated, input, Variable());
+    return res;
+  }
+
+  virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    if (supervision)
+    {
+      ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
+      jassert(loss);
+      return std::make_pair(input, addConstantScalarFunction(bias)->composeWith(loss));
+    }
+    return std::make_pair(input, supervision);
+  }*/
+   
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+  {
+    Variable subOutput = finalState->getSubOutput();
+    return subOutput ? Variable(subOutput.getDouble() + bias) : subOutput;
+  }
+
+  double getBias() const
+    {return bias;}
+
+  void setBias(double bias)
+    {this->bias = bias;}
+  
+protected:
+  double bias;
+};
+
+typedef ReferenceCountedObjectPtr<AddBiasInference> AddBiasInferencePtr;
+
+InferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0)
+  {return new AddBiasInference(name, numericalInference, initialBias);}
+
+class UpdatableInferenceOnlineLearner : public InferenceOnlineLearner
+{
+public:
+  UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency)
+    : updateFrequency(updateFrequency), epoch(0) {}
+
+  virtual void update(InferencePtr inference) = 0;
+
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {
+    ++epoch;
+    if (updateFrequency == perStep)
+      update(inference);
+    if (updateFrequency >= perStepMiniBatch)
+    {
+      int miniBatchSize = updateFrequency - perStepMiniBatch;
+      if (miniBatchSize <= 1 || (epoch % miniBatchSize) == 0)
+        update(inference);
+    }
+  }
+
+  virtual void episodeFinishedCallback(InferencePtr inference)
+  {
+    if (updateFrequency == perEpisode)
+      update(inference);
+  }
+
+  virtual void passFinishedCallback(InferencePtr inference)
+  {
+    if (updateFrequency == perPass)
+      update(inference);
+  }
+
+protected:
+  size_t epoch;
+  UpdateFrequency updateFrequency;
+};
+
+class AddBiasInferenceOnlineLearner : public UpdatableInferenceOnlineLearner
+{
+public:
+  AddBiasInferenceOnlineLearner(UpdateFrequency updateFrequency)
+    : UpdatableInferenceOnlineLearner(updateFrequency) {}
+
+  virtual void stepFinishedCallback(InferencePtr inf, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {
+    AddBiasInferencePtr inference = inf.staticCast<AddBiasInference>();
+
+    if (prediction)
+    {
+      ScalarFunctionPtr loss = supervision.getObjectAndCast<ScalarFunction>();
+      bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
+      double unbiasedScore = prediction.getDouble() - inference->getBias();
+      roc.addPrediction(unbiasedScore, isPositiveExample);
+    }
+    UpdatableInferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+  }
+
+  virtual bool isLearningStopped() const
+    {return false;}
+
+  virtual bool wantsMoreIterations() const
+    {return false;}
+
+  virtual double getCurrentLossEstimate() const
+    {return 0.0;}
+
+  virtual void update(InferencePtr inf)
+  {
+    AddBiasInferencePtr inference = inf.staticCast<AddBiasInference>();
+    
+    if (roc.getSampleCount())
+    {
+      double bestF1Score, precision, recall;
+      std::cout << "Looking for best threshold..." << std::flush;
+      double threshold = roc.findThresholdMaximisingF1(bestF1Score, precision, recall);
+      std::cout << " " << threshold << " (F1: " << bestF1Score * 100.0 << "%)" << std::endl;
+      inference->setBias(-threshold);
+      roc.clear();
+    }
+  }
+
+protected:
+  UpdateFrequency updateFrequency;
+  ScalarVariableMean bestThreshold;
+  ROCAnalyse roc;
+};
+
+AddBiasInference::AddBiasInference(const String& name, InferencePtr numericalInference, double initialBias)
+  : StaticDecoratorInference(name, numericalInference), bias(initialBias)
+{
+  setOnlineLearner(new AddBiasInferenceOnlineLearner(InferenceOnlineLearner::perPass));
+}
+
+
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
@@ -51,7 +198,13 @@ public:
   }
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
-    {return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));}
+  {
+    InferencePtr scoreInference = linearScalarInference(targetName + T(" Classifier"));
+    scoreInference->setOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
+    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+      scoreInference = addBiasInference(targetName, scoreInference);
+    return binaryLinearSVMInference(scoreInference);
+  }
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
   {
@@ -64,7 +217,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/*logicalOr(
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(20);/*logicalOr(
       maxIterationsStoppingCriterion(100),  
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
