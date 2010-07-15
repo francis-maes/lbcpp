@@ -85,9 +85,10 @@ public:
     {return proteinClass();}
 
 protected:
+  friend class ProteinInferenceStepClass;
+
   PerceptionPtr perception;
   size_t targetIndex;
-  TypePtr outputType;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInferenceStep> ProteinInferenceStepPtr;

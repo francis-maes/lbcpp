@@ -71,7 +71,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/*logicalOr(
       maxIterationsStoppingCriterion(100),  
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -175,7 +175,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB\\xml")), 14)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB\\xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 7);
   ContainerPtr testProteins = proteins->fold(0, 7);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
@@ -198,6 +198,8 @@ int main(int argc, char** argv)
   
 
   std::cout << "Inference: " << std::endl;
+  Variable::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+
   Variable(inference).printRecursively(std::cout, 2);
 
   InferenceContextPtr context = singleThreadedInferenceContext();
@@ -205,5 +207,20 @@ int main(int argc, char** argv)
   context->train(inference, trainProteins);
 
   Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+
+  
+  {
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    context->evaluate(inference, trainProteins, evaluator);
+    std::cout << "Check: " << evaluator->toString() << std::endl;
+  }
+
+  Variable v = Variable::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  {
+    inference = v.getObjectAndCast<Inference>();
+    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    context->evaluate(inference, trainProteins, evaluator);
+    std::cout << "Check2: " << evaluator->toString() << std::endl;
+  }
   return 0;
 }

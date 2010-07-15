@@ -11,8 +11,11 @@ using namespace lbcpp;
 PerceptionPtr lbcpp::proteinLengthPerception()
   {return functionBasedPerception(proteinLengthFunction());}
 
+#include "PerceptionToFeatures.h"
+
 void declareProteinPerceptionClasses()
 {
+  Type::declare(new ConvertToFeaturesPerceptionClass());
   LBCPP_DECLARE_CLASS(ProteinCompositePerception, CompositePerception);
 }
 

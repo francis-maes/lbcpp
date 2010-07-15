@@ -9,8 +9,7 @@
 #ifndef LBCPP_INFERENCE_LINEAR_H_
 # define LBCPP_INFERENCE_LINEAR_H_
 
-# include <lbcpp/Inference/ParameterizedInference.h>
-# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+# include "NumericalInference.h"
 # include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
 namespace lbcpp
@@ -19,11 +18,11 @@ namespace lbcpp
 // Input: Features
 // Output: Scalar
 // Supervision: ScalarFunction
-class LinearInference : public ParameterizedInference
+class LinearInference : public NumericalInference
 {
 public:
   LinearInference(const String& name)
-    : ParameterizedInference(name), dotProductCache(NULL) {}
+    : NumericalInference(name), dotProductCache(NULL) {}
   LinearInference() : dotProductCache(NULL) {}
 
   virtual ~LinearInference()

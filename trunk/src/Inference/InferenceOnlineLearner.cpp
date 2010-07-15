@@ -13,9 +13,6 @@
 #include "InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h"
 using namespace lbcpp;
 
-DenseVectorPtr InferenceOnlineLearner::getParameters(InferencePtr inference) const
-  {return getParameterizedInference(inference)->getParameters();}
-
 static bool isRandomizationRequired(InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, InferenceOnlineLearner::UpdateFrequency randomizationFrequency)
 {
   jassert(learningUpdateFrequency != InferenceOnlineLearner::never);

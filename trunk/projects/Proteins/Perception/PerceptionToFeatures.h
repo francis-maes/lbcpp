@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_PERCEPTION_TO_FEATURES_H_
 
 # include <lbcpp/Data/Perception.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
 namespace lbcpp
 {
@@ -23,7 +24,7 @@ inline FeatureGeneratorPtr perceptionToFeatures(PerceptionPtr perception, const 
 class ConvertToFeaturesPerception : public CompositePerception
 {
 public:
-  ConvertToFeaturesPerception(PerceptionPtr perception)
+  ConvertToFeaturesPerception(PerceptionPtr perception = PerceptionPtr())
     : perception(perception) {}
  
   virtual TypePtr getInputType() const
@@ -36,7 +37,26 @@ public:
     {return topLevelVariableFeatures(perception->computeFunction(input, handler));}
 
 protected:
+  friend class ConvertToFeaturesPerceptionClass;
+
   PerceptionPtr perception;
+};
+
+class ConvertToFeaturesPerceptionClass : public DynamicClass
+{
+public:
+  ConvertToFeaturesPerceptionClass() 
+    : DynamicClass(T("ConvertToFeaturesPerception"), compositePerceptionClass())
+  {
+    addVariable(perceptionClass(), T("perception"));
+  }
+
+  virtual VariableValue create() const
+    {return new ConvertToFeaturesPerception();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(ConvertToFeaturesPerception)
+    LBCPP_DECLARE_VARIABLE(perception);
+  LBCPP_DECLARE_VARIABLE_END()
 };
 
 }; /* namespace lbcpp */

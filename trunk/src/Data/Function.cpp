@@ -116,6 +116,9 @@ private:
 FunctionPtr lbcpp::selectPairFieldsFunction(int index1, int index2)
   {return new SelectPairFieldsFunction(index1, index2);}
 
+ClassPtr lbcpp::functionClass()
+  {static TypeCache cache(T("Function")); return cache();}
+
 void declareFunctionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(Function, Object);

@@ -57,6 +57,9 @@ namespace lbcpp
   ClassPtr sharedParallelInferenceClass()
     {static TypeCache cache(T("SharedParallelInference")); return cache();}
 
+  ClassPtr vectorParallelInferenceClass()
+    {static TypeCache cache(T("VectorParallelInference")); return cache();}
+
   class SharedParallelInferenceClass : public DynamicClass
   {
   public:

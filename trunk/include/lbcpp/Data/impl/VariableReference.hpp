@@ -21,6 +21,8 @@ public:
     : t(int32Type) {u.int32Pointer = &intPointer;}
   VariableReference(juce::int64& intPointer)
     : t(int64Type) {u.int64Pointer = &intPointer;}
+  VariableReference(size_t& sizePointer)
+    : t(sizeType)  {u.sizePointer = &sizePointer;}
   VariableReference(double& doublePointer)
     : t(doubleType) {u.doublePointer = &doublePointer;}
   VariableReference(String& stringPointer)
@@ -46,6 +48,7 @@ public:
     case boolType: return Variable(*u.boolPointer, type);
     case int32Type: return Variable(*u.int32Pointer, type);
     case int64Type: return Variable(*u.int64Pointer, type);
+    case sizeType: return Variable(*u.sizePointer, type);
     case doubleType: return Variable(*u.doublePointer, type);
     case stringType: return Variable(*u.stringPointer, type);
     case objectType:
@@ -85,6 +88,11 @@ public:
         *u.int64Pointer = value.getInteger();
       break;
 
+    case sizeType:
+      if (checkInheritance(value, lbcpp::integerType(), callback))
+        *u.sizePointer = (size_t)value.getInteger();
+      break;
+
     case doubleType:
       if (checkInheritance(value, lbcpp::doubleType(), callback))
         *u.doublePointer = value.getDouble();
@@ -115,6 +123,7 @@ private:
     boolType,
     int32Type,
     int64Type,
+    sizeType,
     doubleType,
     stringType,
     objectType,
@@ -126,6 +135,7 @@ private:
     bool* boolPointer;
     juce::int32* int32Pointer;
     juce::int64* int64Pointer;
+    size_t* sizePointer;
     double* doublePointer;
     String* stringPointer;
     ObjectPtr* objectPointer;

@@ -287,6 +287,8 @@ public:
   */
   virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const = 0;
 
+  virtual void saveToXml(XmlElement* xml) const;
+  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
   virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& res) const;
 };
 

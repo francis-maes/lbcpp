@@ -331,6 +331,8 @@ public:
 typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 
 extern ClassPtr objectClass();
+extern TypePtr typeClass();
+extern TypePtr enumerationClass();
 
 class DynamicClass : public Class
 {

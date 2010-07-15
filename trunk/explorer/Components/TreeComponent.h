@@ -182,10 +182,10 @@ public:
       typeAndNameLength = remainingWidth / 3;
 
     g.setFont(Font(12, Font::bold));
-    g.drawText(typeName, x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
+    g.drawText(getUniqueName(), x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
     x1 += typeAndNameLength;
     g.setFont(Font(12, Font::italic));
-    g.drawText(getUniqueName(), x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
+    g.drawText(typeName, x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
     x1 += typeAndNameLength;
 
     if (shortSummary.isNotEmpty())

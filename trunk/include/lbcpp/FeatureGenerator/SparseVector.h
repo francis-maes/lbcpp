@@ -68,6 +68,9 @@ public:
   virtual ~SparseVector()
     {clear();}
 
+  virtual ClassPtr getClass() const
+    {return Object::getClass();}
+
   /**
   ** Clears vector.
   **

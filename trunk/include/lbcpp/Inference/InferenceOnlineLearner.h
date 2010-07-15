@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_ONLINE_LEARNER_H_
 
 # include "Inference.h"
-# include "ParameterizedInference.h"
 # include "../ObjectPredeclarations.h"
 # include "../Utilities/RandomVariable.h"
 # include "../Utilities/IterationFunction.h"
@@ -52,11 +51,6 @@ public:
     {return false;}
 
   InferenceOnlineLearnerPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
-
-protected:
-  ParameterizedInferencePtr getParameterizedInference(InferencePtr inference) const
-    {return inference.staticCast<ParameterizedInference>();}
-  DenseVectorPtr getParameters(InferencePtr inference) const;
 };
 
 extern ClassPtr inferenceOnlineLearnerClass();
