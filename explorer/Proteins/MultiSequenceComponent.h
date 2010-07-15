@@ -157,15 +157,16 @@ private:
       return;
     
     TypePtr type = sequence->getElementsType();
-    
-    if (type == enumerationType())
+    if (type->inheritsFrom(enumerationType()))
     {
       g.setFont(12.f);
-      String res = sequence->getVariable(index).toString();
+      String res;
+      res += type.dynamicCast<Enumeration>()->getOneLetterCode(sequence->getVariable(index).getInteger());
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
     }
-    else if (type == probabilityType())
+
+    if (type->canBeCastedTo(probabilityType()))
     {
       String str = T("?");
       if (sequence->getVariable(index))
@@ -179,8 +180,10 @@ private:
       g.setColour(Colours::black);
       g.setFont(8);
       g.drawText(str, x, y, w, h, Justification::centred, true);
+      return;
     }
-    else if (type == discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))
+
+    if (type->canBeCastedTo(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())))
     {
       DiscreteProbabilityDistributionPtr probs = sequence->getObjectAndCast<DiscreteProbabilityDistribution>(index);
       size_t numVariables = probs->getEnumeration()->getNumElements();
@@ -192,7 +195,10 @@ private:
         int y2 = y + (i + 1) * h / numVariables;
         g.fillRect(x, y1, w, y2 - y1);
       }
+      return;
     }
+    std::cout << "No paint action implemented for element of type: " << type->toString() << std::endl;
+    jassert(false);
   }
 
   void paintInterSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y, ContainerPtr sequence1, ContainerPtr sequence2)
