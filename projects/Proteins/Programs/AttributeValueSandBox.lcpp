@@ -71,7 +71,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(20);/*logicalOr(
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/*logicalOr(
       maxIterationsStoppingCriterion(100),  
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -175,17 +175,17 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB\\xml")), 6)->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->invFold(0, 2);
-  ContainerPtr testProteins = proteins->fold(0, 2);
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB\\xml")), 14)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->invFold(0, 7);
+  ContainerPtr testProteins = proteins->fold(0, 7);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
-//  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   /*
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
@@ -198,10 +198,12 @@ int main(int argc, char** argv)
   
 
   std::cout << "Inference: " << std::endl;
-  Variable(inference).printRecursively(std::cout);
+  Variable(inference).printRecursively(std::cout, 2);
 
   InferenceContextPtr context = singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
+
+  Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   return 0;
 }

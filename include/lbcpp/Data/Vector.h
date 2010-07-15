@@ -37,6 +37,8 @@ public:
   void reserve(size_t size)
     {values.reserve(size);}
 
+  void resize(size_t size);
+
   void clear();
   void append(const Variable& value);
 

@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class ProteinResidueRefinementInferenceStep : public VectorStaticParallelInference
+class ProteinResidueRefinementInferenceStep : public VectorParallelInference
 {
 public:
   ProteinResidueRefinementInferenceStep(const String& name)
-    : VectorStaticParallelInference(name)
+    : VectorParallelInference(name)
   {
     for (size_t i = 0; i < 3; ++i)
     {
@@ -56,10 +56,10 @@ public:
         {
           impl::Vector3 position = atom->getPosition();
           double target = (j == 0 ? position.getX() : (j == 1 ? position.getY() : position.getZ()));
-          res->addSubInference(subInferences[i], input, Variable(target));
+          res->addSubInference(getSubInference(i), input, Variable(target));
         }
         else
-          res->addSubInference(subInferences[i], input, Variable());
+          res->addSubInference(getSubInference(i), input, Variable());
     }
     return res;
   }

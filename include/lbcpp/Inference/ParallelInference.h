@@ -12,6 +12,7 @@
 # include "Inference.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
+# include "../Data/Vector.h"
 
 namespace lbcpp
 {
@@ -87,33 +88,39 @@ public:
 
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
-
-  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 };
 
 extern ClassPtr staticParallelInferenceClass();
 
-class VectorStaticParallelInference : public StaticParallelInference
+class VectorParallelInference : public StaticParallelInference
 {
 public:
-  VectorStaticParallelInference(const String& name)
-    : StaticParallelInference(name) {}
-  VectorStaticParallelInference() {}
+  VectorParallelInference(const String& name)
+    : StaticParallelInference(name), subInferences(new Vector(inferenceClass())) {}
+  VectorParallelInference() {}
 
   virtual size_t getNumSubInferences() const
-    {return subInferences.size();}
+    {return subInferences->size();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return subInferences.get(index);}
+    {return subInferences->getVariable(index).getObjectAndCast<Inference>();}
  
-  virtual bool saveToFile(const File& file) const
-    {return saveToDirectory(file) && subInferences.saveToDirectory(file);}
-
-  virtual bool loadFromFile(const File& file)
-    {return loadFromDirectory(file) && subInferences.loadFromDirectory(file);}
+  void setSubInference(size_t index, InferencePtr inference)
+    {subInferences->setVariable(index, inference);}
+ 
+  void appendInference(InferencePtr inference)
+    {subInferences->append(inference);}
+  
+  virtual void clone(ObjectPtr target) const
+  {
+    StaticParallelInference::clone(target);
+    VectorParallelInferencePtr(target)->subInferences = subInferences->cloneAndCast<Vector>();
+  }
 
 protected:
-  InferenceVector subInferences;
+  friend class VectorParallelInferenceClass;
+
+  VectorPtr subInferences;
 };
 
 class SharedParallelInference : public StaticParallelInference
@@ -146,10 +153,17 @@ public:
   ** Object
   */
   virtual String toString() const;
-  virtual bool loadFromFile(const File& file);
-  virtual bool saveToFile(const File& file) const;
+
+  virtual void clone(ObjectPtr target) const
+  {
+    StaticParallelInference::clone(target);
+    if (subInference)
+      SharedParallelInferencePtr(target)->subInference = subInference->cloneAndCast<Inference>();
+  }
 
 protected:
+  friend class SharedParallelInferenceClass;
+
   InferencePtr subInference;
 };
 

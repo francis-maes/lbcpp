@@ -67,9 +67,9 @@ public:
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
-  virtual VariableReference getVariableReference(size_t index);
-
 protected:
+  friend class AtomClass;
+
   String elementSymbol;
   Vector3Ptr position;
   double occupancy;

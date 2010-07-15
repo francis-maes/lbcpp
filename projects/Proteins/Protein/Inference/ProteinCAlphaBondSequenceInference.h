@@ -13,14 +13,14 @@
 namespace lbcpp
 {
 
-class ProteinCAlphaBondInferenceStep : public VectorStaticParallelInference
+class ProteinCAlphaBondInferenceStep : public VectorParallelInference
 {
 public:
   ProteinCAlphaBondInferenceStep(const String& name, InferencePtr angleInference, InferencePtr dihedralInference)
-    : VectorStaticParallelInference(name)
+    : VectorParallelInference(name)
   {
-    subInferences.append(angleInference);
-    subInferences.append(dihedralInference);
+    appendInference(angleInference);
+    appendInference(dihedralInference);
   }
   ProteinCAlphaBondInferenceStep() {}
 
@@ -30,9 +30,9 @@ public:
     jassert(bond || !supervision);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    res->addSubInference(subInferences.get(0), input, bond && bond->getValue().hasThetaAngle()
+    res->addSubInference(getSubInference(0), input, bond && bond->getValue().hasThetaAngle()
       ? Variable(bond->getValue().getThetaAngle()) : Variable());
-    res->addSubInference(subInferences.get(1), input, bond && bond->getValue().hasPhiDihedralAngle()
+    res->addSubInference(getSubInference(1), input, bond && bond->getValue().hasPhiDihedralAngle()
       ? Variable(bond->getValue().getPhiDihedralAngle()) : Variable());
     return res;
   }

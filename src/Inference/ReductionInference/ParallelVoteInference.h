@@ -14,19 +14,19 @@
 namespace lbcpp 
 {
 
-class ParallelVoteInference : public VectorStaticParallelInference
+class ParallelVoteInference : public VectorParallelInference
 {
 public:
   ParallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner)
-    : VectorStaticParallelInference(name), voteInferenceModel(voteInferenceModel)
+    : VectorParallelInference(name), voteInferenceModel(voteInferenceModel)
   {
     jassert(numVoters);
-    subInferences.resize(numVoters);
+    subInferences->resize(numVoters);
     for (size_t i = 0; i < numVoters; ++i)
     {
       InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>();
       voteInference->setBatchLearner(voterLearner);
-      subInferences.set(i, voteInference);
+      setSubInference(i, voteInference);
     }
     setBatchLearner(parallelVoteInferenceLearner());
   }
@@ -45,8 +45,8 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
-    for (size_t i = 0; i < subInferences.size(); ++i)
-      state->addSubInference(subInferences.get(i), input, supervision);
+    for (size_t i = 0; i < subInferences->size(); ++i)
+      state->addSubInference(getSubInference(i), input, supervision);
     return state;
   }
 

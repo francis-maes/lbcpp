@@ -36,15 +36,20 @@ public:
   void setParameters(DenseVectorPtr parameters)
     {this->parameters = parameters; validateParametersChange();}
 
-  virtual ObjectPtr clone() const;
-
   virtual void validateParametersChange() {}
+
+  virtual void clone(ObjectPtr target) const
+  {
+    Inference::clone(target);
+    if (parameters)
+    {
+      ParameterizedInferencePtr targetInference = target.staticCast<ParameterizedInference>();
+      targetInference->parameters = parameters->cloneAndCast<DenseVector>();
+    }
+  }
 
 protected:
   DenseVectorPtr parameters;
-
-  virtual bool load(InputStream& istr);
-  virtual void save(OutputStream& ostr) const;
 };
 
 }; /* namespace lbcpp */

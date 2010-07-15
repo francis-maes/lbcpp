@@ -109,12 +109,17 @@ public:
   ** Object
   */
   virtual String toString() const;
-  virtual bool loadFromFile(const File& file);
-  virtual bool saveToFile(const File& file) const;
-  virtual void clone(ObjectPtr target) const;
-  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
+  
+  virtual void clone(ObjectPtr target) const
+  {
+    DecoratorInference::clone(target);
+    if (decorated)
+      ReferenceCountedObjectPtr<StaticDecoratorInference>(target)->decorated = decorated->cloneAndCast<Inference>();
+  }
  
 protected:
+  friend class StaticDecoratorInferenceClass;
+
   InferencePtr decorated;
 };
 

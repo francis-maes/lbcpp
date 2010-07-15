@@ -83,8 +83,6 @@ public:
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
   
-  virtual VariableReference getVariableReference(size_t index);
-
   /*
   ** Dynamic creation
   **  deprecated functions, call directly the methods of Type
@@ -318,9 +316,9 @@ public:
   virtual void setName(const String& name)
     {this->name = name;}
 
-  virtual VariableReference getVariableReference(size_t index);
-
 protected:
+  friend class NameableObjectClass;
+
   String name;
 
   virtual bool load(InputStream& istr)

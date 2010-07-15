@@ -28,17 +28,6 @@ Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
 
 }; /* namespace impl */
 
-VariableReference Vector3::getVariableReference(size_t index)
-{
-  switch (index)
-  {
-  case 0: return value.x;
-  case 1: return value.y;
-  case 2: return value.z;
-  default: jassert(false); return VariableReference();
-  };
-}
-
 class Vector3Class : public DynamicClass
 {
 public:
@@ -52,6 +41,12 @@ public:
 
   virtual VariableValue create() const
     {return new Vector3();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(Vector3)
+    LBCPP_DECLARE_VARIABLE(value.x);
+    LBCPP_DECLARE_VARIABLE(value.y);
+    LBCPP_DECLARE_VARIABLE(value.z);
+  LBCPP_DECLARE_VARIABLE_END();
 };
 
 ClassPtr vector3Class()

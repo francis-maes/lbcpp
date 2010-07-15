@@ -200,7 +200,9 @@ SET(LBCPP_INFERENCE_HEADERS
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
-  Inference/InferenceBaseClasses.cpp
+  Inference/DecoratorInference.cpp
+  Inference/ParallelInference.cpp
+  Inference/SequentialInference.cpp
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp

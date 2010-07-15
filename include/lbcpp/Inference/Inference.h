@@ -23,9 +23,6 @@ public:
   Inference(const String& name = T("Unnamed"))
     : NameableObject(name) {}
 
-  static InferencePtr createFromFile(const File& file)
-    {return Object::createFromFileAndCast<Inference>(file);}
-  
   virtual TypePtr getInputType() const
     {return anyType();}
 
@@ -61,15 +58,10 @@ public:
   void setBatchLearner(InferencePtr batchLearner)
     {this->batchLearner = batchLearner;}
 
-  virtual void clone(ObjectPtr target) const
-  {
-    NameableObject::clone(target);
-    InferencePtr res = target.staticCast<Inference>();
-    res->onlineLearner = onlineLearner;
-    res->batchLearner = batchLearner;
-  }
+  virtual void clone(ObjectPtr target) const;
 
 protected:
+  friend class InferenceClass;
   friend class InferenceContext;
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
@@ -136,41 +128,6 @@ extern InferencePtr postProcessInferenceLearner();
 // Misc
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
 extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
-
-/*
-** InferenceVector
-*/
-class InferenceVector
-{
-public:
-  size_t size() const
-    {return v.size();}
-
-  void resize(size_t size)
-    {v.resize(size);}
-
-  void set(size_t index, InferencePtr subInference)
-    {jassert(index < v.size()); v[index] = subInference;}
-
-  InferencePtr get(size_t index) const
-    {jassert(index < v.size()); return v[index];}
-
-  InferencePtr operator [](size_t index) const
-    {return get(index);}
-
-  void append(InferencePtr inference)
-    {v.push_back(inference);}
-
-  int find(InferencePtr inference) const;
-
-  bool saveToDirectory(const File& file) const;
-  bool loadFromDirectory(const File& file);
-
-  File getSubInferenceFile(size_t index, const File& directory) const;
-
-protected:
-  std::vector<InferencePtr> v;
-};
 
 /*
 ** InferenceState

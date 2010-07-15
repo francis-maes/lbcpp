@@ -91,9 +91,9 @@ public:
   // Object
   virtual String toString() const;
 
-  virtual VariableReference getVariableReference(size_t index);
-
 protected:
+  friend class ResidueClass;
+
   AminoAcidType aminoAcidType;
   VectorPtr atoms;
 };

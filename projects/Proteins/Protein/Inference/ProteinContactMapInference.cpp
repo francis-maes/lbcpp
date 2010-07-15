@@ -165,9 +165,9 @@ ProteinContactMapInference::ProteinContactMapInference(const String& name, Infer
 
 SequentialInferenceStatePtr ProteinContactMapInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  jassert(subInferences.size() == 2);
+  jassert(subInferences->size() == 2);
   SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
-  state->setSubInference(subInferences.get(0), input, supervision);
+  state->setSubInference(getSubInference(0), input, supervision);
   return state;
 }
 
@@ -175,7 +175,7 @@ bool ProteinContactMapInference::updateInference(InferenceContextPtr context, Se
 {
   if (state->getStepNumber() == 0)
   {
-    state->setSubInference(subInferences.get(1), Variable::pair(state->getInput(), state->getSubOutput()), state->getSupervision());
+    state->setSubInference(getSubInference(1), Variable::pair(state->getInput(), state->getSubOutput()), state->getSupervision());
     return true;
   }   
   return false;

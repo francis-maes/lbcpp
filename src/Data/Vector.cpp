@@ -16,11 +16,21 @@ Vector::Vector(TypePtr elementsType, size_t initialSize)
     values.resize(initialSize, elementsType->getMissingValue());
 }
 
+void Vector::resize(size_t size)
+  {values.resize(size, getElementsType()->getMissingValue());}
+
 size_t Vector::getNumVariables() const
   {return values.size();}
 
 Variable Vector::getVariable(size_t index) const
-  {jassert(index < values.size()); return Variable::copyFrom(getElementsType(), values[index]);}
+{
+  jassert(index < values.size());
+  TypePtr elementsType = getElementsType();
+  if (elementsType.isInstanceOf<Class>())
+    return Variable(values[index].getObjectPointer());
+  else
+    return Variable::copyFrom(elementsType, values[index]);
+}
 
 void Vector::setVariable(size_t index, const Variable& value)
 {

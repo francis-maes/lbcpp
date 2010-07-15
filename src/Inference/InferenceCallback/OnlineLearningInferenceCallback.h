@@ -57,13 +57,14 @@ private:
 
   void finishPass()
   {
-    learningStopped = true;
+    bool wantsMoreIterations = false;
     for (LearnersMap::const_iterator it = learners.begin(); it != learners.end(); ++it)
     {
       it->second->passFinishedCallback(it->first);
-      learningStopped &= !(it->second->wantsMoreIterations());
+      wantsMoreIterations |= it->second->wantsMoreIterations();
     }
     learners.clear();
+    learningStopped = !wantsMoreIterations;
   }
 };
 

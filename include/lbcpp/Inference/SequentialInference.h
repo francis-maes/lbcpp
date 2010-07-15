@@ -12,7 +12,7 @@
 # include "Inference.h"
 # include "InferenceContext.h"
 # include "InferenceCallback.h"
-# include "../Object/ObjectPair.h"
+# include "../Data/Vector.h"
 
 namespace lbcpp
 {
@@ -84,11 +84,6 @@ public:
   virtual Variable finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
     {return finalState->getSubOutput();}
 
-  /*
-  ** Object
-  */
-  virtual String toString() const;
-
 protected:
   /*
   ** Inference
@@ -107,8 +102,6 @@ public:
 
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
-
-  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const;
 };
 
 typedef ReferenceCountedObjectPtr<StaticSequentialInference> StaticSequentialInferencePtr;
@@ -118,69 +111,40 @@ extern ClassPtr staticSequentialInferenceClass();
 class VectorSequentialInference : public StaticSequentialInference
 {
 public:
-  VectorSequentialInference(const String& name)
-    : StaticSequentialInference(name) {}
+  VectorSequentialInference(const String& name);
   VectorSequentialInference() {}
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
-    if (subInferences.size())
-      prepareSubInference(context, state, 0, returnCode);
-    return state;
-  }
-
-  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
-  {
-    int index = state->getStepNumber(); 
-    jassert(index >= 0);
-    finalizeSubInference(context, state, (size_t)index, returnCode);
-    jassert(state->getSubInference() == subInferences.get(index));
-    ++index;
-    if (index < (int)subInferences.size())
-    {
-      prepareSubInference(context, state, (size_t)index, returnCode);
-      return true;
-    }
-    else
-      return false;
-  }
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
 
   virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
     {}
 
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
-    {state->setSubInference(subInferences.get(index), index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
+    {state->setSubInference(getSubInference(index), index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
 
   virtual size_t getNumSubInferences() const
-    {return subInferences.size();}
+    {return subInferences->size();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return subInferences.get(index);}
+    {return subInferences->getVariable(index).getObjectAndCast<Inference>();}
   
   void setSubInference(size_t index, InferencePtr inference)
-    {subInferences.set(index, inference);}
+    {subInferences->setVariable(index, inference);}
  
   void appendInference(InferencePtr inference)
-    {subInferences.append(inference);}
+    {subInferences->append(inference);}
 
-  File getSubInferenceFile(size_t index, const File& modelDirectory) const
-    {return subInferences.getSubInferenceFile(index, modelDirectory);}
-
-  bool loadSubInferencesFromDirectory(const File& file)
-    {return subInferences.loadFromDirectory(file);}
-
-  virtual bool saveToFile(const File& file) const
-    {return saveToDirectory(file) && subInferences.saveToDirectory(file);}
-
-  virtual bool loadFromFile(const File& file)
-    {return loadFromDirectory(file) && subInferences.loadFromDirectory(file);}
+  virtual void clone(ObjectPtr target) const
+  {
+    StaticSequentialInference::clone(target);
+    VectorSequentialInferencePtr(target)->subInferences = subInferences->cloneAndCast<Vector>();
+  }
 
 protected:
-  InferenceVector subInferences;
+  friend class VectorSequentialInferenceClass;
+  VectorPtr subInferences;
 };
-
-typedef ReferenceCountedObjectPtr<VectorSequentialInference> VectorSequentialInferencePtr;
 
 }; /* namespace lbcpp */
 
