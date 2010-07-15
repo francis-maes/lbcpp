@@ -21,7 +21,7 @@ class MultiProtein1DConfiguration : public Object
 public:
   MultiProtein1DConfiguration(const std::vector<String>& proteinNames, const std::vector< std::pair<String, size_t> >& sequenceIndex)
   {
-    proteins.resize(sequenceIndex.size());
+    proteins.resize(proteinNames.size());
     for (size_t i = 0; i < proteins.size(); ++i)
       proteins[i] = std::make_pair(proteinNames[i], true);
     sequences.resize(sequenceIndex.size());
@@ -175,7 +175,7 @@ public:
         for (size_t j = 0; j < configuration->getNumProteins(); ++j)
           if (configuration->isProteinEnabled(j))
           {
-            ContainerPtr sequence = proteins[j]->getVariable(sequenceIndex).getObjectAndCast<Container>();
+            VectorPtr sequence = proteins[j]->getVariable(sequenceIndex).getObjectAndCast<Container>();
             if (sequence)
               sequences.push_back(std::make_pair(configuration->getProteinName(j), sequence));
           }

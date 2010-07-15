@@ -74,6 +74,7 @@ private:
     for (size_t i = 0; i < proteinPairs.size(); ++i)
       if (proteinPairs[i].second->getVariable(variableIndex))
       {
+        std::cout << "Accepted: " << friendlyName << std::endl;
         res.push_back(std::make_pair(friendlyName, variableIndex));
         return;
       }
