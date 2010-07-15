@@ -71,6 +71,8 @@ public:
   }
 
 private:
+  friend class OneAgainstAllClassificationInferenceClass;
+
   EnumerationPtr classes;
   InferencePtr binaryClassifierModel;
 
@@ -84,6 +86,24 @@ private:
 
   virtual void save(OutputStream& ostr) const
     {VectorParallelInference::save(ostr); lbcpp::write(ostr, classes->getName());}
+};
+
+class OneAgainstAllClassificationInferenceClass : public DynamicClass
+{
+public:
+  OneAgainstAllClassificationInferenceClass() : DynamicClass(T("OneAgainstAllClassificationInference"), vectorParallelInferenceClass())
+  {
+    addVariable(enumerationClass(), T("classes"));
+    addVariable(inferenceClass(), T("binaryClassifierModel"));
+  }
+
+  virtual VariableValue create() const
+    {return new OneAgainstAllClassificationInference();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(OneAgainstAllClassificationInference)
+      LBCPP_DECLARE_VARIABLE(classes);
+      LBCPP_DECLARE_VARIABLE(binaryClassifierModel);
+  LBCPP_DECLARE_VARIABLE_END();
 };
 
 }; /* namespace lbcpp */

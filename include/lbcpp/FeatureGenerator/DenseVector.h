@@ -78,6 +78,9 @@ public:
   virtual ~DenseVector()
     {clear();}
 
+  virtual ClassPtr getClass() const
+    {return Object::getClass();}
+
   /**
   ** = operator.
   **

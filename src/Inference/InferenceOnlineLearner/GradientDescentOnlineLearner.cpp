@@ -56,7 +56,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
 FeatureGeneratorPtr GradientDescentOnlineLearner::getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   double exampleLossValue;
-  FeatureGeneratorPtr gradient = getParameterizedInference(inference)->getExampleGradient(input, supervision, prediction, exampleLossValue);
+  FeatureGeneratorPtr gradient = getNumericalInference(inference)->getExampleGradient(input, supervision, prediction, exampleLossValue);
   lossValue.push(exampleLossValue);
   return gradient;
 }
@@ -81,7 +81,7 @@ void GradientDescentOnlineLearner::checkRegularizerAfterStep(InferencePtr infere
 
 void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inf, FeatureGeneratorPtr gradient, double weight)
 {
-  ParameterizedInferencePtr inference = getParameterizedInference(inf);
+  NumericalInferencePtr inference = getNumericalInference(inf);
   DenseVectorPtr parameters = inference->getParameters();
   if (!parameters)
   {

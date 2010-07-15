@@ -336,3 +336,30 @@ void FeatureGenerator::getChildrenObjects(std::vector< std::pair<String, ObjectP
     res[i].second = getSubGenerator(i);
   }
 }
+
+/*
+** Compatibility loading
+*/
+void FeatureGenerator::saveToXml(XmlElement* xml) const
+{
+  juce::MemoryOutputStream mos;
+  save(mos);
+  juce::MemoryBlock block(mos.getData(), mos.getDataSize());
+  xml->setAttribute(T("binary"), T("true"));
+  xml->addTextElement(block.toBase64Encoding());
+}
+
+bool FeatureGenerator::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+{
+  jassert(xml->getBoolAttribute(T("binary")));
+
+  juce::MemoryBlock block;
+  if (!block.fromBase64Encoding(xml->getAllSubText().trim()))
+  {
+    callback.errorMessage(T("FeatureGenerator::loadFromXml"), T("Could not decode base 64"));
+    return false;
+  }
+
+  juce::MemoryInputStream mis(block.getData(), block.getSize(), false);
+  return load(mis);
+}

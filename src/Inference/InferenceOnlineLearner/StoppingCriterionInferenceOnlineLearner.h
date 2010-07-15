@@ -93,6 +93,12 @@ private:
   double bestScore;
   size_t epoch;
 
+  NumericalInferencePtr getNumericalInference(InferencePtr inference) const
+    {return inference.staticCast<NumericalInference>();}
+
+  DenseVectorPtr getParameters(InferencePtr inference) const
+    {return getNumericalInference(inference)->getParameters();}
+
   void testStoppingCriterion(InferencePtr inference)
   {
     double score = -getCurrentLossEstimate();
@@ -106,7 +112,7 @@ private:
     {
       learningStopped = true;
       if (bestParameters)
-        getParameterizedInference(inference)->setParameters(bestParameters);
+        getNumericalInference(inference)->setParameters(bestParameters);
     }
   }
 };

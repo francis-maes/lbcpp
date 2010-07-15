@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_GRADIENT_DESCENT_LEARNING_H_
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Inference/ParameterizedInference.h>
+# include "../NumericalInference/NumericalInference.h"
 
 namespace lbcpp
 {
@@ -32,6 +32,12 @@ public:
   virtual ObjectPtr clone() const;
 
 protected:
+  NumericalInferencePtr getNumericalInference(InferencePtr inference) const
+    {return inference.staticCast<NumericalInference>();}
+
+  DenseVectorPtr getParameters(InferencePtr inference) const
+    {return getNumericalInference(inference)->getParameters();}
+
   ScalarVariableMean numberOfActiveFeatures;
   size_t epoch;
 

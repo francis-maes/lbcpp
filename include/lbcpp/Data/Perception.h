@@ -116,6 +116,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 
+extern ClassPtr compositePerceptionClass();
+
 PerceptionPtr identityPerception(TypePtr type);
 PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 PerceptionPtr functionBasedPerception(FunctionPtr function);

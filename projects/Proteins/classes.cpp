@@ -77,8 +77,6 @@ void declareProteinClasses()
 
   LBCPP_DECLARE_CLASS_LEGACY(ProteinObject);
 
-  LBCPP_DECLARE_CLASS_LEGACY(ProteinToInputOutputPairFunction);
-
   LBCPP_DECLARE_CLASS_LEGACY(ProteinInference);
     LBCPP_DECLARE_CLASS_LEGACY(ProteinSequenceLabelingInferenceStep);
     

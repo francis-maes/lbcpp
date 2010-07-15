@@ -155,7 +155,7 @@ private:
         res = typeName + T("<");
       else
         res += T(", ");
-      res += arguments[i]->getName();
+      res += arguments[i] ? arguments[i]->getName() : T("ERROR");
     }
     res += T(">");
     return res;
@@ -537,6 +537,7 @@ TypeCache::TypeCache(const String& typeName)
 
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 {
+  jassert(argument);
   std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument);
   if (it == m.end())
   {
@@ -550,6 +551,7 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 
 TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
 {
+  jassert(argument1 && argument2);
   std::pair<TypePtr, TypePtr> key(argument1, argument2);
   std::map<std::pair<TypePtr, TypePtr>, TypePtr>::const_iterator it = m.find(key);
   if (it == m.end())
@@ -587,10 +589,16 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(stringType, T("String"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(fileType, T("File"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(pairType, T("Pair"));
 
-DECLARE_CLASS_SINGLETON_ACCESSOR(enumerationType, T("Enumeration"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(enumerationType, T("EnumValue"));
 
 ClassPtr lbcpp::objectClass()
   {static TypeCache cache(T("Object")); return cache();}
+
+TypePtr lbcpp::typeClass()
+  {static TypeCache cache(T("Type")); return cache();}
+
+TypePtr lbcpp::enumerationClass()
+  {static TypeCache cache(T("Enumeration")); return cache();}
 
 TypePtr lbcpp::pairType(TypePtr firstClass, TypePtr secondClass)
   {static BinaryTemplateTypeCache cache(T("Pair")); return cache(firstClass, secondClass);}
@@ -635,7 +643,7 @@ void declareClassClasses()
 
   Type::declare(new BooleanType());
   Type::declare(new IntegerType());
-    Type::declare(new IntegerType(T("Enumeration"), integerType()));
+    Type::declare(new IntegerType(T("EnumValue"), integerType()));
   Type::declare(new DoubleType());
     Type::declare(new ProbabilityType());
     Type::declare(new AngstromDistanceType());

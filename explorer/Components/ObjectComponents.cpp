@@ -120,9 +120,9 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
 
   if (object.dynamicCast<Inference>())
   {
-    if (object.dynamicCast<ParameterizedInference>())
+    if (object.dynamicCast<NumericalInference>())
     {
-      ParameterizedInferencePtr inference = object.staticCast<ParameterizedInference>();
+      NumericalInferencePtr inference = object.staticCast<NumericalInference>();
       return createComponentForObject(inference->getParameters(), inference->getName());
     }
     else

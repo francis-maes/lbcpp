@@ -41,8 +41,8 @@ typedef ReferenceCountedObjectPtr<VectorParallelInference> VectorParallelInferen
 class SharedParallelInference;
 typedef ReferenceCountedObjectPtr<SharedParallelInference> SharedParallelInferencePtr;
 
-class ParameterizedInference;
-typedef ReferenceCountedObjectPtr<ParameterizedInference> ParameterizedInferencePtr;
+class NumericalInference;
+typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 
 class DecoratorInference;
 typedef ReferenceCountedObjectPtr<DecoratorInference> DecoratorInferencePtr;

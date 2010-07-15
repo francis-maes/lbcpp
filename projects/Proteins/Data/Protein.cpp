@@ -443,4 +443,7 @@ void declareProteinClass()
 {
   Class::declare(new ProteinClass());
   Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
+
+  LBCPP_DECLARE_CLASS(ProteinLengthFunction, Function);
+  LBCPP_DECLARE_CLASS(ProteinToInputOutputPairFunction, Function);
 }

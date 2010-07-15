@@ -44,6 +44,8 @@ public:
     {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
 };
 
+extern ClassPtr functionClass();
+
 FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass()); // File -> Object
 FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 FunctionPtr selectPairFieldsFunction(int index1 = -1, int index2 = -1); 

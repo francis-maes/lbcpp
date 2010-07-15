@@ -123,6 +123,8 @@ protected:
   VectorPtr subInferences;
 };
 
+extern ClassPtr vectorParallelInferenceClass();
+
 class SharedParallelInference : public StaticParallelInference
 {
 public:

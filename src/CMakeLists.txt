@@ -189,7 +189,6 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceStack.h
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceContext.h
-  ../include/lbcpp/Inference/ParameterizedInference.h
   ../include/lbcpp/Inference/DecoratorInference.h
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
@@ -210,6 +209,7 @@ SET(LBCPP_INFERENCE_SOURCES
 )
 
 SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
+  Inference/NumericalInference/NumericalInference.h
   Inference/NumericalInference/LinearInference.h
   Inference/NumericalInference/BinaryClassificationInference.h
   Inference/NumericalInference/TransferFunctionDecoratorInference.h

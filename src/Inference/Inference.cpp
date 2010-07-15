@@ -186,15 +186,15 @@ void declareInferenceClasses()
   /*
   ** Reduction
   */
-  LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, VectorParallelInference);
+  Type::declare(new OneAgainstAllClassificationInferenceClass());
   LBCPP_DECLARE_CLASS(ParallelVoteInference, VectorParallelInference);
-  LBCPP_DECLARE_CLASS(SharedParallelVectorInference, SharedParallelInference);
+  Type::declare(new SharedParallelVectorInferenceClass());
 
   /*
   ** Numerical
   */
-  LBCPP_DECLARE_ABSTRACT_CLASS(ParameterizedInference, Inference);
-    LBCPP_DECLARE_CLASS(LinearInference, ParameterizedInference);
+  Type::declare(new NumericalInferenceClass());
+    LBCPP_DECLARE_CLASS(LinearInference, NumericalInference);
 
     LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationInference, StaticDecoratorInference);
       LBCPP_DECLARE_CLASS(BinaryLinearSVMInference, BinaryClassificationInference);

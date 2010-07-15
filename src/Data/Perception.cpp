@@ -77,6 +77,9 @@ void CompositePerception::computePerception(const Variable& input, PerceptionCal
     callback->sense(i, subPerceptions[i].second, input);
 }
 
+ClassPtr lbcpp::compositePerceptionClass()
+  {static TypeCache cache(T("CompositePerception")); return cache();}
+
 #include "Perception/PreprocessPerception.h"
 #include "Perception/FlattenPerception.h"
 
