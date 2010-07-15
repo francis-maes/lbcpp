@@ -21,9 +21,9 @@ public:
     addVariable(vectorClass(aminoAcidTypeEnumeration()), T("primaryStructure"));
     addVariable(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())), T("positionSpecificScoringMatrix"));
 
-    addVariable(vectorClass(secondaryStructureElementEnumeration()), T("secondaryStructure"));
-    addVariable(vectorClass(dsspSecondaryStructureElementEnumeration()), T("dsspSecondaryStructure"));
-    addVariable(vectorClass(structuralAlphaElementEnumeration()), T("structuralAlphabetSequence"));
+    addVariable(vectorClass(secondaryStructureEnumeration()), T("secondaryStructure"));
+    addVariable(vectorClass(dsspSecondaryStructureEnumeration()), T("dsspSecondaryStructure"));
+    addVariable(vectorClass(structuralAlphabetEnumeration()), T("structuralAlphabetSequence"));
 
     addVariable(vectorClass(probabilityType()), T("solventAccesibility"));
     addVariable(vectorClass(probabilityType()), T("solventAccesibilityAt20p"));
@@ -184,25 +184,182 @@ Variable Protein::getVariable(size_t index)
   return Variable();
 }
 
+/*
+** Compute Missing Targets
+*/
 void Protein::computeMissingVariables()
 {
-  // FIXME
-  if (primaryStructure)
+  jassert(primaryStructure);
+  if (dsspSecondaryStructure && !secondaryStructure)
+    secondaryStructure = computeSecondaryStructureFromDSSPSecondaryStructure(dsspSecondaryStructure);
+  
+  if (solventAccessibility && !solventAccessibilityAt20p)
+    solventAccessibilityAt20p = computeBinarySolventAccessibilityFromSolventAccessibility(solventAccessibility, 0.2);
+
+  if (tertiaryStructure)
   {
+    if (!calphaTrace)
+      calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
+    if (!distanceMapCa)
+      distanceMapCa = computeDistanceMapFromTertiaryStructure(tertiaryStructure, false);
+    if (!distanceMapCb)
+      distanceMapCb = computeDistanceMapFromTertiaryStructure(tertiaryStructure, true);
   }
+
+  if (calphaTrace && !structuralAlphabetSequence)
+    structuralAlphabetSequence = computeStructuralAlphabetSequenceFromCAlphaTrace(calphaTrace);
+
+  if (distanceMapCa && !contactMap8Ca)
+    contactMap8Ca = computeContactMapFromDistanceMap(distanceMapCa, 8);
+  if (distanceMapCb && !contactMap8Cb)
+    contactMap8Cb = computeContactMapFromDistanceMap(distanceMapCb, 8);
 }
 
+VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
+{
+  size_t n = dsspSecondaryStructure->getNumVariables();
+  VectorPtr res = new Vector(secondaryStructureEnumeration(), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable var = dsspSecondaryStructure->getVariable(i);
+    if (var)
+      res->setVariable(i, Variable(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), res->getElementsType()));
+  }
+  return res;
+}
+
+VectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold)
+{
+  size_t n = solventAccessibility->size();
+  VectorPtr res = new Vector(probabilityType(), n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable sa = solventAccessibility->getVariable(i);
+    if (sa)
+      res->setVariable(i, Variable(sa.getDouble() > threshold ? 1.0 : 0.0, probabilityType()));
+  }
+  return res;
+}
+
+SymmetricMatrixPtr Protein::computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold)
+{
+  size_t n = distanceMap->getDimension();
+  SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType(), distanceMap->getDimension());
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = i; j < n; ++j)
+    {
+      Variable distance = distanceMap->getElement(i, j);
+      if (distance)
+      {
+        jassert(distance.isDouble());
+        res->setElement(i, j, Variable(distance.getDouble() <= threshold ? 1.0 : 0.0, probabilityType()));
+      }
+    }
+  return res;
+}
+
+VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
+{
+  /*
+  ** Descriptors from "A HMM derived structural alphabet for proteins" (2004)
+  */
+  static const double structuralAlphabetDescriptiors[27][4] = {
+    {5.39 ,5.09 ,5.38 ,2.92},
+    {5.43 ,5.09 ,5.42 ,2.94},
+    {5.41 ,5.23 ,5.61 ,2.86},
+    {5.62 ,5.25 ,5.42 ,2.87},
+    {5.59 ,5.49 ,5.78 ,2.58},
+    {5.40 ,5.58 ,5.42 ,3.39},
+    {5.78 ,5.68 ,6.07 ,1.46},
+    {5.55 ,7.74 ,5.60 ,-3.31},
+    {5.60 ,6.71 ,5.50 ,3.69},
+    {5.69 ,8.09 ,5.67 ,3.09},
+    {5.66 ,8.95 ,6.54 ,2.09},
+    {5.66 ,8.91 ,6.66 ,-1.46},
+    {5.66 ,8.07 ,6.70 ,2.96},
+    {5.70 ,7.26 ,7.02 ,0.88},
+    {6.03 ,6.85 ,5.64 ,-0.63},
+    {6.47 ,5.92 ,5.56 ,0.53},
+    {6.57 ,8.96 ,5.58 ,-2.19},
+    {6.71 ,8.27 ,5.47 ,-3.56},
+    {6.21 ,9.21 ,5.77 ,0.27},
+    {6.87 ,8.28 ,6.03 ,-3.44},
+    {6.89 ,8.94 ,6.76 ,-0.48},
+    {6.72 ,9.12 ,6.41 ,-3.31},
+    {6.71 ,9.64 ,6.50 ,-2.60},
+    {6.39 ,9.93 ,6.75 ,-1.07},
+    {6.87 ,10.06 ,6.51 ,-1.41},
+    {6.48 ,10.17 ,7.09 ,0.66},
+    {6.80 ,10.35 ,6.85 ,-0.25}
+  };
+
+  size_t n = calphaTrace->size();
+  VectorPtr res = new Vector(structuralAlphabetEnumeration(), n);
+  for (size_t i = 3; i < n; ++i)
+  {
+    impl::Vector3 a = calphaTrace->getPosition(i - 3);
+    impl::Vector3 b = calphaTrace->getPosition(i - 2);
+    impl::Vector3 c = calphaTrace->getPosition(i - 1);
+    impl::Vector3 d = calphaTrace->getPosition(i);
+    if (!a.exists() || !b.exists() || !c.exists() || !d.exists())
+      continue;
+    
+    double d1 = (a - c).l2norm();
+    double d2 = (a - d).l2norm();
+    double d3 = (b - d).l2norm();
+    
+    impl::Vector3 normalVector =  (b - a).crossProduct(c - a);
+    
+    double d4 = (normalVector.dotProduct(d) - normalVector.dotProduct(a)) / normalVector.l2norm();
+    
+    int bestGroup = 0;
+    double minDistance = DBL_MAX;
+    for (size_t j = 0; j < 27; ++j)
+    {
+      double diff_1 = d1 - structuralAlphabetDescriptiors[j][0];
+      double diff_2 = d2 - structuralAlphabetDescriptiors[j][1];
+      double diff_3 = d3 - structuralAlphabetDescriptiors[j][2];
+      double diff_4 = d4 - structuralAlphabetDescriptiors[j][3];
+      
+      diff_1 *= diff_1;
+      diff_2 *= diff_2;
+      diff_3 *= diff_3;
+      diff_4 *= diff_4;
+      
+      double dist = sqrt(diff_1 + diff_2 + diff_3 + diff_4);
+      
+      if (dist < minDistance)
+      {
+        minDistance = dist;
+        bestGroup = j;
+      }
+    }
+    res->setVariable(i - 2, Variable(bestGroup, structuralAlphabetEnumeration()));
+    //std::cout << d1 << "\t" << d2 << "\t" << d3 << "\t" << d4 << "\t\t" << bestGroup << std::endl;
+  }
+  return res;
+}
+
+/*
+** Create Empty Targets
+*/
 VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
   {return new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), getLength());}
 
 VectorPtr Protein::createEmptySecondaryStructure() const
-  {return new Vector(secondaryStructureElementEnumeration(), getLength());}
+  {return new Vector(secondaryStructureEnumeration(), getLength());}
 
 VectorPtr Protein::createEmptyDSSPSecondaryStructure() const
-  {return new Vector(dsspSecondaryStructureElementEnumeration(), getLength());}
+  {return new Vector(dsspSecondaryStructureEnumeration(), getLength());}
 
 VectorPtr Protein::createEmptyProbabilitySequence() const
   {return new Vector(probabilityType(), getLength());}
+
+SymmetricMatrixPtr Protein::createEmptyContactMap() const
+  {return new SymmetricMatrix(probabilityType(), getLength());}
+
+SymmetricMatrixPtr Protein::createEmptyDistanceMap() const
+  {return new SymmetricMatrix(angstromDistanceType(), getLength());}
 
 Variable Protein::createEmptyTarget(size_t index) const
 {
@@ -218,12 +375,15 @@ Variable Protein::createEmptyTarget(size_t index) const
   case 1: return createEmptyPositionSpecificScoringMatrix();
   case 2: return createEmptySecondaryStructure();
   case 3: return createEmptyDSSPSecondaryStructure();
-  case 4: return new Vector(structuralAlphaElementEnumeration(), n);
+  case 4: return new Vector(structuralAlphabetEnumeration(), n);
   case 5: return createEmptyProbabilitySequence();
   case 6: return createEmptyProbabilitySequence();
   case 7: return createEmptyProbabilitySequence();
-
+  case 8: case 9: return createEmptyContactMap();
+  case 10: case 11: return createEmptyDistanceMap();
   default:
     jassert(false); return Variable();
   }
 }
+
+

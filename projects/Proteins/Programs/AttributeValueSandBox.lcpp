@@ -170,7 +170,8 @@ int main(int argc, char** argv)
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInference(T("solventAccesibilityAt20p")));
+  inference->appendInference(factory->createInference(T("secondaryStructure")));
+  inference->appendInference(factory->createInference(T("secondaryStructure")));
   //inference->appendInference(factory->createInference(T("structuralAlphabetSequence")));
   /*
   inference->appendInference(factory->createInference(T("disorderRegions")));

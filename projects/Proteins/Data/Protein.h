@@ -124,9 +124,11 @@ public:
   */
   SymmetricMatrixPtr getContactMap(double threshold = 8, bool betweenCBetaAtoms = false) const;
   void setContactMap(SymmetricMatrixPtr contactMap, double threshold = 8, bool betweenCBetaAtoms = false);
+  SymmetricMatrixPtr createEmptyContactMap() const;
 
   SymmetricMatrixPtr getDistanceMap(bool betweenCBetaAtoms = false) const;
   void setDistanceMap(SymmetricMatrixPtr contactMap, bool betweenCBetaAtoms = false);
+  SymmetricMatrixPtr createEmptyDistanceMap() const;
 
   /*
   ** Tertiary Structure
@@ -172,6 +174,17 @@ protected:
   // 3D
   CartesianPositionVectorPtr calphaTrace;
   TertiaryStructurePtr tertiaryStructure;
+
+  static VectorPtr computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure);
+  static VectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold);
+  static SymmetricMatrixPtr computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold);
+  static VectorPtr computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace);
+
+  static CartesianPositionVectorPtr computeCAlphaTraceFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
+    {return tertiaryStructure->makeCAlphaTrace();}
+
+  static SymmetricMatrixPtr computeDistanceMapFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure, bool betweenCBetaAtoms)
+    {return betweenCBetaAtoms ? tertiaryStructure->makeCBetaDistanceMatrix() : tertiaryStructure->makeCAlphaDistanceMatrix();}
 };
 
 extern ClassPtr proteinClass();
