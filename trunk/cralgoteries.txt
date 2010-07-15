@@ -1,7 +1,6 @@
 
 ContactMaps:
  * ContactMap inference
-   * Base class ProteinTargetInferenceHelper
  * Residue pair perceptions
 
 Perceptions:
@@ -17,6 +16,8 @@ Serialisation:
 Inference:
  * Clean Inference classes
  * ParallelProteinInference
+
+* Clarifier l'histoire des TemplateType
 
 Julien:
  * Voir pourquoi les ExtraTree marchent moyen

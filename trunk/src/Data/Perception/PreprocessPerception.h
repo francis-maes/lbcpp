@@ -26,9 +26,6 @@ public:
   virtual TypePtr getInputType() const
     {return preProcessingFunction->getInputType();}
 
-  virtual TypePtr getOutputType() const
-    {return decorated->getOutputType();}
-
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     if (checkInheritance(preProcessingFunction->getOutputType(input.getType()), decorated->getInputType()))

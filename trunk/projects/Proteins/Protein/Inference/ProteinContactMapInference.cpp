@@ -75,7 +75,7 @@ Variable ContactMapScoresToProbabilitiesInference::run(InferenceContextPtr conte
       }
   return res;
 }
-  
+
 /*
 ** ContactMapScoresToProbabilitiesInferenceBatchLearner
 */

@@ -43,6 +43,13 @@ public:
   }
   
 public:
+  virtual InferencePtr createContactMapInference(const String& targetName) const
+  {
+    InferencePtr res = ProteinInferenceFactory::createContactMapInference(targetName);
+    res->setBatchLearner(onlineToBatchInferenceLearner());
+    return res;
+  }
+
   virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
     {return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));}
 
@@ -50,7 +57,7 @@ public:
   {
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, inputType);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    //res->setBatchLearner(onlineToBatchInferenceLearner());
+    res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
 
@@ -161,16 +168,16 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")))->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->invFold(0, 7);
-  ContainerPtr testProteins = proteins->fold(0, 7);
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB\\xml")), 6)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->invFold(0, 2);
+  ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 //  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   /*

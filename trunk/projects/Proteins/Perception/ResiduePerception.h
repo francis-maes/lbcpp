@@ -20,7 +20,11 @@ class ResidueCompositePerception : public CompositePerception
 public:
   virtual TypePtr getInputType() const
     {return pairType(proteinClass(), integerType());}
+
+  virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };
+
+extern PerceptionPtr proteinToResiduePerception(PerceptionPtr proteinPerception);
 
 }; /* namespace lbcpp */
 

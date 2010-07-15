@@ -34,6 +34,12 @@ public:
 PerceptionPtr lbcpp::proteinLengthPerception()
   {return new ProteinLengthPerception();}
 
+void declareProteinPerceptionClasses()
+{
+  LBCPP_DECLARE_CLASS(ProteinCompositePerception, CompositePerception);
+}
+
+
 #if 0
 
 class PerceptionModifier : public DecoratorPerception

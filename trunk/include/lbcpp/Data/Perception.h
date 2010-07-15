@@ -63,6 +63,9 @@ public:
   DecoratorPerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated) {}
 
+  virtual TypePtr getOutputType() const
+    {return decorated->getOutputType();}
+
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 
@@ -97,7 +100,7 @@ public:
   PerceptionPtr getPerception(size_t index) const
     {jassert(index < subPerceptions.size()); return subPerceptions[index].second;}
 
-  void addPerception(const String& name, PerceptionPtr subPerception)
+  virtual void addPerception(const String& name, PerceptionPtr subPerception)
     {subPerceptions.push_back(std::make_pair(name, subPerception));}
 
   // Perception

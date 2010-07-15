@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
+# include <lbcpp/Data/Perception.h>
 
 namespace lbcpp
 {
@@ -18,11 +19,9 @@ namespace lbcpp
 class SharedParallelVectorInference : public SharedParallelInference
 {
 public:
-  SharedParallelVectorInference(const String& name, PerceptionPtr perception, InferencePtr elementInference)
-    : SharedParallelInference(name, elementInference), perception(perception) {}
+  SharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference)
+    : SharedParallelInference(name, elementInference), sizeFunction(sizeFunction), perception(perception) {}
   SharedParallelVectorInference() {}
-
-  virtual size_t getOutputSize(const Variable& input) const = 0;
 
   virtual TypePtr getInputType() const
     {return perception->getInputType()->getTemplateArgument(0);}
@@ -35,7 +34,7 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    size_t n = getOutputSize(input);
+    size_t n = (size_t)sizeFunction->compute(input).getInteger();
     
     VectorPtr supervisionVector = supervision ? supervision.getObjectAndCast<Vector>() : VectorPtr();
 
@@ -75,6 +74,7 @@ public:
   }
 
 protected:
+  FunctionPtr sizeFunction;
   PerceptionPtr perception;
 };
 

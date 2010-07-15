@@ -138,12 +138,18 @@ InferencePtr lbcpp::classificationExtraTreeInference(const String& name, TypePtr
 */
 #include "ReductionInference/OneAgainstAllClassificationInference.h"
 #include "ReductionInference/ParallelVoteInference.h"
+#include "ReductionInference/SharedParallelVectorInference.h"
 
 InferencePtr lbcpp::oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
   {return new OneAgainstAllClassificationInference(name, classes, binaryClassifierModel);}
 
 InferencePtr lbcpp::parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner)
   {return new ParallelVoteInference(name, numVoters, voteInferenceModel, voteLearner);}
+
+// sizeFunction: input -> size
+// perception: (input, position) pair -> object
+InferencePtr lbcpp::sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference)
+  {return new SharedParallelVectorInference(name, sizeFunction, perception, elementInference);}
 
 /*
 ** Meta Inference
@@ -258,6 +264,7 @@ void declareInferenceClasses()
   */
   LBCPP_DECLARE_CLASS(OneAgainstAllClassificationInference, VectorStaticParallelInference);
   LBCPP_DECLARE_CLASS(ParallelVoteInference, VectorStaticParallelInference);
+  LBCPP_DECLARE_CLASS(SharedParallelVectorInference, SharedParallelInference);
 
   /*
   ** Numerical
