@@ -25,7 +25,7 @@ ObjectContainerPtr loadProteins(const File& directory, size_t maxCount = 0)
   {
     ProteinObjectPtr protein = res->getAndCast<ProteinObject>(i);
     jassert(protein);
-    protein->computeMissingFields();
+    //protein->computeMissingFields();
   }
   return res;
 }
@@ -166,9 +166,9 @@ static ProteinPtr convertProtein(ProteinObjectPtr protein)
   res->setPrimaryStructure(convertLabelSequence(protein->getAminoAcidSequence(), aminoAcidTypeEnumeration()));
   res->setPositionSpecificScoringMatrix(convertScoreVectorSequence(protein->getPositionSpecificScoringMatrix(), aminoAcidTypeEnumeration()));
 
-  res->setSecondaryStructure(convertLabelSequence(protein->getSecondaryStructureSequence(), secondaryStructureElementEnumeration()));
-  res->setDSSPSecondaryStructure(convertLabelSequence(protein->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureElementEnumeration()));
-  res->setStructuralAlphabetSequence(convertLabelSequence(protein->getStructuralAlphabetSequence(), structuralAlphaElementEnumeration()));
+  res->setSecondaryStructure(convertLabelSequence(protein->getSecondaryStructureSequence(), secondaryStructureEnumeration()));
+  res->setDSSPSecondaryStructure(convertLabelSequence(protein->getDSSPSecondaryStructureSequence(), dsspSecondaryStructureEnumeration()));
+  res->setStructuralAlphabetSequence(convertLabelSequence(protein->getStructuralAlphabetSequence(), structuralAlphabetEnumeration()));
 
   res->setSolventAccessibility(convertScalarSequenceToProbabilityVector(protein->getNormalizedSolventAccessibilitySequence()));
   res->setSolventAccessibilityAt20p(convertBinaryLabelSequenceToProbabilityVector(protein->getSolventAccessibilityThreshold20()));
