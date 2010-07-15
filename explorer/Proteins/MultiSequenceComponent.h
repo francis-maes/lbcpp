@@ -131,10 +131,10 @@ private:
     for (size_t i = begin; i < end; ++i)
     {
       g.setColour(Colours::black);
-      Variable object1 = i > 0 ? sequence->getVariable(i - 1) : Variable();
-      Variable object2 = sequence->getVariable(i);
+      Variable variable1 = i > 0 ? sequence->getVariable(i - 1) : Variable();
+      Variable variable2 = sequence->getVariable(i);
       
-      if (object1 && object2 && object1.toString() == object2.toString())
+      if (variable1 && variable2 && variable1 == variable2)
       {
         g.setColour(Colours::lightgrey);
         g.drawLine((float)x, (float)(y1 + 1), (float)x, (float)y2);

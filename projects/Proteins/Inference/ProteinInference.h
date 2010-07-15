@@ -11,6 +11,7 @@
 
 # include "../Data/Protein.h"
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/DecoratorInference.h>
 
 namespace lbcpp
 {
@@ -54,6 +55,42 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
+
+class ProteinInferenceStep : public StaticDecoratorInference
+{
+public:
+  ProteinInferenceStep(const String& targetName, InferencePtr targetInference);
+  ProteinInferenceStep() : targetIndex(0) {}
+
+  // Accessors
+  String getTargetName() const
+    {return proteinClass()->getStaticVariableName(targetIndex);}
+
+  TypePtr getTargetType() const
+    {return proteinClass()->getStaticVariableType(targetIndex);}
+
+  InferencePtr getTargetInference() const
+    {return decorated;}
+
+  // DecoratorInference
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode);
+
+  // Inference
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
+  virtual TypePtr getSupervisionType() const
+    {return proteinClass();}
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return proteinClass();}
+
+protected:
+  PerceptionPtr perception;
+  size_t targetIndex;
+  TypePtr outputType;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinInferenceStep> ProteinInferenceStepPtr;
 
 extern FunctionPtr proteinToInputOutputPairFunction();
 

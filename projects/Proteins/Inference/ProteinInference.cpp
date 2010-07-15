@@ -90,7 +90,39 @@ void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr contex
 Variable ProteinSequentialInference::finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
   {return finalState->getInput();} // the working protein
 
+/*
+** ProteinInferenceStep
+*/
+ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePtr targetInference)
+  : StaticDecoratorInference(targetName, targetInference)
+{
+  int index = proteinClass()->findStaticVariable(targetName);
+  jassert(index >= 0);
+  targetIndex = (size_t)index;
+  checkInheritance(targetInference->getInputType(), proteinClass());
+  checkInheritance(targetInference->getSupervisionType(), getTargetType());
+  checkInheritance(targetInference->getOutputType(proteinClass()), getTargetType());
+}
 
+DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
+  res->setSubInference(decorated, input, supervision[targetIndex]);
+  return res;
+}
+
+Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+{
+  ProteinPtr protein = finalState->getInput().getObjectAndCast<Protein>();
+  Variable prediction = finalState->getSubOutput();
+  if (prediction)
+    protein->setVariable(targetIndex, prediction);
+  return protein;
+}
+
+/*
+** ProteinToInputOutputPairFunction
+*/
 class ProteinToInputOutputPairFunction : public Function
 {
 public:
@@ -118,4 +150,5 @@ FunctionPtr lbcpp::proteinToInputOutputPairFunction()
 void declareProteinInferenceClasses()
 {
   LBCPP_DECLARE_CLASS(ProteinSequentialInference, VectorSequentialInference); 
+  LBCPP_DECLARE_CLASS(ProteinInferenceStep, StaticDecoratorInference);
 }

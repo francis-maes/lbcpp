@@ -24,7 +24,7 @@ public:
   /*
   ** High level inferences
   */
-  virtual InferencePtr createInference(const String& targetName) const;
+  virtual InferencePtr createInferenceStep(const String& targetName) const;
   virtual InferencePtr createTargetInference(const String& targetName) const;
   
   virtual InferencePtr createLabelSequenceInference(const String& targetName) const;

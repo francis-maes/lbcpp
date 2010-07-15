@@ -84,6 +84,9 @@ public:
     map->setSelectedItemIndex(configuration->getCurrentMap(), false);
   }
   
+  virtual ~MultiProtein2DConfigurationComponent()
+    {deleteAllChildren();}
+
   virtual void resized()
   {
     protein1->setBoundsRelative(0, 0, 0.333f, 1.f);

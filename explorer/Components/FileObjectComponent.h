@@ -69,15 +69,17 @@ public:
       }
       else
         beforeZero += data[i];
+
     if (indexOfZero < 0)
     {
-      juce::XmlDocument xml(file);
-      if (xml.getDocumentElement(true))
+      static const char* xmlBegin = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+      if ((size_t)data.getSize() > strlen(xmlBegin) && memcmp(data.getData(), xmlBegin, strlen(xmlBegin)) == 0)
         return xmlFile;
       return textFile;
     }
     if (Class::doClassNameExists(beforeZero))
       return classFile;
+
     return binaryFile;
   }
 
