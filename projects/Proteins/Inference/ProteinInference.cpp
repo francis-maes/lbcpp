@@ -120,35 +120,12 @@ Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, De
   return protein;
 }
 
-/*
-** ProteinToInputOutputPairFunction
-*/
-class ProteinToInputOutputPairFunction : public Function
-{
-public:
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return pairType(proteinClass(), proteinClass());}
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-  {
-    ProteinPtr protein = input.getObjectAndCast<Protein>();
-    jassert(protein);
-    protein->computeMissingVariables();
-    ProteinPtr inputProtein = new Protein(protein->getName());
-    inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
-    inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
-    return Variable::pair(inputProtein, protein);
-  }
-};
-
-FunctionPtr lbcpp::proteinToInputOutputPairFunction()
-  {return new ProteinToInputOutputPairFunction();}
+#include "ContactMapInference.h"
 
 void declareProteinInferenceClasses()
 {
+  LBCPP_DECLARE_CLASS(ContactMapInference, SharedParallelInference);
+
   LBCPP_DECLARE_CLASS(ProteinSequentialInference, VectorSequentialInference); 
   LBCPP_DECLARE_CLASS(ProteinInferenceStep, StaticDecoratorInference);
 }

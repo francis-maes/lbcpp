@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "Perception/PerceptionToFeatures.h"
+#include "InferenceData/CommonFeatureGenerators.h"
 namespace lbcpp
 {
 
@@ -59,15 +60,19 @@ featureGenerator variableFeatures(Variable variable)
     return;
   }
 
-  jassert(false);
+  if (variable.isInteger())
+  {
+    featureCall(0) numberLogFeatures((double)variable.getInteger());
+    return;
+  }
+
+  if (variable.isDouble())
+  {
+    featureCall(0) numberLogFeatures(variable.getDouble());
+    return;
+  }
+
+  jassert(false); // conversion of this type to features is not implemented
 }
 
 }; /* namespace lbcpp */
-
-#include "Perception/ResiduePerception.h"
-using namespace lbcpp;
-
-void declareProteinPerceptionClasses()
-{
-  LBCPP_DECLARE_CLASS(ResidueCompositePerception, CompositePerception);
-}

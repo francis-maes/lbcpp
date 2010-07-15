@@ -24,6 +24,9 @@ public:
       precompute(decorated, String::empty);
   }
 
+  virtual TypePtr getOutputType() const
+    {return Perception::getOutputType();}
+
   virtual size_t getNumOutputVariables() const
     {return outputVariables.size();}
 

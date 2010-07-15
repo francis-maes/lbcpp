@@ -94,14 +94,12 @@ public:
     : Evaluator(name)  {}
   ROCAnalysisEvaluator() {}
 
-  virtual void addPrediction(const Variable& predicted, const Variable& correctObject)
+  virtual void addPrediction(const Variable& predicted, const Variable& correct)
   {
-    if (!predicted)
-      return;
-    LabelPtr correct = correctObject.dynamicCast<Label>();
     if (!predicted || !correct)
       return;
-    roc.addPrediction(predicted.getDouble(), correct->getIndex() == 1);
+    jassert(predicted.isDouble() && correct.isBoolean());
+    roc.addPrediction(predicted.getDouble(), correct.getBoolean());
   }
  
   virtual String toString() const

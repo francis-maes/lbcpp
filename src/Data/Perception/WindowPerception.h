@@ -24,6 +24,9 @@ public:
   virtual TypePtr getInputType() const
     {return pairType(vectorClass(elementsType), integerType());}
 
+  virtual TypePtr getOutputType() const
+    {return Perception::getOutputType();}
+
   virtual size_t getNumOutputVariables() const
     {return windowSize;}
 

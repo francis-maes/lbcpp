@@ -189,6 +189,9 @@ protected:
 
 extern ClassPtr proteinClass();
 
+extern FunctionPtr proteinLengthFunction();
+extern FunctionPtr proteinToInputOutputPairFunction();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEINS_PROTEIN_H_

@@ -49,6 +49,8 @@ extern void declareProteinClass();
 
 // perception
 extern void declareProteinPerceptionClasses();
+extern void declareResiduePerceptionClasses();
+extern void declareResiduePairPerceptionClasses();
 
 // inference
 extern void declareProteinInferenceClasses();
@@ -118,6 +120,8 @@ void declareProteinClasses()
 
   // perception
   declareProteinPerceptionClasses();
+  declareResiduePerceptionClasses();
+  declareResiduePairPerceptionClasses();
 
   // inference
   declareProteinInferenceClasses();

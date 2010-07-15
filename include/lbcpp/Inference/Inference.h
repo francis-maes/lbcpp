@@ -114,6 +114,7 @@ extern InferencePtr classificationExtraTreeInference(const String& name, TypePtr
 */
 extern InferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
 extern InferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
+extern InferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference);
 
 /*
 ** Meta Inference

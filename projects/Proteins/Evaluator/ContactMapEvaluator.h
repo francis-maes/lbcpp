@@ -55,7 +55,7 @@ public:
     for (size_t i = 0; i < n; ++i)
       for (size_t j = i + 6; j < n; ++j)
       {
-        Variable predictedElement = correct->getElement(i, j);
+        Variable predictedElement = predicted->getElement(i, j);
         Variable correctElement = correct->getElement(i, j);
         jassert(predictedElement.getType() == probabilityType() && correctElement.getType() == probabilityType());
         if (predictedElement.isMissingValue() || correctElement.isMissingValue())

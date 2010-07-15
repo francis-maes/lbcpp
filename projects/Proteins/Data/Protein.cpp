@@ -42,11 +42,6 @@ public:
     {return new Protein();}
 };
 
-void declareProteinClass()
-{
-  Class::declare(new ProteinClass());
-}
-
 extern ClassPtr lbcpp::proteinClass()
   {static ClassPtr res = Class::get(T("Protein")); return res;}
 
@@ -393,4 +388,58 @@ Variable Protein::createEmptyTarget(size_t index) const
   }
 }
 
+/*
+** ProteinLengthFunction
+*/
+class ProteinLengthFunction : public Function
+{
+public:
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
 
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return integerType();}
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  {
+    ProteinPtr protein = input.getObjectAndCast<Protein>();
+    jassert(protein);
+    return protein->getLength();
+  }
+};
+
+FunctionPtr lbcpp::proteinLengthFunction()
+  {return new ProteinLengthFunction();}
+
+/*
+** ProteinToInputOutputPairFunction
+*/
+class ProteinToInputOutputPairFunction : public Function
+{
+public:
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return pairType(proteinClass(), proteinClass());}
+
+  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  {
+    ProteinPtr protein = input.getObjectAndCast<Protein>();
+    jassert(protein);
+    protein->computeMissingVariables();
+    ProteinPtr inputProtein = new Protein(protein->getName());
+    inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
+    inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
+    return Variable::pair(inputProtein, protein);
+  }
+};
+
+FunctionPtr lbcpp::proteinToInputOutputPairFunction()
+  {return new ProteinToInputOutputPairFunction();}
+
+
+void declareProteinClass()
+{
+  Class::declare(new ProteinClass());
+}
