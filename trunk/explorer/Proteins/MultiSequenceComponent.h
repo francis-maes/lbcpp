@@ -160,8 +160,9 @@ private:
     if (type->inheritsFrom(enumerationType()))
     {
       g.setFont(12.f);
-      String res;
-      res += type.dynamicCast<Enumeration>()->getOneLetterCode(sequence->getVariable(index).getInteger());
+      String res = T("?");
+      if (sequence->getVariable(index))
+        res[0] = type.dynamicCast<Enumeration>()->getOneLetterCode(sequence->getVariable(index).getInteger());
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
     }
@@ -189,7 +190,7 @@ private:
       size_t numVariables = probs->getEnumeration()->getNumElements();
       for (size_t i = 0; i < numVariables; ++i)
       {
-        juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - sequence->getVariable(i).getDouble()));
+        juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - probs->getVariable(i).getDouble()));
         g.setColour(Colour(255, level, level));
         int y1 = y + i * h / numVariables;
         int y2 = y + (i + 1) * h / numVariables;
