@@ -51,14 +51,11 @@ PerceptionPtr lbcpp::proteinToResiduePairPerception(PerceptionPtr proteinPercept
 /*
 ** ResidueToResiduePairPerception
 */
-class ResidueToResiduePairPerception : public Perception
+class ResidueToResiduePairPerception : public ResiduePairPerception
 {
 public:
   ResidueToResiduePairPerception(PerceptionPtr residuePerception = PerceptionPtr())
     : residuePerception(residuePerception) {}
-
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), pairType(integerType(), integerType()));}
 
   virtual size_t getNumOutputVariables() const
     {return 2;}
@@ -87,10 +84,41 @@ protected:
 PerceptionPtr lbcpp::residueToResiduePairPerception(PerceptionPtr residuePerception)
   {return new ResidueToResiduePairPerception(residuePerception);}
 
+/*
+** SeparationDistanceResiduePairPerception
+*/
+class SeparationDistanceResiduePairPerception : public ResiduePairPerception
+{
+public:
+  virtual size_t getNumOutputVariables() const
+    {return 1;}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return sequenceSeparationDistanceType();}
+
+  virtual String getOutputVariableName(size_t index) const
+    {return T("separationDistance");}
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  {
+    Variable positionPair = input[1];
+    callback->sense(0, Variable(positionPair[1].getInteger() - positionPair[0].getInteger(), sequenceSeparationDistanceType()));
+  }
+
+protected:
+  FunctionPtr function;
+};
+
+PerceptionPtr lbcpp::separationDistanceResiduePairPerception()
+  {return new SeparationDistanceResiduePairPerception();}
+
 void declareResiduePairPerceptionClasses()
 {
+  LBCPP_DECLARE_ABSTRACT_CLASS(ResiduePairPerception, Perception);
+    LBCPP_DECLARE_CLASS(ResidueToResiduePairPerception, ResiduePairPerception);
+    LBCPP_DECLARE_CLASS(SeparationDistanceResiduePairPerception, ResiduePairPerception);
+
   LBCPP_DECLARE_CLASS(ProteinToResiduePairPerception, DecoratorPerception);
-  LBCPP_DECLARE_CLASS(ResidueToResiduePairPerception, Perception);
 
   LBCPP_DECLARE_CLASS(ResiduePairCompositePerception, CompositePerception);
 }

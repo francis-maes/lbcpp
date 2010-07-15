@@ -85,6 +85,38 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFre
   return new StoppingCriterionInferenceOnlineLearner(pthis, criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
 }
 
+/*
+** UpdatableInferenceOnlineLearner
+*/
+UpdatableInferenceOnlineLearner::UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency)
+  : updateFrequency(updateFrequency), epoch(0) {}
+
+void UpdatableInferenceOnlineLearner::stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+{
+  ++epoch;
+  if (updateFrequency == perStep)
+    update(inference);
+  if (updateFrequency >= perStepMiniBatch)
+  {
+    int miniBatchSize = updateFrequency - perStepMiniBatch;
+    if (miniBatchSize <= 1 || (epoch % miniBatchSize) == 0)
+      update(inference);
+  }
+}
+
+void UpdatableInferenceOnlineLearner::episodeFinishedCallback(InferencePtr inference)
+{
+  if (updateFrequency == perEpisode)
+    update(inference);
+}
+
+void UpdatableInferenceOnlineLearner::passFinishedCallback(InferencePtr inference)
+{
+  if (updateFrequency == perPass)
+    update(inference);
+}
+
+
 void declareInferenceOnlineLearnerClasses()
 {
   LBCPP_DECLARE_CLASS_LEGACY(StochasticGradientDescentOnlineLearner);

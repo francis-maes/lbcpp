@@ -59,6 +59,22 @@ protected:
   DenseVectorPtr getParameters(InferencePtr inference) const;
 };
 
+class UpdatableInferenceOnlineLearner : public InferenceOnlineLearner
+{
+public:
+  UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency);
+
+  virtual void update(InferencePtr inference) = 0;
+
+  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(InferencePtr inference);
+  virtual void passFinishedCallback(InferencePtr inference);
+
+protected:
+  size_t epoch;
+  UpdateFrequency updateFrequency;
+};
+
 extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
           // randomization
           InferenceOnlineLearner::UpdateFrequency randomizationFrequency = InferenceOnlineLearner::never,

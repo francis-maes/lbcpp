@@ -15,6 +15,13 @@
 namespace lbcpp
 {
 
+class ResiduePairPerception : public Perception
+{
+public:
+  virtual TypePtr getInputType() const
+    {return pairType(proteinClass(), pairType(integerType(), integerType()));}
+};
+
 class ResiduePairCompositePerception : public CompositePerception
 {
 public:
@@ -26,6 +33,8 @@ public:
 
 extern PerceptionPtr proteinToResiduePairPerception(PerceptionPtr proteinPerception);
 extern PerceptionPtr residueToResiduePairPerception(PerceptionPtr residuePerception);
+
+extern PerceptionPtr separationDistanceResiduePairPerception();
 
 }; /* namespace lbcpp */
 

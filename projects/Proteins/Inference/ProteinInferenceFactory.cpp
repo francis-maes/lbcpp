@@ -119,6 +119,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   CompositePerceptionPtr res = new ResiduePairCompositePerception();
   res->addPerception(T("GLOBAL"), createProteinPerception());
   res->addPerception(T("PT"), residuePerception);
+  res->addPerception(T("SEP"), separationDistanceResiduePairPerception());
   return res;
 }
 

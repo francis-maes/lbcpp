@@ -8,31 +8,8 @@
 #include "ProteinPerception.h"
 using namespace lbcpp;
 
-// todo: Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
-TypePtr sequenceSeparationDistanceType()
-  {return integerType();} // FIXME
-
-class ProteinLengthPerception : public Perception
-{
-public:
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual size_t getNumOutputVariables() const
-    {return 1;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return sequenceSeparationDistanceType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return T("proteinLength");}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-    {callback->sense(0, input.getObjectAndCast<Protein>()->getLength());}
-};
-
 PerceptionPtr lbcpp::proteinLengthPerception()
-  {return new ProteinLengthPerception();}
+  {return functionBasedPerception(proteinLengthFunction());}
 
 void declareProteinPerceptionClasses()
 {

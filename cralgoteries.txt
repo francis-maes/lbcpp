@@ -14,7 +14,7 @@ Inference:
  * ParallelProteinInference
 
 * Clarifier l'histoire des TemplateType
-
+* Move Evaluator from lbcpp/Inference to lbcpp/Data
 =========== 
 
 Library:

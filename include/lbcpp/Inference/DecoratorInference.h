@@ -89,6 +89,12 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return decorated->getOutputType(inputType);}
 
+  virtual void beginRunSession()
+    {decorated->beginRunSession();}
+
+  virtual void endRunSession()
+    {decorated->endRunSession();}
+
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);

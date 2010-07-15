@@ -59,6 +59,7 @@ SET(LBCPP_DATA_PERCEPTION_SOURCES
   Data/Perception/WindowPerception.h
   Data/Perception/PreprocessPerception.h
   Data/Perception/FlattenPerception.h
+  Data/Perception/FunctionBasedPerception.h
 )
 
 ### old 
