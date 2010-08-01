@@ -610,7 +610,7 @@ std::cout << "Simple feature: Unit, Seq. Win. 10, PSSM Win. 10, MultiTask" << st
     // Load existing and contiguous inferences
     for (; i < proteinInference->getNumSubInferences(); ++i)
     {
-      File f = proteinInference->getSubInferenceFile(i, inputInference);
+      File f; jassert(false);// FIXME = proteinInference->getSubInferenceFile(i, inputInference);
       if (!f.exists())
         break;
       InferencePtr inference = Inference::createFromFile(f);

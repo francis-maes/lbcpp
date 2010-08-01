@@ -176,7 +176,8 @@ int main(int argc, char** argv)
 
   std::cout << "Loading inference... " << std::flush;
   ProteinInferencePtr inference = new ProteinInference();
-  inference->loadSubInferencesFromDirectory(modelDirectory);
+ jassert(false); // FIXME
+  //inference->loadSubInferencesFromDirectory(modelDirectory);
   if (!inference->getNumSubInferences())
   {
     std::cerr << "Could not find any inference step in directory " << modelDirectory.getFullPathName() << std::endl;
