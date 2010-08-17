@@ -38,7 +38,7 @@ public:
     {
       ObjectContainerNameListComponent* c = dynamic_cast<ObjectContainerNameListComponent* >(getTabContentComponent(i));
       jassert(c);
-      int index = c->getContainer()->findObject(process);
+      int index = c->getContainer()->find(process);
       if (index >= 0)
       {
         c->selectRow(index);
@@ -145,12 +145,11 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   };
 }
 
-void ProcessManagerComponent::selectionChangedCallback(const std::vector<ObjectPtr>& selectedObjects)
+void ProcessManagerComponent::selectionChangedCallback(const std::vector<Variable>& selectedVariables)
 {
-  if (selectedObjects.size() == 1)
+  if (selectedVariables.size() == 1)
   {
-    ObjectPtr object = selectedObjects[0];
-    ProcessPtr process = object.dynamicCast<Process>();
+    ProcessPtr process = selectedVariables[0].getObjectAndCast<Process>();
     jassert(process);
     RecentProcessesPtr recents = RecentProcesses::getInstance();
     ProcessConsoleSettingsPtr settings = recents->getExecutableConsoleSettings(process->getExecutableFile());

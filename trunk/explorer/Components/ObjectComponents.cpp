@@ -24,19 +24,19 @@ public:
     : ObjectSelectorAndContentComponent(featureGenerator, new ObjectTreeComponent(featureGenerator, name))
     {}
 
-  virtual void selectionChangedCallback(const std::vector<ObjectPtr>& selectedObjects)
+  virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables)
   {
-    std::vector<ObjectPtr> objects;
-    objects.reserve(selectedObjects.size());
-    for (size_t i = 0; i < selectedObjects.size(); ++i)
+    std::vector<Variable> variables;
+    variables.reserve(selectedVariables.size());
+    for (size_t i = 0; i < selectedVariables.size(); ++i)
     {
-      FeatureGeneratorPtr featureGenerator = selectedObjects[i].dynamicCast<FeatureGenerator>();
+      FeatureGeneratorPtr featureGenerator = selectedVariables[i].getObjectAndCast<FeatureGenerator>();
       if (featureGenerator)
-        objects.push_back(featureGenerator->toTable());
+        variables.push_back(featureGenerator->toTable());
       else
-        objects.push_back(selectedObjects[i]);
+        variables.push_back(selectedVariables[i]);
     }
-    ObjectSelectorAndContentComponent::selectionChangedCallback(objects);
+    ObjectSelectorAndContentComponent::selectionChangedCallback(variables);
   }
 };
 
@@ -230,13 +230,16 @@ Component* lbcpp::createComponentForObject(ObjectPtr object, const String& expli
   return res;
 }
 
-ObjectPtr lbcpp::createMultiSelectionObject(const std::vector<ObjectPtr>& objects)
+Variable lbcpp::createMultiSelectionVariable(const std::vector<Variable>& variables)
 {
-  if (objects.empty())
-    return ObjectPtr();
-  if (objects.size() == 1)
-    return objects[0];
-  VectorObjectContainerPtr res = new VectorObjectContainer(objects);
-  res->setName(T("MultiSelection"));
+  if (variables.empty())
+    return Variable();
+  if (variables.size() == 1)
+    return variables[0];
+  VectorPtr res = new Vector(objectClass());
+  res->reserve(variables.size());
+  for (size_t i = 0; i < variables.size(); ++i)
+    res->append(variables[i]);
+  //res->setName(T("MultiSelection"));
   return res;
 }

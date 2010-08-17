@@ -66,28 +66,14 @@ SET(LBCPP_DATA_PERCEPTION_SOURCES
 
 SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ErrorHandler.h  
-  ../include/lbcpp/Object/ObjectStream.h
-  ../include/lbcpp/Object/ObjectContainer.h
-  ../include/lbcpp/Object/ObjectConsumer.h
   ../include/lbcpp/Object/ObjectGraph.h
   ../include/lbcpp/Object/Table.h
   ../include/lbcpp/Object/StringToObjectMap.h
 )
 
 SET(LBCPP_OBJECT_SOURCES
-  ObjectStream.cpp
-  ObjectContainer.cpp
-  ObjectConsumer.cpp
   ObjectGraph.cpp
   Table.cpp
-)
-
-SET(LBCPP_CORE_OBJECT_STREAM_SOURCES
-  ObjectStream/ApplyFunctionObjectStream.h
-  ObjectStream/ClassificationExamplesParser.h
-  ObjectStream/ClassificationExamplesSyntheticGenerator.h
-  ObjectStream/RegressionExamplesParser.h
-  ObjectStream/DirectoriesObjectPairStream.h
 )
 
 ### ---
@@ -322,7 +308,6 @@ SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Perception FILES ${LBCPP_DATA_PERCEPTION_SOURCES})
 
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
-SOURCE_SUB_GROUP(Object ObjectStream FILES ${LBCPP_CORE_OBJECT_STREAM_SOURCES})
 
 SOURCE_GROUP(Utilities FILES ${LBCPP_UTILITIES_HEADERS} ${LBCPP_UTILITIES_SOURCES})
 

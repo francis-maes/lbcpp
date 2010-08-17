@@ -27,6 +27,8 @@ public:
 
   size_t size() const
     {return getNumVariables();}
+    
+  int find(const Variable& value) const;
 
   virtual TypePtr getElementsType() const = 0;
 

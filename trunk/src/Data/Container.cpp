@@ -23,6 +23,15 @@ VectorPtr Container::toVector() const
 String Container::toString() const
   {return T("[") + variablesToString(T(",\n  ")) + T("]");}
 
+int Container::find(const Variable& value) const
+{
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+    if (getVariable(i) == value)
+      return (int)i;
+  return -1;
+}
+
 class ApplyFunctionContainer : public DecoratorContainer
 {
 public:

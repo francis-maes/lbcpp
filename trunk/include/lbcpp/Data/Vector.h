@@ -40,7 +40,9 @@ public:
   void resize(size_t size);
 
   void clear();
+  void prepend(const Variable& value);
   void append(const Variable& value);
+  void remove(size_t index);
 
 protected:
   std::vector<VariableValue> values;

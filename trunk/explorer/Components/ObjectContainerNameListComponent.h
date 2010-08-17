@@ -22,7 +22,7 @@ namespace lbcpp
 class ObjectContainerNameListComponent : public juce::ListBox, public ObjectSelector
 {
 public:
-  ObjectContainerNameListComponent(ObjectContainerPtr container)
+  ObjectContainerNameListComponent(ContainerPtr container)
     : juce::ListBox(container->getName(), new Model(this, container)), container(container)
     {setMultipleSelectionEnabled(true);}
   
@@ -31,21 +31,22 @@ public:
 
   void selectedRowsChanged()
   {
-    std::vector<ObjectPtr> selectedObjects;
-    selectedObjects.reserve(getNumSelectedRows());
+    std::vector<Variable> selectedVariables;
+    selectedVariables.reserve(getNumSelectedRows());
     for (int i = 0; i < getNumSelectedRows(); ++i)
     {
       int rowNumber = getSelectedRow(i);
-      ObjectPtr object = container->get(rowNumber);
-      if (object)
-        selectedObjects.push_back(object);
+      Variable variable = container->getVariable(rowNumber);
+      if (variable)
+        selectedVariables.push_back(variable);
     }
-    sendSelectionChanged(selectedObjects);
+    sendSelectionChanged(selectedVariables);
   }
 
   struct Model : public juce::ListBoxModel
   {
-    Model(ObjectContainerNameListComponent* owner, ObjectContainerPtr container) : owner(owner), container(container) {}
+    Model(ObjectContainerNameListComponent* owner, ContainerPtr container)
+      : owner(owner), container(container) {}
 
     virtual int getNumRows()
       {return (int)container->size();}
@@ -60,7 +61,7 @@ public:
       f.setHorizontalScale(0.9f);
       g.setFont(f);
 
-      ObjectPtr object = container->get(rowNumber);
+      ObjectPtr object = container->getObject(rowNumber);
       String name = object ? object->getName() : T("<null>");
       g.drawText(name, 4, 0, width - 6, height, Justification::centredLeft, true);
     }
@@ -72,16 +73,16 @@ public:
 
   private:
     ObjectContainerNameListComponent* owner;
-    ObjectContainerPtr container;
+    ContainerPtr container;
   };
 
   juce_UseDebuggingNewOperator
 
-  ObjectContainerPtr getContainer() const
+  ContainerPtr getContainer() const
     {return container;}
 
 private:
-  ObjectContainerPtr container;
+  ContainerPtr container;
 };
 
 }; /* namespace lbcpp */
