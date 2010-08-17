@@ -10,7 +10,6 @@
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceStack.h>
-#include <lbcpp/Object/ObjectPair.h>
 #include <lbcpp/Data/Container.h>
 using namespace lbcpp;
 
@@ -104,55 +103,6 @@ Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, Contain
   appendCallback(evaluationCallback);
   runInference(runOnSupervisedExamplesInference(inference), examples, Variable(), res);
   removeCallback(evaluationCallback);
-  return res;
-}
-
-// temp: compatibility with ObjectContainer
-class ObjectPairToContainer : public Container
-{
-public:
-  ObjectPairToContainer() {}
-  ObjectPairToContainer(ObjectContainerPtr container)
-    : container(container) {}
-
-  virtual TypePtr getElementsType() const
-    {return pairType(objectClass(), objectClass());}
-
-  virtual size_t getNumVariables() const
-    {return container->size();}
-
-  virtual Variable getVariable(size_t index) const
-  {
-    ObjectPairPtr pair = container->getAndCast<ObjectPair>(index);
-    return pair ? Variable::pair(pair->getFirst(), pair->getSecond()) : Variable();
-  }
-  
-  virtual void setVariable(size_t index, const Variable& value)
-    {jassert(false);}
-
-private:
-  ObjectContainerPtr container;
-};
-
-// tmp
-ContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples)
-{
-  static bool firstTime = true;
-  if (firstTime)
-    {LBCPP_DECLARE_CLASS(ObjectPairToContainer, Container); firstTime = false;}
-  return new ObjectPairToContainer(examples);
-}
-
-Inference::ReturnCode InferenceContext::train(InferencePtr inference, ObjectContainerPtr examplesContainer)
-{
-  ReturnCode res = Inference::finishedReturnCode;
-  InferencePtr learner = inference->getBatchLearner();
-  jassert(learner);
-  if (!learner)
-    return Inference::errorReturnCode;
-
-  ContainerPtr examples = convertOldStyleExamplesToNewStyle(examplesContainer);
-  runInference(learner, Variable::pair(inference, examples), Variable(), res);
   return res;
 }
 

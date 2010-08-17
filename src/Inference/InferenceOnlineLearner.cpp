@@ -86,7 +86,7 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFre
 ** UpdatableInferenceOnlineLearner
 */
 UpdatableInferenceOnlineLearner::UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency)
-  : updateFrequency(updateFrequency), epoch(0) {}
+  : epoch(0), updateFrequency(updateFrequency) {}
 
 void UpdatableInferenceOnlineLearner::stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {

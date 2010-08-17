@@ -9,7 +9,6 @@
 #include <lbcpp/Object/ObjectContainer.h>
 #include <lbcpp/Object/ObjectStream.h>
 #include <lbcpp/Object/ObjectGraph.h>
-#include <lbcpp/Object/ObjectPair.h>
 #include <lbcpp/Utilities/RandomGenerator.h>
 using namespace lbcpp;
 
@@ -307,5 +306,4 @@ void declareObjectContainerClasses()
   LBCPP_DECLARE_CLASS_LEGACY(ExcludeRangeObjectContainer);
   LBCPP_DECLARE_CLASS_LEGACY(DuplicatedObjectContainer);
   LBCPP_DECLARE_CLASS_LEGACY(RandomizedObjectContainer);
-  LBCPP_DECLARE_CLASS_LEGACY(ObjectPair);
 }

@@ -25,12 +25,8 @@ public:
 
   virtual Variable runInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
-  // new
   ReturnCode train(InferencePtr inference, ContainerPtr examples);
   ReturnCode evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator);
-
-  // old 
-  ReturnCode train(InferencePtr inference, ObjectContainerPtr examples);
 
   /*
   ** Inference Callbacks

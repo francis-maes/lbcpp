@@ -11,16 +11,12 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
-# include <lbcpp/Object/ObjectPair.h>
-
-// tmp
-extern ContainerPtr convertOldStyleExamplesToNewStyle(ObjectContainerPtr examples);
 
 namespace lbcpp
 {
  
   
-// Input: (Input, Supervision) ObjectContainer
+// Input: (Input, Supervision) Container
 // Supervision: None
 // Output: None
 class RunOnSupervisedExamplesInference : public ParallelInference
@@ -43,12 +39,6 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ContainerPtr examples = input.dynamicCast<Container>();
-    if (!examples)
-    {
-      ObjectContainerPtr oldStyleExamples = input.dynamicCast<ObjectContainer>();
-      jassert(oldStyleExamples);
-      examples = convertOldStyleExamplesToNewStyle(oldStyleExamples);
-    }
     jassert(examples);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
