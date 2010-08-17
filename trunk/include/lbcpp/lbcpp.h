@@ -47,7 +47,6 @@
 # include "Object/ObjectContainer.h"
 # include "Object/ObjectStream.h"
 # include "Object/ObjectConsumer.h"
-# include "Object/ObjectPair.h"
 # include "Object/ObjectGraph.h"
 # include "Object/Table.h"
 # include "Object/StringToObjectMap.h"
