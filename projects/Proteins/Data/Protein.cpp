@@ -202,9 +202,9 @@ void Protein::computeMissingVariables()
   {
     if (!calphaTrace)
       calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
-    if (!distanceMapCa)
+    if (!distanceMapCa && tertiaryStructure->hasCAlphaAtoms())
       distanceMapCa = computeDistanceMapFromTertiaryStructure(tertiaryStructure, false);
-    if (!distanceMapCb)
+    if (!distanceMapCb && tertiaryStructure->hasBackboneAndCBetaAtoms())
       distanceMapCb = computeDistanceMapFromTertiaryStructure(tertiaryStructure, true);
   }
 
