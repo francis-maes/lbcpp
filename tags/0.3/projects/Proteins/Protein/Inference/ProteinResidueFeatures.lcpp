@@ -1,0 +1,514 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ProteinResidueFeatures.lcpp    | A feature function phi :        |
+| Author  : Francis Maes                   | protein x position -> features  |
+| Started : 22/04/2010 22:10               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "Protein/Inference/ProteinResidueFeatures.h"
+#include "InferenceData/CommonFeatureGenerators.h"
+using namespace lbcpp;
+
+/*
+** CompositeProteinResidueFeatures
+*/
+featureGenerator CompositeProteinResidueFeatures::compute(ProteinObjectPtr protein, size_t position)
+{
+  for (size_t i = 0; i < this->getNumSubFeatureFunctions(); ++i)
+  {
+    ProteinResidueFeaturesPtr subFunction = this->getSubFeatureFunction(i);
+    FeatureGeneratorPtr fg = subFunction->compute(protein, position);
+    if (fg)
+      featureCall(subFunction->getName()) fg;
+  }
+}
+
+String CompositeProteinResidueFeatures::toString() const
+{
+  String res = T("Composite:\n");
+  for (size_t i = 0; i < subFeatureFunctions.size(); ++i)
+    res += subFeatureFunctions[i]->toString() + T("\n");
+  return res;
+}
+
+bool CompositeProteinResidueFeatures::load(InputStream& istr)
+  {return lbcpp::read(istr, subFeatureFunctions);}
+
+void CompositeProteinResidueFeatures::save(OutputStream& ostr) const
+  {lbcpp::write(ostr, subFeatureFunctions);}
+
+/*
+** ProteinUnitResidueFeature
+*/
+class ProteinUnitResidueFeature : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
+    {featureSense(0);}
+
+  virtual String toString() const
+    {return T("unit");}
+
+  virtual String getName() const
+    {return T("unit");}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinUnitResidueFeature()
+  {return new ProteinUnitResidueFeature();}
+
+/*
+** ProteinPositionIndexResidueFeature
+*/
+class ProteinPositionIndexResidueFeature : public ProteinResidueFeatures
+{
+public:
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
+    {featureSense(position);}
+
+  virtual String toString() const
+    {return T("positionIndex");}
+
+  virtual String getName() const
+    {return T("positionIndex");}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinPositionIndexResidueFeature()
+  {return new ProteinPositionIndexResidueFeature();}
+
+/*
+** PositionProteinResidueFeatures
+*/
+class PositionProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  PositionProteinResidueFeatures(size_t numIntervalsInCoarsestScale, size_t intervalRatio, size_t numScales)
+    : numIntervalsInCoarsestScale(numIntervalsInCoarsestScale), intervalRatio(intervalRatio), numScales(numScales) {}
+  PositionProteinResidueFeatures() {}
+
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
+  {
+    size_t n = protein->getLength();
+    jassert(n);
+    double normalizedPosition = position / (double)n;
+    featureCall(0) multiScalePercentageFeatures(normalizedPosition, numIntervalsInCoarsestScale, intervalRatio, numScales);
+  }
+
+  virtual String toString() const
+    {return T("position");}
+
+protected:
+  size_t numIntervalsInCoarsestScale;
+  size_t intervalRatio;
+  size_t numScales;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, numIntervalsInCoarsestScale) && lbcpp::read(istr, intervalRatio) && lbcpp::read(istr, numScales);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, numIntervalsInCoarsestScale); lbcpp::write(ostr, intervalRatio); lbcpp::write(ostr, numScales);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinPositionFeatures(size_t numIntervalsInCoarsestScale, size_t intervalRatio, size_t numScales)
+  {return new PositionProteinResidueFeatures(numIntervalsInCoarsestScale, intervalRatio, numScales);}
+
+/*
+** SequenceWindowProteinResidueFeatures
+*/
+class SequenceWindowProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  SequenceWindowProteinResidueFeatures(const String& sequenceName, size_t numPrevs, size_t numNexts, bool includeCurrent)
+    : sequenceName(sequenceName), numPrevs(numPrevs), numNexts(numNexts), includeCurrent(includeCurrent) {}
+  SequenceWindowProteinResidueFeatures() {}
+
+  virtual String toString() const
+    {return sequenceName + T("[-") + lbcpp::toString(numPrevs) + T(",") + lbcpp::toString(numNexts) + T("]");}
+
+  virtual String getName() const
+    {return sequenceName + T(" window");}
+
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
+  {
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    if (!sequence)
+      return FeatureGeneratorPtr();
+    return sequence->windowFeatures(position, numPrevs, numNexts, includeCurrent);
+  }
+
+protected:
+  String sequenceName;
+  size_t numPrevs;
+  size_t numNexts;
+  bool includeCurrent;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName) && lbcpp::read(istr, numPrevs)
+      && lbcpp::read(istr, numNexts) && lbcpp::read(istr, includeCurrent);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, sequenceName); lbcpp::write(ostr, numPrevs); lbcpp::write(ostr, numNexts); lbcpp::write(ostr, includeCurrent);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinSequenceWindowFeatures(const String& sequenceName, size_t numPrevs, size_t numNexts, bool includeCurrent)
+  {return ProteinResidueFeaturesPtr(new SequenceWindowProteinResidueFeatures(sequenceName, numPrevs, numNexts, includeCurrent));}
+
+/*
+** FrequencyWindowProteinResidueFeatures
+*/
+class FrequencyWindowProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  FrequencyWindowProteinResidueFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent)
+    : sequenceName(sequenceName), numPrevsAndNexts(numPrevsAndNexts), includeCurrent(includeCurrent) {}
+  FrequencyWindowProteinResidueFeatures() {}
+
+  virtual String toString() const
+    {return sequenceName + T("[-") + lbcpp::toString(numPrevsAndNexts) + T("]");}
+
+  virtual String getName() const
+    {return sequenceName + T(" frequency window");}
+
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
+  {
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    if (!sequence)
+      return FeatureGeneratorPtr();
+    return sequence->symetricFrequencyFeatures(position, numPrevsAndNexts, includeCurrent);
+  }
+
+protected:
+  String sequenceName;
+  size_t numPrevsAndNexts;
+  bool includeCurrent;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName) && lbcpp::read(istr, numPrevsAndNexts)
+      && lbcpp::read(istr, includeCurrent);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, sequenceName); lbcpp::write(ostr, numPrevsAndNexts); lbcpp::write(ostr, includeCurrent);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinFrequencyWindowFeatures(const String& sequenceName, size_t numPrevsAndNexts, bool includeCurrent)
+  {return ProteinResidueFeaturesPtr(new FrequencyWindowProteinResidueFeatures(sequenceName, numPrevsAndNexts, includeCurrent));}
+
+/*
+** SegmentConjunctionProteinResidueFeatures
+*/
+class SegmentConjunctionProteinResidueFeatures : public ProteinResidueFeatures
+{
+public:
+  SegmentConjunctionProteinResidueFeatures(const String& sequenceName, size_t numSegmentsPerSide)
+    : sequenceName(sequenceName), numSegmentsPerSide(numSegmentsPerSide) {}
+  SegmentConjunctionProteinResidueFeatures() {}
+
+  virtual String getName() const
+    {return sequenceName + T(" segmentconj");}
+
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
+  {
+    LabelSequencePtr sequence = protein->getObject(sequenceName).dynamicCast<LabelSequence>();
+    if (sequence)
+      return sequence->bidirectionalSegmentConjunctionFeatures(position, numSegmentsPerSide);
+      //return sequence->bidirectionalSegmentFeatures(position, numSegmentsPerSide);
+    else
+      return FeatureGeneratorPtr();
+  }
+
+protected:
+  String sequenceName;
+  size_t numSegmentsPerSide;
+
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName) && lbcpp::read(istr, numSegmentsPerSide);}
+
+  virtual void save(OutputStream& ostr) const
+    {lbcpp::write(ostr, sequenceName); lbcpp::write(ostr, numSegmentsPerSide);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinSegmentConjunctionFeatures(const String& sequenceName, size_t numSegmentsPerSide)
+  {return new SegmentConjunctionProteinResidueFeatures(sequenceName, numSegmentsPerSide);}
+
+/*
+** SequenceEntropyProteinResidueFeatures
+*/
+class SequenceEntropyProteinResidueFeatures : public ProteinResidueFeatures {
+public:
+  SequenceEntropyProteinResidueFeatures(const String& sequenceName, size_t numPrevsAndNexts)
+    : sequenceName(sequenceName), numPrevsAndNexts(numPrevsAndNexts) {}
+  SequenceEntropyProteinResidueFeatures() {}
+
+  virtual String toString() const
+    {return sequenceName + T("[-") + lbcpp::toString(numPrevsAndNexts) + T("]");}
+    
+  virtual String getName() const
+    {return sequenceName + T(" entropy");}
+
+  virtual FeatureGeneratorPtr compute(ProteinObjectPtr protein, size_t position)
+  {
+    size_t begin = juce::jlimit(0, (int)protein->getLength(), (int)(position - numPrevsAndNexts));
+    size_t end = juce::jlimit(0, (int)protein->getLength() - 1, (int)(position + numPrevsAndNexts));
+    
+    SequencePtr sequence = protein->getObject(sequenceName).dynamicCast<Sequence>();
+    if (!sequence)
+      return FeatureGeneratorPtr();
+    
+    return sequence->entropyFeatures(begin, end);
+  }
+
+protected:
+  String sequenceName;
+  size_t numPrevsAndNexts;
+  
+  virtual bool load(InputStream& istr)
+    {return lbcpp::read(istr, sequenceName) && lbcpp::read(istr, numPrevsAndNexts);}
+  
+  virtual void save(OutputStream& ostr)
+    {lbcpp::write(ostr, sequenceName); lbcpp::write(ostr, numPrevsAndNexts);}
+};
+
+ProteinResidueFeaturesPtr lbcpp::proteinSequenceEntropyFeatures(const String& sequenceName, size_t numPrevsAndNexts)
+  {return ProteinResidueFeaturesPtr(new SequenceEntropyProteinResidueFeatures(sequenceName, numPrevsAndNexts));}
+
+/*
+** MultiSequenceConjunctionProteinResidueFeatures
+*/
+
+#include "Protein/AminoAcidDictionary.h"
+#include "Protein/SecondaryStructureDictionary.h"
+
+class MultiSequenceConjunctionProteinResidueFeatures : public ProteinResidueFeatures {
+public:
+  MultiSequenceConjunctionProteinResidueFeatures()
+    : multiTaskFeatures(String::empty), windowLength(5)
+    {}
+
+  MultiSequenceConjunctionProteinResidueFeatures(const String& multiTaskFeatures, size_t windowLength)
+    : multiTaskFeatures(multiTaskFeatures), windowLength(windowLength)
+    {}
+  
+  virtual String toString() const
+    {return T("MutiSequence");}
+  
+  virtual String getName() const
+    {return T("MultiSequence conjunction");}
+  
+  virtual featureGenerator compute(ProteinObjectPtr protein, size_t position)
+  {
+    if (multiTaskFeatures == String::empty || multiTaskFeatures == T("-"))
+      return;
+
+    std::vector<LabelSequencePtr> sequences;
+    protein->getLabelSequences(sequences);
+
+    const size_t nbSequences = sequences.size();
+    const size_t n = protein->getLength();
+
+    if (!nbSequences)
+      return;
+
+    std::vector<size_t> sequencesID(nbSequences);
+    for (size_t i = 0; i < nbSequences; ++i)
+      sequencesID[i] = getIdentifier(sequences[i]);
+
+    if (multiTaskFeatures.contains(T("VerticalBy2")) && nbSequences > 1)
+    {
+      featureScope("VerticalBy2")
+      {
+        for (int shift = -(int)windowLength; shift <= (int)windowLength; ++shift)
+        {
+          const int index = (int)position + shift;
+          featureScope(shift + windowLength)
+          {
+            if (index < 0)
+              featureSense("before");
+            else if (index < (int)n)
+            {
+              for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                featureScope(sequencesID[s1])
+                featureScope(sequences[s1]->getIndex(index))
+                for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                  featureScope(sequencesID[s2])
+                  featureSense(sequences[s2]->getIndex(index));
+            }
+            else
+              featureSense("after");
+          }
+        }
+      }
+    }
+  
+    if (multiTaskFeatures.contains(T("HorizontalBy2")))
+    {
+      featureScope("HorizontalBy2")
+      {
+        for (int shift = -(int)windowLength; shift <= (int)windowLength; ++shift)
+        {
+          const int index = (int)position + shift;
+          featureScope(shift + windowLength)
+          {
+            if (index < 0)
+              featureSense("before");
+            else if (index < (int)n - 1)
+            {
+              for (size_t s = 0; s < nbSequences; ++s)
+                featureScope(sequencesID[s])
+                featureScope(sequences[s]->getIndex(index))
+                featureSense(sequences[s]->getIndex(index+1));
+            }
+            else
+              featureSense("after");
+          }
+        }
+      }
+    }
+
+    if (multiTaskFeatures.contains(T("OblicBy2")) && nbSequences > 1)
+    {
+      featureScope("OblicBy2")
+      {
+        for (int shift = -(int)windowLength; shift <= (int)windowLength; ++shift)
+        {
+          const int index = (int)position + shift;
+          featureScope(shift + windowLength)
+          {
+            featureScope("TopLeft")
+            {
+              if (index <= 0)
+                featureSense("before");
+              else if (index < (int)n)
+              {
+                for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                  for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                    featureScope(sequencesID[s1])
+                    featureScope(sequencesID[s2])
+                    featureScope(sequences[s1]->getIndex(index-1))
+                    featureSense(sequences[s2]->getIndex(index));
+              }
+              else
+                featureSense("after");
+            }
+
+            featureScope("TopRight")
+            {
+              if (index < 0)
+                featureSense("before");
+               else if (index < (int)n - 1)
+               {
+                 for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                   for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                     featureScope(sequencesID[s1])
+                     featureScope(sequencesID[s2])
+                     featureScope(sequences[s1]->getIndex(index+1))
+                     featureSense(sequences[s2]->getIndex(index));
+               }
+               else
+                 featureSense("after");
+            }
+
+            featureScope("BottomLeft")
+            {
+              if (index <= 0)
+                featureSense("before");
+              else if (index < (int)n)
+              {
+                for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                  for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                    featureScope(sequencesID[s1])
+                    featureScope(sequencesID[s2])
+                    featureScope(sequences[s1]->getIndex(index))
+                    featureSense(sequences[s2]->getIndex(index-1));
+              }
+              else
+                featureSense("after");
+            }
+
+            featureScope("BottomRight")
+            {
+              if (index < 0)
+                featureSense("before");
+               else if (index < (int)n - 1)
+               {
+                 for (size_t s1 = 0; s1 < nbSequences - 1; ++s1)
+                   for (size_t s2 = s1 + 1; s2 < nbSequences; ++s2)
+                     featureScope(sequencesID[s1])
+                     featureScope(sequencesID[s2])
+                     featureScope(sequences[s1]->getIndex(index))
+                     featureSense(sequences[s2]->getIndex(index+1));
+               }
+               else
+                 featureSense("after");
+            }
+          }  
+        }  
+      }
+    }
+
+  }
+
+private:
+  String multiTaskFeatures;
+  size_t windowLength;
+
+  size_t getIdentifier(LabelSequencePtr sequence)
+  {
+    if (sequence->getDictionary() == AminoAcidDictionary::getInstance())
+      return 0;
+
+    if (sequence->getDictionary() == SecondaryStructureDictionary::getInstance())
+      return 1;
+    
+    if (sequence->getDictionary() == DSSPSecondaryStructureDictionary::getInstance())
+      return 2;
+
+    if (sequence->getDictionary() == StructuralAlphabetDictionary::getInstance())
+      return 3;
+
+    if (sequence->getDictionary() == BinaryClassificationDictionary::getInstance())
+    {
+      if (sequence->getName() == T("DisorderSequence"))
+        return 4;
+
+      if (sequence->getName() == T("SolventAccessibilityThreshold"))
+        return 5;
+
+      jassert(false);
+    }
+
+    jassert(false);
+    return 6;
+  }
+};
+
+ProteinResidueFeaturesPtr lbcpp::multiSequenceConjunctionFeatures(const String& multiTaskFeatures, size_t windowLength)
+  {return ProteinResidueFeaturesPtr(new MultiSequenceConjunctionProteinResidueFeatures(multiTaskFeatures, windowLength));}
+
+/*
+** Misc
+*
+#include "Protein/Inference/Protein1DTargetInference.h"
+
+featureGenerator PSSMRowPredictionInferenceStep::getInputFeatures(ObjectPtr input, size_t scoreIndex) const
+{
+  FeatureGeneratorPtr commonFeatures = input.dynamicCast<FeatureGenerator>();
+  jassert(commonFeatures);
+  featureSense(scoreIndex);
+  featureCall(scoreIndex) commonFeatures;
+}*/
+
+/*
+** Classes
+*/
+void declareProteinResidueFeaturesClasses()
+{
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinUnitResidueFeature);
+  LBCPP_DECLARE_CLASS_LEGACY(ProteinPositionIndexResidueFeature);
+  LBCPP_DECLARE_CLASS_LEGACY(PositionProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SequenceWindowProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(FrequencyWindowProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SegmentConjunctionProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(SequenceEntropyProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(CompositeProteinResidueFeatures);
+  LBCPP_DECLARE_CLASS_LEGACY(MultiSequenceConjunctionProteinResidueFeatures);
+}

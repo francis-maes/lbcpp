@@ -1,0 +1,101 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: FeatureGenerator.hpp           | Static to Dynamic Features      |
+| Author  : Francis Maes                   |   Wrapper                       |
+| Started : 13/02/2009 17:28               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+                               
+#ifndef LBCPP_STATIC_FEATURE_GENERATOR_HPP_
+# define LBCPP_STATIC_FEATURE_GENERATOR_HPP_
+
+# include "FeatureGeneratorDefaultImplementations.hpp"
+# include <lbcpp/FeatureGenerator/SparseVector.h>
+# include <lbcpp/FeatureGenerator/DenseVector.h>
+
+namespace lbcpp
+{
+  
+template<class ImplementationType>
+class StaticToDynamicFeatureGenerator : public 
+  FeatureGeneratorDefaultImplementations< StaticToDynamicFeatureGenerator< ImplementationType >, FeatureGenerator >
+{
+public:
+  typedef StaticToDynamicFeatureGenerator<ImplementationType> ThisClass;
+  typedef FeatureGeneratorDefaultImplementations< StaticToDynamicFeatureGenerator< ImplementationType >, FeatureGenerator > BaseClass;
+
+  StaticToDynamicFeatureGenerator(const ImplementationType& impl)
+    : impl(impl) {}
+    
+  virtual ClassPtr getClass() const
+    {return Class::get(T("FeatureGenerator"));}
+
+  virtual String getName() const
+    {return ImplementationType::getName();}
+
+  virtual FeatureDictionaryPtr getDictionary() const
+    {return ImplementationType::getDictionary();}
+
+  template<class VisitorType>
+  void staticFeatureGenerator(VisitorType& visitor) const
+    {const_cast<ImplementationType& >(impl).featureGenerator(visitor);}
+
+  virtual SparseVectorPtr toSparseVector() const
+  {
+    if (!sparseVector)
+      const_cast<ThisClass* >(this)->sparseVector = BaseClass::toSparseVector();
+    return sparseVector;
+  }
+
+  virtual DenseVectorPtr toDenseVector() const
+  {
+    if (!denseVector)
+      const_cast<ThisClass* >(this)->denseVector = BaseClass::toDenseVector();
+    return denseVector;
+  }
+
+  virtual size_t getNumSubGenerators() const
+  {
+    if (denseVector)
+      return denseVector->getNumSubGenerators();
+    else
+      return toSparseVector()->getNumSubGenerators();
+  }
+  
+  virtual FeatureGeneratorPtr getSubGenerator(size_t num) const
+  {
+    if (denseVector)
+      return denseVector->getSubGenerator(num);
+    else
+      return toSparseVector()->getSubGenerator(num);
+  }
+
+  virtual size_t getSubGeneratorIndex(size_t num) const
+  {
+    if (denseVector)
+      return denseVector->getSubGeneratorIndex(num);
+    else
+      return toSparseVector()->getSubGeneratorIndex(num);
+  }
+  
+  virtual FeatureGeneratorPtr getSubGeneratorWithIndex(size_t index) const
+  {
+    if (denseVector)
+      return denseVector->getSubGeneratorWithIndex(index);
+    else
+      return toSparseVector()->getSubGeneratorWithIndex(index);
+  }
+
+private:
+  ImplementationType impl;
+  SparseVectorPtr sparseVector;
+  DenseVectorPtr denseVector;
+};
+
+template<class ImplementationType>
+FeatureGeneratorPtr staticToDynamicFeatureGenerator(const ImplementationType& impl)
+  {return FeatureGeneratorPtr(new StaticToDynamicFeatureGenerator<ImplementationType>(impl));}
+
+}; /* namespace lbcpp */
+
+#endif // !LBCPP_STATIC_FEATURE_GENERATOR_HPP_

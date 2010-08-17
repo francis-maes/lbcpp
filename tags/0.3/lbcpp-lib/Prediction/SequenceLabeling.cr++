@@ -1,0 +1,82 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: SequenceLabeling.cr++          | Sequence labeling cr-algorithms |
+| Author  : Francis Maes                   |                                 |
+| Started : 10/02/2009 22:32               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+# include "../Data/ContentSequence.cr++"
+# include "../Data/LabelSequence.cr++"
+
+namespace lbcpp
+{
+
+crAlgorithm LabelSequence leftRightLabeling(const ContentSequence& x, const LabelDictionary& labels, const LabelSequence* ycorrect, size_t contextSize = 3)
+{
+  LabelSequence res(labels, x.size());
+
+  chooseFunction featureGenerator features(size_t choice)
+  {
+    featureScope (labels.getLabel(choice)) {
+      featureCall x.contentFeatures(i);
+      featureCall res.windowFeatures(i, contextSize);
+    }
+  }
+  
+  chooseFunction double optimal(size_t choice)
+    {return (ycorrect && choice == (*ycorrect)[i]) ? 1.0 : 0.0;}
+  
+  chooseFunction std::string choiceToString(size_t choice)
+    {return labels.getLabel(choice);}
+
+  for (size_t i = 0 ; i < x.size(); ++i)
+  {
+    res.set(i, choose <size_t> (labels, optimal, features, choiceToString));
+    if (ycorrect && res[i] == (*ycorrect)[i])
+       reward (1.0);
+  }
+  return res;
+}
+
+}; /* namespace lbcpp */
+/*
+class LeftRightLabelingTestInstanceSet : public CRAlgorithmInstanceSet
+{
+public:
+  LeftRightLabelingTestInstanceSet() : correct(labels, 10) {}
+  
+  virtual unsigned getNumInstances()
+    {return 10;}
+
+  lbcpp::ContentSequence x;
+  lbcpp::LabelDictionary labels;
+  lbcpp::LabelSequence correct;
+  
+  featureGenerator testContent(size_t instance, size_t t)
+  {
+    for (size_t i = 0; i < 10; ++i)
+      featureScope("instance") featureScope(instance)
+        featureScope("step") featureScope(t)
+          featureScope("feat") featureSense(i);
+  }
+  
+  virtual lbcpp::CRAlgorithmPtr createInstance(size_t index)
+  {
+    if (!labels.size())
+    {
+      for (size_t i = 0; i < 26; ++i)
+      {
+        std::string str = "a";
+        str[0] = 'a' + i;
+        labels.add(str);
+      }
+      for (size_t i = 0; i < correct.size(); ++i)
+        correct.set(i, i);
+      for (size_t i = 0; i < correct.size(); ++i)
+        x.add(testContent(index, i));
+    }
+    return lbcpp::leftRightLabeling(x, labels, &correct);
+  }
+};
+*/

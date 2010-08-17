@@ -1,37 +1,6 @@
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 
-//////////////////////
-
-enum SecondaryStructureElement
-{
-  coil, // C "Coil"
-};
-
-class Toto
-{
-
-private:
-   double toto; // Probability "Toto"
-   /** Blablabla */
-};
-
-//////////////////////
-
-<enumeration name="SecondaryStructureElement">
-  <element name="coil" oneLetterCode="C" userFriendlyName="Coil"/>
-</enumeration>
-
-<class name="Toto" base="Object">
-  <description>
-    This class is a simple example ...
-  </description>
-  <variable type="Probability" name="toto" userFriendlyName="Toto"/>
-  <variable type="Probability" name="toto" userFriendlyName="Toto"/>
-</class>
-
-//////////////////////
-
 Serialisation:
  * Serialisation of Perceptions
  * Serialisation of Inferences
