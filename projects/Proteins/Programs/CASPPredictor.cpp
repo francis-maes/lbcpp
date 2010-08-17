@@ -7,10 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../Protein/ProteinObject.h"
-#include "../Protein/AminoAcidDictionary.h"
-#include "../Protein/SecondaryStructureDictionary.h"
-#include "../Protein/Inference/ProteinInference.h"
+#if 0 // FIXME
 
 #include "../Data/Formats/CASPFileGenerator.h"
 #include "../Data/Formats/PSSMFileParser.h"
@@ -185,3 +182,6 @@ int main(int argc, char* argv[])
   std::cout << "Generated " << numFilesGenerated << " file(s)" << std::endl;
   return 0;
 }
+
+#endif // 0
+int main() {return 1;}

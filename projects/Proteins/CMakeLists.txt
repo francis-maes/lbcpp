@@ -3,8 +3,6 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-
-### new
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/DihedralAngle.h
   Geometry/Vector3.h
@@ -58,6 +56,7 @@ SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   Perception/ResiduePerception.cpp
   Perception/ResiduePairPerception.h
   Perception/ResiduePairPerception.cpp
+  Perception/CommonFeatureGenerators.h
   Perception/PerceptionToFeatures.h
 )
 
@@ -75,91 +74,19 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/ProteinEvaluator.h
 )
 
-###
-### old
-###
-
 ADD_CRALGORITHM_SOURCES(
   Perception/PerceptionToFeatures.lcpp
-
-  InferenceData/CommonFeatureGenerators.lcpp
-  InferenceData/Sequence.lcpp
-  Protein/ProteinBackboneBondSequence.lcpp
-  Protein/Inference/ProteinGlobalFeatures.lcpp
-  Protein/Inference/ProteinResidueFeatures.lcpp
-  Protein/Inference/ProteinResiduePairFeatures.lcpp
+  Perception/CommonFeatureGenerators.lcpp
 )
 
-
-
-SET(LBCPP_INFERENCE_DATA_SOURCES
-  InferenceData/CommonFeatureGenerators.h
-  InferenceData/AccumulatedScoresMatrix.h
-  InferenceData/Sequence.h
-  InferenceData/ScalarSequence.h
-  InferenceData/ScalarSequence.cpp
-  InferenceData/LabelSequence.h
-  InferenceData/LabelSequence.cpp
-  InferenceData/ScoreVectorSequence.h
-  InferenceData/ScoreVectorSequence.cpp
-  InferenceData/CartesianCoordinatesSequence.h
-  InferenceData/BondCoordinatesSequence.h
-  InferenceData/BondCoordinatesSequence.cpp
-  InferenceData/ScoreSymmetricMatrix.h
-  InferenceData/ScoreSymmetricMatrix.cpp
-)
-
-
-SET(LBCPP_PROTEIN_OLD_DATA_SOURCES
-  Protein/AminoAcidDictionary.h
-  Protein/AminoAcidDictionary.cpp
-  Protein/SecondaryStructureDictionary.h
-  Protein/SecondaryStructureDictionary.cpp
-  Protein/ProteinBackboneBondSequence.h
-  Protein/ProteinResidueAtoms.h
-  Protein/ProteinResidueAtoms.cpp
-  Protein/ProteinTertiaryStructure.h
-  Protein/ProteinTertiaryStructure.cpp
-  Protein/ProteinObject.h
-  Protein/ProteinObject.cpp
-)
-
-SET(LBCPP_PROTEIN_INFERENCE_STEP_SOURCES
-  Protein/Inference/ProteinGlobalFeatures.h
-  Protein/Inference/ProteinResidueFeatures.h
-  Protein/Inference/ProteinResiduePairFeatures.h
-  Protein/Inference/ProteinTargetInferenceHelper.h
-  Protein/Inference/Protein1DTargetInference.h
-  Protein/Inference/ProteinCAlphaBondSequenceInference.h
-  Protein/Inference/ProteinBackboneBondSequenceInference.h
-  Protein/Inference/ProteinTertiaryStructureInference.h
-  Protein/Inference/Protein2DTargetInference.h
-  Protein/Inference/ProteinContactMapInference.h
-  Protein/Inference/ProteinContactMapInference.cpp
-  Protein/Inference/ProteinInference.h
-)
-
-SET(LBCPP_PROTEIN_EVALUATION_SOURCES
-  Protein/Evaluation/ScoreVectorSequenceErrorEvaluator.h
-  Protein/Evaluation/ProteinEvaluationCallback.h
-  Protein/Evaluation/ProteinStatisticsCalculator.h
-)
 
 SET(PROTEINS_CPP_SOURCES
-  # new 
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_PROTEIN_DATA_SOURCES}
   ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES}
   ${LBCPP_PROTEIN_PERCEPTION_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
-    
-  # old
-  ${LBCPP_INFERENCE_DATA_SOURCES}
-  ${LBCPP_PROTEIN_OLD_DATA_SOURCES}
-  ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES}
-  ${LBCPP_PROTEIN_EVALUATION_SOURCES}
-  # -
   
   classes.cpp
 )
@@ -179,12 +106,6 @@ SOURCE_GROUP(Perception FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES} Perception/Per
 SOURCE_GROUP(Inference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 
-SOURCE_SUB_GROUP(Old Data FILES ${LBCPP_PROTEIN_OLD_DATA_SOURCES} Protein/ProteinBackboneBondSequence.lcpp)
-SOURCE_SUB_GROUP(Old GenericData FILES ${LBCPP_INFERENCE_DATA_SOURCES} InferenceData/CommonFeatureGenerators.lcpp InferenceData/Sequence.lcpp)
-
-SOURCE_SUB_GROUP(Old Inference FILES ${LBCPP_PROTEIN_INFERENCE_STEP_SOURCES} Protein/Inference/ProteinGlobalFeatures.lcpp Protein/Inference/ProteinResidueFeatures.lcpp Protein/Inference/ProteinResiduePairFeatures.lcpp)
-SOURCE_SUB_GROUP(Old Evaluation FILES ${LBCPP_PROTEIN_EVALUATION_SOURCES})
-
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
 
@@ -199,22 +120,11 @@ ADD_SINGLE_CPP_EXECUTABLE(ConvertPDBToCASPTS)
 ADD_SINGLE_CPP_EXECUTABLE(ComputePSSMs)
 ADD_SINGLE_CPP_EXECUTABLE(CompileProteins)
 ADD_SINGLE_CPP_EXECUTABLE(ProteinInferenceEvaluator)
-ADD_SINGLE_CPP_EXECUTABLE(TertiaryStructureRepresentationTests)
 ADD_SINGLE_CPP_EXECUTABLE(ConvertCASPToValidPDB)
 ADD_SINGLE_CPP_EXECUTABLE(ExtractSequenceFromProtein)
-ADD_SINGLE_CPP_EXECUTABLE(ConvertProteinsToNewFormat)
 ADD_SINGLE_CPP_EXECUTABLE(MoonBox)
+ADD_SINGLE_CPP_EXECUTABLE(SandBox)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-ADD_CREXECUTABLE(SandBox Programs/SandBox.lcpp)
-TARGET_LINK_LIBRARIES(SandBox proteins)
 
-ADD_CREXECUTABLE(AttributeValueSandBox Programs/AttributeValueSandBox.lcpp)
-TARGET_LINK_LIBRARIES(AttributeValueSandBox proteins)
-
-
-ADD_CRALGORITHM_SOURCES(Programs/SunBox.lcpp)
-SOURCE_GROUP(GeneratedCode FILES ${CRALGORITHMS_OUTPUT_FILES})
-ADD_EXECUTABLE(SunBox ${CRALGORITHMS_OUTPUT_FILES} Programs/ArgumentSet.h)
-TARGET_LINK_LIBRARIES(SunBox proteins lbcpp-core)

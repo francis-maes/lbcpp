@@ -1,3 +1,4 @@
+
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 

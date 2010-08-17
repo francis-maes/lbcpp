@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "Perception/PerceptionToFeatures.h"
-#include "InferenceData/CommonFeatureGenerators.h"
+#include "Perception/CommonFeatureGenerators.h"
 namespace lbcpp
 {
 
