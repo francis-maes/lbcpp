@@ -27,7 +27,10 @@ Variable Vector::getVariable(size_t index) const
   jassert(index < values.size());
   TypePtr elementsType = getElementsType();
   if (elementsType.isInstanceOf<Class>())
-    return Variable(values[index].getObjectPointer());
+  {
+    ObjectPtr res = values[index].getObjectPointer();
+    return res ? Variable(res) : Variable::missingValue(elementsType);
+  }
   else
     return Variable::copyFrom(elementsType, values[index]);
 }
