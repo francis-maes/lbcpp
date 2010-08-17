@@ -9,7 +9,6 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-// new
 extern void declareClassClasses();
 extern void declareObjectClasses();
 extern void declareFunctionClasses();
@@ -19,15 +18,10 @@ extern void declareConsumerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
 extern void declarePerceptionClasses();
-// -
-
-extern void declareObjectContainerClasses();
-extern void declareObjectStreamClasses();
 
 // Object
 void declareObjectRelatedClasses()
 {
-  // new
   declareObjectClasses();
   declareFunctionClasses();
   declareContainerClasses();
@@ -36,11 +30,6 @@ void declareObjectRelatedClasses()
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
   declarePerceptionClasses();
-  // -
-
-  LBCPP_DECLARE_CLASS_LEGACY(StringToObjectMap);
-  declareObjectContainerClasses();
-  declareObjectStreamClasses();
 }
 
 // Utilities

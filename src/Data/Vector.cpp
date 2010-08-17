@@ -52,6 +52,15 @@ void Vector::clear()
   values.clear();
 }
 
+void Vector::prepend(const Variable& value)
+{
+  if (checkType(value))
+  {
+    values.insert(values.begin(), VariableValue());
+    value.copyTo(values.front());
+  }
+}
+
 void Vector::append(const Variable& value)
 {
   if (checkType(value))
@@ -59,6 +68,14 @@ void Vector::append(const Variable& value)
     values.push_back(VariableValue());
     value.copyTo(values.back());
   }
+}
+
+void Vector::remove(size_t index)
+{
+  jassert(index < values.size());
+  TypePtr type = getElementsType();
+  type->destroy(values[index]);
+  values.erase(values.begin() + index);
 }
 
 bool Vector::checkType(const Variable& value) const

@@ -100,15 +100,15 @@ public:
   {
     if (!isSelectionUpToDate)
     {
-      std::vector<ObjectPtr> selectedObjects;
-      selectedObjects.reserve(getNumSelectedItems());
+      std::vector<Variable> selectedVariables;
+      selectedVariables.reserve(getNumSelectedItems());
       for (int i = 0; i < getNumSelectedItems(); ++i)
       {
         ObjectTreeViewItem* item = dynamic_cast<ObjectTreeViewItem* >(getSelectedItem(i));
         if (item && item->getObject())
-          selectedObjects.push_back(item->getObject());
+          selectedVariables.push_back(item->getObject());
       }
-      sendSelectionChanged(selectedObjects);
+      sendSelectionChanged(selectedVariables);
       isSelectionUpToDate = true;
     }
   }
@@ -259,15 +259,15 @@ public:
   {
     if (!isSelectionUpToDate)
     {
-      std::vector<ObjectPtr> selectedObjects;
-      selectedObjects.reserve(getNumSelectedItems());
+      std::vector<Variable> selectedVariables;
+      selectedVariables.reserve(getNumSelectedItems());
       for (int i = 0; i < getNumSelectedItems(); ++i)
       {
         VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
         if (item && item->getVariable().isObject())
-          selectedObjects.push_back(item->getVariable().getObject());
+          selectedVariables.push_back(item->getVariable());
       }
-      sendSelectionChanged(selectedObjects);
+      sendSelectionChanged(selectedVariables);
       isSelectionUpToDate = true;
     }
   }

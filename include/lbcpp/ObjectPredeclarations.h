@@ -61,22 +61,6 @@ typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 class Consumer;
 typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
 
-// object stream
-class ObjectStream;
-typedef ReferenceCountedObjectPtr<ObjectStream> ObjectStreamPtr;
-class LearningDataObjectParser;
-typedef ReferenceCountedObjectPtr<LearningDataObjectParser> LearningDataObjectParserPtr;
-
-// object containers
-class ObjectContainer;
-typedef ReferenceCountedObjectPtr<ObjectContainer> ObjectContainerPtr;
-class VectorObjectContainer;
-typedef ReferenceCountedObjectPtr<VectorObjectContainer> VectorObjectContainerPtr;
-
-// object consumer
-class ObjectConsumer;
-typedef ReferenceCountedObjectPtr<ObjectConsumer> ObjectConsumerPtr;
-
 // object function
 class ObjectFunction;
 typedef ReferenceCountedObjectPtr<ObjectFunction> ObjectFunctionPtr;

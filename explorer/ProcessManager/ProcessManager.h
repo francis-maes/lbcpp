@@ -162,26 +162,26 @@ private:
 class ProcessList;
 typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
 
-class ProcessList : public VectorObjectContainer
+class ProcessList : public Vector
 {
 public:
   size_t getNumProcesses() const
     {return size();}
 
   ProcessPtr getProcess(size_t index) const
-    {return getAndCast<Process>(index);}
+    {return getObjectAndCast<Process>(index);}
 
   void moveToTop(size_t index, ProcessListPtr target)
   {
     ProcessPtr process = getProcess(index);
-    objects.erase(objects.begin() + index);
+    remove(index);
     target->prepend(process);
   }
 
   void moveToBottom(size_t index, ProcessListPtr target)
   {
     ProcessPtr process = getProcess(index);
-    objects.erase(objects.begin() + index);
+    remove(index);
     target->append(process);
   }
 };
