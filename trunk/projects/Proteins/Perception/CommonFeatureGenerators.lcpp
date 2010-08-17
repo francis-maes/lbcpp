@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "InferenceData/CommonFeatureGenerators.h"
+#include "Perception/CommonFeatureGenerators.h"
 using namespace lbcpp;
 
 featureGenerator positiveNumberFeatures(double number, size_t numIntervalsPerUnit)

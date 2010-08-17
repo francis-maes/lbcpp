@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
+#if 0
 #include "Protein/Evaluation/ProteinEvaluationCallback.h"
 #include "Protein/Inference/ProteinInference.h"
 using namespace lbcpp;
@@ -233,3 +234,6 @@ int main(int argc, char** argv)
   }
   return 0;
 }
+
+#endif // 0
+int main() {return 1;}
