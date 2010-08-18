@@ -70,6 +70,8 @@ protected:
         generateNamespaceDeclaration(elt);
       else if (tag == T("code"))
         generateCode(elt);
+      else if (tag == T("import"))
+        continue;
       else
         std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
     }
@@ -222,9 +224,30 @@ protected:
 
   void generateFooter()
   {
+    bool hasImports = false;
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    {
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      writeLine(T("extern void declare") + name + T("Classes();"));
+      hasImports = true;
+    }
+    if (hasImports)
+      newLine();
+
     openScope(T("void declare") + fileName + T("Classes()"));
+    
     for (size_t i = 0; i < classes.size(); ++i)
       writeLine(T("lbcpp::Class::declare(new ") + classes[i] + T("Class());"));
+
+    if (hasImports)
+      newLine();
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    {
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      writeLine(T("declare") + name + T("Classes();"));
+    }
+   
     closeScope();
   }
 

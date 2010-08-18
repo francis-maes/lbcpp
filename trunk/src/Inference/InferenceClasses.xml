@@ -6,6 +6,11 @@
   <include file="lbcpp/Inference/SequentialInference.h"/>
   <include file="lbcpp/Inference/ParallelInference.h"/>
 
+  <import name="ReductionInference"/>
+  <import name="DecisionTreeInference"/>
+  <import name="NumericalInference"/>
+  <import name="MetaInference"/>
+
   <namespace name="lbcpp">
 
     <class name="Inference" base="NameableObject" abstract="yes">
@@ -67,5 +72,5 @@
     </class>
     
   </namespace>
-  
+
 </file>
