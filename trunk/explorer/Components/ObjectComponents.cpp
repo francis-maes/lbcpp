@@ -17,6 +17,8 @@
 #include "../Proteins/ProteinComponent.h"
 using namespace lbcpp;
 
+extern void flushErrorAndWarningMessages(const String& title);
+
 class FeatureGeneratorComponent : public ObjectSelectorAndContentComponent
 {
 public:
@@ -101,6 +103,7 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
     case FileObject::xmlFile:
       {
         Variable variable = Variable::createFromFile(fileObject->getFile());
+        flushErrorAndWarningMessages(T("Load file ") + fileObject->getFile().getFileName());
         return createComponentForVariable(variable, name);
       }
 

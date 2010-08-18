@@ -56,6 +56,9 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
 
+// todo: ProteinParallelInference
+
+// Transforms a "Protein -> Target (Target)" Inference into a "Protein -> Protein (Protein)" Inference
 class ProteinInferenceStep : public StaticDecoratorInference
 {
 public:
@@ -87,7 +90,6 @@ public:
 protected:
   friend class ProteinInferenceStepClass;
 
-  PerceptionPtr perception;
   size_t targetIndex;
 };
 

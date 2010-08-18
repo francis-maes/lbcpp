@@ -19,15 +19,37 @@ class ExplorerErrorHandler : public ErrorHandler
 {
 public:
   virtual void errorMessage(const String& where, const String& what)
-    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Error in '") + where + T("'"), what);}
+    {addMessage(T("Error in ") + where + T(": ") + what);}
   
   virtual void warningMessage(const String& where, const String& what)
-    {AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Warning in '") + where + T("'"), what);}
+    {addMessage(T("Warning in ") + where + T(": ") + what);}
+
+  void flushMessages(const String& title)
+  {
+    if (text.isNotEmpty())
+    {
+      AlertWindow::showMessageBox(AlertWindow::WarningIcon, title, text);
+      text = String::empty;
+    }
+  }
 
   juce_UseDebuggingNewOperator
+
+private:
+  String text;
+
+  void addMessage(const String& str)
+  {
+    if (text.isNotEmpty())
+      text += T("\n");
+    text += str;
+  }
 };
 
 static ExplorerErrorHandler explorerErrorHandler;
+
+void flushErrorAndWarningMessages(const String& title)
+  {explorerErrorHandler.flushMessages(title);}
 
 class ExplorerContentTabs : public TabbedComponent
 {
@@ -199,19 +221,27 @@ public:
   ObjectPtr loadObject(const File& file)
   {
     FileObjectPtr fileObject = new FileObject(file);
+    ObjectPtr res;
     switch (fileObject->getType())
     {
     case FileObject::textFile:
-      return fileObject;
+      res = fileObject;
+      break;
+
     case FileObject::xmlFile:
-      return Variable::createFromFile(file).getObject();
+      res = Variable::createFromFile(file).getObject();
+      break;
+
     case FileObject::classFile:
     case FileObject::classDirectory:
-      return Object::createFromFile(file);
+      res = Object::createFromFile(file);
+      break;
 
     default:
-      return fileObject;
+      res = fileObject;
     }
+    flushErrorAndWarningMessages(T("Load ") + file.getFileName());
+    return res;
   }
 
   juce_UseDebuggingNewOperator
@@ -233,6 +263,8 @@ public:
     ErrorHandler::setInstance(explorerErrorHandler);
     lbcpp::initialize();
     declareProteinClasses();
+
+    LBCPP_DECLARE_CLASS(FileObject, Object);
 
     LBCPP_DECLARE_CLASS_LEGACY(ExplorerConfiguration);
 

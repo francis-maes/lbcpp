@@ -313,8 +313,8 @@ bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
       int variableNumber = thisClass->findStaticVariable(name);
       if (variableNumber < 0)
       {
-        callback.errorMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
-        return false;
+        callback.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
+        continue;
       }
       Variable value = Variable::createFromXml(child, callback);
       if (value && !checkInheritance(value, thisClass->getStaticVariableType(variableNumber)))

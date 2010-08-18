@@ -100,12 +100,10 @@ namespace lbcpp
     ProteinInferenceStepClass()
       : DynamicClass(T("ProteinInferenceStep"), staticDecoratorInferenceClass())
     {
-      addVariable(perceptionClass(), T("perception"));
       addVariable(integerType(), T("targetIndex"));
     }
 
     LBCPP_DECLARE_VARIABLE_BEGIN(ProteinInferenceStep)
-      LBCPP_DECLARE_VARIABLE(perception);
       LBCPP_DECLARE_VARIABLE(targetIndex);
     LBCPP_DECLARE_VARIABLE_END()
 

@@ -27,6 +27,8 @@ public:
     }
   }
 
+  FileObject() {}
+
   virtual String getName() const
     {return file.getFileName();}
 
@@ -61,7 +63,7 @@ public:
     
     int indexOfZero = -1;
     String beforeZero;
-    for (int i = 0; i < juce::jmin(50000, data.getSize()); ++i)
+    for (int i = 0; i < juce::jmin(256, data.getSize()); ++i)
       if (data[i] == 0)
       {
         indexOfZero = i;
