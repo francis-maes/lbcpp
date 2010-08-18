@@ -57,6 +57,7 @@ private:
 };
 
 extern ClassPtr perceptionClass();
+typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 
 class DecoratorPerception : public Perception
 {
@@ -90,6 +91,8 @@ protected:
 
   PerceptionPtr decorated;
 };
+
+typedef ReferenceCountedObjectPtr<DecoratorPerception> DecoratorPerceptionPtr;
 extern ClassPtr decoratorPerceptionClass();
 
 class CompositePerception : public Perception
@@ -127,7 +130,7 @@ typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 extern ClassPtr compositePerceptionClass();
 
 PerceptionPtr identityPerception(TypePtr type);
-PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
+DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 PerceptionPtr functionBasedPerception(FunctionPtr function);
 
 }; /* namespace lbcpp */

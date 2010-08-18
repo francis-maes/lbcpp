@@ -1,4 +1,7 @@
-INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(
+  ${LBCpp_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 ##### OBJECT ####
 
@@ -53,6 +56,7 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
 )
+GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
 
 SET(LBCPP_DATA_PERCEPTION_SOURCES
   Data/Perception/IdentityPerception.h
@@ -60,6 +64,8 @@ SET(LBCPP_DATA_PERCEPTION_SOURCES
   Data/Perception/PreprocessPerception.h
   Data/Perception/FlattenPerception.h
   Data/Perception/FunctionBasedPerception.h
+  Data/Perception/PerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
 )
 
 ### old 

@@ -292,6 +292,10 @@ private:
   T& ptr;
 };
 
+template<class T>
+inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
+  {return ReferenceCountedObjectPtr<T>(const_cast<T* >(pthis));}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_REFERENCE_COUNTED_OBJECT_H_
