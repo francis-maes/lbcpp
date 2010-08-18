@@ -21,7 +21,7 @@ extern FeatureGeneratorPtr topLevelVariableFeatures(Variable variable);
 inline FeatureGeneratorPtr perceptionToFeatures(PerceptionPtr perception, const Variable& input)
   {return variableFeatures(perception->compute(input));}
 
-class ConvertToFeaturesPerception : public CompositePerception
+class ConvertToFeaturesPerception : public Perception
 {
 public:
   ConvertToFeaturesPerception(PerceptionPtr perception = PerceptionPtr())
@@ -32,6 +32,18 @@ public:
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return Class::get(T("FeatureGenerator"));}
+
+  virtual size_t getNumOutputVariables() const
+    {return 1;}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return Class::get(T("FeatureGenerator"));}
+
+  virtual String getOutputVariableName(size_t index) const
+    {return perception->getName();}
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+    {jassert(false);}
 
   virtual Variable computeFunction(const Variable& input, ErrorHandler& handler) const
     {return topLevelVariableFeatures(perception->computeFunction(input, handler));}
@@ -46,7 +58,7 @@ class ConvertToFeaturesPerceptionClass : public DynamicClass
 {
 public:
   ConvertToFeaturesPerceptionClass() 
-    : DynamicClass(T("ConvertToFeaturesPerception"), compositePerceptionClass())
+    : DynamicClass(T("ConvertToFeaturesPerception"), perceptionClass())
   {
     addVariable(perceptionClass(), T("perception"));
   }

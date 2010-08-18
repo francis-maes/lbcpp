@@ -33,7 +33,24 @@ public:
   }
 
 protected:
+  friend class PreprocessPerceptionClass;
+
   FunctionPtr preProcessingFunction;
+};
+
+class PreprocessPerceptionClass : public DynamicClass
+{
+public:
+  PreprocessPerceptionClass() : DynamicClass(T("PreprocessPerception"), decoratorPerceptionClass())
+  {
+    addVariable(functionClass(), T("preProcessingFunction"));
+  }
+  virtual VariableValue create() const
+    {return new PreprocessPerception();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(PreprocessPerception)
+    LBCPP_DECLARE_VARIABLE(preProcessingFunction);
+  LBCPP_DECLARE_VARIABLE_END()
 };
 
 }; /* namespace lbcpp */

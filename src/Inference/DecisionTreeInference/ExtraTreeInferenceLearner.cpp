@@ -161,7 +161,7 @@ PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, Typ
   {
     splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
   }
-  else if (variableType->inheritsFrom(enumerationType()))
+  else if (variableType->inheritsFrom(enumValueType()))
   {
     EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
     splitArgument = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
@@ -251,7 +251,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   positiveExamples = pos;
 
   TypePtr outputType = examples->getElementsType()->getTemplateArgument(1);
-  if (outputType->inheritsFrom(enumerationType()))
+  if (outputType->inheritsFrom(enumValueType()))
     return computeClassificationSplitScore(examples, negativeExamples, positiveExamples);
 
   jassert(false);

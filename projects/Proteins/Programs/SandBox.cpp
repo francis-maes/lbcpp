@@ -175,9 +175,9 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")))->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->invFold(0, 7);
-  ContainerPtr testProteins = proteins->fold(0, 7);
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->invFold(0,2);
+  ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
@@ -198,7 +198,6 @@ int main(int argc, char** argv)
   
 
   std::cout << "Inference: " << std::endl;
-  Variable::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
 
   Variable(inference).printRecursively(std::cout, 2);
 

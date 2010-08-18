@@ -157,7 +157,7 @@ private:
       return;
     
     TypePtr type = sequence->getElementsType();
-    if (type->inheritsFrom(enumerationType()))
+    if (type->inheritsFrom(enumValueType()))
     {
       g.setFont(12.f);
       String res = T("?");

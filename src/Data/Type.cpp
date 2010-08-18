@@ -177,6 +177,9 @@ void lbcpp::initialize()
 /*
 ** Type
 */
+ClassPtr Type::getClass() const
+  {return typeClass();}
+
 bool Type::inheritsFrom(TypePtr baseType) const
 {
   jassert(this && baseType.get());
@@ -454,7 +457,7 @@ int DynamicClass::findStaticVariable(const String& name) const
 ** Enumeration
 */
 Enumeration::Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
-  : IntegerType(name, enumerationType()), oneLetterCodes(oneLetterCodes)
+  : IntegerType(name, enumValueType()), oneLetterCodes(oneLetterCodes)
 {
   jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
   for (size_t index = 0; elements[index]; ++index)
@@ -462,7 +465,7 @@ Enumeration::Enumeration(const String& name, const juce::tchar** elements, const
 }
 
 Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
-  : IntegerType(name, enumerationType()), oneLetterCodes(oneLetterCodes)
+  : IntegerType(name, enumValueType()), oneLetterCodes(oneLetterCodes)
 {
   jassert(!oneLetterCodes.containsChar('_'));
   for (int i = 0; i < oneLetterCodes.length(); ++i)
@@ -474,9 +477,12 @@ Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
 }
 
 Enumeration::Enumeration(const String& name)
-  : IntegerType(name, enumerationType())
+  : IntegerType(name, enumValueType())
 {
 }
+
+ClassPtr Enumeration::getClass() const
+  {return enumerationClass();}
 
 void Enumeration::addElement(const String& elementName)
 {
@@ -589,7 +595,7 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(stringType, T("String"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(fileType, T("File"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(pairType, T("Pair"));
 
-DECLARE_CLASS_SINGLETON_ACCESSOR(enumerationType, T("EnumValue"));
+DECLARE_CLASS_SINGLETON_ACCESSOR(enumValueType, T("EnumValue"));
 
 ClassPtr lbcpp::objectClass()
   {static TypeCache cache(T("Object")); return cache();}

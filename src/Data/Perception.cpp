@@ -50,36 +50,32 @@ void Perception::ensureTypeIsComputed()
 /*
 ** CompositePerception
 */
-size_t CompositePerception::getNumOutputVariables() const
-  {return subPerceptions.size();}
-
-TypePtr CompositePerception::getOutputVariableType(size_t index) const
+CompositePerception::CompositePerception()
+  : subPerceptions(new Vector(pairType(stringType(), perceptionClass())))
 {
-  jassert(index < subPerceptions.size());
-  return subPerceptions[index].second->getOutputType();
 }
 
-String CompositePerception::getOutputVariableName(size_t index) const
-{
-  jassert(index < subPerceptions.size());
-  return subPerceptions[index].first;
-}
+size_t CompositePerception::getNumPerceptions() const
+  {return subPerceptions->size();}
 
-PerceptionPtr CompositePerception::getOutputVariableGenerator(size_t index) const
-{
-  jassert(index < subPerceptions.size());
-  return subPerceptions[index].second;
-}
+String CompositePerception::getPerceptionName(size_t index) const
+  {return subPerceptions->getVariable(index)[0].getString();}
+
+PerceptionPtr CompositePerception::getPerception(size_t index) const
+  {return subPerceptions->getVariable(index)[1].getObjectAndCast<Perception>();}
+
+void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
+  {subPerceptions->append(Variable::pair(name, subPerception));}
 
 void CompositePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
-  for (size_t i = 0; i < subPerceptions.size(); ++i)
-    callback->sense(i, subPerceptions[i].second, input);
+  for (size_t i = 0; i < getNumPerceptions(); ++i)
+    callback->sense(i, getPerception(i), input);
 }
 
-ClassPtr lbcpp::compositePerceptionClass()
-  {static TypeCache cache(T("CompositePerception")); return cache();}
-
+/*
+** Class constructors
+*/
 #include "Perception/PreprocessPerception.h"
 #include "Perception/FlattenPerception.h"
 
@@ -102,20 +98,59 @@ PerceptionPtr lbcpp::windowPerception(TypePtr elementsType, size_t windowSize, P
 PerceptionPtr lbcpp::functionBasedPerception(FunctionPtr function)
   {return new FunctionBasedPerception(function);}
 
+/*
+** Class declarations
+*/
 ClassPtr lbcpp::perceptionClass()
   {static TypeCache cache(T("Perception")); return cache();}
+
+namespace lbcpp
+{
+  class CompositePerceptionClass : public DynamicClass
+  {
+  public:
+    CompositePerceptionClass() : DynamicClass(T("CompositePerception"), perceptionClass())
+    {
+      addVariable(vectorClass(pairType(stringType(), perceptionClass())), T("subPerceptions"));
+    }
+
+    LBCPP_DECLARE_VARIABLE_BEGIN(CompositePerception)
+      LBCPP_DECLARE_VARIABLE(subPerceptions);
+    LBCPP_DECLARE_VARIABLE_END()
+  };
+
+  class DecoratorPerceptionClass : public DynamicClass
+  {
+  public:
+    DecoratorPerceptionClass() : DynamicClass(T("DecoratorPerception"), perceptionClass())
+    {
+      addVariable(perceptionClass(), T("decorated"));
+    }
+
+    LBCPP_DECLARE_VARIABLE_BEGIN(DecoratorPerception)
+      LBCPP_DECLARE_VARIABLE(decorated);
+    LBCPP_DECLARE_VARIABLE_END()
+  };
+
+};
+
+ClassPtr lbcpp::compositePerceptionClass()
+  {static TypeCache cache(T("CompositePerception")); return cache();}
+
+ClassPtr lbcpp::decoratorPerceptionClass()
+  {static TypeCache cache(T("DecoratorPerception")); return cache();}
 
 void declarePerceptionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(Perception, Function);
 
-    LBCPP_DECLARE_CLASS(IdentityPerception, Perception);
-    LBCPP_DECLARE_CLASS(WindowPerception, Perception);
-    LBCPP_DECLARE_CLASS(FunctionBasedPerception, Perception);
+    Class::declare(new IdentityPerceptionClass());
+    Class::declare(new FunctionBasedPerceptionClass());
 
-    LBCPP_DECLARE_ABSTRACT_CLASS(CompositePerception, Perception);
+    Class::declare(new CompositePerceptionClass());
   
-    LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorPerception, Perception);
-      LBCPP_DECLARE_CLASS(PreprocessPerception, DecoratorPerception);
+    Class::declare(new DecoratorPerceptionClass());
+      Class::declare(new PreprocessPerceptionClass());
       LBCPP_DECLARE_CLASS(FlattenPerception, DecoratorPerception);
+      Class::declare(new WindowPerceptionClass());
 }

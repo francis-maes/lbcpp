@@ -1,10 +1,8 @@
-
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 
 Serialisation:
  * Serialisation of Perceptions
- * Serialisation of Inferences
 
 Perceptions:
  * Residue: current position, WindowHistogram
