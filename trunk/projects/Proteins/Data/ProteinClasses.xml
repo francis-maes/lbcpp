@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Protein">
+  <include file="Data/Protein.h"/>
+
+  <namespace name="lbcpp">
+    <class name="Protein" base="NameableObject">
+      
+      <!-- Primary Structure -->
+      <variable type="Vector[AminoAcidType]" name="primaryStructure" shortdesc="Primary Structure"/>
+      <variable type="Vector[DiscreteProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortdesc="PSSM"/>
+      
+      <!-- Secondary Structure -->
+      <variable type="Vector[SecondaryStructureElement]" name="secondaryStructure" shortdesc="Secondary Structure"/>
+      <variable type="Vector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortdesc="DSSP Secondary Structure"/>
+      <variable type="Vector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortdesc="Structural Alphabet"/>
+
+      <variable type="Vector[Probability]" name="solventAccessibility" shortdesc="Solvent Accessibility"/>
+      <variable type="Vector[Probability]" name="solventAccessibilityAt20p" shortdesc="Solvent Accessibility at 20%"/>
+      <variable type="Vector[Probability]" name="disorderRegions" shortdesc="Disorder Regions"/>
+      
+      <!-- Contact Maps -->
+      <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortdesc="Contact Map C-alpha 8"/>
+      <variable type="SymmetricMatrix[Probability]" name="contactMap8Cb" shortdesc="Contact Map C-beta 8"/>
+      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortdesc="Distance Map C-alpha"/>
+      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortdesc="Distance Map C-beta"/>
+
+      <!-- Tertiary Structure -->
+      <variable type="CartesianPositionVector" name="calphaTrace" shortdesc="C-alpha Trace"/>
+      <variable type="TertiaryStructure" name="tertiaryStructure" shortdesc="Tertiary Structure"/>
+    </class>
+  </namespace>
+  
+</file>

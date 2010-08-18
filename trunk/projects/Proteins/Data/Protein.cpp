@@ -12,6 +12,7 @@
 #include "Formats/FASTAFileGenerator.h"
 using namespace lbcpp;
 
+#if 0
 namespace lbcpp
 {
 
@@ -28,8 +29,8 @@ public:
     addVariable(vectorClass(dsspSecondaryStructureEnumeration()), T("dsspSecondaryStructure"));
     addVariable(vectorClass(structuralAlphabetEnumeration()), T("structuralAlphabetSequence"));
 
-    addVariable(vectorClass(probabilityType()), T("solventAccesibility"));
-    addVariable(vectorClass(probabilityType()), T("solventAccesibilityAt20p"));
+    addVariable(vectorClass(probabilityType()), T("solventAccessibility"));
+    addVariable(vectorClass(probabilityType()), T("solventAccessibilityAt20p"));
     addVariable(vectorClass(probabilityType()), T("disorderRegions"));
 
     addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Ca"));
@@ -63,6 +64,7 @@ public:
 };
 
 }; /* namespace lbcpp */
+#endif // 0
 
 ClassPtr lbcpp::proteinClass()
   {static TypeCache cache(T("Protein")); return cache();}
@@ -441,7 +443,7 @@ FunctionPtr lbcpp::proteinToInputOutputPairFunction()
 
 void declareProteinClass()
 {
-  Class::declare(new ProteinClass());
+  //Class::declare(new ProteinClass());
   Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
 
   LBCPP_DECLARE_CLASS(ProteinLengthFunction, Function);

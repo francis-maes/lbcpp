@@ -19,7 +19,8 @@ extern void declareSecondaryStructureClasses();
 extern void declareAtomClasses();
 extern void declareResidueClasses();
 extern void declareTertiaryStructureClasses();
-extern void declareProteinClass();
+extern void declareProteinClass(); // by hand (old)
+extern void declareProteinClasses(); // generated (new)
 
 // perception
 extern void declareProteinPerceptionClasses();
@@ -29,7 +30,7 @@ extern void declareResiduePairPerceptionClasses();
 // inference
 extern void declareProteinInferenceClasses();
 
-void declareProteinClasses()
+void declareProteinsClasses()
 {
   // geometry
   declareVector3Classes();
@@ -42,6 +43,7 @@ void declareProteinClasses()
   declareResidueClasses();
   declareTertiaryStructureClasses();
   declareProteinClass();
+  declareProteinClasses(); // generated
 
   // perception
   declareProteinPerceptionClasses();

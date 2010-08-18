@@ -15,6 +15,8 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/kdtree_lib.c
 )
 
+GENERATE_INTROSPECTION_CODE(Data/ProteinClasses.xml ProteinClasses.cpp)
+
 SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/AminoAcid.h
   Data/AminoAcid.cpp
@@ -30,6 +32,8 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/TertiaryStructure.cpp
   Data/Protein.h
   Data/Protein.cpp
+  Data/ProteinClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinClasses.cpp
 )
 
 

@@ -44,7 +44,7 @@ public:
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
         dsspSecondaryStructureSequence = protein->createEmptyDSSPSecondaryStructure();
-        solventAccesibilitySequence = protein->createEmptyProbabilitySequence();
+        solventAccessibilitySequence = protein->createEmptyProbabilitySequence();
         ++serialNumber;
       }
       return true;
@@ -105,13 +105,13 @@ public:
     /*
     ** Solvent accesibility
     */
-    String solventAccesibilityString = line.substring(34, 38).trim();
-    if (!solventAccesibilityString.containsOnly(T("0123456789")))
+    String solventAccessibilityString = line.substring(34, 38).trim();
+    if (!solventAccessibilityString.containsOnly(T("0123456789")))
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccesibilityString);
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccessibilityString);
       return false;
     }
-    int absoluteSolventAccesiblity = solventAccesibilityString.getIntValue();
+    int absoluteSolventAccesiblity = solventAccessibilityString.getIntValue();
 
     static const double maximumSolventAccissibilityValue[] = {
       204, 341, 271, 258, 198,
@@ -128,7 +128,7 @@ public:
       std::cout << "Solvent Accessibility Exeeded: " << lbcpp::toString(aminoAcidCode) << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidType] << std::endl;
       normalizedSolventAccessibility = 1.0;
     }
-    solventAccesibilitySequence->setVariable((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType()));
+    solventAccessibilitySequence->setVariable((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType()));
     return true;
   }
 
@@ -144,7 +144,7 @@ public:
 
     setResult(dsspSecondaryStructureSequence);
     protein->setDSSPSecondaryStructure(dsspSecondaryStructureSequence);
-    protein->setSolventAccessibility(solventAccesibilitySequence);
+    protein->setSolventAccessibility(solventAccessibilitySequence);
     return true;
   }
   
@@ -152,7 +152,7 @@ protected:
   ProteinPtr protein;
   VectorPtr primarySequence;
   VectorPtr dsspSecondaryStructureSequence;
-  VectorPtr solventAccesibilitySequence;
+  VectorPtr solventAccessibilitySequence;
   int serialNumber;
 };
 
