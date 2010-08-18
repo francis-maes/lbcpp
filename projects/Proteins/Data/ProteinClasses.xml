@@ -4,7 +4,24 @@
   <include file="Data/Protein.h"/>
 
   <namespace name="lbcpp">
-    <class name="Protein" base="NameableObject">
+
+    <class name="Atom" base="NameableObject" generateClassDeclarator="yes">
+      <variable type="String" name="elementSymbol"/>
+      <variable type="Vector3" name="position"/>
+      <variable type="Double" name="occupancy"/>
+      <variable type="Double" name="temperatureFactor"/>
+    </class>
+
+    <class name="Residue" generateClassDeclarator="yes">
+      <variable type="AminoAcidType" name="aminoAcidType" cast="int"/>
+      <variable type="Vector[Atom]" name="atoms"/>
+    </class>
+    
+    <class name="TertiaryStructure" generateClassDeclarator="yes">
+      <variable type="Vector[Residue]" name="residues"/>
+    </class>
+    
+    <class name="Protein" base="NameableObject" generateClassDeclarator="yes">
       
       <!-- Primary Structure -->
       <variable type="Vector[AminoAcidType]" name="primaryStructure" shortdesc="Primary Structure"/>

@@ -72,6 +72,8 @@ public:
     {jassert(index == 0); residues = var.getObjectAndCast<Vector>();}
 
 protected:
+  friend class TertiaryStructureClass;
+
   VectorPtr residues;
 };
 

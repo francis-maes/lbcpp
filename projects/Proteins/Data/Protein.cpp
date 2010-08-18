@@ -12,63 +12,6 @@
 #include "Formats/FASTAFileGenerator.h"
 using namespace lbcpp;
 
-#if 0
-namespace lbcpp
-{
-
-class ProteinClass : public DynamicClass
-{
-public:
-  ProteinClass() : DynamicClass(T("Protein"), nameableObjectClass())
-  {
-    // base class: name
-    addVariable(vectorClass(aminoAcidTypeEnumeration()), T("primaryStructure"));
-    addVariable(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())), T("positionSpecificScoringMatrix"));
-
-    addVariable(vectorClass(secondaryStructureEnumeration()), T("secondaryStructure"));
-    addVariable(vectorClass(dsspSecondaryStructureEnumeration()), T("dsspSecondaryStructure"));
-    addVariable(vectorClass(structuralAlphabetEnumeration()), T("structuralAlphabetSequence"));
-
-    addVariable(vectorClass(probabilityType()), T("solventAccessibility"));
-    addVariable(vectorClass(probabilityType()), T("solventAccessibilityAt20p"));
-    addVariable(vectorClass(probabilityType()), T("disorderRegions"));
-
-    addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Ca"));
-    addVariable(symmetricMatrixClass(probabilityType()), T("contactMap8Cb"));
-    addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCa"));
-    addVariable(symmetricMatrixClass(angstromDistanceType()), T("distanceMapCb"));
-
-    addVariable(cartesianPositionVectorClass(), T("calphaTrace"));
-    addVariable(tertiaryStructureClass(), T("tertiaryStructure"));
-  }
-
-  virtual VariableValue create() const
-    {return new Protein();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(Protein)
-    LBCPP_DECLARE_VARIABLE(primaryStructure);
-    LBCPP_DECLARE_VARIABLE(positionSpecificScoringMatrix);
-    LBCPP_DECLARE_VARIABLE(secondaryStructure);
-    LBCPP_DECLARE_VARIABLE(dsspSecondaryStructure);
-    LBCPP_DECLARE_VARIABLE(structuralAlphabetSequence);
-    LBCPP_DECLARE_VARIABLE(solventAccessibility);
-    LBCPP_DECLARE_VARIABLE(solventAccessibilityAt20p);
-    LBCPP_DECLARE_VARIABLE(disorderRegions);
-    LBCPP_DECLARE_VARIABLE(contactMap8Ca);
-    LBCPP_DECLARE_VARIABLE(contactMap8Cb);
-    LBCPP_DECLARE_VARIABLE(distanceMapCa);
-    LBCPP_DECLARE_VARIABLE(distanceMapCb);
-    LBCPP_DECLARE_VARIABLE(calphaTrace);
-    LBCPP_DECLARE_VARIABLE(tertiaryStructure);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
-}; /* namespace lbcpp */
-#endif // 0
-
-ClassPtr lbcpp::proteinClass()
-  {static TypeCache cache(T("Protein")); return cache();}
-
 TypePtr lbcpp::sequenceSeparationDistanceType()
   {static TypeCache cache(T("SequenceSeparationDistance")); return cache();}
 

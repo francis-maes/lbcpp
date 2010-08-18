@@ -390,21 +390,3 @@ void TertiaryStructure::applyAffineTransform(const impl::Matrix4& affineTransfor
       residue->applyAffineTransform(affineTransform);
   }
 }
-
-class TertiaryStructureClass : public DynamicClass
-{
-public:
-  TertiaryStructureClass() : DynamicClass(T("TertiaryStructure"), objectClass())
-    {addVariable(vectorClass(residueClass()), T("residues"));}
-
-  virtual VariableValue create() const
-    {return new TertiaryStructure();}
-};
-
-ClassPtr lbcpp::tertiaryStructureClass()
-  {static TypeCache cache(T("TertiaryStructure")); return cache();}
-
-void declareTertiaryStructureClasses()
-{
-  Class::declare(new TertiaryStructureClass());
-}
