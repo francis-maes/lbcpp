@@ -19,29 +19,6 @@ DecoratorInference::DecoratorInference(const String& name)
 String StaticDecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
 
-namespace lbcpp
-{
-  ClassPtr decoratorInferenceClass()
-    {static TypeCache cache(T("DecoratorInference")); return cache();}
-
-  ClassPtr staticDecoratorInferenceClass()
-    {static TypeCache cache(T("StaticDecoratorInference")); return cache();}
-
-  class StaticDecoratorInferenceClass : public DynamicClass
-  {
-  public:
-    StaticDecoratorInferenceClass()
-      : DynamicClass(T("StaticDecoratorInference"), decoratorInferenceClass())
-    {
-      addVariable(inferenceClass(), T("decorated"));
-    }
-
-    LBCPP_DECLARE_VARIABLE_BEGIN(StaticDecoratorInference)
-      LBCPP_DECLARE_VARIABLE(decorated);
-    LBCPP_DECLARE_VARIABLE_END();
-  };
-};
-
 class PostProcessInference : public StaticDecoratorInference
 {
 public:
@@ -68,7 +45,5 @@ InferencePtr lbcpp::postProcessInference(InferencePtr inference, FunctionPtr pos
 
 void declareDecoratorInferenceClasses()
 {
-  LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorInference, Inference);
-    Type::declare(new StaticDecoratorInferenceClass());
-      LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);
+  LBCPP_DECLARE_CLASS(PostProcessInference, DecoratorInference);
 };

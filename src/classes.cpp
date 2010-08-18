@@ -61,7 +61,7 @@ void declareFeatureGenerators()
 }
 
 // Inference
-extern void declareInferenceClasses();
+extern void declareInferenceLibrary();
 extern void declareInferenceCallbackClasses();
 extern void declareInferenceOnlineLearnerClasses();
 
@@ -81,7 +81,7 @@ void declareLBCppCoreClasses()
   LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
   
   declareInferenceOnlineLearnerClasses();
-  declareInferenceClasses();
+  declareInferenceLibrary();
   declareInferenceCallbackClasses();
   
 }

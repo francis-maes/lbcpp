@@ -13,7 +13,7 @@
 #include "Inference/ProteinInference.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinLibrary();
 
 #if 0
 void addDefaultPredictions(ProteinObjectPtr protein)
@@ -67,7 +67,7 @@ void displayVectorIfExists(String friendlyName, VectorPtr vector)
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinLibrary();
 
   if (argc < 3)
   {
