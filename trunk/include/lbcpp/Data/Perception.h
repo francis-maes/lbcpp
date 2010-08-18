@@ -10,6 +10,7 @@
 # define LBCPP_DATA_PERCEPTION_H_
 
 # include "../ObjectPredeclarations.h"
+# include "Vector.h"
 # include "Function.h"
 
 namespace lbcpp
@@ -85,33 +86,40 @@ public:
     {decorated->computePerception(input, callback);}
 
 protected:
+  friend class DecoratorPerceptionClass;
+
   PerceptionPtr decorated;
 };
+extern ClassPtr decoratorPerceptionClass();
 
 class CompositePerception : public Perception
 {
 public:
-  size_t getNumPerceptions() const
-    {return subPerceptions.size();}
+  CompositePerception();
 
-  String getPerceptionName(size_t index) const
-    {jassert(index < subPerceptions.size()); return subPerceptions[index].first;}
-
-  PerceptionPtr getPerception(size_t index) const
-    {jassert(index < subPerceptions.size()); return subPerceptions[index].second;}
-
-  virtual void addPerception(const String& name, PerceptionPtr subPerception)
-    {subPerceptions.push_back(std::make_pair(name, subPerception));}
+  size_t getNumPerceptions() const;
+  String getPerceptionName(size_t index) const;
+  PerceptionPtr getPerception(size_t index) const;
+  virtual void addPerception(const String& name, PerceptionPtr subPerception);
 
   // Perception
-  virtual size_t getNumOutputVariables() const;
-  virtual TypePtr getOutputVariableType(size_t index) const;
-  virtual String getOutputVariableName(size_t index) const;
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const;
+  virtual size_t getNumOutputVariables() const
+    {return getNumPerceptions();}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return getPerception(index)->getOutputType();}
+
+  virtual String getOutputVariableName(size_t index) const
+    {return getPerceptionName(index);}
+
+  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+    {return getPerception(index);}
+
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
 protected:
-  std::vector< std::pair<String, PerceptionPtr> > subPerceptions;
+  friend class CompositePerceptionClass;
+  VectorPtr subPerceptions;
 };
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;

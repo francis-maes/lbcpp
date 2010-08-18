@@ -52,6 +52,8 @@ public:
     {return inputType->getTemplateArgument(0);}
 
 protected:
+  friend class SetFieldFunctionClass;
+
   size_t fieldIndex;
 
   virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
@@ -63,6 +65,21 @@ protected:
       callback.warningMessage(T("SetFieldFunction::computeFunction"), T("Null object"));
     return input[0];
   }
+};
+
+class SetFieldFunctionClass : public DynamicClass
+{
+public:
+  SetFieldFunctionClass() : DynamicClass(T("SetFieldFunction"), functionClass())
+  {
+    addVariable(integerType(), T("fieldIndex"));
+  }
+  virtual VariableValue create() const
+    {return new SetFieldFunction();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(SetFieldFunction)
+    LBCPP_DECLARE_VARIABLE(fieldIndex);
+  LBCPP_DECLARE_VARIABLE_END()
 };
 
 FunctionPtr lbcpp::setFieldFunction(size_t fieldIndex)
@@ -97,6 +114,8 @@ public:
   }
 
 private:
+  friend class SelectPairFieldsFunctionClass;
+
   int index1, index2;
 
   static TypePtr getOutputTypeBase(TypePtr inputType, int index)
@@ -113,6 +132,24 @@ private:
   }
 };
 
+class SelectPairFieldsFunctionClass : public DynamicClass
+{
+public:
+  SelectPairFieldsFunctionClass() : DynamicClass(T("SelectPairFieldsFunction"), functionClass())
+  {
+    addVariable(integerType(), T("index1"));
+    addVariable(integerType(), T("index2"));
+  }
+
+  virtual VariableValue create() const
+    {return new SelectPairFieldsFunction();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(SelectPairFieldsFunction)
+    LBCPP_DECLARE_VARIABLE(index1);
+    LBCPP_DECLARE_VARIABLE(index2);
+  LBCPP_DECLARE_VARIABLE_END()
+};
+
 FunctionPtr lbcpp::selectPairFieldsFunction(int index1, int index2)
   {return new SelectPairFieldsFunction(index1, index2);}
 
@@ -123,6 +160,6 @@ void declareFunctionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(Function, Object);
     LBCPP_DECLARE_CLASS(LoadFromXmlFunction, Function);
-    LBCPP_DECLARE_CLASS(SetFieldFunction, Function);
-    LBCPP_DECLARE_CLASS(SelectPairFieldsFunction, Function);
+    Class::declare(new SetFieldFunctionClass());
+    Class::declare(new SelectPairFieldsFunctionClass());
 }

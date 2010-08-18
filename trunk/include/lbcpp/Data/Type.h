@@ -41,6 +41,8 @@ public:
   Type(const String& className, TypePtr baseType)
     : NameableObject(className), baseType(baseType) {}
 
+  virtual ClassPtr getClass() const;
+
   static void declare(TypePtr classInstance);
   static TypePtr get(const String& typeName);
   static TypePtr get(const String& typeName, TypePtr argument);
@@ -208,7 +210,7 @@ public:
 
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
   {
-    if (!value.trim().containsOnly(T("0123456789")))
+    if (!value.trim().containsOnly(T("-+e0123456789")))
     {
       callback.errorMessage(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
       return getMissingValue();
@@ -244,6 +246,8 @@ public:
   Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
   Enumeration(const String& name, const String& oneLetterCodes);
   Enumeration(const String& name);
+
+  virtual ClassPtr getClass() const;
 
   static EnumerationPtr get(const String& className)
     {return checkCast<Enumeration>(T("Enumeration::get"), Type::get(className));}
@@ -281,7 +285,7 @@ private:
   String oneLetterCodes;
 };
 
-extern TypePtr enumerationType();
+extern TypePtr enumValueType();
 
 /*
 ** Class

@@ -34,7 +34,25 @@ public:
     {callback->sense(0, function->compute(input));}
 
 protected:
+  friend class FunctionBasedPerceptionClass;
+
   FunctionPtr function;
+};
+
+class FunctionBasedPerceptionClass : public DynamicClass
+{
+public:
+  FunctionBasedPerceptionClass() : DynamicClass(T("FunctionBasedPerception"), perceptionClass())
+  {
+    addVariable(functionClass(), T("function"));
+  }
+
+  virtual VariableValue create() const
+    {return new FunctionBasedPerception();}
+
+  LBCPP_DECLARE_VARIABLE_BEGIN(FunctionBasedPerception)
+    LBCPP_DECLARE_VARIABLE(function);
+  LBCPP_DECLARE_VARIABLE_END()
 };
 
 }; /* namespace lbcpp */
