@@ -45,7 +45,7 @@ class SquareRegressionInference : public RegressionInference
 {
 public:
   SquareRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearScalarInference(name))
+    : RegressionInference(name, linearInference(name))
     {decorated->setOnlineLearner(learner);}
 
   SquareRegressionInference() {}
@@ -54,14 +54,14 @@ public:
     {return squareLoss(target);}
 };
 
-class AngleRegressionInference : public RegressionInference
+class DihedralAngleRegressionInference : public RegressionInference
 {
 public:
-  AngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearScalarInference(name))
+  DihedralAngleRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
+    : RegressionInference(name, linearInference(name))
     {decorated->setOnlineLearner(learner);}
 
-  AngleRegressionInference() {}
+  DihedralAngleRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
     {return dihedralAngleSquareLoss(target);}
@@ -71,7 +71,7 @@ class AbsoluteRegressionInference : public RegressionInference
 {
 public:
   AbsoluteRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearScalarInference(name))
+    : RegressionInference(name, linearInference(name))
     {decorated->setOnlineLearner(learner);}
 
   AbsoluteRegressionInference() {}

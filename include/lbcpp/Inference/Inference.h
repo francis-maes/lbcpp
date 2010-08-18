@@ -75,14 +75,14 @@ extern ClassPtr inferenceClass();
 /*
 ** Decorator inference
 */
-extern InferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
+extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
 /*
 ** Numerical Inference
 */
 
 // Atomic
-extern InferencePtr linearScalarInference(const String& name);
+extern InferencePtr linearInference(const String& name);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Binary Classification
@@ -105,9 +105,9 @@ extern InferencePtr classificationExtraTreeInference(const String& name, TypePtr
 /*
 ** Reduction
 */
-extern InferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
-extern InferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
-extern InferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference);
+extern VectorParallelInferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
+extern VectorParallelInferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
+extern SharedParallelInferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference);
 
 /*
 ** Meta Inference
@@ -117,17 +117,17 @@ extern InferencePtr sharedParallelVectorInference(const String& name, FunctionPt
 // Output: None (side-effect on input Inference)
 extern InferencePtr dummyInferenceLearner();
 extern InferencePtr staticSequentialInferenceLearner();
-extern InferencePtr staticParallelInferenceLearner();
-extern InferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
-extern InferencePtr parallelVoteInferenceLearner();
-extern InferencePtr onlineToBatchInferenceLearner();
+extern ParallelInferencePtr staticParallelInferenceLearner();
+extern DecoratorInferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
+extern ParallelInferencePtr parallelVoteInferenceLearner();
+extern SequentialInferencePtr onlineToBatchInferenceLearner();
 
-extern InferencePtr decoratorInferenceLearner();
-extern InferencePtr postProcessInferenceLearner();
+extern DecoratorInferencePtr decoratorInferenceLearner();
+extern DecoratorInferencePtr postProcessInferenceLearner();
 
 // Misc
-extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
-extern InferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
+extern ParallelInferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
+extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
 
 /*
 ** InferenceState

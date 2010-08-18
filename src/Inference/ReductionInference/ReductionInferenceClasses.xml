@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ReductionInference" directory="Inference/ReductionInference">
+  <namespace name="lbcpp">
+
+    <class name="OneAgainstAllClassificationInference" base="VectorParallelInference">
+      <constructor arguments="const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
+      <variable type="Enumeration" name="classes"/>
+      <variable type="Inference" name="binaryClassifierModel"/>
+    </class>
+
+    <class name="ParallelVoteInference" base="VectorParallelInference">
+      <constructor arguments="const String&amp; name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner"/>
+    </class>
+
+    <class name="SharedParallelVectorInference" base="SharedParallelInference">
+      <constructor arguments="const String&amp; name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference"/>
+      <variable type="Function" name="sizeFunction"/>
+      <variable type="Perception" name="perception"/>
+    </class>
+    
+
+  </namespace>
+  
+</file>

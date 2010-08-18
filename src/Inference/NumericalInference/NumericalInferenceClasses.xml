@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="NumericalInference" directory="Inference/NumericalInference">
+
+  <namespace name="lbcpp">
+
+    <class name="NumericalInference" base="Inference" abstract="yes">
+      <variable type="DenseVector" name="parameters"/>
+    </class>
+
+    <class name="LinearInference" base="NumericalInference">
+      <constructor arguments="const String&amp; name" returnType="Inference"/>
+    </class>
+
+    <class name="BinaryClassificationInference" base="StaticDecoratorInference" abstract="yes"/>
+
+    <class name="BinaryLinearSVMInference" base="BinaryClassificationInference">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="InferencePtr scoreInference" returnType="Inference"/>
+    </class>
+    
+    <class name="BinaryLogisticRegressionInference" base="BinaryClassificationInference">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+    </class>
+
+    <class name="RegressionInference" base="StaticDecoratorInference" abstract="yes"/>
+
+    <class name="SquareRegressionInference" base="RegressionInference">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+    </class>
+    
+    <class name="AbsoluteRegressionInference" base="RegressionInference">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+    </class>
+    
+    <class name="DihedralAngleRegressionInference" base="RegressionInference">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+    </class>
+
+    <class name="TransferFunctionDecoratorInference" base="StaticDecoratorInference">
+      <constructor arguments="const String&amp; name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction" returnType="Inference"/>
+      <variable type="ScalarFunction" name="transferFunction"/>
+    </class>
+
+  </namespace>
+</file>

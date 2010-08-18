@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="DecisionTreeInference" directory="Inference/DecisionTreeInference">
+
+  <namespace name="lbcpp">
+
+    <class name="BinaryDecisionTree"/>
+
+    <class name="BinaryDecisionTreeInference" base="Inference">
+      <variable type="BinaryDecisionTree" name="tree"/>
+      <variable type="Type" name="inputType"/>
+    </class>
+
+    <class name="RegressionBinaryDecisionTreeInference" base="BinaryDecisionTreeInference"/>
+    <class name="BinaryClassificationBinaryDecisionTreeInference" base="BinaryDecisionTreeInference"/>
+    <class name="ClassificationBinaryDecisionTreeInference" base="BinaryDecisionTreeInference"/>
+
+    <code>
+      inline InferencePtr extraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+        {return new SingleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting);}
+
+      InferencePtr lbcpp::regressionExtraTreeInference(const String&amp; name, TypePtr inputType, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+      {
+        InferencePtr decisionTreeModel = new RegressionBinaryDecisionTreeInference(name, inputType);
+        return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
+      }
+
+      InferencePtr lbcpp::binaryClassificationExtraTreeInference(const String&amp; name, TypePtr inputType, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+      {
+        InferencePtr decisionTreeModel = new BinaryClassificationBinaryDecisionTreeInference(name, inputType);
+        return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
+      }
+
+      InferencePtr lbcpp::classificationExtraTreeInference(const String&amp; name, TypePtr inputType, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+      {
+        InferencePtr decisionTreeModel = new ClassificationBinaryDecisionTreeInference(name, inputType, classes);
+        return new ParallelVoteInference(name, numTrees, decisionTreeModel, extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting));
+      }
+    </code>
+    
+  </namespace>
+  
+</file>

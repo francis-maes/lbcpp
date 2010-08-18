@@ -53,7 +53,7 @@ public:
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
   {
-    InferencePtr scoreInference = linearScalarInference(targetName + T(" Classifier"));
+    InferencePtr scoreInference = linearInference(targetName + T(" Classifier"));
     scoreInference->setOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
     if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
       scoreInference = addBiasInference(targetName, scoreInference);

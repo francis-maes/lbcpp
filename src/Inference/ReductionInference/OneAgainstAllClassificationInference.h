@@ -23,7 +23,7 @@ public:
     subInferences->resize(classes->getNumElements());
     for (size_t i = 0; i < subInferences->size(); ++i)
     {
-      InferencePtr subInference = binaryClassifierModel->cloneAndCast<BinaryClassificationInference>();
+      InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>();
       subInference->setName(classes->getElementName(i));
       setSubInference(i, subInference);
     }
@@ -86,24 +86,6 @@ private:
 
   virtual void save(OutputStream& ostr) const
     {VectorParallelInference::save(ostr); lbcpp::write(ostr, classes->getName());}
-};
-
-class OneAgainstAllClassificationInferenceClass : public DynamicClass
-{
-public:
-  OneAgainstAllClassificationInferenceClass() : DynamicClass(T("OneAgainstAllClassificationInference"), vectorParallelInferenceClass())
-  {
-    addVariable(enumerationClass(), T("classes"));
-    addVariable(inferenceClass(), T("binaryClassifierModel"));
-  }
-
-  virtual VariableValue create() const
-    {return new OneAgainstAllClassificationInference();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(OneAgainstAllClassificationInference)
-      LBCPP_DECLARE_VARIABLE(classes);
-      LBCPP_DECLARE_VARIABLE(binaryClassifierModel);
-  LBCPP_DECLARE_VARIABLE_END();
 };
 
 }; /* namespace lbcpp */
