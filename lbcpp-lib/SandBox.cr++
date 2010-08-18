@@ -1,9 +1,0 @@
-
-
-crAlgorithm void toto(const std::vector<int>& choices)
-{
-  int i1 = 1;
-  int i2 = i1;
-  std::cout << "i2 = " << i2 << std::endl;
-}
-
