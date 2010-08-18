@@ -342,6 +342,7 @@ class DynamicClass : public Class
 {
 public:
   DynamicClass(const String& name, TypePtr baseClass = objectClass());
+  DynamicClass(const String& name, const String& baseClass);
 
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;
@@ -350,8 +351,7 @@ public:
   virtual int findStaticVariable(const String& name) const;
 
   void addVariable(TypePtr type, const String& name);
-  void addVariable(const String& typeName, const String& name)
-    {addVariable(Type::get(typeName), name);}
+  void addVariable(const String& typeName, const String& name);
 
 protected:
   CriticalSection variablesLock;

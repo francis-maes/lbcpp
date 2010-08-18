@@ -16,7 +16,7 @@
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
-extern void declareProteinClasses();
+extern void declareProteinsClasses();
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
@@ -170,14 +170,14 @@ VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinsClasses();
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->invFold(0,2);
-  ContainerPtr testProteins = proteins->fold(0, 2);
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")))->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->invFold(0, 7);
+  ContainerPtr testProteins = proteins->fold(0, 7);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();

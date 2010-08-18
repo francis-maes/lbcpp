@@ -22,7 +22,7 @@
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
-extern void declareProteinClasses();
+extern void declareProteinsClasses();
 
 struct DefaultParameters
 {
@@ -179,7 +179,7 @@ bool   DefaultParameters::forceUse            = false;
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinsClasses();
   
   enum {numFolds = 5};
   /*
@@ -284,7 +284,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("SS8")))
       inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
     if (targets[i].contains(T("SA")))
-      inference->appendInference(factory->createInferenceStep(T("solventAccesibilityAt20p")));
+      inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
     if (targets[i].contains(T("DR")))
       inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
     if (targets[i].contains(T("StAl")))

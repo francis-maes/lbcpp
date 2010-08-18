@@ -28,7 +28,7 @@ InferencePtr ProteinInferenceFactory::createTargetInference(const String& target
   if (targetName == T("secondaryStructure") || targetName == T("dsspSecondaryStructure")
         || targetName == T("structuralAlphabetSequence"))
     return createLabelSequenceInference(targetName);
-  if (targetName == T("disorderRegions") || targetName == T("solventAccesibilityAt20p"))
+  if (targetName == T("disorderRegions") || targetName == T("solventAccessibilityAt20p"))
     return createProbabilitySequenceInference(targetName);
   if (targetName.startsWith(T("contactMap")))
     return createContactMapInference(targetName);
@@ -106,7 +106,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
   res->addPerception(T("PSSM"), createPositionSpecificScoringMatrixPerception());
   res->addPerception(T("SS3"), createLabelSequencePerception(T("secondaryStructure")));
   res->addPerception(T("SS8"), createLabelSequencePerception(T("dsspSecondaryStructure")));
-  res->addPerception(T("SA20"), createProbabilitySequencePerception(T("solventAccesibilityAt20p")));
+  res->addPerception(T("SA20"), createProbabilitySequencePerception(T("solventAccessibilityAt20p")));
   res->addPerception(T("DR"), createProbabilitySequencePerception(T("disorderRegions")));
   res->addPerception(T("StAl"), createLabelSequencePerception(T("structuralAlphabetSequence")));
   return res;

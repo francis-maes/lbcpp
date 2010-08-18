@@ -399,6 +399,17 @@ DynamicClass::DynamicClass(const String& name, TypePtr baseClass)
 {
 }
 
+DynamicClass::DynamicClass(const String& name, const String& baseClass)
+  : Class(name, Class::get(baseClass))
+{
+}
+
+void DynamicClass::addVariable(const String& typeName, const String& name)
+{
+  TypePtr type = Type::parseAndGet(typeName, ErrorHandler::getInstance());
+  addVariable(type, name);
+}
+
 size_t DynamicClass::getNumStaticVariables() const
 {
   size_t n = baseType->getNumStaticVariables();
