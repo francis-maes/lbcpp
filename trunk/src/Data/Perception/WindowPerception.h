@@ -68,24 +68,6 @@ protected:
   size_t windowSize;
 };
 
-class WindowPerceptionClass : public DynamicClass
-{
-public:
-  WindowPerceptionClass() : DynamicClass(T("WindowPerception"), decoratorPerceptionClass())
-  {
-    addVariable(typeClass(), T("elementsType"));
-    addVariable(integerType(), T("windowSize"));
-  }
-
-  virtual VariableValue create() const
-    {return new WindowPerception();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(WindowPerception)
-    LBCPP_DECLARE_VARIABLE(elementsType);
-    LBCPP_DECLARE_VARIABLE(windowSize);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PERCEPTION_WINDOW_H_

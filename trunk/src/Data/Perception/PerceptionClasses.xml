@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Perception" directory="Data/Perception">
+  <include file="lbcpp/Data/Perception.h"/>
+
+  <namespace name="lbcpp">
+
+    <class name="Perception" base="Function" abstract="yes"/>
+
+    <class name="IdentityPerception" base="Perception">
+      <constructor arguments="TypePtr type"/>
+      <variable type="Type" name="type"/>
+    </class>
+
+    <class name="FunctionBasedPerception" base="Perception">
+      <constructor arguments="FunctionPtr function"/>
+      <variable type="Function" name="function"/>
+    </class>
+    
+    <class name="CompositePerception" base="Perception" abstract="yes">
+      <variable type="Vector[Pair[String, Perception]]" name="subPerceptions"/>
+    </class>
+
+    <class name="DecoratorPerception" base="Perception" abstract="yes">
+      <variable type="Perception" name="decorated"/>
+    </class>
+    
+    <class name="PreprocessPerception" base="DecoratorPerception">
+      <variable type="Function" name="preProcessingFunction"/>
+    </class>
+    
+    <class name="FlattenPerception" base="DecoratorPerception"/>
+
+    <class name="WindowPerception" base="DecoratorPerception">
+      <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
+      <variable type="Type" name="elementsType"/>
+      <variable type="Integer" name="windowSize"/>
+    </class>
+
+    <code>
+      PerceptionPtr Perception::addPreprocessor(FunctionPtr preProcessingFunction) const
+        {return new PreprocessPerception(preProcessingFunction, refCountedPointerFromThis(this));}
+
+      PerceptionPtr Perception::flatten() const
+        {return new FlattenPerception(refCountedPointerFromThis(this));}
+    </code>
+  </namespace>
+  
+</file>

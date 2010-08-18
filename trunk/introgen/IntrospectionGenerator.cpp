@@ -11,12 +11,15 @@
 #include <vector>
 #include <iostream>
 
+static File inputFile;
+
 class CppCodeGenerator
 {
 public:
   CppCodeGenerator(XmlElement* xml, OutputStream& ostr) : xml(xml), ostr(ostr)
   {
     fileName = xml->getStringAttribute(T("name"), T("???"));
+    directoryName = xml->getStringAttribute(T("directory"), String::empty);
   }
 
   void generate()
@@ -40,6 +43,18 @@ protected:
     ostr << "/* ====== Introspection for file '" << fileName << "', generated on "
       << Time::getCurrentTime().toString(true, true, false) << " ====== */";
     writeLine(T("#include <lbcpp/Data/Variable.h>"));
+
+    OwnedArray<File> headerFiles;
+    File directory = inputFile.getParentDirectory();
+    directory.findChildFiles(headerFiles, File::findFiles, false, T("*.h"));
+    for (int i = 0; i < headerFiles.size(); ++i)
+    {
+      String path = directoryName;
+      if (path.isNotEmpty())
+        path += T("/");
+      path += headerFiles[i]->getRelativePathFrom(directory).replaceCharacter('\\', '/');
+      writeLine(T("#include ") + path.quoted());
+    }
   }
 
   void generateCodeForChildren(XmlElement* xml)
@@ -53,6 +68,8 @@ protected:
         generateClassDeclaration(elt);
       else if (tag == T("namespace"))
         generateNamespaceDeclaration(elt);
+      else if (tag == T("code"))
+        generateCode(elt);
       else
         std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
     }
@@ -87,22 +104,18 @@ protected:
     // constructor
     std::vector<XmlElement* > variables;
     openScope(className + T("Class() : DynamicClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
-    for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
-      if (elt->getTagName() == T("variable"))
-      {
-        generateVariableDeclarationInConstructor(className, elt);
-        variables.push_back(elt);
-      }
+    forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
+    {
+      generateVariableDeclarationInConstructor(className, elt);
+      variables.push_back(elt);
+    }
     closeScope();
     newLine();
 
     // create() function
     if (!isAbstract)
-    {
-      writeLine(T("virtual VariableValue create() const"));
-      writeLine(T("{return new ") + className + T("();}"), 1);
-      newLine();
-    }
+      writeShortFunction(T("virtual VariableValue create() const"),
+        T("return new ") + className + T("();"));
 
     // getStaticVariableReference() function
     if (variables.size())
@@ -137,15 +150,35 @@ protected:
 
     currentScopes.pop_back();
 
-    if (!xml->getBoolAttribute(T("private"), false))
+    String classNameWithFirstLowerCase = className;
+    if (classNameWithFirstLowerCase[0] >= 'A' && classNameWithFirstLowerCase[0] <= 'Z')
+      classNameWithFirstLowerCase[0] += 'a' - 'A';
+
+    // class declarator
+    writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
+      T("static TypeCache cache(T(") + className.quoted() + T(")); return cache();"));
+
+    // class constructors
+    forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
     {
-      String declaratorName = className;
-      if (declaratorName[0] >= 'A' && declaratorName[0] <= 'Z')
-        declaratorName[0] += 'a' - 'A';
-      declaratorName += T("Class");
-      writeLine(T("ClassPtr ") + declaratorName + T("()"));
-      writeLine(T("{static TypeCache cache(T(") + className.quoted() + T(")); return cache();}"), 1);
-      newLine();
+      String arguments = elt->getStringAttribute(T("arguments"), String::empty);
+
+      StringArray tokens;
+      tokens.addTokens(arguments, T(","), NULL);
+      String argNames;
+      for (int i = 0; i < tokens.size(); ++i)
+      {
+        String argName = tokens[i];
+        int n = argName.lastIndexOfChar(' ');
+        if (n >= 0)
+          argName = argName.substring(n + 1);
+        if (argNames.isNotEmpty())
+          argNames += T(", ");
+        argNames += argName;
+      }
+
+      writeShortFunction(baseClassName + T("Ptr lbcpp::") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
+                         T("return new ") + className + T("(") + argNames + T(");"));
     }
   }
 
@@ -162,6 +195,28 @@ protected:
     closeScope(T("; /* namespace ") + name + T(" */"));
   }
 
+  void generateCode(XmlElement* elt)
+  {
+    StringArray lines;
+    lines.addTokens(elt->getAllSubText(), T("\n"), NULL);
+    int minimumSpaces = 0x7FFFFFFF;
+    for (int i = 0; i < lines.size(); ++i)
+    {
+      String line = lines[i];
+      int numSpaces = line.length() - line.trimStart().length();
+      if (numSpaces && line.substring(numSpaces).trim().isNotEmpty())
+        minimumSpaces = jmin(numSpaces, minimumSpaces);
+    }
+
+    int spaces = minimumSpaces == 0x7FFFFFFF ? 0 : minimumSpaces;
+    for (int i = 0; i < lines.size(); ++i)
+    {
+      String line = lines[i];
+      int numSpaces = line.length() - line.trimStart().length();
+      writeLine(lines[i].substring(jmin(numSpaces, spaces)));
+    }
+  }
+
   void generateFooter()
   {
     openScope(T("void declare") + fileName + T("Classes()"));
@@ -174,6 +229,7 @@ private:
   XmlElement* xml;
   OutputStream& ostr;
   String fileName;
+  String directoryName;
   int indentation;
   
   std::vector<String> currentScopes;
@@ -217,6 +273,13 @@ private:
     --indentation;
     newLine();
     ostr << "}" << closingText;
+  }
+
+  void writeShortFunction(const String& declaration, const String& oneLineBody)
+  {
+    writeLine(declaration);
+    writeLine(T("{") + oneLineBody + T("}"), 1);
+    newLine();
   }
 };
 
@@ -312,9 +375,9 @@ int main(int argc, char* argv[])
   output.deleteFile();
   OutputStream* ostr = File(argv[2]).createOutputStream();
 
-  File input(argv[1]);
+  inputFile = File(argv[1]);
   
-  XmlDocument xmldoc(input);
+  XmlDocument xmldoc(inputFile);
   XmlElement* iroot = xmldoc.getDocumentElement();
   String error = xmldoc.getLastParseError();
   if (error != String::empty)

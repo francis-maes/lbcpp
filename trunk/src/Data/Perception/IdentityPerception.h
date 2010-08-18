@@ -53,22 +53,6 @@ protected:
   TypePtr type;
 };
 
-class IdentityPerceptionClass : public DynamicClass
-{
-public:
-  IdentityPerceptionClass() : DynamicClass(T("IdentityPerception"), perceptionClass())
-  {
-    addVariable(typeClass(), T("type"));
-  }
-
-  virtual VariableValue create() const
-    {return new IdentityPerception();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(IdentityPerception)
-    LBCPP_DECLARE_VARIABLE(type);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PERCEPTION_IDENTITY_H_

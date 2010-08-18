@@ -39,22 +39,6 @@ protected:
   FunctionPtr function;
 };
 
-class FunctionBasedPerceptionClass : public DynamicClass
-{
-public:
-  FunctionBasedPerceptionClass() : DynamicClass(T("FunctionBasedPerception"), perceptionClass())
-  {
-    addVariable(functionClass(), T("function"));
-  }
-
-  virtual VariableValue create() const
-    {return new FunctionBasedPerception();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(FunctionBasedPerception)
-    LBCPP_DECLARE_VARIABLE(function);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PERCEPTION_FUNCTION_BASED_H_
