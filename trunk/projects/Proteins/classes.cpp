@@ -16,9 +16,6 @@ extern void declareCartesianPositionVectorClasses();
 // data
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
-extern void declareAtomClasses();
-extern void declareResidueClasses();
-extern void declareTertiaryStructureClasses();
 extern void declareProteinClass(); // by hand (old)
 extern void declareProteinClasses(); // generated (new)
 
@@ -39,9 +36,6 @@ void declareProteinsClasses()
   // data
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
-  declareAtomClasses();
-  declareResidueClasses();
-  declareTertiaryStructureClasses();
   declareProteinClass();
   declareProteinClasses(); // generated
 

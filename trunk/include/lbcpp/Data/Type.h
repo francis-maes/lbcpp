@@ -452,10 +452,6 @@ public:
 #define LBCPP_DECLARE_VARIABLE(Var) \
   if (index == 0) return __this__->Var; --index
 
-#define LBCPP_DECLARE_VARIABLE_CAST(Var, CastType) \
-  if (index == 0) return (CastType&)(__this__->Var); --index
-
-
 #define LBCPP_DECLARE_VARIABLE_END() \
   jassert(false); return VariableReference(); }
 

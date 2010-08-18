@@ -83,13 +83,13 @@ protected:
     writeLine(T("public:"), -1);
 
     // constructor
-    std::vector<String> variables;
+    std::vector<XmlElement* > variables;
     openScope(className + T("Class() : DynamicClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
     for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
       if (elt->getTagName() == T("variable"))
       {
         generateVariableDeclarationInConstructor(elt);
-        variables.push_back(elt->getStringAttribute(T("name")));
+        variables.push_back(elt);
       }
     closeScope();
     newLine();
@@ -113,7 +113,18 @@ protected:
         newLine();
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
-            writeLine(T("case ") + String((int)i) + T(": return __this__->") + variables[i] + T(";"), -1);
+          {
+            String name = variables[i]->getStringAttribute(T("name"), T("???"));
+            String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
+            String code = T("case ") + String((int)i) + T(": return ");
+            if (cast.isNotEmpty())
+              code += T("(") + cast + T("& )(");
+            code += T("__this__->") + name;
+            if (cast.isNotEmpty())
+              code += T(")");
+            code += T(";");
+            writeLine(code, -1);
+          }
           writeLine(T("default: jassert(false); return VariableReference();"), -1);
         closeScope();
       closeScope();
@@ -123,6 +134,17 @@ protected:
     newLine();
 
     currentScopes.pop_back();
+
+    if (xml->getBoolAttribute(T("generateClassDeclarator"), false))
+    {
+      String declaratorName = className;
+      if (declaratorName[0] >= 'A' && declaratorName[0] <= 'Z')
+        declaratorName[0] += 'a' - 'A';
+      declaratorName += T("Class");
+      writeLine(T("ClassPtr ") + declaratorName + T("()"));
+      writeLine(T("{static TypeCache cache(T(") + className.quoted() + T(")); return cache();}"), 1);
+      newLine();
+    }
   }
 
   void generateNamespaceDeclaration(XmlElement* xml)

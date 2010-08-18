@@ -1,11 +1,10 @@
-
 /*-----------------------------------------.---------------------------------.
- | Filename: Consumer.cpp                   | Consumer Classes                |
- | Author  : Francis Maes                   |                                 |
- | Started : 22/03/2010 15:52               |                                 |
- `------------------------------------------/                                 |
-                                |                                             |
-                                `--------------------------------------------*/
+| Filename: Consumer.cpp                   | Consumer Classes                |
+| Author  : Francis Maes                   |                                 |
+| Started : 22/03/2010 15:52               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #include <lbcpp/Data/Consumer.h>
 #include <lbcpp/Data/Stream.h>
@@ -14,8 +13,8 @@
 using namespace lbcpp;
 
 /*
- ** Consumer
- */
+** Consumer
+*/
 void Consumer::consumeStream(StreamPtr stream, size_t maximumCount)
 {
   for (size_t i = 0; !maximumCount || i < maximumCount; ++i)
@@ -35,8 +34,8 @@ void Consumer::consumeContainer(ContainerPtr container)
 }
 
 /*
- ** TextPrinter
- */
+** TextPrinter
+*/
 TextPrinter::TextPrinter(OutputStream* newOutputStream)
   : ostr(newOutputStream) {}
 
