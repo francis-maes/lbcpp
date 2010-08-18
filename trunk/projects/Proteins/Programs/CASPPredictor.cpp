@@ -7,10 +7,10 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#if 0 // FIXME
 
 #include "../Data/Formats/CASPFileGenerator.h"
 #include "../Data/Formats/PSSMFileParser.h"
+#include "Inference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
@@ -57,11 +57,11 @@ void addDefaultPredictions(ProteinObjectPtr protein)
 }
 #endif // 0
 
-void displayObjectIfExists(ProteinObjectPtr protein, const String& objectName)
+
+void displayVectorIfExists(String friendlyName, VectorPtr vector)
 {
-  ObjectPtr object = protein->getObject(objectName);
-  if (object)
-    std::cout << object->getName() << ": " << object->toString() << std::endl;
+  if (vector)
+    std::cout << friendlyName << ": " << vector->toString() << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   String outputBaseName = fastaFile.getFileNameWithoutExtension();
   
   std::cout << "FASTA File: " << fastaFile.getFullPathName() << " PSSM File: " << pssmFile.getFullPathName() << std::endl;
-  ProteinObjectPtr protein = ProteinObject::createFromFASTA(fastaFile);
+  ProteinPtr protein = Protein::createFromFASTA(fastaFile);
   if (!protein)
   {
     std::cerr << "Could not load FASTA file" << std::endl;
@@ -99,21 +99,21 @@ int main(int argc, char* argv[])
   }
 
   std::cout << "Target Name: " << protein->getName() << std::endl;
-  LabelSequencePtr aminoAcidSequence = protein->getAminoAcidSequence();
-  std::cout << "Amino Acid Sequence: " << aminoAcidSequence->toString() << std::endl;
+  VectorPtr primaryStructure = protein->getPrimaryStructure();
+  std::cout << "Amino Acid Sequence: " << primaryStructure->toString() << std::endl;
 
   // FIXME
-  ScoreVectorSequencePtr pssm;// = (new PSSMFileParser(pssmFile, aminoAcidSequence))->next().getObjectAndCast<ScoreVectorSequence>();
-  if (!pssm || pssm->size() != aminoAcidSequence->size())
+  VectorPtr pssm;// = (new PSSMFileParser(pssmFile, aminoAcidSequence))->next().getObjectAndCast<ScoreVectorSequence>();
+  if (!pssm || pssm->size() != primaryStructure->size())
   {
     std::cerr << "Could not load PSSM file" << std::endl;
     return 1;
   }
-  protein->setObject(pssm);
+  protein->setPositionSpecificScoringMatrix(pssm);
   //  std::cout << "Loaded pssm: " << pssm->toString() << std::endl;
 
   std::cout << "Model file: " << modelFile.getFullPathName() << std::endl;
-  ProteinInferencePtr inference = Inference::createFromFileAndCast<ProteinInference>(modelFile);
+  ProteinSequentialInferencePtr inference = Inference::createFromFileAndCast<ProteinSequentialInference>(modelFile);
   if (!inference)
   {
     std::cerr << "Could not load model" << std::endl;
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
   std::cout << "Making predictions ..." << std::endl;
 
   Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode).dynamicCast<ProteinObject>();
+  protein = singleThreadedInferenceContext()->runInference(inference, protein, ObjectPtr(), returnCode).dynamicCast<Protein>();
   if (returnCode != Inference::finishedReturnCode)
   {
     std::cerr << "Invalid return code in inference" << std::endl;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
     std::cerr << "Could not complete inference" << std::endl;
     return 1;
   }
-  protein->computeMissingFields();
+  protein->computeMissingVariables();
 
   //addDefaultPredictions(protein);
   //std::cout << std::endl;
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
   String method = T("The model used to perform these predictions is a multi-task sequence labeling model. Here, only two tasks are taken into account: solvent accesibility prediction and disorder region prediction. The model used here is SA_REG_300 with the six first passes (3 passes of SA and 3 passes of DR)");
 
   int numFilesGenerated = 0;
-  if (protein->getResidueResidueContactMatrix8Cb())
+  if (protein->getContactMap())
   {
     File rrFile = outputDirectory.getChildFile(outputBaseName + T(".rr"));
     std::cout << "Write residue-residue distance file " << rrFile.getFullPathName() << std::endl;
@@ -152,12 +152,12 @@ int main(int argc, char* argv[])
     ++numFilesGenerated;
   }
 
-  displayObjectIfExists(protein, T("SecondaryStructureSequence"));
-  displayObjectIfExists(protein, T("DSSPSecondaryStructureSequence"));
-  displayObjectIfExists(protein, T("SolventAccessibilityThreshold20"));
-  displayObjectIfExists(protein, T("DisorderProbabilitySequence"));
+  displayVectorIfExists(T("SecondaryStructure"), protein->getSecondaryStructure());
+  displayVectorIfExists(T("DSSPSecondaryStructure"), protein->getDSSPSecondaryStructure());
+  displayVectorIfExists(T("SolventAccessibilityThreshold20"), protein->getSolventAccessibilityAt20p());
+  displayVectorIfExists(T("DisorderProbability"), protein->getDisorderRegions());
   
-  if (protein->getDisorderProbabilitySequence())
+  if (protein->getDisorderRegions())
   {
     File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
     std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
@@ -182,6 +182,3 @@ int main(int argc, char* argv[])
   std::cout << "Generated " << numFilesGenerated << " file(s)" << std::endl;
   return 0;
 }
-
-#endif // 0
-int main() {return 1;}
