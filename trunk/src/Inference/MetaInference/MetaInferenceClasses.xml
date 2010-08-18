@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="MetaInference" directory="Inference/MetaInference">
+
+  <namespace name="lbcpp">
+
+    <class name="DummyInferenceLearner" base="Inference">
+      <constructor/>
+    </class>
+    
+    <class name="StaticSequentialInferenceLearner" base="Inference">
+      <constructor/>
+    </class>
+
+    <class name="StaticParallelInferenceLearner" base="ParallelInference">
+      <constructor/>
+    </class>
+    
+    <class name="ParallelVoteInferenceLearner" base="StaticParallelInferenceLearner">
+      <constructor returnType="ParallelInference"/>
+    </class>
+    
+    <class name="SharedParallelInferenceLearner" base="DecoratorInference">
+      <constructor arguments="bool filterUnsupervisedExamples"/>
+    </class>
+    
+    <class name="DecoratorInferenceLearner" base="DecoratorInference">
+      <constructor/>
+    </class>
+    
+    <class name="PostProcessInferenceLearner" base="DecoratorInferenceLearner">
+      <constructor returnType="DecoratorInference"/>
+    </class>
+    
+    <class name="OnlineToBatchInferenceLearner" base="SequentialInference">
+      <constructor/>
+    </class>
+
+    <class name="RunOnSupervisedExamplesInference" base="ParallelInference">
+      <constructor arguments="InferencePtr inference"/>
+    </class>
+  
+    <class name="RunSequentialInferenceStepOnExamples" base="ParallelInference" abstract="yes"/>
+
+    <class name="CallbackBasedDecoratorInference" base="StaticDecoratorInference">
+      <constructor arguments="const String&amp; name, InferencePtr decoratedInference, InferenceCallbackPtr callback"/>
+    </class>
+
+  </namespace>
+  
+</file>

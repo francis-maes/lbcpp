@@ -53,6 +53,8 @@ public:
   }
   
 protected:
+  friend class TransferFunctionDecoratorInferenceClass;
+
   ScalarFunctionPtr transferFunction;
 
   virtual bool load(InputStream& istr)

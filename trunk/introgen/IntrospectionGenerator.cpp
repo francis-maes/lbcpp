@@ -162,6 +162,9 @@ protected:
     forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
     {
       String arguments = elt->getStringAttribute(T("arguments"), String::empty);
+      String returnType = elt->getStringAttribute(T("returnType"), String::empty);
+      if (returnType.isEmpty())
+        returnType = baseClassName;
 
       StringArray tokens;
       tokens.addTokens(arguments, T(","), NULL);
@@ -177,7 +180,7 @@ protected:
         argNames += argName;
       }
 
-      writeShortFunction(baseClassName + T("Ptr lbcpp::") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
+      writeShortFunction(returnType + T("Ptr lbcpp::") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
                          T("return new ") + className + T("(") + argNames + T(");"));
     }
   }

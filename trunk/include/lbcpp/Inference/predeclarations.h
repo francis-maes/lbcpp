@@ -47,6 +47,9 @@ typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 class DecoratorInference;
 typedef ReferenceCountedObjectPtr<DecoratorInference> DecoratorInferencePtr;
 
+class StaticDecoratorInference;
+typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
+
 /*
 ** InferenceContext
 */

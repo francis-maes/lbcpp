@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/ParallelInference.h>
+#include <lbcpp/Inference/DecoratorInference.h>
 using namespace lbcpp;
 
 /*

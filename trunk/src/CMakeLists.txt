@@ -189,6 +189,10 @@ SET(LBCPP_INFERENCE_HEADERS
 )
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClasses.xml NumericalInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
@@ -209,6 +213,8 @@ SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
   Inference/NumericalInference/BinaryClassificationInference.h
   Inference/NumericalInference/TransferFunctionDecoratorInference.h
   Inference/NumericalInference/RegressionInference.h
+  Inference/NumericalInference/NumericalInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalInferenceClasses.cpp  
 )
 
 SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
@@ -217,12 +223,16 @@ SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
   Inference/DecisionTreeInference/ExtraTreeInference.h
   Inference/DecisionTreeInference/ExtraTreeInferenceLearner.h
   Inference/DecisionTreeInference/ExtraTreeInferenceLearner.cpp
+  Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
 )
 
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
   Inference/ReductionInference/SharedParallelVectorInference.h
+  Inference/ReductionInference/ReductionInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ReductionInferenceClasses.cpp
 )
 
 SET(LBCPP_INFERENCE_META_SOURCES
@@ -233,6 +243,8 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/SharedParallelInferenceLearner.h
   Inference/MetaInference/DecoratorInferenceLearner.h
   Inference/MetaInference/OnlineToBatchInferenceLearner.h
+  Inference/MetaInference/MetaInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceClasses.cpp
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES

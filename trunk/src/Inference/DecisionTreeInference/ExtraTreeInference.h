@@ -43,6 +43,8 @@ public:
   }
 
 protected:
+  friend class BinaryDecisionTreeInferenceClass;
+
   BinaryDecisionTreePtr tree;
   TypePtr inputType;
 

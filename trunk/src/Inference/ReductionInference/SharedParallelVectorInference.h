@@ -12,6 +12,7 @@
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Data/Perception.h>
+# include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp
 {
@@ -78,25 +79,6 @@ protected:
 
   FunctionPtr sizeFunction;
   PerceptionPtr perception;
-};
-
-class SharedParallelVectorInferenceClass : public DynamicClass
-{
-public:
-  SharedParallelVectorInferenceClass()
-    : DynamicClass(T("SharedParallelVectorInference"), sharedParallelInferenceClass())
-  {
-    addVariable(functionClass(), T("sizeFunction"));
-    addVariable(perceptionClass(), T("perception"));
-  }
-  
-  LBCPP_DECLARE_VARIABLE_BEGIN(SharedParallelVectorInference)
-    LBCPP_DECLARE_VARIABLE(sizeFunction);
-    LBCPP_DECLARE_VARIABLE(perception);
-  LBCPP_DECLARE_VARIABLE_END()
-
-  virtual VariableValue create() const
-    {return new SharedParallelVectorInference();}
 };
 
 }; /* namespace lbcpp */

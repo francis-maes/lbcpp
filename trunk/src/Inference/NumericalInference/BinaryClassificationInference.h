@@ -10,6 +10,8 @@
 # define LBCPP_INFERENCE_BINARY_CLASSIFICATION_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
+# include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
 namespace lbcpp
 {
@@ -85,7 +87,7 @@ class BinaryLinearSVMInference : public BinaryClassificationInference
 {
 public:
   BinaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearScalarInference(name))
+    : BinaryClassificationInference(name, linearInference(name))
     {decorated->setOnlineLearner(learner);}
   BinaryLinearSVMInference(InferencePtr scoreInference)
     : BinaryClassificationInference(scoreInference->getName(), scoreInference)
@@ -100,7 +102,7 @@ class BinaryLogisticRegressionInference : public BinaryClassificationInference
 {
 public:
   BinaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearScalarInference(name))
+    : BinaryClassificationInference(name, linearInference(name))
     {decorated->setOnlineLearner(learner);}
   BinaryLogisticRegressionInference() {}
 

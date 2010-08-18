@@ -52,19 +52,6 @@ protected:
   DenseVectorPtr parameters;
 };
 
-class NumericalInferenceClass : public DynamicClass
-{
-public:
-  NumericalInferenceClass() : DynamicClass(T("NumericalInference"), inferenceClass())
-  {
-    addVariable(Class::get(T("DenseVector")), T("parameters"));
-  }
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(NumericalInference)
-    LBCPP_DECLARE_VARIABLE(parameters);
-  LBCPP_DECLARE_VARIABLE_END();
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_NUMERICAL_H_

@@ -39,6 +39,33 @@
       <variable type="Vector[Inference]" name="subInferences"/>
     </class>
 
+    <code> <!-- FIXME: ranger -->
+      class PostProcessInference : public StaticDecoratorInference
+      {
+      public:
+      // postProcessingFunction: from (object,any) pair to object
+      PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
+        : StaticDecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
+      postProcessingFunction(postProcessingFunction)
+        {setBatchLearner(postProcessInferenceLearner());}
+
+      PostProcessInference() {}
+
+      virtual TypePtr getOutputType(TypePtr inputType) const
+        {return postProcessingFunction->getOutputType(pairType(inputType, decorated->getOutputType(inputType)));}
+
+      virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode&amp; returnCode)
+        {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
+
+      protected:
+        FunctionPtr postProcessingFunction;
+      };
+    </code>
+
+    <class name="PostProcessInference" base="DecoratorInference">
+      <constructor arguments="InferencePtr inference, FunctionPtr postProcessingFunction"/>
+    </class>
+    
   </namespace>
   
 </file>
