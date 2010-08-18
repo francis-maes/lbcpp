@@ -63,7 +63,8 @@ public:
     for (size_t i = 0; i < selectedVariables.size(); ++i)
       if (selectedVariables[i].getObject() != object) // it is not possible to select the root effect
         variables.push_back(selectedVariables[i]);
-    content->setObject(createMultiSelectionVariable(variables).getObject());
+    Variable multiSelection = createMultiSelectionVariable(variables);
+    content->setObject(multiSelection ? multiSelection.getObject() : ObjectPtr());
   }
 
   enum {selectorPreferedWidth = 200};

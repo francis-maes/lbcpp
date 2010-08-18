@@ -175,7 +175,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("L50DB\\xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("SmallPDB\\xml")))->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 7);
   ContainerPtr testProteins = proteins->fold(0, 7);
   std::cout << trainProteins->size() << " training proteins, " << testProteins->size() << " testing proteins" << std::endl;
@@ -216,6 +216,7 @@ int main(int argc, char** argv)
   }
 
   Variable v = Variable::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  v.saveToFile(workingDirectory.getChildFile(T("NewStyleInference2.xml")));
   {
     inference = v.getObjectAndCast<Inference>();
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
