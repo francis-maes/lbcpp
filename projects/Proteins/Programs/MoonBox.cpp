@@ -24,7 +24,16 @@ using namespace lbcpp;
 extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
 
-struct DefaultParameters;
+struct DefaultParameters
+{
+  static bool   useExtraTrees;
+  static double learningRate;
+  static size_t learningRateUpdate;
+  static bool   useConstantLearning; // TODO
+  static double regularizer;
+  static size_t stoppingIteration;
+  static bool   forceUse; // TODO
+};
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
@@ -66,9 +75,9 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/*logicalOr(
-                                                                                maxIterationsStoppingCriterion(100),  
-                                                                                maxIterationsWithoutImprovementStoppingCriterion(1));*/
+    StoppingCriterionPtr stoppingCriterion = logicalOr(
+                                                       maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),  
+                                                       maxIterationsWithoutImprovementStoppingCriterion(1));
     
     if (targetName.startsWith(T("contactMap")))
       return gradientDescentInferenceOnlineLearner(
@@ -79,8 +88,10 @@ protected:
     else
       return gradientDescentInferenceOnlineLearner(
                                                    InferenceOnlineLearner::never,                                                 // randomization
-                                                   InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
-                                                   InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+                                                   InferenceOnlineLearner::perStep, invLinearIterationFunction(
+                                                                                                               DefaultParameters::learningRate, 
+                                                                                                               DefaultParameters::learningRateUpdate), true, // learning steps
+                                                   InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(DefaultParameters::regularizer),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
 };
@@ -157,17 +168,6 @@ private:
  | Main Function
  -----------------------------------------------------------------------------*/
 
-struct DefaultParameters
-{
-  static bool   useExtraTrees;
-  static double learningRate;
-  static size_t learningRateUpdate;
-  static bool   useConstantLearning;
-  static double regularizer;
-  static size_t stoppingIteration;
-  static bool   forceUse;
-};
-
 bool   DefaultParameters::useExtraTrees       = false;
 double DefaultParameters::learningRate        = 1.;
 size_t DefaultParameters::learningRateUpdate  = 10000;
@@ -175,7 +175,6 @@ bool   DefaultParameters::useConstantLearning = false;
 double DefaultParameters::regularizer         = 0.;
 size_t DefaultParameters::stoppingIteration   = 20;
 bool   DefaultParameters::forceUse            = false;
-
 
 int main(int argc, char** argv)
 {
