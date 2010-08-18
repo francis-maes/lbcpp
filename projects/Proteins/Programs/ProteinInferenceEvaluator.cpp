@@ -7,50 +7,34 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#if 0
-#include "Protein/Evaluation/ProteinEvaluationCallback.h"
-#include "Protein/Inference/ProteinInference.h"
+
+#include "Inference/ProteinInference.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-ObjectContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0)
+ContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0)
 {
   if (fileOrDirectory.isDirectory())
   {
-    ObjectContainerPtr res = directoryObjectStream(fileOrDirectory, T("*.protein"))
+    ContainerPtr res = directoryFileStream(fileOrDirectory, T("*.xml"))
       ->load(maxCount)
       ->randomize()
-      ->apply(new ProteinToInputOutputPairFunction());
-
-    ObjectContainerPtr resPair = directoryObjectStream(fileOrDirectory, T("*.proteinPair"))
-      ->load(maxCount - res->size())
-      ->randomize()
-      ->apply(new ComputeMissingFieldsOfProteinPairFunction());
-
-    res = append(res, resPair);
+      ->apply(proteinToInputOutputPairFunction());
 
     return res;
   }
 
-  if (fileOrDirectory.getFileExtension() == T(".protein")) 
+  if (fileOrDirectory.getFileExtension() == T(".xml")) 
   {
-    ObjectContainerPtr res = directoryObjectStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
+    ContainerPtr res = directoryFileStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
     ->load()
-    ->apply(new ProteinToInputOutputPairFunction());
+    ->apply(proteinToInputOutputPairFunction());
     if (res->size())
       return res;
   }
-  
-  if (fileOrDirectory.getFileExtension() == T(".proteinPair"))
-  {
-    ObjectContainerPtr res = directoryObjectStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
-    ->load()
-    ->apply(new ComputeMissingFieldsOfProteinPairFunction());
-    if (res->size())
-      return res;
-  }
-  return ObjectContainerPtr();
+
+  return ContainerPtr();
 }
 
 InferencePtr addBreakToInference(InferencePtr inference, InferencePtr lastStepBeforeBreak)
@@ -92,24 +76,22 @@ public:
       File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
 
-      ProteinObjectPtr inputProtein = input.dynamicCast<ProteinObject>()->clone();
+      ProteinPtr inputProtein = input.getObjectAndCast<Protein>()->clone();
       jassert(inputProtein);
 
-      ProteinObjectPtr outputProtein = object.dynamicCast<ProteinObject>();
+      ProteinPtr outputProtein = output.getObjectAndCast<Protein>();
       jassert(outputProtein);
       
+      for (size_t i = 0; i < outputProtein->getNumVariables(); ++i)
+        inputProtein->setVariable(i, outputProtein->getVariable(i));
 
-      std::vector<String> keys = outputProtein->getKeys();
-      for (size_t i = 0; i < keys.size(); ++i)
-        inputProtein->setObject(outputProtein->getObject(keys[i]));
-
-      inputProtein->computeMissingFields();
+      inputProtein->computeMissingVariables();
       
-      ProteinObjectPtr supervisionProtein = supervision.dynamicCast<ProteinObject>();
+      ProteinPtr supervisionProtein = supervision.dynamicCast<Protein>();
       jassert(supervisionProtein);
-      supervisionProtein->computeMissingFields();
+      supervisionProtein->computeMissingVariables();
 
-      ObjectPairPtr(new ObjectPair(inputProtein, supervision))->saveToFile(f);
+      Variable::pair(inputProtein, supervision).saveToFile(f);
     }
   }
 
@@ -170,14 +152,14 @@ int main(int argc, char** argv)
   }
 
   std::cout << "Loading data... " << std::flush;
-  ObjectContainerPtr proteins = loadProteins(proteinsFileOrDirectory);
+  ContainerPtr proteins = loadProteins(proteinsFileOrDirectory);
   if (!proteins)
     return 2;
   std::cout << proteins->size() << " protein(s)." << std::endl;
 
   std::cout << "Loading inference... " << std::flush;
-  ProteinInferencePtr inference = new ProteinInference();
- jassert(false); // FIXME
+  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  jassert(false); // FIXME
   //inference->loadSubInferencesFromDirectory(modelDirectory);
   if (!inference->getNumSubInferences())
   {
@@ -187,8 +169,9 @@ int main(int argc, char** argv)
   std::cout << inference->getNumSubInferences() << " step(s)." << std::endl;
 
   InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
-  ProteinEvaluationCallbackPtr evaluationCallback = new ProteinEvaluationCallback();
-  inferenceContext->appendCallback(evaluationCallback);
+  // FIXME
+  //ProteinEvaluationCallbackPtr evaluationCallback = new ProteinEvaluationCallback();
+  //inferenceContext->appendCallback(evaluationCallback);
   inferenceContext->appendCallback(new PrintDotForEachExampleInferenceCallback());
   InferenceResultCachePtr cache = new InferenceResultCache();
 
@@ -202,7 +185,8 @@ int main(int argc, char** argv)
 
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
     inferenceContext->runInference(runOnSupervisedExamplesInference(inference), proteins, ObjectPtr(), returnCode);
-    std::cout << evaluationCallback->toString() << std::endl << std::endl;
+    // FIXME
+    //std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else if (mode == T("StepByStep"))
   {
@@ -224,7 +208,8 @@ int main(int argc, char** argv)
       
       Inference::ReturnCode returnCode = Inference::finishedReturnCode;
       inferenceContext->runInference(runOnSupervisedExamplesInference(decoratedInference), proteins, ObjectPtr(), returnCode);
-      std::cout << evaluationCallback->toString() << std::endl << std::endl;
+      // FIXME
+      //std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }
   }
   else
@@ -234,6 +219,3 @@ int main(int argc, char** argv)
   }
   return 0;
 }
-
-#endif // 0
-int main() {return 1;}
