@@ -251,7 +251,7 @@ private:
 };
 
 extern void declareLBCppCoreClasses();
-extern void declareProteinsClasses();
+extern void declareProteinLibrary();
 
 class ExplorerApplication : public JUCEApplication
 {
@@ -262,7 +262,7 @@ public:
   {    
     ErrorHandler::setInstance(explorerErrorHandler);
     lbcpp::initialize();
-    declareProteinsClasses();
+    declareProteinLibrary();
 
     LBCPP_DECLARE_CLASS(FileObject, Object);
 

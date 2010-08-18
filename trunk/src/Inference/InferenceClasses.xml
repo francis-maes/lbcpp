@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Inference">
+  <include file="lbcpp/Inference/Inference.h"/>
+  <include file="lbcpp/Inference/DecoratorInference.h"/>
+  <include file="lbcpp/Inference/SequentialInference.h"/>
+  <include file="lbcpp/Inference/ParallelInference.h"/>
+
+  <namespace name="lbcpp">
+
+    <class name="Inference" base="NameableObject" abstract="yes">
+      <variable type="InferenceOnlineLearner" name="onlineLearner"/>
+      <variable type="Inference" name="batchLearner"/>
+    </class>
+
+    <!-- Decorator Inference -->
+    <class name="DecoratorInference" base="Inference" abstract="yes"/>
+    <class name="StaticDecoratorInference" base="DecoratorInference" abstract="yes">
+      <variable type="Inference" name="decorated"/>
+    </class>
+
+    <!-- Parallel Inference -->
+    <class name="ParallelInference" base="Inference" abstract="yes"/>
+    <class name="StaticParallelInference" base="ParallelInference" abstract="yes"/>
+
+    <class name="SharedParallelInference" base="StaticParallelInference" abstract="yes">
+      <variable type="Inference" name="subInference"/>
+    </class>
+
+    <class name="VectorParallelInference" base="StaticParallelInference" abstract="yes">
+      <variable type="Vector[Inference]" name="subInferences"/>
+    </class>
+    
+    <!-- Sequential Inference -->
+    <class name="SequentialInference" base="Inference" abstract="yes"/>
+    <class name="StaticSequentialInference" base="SequentialInference" abstract="yes"/>
+    
+    <class name="VectorSequentialInference" base="StaticSequentialInference">
+      <variable type="Vector[Inference]" name="subInferences"/>
+    </class>
+
+  </namespace>
+  
+</file>

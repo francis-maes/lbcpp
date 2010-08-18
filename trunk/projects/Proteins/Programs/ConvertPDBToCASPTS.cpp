@@ -11,12 +11,12 @@
 #include "../Data/Formats/CASPFileGenerator.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinLibrary();
 
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinLibrary();
   
   if (argc < 2)
   {

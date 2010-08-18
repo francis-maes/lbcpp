@@ -22,7 +22,7 @@
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
-extern void declareProteinsClasses();
+extern void declareProteinLibrary();
 
 struct DefaultParameters
 {
@@ -179,7 +179,7 @@ bool   DefaultParameters::forceUse            = false;
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinsClasses();
+  declareProteinLibrary();
   
   enum {numFolds = 5};
   /*

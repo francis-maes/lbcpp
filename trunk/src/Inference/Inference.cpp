@@ -10,29 +10,6 @@
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
-/*
-** InferenceClass
-*/
-namespace lbcpp 
-{
-
-class InferenceClass : public DynamicClass
-{
-public:
-  InferenceClass() : DynamicClass(T("Inference"), nameableObjectClass())
-  {
-    addVariable(inferenceOnlineLearnerClass(), T("onlineLearner"));
-    addVariable(TypePtr(this), T("batchLearner"));
-  }
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(Inference)
-    LBCPP_DECLARE_VARIABLE(onlineLearner);
-    LBCPP_DECLARE_VARIABLE(batchLearner);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
-}; /* namespace lbcpp */
-
 void Inference::clone(ObjectPtr target) const
 {
   NameableObject::clone(target);
@@ -162,25 +139,18 @@ InferencePtr lbcpp::callbackBasedDecoratorInference(const String& name, Inferenc
   {return new CallbackBasedDecoratorInference(name, decoratedInference, callback);}
 
 //
-
-ClassPtr lbcpp::inferenceClass()
-  {static TypeCache cache(T("Inference")); return cache();}
+extern void declareInferenceClasses(); // generated
 
 extern void declareDecoratorInferenceClasses();
-extern void declareSequentialInferenceClasses();
-extern void declareParallelInferenceClasses();
 
-void declareInferenceClasses()
+void declareInferenceLibrary()
 {
-  
+  declareInferenceClasses(); // generated
 
   /*
   ** Base classes
   */
-  Type::declare(new InferenceClass());
-    declareDecoratorInferenceClasses();
-    declareParallelInferenceClasses();
-    declareSequentialInferenceClasses();
+  declareDecoratorInferenceClasses();
     
   
   /*

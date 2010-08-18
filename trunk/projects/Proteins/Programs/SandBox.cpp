@@ -16,7 +16,7 @@
 using namespace lbcpp;
 
 extern void declareLBCppCoreClasses();
-extern void declareProteinsClasses();
+extern void declareProteinLibrary();
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
@@ -170,7 +170,7 @@ VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinsClasses();
+  declareProteinLibrary();
   
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));

@@ -5,7 +5,7 @@
 
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinLibrary();
 
 //#define SEQUENCE
 //#define FEATURES
@@ -16,7 +16,7 @@ extern void declareProteinClasses();
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinLibrary();
   
   File proteinDirectory;
   File outputDirectory;
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinLibrary();
   
   File proteinDirectory;
   File outputDirectory;
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 #ifdef SHOW_PSSM
 int main(int argc, char** argv)
 {
-  declareProteinClasses();
+  declareProteinLibrary();
 
   File inputFile;
 
@@ -150,7 +150,7 @@ static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinLibrary();
 
   size_t nbValidProteins = 0;
   size_t nbProteins = 0;

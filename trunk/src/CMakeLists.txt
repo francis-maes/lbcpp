@@ -182,6 +182,8 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/Evaluator.h
 )
 
+GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
+
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
   Inference/DecoratorInference.cpp
@@ -191,6 +193,8 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp
   Inference/Evaluator.cpp
+  Inference/InferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceClasses.cpp
 )
 
 SET(LBCPP_INFERENCE_NUMERICAL_SOURCES

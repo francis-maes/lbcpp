@@ -63,11 +63,13 @@ protected:
     writeLine(T("#include ") + xml->getStringAttribute(T("file"), T("???")).quoted());
   }
 
-  void generateVariableDeclarationInConstructor(XmlElement* xml)
+  void generateVariableDeclarationInConstructor(const String& className, XmlElement* xml)
   {
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
     String name = xml->getStringAttribute(T("name"), T("???"));
-    writeLine(T("addVariable(T(") + type.quoted() + T("), T(") + name.quoted() + T("));"));
+    
+    String typeArgument = (type == className ? T("ClassPtr(this)") : T("T(") + type.quoted() + T(")"));
+    writeLine(T("addVariable(") + typeArgument + T(", T(") + name.quoted() + T("));"));
   }
 
   void generateClassDeclaration(XmlElement* xml)
@@ -88,7 +90,7 @@ protected:
     for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
       if (elt->getTagName() == T("variable"))
       {
-        generateVariableDeclarationInConstructor(elt);
+        generateVariableDeclarationInConstructor(className, elt);
         variables.push_back(elt);
       }
     closeScope();
@@ -135,7 +137,7 @@ protected:
 
     currentScopes.pop_back();
 
-    if (xml->getBoolAttribute(T("generateClassDeclarator"), false))
+    if (!xml->getBoolAttribute(T("private"), false))
     {
       String declaratorName = className;
       if (declaratorName[0] >= 'A' && declaratorName[0] <= 'Z')

@@ -384,9 +384,8 @@ FunctionPtr lbcpp::proteinToInputOutputPairFunction()
   {return new ProteinToInputOutputPairFunction();}
 
 
-void declareProteinClass()
+void declareProteinMiscTypes()
 {
-  //Class::declare(new ProteinClass());
   Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
 
   LBCPP_DECLARE_CLASS(ProteinLengthFunction, Function);

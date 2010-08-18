@@ -5,23 +5,23 @@
 
   <namespace name="lbcpp">
 
-    <class name="Atom" base="NameableObject" generateClassDeclarator="yes">
+    <class name="Atom" base="NameableObject">
       <variable type="String" name="elementSymbol"/>
       <variable type="Vector3" name="position"/>
       <variable type="Double" name="occupancy"/>
       <variable type="Double" name="temperatureFactor"/>
     </class>
 
-    <class name="Residue" generateClassDeclarator="yes">
+    <class name="Residue">
       <variable type="AminoAcidType" name="aminoAcidType" cast="int"/>
       <variable type="Vector[Atom]" name="atoms"/>
     </class>
     
-    <class name="TertiaryStructure" generateClassDeclarator="yes">
+    <class name="TertiaryStructure">
       <variable type="Vector[Residue]" name="residues"/>
     </class>
     
-    <class name="Protein" base="NameableObject" generateClassDeclarator="yes">
+    <class name="Protein" base="NameableObject">
       
       <!-- Primary Structure -->
       <variable type="Vector[AminoAcidType]" name="primaryStructure" shortdesc="Primary Structure"/>

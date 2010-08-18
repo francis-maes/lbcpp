@@ -21,35 +21,6 @@ StaticSequentialInference::StaticSequentialInference(const String& name)
 /*
 ** VectorSequentialInference
 */
-namespace lbcpp
-{
-
-ClassPtr sequentialInferenceClass()
-  {static TypeCache cache(T("SequentialInference")); return cache();}
-
-ClassPtr staticSequentialInferenceClass()
-  {static TypeCache cache(T("StaticSequentialInference")); return cache();}
-
-
-class VectorSequentialInferenceClass : public DynamicClass
-{
-public:
-  VectorSequentialInferenceClass()
-    : DynamicClass(T("VectorSequentialInference"), staticSequentialInferenceClass())
-  {
-    addVariable(vectorClass(inferenceClass()), T("subInferences"));
-  }
-
-  virtual VariableValue create() const
-    {return new VectorSequentialInference();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(VectorSequentialInference)
-    LBCPP_DECLARE_VARIABLE(subInferences);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
-}; /* namespace lbcpp */
-
 VectorSequentialInference::VectorSequentialInference(const String& name)
   : StaticSequentialInference(name), subInferences(new Vector(inferenceClass())) {}
 
@@ -75,11 +46,4 @@ bool VectorSequentialInference::updateInference(InferenceContextPtr context, Seq
   }
   else
     return false;
-}
-
-void declareSequentialInferenceClasses()
-{
-  LBCPP_DECLARE_ABSTRACT_CLASS(SequentialInference, Inference);
-    LBCPP_DECLARE_ABSTRACT_CLASS(StaticSequentialInference, SequentialInference);
-      Type::declare(new VectorSequentialInferenceClass());
 }

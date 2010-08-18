@@ -16,8 +16,8 @@ extern void declareCartesianPositionVectorClasses();
 // data
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
-extern void declareProteinClass(); // by hand (old)
-extern void declareProteinClasses(); // generated (new)
+extern void declareProteinMiscTypes();
+extern void declareProteinClasses(); // generated
 
 // perception
 extern void declareProteinPerceptionClasses();
@@ -27,7 +27,7 @@ extern void declareResiduePairPerceptionClasses();
 // inference
 extern void declareProteinInferenceClasses();
 
-void declareProteinsClasses()
+void declareProteinLibrary()
 {
   // geometry
   declareVector3Classes();
@@ -36,7 +36,7 @@ void declareProteinsClasses()
   // data
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
-  declareProteinClass();
+  declareProteinMiscTypes();
   declareProteinClasses(); // generated
 
   // perception
