@@ -7,9 +7,15 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Inference/DecoratorInference.h>
+#include <lbcpp/Inference/ParallelInference.h>
+#include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
+/*
+** Inference
+*/
 void Inference::clone(ObjectPtr target) const
 {
   NameableObject::clone(target);
@@ -17,17 +23,77 @@ void Inference::clone(ObjectPtr target) const
     InferencePtr(target)->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
 }
 
-extern void declareInferenceClasses();
-extern void declareReductionInferenceClasses();
-extern void declareDecisionTreeInferenceClasses();
-extern void declareNumericalInferenceClasses();
-extern void declareMetaInferenceClasses();
+/*
+** DecoratorInference
+*/
+DecoratorInference::DecoratorInference(const String& name)
+  : Inference(name)
+  {setBatchLearner(decoratorInferenceLearner());}
 
-void declareInferenceLibrary()
+String StaticDecoratorInference::toString() const
+  {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
+
+/*
+** ParallelInference
+*/
+StaticParallelInference::StaticParallelInference(const String& name)
+  : ParallelInference(name)
 {
-  declareInferenceClasses();
-  declareReductionInferenceClasses();
-  declareDecisionTreeInferenceClasses();
-  declareNumericalInferenceClasses();
-  declareMetaInferenceClasses();
+  setBatchLearner(staticParallelInferenceLearner());
+}
+
+SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
+  : StaticParallelInference(name), subInference(subInference)
+{
+  setBatchLearner(sharedParallelInferenceLearner());
+}
+
+Variable SharedParallelInference::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  subInference->beginRunSession();
+  Variable res = ParallelInference::run(context, input, supervision, returnCode);
+  subInference->endRunSession();
+  return res;
+}
+
+String SharedParallelInference::toString() const
+{
+  jassert(subInference);
+  return getClassName() + T("(") + subInference->toString() + T(")");
+}
+
+/*
+** SequentialInference
+*/
+StaticSequentialInference::StaticSequentialInference(const String& name)
+  : SequentialInference(name)
+{
+  setBatchLearner(staticSequentialInferenceLearner());
+}
+
+VectorSequentialInference::VectorSequentialInference(const String& name)
+  : StaticSequentialInference(name), subInferences(new Vector(inferenceClass())) {}
+
+SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
+  if (subInferences->size())
+    prepareSubInference(context, state, 0, returnCode);
+  return state;
+}
+
+bool VectorSequentialInference::updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+{
+  int index = state->getStepNumber(); 
+  jassert(index >= 0);
+  finalizeSubInference(context, state, (size_t)index, returnCode);
+  jassert(state->getSubInference() == getSubInference(index));
+  ++index;
+  if (index < (int)subInferences->size())
+  {
+    prepareSubInference(context, state, (size_t)index, returnCode);
+    return true;
+  }
+  else
+    return false;
 }

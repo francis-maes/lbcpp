@@ -196,9 +196,6 @@ GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenc
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
-  Inference/DecoratorInference.cpp
-  Inference/ParallelInference.cpp
-  Inference/SequentialInference.cpp
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceCallback.cpp
   Inference/InferenceContext.cpp
