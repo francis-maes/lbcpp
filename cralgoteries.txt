@@ -1,13 +1,17 @@
+* Remove VariableReference and implement set(.., Variable) functions
 * Repair Explorer configuration file
-* Remove VariableReference and generate set/get functions
 * Remove FileObject and use native "File" type
 
+====
+* Afficher les Perceptions dans l'explorer
+* Fixer le bug de performances sur SS3
 
+* Clarifier l'histoire des TemplateType
+* Move Evaluator from lbcpp/Inference to lbcpp/Data
+
+====
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
-
-Serialisation:
- * Serialisation of Perceptions
 
 Perceptions:
  * Residue: current position, WindowHistogram
@@ -16,13 +20,9 @@ Perceptions:
 
 Inference:
  * ParallelProteinInference
-
-* Clarifier l'histoire des TemplateType
-* Move Evaluator from lbcpp/Inference to lbcpp/Data
 =========== 
 
 Library:
- * Remove "featureGenerator" keyword
  * Remove translator
  * Execution multi-thread
  
