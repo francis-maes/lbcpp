@@ -91,28 +91,6 @@ void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr contex
 Variable ProteinSequentialInference::finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
   {return finalState->getInput();} // the working protein
 
-namespace lbcpp
-{
-
-  class ProteinInferenceStepClass : public DynamicClass
-  {
-  public:
-    ProteinInferenceStepClass()
-      : DynamicClass(T("ProteinInferenceStep"), staticDecoratorInferenceClass())
-    {
-      addVariable(integerType(), T("targetIndex"));
-    }
-
-    LBCPP_DECLARE_VARIABLE_BEGIN(ProteinInferenceStep)
-      LBCPP_DECLARE_VARIABLE(targetIndex);
-    LBCPP_DECLARE_VARIABLE_END()
-
-    virtual VariableValue create() const
-      {return new ProteinInferenceStep();}
-  };
-
-}; /* namespace lbcpp */
-
 /*
 ** ProteinInferenceStep
 */
@@ -141,14 +119,4 @@ Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, De
   if (prediction)
     protein->setVariable(targetIndex, prediction);
   return protein;
-}
-
-#include "ContactMapInference.h"
-
-void declareProteinInferenceClassesOld()
-{
-  LBCPP_DECLARE_CLASS(ContactMapInference, SharedParallelInference);
-
-  LBCPP_DECLARE_CLASS(ProteinSequentialInference, VectorSequentialInference); 
-  Type::declare(new ProteinInferenceStepClass());
 }

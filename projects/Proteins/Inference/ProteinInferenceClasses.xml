@@ -2,6 +2,14 @@
 
 <file name="ProteinInference" directory="Inference">
   <namespace name="lbcpp">
-
+    
+    <class name="ContactMapInference" base="SharedParallelInference"/>
+    
+    <class name="ProteinSequentialInference" base="VectorSequentialInference"/>
+    
+    <class name="ProteinInferenceStep" base="StaticDecoratorInference">
+      <variable type="Integer" name="targetIndex"/>
+    </class>
+    
   </namespace>  
 </file>

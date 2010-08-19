@@ -27,7 +27,7 @@ Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
 }
 
 }; /* namespace impl */
-
+#if 0
 class Vector3Class : public DynamicClass
 {
 public:
@@ -51,7 +51,7 @@ public:
 
 ClassPtr vector3Class()
   {static TypeCache cache(T("Vector3")); return cache();}
-
+#endif // 0
 }; /* namespace lbcpp */
 
 /*
@@ -86,10 +86,4 @@ void Vector3KDTree::findPointsInSphere(const impl::Vector3& center, double radiu
     kd_res_next(res);
   }
   kd_res_free(res);
-}
-
-
-void declareVector3Classes()
-{
-  Class::declare(new Vector3Class());
 }

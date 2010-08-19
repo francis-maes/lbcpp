@@ -9,38 +9,27 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-// geometry
-extern void declareVector3Classes();
-extern void declareCartesianPositionVectorClasses();
-
 // data
 extern void declareAminoAcidClasses();
 extern void declareSecondaryStructureClasses();
 extern void declareProteinMiscTypes();
 
-// inference
-extern void declareProteinInferenceClassesOld();
-
 // generated
+extern void declareGeometryClasses();
 extern void declareProteinDataClasses();
 extern void declareProteinPerceptionClasses();
+extern void declareProteinInferenceClasses();
 
 void declareProteinLibrary()
 {
-  // geometry
-  declareVector3Classes();
-  declareCartesianPositionVectorClasses();
-
   // data
   declareAminoAcidClasses();
   declareSecondaryStructureClasses();
   declareProteinMiscTypes();
-   
-
-  // inference
-  declareProteinInferenceClassesOld();
 
   // generated
+  declareGeometryClasses();
   declareProteinDataClasses();
   declareProteinPerceptionClasses();
+  declareProteinInferenceClasses();
 }
