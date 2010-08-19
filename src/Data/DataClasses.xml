@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Data" directory="Data">
+  <import name="Function"/>
+  <import name="Perception"/>
+  <import name="Stream"/>
+
+  <namespace name="lbcpp">
+
+    <!-- Object -->
+    <class name="NameableObject" abstract="yes">
+      <variable type="String" name="name"/>
+    </class>
+    
+    <!-- Consumer -->
+    <class name="Consumer" base="Function" abstract="yes"/>
+    <class name="TextPrinter" base="Consumer" abstract="yes"/>
+    
+  </namespace>
+  
+</file>

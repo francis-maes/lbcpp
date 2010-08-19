@@ -42,24 +42,8 @@ bool Stream::iterate(size_t maximumCount)
 }
 
 /*
- ** directoryFileStream
- */
-#include "Stream/DirectoryFileStream.h"
-#include "Stream/ApplyFunctionStream.h"
-
-StreamPtr lbcpp::directoryFileStream(const File& directory, const String& wildCardPattern, bool searchFilesRecursively)
-  {return new DirectoryFileStream(directory, wildCardPattern, searchFilesRecursively);}
-
-StreamPtr Stream::apply(FunctionPtr function) const
-{
-  return checkInheritance(getElementsType(), function->getInputType())
-    ? StreamPtr(new ApplyFunctionStream(StreamPtr(const_cast<Stream* >(this)), function))
-    : StreamPtr();
-}
-
-/*
- ** TextParser
- */
+** TextParser
+*/
 TextParser::TextParser(InputStream* newInputStream, ErrorHandler& callback)
   : callback(callback), istr(newInputStream) {}
 
@@ -142,11 +126,4 @@ Variable TextParser::next()
   delete istr;
   istr = NULL;
   return currentResult;
-}
-
-void declareStreamClasses()
-{
-  LBCPP_DECLARE_ABSTRACT_CLASS(Stream, Object);
-    LBCPP_DECLARE_CLASS(DirectoryFileStream, Stream);
-    LBCPP_DECLARE_ABSTRACT_CLASS(TextParser, Stream);
 }

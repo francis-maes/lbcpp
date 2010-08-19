@@ -57,9 +57,3 @@ TextPrinter::TextPrinter(const File& file, ErrorHandler& callback)
   }
   this->ostr = outputStream;
 }
-
-void declareConsumerClasses()
-{
-  LBCPP_DECLARE_ABSTRACT_CLASS(Consumer, Function);
-    LBCPP_DECLARE_ABSTRACT_CLASS(TextPrinter, Consumer);
-}
