@@ -278,7 +278,7 @@ public:
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
 
 protected:
-  void addElement(const String& elementName);
+  void addElement(const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
 
 private:
   std::vector<String> elements;

@@ -94,13 +94,14 @@ public:
     String secondaryStructureCode = line.substring(16, 17);
     if (secondaryStructureCode == T(" "))
       secondaryStructureCode = T("C");
-    int secondaryStructureIndex = dsspSecondaryStructureEnumeration()->getOneLetterCodes().indexOf(secondaryStructureCode);
+    EnumerationPtr dsspEnum = dsspSecondaryStructureElementEnumeration();
+    int secondaryStructureIndex = dsspEnum->getOneLetterCodes().indexOf(secondaryStructureCode);
     if (secondaryStructureIndex < 0)
     {
       callback.errorMessage(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));
       return false;
     }
-    dsspSecondaryStructureSequence->setVariable((size_t)residueNumber, Variable(secondaryStructureIndex, dsspSecondaryStructureEnumeration()));
+    dsspSecondaryStructureSequence->setVariable((size_t)residueNumber, Variable(secondaryStructureIndex, dsspEnum));
 
     /*
     ** Solvent accesibility

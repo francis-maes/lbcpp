@@ -37,6 +37,52 @@ protected:
   static String xmlTypeToCppType(const String& typeName)
     {return typeName.replaceCharacters(T("[]"), T("<>"));}
 
+  static String replaceFirstLettersByLowerCase(const String& str)
+  {
+    if (str.isEmpty())
+      return String::empty;
+    int numUpper = 0;
+    for (numUpper = 0; numUpper < str.length(); ++numUpper)
+      if (!CharacterFunctions::isUpperCase(str[numUpper]))
+        break;
+
+    if (numUpper == 0)
+      return str;
+
+    String res = str;
+    if (numUpper == 1)
+      res[0] += 'a' - 'A';
+    else
+      for (int i = 0; i < numUpper - 1; ++i)
+        res[i] += 'a' - 'A';
+    return res;
+  }
+
+  void generateCodeForChildren(XmlElement* xml)
+  {
+    for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
+    {
+      String tag = elt->getTagName();
+      if (tag == T("include"))
+        generateInclude(elt);
+      else if (tag == T("class"))
+        generateClassDeclaration(elt);
+      else if (tag == T("enumeration"))
+        generateEnumerationDeclaration(elt);
+      else if (tag == T("namespace"))
+        generateNamespaceDeclaration(elt);
+      else if (tag == T("code"))
+        generateCode(elt);
+      else if (tag == T("import"))
+        continue;
+      else
+        std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
+    }
+  }
+
+  /*
+  ** Header
+  */
   void generateHeader()
   {
     // header
@@ -57,31 +103,51 @@ protected:
     }
   }
 
-  void generateCodeForChildren(XmlElement* xml)
-  {
-    for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
-    {
-      String tag = elt->getTagName();
-      if (tag == T("include"))
-        generateInclude(elt);
-      else if (tag == T("class"))
-        generateClassDeclaration(elt);
-      else if (tag == T("namespace"))
-        generateNamespaceDeclaration(elt);
-      else if (tag == T("code"))
-        generateCode(elt);
-      else if (tag == T("import"))
-        continue;
-      else
-        std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
-    }
-  }
-
+  /*
+  ** Include
+  */
   void generateInclude(XmlElement* xml)
   {
     writeLine(T("#include ") + xml->getStringAttribute(T("file"), T("???")).quoted());
   }
 
+  /*
+  ** Enumeration
+  */
+  void generateEnumValueInConstructor(XmlElement* xml)
+  {
+    String name = xml->getStringAttribute(T("name"), T("???"));
+    String oneLetterCode = xml->getStringAttribute(T("oneLetterCode"), String::empty);
+    String threeLettersCode = xml->getStringAttribute(T("threeLettersCode"), String::empty);
+    writeLine(T("addElement(T(") + name.quoted() + T("), T(") + oneLetterCode.quoted() + T("), T(") + threeLettersCode.quoted() + T("));"));
+  }
+
+  void generateEnumerationDeclaration(XmlElement* xml)
+  {
+    String enumName = xml->getStringAttribute(T("name"), T("???"));
+
+    currentScopes.push_back(enumName);
+    classes.push_back(getCurrentScopeFullName() + T("Enumeration"));
+    openClass(enumName + T("Enumeration"), T("Enumeration"));
+
+    // constructor
+    openScope(enumName + T("Enumeration() : Enumeration(T(") + enumName.quoted() + T("))"));
+    forEachXmlChildElementWithTagName(*xml, elt, T("value"))
+      generateEnumValueInConstructor(elt);
+    closeScope();
+
+    closeClass();
+    currentScopes.pop_back();
+
+    // enum declarator
+    String declaratorName = replaceFirstLettersByLowerCase(enumName) + T("Enumeration");
+    writeShortFunction(T("EnumerationPtr ") + declaratorName + T("()"),
+      T("static TypeCache cache(T(") + enumName.quoted() + T(")); return (EnumerationPtr)cache();"));
+  }
+
+  /*
+  ** Class
+  */
   void generateVariableDeclarationInConstructor(const String& className, XmlElement* xml)
   {
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
@@ -98,10 +164,9 @@ protected:
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
 
     currentScopes.push_back(className);
-    classes.push_back(getCurrentScopeFullName());
+    classes.push_back(getCurrentScopeFullName() + T("Class"));
 
-    openScope(T("class ") + className + T("Class : public DynamicClass"));
-    writeLine(T("public:"), -1);
+    openClass(className + T("Class"), T("DynamicClass"));
 
     // constructor
     std::vector<XmlElement* > variables;
@@ -120,7 +185,7 @@ protected:
         T("return new ") + className + T("();"));
 
     // getStaticVariableReference() function
-    if (variables.size())
+    if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false))
     {
       openScope(T("virtual VariableReference getStaticVariableReference(const VariableValue& __value__, size_t __index__) const"));
         writeLine(T("if (__index__ < baseType->getNumStaticVariables())"));
@@ -150,14 +215,11 @@ protected:
       closeScope();
     }
 
-    closeScope(T(";"));
-    newLine();
+    closeClass();
 
     currentScopes.pop_back();
 
-    String classNameWithFirstLowerCase = className;
-    if (classNameWithFirstLowerCase[0] >= 'A' && classNameWithFirstLowerCase[0] <= 'Z')
-      classNameWithFirstLowerCase[0] += 'a' - 'A';
+    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
 
     // class declarator
     writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
@@ -190,6 +252,9 @@ protected:
     }
   }
 
+  /*
+  ** Namespace
+  */
   void generateNamespaceDeclaration(XmlElement* xml)
   {
     String name = xml->getStringAttribute(T("name"), T("???"));
@@ -203,6 +268,9 @@ protected:
     closeScope(T("; /* namespace ") + name + T(" */"));
   }
 
+  /*
+  ** Code
+  */
   void generateCode(XmlElement* elt)
   {
     StringArray lines;
@@ -225,6 +293,9 @@ protected:
     }
   }
 
+  /*
+  ** Footer
+  */
   void generateFooter()
   {
     bool hasImports = false;
@@ -240,7 +311,7 @@ protected:
     openScope(T("void declare") + fileName + T("Classes()"));
     
     for (size_t i = 0; i < classes.size(); ++i)
-      writeLine(T("lbcpp::Class::declare(new ") + classes[i] + T("Class());"));
+      writeLine(T("lbcpp::Class::declare(new ") + classes[i] + T("());"));
 
     if (hasImports)
       newLine();
@@ -303,6 +374,15 @@ private:
     newLine();
     ostr << "}" << closingText;
   }
+
+  void openClass(const String& className, const String& baseClass)
+  {
+    openScope(T("class ") + className + T(" : public ") + baseClass);
+    writeLine(T("public:"), -1);
+  }
+
+  void closeClass()
+    {closeScope(T(";")); newLine();}
 
   void writeShortFunction(const String& declaration, const String& oneLineBody)
   {

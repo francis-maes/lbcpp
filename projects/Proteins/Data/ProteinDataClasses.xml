@@ -3,6 +3,102 @@
 <file name="ProteinData" directory="Data">
   <namespace name="lbcpp">
 
+    <!-- Enumerations -->
+    <enumeration name="AminoAcidType">
+      <value name="alanine"             oneLetterCode="A" threeLettersCode="ALA"/>
+      <value name="arginine"            oneLetterCode="R" threeLettersCode="ARG"/>
+      <value name="asparagine"          oneLetterCode="N" threeLettersCode="ASN"/>
+      <value name="asparticAcid"        oneLetterCode="D" threeLettersCode="ASP"/>
+      <value name="cysteine"            oneLetterCode="C" threeLettersCode="CYS"/>
+
+      <value name="glutamicAcid"        oneLetterCode="E" threeLettersCode="GLU"/>
+      <value name="glutamine"           oneLetterCode="Q" threeLettersCode="GLN"/>
+      <value name="glycine"             oneLetterCode="G" threeLettersCode="GLY"/>
+      <value name="histidine"           oneLetterCode="H" threeLettersCode="HIS"/>
+      <value name="isoleucine"          oneLetterCode="I" threeLettersCode="ILE"/>
+
+      <value name="leucine"             oneLetterCode="L" threeLettersCode="LEU"/>
+      <value name="lysine"              oneLetterCode="K" threeLettersCode="LYS"/>
+      <value name="methionine"          oneLetterCode="M" threeLettersCode="MET"/>
+      <value name="phenylalanine"       oneLetterCode="F" threeLettersCode="PHE"/>
+      <value name="proline"             oneLetterCode="P" threeLettersCode="PRO"/>
+
+      <value name="serine"              oneLetterCode="S" threeLettersCode="SER"/>
+      <value name="threonine"           oneLetterCode="T" threeLettersCode="THR"/>
+      <value name="tryptophan"          oneLetterCode="W" threeLettersCode="TRP"/>
+      <value name="tyrosine"            oneLetterCode="Y" threeLettersCode="TYR"/>
+      <value name="valine"              oneLetterCode="V" threeLettersCode="VAL"/>
+
+      <value name="asparagineOrAsparticAcid" oneLetterCode="B" threeLettersCode="ASX"/>
+      <value name="glutamineOrGlutamicAcid"  oneLetterCode="Z" threeLettersCode="GLX"/>
+      <value name="lecineOrIsoleucine"       oneLetterCode="J" threeLettersCode="XLE"/>
+      
+      <!-- missingvalue: name="unknown" oneLetterCode="X" threeLettersCode="XAA"-->
+    </enumeration>
+
+    <enumeration name="AminoAcidCategory1">
+      <value name="nonPolar"/>
+      <value name="polar"/>
+      <value name="acidic"/>
+      <value name="basic"/>
+    </enumeration>
+
+    <enumeration name="SecondaryStructureElement">
+      <value name="helix" oneLetterCode="H"/>
+      <value name="sheet" oneLetterCode="E"/>
+      <value name="other" oneLetterCode="C"/>
+    </enumeration>
+
+    <enumeration name="DSSPSecondaryStructureElement">
+      <value name="threeTurnHelix"          oneLetterCode="G"/>
+      <value name="alphaHelix"              oneLetterCode="H"/>
+      <value name="piHelix"                 oneLetterCode="I"/>
+      <value name="hydrogenBondedTurn"      oneLetterCode="T"/>
+      <value name="extendedStrandInSheet"   oneLetterCode="E"/>
+      <value name="residueInIsolatedBridge" oneLetterCode="B"/>
+      <value name="bend"                    oneLetterCode="S"/>
+      <value name="coil"                    oneLetterCode="C"/>
+    </enumeration>
+
+    <enumeration name="StructuralAlphabetElement">
+      <value name="A"/>
+      <value name="B"/>
+      <value name="C"/>
+      <value name="D"/>
+      <value name="E"/>
+      <value name="F"/>
+      <value name="G"/>
+      <value name="H"/>
+      <value name="I"/>
+      <value name="J"/>
+      <value name="K"/>
+      <value name="L"/>
+      <value name="M"/>
+      <value name="N"/>
+      <value name="O"/>
+      <value name="P"/>
+      <value name="Q"/>
+      <value name="R"/>
+      <value name="S"/>
+      <value name="T"/>
+      <value name="U"/>
+      <value name="V"/>
+      <value name="W"/>
+      <value name="X"/>
+      <value name="Y"/>
+      <value name="Z"/>
+      <value name="a"/>
+    </enumeration>
+
+    <!-- Amino Acid Class -->      
+    <class name="AminoAcid" manualAccessors="yes">
+      <variable type="AminoAcidType" name="type" cast="int"/>
+      <variable type="String" name="oneLetterCode"/>
+      <variable type="String" name="threeLettersCode"/>
+      <variable type="AminoAcidCategory1" name="category1"/>
+    </class>
+    
+    <!-- Tertiary Structure Classes -->
     <class name="Atom" base="NameableObject">
       <variable type="String" name="elementSymbol"/>
       <variable type="Vector3" name="position"/>

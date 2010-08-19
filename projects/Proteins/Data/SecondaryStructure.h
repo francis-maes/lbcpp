@@ -21,7 +21,7 @@ enum SecondaryStructureElement
   other  // I, T, S or C
 };
 
-extern EnumerationPtr secondaryStructureEnumeration();
+extern EnumerationPtr secondaryStructureElementEnumeration();
 
 enum DSSPSecondaryStructureElement
 {
@@ -35,7 +35,7 @@ enum DSSPSecondaryStructureElement
   coil                       // C -
 };
 
-extern EnumerationPtr dsspSecondaryStructureEnumeration();
+extern EnumerationPtr dsspSecondaryStructureElementEnumeration();
 extern SecondaryStructureElement dsspSecondaryStructureToSecondaryStructure(DSSPSecondaryStructureElement dsspElement);
 
 /*enum StructuralAlphabetElement
@@ -43,7 +43,7 @@ extern SecondaryStructureElement dsspSecondaryStructureToSecondaryStructure(DSSP
   A = 0, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, a
 };*/
 
-extern EnumerationPtr structuralAlphabetEnumeration();
+extern EnumerationPtr structuralAlphabetElementEnumeration();
 
 }; /* namespace lbcpp */
 

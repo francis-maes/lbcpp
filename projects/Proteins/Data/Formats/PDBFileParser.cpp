@@ -415,8 +415,7 @@ static String tertiaryStructureBlockToAminoAcidString(const std::vector<ResidueP
 {
   String res;
   for (size_t i = 0; i < residues.size(); ++i)
-    res += aminoAcidCollection()->getElement((size_t)residues[i]->getAminoAcidType()).dynamicCast<AminoAcid>()->getOneLetterCode();
-    //res += AminoAcidDictionary::getInstance()->getFeature((size_t)residues[i]->getAminoAcid());
+    res += aminoAcidTypeEnumeration()->getOneLetterCode((size_t)residues[i]->getAminoAcidType());
   jassert((size_t) res.length() == residues.size());
   return res;
 }

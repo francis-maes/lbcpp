@@ -165,7 +165,7 @@ void Protein::computeMissingVariables()
 VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
 {
   size_t n = dsspSecondaryStructure->getNumVariables();
-  VectorPtr res = new Vector(secondaryStructureEnumeration(), n);
+  VectorPtr res = new Vector(secondaryStructureElementEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
   {
     Variable var = dsspSecondaryStructure->getVariable(i);
@@ -241,7 +241,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
   };
 
   size_t n = calphaTrace->size();
-  VectorPtr res = new Vector(structuralAlphabetEnumeration(), n);
+  VectorPtr res = new Vector(structuralAlphabetElementEnumeration(), n);
   for (size_t i = 3; i < n; ++i)
   {
     impl::Vector3 a = calphaTrace->getPosition(i - 3);
@@ -281,7 +281,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
         bestGroup = j;
       }
     }
-    res->setVariable(i - 2, Variable(bestGroup, structuralAlphabetEnumeration()));
+    res->setVariable(i - 2, Variable(bestGroup, structuralAlphabetElementEnumeration()));
     //std::cout << d1 << "\t" << d2 << "\t" << d3 << "\t" << d4 << "\t\t" << bestGroup << std::endl;
   }
   return res;
@@ -294,10 +294,10 @@ VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
   {return new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), getLength());}
 
 VectorPtr Protein::createEmptySecondaryStructure() const
-  {return new Vector(secondaryStructureEnumeration(), getLength());}
+  {return new Vector(secondaryStructureElementEnumeration(), getLength());}
 
 VectorPtr Protein::createEmptyDSSPSecondaryStructure() const
-  {return new Vector(dsspSecondaryStructureEnumeration(), getLength());}
+  {return new Vector(dsspSecondaryStructureElementEnumeration(), getLength());}
 
 VectorPtr Protein::createEmptyProbabilitySequence() const
   {return new Vector(probabilityType(), getLength());}
@@ -322,7 +322,7 @@ Variable Protein::createEmptyTarget(size_t index) const
   case 1: return createEmptyPositionSpecificScoringMatrix();
   case 2: return createEmptySecondaryStructure();
   case 3: return createEmptyDSSPSecondaryStructure();
-  case 4: return new Vector(structuralAlphabetEnumeration(), n);
+  case 4: return new Vector(structuralAlphabetElementEnumeration(), n);
   case 5: return createEmptyProbabilitySequence();
   case 6: return createEmptyProbabilitySequence();
   case 7: return createEmptyProbabilitySequence();
