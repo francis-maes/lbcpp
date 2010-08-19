@@ -182,7 +182,7 @@ protected:
         argNames += argName;
       }
 
-      writeShortFunction(returnType + T("Ptr lbcpp::") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
+      writeShortFunction(returnType + T("Ptr ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
                          T("return new ") + className + T("(") + argNames + T(");"));
     }
   }

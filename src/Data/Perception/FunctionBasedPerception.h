@@ -9,6 +9,9 @@
 #ifndef LBCPP_DATA_PERCEPTION_FUNCTION_BASED_H_
 # define LBCPP_DATA_PERCEPTION_FUNCTION_BASED_H_
 
+# include <lbcpp/Data/Function.h>
+# include <lbcpp/Data/Perception.h>
+
 namespace lbcpp
 {
 
