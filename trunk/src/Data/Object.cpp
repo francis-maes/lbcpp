@@ -370,38 +370,3 @@ bool Object::loadFromString(const String& str, ErrorHandler& callback)
   callback.errorMessage(T("Object::loadFromString"), T("Not implemented"));
   return false;
 }
-
-namespace lbcpp
-{
-
-class TypeClass : public DynamicClass
-{
-public:
-  TypeClass(const String& name, ClassPtr baseClass)
-    : DynamicClass(name, baseClass) {}
-  TypeClass() : DynamicClass(T("Type"), nameableObjectClass()) {}
-
-  virtual VariableValue create() const
-    {return nilType();}
-
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
-    {return Type::parseAndGet(value, callback);}
-
-  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
-    {return Type::createFromXml(xml, callback);}
-
-  virtual String toString(const VariableValue& value) const
-    {TypePtr type = value.getObject(); return type ? type->getName() : T("Nil");}
-
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
-    {Type::saveToXml(xml, value);}
-};
-
-}; /* namespace lbcpp */
-
-
-void declareObjectClasses()
-{
-  Class::declare(new TypeClass());
-  Class::declare(new TypeClass(T("Enumeration"), typeClass()));
-}

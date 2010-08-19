@@ -12,6 +12,22 @@
       <variable type="String" name="name"/>
     </class>
     
+    <!-- Type -->
+    <class name="Type" base="NameableObject" abstract="yes">
+      <variable type="Type" name="baseType"/>
+      <code>
+        virtual VariableValue createFromString(const String&amp; value, ErrorHandler&amp; callback) const
+          {return Type::parseAndGet(value, callback);}
+
+        virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler&amp; callback) const
+          {return createFromString(xml->getAllSubText(), callback);}
+      </code>
+    </class>
+
+    <class name="Enumeration" base="Type" abstract="yes">
+      <variable type="String" name="oneLetterCodes"/>
+    </class>
+
     <!-- Consumer -->
     <class name="Consumer" base="Function" abstract="yes"/>
     <class name="TextPrinter" base="Consumer" abstract="yes"/>

@@ -14,23 +14,9 @@ extern void declareDataClasses();
 
 // old
 extern void declareClassClasses();
-extern void declareObjectClasses();
 extern void declareContainerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
-
-// Object
-void declareObjectRelatedClasses()
-{
-  // new
-  declareDataClasses();
-
-  // old
-  declareObjectClasses();
-  declareContainerClasses();
-  declarePredicateClasses();
-  declareProbabilityDistributionClasses();
-}
 
 // Utilities
 extern void declareIterationFunctions();
@@ -68,10 +54,15 @@ extern void declareInferenceOnlineLearnerClasses();
 void declareLBCppCoreClasses()
 {
   declareClassClasses();
+  declareContainerClasses();
+  
+  declareDataClasses(); // generated
+
+  declarePredicateClasses();
+  declareProbabilityDistributionClasses();
 
   declareRandomVariableStatistics();
   declareFeatureGenerators();
-  declareObjectRelatedClasses();
   
   declareContinuousFunctions();
   declareIterationFunctions();

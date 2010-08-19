@@ -1,31 +1,31 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ObjectSelector.h               | Interface for object selectors  |
+| Filename: VariableSelector.h             | Interface for variable selectors|
 | Author  : Francis Maes                   |                                 |
 | Started : 14/06/2010 14:00               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_UTILITIES_OBJECT_SELECTOR_H_
-# define EXPLORER_UTILITIES_OBJECT_SELECTOR_H_
+#ifndef EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_
+# define EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_
 
 # include "../Components/common.h"
 
 namespace lbcpp
 {
 
-class ObjectSelectorCallback
+class VariableSelectorCallback
 {
 public:
-  virtual ~ObjectSelectorCallback() {}
+  virtual ~VariableSelectorCallback() {}
 
   virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables) = 0;
 };
 
-class ObjectSelector
+class VariableSelector
 {
 public:
-  void addCallback(ObjectSelectorCallback& callback)
+  void addCallback(VariableSelectorCallback& callback)
     {callbacks.push_back(&callback);}
 
   void sendSelectionChanged(const std::vector<Variable>& selectedVariables)
@@ -35,9 +35,9 @@ public:
   }
 
 protected:
-  std::vector<ObjectSelectorCallback* > callbacks;
+  std::vector<VariableSelectorCallback* > callbacks;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_UTILITIES_OBJECT_SELECTOR_H_
+#endif // !EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_

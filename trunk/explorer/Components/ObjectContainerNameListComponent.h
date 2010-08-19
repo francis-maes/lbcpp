@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_OBJECT_CONTAINER_NAME_LIST_H_
 
 # include "common.h"
-# include "../Utilities/ObjectSelector.h"
+# include "../Utilities/VariableSelector.h"
 
 namespace lbcpp
 {
@@ -19,7 +19,7 @@ namespace lbcpp
 # pragma warning(disable:4355)
 #endif // JUCE_WIN32
 
-class ObjectContainerNameListComponent : public juce::ListBox, public ObjectSelector
+class ObjectContainerNameListComponent : public juce::ListBox, public VariableSelector
 {
 public:
   ObjectContainerNameListComponent(ContainerPtr container)

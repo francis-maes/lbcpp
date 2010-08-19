@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_TREE_H_
 
 # include "common.h"
-# include "../Utilities/ObjectSelector.h"
+# include "../Utilities/VariableSelector.h"
 # include "../Utilities/SimpleTreeViewItem.h"
 
 namespace lbcpp
@@ -47,7 +47,7 @@ protected:
   std::vector< std::pair<String, ObjectPtr> > subObjects;
 };
 
-class ObjectTreeComponent : public juce::TreeView, public ObjectSelector, public juce::Timer
+class ObjectTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer
 {
 public:
   ObjectTreeComponent(ObjectPtr object, const String& name) 
@@ -206,7 +206,7 @@ protected:
   std::vector< std::pair<String, Variable> > subVariables;
 };
 
-class VariableTreeComponent : public juce::TreeView, public ObjectSelector, public juce::Timer
+class VariableTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer
 {
 public:
   VariableTreeComponent(const Variable& variable, const String& name) 

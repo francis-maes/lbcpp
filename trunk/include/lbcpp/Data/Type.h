@@ -96,15 +96,13 @@ public:
 
   virtual VariableValue create() const = 0;
 
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
-    {callback.errorMessage(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
-
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const = 0;
   virtual void copy(VariableValue& dest, const VariableValue& source) const = 0;
-  virtual String toString(const VariableValue& value) const = 0;
+  virtual String toString(const VariableValue& value) const;
   virtual String getShortSummary(const VariableValue& value) const
     {return toString(value);}
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const = 0;
@@ -151,6 +149,9 @@ public:
   virtual String toString() const
     {return getName();}
 
+  virtual void saveToXml(XmlElement* xml) const
+    {xml->addTextElement(getName());}
+
   virtual void clone(ObjectPtr target) const
   {
     TypePtr targetType = target.staticCast<Type>();
@@ -159,8 +160,10 @@ public:
   }
 
 protected:
+  friend class TypeClass;
+
   TypePtr baseType;
-  std::vector<TypePtr> templateArguments;
+  std::vector<TypePtr> templateArguments; // use Vector ?
 };
 
 extern TypePtr topLevelType();
@@ -176,10 +179,17 @@ public:
   BuiltinType(const String& name, TypePtr baseType = topLevelType())
     : Type(name, baseType) {}
 
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
+    {return createFromString(xml->getAllSubText(), callback);}
+
+  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
+    {xml->addTextElement(toString(value));}
 };
 
 extern TypePtr booleanType();
 extern TypePtr integerType();
+  extern TypePtr enumValueType();
+
 extern TypePtr doubleType();
   extern TypePtr probabilityType();
   extern TypePtr angstromDistanceType(); // todo: move
@@ -266,14 +276,9 @@ public:
 
   int findElement(const String& name) const;
 
-  bool hasOneLetterCodes() const
-    {return oneLetterCodes.isNotEmpty();}
-
-  juce::tchar getOneLetterCode(size_t index) const
-    {jassert((int)index < oneLetterCodes.length()); return oneLetterCodes[index];}
-
-  String getOneLetterCodes() const
-    {return oneLetterCodes;}
+  bool hasOneLetterCodes() const;
+  juce::tchar getOneLetterCode(size_t index) const;
+  String getOneLetterCodes() const;
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
 
@@ -281,11 +286,11 @@ protected:
   void addElement(const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
 
 private:
-  std::vector<String> elements;
+  friend class EnumerationClass;
+
+  std::vector<String> elements; // use Vector ?
   String oneLetterCodes;
 };
-
-extern TypePtr enumValueType();
 
 /*
 ** Class
@@ -335,8 +340,8 @@ public:
 typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 
 extern ClassPtr objectClass();
-extern TypePtr typeClass();
-extern TypePtr enumerationClass();
+extern ClassPtr typeClass();
+extern ClassPtr enumerationClass();
 
 class DynamicClass : public Class
 {

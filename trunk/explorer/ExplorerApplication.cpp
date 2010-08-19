@@ -59,7 +59,7 @@ public:
 
   void addObject(ObjectPtr object, const String& name)
   {
-    Component* component = createComponentForObject(object, name, true);
+    Component* component = createComponentForVariable(object, name, true);
     addTab(name, Colours::lightblue, component, true);
     objects.push_back(object);
     setCurrentTabIndex(getNumTabs() - 1);
@@ -272,6 +272,8 @@ public:
     LBCPP_DECLARE_CLASS_LEGACY(RecentProcesses);
     LBCPP_DECLARE_CLASS_LEGACY(ProcessConsoleSettings);
     LBCPP_DECLARE_CLASS_LEGACY(ProcessConsoleFilter);
+
+    flushErrorAndWarningMessages(T("Explorer Start-up"));
 
     theCommandManager = new ApplicationCommandManager();
 

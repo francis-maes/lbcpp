@@ -6,24 +6,24 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "ObjectProxyComponent.h"
+#include "VariableProxyComponent.h"
 #include "ObjectContainerNameListComponent.h"
 #include "StringComponent.h"
 #include "TableComponent.h"
 #include "TreeComponent.h"
 #include "StringToObjectMapTabbedComponent.h"
 #include "FileObjectComponent.h"
-#include "ObjectBrowser.h"
+#include "VariableBrowser.h"
 #include "../Proteins/ProteinComponent.h"
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
 
-class FeatureGeneratorComponent : public ObjectSelectorAndContentComponent
+class FeatureGeneratorComponent : public VariableSelectorAndContentComponent
 {
 public:
   FeatureGeneratorComponent(FeatureGeneratorPtr featureGenerator, const String& name = String::empty)
-    : ObjectSelectorAndContentComponent(featureGenerator, new ObjectTreeComponent(featureGenerator, name))
+    : VariableSelectorAndContentComponent(featureGenerator, new ObjectTreeComponent(featureGenerator, name))
     {}
 
   virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables)
@@ -38,35 +38,19 @@ public:
       else
         variables.push_back(selectedVariables[i]);
     }
-    ObjectSelectorAndContentComponent::selectionChangedCallback(variables);
+    VariableSelectorAndContentComponent::selectionChangedCallback(variables);
   }
 };
 
-class InferenceComponent : public ObjectSelectorAndContentComponent
+class InferenceComponent : public VariableSelectorAndContentComponent
 {
 public:
   InferenceComponent(InferencePtr inference, const String& name = String::empty)
-    : ObjectSelectorAndContentComponent(inference, new ObjectTreeComponent(inference, name))
+    : VariableSelectorAndContentComponent(inference, new ObjectTreeComponent(inference, name))
     {}
 };
 
-Component* createComponentForVariable(const Variable& variable, const String& name)
-{
-  if (!variable)
-    return new StringComponent(variable);
-  
-  TypePtr type = variable.getType();
-  if (type->canBeCastedTo(proteinClass()))
-  {
-    ProteinPtr protein = variable.getObjectAndCast<Protein>();
-    protein->computeMissingVariables();
-    return new ProteinComponent(protein, name);
-  }
-
-  return new VariableTreeComponent(variable, name); 
-}
-
-Component* createComponentForObjectImpl(ObjectPtr object, const String& explicitName)
+Component* createComponentForObject(ObjectPtr object, const String& explicitName)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
 
@@ -83,16 +67,16 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
     switch (type)
     {
     case FileObject::directory:
-      return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
+      return new VariableSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
 
     case FileObject::classDirectory:
     case FileObject::classFile:
       {
         ObjectPtr object = Object::createFromFile(fileObject->getFile());
         if (object)
-          return createComponentForObjectImpl(object, name);
+          return createComponentForVariable(object, name);
         else if (type == FileObject::classDirectory)
-          return new ObjectSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
+          return new VariableSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
         else
           return new HexadecimalFileObjectComponent(object, name);
       }
@@ -114,9 +98,32 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
     };
   }
   
-  if (Variable(object))
-    return createComponentForVariable(Variable(object), name);
-  
+  if (object.dynamicCast<Protein>())
+  {
+    ProteinPtr protein = object.dynamicCast<Protein>();
+    protein->computeMissingVariables();
+    return new ProteinComponent(protein, name);
+  }
+
+  return NULL;
+}
+
+Component* createComponentForVariableImpl(const Variable& variable, const String& explicitName)
+{
+  if (variable.isNil())
+    return NULL;
+  if (variable.isMissingValue())
+    return NULL;
+
+  Component* res = NULL;
+  if (variable.isObject())
+    res = createComponentForObject(variable.getObject(), explicitName);
+
+  if (!res)
+    res = new VariableTreeComponent(variable, explicitName); 
+  return res;
+}
+
 /*
   if (object.dynamicCast<FeatureGenerator>())
     return new FeatureGeneratorComponent(object.dynamicCast<FeatureGenerator>(), name);
@@ -197,11 +204,11 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
           objects->append(object);
         }
       }
-      return createComponentForObjectImpl(objects, explicitName);
+      return createComponentForVariableImpl(objects, explicitName);
     }
 
     // default for ObjectContainer
-    return new ObjectSelectorAndContentComponent(object, new ObjectContainerNameListComponent(object.dynamicCast<ObjectContainer>()));
+    return new VariableSelectorAndContentComponent(object, new ObjectContainerNameListComponent(object.dynamicCast<ObjectContainer>()));
   }
 
   if (object.dynamicCast<Table>())
@@ -217,18 +224,17 @@ Component* createComponentForObjectImpl(ObjectPtr object, const String& explicit
   if (table)
     return new TableComponent(table);
  */
-  return new VariableTreeComponent(object, name);
-//  return new StringComponent(object);
-}
 
-Component* lbcpp::createComponentForObject(ObjectPtr object, const String& explicitName, bool topLevelComponent)
+Component* lbcpp::createComponentForVariable(const Variable& variable, const String& explicitName, bool topLevelComponent)
 {
-  Component* res = createComponentForObjectImpl(object, explicitName);
+  if (!variable)
+    return NULL;
+  Component* res = createComponentForVariableImpl(variable, explicitName);
   if (topLevelComponent)
   {
-    ObjectSelectorAndContentComponent* selector = dynamic_cast<ObjectSelectorAndContentComponent* >(res);
+    VariableSelectorAndContentComponent* selector = dynamic_cast<VariableSelectorAndContentComponent* >(res);
     if (selector)
-      res = new ObjectBrowser(selector);
+      res = new VariableBrowser(selector);
   }
   return res;
 }

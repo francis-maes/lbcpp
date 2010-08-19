@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ObjectProxyComponent.h         | A Object proxy component        |
-| Author  : Francis Maes                   |                                 |
+| Filename: VariableProxyComponent.h       | A component whose Variable can  |
+| Author  : Francis Maes                   | be dynamically changed          |
 | Started : 15/06/2009 13:17               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_COMPONENTS_OBJECT_PROXY_H_
-# define EXPLORER_COMPONENTS_OBJECT_PROXY_H_
+#ifndef EXPLORER_COMPONENTS_VARIABLE_PROXY_H_
+# define EXPLORER_COMPONENTS_VARIABLE_PROXY_H_
 
 # include "common.h"
 # include "../Utilities/ComponentWithPreferedSize.h"
@@ -15,21 +15,21 @@
 namespace lbcpp
 {
 
-class ObjectProxyComponent : public Component, public ComponentWithPreferedSize
+class VariableProxyComponent : public Component, public ComponentWithPreferedSize
 {
 public:
-  ObjectProxyComponent() : component(NULL)
+  VariableProxyComponent() : component(NULL)
     {}
 
-  virtual ~ObjectProxyComponent()
+  virtual ~VariableProxyComponent()
     {deleteAllChildren();}
 
-  void setObject(ObjectPtr object)
-    {setObject(object, object ? createComponentForObject(object) : NULL);}
+  void setVariable(const Variable& variable)
+    {setVariable(variable, createComponentForVariable(variable));}
   
-  void setObject(ObjectPtr object, Component* newComponent)
+  void setVariable(const Variable& variable, Component* newComponent)
   {
-    this->object = object;
+    this->variable = variable;
     if (component)
     {
       removeChildComponent(component);
@@ -43,8 +43,8 @@ public:
     }
   }
     
-  ObjectPtr getObject() const
-    {return object;}
+  Variable getVariable() const
+    {return variable;}
   
   virtual void resized()
   {
@@ -66,10 +66,9 @@ public:
 
 private:
   Component* component;
-  ObjectPtr object;
+  Variable variable;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_COMPONENTS_OBJECT_PROXY_H_
-
+#endif // !EXPLORER_COMPONENTS_VARIABLE_PROXY_H_
