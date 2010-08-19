@@ -12,7 +12,7 @@
 #include "../Data/Formats/DSSPFileParser.h"
 using namespace lbcpp;
 
-extern void declareProteinLibrary();
+extern void declareProteinClasses();
 
 using juce::OwnedArray;
 
@@ -123,7 +123,7 @@ void compileProteins(const File& mainInputDirectory, const std::vector<File>& ot
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinLibrary();
+  declareProteinClasses();
 
   if (argc < 4)
   {

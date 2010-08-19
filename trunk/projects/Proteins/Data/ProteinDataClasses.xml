@@ -59,6 +59,17 @@
       <value name="bend"                    oneLetterCode="S"/>
       <value name="coil"                    oneLetterCode="C"/>
     </enumeration>
+    
+    <code>
+      SecondaryStructureElement dsspSecondaryStructureToSecondaryStructure(DSSPSecondaryStructureElement element)
+      {
+        if (element == threeTurnHelix || element == alphaHelix)
+          return helix;
+        if (element == residueInIsolatedBridge || element == extendedStrandInSheet)
+          return sheet;
+        return other;
+      }
+    </code>
 
     <enumeration name="StructuralAlphabetElement">
       <value name="A"/>
@@ -139,6 +150,15 @@
       <!-- Tertiary Structure -->
       <variable type="CartesianPositionVector" name="calphaTrace" shortdesc="C-alpha Trace"/>
       <variable type="TertiaryStructure" name="tertiaryStructure" shortdesc="Tertiary Structure"/>
+    </class>
+    
+    <!-- Protein Functions -->
+    <class name="ProteinLengthFunction" base="Function">
+      <constructor/>
+    </class>
+
+    <class name="ProteinToInputOutputPairFunction" base="Function">
+      <constructor/>
     </class>
   </namespace>
   

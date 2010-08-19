@@ -11,7 +11,7 @@
 #include "../Data/Protein.h"
 using namespace lbcpp;
 
-extern void declareProteinLibrary();
+extern void declareProteinClasses();
 
 File psiBlastExecutable(T("C:\\Program Files (x86)\\NCBI\\blast-2.2.23+\\bin\\psiblast.exe"));
 File dsspExecutable(T("C:\\Projets\\LBC++\\projects\\temp\\DSSPCMBI.EXE"));
@@ -152,7 +152,7 @@ void computePSSMsAndDSSPs(const File& inputDirectory, const File& pssmOutputDire
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinLibrary();
+  declareProteinClasses();
   juce::initialiseJuce_NonGUI();
 
   if (argc < 4)

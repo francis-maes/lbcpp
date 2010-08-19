@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Protein">
+
+  <import name="Geometry"/>
+  <import name="ProteinData"/>
+  <import name="ProteinPerception"/>
+  <import name="ProteinInference"/>
+
+  <include file="Data/Protein.h"/>
+  
+  <namespace name="lbcpp">
+
+    <code>
+      TypePtr sequenceSeparationDistanceType()
+        {static TypeCache cache(T("SequenceSeparationDistance")); return cache();}
+    </code>
+    
+  </namespace>
+
+  <declarationCode>
+    lbcpp::Class::declare(new lbcpp::IntegerType(T("SequenceSeparationDistance"), lbcpp::integerType()));
+  </declarationCode>
+  
+</file>
