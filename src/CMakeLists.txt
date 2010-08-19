@@ -28,11 +28,13 @@ SET(LBCPP_DATA_IMPL_HEADERS
   ../include/lbcpp/Data/impl/VariableReference.hpp
 )
 
+GENERATE_INTROSPECTION_CODE(Data/Function/FunctionClasses.xml FunctionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+
 SET(LBCPP_DATA_SOURCES
   Data/Variable.cpp
   Data/Object.cpp
   Data/Type.cpp
-  Data/Function.cpp
   Data/Stream.cpp
   Data/Container.cpp
   Data/Vector.cpp
@@ -56,7 +58,14 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
 )
-GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+
+SET(LBCPP_DATA_FUNCTION_SOURCES
+  Data/Function/LoadFromFileFunction.h
+  Data/Function/SetFieldFunction.h
+  Data/Function/SelectPairFieldsFunction.h
+  Data/Function/FunctionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
+)
 
 SET(LBCPP_DATA_PERCEPTION_SOURCES
   Data/Perception/IdentityPerception.h
@@ -287,6 +296,7 @@ SET(LBCPP_CORE
   ${LBCPP_DATA_SOURCES}
     ${LBCPP_DATA_TYPE_SOURCES}
     ${LBCPP_DATA_STREAM_SOURCES}
+    ${LBCPP_DATA_FUNCTION_SOURCES}
     ${LBCPP_DATA_PERCEPTION_SOURCES}
   
   ${LBCPP_OBJECT_HEADERS}
@@ -324,6 +334,7 @@ SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES} ${LBCPP_DATA_HEADERS})
 SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
+SOURCE_SUB_GROUP(Data Function FILES ${LBCPP_DATA_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Data Perception FILES ${LBCPP_DATA_PERCEPTION_SOURCES})
 
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
