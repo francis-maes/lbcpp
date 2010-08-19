@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Function" directory="Data/Function">
+  <namespace name="lbcpp">
+
+    <class name="Function" abstract="yes"/>
+
+    <class name="LoadFromFileFunction" base="Function">
+      <constructor arguments="TypePtr expectedType"/>
+      <variable type="Type" name="expectedType"/>
+    </class>
+    
+    <class name="SetFieldFunction" base="Function">
+      <constructor arguments="size_t fieldIndex"/>
+      <variable type="Integer" name="fieldIndex"/>
+    </class>
+
+    <class name="SelectPairFieldsFunction" base="Function">
+      <constructor arguments="int index1, int index2"/>
+      <variable type="Integer" name="index1"/>
+      <variable type="Integer" name="index2"/>
+    </class>
+  </namespace>
+  
+</file>
