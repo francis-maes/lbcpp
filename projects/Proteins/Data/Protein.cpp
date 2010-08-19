@@ -12,11 +12,6 @@
 #include "Formats/FASTAFileGenerator.h"
 using namespace lbcpp;
 
-TypePtr lbcpp::sequenceSeparationDistanceType()
-  {static TypeCache cache(T("SequenceSeparationDistance")); return cache();}
-
-///////////////////
-
 ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, ErrorHandler& callback)
 {
   ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant, callback));
@@ -101,6 +96,8 @@ void Protein::setDistanceMap(SymmetricMatrixPtr distanceMap, bool betweenCBetaAt
 
 String Protein::getTargetFriendlyName(size_t index)
 {
+  // FIXME: use info from class
+
   // skip base class variables
   size_t baseClassVariables = nameableObjectClass()->getNumStaticVariables();
   if (index < baseClassVariables)
@@ -331,63 +328,4 @@ Variable Protein::createEmptyTarget(size_t index) const
   default:
     jassert(false); return Variable();
   }
-}
-
-/*
-** ProteinLengthFunction
-*/
-class ProteinLengthFunction : public Function
-{
-public:
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return sequenceSeparationDistanceType();}
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-  {
-    ProteinPtr protein = input.getObjectAndCast<Protein>();
-    jassert(protein);
-    return protein->getLength();
-  }
-};
-
-FunctionPtr lbcpp::proteinLengthFunction()
-  {return new ProteinLengthFunction();}
-
-/*
-** ProteinToInputOutputPairFunction
-*/
-class ProteinToInputOutputPairFunction : public Function
-{
-public:
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return pairType(proteinClass(), proteinClass());}
-
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
-  {
-    ProteinPtr protein = input.getObjectAndCast<Protein>();
-    jassert(protein);
-    protein->computeMissingVariables();
-    ProteinPtr inputProtein = new Protein(protein->getName());
-    inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
-    inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
-    return Variable::pair(inputProtein, protein);
-  }
-};
-
-FunctionPtr lbcpp::proteinToInputOutputPairFunction()
-  {return new ProteinToInputOutputPairFunction();}
-
-
-void declareProteinMiscTypes()
-{
-  Class::declare(new IntegerType(T("SequenceSeparationDistance"), integerType()));
-
-  LBCPP_DECLARE_CLASS(ProteinLengthFunction, Function);
-  LBCPP_DECLARE_CLASS(ProteinToInputOutputPairFunction, Function);
 }

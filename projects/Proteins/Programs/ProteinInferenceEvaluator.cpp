@@ -11,7 +11,7 @@
 #include "Inference/ProteinInference.h"
 using namespace lbcpp;
 
-extern void declareProteinLibrary();
+extern void declareProteinClasses();
 
 ContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0)
 {
@@ -113,7 +113,7 @@ public:
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinLibrary();
+  declareProteinClasses();
 
   if (argc < 4)
   {

@@ -10,7 +10,7 @@
 #include "../Data/Protein.h"
 using namespace lbcpp;
 
-extern void declareProteinLibrary();
+extern void declareProteinClasses();
 
 bool convertPDBToProtein(const File& inputFile, const File& outputFile)
 {
@@ -48,7 +48,7 @@ bool convertProteinToPDB(const File& inputFile, const File& outputFile)
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinLibrary();
+  declareProteinClasses();
 
   if (argc < 3)
   {

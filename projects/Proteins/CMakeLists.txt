@@ -7,6 +7,7 @@ GENERATE_INTROSPECTION_CODE(Geometry/GeometryClasses.xml GeometryClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/ProteinDataClasses.xml ProteinDataClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionClasses.xml ProteinPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceClasses.xml ProteinInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(ProteinClasses.xml ProteinClasses.cpp)
 
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/DihedralAngle.h
@@ -28,7 +29,6 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/AminoAcid.h
   Data/AminoAcid.cpp
   Data/SecondaryStructure.h
-  Data/SecondaryStructure.cpp
   Data/Atom.h
   Data/Atom.cpp
   Data/Residue.h
@@ -37,6 +37,7 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/TertiaryStructure.cpp
   Data/Protein.h
   Data/Protein.cpp
+  Data/ProteinFunctions.h
   Data/ProteinDataClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinDataClasses.cpp
 )
@@ -91,7 +92,6 @@ ADD_CRALGORITHM_SOURCES(
   Perception/CommonFeatureGenerators.lcpp
 )
 
-
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_PROTEIN_DATA_SOURCES}
@@ -100,7 +100,8 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
   
-  classes.cpp
+  ProteinClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinClasses.cpp
 )
 
 SET(PROTEINS_SOURCES

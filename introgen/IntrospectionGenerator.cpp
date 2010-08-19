@@ -321,6 +321,11 @@ protected:
       String name = elt->getStringAttribute(T("name"), T("???"));
       writeLine(T("declare") + name + T("Classes();"));
     }
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("declarationCode"))
+    {
+      writeLine(elt->getAllSubText());
+    }
    
     closeScope();
   }

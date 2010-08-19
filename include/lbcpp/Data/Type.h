@@ -361,35 +361,6 @@ protected:
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
 /*
-** Collection
-*/
-class Collection;
-typedef ReferenceCountedObjectPtr<Collection> CollectionPtr;
-
-class Collection : public DynamicClass
-{
-public:
-  Collection(const String& name)
-    : DynamicClass(name, objectClass()) {}
-
-  static CollectionPtr get(const String& className)
-    {return checkCast<Collection>(T("Collection::get"), Type::get(className));}
-
-  size_t getNumElements() const
-    {return objects.size();}
-
-  ObjectPtr getElement(size_t index) const
-    {jassert(index < objects.size()); return objects[index];}
-
-protected:
-  void addElement(ObjectPtr object)
-    {objects.push_back(object);}
-
-private:
-  std::vector<ObjectPtr> objects;
-};
-
-/*
 ** Minimalistic C++ classes Wrapper
 */
 template<class TT>

@@ -5,12 +5,12 @@
 
 using namespace lbcpp;
 
-extern void declareProteinLibrary();
+extern void declareProteinClasses();
 
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinLibrary();
+  declareProteinClasses();
   
   File pdbDirectoryFile;
   File fastaFile;
