@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ProteinPerception" directory="Perception">
+  <namespace name="lbcpp">
+
+    <!-- Protein Perception -->
+    <class name="ProteinCompositePerception" base="CompositePerception"/>
+
+    <!-- Residue Perception -->
+    <class name="ResidueCompositePerception" base="CompositePerception"/>
+    <class name="ProteinToResiduePerception" base="DecoratorPerception">
+      <constructor arguments="PerceptionPtr proteinPerception"/>
+    </class>
+
+    <!-- Residue Pair Perception -->
+    <class name="ResiduePairPerception" base="Perception" abstract="yes"/>
+
+    <class name="ProteinToResiduePairPerception" base="DecoratorPerception">
+      <constructor arguments="PerceptionPtr proteinPerception"/>
+    </class>
+    
+    <class name="ResidueToResiduePairPerception" base="ResiduePairPerception">
+      <constructor arguments="PerceptionPtr residuePerception"/>
+      <variable type="Perception" name="residuePerception"/>
+    </class>
+
+    <class name="SeparationDistanceResiduePairPerception" base="ResiduePairPerception">
+      <constructor/>
+    </class>
+
+    <class name="ResiduePairCompositePerception" base="CompositePerception"/>
+
+    <!-- Convert Perception To Features -->
+    <class name="ConvertToFeaturesPerception" base="Perception">
+      <variable type="Perception" name="perception"/>
+    </class>
+    
+  </namespace>  
+</file>

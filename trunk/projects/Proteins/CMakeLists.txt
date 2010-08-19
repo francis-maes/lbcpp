@@ -3,6 +3,11 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+GENERATE_INTROSPECTION_CODE(Geometry/GeometryClasses.xml GeometryClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/ProteinDataClasses.xml ProteinDataClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionClasses.xml ProteinPerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceClasses.xml ProteinInferenceClasses.cpp)
+
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/DihedralAngle.h
   Geometry/Vector3.h
@@ -13,9 +18,9 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/Matrix4.cpp
   Geometry/kdtree_lib.h
   Geometry/kdtree_lib.c
+  Geometry/GeometryClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/GeometryClasses.cpp
 )
-
-GENERATE_INTROSPECTION_CODE(Data/ProteinClasses.xml ProteinClasses.cpp)
 
 SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/AminoAcid.h
@@ -32,8 +37,8 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/TertiaryStructure.cpp
   Data/Protein.h
   Data/Protein.cpp
-  Data/ProteinClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinClasses.cpp
+  Data/ProteinDataClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinDataClasses.cpp
 )
 
 
@@ -56,12 +61,13 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
 SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   Perception/ProteinPerception.h
   Perception/ProteinPerception.cpp
-  Perception/ResiduePerception.h
-  Perception/ResiduePerception.cpp
-  Perception/ResiduePairPerception.h
-  Perception/ResiduePairPerception.cpp
+  Perception/ProteinToResiduePerception.h
+  Perception/ProteinToResiduePairPerception.h
+  Perception/SeparationDistanceResiduePairPerception.h
   Perception/CommonFeatureGenerators.h
   Perception/PerceptionToFeatures.h
+  Perception/ProteinPerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionClasses.cpp
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
@@ -70,6 +76,8 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   Inference/ProteinInference.cpp
   Inference/ProteinInferenceFactory.h
   Inference/ProteinInferenceFactory.cpp
+  Inference/ProteinInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinInferenceClasses.cpp
 )
 
 SET(LBCPP_PROTEIN_EVALUATOR_SOURCES

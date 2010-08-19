@@ -12,6 +12,7 @@
 # include <lbcpp/Data/Perception.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Inference/DecoratorInference.h>
 # include "../Data/Protein.h"
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>

@@ -10,8 +10,6 @@
 #include "ProteinInference.h"
 #include "ContactMapInference.h"
 #include "../Perception/ProteinPerception.h"
-#include "../Perception/ResiduePerception.h"
-#include "../Perception/ResiduePairPerception.h"
 #include <lbcpp/Data/Perception.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 using namespace lbcpp;

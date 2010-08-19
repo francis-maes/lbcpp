@@ -54,23 +54,6 @@ protected:
   PerceptionPtr perception;
 };
 
-class ConvertToFeaturesPerceptionClass : public DynamicClass
-{
-public:
-  ConvertToFeaturesPerceptionClass() 
-    : DynamicClass(T("ConvertToFeaturesPerception"), perceptionClass())
-  {
-    addVariable(perceptionClass(), T("perception"));
-  }
-
-  virtual VariableValue create() const
-    {return new ConvertToFeaturesPerception();}
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(ConvertToFeaturesPerception)
-    LBCPP_DECLARE_VARIABLE(perception);
-  LBCPP_DECLARE_VARIABLE_END()
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PERCEPTION_TO_FEATURES_H_

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Protein" directory="Data">
+<file name="ProteinData" directory="Data">
   <namespace name="lbcpp">
 
     <class name="Atom" base="NameableObject">
