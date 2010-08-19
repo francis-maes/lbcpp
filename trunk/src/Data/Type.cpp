@@ -495,7 +495,7 @@ Enumeration::Enumeration(const String& name)
 ClassPtr Enumeration::getClass() const
   {return enumerationClass();}
 
-void Enumeration::addElement(const String& elementName)
+void Enumeration::addElement(const String& elementName, const String& oneLetterCode, const String& threeLettersCode)
 {
   if (findElement(elementName) >= 0)
   {
@@ -503,6 +503,10 @@ void Enumeration::addElement(const String& elementName)
     return;
   }
   elements.push_back(elementName);
+  if (oneLetterCode.length() == 1)
+    oneLetterCodes += oneLetterCode;
+
+  // FIXME: store three-letters code
 }
 
 int Enumeration::findElement(const String& name) const

@@ -102,8 +102,8 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<AminoAcid> AminoAcidPtr;
-  
-extern CollectionPtr aminoAcidCollection();
+
+extern ClassPtr aminoAcidClass();
 
 }; /* namespace lbcpp */
 

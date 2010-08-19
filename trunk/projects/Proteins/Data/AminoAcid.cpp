@@ -14,9 +14,9 @@ using namespace lbcpp;
 */
 const size_t AminoAcid::numStandardAminoAcid = 20;
 
+// todo: remove and use Enumeration generic functions
 const String AminoAcid::oneLetterCodes
   = T("ARNDCEQGHILKMFPSTWYVBZJ"); // X
-
 const juce::tchar* AminoAcid::threeLettersCodes[] =
 {
   T("Ala"), T("Arg"), T("Asn"), T("Asp"), T("Cys"),
@@ -93,65 +93,4 @@ AminoAcidCategory1 AminoAcid::getCategory1() const
     return basicCategory;
   jassert(false);
   return nonPolarCategory;
-}
-/*
-** AminoAcidClass
-*/
-namespace lbcpp {
-
-class AminoAcidClass : public Collection
-{
-public:
-  AminoAcidClass() : Collection(T("AminoAcid"))
-  {
-    addVariable(aminoAcidTypeEnumeration(), T("type"));
-    addVariable(stringType(), T("oneLetterCode"));
-    addVariable(stringType(), T("threeLettersCode"));
-    addVariable(aminoAcidCategory1Enumeration(), T("category1"));
-
-    for (size_t i = 0; i < (size_t)totalNumAminoAcids; ++i)
-      addElement(new AminoAcid((AminoAcidType)i));
-  }
-};
-
-}; /* namespace lbcpp */
-
-static const juce::tchar* aminoAcidTypeStrings[] = {
-  // 20 amino acids
-  T("Alanine"), T("Arginine"), T("Asparagine"), T("Aspartic Acid"), T("Cysteine"),
-  T("Glutamic Acid"), T("Glutamine"), T("Glycine"), T("Histidine"), T("Isoleucine"),
-  T("Leucine"), T("Lysine"), T("Methionine"), T("Phenylalanine"), T("Proline"),
-  T("Serine"), T("Threonine"), T("Tryptophan"), T("Tyrosine"), T("Valine"),
-
-  // 3 ambiguous amino acids
-  T("Asparagine or Aspartic Acid"),
-  T("Glutamine or Glutamic Acid"),
-  T("Lecine or Isoleucine"),
-
-  NULL
-};
-
-static const String aminoAcidTypeOneLetterCodes = T("ARNDCEQGHILKMFPSTWYVBZJ");
-
-EnumerationPtr lbcpp::aminoAcidTypeEnumeration()
-  {static EnumerationPtr res = Enumeration::get(T("AminoAcidType")); return res;}
-
-static const juce::tchar* aminoAcidCategory1Strings[] = {
-  T("Non Polar"), T("Polar"), T("Acidic"), T("Basic"), NULL
-};
-
-EnumerationPtr lbcpp::aminoAcidCategory1Enumeration()
-  {static EnumerationPtr res = Enumeration::get(T("AminoAcidCategory1")); return res;}
-
-CollectionPtr lbcpp::aminoAcidCollection()
-{
-  static CollectionPtr res = Collection::get(T("AminoAcid"));
-  return res;
-}
-
-void declareAminoAcidClasses()
-{
-  Class::declare(new Enumeration(T("AminoAcidType"), aminoAcidTypeStrings, aminoAcidTypeOneLetterCodes));
-  Class::declare(new Enumeration(T("AminoAcidCategory1"), aminoAcidCategory1Strings));
-  Class::declare(new AminoAcidClass());
 }

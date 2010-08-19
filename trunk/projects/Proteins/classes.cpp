@@ -10,8 +10,6 @@
 using namespace lbcpp;
 
 // data
-extern void declareAminoAcidClasses();
-extern void declareSecondaryStructureClasses();
 extern void declareProteinMiscTypes();
 
 // generated
@@ -23,8 +21,6 @@ extern void declareProteinInferenceClasses();
 void declareProteinLibrary()
 {
   // data
-  declareAminoAcidClasses();
-  declareSecondaryStructureClasses();
   declareProteinMiscTypes();
 
   // generated
