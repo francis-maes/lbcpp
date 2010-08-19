@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
   //  std::cout << "Loaded pssm: " << pssm->toString() << std::endl;
 
   std::cout << "Model file: " << modelFile.getFullPathName() << std::endl;
-  ProteinSequentialInferencePtr inference = Inference::createFromFileAndCast<ProteinSequentialInference>(modelFile);
+  ProteinSequentialInferencePtr inference = Variable::createFromFile(modelFile).getObjectAndCast<ProteinSequentialInference>();
   if (!inference)
   {
     std::cerr << "Could not load model" << std::endl;

@@ -29,12 +29,6 @@ public:
   virtual bool shouldOptimizerStop(double)
     {return shouldStop();}
 
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, maxIterations);}
-
-  virtual bool load(InputStream& istr)
-    {return read(istr, maxIterations);}
-
   virtual ObjectPtr clone() const
   {
     ReferenceCountedObjectPtr<MaxIterationsStoppingCriterion> res = new MaxIterationsStoppingCriterion(maxIterations);
@@ -78,12 +72,6 @@ public:
     }
     return false;
   }
-
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, maxIterationsWithoutImprovement);}
-
-  virtual bool load(InputStream& istr)
-    {return read(istr, maxIterationsWithoutImprovement);}
 
   virtual ObjectPtr clone() const
   {
@@ -141,12 +129,6 @@ public:
     return false;
   }
 
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, tolerance);}
-
-  virtual bool load(InputStream& istr)
-    {return read(istr, tolerance);}
-
   virtual ObjectPtr clone() const
   {
     ReferenceCountedObjectPtr<AverageImprovementStoppingCriterion> res 
@@ -183,12 +165,6 @@ public:
     bool t2 = criterion2->shouldOptimizerStop(value);
     return t1 || t2;
   }
-
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, criterion1); write(ostr, criterion2);}
-
-  virtual bool load(InputStream& istr)
-    {return read(istr, criterion1) && read(istr, criterion2);}
 
   virtual ObjectPtr clone() const
     {return new LogicalOrStoppingCriterion(criterion1->cloneAndCast<StoppingCriterion>(), criterion2->cloneAndCast<StoppingCriterion>());}

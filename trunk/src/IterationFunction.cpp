@@ -17,12 +17,6 @@ public:
   virtual double compute(size_t iteration) const
     {return value;}
     
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, value);}
-    
-  virtual bool load(InputStream& istr)
-    {return read(istr, value);}
-
   virtual String toString() const
     {return "ConstantIterationFunction(" + lbcpp::toString(value) + ")";}
   
@@ -44,12 +38,6 @@ public:
     
   virtual double compute(size_t iteration) const
     {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
-
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, initialValue); write(ostr, numberIterationsToReachHalfInitialValue);}
-    
-  virtual bool load(InputStream& istr)
-    {return read(istr, initialValue) && read(istr, numberIterationsToReachHalfInitialValue);}
 
   virtual String toString() const
     {return "InvLinearIterationFunction(" + lbcpp::toString(initialValue) + 

@@ -33,12 +33,6 @@ public:
     setParameters(denseParameters);
     return optimizerContinue;
   }
-
-  virtual void save(OutputStream& ostr) const
-    {write(ostr, stepSize);}
-
-  virtual bool load(InputStream& istr)
-    {return read(istr, stepSize);}
   
 private:
   IterationFunctionPtr stepSize;

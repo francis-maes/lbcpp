@@ -47,12 +47,6 @@ public:
 
 protected:
   double margin;
-
-  virtual bool load(InputStream& istr)
-    {return BinaryClassificationLossFunction::load(istr) && lbcpp::read(istr, margin);}
-
-  virtual void save(OutputStream& ostr) const
-    {BinaryClassificationLossFunction::save(ostr); lbcpp::write(ostr, margin);}
 };
 
 }; /* namespace lbcpp */

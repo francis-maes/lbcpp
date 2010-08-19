@@ -56,12 +56,6 @@ protected:
   friend class TransferFunctionDecoratorInferenceClass;
 
   ScalarFunctionPtr transferFunction;
-
-  virtual bool load(InputStream& istr)
-    {return DecoratorInference::load(istr) && lbcpp::read(istr, transferFunction);}
-
-  virtual void save(OutputStream& ostr) const
-    {DecoratorInference::save(ostr); lbcpp::write(ostr, transferFunction);}
 };
 
 }; /* namespace lbcpp */

@@ -94,7 +94,7 @@ public:
 
   virtual ObjectPtr clone() const
   {
-    StringToObjectMapPtr res = Object::createAndCast<StringToObjectMap>(getClassName());
+    StringToObjectMapPtr res = Object::cloneAndCast<StringToObjectMap>();
     res->name = name;
     res->objects = objects;
     return res;

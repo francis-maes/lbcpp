@@ -60,9 +60,6 @@ protected:
   std::vector<RecentExecutable> v;
 
   int findRecentExecutable(const File& file) const;
-
-  virtual bool load(InputStream& istr);
-  virtual void save(OutputStream& ostr) const;
 };
 
 }; /* namespace lbcpp */

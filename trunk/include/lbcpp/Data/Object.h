@@ -87,12 +87,11 @@ public:
   ** Dynamic creation
   **  deprecated functions, call directly the methods of Type
   */
+  //static ObjectPtr create(const String& className);
 
-  static ObjectPtr create(const String& className);
-
-  template<class T>
+/*  template<class T>
   static ReferenceCountedObjectPtr<T> createAndCast(const String& className)
-    {return checkCast<T>(T("Object::createAndCast"), create(className));}
+    {return checkCast<T>(T("Object::createAndCast"), create(className));}*/
 
   /**
   ** Loads an object from a C++ stream.
@@ -106,17 +105,6 @@ public:
   static ObjectPtr createFromStream(InputStream& istr, bool doLoading = true);
 
   /**
-  ** Loads an object from a file.
-  **
-  ** @param fileName : file name.
-  **
-  ** @return a pointer on the loaded object or ObjectPtr() if any error
-  ** occurs.
-  ** @see saveToFile
-  */
-  static ObjectPtr createFromFile(const File& file);
-
-  /**
   ** Loads an object from a stream and cast it.
   **
   ** @param istr : input stream.
@@ -127,16 +115,6 @@ public:
   static ReferenceCountedObjectPtr<T> createFromStreamAndCast(InputStream& istr)
     {return checkCast<T>(T("Object::createFromStreamAndCast"), createFromStream(istr));}
 
-  /**
-  ** Loads an object from a file and cast it.
-  **
-  ** @param fileName : file name.
-  **
-  ** @return a pointer on the loaded object or a null pointer if the cast fails.
-  */
-  template<class T>
-  static ReferenceCountedObjectPtr<T> createFromFileAndCast(const File& file)
-    {return checkCast<T>(T("Object::createFromFileAndCast"), createFromFile(file));}
 
   /**
   ** Name getter.
@@ -203,9 +181,31 @@ public:
   virtual ObjectPtr addWeighted(const Variable& value, double weight)
     {jassert(false); return ObjectPtr(this);}
 
-  // XML Serialisation
+  /**
+  ** Override this function to save the object to an XML tree
+  **
+  ** @param xml : the target XML tree
+  */
   virtual void saveToXml(XmlElement* xml) const;
+
+  /**
+  ** Override this function to load the object from an XML tree
+  **
+  ** @param xml : an XML tree
+  ** @param callback : a callback that can receive errors and warnings
+  ** @return false is the loading fails, true otherwise. If loading fails,
+  ** load() is responsible for declaring an error to the callback.
+  */
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+
+  /**
+  ** Override this function to load the object from a String
+  **
+  ** @param str : a String
+  ** @param callback : a callback that can receive errors and warnings
+  ** @return false is the loading fails, true otherwise. If loading fails,
+  ** load() is responsible for declaring an error to the callback.
+  */
   virtual bool loadFromString(const String& str, ErrorHandler& callback);
 
   // tmp
@@ -220,18 +220,6 @@ public:
   template<class T>
   ReferenceCountedObjectPtr<T> cloneAndCast() const
     {return checkCast<T>(T("Object::cloneAndCast"), clone());}
-
-  virtual bool loadFromFile(const File& file);
-
-  /**
-  ** Saves the current object to the file @a filename.
-  **
-  ** @param fileName : output file name.
-  **
-  ** @return False if any error occurs.
-  ** @see createFromFile
-  */
-  virtual bool saveToFile(const File& file) const;
 
   /**
   ** Saves the current object to a C++ stream.
@@ -270,29 +258,11 @@ protected:
   
   ClassPtr thisClass;
   
-  bool loadFromDirectory(const File& directory);
-  bool saveToDirectory(const File& directory) const;
-
   template<class T>
   friend struct ObjectTraits;
 
-  /**
-  ** Override this function to load the object from a C++ stream.
-  **
-  ** @param istr : a C++ input stream.
-  ** @return false is the loading fails, true otherwise. If loading fails,
-  ** load() is responsible for declaring an error to the ErrorManager.
-  */
-  virtual bool load(InputStream& istr)
-    {return true;}
-
-  /**
-  ** Override this function to save the object to a C++ stream.
-  **
-  ** @param ostr : a C++ output stream.
-  */
-  virtual void save(OutputStream& ostr) const
-    {}
+  virtual bool load(InputStream& istr) {jassert(false); return false;}
+  virtual void save(OutputStream& ostr) const {jassert(false);}
 
   // utilities
   String variablesToString(const String& separator, bool includeTypes = true) const;
@@ -320,29 +290,11 @@ protected:
   friend class NameableObjectClass;
 
   String name;
-
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, name);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, name);}
 };
 
 extern ClassPtr nameableObjectClass();
 
 typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
-
-/**
-** Loads an object from the file @a filename.
-**
-** @see Object::saveToStream
-** @see Object::saveToFile
-** @param filename : file name.
-**
-** @return an object pointer.
-*/
-inline ObjectPtr loadObject(const File& file)
-  {return Object::createFromFile(file);}
 
 template<class T>
 struct ObjectPtrTraits

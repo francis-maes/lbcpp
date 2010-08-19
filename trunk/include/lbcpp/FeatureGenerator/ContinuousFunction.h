@@ -123,9 +123,6 @@ protected:
   virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
 
   bool isPositive;
-
-  virtual bool load(InputStream& istr);
-  virtual void save(OutputStream& ostr) const;
 };
 
 typedef ReferenceCountedObjectPtr<BinaryClassificationLossFunction> BinaryClassificationLossFunctionPtr;

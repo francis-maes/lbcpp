@@ -44,30 +44,39 @@ public:
   void clearRecentFiles()
     {recentFiles.clear();}
 
-protected:
-  virtual bool load(InputStream& istr);
-  virtual void save(OutputStream& ostr) const;
-
 private:
+  friend class ExplorerRecentFilesClass;
+
   enum {maxRecentFiles = 8};
   File recentDirectory;
   std::vector<File> recentFiles;
 };
 
-class ExplorerConfiguration : public StringToObjectMap
+class ExplorerConfiguration : public DynamicObject
 {
 public:
   static File getApplicationDataDirectory();
   static File getConfigurationFile();
 
-  static StringToObjectMapPtr getInstance();
+  static DynamicObjectPtr getInstance();
 
   static void save()
-    {getInstance()->saveToFile(getConfigurationFile());}
+    {Variable(getInstance()).saveToFile(getConfigurationFile());}
 
-  template<class TT>
-  static ReferenceCountedObjectPtr<TT>& getAndCast(const String& name)
-    {return *(ReferenceCountedObjectPtr<TT>* )&(getInstance()->getObjects()[name]);}
+  static Variable& getConfiguration(const String& typeName)
+  {
+    DynamicObjectPtr object = getInstance();
+    for (size_t i = 0; i < object->getNumVariables(); ++i)
+    {
+      Variable& variable = object->getVariable(i);
+      if (variable.getTypeName() == typeName)
+        return variable;
+    }
+    TypePtr type = Type::get(typeName);
+    jassert(type);
+    object->appendVariable(Variable::create(type));
+    return object->getVariable(object->getNumVariables() - 1);
+  }
 };
 
 }; /* namespace lbcpp */

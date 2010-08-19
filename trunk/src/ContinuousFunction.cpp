@@ -87,12 +87,6 @@ void BinaryClassificationLossFunction::compute(double input, double* output, con
     *derivative = - (*derivative);
 }
 
-bool BinaryClassificationLossFunction::load(InputStream& istr)
-  {return ScalarFunction::load(istr) && lbcpp::read(istr, isPositive);}
-
-void BinaryClassificationLossFunction::save(OutputStream& ostr) const
-  {ScalarFunction::save(ostr); lbcpp::write(ostr, isPositive);}
-
 /*
 ** ScalarVectorFunction
 */

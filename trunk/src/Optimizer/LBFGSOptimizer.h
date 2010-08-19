@@ -60,12 +60,6 @@ public:
     return optimizerContinue;
   }
 
-  virtual void save(OutputStream& ostr) const
-    {}
-
-  virtual bool load(InputStream& istr)
-    {return true;}
-
 protected:
   QuasiNewtonMemory memory;
   BackTrackingLineSearch* lineSearch;

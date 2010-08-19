@@ -7,9 +7,8 @@
                                `--------------------------------------------*/
 
 #include "Utilities/SplittedLayout.h"
+#include "Components/FileObjectComponent.h" // tmp, for FileObject
 #include "ProcessManager/ProcessManager.h"
-#include "ProcessManager/RecentProcesses.h"
-#include "Components/FileObjectComponent.h" // for FileObject
 #include "ExplorerConfiguration.h"
 using namespace lbcpp;
 
@@ -232,11 +231,6 @@ public:
       res = Variable::createFromFile(file).getObject();
       break;
 
-    case FileObject::classFile:
-    case FileObject::classDirectory:
-      res = Object::createFromFile(file);
-      break;
-
     default:
       res = fileObject;
     }
@@ -252,6 +246,7 @@ private:
 
 extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
+extern void declareExplorerClasses();
 
 class ExplorerApplication : public JUCEApplication
 {
@@ -263,22 +258,14 @@ public:
     ErrorHandler::setInstance(explorerErrorHandler);
     lbcpp::initialize();
     declareProteinClasses();
-
-    LBCPP_DECLARE_CLASS(FileObject, Object);
-
-    LBCPP_DECLARE_CLASS_LEGACY(ExplorerConfiguration);
-
-    LBCPP_DECLARE_CLASS_LEGACY(ExplorerRecentFiles);
-    LBCPP_DECLARE_CLASS_LEGACY(RecentProcesses);
-    LBCPP_DECLARE_CLASS_LEGACY(ProcessConsoleSettings);
-    LBCPP_DECLARE_CLASS_LEGACY(ProcessConsoleFilter);
-
-    flushErrorAndWarningMessages(T("Explorer Start-up"));
+    declareExplorerClasses();
 
     theCommandManager = new ApplicationCommandManager();
 
     mainWindow = new ExplorerMainWindow();
     mainWindow->setVisible(true);
+
+    flushErrorAndWarningMessages(T("Explorer Start-up"));
   }
   
   virtual void shutdown()

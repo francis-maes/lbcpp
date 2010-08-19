@@ -62,6 +62,15 @@ public:
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {jassert(false); return false;}
+
+  virtual size_t getNumStaticVariables() const
+    {return 0;}
+
+  virtual TypePtr getStaticVariableType(size_t index) const
+    {ErrorHandler::error(T("Type::getStaticVariableType()"), T("Not implemented")); return TypePtr();}
+
+  virtual String getStaticVariableName(size_t index) const
+    {ErrorHandler::error(T("Type::getStaticVariableName()"), T("Not implemented")); return String::empty;}
 };
 
 class NilType : public Type

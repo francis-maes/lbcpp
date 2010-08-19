@@ -53,7 +53,7 @@ public:
       ObjectPtr object = output.getObject();
       File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save " << f.getFileName() << "." << std::endl;
-      object->saveToFile(f);
+      Variable(object).saveToFile(f);
     }
   }
 

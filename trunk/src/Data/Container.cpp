@@ -82,13 +82,6 @@ public:
   virtual Variable getVariable(size_t index) const
     {jassert(index < indices.size()); return target->getVariable(indices[index]);}
 
-protected:
-  virtual bool load(InputStream& istr)
-    {return DecoratorContainer::load(istr) && lbcpp::read(istr, indices);}
-
-  virtual void save(OutputStream& ostr) const
-    {DecoratorContainer::save(ostr); lbcpp::write(ostr, indices);}  
-
 private:
   std::vector<size_t> indices;
 };
@@ -120,13 +113,6 @@ public:
     return target->getVariable(index % target->size());
   }
 
-protected:
-  virtual bool load(InputStream& istr)
-    {return DecoratorContainer::load(istr) && lbcpp::read(istr, count);}
-
-  virtual void save(OutputStream& ostr) const
-    {DecoratorContainer::save(ostr); lbcpp::write(ostr, count);}  
-
 private:
   size_t count;
 };
@@ -152,13 +138,6 @@ public:
     jassert(index < end);
     return target->getVariable(index);
   }
-
-protected:
-  virtual bool load(InputStream& istr)
-    {return DecoratorContainer::load(istr) && lbcpp::read(istr, begin) && lbcpp::read(istr, end);}
-
-  virtual void save(OutputStream& ostr) const
-    {DecoratorContainer::save(ostr); lbcpp::write(ostr, begin); lbcpp::write(ostr, end);}  
 
 private:
   size_t begin, end;
@@ -188,13 +167,6 @@ public:
       return target->getVariable(index + (end - begin));
   }
 
-protected:
-  virtual bool load(InputStream& istr)
-    {return DecoratorContainer::load(istr) && lbcpp::read(istr, begin) && lbcpp::read(istr, end);}
-
-  virtual void save(OutputStream& ostr) const
-    {DecoratorContainer::save(ostr); lbcpp::write(ostr, begin); lbcpp::write(ostr, end);}  
-  
 private:
   size_t begin, end;
 };

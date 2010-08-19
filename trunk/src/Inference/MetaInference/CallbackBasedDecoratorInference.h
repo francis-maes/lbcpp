@@ -32,12 +32,6 @@ public:
 
 protected:
   InferenceCallbackPtr callback;
-  
-  virtual bool load(InputStream& istr)
-    {return DecoratorInference::load(istr) && lbcpp::read(istr, callback);}
-
-  virtual void save(OutputStream& ostr) const
-    {DecoratorInference::save(ostr); lbcpp::write(ostr, callback);}
 };
 
 }; /* namespace lbcpp */

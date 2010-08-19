@@ -9,6 +9,7 @@
 #ifndef EXPLORER_COMPONENTS_FILE_OBJECT_H_
 # define EXPLORER_COMPONENTS_FILE_OBJECT_H_
 
+# include "common.h"
 # include "../Utilities/ComponentWithPreferedSize.h"
 
 namespace lbcpp

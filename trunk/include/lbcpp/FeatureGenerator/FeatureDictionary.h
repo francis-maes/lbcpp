@@ -290,15 +290,6 @@ private:
   void toStringRec(size_t indent, String& res) const;
 };
 
-/**
-** Loads a feature dictionary from a file.
-**
-** @param filename : file name.
-** @return a feature dictionary pointer.
-*/
-inline FeatureDictionaryPtr loadFeatureDictionary(const File& file)
-  {return Object::createFromFileAndCast<FeatureDictionary>(file);}
-
 class FeatureDictionaryManager
 {
 public:

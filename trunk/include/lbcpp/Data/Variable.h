@@ -53,6 +53,15 @@ public:
   static Variable create(TypePtr type);
   static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback = ErrorHandler::getInstance());
   static Variable createFromXml(XmlElement* xml, ErrorHandler& callback = ErrorHandler::getInstance());
+
+  /**
+  ** Loads a variable from a file.
+  **
+  ** @param file : the file to load
+  **
+  ** @return the loaded Variable or Nil if any error occurs.
+  ** @see saveToFile
+  */
   static Variable createFromFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
 
   static Variable missingValue(TypePtr type);
@@ -107,6 +116,15 @@ public:
   String getShortSummary() const;
   XmlElement* toXml(const String& tagName = T("var"), const String& name = String::empty) const;
 
+  /**
+  ** Saves variable to a file
+  **
+  ** @param file : output file
+  ** @param callback : A callback that can receive errors and warnings
+  **
+  ** @return false if any error occurs.
+  ** @see createFromFile
+  */
   bool saveToFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance()) const;
 
   int compare(const Variable& otherValue) const;
