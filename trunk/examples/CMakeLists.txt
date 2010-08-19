@@ -13,6 +13,9 @@ ENDMACRO(ADD_LBCPP_EXAMPLE)
 
 ADD_CPP_EXAMPLE(Misc UserTypeTraits)
 ADD_CPP_EXAMPLE(Misc MissingValues)
-ADD_CPP_EXAMPLE(Misc SimpleIntrospection)
+
+GENERATE_INTROSPECTION_CODE(Misc/SimpleIntrospection.xml SimpleIntrospection.cpp)
+ADD_EXECUTABLE(SimpleIntrospection Misc/SimpleIntrospection.xml ${CMAKE_CURRENT_BINARY_DIR}/SimpleIntrospection.cpp)
+TARGET_LINK_LIBRARIES(SimpleIntrospection lbcpp-core)
 
 ADD_LBCPP_EXAMPLE(FeatureGenerator FeatureAcceptVisitor)

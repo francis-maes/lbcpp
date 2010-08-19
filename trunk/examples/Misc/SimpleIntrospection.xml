@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<file name="SimpleIntrospection">
+  <include file="lbcpp/lbcpp.h"/>
+  <namespace name="lbcpp">
+    <code>
+      class A : public Object
+      {
+      public:
+        A(bool b) : myBool(true), myInt(1664), myDouble(8.6), myString(T("yo")), myVariable(Variable::pair(51, 33)) {}
+        A() {}
+
+      private:
+        friend class AClass;
+
+        bool myBool;
+        int myInt;
+        double myDouble;
+        String myString;
+        ObjectPtr myObject;
+        Variable myVariable;
+      };
+
+      typedef ReferenceCountedObjectPtr&lt;A&gt; APtr;
+    </code>
+    
+    <class name="A">
+      <variable type="Boolean" name="myBool"/>
+      <variable type="Integer" name="myInt"/>
+      <variable type="Double" name="myDouble"/>
+      <variable type="String" name="myString"/>
+      <variable type="Object" name="myObject"/>
+      <variable type="Variable" name="myVariable"/>
+    </class>
+  </namespace>
+  
+  <code>
+    using namespace lbcpp;
+    
+    int main(int argc, char** argv)
+    {
+      lbcpp::initialize();
+
+      Class::declare(new AClass());
+
+      APtr a = new A(true);
+      APtr emptyA = new A();
+      std::cout &lt;&lt; "A = " &lt;&lt; std::endl &lt;&lt; a->toString() &lt;&lt; std::endl;
+      std::cout &lt;&lt; "EmptyA = " &lt;&lt; std::endl &lt;&lt; emptyA->toString() &lt;&lt; std::endl;
+      File file = File::createTempFile(T("a"));
+      Variable(a).saveToFile(file);
+
+      APtr loadedA = Variable::createFromFile(file).getObjectAndCast&lt;A&gt;();
+      std::cout &lt;&lt; "LoadedA = " &lt;&lt; std::endl &lt;&lt; loadedA->toString() &lt;&lt; std::endl;
+      return 0;
+    }
+  </code>
+  
+</file>
