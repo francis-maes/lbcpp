@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_REGRESSION_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
+# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 
 namespace lbcpp
 {
