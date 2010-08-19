@@ -145,7 +145,7 @@ Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, De
 
 #include "ContactMapInference.h"
 
-void declareProteinInferenceClasses()
+void declareProteinInferenceClassesOld()
 {
   LBCPP_DECLARE_CLASS(ContactMapInference, SharedParallelInference);
 
