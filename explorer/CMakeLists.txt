@@ -1,8 +1,9 @@
-INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 
 FIND_PACKAGE(OpenGL REQUIRED)
 INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 
+GENERATE_INTROSPECTION_CODE(ExplorerClasses.xml ExplorerClasses.cpp)
 
 SET(EXPLORER_UTILITIES_SOURCES
   Utilities/SplittedLayout.h
@@ -50,6 +51,8 @@ SET(EXPLORER_APPLICATION_SOURCES
   ExplorerConfiguration.h
   ExplorerConfiguration.cpp
   ExplorerApplication.cpp
+  ExplorerClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExplorerClasses.cpp
 )
 
 SET(LBCPP_EXPLORER_SOURCES

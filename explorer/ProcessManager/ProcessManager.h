@@ -109,12 +109,6 @@ private:
   String pattern;
   bool display;
   juce::Colour colour;
-
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, pattern) && lbcpp::read(istr, display) && lbcpp::read(istr, colour);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, pattern); lbcpp::write(ostr, display); lbcpp::write(ostr, colour);}
 };
 
 typedef ReferenceCountedObjectPtr<ProcessConsoleFilter> ProcessConsoleFilterPtr;
@@ -151,12 +145,6 @@ public:
 
 private:
   std::vector<ProcessConsoleFilterPtr> filters;
-
-  virtual bool load(InputStream& istr)
-    {return lbcpp::read(istr, filters);}
-
-  virtual void save(OutputStream& ostr) const
-    {lbcpp::write(ostr, filters);}
 };
 
 class ProcessList;

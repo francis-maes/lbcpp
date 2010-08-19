@@ -432,16 +432,6 @@ private:
   double denseDotProduct(const DenseVectorPtr otherVector) const;
 };
 
-/**
-** Loads dense vector from file @a filename.
-**
-** @param filename : input file name.
-**
-** @return a new DenseVector instance.
-*/
-inline DenseVectorPtr loadDenseVector(const File& file)
-  {return Object::createFromFileAndCast<DenseVector>(file);}
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DENSE_VECTOR_H_

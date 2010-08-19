@@ -1,3 +1,8 @@
+* Repair Explorer configuration file
+* Remove VariableReference and generate set/get functions
+* Remove FileObject and use native "File" type
+
+
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 

@@ -336,16 +336,6 @@ private:
   SubVectorVector subVectors;   /**< Sparse vector subvectors. */
 };
 
-  /**
-  ** Loads sparse vector from a file.
-  **
-  ** @param filename : file name.
-  **
-  ** @return a sparse vector pointer.
-  */
-inline SparseVectorPtr loadSparseVector(const File& file)
-  {return Object::createFromFileAndCast<SparseVector>(file);}
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SPARSE_VECTOR_H_

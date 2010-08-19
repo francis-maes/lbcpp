@@ -10,10 +10,10 @@ using namespace lbcpp;
 
 RecentProcessesPtr RecentProcesses::getInstance()
 {
-  RecentProcessesPtr& res = ExplorerConfiguration::getAndCast<RecentProcesses>(T("RecentProcesses"));
+  Variable& res = ExplorerConfiguration::getConfiguration(T("RecentProcesses"));
   if (!res)
-    res = new RecentProcesses();
-  return res;
+    res = Variable(new RecentProcesses());
+  return res.getObjectAndCast<RecentProcesses>();
 }
 
 void RecentProcesses::addRecentExecutable(const File& file)
@@ -105,34 +105,3 @@ int RecentProcesses::findRecentExecutable(const File& file) const
       return (int)i;
   return -1;
 }
-
-bool RecentProcesses::load(InputStream& istr)
-{
-  size_t size;
-  if (!lbcpp::read(istr, size))
-    return false;
-
-  v.resize(size);
-  for (size_t i = 0; i < size; ++i)
-  {
-    if (!lbcpp::read(istr, v[i].executable) || !lbcpp::read(istr, v[i].arguments) ||
-        !lbcpp::read(istr, v[i].workingDirectories) || !lbcpp::read(istr, v[i].consoleSettings))
-      return false;
-    if (!v[i].consoleSettings)
-      v[i].consoleSettings = new ProcessConsoleSettings();
-  }
-  return true;
-}
-
-void RecentProcesses::save(OutputStream& ostr) const
-{
-  lbcpp::write(ostr, v.size());
-  for (size_t i = 0; i < v.size(); ++i)
-  {
-    lbcpp::write(ostr, v[i].executable);
-    lbcpp::write(ostr, v[i].arguments);
-    lbcpp::write(ostr, v[i].workingDirectories);
-    lbcpp::write(ostr, v[i].consoleSettings);
-  }
-}
-

@@ -102,13 +102,8 @@ String Object::variablesToString(const String& separator, bool includeTypes) con
   return res;
 }
 
-ObjectPtr Object::create(const String& className)
-{
-  String name = className;
-  if (name == T("Protein"))
-    name = T("ProteinObject"); // tmp
-  return Type::createInstance(name);
-}
+//ObjectPtr Object::create(const String& className)
+//  {return Type::createInstance(className);}
 
 /*
 ** Create and load
@@ -123,12 +118,12 @@ ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
   }
   if (className == T("__null__"))
     return ObjectPtr();
-  ObjectPtr res = create(className);
+  ObjectPtr res = Type::createInstance(className).getObject();
   if (res && doLoading && !res->load(istr))
     error(T("Object::create"), T("Could not load object of class ") + className);
   return res;
 }
-
+/*
 ObjectPtr Object::createFromFile(const File& file)
 {
   if (!file.exists())
@@ -166,10 +161,11 @@ ObjectPtr Object::createFromFile(const File& file)
   }
   return res;
 }
+*/
 
 /*
 ** Load
-*/
+*
 bool Object::loadFromFile(const File& file)
 {
   InputStream* inputStream = file.createInputStream();
@@ -200,17 +196,7 @@ bool Object::loadFromFile(const File& file)
   delete inputStream;
   return true;
 }
-
-bool Object::loadFromDirectory(const File& directory)
-{
-  if (!directory.exists() || !directory.isDirectory())
-  {
-    error(T("Object::loadFromDirectory"), directory.getFullPathName() + T(" is not a directory"));
-    return false;
-  }
-  return Object::loadFromFile(directory.getChildFile(T(".classFile")));
-}
-
+*/
 /*
 ** Save
 */
@@ -219,7 +205,7 @@ void Object::saveToStream(OutputStream& ostr) const
   ostr.writeString(getClassName());
   save(ostr);
 }
-
+/*
 bool Object::saveToFile(const File& file) const
 {
   if (file.existsAsFile())
@@ -235,19 +221,7 @@ bool Object::saveToFile(const File& file) const
   delete outputStream;
   return true;
 }
-
-bool Object::saveToDirectory(const File& directory) const
-{
-  if (directory.existsAsFile())
-    directory.deleteFile();
-  if (!directory.exists() && !directory.createDirectory())
-  {
-    error(T("Object::saveToFile"), T("Could not create directory ") + directory.getFullPathName());
-    return false;
-  }
-  return Object::saveToFile(directory.getChildFile(T(".classFile")));
-}
-
+*/
 /*
 ** Clone
 */

@@ -139,7 +139,7 @@ void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(FeatureGenerator
 
 ObjectPtr GradientDescentOnlineLearner::clone() const
 {
-  GradientDescentOnlineLearnerPtr res = createAndCast<GradientDescentOnlineLearner>(getClassName());
+  GradientDescentOnlineLearnerPtr res = Object::cloneAndCast<GradientDescentOnlineLearner>();
   res->numberOfActiveFeatures = numberOfActiveFeatures;
   res->epoch = epoch;
   res->learningRate = learningRate;

@@ -75,17 +75,6 @@ private:
 
   EnumerationPtr classes;
   InferencePtr binaryClassifierModel;
-
-  virtual bool load(InputStream& istr)
-  {
-    String classesName;
-    if (!VectorParallelInference::load(istr) || !lbcpp::read(istr, classesName))
-      return false;
-    return (classes = Enumeration::get(classesName)) != EnumerationPtr();
-  }
-
-  virtual void save(OutputStream& ostr) const
-    {VectorParallelInference::save(ostr); lbcpp::write(ostr, classes->getName());}
 };
 
 }; /* namespace lbcpp */

@@ -14,10 +14,10 @@ using namespace lbcpp;
 */
 ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance()
 {
-  ExplorerRecentFilesPtr& res = ExplorerConfiguration::getAndCast<ExplorerRecentFiles>(T("ExplorerRecentFiles"));
+  Variable& res = ExplorerConfiguration::getConfiguration(T("ExplorerRecentFiles"));
   if (!res)
-    res = new ExplorerRecentFiles();
-  return res;
+    res = Variable(new ExplorerRecentFiles());
+  return res.getObjectAndCast<ExplorerRecentFiles>();
 }
 
 void ExplorerRecentFiles::addRecentFile(const File& file)
@@ -32,12 +32,6 @@ void ExplorerRecentFiles::addRecentFile(const File& file)
   if (recentFiles.size() > maxRecentFiles)
     recentFiles.pop_back();
 }
-
-bool ExplorerRecentFiles::load(InputStream& istr)
-  {return lbcpp::read(istr, recentDirectory) && lbcpp::read(istr, recentFiles);}
-
-void ExplorerRecentFiles::save(OutputStream& ostr) const
-  {lbcpp::write(ostr, recentDirectory); lbcpp::write(ostr, recentFiles);}
 
 /*
 ** ExplorerConfiguration
@@ -54,16 +48,16 @@ File ExplorerConfiguration::getApplicationDataDirectory()
 }
 
 File ExplorerConfiguration::getConfigurationFile()
-  {return getApplicationDataDirectory().getChildFile(T("config.data"));}
+  {return File(T("C:\\temp\\explorerConfig.xml"));}// getApplicationDataDirectory().getChildFile(T("config.data"));}
 
-StringToObjectMapPtr ExplorerConfiguration::getInstance()
+DynamicObjectPtr ExplorerConfiguration::getInstance()
 {
-  static StringToObjectMapPtr configuration;
+  static DynamicObjectPtr configuration;
   if (!configuration)
   {
     File configurationFile = getConfigurationFile();
     if (configurationFile.exists())
-      configuration = Object::createFromFileAndCast<StringToObjectMap>(configurationFile);
+      configuration = Variable::createFromFile(configurationFile).getObjectAndCast<DynamicObject>();
     if (!configuration)
       configuration = new ExplorerConfiguration();
   }

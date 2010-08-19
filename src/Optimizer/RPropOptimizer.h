@@ -35,12 +35,6 @@ public:
     setParameters(denseParameters);
     return optimizerContinue;
   }
-  
-  virtual void save(OutputStream& ostr) const
-    {}
-
-  virtual bool load(InputStream& istr)
-    {return true;}
 
 private:
   DenseVectorPtr previousGradient;

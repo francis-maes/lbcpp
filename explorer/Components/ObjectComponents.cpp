@@ -72,10 +72,7 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
     case FileObject::classDirectory:
     case FileObject::classFile:
       {
-        ObjectPtr object = Object::createFromFile(fileObject->getFile());
-        if (object)
-          return createComponentForVariable(object, name);
-        else if (type == FileObject::classDirectory)
+        if (type == FileObject::classDirectory)
           return new VariableSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
         else
           return new HexadecimalFileObjectComponent(object, name);

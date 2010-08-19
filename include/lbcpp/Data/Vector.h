@@ -170,7 +170,14 @@ public:
     {jassert(index < variables.size()); return variables[index];}
 
   virtual void setVariable(size_t index, const Variable& value)
-    {jassert(index < variables.size()); variables[index] = value;}
+  {
+    if (index >= variables.size())
+      variables.resize(index + 1);
+    variables[index] = value;
+  }
+
+  Variable& getVariable(size_t index)
+    {jassert(index < variables.size()); return variables[index];}
 
   void reserveVariables(size_t size)
     {variables.reserve(size);}
@@ -186,6 +193,8 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
+
+extern ClassPtr dynamicObjectClass();
 
 }; /* namespace lbcpp */
 

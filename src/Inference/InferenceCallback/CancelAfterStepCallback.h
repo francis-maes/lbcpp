@@ -30,12 +30,6 @@ public:
 
 protected:
   String stepName;
-
-  virtual bool load(InputStream& istr)
-    {return InferenceCallback::load(istr) && lbcpp::read(istr, stepName);}
-
-  virtual void save(OutputStream& ostr) const
-    {InferenceCallback::save(ostr); lbcpp::write(ostr, stepName);}
 };
 
 }; /* namespace lbcpp */

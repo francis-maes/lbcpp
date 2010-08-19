@@ -36,12 +36,6 @@ public:
 private:
   ScalarFunctionPtr f1;
   ScalarFunctionPtr f2;
-
-  virtual bool load(InputStream& istr)
-    {return ScalarFunction::load(istr) && lbcpp::read(istr, f1) && lbcpp::read(istr, f2);}
-
-  virtual void save(OutputStream& ostr) const
-    {ScalarFunction::save(ostr); lbcpp::write(ostr, f1); lbcpp::write(ostr, f2);}
 };
 
 class MultiplyByScalarFunction : public ScalarFunction
@@ -79,12 +73,6 @@ public:
 protected:
   ScalarFunctionPtr function;
   double scalar;
-
-  virtual bool load(InputStream& istr)
-    {return ScalarFunction::load(istr) && lbcpp::read(istr, function) && lbcpp::read(istr, scalar);}
-
-  virtual void save(OutputStream& ostr) const
-    {ScalarFunction::save(ostr); lbcpp::write(ostr, function); lbcpp::write(ostr, scalar);}
 };
 
 class AddConstantScalarFunction : public ScalarFunction
@@ -148,12 +136,6 @@ public:
 
 protected:
   double referenceAngle;
-
-  virtual bool load(InputStream& istr)
-    {return ScalarFunction::load(istr) && lbcpp::read(istr, referenceAngle);}
-
-  virtual void save(OutputStream& ostr) const
-    {ScalarFunction::save(ostr); lbcpp::write(ostr, referenceAngle);}
 };
 
 }; /* namespace lbcpp */

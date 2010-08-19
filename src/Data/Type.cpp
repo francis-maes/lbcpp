@@ -260,6 +260,15 @@ String Type::toString(const VariableValue& value) const
 void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
   {jassert(baseType); return baseType->saveToXml(xml, value);}
 
+size_t Type::getNumStaticVariables() const
+  {jassert(baseType); return baseType->getNumStaticVariables();}
+
+TypePtr Type::getStaticVariableType(size_t index) const
+  {jassert(baseType); return baseType->getStaticVariableType(index);}
+
+String Type::getStaticVariableName(size_t index) const
+  {jassert(baseType); return baseType->getStaticVariableName(index);}
+
 int Type::findStaticVariable(const String& name) const
 {
   size_t n = getNumStaticVariables();

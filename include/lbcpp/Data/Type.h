@@ -116,15 +116,9 @@ public:
   /*
   ** Static Variables
   */
-  virtual size_t getNumStaticVariables() const
-    {return baseType ? baseType->getNumStaticVariables() : 0;}
-
-  virtual TypePtr getStaticVariableType(size_t index) const
-    {return baseType ? baseType->getStaticVariableType(index) : TypePtr();}
-
-  virtual String getStaticVariableName(size_t index) const
-    {return baseType ? baseType->getStaticVariableName(index) : String::empty;}
-
+  virtual size_t getNumStaticVariables() const;
+  virtual TypePtr getStaticVariableType(size_t index) const;
+  virtual String getStaticVariableName(size_t index) const;
   virtual VariableReference getStaticVariableReference(const VariableValue& value, size_t index) const;
 
   virtual int findStaticVariable(const String& name) const;
