@@ -157,12 +157,14 @@ private:
       return;
     
     TypePtr type = sequence->getElementsType();
+    Variable value = sequence->getVariable(index);
+
     if (type->inheritsFrom(enumValueType()))
     {
       g.setFont(12.f);
       String res = T("?");
-      if (sequence->getVariable(index))
-        res[0] = type.dynamicCast<Enumeration>()->getOneLetterCode(sequence->getVariable(index).getInteger());
+      if (value)
+        res[0] = type.dynamicCast<Enumeration>()->getOneLetterCode(value.getInteger());
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
     }

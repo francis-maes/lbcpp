@@ -214,6 +214,9 @@ protected:
         closeScope();
       closeScope();
     }
+   
+    forEachXmlChildElementWithTagName(*xml, elt, T("code"))
+      {generateCode(elt);}
 
     closeClass();
 

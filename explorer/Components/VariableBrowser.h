@@ -1,29 +1,29 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ObjectBrowser.h                | The Object Browser              |
+| Filename: VariableBrowser.h              | The Variable Browser            |
 | Author  : Francis Maes                   |                                 |
 | Started : 14/06/2010 15:55               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_COMPONENTS_OBJECT_BROWSER_H_
-# define EXPLORER_COMPONENTS_OBJECT_BROWSER_H_
+#ifndef EXPLORER_COMPONENTS_VARIABLE_BROWSER_H_
+# define EXPLORER_COMPONENTS_VARIABLE_BROWSER_H_
 
-# include "ObjectProxyComponent.h"
+# include "VariableProxyComponent.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
 # include "../Utilities/ComponentWithPreferedSize.h"
-# include "../Utilities/ObjectSelector.h"
+# include "../Utilities/VariableSelector.h"
 
 namespace lbcpp
 {
 
-class ObjectSelectorAndContentComponent : public Component, public ObjectSelectorCallback, public ComponentWithPreferedSize
+class VariableSelectorAndContentComponent : public Component, public VariableSelectorCallback, public ComponentWithPreferedSize
 {
 public:
-  ObjectSelectorAndContentComponent(ObjectPtr object, Component* selector)
-    : object(object), selector(selector), content(new ObjectProxyComponent())
+  VariableSelectorAndContentComponent(ObjectPtr object, Component* selector)
+    : object(object), selector(selector), content(new VariableProxyComponent())
   {
-    ObjectSelector* s = dynamic_cast<ObjectSelector* >(selector);
+    VariableSelector* s = dynamic_cast<VariableSelector* >(selector);
     jassert(s);
     s->addCallback(*this);
 
@@ -43,7 +43,7 @@ public:
     layout.setItemLayout(2, 10, -1, -1);   
   }
 
-  virtual ~ObjectSelectorAndContentComponent()
+  virtual ~VariableSelectorAndContentComponent()
     {deleteAllChildren();}
 
   virtual void resized()
@@ -64,7 +64,7 @@ public:
       if (selectedVariables[i].getObject() != object) // it is not possible to select the root effect
         variables.push_back(selectedVariables[i]);
     Variable multiSelection = createMultiSelectionVariable(variables);
-    content->setObject(multiSelection ? multiSelection.getObject() : ObjectPtr());
+    content->setVariable(multiSelection);
   }
 
   enum {selectorPreferedWidth = 200};
@@ -87,18 +87,18 @@ private:
   PropertyListDisplayComponent* properties;
   Component* selector;
   Component* resizeBar;
-  ObjectProxyComponent* content;
+  VariableProxyComponent* content;
   juce::StretchableLayoutManager layout;
 };
 
-class ObjectBrowser : public ViewportComponent
+class VariableBrowser : public ViewportComponent
 {
 public:
-  ObjectBrowser(ObjectSelectorAndContentComponent* content)
+  VariableBrowser(VariableSelectorAndContentComponent* content)
     : ViewportComponent(content, false, true) {}
 };
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_COMPONENTS_OBJECT_BROWSER_H_
+#endif // !EXPLORER_COMPONENTS_VARIABLE_BROWSER_H_
 

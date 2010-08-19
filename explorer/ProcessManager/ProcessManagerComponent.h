@@ -12,7 +12,7 @@
 # include "ProcessManager.h"
 # include "../Components/common.h"
 # include "../Utilities/SplittedLayout.h"
-# include "../Utilities/ObjectSelector.h"
+# include "../Utilities/VariableSelector.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
 
 class ProcessConsoleComponent;
@@ -42,7 +42,7 @@ protected:
   Component* consoleTools;
 };
 
-class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer, public ObjectSelectorCallback
+class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, public juce::Timer, public VariableSelectorCallback
 {
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);

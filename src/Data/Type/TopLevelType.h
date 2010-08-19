@@ -41,6 +41,12 @@ public:
   virtual VariableValue create() const
     {jassert(false); return VariableValue();}
 
+  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+    {callback.errorMessage(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
+
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
+    {callback.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}
+
   virtual void destroy(VariableValue& value) const
     {jassert(false);}
 
@@ -48,7 +54,11 @@ public:
     {jassert(false);}
 
   virtual String toString(const VariableValue& value) const
-    {jassert(false); return String::empty;}
+  {
+    ErrorHandler::error(T("Type::toString(value)"), T("Not implemented"));
+    jassert(false);
+    return String::empty;
+  }
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {jassert(false); return false;}

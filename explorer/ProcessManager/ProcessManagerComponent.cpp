@@ -13,7 +13,7 @@ using namespace lbcpp;
 class ProcessManagerListTabs : public TabbedComponent
 {
 public:
-  ProcessManagerListTabs(ProcessManagerPtr processManager, ObjectSelectorCallback& selectorCallback)
+  ProcessManagerListTabs(ProcessManagerPtr processManager, VariableSelectorCallback& selectorCallback)
     : TabbedComponent(TabbedButtonBar::TabsAtBottom), selectorCallback(selectorCallback)
   {
     addProcessList(T("Running"), processManager->getRunningProcesses());
@@ -50,7 +50,7 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  ObjectSelectorCallback& selectorCallback;
+  VariableSelectorCallback& selectorCallback;
 
   void addProcessList(const String& name, ProcessListPtr processes)
   {

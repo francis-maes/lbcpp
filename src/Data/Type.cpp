@@ -248,14 +248,17 @@ bool Type::isMissingValue(const VariableValue& value) const
   return value.getInteger() == missing.getInteger();
 }
 
+VariableValue Type::createFromString(const String& value, ErrorHandler& callback) const
+  {jassert(baseType); return baseType->createFromString(value, callback);}
+
 VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
-  {return createFromString(xml->getAllSubText(), callback);}
+  {jassert(baseType); return baseType->createFromXml(xml, callback);}
+
+String Type::toString(const VariableValue& value) const
+  {jassert(baseType); return baseType->toString(value);}
 
 void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
-{
-  jassert(!isMissingValue(value));
-  xml->addTextElement(toString(value));
-}
+  {jassert(baseType); return baseType->saveToXml(xml, value);}
 
 int Type::findStaticVariable(const String& name) const
 {
@@ -546,6 +549,40 @@ TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
   return distribution->getClass();
 }
 
+bool Enumeration::hasOneLetterCodes() const
+  {return oneLetterCodes.length() == elements.size();}
+
+juce::tchar Enumeration::getOneLetterCode(size_t index) const
+{
+  jassert(index < elements.size());
+  if (oneLetterCodes.length())
+  {
+    jassert(oneLetterCodes.length() == (int)elements.size());
+    return oneLetterCodes[index];
+  }
+  else
+  {
+    jassert(elements[index].isNotEmpty());
+    return elements[index][0];
+  }
+}
+
+String Enumeration::getOneLetterCodes() const
+{
+  if (oneLetterCodes.isEmpty())
+  {
+    String res;
+    for (size_t i = 0; i < elements.size(); ++i)
+      res += getOneLetterCode(i);
+    return res;
+  }
+  else
+  {
+    jassert(oneLetterCodes.length() == (int)elements.size());
+    return oneLetterCodes;
+  }
+}
+
 /*
 ** TypeCache
 */
@@ -614,12 +651,6 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(enumValueType, T("EnumValue"));
 
 ClassPtr lbcpp::objectClass()
   {static TypeCache cache(T("Object")); return cache();}
-
-TypePtr lbcpp::typeClass()
-  {static TypeCache cache(T("Type")); return cache();}
-
-TypePtr lbcpp::enumerationClass()
-  {static TypeCache cache(T("Enumeration")); return cache();}
 
 TypePtr lbcpp::pairType(TypePtr firstClass, TypePtr secondClass)
   {static BinaryTemplateTypeCache cache(T("Pair")); return cache(firstClass, secondClass);}

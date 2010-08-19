@@ -22,7 +22,7 @@ public:
   {
     std::map<String, ObjectPtr> objects = map->getObjects();
     for (std::map<String, ObjectPtr>::const_iterator it = objects.begin(); it != objects.end(); ++it)
-      addTab(it->first, Colours::white, lbcpp::createComponentForObject(it->second), true);
+      addTab(it->first, Colours::white, lbcpp::createComponentForVariable(it->second), true);
   }
     
   juce_UseDebuggingNewOperator
