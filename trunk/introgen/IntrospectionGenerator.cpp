@@ -73,7 +73,7 @@ protected:
         generateNamespaceDeclaration(elt);
       else if (tag == T("code"))
         generateCode(elt);
-      else if (tag == T("import"))
+      else if (tag == T("import") || tag == T("declarationCode"))
         continue;
       else
         std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
