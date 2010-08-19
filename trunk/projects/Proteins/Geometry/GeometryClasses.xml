@@ -3,5 +3,13 @@
 <file name="Geometry" directory="Geometry">
   <namespace name="lbcpp">
 
+    <class name="Vector3">
+      <variable type="Double" name="x" var="value.x"/>
+      <variable type="Double" name="y" var="value.y"/>
+      <variable type="Double" name="z" var="value.z"/>
+    </class>
+
+    <class name="CartesianPositionVector" base="Container"/>
+    
   </namespace>  
 </file>

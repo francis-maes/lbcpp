@@ -131,7 +131,10 @@ protected:
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
           {
-            String name = variables[i]->getStringAttribute(T("name"), T("???"));
+            String name = variables[i]->getStringAttribute(T("var"), String::empty);
+            if (name.isEmpty())
+              name = variables[i]->getStringAttribute(T("name"), T("???"));
+
             String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
             String code = T("case ") + String((int)i) + T(": return ");
             if (cast.isNotEmpty())

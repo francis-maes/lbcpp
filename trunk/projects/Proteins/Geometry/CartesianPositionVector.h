@@ -6,12 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_DATA_CARTESIAN_POSITION_VECTOR_H_
-# define LBCPP_PROTEINS_DATA_CARTESIAN_POSITION_VECTOR_H_
+#ifndef LBCPP_GEOMETRY_CARTESIAN_POSITION_VECTOR_H_
+# define LBCPP_GEOMETRY_CARTESIAN_POSITION_VECTOR_H_
 
 # include <lbcpp/Data/Vector.h>
-# include "../Geometry/Vector3.h"
-# include "../Geometry/Matrix4.h"
+# include "Vector3.h"
+# include "Matrix4.h"
 
 namespace lbcpp
 {
@@ -66,4 +66,4 @@ extern ClassPtr cartesianPositionVectorClass();
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_PROTEINS_DATA_CARTESIAN_POSITION_VECTOR_H_
+#endif // !LBCPP_GEOMETRY_CARTESIAN_POSITION_VECTOR_H_

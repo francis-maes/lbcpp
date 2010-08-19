@@ -10,7 +10,7 @@
 # define LBCPP_PROTEIN_TERTIARY_STRUCTURE_H_
 
 # include "Residue.h"
-# include "CartesianPositionVector.h"
+# include "../Geometry/CartesianPositionVector.h"
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 

@@ -18,6 +18,8 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/Matrix4.cpp
   Geometry/kdtree_lib.h
   Geometry/kdtree_lib.c
+  Geometry/CartesianPositionVector.h
+  Geometry/CartesianPositionVector.cpp
   Geometry/GeometryClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/GeometryClasses.cpp
 )
@@ -27,8 +29,6 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/AminoAcid.cpp
   Data/SecondaryStructure.h
   Data/SecondaryStructure.cpp
-  Data/CartesianPositionVector.h
-  Data/CartesianPositionVector.cpp
   Data/Atom.h
   Data/Atom.cpp
   Data/Residue.h

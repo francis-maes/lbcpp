@@ -107,13 +107,3 @@ bool CartesianPositionVector::loadFromXml(XmlElement* xml, ErrorHandler& callbac
   }
   return true;
 }
-
-/////
-
-ClassPtr lbcpp::cartesianPositionVectorClass()
-  {static TypeCache cache(T("CartesianPositionVector")); return cache();}
-
-void declareCartesianPositionVectorClasses()
-{
-  LBCPP_DECLARE_CLASS(CartesianPositionVector, Container);
-}
