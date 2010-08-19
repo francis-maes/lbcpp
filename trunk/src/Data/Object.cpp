@@ -374,22 +374,6 @@ bool Object::loadFromString(const String& str, ErrorHandler& callback)
 namespace lbcpp
 {
 
-class NameableObjectClass : public DynamicClass
-{
-public:
-  NameableObjectClass() : DynamicClass(T("NameableObject"), objectClass())
-  {
-    addVariable(stringType(), T("name"));
-  }
-
-  LBCPP_DECLARE_VARIABLE_BEGIN(NameableObject)
-    LBCPP_DECLARE_VARIABLE(name);
-  LBCPP_DECLARE_VARIABLE_END();
-};
-
-ClassPtr nameableObjectClass()
-  {static TypeCache cache(T("NameableObject")); return cache();}
-
 class TypeClass : public DynamicClass
 {
 public:
@@ -418,7 +402,6 @@ public:
 
 void declareObjectClasses()
 {
-  Class::declare(new NameableObjectClass());
   Class::declare(new TypeClass());
   Class::declare(new TypeClass(T("Enumeration"), typeClass()));
 }

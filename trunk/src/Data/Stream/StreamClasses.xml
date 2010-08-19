@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Stream" directory="Data/Stream">
+  <namespace name="lbcpp">
+
+    <class name="Stream" abstract="yes"/>
+    <class name="TextParser" base="Stream" abstract="yes"/>
+
+    <class name="DirectoryFileStream" base="Stream">
+      <constructor arguments="const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+    </class>
+
+    <class name="ApplyFunctionStream" base="Stream">
+      <constructor arguments="StreamPtr stream, FunctionPtr function"/>
+      <variable type="Stream" name="stream"/>
+      <variable type="Function" name="function"/>
+      <variable type="Type" name="outputType"/>
+    </class>
+
+    <code>
+      StreamPtr Stream::apply(FunctionPtr function) const
+      {
+        return checkInheritance(getElementsType(), function->getInputType())
+          ? applyFunctionStream(refCountedPointerFromThis(this), function)
+          : StreamPtr();
+      }
+    </code>
+    
+  </namespace> 
+</file>

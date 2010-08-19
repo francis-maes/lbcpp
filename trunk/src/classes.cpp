@@ -9,27 +9,27 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
+// new
+extern void declareDataClasses();
+
+// old
 extern void declareClassClasses();
 extern void declareObjectClasses();
-extern void declareFunctionClasses();
 extern void declareContainerClasses();
-extern void declareStreamClasses();
-extern void declareConsumerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
-extern void declarePerceptionClasses();
 
 // Object
 void declareObjectRelatedClasses()
 {
+  // new
+  declareDataClasses();
+
+  // old
   declareObjectClasses();
-  declareFunctionClasses();
   declareContainerClasses();
-  declareConsumerClasses();
-  declareStreamClasses();
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
-  declarePerceptionClasses();
 }
 
 // Utilities

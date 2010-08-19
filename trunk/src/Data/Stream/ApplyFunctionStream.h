@@ -21,7 +21,8 @@ public:
   ApplyFunctionStream(StreamPtr stream, FunctionPtr function)
     : stream(stream), function(function),
       outputType(function->getOutputType(stream->getElementsType())) {}
-    
+  ApplyFunctionStream() {}
+
   virtual TypePtr getElementsType() const
     {return outputType;}
 
@@ -38,6 +39,8 @@ public:
   }
 
 private:
+  friend class ApplyFunctionStreamClass;
+
   StreamPtr stream;
   FunctionPtr function;
   TypePtr outputType;

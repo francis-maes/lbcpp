@@ -30,6 +30,8 @@ SET(LBCPP_DATA_IMPL_HEADERS
 
 GENERATE_INTROSPECTION_CODE(Data/Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
 SET(LBCPP_DATA_SOURCES
   Data/Variable.cpp
@@ -43,6 +45,8 @@ SET(LBCPP_DATA_SOURCES
   Data/ProbabilityDistribution.cpp
   Data/Consumer.cpp
   Data/Perception.cpp
+  Data/DataClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
 )  
 
 SET(LBCPP_DATA_TYPE_SOURCES
@@ -57,6 +61,8 @@ SET(LBCPP_DATA_TYPE_SOURCES
 SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
+  Data/Stream/StreamClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/StreamClasses.cpp
 )
 
 SET(LBCPP_DATA_FUNCTION_SOURCES
