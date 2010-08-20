@@ -42,6 +42,7 @@ public:
   Variable(int intValue, TypePtr type = integerType());
   Variable(double doubleValue, TypePtr type = doubleType());
   Variable(const String& stringValue, TypePtr type = stringType());
+  Variable(const File& fileValue, TypePtr type = fileType());
   Variable(ObjectPtr object);
   Variable(Object* object);
 
@@ -186,6 +187,5 @@ private:
 }; /* namespace lbcpp */
 
 # include "impl/Variable.hpp"
-# include "impl/VariableReference.hpp"
 
 #endif // !LBCPP_OBJECT_VARIABLE_H_

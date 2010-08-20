@@ -11,8 +11,8 @@
     <class name="ExplorerConfiguration" base="Object"/>
 
     <class name="ExplorerRecentFiles">
-      <!--
       <variable type="File" name="recentDirectory"/>
+      <!--
       <variable type="Vector[File]" name="recentFiles"/>
       -->
     </class>

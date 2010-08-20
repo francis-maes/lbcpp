@@ -119,8 +119,7 @@ public:
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;
   virtual String getStaticVariableName(size_t index) const;
-  virtual VariableReference getStaticVariableReference(const VariableValue& value, size_t index) const;
-
+  
   virtual int findStaticVariable(const String& name) const;
 
   /*
@@ -324,8 +323,6 @@ public:
 
   virtual size_t getNumSubVariables(const VariableValue& value) const;
   virtual String getSubVariableName(const VariableValue& value, size_t index) const;
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
   virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
@@ -411,19 +408,6 @@ public:
 
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
-
-#define LBCPP_DECLARE_VARIABLE_BEGIN(ClassName) \
-  virtual VariableReference getStaticVariableReference(const VariableValue& value, size_t index) const { \
-    if (index < baseType->getNumStaticVariables()) \
-      return baseType->getStaticVariableReference(value, index); \
-    index -= baseType->getNumStaticVariables(); \
-    ClassName* __this__ = static_cast<ClassName* >(value.getObjectPointer());
-
-#define LBCPP_DECLARE_VARIABLE(Var) \
-  if (index == 0) return __this__->Var; --index
-
-#define LBCPP_DECLARE_VARIABLE_END() \
-  jassert(false); return VariableReference(); }
 
 inline bool checkInheritance(TypePtr type, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
 {

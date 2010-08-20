@@ -35,8 +35,6 @@ namespace lbcpp
 {
 
 class Variable;
-class VariableReference;
-
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 class Type;
