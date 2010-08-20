@@ -78,10 +78,10 @@ inline void Variable::clear()
   {type->destroy(value); type = nilType();}
 
 inline Variable Variable::create(TypePtr type)
-  {return Variable(type, type->create());}
+  {jassert(type); return Variable(type, type->create());}
 
 inline Variable Variable::missingValue(TypePtr type)
-  {return Variable(type, type->getMissingValue());}
+  {jassert(type); return Variable(type, type->getMissingValue());}
 
 inline void Variable::copyTo(VariableValue& dest) const
   {type->destroy(dest); type->copy(dest, value);}

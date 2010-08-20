@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AttributeValueSandBox.cpp      | Attribute Value Perception      |
+| Filename: SandBox.cpp                    | Sand Box                        |
 | Author  : Francis Maes                   |                                 |
 | Started : 24/06/2010 11:09               |                                 |
 `------------------------------------------/                                 |
@@ -15,7 +15,6 @@
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
-extern void declareLBCppCoreClasses();
 extern void declareProteinClasses();
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory

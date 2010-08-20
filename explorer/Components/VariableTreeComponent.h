@@ -21,11 +21,12 @@ namespace lbcpp
 
 struct VariableTreeOptions
 {
-  VariableTreeOptions(bool showTypes = true, bool showShortSummaries = true)
+  VariableTreeOptions(bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = true)
     : showTypes(showTypes), showShortSummaries(showShortSummaries) {}
 
   bool showTypes;
   bool showShortSummaries;
+  bool showMissingVariables;
 };
 
 class VariableTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer, public ComponentWithPreferedSize

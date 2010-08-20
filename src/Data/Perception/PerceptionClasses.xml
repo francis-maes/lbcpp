@@ -7,6 +7,12 @@
 
     <class name="Perception" base="Function" abstract="yes"/>
 
+    <class name="DecoratorPerception" base="Perception" abstract="yes">
+      <variable type="Perception" name="decorated"/>
+    </class>
+
+    <class name="ModifierPerception" base="DecoratorPerception" abstract="yes"/>
+    
     <class name="IdentityPerception" base="Perception">
       <constructor arguments="TypePtr type"/>
       <variable type="Type" name="type"/>
@@ -21,16 +27,15 @@
       <variable type="Vector[Pair[String, Perception]]" name="subPerceptions"/>
     </class>
 
-    <class name="DecoratorPerception" base="Perception" abstract="yes">
-      <variable type="Perception" name="decorated"/>
-    </class>
-    
     <class name="PreprocessPerception" base="DecoratorPerception">
       <variable type="Function" name="preProcessingFunction"/>
     </class>
     
     <class name="FlattenPerception" base="DecoratorPerception"/>
-
+    <class name="PerceptionToFeatures" base="ModifierPerception">
+      <constructor arguments="PerceptionPtr target"/>
+    </class>
+    
     <class name="WindowPerception" base="DecoratorPerception">
       <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
       <variable type="Type" name="elementsType"/>

@@ -95,6 +95,32 @@ protected:
 typedef ReferenceCountedObjectPtr<DecoratorPerception> DecoratorPerceptionPtr;
 extern ClassPtr decoratorPerceptionClass();
 
+class ModifierPerception;
+typedef ReferenceCountedObjectPtr<ModifierPerception> ModifierPerceptionPtr;
+
+class ModifierPerception : public DecoratorPerception
+{
+public:
+  ModifierPerception(PerceptionPtr decorated);
+  ModifierPerception() {}
+
+  virtual PerceptionPtr getModifiedPerception(size_t index, TypePtr type) const = 0;
+
+  virtual TypePtr getOutputType() const
+    {return Perception::getOutputType();}
+
+  virtual TypePtr getOutputVariableType(size_t index) const;
+  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+    {return getModifiedPerceptionCached(index);}
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
+
+  PerceptionPtr getModifiedPerceptionCached(size_t index) const;
+
+protected:
+  std::vector<PerceptionPtr> modifiedPerceptions;
+};
+
 class CompositePerception : public Perception
 {
 public:
@@ -132,6 +158,7 @@ extern ClassPtr compositePerceptionClass();
 PerceptionPtr identityPerception(TypePtr type);
 DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 PerceptionPtr functionBasedPerception(FunctionPtr function);
+ModifierPerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 
 }; /* namespace lbcpp */
 

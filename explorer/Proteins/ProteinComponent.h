@@ -36,7 +36,9 @@ public:
     ClassPtr proteinClass = lbcpp::proteinClass();
     jassert(variable.getType()->canBeCastedTo(pairType(anyType(), stringType())));
     String tabName = variable[1].getString();
-    return new VariableTreeComponent(getPerception(tabName)->compute(input), name + T(" ") + tabName);
+    VariableTreeOptions options;
+    options.showMissingVariables = false;
+    return new VariableTreeComponent(getPerception(tabName)->compute(input), name + T(" ") + tabName, options);
   }
 
 protected:
@@ -48,7 +50,7 @@ protected:
     if (tabName == T("Attributes"))
       return perception->flatten();
     else if (tabName == T("Features"))
-      return PerceptionPtr(new ConvertToFeaturesPerception(perception));
+      return perceptionToFeatures(perception);
     else
       return perception;
   }
