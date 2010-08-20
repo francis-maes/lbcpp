@@ -11,6 +11,7 @@ SET(EXPLORER_UTILITIES_SOURCES
   Utilities/VariableSelector.h
   Utilities/PropertyListDisplayComponent.h
   Utilities/ComponentWithPreferedSize.h
+  Utilities/FileType.h
 )
 
 SET(EXPLORER_COMPONENTS_SOURCES
@@ -19,13 +20,12 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/TableComponent.h
   Components/TreeComponent.h
   Components/ObjectGraphComponent.h
-  Components/StringToObjectMapTabbedComponent.h
   Components/ObjectContainerNameListComponent.h
-  Components/FileObjectComponent.h
   Components/ObjectComponents.cpp
 
   Components/VariableProxyComponent.h
   Components/VariableBrowser.h
+  Components/HexadecimalFileComponent.h
 )
 
 SET(EXPLORER_PROCESS_MANAGER_SOURCES

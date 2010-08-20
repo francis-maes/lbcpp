@@ -134,12 +134,21 @@ inline void ObjectTreeViewItem::itemSelectionChanged(bool isNowSelected)
 
 //////////////////////////////////////////////////////////////////////////////
 
+struct VariableTreeOptions
+{
+  VariableTreeOptions(bool showTypes = true, bool showShortSummaries = true)
+    : showTypes(showTypes), showShortSummaries(showShortSummaries) {}
+
+  bool showTypes;
+  bool showShortSummaries;
+};
+
 class VariableTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  VariableTreeViewItem(const String& name, const Variable& variable)
-    : SimpleTreeViewItem(name, NULL, true),
-      variable(variable), typeName(variable.getTypeName()), component(NULL)
+  VariableTreeViewItem(const String& name, const Variable& variable, const VariableTreeOptions& options)
+    : SimpleTreeViewItem(name, NULL, true), 
+      variable(variable), options(options), typeName(variable.getTypeName()), component(NULL)
   {
     shortSummary = variable.getShortSummary();
 
@@ -155,7 +164,7 @@ public:
   virtual void createSubItems()
   {
     for (size_t i = 0; i < subVariables.size(); ++i)
-      addSubItem(new VariableTreeViewItem(subVariables[i].first, subVariables[i].second));
+      addSubItem(new VariableTreeViewItem(subVariables[i].first, subVariables[i].second, options));
   }
 
   Variable getVariable() const
@@ -173,22 +182,29 @@ public:
       x1 += iconToUse->getWidth() + 5;
     }
 
+    int numFields = 1;
+    if (options.showTypes) ++numFields;
+    if (options.showShortSummaries) ++numFields;
+
     int typeAndNameLength;
     enum {wantedLength = 300};
     int remainingWidth = width - x1;
-    if (remainingWidth >= 3 * wantedLength)
+    if (remainingWidth >= numFields * wantedLength)
       typeAndNameLength = wantedLength;
     else
-      typeAndNameLength = remainingWidth / 3;
+      typeAndNameLength = remainingWidth / numFields;
 
     g.setFont(Font(12, Font::bold));
     g.drawText(getUniqueName(), x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
     x1 += typeAndNameLength;
-    g.setFont(Font(12, Font::italic));
-    g.drawText(typeName, x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
-    x1 += typeAndNameLength;
+    if (options.showTypes)
+    {
+      g.setFont(Font(12, Font::italic));
+      g.drawText(typeName, x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
+      x1 += typeAndNameLength;
+    }
 
-    if (shortSummary.isNotEmpty())
+    if (options.showShortSummaries && shortSummary.isNotEmpty())
     {
       g.setFont(Font(12));
       g.drawText(shortSummary, x1, 0, width - x1 - 2, height, Justification::centredLeft, true);
@@ -199,6 +215,7 @@ public:
 
 protected:
   Variable variable;
+  const VariableTreeOptions& options;
   String typeName;
   String shortSummary;
   Component* component;
@@ -209,8 +226,8 @@ protected:
 class VariableTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer
 {
 public:
-  VariableTreeComponent(const Variable& variable, const String& name) 
-    : variable(variable), name(name), root(NULL), isSelectionUpToDate(false)
+  VariableTreeComponent(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions())
+    : variable(variable), name(name), options(options), root(NULL), isSelectionUpToDate(false)
   {
     setRootItemVisible(true);
     setWantsKeyboardFocus(true);
@@ -244,7 +261,7 @@ public:
 
   void buildTree()
   {
-    root = new VariableTreeViewItem(name, variable);
+    root = new VariableTreeViewItem(name, variable, options);
     setRootItem(root);
     root->setOpen(true);
   }
@@ -264,7 +281,7 @@ public:
       for (int i = 0; i < getNumSelectedItems(); ++i)
       {
         VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
-        if (item && item->getVariable().isObject())
+        if (item && item->getVariable())
           selectedVariables.push_back(item->getVariable());
       }
       sendSelectionChanged(selectedVariables);
@@ -280,6 +297,7 @@ public:
 protected:
   Variable variable;
   String name;
+  VariableTreeOptions options;
   VariableTreeViewItem* root;
   bool isSelectionUpToDate;
 };

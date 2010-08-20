@@ -71,12 +71,6 @@ public:
     {return 0;}
 };
 
-class FileType : public StringType
-{
-public:
-  FileType() : StringType(T("File"), stringType()) {}
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_TYPE_STRING_H_

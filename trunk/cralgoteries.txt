@@ -1,4 +1,6 @@
-* Remove FileObject and use native "File" type
+
+* Remove ObjectTreeComponent
+* Remove Object::getChildrenObjects()
 
 * Normalize Container classes declaration
 

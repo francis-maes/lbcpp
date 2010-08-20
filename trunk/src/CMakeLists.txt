@@ -88,7 +88,6 @@ SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ErrorHandler.h  
   ../include/lbcpp/Object/ObjectGraph.h
   ../include/lbcpp/Object/Table.h
-  ../include/lbcpp/Object/StringToObjectMap.h
 )
 
 SET(LBCPP_OBJECT_SOURCES
