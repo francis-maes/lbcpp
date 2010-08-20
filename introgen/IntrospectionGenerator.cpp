@@ -153,7 +153,7 @@ protected:
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
     String name = xml->getStringAttribute(T("name"), T("???"));
     
-    String typeArgument = (type == className ? T("ClassPtr(this)") : T("T(") + type.quoted() + T(")"));
+    String typeArgument = (type == className ? T("this") : T("T(") + type.quoted() + T(")"));
     writeLine(T("addVariable(") + typeArgument + T(", T(") + name.quoted() + T("));"));
   }
 
@@ -347,12 +347,13 @@ protected:
       writeLine(T("lbcpp::Class::declare(new ") + classes[i] + T("());"));
 
     if (hasImports)
-      newLine();
-
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
     {
-      String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(T("declare") + name + T("Classes();"));
+      newLine();
+      forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+      {
+        String name = elt->getStringAttribute(T("name"), T("???"));
+        writeLine(T("declare") + name + T("Classes();"));
+      }
     }
 
     forEachXmlChildElementWithTagName(*xml, elt, T("declarationCode"))
@@ -420,7 +421,7 @@ private:
   }
 
   void closeClass()
-    {closeScope(T(";")); newLine();}
+    {writeLine(T("juce_UseDebuggingNewOperator")); closeScope(T(";")); newLine();}
 
   void writeShortFunction(const String& declaration, const String& oneLineBody)
   {

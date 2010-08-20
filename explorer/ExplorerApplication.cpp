@@ -237,7 +237,7 @@ extern void declareExplorerClasses();
 class ExplorerApplication : public JUCEApplication
 {
 public:
-  ExplorerApplication() : mainWindow(0) {/*_crtBreakAlloc = 3905;*/}
+  ExplorerApplication() : mainWindow(0) {/*_crtBreakAlloc = 729;*/}
 
   virtual void initialise(const String& commandLine)
   {    
@@ -259,6 +259,7 @@ public:
     delete mainWindow;
     mainWindow = 0;
     deleteAndZero(theCommandManager); 
+    lbcpp::deinitialize();
   }
 
   virtual void systemRequestedQuit()

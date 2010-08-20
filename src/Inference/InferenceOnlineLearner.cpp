@@ -113,17 +113,3 @@ void UpdatableInferenceOnlineLearner::passFinishedCallback(InferencePtr inferenc
     update(inference);
 }
 
-ClassPtr lbcpp::inferenceOnlineLearnerClass()
-  {static TypeCache cache(T("InferenceOnlineLearner")); return cache();}
-
-void declareInferenceOnlineLearnerClasses()
-{
-  LBCPP_DECLARE_ABSTRACT_CLASS(InferenceOnlineLearner, Object);
-    LBCPP_DECLARE_CLASS(RandomizerInferenceOnlineLearner, InferenceOnlineLearner);
-    LBCPP_DECLARE_CLASS(StoppingCriterionInferenceOnlineLearner, InferenceOnlineLearner);
-
-    LBCPP_DECLARE_ABSTRACT_CLASS(GradientDescentOnlineLearner, InferenceOnlineLearner);
-      LBCPP_DECLARE_CLASS(StochasticGradientDescentOnlineLearner, GradientDescentOnlineLearner);
-      LBCPP_DECLARE_CLASS(MiniBatchGradientDescentOnlineLearner, GradientDescentOnlineLearner);
-      LBCPP_DECLARE_CLASS(BatchGradientDescentOnlineLearner, GradientDescentOnlineLearner);
-}

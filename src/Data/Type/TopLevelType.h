@@ -71,6 +71,8 @@ public:
 
   virtual String getStaticVariableName(size_t index) const
     {ErrorHandler::error(T("Type::getStaticVariableName()"), T("Not implemented")); return String::empty;}
+
+  juce_UseDebuggingNewOperator
 };
 
 class NilType : public Type

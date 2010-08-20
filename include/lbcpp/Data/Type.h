@@ -34,6 +34,7 @@ namespace lbcpp
 {
 
 extern void initialize();
+extern void deinitialize();
 
 class Type : public NameableObject
 {
@@ -152,6 +153,8 @@ public:
     targetType->templateArguments = templateArguments;
   }
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class TypeClass;
 
@@ -177,6 +180,8 @@ public:
 
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
     {xml->addTextElement(toString(value));}
+
+  juce_UseDebuggingNewOperator
 };
 
 extern TypePtr booleanType();
@@ -235,6 +240,8 @@ public:
 
   virtual size_t getNumSubVariables(const VariableValue& value) const
     {return 0;}
+
+  juce_UseDebuggingNewOperator
 };
 
 /*
@@ -274,6 +281,8 @@ public:
   String getOneLetterCodes() const;
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
+
+  juce_UseDebuggingNewOperator
 
 protected:
   void addElement(const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
@@ -326,6 +335,8 @@ public:
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
   virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
+
+  juce_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<Class> ClassPtr;
@@ -346,12 +357,16 @@ public:
 
   virtual int findStaticVariable(const String& name) const;
 
-  void addVariable(TypePtr type, const String& name);
+  void addVariable(TypePtr type, const String& name)
+    {addVariable(type.get(), name);}
+
+  void addVariable(Type* type, const String& name);
   void addVariable(const String& typeName, const String& name);
 
+  juce_UseDebuggingNewOperator
 protected:
   CriticalSection variablesLock;
-  std::vector< std::pair<TypePtr, String> > variables;
+  std::vector< std::pair<Type*, String> > variables;
 };
 
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
@@ -372,6 +387,8 @@ public:
     Object::error(T("AbstractClass::create"), T("Cannot instantiate abstract classes"));
     return VariableValue(0);
   }
+
+  juce_UseDebuggingNewOperator
 };
 
 template<class TT>
@@ -395,6 +412,8 @@ public:
     Type::clone(res);
     return res;
   }
+
+  juce_UseDebuggingNewOperator
 };
 
 #define LBCPP_DECLARE_ABSTRACT_CLASS(Name, BaseClass) \
@@ -429,10 +448,10 @@ public:
   TypeCache(const String& typeName);
 
   TypePtr operator ()()
-    {return type;}
+    {return TypePtr(type);}
 
 protected:
-  TypePtr type;
+  Type* type;
 };
 
 class UnaryTemplateTypeCache
@@ -445,7 +464,7 @@ public:
 
 private:
   String typeName;
-  std::map<TypePtr, TypePtr> m;
+  std::map<Type*, Type*> m;
 };
 
 class BinaryTemplateTypeCache
@@ -458,7 +477,7 @@ public:
 
 private:
   String typeName;
-  std::map<std::pair<TypePtr, TypePtr>, TypePtr> m;
+  std::map<std::pair<Type*, Type*>, Type*> m;
 };
 
 }; /* namespace lbcpp */

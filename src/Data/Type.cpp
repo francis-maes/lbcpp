@@ -134,6 +134,13 @@ public:
     }
   }
 
+  void clear()
+  {
+    ScopedLock _(typesLock);
+    types.clear();
+    templateTypes.clear();
+  }
+
 private:
   typedef std::map<String, TypePtr> TypeMap;
   typedef std::pair<String, std::vector<TypePtr> > TemplateTypeKey;
@@ -173,6 +180,8 @@ inline TypeManager& getClassManagerInstance()
 void lbcpp::initialize()
   {getClassManagerInstance().ensureStandardClassesAreLoaded();}
 
+void lbcpp::deinitialize()
+  {getClassManagerInstance().clear();}
 
 /*
 ** Type
@@ -211,8 +220,8 @@ bool Type::canBeCastedTo(TypePtr targetType) const
 Variable Type::getSubVariable(const VariableValue& value, size_t index) const
   {return baseType ? baseType->getSubVariable(value, index) : Variable();}
 
-void Type::declare(TypePtr classInstance)
-  {getClassManagerInstance().declare(classInstance);}
+void Type::declare(TypePtr typeInstance)
+  {getClassManagerInstance().declare(typeInstance);}
 
 TypePtr Type::get(const String& typeName)
   {return getClassManagerInstance().get(typeName);}
@@ -428,7 +437,7 @@ String DynamicClass::getStaticVariableName(size_t index) const
   return variables[index].second;
 }
 
-void DynamicClass::addVariable(TypePtr type, const String& name)
+void DynamicClass::addVariable(Type* type, const String& name)
 {
   if (!type || name.isEmpty())
   {
@@ -572,7 +581,7 @@ String Enumeration::getOneLetterCodes() const
 */
 TypeCache::TypeCache(const String& typeName)
 {
-  type = Type::get(typeName);
+  type = Type::get(typeName).get();
   if (!type)
     Object::error(T("TypeCache()"), T("Could not find type ") + typeName.quoted());
 }
@@ -580,11 +589,11 @@ TypeCache::TypeCache(const String& typeName)
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 {
   jassert(argument);
-  std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument);
+  std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
   if (it == m.end())
   {
-    TypePtr res = Type::get(typeName, argument);
-    m[argument] = res;
+    Type* res = Type::get(typeName, argument).get();
+    m[argument.get()] = res;
     return res;
   }
   else
@@ -594,11 +603,11 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
 {
   jassert(argument1 && argument2);
-  std::pair<TypePtr, TypePtr> key(argument1, argument2);
-  std::map<std::pair<TypePtr, TypePtr>, TypePtr>::const_iterator it = m.find(key);
+  std::pair<Type*, Type*> key(argument1.get(), argument2.get());
+  std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
   if (it == m.end())
   {
-    TypePtr res = Type::get(typeName, argument1, argument2);
+    Type* res = Type::get(typeName, argument1, argument2).get();
     m[key] = res;
     return res;
   }

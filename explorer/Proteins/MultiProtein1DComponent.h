@@ -196,6 +196,14 @@ public:
     if (selection.empty() && proteins.size() == 1)
       selection.push_back(proteins[0]);
     sendSelectionChanged(selection);
+    MultiSequenceComponent* component = dynamic_cast<MultiSequenceComponent* >(getViewport()->getViewedComponent());
+    if (component)
+    {
+      if (selectedVariables.size() == 1)
+        component->setSelection(selectedVariables[0][1].getInteger(), String::empty, String::empty);
+      else
+        component->setNoSelection();
+    }
   }
   
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
