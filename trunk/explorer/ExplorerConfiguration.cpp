@@ -22,15 +22,15 @@ ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance()
 
 void ExplorerRecentFiles::addRecentFile(const File& file)
 {
-  recentFiles.insert(recentFiles.begin(), file);
-  for (size_t i = 1; i < recentFiles.size(); ++i)
-    if (recentFiles[i] == file)
+  recentFiles->prepend(file);
+  for (size_t i = 1; i < recentFiles->size(); ++i)
+    if (getRecentFile(i) == file)
     {
-      recentFiles.erase(recentFiles.begin() + i);
+      recentFiles->remove(i);
       break;
     }
-  if (recentFiles.size() > maxRecentFiles)
-    recentFiles.pop_back();
+  if (recentFiles->size() > maxRecentFiles)
+    recentFiles->remove(maxRecentFiles);
 }
 
 /*

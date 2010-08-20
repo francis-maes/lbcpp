@@ -102,6 +102,9 @@ public:
   bool isString() const;
   String getString() const;
 
+  bool isFile() const;
+  File getFile() const;
+
   bool isObject() const;
   ObjectPtr getObject() const;
   template<class O>

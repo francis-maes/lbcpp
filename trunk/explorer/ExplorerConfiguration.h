@@ -20,7 +20,7 @@ typedef ReferenceCountedObjectPtr<ExplorerRecentFiles> ExplorerRecentFilesPtr;
 class ExplorerRecentFiles : public Object
 {
 public:
-  ExplorerRecentFiles() {}
+  ExplorerRecentFiles() : recentFiles(new Vector(fileType())) {}
 
   static ExplorerRecentFilesPtr getInstance();
 
@@ -34,27 +34,31 @@ public:
     {recentDirectory = directory;}
 
   size_t getNumRecentFiles() const
-    {return recentFiles.size();}
+    {return recentFiles->size();}
 
   File getRecentFile(size_t index) const
-    {jassert(index < recentFiles.size()); return recentFiles[index];}
+    {jassert(index < recentFiles->size()); return recentFiles->getVariable(index).getFile();}
 
   void addRecentFile(const File& file);
   
   void clearRecentFiles()
-    {recentFiles.clear();}
+    {recentFiles->clear();}
 
 private:
   friend class ExplorerRecentFilesClass;
 
   enum {maxRecentFiles = 8};
   File recentDirectory;
-  std::vector<File> recentFiles;
+  VectorPtr recentFiles;
 };
+
+extern ClassPtr explorerConfigurationClass();
 
 class ExplorerConfiguration : public DynamicObject
 {
 public:
+  ExplorerConfiguration() : DynamicObject(explorerConfigurationClass()) {}
+
   static File getApplicationDataDirectory();
   static File getConfigurationFile();
 

@@ -1,5 +1,4 @@
 * Remove FileObject and use native "File" type
-* Repair Explorer configuration file
 
 * Normalize Container classes declaration
 

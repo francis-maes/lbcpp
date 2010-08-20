@@ -131,6 +131,12 @@ inline bool Variable::isString() const
 inline String Variable::getString() const
   {jassert(isString()); return value.getString();}
 
+inline bool Variable::isFile() const
+  {return type->inheritsFrom(fileType());}
+
+inline File Variable::getFile() const
+  {jassert(isFile()); return File(value.getString());}
+
 inline bool Variable::isObject() const
   {return type->inheritsFrom(objectClass());}
 
