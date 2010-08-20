@@ -14,12 +14,13 @@
 namespace lbcpp
 {
 
+class VariableSelector;
 class VariableSelectorCallback
 {
 public:
   virtual ~VariableSelectorCallback() {}
 
-  virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables) = 0;
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables) = 0;
 };
 
 class VariableSelector
@@ -34,8 +35,14 @@ public:
   void sendSelectionChanged(const std::vector<Variable>& selectedVariables)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i]->selectionChangedCallback(selectedVariables);
+      callbacks[i]->selectionChangedCallback(this, selectedVariables);
   }
+
+  virtual Variable createMultiSelectionVariable(const std::vector<Variable>& selection)
+    {return lbcpp::createMultiSelectionVariable(selection);}
+
+  virtual Component* createComponentForVariable(const Variable& variable, const String& name)
+    {return lbcpp::createComponentForVariable(variable, name);}
 
 protected:
   std::vector<VariableSelectorCallback* > callbacks;

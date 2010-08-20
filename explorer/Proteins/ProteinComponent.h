@@ -57,7 +57,7 @@ public:
       if (proteinsAlone.size() == 1)
         variable = Variable(proteinsAlone[0]);
 
-      Component* tabComponent = new VariableSelectorAndContentComponent(variable, protein1dComponent); 
+      Component* tabComponent = /*new VariableSelectorAndContentComponent(variable,*/ protein1dComponent;
       addTab(T("Protein 1D"), Colours::white, tabComponent, true);
     }
     
