@@ -105,13 +105,14 @@ CartesianPositionVectorPtr TertiaryStructure::makeCAlphaTrace() const
     if (!residue)
       continue;
     AtomPtr atom = residue->getCAlphaAtom();
-    if (!atom)
+/*    if (!atom)
     {
-      Object::error(T("CartesianCoordinatesSequence::createCBetaTrace"),
+      Object::error(T("CartesianCoordinatesSequence::createCAlphaTrace"),
           T("No C-alpha atom in residue ") + residue->getName() + T(" ") + lbcpp::toString(i + 1));
         return CartesianPositionVectorPtr();
-    }
-    res->setPosition(i, atom->getPosition());
+    }*/
+    if (atom)
+      res->setPosition(i, atom->getPosition());
   }
   return res;
 }
@@ -123,10 +124,9 @@ CartesianPositionVectorPtr TertiaryStructure::makeCBetaTrace() const
   for (size_t i = 0; i < n; ++i)
   {
     ResiduePtr residue = getResidue(i);
-    AtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : AtomPtr();
-    if (!atom)
-      return CartesianPositionVectorPtr();
-    res->setPosition(i, atom->getPosition());
+    AtomPtr atom = residue ? residue->getCBetaAtom() : AtomPtr();
+    if (atom)
+      res->setPosition(i, atom->getPosition());
   }
   return res;
 }

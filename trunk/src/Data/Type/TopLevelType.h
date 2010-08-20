@@ -39,7 +39,7 @@ public:
     : Type(T("Variable"), TypePtr()) {}
 
   virtual VariableValue create() const
-    {jassert(false); return VariableValue();}
+    {ErrorHandler::error(T("Type::create"), getName() + T(" has no default constructor")); return VariableValue();}
 
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
     {callback.errorMessage(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
@@ -71,6 +71,9 @@ public:
 
   virtual String getStaticVariableName(size_t index) const
     {ErrorHandler::error(T("Type::getStaticVariableName()"), T("Not implemented")); return String::empty;}
+
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
+    {ErrorHandler::error(T("Type::getSubVariable()"), T("Not implemented")); return Variable();}
 
   juce_UseDebuggingNewOperator
 };

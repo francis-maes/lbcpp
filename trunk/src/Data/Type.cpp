@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Type.cpp                      | The class interface for         |
+| Filename: Type.cpp                       | The class interface for         |
 | Author  : Francis Maes                   |  introspection                  |
 | Started : 24/06/2010 11:31               |                                 |
 `------------------------------------------/                                 |
@@ -217,9 +217,6 @@ bool Type::inheritsFrom(TypePtr baseType) const
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
 
-Variable Type::getSubVariable(const VariableValue& value, size_t index) const
-  {return baseType ? baseType->getSubVariable(value, index) : Variable();}
-
 void Type::declare(TypePtr typeInstance)
   {getClassManagerInstance().declare(typeInstance);}
 
@@ -254,6 +251,9 @@ bool Type::isMissingValue(const VariableValue& value) const
   return value.getInteger() == missing.getInteger();
 }
 
+VariableValue Type::create() const
+  {jassert(baseType); return baseType->create();}
+
 VariableValue Type::createFromString(const String& value, ErrorHandler& callback) const
   {jassert(baseType); return baseType->createFromString(value, callback);}
 
@@ -284,6 +284,9 @@ int Type::findStaticVariable(const String& name) const
   return -1;
 }
   
+Variable Type::getSubVariable(const VariableValue& value, size_t index) const
+  {jassert(baseType); return baseType->getSubVariable(value, index);}
+
 /*
 ** Class
 */
@@ -339,12 +342,6 @@ TypePtr Class::addWeighted(VariableValue& target, const Variable& source, double
   }
   else
     return TypePtr(this);
-}
-
-VariableValue Class::create() const
-{
-  ErrorHandler::error(T("Class::create"), getName() + T(" has no default constructor"));
-  return VariableValue();
 }
 
 VariableValue Class::createFromString(const String& value, ErrorHandler& callback) const

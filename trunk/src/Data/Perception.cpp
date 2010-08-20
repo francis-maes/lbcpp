@@ -41,7 +41,7 @@ void Perception::ensureTypeIsComputed()
 {
   if (type)
     return;
-  type = new DynamicClass(getClassName() + T("Class"));
+  type = new DynamicClass(getClassName() + T("Class"), dynamicObjectClass());
   size_t n = getNumOutputVariables();
   for (size_t i = 0; i < n; ++i)
     type->addVariable(getOutputVariableType(i), getOutputVariableName(i));

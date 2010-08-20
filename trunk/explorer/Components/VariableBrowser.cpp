@@ -9,6 +9,8 @@
 #include "VariableBrowser.h"
 using namespace lbcpp;
 
+extern void flushErrorAndWarningMessages(const String& title);
+
 class VariableBrowserResizerBar : public Component
 {
 public:
@@ -21,8 +23,6 @@ public:
   virtual void paint(Graphics& g)
   {
     g.fillAll(Colour(240, 245, 250));
-    //getLookAndFeel().drawStretchableLayoutResizerBar(g, getWidth(), getHeight(),
-    //      true, isMouseOver(), isMouseButtonDown());
     float x = getWidth() / 2.f;
     float thickness = isMouseOver() ? 2.f : 1.f;
     g.setColour(isMouseButtonDown() ? Colours::grey : Colours::lightgrey);
@@ -81,6 +81,9 @@ public:
     selector->setBounds(0, propertiesHeight, w, getHeight() - propertiesHeight);
     resizer->setBounds(w, 0, resizerWidth, getHeight());
   }
+
+  virtual void paint(Graphics& g)
+    {g.fillAll(Colours::white);}
 
   virtual void paintOverChildren(Graphics& g)
   {
@@ -195,16 +198,16 @@ public:
       rows.erase(rows.begin() + i);
     }
     Variable variable = selector->createMultiSelectionVariable(selectedVariables);
-    if (variable != rows.back().first->getVariable())
-    {
-      Component* component = selector->createComponentForVariable(variable, variable.getShortSummary());
-      if (component)
-        appendVariable(variable, component);
-    }
+    Component* component = selector->createComponentForVariable(variable, variable.getShortSummary());
+    if (component)
+      appendVariable(variable, component);
+
     setSize(getPreferedWidth(), getHeight());
     Viewport* viewport = findParentComponentOfClass<Viewport>();
     if (viewport)
       viewport->setViewPositionProportionately(1.0, 0.0);
+
+    flushErrorAndWarningMessages(T("Changed Selection"));
   }
 
 private:

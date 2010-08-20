@@ -231,6 +231,12 @@ public:
 
   virtual size_t getNumStaticVariables() const
     {return getEnumeration()->getNumElements() + 1;}
+  
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
+    {return value.getObject()->getVariable(index);}
+
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+    {value.getObject()->setVariable(index, subValue);}
 
   virtual TypePtr getStaticVariableType(size_t index) const
     {return probabilityType();}
