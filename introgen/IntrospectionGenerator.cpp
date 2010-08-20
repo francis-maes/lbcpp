@@ -189,10 +189,12 @@ protected:
     {
       // getSubVariable
       openScope(T("virtual Variable getSubVariable(const VariableValue& __value__, size_t __index__) const"));
+        writeLine(T("TypePtr expectedType = getStaticVariableType(__index__);"));
         writeLine(T("if (__index__ < baseType->getNumStaticVariables())"));
         writeLine(T("return baseType->getSubVariable(__value__, __index__);"), 1);
         writeLine(T("__index__ -= baseType->getNumStaticVariables();"));
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__value__.getObjectPointer());"));
+        writeLine(T("Variable __res__;"));
         newLine();
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)
@@ -202,17 +204,18 @@ protected:
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
             String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
-            String code = T("case ") + String((int)i) + T(": return ");
+            String code = T("case ") + String((int)i) + T(": __res__ = ");
             if (cast.isNotEmpty())
               code += T("(") + cast + T(")(");
             code += T("__this__->") + name;
             if (cast.isNotEmpty())
               code += T(")");
-            code += T(";");
+            code += T("; break;");
             writeLine(code, -1);
           }
           writeLine(T("default: jassert(false); return Variable();"), -1);
         closeScope();
+        writeLine(T("return __res__.isNil() ? Variable::missingValue(expectedType) : __res__;"));
       closeScope();
       newLine();
 

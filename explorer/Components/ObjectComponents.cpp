@@ -43,6 +43,8 @@ public:
   }
 };
 */
+
+
 Component* createComponentForObject(ObjectPtr object, const String& explicitName)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
@@ -90,8 +92,14 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     };
   }
 
+  if (variable.getType() == pairType(proteinClass(), integerType()))
+    return new ResiduePerceptionComponent(variable);
+
   if (variable.isObject())
+  {
     res = createComponentForObject(variable.getObject(), explicitName);
+    if (res) return res;
+  }
 
   if (!res)
     res = new VariableTreeComponent(variable, explicitName); 
@@ -204,6 +212,10 @@ Component* lbcpp::createComponentForVariable(const Variable& variable, const Str
   Component* res = createComponentForVariableImpl(variable, explicitName);
   if (topLevelComponent && dynamic_cast<VariableSelector* >(res))
     res = new VariableBrowser(variable, res);
+  String title = T("Create Component");
+  if (explicitName.isNotEmpty())
+    title += T(" for ") + explicitName;
+  flushErrorAndWarningMessages(title);
   return res;
 }
 

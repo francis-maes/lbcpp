@@ -95,8 +95,7 @@ public:
   virtual VariableValue getMissingValue() const;
   virtual bool isMissingValue(const VariableValue& value) const;
 
-  virtual VariableValue create() const = 0;
-
+  virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
@@ -312,7 +311,6 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;

@@ -1,6 +1,3 @@
-* Faire un layout a base de taille fixe dans le VariableBrowser
--
-
 * Afficher les Perceptions dans l'explorer
 * Fixer le bug de performances sur SS3
 -
@@ -9,6 +6,7 @@
 * Commencer à voir si on peut enlever les TypeTraits
 -
 * Clarifier l'histoire des TemplateType
+* Clarifier l'histoire des variables dynamiques
 * Normalize Container classes declaration
 * Move Evaluator from lbcpp/Inference to lbcpp/Data
 

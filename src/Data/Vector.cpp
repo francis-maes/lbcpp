@@ -235,3 +235,6 @@ ClassPtr lbcpp::vectorClass(TypePtr elementsType)
   static UnaryTemplateTypeCache cache(T("Vector"));
   return cache(elementsType);
 }
+
+ClassPtr lbcpp::dynamicObjectClass()
+  {static TypeCache cache(T("DynamicObject")); return cache();}

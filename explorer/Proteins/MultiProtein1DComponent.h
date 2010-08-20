@@ -12,6 +12,8 @@
 # include "MultiSequenceComponent.h"
 # include "../Utilities/SplittedLayout.h"
 # include "../../projects/Proteins/Data/Protein.h"
+# include "../../projects/Proteins/Inference/ProteinInferenceFactory.h"
+# include "../../projects/Proteins/Perception/PerceptionToFeatures.h"
 
 namespace lbcpp
 {
@@ -193,8 +195,6 @@ public:
     selection.resize(selectedVariables.size());
     for (size_t i = 0; i < selection.size(); ++i)
       selection[i] = makeSelection(selectedVariables[i]);
-    if (selection.empty() && proteins.size() == 1)
-      selection.push_back(proteins[0]);
     sendSelectionChanged(selection);
     MultiSequenceComponent* component = dynamic_cast<MultiSequenceComponent* >(getViewport()->getViewedComponent());
     if (component)

@@ -47,8 +47,11 @@ public:
   /*
   ** Low level inferences
   */
-  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const = 0;
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const = 0;
+  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
+    {jassert(false); return InferencePtr();}
+
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
+    {jassert(false); return InferencePtr();}
 
 protected:
   ClassPtr proteinClass;

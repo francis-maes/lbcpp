@@ -52,17 +52,21 @@ protected:
 class TabbedVariableSelectorComponent : public TabbedButtonBar, public VariableSelector, public juce::ChangeListener, public ComponentWithPreferedSize
 {
 public:
-  TabbedVariableSelectorComponent() : TabbedButtonBar(TabsAtLeft)
+  TabbedVariableSelectorComponent(const Variable& variable)
+    : TabbedButtonBar(TabsAtLeft), variable(variable)
     {addChangeListener(this);}
 
   virtual void changeListenerCallback(void* objectThatHasChanged)
-    {sendSelectionChanged(getCurrentTabName());}
+    {sendSelectionChanged(Variable::pair(variable, getCurrentTabName()));}
 
   virtual int getDefaultWidth() const
     {return 27;}
 
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
     {return 27;}
+
+protected:
+  Variable variable;
 };
 
 }; /* namespace lbcpp */

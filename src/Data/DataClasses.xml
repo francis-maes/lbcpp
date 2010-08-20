@@ -26,6 +26,13 @@
 
     <class name="Enumeration" base="Type" abstract="yes">
       <variable type="String" name="oneLetterCodes"/>
+      <code>
+        virtual VariableValue createFromString(const String&amp; value, ErrorHandler&amp; callback) const
+          {return Type::parseAndGet(value, callback);}
+
+        virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler&amp; callback) const
+          {return createFromString(xml->getAllSubText(), callback);}
+      </code>
     </class>
 
     <!-- Consumer -->

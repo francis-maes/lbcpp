@@ -289,6 +289,9 @@ public:
 
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+
+  virtual String getShortSummary() const
+    {return getName();}
 };
 
   /**

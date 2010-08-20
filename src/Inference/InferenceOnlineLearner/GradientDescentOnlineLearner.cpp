@@ -137,9 +137,9 @@ void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(FeatureGenerator
   numberOfActiveFeatures.push((double)(features->l1norm()));
 }
 
-ObjectPtr GradientDescentOnlineLearner::clone() const
+void GradientDescentOnlineLearner::clone(ObjectPtr target) const
 {
-  GradientDescentOnlineLearnerPtr res = Object::cloneAndCast<GradientDescentOnlineLearner>();
+  GradientDescentOnlineLearnerPtr res = (GradientDescentOnlineLearnerPtr)target;
   res->numberOfActiveFeatures = numberOfActiveFeatures;
   res->epoch = epoch;
   res->learningRate = learningRate;
@@ -149,5 +149,5 @@ ObjectPtr GradientDescentOnlineLearner::clone() const
   res->regularizer = regularizer;
   res->lossValue = lossValue;
   res->lastApplyRegularizerEpoch = lastApplyRegularizerEpoch;
-  return res;
+  Object::clone(res);
 }
