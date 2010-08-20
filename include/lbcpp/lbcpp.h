@@ -46,7 +46,6 @@
 // old
 # include "Object/ObjectGraph.h"
 # include "Object/Table.h"
-# include "Object/StringToObjectMap.h"
 // -
 
 # include "Utilities/IterationFunction.h"

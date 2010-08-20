@@ -2,11 +2,8 @@
 
 <file name="Explorer">
   <include file="ProcessManager/RecentProcesses.h"/>
-  <include file="Components/FileObjectComponent.h"/>
 
   <namespace name="lbcpp">
-
-    <class name="FileObject"/>
 
     <class name="ExplorerConfiguration" base="Object"/>
 

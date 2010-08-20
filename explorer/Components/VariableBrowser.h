@@ -20,17 +20,17 @@ namespace lbcpp
 class VariableSelectorAndContentComponent : public Component, public VariableSelectorCallback, public ComponentWithPreferedSize
 {
 public:
-  VariableSelectorAndContentComponent(ObjectPtr object, Component* selector)
-    : object(object), selector(selector), content(new VariableProxyComponent())
+  VariableSelectorAndContentComponent(const Variable& variable, Component* selector)
+    : variable(variable), selector(selector), content(new VariableProxyComponent())
   {
     VariableSelector* s = dynamic_cast<VariableSelector* >(selector);
     jassert(s);
     s->addCallback(*this);
 
     addAndMakeVisible(properties = new PropertyListDisplayComponent(40));
-    properties->addProperty(T("Class"), object->getClassName());
-    String name = object->getName();
-    if (name.indexOf(T("unimplemented")) < 0)
+    properties->addProperty(T("Type"), variable.getTypeName());
+    String name = variable.isObject() ? variable.getObject()->getName() : String::empty;
+    if (name.isNotEmpty() && name.indexOf(T("unimplemented")) < 0)
       properties->addProperty(T("Name"), name);
 
     addAndMakeVisible(selector);
@@ -61,7 +61,7 @@ public:
     std::vector<Variable> variables;
     variables.reserve(selectedVariables.size());
     for (size_t i = 0; i < selectedVariables.size(); ++i)
-      if (selectedVariables[i].getObject() != object) // it is not possible to select the root effect
+      if (selectedVariables[i] != variable) // it is not possible to select the root effect
         variables.push_back(selectedVariables[i]);
     Variable multiSelection = createMultiSelectionVariable(variables);
     content->setVariable(multiSelection);
@@ -83,7 +83,7 @@ public:
   }
 
 private:
-  ObjectPtr object;
+  Variable variable;
   PropertyListDisplayComponent* properties;
   Component* selector;
   Component* resizeBar;

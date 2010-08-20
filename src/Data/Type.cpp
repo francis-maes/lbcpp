@@ -613,7 +613,10 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
 #include "Type/BooleanType.h"
 #include "Type/DoubleType.h"
 #include "Type/StringType.h"
+#include "Type/FileType.h"
 #include "Type/TupleType.h"
+
+DirectoriesCache FileType::cache;
 
 #define DECLARE_CLASS_SINGLETON_ACCESSOR(AccessorName, ClassName) \
   TypePtr lbcpp::AccessorName() { static TypeCache cache(ClassName); return cache(); }

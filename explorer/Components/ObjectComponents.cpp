@@ -11,10 +11,10 @@
 #include "StringComponent.h"
 #include "TableComponent.h"
 #include "TreeComponent.h"
-#include "StringToObjectMapTabbedComponent.h"
-#include "FileObjectComponent.h"
 #include "VariableBrowser.h"
+#include "HexadecimalFileComponent.h"
 #include "../Proteins/ProteinComponent.h"
+#include "../Utilities/FileType.h"
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
@@ -60,41 +60,6 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
   if (res)
     return res;
 
-  if (object.dynamicCast<FileObject>())
-  {
-    FileObjectPtr fileObject = object.staticCast<FileObject>();
-    FileObject::Type type = fileObject->getType();
-    switch (type)
-    {
-    case FileObject::directory:
-      return new VariableSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
-
-    case FileObject::classDirectory:
-    case FileObject::classFile:
-      {
-        if (type == FileObject::classDirectory)
-          return new VariableSelectorAndContentComponent(object, new ObjectTreeComponent(fileObject, name));
-        else
-          return new HexadecimalFileObjectComponent(object, name);
-      }
-
-    case FileObject::textFile:
-        return new StringComponent(object);
-
-    case FileObject::xmlFile:
-      {
-        Variable variable = Variable::createFromFile(fileObject->getFile());
-        flushErrorAndWarningMessages(T("Load file ") + fileObject->getFile().getFileName());
-        return createComponentForVariable(variable, name);
-      }
-
-    case FileObject::binaryFile:
-      return new HexadecimalFileObjectComponent(fileObject, name);
-    default:
-      jassert(false); return NULL;
-    };
-  }
-  
   if (object.dynamicCast<Protein>())
   {
     ProteinPtr protein = object.dynamicCast<Protein>();
@@ -113,6 +78,25 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     return NULL;
 
   Component* res = NULL;
+
+  if (variable.isFile())
+  {
+    File file = variable.getFile();
+    switch (getFileType(file))
+    {
+    case binaryFile: return new HexadecimalFileComponent(variable, explicitName);
+    case xmlFile: 
+    case textFile: return new StringComponent(variable); 
+    case lbcppXmlFile:
+      {
+        Variable v = Variable::createFromFile(file);
+        return v ? createComponentForVariableImpl(v, file.getFileName()) : NULL;
+      }
+    case directory: return new VariableSelectorAndContentComponent(variable, new VariableTreeComponent(variable, explicitName, VariableTreeOptions(false, false)));
+    default: return NULL;
+    };
+  }
+
   if (variable.isObject())
     res = createComponentForObject(variable.getObject(), explicitName);
 
@@ -211,9 +195,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
   if (object.dynamicCast<Table>())
     return new TableComponent(object.dynamicCast<Table>());
 
-  if (object.dynamicCast<StringToObjectMap>())
-    return new StringToObjectMapTabbedComponent(object.dynamicCast<StringToObjectMap>());
-
+  
   //ObjectGraphPtr graph = object->toGraph();
   //if (topLevelComponent && graph)
   //  return new ObjectGraphAndContentComponent(graph);

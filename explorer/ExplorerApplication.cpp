@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "Utilities/SplittedLayout.h"
-#include "Components/FileObjectComponent.h" // tmp, for FileObject
+#include "Utilities/FileType.h"
 #include "ProcessManager/ProcessManager.h"
 #include "ExplorerConfiguration.h"
 using namespace lbcpp;
@@ -56,18 +56,18 @@ public:
   ExplorerContentTabs(DocumentWindow* mainWindow)
     : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
 
-  void addObject(ObjectPtr object, const String& name)
+  void addVariable(const Variable& variable, const String& name)
   {
-    Component* component = createComponentForVariable(object, name, true);
+    Component* component = createComponentForVariable(variable, name, true);
     addTab(name, Colours::lightblue, component, true);
-    objects.push_back(object);
+    variables.push_back(variable);
     setCurrentTabIndex(getNumTabs() - 1);
   }
 
   void closeCurrentTab()
   {
     int current = getCurrentTabIndex();
-    objects.erase(objects.begin() + current);
+    variables.erase(variables.begin() + current);
     if (current >= 0)
       removeTab(current);
   }
@@ -81,15 +81,15 @@ public:
     dynamic_cast<MenuBarModel* >(mainWindow)->menuItemsChanged();
   }
 
-  ObjectPtr getCurrentObject() const
+  Variable getCurrentVariable() const
   {
     int current = getCurrentTabIndex();
-    return current >= 0 ? objects[current] : ObjectPtr();
+    return current >= 0 ? variables[current] : Variable();
   }
 
 private:
   DocumentWindow* mainWindow;
-  std::vector<ObjectPtr> objects;
+  std::vector<Variable> variables;
 };
 
 class ExplorerMainWindow : public DocumentWindow, public MenuBarModel
@@ -195,7 +195,7 @@ public:
       else if (menuItemID == 3)
         contentTabs->closeCurrentTab();
       else if (menuItemID == 4)
-        contentTabs->addObject(localProcessManager(), T("Process Manager"));
+        contentTabs->addVariable(localProcessManager(), T("Process Manager"));
       else if (menuItemID == 5)
         JUCEApplication::quit();
     }
@@ -212,28 +212,14 @@ public:
   {
     ExplorerRecentFiles::getInstance()->addRecentFile(file);
     ExplorerConfiguration::save();
-    ObjectPtr object = loadObject(file);
-    if (object)
-      contentTabs->addObject(object, file.getFileNameWithoutExtension());
+    Variable variable = createVariableFromFile(file);
+    if (variable)
+      contentTabs->addVariable(variable, file.getFileNameWithoutExtension());
   }
 
-  ObjectPtr loadObject(const File& file)
+  Variable createVariableFromFile(const File& file)
   {
-    FileObjectPtr fileObject = new FileObject(file);
-    ObjectPtr res;
-    switch (fileObject->getType())
-    {
-    case FileObject::textFile:
-      res = fileObject;
-      break;
-
-    case FileObject::xmlFile:
-      res = Variable::createFromFile(file).getObject();
-      break;
-
-    default:
-      res = fileObject;
-    }
+    Variable res = getFileType(file) == lbcppXmlFile ? Variable::createFromFile(file) : Variable(file);
     flushErrorAndWarningMessages(T("Load ") + file.getFileName());
     return res;
   }
