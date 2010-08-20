@@ -1,7 +1,4 @@
 
-* Remove ObjectTreeComponent
-* Remove Object::getChildrenObjects()
-
 * Normalize Container classes declaration
 
 ====

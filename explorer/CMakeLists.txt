@@ -18,13 +18,13 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
   Components/StringComponent.h
   Components/TableComponent.h
-  Components/TreeComponent.h
   Components/ObjectGraphComponent.h
   Components/ObjectContainerNameListComponent.h
   Components/ObjectComponents.cpp
 
   Components/VariableProxyComponent.h
   Components/VariableBrowser.h
+  Components/VariableTreeComponent.h
   Components/HexadecimalFileComponent.h
 )
 

@@ -206,10 +206,6 @@ public:
   */
   virtual bool loadFromString(const String& str, ErrorHandler& callback);
 
-  // tmp
-  virtual void getChildrenObjects(std::vector< std::pair<String, ObjectPtr> >& subObjects) const
-    {}
-
   /**
   ** Clones and cast the current object.
   **
