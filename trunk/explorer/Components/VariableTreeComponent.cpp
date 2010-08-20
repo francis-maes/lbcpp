@@ -19,9 +19,13 @@ public:
     shortSummary = variable.getShortSummary();
 
     size_t n = variable.size();
-    subVariables.resize(n);
+    subVariables.reserve(n);
     for (size_t i = 0; i < n; ++i)
-      subVariables[i] = std::make_pair(variable.getVariableName(i), variable[i]);
+    {
+      Variable subVariable = variable[i];
+      if (subVariable)
+        subVariables.push_back(std::make_pair(variable.getVariableName(i), subVariable));
+    }
     mightContainSubItemsFlag = !subVariables.empty();
   }
 
