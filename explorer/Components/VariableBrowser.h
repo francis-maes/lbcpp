@@ -37,10 +37,18 @@ public:
     addAndMakeVisible(resizeBar = new juce::StretchableLayoutResizerBar(&layout, 1, true));
     addAndMakeVisible(content);
 
-    layout.setItemLayout(0, 10, -1, 200);
+    double preferedWidth = 200.0;
+    ComponentWithPreferedSize* componentWithPreferedSize = dynamic_cast<ComponentWithPreferedSize* >(selector);
+    if (componentWithPreferedSize)
+    {
+      int w = componentWithPreferedSize->getPreferedWidth(0, 0);
+      if (w)
+        preferedWidth = (double)w;
+    }
+    layout.setItemLayout(0, 10, -1, preferedWidth);
     double size = 4;
     layout.setItemLayout(1, size, size, size);
-    layout.setItemLayout(2, 10, -1, -1);   
+    layout.setItemLayout(2, 10, -1, -1.0);
   }
 
   virtual ~VariableSelectorAndContentComponent()

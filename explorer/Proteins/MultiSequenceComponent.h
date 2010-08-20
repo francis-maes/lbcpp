@@ -11,12 +11,13 @@
 
 # include "../Components/common.h"
 # include "../Utilities/ComponentWithPreferedSize.h"
+# include "../Utilities/VariableSelector.h"
 # include "../../projects/Proteins/Data/AminoAcid.h"
 
 namespace lbcpp
 {
 
-class MultiSequenceComponent : public Component, public ComponentWithPreferedSize
+class MultiSequenceComponent : public Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
   MultiSequenceComponent() : numSequences(0), longestSequence(0) {}
@@ -34,6 +35,39 @@ public:
       if (length > longestSequence)
         longestSequence = length;
     }
+  }
+
+  bool hitTest(int x, int y, String& sequenceName, String& versionName, int& position)
+  {
+    position = -1;
+    if (lines.empty() || y < lines[0].y1)
+      return false;
+
+    for (size_t i = 0; i < lines.size(); ++i)
+      if (y >= lines[i].y1 && y < lines[i].y1 + elementHeight)
+      {
+        LineInfo info = lines[i];
+        size_t length = info.end - info.begin;
+        if (x < info.x1 || x >= (int)(info.x1 + length * elementWidth))
+          return false;
+        int positionInLine = (x - info.x1) / elementWidth;
+        position = (int)info.begin + positionInLine;
+        sequenceName = info.sequenceName;
+        versionName = info.versionName;
+        return true;
+      }
+    return false;
+  }
+
+  virtual void mouseUp(const MouseEvent& e)
+  {
+    String sequenceName, versionName;
+    int position;
+    if (hitTest(e.getMouseDownX(), e.getMouseDownY(), sequenceName, versionName, position))
+      sendSelectionChanged(Variable::pair(Variable::pair(sequenceName, versionName), position));
+    else
+      sendSelectionChanged(std::vector<Variable>());
+    repaint();
   }
 
   enum
@@ -56,6 +90,7 @@ public:
 
   virtual void paint(Graphics& g)
   {
+    lines.clear();
     g.fillAll(Colours::white);
     int numElementsPerLine = (getWidth() - marginLeft - marginRight) / elementWidth;
     int numParts = (int)ceil(longestSequence / (double)numElementsPerLine);
@@ -76,6 +111,15 @@ public:
 private:
   std::vector< std::pair<String, std::vector< std::pair<String, ContainerPtr> > > > sequences;
   size_t numSequences, longestSequence;
+
+  struct LineInfo
+  {
+    String sequenceName, versionName;
+    size_t begin, end;
+    int x1, y1;
+  };
+  std::vector<LineInfo> lines;
+    
   
   void paintSequencesInterval(Graphics& g, size_t begin, size_t end, int x1, int y1)
   {
@@ -110,7 +154,15 @@ private:
         else
           g.drawText(sequences[i].first, 0, y, marginLeft - 5, elementHeight, Justification::centredRight, true);
           
-        paintSequenceInterval(g, begin, end, x1, y, seq[j].first, seq[j].second);
+        LineInfo info;
+        info.begin = begin;
+        info.end = end;
+        info.x1 = x1;
+        info.y1 = y;
+        info.sequenceName = sequences[i].first;
+        info.versionName = seq[j].first;
+        lines.push_back(info);
+        paintSequenceInterval(g, info, seq[j].first, seq[j].second);
         y += elementHeight;
 
         if (j < seq.size() - 1)
@@ -119,16 +171,17 @@ private:
     }
   }
 
-  void paintSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y1, const String& versionName, ContainerPtr sequence)
+  void paintSequenceInterval(Graphics& g, const LineInfo& info, const String& versionName, ContainerPtr sequence)
   {
-    int y2 = y1 + elementHeight;
+    int y2 = info.y1 + elementHeight;
     
     g.setColour(Colours::black);
-    g.drawLine((float)x1, (float)y1, (float)(x1 + (end - begin) * elementWidth), (float)y1);
-    g.drawLine((float)x1, (float)y2, (float)(x1 + (end - begin) * elementWidth), (float)y2);
+    size_t length = info.end - info.begin;
+    g.drawLine((float)info.x1, (float)info.y1, (float)(info.x1 + length * elementWidth), (float)info.y1);
+    g.drawLine((float)info.x1, (float)y2, (float)(info.x1 + length * elementWidth), (float)y2);
     
-    int x = x1;
-    for (size_t i = begin; i < end; ++i)
+    int x = info.x1;
+    for (size_t i = info.begin; i < info.end; ++i)
     {
       g.setColour(Colours::black);
       Variable variable1 = i > 0 ? sequence->getVariable(i - 1) : Variable();
@@ -137,17 +190,17 @@ private:
       if (variable1 && variable2 && variable1 == variable2)
       {
         g.setColour(Colours::lightgrey);
-        g.drawLine((float)x, (float)(y1 + 1), (float)x, (float)y2);
+        g.drawLine((float)x, (float)(info.y1 + 1), (float)x, (float)y2);
         g.setColour(Colours::black);
       }
       else
-        g.drawLine((float)x, (float)(y1 + 1), (float)x, (float)y2);
+        g.drawLine((float)x, (float)(info.y1 + 1), (float)x, (float)y2);
       
-      paintSequenceElement(g, x + 1, y1 + 1, elementWidth - 1, elementHeight - 1, sequence, i);
+      paintSequenceElement(g, x + 1, info.y1 + 1, elementWidth - 1, elementHeight - 1, sequence, i);
       x += elementWidth;
     }
     g.setColour(Colours::black);
-    g.drawLine((float)x, (float)y1, (float)x, (float)(y2 + 1));
+    g.drawLine((float)x, (float)info.y1, (float)x, (float)(y2 + 1));
   }
 
   void paintSequenceElement(Graphics& g, int x, int y, int w, int h, ContainerPtr seq, size_t index)

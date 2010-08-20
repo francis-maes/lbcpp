@@ -1,11 +1,8 @@
-
-* Normalize Container classes declaration
-
-====
 * Afficher les Perceptions dans l'explorer
 * Fixer le bug de performances sur SS3
 
 * Clarifier l'histoire des TemplateType
+* Normalize Container classes declaration
 * Move Evaluator from lbcpp/Inference to lbcpp/Data
 
 ====

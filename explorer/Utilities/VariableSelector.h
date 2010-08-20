@@ -28,6 +28,9 @@ public:
   void addCallback(VariableSelectorCallback& callback)
     {callbacks.push_back(&callback);}
 
+  void sendSelectionChanged(const Variable& selectedVariable)
+    {sendSelectionChanged(std::vector<Variable>(1, selectedVariable));}
+
   void sendSelectionChanged(const std::vector<Variable>& selectedVariables)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
