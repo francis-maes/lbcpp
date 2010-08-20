@@ -1,6 +1,3 @@
-* Afficher les Perceptions dans l'explorer
-* Fixer le bug de performances sur SS3
--
 * Refaire la serialisation du DenseVector / FeatureDictionary
 * Finir d'enlever le code de serialisation binaire
 * Commencer à voir si on peut enlever les TypeTraits
