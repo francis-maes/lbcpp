@@ -12,11 +12,10 @@
 
     <class name="ExplorerRecentFiles">
       <variable type="File" name="recentDirectory"/>
-      <!--
       <variable type="Vector[File]" name="recentFiles"/>
-      -->
     </class>
 
+    <!-- FIXME: add introspection to these classes -->
     <class name="RecentProcesses"/>
     <class name="ProcessConsoleSettings"/>
     <class name="ProcessConsoleFilter"/>
