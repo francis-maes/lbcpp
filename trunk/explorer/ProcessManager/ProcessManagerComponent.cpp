@@ -145,7 +145,7 @@ void ProcessManagerComponent::menuItemSelected(int menuItemID, int topLevelMenuI
   };
 }
 
-void ProcessManagerComponent::selectionChangedCallback(const std::vector<Variable>& selectedVariables)
+void ProcessManagerComponent::selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
 {
   if (selectedVariables.size() == 1)
   {

@@ -12,6 +12,9 @@
 # include "common.h"
 # include "../Utilities/VariableSelector.h"
 # include "../Utilities/SimpleTreeViewItem.h"
+# include "../Utilities/ComponentWithPreferedSize.h"
+
+class VariableTreeViewItem;
 
 namespace lbcpp
 {
@@ -25,154 +28,22 @@ struct VariableTreeOptions
   bool showShortSummaries;
 };
 
-class VariableTreeViewItem : public SimpleTreeViewItem
+class VariableTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer, public ComponentWithPreferedSize
 {
 public:
-  VariableTreeViewItem(const String& name, const Variable& variable, const VariableTreeOptions& options)
-    : SimpleTreeViewItem(name, NULL, true), 
-      variable(variable), options(options), typeName(variable.getTypeName()), component(NULL)
-  {
-    shortSummary = variable.getShortSummary();
+  VariableTreeComponent(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions());
+  virtual ~VariableTreeComponent();
 
-    size_t n = variable.size();
-    subVariables.resize(n);
-    for (size_t i = 0; i < n; ++i)
-      subVariables[i] = std::make_pair(variable.getVariableName(i), variable[i]);
-    mightContainSubItemsFlag = !subVariables.empty();
-  }
+  virtual bool keyPressed(const juce::KeyPress& key);
 
-  virtual void itemSelectionChanged(bool isNowSelected);
-  
-  virtual void createSubItems()
-  {
-    for (size_t i = 0; i < subVariables.size(); ++i)
-      addSubItem(new VariableTreeViewItem(subVariables[i].first, subVariables[i].second, options));
-  }
+  void clearTree();
+  void buildTree();
 
-  Variable getVariable() const
-    {return variable;}
-  
-  virtual void paintItem(Graphics& g, int width, int height)
-  {
-    if (isSelected())
-      g.fillAll(Colours::lightgrey);
-    g.setColour(Colours::black);
-    int x1 = 0;
-    if (iconToUse)
-    {
-      g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
-      x1 += iconToUse->getWidth() + 5;
-    }
+  virtual void paint(Graphics& g);
+  virtual void timerCallback();
+  void invalidateSelection();
 
-    int numFields = 1;
-    if (options.showTypes) ++numFields;
-    if (options.showShortSummaries) ++numFields;
-
-    int typeAndNameLength;
-    enum {wantedLength = 300};
-    int remainingWidth = width - x1;
-    if (remainingWidth >= numFields * wantedLength)
-      typeAndNameLength = wantedLength;
-    else
-      typeAndNameLength = remainingWidth / numFields;
-
-    g.setFont(Font(12, Font::bold));
-    g.drawText(getUniqueName(), x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
-    x1 += typeAndNameLength;
-    if (options.showTypes)
-    {
-      g.setFont(Font(12, Font::italic));
-      g.drawText(typeName, x1, 0, typeAndNameLength - 5, height, Justification::centredLeft, true);
-      x1 += typeAndNameLength;
-    }
-
-    if (options.showShortSummaries && shortSummary.isNotEmpty())
-    {
-      g.setFont(Font(12));
-      g.drawText(shortSummary, x1, 0, width - x1 - 2, height, Justification::centredLeft, true);
-    }
-  }
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  Variable variable;
-  const VariableTreeOptions& options;
-  String typeName;
-  String shortSummary;
-  Component* component;
-
-  std::vector< std::pair<String, Variable> > subVariables;
-};
-
-class VariableTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer
-{
-public:
-  VariableTreeComponent(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions())
-    : variable(variable), name(name), options(options), root(NULL), isSelectionUpToDate(false)
-  {
-    setRootItemVisible(true);
-    setWantsKeyboardFocus(true);
-    setMultiSelectEnabled(true);
-    buildTree();
-    root->setSelected(true, true);
-    startTimer(100);  
-  }
-
-  virtual ~VariableTreeComponent()
-    {clearTree();}
-
-  virtual bool keyPressed(const juce::KeyPress& key)
-  {
-    if (key.getKeyCode() == juce::KeyPress::F5Key)
-    {
-      clearTree(), buildTree();
-      return true;
-    }
-    return juce::TreeView::keyPressed(key);
-  }
-  
-  void clearTree()
-  {
-    if (root)
-    {
-      deleteRootItem();
-      root = NULL;
-    }    
-  }
-
-  void buildTree()
-  {
-    root = new VariableTreeViewItem(name, variable, options);
-    setRootItem(root);
-    root->setOpen(true);
-  }
-
-  virtual void paint(Graphics& g)
-  {
-    g.fillAll(Colours::white);
-    juce::TreeView::paint(g);
-  }
-  
-  virtual void timerCallback()
-  {
-    if (!isSelectionUpToDate)
-    {
-      std::vector<Variable> selectedVariables;
-      selectedVariables.reserve(getNumSelectedItems());
-      for (int i = 0; i < getNumSelectedItems(); ++i)
-      {
-        VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
-        if (item && item->getVariable())
-          selectedVariables.push_back(item->getVariable());
-      }
-      sendSelectionChanged(selectedVariables);
-      isSelectionUpToDate = true;
-    }
-  }
-  
-  void invalidateSelection()
-    {isSelectionUpToDate = false;}
+  virtual int getDefaultWidth() const;
 
   juce_UseDebuggingNewOperator
 
@@ -183,13 +54,6 @@ protected:
   VariableTreeViewItem* root;
   bool isSelectionUpToDate;
 };
-
-inline void VariableTreeViewItem::itemSelectionChanged(bool isNowSelected)
-{
-  VariableTreeComponent* owner = dynamic_cast<VariableTreeComponent* >(getOwnerView());
-  jassert(owner);
-  owner->invalidateSelection();
-}
 
 }; /* namespace lbcpp */
 

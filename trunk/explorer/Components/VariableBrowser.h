@@ -14,9 +14,12 @@
 # include "../Utilities/ComponentWithPreferedSize.h"
 # include "../Utilities/VariableSelector.h"
 
+class VariableBrowserContent;
+
 namespace lbcpp
 {
 
+#if 0
 class VariableSelectorAndContentComponent : public Component, public VariableSelectorCallback, public ComponentWithPreferedSize
 {
 public:
@@ -64,7 +67,7 @@ public:
     selector->setBounds(selector->getX(), propertiesHeight, selector->getWidth(), getHeight() - propertiesHeight);
   }
 
-  virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables)
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
   {
     std::vector<Variable> variables;
     variables.reserve(selectedVariables.size());
@@ -98,12 +101,17 @@ private:
   VariableProxyComponent* content;
   juce::StretchableLayoutManager layout;
 };
+#endif // 0
 
 class VariableBrowser : public ViewportComponent
 {
 public:
-  VariableBrowser(VariableSelectorAndContentComponent* content)
-    : ViewportComponent(content, false, true) {}
+  VariableBrowser(const Variable& variable, Component* selector);
+
+  virtual void resized();
+
+private:
+  VariableBrowserContent* getContent() const;
 };
 
 }; /* namespace lbcpp */

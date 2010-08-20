@@ -1,5 +1,3 @@
-* Memory Leak dans l'explorer
-* XML pour InferenceOnlineLearner
 * Faire un layout a base de taille fixe dans le VariableBrowser
 -
 

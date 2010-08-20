@@ -187,7 +187,7 @@ public:
     getViewport()->resized();
   }
 
-  virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables)
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
   {
     std::vector<Variable> selection;
     selection.resize(selectedVariables.size());
@@ -206,7 +206,7 @@ public:
     }
   }
   
-  virtual int getPreferedWidth(int availableWidth, int availableHeight) const
+  virtual int getDefaultWidth() const
     {return 900;}
 
 protected:

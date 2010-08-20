@@ -24,7 +24,9 @@ SET(EXPLORER_COMPONENTS_SOURCES
 
   Components/VariableProxyComponent.h
   Components/VariableBrowser.h
+  Components/VariableBrowser.cpp
   Components/VariableTreeComponent.h
+  Components/VariableTreeComponent.cpp
   Components/HexadecimalFileComponent.h
 )
 

@@ -27,7 +27,7 @@ public:
     : VariableSelectorAndContentComponent(featureGenerator, new ObjectTreeComponent(featureGenerator, name))
     {}
 
-  virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables)
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
   {
     std::vector<Variable> variables;
     variables.reserve(selectedVariables.size());
@@ -39,7 +39,7 @@ public:
       else
         variables.push_back(selectedVariables[i]);
     }
-    VariableSelectorAndContentComponent::selectionChangedCallback(variables);
+    VariableSelectorAndContentComponent::selectionChangedCallback(selector, variables);
   }
 };
 */
@@ -85,7 +85,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
         Variable v = Variable::createFromFile(file);
         return v ? createComponentForVariableImpl(v, file.getFileName()) : NULL;
       }
-    case directory: return new VariableSelectorAndContentComponent(variable, new VariableTreeComponent(variable, explicitName, VariableTreeOptions(false, false)));
+    case directory: return new VariableTreeComponent(variable, explicitName, VariableTreeOptions(false, false));
     default: return NULL;
     };
   }
@@ -202,12 +202,8 @@ Component* lbcpp::createComponentForVariable(const Variable& variable, const Str
   if (!variable)
     return NULL;
   Component* res = createComponentForVariableImpl(variable, explicitName);
-  if (topLevelComponent)
-  {
-    VariableSelectorAndContentComponent* selector = dynamic_cast<VariableSelectorAndContentComponent* >(res);
-    if (selector)
-      res = new VariableBrowser(selector);
-  }
+  if (topLevelComponent && dynamic_cast<VariableSelector* >(res))
+    res = new VariableBrowser(variable, res);
   return res;
 }
 

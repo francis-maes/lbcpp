@@ -17,6 +17,12 @@ class ComponentWithPreferedSize
 public:
   virtual ~ComponentWithPreferedSize() {}
 
+  virtual int getDefaultWidth() const
+    {return getPreferedWidth(0, 0);}
+
+  virtual int getDefaultHeight() const
+    {return getPreferedHeight(0, 0);}
+
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
     {return availableWidth;}
 
