@@ -20,8 +20,13 @@ public:
 
   virtual void paint(Graphics& g)
   {
-    getLookAndFeel().drawStretchableLayoutResizerBar(g, getWidth(), getHeight(),
-          true, isMouseOver(), isMouseButtonDown());
+    g.fillAll(Colour(240, 245, 250));
+    //getLookAndFeel().drawStretchableLayoutResizerBar(g, getWidth(), getHeight(),
+    //      true, isMouseOver(), isMouseButtonDown());
+    float x = getWidth() / 2.f;
+    float thickness = isMouseOver() ? 2.f : 1.f;
+    g.setColour(isMouseButtonDown() ? Colours::grey : Colours::lightgrey);
+    g.drawLine(x, 0.f, x, (float)getHeight(), thickness);
   }
 
   virtual void mouseDown(const MouseEvent& )
@@ -48,9 +53,13 @@ public:
     : variable(variable), selector(selector)
   {
     properties = new PropertyListDisplayComponent(40);
-    properties->addProperty(T("Type"), variable.getTypeName());
-    properties->addProperty(T("Desc"), variable.getShortSummary());
-    properties->addProperty(T("Size"), String((int)variable.size()));
+    if (!dynamic_cast<TabbedVariableSelectorComponent* >(selector))
+    {
+      properties->addProperty(T("Type"), variable.getTypeName());
+      properties->addProperty(T("Desc"), variable.getShortSummary());
+      if (variable.size())
+        properties->addProperty(T("Size"), String((int)variable.size()));
+    }
     addAndMakeVisible(properties);
     addAndMakeVisible(selector);
     addAndMakeVisible(resizer = new VariableBrowserResizerBar());
@@ -71,6 +80,12 @@ public:
     properties->setBounds(0, 0, w, propertiesHeight);
     selector->setBounds(0, propertiesHeight, w, getHeight() - propertiesHeight);
     resizer->setBounds(w, 0, resizerWidth, getHeight());
+  }
+
+  virtual void paintOverChildren(Graphics& g)
+  {
+    g.setColour(Colours::lightgrey);
+    g.drawLine(0.f, (float)propertiesHeight, (float)getWidth(), (float)propertiesHeight);
   }
 
   Component* getSelectorComponent() const

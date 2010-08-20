@@ -10,6 +10,7 @@
 # define EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_
 
 # include "../Components/common.h"
+# include "ComponentWithPreferedSize.h"
 
 namespace lbcpp
 {
@@ -46,6 +47,22 @@ public:
 
 protected:
   std::vector<VariableSelectorCallback* > callbacks;
+};
+
+class TabbedVariableSelectorComponent : public TabbedButtonBar, public VariableSelector, public juce::ChangeListener, public ComponentWithPreferedSize
+{
+public:
+  TabbedVariableSelectorComponent() : TabbedButtonBar(TabsAtLeft)
+    {addChangeListener(this);}
+
+  virtual void changeListenerCallback(void* objectThatHasChanged)
+    {sendSelectionChanged(getCurrentTabName());}
+
+  virtual int getDefaultWidth() const
+    {return 27;}
+
+  virtual int getPreferedWidth(int availableWidth, int availableHeight) const
+    {return 27;}
 };
 
 }; /* namespace lbcpp */
