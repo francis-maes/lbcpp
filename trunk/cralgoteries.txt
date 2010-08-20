@@ -1,6 +1,15 @@
+* Memory Leak dans l'explorer
+* XML pour InferenceOnlineLearner
+* Faire un layout a base de taille fixe dans le VariableBrowser
+-
+
 * Afficher les Perceptions dans l'explorer
 * Fixer le bug de performances sur SS3
-
+-
+* Refaire la serialisation du DenseVector / FeatureDictionary
+* Finir d'enlever le code de serialisation binaire
+* Commencer à voir si on peut enlever les TypeTraits
+-
 * Clarifier l'histoire des TemplateType
 * Normalize Container classes declaration
 * Move Evaluator from lbcpp/Inference to lbcpp/Data

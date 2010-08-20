@@ -7,12 +7,15 @@
   <include file="lbcpp/Inference/ParallelInference.h"/>
   <include file="lbcpp/Inference/InferenceOnlineLearner.h"/>
 
+  <import name="InferenceOnlineLearner"/>
   <import name="ReductionInference"/>
   <import name="DecisionTreeInference"/>
   <import name="NumericalInference"/>
   <import name="MetaInference"/>
 
   <namespace name="lbcpp">
+
+    <class name="InferenceOnlineLearner" abstract="yes"/>
 
     <class name="Inference" base="NameableObject" abstract="yes">
       <variable type="InferenceOnlineLearner" name="onlineLearner"/>

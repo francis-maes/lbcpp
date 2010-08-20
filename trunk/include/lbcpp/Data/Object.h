@@ -81,16 +81,6 @@ public:
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
   
-  /*
-  ** Dynamic creation
-  **  deprecated functions, call directly the methods of Type
-  */
-  //static ObjectPtr create(const String& className);
-
-/*  template<class T>
-  static ReferenceCountedObjectPtr<T> createAndCast(const String& className)
-    {return checkCast<T>(T("Object::createAndCast"), create(className));}*/
-
   /**
   ** Loads an object from a C++ stream.
   **
@@ -112,7 +102,6 @@ public:
   template<class T>
   static ReferenceCountedObjectPtr<T> createFromStreamAndCast(InputStream& istr)
     {return checkCast<T>(T("Object::createFromStreamAndCast"), createFromStream(istr));}
-
 
   /**
   ** Name getter.
@@ -246,6 +235,8 @@ public:
   // user interface
   virtual juce::Component* createComponent() const
     {return NULL;}
+
+  juce_UseDebuggingNewOperator
 
 protected:
   friend class Class;

@@ -67,7 +67,6 @@ public:
       sendSelectionChanged(Variable::pair(Variable::pair(sequenceName, versionName), position));
     else
       sendSelectionChanged(std::vector<Variable>());
-    repaint();
   }
 
   enum
@@ -108,7 +107,21 @@ public:
     }
   }
 
+  void setSelection(int position, const String& sequence, const String& version)
+  {
+    selectedPosition = position;
+    selectedSequence = sequence;
+    selectedVersion = version;
+    repaint();
+  }
+
+  void setNoSelection()
+    {selectedPosition = -1; selectedSequence = selectedVersion = String::empty; repaint();}
+
 private:
+  int selectedPosition;
+  String selectedSequence, selectedVersion;
+
   std::vector< std::pair<String, std::vector< std::pair<String, ContainerPtr> > > > sequences;
   size_t numSequences, longestSequence;
 
@@ -119,8 +132,7 @@ private:
     int x1, y1;
   };
   std::vector<LineInfo> lines;
-    
-  
+
   void paintSequencesInterval(Graphics& g, size_t begin, size_t end, int x1, int y1)
   {
     g.setFont(10);
@@ -168,6 +180,12 @@ private:
         if (j < seq.size() - 1)
           paintInterSequenceInterval(g, begin, end, x1, y, seq[j].second, seq[j + 1].second); 
       }
+    }
+    if (selectedPosition >= (int)begin && selectedPosition < (int)end)
+    {
+      g.setColour(Colours::lightblue.withAlpha(0.2f));
+      int pos = selectedPosition - (int)begin;
+      g.fillRect(x1 + pos * elementWidth, y1, elementWidth, y - y1);
     }
   }
 

@@ -70,8 +70,3 @@ void InferenceOnlineLearnerCallback::postInferenceCallback(InferenceStackPtr sta
   else if (stack->getDepth() == 1)
     learner->episodeFinishedCallback(inference);
 }
-
-void declareInferenceCallbackClasses()
-{
-  LBCPP_DECLARE_CLASS_LEGACY(CancelAfterStepCallback);
-}

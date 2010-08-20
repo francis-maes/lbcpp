@@ -206,6 +206,7 @@ GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClass
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClasses.xml NumericalInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
@@ -271,6 +272,8 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h
   Inference/InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h
+  Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp
 )
 
 SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
