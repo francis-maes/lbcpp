@@ -10,7 +10,7 @@
 #include "ObjectContainerNameListComponent.h"
 #include "StringComponent.h"
 #include "TableComponent.h"
-#include "TreeComponent.h"
+#include "VariableTreeComponent.h"
 #include "VariableBrowser.h"
 #include "HexadecimalFileComponent.h"
 #include "../Proteins/ProteinComponent.h"
@@ -19,6 +19,7 @@ using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
 
+/*
 class FeatureGeneratorComponent : public VariableSelectorAndContentComponent
 {
 public:
@@ -41,15 +42,7 @@ public:
     VariableSelectorAndContentComponent::selectionChangedCallback(variables);
   }
 };
-
-class InferenceComponent : public VariableSelectorAndContentComponent
-{
-public:
-  InferenceComponent(InferencePtr inference, const String& name = String::empty)
-    : VariableSelectorAndContentComponent(inference, new ObjectTreeComponent(inference, name))
-    {}
-};
-
+*/
 Component* createComponentForObject(ObjectPtr object, const String& explicitName)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
