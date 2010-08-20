@@ -211,9 +211,6 @@ bool Type::canBeCastedTo(TypePtr targetType) const
 Variable Type::getSubVariable(const VariableValue& value, size_t index) const
   {return baseType ? baseType->getSubVariable(value, index) : Variable();}
 
-VariableReference Type::getStaticVariableReference(const VariableValue& value, size_t index) const
-  {return baseType ? baseType->getStaticVariableReference(value, index) : VariableReference();}
-
 void Type::declare(TypePtr classInstance)
   {getClassManagerInstance().declare(classInstance);}
 
@@ -370,28 +367,6 @@ void Class::saveToXml(XmlElement* xml, const VariableValue& value) const
   ObjectPtr object = value.getObject();
   jassert(object);
   object->saveToXml(xml);
-}
-
-Variable Class::getSubVariable(const VariableValue& value, size_t index) const
-{
-  if (index < getNumStaticVariables())
-  {
-    VariableReference ref = getStaticVariableReference(value, index);
-    return ref.get(getStaticVariableType(index));
-  }
-  else
-    return value.getObject()->getVariable(index);
-}
-
-void Class::setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-{
-  if (index < getNumStaticVariables())
-  {
-    VariableReference ref = getStaticVariableReference(value, index);
-    ref.set(subValue);
-  }
-  else
-    value.getObject()->setVariable(index, subValue);
 }
 
 size_t Class::getNumSubVariables(const VariableValue& value) const

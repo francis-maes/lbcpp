@@ -1,6 +1,7 @@
-* Remove VariableReference and implement set(.., Variable) functions
-* Repair Explorer configuration file
 * Remove FileObject and use native "File" type
+* Repair Explorer configuration file
+
+* Normalize Container classes declaration
 
 ====
 * Afficher les Perceptions dans l'explorer

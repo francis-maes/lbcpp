@@ -202,9 +202,21 @@ ContainerPtr Container::invFold(size_t fold, size_t numFolds) const
 ClassPtr lbcpp::containerClass()
   {static TypeCache cache(T("Container")); return cache();}
 
+class ContainerClass : public DynamicClass
+{
+public:
+  ContainerClass() : DynamicClass(T("Container"), T("Object")) {}
+  
+  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
+    {return value.getObject()->getVariable(index);}
+
+  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+    {value.getObject()->setVariable(index, subValue);}
+};
+
 void declareContainerClasses()
 {
-  LBCPP_DECLARE_ABSTRACT_CLASS(Container, Object);
+  Type::declare(new ContainerClass());
 
     LBCPP_DECLARE_TEMPLATE_CLASS(Vector, 1, Container);
     LBCPP_DECLARE_CLASS(BooleanVector, Container);

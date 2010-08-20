@@ -25,7 +25,6 @@ SET(LBCPP_DATA_HEADERS
 SET(LBCPP_DATA_IMPL_HEADERS
   ../include/lbcpp/Data/impl/VariableValue.hpp
   ../include/lbcpp/Data/impl/Variable.hpp
-  ../include/lbcpp/Data/impl/VariableReference.hpp
 )
 
 GENERATE_INTROSPECTION_CODE(Data/Function/FunctionClasses.xml FunctionClasses.cpp)

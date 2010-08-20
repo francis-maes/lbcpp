@@ -216,10 +216,10 @@ protected:
       closeScope();
       newLine();
 
-      /* setSubVariable
+      // setSubVariable
       openScope(T("virtual void setSubVariable(const VariableValue& __value__, size_t __index__, const Variable& __subValue__) const"));
         writeLine(T("if (__index__ < baseType->getNumStaticVariables())"));
-        writeLine(T("{baseType->setSubVariable(__value__, __index__, __subValue__); return;"), 1);
+        writeLine(T("{baseType->setSubVariable(__value__, __index__, __subValue__); return;}"), 1);
         writeLine(T("__index__ -= baseType->getNumStaticVariables();"));
         writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__value__.getObjectPointer());"));
         newLine();
@@ -231,52 +231,22 @@ protected:
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
             String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
-            String code = T("case ") + String((int)i) + T(": ");
-            code += T("__this__->") + name + T(" = ");
-           // if (cast.isNotEmpty())
-           //   code += T("(") + cast + T(")(");
-            
-            if (cast.isNotEmpty())
-              code += T(")");
-            code += T(";");
-            writeLine(code, -1);
-          }
-          writeLine(T("default: jassert(false); return Variable();"), -1);
-        closeScope();
-      closeScope();
-      newLine();*/
-
-      // getStaticVariableReference
-      openScope(T("virtual VariableReference getStaticVariableReference(const VariableValue& __value__, size_t __index__) const"));
-        writeLine(T("if (__index__ < baseType->getNumStaticVariables())"));
-        writeLine(T("return baseType->getStaticVariableReference(__value__, __index__);"), 1);
-        writeLine(T("__index__ -= baseType->getNumStaticVariables();"));
-        writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__value__.getObjectPointer());"));
-        newLine();
-        openScope(T("switch (__index__)"));
-          for (size_t i = 0; i < variables.size(); ++i)
-          {
-            String name = variables[i]->getStringAttribute(T("var"), String::empty);
-            if (name.isEmpty())
-              name = variables[i]->getStringAttribute(T("name"), T("???"));
-
-            String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
-            String code = T("case ") + String((int)i) + T(": return ");
+            String code = T("case ") + String((int)i) + T(": lbcpp::copy(");
             if (cast.isNotEmpty())
               code += T("(") + cast + T("& )(");
             code += T("__this__->") + name;
             if (cast.isNotEmpty())
               code += T(")");
-            code += T(";");
+            code += T(", __subValue__); break;");
             writeLine(code, -1);
           }
-          writeLine(T("default: jassert(false); return VariableReference();"), -1);
+          writeLine(T("default: jassert(false);"), -1);
         closeScope();
       closeScope();
     }
    
     forEachXmlChildElementWithTagName(*xml, elt, T("code"))
-      {generateCode(elt);}
+      {newLine(); generateCode(elt);}
 
     closeClass();
 

@@ -50,6 +50,9 @@ inline Variable::Variable(double doubleValue, TypePtr type)
 inline Variable::Variable(const String& stringValue, TypePtr type)
   : type(type), value(stringValue) {jassert(isString());}
 
+inline Variable::Variable(const File& fileValue, TypePtr type)
+  : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
+
 inline Variable::Variable(ObjectPtr object)
   : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
 
@@ -214,6 +217,37 @@ inline void Variable::addWeighted(const Variable& other, double weight)
   else
     type = type->addWeighted(value, other, weight);
 }
+
+inline void copy(bool& dest, const Variable& source)
+  {jassert(source.isBoolean()); dest = source.getBoolean();}
+
+inline void copy(int& dest, const Variable& source)
+  {jassert(source.isInteger()); dest = source.getInteger();}
+
+inline void copy(juce::int64& dest, const Variable& source)
+  {jassert(source.isInteger()); dest = source.getInteger();}
+
+inline void copy(size_t& dest, const Variable& source)
+  {jassert(source.isInteger() && source.getInteger() >= 0); dest = (size_t)source.getInteger();}
+
+inline void copy(double& dest, const Variable& source)
+  {jassert(source.isDouble()); dest = source.getDouble();}
+
+inline void copy(String& dest, const Variable& source)
+  {jassert(source.isString()); dest = source.getString();}
+
+inline void copy(File& dest, const Variable& source)
+  {jassert(source.isString()); dest = File(source.getString());}
+
+inline void copy(ObjectPtr& dest, const Variable& source)
+  {jassert(source.isObject()); dest = source.getObject();}
+
+template<class TT>
+inline void copy(ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
+  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>();}
+
+inline void copy(Variable& dest, const Variable& source)
+  {dest = source;}
 
 inline bool checkInheritance(const Variable& variable, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
   {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
