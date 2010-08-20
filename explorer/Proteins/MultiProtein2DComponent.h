@@ -217,7 +217,7 @@ private:
   }
 };
 
-class MultiProtein2DComponent : public Component, public juce::ChangeListener
+class MultiProtein2DComponent : public Component, public juce::ChangeListener, public ComponentWithPreferedSize
 {
 public:
   MultiProtein2DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
@@ -246,7 +246,10 @@ public:
     configurationComponent->setBounds(0, 0, getWidth(), configurationHeight);
     viewport->setBounds(0, configurationHeight, getWidth(), getHeight() - configurationHeight);
   }
-  
+ 
+  virtual int getDefaultWidth() const
+    {return 900;}
+
 protected:
   MultiProtein2DConfigurationComponent* configurationComponent;
   ViewportComponent* viewport;

@@ -152,7 +152,7 @@ void VariableTreeComponent::timerCallback()
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
       VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
-      if (item && item->getVariable())
+      if (item && item->getVariable() && item != root)
         selectedVariables.push_back(item->getVariable());
     }
     sendSelectionChanged(selectedVariables);
