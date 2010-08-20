@@ -10,15 +10,19 @@
 # define EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
 
 # include "../Components/common.h"
+# include "ComponentWithPreferedSize.h"
 
-class SplittedLayout : public Component
+namespace lbcpp
+{
+
+class SplittedLayout : public Component, public ComponentWithPreferedSize
 {
 public:
-  SplittedLayout(Component* first, Component* second, double default_ratio, int flags)
-    : layoutflags(flags), first(first), second(second)
+  SplittedLayout(Component* first, Component* second, double defaultRatio, int flags)
+    : layoutflags(flags), first(first), second(second), defaultRatio(defaultRatio)
   {
     addAndMakeVisible(first);
-    layout.setItemLayout(0, 10, -1, -default_ratio);
+    layout.setItemLayout(0, 10, -1, -defaultRatio);
     if ((layoutflags & noResizeBar) != 0)
       resizebar = new Component();
     else
@@ -27,7 +31,7 @@ public:
     double s = (layoutflags & miniResizeBar) != 0 ? 2 : 8;
     layout.setItemLayout(1, s, s, s);
     addAndMakeVisible(second);
-    layout.setItemLayout(2, 10, -1, default_ratio - 1);
+    layout.setItemLayout(2, 10, -1, defaultRatio - 1);
   }
 
   virtual ~SplittedLayout()
@@ -94,6 +98,33 @@ public:
     addAndMakeVisible(second = newComponent);
     resized();
   }
+  
+  virtual int getPreferedWidth(int availableWidth, int availableHeight) const
+    {return isHorizontal() ? computePreferedSize(availableWidth, availableHeight) : availableWidth;}
+
+  virtual int getPreferedHeight(int availableWidth, int availableHeight) const
+    {return isVertical() ? computePreferedSize(availableHeight, availableWidth) : availableHeight;}
+
+  int computePreferedSize(int availableSize1, int availableSize2) const
+  {
+    int prefered1 = getSubPreferedSize(first, (int)(availableSize1 * defaultRatio), availableSize2);
+    int prefered2 = getSubPreferedSize(second, (int)(availableSize1 * (1.0 - defaultRatio)), availableSize2);
+    return prefered1 + 8 + prefered2;
+  }
+
+  int getSubPreferedSize(Component* c, int availableSize1, int availableSize2) const
+  {
+    ComponentWithPreferedSize* cs = dynamic_cast<ComponentWithPreferedSize* >(c);
+    return cs 
+      ? (isHorizontal() ? cs->getPreferedWidth(availableSize1, availableSize2) : cs->getPreferedHeight(availableSize2, availableSize1))
+      : availableSize1;
+  }
+
+  bool isHorizontal() const
+    {return (layoutflags & horizontal) == horizontal;}
+
+  bool isVertical() const
+    {return (layoutflags & vertical) == vertical;}
 
   juce::StretchableLayoutManager layout;
 
@@ -104,6 +135,9 @@ protected:
   Component* first;
   Component* resizebar;
   Component* second;
+  double defaultRatio;
 };
+
+}; /* namespace lbcpp */
 
 #endif //!EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_

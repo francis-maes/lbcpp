@@ -152,7 +152,7 @@ private:
   std::vector< std::vector<ConfigurationButton* > > buttons;
 };
 
-class MultiProtein1DComponent : public SplittedLayout, public juce::ChangeListener
+class MultiProtein1DComponent : public SplittedLayout, public juce::ChangeListener, public VariableSelector, public VariableSelectorCallback
 {
 public:
   MultiProtein1DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
@@ -166,6 +166,7 @@ public:
   virtual void changeListenerCallback(void* objectThatHasChanged)
   {
     MultiSequenceComponent* component = new MultiSequenceComponent();
+    component->addCallback(*this);
     for (size_t i = 0; i < configuration->getNumSequences(); ++i)
       if (configuration->isSequenceEnabled(i))
       {
@@ -185,13 +186,49 @@ public:
     getViewport()->setViewedComponent(component);
     getViewport()->resized();
   }
+
+  virtual void selectionChangedCallback(const std::vector<Variable>& selectedVariables)
+  {
+    std::vector<Variable> selection;
+    selection.resize(selectedVariables.size());
+    for (size_t i = 0; i < selection.size(); ++i)
+      selection[i] = makeSelection(selectedVariables[i]);
+    if (selection.empty() && proteins.size() == 1)
+      selection.push_back(proteins[0]);
+    sendSelectionChanged(selection);
+  }
   
+  virtual int getPreferedWidth(int availableWidth, int availableHeight) const
+    {return 900;}
+
 protected:
   std::vector<ProteinPtr> proteins;
   MultiProtein1DConfigurationPtr configuration;
 
   ViewportComponent* getViewport() const
     {return (ViewportComponent* )second;}
+
+  Variable makeSelection(const Variable& sequenceVariable) const
+  {
+    jassert(sequenceVariable.getType() == pairType(pairType(stringType(), stringType()), integerType()));
+    Variable names = sequenceVariable[0];
+    //String sequenceName = names[0].getString();
+    ProteinPtr protein = findProteinWithName(names[1].getString());
+    jassert(protein);
+    int position = sequenceVariable[1].getInteger();
+    if (position < 0)
+      return protein;
+    else
+      return Variable::pair(protein, position);
+  }
+ 
+  ProteinPtr findProteinWithName(const String& proteinName) const
+  {
+    for (size_t i = 0; i < configuration->getNumProteins(); ++i)
+      if (configuration->getProteinName(i) == proteinName)
+        return proteins[i];
+    return ProteinPtr();
+  }
 };
 
 }; /* namespace lbcpp */

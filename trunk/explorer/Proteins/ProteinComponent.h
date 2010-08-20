@@ -50,7 +50,15 @@ public:
       }
 
       MultiProtein1DConfigurationPtr configuration = new MultiProtein1DConfiguration(proteinNames, sequenceIndex);
-      addTab(T("Protein 1D"), Colours::white, new MultiProtein1DComponent(proteinsAlone, configuration), true);
+      
+      Component* protein1dComponent = new MultiProtein1DComponent(proteinsAlone, configuration);
+      
+      Variable variable;
+      if (proteinsAlone.size() == 1)
+        variable = Variable(proteinsAlone[0]);
+
+      Component* tabComponent = new VariableSelectorAndContentComponent(variable, protein1dComponent); 
+      addTab(T("Protein 1D"), Colours::white, tabComponent, true);
     }
     
     /*
