@@ -173,7 +173,7 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(ErrorHandler& cal
     callback.errorMessage(T("Variable::getObjectAndCast"), T("This variable is not an object"));
     return res;
   }
-  return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);
+  return value.getObjectAndCast<O>(callback);
 }
 
 inline String Variable::toString() const
@@ -189,10 +189,13 @@ inline bool Variable::equals(const Variable& otherValue) const
 }
 
 inline size_t Variable::size() const
-  {return type->getNumSubVariables(value);}
+  {return type->getNumElements(value);}
+
+inline String Variable::getName(size_t index) const
+  {return type->getElementName(value, index);}
 
 inline Variable Variable::operator [](size_t index) const
-  {return type->getSubVariable(value, index);}
+  {return type->getElement(value, index);}
 
 inline Variable& Variable::operator =(const Variable& otherVariant)
 {

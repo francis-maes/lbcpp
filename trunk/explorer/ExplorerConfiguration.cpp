@@ -23,13 +23,13 @@ ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance()
 void ExplorerRecentFiles::addRecentFile(const File& file)
 {
   recentFiles->prepend(file);
-  for (size_t i = 1; i < recentFiles->size(); ++i)
+  for (size_t i = 1; i < recentFiles->getNumElements(); ++i)
     if (getRecentFile(i) == file)
     {
       recentFiles->remove(i);
       break;
     }
-  if (recentFiles->size() > maxRecentFiles)
+  if (recentFiles->getNumElements() > maxRecentFiles)
     recentFiles->remove(maxRecentFiles);
 }
 
@@ -38,6 +38,7 @@ void ExplorerRecentFiles::addRecentFile(const File& file)
 */
 File ExplorerConfiguration::getApplicationDataDirectory()
 {
+  return File(T("C:\\temp"));
   File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
@@ -50,14 +51,14 @@ File ExplorerConfiguration::getApplicationDataDirectory()
 File ExplorerConfiguration::getConfigurationFile()
   {return getApplicationDataDirectory().getChildFile(T("config.data"));}
 
-DynamicObjectPtr ExplorerConfiguration::getInstance()
+VariableVectorPtr ExplorerConfiguration::getInstance()
 {
-  static DynamicObjectPtr configuration;
+  static VariableVectorPtr configuration;
   if (!configuration)
   {
     File configurationFile = getConfigurationFile();
     if (configurationFile.exists())
-      configuration = Variable::createFromFile(configurationFile).getObjectAndCast<DynamicObject>();
+      configuration = Variable::createFromFile(configurationFile).getObjectAndCast<VariableVector>();
     if (!configuration)
       configuration = new ExplorerConfiguration();
   }

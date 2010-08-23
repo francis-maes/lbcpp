@@ -29,7 +29,7 @@ public:
   {
     currentPosition = -3;
 
-    pssm = new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), primaryStructure->getNumVariables());
+    pssm = new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(const String& line)
@@ -53,7 +53,7 @@ public:
       return true;
     }
 
-    if (currentPosition >= (int)primaryStructure->size())
+    if (currentPosition >= (int)primaryStructure->getNumElements())
       return true; // skip
 
     if (line.length() < 73)
@@ -70,7 +70,7 @@ public:
     }   
 
     String aminoAcid = line.substring(6, 7);
-    if (AminoAcid::fromOneLetterCode(aminoAcid[0]) != primaryStructure->getVariable(currentPosition))
+    if (AminoAcid::fromOneLetterCode(aminoAcid[0]) != primaryStructure->getElement(currentPosition))
     {
       callback.errorMessage(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + lbcpp::toString(currentPosition));
       return false;
@@ -98,9 +98,9 @@ public:
 
     String gapScore = line.substring(153, 157).trim();
     scores->setVariable(20, gapScore.getDoubleValue());
-    scores->setVariable(21, scores->computeEntropy() / 10.0);
+    //scores->setElement(21, scores->computeEntropy() / 10.0); // FIXME: this must be computed by a Perception
 
-    pssm->setVariable(currentPosition, scores);
+    pssm->setElement(currentPosition, scores);
 
     ++currentPosition;
     return true;

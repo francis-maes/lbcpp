@@ -32,9 +32,9 @@ public:
   virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
   {
     if (value.isMissingValue())
-      return mask->get(mask->size() - 1);
+      return mask->get(mask->getNumElements() - 1);
     size_t i = (size_t)value.getInteger();
-    jassert(i < mask->size() - 1);
+    jassert(i < mask->getNumElements() - 1);
     return mask->get(i);
  }
 

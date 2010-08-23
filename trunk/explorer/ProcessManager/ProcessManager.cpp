@@ -23,7 +23,7 @@ ProcessManager::ProcessManager() : runningProcesses(new ProcessList()),
 void ProcessManager::updateProcesses()
 {
   // remove finished processes
-  for (size_t i = 0; i < runningProcesses->size();)
+  for (size_t i = 0; i < runningProcesses->getNumElements();)
   {
     ProcessPtr process = runningProcesses->getProcess(i);
     process->update();
@@ -35,7 +35,7 @@ void ProcessManager::updateProcesses()
 
   // add waiting processes
   size_t numCpus = getNumberOfCpus();
-  for (size_t i = 0; i < waitingProcesses->size() && runningProcesses->size() < numCpus;)
+  for (size_t i = 0; i < waitingProcesses->getNumElements() && runningProcesses->getNumElements() < numCpus;)
   {
     ProcessPtr process = waitingProcesses->getProcess(i);
     if (process->start())
@@ -53,7 +53,7 @@ void ProcessManager::clearFinishedProcessLists()
 
 void ProcessManager::killAllRunningProcesses()
 {
-  for (size_t i = 0; i < runningProcesses->size();)
+  for (size_t i = 0; i < runningProcesses->getNumElements();)
   {
     ProcessPtr process = runningProcesses->getProcess(i);
     if (process->isFinished())

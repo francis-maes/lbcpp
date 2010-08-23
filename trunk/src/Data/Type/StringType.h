@@ -66,9 +66,6 @@ public:
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return value1.getString().compare(value2.getString());}
-
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return 0;}
 };
 
 }; /* namespace lbcpp */

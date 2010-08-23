@@ -109,10 +109,10 @@ public:
     else if (tabName == T("Protein 1D"))
     {
       std::vector< std::pair<String, size_t> > sequenceIndex;
-      size_t n = proteinClass->getNumStaticVariables();
+      size_t n = proteinClass->getObjectNumVariables();
       for (size_t i = 0; i < n; ++i)
       {
-        TypePtr type = proteinClass->getStaticVariableType(i);
+        TypePtr type = proteinClass->getObjectVariableType(i);
         if (type->inheritsFrom(vectorClass(anyType())))
         {
           String friendlyName = Protein::getTargetFriendlyName(i);
@@ -129,8 +129,8 @@ public:
     else if (tabName == T("Protein 2D"))
     {
       std::vector< std::pair<String, size_t> > mapIndex;
-      addObjectNameIfExists(T("Ca 8 angstrom"), proteinClass->findStaticVariable(T("contactMap8Ca")), mapIndex);
-      addObjectNameIfExists(T("Cb 8 angstrom"), proteinClass->findStaticVariable(T("contactMap8Cb")), mapIndex);
+      addObjectNameIfExists(T("Ca 8 angstrom"), proteinClass->findObjectVariable(T("contactMap8Ca")), mapIndex);
+      addObjectNameIfExists(T("Cb 8 angstrom"), proteinClass->findObjectVariable(T("contactMap8Cb")), mapIndex);
       
       MultiProtein2DConfigurationPtr configuration = new MultiProtein2DConfiguration(names, mapIndex);
       return new MultiProtein2DComponent(proteins, configuration);

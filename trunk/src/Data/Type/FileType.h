@@ -77,23 +77,20 @@ class FileType : public StringType
 public:
   FileType() : StringType(T("File"), stringType()) {}
 
-  virtual size_t getNumSubVariables(const VariableValue& value) const
+  virtual size_t getNumElements(const VariableValue& value) const
     {return getSubFiles(value).size();}
 
-  virtual String getSubVariableName(const VariableValue& value, size_t index) const
+  virtual String getElementName(const VariableValue& value, size_t index) const
   {
     const std::vector<File>& subFiles = getSubFiles(value);
     return index < subFiles.size() ? subFiles[index].getFileName() : String::empty;
   }
 
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
+  virtual Variable getElement(const VariableValue& value, size_t index) const
   {
     const std::vector<File>& subFiles = getSubFiles(value);
     return index < subFiles.size() ? Variable(subFiles[index]) : Variable::missingValue(fileType());
   }
-
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-    {jassert(false);}
   
   virtual String getShortSummary(const VariableValue& value) const
     {return getFile(value).getFileName();}

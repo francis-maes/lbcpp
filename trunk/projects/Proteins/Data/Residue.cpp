@@ -12,11 +12,11 @@ using namespace lbcpp;
 String Residue::toString() const
 {
   String res = T("Residue ") + getName() + T(":");
-  if (atoms->size())
+  if (atoms->getNumElements())
   {
     res += T("\n");
-    for (size_t i = 0; i < atoms->size(); ++i)
-      res += T("  ") + atoms->getVariable(i).toString() + T("\n");
+    for (size_t i = 0; i < atoms->getNumElements(); ++i)
+      res += T("  ") + getAtom(i)->toString() + T("\n");
   }
   else
     res += T(" no atoms.\n");
@@ -25,9 +25,9 @@ String Residue::toString() const
 
 AtomPtr Residue::findAtomByName(const String& name) const
 {
-  for (size_t i = 0; i < atoms->size(); ++i)
+  for (size_t i = 0; i < atoms->getNumElements(); ++i)
   {
-    AtomPtr atom = atoms->getObjectAndCast<Atom>(i);
+    AtomPtr atom = getAtom(i);
     if (atom->getName() == name)
       return atom;
   }
@@ -76,9 +76,9 @@ AtomPtr Residue::checkAndGetCBetaOrCAlphaAtom() const
 void Residue::applyAffineTransform(const impl::Matrix4& affineTransform) const
 {
   jassert(affineTransform.isAffine());
-  for (size_t i = 0; i < atoms->size(); ++i)
+  for (size_t i = 0; i < atoms->getNumElements(); ++i)
   {
-    AtomPtr atom = atoms->getObjectAndCast<Atom>(i);
+    AtomPtr atom = getAtom(i);
     if (atom->getPosition())
       atom->setPosition(new Vector3(affineTransform.transformAffine(atom->getPosition()->getValue())));
   }

@@ -152,12 +152,15 @@ public:
   bool operator >(const Variable& otherVariable) const
     {return compare(otherVariable) > 0;}
 
-  size_t size() const;
-  Variable operator [](size_t index) const;
-  String getVariableName(size_t index) const;
-
   friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
     {return ostr << variable.toString();}
+
+  /*
+  ** Dynamic variables
+  */
+  size_t size() const;
+  String getName(size_t index) const;
+  Variable operator [](size_t index) const;
 
   void printRecursively(std::ostream& ostr, int maxDepth = -1);
 

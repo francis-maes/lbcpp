@@ -21,7 +21,7 @@ public:
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
     subInferences->resize(classes->getNumElements());
-    for (size_t i = 0; i < subInferences->size(); ++i)
+    for (size_t i = 0; i < subInferences->getNumElements(); ++i)
     {
       InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>();
       subInference->setName(classes->getElementName(i));
@@ -42,9 +42,9 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    res->reserve(subInferences->size());
+    res->reserve(subInferences->getNumElements());
     int correctClass = supervision ? supervision.getInteger() : -1;
-    for (size_t i = 0; i < subInferences->size(); ++i)
+    for (size_t i = 0; i < subInferences->getNumElements(); ++i)
       res->addSubInference(getSubInference(i), input, correctClass >= 0 ? Variable(i == (size_t)correctClass) : Variable());
     return res;
   }

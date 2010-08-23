@@ -116,25 +116,19 @@ public:
   /*
   ** Static Variables
   */
-  virtual size_t getNumStaticVariables() const;
-  virtual TypePtr getStaticVariableType(size_t index) const;
-  virtual String getStaticVariableName(size_t index) const;
-  
-  virtual int findStaticVariable(const String& name) const;
+  virtual size_t getObjectNumVariables() const;
+  virtual TypePtr getObjectVariableType(size_t index) const;
+  virtual String getObjectVariableName(size_t index) const;
+  virtual int findObjectVariable(const String& name) const;
+  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const;
+  virtual void setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
 
   /*
   ** Dynamic Variables
   */
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return getNumStaticVariables();}
-
-  virtual String getSubVariableName(const VariableValue& value, size_t index) const
-    {return getStaticVariableName(index);}
-
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const;
-
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-    {if (baseType) baseType->setSubVariable(value, index, subValue);}
+  virtual size_t getNumElements(const VariableValue& value) const;
+  virtual Variable getElement(const VariableValue& value, size_t index) const;
+  virtual String getElementName(const VariableValue& value, size_t index) const;
 
   /*
   ** Object
@@ -179,6 +173,9 @@ public:
 
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
     {xml->addTextElement(toString(value));}
+
+  virtual size_t getNumElements(const VariableValue& value) const
+    {return 0;}
 
   juce_UseDebuggingNewOperator
 };
@@ -236,9 +233,6 @@ public:
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return (int)(value1.getInteger() - value2.getInteger());}
-
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return 0;}
 
   juce_UseDebuggingNewOperator
 };
@@ -328,9 +322,6 @@ public:
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
-  virtual size_t getNumSubVariables(const VariableValue& value) const;
-  virtual String getSubVariableName(const VariableValue& value, size_t index) const;
-
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
   virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
 
@@ -349,11 +340,10 @@ public:
   DefaultClass(const String& name, TypePtr baseClass = objectClass());
   DefaultClass(const String& name, const String& baseClass);
 
-  virtual size_t getNumStaticVariables() const;
-  virtual TypePtr getStaticVariableType(size_t index) const;
-  virtual String getStaticVariableName(size_t index) const;
-
-  virtual int findStaticVariable(const String& name) const;
+  virtual size_t getObjectNumVariables() const;
+  virtual TypePtr getObjectVariableType(size_t index) const;
+  virtual String getObjectVariableName(size_t index) const;
+  virtual int findObjectVariable(const String& name) const;
 
   void addVariable(TypePtr type, const String& name)
     {addVariable(type.get(), name);}
@@ -362,6 +352,7 @@ public:
   void addVariable(const String& typeName, const String& name);
 
   juce_UseDebuggingNewOperator
+
 protected:
   CriticalSection variablesLock;
   std::vector< std::pair<Type*, String> > variables;

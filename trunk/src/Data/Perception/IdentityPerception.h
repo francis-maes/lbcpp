@@ -28,13 +28,13 @@ public:
     {return type;}
 
   virtual size_t getNumOutputVariables() const
-    {return type->getNumStaticVariables();}
+    {return type->getObjectNumVariables();}
 
   virtual TypePtr getOutputVariableType(size_t index) const
-    {return type->getStaticVariableType(index);}
+    {return type->getObjectVariableType(index);}
 
   virtual String getOutputVariableName(size_t index) const
-    {return type->getStaticVariableName(index);}
+    {return type->getObjectVariableName(index);}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {

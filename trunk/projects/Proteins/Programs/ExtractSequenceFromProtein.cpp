@@ -135,16 +135,16 @@ static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
   else if (position >= (int)protein->getLength())
     *o << Variable::missingValue(aminoAcidTypeEnumeration()).getInteger() + 1;
   else
-    *o << primaryStructure->getVariable(position).getInteger();
+    *o << primaryStructure->getElement(position).getInteger();
   *o << " ";
 
   VectorPtr pssm = protein->getPositionSpecificScoringMatrix();
   if (position < 0 || position >= (int)protein->getLength())
-    for (size_t i = 0; i < pssm->getNumVariables(); ++i)
+    for (size_t i = 0; i < pssm->getNumElements(); ++i)
       *o << "0 ";
   else
-    for (size_t i = 0; i < pssm->getNumVariables(); ++i)
-      *o << pssm->getObjectAndCast<DiscreteProbabilityDistribution>(position)->getVariable(i).getDouble() << " ";
+    for (size_t i = 0; i < pssm->getNumElement(); ++i)
+      *o << pssm->getElement(position).getObjectAndCast<DiscreteProbabilityDistribution>()->getElement(i).getDouble() << " ";
 }
 
 int main(int argc, char** argv)
@@ -196,7 +196,7 @@ int main(int argc, char** argv)
     ++nbValidProteins;
     for (int j = 0; j < (int)protein->getLength(); ++j)
     {
-      int ss3Value = ss3->getVariable(j).getInteger();
+      int ss3Value = ss3->getElement(j).getInteger();
       if (ss3Value == -1)
       {
         ++nbSkippedExamples;

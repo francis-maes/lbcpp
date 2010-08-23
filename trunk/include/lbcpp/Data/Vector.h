@@ -28,9 +28,10 @@ public:
   virtual TypePtr getElementsType() const
     {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
-  virtual size_t getNumVariables() const;
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
+  virtual size_t getNumElements() const;
+  virtual Variable getElement(size_t index) const;
+  virtual void setElement(size_t index, const Variable& value);
+
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
@@ -72,13 +73,13 @@ public:
   virtual TypePtr getElementsType() const
     {return booleanType();}
 
-  virtual size_t getNumVariables() const
+  virtual size_t getNumElements() const
     {return v.size();}
 
-  virtual Variable getVariable(size_t index) const
+  virtual Variable getElement(size_t index) const
     {jassert(index < v.size()); return v[index];}
 
-  virtual void setVariable(size_t index, const Variable& value)
+  virtual void setElement(size_t index, const Variable& value)
   {
     if (checkInheritance(value, booleanType()))
       v[index] = value.getBoolean();
@@ -109,10 +110,10 @@ public:
   virtual TypePtr getElementsType() const
     {return thisClass->getTemplateArgument(0);}
 
-  virtual size_t getNumVariables() const
+  virtual size_t getNumElements() const
     {return values.size();}
 
-  virtual Variable getVariable(size_t index) const
+  virtual Variable getElement(size_t index) const
   {
     if (values[index].exists())
       return ObjectPtr(new ObjectType(values[index]));
@@ -120,7 +121,7 @@ public:
       return Variable::missingValue(getElementsType());
   }
 
-  virtual void setVariable(size_t index, const Variable& value)
+  virtual void setElement(size_t index, const Variable& value)
   {
     ReferenceCountedObjectPtr<ObjectType> v = value.getObjectAndCast<ObjectType>();
     if (v)
@@ -147,52 +148,45 @@ protected:
   std::vector<ImplementationType> values;
 };
 
-class DynamicObject : public Object
+class VariableVector : public Container
 {
 public:
-  DynamicObject(ClassPtr type = objectClass()) : Object(type)
-  {
-    variables.resize(type->getNumStaticVariables());
-    for (size_t i = 0; i < variables.size(); ++i)
-      variables[i] = Variable::missingValue(type->getStaticVariableType(i));
-  }
-
   virtual String toString() const
-    {return getClass()->getName() + T("{") + variablesToString(T(", ")) + T("}");}
+    {return getClass()->getName();}
 
-  virtual size_t getNumVariables() const
+  virtual TypePtr getElementsType() const
+    {return anyType();}
+
+  virtual size_t getNumElements() const
     {return variables.size();}
 
-  virtual TypePtr getVariableType(size_t index) const
-    {jassert(index < variables.size()); return variables[index].getType();}
-
-  virtual Variable getVariable(size_t index) const
+  virtual Variable getElement(size_t index) const
     {jassert(index < variables.size()); return variables[index];}
 
-  virtual void setVariable(size_t index, const Variable& value)
+  virtual void setElement(size_t index, const Variable& value)
   {
     if (index >= variables.size())
       variables.resize(index + 1);
     variables[index] = value;
   }
 
-  Variable& getVariable(size_t index)
+  Variable& getElement(size_t index)
     {jassert(index < variables.size()); return variables[index];}
 
-  void reserveVariables(size_t size)
+  void reserve(size_t size)
     {variables.reserve(size);}
 
-  void clearVariables()
+  void clear()
     {variables.clear();}
 
-  void appendVariable(const Variable& value)
+  void append(const Variable& value)
     {variables.push_back(value);}
 
 private:
   std::vector<Variable> variables;
 };
 
-typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
+typedef ReferenceCountedObjectPtr<VariableVector> VariableVectorPtr;
 
 extern ClassPtr dynamicObjectClass();
 

@@ -71,9 +71,6 @@ public:
   // Object
   virtual String toString() const;
 
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
-
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
   virtual bool loadFromString(const String& str, ErrorHandler& callback);
@@ -82,6 +79,8 @@ public:
   virtual ObjectPtr addWeighted(const Variable& value, double weight);
 
 private:
+  friend class DiscreteProbabilityDistributionClass;
+
   std::vector<double> values;
   double sum;
 };

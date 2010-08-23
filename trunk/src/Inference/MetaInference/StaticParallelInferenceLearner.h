@@ -32,14 +32,14 @@ public:
     StaticParallelInferencePtr targetInference = input[0].getObjectAndCast<StaticParallelInference>();
     size_t numSubInferences = targetInference->getNumSubInferences();
     ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
-    size_t n = trainingData->size();
+    size_t n = trainingData->getNumElements();
 
     // Compute sub-inferences for each example
     // Compute input and supervision types for each sub-inference
     std::vector<ParallelInferenceStatePtr> currentStates(n);
     for (size_t i = 0; i < currentStates.size(); ++i)
     {
-      Variable example = trainingData->getVariable(i);
+      Variable example = trainingData->getElement(i);
       currentStates[i] = targetInference->prepareInference(context, example[0], example[1], returnCode);
       if (returnCode != Inference::finishedReturnCode)
         return ParallelInferenceStatePtr();
@@ -57,7 +57,7 @@ public:
       {
         VectorPtr subTrainingData = new Vector(pairType(subInference->getInputType(), subInference->getSupervisionType()), n);
         for (size_t j = 0; j < n; ++j)
-          subTrainingData->setVariable(j, Variable::pair(currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i)));
+          subTrainingData->setElement(j, Variable::pair(currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i)));
         res->addSubInference(subInferenceLearner, Variable::pair(subInference, subTrainingData), Variable());
       }
     }

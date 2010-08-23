@@ -266,26 +266,32 @@ String Type::toString(const VariableValue& value) const
 void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
   {jassert(baseType); return baseType->saveToXml(xml, value);}
 
-size_t Type::getNumStaticVariables() const
-  {jassert(baseType); return baseType->getNumStaticVariables();}
+size_t Type::getObjectNumVariables() const
+  {jassert(baseType); return baseType->getObjectNumVariables();}
 
-TypePtr Type::getStaticVariableType(size_t index) const
-  {jassert(baseType); return baseType->getStaticVariableType(index);}
+TypePtr Type::getObjectVariableType(size_t index) const
+  {jassert(baseType); return baseType->getObjectVariableType(index);}
 
-String Type::getStaticVariableName(size_t index) const
-  {jassert(baseType); return baseType->getStaticVariableName(index);}
+String Type::getObjectVariableName(size_t index) const
+  {jassert(baseType); return baseType->getObjectVariableName(index);}
 
-int Type::findStaticVariable(const String& name) const
-{
-  size_t n = getNumStaticVariables();
-  for (size_t i = 0; i < n; ++i)
-    if (getStaticVariableName(i) == name)
-      return (int)i;
-  return -1;
-}
+int Type::findObjectVariable(const String& name) const
+  {jassert(baseType); return baseType->findObjectVariable(name);}
   
-Variable Type::getSubVariable(const VariableValue& value, size_t index) const
-  {jassert(baseType); return baseType->getSubVariable(value, index);}
+Variable Type::getObjectVariable(const VariableValue& value, size_t index) const
+  {jassert(baseType); return baseType->getObjectVariable(value, index);}
+
+void Type::setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {if (baseType) baseType->setObjectVariable(value, index, subValue);}
+
+size_t Type::getNumElements(const VariableValue& value) const
+  {jassert(baseType); return baseType->getNumElements(value);}
+
+Variable Type::getElement(const VariableValue& value, size_t index) const
+  {jassert(baseType); return baseType->getElement(value, index);}
+
+String Type::getElementName(const VariableValue& value, size_t index) const
+  {jassert(baseType); return baseType->getElementName(value, index);}
 
 /*
 ** Class
@@ -294,10 +300,10 @@ String Class::toString() const
 {
   String res = getName();
   res += T(" = {");
-  size_t n = getNumStaticVariables();
+  size_t n = getObjectNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    res += getStaticVariableType(i)->getName() + T(" ") + getStaticVariableName(i);
+    res += getObjectVariableType(i)->getName() + T(" ") + getObjectVariableName(i);
     if (i < n - 1)
       res += T(", ");
   }
@@ -375,15 +381,6 @@ void Class::saveToXml(XmlElement* xml, const VariableValue& value) const
   object->saveToXml(xml);
 }
 
-size_t Class::getNumSubVariables(const VariableValue& value) const
-{
-  ObjectPtr object = value.getObject();
-  return object ? object->getNumVariables() : 0;
-}
-
-String Class::getSubVariableName(const VariableValue& value, size_t index) const
-  {return value.getObject()->getVariableName(index);}
-
 /*
 ** DefaultClass
 */
@@ -403,18 +400,18 @@ void DefaultClass::addVariable(const String& typeName, const String& name)
   addVariable(type, name);
 }
 
-size_t DefaultClass::getNumStaticVariables() const
+size_t DefaultClass::getObjectNumVariables() const
 {
-  size_t n = baseType->getNumStaticVariables();
+  size_t n = baseType->getObjectNumVariables();
   ScopedLock _(variablesLock);
   return n + variables.size();
 }
 
-TypePtr DefaultClass::getStaticVariableType(size_t index) const
+TypePtr DefaultClass::getObjectVariableType(size_t index) const
 {
-  size_t n = baseType->getNumStaticVariables();
+  size_t n = baseType->getObjectNumVariables();
   if (index < n)
-    return baseType->getStaticVariableType(index);
+    return baseType->getObjectVariableType(index);
   index -= n;
   
   ScopedLock _(variablesLock);
@@ -422,11 +419,11 @@ TypePtr DefaultClass::getStaticVariableType(size_t index) const
   return variables[index].first;
 }
 
-String DefaultClass::getStaticVariableName(size_t index) const
+String DefaultClass::getObjectVariableName(size_t index) const
 {
-  size_t n = baseType->getNumStaticVariables();
+  size_t n = baseType->getObjectNumVariables();
   if (index < n)
-    return baseType->getStaticVariableName(index);
+    return baseType->getObjectVariableName(index);
   index -= n;
   
   ScopedLock _(variablesLock);
@@ -442,19 +439,19 @@ void DefaultClass::addVariable(Type* type, const String& name)
     return;
   }
   ScopedLock _(variablesLock);
-  if (findStaticVariable(name) >= 0)
+  if (findObjectVariable(name) >= 0)
     Object::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
   else
     variables.push_back(std::make_pair(type, name));
 }
 
-int DefaultClass::findStaticVariable(const String& name) const
+int DefaultClass::findObjectVariable(const String& name) const
 {
   ScopedLock _(variablesLock);
   for (size_t i = 0; i < variables.size(); ++i)
     if (variables[i].second == name)
-      return (int)(i + baseType->getNumStaticVariables());
-  return baseType->findStaticVariable(name);
+      return (int)(i + baseType->getObjectNumVariables());
+  return baseType->findObjectVariable(name);
 }
 
 /*
@@ -616,6 +613,7 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
 ** Type Declarations
 */
 #include "Type/TopLevelType.h"
+#include "Type/NilType.h"
 #include "Type/BooleanType.h"
 #include "Type/DoubleType.h"
 #include "Type/StringType.h"

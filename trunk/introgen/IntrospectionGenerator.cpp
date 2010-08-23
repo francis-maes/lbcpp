@@ -187,12 +187,12 @@ protected:
     // getStaticVariableReference() function
     if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false))
     {
-      // getSubVariable
-      openScope(T("virtual Variable getSubVariable(const VariableValue& __value__, size_t __index__) const"));
-        writeLine(T("TypePtr expectedType = getStaticVariableType(__index__);"));
-        writeLine(T("if (__index__ < baseType->getNumStaticVariables())"));
-        writeLine(T("return baseType->getSubVariable(__value__, __index__);"), 1);
-        writeLine(T("__index__ -= baseType->getNumStaticVariables();"));
+      // getObjectVariable
+      openScope(T("virtual Variable getObjectVariable(const VariableValue& __value__, size_t __index__) const"));
+        writeLine(T("TypePtr expectedType = getObjectVariableType(__index__);"));
+        writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
+        writeLine(T("return baseType->getObjectVariable(__value__, __index__);"), 1);
+        writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__value__.getObjectPointer());"));
         writeLine(T("Variable __res__;"));
         newLine();
@@ -219,11 +219,11 @@ protected:
       closeScope();
       newLine();
 
-      // setSubVariable
-      openScope(T("virtual void setSubVariable(const VariableValue& __value__, size_t __index__, const Variable& __subValue__) const"));
-        writeLine(T("if (__index__ < baseType->getNumStaticVariables())"));
-        writeLine(T("{baseType->setSubVariable(__value__, __index__, __subValue__); return;}"), 1);
-        writeLine(T("__index__ -= baseType->getNumStaticVariables();"));
+      // setObjectVariable
+      openScope(T("virtual void setObjectVariable(const VariableValue& __value__, size_t __index__, const Variable& __subValue__) const"));
+        writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
+        writeLine(T("{baseType->setObjectVariable(__value__, __index__, __subValue__); return;}"), 1);
+        writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
         writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__value__.getObjectPointer());"));
         newLine();
         openScope(T("switch (__index__)"));

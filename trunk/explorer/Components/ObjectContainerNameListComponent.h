@@ -36,7 +36,7 @@ public:
     for (int i = 0; i < getNumSelectedRows(); ++i)
     {
       int rowNumber = getSelectedRow(i);
-      Variable variable = container->getVariable(rowNumber);
+      Variable variable = container->getElement(rowNumber);
       if (variable)
         selectedVariables.push_back(variable);
     }
@@ -49,7 +49,7 @@ public:
       : owner(owner), container(container) {}
 
     virtual int getNumRows()
-      {return (int)container->size();}
+      {return (int)container->getNumElements();}
 
     virtual void paintListBoxItem(int rowNumber, Graphics& g, int width, int height, bool rowIsSelected)
     {
@@ -61,7 +61,7 @@ public:
       f.setHorizontalScale(0.9f);
       g.setFont(f);
 
-      ObjectPtr object = container->getObject(rowNumber);
+      ObjectPtr object = container->getElement(rowNumber).getObject();
       String name = object ? object->getName() : T("<null>");
       g.drawText(name, 4, 0, width - 6, height, Justification::centredLeft, true);
     }

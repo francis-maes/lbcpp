@@ -29,7 +29,7 @@ public:
     VectorPtr primaryStructure = protein->getPrimaryStructure();
     jassert(primaryStructure);
     String aa = primaryStructure->toString();
-    jassert((size_t) aa.length() == primaryStructure->size());
+    jassert((size_t) aa.length() == primaryStructure->getNumElements());
     print(aa, true);
   }
 };

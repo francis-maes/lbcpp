@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_TYPE_INTEGER_H_
-# define LBCPP_OBJECT_TYPE_INTEGER_H_
+#ifndef LBCPP_DATA_TYPE_TOP_LEVEL_H_
+# define LBCPP_DATA_TYPE_TOP_LEVEL_H_
 
 # include <lbcpp/Data/Variable.h>
 
@@ -48,57 +48,44 @@ public:
     {callback.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}
 
   virtual void destroy(VariableValue& value) const
-    {jassert(false);}
+    {ErrorHandler::error(T("Type::destroy()"), T("Not implemented"));}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {jassert(false);}
+    {ErrorHandler::error(T("Type::copy()"), T("Not implemented"));}
 
   virtual String toString(const VariableValue& value) const
-  {
-    ErrorHandler::error(T("Type::toString(value)"), T("Not implemented"));
-    jassert(false);
-    return String::empty;
-  }
+    {ErrorHandler::error(T("Type::toString()"), T("Not implemented")); return String::empty;}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {jassert(false); return false;}
+    {ErrorHandler::error(T("Type::compare()"), T("Not implemented")); return 0;}
 
-  virtual size_t getNumStaticVariables() const
+  virtual size_t getObjectNumVariables() const
     {return 0;}
 
-  virtual TypePtr getStaticVariableType(size_t index) const
-    {ErrorHandler::error(T("Type::getStaticVariableType()"), T("Not implemented")); return TypePtr();}
+  virtual TypePtr getObjectVariableType(size_t index) const
+    {ErrorHandler::error(T("Type::getObjectVariableType()"), T("Not implemented")); return TypePtr();}
 
-  virtual String getStaticVariableName(size_t index) const
-    {ErrorHandler::error(T("Type::getStaticVariableName()"), T("Not implemented")); return String::empty;}
+  virtual String getObjectVariableName(size_t index) const
+    {ErrorHandler::error(T("Type::getObjectVariableName()"), T("Not implemented")); return String::empty;}
 
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
-    {ErrorHandler::error(T("Type::getSubVariable()"), T("Not implemented")); return Variable();}
+  virtual int findObjectVariable(const String& name) const
+    {return -1;}
+
+  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const
+    {ErrorHandler::error(T("Type::getObjectVariable()"), T("Not implemented")); return Variable();}
+
+  virtual size_t getNumElements(const VariableValue& value) const
+    {return 0;}
+
+  virtual Variable getElement(const VariableValue& value, size_t index) const
+    {ErrorHandler::error(T("Type::getElement()"), T("Not implemented")); return Variable();}
+
+  virtual String getElementName(const VariableValue& value, size_t index) const
+    {ErrorHandler::error(T("Type::getElementName()"), T("Not implemented")); return String::empty;}
 
   juce_UseDebuggingNewOperator
 };
 
-class NilType : public Type
-{
-public:
-  NilType() : Type(T("Nil"), topLevelType()) {}
-
-  virtual VariableValue create() const
-    {return VariableValue();}
-
-  virtual void destroy(VariableValue& value) const
-    {}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest = VariableValue();}
-
-  virtual String toString(const VariableValue& value) const
-    {return T("Nil");}
-
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {return 0;}
-};
-
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_TYPE_INTEGER_H_
+#endif // !LBCPP_DATA_TYPE_TOP_LEVEL_H_

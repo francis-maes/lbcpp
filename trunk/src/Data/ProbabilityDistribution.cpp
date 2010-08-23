@@ -97,17 +97,6 @@ double DiscreteProbabilityDistribution::computeEntropy() const
   return res;
 }
 
-void DiscreteProbabilityDistribution::setVariable(size_t index, const Variable& value)
-{
-  jassert(value.isDouble());
-  sum -= values[index];
-  values[index] = value.getDouble();
-  sum += values[index];
-}
-
-Variable DiscreteProbabilityDistribution::getVariable(size_t index) const
-  {jassert(index < values.size()); return Variable(values[index], probabilityType());}
-
 void DiscreteProbabilityDistribution::increment(const Variable& value)
 {
   if (value.isNil())
@@ -214,6 +203,9 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, ErrorHan
 bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   {return loadFromString(xml->getAllSubText(), callback);}
 
+namespace lbcpp
+{
+
 class DiscreteProbabilityDistributionClass : public Class
 {
 public:
@@ -229,19 +221,31 @@ public:
   virtual VariableValue create() const
     {return new DiscreteProbabilityDistribution(getEnumeration());}
 
-  virtual size_t getNumStaticVariables() const
+  virtual size_t getObjectNumVariables() const
     {return getEnumeration()->getNumElements() + 1;}
   
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
-    {return value.getObject()->getVariable(index);}
+  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const
+  {
+    DiscreteProbabilityDistributionPtr distribution = value.getObjectAndCast<DiscreteProbabilityDistribution>();
+    return distribution ? Variable(distribution->values[index], probabilityType()) : Variable::missingValue(probabilityType());
+  }
 
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-    {value.getObject()->setVariable(index, subValue);}
+  virtual void setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {
+    DiscreteProbabilityDistributionPtr distribution = value.getObjectAndCast<DiscreteProbabilityDistribution>();
+    if (distribution)
+    {
+      jassert(subValue.isDouble());
+      distribution->sum -= distribution->values[index];
+      distribution->values[index] = subValue.getDouble();
+      distribution->sum += distribution->values[index];
+    }
+  }
 
-  virtual TypePtr getStaticVariableType(size_t index) const
+  virtual TypePtr getObjectVariableType(size_t index) const
     {return probabilityType();}
 
-  virtual String getStaticVariableName(size_t index) const
+  virtual String getObjectVariableName(size_t index) const
     {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
 
   virtual ObjectPtr clone() const
@@ -251,6 +255,8 @@ public:
     return res;
   }
 };
+
+}; /* namespace lbcpp */
 
 ClassPtr lbcpp::probabilityDistributionClass()
   {static TypeCache cache(T("ProbabilityDistribution")); return cache();}

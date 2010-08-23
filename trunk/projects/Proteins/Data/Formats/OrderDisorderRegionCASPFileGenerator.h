@@ -33,8 +33,8 @@ public:
     
     for (size_t i = 0; i < n; ++i)
     {
-      double disorderProbability = disorderRegions->getVariable(i).getDouble();
-      print(String(AminoAcid::toOneLetterCode((AminoAcidType)primaryStructure->getVariable(i).getInteger())) +
+      double disorderProbability = disorderRegions->getElement(i).getDouble();
+      print(String(AminoAcid::toOneLetterCode((AminoAcidType)primaryStructure->getElement(i).getInteger())) +
         T(" ") + (disorderProbability > 0.5 ? T("D") : T("O")) + T(" ") + 
         String(disorderProbability, 2), true);
     }

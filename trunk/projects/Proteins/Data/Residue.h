@@ -40,10 +40,10 @@ public:
     {this->aminoAcidType = aminoAcidType;}
 
   size_t getNumAtoms() const
-    {return atoms->size();}
+    {return atoms->getNumElements();}
 
   AtomPtr getAtom(size_t index) const
-    {jassert(index < atoms->size()); return atoms->getObjectAndCast<Atom>(index);}
+    {jassert(index < atoms->getNumElements()); return atoms->getElement(index).getObjectAndCast<Atom>();}
 
   void addAtom(AtomPtr atom)
     {atoms->append(atom);}
@@ -76,7 +76,7 @@ public:
     {return getCAlphaAtom();}
 
   bool hasOnlyCAlphaAtom() const
-    {return atoms->size() && hasCAlphaAtom();}
+    {return atoms->getNumElements() && hasCAlphaAtom();}
 
   bool hasCompleteBackbone() const
     {return getCAlphaAtom() && getNitrogenAtom() && getCarbonAtom();}

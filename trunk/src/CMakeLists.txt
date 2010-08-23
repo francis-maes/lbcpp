@@ -30,6 +30,7 @@ SET(LBCPP_DATA_IMPL_HEADERS
 GENERATE_INTROSPECTION_CODE(Data/Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
 SET(LBCPP_DATA_SOURCES
@@ -50,10 +51,12 @@ SET(LBCPP_DATA_SOURCES
 
 SET(LBCPP_DATA_TYPE_SOURCES
   Data/Type/TopLevelType.h
+  Data/Type/NilType.h
   Data/Type/BuiltinType.h
   Data/Type/BooleanType.h
   Data/Type/DoubleType.h
   Data/Type/StringType.h
+  Data/Type/FileType.h
   Data/Type/TupleType.h
 )
 
@@ -62,6 +65,16 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/DirectoryFileStream.h
   Data/Stream/StreamClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamClasses.cpp
+)
+
+SET(LBCPP_DATA_CONTAINER_SOURCES
+  Data/Container/ApplyFunctionContainer.h
+  Data/Container/SubsetContainer.h
+  Data/Container/DuplicatedContainer.h
+  Data/Container/RangeContainer.h
+  Data/Container/ExcludeRangeContainer.h
+  Data/Container/ContainerClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
 )
 
 SET(LBCPP_DATA_FUNCTION_SOURCES
@@ -303,8 +316,9 @@ SET(LBCPP_CORE
   ${LBCPP_DATA_IMPL_HEADERS}
   ${LBCPP_DATA_SOURCES}
     ${LBCPP_DATA_TYPE_SOURCES}
-    ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_FUNCTION_SOURCES}
+    ${LBCPP_DATA_STREAM_SOURCES}
+    ${LBCPP_DATA_CONTAINER_SOURCES}
     ${LBCPP_DATA_PERCEPTION_SOURCES}
   
   ${LBCPP_OBJECT_HEADERS}
@@ -341,8 +355,9 @@ SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES} ${LBCPP_DATA_HEADERS})
 SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
-SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Function FILES ${LBCPP_DATA_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
+SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 SOURCE_SUB_GROUP(Data Perception FILES ${LBCPP_DATA_PERCEPTION_SOURCES})
 
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})

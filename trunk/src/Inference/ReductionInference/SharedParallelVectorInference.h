@@ -45,7 +45,7 @@ public:
     {
       Variable elementSupervision;
       if (supervisionVector)
-        elementSupervision = supervisionVector->getVariable(i);
+        elementSupervision = supervisionVector->getElement(i);
       res->addSubInference(subInference, perception->compute(Variable::pair(input, i)), elementSupervision);
     }
     return res;
@@ -68,7 +68,7 @@ public:
             result = distribution->sample(RandomGenerator::getInstance());
         }
         atLeastOnePrediction = true;
-        res->setVariable(i, result);
+        res->setElement(i, result);
       }
     }
     return atLeastOnePrediction ? res : Variable::missingValue(res->getClass());

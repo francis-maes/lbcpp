@@ -259,8 +259,8 @@ int main(int argc, char** argv)
                 ->apply(proteinToInputOutputPairFunction());
   }
   
-  std::cout << trainingData->size() << " Training Proteins & "
-            << testingData->size()  << " Testing Proteins" << std::endl;
+  std::cout << trainingData->getNumElements() << " Training Proteins & "
+            << testingData->getNumElements()  << " Testing Proteins" << std::endl;
  
   /*
   ** Selection of the Protein Inference Factory

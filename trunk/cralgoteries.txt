@@ -1,23 +1,25 @@
-Vector:
+* Demeler les variables dynamiques des statiques
+  
+  
+
+* Nouvelle classe TemplateType, génération des TemplateType via le XML, utilisation des TemplateType
+* AminoAcid::getVariable renvoie pas le bon type
+
+Container:
   * Rendre la classe Vector abstraite
-  * Différentes implémentations: DoubleVector, VariableVector (remplace le DynamicObject courrant), VariableValueVector, BuiltinTypeVector
-    * Explorer: utiliser un VariableVector pour la configuration
-  * Nouveau DynamicObject: ne stoquer que les VariableValue, implémentation entièrement cachée
-  * Serialisation des DynamicObject/DynamicClass
-    * Utiliser dans les Perceptions
+  * Normaliser les classes de Container
   
 Types:
   * Cacher l'implementation de IntegerType
-  * Fonctions dans Container pour les variables dynamiques
-  * Rendre les fonctions d'accès aux variables statiques non-virtuel
-  * Normaliser les classes de Container
   * Rendre visible la variable Type de la classe Object
-  * Clarifier l'histoire des TemplateType
   * Enlever les multiplyByScalar et addWeighted de Type et Object
 
 FeaturePerceptions:
+  * Serialisation des DynamicObject/DynamicClass
+    * Utiliser dans les Perceptions
   * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
   * use it in numerical inference !
+  * IntegerToFeaturesPerception
 
 Cleaning:
   * Finir d'enlever le code de serialisation binaire

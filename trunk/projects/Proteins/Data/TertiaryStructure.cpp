@@ -17,8 +17,8 @@ TertiaryStructure::TertiaryStructure(size_t numResidues)
 
 TertiaryStructurePtr TertiaryStructure::createFromCAlphaTrace(VectorPtr primaryStructure, CartesianPositionVectorPtr trace)
 {
-  size_t n = trace->size();
-  jassert(primaryStructure && primaryStructure->size() == n);
+  size_t n = trace->getNumElements();
+  jassert(primaryStructure && primaryStructure->getNumElements() == n);
 
   TertiaryStructurePtr res = new TertiaryStructure(n);
   for (size_t i = 0; i < n; ++i)
@@ -27,7 +27,7 @@ TertiaryStructurePtr TertiaryStructure::createFromCAlphaTrace(VectorPtr primaryS
     if (position.exists())
     {
       // create a residue with a single Ca atom
-      ResiduePtr residue = new Residue((AminoAcidType)primaryStructure->getVariable(i).getInteger());
+      ResiduePtr residue = new Residue((AminoAcidType)primaryStructure->getElement(i).getInteger());
       AtomPtr atom = new Atom(T("CA"), T("C"));
       atom->setPosition(new Vector3(position));
       residue->addAtom(atom);
@@ -39,8 +39,8 @@ TertiaryStructurePtr TertiaryStructure::createFromCAlphaTrace(VectorPtr primaryS
 /*
 TertiaryStructurePtr TertiaryStructure::createFromBackbone(LabelSequencePtr aminoAcidSequence, ProteinBackboneBondSequencePtr backbone)
 {
-  size_t n = backbone->size();
-  jassert(aminoAcidSequence && aminoAcidSequence->size() == n);
+  size_t n = backbone->getNumElements();
+  jassert(aminoAcidSequence && aminoAcidSequence->getNumElements() == n);
 
   impl::Matrix4 matrix = impl::Matrix4::identity;
   TertiaryStructurePtr res = new TertiaryStructure(n);
@@ -91,7 +91,7 @@ VectorPtr TertiaryStructure::makePrimaryStructure() const
   jassert(n);
   VectorPtr res = new Vector(aminoAcidTypeEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
-    res->setVariable(i, getResidue(i)->getAminoAcidType());
+    res->setElement(i, getResidue(i)->getAminoAcidType());
   return res;
 }
 

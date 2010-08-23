@@ -77,7 +77,7 @@ VectorSequentialInference::VectorSequentialInference(const String& name)
 SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
-  if (subInferences->size())
+  if (subInferences->getNumElements())
     prepareSubInference(context, state, 0, returnCode);
   return state;
 }
@@ -89,7 +89,7 @@ bool VectorSequentialInference::updateInference(InferenceContextPtr context, Seq
   finalizeSubInference(context, state, (size_t)index, returnCode);
   jassert(state->getSubInference() == getSubInference(index));
   ++index;
-  if (index < (int)subInferences->size())
+  if (index < (int)subInferences->getNumElements())
   {
     prepareSubInference(context, state, (size_t)index, returnCode);
     return true;

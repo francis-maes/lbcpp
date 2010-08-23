@@ -32,6 +32,9 @@
     </class>
     
     <class name="FlattenPerception" base="DecoratorPerception"/>
+
+    <class name="EnumValueToFeaturesPerception" base="Perception"/>
+    <class name="IntegerToFeaturesPerception" base="Perception"/>
     <class name="PerceptionToFeatures" base="ModifierPerception">
       <constructor arguments="PerceptionPtr target"/>
     </class>

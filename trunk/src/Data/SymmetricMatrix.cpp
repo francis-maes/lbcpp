@@ -20,7 +20,7 @@ size_t SymmetricMatrix::getIndex(size_t i, size_t j) const
   if (i > j)
     {size_t tmp = i; i = j; j = tmp;}
   size_t res = (j - i) + (i * dimension) - ((i * (i - 1)) / 2);
-  jassert(res < values.size());
+  jassert(res < values.getNumElements());
   return res;
 }
 
@@ -61,13 +61,13 @@ bool SymmetricMatrix::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 TypePtr SymmetricMatrix::getElementsType() const
   {jassert(thisClass); return symmetricMatrixRowClass(getMatrixElementsType());}
 
-Variable SymmetricMatrix::getVariable(size_t index) const
+Variable SymmetricMatrix::getElement(size_t index) const
 {
   jassert(index < dimension);
-  return new SymmetricMatrixRow(SymmetricMatrixPtr(const_cast<SymmetricMatrix* >(this)), index);
+  return new SymmetricMatrixRow(refCountedPointerFromThis(this), index);
 }
 
-void SymmetricMatrix::setVariable(size_t index, const Variable& value)
+void SymmetricMatrix::setElement(size_t index, const Variable& value)
 {
   // not implemented
   jassert(false);

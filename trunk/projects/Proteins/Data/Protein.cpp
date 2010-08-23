@@ -37,7 +37,7 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, ErrorHan
   VectorPtr primaryStructure = res->getPrimaryStructure();
   jassert(primaryStructure);
   TertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
-  jassert(tertiaryStructure && tertiaryStructure->getNumResidues() == primaryStructure->getNumVariables());
+  jassert(tertiaryStructure && tertiaryStructure->getNumResidues() == primaryStructure->getNumElements());
   return res;
 }
 
@@ -63,7 +63,7 @@ void Protein::setPrimaryStructure(const String& primaryStructure)
 
   this->primaryStructure = new Vector(aminoAcidTypeEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
-    this->primaryStructure->setVariable(i, AminoAcid::fromOneLetterCode(primaryStructure[i]));
+    this->primaryStructure->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[i]));
 }
 
 SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAtoms) const
@@ -99,7 +99,7 @@ String Protein::getTargetFriendlyName(size_t index)
   // FIXME: use info from class
 
   // skip base class variables
-  size_t baseClassVariables = nameableObjectClass()->getNumStaticVariables();
+  size_t baseClassVariables = nameableObjectClass()->getObjectNumVariables();
   if (index < baseClassVariables)
     return String::empty;
   index -= baseClassVariables;
@@ -161,26 +161,26 @@ void Protein::computeMissingVariables()
 
 VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
 {
-  size_t n = dsspSecondaryStructure->getNumVariables();
+  size_t n = dsspSecondaryStructure->getNumElements();
   VectorPtr res = new Vector(secondaryStructureElementEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
   {
-    Variable var = dsspSecondaryStructure->getVariable(i);
+    Variable var = dsspSecondaryStructure->getElement(i);
     if (var)
-      res->setVariable(i, Variable(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), res->getElementsType()));
+      res->setElement(i, Variable(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), res->getElementsType()));
   }
   return res;
 }
 
 VectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold)
 {
-  size_t n = solventAccessibility->size();
+  size_t n = solventAccessibility->getNumElements();
   VectorPtr res = new Vector(probabilityType(), n);
   for (size_t i = 0; i < n; ++i)
   {
-    Variable sa = solventAccessibility->getVariable(i);
+    Variable sa = solventAccessibility->getElement(i);
     if (sa)
-      res->setVariable(i, Variable(sa.getDouble() > threshold ? 1.0 : 0.0, probabilityType()));
+      res->setElement(i, Variable(sa.getDouble() > threshold ? 1.0 : 0.0, probabilityType()));
   }
   return res;
 }
@@ -237,7 +237,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
     {6.80 ,10.35 ,6.85 ,-0.25}
   };
 
-  size_t n = calphaTrace->size();
+  size_t n = calphaTrace->getNumElements();
   VectorPtr res = new Vector(structuralAlphabetElementEnumeration(), n);
   for (size_t i = 3; i < n; ++i)
   {
@@ -278,7 +278,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
         bestGroup = j;
       }
     }
-    res->setVariable(i - 2, Variable(bestGroup, structuralAlphabetElementEnumeration()));
+    res->setElement(i - 2, Variable(bestGroup, structuralAlphabetElementEnumeration()));
     //std::cout << d1 << "\t" << d2 << "\t" << d3 << "\t" << d4 << "\t\t" << bestGroup << std::endl;
   }
   return res;
@@ -310,7 +310,7 @@ Variable Protein::createEmptyTarget(size_t index) const
   size_t n = getLength();
 
   // skip base class variables
-  size_t baseClassVariables = nameableObjectClass()->getNumStaticVariables();
+  size_t baseClassVariables = nameableObjectClass()->getObjectNumVariables();
   jassert(index >= baseClassVariables)
   index -= baseClassVariables;
 

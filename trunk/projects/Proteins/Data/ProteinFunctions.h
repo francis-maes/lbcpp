@@ -31,7 +31,7 @@ public:
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
-    return protein->getLength();
+    return Variable(protein->getLength(), sequenceSeparationDistanceType());
   }
 };
 
