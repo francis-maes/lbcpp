@@ -78,6 +78,7 @@ SET(LBCPP_DATA_PERCEPTION_SOURCES
   Data/Perception/PreprocessPerception.h
   Data/Perception/FlattenPerception.h
   Data/Perception/FunctionBasedPerception.h
+  Data/Perception/PerceptionToFeatures.h
   Data/Perception/PerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
 )

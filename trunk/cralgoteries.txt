@@ -1,3 +1,13 @@
+FG and Perception:
+==================
+  1- Pouvoir faire les opérations const-unaire: l0norm(), l1norm(), l2norm()
+  2- Opérations unaire sur les OutputType: multiplyByScalar()
+  3- Opérations entre OutputType et Perception: dotProduct(), addWeighted(), add/sub, addWeightedSigns()
+  4- Sérialisation des OutputType
+  5- Commencer à remplacer dans NumericalInference
+
+
+-
 * Refaire la serialisation du DenseVector / FeatureDictionary
 * Finir d'enlever le code de serialisation binaire
 * Commencer à voir si on peut enlever les TypeTraits
@@ -13,7 +23,7 @@ ContactMap:
 
 Perceptions:
  * Residue: current position, WindowHistogram
- * ResiduePair: separation distance, SegmentHistogram
+ * ResiduePair: SegmentHistogram
  * Distribution: Entropy 
 
 Inference:

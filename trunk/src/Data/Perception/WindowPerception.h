@@ -49,14 +49,14 @@ public:
       for (size_t i = 0; i < windowSize; ++i)
       {
         int position = startPosition + (int)i;
-        Variable variable = position >= 0 && position < (int)container->size()
-            ? container->getVariable(position)
-            : Variable::missingValue(elementsType);
-
-        if (decorated)
-          callback->sense(i, decorated, variable);
-        else
-          callback->sense(i, variable);
+        if (position >= 0 && position < (int)container->size())
+        {
+          Variable variable = container->getVariable(position);
+          if (decorated)
+            callback->sense(i, decorated, variable);
+          else
+            callback->sense(i, variable);
+        }
       }
     }
   }
