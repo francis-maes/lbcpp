@@ -24,8 +24,8 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
   virtual void sense(size_t variableNumber, const Variable& value)
     {target->setVariable(variableNumber, value); atLeastOneVariable = true;}
 
-  bool atLeastOneVariable;
   ObjectPtr target;
+  bool atLeastOneVariable;
 };
 
 Variable Perception::computeFunction(const Variable& input, ErrorHandler& callback) const

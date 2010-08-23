@@ -48,7 +48,7 @@ File ExplorerConfiguration::getApplicationDataDirectory()
 }
 
 File ExplorerConfiguration::getConfigurationFile()
-  {return File(T("C:\\temp\\explorerConfig.xml"));}// getApplicationDataDirectory().getChildFile(T("config.data"));}
+  {return getApplicationDataDirectory().getChildFile(T("config.data"));}
 
 DynamicObjectPtr ExplorerConfiguration::getInstance()
 {

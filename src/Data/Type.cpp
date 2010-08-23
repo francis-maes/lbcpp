@@ -540,7 +540,7 @@ TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
 }
 
 bool Enumeration::hasOneLetterCodes() const
-  {return oneLetterCodes.length() == elements.size();}
+  {return oneLetterCodes.length() == (int)elements.size();}
 
 juce::tchar Enumeration::getOneLetterCode(size_t index) const
 {
