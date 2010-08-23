@@ -245,7 +245,6 @@ int main(int argc, char** argv)
                             ->load(numProteinsToLoad)
                             ->apply(proteinToInputOutputPairFunction())
                             ->randomize();
-  
   ContainerPtr testingData;
   if (testingProteinsDirectory == File::nonexistent)
   {
@@ -262,8 +261,7 @@ int main(int argc, char** argv)
   
   std::cout << trainingData->size() << " Training Proteins & "
             << testingData->size()  << " Testing Proteins" << std::endl;
-  
-  
+ 
   /*
   ** Selection of the Protein Inference Factory
   */
@@ -290,11 +288,11 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("StAl")))
       inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   }
-  
+/*  
   std::cout << "*--------- Inference ---------" << std::endl;
   Variable(inference).printRecursively(std::cout);
   std::cout << "*-----------------------------" << std::endl;
-
+*/
   /*
   ** Setting Callbacks
   */

@@ -13,7 +13,7 @@ function launch {
   sleep 2
 
 qsub << EOF
-#$ -l h_vmem=12G
+#$ -l h_vmem=3G
 #$ -l h_rt=${expected_time}:00:00
 
 #$ -m eas
@@ -27,14 +27,40 @@ EOF
 
 }
 
-program="SunBox"
+program="MoonBox"
 
-target="(DR)10"
+target="(SS3)5"
 
 prefix="exp"
 database="PDB70/protein"
-nbProt="140"
+nbProt="500"
 #------------------------------------------------
+
+database="ProteinToXml/xml" #"PDB30/protein"
+prefix_="exp.500.basic"
+other_="StoppingIteration 10"
+target="(SS3)5"
+for lr in 5 10 20 50
+do
+for ls in 1000000
+do
+  prefix="${prefix_}.lr${lr}.ls${ls}"
+  other="${other_} LearningRate ${lr} LearningStep ${ls}"
+  launch
+done
+done
+
+
+exit
+
+for targ in SS3 SS8 SS3-SS8 DR SA SS3-SA SS3-DR
+do
+  target="($targ)10"
+  launch
+done
+
+
+exit
 
 #for targ in `python CombinaisonGenerator.py StAl BBB DR SA SS8 SS3`
 #for lr in 0.0001 0.0002 0.0005 0.001 0.002 0.005 0.01 0.02 0.05 0.1 0.2 0.5 1 2 5 10 20 50 100 200 500 1000 2000 5000 10000

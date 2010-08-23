@@ -197,3 +197,4 @@ inline AddBiasInference::AddBiasInference(const String& name, InferencePtr numer
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_INFERENCE_CONTACT_MAP_H_
+
