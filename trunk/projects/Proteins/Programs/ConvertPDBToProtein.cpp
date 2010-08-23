@@ -24,6 +24,10 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
   {
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".xml"));
   }
+  //OutputStream* o = output.createOutputStream();
+  //*o << "> " << inputFile.getFileNameWithoutExtension() << "\n";
+  //*o << protein->getPrimaryStructure()->toString();
+  //delete o;
   Variable(protein).saveToFile(output);
   return true;
 }

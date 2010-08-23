@@ -98,3 +98,4 @@ typedef ReferenceCountedObjectPtr<ProteinInferenceStep> ProteinInferenceStepPtr;
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_INFERENCE_H_
+
