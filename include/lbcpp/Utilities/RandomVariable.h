@@ -168,50 +168,6 @@ private:
   double max;
 };
 
-class PolicyStatistics : public Object
-{
-public:
-  PolicyStatistics();
-
-  ScalarVariableStatisticsPtr getRewardPerChoose() const
-    {return rewardPerChoose;}
-
-  ScalarVariableStatisticsPtr getRewardPerEpisode() const
-    {return rewardPerEpisode;}
-
-  ScalarVariableStatisticsPtr getChoicesPerChoose() const
-    {return choicesPerChoose;}
-
-  ScalarVariableStatisticsPtr getChoosesPerEpisode() const
-    {return choosesPerEpisode;}
-
-  ScalarVariableStatisticsPtr getChoicesPerEpisode() const
-    {return choicesPerEpisode;}
-
-  // shortcuts
-  double getRewardPerChooseMean() const
-    {return rewardPerChoose->getMean();}
-
-  double getRewardPerChooseStddev() const
-    {return rewardPerChoose->getStandardDeviation();}
-
-  double getRewardPerEpisodeMean() const
-    {return rewardPerEpisode->getMean();}
-
-  double getRewardPerEpisodeStddev() const
-    {return rewardPerEpisode->getStandardDeviation();}
-
-  // Object
-  virtual String toString() const;
-
-private:
-  ScalarVariableStatisticsPtr rewardPerChoose;
-  ScalarVariableStatisticsPtr choicesPerChoose;
-  ScalarVariableStatisticsPtr rewardPerEpisode;
-  ScalarVariableStatisticsPtr choosesPerEpisode;
-  ScalarVariableStatisticsPtr choicesPerEpisode;
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_RANDOM_VARIABLE_H_

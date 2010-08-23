@@ -32,26 +32,10 @@
 namespace lbcpp
 {
 
-/*!
-** @class StoppingCriterion
-** @brief
-*/
 class StoppingCriterion : public Object
 {
 public:
-  /*!
-  **
-  **
-  */
   virtual void reset() = 0;
-
-  /*!
-  **
-  **
-  ** @param value
-  **
-  ** @return
-  */
   virtual bool shouldOptimizerStop(double value) = 0;
 };
 

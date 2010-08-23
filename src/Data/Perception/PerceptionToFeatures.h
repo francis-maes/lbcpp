@@ -42,6 +42,28 @@ private:
   EnumerationPtr enumeration;
 };
 
+class IntegerToFeaturesPerception : public Perception
+{
+public:
+  virtual TypePtr getInputType() const
+    {return integerType();}
+
+  virtual size_t getNumOutputVariables() const
+    {return 0;}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return doubleType();}
+
+  virtual String getOutputVariableName(size_t index) const
+    {return String::empty;}
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  {
+    //jassert(input.getType()->inheritsFrom(enumeration));
+    //callback->sense((size_t)input.getInteger(), 1.0);
+  }
+};
+
 class PerceptionToFeatures : public ModifierPerception
 {
 public:
@@ -55,6 +77,8 @@ public:
       return PerceptionPtr();
     if (valueType->inheritsFrom(enumValueType()))
       return PerceptionPtr(new EnumValueToFeaturesPerception(valueType));
+    if (valueType->inheritsFrom(integerType()))
+      return PerceptionPtr(new IntegerToFeaturesPerception());
 
     // to be continued
     return PerceptionPtr();
