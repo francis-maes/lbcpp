@@ -343,11 +343,11 @@ extern ClassPtr objectClass();
 extern ClassPtr typeClass();
 extern ClassPtr enumerationClass();
 
-class DynamicClass : public Class
+class DefaultClass : public Class
 {
 public:
-  DynamicClass(const String& name, TypePtr baseClass = objectClass());
-  DynamicClass(const String& name, const String& baseClass);
+  DefaultClass(const String& name, TypePtr baseClass = objectClass());
+  DefaultClass(const String& name, const String& baseClass);
 
   virtual size_t getNumStaticVariables() const;
   virtual TypePtr getStaticVariableType(size_t index) const;
@@ -367,7 +367,7 @@ protected:
   std::vector< std::pair<Type*, String> > variables;
 };
 
-typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
+typedef ReferenceCountedObjectPtr<DefaultClass> DynamicClassPtr;
 
 /*
 ** Minimalistic C++ classes Wrapper

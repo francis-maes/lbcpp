@@ -1,21 +1,30 @@
-FG and Perception:
-==================
-  1- Pouvoir faire les opérations const-unaire: l0norm(), l1norm(), l2norm()
-  2- Opérations unaire sur les OutputType: multiplyByScalar()
-  3- Opérations entre OutputType et Perception: dotProduct(), addWeighted(), add/sub, addWeightedSigns()
-  4- Sérialisation des OutputType
-  5- Commencer à remplacer dans NumericalInference
+Vector:
+  * Rendre la classe Vector abstraite
+  * Différentes implémentations: DoubleVector, VariableVector (remplace le DynamicObject courrant), VariableValueVector, BuiltinTypeVector
+    * Explorer: utiliser un VariableVector pour la configuration
+  * Nouveau DynamicObject: ne stoquer que les VariableValue, implémentation entièrement cachée
+  * Serialisation des DynamicObject/DynamicClass
+    * Utiliser dans les Perceptions
+  
+Types:
+  * Cacher l'implementation de IntegerType
+  * Fonctions dans Container pour les variables dynamiques
+  * Rendre les fonctions d'accès aux variables statiques non-virtuel
+  * Normaliser les classes de Container
+  * Rendre visible la variable Type de la classe Object
+  * Clarifier l'histoire des TemplateType
+  * Enlever les multiplyByScalar et addWeighted de Type et Object
 
+FeaturePerceptions:
+  * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
+  * use it in numerical inference !
 
--
-* Refaire la serialisation du DenseVector / FeatureDictionary
-* Finir d'enlever le code de serialisation binaire
-* Commencer à voir si on peut enlever les TypeTraits
--
-* Clarifier l'histoire des TemplateType
-* Clarifier l'histoire des variables dynamiques
-* Normalize Container classes declaration
-* Move Evaluator from lbcpp/Inference to lbcpp/Data
+Cleaning:
+  * Finir d'enlever le code de serialisation binaire
+  * Enlever TypeTraits et ContainerTypeTraits
+  * Deplacer Perception de lbcpp/Data vers lbcpp/Perception
+  * Deplacer Evaluator de lbcpp/Inference vers lbcpp/Data
+  * Ranger les Utilities et les anciens Objects  
 
 ====
 ContactMap:

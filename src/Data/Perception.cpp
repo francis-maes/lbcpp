@@ -37,11 +37,21 @@ Variable Perception::computeFunction(const Variable& input, ErrorHandler& callba
   return perceptionCallback->atLeastOneVariable ? res : Variable::missingValue(type);
 }
 
+class DynamicClass : public DefaultClass
+{
+public:
+  DynamicClass(const String& name, TypePtr baseClass = objectClass())
+    : DefaultClass(name, baseClass) {}
+
+  virtual VariableValue create() const
+    {return new DynamicObject(refCountedPointerFromThis(this));}
+};
+
 void Perception::ensureTypeIsComputed()
 {
   if (type)
     return;
-  type = new DynamicClass(getClassName() + T("Class"), dynamicObjectClass());
+  type = new DynamicClass(getClassName() + T("Class"));
   size_t n = getNumOutputVariables();
   for (size_t i = 0; i < n; ++i)
     type->addVariable(getOutputVariableType(i), getOutputVariableName(i));

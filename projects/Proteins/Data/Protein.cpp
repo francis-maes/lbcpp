@@ -48,13 +48,13 @@ ProteinPtr Protein::createFromFASTA(const File& file, ErrorHandler& callback)
   {return StreamPtr(new FASTAFileParser(file, callback))->next().getObjectAndCast<Protein>(callback);}
 
 void Protein::saveToPDBFile(const File& pdbFile, ErrorHandler& callback) const
-  {ConsumerPtr(new PDBFileGenerator(pdbFile, callback))->consume(ProteinPtr(const_cast<Protein* >(this)));}
+  {ConsumerPtr(new PDBFileGenerator(pdbFile, callback))->consume(refCountedPointerFromThis(this));}
 
 void Protein::saveToXmlFile(const File& xmlFile, ErrorHandler& callback) const
-  {Variable(const_cast<Protein* >(this)).saveToFile(xmlFile, callback);}
+  {Variable(refCountedPointerFromThis(this)).saveToFile(xmlFile, callback);}
 
 void Protein::saveToFASTAFile(const File& fastaFile, ErrorHandler& callback) const
-  {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(ProteinPtr(const_cast<Protein* >(this)));}
+  {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(refCountedPointerFromThis(this));}
 
 void Protein::setPrimaryStructure(const String& primaryStructure)
 {

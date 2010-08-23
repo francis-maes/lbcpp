@@ -352,7 +352,7 @@ VariableValue Class::createFromString(const String& value, ErrorHandler& callbac
     callback.errorMessage(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
     return getMissingValue();
   }
-  res.getObject()->thisClass = ClassPtr(const_cast<Class* >(this));
+  res.getObject()->thisClass = refCountedPointerFromThis(this);
   return res.getObject()->loadFromString(value, callback) ? res : getMissingValue();
 }
 
@@ -364,7 +364,7 @@ VariableValue Class::createFromXml(XmlElement* xml, ErrorHandler& callback) cons
     callback.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
     return getMissingValue();
   }
-  res.getObject()->thisClass = ClassPtr(const_cast<Class* >(this));
+  res.getObject()->thisClass = refCountedPointerFromThis(this);
   return res.getObject()->loadFromXml(xml, callback) ? res : getMissingValue();
 }
 
@@ -385,32 +385,32 @@ String Class::getSubVariableName(const VariableValue& value, size_t index) const
   {return value.getObject()->getVariableName(index);}
 
 /*
-** DynamicClass
+** DefaultClass
 */
-DynamicClass::DynamicClass(const String& name, TypePtr baseClass)
+DefaultClass::DefaultClass(const String& name, TypePtr baseClass)
   : Class(name, baseClass)
 {
 }
 
-DynamicClass::DynamicClass(const String& name, const String& baseClass)
+DefaultClass::DefaultClass(const String& name, const String& baseClass)
   : Class(name, Class::get(baseClass))
 {
 }
 
-void DynamicClass::addVariable(const String& typeName, const String& name)
+void DefaultClass::addVariable(const String& typeName, const String& name)
 {
   TypePtr type = Type::parseAndGet(typeName, ErrorHandler::getInstance());
   addVariable(type, name);
 }
 
-size_t DynamicClass::getNumStaticVariables() const
+size_t DefaultClass::getNumStaticVariables() const
 {
   size_t n = baseType->getNumStaticVariables();
   ScopedLock _(variablesLock);
   return n + variables.size();
 }
 
-TypePtr DynamicClass::getStaticVariableType(size_t index) const
+TypePtr DefaultClass::getStaticVariableType(size_t index) const
 {
   size_t n = baseType->getNumStaticVariables();
   if (index < n)
@@ -422,7 +422,7 @@ TypePtr DynamicClass::getStaticVariableType(size_t index) const
   return variables[index].first;
 }
 
-String DynamicClass::getStaticVariableName(size_t index) const
+String DefaultClass::getStaticVariableName(size_t index) const
 {
   size_t n = baseType->getNumStaticVariables();
   if (index < n)
@@ -434,7 +434,7 @@ String DynamicClass::getStaticVariableName(size_t index) const
   return variables[index].second;
 }
 
-void DynamicClass::addVariable(Type* type, const String& name)
+void DefaultClass::addVariable(Type* type, const String& name)
 {
   if (!type || name.isEmpty())
   {
@@ -448,7 +448,7 @@ void DynamicClass::addVariable(Type* type, const String& name)
     variables.push_back(std::make_pair(type, name));
 }
 
-int DynamicClass::findStaticVariable(const String& name) const
+int DefaultClass::findStaticVariable(const String& name) const
 {
   ScopedLock _(variablesLock);
   for (size_t i = 0; i < variables.size(); ++i)
