@@ -166,11 +166,11 @@ protected:
     currentScopes.push_back(className);
     classes.push_back(getCurrentScopeFullName() + T("Class"));
 
-    openClass(className + T("Class"), T("DynamicClass"));
+    openClass(className + T("Class"), T("DefaultClass"));
 
     // constructor
     std::vector<XmlElement* > variables;
-    openScope(className + T("Class() : DynamicClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    openScope(className + T("Class() : DefaultClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
     forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
     {
       generateVariableDeclarationInConstructor(className, elt);

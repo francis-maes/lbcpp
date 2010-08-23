@@ -78,8 +78,8 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
 
 InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops) const
 {
-  InferenceOnlineLearnerPtr pthis(const_cast<InferenceOnlineLearner* >(this));
-  return new StoppingCriterionInferenceOnlineLearner(pthis, criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
+  return new StoppingCriterionInferenceOnlineLearner(refCountedPointerFromThis(this),
+    criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
 }
 
 /*

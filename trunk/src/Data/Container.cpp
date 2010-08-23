@@ -57,7 +57,7 @@ private:
 ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
 {
   if (lazyCompute)
-    return new ApplyFunctionContainer(const_cast<Container* >(this), function);
+    return new ApplyFunctionContainer(refCountedPointerFromThis(this), function);
   else
   {
     size_t n = size();
@@ -87,7 +87,7 @@ private:
 };
 
 ContainerPtr Container::subset(const std::vector<size_t>& indices) const
-  {return new SubsetContainer(const_cast<Container* >(this), indices);}
+  {return new SubsetContainer(refCountedPointerFromThis(this), indices);}
 
 // Creates a randomized version of a dataset.
 ContainerPtr Container::randomize() const
@@ -119,7 +119,7 @@ private:
 
 // Creates a set where each instance is duplicated multiple times.
 ContainerPtr Container::duplicate(size_t count) const
-  {return new DuplicatedContainer(const_cast<Container* >(this), count);}
+  {return new DuplicatedContainer(refCountedPointerFromThis(this), count);}
 
 class RangeContainer : public DecoratorContainer
 {
@@ -145,7 +145,7 @@ private:
 
 // Selects a range.
 ContainerPtr Container::range(size_t begin, size_t end) const
-  {return new RangeContainer(const_cast<Container* >(this), begin, end);}
+  {return new RangeContainer(refCountedPointerFromThis(this), begin, end);}
 
 class ExcludeRangeContainer : public DecoratorContainer
 {
@@ -173,7 +173,7 @@ private:
 
 // Excludes a range.
 ContainerPtr Container::invRange(size_t begin, size_t end) const
-  {return new ExcludeRangeContainer(const_cast<Container* >(this), begin, end);}
+  {return new ExcludeRangeContainer(refCountedPointerFromThis(this), begin, end);}
 
 // Selects a fold.
 ContainerPtr Container::fold(size_t fold, size_t numFolds) const
@@ -202,10 +202,10 @@ ContainerPtr Container::invFold(size_t fold, size_t numFolds) const
 ClassPtr lbcpp::containerClass()
   {static TypeCache cache(T("Container")); return cache();}
 
-class ContainerClass : public DynamicClass
+class ContainerClass : public DefaultClass
 {
 public:
-  ContainerClass() : DynamicClass(T("Container"), T("Object")) {}
+  ContainerClass() : DefaultClass(T("Container"), T("Object")) {}
   
   virtual Variable getSubVariable(const VariableValue& value, size_t index) const
     {return value.getObject()->getVariable(index);}
