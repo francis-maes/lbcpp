@@ -448,11 +448,11 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
   VectorPtr primaryStructure = protein->getPrimaryStructure();
   if (primaryStructure)
   {
-    size_t n = primaryStructure->size();
+    size_t n = primaryStructure->getNumElements();
     tertiaryStructure = new TertiaryStructure(n);
 
     String primaryAminoAcids = primaryStructure->toString();
-    jassert((size_t) primaryAminoAcids.length() == n);
+    jassert((size_t)primaryAminoAcids.length() == n);
 
     // align each tertiary structure block with the primary sequence and fill the corresponding part of the tertiary structure
     int lastIndex = 0;
@@ -525,19 +525,19 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
   // an element is in disorder if the associated residue is not defined
   VectorPtr res = protein->createEmptyProbabilitySequence();
   for (size_t i = 0; i < n; ++i)
-    res->setVariable(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType()));
+    res->setElement(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType()));
 
   // remove disorder segments whose length is less than 4
   static const int minimumDisorderLength = 4;
   for (size_t i = 0; i < n; )
   {
-    if (res->getVariable(i).getDouble() == 1.0)
+    if (res->getElement(i).getDouble() == 1.0)
     {
       size_t j = i + 1;
-      while (j < n && res->getVariable(j).getDouble() == 1.0) ++j;
+      while (j < n && res->getElement(j).getDouble() == 1.0) ++j;
       if ((j - i) < (size_t)minimumDisorderLength)
         for (size_t ii = i; ii < j; ++ii)
-          res->setVariable(ii, Variable(0.0, probabilityType()));
+          res->setElement(ii, Variable(0.0, probabilityType()));
       i = j;
     }
     else

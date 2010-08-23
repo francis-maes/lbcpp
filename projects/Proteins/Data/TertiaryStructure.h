@@ -37,16 +37,16 @@ public:
   SymmetricMatrixPtr makeCBetaDistanceMatrix() const;
 
   size_t getNumResidues() const
-    {return residues->getNumVariables();}
+    {return residues->getNumElements();}
 
   ResiduePtr getResidue(size_t index) const
-    {jassert(index < getNumResidues()); return residues->getObjectAndCast<Residue>(index);}
+    {jassert(index < getNumResidues()); return residues->getElement(index).getObjectAndCast<Residue>();}
 
   ResiduePtr getLastResidue() const
-    {size_t n = residues->size(); return n ? residues->getObjectAndCast<Residue>(n - 1) : ResiduePtr();}
+    {size_t n = residues->getNumElements(); return n ? getResidue(n - 1) : ResiduePtr();}
 
   void setResidue(size_t index, ResiduePtr residue)
-    {residues->setVariable(index, residue);}
+    {residues->setElement(index, residue);}
 
   void append(ResiduePtr residue)
     {residues->append(residue);}
@@ -63,13 +63,6 @@ public:
   impl::Matrix4 superposeCAlphaAtoms(TertiaryStructurePtr targetStructure) const;
   double computeCAlphaAtomsRMSE(TertiaryStructurePtr targetStructure) const;
   void applyAffineTransform(const impl::Matrix4& affineTransform) const;
-
-  // Object
-  virtual Variable getVariable(size_t index) const
-    {jassert(index == 0); return residues;}
-
-  virtual void setVariable(size_t index, const Variable& var)
-    {jassert(index == 0); residues = var.getObjectAndCast<Vector>();}
 
 protected:
   friend class TertiaryStructureClass;

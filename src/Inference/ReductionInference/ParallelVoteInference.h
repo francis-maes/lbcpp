@@ -45,7 +45,7 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
-    for (size_t i = 0; i < subInferences->size(); ++i)
+    for (size_t i = 0; i < subInferences->getNumElements(); ++i)
       state->addSubInference(getSubInference(i), input, supervision);
     return state;
   }

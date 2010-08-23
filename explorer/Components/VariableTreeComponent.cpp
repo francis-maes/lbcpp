@@ -18,14 +18,19 @@ public:
   {
     shortSummary = variable.getShortSummary();
 
-    size_t n = variable.size();
-    subVariables.reserve(n);
-    for (size_t i = 0; i < n; ++i)
+    TypePtr type = variable.getType();
+    if (variable && variable.isObject())
     {
-      Variable subVariable = variable[i];
-      if (subVariable)
-        subVariables.push_back(std::make_pair(variable.getVariableName(i), subVariable));
+      ObjectPtr object = variable.getObject();
+      subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
+      for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+        subVariables.push_back(std::make_pair(type->getObjectVariableName(i), object->getVariable(i)));
     }
+
+    subVariables.reserve(subVariables.size() + variable.size());
+    for (size_t i = 0; i < variable.size(); ++i)
+      subVariables.push_back(std::make_pair(variable.getName(i), variable[i]));
+
     mightContainSubItemsFlag = !subVariables.empty();
   }
 

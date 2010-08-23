@@ -51,7 +51,7 @@ public:
     {return representation->addPreprocessor(preProcessingFunction);}
 
 private:
-  DynamicClassPtr type;
+  DynamicClassPtr outputType;
 
   void ensureTypeIsComputed();
 };

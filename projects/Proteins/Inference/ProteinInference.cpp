@@ -97,7 +97,7 @@ Variable ProteinSequentialInference::finalizeInference(InferenceContextPtr conte
 ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePtr targetInference)
   : StaticDecoratorInference(targetName, targetInference)
 {
-  int index = proteinClass()->findStaticVariable(targetName);
+  int index = proteinClass()->findObjectVariable(targetName);
   jassert(index >= 0);
   targetIndex = (size_t)index;
   checkInheritance(targetInference->getInputType(), proteinClass());

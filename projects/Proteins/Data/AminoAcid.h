@@ -76,7 +76,7 @@ public:
   virtual String toString() const
     {String res; res += getOneLetterCode(); return res;}
 
-  virtual Variable getVariable(size_t index) const;
+ // virtual Variable getVariable(size_t index) const;
   
   virtual bool isStandard() const
     {return type < 20;}

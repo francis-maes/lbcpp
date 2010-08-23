@@ -31,7 +31,7 @@ public:
     numSequences += sequences.size();
     for (size_t i = 0; i < sequences.size(); ++i)
     {
-      size_t length = sequences[i].second->size();
+      size_t length = sequences[i].second->getNumElements();
       if (length > longestSequence)
         longestSequence = length;
     }
@@ -202,8 +202,8 @@ private:
     for (size_t i = info.begin; i < info.end; ++i)
     {
       g.setColour(Colours::black);
-      Variable variable1 = i > 0 ? sequence->getVariable(i - 1) : Variable();
-      Variable variable2 = sequence->getVariable(i);
+      Variable variable1 = i > 0 ? sequence->getElement(i - 1) : Variable();
+      Variable variable2 = sequence->getElement(i);
       
       if (variable1 && variable2 && variable1 == variable2)
       {
@@ -228,7 +228,7 @@ private:
       return;
     
     TypePtr type = sequence->getElementsType();
-    Variable value = sequence->getVariable(index);
+    Variable value = sequence->getElement(index);
 
     if (type->inheritsFrom(enumValueType()))
     {
@@ -243,10 +243,10 @@ private:
     if (type->canBeCastedTo(probabilityType()))
     {
       String str = T("?");
-      if (sequence->getVariable(index))
+      if (sequence->getElement(index))
       {
         g.setColour(Colours::red);
-        double realValue = sequence->getVariable(index).getDouble();
+        double realValue = sequence->getElement(index).getDouble();
         double limitedValue = juce::jlimit(0.0, 1.0, realValue);
         g.fillRect(x, y + (int)(h * (1 - limitedValue)), w, (int)(h * limitedValue + 1));
         str = String(realValue, 2);
@@ -259,7 +259,7 @@ private:
 
     if (type->canBeCastedTo(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())))
     {
-      DiscreteProbabilityDistributionPtr probs = sequence->getObjectAndCast<DiscreteProbabilityDistribution>(index);
+      DiscreteProbabilityDistributionPtr probs = sequence->getElement(index).getObjectAndCast<DiscreteProbabilityDistribution>();
       size_t numVariables = probs->getEnumeration()->getNumElements();
       for (size_t i = 0; i < numVariables; ++i)
       {
@@ -279,12 +279,12 @@ private:
   {
     for (size_t i = begin; i < end; ++i)
     {
-      ObjectPtr object1 = sequence1->getObject(i);
-      ObjectPtr object2 = sequence2->getObject(i);
-      if (object1 && object2)
+      Variable v1 = sequence1->getElement(i);
+      Variable v2 = sequence2->getElement(i);
+      if (v1 && v2)
       {
         float x = (float)(x1 + (i - begin) * elementWidth + elementWidth / 2);
-        if (object1->toString() == object2->toString())
+        if (v1 == v2)
         {
           g.setColour(Colours::lightgreen);
           enum {lineSize = 3};

@@ -7,14 +7,18 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Data/Perception.h>
-#include <lbcpp/Data/Vector.h> // for DynamicObject
+#include <lbcpp/Data/Vector.h> // for VariableVector
 using namespace lbcpp;
 
 void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
-  {sense(variableNumber, subPerception->compute(input));}
+{
+  Variable variable = subPerception->compute(input);
+  if (variable)
+    sense(variableNumber, variable);
+}
 
 TypePtr Perception::getOutputType() const
-  {const_cast<Perception* >(this)->ensureTypeIsComputed(); return type;}
+  {const_cast<Perception* >(this)->ensureTypeIsComputed(); return outputType;}
 
 struct SetInObjectPerceptionCallback : public PerceptionCallback
 {
@@ -22,7 +26,7 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
     : target(target), atLeastOneVariable(false) {}
 
   virtual void sense(size_t variableNumber, const Variable& value)
-    {target->setVariable(variableNumber, value); atLeastOneVariable = true;}
+    {jassert(value); target->setVariable(variableNumber, value); atLeastOneVariable = true;}
 
   ObjectPtr target;
   bool atLeastOneVariable;
@@ -30,12 +34,46 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
 
 Variable Perception::computeFunction(const Variable& input, ErrorHandler& callback) const
 {
-  const_cast<Perception* >(this)->ensureTypeIsComputed();
-  DynamicObjectPtr res = new DynamicObject(type);
-  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(res));
+  ObjectPtr object = Variable::create(getOutputType()).getObject();
+  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(object));
   computePerception(input, perceptionCallback);
-  return perceptionCallback->atLeastOneVariable ? res : Variable::missingValue(type);
+  return perceptionCallback->atLeastOneVariable ? object : Variable::missingValue(outputType);
 }
+
+/////////////////////////////////////
+class DynamicObject : public Object
+{
+public:
+  DynamicObject(TypePtr thisType)
+    : Object(thisType) {}
+  
+  virtual ~DynamicObject()
+  {
+    for (size_t i = 0; i < variableValues.size(); ++i)
+      thisClass->getObjectVariableType(i)->destroy(variableValues[i]);
+  }
+
+  VariableValue& operator[](size_t index)
+  {
+    jassert(index < thisClass->getObjectNumVariables());
+    if (variableValues.size() <= index)
+    {
+      size_t i = variableValues.size();
+      variableValues.resize(index + 1);
+      while (i < variableValues.size())
+      {
+        variableValues[i] = thisClass->getObjectVariableType(i)->getMissingValue();
+        ++i;
+      }
+    }
+    return variableValues[index];
+  }
+
+private:
+  std::vector<VariableValue> variableValues;
+};
+
+typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
 
 class DynamicClass : public DefaultClass
 {
@@ -45,16 +83,32 @@ public:
 
   virtual VariableValue create() const
     {return new DynamicObject(refCountedPointerFromThis(this));}
+
+  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const
+  {
+    DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
+    jassert(object);
+    return Variable::copyFrom(getObjectVariableType(index), (*object)[index]);
+  }
+
+  virtual void setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+  {
+    jassert(subValue.getType()->inheritsFrom(getObjectVariableType(index)));
+    DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
+    jassert(object);
+    subValue.copyTo((*object)[index]);
+  }
 };
+//////////////////////////////////
 
 void Perception::ensureTypeIsComputed()
 {
-  if (type)
+  if (outputType)
     return;
-  type = new DynamicClass(getClassName() + T("Class"));
+  outputType = new DynamicClass(getClassName() + T("Class"));
   size_t n = getNumOutputVariables();
   for (size_t i = 0; i < n; ++i)
-    type->addVariable(getOutputVariableType(i), getOutputVariableName(i));
+    outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));
 }
 
 /*
@@ -129,13 +183,13 @@ CompositePerception::CompositePerception()
 }
 
 size_t CompositePerception::getNumPerceptions() const
-  {return subPerceptions->size();}
+  {return subPerceptions->getNumElements();}
 
 String CompositePerception::getPerceptionName(size_t index) const
-  {return subPerceptions->getVariable(index)[0].getString();}
+  {return subPerceptions->getElement(index)[0].getString();}
 
 PerceptionPtr CompositePerception::getPerception(size_t index) const
-  {return subPerceptions->getVariable(index)[1].getObjectAndCast<Perception>();}
+  {return subPerceptions->getElement(index)[1].getObjectAndCast<Perception>();}
 
 void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
   {subPerceptions->append(Variable::pair(name, subPerception));}

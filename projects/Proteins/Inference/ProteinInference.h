@@ -67,10 +67,10 @@ public:
 
   // Accessors
   String getTargetName() const
-    {return proteinClass()->getStaticVariableName(targetIndex);}
+    {return proteinClass()->getObjectVariableName(targetIndex);}
 
   TypePtr getTargetType() const
-    {return proteinClass()->getStaticVariableType(targetIndex);}
+    {return proteinClass()->getObjectVariableType(targetIndex);}
 
   InferencePtr getTargetInference() const
     {return decorated;}

@@ -147,9 +147,9 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     bool areClassFiles = true;
     size_t proteinSize = 0;
     std::vector< std::pair<String, ProteinObjectPtr> > proteins;
-    for (size_t i = 0; i < container->size(); ++i)
+    for (size_t i = 0; i < container->getNumElements(); ++i)
     {
-      ObjectPtr object = container->get(i);
+      ObjectPtr object = container->getElement(i);
       
       ProteinObjectPtr protein = object.dynamicCast<ProteinObject>();
       if (!protein || (proteinSize && protein->getLength() != proteinSize))
@@ -174,7 +174,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
       // container of file objects => container of loaded objects
       VectorObjectContainerPtr objects = new VectorObjectContainer();
       objects->setName(container->getName());
-      for (size_t i = 0; i < container->size(); ++i)
+      for (size_t i = 0; i < container->getNumElements(); ++i)
       {
         FileObjectPtr fileObject = container->getAndCast<FileObject>(i);
         ObjectPtr object = Object::createFromFile(fileObject->getFile());

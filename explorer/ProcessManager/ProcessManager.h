@@ -154,10 +154,10 @@ class ProcessList : public Vector
 {
 public:
   size_t getNumProcesses() const
-    {return size();}
+    {return getNumElements();}
 
   ProcessPtr getProcess(size_t index) const
-    {return getObjectAndCast<Process>(index);}
+    {return getElement(index).getObjectAndCast<Process>();}
 
   void moveToTop(size_t index, ProcessListPtr target)
   {

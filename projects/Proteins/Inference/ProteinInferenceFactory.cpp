@@ -60,13 +60,13 @@ InferencePtr ProteinInferenceFactory::createContactMapInference(const String& ta
 
 size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const
 {
-  int targetIndex = proteinClass->findStaticVariable(targetName);
+  int targetIndex = proteinClass->findObjectVariable(targetName);
   jassert(targetIndex >= 0);
   return (size_t)targetIndex;
 }
 
 TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
-  {return proteinClass->getStaticVariableType(getTargetIndex(targetName));}
+  {return proteinClass->getObjectVariableType(getTargetIndex(targetName));}
 
 PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const String& targetName) const
 {
@@ -133,6 +133,6 @@ PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName
 
 PerceptionPtr ProteinInferenceFactory::applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const
 {
-   FunctionPtr selectVariableFunction = selectPairFieldsFunction(proteinClass->findStaticVariable(variableName));
+   FunctionPtr selectVariableFunction = selectPairFieldsFunction(proteinClass->findObjectVariable(variableName));
    return Perception::compose(selectVariableFunction, variablePerception);
 }

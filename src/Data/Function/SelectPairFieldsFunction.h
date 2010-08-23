@@ -51,8 +51,8 @@ private:
   {
     if (index >= 0)
     {
-      if ((size_t)index < inputType->getNumStaticVariables())
-        return inputType->getStaticVariableType((size_t)index);
+      if ((size_t)index < inputType->getObjectNumVariables())
+        return inputType->getObjectVariableType((size_t)index);
       else
         return anyType();
     }

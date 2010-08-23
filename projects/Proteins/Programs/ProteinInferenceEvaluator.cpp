@@ -30,7 +30,7 @@ ContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0)
     ContainerPtr res = directoryFileStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
     ->load()
     ->apply(proteinToInputOutputPairFunction());
-    if (res->size())
+    if (res->getNumElements())
       return res;
   }
 
@@ -155,7 +155,7 @@ int main(int argc, char** argv)
   ContainerPtr proteins = loadProteins(proteinsFileOrDirectory);
   if (!proteins)
     return 2;
-  std::cout << proteins->size() << " protein(s)." << std::endl;
+  std::cout << proteins->getNumElements() << " protein(s)." << std::endl;
 
   std::cout << "Loading inference... " << std::flush;
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();

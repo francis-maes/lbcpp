@@ -100,13 +100,13 @@ public:
   VectorParallelInference() {}
 
   virtual size_t getNumSubInferences() const
-    {return subInferences->size();}
+    {return subInferences->getNumElements();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return subInferences->getVariable(index).getObjectAndCast<Inference>();}
+    {return subInferences->getElement(index).getObjectAndCast<Inference>();}
  
   void setSubInference(size_t index, InferencePtr inference)
-    {subInferences->setVariable(index, inference);}
+    {subInferences->setElement(index, inference);}
  
   void appendInference(InferencePtr inference)
     {subInferences->append(inference);}

@@ -47,7 +47,7 @@ public:
   VectorPtr createEmptyProbabilitySequence() const;
   
   size_t getLength() const
-    {return primaryStructure ? primaryStructure->size() : 0;}
+    {return primaryStructure ? primaryStructure->getNumElements() : 0;}
 
   /*
   ** Primary Structure

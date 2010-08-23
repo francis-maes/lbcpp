@@ -79,7 +79,7 @@ public:
     ** Amino Acid
     */
     juce::tchar aminoAcidCode = line.substring(13, 14).trim().getLastCharacter();
-    AminoAcidType aminoAcidType = (AminoAcidType)primarySequence->getVariable(residueNumber).getInteger();
+    AminoAcidType aminoAcidType = (AminoAcidType)primarySequence->getElement(residueNumber).getInteger();
     juce::tchar expectedAminoAcid = AminoAcid::toOneLetterCode(aminoAcidType);
 
     if (aminoAcidCode != expectedAminoAcid)
@@ -101,7 +101,7 @@ public:
       callback.errorMessage(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));
       return false;
     }
-    dsspSecondaryStructureSequence->setVariable((size_t)residueNumber, Variable(secondaryStructureIndex, dsspEnum));
+    dsspSecondaryStructureSequence->setElement((size_t)residueNumber, Variable(secondaryStructureIndex, dsspEnum));
 
     /*
     ** Solvent accesibility
@@ -129,7 +129,7 @@ public:
       std::cout << "Solvent Accessibility Exeeded: " << lbcpp::toString(aminoAcidCode) << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidType] << std::endl;
       normalizedSolventAccessibility = 1.0;
     }
-    solventAccessibilitySequence->setVariable((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType()));
+    solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType()));
     return true;
   }
 

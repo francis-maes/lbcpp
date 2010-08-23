@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     enum {numResiduesPerLine = 13};
     size_t numResidues = 0;
     size_t numLine = 0;
-    for (size_t i = 0; i < primaryStructure->size(); ++i)
+    for (size_t i = 0; i < primaryStructure->getNumElements(); ++i)
     {
       if (!numResidues)
       {
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
           *o << " ";
         *o << id << "    128  ";
       }
-      *o << AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getVariable(i).getInteger()).toUpperCase() << " ";
+      *o << AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getElement(i).getInteger()).toUpperCase() << " ";
       
       ++numResidues;
       numResidues %= numResiduesPerLine;

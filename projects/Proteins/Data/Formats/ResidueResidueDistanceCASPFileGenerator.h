@@ -50,7 +50,7 @@ public:
     enum {numAminoAcidsPerLine = 50};
 
     size_t begin = 0;
-    size_t length = primaryStructure->size();
+    size_t length = primaryStructure->getNumElements();
     while (begin < length)
     {
       size_t end = begin + numAminoAcidsPerLine;
@@ -59,7 +59,7 @@ public:
 
       String line;
       for (size_t i = begin; i < end; ++i)
-        line += AminoAcid::toOneLetterCode((AminoAcidType)primaryStructure->getVariable(i).getInteger());
+        line += AminoAcid::toOneLetterCode((AminoAcidType)primaryStructure->getElement(i).getInteger());
       jassert(line.length() <= numAminoAcidsPerLine);
       print(line, true);
 

@@ -28,9 +28,9 @@ void Consumer::consumeStream(StreamPtr stream, size_t maximumCount)
 
 void Consumer::consumeContainer(ContainerPtr container)
 {
-  size_t s = container->size();
+  size_t s = container->getNumElements();
   for (size_t i = 0; i < s; ++i)
-    consume(container->getVariable(i));
+    consume(container->getElement(i));
 }
 
 /*

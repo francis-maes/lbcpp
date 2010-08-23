@@ -98,26 +98,13 @@ public:
     return 0;
   }
   
-  virtual size_t getNumStaticVariables() const
+  virtual size_t getNumElements(const VariableValue& value) const
     {return size;}
 
-  virtual TypePtr getStaticVariableType(size_t index) const
-    {return TypePtr();}
-
-  virtual String getStaticVariableName(size_t index) const
-    {return T("[") + String((int)index) + T("]");}
-
-  virtual Variable getSubVariable(const VariableValue& value, size_t index) const
+  virtual Variable getElement(const VariableValue& value, size_t index) const
   {
     jassert(index < size);
     return ((const Variable* )value.getRawData())[index];
-  }
-
-  virtual void setSubVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-  {
-    jassert(index < size);
-    Variable* data = (Variable* )value.getRawData();
-    data[index] = subValue;
   }
 
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const

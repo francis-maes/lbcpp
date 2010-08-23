@@ -28,10 +28,10 @@ public:
     {return dimension;}
 
   void setElement(size_t i, size_t j, const Variable& value)
-    {values.setVariable(getIndex(i, j), value);}
+    {values.setElement(getIndex(i, j), value);}
 
   Variable getElement(size_t i, size_t j) const
-    {return values.getVariable(getIndex(i, j));}
+    {return values.getElement(getIndex(i, j));}
 
   /*
   ** Container
@@ -41,11 +41,11 @@ public:
 
   virtual TypePtr getElementsType() const;
 
-  virtual size_t getNumVariables() const
+  virtual size_t getNumElements() const
     {return dimension;}
   
-  virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
+  virtual Variable getElement(size_t index) const;
+  virtual void setElement(size_t index, const Variable& value);
 
   /*
   ** Object
@@ -76,13 +76,13 @@ public:
   virtual TypePtr getElementsType() const
     {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
-  virtual size_t getNumVariables() const
+  virtual size_t getNumElements() const
     {return matrix->getDimension();}
   
-  virtual Variable getVariable(size_t index) const
+  virtual Variable getElement(size_t index) const
     {return matrix->getElement(rowNumber, index);}
 
-  virtual void setVariable(size_t index, const Variable& value)
+  virtual void setElement(size_t index, const Variable& value)
     {matrix->setElement(rowNumber, index, value);}
 
 protected:

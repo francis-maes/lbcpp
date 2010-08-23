@@ -49,9 +49,9 @@ public:
       for (size_t i = 0; i < windowSize; ++i)
       {
         int position = startPosition + (int)i;
-        if (position >= 0 && position < (int)container->size())
+        if (position >= 0 && position < (int)container->getNumElements())
         {
-          Variable variable = container->getVariable(position);
+          Variable variable = container->getElement(position);
           if (decorated)
             callback->sense(i, decorated, variable);
           else

@@ -68,9 +68,6 @@ public:
     double v2 = value2.getDouble();
     return v1 < v2 ? -1 : (v1 > v2 ? 1 : 0);
   }
-
-  virtual size_t getNumSubVariables(const VariableValue& value) const
-    {return 0;}
 };
 
 class ProbabilityType : public DoubleType

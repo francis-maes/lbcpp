@@ -34,10 +34,10 @@ public:
     {recentDirectory = directory;}
 
   size_t getNumRecentFiles() const
-    {return recentFiles->size();}
+    {return recentFiles->getNumElements();}
 
   File getRecentFile(size_t index) const
-    {jassert(index < recentFiles->size()); return recentFiles->getVariable(index).getFile();}
+    {jassert(index < recentFiles->getNumElements()); return recentFiles->getElement(index).getFile();}
 
   void addRecentFile(const File& file);
   
@@ -54,32 +54,33 @@ private:
 
 extern ClassPtr explorerConfigurationClass();
 
-class ExplorerConfiguration : public DynamicObject
+class ExplorerConfiguration : public VariableVector
 {
 public:
-  ExplorerConfiguration() : DynamicObject(explorerConfigurationClass()) {}
+  ExplorerConfiguration() : VariableVector() {}
 
   static File getApplicationDataDirectory();
   static File getConfigurationFile();
 
-  static DynamicObjectPtr getInstance();
+  static VariableVectorPtr getInstance();
 
   static void save()
     {Variable(getInstance()).saveToFile(getConfigurationFile());}
 
   static Variable& getConfiguration(const String& typeName)
   {
-    DynamicObjectPtr object = getInstance();
-    for (size_t i = 0; i < object->getNumVariables(); ++i)
+    // FIXME !
+    VariableVectorPtr object = getInstance();
+    for (size_t i = 0; i < object->getNumElements(); ++i)
     {
-      Variable& variable = object->getVariable(i);
+      Variable& variable = object->getElement(i);
       if (variable.getTypeName() == typeName)
         return variable;
     }
     TypePtr type = Type::get(typeName);
     jassert(type);
-    object->appendVariable(Variable::create(type));
-    return object->getVariable(object->getNumVariables() - 1);
+    object->append(Variable::create(type));
+    return object->getElement(object->getNumElements() - 1);
   }
 };
 

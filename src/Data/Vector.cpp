@@ -19,10 +19,10 @@ Vector::Vector(TypePtr elementsType, size_t initialSize)
 void Vector::resize(size_t size)
   {values.resize(size, getElementsType()->getMissingValue());}
 
-size_t Vector::getNumVariables() const
+size_t Vector::getNumElements() const
   {return values.size();}
 
-Variable Vector::getVariable(size_t index) const
+Variable Vector::getElement(size_t index) const
 {
   jassert(index < values.size());
   TypePtr elementsType = getElementsType();
@@ -35,7 +35,7 @@ Variable Vector::getVariable(size_t index) const
     return Variable::copyFrom(elementsType, values[index]);
 }
 
-void Vector::setVariable(size_t index, const Variable& value)
+void Vector::setElement(size_t index, const Variable& value)
 {
   if (checkType(value))
   {
@@ -84,7 +84,7 @@ bool Vector::checkType(const Variable& value) const
 String Vector::toString() const
 {
   TypePtr type = getElementsType();
-  size_t n = size();
+  size_t n = getNumElements();
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
   {
@@ -92,7 +92,7 @@ String Vector::toString() const
     String oneLetterCodes = enumeration->getOneLetterCodes();
     for (size_t i = 0; i < n; ++i)
     {
-      Variable variable = getVariable(i);
+      Variable variable = getElement(i);
       if (variable.isMissingValue())
         value += '_';
       else
@@ -106,7 +106,7 @@ String Vector::toString() const
     String value;
     for (size_t i = 0; i < n; ++i)
     {
-      Variable variable = getVariable(i);
+      Variable variable = getElement(i);
       if (variable.isMissingValue())
         value += '_';
       else
@@ -237,4 +237,4 @@ ClassPtr lbcpp::vectorClass(TypePtr elementsType)
 }
 
 ClassPtr lbcpp::dynamicObjectClass()
-  {static TypeCache cache(T("DynamicObject")); return cache();}
+  {static TypeCache cache(T("VariableVector")); return cache();}

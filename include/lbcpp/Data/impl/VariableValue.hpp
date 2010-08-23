@@ -99,6 +99,10 @@ struct VariableValue
   ObjectPtr getObject() const
     {return u.objectValue ? ObjectPtr(u.objectValue) : ObjectPtr();}
 
+  template<class O>
+  ReferenceCountedObjectPtr<O> getObjectAndCast(ErrorHandler& callback = ErrorHandler::getInstance()) const
+    {return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);}
+
   Object* getObjectPointer() const
     {return u.objectValue ? u.objectValue : NULL;}
 

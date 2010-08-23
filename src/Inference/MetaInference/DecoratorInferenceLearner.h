@@ -51,11 +51,11 @@ public:
 protected:
   virtual ContainerPtr createSubTrainingData(InferenceContextPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
-    size_t n = trainingData->size();
+    size_t n = trainingData->getNumElements();
     std::vector<Variable> subTrainingData;
     for (size_t i = 0; i < n; ++i)
     {
-      Variable inputAndSupervision = trainingData->getVariable(i);
+      Variable inputAndSupervision = trainingData->getElement(i);
       Inference::ReturnCode returnCode = Inference::finishedReturnCode;
       DecoratorInferenceStatePtr state = targetInference->prepareInference(context, inputAndSupervision[0], inputAndSupervision[1], returnCode);
       if (returnCode != Inference::finishedReturnCode)
@@ -68,7 +68,7 @@ protected:
 
     VectorPtr res = new Vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
     for (size_t i = 0; i < n; ++i)
-      res->setVariable(i, subTrainingData[i]);
+      res->setElement(i, subTrainingData[i]);
     return res;
   }
 };

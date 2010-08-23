@@ -19,6 +19,7 @@ class EnumValueToFeaturesPerception : public Perception
 public:
   EnumValueToFeaturesPerception(EnumerationPtr enumeration)
     : enumeration(enumeration) {}
+  EnumValueToFeaturesPerception() {}
 
   virtual TypePtr getInputType() const
     {return enumeration;}

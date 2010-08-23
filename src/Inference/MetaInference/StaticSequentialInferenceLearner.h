@@ -33,7 +33,7 @@ public:
     ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
     jassert(targetInference && trainingData);
 
-    size_t n = trainingData->size();
+    size_t n = trainingData->getNumElements();
 
     StatePtr res = new State(input, supervision);
     if (!targetInference->getNumSubInferences())
@@ -43,7 +43,7 @@ public:
     res->targetStates.resize(n);
     for (size_t i = 0; i < n; ++i)
     {
-      Variable inputAndSupervision = trainingData->getVariable(i);
+      Variable inputAndSupervision = trainingData->getElement(i);
       SequentialInferenceStatePtr targetState = targetInference->prepareInference(context, inputAndSupervision[0], inputAndSupervision[1], returnCode);
       if (!targetState)
         return SequentialInferenceStatePtr();
@@ -101,17 +101,17 @@ private:
     virtual TypePtr getElementsType() const
       {return pairType(subInference->getInputType(), subInference->getSupervisionType());}
 
-    virtual size_t getNumVariables() const
+    virtual size_t getNumElements() const
       {return targetStates.size();}
 
-    virtual Variable getVariable(size_t index) const
+    virtual Variable getElement(size_t index) const
     {
       jassert(index < targetStates.size());
       SequentialInferenceStatePtr targetState = targetStates[index];
       return Variable::pair(targetState->getSubInput(), targetState->getSubSupervision());
     }
 
-    virtual void setVariable(size_t index, const Variable& value)
+    virtual void setElement(size_t index, const Variable& value)
       {jassert(false);}
 
   private:

@@ -9,9 +9,6 @@
 #include "Type/TupleType.h"
 using namespace lbcpp;
 
-String Variable::getVariableName(size_t index) const
-  {return type->getSubVariableName(value, index);}
-
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
   {return Variable(pairType(variable1.getType(), variable2.getType()), PairType::allocate(variable1, variable2));}
 
@@ -157,9 +154,15 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
   if (maxDepth >= 0 && currentDepth >= maxDepth)
     return;
   TypePtr type = variable.getType();
+  if (type->inheritsFrom(objectClass()))
+  {
+    ObjectPtr object = variable.getObject();
+    for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+      printVariableLine(object->getVariable(i), ostr, i, type->getObjectVariableName(i), currentDepth);
+  }
   for (size_t i = 0; i < variable.size(); ++i)
   {
-    printVariableLine(variable[i], ostr, i, variable.getVariableName(i), currentDepth);
+    printVariableLine(variable[i], ostr, (size_t)-1, variable.getName(i), currentDepth);
     printVariablesRecursively(variable[i], ostr, maxDepth, currentDepth + 1);
   }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Container" directory="Data/Container">
+  <namespace name="lbcpp">
+    <!--
+
+    <template name="Container" base="Object" abstract="yes">
+      <argument name="elementsType"/>
+    </template>
+
+    <template name="Vector" base="Container[elementsType]" abstract="yes">
+      <argument name="elementsType"/>
+    </template>
+
+    <class name="VariableVector" base="Vector[Variable]">
+      <constructor/>
+    </class>
+
+    <template name="VariableValueVector" base="Vector[elementsType]">
+      <argument name="elementsType"/>
+      <constructor/>
+    </template>
+    
+    <class name="ObjectVector" base="Vector[Object]">
+      <constructor/>
+    </class>
+    
+    <class name="BooleanVector" base="Vector[Boolean]">
+      <constructor/>
+    </class>
+-->
+
+  </namespace>  
+</file>

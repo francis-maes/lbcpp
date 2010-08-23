@@ -28,7 +28,7 @@ const juce::tchar* AminoAcid::threeLettersCodes[] =
 
   NULL
 };
-
+/*
 Variable AminoAcid::getVariable(size_t index) const
 {
   switch (index)
@@ -40,7 +40,7 @@ Variable AminoAcid::getVariable(size_t index) const
   };
   return Variable();
 }
-
+*/
 Variable AminoAcid::fromOneLetterCode(juce::tchar code)
 {
   int index = oneLetterCodes.indexOfChar(code);

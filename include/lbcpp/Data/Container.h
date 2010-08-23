@@ -22,32 +22,28 @@ public:
     : Object(thisClass) {}
   Container() {}
 
-  bool empty() const
-    {return getNumVariables() == 0;}
-
-  size_t size() const
-    {return getNumVariables();}
+  bool isEmpty() const
+    {return getNumElements() == 0;}
     
-  int find(const Variable& value) const;
+  int findElement(const Variable& value) const;
 
   virtual TypePtr getElementsType() const = 0;
+
+  // new --
+  virtual size_t getNumElements() const = 0;
+  virtual String getElementName(size_t index) const
+    {return String((int)index);}
+
+  virtual Variable getElement(size_t index) const = 0;
+  virtual void setElement(size_t index, const Variable& value) = 0;
+  // --
 
   virtual String toString() const;
 
   VectorPtr toVector() const;
 
-  ObjectPtr getObject(size_t index) const
-    {return getVariable(index).getObject();}
-
-  template<class T>
-  ReferenceCountedObjectPtr<T> getObjectAndCast(size_t index) const
-    {return getVariable(index).getObjectAndCast<T>();}
-
-  virtual TypePtr getVariableType(size_t index) const
-    {return getElementsType();}
-
-  virtual String getVariableName(size_t index) const
-    {return String((int)index);}
+  virtual void saveToXml(XmlElement* xml) const;
+  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
 
 public:
   ContainerPtr subset(const std::vector<size_t>& indices) const;
@@ -206,8 +202,8 @@ public:
   **
   ** @return container size.
   */
-  virtual size_t getNumVariables() const
-    {return target->getNumVariables();}
+  virtual size_t getNumElements() const
+    {return target->getNumElements();}
 
   virtual TypePtr getElementsType() const
     {return target->getElementsType();}
@@ -219,11 +215,11 @@ public:
   **
   ** @return an object pointer.
   */
-  virtual Variable getVariable(size_t index) const
-    {return target->getVariable(index);}
+  virtual Variable getElement(size_t index) const
+    {return target->getElement(index);}
 
-  virtual void setVariable(size_t index, const Variable& value) const
-    {target->setVariable(index, value);}
+  virtual void setElement(size_t index, const Variable& value) const
+    {target->setElement(index, value);}
 
 protected:
   ContainerPtr target; /*!< A pointer to the decorated Container. */

@@ -38,7 +38,7 @@ public:
     {
       ObjectContainerNameListComponent* c = dynamic_cast<ObjectContainerNameListComponent* >(getTabContentComponent(i));
       jassert(c);
-      int index = c->getContainer()->find(process);
+      int index = c->getContainer()->findElement(process);
       if (index >= 0)
       {
         c->selectRow(index);

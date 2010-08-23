@@ -11371,22 +11371,22 @@ private:
 #ifndef __JUCE_VARIANT_JUCEHEADER__
 #define __JUCE_VARIANT_JUCEHEADER__
 
-class JUCE_API  DynamicObject;
+class JUCE_API  VariableVector;
 
 /**
     A variant class, that can be used to hold a range of primitive values.
 
     A var object can hold a range of simple primitive values, strings, or
-    a reference-counted pointer to a DynamicObject. The var class is intended
+    a reference-counted pointer to a VariableVector. The var class is intended
     to act like the values used in dynamic scripting languages.
 
-    @see DynamicObject
+    @see VariableVector
 */
 class JUCE_API  var
 {
 public:
 
-    typedef const var (DynamicObject::*MethodFunction) (const var* arguments, int numArguments);
+    typedef const var (VariableVector::*MethodFunction) (const var* arguments, int numArguments);
 
     /** Creates a void variant. */
     var() throw();
@@ -11401,7 +11401,7 @@ public:
     var (const char* const value) throw();
     var (const juce_wchar* const value) throw();
     var (const String& value) throw();
-    var (DynamicObject* const object) throw();
+    var (VariableVector* const object) throw();
     var (MethodFunction method) throw();
 
     const var& operator= (const var& valueToCopy) throw();
@@ -11411,14 +11411,14 @@ public:
     const var& operator= (const char* const value) throw();
     const var& operator= (const juce_wchar* const value) throw();
     const var& operator= (const String& value) throw();
-    const var& operator= (DynamicObject* const object) throw();
+    const var& operator= (VariableVector* const object) throw();
     const var& operator= (MethodFunction method) throw();
 
     operator int() const throw();
     operator bool() const throw();
     operator double() const throw();
     const String toString() const throw();
-    DynamicObject* getObject() const throw();
+    VariableVector* getObject() const throw();
 
     bool isVoid() const throw()         { return type == voidType; }
     bool isInt() const throw()          { return type == intType; }
@@ -11485,7 +11485,7 @@ private:
         bool boolValue;
         double doubleValue;
         String* stringValue;
-        DynamicObject* objectValue;
+        VariableVector* objectValue;
         MethodFunction methodValue;
     } value;
 
@@ -11501,14 +11501,14 @@ private:
 
     This is intended for use as a wrapper for scripting language objects.
 */
-class JUCE_API  DynamicObject  : public ReferenceCountedObject
+class JUCE_API  VariableVector  : public ReferenceCountedObject
 {
 public:
 
-    DynamicObject();
+    VariableVector();
 
     /** Destructor. */
-    virtual ~DynamicObject();
+    virtual ~VariableVector();
 
     /** Returns true if the object has a property with this name.
         Note that if the property is actually a method, this will return false.

@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 
   // FIXME
   VectorPtr pssm;// = (new PSSMFileParser(pssmFile, aminoAcidSequence))->next().getObjectAndCast<ScoreVectorSequence>();
-  if (!pssm || pssm->size() != primaryStructure->size())
+  if (!pssm || pssm->getNumElements() != primaryStructure->getNumElements())
   {
     std::cerr << "Could not load PSSM file" << std::endl;
     return 1;

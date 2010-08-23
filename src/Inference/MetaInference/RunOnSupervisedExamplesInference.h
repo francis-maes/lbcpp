@@ -42,10 +42,11 @@ public:
     jassert(examples);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    res->reserve(examples->size());
-    for (size_t i = 0; i < examples->size(); ++i)
+    size_t n = examples->getNumElements();
+    res->reserve(n);
+    for (size_t i = 0; i < n; ++i)
     {
-      Variable example = examples->getVariable(i);
+      Variable example = examples->getElement(i);
       res->addSubInference(inference, example[0], example[1]);
     }
     return res;
@@ -70,10 +71,11 @@ public:
     jassert(examples);
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    res->reserve(examples->size());
-    for (size_t i = 0; i < examples->size(); ++i)
+    size_t n = examples->getNumElements();
+    res->reserve(n);
+    for (size_t i = 0; i < n; ++i)
     {
-      Variable example = examples->getVariable(i);
+      Variable example = examples->getElement(i);
       res->addSubInference(currentStates[i]->getSubInference(), example[0], example[1]);
     }
     return res;

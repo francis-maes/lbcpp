@@ -36,7 +36,7 @@ void PDBFileGenerator::consume(const Variable& variable)
   */
   std::vector<String> residueNames(n);
   for (size_t i = 0; i < n; ++i)
-    residueNames[i] = AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getVariable(i).getInteger()).toUpperCase();
+    residueNames[i] = AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getElement(i).getInteger()).toUpperCase();
   size_t firstResidueIndex = 0;
   size_t seqResIndex = 1;
   while (firstResidueIndex < n)

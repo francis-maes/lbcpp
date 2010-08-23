@@ -37,10 +37,10 @@ public:
 
     ContainerPtr predicted = predictedObject.dynamicCast<Container>();
     ContainerPtr correct = correctObject.dynamicCast<Container>();
-    size_t n = predicted->size();
-    jassert(correct->size() == n);
+    size_t n = predicted->getNumElements();
+    jassert(correct->getNumElements() == n);
     for (size_t i = 0; i < n; ++i)
-      elementEvaluator->addPrediction(predicted->getVariable(i), correct->getVariable(i));
+      elementEvaluator->addPrediction(predicted->getElement(i), correct->getElement(i));
   }
 
 protected:

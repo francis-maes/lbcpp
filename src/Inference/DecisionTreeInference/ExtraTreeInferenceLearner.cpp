@@ -26,7 +26,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   BinaryDecisionTreeInferencePtr inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
   ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
   jassert(inference && trainingData);
-  if (!trainingData->size())
+  if (!trainingData->getNumElements())
     return Variable();
   
   TypePtr trainingDataType = trainingData->getElementsType();
@@ -34,12 +34,12 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   TypePtr inputType = trainingDataType->getTemplateArgument(0);
   TypePtr outputType = trainingDataType->getTemplateArgument(1);
 
-  jassert(inputType->getNumStaticVariables());
+  jassert(inputType->getObjectNumVariables());
 
   BinaryDecisionTreePtr tree = sampleTree(inputType, outputType, trainingData);
   if (tree)
   {
-    std::cout << "Tree: numAttributes = " << inputType->getNumStaticVariables() << " numExamples = " << trainingData->size() << " numNodes = " << tree->getNumNodes() << std::endl;
+    std::cout << "Tree: numAttributes = " << inputType->getObjectNumVariables() << " numExamples = " << trainingData->getNumElements() << " numNodes = " << tree->getNumNodes() << std::endl;
     inference->setTree(tree);
     //std::cout << tree->toString() << std::endl;
   }
@@ -48,15 +48,15 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
 
 static bool isVariableConstant(ContainerPtr container, size_t index1, int index2, Variable& value)
 {
-  size_t n = container->size();
+  size_t n = container->getNumElements();
   if (n <= 1)
     return true;
-  value = container->getVariable(0)[index1];
+  value = container->getElement(0)[index1];
   if (index2 >= 0)
     value = value[(size_t)index2];
   for (size_t i = 1; i < n; ++i)
   {
-    Variable otherValue = container->getVariable(i)[index1];
+    Variable otherValue = container->getElement(i)[index1];
     if (index2 >= 0)
       otherValue = otherValue[(size_t)index2];
 
@@ -74,19 +74,19 @@ static bool isOutputConstant(ContainerPtr trainingData, Variable& value)
 
 bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
 {
-  size_t n = trainingData->size();
+  size_t n = trainingData->getNumElements();
   jassert(n);
 
   if (n < minimumSizeForSplitting || variables.empty())
   {
     if (n == 1)
-      leafValue = trainingData->getVariable(0)[1];
+      leafValue = trainingData->getElement(0)[1];
     else
     {
       jassert(n > 1);
       double weight = 1.0 / (double)n;
       for (size_t i = 0; i < n; ++i)
-        leafValue.addWeighted(trainingData->getVariable(i)[1], weight);
+        leafValue.addWeighted(trainingData->getElement(i)[1], weight);
     }
     return true;
   }
@@ -96,11 +96,11 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
 Variable sampleNumericalSplit(RandomGenerator& random, ContainerPtr trainingData, size_t variableIndex)
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
-  size_t n = trainingData->size();
+  size_t n = trainingData->getNumElements();
   //std::cout << "NumericalSplit: ";
   for (size_t i = 0; i < n; ++i)
   {
-    Variable variable = trainingData->getVariable(i)[0][variableIndex];
+    Variable variable = trainingData->getElement(i)[0][variableIndex];
     if (variable.isNil())
       continue;
     double value = variable.getDouble();
@@ -123,9 +123,9 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
 
   // enumerate possible values
   std::set<size_t> possibleValues;
-  for (size_t i = 0; i < trainingData->size(); ++i)
+  for (size_t i = 0; i < trainingData->getNumElements(); ++i)
   {
-    Variable value = trainingData->getVariable(i)[0][variableIndex];
+    Variable value = trainingData->getElement(i)[0][variableIndex];
     possibleValues.insert((size_t)value.getInteger());
   }
   jassert(possibleValues.size() >= 2);
@@ -142,7 +142,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
 
   // create mask
   BooleanVectorPtr mask = new BooleanVector(n + 1);
-  for (size_t i = 0; i < mask->size(); ++i)
+  for (size_t i = 0; i < mask->getNumElements(); ++i)
   {
     bool bitValue;
     if (possibleValues.find(i) == possibleValues.end())
@@ -156,7 +156,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
 
 PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
 {
-  TypePtr variableType = inputType->getStaticVariableType(variableIndex);
+  TypePtr variableType = inputType->getObjectVariableType(variableIndex);
   if (variableType->inheritsFrom(doubleType()))
   {
     splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
@@ -180,9 +180,9 @@ PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, Typ
 
 #ifdef JUCE_DEBUG
   size_t numPos = 0, numNeg = 0;
-  for (size_t i = 0; i < trainingData->size(); ++i)
+  for (size_t i = 0; i < trainingData->getNumElements(); ++i)
   {
-    Variable inputOutputPair = trainingData->getVariable(i);
+    Variable inputOutputPair = trainingData->getElement(i);
     if (predicate->computePredicate(inputOutputPair[0][variableIndex]))
       ++numPos;
     else
@@ -190,7 +190,7 @@ PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, Typ
   }
   if (!numPos || !numNeg)
   {
-    std::cout << "Predicate: " << predicate->toString() << " " << trainingData->size() << " => " << numPos << " + " << numNeg << std::endl;
+    std::cout << "Predicate: " << predicate->toString() << " " << trainingData->getNumElements() << " => " << numPos << " + " << numNeg << std::endl;
     jassert(false);
   }
 #endif // JUCE_DEBUG
@@ -201,13 +201,13 @@ PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, Typ
 
 DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPtr examples)
 {
-  if (!examples->size())
+  if (!examples->getNumElements())
     return DiscreteProbabilityDistributionPtr();
   DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(examples->getElementsType()->getTemplateArgument(1));
-  size_t n = examples->size();
+  size_t n = examples->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    Variable output = examples->getVariable(i)[1];
+    Variable output = examples->getElement(i)[1];
     jassert(output);
     res->increment(output);
   }
@@ -220,7 +220,7 @@ static double computeClassificationSplitScore(ContainerPtr examples, ContainerPt
   DiscreteProbabilityDistributionPtr negativeDistribution = computeDiscreteOutputDistribution(negativeExamples);
   DiscreteProbabilityDistributionPtr positiveDistribution = computeDiscreteOutputDistribution(positiveExamples);
 
-  BernoulliDistributionPtr splitDistribution = new BernoulliDistribution(positiveExamples->size() / (double)examples->size());
+  BernoulliDistributionPtr splitDistribution = new BernoulliDistribution(positiveExamples->getNumElements() / (double)examples->getNumElements());
 
   double classificationEntropy = priorDistribution->computeEntropy();
   
@@ -238,15 +238,15 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
 {
   VectorPtr neg = new Vector(examples->getElementsType());
   VectorPtr pos = new Vector(examples->getElementsType());
-  for (size_t i = 0; i < examples->size(); ++i)
+  for (size_t i = 0; i < examples->getNumElements(); ++i)
   {
-    Variable inputOutputPair = examples->getVariable(i);
+    Variable inputOutputPair = examples->getElement(i);
     if (predicate->computePredicate(inputOutputPair[0][variableIndex]))
       pos->append(inputOutputPair);
     else
       neg->append(inputOutputPair);
   }
-  jassert(pos->size() && neg->size());
+  jassert(pos->getNumElements() && neg->getNumElements());
   negativeExamples = neg;
   positiveExamples = pos;
 
@@ -262,7 +262,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
 
 void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, ContainerPtr trainingData, const std::vector<size_t>& variables)
 {
-  jassert(trainingData->size());
+  jassert(trainingData->getNumElements());
 
   // update "non constant variables" set
   std::vector<size_t> nonConstantVariables;
@@ -328,12 +328,12 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
 
 BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData)
 {
-  size_t n = trainingData->size();
+  size_t n = trainingData->getNumElements();
   if (!n)
     return BinaryDecisionTreePtr();
 
   // we start with all variables
-  std::vector<size_t> variables(inputClass->getNumStaticVariables());
+  std::vector<size_t> variables(inputClass->getObjectNumVariables());
   for (size_t i = 0; i < variables.size(); ++i)
     variables[i] = i;
 
