@@ -10,6 +10,7 @@ SET(LBCPP_DATA_HEADERS
   ../include/lbcpp/Data/ReferenceCountedObject.h
   ../include/lbcpp/Data/Object.h
   ../include/lbcpp/Data/Type.h
+  ../include/lbcpp/Data/TemplateType.h
   ../include/lbcpp/Data/Variable.h
   ../include/lbcpp/Data/Function.h
   ../include/lbcpp/Data/Stream.h
@@ -27,6 +28,7 @@ SET(LBCPP_DATA_IMPL_HEADERS
   ../include/lbcpp/Data/impl/Variable.hpp
 )
 
+GENERATE_INTROSPECTION_CODE(Data/Type/TypeClasses.xml TypeClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
@@ -37,6 +39,7 @@ SET(LBCPP_DATA_SOURCES
   Data/Variable.cpp
   Data/Object.cpp
   Data/Type.cpp
+  Data/TemplateType.cpp
   Data/Stream.cpp
   Data/Container.cpp
   Data/Vector.cpp
@@ -59,6 +62,8 @@ SET(LBCPP_DATA_TYPE_SOURCES
   Data/Type/StringType.h
   Data/Type/FileType.h
   Data/Type/TupleType.h
+  Data/Type/TypeClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/TypeClasses.cpp
 )
 
 SET(LBCPP_DATA_STREAM_SOURCES

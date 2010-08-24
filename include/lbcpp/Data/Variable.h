@@ -29,6 +29,7 @@
 
 # include "Object.h"
 # include "Type.h"
+# include "TemplateType.h"
 
 namespace lbcpp
 {
@@ -51,7 +52,19 @@ public:
   Variable(const Variable& other);
   Variable();
   
+  /** Creates dynamically an object of type @a type.
+  **
+  ** The type @a type must be declared with Type::declare()
+  ** and must have a default constructor to be able
+  ** to instantiate it dynamically.
+  **
+  ** @param type : type
+  **
+  ** @return an instance of @a type Variable.
+  ** @see Type::declare
+  */
   static Variable create(TypePtr type);
+
   static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback = ErrorHandler::getInstance());
   static Variable createFromXml(XmlElement* xml, ErrorHandler& callback = ErrorHandler::getInstance());
 

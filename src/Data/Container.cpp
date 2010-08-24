@@ -142,6 +142,7 @@ ContainerPtr Container::invFold(size_t fold, size_t numFolds) const
   return invRange(begin, end);
 }
 
+#if 0
 ClassPtr lbcpp::containerClass()
   {static TypeCache cache(T("Container")); return cache();}
 
@@ -185,3 +186,4 @@ void declareOldContainerClasses()
       LBCPP_DECLARE_CLASS(DuplicatedContainer, DecoratorContainer);
       LBCPP_DECLARE_CLASS(SubsetContainer, DecoratorContainer);
 }
+#endif // 0

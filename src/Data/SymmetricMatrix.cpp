@@ -72,7 +72,7 @@ void SymmetricMatrix::setElement(size_t index, const Variable& value)
   // not implemented
   jassert(false);
 }
-
+/*
 ClassPtr lbcpp::symmetricMatrixClass(TypePtr elementsType)
 {
   static UnaryTemplateTypeCache cache(T("SymmetricMatrix"));
@@ -84,3 +84,4 @@ ClassPtr lbcpp::symmetricMatrixRowClass(TypePtr elementsType)
   static UnaryTemplateTypeCache cache(T("SymmetricMatrixRow"));
   return cache(elementsType);
 }
+*/

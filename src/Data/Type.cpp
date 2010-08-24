@@ -8,6 +8,7 @@
 
 #include <lbcpp/Data/Type.h>
 #include <lbcpp/Data/Variable.h>
+#include <lbcpp/Data/Vector.h>
 #include <map>
 using namespace lbcpp;
 
@@ -30,8 +31,7 @@ public:
 
     ScopedLock _(typesLock);
     String typeName = type->getName();
-    TypeMap::const_iterator it = types.find(typeName);
-    if (it != types.end())
+    if (doTypeExists(typeName))
     {
       Object::error(T("TypeManager::declare"), T("Type '") + typeName + T("' has already been declared"));
       return;
@@ -39,91 +39,96 @@ public:
     types[typeName] = type;
   }
 
-  TypePtr get(const String& typeName) const
+  void declare(TemplateTypePtr templateType)
+  {
+    if (!templateType || templateType->getName().isEmpty())
+      Object::error(T("TypeManager::declare"), T("Empty template class name"));
+
+    ScopedLock _(typesLock);
+    String typeName = templateType->getName();
+    TemplateTypeMap::const_iterator it = templateTypes.find(typeName);
+    if (it != templateTypes.end())
+    {
+      Object::error(T("TypeManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
+      return;
+    }
+    templateTypes[typeName] = templateType;
+  }
+
+  TemplateTypePtr getTemplateType(const String& templateTypeName, ErrorHandler& callback) const
   {
     ScopedLock _(typesLock);
-    TypeMap::const_iterator it = types.find(typeName);
+    TemplateTypeMap::const_iterator it = templateTypes.find(templateTypeName);
+    if (it == templateTypes.end())
+    {
+      callback.errorMessage(T("TypeManager::getTemplateType()"), T("Could not find template type ") + templateTypeName);
+      return TemplateTypePtr();
+    }
+    return it->second;
+  }
+
+  void finishDeclarations(ErrorHandler& callback)
+  {
+    ScopedLock _(typesLock);
+    for (TypeMap::const_iterator it = types.begin(); it != types.end(); ++it)
+    {
+      String name = it->first;
+      TypePtr type = it->second;
+      if (!type->initialized && !type->initialize(callback))
+        callback.errorMessage(T("TypeManager::finishDeclarations()"), T("Could not initialize type ") + type->getName());
+    }
+
+    for (TemplateTypeMap::const_iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
+    {
+      String name = it->first;
+      TemplateTypePtr templateType = it->second;
+      if (!templateType->initialized && !templateType->initialize(callback))
+        callback.errorMessage(T("TypeManager::finishDeclarations()"), T("Could not initialize template type ") + templateType->getName());
+    }
+  }
+
+  TypePtr getType(const String& typeName, ErrorHandler& callback) const
+  {
+    ScopedLock _(typesLock);
+    TypePtr type = findType(typeName);
+    if (type)
+      return type;
+
+    if (typeName == T("Vector<Type>"))
+    {
+      int i = 51;
+    }
+
+    if (TemplateType::isInstanciatedTypeName(typeName))
+    {
+      String templateName;
+      std::vector<TypePtr> templateArguments;
+      if (!TemplateType::parseInstanciatedTypeName(typeName, templateName, templateArguments, callback))
+        return TypePtr();
+
+      TemplateTypePtr templateType = getTemplateType(templateName, callback);
+      if (!templateType)
+        return TypePtr();
+      
+      type = templateType->instantiate(templateArguments, callback);
+      if (type)
+        const_cast<TypeManager* >(this)->declare(type);
+    }
+    else
+      callback.errorMessage(T("TypeManager::getType()"), T("Could not find type ") + typeName);
+
+    return type;
+  }
+
+  TypePtr findType(const String& name) const
+  {
+    ScopedLock _(typesLock);
+    TypeMap::const_iterator it = types.find(name);
     return it == types.end() ? TypePtr() : it->second;
   }
 
-  TypePtr get(const String& typeName, TypePtr argument1, TypePtr argument2 = TypePtr(), TypePtr argument3 = TypePtr()) const
-  {
-    std::vector<TypePtr> arguments(1, argument1);
-    if (argument2) arguments.push_back(argument2);
-    if (argument3) arguments.push_back(argument3);
-    return get(typeName, arguments);
-  }
-
-  TypePtr get(const String& typeName, const std::vector<TypePtr>& arguments) const
-  {
-    TemplateTypeKey key(typeName, arguments);
-    
-    ScopedLock _(typesLock);
-    TemplateTypeMap::const_iterator it = templateTypes.find(key);
-    if (it != templateTypes.end())
-      return it->second;
-
-    TypePtr type = get(typeName);
-    if (!type)
-    {
-      Object::error(T("TypeManager::get"), T("Could not find type '") + typeName + T("'"));
-      return TypePtr();
-    }
-    TypePtr specializedType = type->cloneAndCast<Type>();
-    if (!specializedType)
-    {
-      Object::error(T("TypeManager::get"), T("Could not specialize template type '") + typeName + T("'"));
-      return TypePtr();
-    }
-    for (size_t i = 0; i < key.second.size(); ++i)
-      specializedType->setTemplateArgument(i, key.second[i]);
-    specializedType->setBaseType(type);
-    specializedType->setName(makeTemplateClassName(typeName, key.second));
-    const_cast<TypeManager* >(this)->templateTypes[key] = specializedType;
-    return specializedType;
-  }
-
-  TypePtr parseAndGet(const String& typeName, ErrorHandler& callback) const
-  {
-    int b = typeName.indexOfChar('<');
-    int e = typeName.lastIndexOfChar('>');
-    if ((b >= 0) != (e >= 0))
-    {
-      callback.errorMessage(T("TypeManager::parseAndGet"), T("Invalid type syntax: ") + typeName.quoted());
-      return TypePtr();
-    }
-    if (b < 0 && e < 0)
-      return get(typeName);
-    String baseName = typeName.substring(0, b);
-    String arguments = typeName.substring(b + 1, e);
-    StringArray tokens;
-    tokens.addTokens(arguments, T(","), T("<>"));
-    std::vector<TypePtr> typeArguments(tokens.size());
-    for (int i = 0; i < tokens.size(); ++i)
-    {
-      typeArguments[i] = parseAndGet(tokens[i].trim(), callback);
-      if (!typeArguments[i])
-        return TypePtr();
-    } 
-    return get(baseName, typeArguments);
-  }
-
-  Variable createInstance(const String& typeName) const
-  {
-    if (typeName.isEmpty())
-    {
-      Object::error(T("TypeManager::create"), T("Empty type name"));
-      return Variable();
-    }
-
-    TypePtr type = get(typeName);
-    if (!type)
-    {
-      Object::error(T("TypeManager::create"), T("Could not find type '") + typeName + T("'"));
-      return Variable();
-    }
-    return Variable::create(type);
-  }
+  bool doTypeExists(const String& type) const
+    {return findType(type);}
 
   void ensureStandardClassesAreLoaded()
   {
@@ -143,100 +148,82 @@ public:
 
 private:
   typedef std::map<String, TypePtr> TypeMap;
-  typedef std::pair<String, std::vector<TypePtr> > TemplateTypeKey;
-  typedef std::map<TemplateTypeKey, TypePtr> TemplateTypeMap;
+  typedef std::map<String, TemplateTypePtr> TemplateTypeMap;
 
   CriticalSection typesLock;
   TypeMap types;
   TemplateTypeMap templateTypes;
-
+ 
   bool standardTypesAreDeclared;
-
-  static String makeTemplateClassName(const String& typeName, const std::vector<TypePtr>& arguments)
-  {
-    jassert(arguments.size());
-    String res;
-    for (size_t i = 0; i < arguments.size(); ++i)
-    {
-      if (i == 0)
-        res = typeName + T("<");
-      else
-        res += T(", ");
-      res += arguments[i] ? arguments[i]->getName() : T("ERROR");
-    }
-    res += T(">");
-    return res;
-  }
 };
 
 }; /* namespace lbcpp */
 
-inline TypeManager& getClassManagerInstance()
+inline TypeManager& getTypeManagerInstance()
 {
   static TypeManager instance;
   return instance;
 }
 
 void lbcpp::initialize()
-  {getClassManagerInstance().ensureStandardClassesAreLoaded();}
+  {getTypeManagerInstance().ensureStandardClassesAreLoaded();}
 
 void lbcpp::deinitialize()
-  {getClassManagerInstance().clear();}
+  {getTypeManagerInstance().clear();}
+
+void Type::declare(TypePtr typeInstance)
+  {getTypeManagerInstance().declare(typeInstance);}
+
+void Type::declare(TemplateTypePtr templateTypeInstance)
+  {getTypeManagerInstance().declare(templateTypeInstance);}
+
+void Type::finishDeclarations(ErrorHandler& callback)
+  {getTypeManagerInstance().finishDeclarations(callback);}
+
+TypePtr Type::get(const String& typeName, ErrorHandler& callback)
+  {return getTypeManagerInstance().getType(typeName, callback);}
+
+bool Type::doTypeExists(const String& typeName)
+  {return getTypeManagerInstance().doTypeExists(typeName);}
 
 /*
 ** Type
 */
+Type::Type(const String& className, TypePtr baseType)
+  : NameableObject(className), initialized(false), baseType(baseType) {}
+
+Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+  : NameableObject(templateType->makeTypeName(templateArguments)), initialized(false),
+      templateType(templateType), templateArguments(templateArguments), baseType(baseType)
+  {}
+
 ClassPtr Type::getClass() const
   {return typeClass();}
 
 bool Type::inheritsFrom(TypePtr baseType) const
 {
   jassert(this && baseType.get());
-  if (this == baseType.get())
-    return true;
+
   if (!this->baseType)
     return false;
-  if (this->baseType->inheritsFrom(baseType))
+
+  if (this == baseType.get())
     return true;
 
-  // FIXME: the check is not complete, TemplateClass should be distinguished from Class to properly check inheritance
-  size_t n = getNumTemplateArguments();
-  if (n > 0)
+  if (this->templateType && this->templateType == baseType->templateType)
   {
-    if (n != baseType->getNumTemplateArguments())
-      return false;
-    for (size_t i = 0; i < n; ++i)
-      if (!getTemplateArgument(i)->inheritsFrom(baseType->getTemplateArgument(i)))
+    jassert(this->templateArguments.size() == baseType->templateArguments.size());
+    for (size_t i = 0; i < this->templateArguments.size(); ++i)
+      if (!this->templateArguments[i]->inheritsFrom(baseType->templateArguments[i]))
         return false;
     return true;
   }
 
-  return false;
+  return this->baseType->inheritsFrom(baseType);
 }
 
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
-
-void Type::declare(TypePtr typeInstance)
-  {getClassManagerInstance().declare(typeInstance);}
-
-TypePtr Type::get(const String& typeName)
-  {return getClassManagerInstance().get(typeName);}
-
-TypePtr Type::get(const String& typeName, TypePtr argument)
-  {return getClassManagerInstance().get(typeName, argument);}
-
-TypePtr Type::get(const String& typeName, TypePtr argument1, TypePtr argument2)
-  {return getClassManagerInstance().get(typeName, argument1, argument2);}
-
-TypePtr Type::parseAndGet(const String& typeName, ErrorHandler& callback)
-  {return getClassManagerInstance().parseAndGet(typeName, callback);}
-
-Variable Type::createInstance(const String& typeName)
-  {return getClassManagerInstance().createInstance(typeName);}
-
-bool Type::doClassNameExists(const String& className)
-  {return get(className) != TypePtr();}
 
 VariableValue Type::getMissingValue() const
 {
@@ -301,6 +288,12 @@ Variable Type::getElement(const VariableValue& value, size_t index) const
 
 String Type::getElementName(const VariableValue& value, size_t index) const
   {jassert(baseType); return baseType->getElementName(value, index);}
+
+size_t Type::getNumTemplateArguments() const
+  {return templateArguments.size();}
+
+TypePtr Type::getTemplateArgument(size_t index) const
+  {jassert(index < templateArguments.size()); return templateArguments[index];}
 
 /*
 ** Class
@@ -403,10 +396,14 @@ DefaultClass::DefaultClass(const String& name, const String& baseClass)
 {
 }
 
+DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+  : Class(templateType, templateArguments, baseClass) {}
+
 void DefaultClass::addVariable(const String& typeName, const String& name)
 {
-  TypePtr type = Type::parseAndGet(typeName, ErrorHandler::getInstance());
-  addVariable(type, name);
+  TypePtr type = Type::get(typeName);
+  if (type)
+    addVariable(type, name);
 }
 
 size_t DefaultClass::getObjectNumVariables() const
@@ -606,8 +603,8 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
   std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
   if (it == m.end())
   {
-    Type* res = Type::get(typeName, argument).get();
-    m[argument.get()] = res;
+    TypePtr res = Type::get(typeName + T("<") + argument->getName() + T(">"));
+    m[argument.get()] = res.get();
     return res;
   }
   else
@@ -621,8 +618,8 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
   std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
   if (it == m.end())
   {
-    Type* res = Type::get(typeName, argument1, argument2).get();
-    m[key] = res;
+    TypePtr res = Type::get(typeName + T("<") + argument1->getName() + T(", ") + argument2->getName() + T(">"));
+    m[key] = res.get();
     return res;
   }
   else
@@ -657,7 +654,6 @@ DECLARE_CLASS_SINGLETON_ACCESSOR(doubleType, T("Double"));
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(stringType, T("String"));
 DECLARE_CLASS_SINGLETON_ACCESSOR(fileType, T("File"));
-DECLARE_CLASS_SINGLETON_ACCESSOR(pairType, T("Pair"));
 
 DECLARE_CLASS_SINGLETON_ACCESSOR(enumValueType, T("EnumValue"));
 
@@ -714,7 +710,8 @@ void declareClassClasses()
 
   Type::declare(new StringType());
     Type::declare(new FileType());
-  Type::declare(new PairType());
+
+  Type::declare(new PairTemplateType());
 
   Type::declare(new Class());
 }

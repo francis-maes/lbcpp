@@ -15,8 +15,10 @@ extern void declareLBCppCoreClasses();
 
 String Object::getClassName() const
 {
-  TypePtr type = getClass();
-  return type ? type->getName() : lbcpp::toString(typeid(*this));
+  if (thisClass)
+    return thisClass->getName();
+  else
+    return lbcpp::toString(typeid(*this));
 }
 
 ClassPtr Object::getClass() const
@@ -110,7 +112,8 @@ ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
   }
   if (className == T("__null__"))
     return ObjectPtr();
-  ObjectPtr res = Type::createInstance(className).getObject();
+  ObjectPtr res; // FIXME
+  //ObjectPtr res = Type::createInstance(className).getObject();
   if (res && doLoading && !res->load(istr))
     error(T("Object::create"), T("Could not load object of class ") + className);
   return res;

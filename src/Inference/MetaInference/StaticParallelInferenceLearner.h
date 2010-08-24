@@ -19,7 +19,7 @@ class StaticParallelInferenceLearner : public ParallelInference
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(staticParallelInferenceClass(), containerClass());}
+    {return pairType(staticParallelInferenceClass(), containerClass(pairType(anyType(), anyType())));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}

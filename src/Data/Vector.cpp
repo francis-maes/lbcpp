@@ -9,8 +9,8 @@
 using namespace lbcpp;
 
 Vector::Vector(TypePtr elementsType, size_t initialSize)
-  : Container(vectorClass(elementsType))
 {
+  thisClass = vectorClass(elementsType);
   jassert(elementsType != topLevelType());
   if (initialSize)
     values.resize(initialSize, elementsType->getMissingValue());
@@ -229,12 +229,3 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   // default implementation  
   return Container::loadFromXml(xml, callback);
 }
-
-ClassPtr lbcpp::vectorClass(TypePtr elementsType)
-{
-  static UnaryTemplateTypeCache cache(T("Vector"));
-  return cache(elementsType);
-}
-
-ClassPtr lbcpp::dynamicObjectClass()
-  {static TypeCache cache(T("VariableVector")); return cache();}

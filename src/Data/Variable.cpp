@@ -31,7 +31,7 @@ Variable Variable::createFromString(TypePtr type, const String& str, ErrorHandle
 Variable Variable::createFromXml(XmlElement* xml, ErrorHandler& callback)
 {
   String typeName = xml->getStringAttribute(T("type")).replaceCharacters(T("[]"), T("<>"));
-  TypePtr type = Type::parseAndGet(typeName, callback);
+  TypePtr type = Type::get(typeName, callback);
   if (!type)
   {
     callback.errorMessage(T("Variable::createFromXml"), T("Could not find type ") + typeName.quoted());

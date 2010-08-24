@@ -18,7 +18,7 @@ class DummyInferenceLearner : public Inference
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(inferenceClass(), containerClass());}
+    {return pairType(inferenceClass(), containerClass(pairType(anyType(), anyType())));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}
