@@ -78,7 +78,7 @@ inline void Variable::clear()
   {type->destroy(value); type = nilType();}
 
 inline Variable Variable::create(TypePtr type)
-  {jassert(type); return Variable(type, type->create());}
+  {jassert(type && type->isInitialized()); return Variable(type, type->create());}
 
 inline Variable Variable::missingValue(TypePtr type)
   {jassert(type); return Variable(type, type->getMissingValue());}

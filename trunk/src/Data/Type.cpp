@@ -74,7 +74,7 @@ public:
     {
       String name = it->first;
       TypePtr type = it->second;
-      if (!type->initialized && !type->initialize(callback))
+      if (!type->isInitialized() && !type->initialize(callback))
         callback.errorMessage(T("TypeManager::finishDeclarations()"), T("Could not initialize type ") + type->getName());
     }
 
@@ -82,7 +82,7 @@ public:
     {
       String name = it->first;
       TemplateTypePtr templateType = it->second;
-      if (!templateType->initialized && !templateType->initialize(callback))
+      if (!templateType->isInitialized() && !templateType->initialize(callback))
         callback.errorMessage(T("TypeManager::finishDeclarations()"), T("Could not initialize template type ") + templateType->getName());
     }
   }
@@ -93,11 +93,6 @@ public:
     TypePtr type = findType(typeName);
     if (type)
       return type;
-
-    if (typeName == T("Vector<Type>"))
-    {
-      int i = 51;
-    }
 
     if (TemplateType::isInstanciatedTypeName(typeName))
     {
@@ -120,10 +115,19 @@ public:
     return type;
   }
 
+  static String removeAllSpaces(const String& str)
+  {
+    String res;
+    for (int i = 0; i < str.length(); ++i)
+      if (str[i] != ' ' && str[i] != '\t')
+        res += str[i];
+    return res;
+  }
+
   TypePtr findType(const String& name) const
   {
     ScopedLock _(typesLock);
-    TypeMap::const_iterator it = types.find(name);
+    TypeMap::const_iterator it = types.find(removeAllSpaces(name));
     return it == types.end() ? TypePtr() : it->second;
   }
 
@@ -204,11 +208,11 @@ bool Type::inheritsFrom(TypePtr baseType) const
 {
   jassert(this && baseType.get());
 
-  if (!this->baseType)
-    return false;
-
   if (this == baseType.get())
     return true;
+
+  if (!this->baseType)
+    return false;
 
   if (this->templateType && this->templateType == baseType->templateType)
   {

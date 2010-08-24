@@ -10,7 +10,11 @@
 using namespace lbcpp;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
-  {return Variable(pairType(variable1.getType(), variable2.getType()), PairType::allocate(variable1, variable2));}
+{
+  TypePtr type = pairType(variable1.getType(), variable2.getType());
+  jassert(type->getNumTemplateArguments() == 2);
+  return Variable(type, PairType::allocate(variable1, variable2));
+}
 
 Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
 {

@@ -14,6 +14,51 @@ using namespace lbcpp;
 bool TemplateType::isInstanciatedTypeName(const String& name)
   {return name.indexOfChar('<') >= 0;}
 
+static bool parseTypeList(const String& str, std::vector<TypePtr>& res, ErrorHandler& callback)
+{
+  int b = 0;
+  while (b < str.length())
+  {
+    int e = b;
+
+    // eat identifier
+    while (e < str.length() && juce::CharacterFunctions::isLetterOrDigit(str[e]))
+      ++e;
+
+    // eat subtypelist
+    if (e < str.length() && str[e] == '<')
+    {
+      int depth = 1;
+      for (++e; e < str.length(); ++e)
+      {
+        if (str[e] == '<')
+          ++depth;
+        else if (str[e] == '>')
+        {
+          --depth;
+          if (depth == 0)
+          {
+            ++e;
+            break;
+          }
+        }
+      }
+    }
+    String identifier = str.substring(b, e);
+    TypePtr type = Type::get(identifier, callback);
+    if (!type)
+      return false;
+    res.push_back(type);
+
+    // eat comma and spaces
+    while (e < str.length() && !juce::CharacterFunctions::isLetterOrDigit(str[e]))
+      ++e;
+
+    b = e;
+  }
+  return true;
+}
+
 bool TemplateType::parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, ErrorHandler& callback)
 {
   int b = typeName.indexOfChar('<');
@@ -24,17 +69,7 @@ bool TemplateType::parseInstanciatedTypeName(const String& typeName, String& tem
     return false;
   }
   templateName = typeName.substring(0, b);
-  StringArray tokens;
-  tokens.addTokens(typeName.substring(b + 1, e), T(","), T("<>"));
-  templateArguments.resize(tokens.size());
-  for (int i = 0; i < tokens.size(); ++i)
-  {
-    TypePtr arg = Type::get(tokens[i].trim(), callback);
-    if (!arg)
-      return false;
-    templateArguments[i] = arg;
-  }
-  return true;
+  return parseTypeList(typeName.substring(b + 1, e), templateArguments, callback);
 }
   
 String TemplateType::makeInstanciatedTypeName(const String& typeName, const std::vector<TypePtr>& arguments)

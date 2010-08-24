@@ -49,9 +49,15 @@ public:
   /*
   ** Initialization
   */
+  bool isInitialized() const
+    {return initialized;}
+
   virtual bool initialize(ErrorHandler& callback)
     {return (initialized = true);}
 
+  /*
+  ** Parameters
+  */
   virtual size_t getNumParameters() const = 0;
   virtual String getParameterName(size_t index) const = 0;
   virtual TypePtr getParameterBaseType(size_t index) const = 0;
@@ -59,7 +65,6 @@ public:
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, ErrorHandler& callback) const = 0;
 
 protected:
-  friend class TypeManager;
   bool initialized;
 };
 

@@ -56,6 +56,9 @@ public:
   /*
   ** Initialization
   */
+  bool isInitialized() const
+    {return initialized;}
+
   virtual bool initialize(ErrorHandler& callback)
     {return (initialized = true);}
 
@@ -141,7 +144,6 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  friend class TypeManager;
   friend class TypeClass;
 
   bool initialized;
