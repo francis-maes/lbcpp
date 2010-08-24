@@ -151,6 +151,8 @@ public:
   void clear()
   {
     ScopedLock _(typesLock);
+    for (TypeMap::iterator it = types.begin(); it != types.end(); ++it)
+      it->second->deinitialize();
     types.clear();
     templateTypes.clear();
   }
@@ -204,7 +206,18 @@ Type::Type(const String& className, TypePtr baseType)
 Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
   : NameableObject(templateType->makeTypeName(templateArguments)), initialized(false),
       templateType(templateType), templateArguments(templateArguments), baseType(baseType)
-  {}
+ {}
+
+bool Type::initialize(ErrorHandler& callback)
+  {return (initialized = true);}
+
+void Type::deinitialize()
+{
+  baseType = TypePtr();
+  templateType = TemplateTypePtr();
+  templateArguments.clear();
+  initialized = false;
+}
 
 ClassPtr Type::getClass() const
   {return typeClass();}

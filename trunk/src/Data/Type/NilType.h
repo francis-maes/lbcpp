@@ -37,6 +37,7 @@ class NilType : public Type
 public:
   NilType(const String& name, TypePtr baseType)
     : Type(name, baseType) {}
+  virtual ~NilType() {}
 
   virtual VariableValue create() const
     {return VariableValue();}

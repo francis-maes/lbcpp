@@ -59,8 +59,8 @@ public:
   bool isInitialized() const
     {return initialized;}
 
-  virtual bool initialize(ErrorHandler& callback)
-    {return (initialized = true);}
+  virtual bool initialize(ErrorHandler& callback);
+  virtual void deinitialize();
 
   /*
   ** Base class
@@ -293,6 +293,8 @@ public:
   DefaultClass(const String& name, TypePtr baseClass = objectClass());
   DefaultClass(const String& name, const String& baseClass);
   DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
+
+  virtual void deinitialize();
 
   virtual size_t getObjectNumVariables() const;
   virtual TypePtr getObjectVariableType(size_t index) const;

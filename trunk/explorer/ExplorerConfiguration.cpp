@@ -51,9 +51,15 @@ File ExplorerConfiguration::getApplicationDataDirectory()
 File ExplorerConfiguration::getConfigurationFile()
   {return getApplicationDataDirectory().getChildFile(T("config.xml"));}
 
-VariableVectorPtr ExplorerConfiguration::getInstance()
+VariableVectorPtr& ExplorerConfiguration::getInstancePtr()
 {
   static VariableVectorPtr configuration;
+  return configuration;
+}
+
+VariableVectorPtr ExplorerConfiguration::getInstance()
+{
+  VariableVectorPtr& configuration = getInstancePtr();
   if (!configuration)
   {
     File configurationFile = getConfigurationFile();

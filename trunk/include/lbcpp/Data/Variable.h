@@ -196,6 +196,8 @@ public:
   Variable& operator -=(const Variable& other)
     {addWeighted(other, -1.0); return *this;}
 
+  juce_UseDebuggingNewOperator
+
 private:
   Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}
 
