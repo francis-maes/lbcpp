@@ -166,6 +166,13 @@ void DefaultClass::addVariable(TypePtr type, const String& name)
     variables.push_back(std::make_pair(type, name));
 }
 
+void DefaultClass::deinitialize()
+{
+  ScopedLock _(variablesLock);
+  variables.clear();
+  Class::deinitialize();
+}
+
 int DefaultClass::findObjectVariable(const String& name) const
 {
   ScopedLock _(variablesLock);

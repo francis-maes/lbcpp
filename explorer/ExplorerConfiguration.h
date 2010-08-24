@@ -62,6 +62,7 @@ public:
   static File getApplicationDataDirectory();
   static File getConfigurationFile();
 
+  static VariableVectorPtr& getInstancePtr();
   static VariableVectorPtr getInstance();
 
   static void save()

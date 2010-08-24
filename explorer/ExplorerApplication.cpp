@@ -259,6 +259,7 @@ public:
     delete mainWindow;
     mainWindow = 0;
     deleteAndZero(theCommandManager); 
+    ExplorerConfiguration::getInstancePtr() = VariableVectorPtr();
     lbcpp::deinitialize();
   }
 

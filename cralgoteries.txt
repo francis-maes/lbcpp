@@ -4,9 +4,8 @@ Types:
   * Rendre visible la variable Type de la classe Object
   * Move AngstromDistanceType into the Proteins project
   * Rendre la classe Vector abstraite
-  * Normaliser les classes de Type
   * Enlever les multiplyByScalar et addWeighted de Type et Object
-  * Render les stream Template
+  * Rendre les stream Template
 
 FeaturePerceptions:
   * Serialisation des DynamicObject/DynamicClass
