@@ -17,5 +17,9 @@
     <class name="ProcessConsoleSettings"/>
     <class name="ProcessConsoleFilter"/>
   </namespace>
- 
+  
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+
 </file>

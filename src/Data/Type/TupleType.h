@@ -132,7 +132,7 @@ class PairType : public TupleType
 {
 public:
   PairType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
-    : TupleType(templateType, templateArguments, baseType, 2) {}
+    : TupleType(templateType, templateArguments, baseType, 2) {jassert(templateArguments.size() == 2);}
 
   virtual VariableValue create() const
     {return allocate(Variable(), Variable());}
@@ -183,7 +183,7 @@ public:
   }
 
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const
-    {return new PairType(refCountedPointerFromThis(this), arguments, baseType);}
+    {jassert(arguments.size() == 2); return new PairType(refCountedPointerFromThis(this), arguments, baseType);}
 };
 
 }; /* namespace lbcpp */

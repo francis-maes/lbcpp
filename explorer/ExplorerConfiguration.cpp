@@ -38,7 +38,7 @@ void ExplorerRecentFiles::addRecentFile(const File& file)
 */
 File ExplorerConfiguration::getApplicationDataDirectory()
 {
-  return File(T("C:\\temp"));
+ // return File(T("C:\\temp"));
   File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
@@ -49,7 +49,7 @@ File ExplorerConfiguration::getApplicationDataDirectory()
 }
 
 File ExplorerConfiguration::getConfigurationFile()
-  {return getApplicationDataDirectory().getChildFile(T("config.data"));}
+  {return getApplicationDataDirectory().getChildFile(T("config.xml"));}
 
 VariableVectorPtr ExplorerConfiguration::getInstance()
 {

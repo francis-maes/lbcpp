@@ -110,6 +110,7 @@ void Perception::ensureTypeIsComputed()
   size_t n = getNumOutputVariables();
   for (size_t i = 0; i < n; ++i)
     outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));
+  outputType->initialize(ErrorHandler::getInstance());
   this->outputType = outputType;
 }
 
