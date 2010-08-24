@@ -38,12 +38,17 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    jassert(!input.isNil());
-    if (input)
+    jassert(input.isObject());
+    ObjectPtr inputObject = input.getObject();
+    if (inputObject)
     {
-      size_t n = getNumOutputVariables();
+      size_t n = type->getObjectNumVariables();
       for (size_t i = 0; i < n; ++i)
-        callback->sense(i, input[i]);
+      {
+        Variable variable = inputObject->getVariable(i);
+        if (variable)
+          callback->sense(i, variable);
+      }
     }
   }
 

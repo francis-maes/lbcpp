@@ -35,10 +35,10 @@ public:
   {
     Variable first = input[0];
     if (index1 >= 0)
-      first = first[index1];
+      first = first.getObject()->getVariable(index1);
     Variable second = input[1];
     if (index2 >= 0)
-      second = second[index2];
+      second = second.getObject()->getVariable(index2);
     return Variable::pair(first, second);
   }
 

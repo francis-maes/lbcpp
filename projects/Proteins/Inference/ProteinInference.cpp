@@ -108,7 +108,8 @@ ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePt
 DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
-  res->setSubInference(decorated, input, supervision[targetIndex]);
+  ObjectPtr supervisionObject = supervision.getObject();
+  res->setSubInference(decorated, input, supervisionObject ? supervisionObject->getVariable(targetIndex) : Variable());
   return res;
 }
 
