@@ -431,7 +431,7 @@ String DefaultClass::getObjectVariableName(size_t index) const
   return variables[index].second;
 }
 
-void DefaultClass::addVariable(Type* type, const String& name)
+void DefaultClass::addVariable(TypePtr type, const String& name)
 {
   if (!type || name.isEmpty())
   {

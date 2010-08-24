@@ -345,17 +345,14 @@ public:
   virtual String getObjectVariableName(size_t index) const;
   virtual int findObjectVariable(const String& name) const;
 
-  void addVariable(TypePtr type, const String& name)
-    {addVariable(type.get(), name);}
-
-  void addVariable(Type* type, const String& name);
+  void addVariable(TypePtr type, const String& name);
   void addVariable(const String& typeName, const String& name);
 
   juce_UseDebuggingNewOperator
 
 protected:
   CriticalSection variablesLock;
-  std::vector< std::pair<Type*, String> > variables;
+  std::vector< std::pair<TypePtr, String> > variables;
 };
 
 typedef ReferenceCountedObjectPtr<DefaultClass> DynamicClassPtr;
