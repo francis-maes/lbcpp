@@ -17,57 +17,56 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: StringType.h                   | String type                     |
+| Filename: IntegerType.h                  | Integer type                    |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/06/2010 15:28               |                                 |
+| Started : 24/08/2010 17:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_TYPE_STRING_H_
-# define LBCPP_OBJECT_TYPE_STRING_H_
+#ifndef LBCPP_OBJECT_TYPE_INTEGER_H_
+# define LBCPP_OBJECT_TYPE_INTEGER_H_
 
 # include "BuiltinType.h"
 
 namespace lbcpp
 {
 
-class StringType : public BuiltinType
+class IntegerType : public BuiltinType
 {
 public:
-  StringType(const String& name, TypePtr baseType)
-    : BuiltinType(name, baseType) {}
-  StringType() : BuiltinType(T("String")) {}
-
-  virtual VariableValue getMissingValue() const
-    {return VariableValue();}
+  IntegerType(const String& className, TypePtr baseType)
+    : BuiltinType(className, baseType) {}
+  IntegerType() : BuiltinType(T("Integer")) {}
 
   virtual VariableValue create() const
-    {return VariableValue(String::empty);}
+    {return VariableValue(0);}
 
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
   {
-    String v = value.trim();
-    return VariableValue(v.startsWithChar('"') ? v.unquoted() : v);
+    if (!value.trim().containsOnly(T("-+e0123456789")))
+    {
+      callback.errorMessage(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
+      return getMissingValue();
+    }
+    return VariableValue(value.getIntValue());
   }
 
   virtual void destroy(VariableValue& value) const
-    {value.clearString();}
+    {value.clearBuiltin();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setString(source.getString());}
+    {dest.setInteger(source.getInteger());}
 
   virtual String toString(const VariableValue& value) const
-  {
-    jassert(!isMissingValue(value));
-    String str = value.getString();
-    return str.containsAnyOf(T(" \t\r\n")) ? str.quoted() : str;
-  }
+    {return String(value.getInteger());}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {return value1.getString().compare(value2.getString());}
+    {return (int)(value1.getInteger() - value2.getInteger());}
+
+  juce_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_TYPE_STRING_H_
+#endif // !LBCPP_OBJECT_TYPE_INTEGER_H_

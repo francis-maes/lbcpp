@@ -54,7 +54,7 @@ public:
           Variable variable = container->getElement(position);
           if (decorated)
             callback->sense(i, decorated, variable);
-          else
+          else if (variable)
             callback->sense(i, variable);
         }
       }

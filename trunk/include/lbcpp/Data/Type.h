@@ -100,12 +100,12 @@ public:
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
 
-  virtual void destroy(VariableValue& value) const = 0;
-  virtual void copy(VariableValue& dest, const VariableValue& source) const = 0;
+  virtual void destroy(VariableValue& value) const;
+  virtual void copy(VariableValue& dest, const VariableValue& source) const;
   virtual String toString(const VariableValue& value) const;
   virtual String getShortSummary(const VariableValue& value) const
     {return toString(value);}
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const = 0;
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
   virtual TypePtr multiplyByScalar(VariableValue& value, double scalar)
     {jassert(false); return TypePtr(this);}
@@ -162,24 +162,6 @@ inline TypePtr anyType()
 
 extern TypePtr nilType();
 
-class BuiltinType : public Type
-{
-public:
-  BuiltinType(const String& name, TypePtr baseType = topLevelType())
-    : Type(name, baseType) {}
-
-  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
-    {return createFromString(xml->getAllSubText(), callback);}
-
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
-    {xml->addTextElement(toString(value));}
-
-  virtual size_t getNumElements(const VariableValue& value) const
-    {return 0;}
-
-  juce_UseDebuggingNewOperator
-};
-
 extern TypePtr booleanType();
 extern TypePtr integerType();
   extern TypePtr enumValueType();
@@ -200,50 +182,12 @@ extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3, TypePtr type
 extern TypePtr sumType(const std::vector<TypePtr>& types);
 
 /*
-** Integer
-*/
-class IntegerType : public BuiltinType
-{
-public:
-  IntegerType(const String& className, TypePtr baseType)
-    : BuiltinType(className, baseType) {}
-  IntegerType() : BuiltinType(T("Integer")) {}
-
-  virtual VariableValue create() const
-    {return VariableValue(0);}
-
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
-  {
-    if (!value.trim().containsOnly(T("-+e0123456789")))
-    {
-      callback.errorMessage(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
-      return getMissingValue();
-    }
-    return VariableValue(value.getIntValue());
-  }
-
-  virtual void destroy(VariableValue& value) const
-    {value.clearBuiltin();}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setInteger(source.getInteger());}
-
-  virtual String toString(const VariableValue& value) const
-    {return String(value.getInteger());}
-
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {return (int)(value1.getInteger() - value2.getInteger());}
-
-  juce_UseDebuggingNewOperator
-};
-
-/*
 ** Enumeration
 */
 class Enumeration;
 typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 
-class Enumeration : public IntegerType
+class Enumeration : public Type
 {
 public:
   Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
@@ -255,12 +199,19 @@ public:
   static EnumerationPtr get(const String& className)
     {return checkCast<Enumeration>(T("Enumeration::get"), Type::get(className));}
 
-  virtual VariableValue getMissingValue() const
-    {return VariableValue((juce::int64)getNumElements());}
-
+  virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
-  virtual String toString(const VariableValue& value) const;
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
 
+  virtual VariableValue getMissingValue() const;
+
+  virtual String toString(const VariableValue& value) const;
+  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
+
+  virtual size_t getNumElements(const VariableValue& value) const
+    {return 0;}
+
+  // FIXME: names are not very good
   size_t getNumElements() const
     {return elements.size();}
 
@@ -268,6 +219,7 @@ public:
     {jassert(index < elements.size()); return elements[index];}
 
   int findElement(const String& name) const;
+  // --
 
   bool hasOneLetterCodes() const;
   juce::tchar getOneLetterCode(size_t index) const;

@@ -54,6 +54,7 @@ SET(LBCPP_DATA_TYPE_SOURCES
   Data/Type/NilType.h
   Data/Type/BuiltinType.h
   Data/Type/BooleanType.h
+  Data/Type/IntegerType.h
   Data/Type/DoubleType.h
   Data/Type/StringType.h
   Data/Type/FileType.h

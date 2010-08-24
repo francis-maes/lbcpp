@@ -24,12 +24,12 @@ public:
       ObjectPtr object = variable.getObject();
       subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
       for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
-        subVariables.push_back(std::make_pair(type->getObjectVariableName(i), object->getVariable(i)));
+        addSubVariable(type->getObjectVariableName(i), object->getVariable(i));
     }
 
     subVariables.reserve(subVariables.size() + variable.size());
     for (size_t i = 0; i < variable.size(); ++i)
-      subVariables.push_back(std::make_pair(variable.getName(i), variable[i]));
+      addSubVariable(variable.getName(i), variable[i]);
 
     mightContainSubItemsFlag = !subVariables.empty();
   }
@@ -101,6 +101,12 @@ protected:
   Component* component;
 
   std::vector< std::pair<String, Variable> > subVariables;
+
+  void addSubVariable(const String& name, const Variable& variable)
+  {
+    if (variable || options.showMissingVariables)
+      subVariables.push_back(std::make_pair(name, variable));
+  }
 };
 
 /*

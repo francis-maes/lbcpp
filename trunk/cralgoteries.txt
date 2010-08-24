@@ -1,13 +1,15 @@
-* Memory Leak sur les Types
 * Nouvelle classe TemplateType, génération des TemplateType via le XML, utilisation des TemplateType
-* AminoAcid::getVariable renvoie pas le bon type
+
+
+* Bug: AminoAcid::getVariable renvoie pas le bon type
+* Bug: Memory Leak sur les Types
 
 Container:
   * Rendre la classe Vector abstraite
   * Normaliser les classes de Container
+  * Normaliser les classes de Type
   
 Types:
-  * Cacher l'implementation de IntegerType
   * Rendre visible la variable Type de la classe Object
   * Enlever les multiplyByScalar et addWeighted de Type et Object
 
