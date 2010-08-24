@@ -24,30 +24,19 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    if (correctObject.isEnumeration())
+    if (!predictedObject || !correctObject)
+      return;
+    jassert(correctObject.isEnumeration());
+    if (predictedObject.isEnumeration())
     {
-      // new:
-      if (predictedObject.isEnumeration())
-      {
-        jassert(predictedObject.getType() == correctObject.getType());
-        accuracy->push(predictedObject.getInteger() == correctObject.getInteger());
-      }
-      else
-      {
-        DiscreteProbabilityDistributionPtr distribution = predictedObject.getObjectAndCast<DiscreteProbabilityDistribution>();
-        jassert(distribution);
-        accuracy->push(distribution->compute(correctObject));
-      }
+      jassert(predictedObject.getType() == correctObject.getType());
+      accuracy->push(predictedObject.getInteger() == correctObject.getInteger());
     }
     else
     {
-      // old:
-      LabelPtr predicted = predictedObject.dynamicCast<Label>();
-      LabelPtr correct = correctObject.dynamicCast<Label>();
-      if (!predicted || !correct)
-        return;
-      jassert(predicted->getDictionary() == correct->getDictionary());
-      accuracy->push(predicted->getIndex() == correct->getIndex() ? 1.0 : 0.0);
+      DiscreteProbabilityDistributionPtr distribution = predictedObject.getObjectAndCast<DiscreteProbabilityDistribution>();
+      jassert(distribution);
+      accuracy->push(distribution->compute(correctObject));
     }
   }
   

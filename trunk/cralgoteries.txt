@@ -1,7 +1,4 @@
-* Demeler les variables dynamiques des statiques
-  
-  
-
+* Memory Leak sur les Types
 * Nouvelle classe TemplateType, génération des TemplateType via le XML, utilisation des TemplateType
 * AminoAcid::getVariable renvoie pas le bon type
 
