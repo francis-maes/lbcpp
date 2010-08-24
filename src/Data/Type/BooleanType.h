@@ -26,7 +26,7 @@
 #ifndef LBCPP_OBJECT_TYPE_BOOLEAN_H_
 # define LBCPP_OBJECT_TYPE_BOOLEAN_H_
 
-# include <lbcpp/Data/Variable.h>
+# include "BuiltinType.h"
 
 namespace lbcpp
 {

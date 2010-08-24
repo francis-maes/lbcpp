@@ -19,7 +19,7 @@
   </namespace>
 
   <declarationCode>
-    lbcpp::Class::declare(new lbcpp::IntegerType(T("SequenceSeparationDistance"), lbcpp::integerType()));
+    lbcpp::Class::declare(new lbcpp::Type(T("SequenceSeparationDistance"), lbcpp::integerType()));
   </declarationCode>
   
 </file>

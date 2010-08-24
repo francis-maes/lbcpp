@@ -263,6 +263,15 @@ VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
 String Type::toString(const VariableValue& value) const
   {jassert(baseType); return baseType->toString(value);}
 
+void Type::destroy(VariableValue& value) const
+  {jassert(baseType); baseType->destroy(value);}
+
+void Type::copy(VariableValue& dest, const VariableValue& source) const
+  {jassert(baseType); baseType->copy(dest, source);}
+
+int Type::compare(const VariableValue& value1, const VariableValue& value2) const
+  {jassert(baseType); return baseType->compare(value1, value2);}
+
 void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
   {jassert(baseType); return baseType->saveToXml(xml, value);}
 
@@ -458,7 +467,7 @@ int DefaultClass::findObjectVariable(const String& name) const
 ** Enumeration
 */
 Enumeration::Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
-  : IntegerType(name, enumValueType()), oneLetterCodes(oneLetterCodes)
+  : Type(name, enumValueType()), oneLetterCodes(oneLetterCodes)
 {
   jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
   for (size_t index = 0; elements[index]; ++index)
@@ -466,7 +475,7 @@ Enumeration::Enumeration(const String& name, const juce::tchar** elements, const
 }
 
 Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
-  : IntegerType(name, enumValueType()), oneLetterCodes(oneLetterCodes)
+  : Type(name, enumValueType()), oneLetterCodes(oneLetterCodes)
 {
   jassert(!oneLetterCodes.containsChar('_'));
   for (int i = 0; i < oneLetterCodes.length(); ++i)
@@ -478,7 +487,7 @@ Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
 }
 
 Enumeration::Enumeration(const String& name)
-  : IntegerType(name, enumValueType())
+  : Type(name, enumValueType())
 {
 }
 
@@ -507,8 +516,14 @@ int Enumeration::findElement(const String& name) const
   return -1;
 }
 
+VariableValue Enumeration::create() const
+  {return getMissingValue();}
 
-#include <lbcpp/Data/ProbabilityDistribution.h>
+VariableValue Enumeration::getMissingValue() const
+  {return VariableValue((juce::int64)getNumElements());}
+
+VariableValue Enumeration::createFromXml(XmlElement* xml, ErrorHandler& callback) const
+  {return createFromString(xml->getAllSubText(), callback);}
  
 VariableValue Enumeration::createFromString(const String& value, ErrorHandler& callback) const
 {
@@ -526,6 +541,11 @@ String Enumeration::toString(const VariableValue& value) const
   juce::int64 val = value.getInteger();
   return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Nil");
 }
+
+void Enumeration::saveToXml(XmlElement* xml, const VariableValue& value) const
+  {xml->addTextElement(toString(value));}
+
+#include <lbcpp/Data/ProbabilityDistribution.h>
 
 TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
 {
@@ -615,6 +635,7 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
 #include "Type/TopLevelType.h"
 #include "Type/NilType.h"
 #include "Type/BooleanType.h"
+#include "Type/IntegerType.h"
 #include "Type/DoubleType.h"
 #include "Type/StringType.h"
 #include "Type/FileType.h"
