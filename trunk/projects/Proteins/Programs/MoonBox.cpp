@@ -54,15 +54,25 @@ public:
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  NumericalProteinInferenceFactory(size_t windowSize)
+  : windowSize(windowSize) {}
+  
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
     return res ? PerceptionPtr(new ConvertToFeaturesPerception(res)) : PerceptionPtr();
   }
   
-public:
+  virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
+  {
+    TypePtr targetType = getTargetType(targetName)->getTemplateArgument(0);
+    return applyPerceptionOnProteinVariable(targetName, windowPerception(targetType, windowSize));
+  }
+
   virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
-  {return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));}
+  {
+    return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
+  }
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
   {
@@ -94,16 +104,109 @@ protected:
                                                    InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(DefaultParameters::regularizer),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
+
+private:
+  size_t windowSize;
 };
 
-///////////////////////////////////////// 
-
-class MyInferenceCallback : public InferenceCallback
+/////////////////////////////////////////
+class WrappedInferenceCallback : public InferenceCallback
 {
 public:
-  MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
-  : inference(inference), trainingData(trainingData), testingData(testingData) {}
+  void setTargetName(const String& targetName)
+  {this->targetName = targetName;}
   
+  void setTrainingEvaluator(ProteinEvaluatorPtr trainingEvaluator)
+  {this->trainingEvaluator = trainingEvaluator;}
+  
+  void setTestingEvaluator(ProteinEvaluatorPtr testingEvaluator)
+  {this->testingEvaluator = testingEvaluator;}
+  
+  String getTargetName()
+  {return targetName;}
+  
+  ProteinEvaluatorPtr getTrainingEvaluator()
+  {return trainingEvaluator;}
+  
+  ProteinEvaluatorPtr getTestingEvaluator()
+  {return testingEvaluator;}
+  
+private:
+  String targetName;
+  ProteinEvaluatorPtr trainingEvaluator;
+  ProteinEvaluatorPtr testingEvaluator;
+};
+
+typedef ReferenceCountedObjectPtr<WrappedInferenceCallback> WrappedInferenceCallbackPtr;
+
+class WrapperInferenceCallback : public InferenceCallback
+{
+public:
+  WrapperInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
+  : inference(inference), trainingData(trainingData), testingData(testingData), targetName(String::empty) {}
+  
+  void appendCallback(WrappedInferenceCallbackPtr callback)
+  {
+    callbacks.push_back(callback);
+  }
+  
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+    
+    if (inferenceClassName == T("ProteinInferenceStep"))
+    {
+      String currentTargetName = stack->getCurrentInference()->getName();
+      if (currentTargetName != targetName)
+      {
+        targetName = currentTargetName;
+        for (size_t i = 0; i < callbacks.size(); ++i)
+          callbacks[i]->setTargetName(targetName);
+      }
+    }
+    
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i]->preInferenceCallback(stack, input, supervision, output, returnCode);
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+    
+    if (inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
+    {
+      InferenceContextPtr validationContext = singleThreadedInferenceContext();
+
+      ProteinEvaluatorPtr trainingEvaluator = new ProteinEvaluator();
+      validationContext->evaluate(inference, trainingData, trainingEvaluator);
+      
+      ProteinEvaluatorPtr testingEvaluator = new ProteinEvaluator();
+      validationContext->evaluate(inference, testingData, testingEvaluator);
+      
+      for (size_t i = 0; i < callbacks.size(); ++i)
+      {
+        callbacks[i]->setTrainingEvaluator(trainingEvaluator);
+        callbacks[i]->setTestingEvaluator(testingEvaluator);
+      }
+    }
+    
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i]->postInferenceCallback(stack, input, supervision, output, returnCode);
+  }
+
+private:
+  InferencePtr inference;
+  ContainerPtr trainingData;
+  ContainerPtr testingData;
+  String targetName;
+  std::vector<WrappedInferenceCallbackPtr> callbacks;
+};
+
+typedef ReferenceCountedObjectPtr<WrapperInferenceCallback> WrapperInferenceCallbackPtr;
+
+class StandardOutputInferenceCallback : public WrappedInferenceCallback
+{
+public:
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
@@ -137,13 +240,10 @@ public:
       << "================ EVALUATION =========================  " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl
       << "=====================================================" << std::endl;
       
-      InferenceContextPtr validationContext = singleThreadedInferenceContext();
-      ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-      validationContext->evaluate(inference, trainingData, evaluator);
+      ProteinEvaluatorPtr evaluator = getTrainingEvaluator();
       processResults(evaluator, true);
-      
-      evaluator = new ProteinEvaluator();
-      validationContext->evaluate(inference, testingData, evaluator);
+
+      evaluator = getTestingEvaluator();
       processResults(evaluator, false);
       
       std::cout << "=====================================================" << std::endl << std::endl;
@@ -161,6 +261,47 @@ private:
   InferencePtr inference;
   ContainerPtr trainingData, testingData;
   size_t iterationNumber;
+  juce::uint32 startingTime;
+};
+
+class GnuPlotInferenceCallback : public WrappedInferenceCallback {
+public:
+  GnuPlotInferenceCallback(const File& prefixFile)
+  : prefixFile(prefixFile), currentIteration(0), startingTime(0) {}
+  
+  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    if (stack->getDepth() == 1)
+    {
+      // top-level learning is beginning
+      startingTime = Time::getMillisecondCounter();
+    }
+  }
+  
+  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    String inferenceClassName = stack->getCurrentInference()->getClassName();
+    
+    if (inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
+    {
+      File dst = prefixFile.getFullPathName() + T(".") + getTargetName();
+      if (currentIteration == 0 && dst.exists())
+        dst.deleteFile();
+
+      OutputStream* o = dst.createOutputStream();
+      *o << lbcpp::toString(currentIteration) << '\t'
+         << getTrainingEvaluator()->getEvaluatorForTarget(getTargetName())->getDefaultScore() << '\t'
+         << getTestingEvaluator()->getEvaluatorForTarget(getTargetName())->getDefaultScore() << '\t'
+         << lbcpp::toString((size_t)(Time::getMillisecondCounter() - startingTime) / 1000) << '\n';
+      delete o;
+      
+      ++currentIteration;
+    }
+  }
+
+private:
+  File prefixFile;
+  size_t currentIteration;
   juce::uint32 startingTime;
 };
 
@@ -191,6 +332,8 @@ int main(int argc, char** argv)
   std::vector<String> targets;
   String output(T("result"));
   
+  size_t windowSize = 15;
+  
   bool isTestVersion = false;
   String multiTaskFeatures;
   bool isExperimentalMode = false;
@@ -209,6 +352,7 @@ int main(int argc, char** argv)
   arguments.insert(new DoubleArgument(T("Regularizer"), DefaultParameters::regularizer));
   arguments.insert(new IntegerArgument(T("StoppingIteration"), (int&)DefaultParameters::stoppingIteration));
   /* Perception Parameters */
+  arguments.insert(new IntegerArgument(T("WindowSize"), (int&)windowSize));
   // ...
   /* Modes */
   arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
@@ -269,7 +413,7 @@ int main(int argc, char** argv)
   if (DefaultParameters::useExtraTrees)
     factory = new ExtraTreeProteinInferenceFactory();
   else
-    factory = new NumericalProteinInferenceFactory();
+    factory = new NumericalProteinInferenceFactory(windowSize);
   
   /*
   ** Creation of the inference
@@ -290,15 +434,20 @@ int main(int argc, char** argv)
   }
 /*  
   std::cout << "*--------- Inference ---------" << std::endl;
-  Variable(inference).printRecursively(std::cout);
+  //Variable(inference).printRecursively(std::cout);
   std::cout << "*-----------------------------" << std::endl;
 */
   /*
   ** Setting Callbacks
   */
   InferenceContextPtr context = singleThreadedInferenceContext();
-  context->appendCallback(new MyInferenceCallback(inference, trainingData, testingData));
   
+  WrapperInferenceCallbackPtr callbacks = new WrapperInferenceCallback(inference, trainingData, testingData);
+  callbacks->appendCallback(new StandardOutputInferenceCallback());
+  callbacks->appendCallback(new GnuPlotInferenceCallback(File::getCurrentWorkingDirectory().getChildFile(output)));
+  
+  context->appendCallback(callbacks);
+
 /*  EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
   
   learningContext->appendCallback(new StandardOutputInferenceCallback(evaluationCallback));
