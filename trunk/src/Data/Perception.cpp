@@ -35,10 +35,10 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
 Variable Perception::computeFunction(const Variable& input, ErrorHandler& callback) const
 {
   TypePtr outputType = getOutputType();
-  ObjectPtr object = Variable::create(outputType).getObject();
-  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(object));
+  Variable res = Variable::create(outputType);
+  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(res.getObject()));
   computePerception(input, perceptionCallback);
-  return perceptionCallback->atLeastOneVariable ? object : Variable::missingValue(outputType);
+  return perceptionCallback->atLeastOneVariable ? res : Variable::missingValue(outputType);
 }
 
 /////////////////////////////////////

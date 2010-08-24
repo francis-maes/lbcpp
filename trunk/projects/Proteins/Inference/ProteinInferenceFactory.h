@@ -11,7 +11,7 @@
 
 # include <lbcpp/Data/Perception.h>
 # include <lbcpp/Inference/Inference.h>
-# include "../Data/Protein.h"
+# include "../Data/Protein.h"   
 
 namespace lbcpp
 {
