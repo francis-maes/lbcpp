@@ -34,7 +34,8 @@ namespace lbcpp
 class BooleanType : public BuiltinType
 {
 public:
-  BooleanType() : BuiltinType(T("Boolean")) {}
+  BooleanType(const String& name, TypePtr baseType)
+    : BuiltinType(name, baseType) {}
 
   virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
   {

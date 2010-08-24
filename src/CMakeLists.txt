@@ -39,6 +39,8 @@ SET(LBCPP_DATA_SOURCES
   Data/Variable.cpp
   Data/Object.cpp
   Data/Type.cpp
+  Data/Enumeration.cpp
+  Data/Class.cpp
   Data/TemplateType.cpp
   Data/Stream.cpp
   Data/Container.cpp

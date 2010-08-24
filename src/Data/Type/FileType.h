@@ -75,7 +75,8 @@ private:
 class FileType : public StringType
 {
 public:
-  FileType() : StringType(T("File"), stringType()) {}
+  FileType(const String& name, TypePtr baseType)
+    : StringType(name, baseType) {}
 
   virtual size_t getNumElements(const VariableValue& value) const
     {return getSubFiles(value).size();}

@@ -73,8 +73,8 @@ public:
 class ProbabilityType : public DoubleType
 {
 public:
-  ProbabilityType()
-    : DoubleType(T("Probability"), doubleType()) {}
+  ProbabilityType(const String& name, TypePtr baseType)
+    : DoubleType(name, baseType) {}
 
   virtual String toString(const VariableValue& value) const
     {return String(value.getDouble() * 100, 2) + T("%");}
@@ -83,8 +83,8 @@ public:
 class AngstromDistanceType : public DoubleType
 {
 public:
-  AngstromDistanceType()
-    : DoubleType(T("AngstromDistance"), doubleType()) {}
+  AngstromDistanceType(const String& name, TypePtr baseType)
+    : DoubleType(name, baseType) {}
 
   virtual String toString(const VariableValue& value) const
     {return DoubleType::toString(value) + T(" A");}
