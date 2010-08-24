@@ -113,10 +113,17 @@ ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
   }
   if (className == T("__null__"))
     return ObjectPtr();
-  ObjectPtr res; // FIXME
-  //ObjectPtr res = Type::createInstance(className).getObject();
-  if (res && doLoading && !res->load(istr))
+  TypePtr type = Type::get(className);
+  if (!type)
+    return ObjectPtr();
+
+  ObjectPtr res = Variable::create(type).getObject();
+  if (!res)
+    return ObjectPtr();
+
+  if (doLoading && !res->load(istr))
     error(T("Object::create"), T("Could not load object of class ") + className);
+
   return res;
 }
 
