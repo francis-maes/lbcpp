@@ -37,6 +37,15 @@ protected:
   static String xmlTypeToCppType(const String& typeName)
     {return typeName.replaceCharacters(T("[]"), T("<>"));}
 
+  static String typeToRefCountedPointerType(const String& typeName)
+  {
+    String str = xmlTypeToCppType(typeName);
+    int i = str.indexOfChar('<');
+    if (i >= 0)
+      str = str.substring(0, i);
+    return str + T("Ptr");
+  }
+
   static String replaceFirstLettersByLowerCase(const String& str)
   {
     if (str.isEmpty())
@@ -66,7 +75,13 @@ protected:
       if (tag == T("include"))
         generateInclude(elt);
       else if (tag == T("class"))
-        generateClassDeclaration(elt);
+        generateClassDeclaration(elt, false);
+      else if (tag == T("template"))
+      {
+        generateClassDeclaration(elt, true);
+        newLine();
+        generateTemplateClassDeclaration(elt);
+      }
       else if (tag == T("enumeration"))
         generateEnumerationDeclaration(elt);
       else if (tag == T("namespace"))
@@ -127,7 +142,7 @@ protected:
     String enumName = xml->getStringAttribute(T("name"), T("???"));
 
     currentScopes.push_back(enumName);
-    classes.push_back(getCurrentScopeFullName() + T("Enumeration"));
+    types.push_back(getCurrentScopeFullName() + T("Enumeration"));
     openClass(enumName + T("Enumeration"), T("Enumeration"));
 
     // constructor
@@ -148,34 +163,35 @@ protected:
   /*
   ** Class
   */
-  void generateVariableDeclarationInConstructor(const String& className, XmlElement* xml)
-  {
-    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
-    String name = xml->getStringAttribute(T("name"), T("???"));
-    
-    String typeArgument = (type == className ? T("this") : T("T(") + type.quoted() + T(")"));
-    writeLine(T("addVariable(") + typeArgument + T(", T(") + name.quoted() + T("));"));
-  }
-
-  void generateClassDeclaration(XmlElement* xml)
+  void generateClassDeclaration(XmlElement* xml, bool isTemplate)
   {
     String className = xml->getStringAttribute(T("name"), T("???"));
-    String baseClassName = xml->getStringAttribute(T("base"), T("Object"));
+    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
 
     currentScopes.push_back(className);
-    classes.push_back(getCurrentScopeFullName() + T("Class"));
+    if (!isTemplate)
+      types.push_back(getCurrentScopeFullName() + T("Class"));
 
     openClass(className + T("Class"), T("DefaultClass"));
 
     // constructor
     std::vector<XmlElement* > variables;
-    openScope(className + T("Class() : DefaultClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
-    forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
-    {
-      generateVariableDeclarationInConstructor(className, elt);
-      variables.push_back(elt);
-    }
+    if (isTemplate)
+      openScope(className + T("Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
+        + T(" : DefaultClass(templateType, templateArguments, baseClass)"));
+    else
+      openScope(className + T("Class() : DefaultClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    closeScope();
+    newLine();
+
+    openScope(T("virtual bool initialize(ErrorHandler& callback)"));
+      forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
+      {
+        generateVariableDeclarationInConstructor(className, elt);
+        variables.push_back(elt);
+      }
+      writeLine(T("return DefaultClass::initialize(callback);"));
     closeScope();
     newLine();
 
@@ -252,40 +268,116 @@ protected:
       {newLine(); generateCode(elt);}
 
     closeClass();
-
     currentScopes.pop_back();
 
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
 
     // class declarator
-    writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
-      T("static TypeCache cache(T(") + className.quoted() + T(")); return cache();"));
-
-    // class constructors
-    forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
+    if (!isTemplate)
     {
-      String arguments = elt->getStringAttribute(T("arguments"), String::empty);
-      String returnType = elt->getStringAttribute(T("returnType"), String::empty);
-      if (returnType.isEmpty())
-        returnType = baseClassName;
+      writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
+        T("static TypeCache cache(T(") + className.quoted() + T(")); return cache();"));
 
-      StringArray tokens;
-      tokens.addTokens(arguments, T(","), NULL);
-      String argNames;
-      for (int i = 0; i < tokens.size(); ++i)
-      {
-        String argName = tokens[i];
-        int n = argName.lastIndexOfChar(' ');
-        if (n >= 0)
-          argName = argName.substring(n + 1);
-        if (argNames.isNotEmpty())
-          argNames += T(", ");
-        argNames += argName;
-      }
-
-      writeShortFunction(returnType + T("Ptr ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
-                         T("return new ") + className + T("(") + argNames + T(");"));
+      // class constructors
+      forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
+        generateClassConstructorMethod(elt, className, baseClassName);
     }
+  }
+
+  void generateVariableDeclarationInConstructor(const String& className, XmlElement* xml)
+  {
+    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
+    String name = xml->getStringAttribute(T("name"), T("???"));
+    
+    String typeArgument = (type == className ? T("this") : T("T(") + type.quoted() + T(")"));
+    writeLine(T("addVariable(") + typeArgument + T(", T(") + name.quoted() + T("));"));
+  }
+
+  void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)
+  {
+    String arguments = xml->getStringAttribute(T("arguments"), String::empty);
+    String returnType = xml->getStringAttribute(T("returnType"), String::empty);
+    if (returnType.isEmpty())
+      returnType = baseClassName;
+
+    StringArray tokens;
+    tokens.addTokens(arguments, T(","), NULL);
+    String argNames;
+    for (int i = 0; i < tokens.size(); ++i)
+    {
+      String argName = tokens[i];
+      int n = argName.lastIndexOfChar(' ');
+      if (n >= 0)
+        argName = argName.substring(n + 1);
+      if (argNames.isNotEmpty())
+        argNames += T(", ");
+      argNames += argName;
+    }
+
+    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
+    writeShortFunction(typeToRefCountedPointerType(returnType) + T(" ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
+                       T("return new ") + className + T("(") + argNames + T(");"));
+  }
+
+  /*
+  ** Template
+  */
+  void generateTemplateClassDeclaration(XmlElement* xml)
+  {
+    String className = xml->getStringAttribute(T("name"), T("???"));
+    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
+    
+    currentScopes.push_back(className);
+    types.push_back(getCurrentScopeFullName() + T("TemplateClass"));
+
+    openClass(className + T("TemplateClass"), T("DefaultTemplateType"));
+
+    // constructor
+    openScope(className + T("TemplateClass() : DefaultTemplateType(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    closeScope();
+    newLine();
+
+    // initialize()
+    openScope(T("virtual bool initialize(ErrorHandler& callback)"));
+      std::vector<XmlElement* > parameters;
+      forEachXmlChildElementWithTagName(*xml, elt, T("parameter"))
+      {
+        generateParameterDeclarationInConstructor(className, elt);
+        parameters.push_back(elt);
+      }
+      writeLine(T("return DefaultTemplateType::initialize(callback);"));
+    closeScope();
+    newLine();
+
+    // instantiate
+    openScope(T("virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const"));
+      writeLine(T("return new ") + className + T("Class(refCountedPointerFromThis(this), arguments, baseType);"));
+    closeScope();
+    newLine();
+
+    closeClass();
+    currentScopes.pop_back();
+
+    // class declarator
+    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
+    if (parameters.size() == 0)
+      std::cerr << "Error: No parameters in template. Type = " << className << std::endl;
+    else if (parameters.size() == 1)
+      writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type)"),
+          T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
+    else if (parameters.size() == 2)
+      writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type1, TypePtr type2)"),
+          T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
+    else
+      std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
+        << className << ", NumParams = " << parameters.size() << std::endl;
+  }
+
+  void generateParameterDeclarationInConstructor(const String& className, XmlElement* xml)
+  {
+    String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("Variable")));
+    String name = xml->getStringAttribute(T("name"), T("???"));
+    writeLine(T("addParameter(T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
   }
 
   /*
@@ -346,8 +438,8 @@ protected:
 
     openScope(T("void declare") + fileName + T("Classes()"));
     
-    for (size_t i = 0; i < classes.size(); ++i)
-      writeLine(T("lbcpp::Class::declare(new ") + classes[i] + T("());"));
+    for (size_t i = 0; i < types.size(); ++i)
+      writeLine(T("lbcpp::Class::declare(new ") + types[i] + T("());"));
 
     if (hasImports)
     {
@@ -375,7 +467,8 @@ private:
   int indentation;
   
   std::vector<String> currentScopes;
-  std::vector<String> classes;
+
+  std::vector<String> types;
   
   String getCurrentScopeFullName() const
   {

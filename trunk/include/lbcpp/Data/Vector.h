@@ -25,9 +25,6 @@ public:
 
   virtual String toString() const;
 
-  virtual TypePtr getElementsType() const
-    {jassert(thisClass); return thisClass->getTemplateArgument(0);}
-
   virtual size_t getNumElements() const;
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
@@ -187,8 +184,6 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<VariableVector> VariableVectorPtr;
-
-extern ClassPtr dynamicObjectClass();
 
 }; /* namespace lbcpp */
 

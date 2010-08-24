@@ -14,7 +14,6 @@ extern void declareDataClasses();
 
 // old
 extern void declareClassClasses();
-extern void declareContainerClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
 
@@ -53,10 +52,8 @@ extern void declareInferenceCallbackClasses();
 void declareLBCppCoreClasses()
 {
   declareClassClasses();
-  declareContainerClasses();
-  
   declareDataClasses(); // generated
-
+  
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
 
@@ -71,4 +68,6 @@ void declareLBCppCoreClasses()
   LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
   
   declareInferenceClasses(); // generated
+
+  Type::finishDeclarations();
 }

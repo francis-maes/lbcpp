@@ -36,6 +36,8 @@ class BuiltinType : public Type
 public:
   BuiltinType(const String& name, TypePtr baseType = topLevelType())
     : Type(name, baseType) {}
+  BuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+    : Type(templateType, templateArguments, baseType) {}
 
   virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
     {return createFromString(xml->getAllSubText(), callback);}
@@ -54,6 +56,8 @@ class RawDataBuiltinType : public BuiltinType
 public:
   RawDataBuiltinType(const String& name)
     : BuiltinType(name) {}
+  RawDataBuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+    : BuiltinType(templateType, templateArguments, baseType) {}
 
   virtual VariableValue getMissingValue() const
     {return VariableValue();}

@@ -1,45 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Data" directory="Data">
+  <import name="Type"/>
   <import name="Function"/>
   <import name="Stream"/>
-  <import name="OldContainer"/>
+  <import name="Container"/>
   <import name="Perception"/>
 
   <namespace name="lbcpp">
 
-    <!-- Object -->
-    <class name="NameableObject" abstract="yes">
-      <variable type="String" name="name"/>
-    </class>
-    
-    <!-- Type -->
-    <class name="Type" base="NameableObject" abstract="yes">
-      <variable type="Type" name="baseType"/>
-      <code>
-        virtual VariableValue createFromString(const String&amp; value, ErrorHandler&amp; callback) const
-          {return Type::parseAndGet(value, callback);}
-
-        virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler&amp; callback) const
-          {return createFromString(xml->getAllSubText(), callback);}
-      </code>
-    </class>
-
-    <class name="Enumeration" base="Type" abstract="yes">
-      <variable type="String" name="oneLetterCodes"/>
-      <code>
-        virtual VariableValue createFromString(const String&amp; value, ErrorHandler&amp; callback) const
-          {return Type::parseAndGet(value, callback);}
-
-        virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler&amp; callback) const
-          {return createFromString(xml->getAllSubText(), callback);}
-      </code>
-    </class>
-
     <!-- Consumer -->
-    <class name="Consumer" base="Function" abstract="yes"/>
+   <!-- <class name="Consumer" base="Function" abstract="yes"/>
     <class name="TextPrinter" base="Consumer" abstract="yes"/>
-    
+    -->
   </namespace>
   
 </file>

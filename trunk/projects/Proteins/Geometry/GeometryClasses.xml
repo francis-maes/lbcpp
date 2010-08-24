@@ -9,7 +9,7 @@
       <variable type="Double" name="z" var="value.z"/>
     </class>
 
-    <class name="CartesianPositionVector" base="Container"/>
+    <class name="CartesianPositionVector" base="Vector[Vector3]"/>
     
   </namespace>  
 </file>

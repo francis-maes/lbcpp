@@ -21,7 +21,7 @@ public:
     : filterUnsupervisedExamples(filterUnsupervisedExamples) {}
 
   virtual TypePtr getInputType() const
-    {return pairType(sharedParallelInferenceClass(), containerClass());}
+    {return pairType(sharedParallelInferenceClass(), containerClass(pairType(anyType(), anyType())));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}

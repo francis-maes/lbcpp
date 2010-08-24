@@ -27,19 +27,17 @@ public:
     
   int findElement(const Variable& value) const;
 
-  virtual TypePtr getElementsType() const = 0;
+  virtual TypePtr getElementsType() const
+    {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
-  // new --
   virtual size_t getNumElements() const = 0;
   virtual String getElementName(size_t index) const
     {return String((int)index);}
 
   virtual Variable getElement(size_t index) const = 0;
   virtual void setElement(size_t index, const Variable& value) = 0;
-  // --
 
   virtual String toString() const;
-
   VectorPtr toVector() const;
 
   virtual void saveToXml(XmlElement* xml) const;
@@ -174,7 +172,7 @@ public:
   ContainerPtr invRange(size_t begin, size_t end) const;
 };
 
-extern ClassPtr containerClass();
+extern ClassPtr containerClass(TypePtr elementsType);
 
 /**
 ** @class DecoratorContainer
@@ -222,6 +220,8 @@ public:
     {target->setElement(index, value);}
 
 protected:
+  friend class DecoratorContainerClass;
+
   ContainerPtr target; /*!< A pointer to the decorated Container. */
 };
 

@@ -35,11 +35,8 @@ namespace lbcpp
 class TupleType : public RawDataBuiltinType
 {
 public:
-  TupleType(const String& name, size_t size)
-    : RawDataBuiltinType(name), size(size)
-  {
-    templateArguments.resize(size, topLevelType());
-  }
+  TupleType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType, size_t size)
+    : RawDataBuiltinType(templateType, templateArguments, baseType), size(size) {}
 
   static char* allocateMemory(size_t size)
   {
@@ -134,7 +131,8 @@ protected:
 class PairType : public TupleType
 {
 public:
-  PairType() : TupleType(T("Pair"), 2) {}
+  PairType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+    : TupleType(templateType, templateArguments, baseType, 2) {}
 
   virtual VariableValue create() const
     {return allocate(Variable(), Variable());}
@@ -166,10 +164,26 @@ public:
 
   virtual ObjectPtr clone() const
   {
-    TypePtr res(new PairType());
+    TypePtr res(new PairType(templateType, templateArguments, baseType));
     Type::clone(res);
     return res;
   }
+};
+
+class PairTemplateType : public DefaultTemplateType
+{
+public:
+  PairTemplateType() : DefaultTemplateType(T("Pair"), T("Variable")) {}
+
+  virtual bool initialize(ErrorHandler& callback)
+  {
+    addParameter(T("firstType"));
+    addParameter(T("secondType"));
+    return DefaultTemplateType::initialize(callback);
+  }
+
+  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const
+    {return new PairType(refCountedPointerFromThis(this), arguments, baseType);}
 };
 
 }; /* namespace lbcpp */

@@ -20,7 +20,7 @@ class DecoratorInferenceLearner : public DecoratorInference
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(staticDecoratorInferenceClass(), containerClass());}
+    {return pairType(staticDecoratorInferenceClass(), containerClass(pairType(anyType(), anyType())));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}

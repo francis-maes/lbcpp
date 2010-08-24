@@ -19,7 +19,7 @@ class StaticSequentialInferenceLearner : public SequentialInference
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(staticSequentialInferenceClass(), containerClass());}
+    {return pairType(staticSequentialInferenceClass(), containerClass(pairType(anyType(), anyType())));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}
@@ -96,7 +96,7 @@ private:
       : subInference(subInference), targetStates(targetStates) {}
 
     virtual ClassPtr getClass() const
-      {return containerClass();}
+      {return containerClass(pairType(anyType(), anyType()));}
 
     virtual TypePtr getElementsType() const
       {return pairType(subInference->getInputType(), subInference->getSupervisionType());}

@@ -20,6 +20,7 @@
 
   <declarationCode>
     lbcpp::Class::declare(new lbcpp::Type(T("SequenceSeparationDistance"), lbcpp::integerType()));
+    lbcpp::Type::finishDeclarations();
   </declarationCode>
   
 </file>

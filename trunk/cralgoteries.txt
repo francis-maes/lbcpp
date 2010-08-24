@@ -1,5 +1,4 @@
-* Nouvelle classe TemplateType, génération des TemplateType via le XML, utilisation des TemplateType
-
+FIXER le bazar !
 
 * Bug: AminoAcid::getVariable renvoie pas le bon type
 * Bug: Memory Leak sur les Types
@@ -26,7 +25,7 @@ Cleaning:
   * Deplacer Perception de lbcpp/Data vers lbcpp/Perception
   * Deplacer Evaluator de lbcpp/Inference vers lbcpp/Data
   * Ranger les Utilities et les anciens Objects  
-
+ 
 ====
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
@@ -41,8 +40,8 @@ Inference:
 =========== 
 
 Library:
- * Remove translator
  * Execution multi-thread
+ * Remove translator
  
 Inference:
  * Atomic MultiClass machines (MultiLinear, Ranking...)

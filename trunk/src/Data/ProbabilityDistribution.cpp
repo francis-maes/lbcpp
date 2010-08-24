@@ -209,11 +209,8 @@ namespace lbcpp
 class DiscreteProbabilityDistributionClass : public Class
 {
 public:
-  DiscreteProbabilityDistributionClass()
-    : Class(T("DiscreteProbabilityDistribution"), probabilityDistributionClass())
-  {
-    templateArguments.push_back(anyType());
-  }
+  DiscreteProbabilityDistributionClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+    : Class(templateType, templateArguments, baseType) {}
 
   EnumerationPtr getEnumeration() const
     {return getTemplateArgument(0).staticCast<Enumeration>();}
@@ -247,13 +244,21 @@ public:
 
   virtual String getObjectVariableName(size_t index) const
     {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+};
 
-  virtual ObjectPtr clone() const
+class DiscreteProbabilityDistributionTemplateClass : public DefaultTemplateType
+{
+public:
+  DiscreteProbabilityDistributionTemplateClass() : DefaultTemplateType(T("DiscreteProbabilityDistribution"), T("ProbabilityDistribution")) {}
+
+  virtual bool initialize(ErrorHandler& callback)
   {
-    ClassPtr res(new DiscreteProbabilityDistributionClass());
-    Type::clone(res);
-    return res;
+    addParameter(T("enumeration"), enumValueType());
+    return DefaultTemplateType::initialize(callback);
   }
+
+  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const
+    {return new DiscreteProbabilityDistributionClass(refCountedPointerFromThis(this), arguments, baseType);}
 };
 
 }; /* namespace lbcpp */
@@ -270,5 +275,5 @@ ClassPtr lbcpp::discreteProbabilityDistributionClass(EnumerationPtr enumeration)
 void declareProbabilityDistributionClasses()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(ProbabilityDistribution, Object);
-    Class::declare(new DiscreteProbabilityDistributionClass());
+  Class::declare(new DiscreteProbabilityDistributionTemplateClass());
 }

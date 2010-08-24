@@ -1,34 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Container" directory="Data/Container">
+  <include file="lbcpp/Data/Vector.h"/>
+  <include file="lbcpp/Data/SymmetricMatrix.h"/>
   <namespace name="lbcpp">
-    <!--
-
+    
     <template name="Container" base="Object" abstract="yes">
-      <argument name="elementsType"/>
+      <parameter name="elementsType"/>
+      <code>
+        virtual size_t getNumElements(const VariableValue&amp; value) const
+        {
+          ContainerPtr container = value.getObjectAndCast&lt;Container&gt;();
+          return container ? container->getNumElements() : 0;
+        }
+
+        virtual Variable getElement(const VariableValue&amp; value, size_t index) const
+        {
+          ContainerPtr container = value.getObjectAndCast&lt;Container&gt;();
+          jassert(container);
+          return container->getElement(index);
+        }
+
+        virtual String getElementName(const VariableValue&amp; value, size_t index) const
+          {return T("[") + String((int)index) + T("]");}
+      </code>
     </template>
 
-    <template name="Vector" base="Container[elementsType]" abstract="yes">
-      <argument name="elementsType"/>
+    <template name="Vector" base="Container[elementsType]">
+      <parameter name="elementsType"/>
     </template>
 
-    <class name="VariableVector" base="Vector[Variable]">
+    <class name="VariableVector" base="Container[Variable]">
       <constructor/>
     </class>
 
-    <template name="VariableValueVector" base="Vector[elementsType]">
-      <argument name="elementsType"/>
+    <!-- <template name="VariableValueVector" base="Vector[elementsType]">
+      <parameter name="elementsType"/>
       <constructor/>
     </template>
     
     <class name="ObjectVector" base="Vector[Object]">
       <constructor/>
-    </class>
+    </class> -->
     
-    <class name="BooleanVector" base="Vector[Boolean]">
+    <class name="BooleanVector" base="Container[Boolean]">
       <constructor/>
     </class>
--->
+
+    <template name="SymmetricMatrix" base="Container[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+
+    <template name="SymmetricMatrixRow" base="Container[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+
+    <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
+      <variable type="Container[Variable]" name="target"/>
+      <parameter name="elementsType"/>
+    </template>
+
+    <template name="ApplyFunctionContainer" base="DecoratorContainer[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+
+    <template name="RangeContainer" base="DecoratorContainer[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+    
+    <template name="ExcludeRangeContainer" base="DecoratorContainer[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+    
+    <template name="DuplicatedContainer" base="DecoratorContainer[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+    
+    <template name="SubsetContainer" base="DecoratorContainer[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
 
   </namespace>  
 </file>

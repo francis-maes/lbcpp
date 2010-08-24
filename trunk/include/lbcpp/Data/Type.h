@@ -17,15 +17,15 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: Type.h                        | The class interface for         |
+| Filename: Type.h                         | The class interface for         |
 | Author  : Francis Maes                   |  introspection                  |
 | Started : 24/06/2010 11:28               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CLASS_H_
-# define LBCPP_OBJECT_CLASS_H_
+#ifndef LBCPP_DATA_TYPE_H_
+# define LBCPP_DATA_TYPE_H_
 
 # include "Object.h"
 # include "impl/VariableValue.hpp"
@@ -36,34 +36,28 @@ namespace lbcpp
 extern void initialize();
 extern void deinitialize();
 
+class TemplateType;
+typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
+class Vector;
+typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
+
 class Type : public NameableObject
 {
 public:
-  Type(const String& className, TypePtr baseType)
-    : NameableObject(className), baseType(baseType) {}
+  Type(const String& className, TypePtr baseType);
+  Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType);
 
-  virtual ClassPtr getClass() const;
-
-  static void declare(TypePtr classInstance);
-  static TypePtr get(const String& typeName);
-  static TypePtr get(const String& typeName, TypePtr argument);
-  static TypePtr get(const String& typeName, TypePtr argument1, TypePtr argument2);
-  static TypePtr parseAndGet(const String& typeName, ErrorHandler& callback);
-
-  static bool doClassNameExists(const String& className);
-  
-  /** Creates dynamically an object of type @a typeName.
-  **
-  ** The type @a typeName must be declared with Type::declare()
-  ** and must have a default constructor before being able
-  ** to instantiate it dynamically.
-  **
-  ** @param typeName : type name.
-  **
-  ** @return an instance of @a typeName object.
-  ** @see Type::declare
+  static void declare(TypePtr typeInstance);
+  static void declare(TemplateTypePtr templateTypeInstance);
+  static void finishDeclarations(ErrorHandler& callback = ErrorHandler::getInstance());
+  static bool doTypeExists(const String& typeName);
+  static TypePtr get(const String& typeName, ErrorHandler& callback = ErrorHandler::getInstance());
+ 
+  /*
+  ** Initialization
   */
-  static Variable createInstance(const String& typeName);
+  virtual bool initialize(ErrorHandler& callback)
+    {return (initialized = true);}
 
   /*
   ** Base class
@@ -80,14 +74,17 @@ public:
   /*
   ** Template Arguments
   */
-  size_t getNumTemplateArguments() const
-    {return templateArguments.size();}
+  TemplateTypePtr getTemplate() const
+    {return templateType;}
 
-  TypePtr getTemplateArgument(size_t index) const
-    {jassert(index < templateArguments.size()); return templateArguments[index];}
-  
-  void setTemplateArgument(size_t index, TypePtr type)
-    {jassert(index < templateArguments.size()); templateArguments[index] = type;}
+  const std::vector<TypePtr>& getTemplateArguments() const
+    {return templateArguments;}
+
+  TypePtr getTemplateArgument(size_t index) const;
+  size_t getNumTemplateArguments() const;
+
+  void setTemplate(TemplateTypePtr type, const std::vector<TypePtr>& arguments)
+    {templateType = type; templateArguments = arguments;}
 
   /*
   ** Operations
@@ -133,26 +130,25 @@ public:
   /*
   ** Object
   */
+  virtual ClassPtr getClass() const;
+
   virtual String toString() const
     {return getName();}
 
   virtual void saveToXml(XmlElement* xml) const
     {xml->addTextElement(getName());}
 
-  virtual void clone(ObjectPtr target) const
-  {
-    TypePtr targetType = target.staticCast<Type>();
-    targetType->baseType = baseType;
-    targetType->templateArguments = templateArguments;
-  }
-
   juce_UseDebuggingNewOperator
 
 protected:
+  friend class TypeManager;
   friend class TypeClass;
 
+  bool initialized;
+
   TypePtr baseType;
-  std::vector<TypePtr> templateArguments; // use Vector ?
+  TemplateTypePtr templateType;
+  std::vector<TypePtr> templateArguments;
 };
 
 extern TypePtr topLevelType();
@@ -173,7 +169,6 @@ extern TypePtr doubleType();
 extern TypePtr stringType();
   extern TypePtr fileType();
 
-extern TypePtr pairType();
 extern TypePtr pairType(TypePtr firstClass, TypePtr secondClass);
 
 extern TypePtr sumType(TypePtr type1, TypePtr type2);
@@ -247,6 +242,8 @@ class Class : public Type
 public:
   Class(const String& name, TypePtr baseClass)
     : Type(name, baseClass) {}
+  Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+    : Type(templateType, templateArguments, baseClass) {}
   Class() : Type(T("Object"), topLevelType()) {}
 
   virtual String toString() const;
@@ -291,6 +288,7 @@ class DefaultClass : public Class
 public:
   DefaultClass(const String& name, TypePtr baseClass = objectClass());
   DefaultClass(const String& name, const String& baseClass);
+  DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
 
   virtual size_t getObjectNumVariables() const;
   virtual TypePtr getObjectVariableType(size_t index) const;
@@ -307,7 +305,7 @@ protected:
   std::vector< std::pair<TypePtr, String> > variables;
 };
 
-typedef ReferenceCountedObjectPtr<DefaultClass> DynamicClassPtr;
+typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 
 /*
 ** Minimalistic C++ classes Wrapper
@@ -333,13 +331,9 @@ template<class TT>
 class DefaultClass_ : public Class
 {
 public:
-  DefaultClass_(TypePtr baseClass, size_t numTemplateArguments = 0)
+  DefaultClass_(TypePtr baseClass)
     : Class(lbcpp::toString(typeid(TT)), baseClass)
-  {
-    jassert(baseClass);
-    if (numTemplateArguments)
-      templateArguments.resize(numTemplateArguments, topLevelType());
-  }
+    {}
 
   virtual VariableValue create() const
     {return new TT();}
@@ -360,8 +354,8 @@ public:
 #define LBCPP_DECLARE_CLASS(Name, BaseClass) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass))))
 
-#define LBCPP_DECLARE_TEMPLATE_CLASS(Name, NumTemplateArguments, BaseClass) \
-  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass), NumTemplateArguments)))
+//#define LBCPP_DECLARE_TEMPLATE_CLASS(Name, NumTemplateArguments, BaseClass) \
+//  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass), NumTemplateArguments)))
 
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
@@ -420,4 +414,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CLASS_H_
+#endif // !LBCPP_DATA_TYPE_H_
