@@ -81,10 +81,19 @@ bool Container::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   return true;
 }
 
+namespace lbcpp
+{
+  extern DecoratorContainerPtr rangeContainer(ContainerPtr target, size_t begin, size_t end);
+  extern DecoratorContainerPtr excludeRangeContainer(ContainerPtr target, size_t begin, size_t end);
+  extern DecoratorContainerPtr duplicatedContainer(ContainerPtr target, size_t count);
+  extern DecoratorContainerPtr subsetContainer(ContainerPtr target, const std::vector<size_t>& indices);
+  extern DecoratorContainerPtr applyFunctionContainer(ContainerPtr container, FunctionPtr function);
+};
+
 ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
 {
   if (lazyCompute)
-    return new ApplyFunctionContainer(refCountedPointerFromThis(this), function);
+    return applyFunctionContainer(refCountedPointerFromThis(this), function);
   else
   {
     size_t n = getNumElements();
@@ -96,7 +105,7 @@ ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
 }
 
 ContainerPtr Container::subset(const std::vector<size_t>& indices) const
-  {return new SubsetContainer(refCountedPointerFromThis(this), indices);}
+  {return subsetContainer(refCountedPointerFromThis(this), indices);}
 
 // Creates a randomized version of a dataset.
 ContainerPtr Container::randomize() const
@@ -108,15 +117,15 @@ ContainerPtr Container::randomize() const
 
 // Creates a set where each instance is duplicated multiple times.
 ContainerPtr Container::duplicate(size_t count) const
-  {return new DuplicatedContainer(refCountedPointerFromThis(this), count);}
+  {return duplicatedContainer(refCountedPointerFromThis(this), count);}
 
-// Selects a range.
+// Selects a range.  
 ContainerPtr Container::range(size_t begin, size_t end) const
-  {return new RangeContainer(refCountedPointerFromThis(this), begin, end);}
+  {return rangeContainer(refCountedPointerFromThis(this), begin, end);}
 
 // Excludes a range.
 ContainerPtr Container::invRange(size_t begin, size_t end) const
-  {return new ExcludeRangeContainer(refCountedPointerFromThis(this), begin, end);}
+  {return excludeRangeContainer(refCountedPointerFromThis(this), begin, end);}
 
 // Selects a fold.
 ContainerPtr Container::fold(size_t fold, size_t numFolds) const
@@ -141,49 +150,3 @@ ContainerPtr Container::invFold(size_t fold, size_t numFolds) const
   size_t end = (size_t)((fold + 1) * meanFoldSize);
   return invRange(begin, end);
 }
-
-#if 0
-ClassPtr lbcpp::containerClass()
-  {static TypeCache cache(T("Container")); return cache();}
-
-class ContainerClass : public DefaultClass
-{
-public:
-  ContainerClass() : DefaultClass(T("Container"), T("Object")) {}
-
-  virtual size_t getNumElements(const VariableValue& value) const
-  {
-    ContainerPtr container = value.getObjectAndCast<Container>();
-    return container ? container->getNumElements() : 0;
-  }
-
-  virtual Variable getElement(const VariableValue& value, size_t index) const
-  {
-    ContainerPtr container = value.getObjectAndCast<Container>();
-    jassert(container);
-    return container->getElement(index);
-  }
-
-  virtual String getElementName(const VariableValue& value, size_t index) const
-    {return T("[") + String((int)index) + T("]");}
-};
-
-void declareOldContainerClasses()
-{
-  Type::declare(new ContainerClass());
-
-    LBCPP_DECLARE_TEMPLATE_CLASS(Vector, 1, Container);
-    LBCPP_DECLARE_CLASS(BooleanVector, Container);
-    LBCPP_DECLARE_CLASS(VariableVector, Container);
-    LBCPP_DECLARE_TEMPLATE_CLASS(SymmetricMatrix, 1, Container);
-      LBCPP_DECLARE_TEMPLATE_CLASS(SymmetricMatrixRow, 1, Container);
-
-    LBCPP_DECLARE_ABSTRACT_CLASS(DecoratorContainer, Container);
-
-      LBCPP_DECLARE_CLASS(ApplyFunctionContainer, DecoratorContainer);
-      LBCPP_DECLARE_CLASS(RangeContainer, DecoratorContainer);
-      LBCPP_DECLARE_CLASS(ExcludeRangeContainer, DecoratorContainer);
-      LBCPP_DECLARE_CLASS(DuplicatedContainer, DecoratorContainer);
-      LBCPP_DECLARE_CLASS(SubsetContainer, DecoratorContainer);
-}
-#endif // 0

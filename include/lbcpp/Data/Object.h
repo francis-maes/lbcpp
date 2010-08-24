@@ -236,6 +236,9 @@ public:
   virtual juce::Component* createComponent() const
     {return NULL;}
 
+  void setThisClass(ClassPtr thisClass)
+    {this->thisClass = thisClass;}
+
   juce_UseDebuggingNewOperator
 
 protected:

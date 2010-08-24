@@ -197,8 +197,14 @@ protected:
 
     // create() function
     if (!isAbstract)
-      writeShortFunction(T("virtual VariableValue create() const"),
-        T("return new ") + className + T("();"));
+    {
+      openScope(T("virtual VariableValue create() const"));
+        writeLine(className + T("* res = new ") + className + T("();"));
+        writeLine(T("res->setThisClass(refCountedPointerFromThis(this));"));
+        writeLine(T("return res;"));
+      closeScope();
+      newLine();
+    }
 
     // getStaticVariableReference() function
     if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false))
@@ -296,7 +302,9 @@ protected:
   void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)
   {
     String arguments = xml->getStringAttribute(T("arguments"), String::empty);
+    String parameters = xml->getStringAttribute(T("parameters"), String::empty);
     String returnType = xml->getStringAttribute(T("returnType"), String::empty);
+    
     if (returnType.isEmpty())
       returnType = baseClassName;
 
@@ -314,9 +322,15 @@ protected:
       argNames += argName;
     }
 
+    // class declarator
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
-    writeShortFunction(typeToRefCountedPointerType(returnType) + T(" ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"),
-                       T("return new ") + className + T("(") + argNames + T(");"));
+    String returnTypePtr = typeToRefCountedPointerType(returnType);
+    openScope(returnTypePtr + T(" ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"));
+      writeLine(returnTypePtr + T(" res = new ") + className + T("(") + argNames + T(");"));
+      writeLine(T("res->setThisClass(") + classNameWithFirstLowerCase + T("Class(") + parameters + T("));"));
+      writeLine(T("return res;"));
+    closeScope();
+    newLine();
   }
 
   /*
@@ -371,6 +385,10 @@ protected:
     else
       std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
         << className << ", NumParams = " << parameters.size() << std::endl;
+
+    // class constructors
+    forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
+      generateClassConstructorMethod(elt, className, baseClassName);
   }
 
   void generateParameterDeclarationInConstructor(const String& className, XmlElement* xml)

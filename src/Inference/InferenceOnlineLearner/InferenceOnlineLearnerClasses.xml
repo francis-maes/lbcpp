@@ -3,13 +3,26 @@
 <file name="InferenceOnlineLearner" directory="Inference/InferenceOnlineLearner">
 
   <namespace name="lbcpp">
-    <class name="RandomizerInferenceOnlineLearner" base="InferenceOnlineLearner"/>
-    <class name="StoppingCriterionInferenceOnlineLearner" base="InferenceOnlineLearner"/>
+    <class name="RandomizerInferenceOnlineLearner" base="InferenceOnlineLearner">
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback"/>
+    </class>
+    
+    <class name="StoppingCriterionInferenceOnlineLearner" base="InferenceOnlineLearner">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops"/>
+    </class>
 
     <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes"/>
-    
-    <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner"/>
-    <class name="MiniBatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner"/>
-    <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner"/>
+
+    <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
+    </class>
+
+    <class name="MiniBatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="size_t miniBatchSize, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
+    </class>
+
+    <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
+    </class>
   </namespace>
 </file>

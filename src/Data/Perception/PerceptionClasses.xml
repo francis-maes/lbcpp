@@ -28,10 +28,13 @@
     </class>
 
     <class name="PreprocessPerception" base="DecoratorPerception">
+      <constructor arguments="FunctionPtr preProcessingFunction, PerceptionPtr perception"/>
       <variable type="Function" name="preProcessingFunction"/>
     </class>
-    
-    <class name="FlattenPerception" base="DecoratorPerception"/>
+
+    <class name="FlattenPerception" base="DecoratorPerception">
+      <constructor arguments="PerceptionPtr perception"/>
+    </class>
 
     <class name="EnumValueToFeaturesPerception" base="Perception"/>
     <class name="IntegerToFeaturesPerception" base="Perception"/>
@@ -44,14 +47,6 @@
       <variable type="Type" name="elementsType"/>
       <variable type="Integer" name="windowSize"/>
     </class>
-
-    <code>
-      PerceptionPtr Perception::addPreprocessor(FunctionPtr preProcessingFunction) const
-        {return new PreprocessPerception(preProcessingFunction, refCountedPointerFromThis(this));}
-
-      PerceptionPtr Perception::flatten() const
-        {return new FlattenPerception(refCountedPointerFromThis(this));}
-    </code>
   </namespace>
   
 </file>

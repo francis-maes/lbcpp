@@ -19,8 +19,8 @@ class PreprocessPerception : public DecoratorPerception
 public:
   PreprocessPerception() {}
 
-  PreprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr representation)
-    : DecoratorPerception(representation), preProcessingFunction(preProcessingFunction)
+  PreprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception)
+    : DecoratorPerception(perception), preProcessingFunction(preProcessingFunction)
     {}
 
   virtual TypePtr getInputType() const

@@ -1,15 +1,10 @@
-FIXER le bazar !
-
-* Bug: AminoAcid::getVariable renvoie pas le bon type
+* Rendre visible la variable Type de la classe Object
 * Bug: Memory Leak sur les Types
 
-Container:
+Types:
   * Rendre la classe Vector abstraite
   * Normaliser les classes de Container
   * Normaliser les classes de Type
-  
-Types:
-  * Rendre visible la variable Type de la classe Object
   * Enlever les multiplyByScalar et addWeighted de Type et Object
 
 FeaturePerceptions:
@@ -26,6 +21,8 @@ Cleaning:
   * Deplacer Evaluator de lbcpp/Inference vers lbcpp/Data
   * Ranger les Utilities et les anciens Objects  
  
+* Bug: AminoAcid::getVariable renvoie pas le bon type
+
 ====
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
