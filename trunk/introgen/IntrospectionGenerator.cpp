@@ -375,7 +375,7 @@ protected:
     // class declarator
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
     if (parameters.size() == 0)
-      std::cerr << "Error: No parameters in template. Type = " << className << std::endl;
+      std::cerr << "Error: No parameters in template. Type = " << (const char *)className << std::endl;
     else if (parameters.size() == 1)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type)"),
           T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
@@ -384,7 +384,7 @@ protected:
           T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
     else
       std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
-        << className << ", NumParams = " << parameters.size() << std::endl;
+		<< (const char* )className << ", NumParams = " << parameters.size() << std::endl;
 
     // class constructors
     forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
