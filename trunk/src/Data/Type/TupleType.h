@@ -173,7 +173,8 @@ public:
 class PairTemplateType : public DefaultTemplateType
 {
 public:
-  PairTemplateType() : DefaultTemplateType(T("Pair"), T("Variable")) {}
+  PairTemplateType(const String& name, const String& baseType)
+    : DefaultTemplateType(name, baseType) {}
 
   virtual bool initialize(ErrorHandler& callback)
   {

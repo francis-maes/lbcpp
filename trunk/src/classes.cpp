@@ -13,11 +13,8 @@ using namespace lbcpp;
 extern void declareDataClasses();
 
 // old
-extern void declareClassClasses();
 extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
-
-// Utilities
 extern void declareIterationFunctions();
 extern void declareStoppingCriterions();
 
@@ -51,7 +48,6 @@ extern void declareInferenceCallbackClasses();
 
 void declareLBCppCoreClasses()
 {
-  declareClassClasses();
   declareDataClasses(); // generated
   
   declarePredicateClasses();

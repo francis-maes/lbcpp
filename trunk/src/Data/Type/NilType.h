@@ -35,7 +35,8 @@ namespace lbcpp
 class NilType : public Type
 {
 public:
-  NilType() : Type(T("Nil"), topLevelType()) {}
+  NilType(const String& name, TypePtr baseType)
+    : Type(name, baseType) {}
 
   virtual VariableValue create() const
     {return VariableValue();}

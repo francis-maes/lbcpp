@@ -35,8 +35,8 @@ namespace lbcpp
 class TopLevelType : public Type
 {
 public:
-  TopLevelType()
-    : Type(T("Variable"), TypePtr()) {}
+  TopLevelType(const String& name)
+    : Type(name, TypePtr()) {}
 
   virtual VariableValue create() const
     {ErrorHandler::error(T("Type::create"), getName() + T(" has no default constructor")); return VariableValue();}

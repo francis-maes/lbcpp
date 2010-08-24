@@ -242,7 +242,7 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  friend class Class;
+  friend class ObjectClass;
   
   ClassPtr thisClass;
   

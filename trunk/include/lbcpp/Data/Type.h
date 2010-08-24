@@ -153,10 +153,13 @@ protected:
   std::vector<TypePtr> templateArguments;
 };
 
-extern TypePtr topLevelType();
+extern TypePtr variableType();
 
+// synonims:
+inline TypePtr topLevelType()
+  {return variableType();}
 inline TypePtr anyType()
-  {return topLevelType();}
+  {return variableType();}
 
 extern TypePtr nilType();
 
@@ -246,7 +249,6 @@ public:
     : Type(name, baseClass) {}
   Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
     : Type(templateType, templateArguments, baseClass) {}
-  Class() : Type(T("Object"), topLevelType()) {}
 
   virtual String toString() const;
 

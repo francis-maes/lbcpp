@@ -74,6 +74,8 @@ protected:
       String tag = elt->getTagName();
       if (tag == T("include"))
         generateInclude(elt);
+      else if (tag == T("type") || tag == T("templateType"))
+        generateTypeDeclaration(elt);
       else if (tag == T("class"))
         generateClassDeclaration(elt, false);
       else if (tag == T("template"))
@@ -127,6 +129,34 @@ protected:
   }
 
   /*
+  ** Type (implemented in C++)
+  */
+  void generateTypeDeclaration(XmlElement* xml)
+  {
+    String typeName = xml->getStringAttribute(T("name"), T("???"));
+    String baseTypeName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Variable")));
+    String suffix = xml->getTagName() == T("type") ? T("Type") : T("TemplateType");
+    String implementation = xml->getStringAttribute(T("implementation"), typeName + suffix);
+
+    String fullName = getCurrentScopeFullName() + T("::") + implementation + T("(T(") + typeName.quoted() + T(")");
+    if (baseTypeName.isNotEmpty())
+    {
+      fullName += T(", ");
+      if (xml->getTagName() == T("type"))
+        fullName += T("lbcpp::Type::get(T(") + baseTypeName.quoted() + T("))");
+      else
+        fullName += T("T(") + baseTypeName.quoted() + T(")");
+    }
+    fullName += T(")");
+    types.push_back(fullName);
+
+    // Type declarator
+    if (xml->getTagName() == T("type"))
+      writeShortFunction(T("TypePtr ") + replaceFirstLettersByLowerCase(typeName) + T("Type()"),
+          T("static TypeCache cache(T(") + typeName.quoted() + T(")); return cache();"));
+  }
+
+  /*
   ** Enumeration
   */
   void generateEnumValueInConstructor(XmlElement* xml)
@@ -142,7 +172,7 @@ protected:
     String enumName = xml->getStringAttribute(T("name"), T("???"));
 
     currentScopes.push_back(enumName);
-    types.push_back(getCurrentScopeFullName() + T("Enumeration"));
+    types.push_back(getCurrentScopeFullName() + T("Enumeration()"));
     openClass(enumName + T("Enumeration"), T("Enumeration"));
 
     // constructor
@@ -171,7 +201,7 @@ protected:
 
     currentScopes.push_back(className);
     if (!isTemplate)
-      types.push_back(getCurrentScopeFullName() + T("Class"));
+      types.push_back(getCurrentScopeFullName() + T("Class()"));
 
     openClass(className + T("Class"), T("DefaultClass"));
 
@@ -342,7 +372,7 @@ protected:
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     
     currentScopes.push_back(className);
-    types.push_back(getCurrentScopeFullName() + T("TemplateClass"));
+    types.push_back(getCurrentScopeFullName() + T("TemplateClass()"));
 
     openClass(className + T("TemplateClass"), T("DefaultTemplateType"));
 
@@ -457,7 +487,7 @@ protected:
     openScope(T("void declare") + fileName + T("Classes()"));
     
     for (size_t i = 0; i < types.size(); ++i)
-      writeLine(T("lbcpp::Class::declare(new ") + types[i] + T("());"));
+      writeLine(T("lbcpp::Type::declare(new ") + types[i] + T(");"));
 
     if (hasImports)
     {
