@@ -159,6 +159,8 @@ PerceptionPtr identityPerception(TypePtr type);
 DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 PerceptionPtr functionBasedPerception(FunctionPtr function);
 ModifierPerceptionPtr perceptionToFeatures(PerceptionPtr perception);
+DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
+DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
 
 }; /* namespace lbcpp */
 

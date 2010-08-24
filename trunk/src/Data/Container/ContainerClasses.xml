@@ -62,22 +62,27 @@
 
     <template name="ApplyFunctionContainer" base="DecoratorContainer[elementsType]">
       <parameter name="elementsType"/>
+      <constructor arguments="ContainerPtr container, FunctionPtr function" parameters="function->getOutputType(container->getElementsType())"/>
     </template>
 
     <template name="RangeContainer" base="DecoratorContainer[elementsType]">
       <parameter name="elementsType"/>
+      <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
     </template>
     
     <template name="ExcludeRangeContainer" base="DecoratorContainer[elementsType]">
       <parameter name="elementsType"/>
+      <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
     </template>
     
     <template name="DuplicatedContainer" base="DecoratorContainer[elementsType]">
       <parameter name="elementsType"/>
+      <constructor arguments="ContainerPtr target, size_t count" parameters="target->getElementsType()"/>
     </template>
     
     <template name="SubsetContainer" base="DecoratorContainer[elementsType]">
       <parameter name="elementsType"/>
+      <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
     </template>
 
   </namespace>  

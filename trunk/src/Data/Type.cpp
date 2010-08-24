@@ -87,8 +87,9 @@ public:
     }
   }
 
-  TypePtr getType(const String& typeName, ErrorHandler& callback) const
+  TypePtr getType(const String& name, ErrorHandler& callback) const
   {
+    String typeName = removeAllSpaces(name);
     ScopedLock _(typesLock);
     TypePtr type = findType(typeName);
     if (type)
@@ -107,7 +108,11 @@ public:
       
       type = templateType->instantiate(templateArguments, callback);
       if (type)
-        const_cast<TypeManager* >(this)->declare(type);
+      {
+        if (!type->initialize(callback))
+          return TypePtr();
+        const_cast<TypeManager* >(this)->types[typeName] = type;
+      }
     }
     else
       callback.errorMessage(T("TypeManager::getType()"), T("Could not find type ") + typeName);

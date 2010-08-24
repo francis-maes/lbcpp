@@ -13,6 +13,32 @@
 #include "InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h"
 using namespace lbcpp;
 
+namespace lbcpp
+{
+  extern InferenceOnlineLearnerPtr randomizerInferenceOnlineLearner(
+    InferenceOnlineLearner::UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback);
+ 
+  extern InferenceOnlineLearnerPtr stoppingCriterionInferenceOnlineLearner(
+      InferenceOnlineLearnerPtr learner, InferenceOnlineLearner::UpdateFrequency criterionTestFrequency,
+      StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
+
+  extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
+    IterationFunctionPtr learningRate, bool normalizeLearningRate,
+    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
+    ScalarVectorFunctionPtr regularizer);
+
+  extern GradientDescentOnlineLearnerPtr miniBatchGradientDescentOnlineLearner(
+    size_t miniBatchSize,
+    IterationFunctionPtr learningRate, bool normalizeLearningRate,
+    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
+    ScalarVectorFunctionPtr regularizer);
+
+  extern GradientDescentOnlineLearnerPtr batchGradientDescentOnlineLearner(
+    InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
+    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
+  
+};
+
 static bool isRandomizationRequired(InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, InferenceOnlineLearner::UpdateFrequency randomizationFrequency)
 {
   jassert(learningUpdateFrequency != InferenceOnlineLearner::never);
@@ -53,16 +79,16 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
 
   // base learner
   if (learningUpdateFrequency == InferenceOnlineLearner::perStep)
-    res = new StochasticGradientDescentOnlineLearner(learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+    res = stochasticGradientDescentOnlineLearner(learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   else if (learningUpdateFrequency >= InferenceOnlineLearner::perStepMiniBatch && miniBatchSize < 100)
-    res = new MiniBatchGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+    res = miniBatchGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   else
-    res = new BatchGradientDescentOnlineLearner(learningUpdateFrequency,
+    res = batchGradientDescentOnlineLearner(learningUpdateFrequency,
                                               learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
 
   // randomization
   if (isRandomizationRequired(learningUpdateFrequency, randomizationFrequency))
-    res = InferenceOnlineLearnerPtr(new RandomizerInferenceOnlineLearner(randomizationFrequency, res));
+    res = InferenceOnlineLearnerPtr(randomizerInferenceOnlineLearner(randomizationFrequency, res));
 
   // stopping criterion and best parameters restore
   jassert(!restoreBestParametersWhenLearningStops || stoppingCriterion);
@@ -78,7 +104,7 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
 
 InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops) const
 {
-  return new StoppingCriterionInferenceOnlineLearner(refCountedPointerFromThis(this),
+  return stoppingCriterionInferenceOnlineLearner(refCountedPointerFromThis(this),
     criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
 }
 

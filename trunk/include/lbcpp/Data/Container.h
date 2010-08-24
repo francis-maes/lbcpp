@@ -225,6 +225,8 @@ protected:
   ContainerPtr target; /*!< A pointer to the decorated Container. */
 };
 
+typedef ReferenceCountedObjectPtr<DecoratorContainer> DecoratorContainerPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_CONTAINER_H_

@@ -25,6 +25,7 @@ ClassPtr Object::getClass() const
 {
   if (!thisClass)
   {
+    //jassert(false);
     const_cast<Object* >(this)->thisClass = Class::get(lbcpp::toString(typeid(*this)));
     jassert(thisClass);
   }
