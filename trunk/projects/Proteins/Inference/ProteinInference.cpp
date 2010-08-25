@@ -100,8 +100,8 @@ ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePt
   int index = proteinClass()->findObjectVariable(targetName);
   jassert(index >= 0);
   targetIndex = (size_t)index;
-  checkInheritance(targetInference->getInputType(), proteinClass());
-  checkInheritance(targetInference->getSupervisionType(), getTargetType());
+  checkInheritance((TypePtr)proteinClass(), targetInference->getInputType());
+  checkInheritance(getTargetType(), targetInference->getSupervisionType());
   checkInheritance(targetInference->getOutputType(proteinClass()), getTargetType());
 }
 
