@@ -153,7 +153,7 @@ static void printVariableLine(const Variable& value, std::ostream& ostr, size_t 
   ostr << " = " << v << std::endl;
 }
 
-static void printVariablesRecursively(const Variable& variable, std::ostream& ostr, int maxDepth, int currentDepth)
+static void printVariablesRecursively(const Variable& variable, std::ostream& ostr, int maxDepth, int currentDepth, bool displayMissingValues)
 {
   if (maxDepth >= 0 && currentDepth >= maxDepth)
     return;
@@ -161,18 +161,30 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
   if (type->inheritsFrom(objectClass()))
   {
     ObjectPtr object = variable.getObject();
-    for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
-      printVariableLine(object->getVariable(i), ostr, i, type->getObjectVariableName(i), currentDepth);
+    if (object)
+      for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+      {
+        Variable subVariable = object->getVariable(i);
+        if (displayMissingValues || subVariable)
+        {
+          printVariableLine(subVariable, ostr, i, type->getObjectVariableName(i), currentDepth);
+          printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues);
+        }
+      }
   }
   for (size_t i = 0; i < variable.size(); ++i)
   {
-    printVariableLine(variable[i], ostr, (size_t)-1, variable.getName(i), currentDepth);
-    printVariablesRecursively(variable[i], ostr, maxDepth, currentDepth + 1);
+    Variable subVariable = variable[i];
+    if (displayMissingValues || subVariable)
+    {
+      printVariableLine(subVariable, ostr, (size_t)-1, variable.getName(i), currentDepth);
+      printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues);
+    }
   }
 }
 
-void Variable::printRecursively(std::ostream& ostr, int maxDepth)
+void Variable::printRecursively(std::ostream& ostr, int maxDepth, bool displayMissingValues)
 {
   printVariableLine(*this, ostr, (size_t)-1, String::empty, 0);
-  printVariablesRecursively(*this, ostr, maxDepth, 1);
+  printVariablesRecursively(*this, ostr, maxDepth, 1, displayMissingValues);
 }

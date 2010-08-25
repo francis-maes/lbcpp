@@ -175,7 +175,7 @@ public:
   String getName(size_t index) const;
   Variable operator [](size_t index) const;
 
-  void printRecursively(std::ostream& ostr, int maxDepth = -1);
+  void printRecursively(std::ostream& ostr, int maxDepth = -1, bool displayMissingValues = true);
 
   /*
   ** Non-const operations

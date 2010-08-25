@@ -42,6 +42,7 @@
 # include "Data/Predicate.h"
 # include "Data/ProbabilityDistribution.h"
 # include "Data/Perception.h"
+# include "Data/PerceptionMaths.h"
 
 // old
 # include "Object/ObjectGraph.h"
