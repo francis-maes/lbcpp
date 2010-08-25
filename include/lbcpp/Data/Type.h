@@ -348,9 +348,6 @@ public:
 #define LBCPP_DECLARE_CLASS(Name, BaseClass) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass))))
 
-//#define LBCPP_DECLARE_TEMPLATE_CLASS(Name, NumTemplateArguments, BaseClass) \
-//  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass), NumTemplateArguments)))
-
 #define LBCPP_DECLARE_CLASS_LEGACY(Name) \
   lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
 
