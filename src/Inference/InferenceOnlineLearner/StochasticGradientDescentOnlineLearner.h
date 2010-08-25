@@ -18,7 +18,7 @@ class StochasticGradientDescentOnlineLearner : public GradientDescentOnlineLearn
 {
 public:
   StochasticGradientDescentOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                          UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
+                                          UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
     : GradientDescentOnlineLearner(perStep, learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer) {}
 

@@ -66,6 +66,7 @@
 
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"
+# include "Function/ScalarObjectFunction.h"
 # include "Function/Perception.h"
 # include "Function/PerceptionMaths.h"
 

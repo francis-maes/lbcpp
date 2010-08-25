@@ -12,7 +12,7 @@ using namespace lbcpp;
 
 GradientDescentOnlineLearner::GradientDescentOnlineLearner(
                       UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                      UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
+                      UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
     : epoch(0),
       learningUpdateFrequency(learningUpdateFrequency), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate),
       regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer),
@@ -49,15 +49,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
   }
   std::cout << std::endl;
 }
-/*
-FeatureGeneratorPtr GradientDescentOnlineLearner::getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-{
-  double exampleLossValue;
-  FeatureGeneratorPtr gradient = getNumericalInference(inference)->getExampleGradient(input, supervision, prediction, exampleLossValue);
-  lossValue.push(exampleLossValue);
-  return gradient;
-}
-*/
+
 void GradientDescentOnlineLearner::updateParameters(InferencePtr inference, ObjectPtr& target, double weight, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   double exampleLossValue;
@@ -89,21 +81,6 @@ void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inf, ObjectP
   ObjectPtr& parameters = inference->getParameters();
   lbcpp::addWeighted(parameters, gradient, -computeLearningRate() * weight);
   inference->validateParametersChange();
-
-  /*
-  NumericalInferencePtr inference = getNumericalInference(inf);
-  DenseVectorPtr parameters = inference->getParameters();
-  if (!parameters)
-  {
-    parameters = new DenseVector(gradient->getDictionary());
-    inference->setParameters(parameters);
-  }
-  else
-    parameters->ensureDictionary(gradient->getDictionary());
-
-  gradient->addWeightedTo(parameters, -computeLearningRate() * weight);
-  //std::cout << "gradient: " << gradient->l2norm() << " learning rate: " << computeLearningRate() * weight << " parameters: " << parameters->l2norm() << std::endl;
-  inference->validateParametersChange();*/
 }
 
 void GradientDescentOnlineLearner::applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
@@ -119,13 +96,15 @@ void GradientDescentOnlineLearner::applyRegularizer(InferencePtr inference)
 {
   if (regularizer)
   {
-    /*DenseVectorPtr parameters = getParameters(inference);
+    ObjectPtr parameters = getParameters(inference);
     if (parameters)
-      //std::cout << "R" << std::flush;
-      gradientDescentStep(inference, regularizer->computeGradient(getParameters(inference)), (double)(epoch - lastApplyRegularizerEpoch));
-      */
-    //jassert(false); // FIXME !
-
+    {
+      double weight = (double)(epoch - lastApplyRegularizerEpoch);
+      //std::cout << "Reg: before: " << lbcpp::l2norm(parameters);
+      regularizer->compute(parameters, NULL, &parameters, -computeLearningRate() * weight);
+      //std::cout << " after: " << lbcpp::l2norm(parameters);
+      //std::cout << " regularizer = " << regularizer->toString() << std::endl;
+    }
     lastApplyRegularizerEpoch = epoch;
   }
 }

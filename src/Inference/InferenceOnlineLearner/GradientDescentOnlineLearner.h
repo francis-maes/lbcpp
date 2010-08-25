@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_GRADIENT_DESCENT_LEARNING_H_
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include <lbcpp/Function/ScalarObjectFunction.h>
 # include "../NumericalInference/NumericalInference.h"
 
 namespace lbcpp
@@ -20,7 +21,7 @@ class GradientDescentOnlineLearner : public InferenceOnlineLearner
 public:
   GradientDescentOnlineLearner(UpdateFrequency learningUpdateFrequency,
                                 IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
+                                UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
   GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never) {}
 
   virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
@@ -49,11 +50,9 @@ protected:
   bool normalizeLearningRate;
 
   UpdateFrequency regularizerUpdateFrequency;
-  ScalarVectorFunctionPtr regularizer;
+  ScalarObjectFunctionPtr regularizer;
   ScalarVariableMean lossValue;
   size_t lastApplyRegularizerEpoch;
-
-//  FeatureGeneratorPtr getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
 
   void updateParameters(InferencePtr inference, ObjectPtr& target, double weight, const Variable& input, const Variable& supervision, const Variable& prediction);
 

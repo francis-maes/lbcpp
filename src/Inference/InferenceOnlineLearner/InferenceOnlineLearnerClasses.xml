@@ -14,11 +14,11 @@
     <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes"/>
 
     <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
-      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
+      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
     </class>
 
     <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
     </class>
   </namespace>
 </file>

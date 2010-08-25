@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_ONLINE_LEARNER_H_
 
 # include "Inference.h"
+# include "../Function/ScalarObjectFunction.h"
 # include "../ObjectPredeclarations.h"
 # include "../Utilities/RandomVariable.h"
 # include "../Utilities/IterationFunction.h"
@@ -80,7 +81,7 @@ extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
           bool normalizeLearningRate = true,
           // regularizer
           InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency = InferenceOnlineLearner::perEpisode,
-          ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr(),
+          ScalarObjectFunctionPtr regularizer = ScalarObjectFunctionPtr(),
           // stopping criterion
           InferenceOnlineLearner::UpdateFrequency criterionTestFrequency = InferenceOnlineLearner::never,
           StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),

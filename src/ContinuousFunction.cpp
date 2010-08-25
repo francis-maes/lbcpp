@@ -8,13 +8,13 @@
 
 #include <lbcpp/FeatureGenerator/ContinuousFunction.h>
 //#include "ContinuousFunction/MiscScalarFunctions.h"
-#include "ContinuousFunction/BinarySumScalarVectorFunction.h"
+//#include "ContinuousFunction/BinarySumScalarVectorFunction.h"
 //#include "ContinuousFunction/HingeLossFunction.h"
 //#include "ContinuousFunction/LogBinomialLossFunction.h"
 //#include "ContinuousFunction/SquareFunction.h"
 //#include "ContinuousFunction/AbsFunction.h"
-#include "ContinuousFunction/MultiplyByScalarVectorFunction.h"
-#include "ContinuousFunction/SumOfSquaresScalarVectorFunction.h"
+//#include "ContinuousFunction/MultiplyByScalarVectorFunction.h"
+//#include "ContinuousFunction/SumOfSquaresScalarVectorFunction.h"
 using namespace lbcpp;
 
 /*
@@ -133,12 +133,15 @@ bool ScalarVectorFunction::checkDerivativeWrtDirection(const FeatureGeneratorPtr
 
 ObjectPtr ScalarVectorFunction::multiplyByScalar(double scalar)
 {
+  jassert(false);
+  return ObjectPtr();
+  /*
   ScalarVectorFunctionPtr pthis(const_cast<ScalarVectorFunction* >(this));
   return scalar == 1.0
     ? ObjectPtr(pthis)
-    : ObjectPtr(new MultiplyByScalarVectorFunction(pthis, scalar));
+    : ObjectPtr(new MultiplyByScalarVectorFunction(pthis, scalar));*/
 }
-
+/*
 ScalarVectorFunctionPtr lbcpp::sumOfSquaresFunction()
   {return new SumOfSquaresScalarVectorFunction();}
 
@@ -149,10 +152,10 @@ ScalarVectorFunctionPtr lbcpp::sum(ScalarVectorFunctionPtr f1, ScalarVectorFunct
   else
     return f2 ? f2 : ScalarVectorFunctionPtr();
 }
-
+*/
 /*
 ** Serializable classes declaration
-*/
+*
 void declareContinuousFunctions()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(ContinuousFunction, Object);
@@ -167,8 +170,9 @@ void declareContinuousFunctions()
 
   LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationLossFunction, ScalarFunction);
   LBCPP_DECLARE_CLASS(HingeLossFunction, BinaryClassificationLossFunction);
-  LBCPP_DECLARE_CLASS(LogBinomialLossFunction, BinaryClassificationLossFunction);*/
+  LBCPP_DECLARE_CLASS(LogBinomialLossFunction, BinaryClassificationLossFunction);
 
   LBCPP_DECLARE_ABSTRACT_CLASS(ScalarVectorFunction, ContinuousFunction);
   LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction, ScalarVectorFunction);
 }
+*/

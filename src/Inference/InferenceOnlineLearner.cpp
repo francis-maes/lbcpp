@@ -24,11 +24,11 @@ namespace lbcpp
   extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
     InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
-    ScalarVectorFunctionPtr regularizer);
+    ScalarObjectFunctionPtr regularizer);
 
   extern GradientDescentOnlineLearnerPtr batchGradientDescentOnlineLearner(
     InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
+    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
   
 };
 
@@ -56,7 +56,7 @@ static bool isRandomizationRequired(InferenceOnlineLearner::UpdateFrequency lear
 InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
         InferenceOnlineLearner::UpdateFrequency randomizationFrequency,
         InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-        InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer,
+        InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer,
         InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr stoppingCriterion, bool restoreBestParametersWhenLearningStops)
 {
   jassert(learningUpdateFrequency != InferenceOnlineLearner::never);
