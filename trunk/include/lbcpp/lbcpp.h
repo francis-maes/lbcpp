@@ -37,10 +37,10 @@
 # include "Data/SymmetricMatrix.h"
 # include "Data/Predicate.h"
 # include "Data/ProbabilityDistribution.h"
+# include "Data/RandomGenerator.h"
 
 // old
 # include "Utilities/IterationFunction.h"
-# include "Utilities/RandomGenerator.h"
 # include "Utilities/RandomVariable.h"
 # include "Utilities/ProgressCallback.h"
 # include "Utilities/StoppingCriterion.h"

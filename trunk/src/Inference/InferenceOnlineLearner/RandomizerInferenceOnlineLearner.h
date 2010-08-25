@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_RANDOMIZER_LEARNING_H_
 
 # include "GradientDescentOnlineLearner.h"
-# include <lbcpp/Utilities/RandomGenerator.h>
+# include <lbcpp/Data/RandomGenerator.h>
 namespace lbcpp
 {
 
@@ -76,7 +76,7 @@ private:
       return;
     //std::cout << "*" << std::flush;
     std::vector<size_t> order;
-    RandomGenerator::getInstance().sampleOrder(examples.size(), order);
+    RandomGenerator::getInstance()->sampleOrder(examples.size(), order);
     for (size_t i = 0; i < order.size(); ++i)
     {
       const Example& example = examples[order[i]];

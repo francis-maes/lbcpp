@@ -35,8 +35,6 @@ namespace lbcpp
 class Variable;
 
 // tools
-class RandomGenerator;
-
 class ScalarVariableStatistics;
 typedef ReferenceCountedObjectPtr<ScalarVariableStatistics> ScalarVariableStatisticsPtr;
 class IterationFunction;
@@ -61,6 +59,8 @@ class SymmetricMatrix;
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
 class Consumer;
 typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
+class RandomGenerator;
+typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
 
 }; /* namespace lbcpp */
 

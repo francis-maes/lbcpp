@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/Container.h>
-#include <lbcpp/Utilities/RandomGenerator.h>
+#include <lbcpp/Data/RandomGenerator.h>
 
 #include "Container/ApplyFunctionContainer.h"
 #include "Container/SubsetContainer.h"
@@ -112,7 +112,7 @@ ContainerPtr Container::subset(const std::vector<size_t>& indices) const
 ContainerPtr Container::randomize() const
 {
   std::vector<size_t> indices;
-  lbcpp::RandomGenerator::getInstance().sampleOrder(getNumElements(), indices);
+  lbcpp::RandomGenerator::getInstance()->sampleOrder(getNumElements(), indices);
   return subset(indices);
 }
 

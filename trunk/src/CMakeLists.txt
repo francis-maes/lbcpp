@@ -48,6 +48,8 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/Predicate.h
   Data/Predicate.cpp
   ../include/lbcpp/Data/ProbabilityDistribution.h
+  ../include/lbcpp/Data/RandomGenerator.h
+  Data/RandomGenerator.cpp  
   Data/ProbabilityDistribution.cpp
   ../include/lbcpp/Data/Consumer.h
   Data/Consumer.cpp
@@ -99,7 +101,6 @@ SET(LBCPP_OBJECT_HEADERS
 
 SET(LBCPP_UTILITIES_HEADERS
   ../include/lbcpp/Utilities/ProgressCallback.h
-  ../include/lbcpp/Utilities/RandomGenerator.h
   ../include/lbcpp/Utilities/RandomVariable.h
   ../include/lbcpp/Utilities/IterationFunction.h
   ../include/lbcpp/Utilities/StoppingCriterion.h

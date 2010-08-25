@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Data" directory="Data">
-  <import name="Type"/>
+  <import name="Type" pre="yes"/>
   <import name="Stream"/>
   <import name="Container"/>
+  <include file="lbcpp/Data/RandomGenerator.h"/>
 
   <namespace name="lbcpp">
+    
+    <!-- Random Generator -->
+    <class name="RandomGenerator">
+      <variable type="Integer" name="seed"/>
+    </class>
 
     <!-- Consumer -->
-   <!-- <class name="Consumer" base="Function" abstract="yes"/>
+    <class name="Consumer" base="Object" abstract="yes"/>
     <class name="TextPrinter" base="Consumer" abstract="yes"/>
-    -->
+    
   </namespace>
   
 </file>

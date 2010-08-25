@@ -17,7 +17,7 @@ using namespace lbcpp;
 ** SingleExtraTreeInferenceLearner
 */
 SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  : Inference(T("SingleExtraTreeInferenceLearner")),
+  : Inference(T("SingleExtraTreeInferenceLearner")), random(new RandomGenerator),
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting) {}
 
@@ -95,7 +95,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
   return isOutputConstant(trainingData, leafValue);
 }
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
-Variable sampleNumericalSplit(RandomGenerator& random, ContainerPtr trainingData, size_t variableIndex)
+Variable sampleNumericalSplit(RandomGeneratorPtr random, ContainerPtr trainingData, size_t variableIndex)
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
   size_t n = trainingData->getNumElements();
@@ -113,13 +113,13 @@ Variable sampleNumericalSplit(RandomGenerator& random, ContainerPtr trainingData
     //std::cout << variable << " ";
   }
   jassert(minValue != DBL_MAX && maxValue != -DBL_MAX);
-  double res = RandomGenerator::getInstance().sampleDouble(minValue, maxValue);
+  double res = RandomGenerator::getInstance()->sampleDouble(minValue, maxValue);
   jassert(res >= minValue && res < maxValue);
   //std::cout << " => " << res << std::endl;
   return res;
 }
 
-Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumeration, ContainerPtr trainingData, size_t variableIndex)
+Variable sampleEnumerationSplit(RandomGeneratorPtr random, EnumerationPtr enumeration, ContainerPtr trainingData, size_t variableIndex)
 {
   size_t n = enumeration->getNumElements();
 
@@ -140,7 +140,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
 
   // sample selected values
   std::set<size_t> selectedValues;
-  random.sampleSubset(possibleValuesVector, possibleValues.size() / 2, selectedValues);
+  random->sampleSubset(possibleValuesVector, possibleValues.size() / 2, selectedValues);
 
   // create mask
   BooleanVectorPtr mask = new BooleanVector(n + 1);
@@ -148,7 +148,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
   {
     bool bitValue;
     if (possibleValues.find(i) == possibleValues.end())
-      bitValue = random.sampleBool(); // 50% probability for values that do not appear in the training data
+      bitValue = random->sampleBool(); // 50% probability for values that do not appear in the training data
     else
       bitValue = (selectedValues.find(i) != selectedValues.end()); // true for selected values
     mask->set(i, bitValue);
@@ -156,7 +156,7 @@ Variable sampleEnumerationSplit(RandomGenerator& random, EnumerationPtr enumerat
   return mask;
 }
 
-PredicatePtr sampleSplit(RandomGenerator& random, ContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
+PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
 {
   TypePtr variableType = inputType->getObjectVariableType(variableIndex);
   if (variableType->inheritsFrom(doubleType()))
@@ -288,7 +288,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
   if (numAttributeSamplesPerSplit >= nonConstantVariables.size())
     splitVariables = nonConstantVariables;
   else
-    RandomGenerator::getInstance().sampleSubset(nonConstantVariables, numAttributeSamplesPerSplit, splitVariables); 
+    RandomGenerator::getInstance()->sampleSubset(nonConstantVariables, numAttributeSamplesPerSplit, splitVariables); 
   size_t K = splitVariables.size();
   
   // generate split predicates, score them, and keep the best one

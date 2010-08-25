@@ -24,10 +24,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_RANDOM_H_
-# define LBCPP_RANDOM_H_
+#ifndef LBCPP_DATA_RANDOM_GENERATOR_H_
+# define LBCPP_DATA_RANDOM_GENERATOR_H_
 
-# include "../common.h"
+# include "Object.h"
 
 namespace lbcpp
 {
@@ -36,15 +36,15 @@ namespace lbcpp
 ** @class RandomGenerator
 ** @brief Pseudo-random number generator
 */
-class RandomGenerator
+class RandomGenerator : public Object
 {
 public:
   /** Singleton instance getter.
   **
   ** @return a reference on the RandomGenerator singleton.
   */
-  static RandomGenerator& getInstance()
-    {static RandomGenerator instance(1664518616645186LL); return instance;}
+  static RandomGeneratorPtr getInstance()
+    {static RandomGeneratorPtr instance(new RandomGenerator(1664518616645186LL)); return instance;}
 
   /** Constructor.
   **
@@ -319,6 +319,8 @@ public:
       res.insert(elements[order[i]]);
   }
 private:
+  friend class RandomGeneratorClass;
+
   long long seed;               /*!< RandomGenerator seed. */
 
   /**
@@ -333,4 +335,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_RANDOM_H_
+#endif // !LBCPP_DATA_RANDOM_GENERATOR_H_
