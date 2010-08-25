@@ -35,20 +35,20 @@
 # include "Data/Consumer.h"
 # include "Data/Vector.h"
 # include "Data/SymmetricMatrix.h"
-# include "Data/Predicate.h"
 # include "Data/ProbabilityDistribution.h"
 # include "Data/RandomGenerator.h"
 
 // old
-# include "Utilities/IterationFunction.h"
 # include "Utilities/RandomVariable.h"
 # include "Utilities/ProgressCallback.h"
-# include "Utilities/StoppingCriterion.h"
 // -
 
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarObjectFunction.h"
+# include "Function/Predicate.h"
+# include "Function/IterationFunction.h"
+# include "Function/StoppingCriterion.h"
 # include "Function/Perception.h"
 # include "Function/PerceptionMaths.h"
 

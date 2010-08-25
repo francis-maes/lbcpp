@@ -11,7 +11,7 @@
 
 # include <lbcpp/Data/Object.h>
 # include <lbcpp/Data/Variable.h>
-# include <lbcpp/Data/Predicate.h>
+# include <lbcpp/Function/Predicate.h>
 
 namespace lbcpp 
 {

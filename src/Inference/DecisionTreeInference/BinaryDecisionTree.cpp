@@ -15,7 +15,7 @@ Variable BinaryDecisionTree::makePrediction(const Variable& input, size_t nodeIn
   return node.isLeaf() ? node.getLeafValue() : makePrediction(input, node.getChildNodeIndex(input));
 }
 
-#include <lbcpp/Data/Predicate.h>
+#include <lbcpp/Function/Predicate.h>
 #include <lbcpp/Data/Vector.h>
 class BelongsToMaskPredicate : public Predicate
 {
