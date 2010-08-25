@@ -144,7 +144,7 @@ static void printVariableLine(const Variable& value, std::ostream& ostr, size_t 
     ostr << "  ";
   if (variableNumber != (size_t)-1)
     ostr << "[" << variableNumber << "] ";
-  ostr << value.getTypeName();
+  ostr << (const char* )value.getTypeName();
   if (name.isNotEmpty())
     ostr << " " << name;
   String v = value.toString();
