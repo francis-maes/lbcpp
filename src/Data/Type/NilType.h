@@ -42,6 +42,9 @@ public:
   virtual VariableValue create() const
     {return VariableValue();}
 
+  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
+    {return VariableValue();}
+
   virtual void destroy(VariableValue& value) const
     {}
 
@@ -50,6 +53,9 @@ public:
 
   virtual String toString(const VariableValue& value) const
     {return T("Nil");}
+
+  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
+    {}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return 0;}

@@ -158,7 +158,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
   {
     jassert(serialNumber == 1);
     chain.protein = protein = new Protein(proteinName);
-    primaryStructure = new Vector(aminoAcidTypeEnumeration());
+    primaryStructure = vector(aminoAcidTypeEnumeration());
     protein->setPrimaryStructure(primaryStructure);
     currentSeqResSerialNumber = serialNumber;
   }

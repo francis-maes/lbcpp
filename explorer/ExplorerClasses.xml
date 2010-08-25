@@ -9,7 +9,7 @@
 
     <class name="ExplorerRecentFiles">
       <variable type="File" name="recentDirectory"/>
-      <variable type="Vector[File]" name="recentFiles"/>
+      <variable type="GenericVector[File]" name="recentFiles"/>
     </class>
 
     <!-- FIXME: add introspection to these classes -->

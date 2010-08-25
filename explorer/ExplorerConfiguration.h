@@ -20,7 +20,7 @@ typedef ReferenceCountedObjectPtr<ExplorerRecentFiles> ExplorerRecentFilesPtr;
 class ExplorerRecentFiles : public Object
 {
 public:
-  ExplorerRecentFiles() : recentFiles(new Vector(fileType())) {}
+  ExplorerRecentFiles() : recentFiles(vector(fileType())) {}
 
   static ExplorerRecentFilesPtr getInstance();
 

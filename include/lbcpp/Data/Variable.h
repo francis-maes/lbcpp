@@ -131,7 +131,7 @@ public:
   */
   String toString() const;
   String getShortSummary() const;
-  XmlElement* toXml(const String& tagName = T("var"), const String& name = String::empty) const;
+  XmlElement* toXml(const String& tagName = T("variable"), const String& name = String::empty) const;
 
   /**
   ** Saves variable to a file

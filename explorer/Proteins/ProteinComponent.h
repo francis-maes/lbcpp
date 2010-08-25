@@ -113,12 +113,10 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         TypePtr type = proteinClass->getObjectVariableType(i);
-        if (type->inheritsFrom(vectorClass(anyType())))
+        if (type->inheritsFrom(genericVectorClass(anyType()))
+         || type->inheritsFrom(objectVectorClass(discreteProbabilityDistributionClass(anyType()))))
         {
           String friendlyName = Protein::getTargetFriendlyName(i);
-          if (friendlyName.contains(T("Distance Map")) || friendlyName.contains(T("Contact Map")))
-            continue; // FIXME: bug in Type::inheritsFrom when using template types
-
           addObjectNameIfExists(friendlyName, i, sequenceIndex);
         }
       }

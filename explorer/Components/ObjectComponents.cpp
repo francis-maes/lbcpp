@@ -225,7 +225,7 @@ Variable lbcpp::createMultiSelectionVariable(const std::vector<Variable>& variab
     return Variable();
   if (variables.size() == 1)
     return variables[0];
-  VectorPtr res = new Vector(objectClass());
+  VectorPtr res = vector(objectClass());
   res->reserve(variables.size());
   for (size_t i = 0; i < variables.size(); ++i)
     res->append(variables[i]);

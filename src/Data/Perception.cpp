@@ -187,7 +187,7 @@ PerceptionPtr ModifierPerception::getModifiedPerceptionCached(size_t index) cons
 ** CompositePerception
 */
 CompositePerception::CompositePerception()
-  : subPerceptions(new Vector(pairType(stringType(), perceptionClass())))
+  : subPerceptions(vector(pairType(stringType(), perceptionClass())))
 {
 }
 

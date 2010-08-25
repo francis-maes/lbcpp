@@ -54,7 +54,7 @@ bool SymmetricMatrix::loadFromXml(XmlElement* xml, ErrorHandler& callback)
     return false;
   }
   dimension = (size_t)xml->getIntAttribute(T("dimension"));
-  values = Vector(getMatrixElementsType());
+  values = GenericVector(getMatrixElementsType(), 0);
   return values.loadFromXml(xml, callback);
 }
 

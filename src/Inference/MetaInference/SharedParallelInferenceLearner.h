@@ -54,7 +54,7 @@ private:
   ContainerPtr computeSubTrainingData(InferenceContextPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     InferencePtr targetSubInference = targetInference->getSubInference();
-    VectorPtr res = new Vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()));
+    VectorPtr res = vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()));
     
     size_t n = trainingData->getNumElements();
     for (size_t i = 0; i < n; ++i)

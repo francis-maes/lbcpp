@@ -269,13 +269,16 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
             String code = T("case ") + String((int)i) + T(": __res__ = ");
-            if (cast.isNotEmpty())
-              code += T("(") + cast + T(")(");
-            code += T("__this__->") + name;
-            if (cast.isNotEmpty())
-              code += T(")");
+            bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
+            if (isEnumeration)
+            {
+              code += T("Variable((int)__this__->") + name + T(", ")
+                + replaceFirstLettersByLowerCase(variables[i]->getStringAttribute(T("type"))) + T("Enumeration())");
+            }
+            else
+              code += T("__this__->") + name;
+
             code += T("; break;");
             writeLine(code, -1);
           }
@@ -299,13 +302,13 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String cast = variables[i]->getStringAttribute(T("cast"), String::empty);
             String code = T("case ") + String((int)i) + T(": lbcpp::copy(");
-            if (cast.isNotEmpty())
-              code += T("(") + cast + T("& )(");
-            code += T("__this__->") + name;
-            if (cast.isNotEmpty())
-              code += T(")");
+
+            bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
+            if (isEnumeration)
+              code += T("(int& )(__this__->") + name + T(")");
+            else
+              code += T("__this__->") + name;
             code += T(", __subValue__); break;");
             writeLine(code, -1);
           }

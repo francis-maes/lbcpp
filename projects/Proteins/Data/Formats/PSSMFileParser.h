@@ -29,7 +29,7 @@ public:
   {
     currentPosition = -3;
 
-    pssm = new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), primaryStructure->getNumElements());
+    pssm = vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(const String& line)

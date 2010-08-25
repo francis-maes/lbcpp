@@ -54,7 +54,7 @@ public:
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
-    VectorPtr res = new Vector(subInference->getOutputType(perception->getOutputType()), n);
+    VectorPtr res = vector(subInference->getOutputType(perception->getOutputType()), n);
     bool atLeastOnePrediction = false;
     for (size_t i = 0; i < n; ++i)
     {

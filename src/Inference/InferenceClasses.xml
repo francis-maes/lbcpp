@@ -37,7 +37,7 @@
     </class>
 
     <class name="VectorParallelInference" base="StaticParallelInference" abstract="yes">
-      <variable type="Vector[Inference]" name="subInferences"/>
+      <variable type="ObjectVector[Inference]" name="subInferences"/>
     </class>
     
     <!-- Sequential Inference -->
@@ -45,7 +45,7 @@
     <class name="StaticSequentialInference" base="SequentialInference" abstract="yes"/>
     
     <class name="VectorSequentialInference" base="StaticSequentialInference">
-      <variable type="Vector[Inference]" name="subInferences"/>
+      <variable type="ObjectVector[Inference]" name="subInferences"/>
     </class>
 
     <code> <!-- FIXME: ranger -->

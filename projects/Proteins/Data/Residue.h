@@ -24,7 +24,7 @@ class Residue : public Object
 {
 public:
   Residue(AminoAcidType aminoAcidType)
-    : aminoAcidType(aminoAcidType), atoms(new Vector(atomClass())) {}
+    : aminoAcidType(aminoAcidType), atoms(vector(atomClass())) {}
   Residue() {}
 
   virtual String getName() const
@@ -43,7 +43,7 @@ public:
     {return atoms->getNumElements();}
 
   AtomPtr getAtom(size_t index) const
-    {jassert(index < atoms->getNumElements()); return atoms->getElement(index).getObjectAndCast<Atom>();}
+    {return atoms->getAndCast<Atom>(index);}
 
   void addAtom(AtomPtr atom)
     {atoms->append(atom);}
@@ -95,7 +95,7 @@ protected:
   friend class ResidueClass;
 
   AminoAcidType aminoAcidType;
-  VectorPtr atoms;
+  ObjectVectorPtr atoms;
 };
 
 extern ClassPtr residueClass();

@@ -10,7 +10,7 @@
 using namespace lbcpp;
 
 TertiaryStructure::TertiaryStructure(size_t numResidues)
-  : residues(new Vector(residueClass(), numResidues))
+  : residues(vector(residueClass(), numResidues))
 {
   thisClass = tertiaryStructureClass();
 }
@@ -89,7 +89,7 @@ VectorPtr TertiaryStructure::makePrimaryStructure() const
 {
   size_t n = getNumResidues();
   jassert(n);
-  VectorPtr res = new Vector(aminoAcidTypeEnumeration(), n);
+  VectorPtr res = vector(aminoAcidTypeEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
     res->setElement(i, getResidue(i)->getAminoAcidType());
   return res;

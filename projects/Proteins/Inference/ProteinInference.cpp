@@ -102,7 +102,11 @@ ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePt
   targetIndex = (size_t)index;
   checkInheritance((TypePtr)proteinClass(), targetInference->getInputType());
   checkInheritance(getTargetType(), targetInference->getSupervisionType());
-  checkInheritance(targetInference->getOutputType(proteinClass()), getTargetType());
+  // FIXME: we need the ability to declare variables with abstract types
+  // here, getTargetType() is the concrete GenericVector<Probability> class, whil
+  // the inference target is the generic Vector<Probability> class.
+  // getTargetType() should have been typed with the generic type !
+  //checkInheritance(targetInference->getOutputType(proteinClass()), getTargetType());
 }
 
 DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

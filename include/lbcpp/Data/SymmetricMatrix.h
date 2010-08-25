@@ -57,7 +57,7 @@ public:
 
 private:
   size_t dimension;
-  Vector values;
+  GenericVector values;
 
   size_t getIndex(size_t i, size_t j) const;
 };

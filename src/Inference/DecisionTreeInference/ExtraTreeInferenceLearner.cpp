@@ -238,8 +238,8 @@ static double computeClassificationSplitScore(ContainerPtr examples, ContainerPt
 
 double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicatePtr predicate, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples)
 {
-  VectorPtr neg = new Vector(examples->getElementsType());
-  VectorPtr pos = new Vector(examples->getElementsType());
+  VectorPtr neg = vector(examples->getElementsType());
+  VectorPtr pos = vector(examples->getElementsType());
   for (size_t i = 0; i < examples->getNumElements(); ++i)
   {
     Variable inputOutputPair = examples->getElement(i);

@@ -61,7 +61,7 @@ void Protein::setPrimaryStructure(const String& primaryStructure)
   jassert(!this->primaryStructure);
   size_t n = primaryStructure.length();
 
-  this->primaryStructure = new Vector(aminoAcidTypeEnumeration(), n);
+  this->primaryStructure = vector(aminoAcidTypeEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
     this->primaryStructure->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[i]));
 }
@@ -162,7 +162,7 @@ void Protein::computeMissingVariables()
 VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
 {
   size_t n = dsspSecondaryStructure->getNumElements();
-  VectorPtr res = new Vector(secondaryStructureElementEnumeration(), n);
+  VectorPtr res = vector(secondaryStructureElementEnumeration(), n);
   for (size_t i = 0; i < n; ++i)
   {
     Variable var = dsspSecondaryStructure->getElement(i);
@@ -175,7 +175,7 @@ VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr
 VectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold)
 {
   size_t n = solventAccessibility->getNumElements();
-  VectorPtr res = new Vector(probabilityType(), n);
+  VectorPtr res = vector(probabilityType(), n);
   for (size_t i = 0; i < n; ++i)
   {
     Variable sa = solventAccessibility->getElement(i);
@@ -238,7 +238,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
   };
 
   size_t n = calphaTrace->getNumElements();
-  VectorPtr res = new Vector(structuralAlphabetElementEnumeration(), n);
+  VectorPtr res = vector(structuralAlphabetElementEnumeration(), n);
   for (size_t i = 3; i < n; ++i)
   {
     impl::Vector3 a = calphaTrace->getPosition(i - 3);
@@ -288,16 +288,16 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
 ** Create Empty Targets
 */
 VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
-  {return new Vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), getLength());}
+  {return vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), getLength());}
 
 VectorPtr Protein::createEmptySecondaryStructure() const
-  {return new Vector(secondaryStructureElementEnumeration(), getLength());}
+  {return vector(secondaryStructureElementEnumeration(), getLength());}
 
 VectorPtr Protein::createEmptyDSSPSecondaryStructure() const
-  {return new Vector(dsspSecondaryStructureElementEnumeration(), getLength());}
+  {return vector(dsspSecondaryStructureElementEnumeration(), getLength());}
 
 VectorPtr Protein::createEmptyProbabilitySequence() const
-  {return new Vector(probabilityType(), getLength());}
+  {return vector(probabilityType(), getLength());}
 
 SymmetricMatrixPtr Protein::createEmptyContactMap() const
   {return new SymmetricMatrix(probabilityType(), getLength());}
@@ -319,7 +319,7 @@ Variable Protein::createEmptyTarget(size_t index) const
   case 1: return createEmptyPositionSpecificScoringMatrix();
   case 2: return createEmptySecondaryStructure();
   case 3: return createEmptyDSSPSecondaryStructure();
-  case 4: return new Vector(structuralAlphabetElementEnumeration(), n);
+  case 4: return vector(structuralAlphabetElementEnumeration(), n);
   case 5: return createEmptyProbabilitySequence();
   case 6: return createEmptyProbabilitySequence();
   case 7: return createEmptyProbabilitySequence();
