@@ -11,7 +11,6 @@
 
 # include "Inference.h"
 # include "../Function/ScalarObjectFunction.h"
-# include "../ObjectPredeclarations.h"
 # include "../Utilities/RandomVariable.h"
 # include "../Utilities/IterationFunction.h"
 

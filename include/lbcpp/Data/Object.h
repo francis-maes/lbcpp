@@ -28,23 +28,11 @@
 # define LBCPP_OBJECT_H_
 
 # include "../ContainerTraits.h"
-# include "ReferenceCountedObject.h"
+# include "predeclarations.h"
 # include "../Object/ErrorHandler.h"
 
 namespace lbcpp
 {
-
-class Variable;
-class Object;
-typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
-class Type;
-typedef ReferenceCountedObjectPtr<Type> TypePtr;
-class Class;
-typedef ReferenceCountedObjectPtr<Class> ClassPtr;
-class ObjectGraph;
-typedef ReferenceCountedObjectPtr<ObjectGraph> ObjectGraphPtr;
-class Table;
-typedef ReferenceCountedObjectPtr<Table> TablePtr;
 
 /*!
 ** @class Object

@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_CALLBACK_H_
 
 # include "Inference.h"
-# include "../ObjectPredeclarations.h"
 
 namespace lbcpp
 {

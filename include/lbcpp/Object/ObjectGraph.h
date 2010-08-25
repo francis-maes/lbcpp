@@ -26,7 +26,8 @@
 #ifndef LBCPP_OBJECT_GRAPH_H_
 # define LBCPP_OBJECT_GRAPH_H_
 
-# include "../ObjectPredeclarations.h"
+# include "../Data/predeclarations.h"
+# include "../Data/Variable.h"
 
 namespace lbcpp
 {

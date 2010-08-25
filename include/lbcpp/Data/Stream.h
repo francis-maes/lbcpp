@@ -26,7 +26,7 @@
 #ifndef LBCPP_VARIABLE_STREAM_H_
 # define LBCPP_VARIABLE_STREAM_H_
 
-# include "../ObjectPredeclarations.h"
+# include "predeclarations.h"
 # include "../Function/Function.h"
 
 namespace lbcpp

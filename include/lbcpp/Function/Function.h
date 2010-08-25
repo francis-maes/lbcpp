@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_FUNCTION_H_
 
 # include "../Data/Variable.h"
-# include "../ObjectPredeclarations.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {
