@@ -292,7 +292,6 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.cpp
   Inference/InferenceOnlineLearner/StochasticGradientDescentOnlineLearner.h
-  Inference/InferenceOnlineLearner/MiniBatchGradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h
   Inference/InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h

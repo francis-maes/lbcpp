@@ -11,7 +11,6 @@
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
 #include "Inference/ContactMapInference.h"
-#include "Perception/PerceptionToFeatures.h"
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
@@ -26,11 +25,11 @@ public:
     return res ? res->flatten() : PerceptionPtr();
   }
 
-  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
-    {return binaryClassificationExtraTreeInference(targetName, inputType, 2, 3);}
+  virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
+    {return binaryClassificationExtraTreeInference(targetName, perception->getOutputType(), 2, 3);}
 
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, inputType, classes, 2, 3);}
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
+    {return classificationExtraTreeInference(targetName, perception->getOutputType(), classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
@@ -39,7 +38,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res ? PerceptionPtr(new ConvertToFeaturesPerception(res)) : PerceptionPtr();
+    return res ? perceptionToFeatures(res) : PerceptionPtr();
   }
   
 public:
@@ -50,18 +49,18 @@ public:
     return res;
   }
 
-  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
+  virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
-    InferencePtr scoreInference = linearInference(targetName + T(" Classifier"));
+    InferencePtr scoreInference = linearInference(targetName + T(" Classifier"), perception);
     scoreInference->setOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
     if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
       scoreInference = addBiasInference(targetName, scoreInference);
     return binaryLinearSVMInference(scoreInference);
   }
 
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName, inputType);
+    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
@@ -70,7 +69,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/*logicalOr(
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/*logicalOr(
       maxIterationsStoppingCriterion(100),  
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -174,7 +173,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")))->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;

@@ -44,11 +44,11 @@ public:
     return res ? res->flatten() : PerceptionPtr();
   }
   
-  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
-  {return binaryClassificationExtraTreeInference(targetName, inputType, 2, 3);}
+  virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
+  {return binaryClassificationExtraTreeInference(targetName, perception->getOutputType(), 2, 3);}
   
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
-  {return classificationExtraTreeInference(targetName, inputType, classes, 2, 3);}
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
+  {return classificationExtraTreeInference(targetName, perception->getOutputType(), classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
@@ -60,7 +60,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res ? PerceptionPtr(new ConvertToFeaturesPerception(res)) : PerceptionPtr();
+    return res ? perceptionToFeatures(res) : PerceptionPtr();
   }
   
   virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
@@ -69,14 +69,14 @@ public:
     return applyPerceptionOnProteinVariable(targetName, windowPerception(targetType, windowSize));
   }
 
-  virtual InferencePtr createBinaryClassifier(const String& targetName, TypePtr inputType) const
+  virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
-    return binaryLinearSVMInference(createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
+    return binaryLinearSVMInference(perception, createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
   }
   
-  virtual InferencePtr createMultiClassClassifier(const String& targetName, TypePtr inputType, EnumerationPtr classes) const
+  virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName, inputType);
+    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     //res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;

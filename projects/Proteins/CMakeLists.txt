@@ -65,8 +65,6 @@ SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   Perception/ProteinToResiduePerception.h
   Perception/ProteinToResiduePairPerception.h
   Perception/SeparationDistanceResiduePairPerception.h
-  Perception/CommonFeatureGenerators.h
-  Perception/PerceptionToFeatures.h
   Perception/ProteinPerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionClasses.cpp
 )
@@ -85,11 +83,6 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/TertiaryStructureEvaluator.h
   Evaluator/ContactMapEvaluator.h
   Evaluator/ProteinEvaluator.h
-)
-
-ADD_CRALGORITHM_SOURCES(
-  Perception/PerceptionToFeatures.lcpp
-  Perception/CommonFeatureGenerators.lcpp
 )
 
 SET(PROTEINS_CPP_SOURCES
@@ -115,7 +108,7 @@ SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 
 SOURCE_GROUP(Data FILES ${LBCPP_PROTEIN_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Formats FILES ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES})
-SOURCE_GROUP(Perception FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES} Perception/PerceptionToFeatures.lcpp)
+SOURCE_GROUP(Perception FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES})
 SOURCE_GROUP(Inference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 

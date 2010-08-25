@@ -20,18 +20,21 @@ namespace lbcpp
 class SharedParallelVectorInference : public SharedParallelInference
 {
 public:
-  SharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference)
-    : SharedParallelInference(name, elementInference), sizeFunction(sizeFunction), perception(perception) {}
+  SharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, InferencePtr elementInference)
+    : SharedParallelInference(name, elementInference), sizeFunction(sizeFunction) {}
   SharedParallelVectorInference() {}
 
   virtual TypePtr getInputType() const
-    {return perception->getInputType()->getTemplateArgument(0);}
+    {return anyType();}
 
   virtual TypePtr getSupervisionType() const
     {return vectorClass(subInference->getSupervisionType());}
 
+  TypePtr getOutputElementsType(TypePtr inputType) const
+    {return subInference->getOutputType(pairType(inputType, integerType()));}
+
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return vectorClass(subInference->getOutputType(perception->getOutputType()));}
+    {return vectorClass(getOutputElementsType(inputType));}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -46,7 +49,7 @@ public:
       Variable elementSupervision;
       if (supervisionVector)
         elementSupervision = supervisionVector->getElement(i);
-      res->addSubInference(subInference, perception->compute(Variable::pair(input, i)), elementSupervision);
+      res->addSubInference(subInference, Variable::pair(input, i), elementSupervision);
     }
     return res;
   }
@@ -54,7 +57,7 @@ public:
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
-    VectorPtr res = vector(subInference->getOutputType(perception->getOutputType()), n);
+    VectorPtr res = vector(getOutputElementsType(state->getInput().getType()), n);
     bool atLeastOnePrediction = false;
     for (size_t i = 0; i < n; ++i)
     {
@@ -78,7 +81,6 @@ protected:
   friend class SharedParallelVectorInferenceClass;
 
   FunctionPtr sizeFunction;
-  PerceptionPtr perception;
 };
 
 }; /* namespace lbcpp */

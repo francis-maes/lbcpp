@@ -17,10 +17,6 @@
       <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
     </class>
 
-    <class name="MiniBatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
-      <constructor arguments="size_t miniBatchSize, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
-    </class>
-
     <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
       <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
     </class>

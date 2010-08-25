@@ -29,10 +29,8 @@ public:
   virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
-    FeatureGeneratorPtr exampleGradient = getExampleGradient(inference, input, supervision, prediction);
-    if (!gradientSum)
-      gradientSum = new DenseVector(exampleGradient->getDictionary());
-    exampleGradient->addTo(gradientSum);
+
+    updateParameters(inference, gradientSum, 1.0, input, supervision, prediction);
     ++epoch;
     if (learningUpdateFrequency >= perStepMiniBatch)
     {
@@ -54,7 +52,7 @@ public:
     {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(inference);}
 
 protected:
-  DenseVectorPtr gradientSum;
+  ObjectPtr gradientSum;
 
   void applyGradientSum(InferencePtr inference)
   {
@@ -62,7 +60,7 @@ protected:
     {
       //std::cout << "E" << std::flush;
       gradientDescentStep(inference, gradientSum);
-      gradientSum = DenseVectorPtr();
+      gradientSum = ObjectPtr();
     }
   }
 };

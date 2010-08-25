@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include "InferenceOnlineLearner/StochasticGradientDescentOnlineLearner.h"
-#include "InferenceOnlineLearner/MiniBatchGradientDescentOnlineLearner.h"
 #include "InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h"
 #include "InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h"
 #include "InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h"
@@ -23,12 +22,6 @@ namespace lbcpp
       StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
 
   extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
-    IterationFunctionPtr learningRate, bool normalizeLearningRate,
-    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
-    ScalarVectorFunctionPtr regularizer);
-
-  extern GradientDescentOnlineLearnerPtr miniBatchGradientDescentOnlineLearner(
-    size_t miniBatchSize,
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
     InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
     ScalarVectorFunctionPtr regularizer);
@@ -80,8 +73,8 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
   // base learner
   if (learningUpdateFrequency == InferenceOnlineLearner::perStep)
     res = stochasticGradientDescentOnlineLearner(learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
-  else if (learningUpdateFrequency >= InferenceOnlineLearner::perStepMiniBatch && miniBatchSize < 100)
-    res = miniBatchGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+  //else if (learningUpdateFrequency >= InferenceOnlineLearner::perStepMiniBatch && miniBatchSize < 100)
+  //  res = miniBatchGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   else
     res = batchGradientDescentOnlineLearner(learningUpdateFrequency,
                                               learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);

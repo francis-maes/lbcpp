@@ -14,11 +14,9 @@
     </class>
 
     <class name="SharedParallelVectorInference" base="SharedParallelInference">
-      <constructor arguments="const String&amp; name, FunctionPtr sizeFunction, PerceptionPtr perception, InferencePtr elementInference"/>
+      <constructor arguments="const String&amp; name, FunctionPtr sizeFunction, InferencePtr elementInference"/>
       <variable type="Function" name="sizeFunction"/>
-      <variable type="Perception" name="perception"/>
     </class>
-    
 
   </namespace>
   
