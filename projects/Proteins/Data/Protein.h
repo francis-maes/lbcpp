@@ -175,6 +175,7 @@ protected:
   CartesianPositionVectorPtr calphaTrace;
   TertiaryStructurePtr tertiaryStructure;
 
+  static VectorPtr computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure);
   static VectorPtr computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure);
   static VectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold);
   static SymmetricMatrixPtr computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold);

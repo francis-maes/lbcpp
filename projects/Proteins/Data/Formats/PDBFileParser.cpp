@@ -563,10 +563,11 @@ bool PDBFileParser::parseEnd()
     if (!tertiaryStructure)
       return false;
     protein->setTertiaryStructure(tertiaryStructure);
-
+    /* Fonction has been transfered into computeMissingVariable
     VectorPtr disorderSequence = finalizeDisorderSequence(protein);
     if (disorderSequence)
       protein->setDisorderRegions(disorderSequence);
+    */
   }
 
   setResult(chains.begin()->second.protein);
