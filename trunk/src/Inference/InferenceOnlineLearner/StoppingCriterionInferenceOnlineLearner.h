@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_STOPPING_CRITERION_LEARNING_H_
 
 # include "GradientDescentOnlineLearner.h"
-# include <lbcpp/Utilities/StoppingCriterion.h>
+# include <lbcpp/Function/StoppingCriterion.h>
 
 namespace lbcpp
 {
@@ -108,7 +108,7 @@ private:
       bestParameters = parameters->clone();
       bestScore = score;
     }
-    if (criterion->shouldOptimizerStop(score))
+    if (criterion->shouldStop(score))
     {
       learningStopped = true;
       if (bestParameters)

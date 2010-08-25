@@ -11,8 +11,8 @@
 
 # include "Inference.h"
 # include "../Function/ScalarObjectFunction.h"
+# include "../Function/IterationFunction.h"
 # include "../Utilities/RandomVariable.h"
-# include "../Utilities/IterationFunction.h"
 
 namespace lbcpp
 {

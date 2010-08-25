@@ -37,13 +37,16 @@ class StoppingCriterion : public Object
 {
 public:
   virtual void reset() = 0;
-  virtual bool shouldOptimizerStop(double value) = 0;
+  virtual bool shouldStop(double objectiveValueToMinimize) = 0;
 };
 
 extern StoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);
 extern StoppingCriterionPtr maxIterationsWithoutImprovementStoppingCriterion(size_t maxIterationsWithoutImprovement);
 extern StoppingCriterionPtr averageImprovementStoppingCriterion(double tolerance, bool relativeImprovment = false);
-extern StoppingCriterionPtr logicalOr(StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2);
+extern StoppingCriterionPtr logicalOrStoppingCriterion(StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2);
+
+inline StoppingCriterionPtr logicalOr(StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2)
+  {return logicalOrStoppingCriterion(criterion1, criterion2);}
 
 }; /* namespace lbcpp */
 

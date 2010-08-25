@@ -1,34 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: IterationFunction.cpp          | Iteration Functions             |
+| Filename: InvLinearIterationFunction.h   | InvLinear Iteration Function    |
 | Author  : Francis Maes                   |                                 |
-| Started : 09/06/2009 16:36               |                                 |
+| Started : 25/08/2010 22:16               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Utilities/IterationFunction.h>
-using namespace lbcpp;
+#ifndef LBCPP_FUNCTION_ITERATION_INV_LINEAR_H_
+# define LBCPP_FUNCTION_ITERATION_INV_LINEAR_H_
 
-class ConstantIterationFunction : public IterationFunction
+# include <lbcpp/Function/IterationFunction.h>
+
+namespace lbcpp
 {
-public:
-  ConstantIterationFunction(double value = 0.0) : value(value) {}
-  
-  virtual double compute(size_t iteration) const
-    {return value;}
-    
-  virtual String toString() const
-    {return "ConstantIterationFunction(" + String(value) + ")";}
-  
-  virtual ObjectPtr clone() const
-    {return new ConstantIterationFunction(value);}
-  
-private:
-  double value;
-};
-
-IterationFunctionPtr lbcpp::constantIterationFunction(double value)
-  {return new ConstantIterationFunction(value);}
 
 class InvLinearIterationFunction : public IterationFunction
 {
@@ -47,19 +31,12 @@ public:
     {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
 
 private:
+  friend class InvLinearIterationFunctionClass;
+
   double initialValue;
   size_t numberIterationsToReachHalfInitialValue;
 };
 
-IterationFunctionPtr lbcpp::invLinearIterationFunction(double initialValue, size_t numberIterationsToReachHalfInitialValue)
-  {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
+}; /* namespace lbcpp */
 
-
-/*
-** Serializable classes declaration
-*/
-void declareIterationFunctions()
-{
-  LBCPP_DECLARE_CLASS_LEGACY(ConstantIterationFunction);
-  LBCPP_DECLARE_CLASS_LEGACY(InvLinearIterationFunction);
-}
+#endif // !LBCPP_FUNCTION_ITERATION_INV_LINEAR_H_

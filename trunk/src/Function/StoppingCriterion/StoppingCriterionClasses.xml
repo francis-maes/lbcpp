@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="StoppingCriterion" directory="Function/StoppingCriterion">
+  <include file="lbcpp/Function/StoppingCriterion.h"/>
+
+  <namespace name="lbcpp">
+
+    <class name="StoppingCriterion" base="Function" abstract="yes"/>
+    <class name="MaxIterationsStoppingCriterion" base="StoppingCriterion">
+      <constructor arguments="size_t maxIterations"/>
+      <variable type="Integer" name="maxIterations"/>
+    </class>
+
+    <class name="MaxIterationsWithoutImprovementStoppingCriterion" base="StoppingCriterion">
+      <constructor arguments="size_t maxIterationsWithoutImprovement"/>
+      <variable type="Integer" name="maxIterationsWithoutImprovement"/>
+    </class>
+
+    <class name="AverageImprovementStoppingCriterion" base="StoppingCriterion">
+      <constructor arguments="double tolerance, bool relativeImprovment"/>
+      <variable type="Double" name="tolerance"/>
+      <variable type="Boolean" name="relativeImprovement"/>
+    </class>
+
+    <class name="LogicalOrStoppingCriterion" base="StoppingCriterion">
+      <constructor arguments="StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2"/>
+      <variable type="StoppingCriterion" name="criterion1"/>
+      <variable type="StoppingCriterion" name="criterion2"/>
+    </class>
+  </namespace> 
+</file>

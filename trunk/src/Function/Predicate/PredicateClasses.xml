@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Predicate" directory="Function/Predicate">
+  <include file="lbcpp/Function/Predicate.h"/>
+
+  <namespace name="lbcpp">
+
+    <class name="Predicate" base="Function" abstract="yes"/>
+
+    <class name="BinaryPredicate" base="Predicate" abstract="yes">
+      <variable type="Predicate" name="predicate1"/>
+      <variable type="Predicate" name="predicate2"/>
+    </class>
+
+    <class name="LogicalOrPredicate" base="BinaryPredicate">
+      <constructor arguments="PredicatePtr predicate1, PredicatePtr predicate2"/>
+    </class>
+    
+    <class name="LogicalAndPredicate" base="BinaryPredicate">
+      <constructor arguments="PredicatePtr predicate1, PredicatePtr predicate2"/>
+    </class>
+
+    <class name="UnaryComparisonPredicate" base="Predicate" abstract="yes">
+      <variable type="Variable" name="operand"/>
+    </class>
+
+    <class name="LessThanPredicate" base="UnaryComparisonPredicate">
+      <constructor arguments="const Variable&amp; operand"/>
+    </class>
+    
+    <class name="LessThanOrEqualToPredicate" base="UnaryComparisonPredicate">
+      <constructor arguments="const Variable&amp; operand"/>
+    </class>
+    
+    <class name="EqualToPredicate" base="UnaryComparisonPredicate">
+      <constructor arguments="const Variable&amp; operand"/>
+    </class>
+    
+    <class name="DifferentFromPredicate" base="UnaryComparisonPredicate">
+      <constructor arguments="const Variable&amp; operand"/>
+    </class>
+
+    <class name="GreaterThanOrEqualToPredicate" base="UnaryComparisonPredicate">
+      <constructor arguments="const Variable&amp; operand"/>
+    </class>
+    
+    <class name="GreaterThanPredicate" base="UnaryComparisonPredicate">
+      <constructor arguments="const Variable&amp; operand"/>
+    </class>
+  </namespace> 
+</file>

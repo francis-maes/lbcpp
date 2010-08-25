@@ -12,6 +12,9 @@ GENERATE_INTROSPECTION_CODE(Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsClasses.xml MiscFunctionsClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionClasses.xml ScalarFunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml ScalarObjectFunctionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionClasses.xml IterationFunctionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionClasses.xml StoppingCriterionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateClasses.xml PredicateClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
@@ -45,8 +48,6 @@ SET(LBCPP_DATA_SOURCES
   Data/Vector.cpp
   ../include/lbcpp/Data/SymmetricMatrix.h
   Data/SymmetricMatrix.cpp
-  ../include/lbcpp/Data/Predicate.h
-  Data/Predicate.cpp
   ../include/lbcpp/Data/ProbabilityDistribution.h
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
@@ -102,14 +103,10 @@ SET(LBCPP_OBJECT_HEADERS
 SET(LBCPP_UTILITIES_HEADERS
   ../include/lbcpp/Utilities/ProgressCallback.h
   ../include/lbcpp/Utilities/RandomVariable.h
-  ../include/lbcpp/Utilities/IterationFunction.h
-  ../include/lbcpp/Utilities/StoppingCriterion.h
 )
 
 SET(LBCPP_UTILITIES_SOURCES
   Utilities.cpp
-  IterationFunction.cpp
-  StoppingCriterion.cpp
 )
 ### old <-------------------
 
@@ -122,6 +119,9 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/ScalarFunction.h
   ../include/lbcpp/Function/ScalarObjectFunction.h
   Function/ScalarFunction.cpp
+  ../include/lbcpp/Function/IterationFunction.h
+  ../include/lbcpp/Function/StoppingCriterion.h
+  ../include/lbcpp/Function/Predicate.h
   ../include/lbcpp/Function/Perception.h
   Function/Perception.cpp
   ../include/lbcpp/Function/PerceptionMaths.h
@@ -157,6 +157,29 @@ SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
   Function/ScalarObjectFunction/SumOfSquaresScalarObjectFunction.h
   Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_ITERATION_SOURCES
+  Function/IterationFunction/ConstantIterationFunction.h
+  Function/IterationFunction/InvLinearIterationFunction.h
+  Function/IterationFunction/IterationFunctionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/IterationFunctionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES
+  Function/StoppingCriterion/MaxIterationsStoppingCriterion.h
+  Function/StoppingCriterion/MaxIterationsWithoutImprovementStoppingCriterion.h
+  Function/StoppingCriterion/AverageImprovementStoppingCriterion.h
+  Function/StoppingCriterion/LogicalOrStoppingCriterion.h
+  Function/StoppingCriterion/StoppingCriterionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/StoppingCriterionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_PREDICATE_SOURCES
+  Function/Predicate/BinaryPredicate.h
+  Function/Predicate/UnaryComparisonPredicate.h
+  Function/Predicate/PredicateClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PredicateClasses.cpp
 )
 
 SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
@@ -291,6 +314,9 @@ SET(LBCPP_CORE
     ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
+    ${LBCPP_FUNCTION_ITERATION_SOURCES}
+    ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
+    ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_PERCEPTION_SOURCES}
 
   # Inference
@@ -329,6 +355,9 @@ SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarObjectFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
+SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
+SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
+SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Perception FILES ${LBCPP_FUNCTION_PERCEPTION_SOURCES})
 
 ## Inference

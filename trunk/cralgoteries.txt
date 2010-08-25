@@ -1,9 +1,6 @@
 
- * Normaliser Predicate et mettre dans Function
- * Normaliser IterationFunction et mettre dans Function
- * Normaliser StoppingCriterion et mettre dans Function
  * Normaliser Evaluator et mettre dans Function
- 
+ * Faire un sort avec RandomVariable.h
  * Faire un sort avec les Callbacks
 
 ====
