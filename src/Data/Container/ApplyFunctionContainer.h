@@ -34,6 +34,8 @@ public:
     {jassert(false);}
 
 private:
+  friend class ApplyFunctionContainerClass;
+
   FunctionPtr function;
 };
 

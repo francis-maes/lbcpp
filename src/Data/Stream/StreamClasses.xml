@@ -20,9 +20,8 @@
     
       <constructor arguments="StreamPtr stream, FunctionPtr function" parameters="function->getOutputType(stream->getElementsType())"/>
       
-      <variable type="Stream" name="stream"/>
+      <variable type="Stream[Variable]" name="stream"/>
       <variable type="Function" name="function"/>
-      <variable type="Type" name="outputType"/>
     </class>
     
   </namespace> 

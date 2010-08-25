@@ -1,7 +1,6 @@
 
 Types:
   * Rendre la classe Vector abstraite
-  * Rendre les stream Template
 
 FeaturePerceptions:
   * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
