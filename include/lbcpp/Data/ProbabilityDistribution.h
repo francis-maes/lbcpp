@@ -22,7 +22,7 @@ public:
   
   virtual double computeEntropy() const = 0;
   virtual double compute(const Variable& value) const = 0;
-  virtual Variable sample(RandomGenerator& random) const = 0;
+  virtual Variable sample(RandomGeneratorPtr random) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProbabilityDistribution> ProbabilityDistributionPtr;
@@ -42,7 +42,7 @@ public:
     {return 1.0 - getProbabilityOfTrue();}
 
   virtual double compute(const Variable& value) const;
-  virtual Variable sample(RandomGenerator& random) const;
+  virtual Variable sample(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
 
 protected:
@@ -65,7 +65,7 @@ public:
 
   // ProbabilityDistribution
   virtual double compute(const Variable& value) const;
-  virtual Variable sample(RandomGenerator& random) const;
+  virtual Variable sample(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
 
   // Object

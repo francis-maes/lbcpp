@@ -503,6 +503,17 @@ protected:
 
     openScope(T("void declare") + fileName + T("Classes()"));
     
+    if (hasImports)
+    {
+      newLine();
+      forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+        if (elt->getBoolAttribute(T("pre"), false))
+        {
+          String name = elt->getStringAttribute(T("name"), T("???"));
+          writeLine(T("declare") + name + T("Classes();"));
+        }
+    }
+
     for (size_t i = 0; i < types.size(); ++i)
       writeLine(T("lbcpp::Type::declare(new ") + types[i] + T(");"));
 
@@ -510,10 +521,11 @@ protected:
     {
       newLine();
       forEachXmlChildElementWithTagName(*xml, elt, T("import"))
-      {
-        String name = elt->getStringAttribute(T("name"), T("???"));
-        writeLine(T("declare") + name + T("Classes();"));
-      }
+        if (!elt->getBoolAttribute(T("pre"), false))
+        {
+          String name = elt->getStringAttribute(T("name"), T("???"));
+          writeLine(T("declare") + name + T("Classes();"));
+        }
     }
 
     forEachXmlChildElementWithTagName(*xml, elt, T("declarationCode"))

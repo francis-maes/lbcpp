@@ -1,14 +1,12 @@
 
- * Deplacer Predicate de Data vers Function
- * Deplacer RandomGenerator de Utilities vers Data, et deriver de Object
+ * Normaliser Predicate et mettre dans Function
  * Normaliser IterationFunction et mettre dans Function
  * Normaliser StoppingCriterion et mettre dans Function
- * Faire un sort avec les Callbacks
+ * Normaliser Evaluator et mettre dans Function
  
-Cleaning:
-  * Deplacer Evaluator de Inference vers Function
-  * Ranger les Utilities et les anciens Objects  
+ * Faire un sort avec les Callbacks
 
+====
 * Serialisation des Perceptions
 * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  

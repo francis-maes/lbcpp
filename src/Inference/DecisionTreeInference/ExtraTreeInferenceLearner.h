@@ -11,7 +11,7 @@
 
 # include "ExtraTreeInference.h"
 # include <lbcpp/Inference/ParallelInference.h>
-# include <lbcpp/Utilities/RandomGenerator.h>
+# include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
 {
@@ -25,7 +25,7 @@ public:
   SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting);
 
 protected:
-  RandomGenerator random;
+  RandomGeneratorPtr random;
 
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;

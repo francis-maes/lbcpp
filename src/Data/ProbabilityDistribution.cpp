@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Data/ProbabilityDistribution.h>
-#include <lbcpp/Utilities/RandomGenerator.h>
+#include <lbcpp/Data/RandomGenerator.h>
 using namespace lbcpp;
 
 /*
@@ -20,8 +20,8 @@ double BernoulliDistribution::compute(const Variable& value) const
   return 0.0;
 }
 
-Variable BernoulliDistribution::sample(RandomGenerator& random) const
-  {return random.sampleBool(getProbabilityOfTrue());}
+Variable BernoulliDistribution::sample(RandomGeneratorPtr random) const
+  {return random->sampleBool(getProbabilityOfTrue());}
   
 double BernoulliDistribution::computeEntropy() const
 {
@@ -62,10 +62,10 @@ String DiscreteProbabilityDistribution::toString() const
   return str;
 }
 
-Variable DiscreteProbabilityDistribution::sample(RandomGenerator& random) const
+Variable DiscreteProbabilityDistribution::sample(RandomGeneratorPtr random) const
 {
   EnumerationPtr enumeration = getEnumeration();
-  int res = random.sampleWithProbabilities(values, sum);
+  int res = random->sampleWithProbabilities(values, sum);
   if (res >= 0 && res < (int)enumeration->getNumElements())
     return Variable(res, enumeration);
   else
