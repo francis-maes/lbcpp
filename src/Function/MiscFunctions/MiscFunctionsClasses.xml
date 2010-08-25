@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Function" directory="Data/Function">
+<file name="MiscFunctions" directory="Function/MiscFunctions">
   <namespace name="lbcpp">
-
-    <class name="Function" abstract="yes"/>
 
     <class name="LoadFromFileFunction" base="Function">
       <constructor arguments="TypePtr expectedType"/>

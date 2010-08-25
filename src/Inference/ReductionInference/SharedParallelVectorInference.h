@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
-# include <lbcpp/Data/Perception.h>
+# include <lbcpp/Function/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp

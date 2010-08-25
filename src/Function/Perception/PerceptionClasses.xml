@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Perception" directory="Data/Perception">
-  <include file="lbcpp/Data/Perception.h"/>
+<file name="Perception" directory="Function/Perception">
+  <include file="lbcpp/Function/Perception.h"/>
 
   <namespace name="lbcpp">
 

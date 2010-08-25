@@ -10,7 +10,7 @@
 # define LBCPP_DATA_CONTAINER_APPLY_FUNCTION_H_
 
 # include <lbcpp/Data/Container.h>
-# include <lbcpp/Data/Function.h>
+# include <lbcpp/Function/Function.h>
 
 namespace lbcpp
 {

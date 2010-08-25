@@ -2,10 +2,8 @@
 
 <file name="Data" directory="Data">
   <import name="Type"/>
-  <import name="Function"/>
   <import name="Stream"/>
   <import name="Container"/>
-  <import name="Perception"/>
 
   <namespace name="lbcpp">
 

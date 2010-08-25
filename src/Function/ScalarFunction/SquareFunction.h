@@ -9,7 +9,7 @@
 #ifndef LBCPP_SCALAR_FUNCTION_SQUARE_H_
 # define LBCPP_SCALAR_FUNCTION_SQUARE_H_
 
-# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
+# include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp
 {

@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
-# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
+# include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp
 {
@@ -95,7 +95,7 @@ public:
   BinaryLinearSVMInference() {}
 
   virtual ScalarFunctionPtr getLoss(bool isPositive) const
-    {return hingeLoss(isPositive ? 1 : 0);}
+    {return hingeLossFunction(isPositive ? 1 : 0);}
 };
 
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
@@ -107,7 +107,7 @@ public:
   BinaryLogisticRegressionInference() {}
 
   virtual ScalarFunctionPtr getLoss(bool isPositive) const
-    {return logBinomialLoss(isPositive ? 1 : 0);}
+    {return logBinomialLossFunction(isPositive ? 1 : 0);}
 };
 
 }; /* namespace lbcpp */

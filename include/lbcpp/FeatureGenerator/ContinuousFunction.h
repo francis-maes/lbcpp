@@ -58,7 +58,7 @@ public:
 class ScalarFunction : public ContinuousFunction
 {
 public:
-  virtual ObjectPtr multiplyByScalar(double scalar);
+  ScalarFunctionPtr multiplyByScalar(double scalar);
   ScalarFunctionPtr composeWith(ScalarFunctionPtr postFunction) const;
 
   /**

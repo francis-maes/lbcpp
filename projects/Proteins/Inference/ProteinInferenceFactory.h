@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 # define LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 
-# include <lbcpp/Data/Perception.h>
+# include <lbcpp/Function/Perception.h>
 # include <lbcpp/Inference/Inference.h>
 # include "../Data/Protein.h"   
 

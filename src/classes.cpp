@@ -11,6 +11,9 @@ using namespace lbcpp;
 
 // new
 extern void declareDataClasses();
+extern void declareFunctionClasses();
+extern void declareInferenceClasses();
+
 
 // old
 extern void declarePredicateClasses();
@@ -31,6 +34,7 @@ extern void declareOptimizers();
 
 void declareFeatureGenerators()
 {
+  /*
   LBCPP_DECLARE_CLASS_LEGACY(StringDictionary);
   LBCPP_DECLARE_CLASS_LEGACY(FeatureDictionary);
 
@@ -39,17 +43,17 @@ void declareFeatureGenerators()
   LBCPP_DECLARE_CLASS_LEGACY(Label);
   LBCPP_DECLARE_CLASS_LEGACY(Scalar);
   LBCPP_DECLARE_CLASS_LEGACY(SparseVector);
-  LBCPP_DECLARE_CLASS_LEGACY(DenseVector);
+  LBCPP_DECLARE_CLASS_LEGACY(DenseVector);*/
 }
 
 // Inference
-extern void declareInferenceClasses();
 extern void declareInferenceCallbackClasses();
 
 void declareLBCppCoreClasses()
 {
   declareDataClasses(); // generated
   
+  // old -->
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
 
@@ -61,8 +65,10 @@ void declareLBCppCoreClasses()
   declareStoppingCriterions();
   declareOptimizers();
   
-  LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
+  //LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
+  // <--
   
+  declareFunctionClasses(); // generated
   declareInferenceClasses(); // generated
 
   Type::finishDeclarations();

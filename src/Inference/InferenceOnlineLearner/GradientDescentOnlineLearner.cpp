@@ -7,8 +7,7 @@
                                `--------------------------------------------*/
 
 #include "GradientDescentOnlineLearner.h"
-#include <lbcpp/FeatureGenerator/DenseVector.h>
-#include <lbcpp/FeatureGenerator/ContinuousFunction.h>
+# include <lbcpp/Function/ScalarFunction.h>
 using namespace lbcpp;
 
 GradientDescentOnlineLearner::GradientDescentOnlineLearner(

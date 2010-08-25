@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_DATA_FUNCTIONS_H_
 # define LBCPP_PROTEIN_DATA_FUNCTIONS_H_
 
-# include <lbcpp/Data/Function.h>
+# include <lbcpp/Function/Function.h>
 # include "Protein.h"
 
 namespace lbcpp

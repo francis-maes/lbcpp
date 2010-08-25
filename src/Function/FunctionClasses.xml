@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Function" directory="Function">
+  <import name="MiscFunctions"/>
+  <import name="ScalarFunction"/>
+  <import name="Perception"/>
+
+  <namespace name="lbcpp">
+
+   <class name="Function" abstract="yes"/>
+
+  </namespace>
+  
+</file>

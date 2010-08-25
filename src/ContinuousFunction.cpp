@@ -7,19 +7,19 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/FeatureGenerator/ContinuousFunction.h>
-#include "ContinuousFunction/MiscScalarFunctions.h"
+//#include "ContinuousFunction/MiscScalarFunctions.h"
 #include "ContinuousFunction/BinarySumScalarVectorFunction.h"
-#include "ContinuousFunction/HingeLossFunction.h"
-#include "ContinuousFunction/LogBinomialLossFunction.h"
-#include "ContinuousFunction/SquareFunction.h"
-#include "ContinuousFunction/AbsFunction.h"
+//#include "ContinuousFunction/HingeLossFunction.h"
+//#include "ContinuousFunction/LogBinomialLossFunction.h"
+//#include "ContinuousFunction/SquareFunction.h"
+//#include "ContinuousFunction/AbsFunction.h"
 #include "ContinuousFunction/MultiplyByScalarVectorFunction.h"
 #include "ContinuousFunction/SumOfSquaresScalarVectorFunction.h"
 using namespace lbcpp;
 
 /*
 ** Scalar Function
-*/
+*
 double ScalarFunction::compute(double input) const
 {
   double res;
@@ -44,7 +44,7 @@ double ScalarFunction::computeDerivative(double input, double direction) const
 void ScalarFunction::compute(double input, double* output, double* derivative) const
   {compute(input, output, NULL, derivative);}
 
-ObjectPtr ScalarFunction::multiplyByScalar(double scalar)
+ScalarFunctionPtr ScalarFunction::multiplyByScalar(double scalar)
   {return new MultiplyByScalarFunction(ScalarFunctionPtr(const_cast<ScalarFunction* >(this)), scalar);}
 
 ScalarFunctionPtr ScalarFunction::composeWith(ScalarFunctionPtr postFunction) const
@@ -71,9 +71,9 @@ BinaryClassificationLossFunctionPtr lbcpp::hingeLoss(bool isPositive, double mar
 BinaryClassificationLossFunctionPtr lbcpp::logBinomialLoss(bool isPositive)
   {return new LogBinomialLossFunction(isPositive);}
 
-/*
+*
 ** BinaryClassificationLossFunction
-*/
+*
 String BinaryClassificationLossFunction::toString() const
   {return getClassName() + T("(") + (isPositive ? T("+") : T("-")) + T(")");}
 
@@ -86,6 +86,7 @@ void BinaryClassificationLossFunction::compute(double input, double* output, con
   if (derivative && !isPositive)
     *derivative = - (*derivative);
 }
+*/
 
 /*
 ** ScalarVectorFunction
@@ -155,9 +156,9 @@ ScalarVectorFunctionPtr lbcpp::sum(ScalarVectorFunctionPtr f1, ScalarVectorFunct
 void declareContinuousFunctions()
 {
   LBCPP_DECLARE_ABSTRACT_CLASS(ContinuousFunction, Object);
-  LBCPP_DECLARE_ABSTRACT_CLASS(ScalarFunction, ContinuousFunction);
+ // LBCPP_DECLARE_ABSTRACT_CLASS(ScalarFunction, ContinuousFunction);
 
-  LBCPP_DECLARE_CLASS(ScalarFunctionComposition, ScalarFunction);
+  /*LBCPP_DECLARE_CLASS(ScalarFunctionComposition, ScalarFunction);
   LBCPP_DECLARE_CLASS(MultiplyByScalarFunction, ScalarFunction);
 
   LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction, ScalarFunction);
@@ -166,7 +167,7 @@ void declareContinuousFunctions()
 
   LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationLossFunction, ScalarFunction);
   LBCPP_DECLARE_CLASS(HingeLossFunction, BinaryClassificationLossFunction);
-  LBCPP_DECLARE_CLASS(LogBinomialLossFunction, BinaryClassificationLossFunction);
+  LBCPP_DECLARE_CLASS(LogBinomialLossFunction, BinaryClassificationLossFunction);*/
 
   LBCPP_DECLARE_ABSTRACT_CLASS(ScalarVectorFunction, ContinuousFunction);
   LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction, ScalarVectorFunction);
