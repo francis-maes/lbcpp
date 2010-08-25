@@ -36,7 +36,7 @@ public:
   virtual String toString() const
   {
     String res;
-    res += lbcpp::toString(numProteins) + T(" proteins");
+    res += String((int)numProteins) + T(" proteins");
     res += "\n";
     //if (pssmEvaluator->getDefaultScore())
     //  evaluatorToString(res, pssmEvaluator);

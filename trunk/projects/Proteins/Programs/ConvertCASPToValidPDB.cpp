@@ -60,7 +60,7 @@ int main(int argc, char** argv)
       if (!numResidues)
       {
         *o << "SEQRES ";
-        String id = lbcpp::toString(++numLine);
+        String id = String((int)(++numLine));
         for (size_t i = id.length(); i < 3; ++i)
           *o << " ";
         *o << id << "    128  ";

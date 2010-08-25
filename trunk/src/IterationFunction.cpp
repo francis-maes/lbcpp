@@ -18,7 +18,7 @@ public:
     {return value;}
     
   virtual String toString() const
-    {return "ConstantIterationFunction(" + lbcpp::toString(value) + ")";}
+    {return "ConstantIterationFunction(" + String(value) + ")";}
   
   virtual ObjectPtr clone() const
     {return new ConstantIterationFunction(value);}
@@ -40,8 +40,8 @@ public:
     {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
 
   virtual String toString() const
-    {return "InvLinearIterationFunction(" + lbcpp::toString(initialValue) + 
-       ", " + lbcpp::toString(numberIterationsToReachHalfInitialValue) + ")";}
+    {return "InvLinearIterationFunction(" + String(initialValue) + 
+       ", " + String((int)numberIterationsToReachHalfInitialValue) + ")";}
 
   virtual ObjectPtr clone() const
     {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}

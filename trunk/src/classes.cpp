@@ -16,8 +16,9 @@ extern void declareInferenceClasses();
 
 
 // old
-extern void declarePredicateClasses();
 extern void declareProbabilityDistributionClasses();
+
+extern void declarePredicateClasses();
 extern void declareIterationFunctions();
 extern void declareStoppingCriterions();
 

@@ -13,6 +13,7 @@
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Function/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/Utilities/RandomGenerator.h>
 
 namespace lbcpp
 {

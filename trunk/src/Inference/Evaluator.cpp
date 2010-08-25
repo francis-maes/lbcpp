@@ -60,7 +60,7 @@ String RegressionErrorEvaluator::toString() const
     return String::empty;
   return getName() + T(": rmse = ") + String(getRMSE(), 4)
       + T(" abs = ") + String(absoluteError->getMean(), 4)
-      + T(" (") + lbcpp::toString(count) + T(" examples)");
+      + T(" (") + String((int)count) + T(" examples)");
 }
 
 void RegressionErrorEvaluator::getScores(std::vector< std::pair<String, double> >& res) const

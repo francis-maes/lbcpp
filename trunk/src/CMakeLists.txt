@@ -26,6 +26,7 @@ GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLear
 SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/ReferenceCountedObject.h
   ../include/lbcpp/Data/predeclarations.h
+  ../include/lbcpp/Data/Utilities.h  
   ../include/lbcpp/Data/Object.h
   Data/Object.cpp
   ../include/lbcpp/Data/Type.h
@@ -94,13 +95,6 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
 ### old ------------------->
 SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ErrorHandler.h  
-  ../include/lbcpp/Object/ObjectGraph.h
-  ../include/lbcpp/Object/Table.h
-)
-
-SET(LBCPP_OBJECT_SOURCES
-  ObjectGraph.cpp
-  Table.cpp
 )
 
 SET(LBCPP_UTILITIES_HEADERS
@@ -272,8 +266,6 @@ SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
 
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/common.h
-  ../include/lbcpp/Traits.h
-  ../include/lbcpp/ContainerTraits.h
   ../include/lbcpp/lbcpp.h
 )
 
@@ -289,7 +281,6 @@ SET(LBCPP_CORE
   
   #Old -->
   ${LBCPP_OBJECT_HEADERS}
-  ${LBCPP_OBJECT_SOURCES}
   ${LBCPP_UTILITIES_HEADERS}
   ${LBCPP_UTILITIES_SOURCES}
   ## <--

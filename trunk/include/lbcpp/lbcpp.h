@@ -27,10 +27,7 @@
 #ifndef LBCPP_LBCPP_H_
 # define LBCPP_LBCPP_H_
 
-# include "Traits.h"
-# include "ContainerTraits.h"
-
-// new
+# include "Data/Utilities.h"
 # include "Data/Object.h"
 # include "Data/Type.h"
 # include "Data/Variable.h"
@@ -42,8 +39,6 @@
 # include "Data/ProbabilityDistribution.h"
 
 // old
-# include "Object/ObjectGraph.h"
-# include "Object/Table.h"
 # include "Utilities/IterationFunction.h"
 # include "Utilities/RandomGenerator.h"
 # include "Utilities/RandomVariable.h"

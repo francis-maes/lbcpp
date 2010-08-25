@@ -1,7 +1,7 @@
 INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 
-FIND_PACKAGE(OpenGL REQUIRED)
-INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
+#FIND_PACKAGE(OpenGL REQUIRED)
+#INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 
 GENERATE_INTROSPECTION_CODE(ExplorerClasses.xml ExplorerClasses.cpp)
 
@@ -17,8 +17,6 @@ SET(EXPLORER_UTILITIES_SOURCES
 SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
   Components/StringComponent.h
-  Components/TableComponent.h
-  Components/ObjectGraphComponent.h
   Components/ObjectContainerNameListComponent.h
   Components/ObjectComponents.cpp
 

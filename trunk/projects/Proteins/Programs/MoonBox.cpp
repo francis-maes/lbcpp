@@ -288,10 +288,10 @@ public:
         dst.deleteFile();
 
       OutputStream* o = dst.createOutputStream();
-      *o << lbcpp::toString(currentIteration) << '\t'
+      *o << String((int)currentIteration) << '\t'
          << getTrainingEvaluator()->getEvaluatorForTarget(getTargetName())->getDefaultScore() << '\t'
          << getTestingEvaluator()->getEvaluatorForTarget(getTargetName())->getDefaultScore() << '\t'
-         << lbcpp::toString((size_t)(Time::getMillisecondCounter() - startingTime) / 1000) << '\n';
+         << String((int)(Time::getMillisecondCounter() - startingTime) / 1000) << '\n';
       delete o;
       
       ++currentIteration;

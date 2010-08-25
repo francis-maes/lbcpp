@@ -18,7 +18,7 @@ public:
     : iterations(0), maxIterations(maxIterations) {}
 
   virtual String toString() const
-    {return "MaxIterations(" + lbcpp::toString(maxIterations) + ")";}
+    {return "MaxIterations(" + String((int)maxIterations) + ")";}
 
   virtual void reset()
     {iterations = 0;}
@@ -51,7 +51,7 @@ public:
     {reset();}
 
   virtual String toString() const
-    {return "MaxIterationsWithoutImprovement(" + lbcpp::toString(maxIterationsWithoutImprovement) + ")";}
+    {return "MaxIterationsWithoutImprovement(" + String((int)maxIterationsWithoutImprovement) + ")";}
 
   virtual void reset()
     {numIterationsWithoutImprovement = 0; bestValue = -DBL_MAX;}
@@ -98,7 +98,7 @@ public:
     : tolerance(tolerance), relativeImprovement(relativeImprovement) {}
     
   virtual String toString() const
-    {return "AvgImprovment(" + lbcpp::toString(tolerance) + ")";}
+    {return "AvgImprovment(" + String(tolerance) + ")";}
 
   virtual void reset()
     {prevs.clear();}

@@ -65,14 +65,14 @@ public:
     String serialNumber = line.substring(0, 5).trim();
     if (serialNumber.getIntValue() != currentPosition + 1)
     {
-      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Invalid serial number ") + lbcpp::toString(serialNumber));
+      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Invalid serial number ") + serialNumber);
       return false;
     }   
 
     String aminoAcid = line.substring(6, 7);
     if (AminoAcid::fromOneLetterCode(aminoAcid[0]) != primaryStructure->getElement(currentPosition))
     {
-      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + lbcpp::toString(currentPosition));
+      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + String((int)currentPosition));
       return false;
     }
 

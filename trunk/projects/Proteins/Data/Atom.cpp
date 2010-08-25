@@ -12,7 +12,7 @@ using namespace lbcpp;
 String Atom::toString() const
 {
   return getName() + T(" ") + position->toString() + T(" ")
-    + lbcpp::toString(occupancy) + T(" ") + lbcpp::toString(temperatureFactor);
+    + String(occupancy) + T(" ") + String(temperatureFactor);
 }
 
 void Atom::saveToXml(XmlElement* xml) const

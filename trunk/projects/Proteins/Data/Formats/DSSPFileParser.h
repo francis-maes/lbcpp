@@ -59,7 +59,7 @@ public:
     int newSerialNumber = line.substring(0, 5).trim().getIntValue();
     if (newSerialNumber != (int)serialNumber)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid serial number: ") + lbcpp::toString(newSerialNumber));
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid serial number: ") + String(newSerialNumber));
       return false;
     }
     ++serialNumber;
@@ -71,7 +71,7 @@ public:
     int residueNumber = residueNumberString.getIntValue() -1;    
     if (residueNumber < 0 || residueNumber >= (int)n)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + lbcpp::toString(residueNumber));
+      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + String(residueNumber));
       return false;
     }
 
@@ -126,7 +126,7 @@ public:
     // jassert(normalizedSolventAccessibility <= 1.0); FIXME: IT FAILS !
     if (normalizedSolventAccessibility > 1.0)
     {
-      std::cout << "Solvent Accessibility Exeeded: " << lbcpp::toString(aminoAcidCode) << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidType] << std::endl;
+      std::cout << "Solvent Accessibility Exeeded: " << aminoAcidCode << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidType] << std::endl;
       normalizedSolventAccessibility = 1.0;
     }
     solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType()));

@@ -71,7 +71,7 @@ bool BinaryDecisionTree::Node::test(const Variable& variable) const
 String BinaryDecisionTree::toString() const
 {
   jassert(nodes.size());
-  return T("BinaryDecisionTree ") + lbcpp::toString(nodes.size()) + T(" nodes\n") + toStringRecursive(); 
+  return T("BinaryDecisionTree ") + String((int)nodes.size()) + T(" nodes\n") + toStringRecursive(); 
 }
 
 String BinaryDecisionTree::Node::toString() const
@@ -92,7 +92,7 @@ String BinaryDecisionTree::toStringRecursive(size_t index, String indent) const
   jassert(index >= 0);
   const Node currentNode = nodes[index];
   
-  String res = indent + lbcpp::toString(index) + T(" ") + currentNode.toString() + T("\n");
+  String res = indent + String((int)index) + T(" ") + currentNode.toString() + T("\n");
   if (currentNode.isLeaf())
     return res;
   

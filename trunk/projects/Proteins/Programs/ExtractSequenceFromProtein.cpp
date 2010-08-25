@@ -76,7 +76,7 @@ int main(int argc, char** argv)
   juce::OwnedArray<File> proteinFiles;
   proteinDirectory.findChildFiles(proteinFiles, File::findFiles, false, T("*.xml"));
   
-  File outputFile = outputDirectory.getChildFile(T("L") + lbcpp::toString(minimumLength) + T("-") + lbcpp::toString(maximumLength) + T("DB"));
+  File outputFile = outputDirectory.getChildFile(T("L") + String(minimumLength) + T("-") + String(maximumLength) + T("DB"));
   outputFile.deleteFile();
   OutputStream* o = outputFile.createOutputStream();
   
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
     
     std::cout << "Selecting " << proteinFiles[i]->getFileNameWithoutExtension() << " ... ";
-    *o << protein->getName() << '\t' << lbcpp::toString(protein->getLength()) << '\n';
+    *o << protein->getName() << '\t' << String((int)protein->getLength()) << '\n';
     std::cout << "OK" << std::endl;
   }
   delete o;

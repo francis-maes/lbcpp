@@ -15,6 +15,7 @@
 # include <sstream>
 # include <vector>
 # include <set>
+# include <map>
 # include <typeinfo>
 # include <cmath>
 

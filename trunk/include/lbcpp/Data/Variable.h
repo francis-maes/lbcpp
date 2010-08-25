@@ -166,7 +166,7 @@ public:
     {return compare(otherVariable) > 0;}
 
   friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
-    {return ostr << variable.toString();}
+    {return ostr << (const char* )variable.toString();}
 
   /*
   ** Dynamic variables

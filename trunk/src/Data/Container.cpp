@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/Container.h>
+#include <lbcpp/Utilities/RandomGenerator.h>
 
 #include "Container/ApplyFunctionContainer.h"
 #include "Container/SubsetContainer.h"

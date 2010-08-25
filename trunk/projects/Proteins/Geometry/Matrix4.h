@@ -170,8 +170,6 @@ private:
     double m[4][4];
     double _m[16];
   };
-
-  friend struct Traits<Matrix4>;
 };
 
 inline Vector3 operator *(const Vector3& v, const Matrix4& mat)
@@ -186,29 +184,6 @@ inline Vector3 operator *(const Vector3& v, const Matrix4& mat)
 }
 
 }; /* namespace impl */
-
-template<>
-struct Traits<impl::Matrix4>
-{
-  typedef impl::Matrix4 Type;
-
-  static inline String toString(const impl::Matrix4& value)
-    {return value.toString();}
-
-  static inline void write(OutputStream& ostr, const impl::Matrix4& value)
-  {
-    for (size_t i = 0; i < 16; ++i)
-      lbcpp::write(ostr, value._m[i]);
-  }
-
-  static inline bool read(InputStream& istr, impl::Matrix4& res)
-  {
-    for (size_t i = 0; i < 16; ++i)
-    if (!lbcpp::read(istr, res._m[i]))
-      return false;
-    return true;
-  }
-};
 
 }; /* namespace lbcpp */
 

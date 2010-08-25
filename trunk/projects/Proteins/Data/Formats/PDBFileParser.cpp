@@ -95,7 +95,7 @@ bool PDBFileParser::parseRemarkLine(const String& line)
       std::cout << "ProteinObject " << proteinName << " Resolution " << resolution << std::endl;
       if (!beTolerant && resolution > highestTolerableResolution)
       {
-        callback.errorMessage(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + lbcpp::toString(resolution) + T(" is not precise enough"));
+        callback.errorMessage(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + String(resolution) + T(" is not precise enough"));
         return false;
       }
     }
@@ -143,7 +143,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     return false;
   if (numResidues <= 0)
   {
-    callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + lbcpp::toString(serialNumber));
+    callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + String(serialNumber));
     return false;
   }
   if (numResidues < 10)
@@ -168,7 +168,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     ++currentSeqResSerialNumber;
     if (serialNumber != currentSeqResSerialNumber)
     {
-      callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
+      callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid serial number: ") + String(serialNumber));
       return false;
     }
     primaryStructure = protein->getPrimaryStructure();
@@ -290,7 +290,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   Variable aminoAcid = AminoAcid::fromThreeLettersCode(residueName);
   if (!aminoAcid || aminoAcid.getInteger() >= (int)AminoAcid::numStandardAminoAcid)
   {
-    callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + lbcpp::toString(residueName));
+    callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + residueName);
     return false;
   }
 
@@ -303,7 +303,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
     residue = tertiaryStructureBlock[currentResidueIndex];
     if (residue->getAminoAcidType() != aminoAcid.getInteger())
     {
-      callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Unconsistent residue name: ") + lbcpp::toString(residueName));
+      callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Unconsistent residue name: ") + residueName);
       return false;
     }
   }
@@ -405,7 +405,7 @@ bool PDBFileParser::parseAndCheckAtomSerialNumber(const String& line, int firstC
   currentAtomSerialNumber = serialNumber;
   if (serialNumber != currentAtomSerialNumber)
   {
-    callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid serial number: ") + lbcpp::toString(serialNumber));
+    callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid serial number: ") + String(serialNumber));
     return false;
   }
   return true;
@@ -440,7 +440,8 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
 {
   if (!tertiaryStructureBlocks.size())
   {
-    callback.errorMessage(T("PDBFileParser::finalizeChain"), T("No tertiary structure for chain ") + lbcpp::toString(chainId));
+    String str; str += chainId;
+    callback.errorMessage(T("PDBFileParser::finalizeChain"), T("No tertiary structure for chain ") + str);
     return TertiaryStructurePtr();
   }
   
@@ -649,7 +650,8 @@ bool PDBFileParser::getChainId(const String& line, int column, char& res) const
   }
   if (res < 'A' && res > 'Z')
   {
-    callback.errorMessage(T("PDBFileParser::getChainId"), T("Invalid chain ID: ") + lbcpp::toString(res));
+    String str; str += res;
+    callback.errorMessage(T("PDBFileParser::getChainId"), T("Invalid chain ID: ") + str);
     return false;
   }
   return true;
