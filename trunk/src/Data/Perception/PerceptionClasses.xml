@@ -24,7 +24,7 @@
     </class>
     
     <class name="CompositePerception" base="Perception" abstract="yes">
-      <variable type="Vector[Pair[String, Perception]]" name="subPerceptions"/>
+      <variable type="GenericVector[Pair[String, Perception]]" name="subPerceptions"/>
     </class>
 
     <class name="PreprocessPerception" base="DecoratorPerception">

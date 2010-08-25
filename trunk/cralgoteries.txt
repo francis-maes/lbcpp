@@ -1,6 +1,4 @@
 
-Types:
-  * Rendre la classe Vector abstraite
 
 FeaturePerceptions:
   * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
@@ -16,8 +14,7 @@ Cleaning:
   * Deplacer Evaluator de lbcpp/Inference vers lbcpp/Data
   * Ranger les Utilities et les anciens Objects  
  
-* Bug: AminoAcid::getVariable renvoie pas le bon type
-* Rendre visible la variable Type de la classe Object (?)
+* Types: Rendre visible la variable Type de la classe Object (?)
 
 ====
 ContactMap:

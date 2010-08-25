@@ -15,7 +15,7 @@ using namespace lbcpp;
 */
 VectorPtr Stream::load(size_t maximumCount)
 {
-  VectorPtr res = new Vector(getElementsType());
+  VectorPtr res = vector(getElementsType());
   while (maximumCount == 0 || res->getNumElements() < maximumCount)
   {
     Variable variable = next();

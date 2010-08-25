@@ -32,7 +32,7 @@
     <class name="Type" base="NameableObject" abstract="yes">
       <variable type="Type" name="baseType"/>
       <variable type="TemplateType" name="templateType"/>
-      <!-- <variable type="Vector[Type]" name="templateArguments"/> -->
+      <!-- <variable type="ObjectVector[Type]" name="templateArguments"/> -->
       <code>
         virtual VariableValue createFromString(const String&amp; value, ErrorHandler&amp; callback) const
         {return Type::get(value, callback);}

@@ -55,7 +55,7 @@ public:
       InferencePtr subInferenceLearner = subInference->getBatchLearner();
       if (subInferenceLearner)
       {
-        VectorPtr subTrainingData = new Vector(pairType(subInference->getInputType(), subInference->getSupervisionType()), n);
+        VectorPtr subTrainingData = vector(pairType(subInference->getInputType(), subInference->getSupervisionType()), n);
         for (size_t j = 0; j < n; ++j)
           subTrainingData->setElement(j, Variable::pair(currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i)));
         res->addSubInference(subInferenceLearner, Variable::pair(subInference, subTrainingData), Variable());

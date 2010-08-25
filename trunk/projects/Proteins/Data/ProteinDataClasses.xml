@@ -103,7 +103,7 @@
 
     <!-- Amino Acid Class -->      
     <class name="AminoAcid" manualAccessors="yes">
-      <variable type="AminoAcidType" name="type" cast="int"/>
+      <variable type="AminoAcidType" name="type" enumeration="yes"/>
       <variable type="String" name="oneLetterCode"/>
       <variable type="String" name="threeLettersCode"/>
       <variable type="AminoAcidCategory1" name="category1"/>
@@ -118,28 +118,28 @@
     </class>
 
     <class name="Residue">
-      <variable type="AminoAcidType" name="aminoAcidType" cast="int"/>
-      <variable type="Vector[Atom]" name="atoms"/>
+      <variable type="AminoAcidType" name="aminoAcidType" enumeration="yes"/>
+      <variable type="ObjectVector[Atom]" name="atoms"/>
     </class>
     
     <class name="TertiaryStructure">
-      <variable type="Vector[Residue]" name="residues"/>
+      <variable type="ObjectVector[Residue]" name="residues"/>
     </class>
     
     <class name="Protein" base="NameableObject">
       
       <!-- Primary Structure -->
-      <variable type="Vector[AminoAcidType]" name="primaryStructure" shortdesc="Primary Structure"/>
-      <variable type="Vector[DiscreteProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortdesc="PSSM"/>
+      <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortdesc="Primary Structure"/>
+      <variable type="ObjectVector[DiscreteProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortdesc="PSSM"/>
       
       <!-- Secondary Structure -->
-      <variable type="Vector[SecondaryStructureElement]" name="secondaryStructure" shortdesc="Secondary Structure"/>
-      <variable type="Vector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortdesc="DSSP Secondary Structure"/>
-      <variable type="Vector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortdesc="Structural Alphabet"/>
+      <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortdesc="Secondary Structure"/>
+      <variable type="GenericVector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortdesc="DSSP Secondary Structure"/>
+      <variable type="GenericVector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortdesc="Structural Alphabet"/>
 
-      <variable type="Vector[Probability]" name="solventAccessibility" shortdesc="Solvent Accessibility"/>
-      <variable type="Vector[Probability]" name="solventAccessibilityAt20p" shortdesc="Solvent Accessibility at 20%"/>
-      <variable type="Vector[Probability]" name="disorderRegions" shortdesc="Disorder Regions"/>
+      <variable type="GenericVector[Probability]" name="solventAccessibility" shortdesc="Solvent Accessibility"/>
+      <variable type="GenericVector[Probability]" name="solventAccessibilityAt20p" shortdesc="Solvent Accessibility at 20%"/>
+      <variable type="GenericVector[Probability]" name="disorderRegions" shortdesc="Disorder Regions"/>
       
       <!-- Contact Maps -->
       <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortdesc="Contact Map C-alpha 8"/>

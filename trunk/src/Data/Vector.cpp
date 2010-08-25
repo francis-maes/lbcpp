@@ -8,76 +8,9 @@
 #include <lbcpp/Data/Vector.h>
 using namespace lbcpp;
 
-Vector::Vector(TypePtr elementsType, size_t initialSize)
-{
-  thisClass = vectorClass(elementsType);
-  jassert(elementsType != topLevelType());
-  if (initialSize)
-    values.resize(initialSize, elementsType->getMissingValue());
-}
-
-void Vector::resize(size_t size)
-  {values.resize(size, getElementsType()->getMissingValue());}
-
-size_t Vector::getNumElements() const
-  {return values.size();}
-
-Variable Vector::getElement(size_t index) const
-{
-  jassert(index < values.size());
-  TypePtr elementsType = getElementsType();
-  if (elementsType.isInstanceOf<Class>())
-  {
-    ObjectPtr res = values[index].getObjectPointer();
-    return res ? Variable(res) : Variable::missingValue(elementsType);
-  }
-  else
-    return Variable::copyFrom(elementsType, values[index]);
-}
-
-void Vector::setElement(size_t index, const Variable& value)
-{
-  if (checkType(value))
-  {
-    jassert(index < values.size());
-    value.copyTo(values[index]);
-  }
-}
-
-void Vector::clear()
-{
-  TypePtr type = getElementsType();
-  for (size_t i = 0; i < values.size(); ++i)
-    type->destroy(values[i]);
-  values.clear();
-}
-
-void Vector::prepend(const Variable& value)
-{
-  if (checkType(value))
-  {
-    values.insert(values.begin(), VariableValue());
-    value.copyTo(values.front());
-  }
-}
-
-void Vector::append(const Variable& value)
-{
-  if (checkType(value))
-  {
-    values.push_back(VariableValue());
-    value.copyTo(values.back());
-  }
-}
-
-void Vector::remove(size_t index)
-{
-  jassert(index < values.size());
-  TypePtr type = getElementsType();
-  type->destroy(values[index]);
-  values.erase(values.begin() + index);
-}
-
+/*
+** Vector
+*/
 bool Vector::checkType(const Variable& value) const
   {return checkInheritance(value, getElementsType());}
 
@@ -120,9 +53,97 @@ String Vector::toString() const
   return Container::toString();
 }
 
-void Vector::saveToXml(XmlElement* xml) const
+bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 {
-  size_t n = getNumVariables();
+  int size = xml->getIntAttribute(T("size"), -1);
+  if (size < 0)
+  {
+    callback.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
+    return false;
+  }
+  resize(size);
+  return Container::loadFromXml(xml, callback);
+}
+
+/*
+** GenericVector
+*/
+GenericVector::GenericVector(TypePtr elementsType, size_t initialSize)
+  : Vector(genericVectorClass(elementsType))
+{
+  jassert(elementsType != topLevelType());
+  if (initialSize)
+    values.resize(initialSize, elementsType->getMissingValue());
+}
+
+size_t GenericVector::getNumElements() const
+  {return values.size();}
+
+Variable GenericVector::getElement(size_t index) const
+{
+  jassert(index < values.size());
+  TypePtr elementsType = getElementsType();
+  if (elementsType.isInstanceOf<Class>())
+  {
+    ObjectPtr res = values[index].getObjectPointer();
+    return res ? Variable(res) : Variable::missingValue(elementsType);
+  }
+  else
+    return Variable::copyFrom(elementsType, values[index]);
+}
+
+void GenericVector::setElement(size_t index, const Variable& value)
+{
+  if (checkType(value))
+  {
+    jassert(index < values.size());
+    value.copyTo(values[index]);
+  }
+}
+
+void GenericVector::clear()
+{
+  TypePtr type = getElementsType();
+  for (size_t i = 0; i < values.size(); ++i)
+    type->destroy(values[i]);
+  values.clear();
+}
+
+void GenericVector::reserve(size_t size)
+  {values.reserve(size);}
+
+void GenericVector::resize(size_t size)
+  {values.resize(size, getElementsType()->getMissingValue());}
+
+void GenericVector::prepend(const Variable& value)
+{
+  if (checkType(value))
+  {
+    values.insert(values.begin(), VariableValue());
+    value.copyTo(values.front());
+  }
+}
+
+void GenericVector::append(const Variable& value)
+{
+  if (checkType(value))
+  {
+    values.push_back(VariableValue());
+    value.copyTo(values.back());
+  }
+}
+
+void GenericVector::remove(size_t index)
+{
+  jassert(index < values.size());
+  TypePtr type = getElementsType();
+  type->destroy(values[index]);
+  values.erase(values.begin() + index);
+}
+
+void GenericVector::saveToXml(XmlElement* xml) const
+{
+  size_t n = getNumElements();
 
   TypePtr type = getElementsType();
   xml->setAttribute(T("size"), (int)n);
@@ -142,7 +163,7 @@ void Vector::saveToXml(XmlElement* xml) const
     Container::saveToXml(xml);
 }
 
-bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool GenericVector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 {
   TypePtr type = getElementsType();
   jassert(type);
@@ -228,4 +249,146 @@ bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
 
   // default implementation  
   return Container::loadFromXml(xml, callback);
+}
+
+/*
+** BooleanVector
+*/
+BooleanVector::BooleanVector(size_t initialSize)
+  : Vector(booleanVectorClass())
+{
+  if (initialSize)
+    v.resize(initialSize, false);
+}
+
+String BooleanVector::toString() const
+{
+  String res = T("[");
+  for (size_t i = 0; i < v.size(); ++i)
+    res += v[i] ? '+' : '-';
+  res += T("]");
+  return res;
+}
+
+size_t BooleanVector::getNumElements() const
+  {return v.size();}
+
+Variable BooleanVector::getElement(size_t index) const
+  {jassert(index < v.size()); return v[index];}
+
+void BooleanVector::setElement(size_t index, const Variable& value)
+{
+  if (checkInheritance(value, booleanType()))
+    v[index] = value.getBoolean();
+}
+
+void BooleanVector::reserve(size_t size)
+  {v.reserve(size);}
+
+void BooleanVector::resize(size_t size)
+  {v.resize(size);}
+
+void BooleanVector::clear()
+  {v.clear();}
+
+void BooleanVector::prepend(const Variable& value)
+  {v.insert(v.begin(), value.getBoolean());}
+
+void BooleanVector::append(const Variable& value)
+  {v.push_back(value.getBoolean());}
+
+void BooleanVector::remove(size_t index)
+  {v.erase(v.begin() + index);}
+
+/*
+** ObjectVector
+*/
+ObjectVector::ObjectVector(TypePtr elementsType, size_t initialSize)
+  : Vector(objectVectorClass(elementsType)), objects(initialSize)
+{
+}
+
+void ObjectVector::clear()
+  {objects.clear();}
+
+void ObjectVector::reserve(size_t size)
+  {objects.reserve(size);}
+
+void ObjectVector::resize(size_t size)
+  {objects.resize(size);}
+
+void ObjectVector::prepend(const Variable& value)
+  {objects.insert(objects.begin(), value.getObject());}
+
+void ObjectVector::append(const Variable& value)
+  {objects.push_back(value.getObject());}
+
+void ObjectVector::remove(size_t index)
+  {objects.erase(objects.begin() + index);}
+
+size_t ObjectVector::getNumElements() const
+  {return objects.size();}
+
+Variable ObjectVector::getElement(size_t index) const
+{
+  jassert(index < objects.size());
+  ObjectPtr res = objects[index];
+  return res ? Variable(res) : Variable::missingValue(getElementsType());
+}
+
+void ObjectVector::setElement(size_t index, const Variable& value)
+  {jassert(index < objects.size()); objects[index] = value.getObject();}
+
+
+/*
+** VariableVector
+*/
+VariableVector::VariableVector(size_t initialSize)
+  : Vector(variableVectorClass()), variables(initialSize)
+{
+}
+
+void VariableVector::clear()
+  {variables.clear();}
+
+void VariableVector::reserve(size_t size)
+  {variables.reserve(size);}
+
+void VariableVector::resize(size_t size)
+  {variables.resize(size);}
+
+void VariableVector::prepend(const Variable& value)
+  {variables.insert(variables.begin(), value);}
+
+void VariableVector::append(const Variable& value)
+  {variables.push_back(value);}
+
+void VariableVector::remove(size_t index)
+  {variables.erase(variables.begin() + index);}
+
+TypePtr VariableVector::getElementsType() const
+  {return variableType();}
+
+size_t VariableVector::getNumElements() const
+  {return variables.size();}
+
+Variable VariableVector::getElement(size_t index) const
+  {jassert(index < variables.size()); return variables[index];}
+
+void VariableVector::setElement(size_t index, const Variable& value)
+  {jassert(index < variables.size()); variables[index] = value;}
+
+/*
+** Vector Constructor Method
+*/
+VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
+{
+  if (elementsType->inheritsFrom(booleanType()))
+    return booleanVector(initialSize);
+  else if (elementsType->inheritsFrom(objectClass()))
+    return objectVector(elementsType, initialSize);
+  else if (elementsType == variableType())
+    return variableVector(initialSize);
+  else
+    return genericVector(elementsType, initialSize);
 }

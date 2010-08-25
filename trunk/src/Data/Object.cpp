@@ -167,8 +167,8 @@ XmlElement* Object::variableToXml(size_t index) const
   if (value.isNil())
     value = Variable::missingValue(staticType);
   else
-    jassert(value.getType()->inheritsFrom(staticType));
-  return value.toXml(T("static"), type->getObjectVariableName(index));
+    jassert(checkInheritance(value, staticType));
+  return value.toXml(T("variable"), type->getObjectVariableName(index));
 }
 
 void Object::saveToXml(XmlElement* xml) const
@@ -184,7 +184,7 @@ bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
   ClassPtr thisClass = getClass();
   
   for (XmlElement* child = xml->getFirstChildElement(); child; child = child->getNextElement())
-    if (child->getTagName() == T("static"))
+    if (child->getTagName() == T("variable"))
     {
       String name = child->getStringAttribute(T("name"));
       if (name.isEmpty())

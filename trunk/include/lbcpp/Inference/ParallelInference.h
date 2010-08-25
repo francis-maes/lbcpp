@@ -96,7 +96,7 @@ class VectorParallelInference : public StaticParallelInference
 {
 public:
   VectorParallelInference(const String& name)
-    : StaticParallelInference(name), subInferences(new Vector(inferenceClass())) {}
+    : StaticParallelInference(name), subInferences(vector(inferenceClass())) {}
   VectorParallelInference() {}
 
   virtual size_t getNumSubInferences() const

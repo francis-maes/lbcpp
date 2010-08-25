@@ -5,6 +5,7 @@
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   <namespace name="lbcpp">
     
+    <!-- Container -->
     <template name="Container" base="Object" abstract="yes">
       <parameter name="elementsType"/>
       <code>
@@ -26,35 +27,7 @@
       </code>
     </template>
 
-    <template name="Vector" base="Container[elementsType]">
-      <parameter name="elementsType"/>
-    </template>
-
-    <class name="VariableVector" base="Container[Variable]">
-      <constructor/>
-    </class>
-
-    <!-- <template name="VariableValueVector" base="Vector[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor/>
-    </template>
-    
-    <class name="ObjectVector" base="Vector[Object]">
-      <constructor/>
-    </class> -->
-    
-    <class name="BooleanVector" base="Container[Boolean]">
-      <constructor/>
-    </class>
-
-    <template name="SymmetricMatrix" base="Container[elementsType]">
-      <parameter name="elementsType"/>
-    </template>
-
-    <template name="SymmetricMatrixRow" base="Container[elementsType]">
-      <parameter name="elementsType"/>
-    </template>
-
+    <!-- DecoratorContainer -->
     <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
       <variable type="Container[Variable]" name="target"/>
       <parameter name="elementsType"/>
@@ -85,6 +58,42 @@
       <parameter name="elementsType"/>
       <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
     </template>
+    
+    <!-- Vector -->
+    <template name="Vector" base="Container[elementsType]" abstract="yes">
+      <parameter name="elementsType"/>
+    </template>
 
-  </namespace>  
+    <template name="GenericVector" base="Vector[elementsType]">
+      <parameter name="elementsType"/>
+      <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+    </template>
+
+    <template name="ObjectVector" base="Vector[elementsType]">
+      <parameter name="elementsType"/>
+      <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+    </template>
+
+    <class name="BooleanVector" base="Vector[Boolean]">
+      <constructor arguments="size_t initialSize"/>
+    </class>
+
+    <class name="VariableVector" base="Vector[Variable]">
+      <constructor arguments="size_t initialSize"/>
+    </class>
+
+    <!-- SymmetricMatrix -->
+    <template name="SymmetricMatrix" base="Container[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+
+    <template name="SymmetricMatrixRow" base="Container[elementsType]">
+      <parameter name="elementsType"/>
+    </template>
+
+  </namespace>
+
+  <!--<declarationCode>
+    lbcpp::Type::declare(new BooleanVector(), T("Vector[Boolean]"));
+  </declarationCode>-->
 </file>

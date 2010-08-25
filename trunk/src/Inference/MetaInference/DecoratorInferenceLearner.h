@@ -66,7 +66,7 @@ protected:
 
     InferencePtr targetSubInference = targetInference->getSubInference();
 
-    VectorPtr res = new Vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
+    VectorPtr res = vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
     for (size_t i = 0; i < n; ++i)
       res->setElement(i, subTrainingData[i]);
     return res;

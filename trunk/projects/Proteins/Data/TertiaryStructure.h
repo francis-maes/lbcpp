@@ -40,7 +40,7 @@ public:
     {return residues->getNumElements();}
 
   ResiduePtr getResidue(size_t index) const
-    {jassert(index < getNumResidues()); return residues->getElement(index).getObjectAndCast<Residue>();}
+    {jassert(index < getNumResidues()); return residues->getAndCast<Residue>(index);}
 
   ResiduePtr getLastResidue() const
     {size_t n = residues->getNumElements(); return n ? getResidue(n - 1) : ResiduePtr();}
@@ -67,7 +67,7 @@ public:
 protected:
   friend class TertiaryStructureClass;
 
-  VectorPtr residues;
+  ObjectVectorPtr residues;
 };
 
 extern ClassPtr tertiaryStructureClass();

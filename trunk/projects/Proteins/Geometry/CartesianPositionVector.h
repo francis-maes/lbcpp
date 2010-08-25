@@ -16,15 +16,17 @@
 namespace lbcpp
 {
 
+extern ClassPtr cartesianPositionVectorClass();
+
 class CartesianPositionVector : public BuiltinVector<impl::Vector3, Vector3>
 {
 public:
   typedef BuiltinVector<impl::Vector3, Vector3> BaseClass;
 
   CartesianPositionVector(size_t length, const impl::Vector3& defaultValue = impl::Vector3())
-    : BaseClass(length, defaultValue) {}
+    : BaseClass(cartesianPositionVectorClass(), length, defaultValue) {}
   CartesianPositionVector(const std::vector<impl::Vector3>& positions)
-    : BaseClass(positions) {}
+    : BaseClass(cartesianPositionVectorClass(), positions) {}
   CartesianPositionVector() {}
 
   virtual TypePtr getElementsType() const
@@ -61,8 +63,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<CartesianPositionVector> CartesianPositionVectorPtr;
-
-extern ClassPtr cartesianPositionVectorClass();
 
 }; /* namespace lbcpp */
 

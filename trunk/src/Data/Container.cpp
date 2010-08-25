@@ -20,7 +20,7 @@ using namespace lbcpp;
 VectorPtr Container::toVector() const
 {
   size_t n = getNumElements();
-  VectorPtr res = new Vector(getElementsType(), n);
+  VectorPtr res = vector(getElementsType(), n);
   for (size_t i = 0; i < n; ++i)
     res->setElement(i, getElement(i));
   return res;
@@ -55,7 +55,7 @@ void Container::saveToXml(XmlElement* xml) const
   xml->setAttribute(T("size"), (int)n);
   for (size_t i = 0; i < n; ++i)
   {
-    XmlElement* value = getElement(i).toXml(T("dynamic"));
+    XmlElement* value = getElement(i).toXml(T("element"));
     value->setAttribute(T("index"), (int)i);
     xml->addChildElement(value);
   }
@@ -67,7 +67,7 @@ bool Container::loadFromXml(XmlElement* xml, ErrorHandler& callback)
     return false;
 
   for (XmlElement* child = xml->getFirstChildElement(); child; child = child->getNextElement())
-    if (child->getTagName() == T("dynamic"))
+    if (child->getTagName() == T("element"))
     {
       int index = child->getIntAttribute(T("index"), -1);
       if (index < 0)
@@ -97,7 +97,7 @@ ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
   else
   {
     size_t n = getNumElements();
-    VectorPtr res = new Vector(function->getOutputType(getElementsType()), n);
+    VectorPtr res = vector(function->getOutputType(getElementsType()), n);
     for (size_t i = 0; i < n; ++i)
       res->setElement(i, function->compute(getElement(i)));
     return res;
