@@ -206,27 +206,6 @@ inline Variable& Variable::operator =(const Variable& otherVariant)
   return *this;
 }
 
-inline void Variable::multiplyByScalar(double scalar)
-{
-  if (isNil() || scalar == 1.0)
-    return;
-  if (scalar == 0.0)
-    clear();
-  else
-    type = type->multiplyByScalar(value, scalar);
-}
-
-inline void Variable::addWeighted(const Variable& other, double weight)
-{
-  if (isNil())
-  {
-    *this = other;
-    multiplyByScalar(weight);
-  }
-  else
-    type = type->addWeighted(value, other, weight);
-}
-
 inline void copy(bool& dest, const Variable& source)
   {jassert(source.isBoolean()); dest = source.getBoolean();}
 

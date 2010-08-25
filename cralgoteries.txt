@@ -2,7 +2,6 @@
 Types:
   * Rendre visible la variable Type de la classe Object
   * Rendre la classe Vector abstraite
-  * Enlever les multiplyByScalar et addWeighted de Type et Object
   * Rendre les stream Template
 
 FeaturePerceptions:
