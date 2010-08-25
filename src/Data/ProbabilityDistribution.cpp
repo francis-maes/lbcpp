@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Data/ProbabilityDistribution.h>
+#include <lbcpp/Utilities/RandomGenerator.h>
 using namespace lbcpp;
 
 /*

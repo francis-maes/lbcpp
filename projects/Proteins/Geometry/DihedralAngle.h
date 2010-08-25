@@ -84,49 +84,6 @@ typedef std::pair<DihedralAngle, DihedralAngle> DihedralAnglesPair;
 
 }; /* namespace impl */
 
-
-template<>
-struct Traits<impl::Angle>
-{
-  typedef impl::Angle Type;
-
-  static inline String toString(const impl::Angle& value)
-    {return String((double)value * 180 / M_PI, 1);}
-
-  static inline void write(OutputStream& ostr, const impl::Angle& value)
-    {lbcpp::write(ostr, (double)value);}
-
-  static inline bool read(InputStream& istr, impl::Angle& res)
-  {
-    double value;
-    if (!lbcpp::read(istr, value))
-      return false;
-    res = value;
-    return true;
-  }
-};
-
-template<>
-struct Traits<impl::DihedralAngle>
-{
-  typedef impl::DihedralAngle Type;
-
-  static inline String toString(const impl::DihedralAngle& value)
-    {return String((double)value * 180 / M_PI, 1);}
-
-  static inline void write(OutputStream& ostr, const impl::DihedralAngle& value)
-    {lbcpp::write(ostr, (double)value);}
-
-  static inline bool read(InputStream& istr, impl::DihedralAngle& res)
-  {
-    double value;
-    if (!lbcpp::read(istr, value))
-      return false;
-    res = value;
-    return true;
-  }
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_GEOMETRY_DIHEDRAL_ANGLE_H_

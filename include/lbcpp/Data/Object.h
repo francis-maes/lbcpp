@@ -27,7 +27,7 @@
 #ifndef LBCPP_OBJECT_H_
 # define LBCPP_OBJECT_H_
 
-# include "../ContainerTraits.h"
+# include "Utilities.h"
 # include "predeclarations.h"
 # include "../Object/ErrorHandler.h"
 
@@ -68,28 +68,6 @@ public:
   String getVariableName(size_t index) const;
   Variable getVariable(size_t index) const;
   void setVariable(size_t index, const Variable& value);
-  
-  /**
-  ** Loads an object from a C++ stream.
-  **
-  ** @param istr : C++ input stream.
-  **
-  ** @return a pointer on the loaded object or ObjectPtr() if an error
-  ** occurs.
-  ** @see saveToStream
-  */
-  static ObjectPtr createFromStream(InputStream& istr, bool doLoading = true);
-
-  /**
-  ** Loads an object from a stream and cast it.
-  **
-  ** @param istr : input stream.
-  **
-  ** @return a pointer on the loaded object or a null pointer if the cast fails.
-  */
-  template<class T>
-  static ReferenceCountedObjectPtr<T> createFromStreamAndCast(InputStream& istr)
-    {return checkCast<T>(T("Object::createFromStreamAndCast"), createFromStream(istr));}
 
   /**
   ** Name getter.
@@ -111,30 +89,6 @@ public:
   */
   virtual String toString() const;
   virtual String getShortSummary() const;
-
-  /**
-  ** Converts the current object to a graph.
-  **
-  ** Try to convert the object into a graph (for serialization
-  ** or visualization purpose).
-  **
-  ** @return the current object (graph form) or ObjectGraphPtr() if the
-  ** conversion to graph is undefined for this object.
-  */
-  virtual ObjectGraphPtr toGraph() const
-    {return ObjectGraphPtr();}
-
-  /**
-  ** Converts the current object to a table.
-  **
-  ** Try to convert the object into a table (for serialization
-  ** or visualization purpose).
-  **
-  ** @return the current object (table form) or TablePtr() if the
-  ** conversion to table is undefined for this object.
-  */
-  virtual TablePtr toTable() const
-    {return TablePtr();}
 
   /**
   ** Clones the current object.
@@ -187,14 +141,6 @@ public:
     {return checkCast<T>(T("Object::cloneAndCast"), clone());}
 
   /**
-  ** Saves the current object to a C++ stream.
-  **
-  ** @param ostr : output stream.
-  ** @see createFromStream
-  */
-  virtual void saveToStream(OutputStream& ostr) const;
-
-  /**
   ** Error manager.
   **
   ** @param where : where the problem occurs.
@@ -231,9 +177,6 @@ protected:
   template<class T>
   friend struct ObjectTraits;
 
-  virtual bool load(InputStream& istr) {jassert(false); return false;}
-  virtual void save(OutputStream& ostr) const {jassert(false);}
-
   // utilities
   String variablesToString(const String& separator, bool includeTypes = true) const;
   XmlElement* variableToXml(size_t index) const;
@@ -265,51 +208,6 @@ protected:
 extern ClassPtr nameableObjectClass();
 
 typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
-
-template<class T>
-struct ObjectPtrTraits
-{
-public:
-  static inline String toString(const ReferenceCountedObjectPtr<T> value)
-    {return value ? value->toString() : T("null");}
-    
-  static inline void write(OutputStream& ostr, const ReferenceCountedObjectPtr<T> value)
-  {
-    if (value)
-      value->saveToStream(ostr);
-    else
-    {
-      static const String nullString(T("__null__"));
-      lbcpp::write(ostr, nullString);
-    }
-  }
-  
-  static inline bool read(InputStream& istr, ReferenceCountedObjectPtr<T>& result)
-  {
-    result = Object::createFromStreamAndCast<T>(istr);
-    return true;
-  }
-};
-
-template<class T>
-struct ObjectTraits
-{
-public:
-  static inline String toString(const T& value)
-    {return value.toString();}
-    
-  static inline void write(OutputStream& ostr, const T& value)
-    {value.save(ostr);}
-    
-  static inline bool read(InputStream& istr, T& result)
-    {return result.load(istr);}
-};
-
-template<>
-struct Traits<ObjectPtr> : public ObjectPtrTraits<Object> {};
-
-template<class T>
-struct Traits< ReferenceCountedObjectPtr<T> > : public ObjectPtrTraits<T> {};
 
 }; /* namespace lbcpp */
 

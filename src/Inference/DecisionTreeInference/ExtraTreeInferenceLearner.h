@@ -11,6 +11,7 @@
 
 # include "ExtraTreeInference.h"
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Utilities/RandomGenerator.h>
 
 namespace lbcpp 
 {

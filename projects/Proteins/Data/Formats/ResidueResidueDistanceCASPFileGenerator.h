@@ -39,7 +39,7 @@ public:
       {
         double probability = residueResidueContactMatrix8Cb->getElement(i, j).getDouble();
         jassert(probability >= 0.0 && probability <= 1.0);
-        print(lbcpp::toString(i + 1) + T(" ") + lbcpp::toString(j + 1) + T(" 0 8 ") + String(probability, 2), true);
+        print(String((int)(i + 1)) + T(" ") + String((int)(j + 1)) + T(" 0 8 ") + String(probability, 2), true);
         ++lineCount;
       }
     }

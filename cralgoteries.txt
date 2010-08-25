@@ -1,10 +1,12 @@
 
-* Enlever le code de serialiastion binaire
-* Enlever TypeTraits et ContainerTypeTraits
-
+ * Deplacer Predicate de Data vers Function
+ * Deplacer RandomGenerator de Utilities vers Data, et deriver de Object
+ * Normaliser IterationFunction et mettre dans Function
+ * Normaliser StoppingCriterion et mettre dans Function
+ * Faire un sort avec les Callbacks
+ 
 Cleaning:
   * Deplacer Evaluator de Inference vers Function
-  * Deplacer Predicate de Data vers Function
   * Ranger les Utilities et les anciens Objects  
 
 * Serialisation des Perceptions

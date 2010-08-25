@@ -6,7 +6,6 @@ MACRO(ADD_CPP_EXAMPLE CATEGORY FILENAME)
   TARGET_LINK_LIBRARIES(${NAME} lbcpp-core)
 ENDMACRO(ADD_CPP_EXAMPLE)
 
-ADD_CPP_EXAMPLE(Misc UserTypeTraits)
 ADD_CPP_EXAMPLE(Misc MissingValues)
 
 GENERATE_INTROSPECTION_CODE(Misc/SimpleIntrospection.xml SimpleIntrospection.cpp)

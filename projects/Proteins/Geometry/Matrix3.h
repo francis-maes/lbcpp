@@ -121,37 +121,12 @@ private:
     double m[3][3];
     double _m[9];
   };
-
-  friend struct Traits<Matrix3>;
 };
 
 inline Vector3 operator *(const Vector3& v, const Matrix3& mat)
   {return mat.transformAffine(v);}
 
 }; /* namespace impl */
-
-template<>
-struct Traits<impl::Matrix3>
-{
-  typedef impl::Matrix3 Type;
-
-  static inline String toString(const impl::Matrix3& value)
-    {return value.toString();}
-
-  static inline void write(OutputStream& ostr, const impl::Matrix3& value)
-  {
-    for (size_t i = 0; i < 9; ++i)
-      lbcpp::write(ostr, value._m[i]);
-  }
-
-  static inline bool read(InputStream& istr, impl::Matrix3& res)
-  {
-    for (size_t i = 0; i < 9; ++i)
-    if (!lbcpp::read(istr, res._m[i]))
-      return false;
-    return true;
-  }
-};
 
 }; /* namespace lbcpp */
 

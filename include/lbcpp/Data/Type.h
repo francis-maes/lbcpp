@@ -309,7 +309,7 @@ class DefaultAbstractClass_ : public Class
 {
 public:
   DefaultAbstractClass_(TypePtr baseClass)
-    : Class(lbcpp::toString(typeid(TT)), baseClass)
+    : Class(getTypeName(typeid(TT)), baseClass)
     {jassert(baseClass);}
 
   virtual VariableValue create() const
@@ -326,7 +326,7 @@ class DefaultClass_ : public Class
 {
 public:
   DefaultClass_(TypePtr baseClass)
-    : Class(lbcpp::toString(typeid(TT)), baseClass)
+    : Class(getTypeName(typeid(TT)), baseClass)
     {}
 
   virtual VariableValue create() const

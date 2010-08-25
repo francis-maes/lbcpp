@@ -9,7 +9,6 @@
 #include "VariableProxyComponent.h"
 #include "ObjectContainerNameListComponent.h"
 #include "StringComponent.h"
-#include "TableComponent.h"
 #include "VariableTreeComponent.h"
 #include "VariableBrowser.h"
 #include "HexadecimalFileComponent.h"

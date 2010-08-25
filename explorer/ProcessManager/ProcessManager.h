@@ -14,27 +14,6 @@
 namespace lbcpp
 {
 
-template<>
-struct Traits<juce::Colour>
-{
-  typedef juce::Colour Type;
-
-  static inline String toString(const juce::Colour& value)
-    {return value.toString();}
-
-  static inline void write(OutputStream& ostr, const juce::Colour& value)
-    {ostr.writeString(value.toString());}
-
-  static inline bool read(InputStream& istr, juce::Colour& res)
-  {
-    if (istr.isExhausted())
-      return false;
-    String str = istr.readString();
-    res = juce::Colour::fromString(str);
-    return true;
-  }
-};
-
 class ProcessConsoleSettings;
 typedef ReferenceCountedObjectPtr<ProcessConsoleSettings> ProcessConsoleSettingsPtr;
 

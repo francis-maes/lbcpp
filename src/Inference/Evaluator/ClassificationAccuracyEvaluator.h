@@ -44,7 +44,7 @@ public:
     double count = accuracy->getCount();
     if (!count)
       return String::empty;
-    return getName() + T(": ") + String(accuracy->getMean() * 100.0, 2) + T("% (") + lbcpp::toString(count) + T(" examples)");
+    return getName() + T(": ") + String(accuracy->getMean() * 100.0, 2) + T("% (") + String((int)count) + T(" examples)");
   }
 
   virtual double getDefaultScore() const

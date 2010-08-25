@@ -108,7 +108,7 @@ CartesianPositionVectorPtr TertiaryStructure::makeCAlphaTrace() const
 /*    if (!atom)
     {
       Object::error(T("CartesianCoordinatesSequence::createCAlphaTrace"),
-          T("No C-alpha atom in residue ") + residue->getName() + T(" ") + lbcpp::toString(i + 1));
+          T("No C-alpha atom in residue ") + residue->getName() + T(" ") + String((int)(i + 1)));
         return CartesianPositionVectorPtr();
     }*/
     if (atom)
@@ -264,7 +264,7 @@ bool TertiaryStructure::isConsistent(String& failureReason) const
   size_t n = getNumResidues();
   for (size_t i = 0; i < n; ++i)
   {
-    String position = T(" at position ") + lbcpp::toString(i + 1);
+    String position = T(" at position ") + String((int)(i + 1));
     ResiduePtr residue = getResidue(i);
     if (!residue)
       continue;
@@ -281,14 +281,14 @@ bool TertiaryStructure::isConsistent(String& failureReason) const
       double d = residue->getDistanceBetweenAtoms(T("N"), T("CA")).getDouble();
       if (d < 1.0 || d > 2.0)
       {
-        failureReason += T("Suspect N--CA distance: ") + lbcpp::toString(d) + position + T("\n");
+        failureReason += T("Suspect N--CA distance: ") + String(d) + position + T("\n");
         res = false;
       }
 
       d = residue->getDistanceBetweenAtoms(T("CA"), T("C")).getDouble();
       if (d < 1.0 || d > 2.0)
       {
-        failureReason += T("Suspect CA--C distance: ") + lbcpp::toString(d) + position + T("\n");
+        failureReason += T("Suspect CA--C distance: ") + String(d) + position + T("\n");
         res = false;
       }
       if (nextResidue)
@@ -297,7 +297,7 @@ bool TertiaryStructure::isConsistent(String& failureReason) const
         jassert(d);
         if (d < 1.0 || d > 2.0)
         {
-          failureReason += T("Suspect C--N distance: ") + lbcpp::toString(d) + position + T("\n");
+          failureReason += T("Suspect C--N distance: ") + String(d) + position + T("\n");
           res = false;
         }
       }

@@ -18,7 +18,7 @@ String Object::getClassName() const
   if (thisClass)
     return thisClass->getName();
   else
-    return lbcpp::toString(typeid(*this));
+    return getTypeName(typeid(*this));
 }
 
 ClassPtr Object::getClass() const
@@ -26,7 +26,7 @@ ClassPtr Object::getClass() const
   if (!thisClass)
   {
     //jassert(false);
-    const_cast<Object* >(this)->thisClass = Class::get(lbcpp::toString(typeid(*this)));
+    const_cast<Object* >(this)->thisClass = Class::get(getTypeName(typeid(*this)));
     jassert(thisClass);
   }
   return thisClass;
@@ -98,42 +98,6 @@ String Object::variablesToString(const String& separator, bool includeTypes) con
       res += separator;
   }
   return res;
-}
-
-/*
-** Create and load
-*/
-ObjectPtr Object::createFromStream(InputStream& istr, bool doLoading)
-{
-  String className;
-  if (!read(istr, className))
-  {
-    error(T("Object::create"), T("Could not read class name"));
-    return ObjectPtr();
-  }
-  if (className == T("__null__"))
-    return ObjectPtr();
-  TypePtr type = Type::get(className);
-  if (!type)
-    return ObjectPtr();
-
-  ObjectPtr res = Variable::create(type).getObject();
-  if (!res)
-    return ObjectPtr();
-
-  if (doLoading && !res->load(istr))
-    error(T("Object::create"), T("Could not load object of class ") + className);
-
-  return res;
-}
-
-/*
-** Save
-*/
-void Object::saveToStream(OutputStream& ostr) const
-{
-  ostr.writeString(getClassName());
-  save(ostr);
 }
 
 /*

@@ -111,7 +111,7 @@ public:
     double bestThreshold = roc.findThresholdMaximisingF1(bestF1, precision, recall);
 
     return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% prec = ") + String(precision * 100, 2) +
-            T("% recall = ") + String(recall * 100, 2) + T("% threshold = ") + lbcpp::toString(bestThreshold);
+            T("% recall = ") + String(recall * 100, 2) + T("% threshold = ") + String(bestThreshold);
   }
 
   virtual double getDefaultScore() const

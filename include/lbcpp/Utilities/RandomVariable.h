@@ -58,17 +58,7 @@ public:
     {return sum;}
 
   virtual String toString() const
-    {return getName() + T(" = ") + lbcpp::toString(getMean());}
-
-  virtual void save(OutputStream& ostr) const
-  {
-    NameableObject::save(ostr);
-    write(ostr, sum);
-    write(ostr, cnt);
-  }
-
-  virtual bool load(InputStream& istr)
-    {return NameableObject::load(istr) && read(istr, sum) && read(istr, cnt);}
+    {return getName() + T(" = ") + String(getMean());}
 
 protected:
   double sum;
@@ -96,16 +86,7 @@ public:
     {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}
 
   virtual String toString() const
-    {return ScalarVariableMean::toString() + " +/- " + lbcpp::toString(getStandardDeviation());}
-
-  virtual void save(OutputStream& ostr) const
-  {
-    ScalarVariableMean::save(ostr);
-    meansqr.save(ostr);
-  }
-
-  virtual bool load(InputStream& istr)
-    {return ScalarVariableMean::load(istr) && meansqr.load(istr);}
+    {return ScalarVariableMean::toString() + " +/- " + String(getStandardDeviation());}
 
 private:
   ScalarVariableMean meansqr;
@@ -150,18 +131,8 @@ public:
   virtual String toString() const
   {
     return ScalarVariableMeanAndVariance::toString() + " [" +
-      lbcpp::toString(min) + " - " + lbcpp::toString(max) + "]";
+      String(min) + " - " + String(max) + "]";
   }
-
-  virtual void save(OutputStream& ostr) const
-  {
-    ScalarVariableMeanAndVariance::save(ostr);
-    write(ostr, min);
-    write(ostr, max);
-  }
-
-  virtual bool load(InputStream& istr)
-    {return ScalarVariableMeanAndVariance::load(istr) && read(istr, min) && read(istr, max);}
 
 private:
   double min;

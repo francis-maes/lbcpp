@@ -159,31 +159,6 @@ public:
 
 }; /* namespace impl */
 
-template<>
-struct Traits<impl::Vector3>
-{
-  typedef impl::Vector3 Type;
-
-  static inline String toString(const impl::Vector3& value)
-    {return value.toString();}
-
-  static inline void write(OutputStream& ostr, const impl::Vector3& value)
-  {
-    lbcpp::write(ostr, value.getX());
-    lbcpp::write(ostr, value.getY());
-    lbcpp::write(ostr, value.getZ());
-  }
-
-  static inline bool read(InputStream& istr, impl::Vector3& res)
-  {
-    double x, y, z;
-    if (!lbcpp::read(istr, x) || !lbcpp::read(istr, y) || !lbcpp::read(istr, z))
-      return false;
-    res.set(x, y, z);
-    return true;
-  }
-};
-
 class Vector3 : public Object
 {
 public:
