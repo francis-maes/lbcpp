@@ -169,7 +169,6 @@ extern TypePtr integerType();
 
 extern TypePtr doubleType();
   extern TypePtr probabilityType();
-  extern TypePtr angstromDistanceType(); // todo: move
 
 extern TypePtr stringType();
   extern TypePtr fileType();

@@ -80,16 +80,6 @@ public:
     {return String(value.getDouble() * 100, 2) + T("%");}
 };
 
-class AngstromDistanceType : public DoubleType
-{
-public:
-  AngstromDistanceType(const String& name, TypePtr baseType)
-    : DoubleType(name, baseType) {}
-
-  virtual String toString(const VariableValue& value) const
-    {return DoubleType::toString(value) + T(" A");}
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_TYPE_DOUBLE_H_

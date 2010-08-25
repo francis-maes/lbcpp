@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "TertiaryStructure.h"
+#include "Protein.h"
 using namespace lbcpp;
 
 TertiaryStructure::TertiaryStructure(size_t numResidues)
