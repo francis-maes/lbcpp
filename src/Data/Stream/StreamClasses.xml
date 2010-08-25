@@ -3,28 +3,27 @@
 <file name="Stream" directory="Data/Stream">
   <namespace name="lbcpp">
 
-    <class name="Stream" abstract="yes"/>
-    <class name="TextParser" base="Stream" abstract="yes"/>
+    <template name="Stream" abstract="yes">
+      <parameter name="elementsType"/>
+    </template>
+    
+    <template name="TextParser" base="Stream[elementsType]" abstract="yes">
+      <parameter name="elementsType"/>
+    </template>
 
-    <class name="DirectoryFileStream" base="Stream">
+    <class name="DirectoryFileStream" base="Stream[File]">
       <constructor arguments="const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
     </class>
 
-    <class name="ApplyFunctionStream" base="Stream">
-      <constructor arguments="StreamPtr stream, FunctionPtr function"/>
+    <template name="ApplyFunctionStream" base="Stream[elementsType]">
+      <parameter name="elementsType"/>
+    
+      <constructor arguments="StreamPtr stream, FunctionPtr function" parameters="function->getOutputType(stream->getElementsType())"/>
+      
       <variable type="Stream" name="stream"/>
       <variable type="Function" name="function"/>
       <variable type="Type" name="outputType"/>
     </class>
-
-    <code>
-      StreamPtr Stream::apply(FunctionPtr function) const
-      {
-        return checkInheritance(getElementsType(), function->getInputType())
-          ? applyFunctionStream(refCountedPointerFromThis(this), function)
-          : StreamPtr();
-      }
-    </code>
     
   </namespace> 
 </file>
