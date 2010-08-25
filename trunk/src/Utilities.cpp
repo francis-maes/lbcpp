@@ -8,7 +8,7 @@
 
 #include <lbcpp/Data/Utilities.h>
 #include <lbcpp/Utilities/ProgressCallback.h>
-#include <lbcpp/Utilities/IterationFunction.h>
+#include <lbcpp/Function/IterationFunction.h>
 #include <iostream>
 #include <fstream>
 using namespace lbcpp;
