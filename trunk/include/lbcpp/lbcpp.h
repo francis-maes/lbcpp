@@ -34,15 +34,12 @@
 # include "Data/Object.h"
 # include "Data/Type.h"
 # include "Data/Variable.h"
-# include "Data/Function.h"
 # include "Data/Stream.h"
 # include "Data/Consumer.h"
 # include "Data/Vector.h"
 # include "Data/SymmetricMatrix.h"
 # include "Data/Predicate.h"
 # include "Data/ProbabilityDistribution.h"
-# include "Data/Perception.h"
-# include "Data/PerceptionMaths.h"
 
 // old
 # include "Object/ObjectGraph.h"
@@ -54,7 +51,7 @@
 # include "Utilities/RandomVariable.h"
 # include "Utilities/ProgressCallback.h"
 # include "Utilities/StoppingCriterion.h"
-
+/*
 # include "FeatureGenerator/FeatureGenerator.h"
 # include "FeatureGenerator/FeatureVisitor.h"
 # include "FeatureGenerator/EditableFeatureGenerator.h"
@@ -65,6 +62,12 @@
 # include "FeatureGenerator/impl/DoubleVector.hpp"
 # include "FeatureGenerator/impl/FeatureGenerator.hpp"
 # include "FeatureGenerator/impl/FeatureGeneratorDefaultImplementations.hpp"
+*/
+
+# include "Function/Function.h"
+# include "Function/ScalarFunction.h"
+# include "Function/Perception.h"
+# include "Function/PerceptionMaths.h"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceStack.h"

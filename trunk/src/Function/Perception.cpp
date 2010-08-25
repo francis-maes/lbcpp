@@ -6,8 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Perception.h>
-#include <lbcpp/Data/Vector.h> // for VariableVector
+#include <lbcpp/Function/Perception.h>
 using namespace lbcpp;
 
 void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)

@@ -18,16 +18,16 @@
  */
 
 /*-----------------------------------------.---------------------------------.
- | Filename:       Consumer.h               | Consumer                        |
+ | Filename: Consumer.h                     | Consumer                        |
  | Author  : Francis Maes                   |                                 |
  | Started : 22/03/2010 15:50               |                                 |
  `------------------------------------------/                                 |
                                 |                                             |
                                 `--------------------------------------------*/
-#ifndef LBCPP_CONSUMER_H_
-# define LBCPP_CONSUMER_H_
+#ifndef LBCPP_DATA_CONSUMER_H_
+# define LBCPP_DATA_CONSUMER_H_
 
-# include "Function.h"
+# include "../Function/Function.h"
 
 namespace lbcpp
 {
@@ -69,4 +69,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CONSUMER_H_
+#endif // !LBCPP_DATA_CONSUMER_H_

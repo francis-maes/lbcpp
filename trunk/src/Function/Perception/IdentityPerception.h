@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_PERCEPTION_IDENTITY_H_
 # define LBCPP_DATA_PERCEPTION_IDENTITY_H_
 
-# include <lbcpp/Data/Perception.h>
+# include <lbcpp/Function/Perception.h>
 
 namespace lbcpp
 {

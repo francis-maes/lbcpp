@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/PerceptionMaths.h>
+#include <lbcpp/Function/PerceptionMaths.h>
 using namespace lbcpp;
 
 /*
@@ -171,6 +171,65 @@ double lbcpp::sumOfSquares(PerceptionPtr perception, const Variable& input)
   {ComputeSumOfSquaresOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
+** Unary Operation
+*/
+struct DoubleUnaryOperation
+{
+  void compute(double& value)
+    {jassert(false);}
+  void compute(ObjectPtr object)
+    {jassert(false);}
+};
+
+template<class OperationType>
+void doubleUnaryOperation(OperationType& operation, ObjectPtr object)
+{
+  size_t n = object->getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable v = object->getVariable(i);
+    if (v.isMissingValue())
+      continue;
+
+    if (v.isObject())
+      operation.compute(v.getObject());
+    else
+    {
+      jassert(v.isDouble());
+      double value = v.getDouble();
+      operation.compute(value);
+      object->setVariable(i, Variable(value, v.getType()));
+    }
+  }
+}
+
+/*
+** MultiplyByScalar
+*/
+struct MultiplyByScalarOperation : public DoubleUnaryOperation
+{
+  MultiplyByScalarOperation(double scalar)
+    : scalar(scalar) {}
+
+  double scalar;
+
+  void compute(double& value)
+    {value *= scalar;}
+
+  void compute(ObjectPtr object)
+    {multiplyByScalar(object, scalar);}
+};
+
+void lbcpp::multiplyByScalar(ObjectPtr object, double scalar)
+{
+  if (scalar != 1.0 && object)
+  {
+    MultiplyByScalarOperation operation(scalar);
+    doubleUnaryOperation(operation, object);
+  }
+}
+
+/*
 ** Dot-product
 */
 struct ComputeDotProductCallback : public PerceptionCallback
@@ -315,6 +374,11 @@ void lbcpp::addWeighted(ObjectPtr& target, ObjectPtr source, double weight)
     return;
   if (!target)
     target = Variable::create(source->getClass()).getObject();
-  AddWeightedOperation operation(weight);
-  doubleAssignmentOperation(operation, target, source);
+  if (target == source)
+    lbcpp::multiplyByScalar(target, 1 + weight);
+  else
+  {
+    AddWeightedOperation operation(weight);
+    doubleAssignmentOperation(operation, target, source);
+  }
 }

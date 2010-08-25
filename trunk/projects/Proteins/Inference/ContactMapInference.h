@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_CONTACT_MAP_H_
 # define LBCPP_PROTEIN_INFERENCE_CONTACT_MAP_H_
 
-# include <lbcpp/Data/Perception.h>
+# include <lbcpp/Function/Perception.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/DecoratorInference.h>
@@ -17,8 +17,7 @@
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 # include <lbcpp/Inference/Evaluator.h>
-# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
-
+# include <lbcpp/Function/ScalarFunction.h>
 namespace lbcpp
 {
 

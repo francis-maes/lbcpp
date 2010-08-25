@@ -6,8 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "ProteinInference.h"
-#include <lbcpp/Data/Function.h>
-#include <lbcpp/Data/Perception.h>
+#include <lbcpp/Function/Perception.h>
 using namespace lbcpp;
 
 /*

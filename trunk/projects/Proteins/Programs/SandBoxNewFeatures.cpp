@@ -11,7 +11,6 @@
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
 #include "Inference/ContactMapInference.h"
-#include "Perception/PerceptionToFeatures.h"
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 

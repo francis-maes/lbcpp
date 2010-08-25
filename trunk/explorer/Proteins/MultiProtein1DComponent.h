@@ -13,7 +13,6 @@
 # include "../Utilities/SplittedLayout.h"
 # include "../../projects/Proteins/Data/Protein.h"
 # include "../../projects/Proteins/Inference/ProteinInferenceFactory.h"
-# include "../../projects/Proteins/Perception/PerceptionToFeatures.h"
 
 namespace lbcpp
 {

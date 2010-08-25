@@ -3,58 +3,59 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-##### OBJECT ####
+GENERATE_INTROSPECTION_CODE(Data/Type/TypeClasses.xml TypeClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
-### new 
-SET(LBCPP_DATA_HEADERS
+GENERATE_INTROSPECTION_CODE(Function/FunctionClasses.xml FunctionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsClasses.xml MiscFunctionsClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionClasses.xml ScalarFunctionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+
+GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClasses.xml NumericalInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
+
+##### Data ####
+
+SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/ReferenceCountedObject.h
   ../include/lbcpp/Data/Object.h
+  Data/Object.cpp
   ../include/lbcpp/Data/Type.h
+  Data/Type.cpp
+  Data/Enumeration.cpp
+  Data/Class.cpp
   ../include/lbcpp/Data/TemplateType.h
+  Data/TemplateType.cpp
   ../include/lbcpp/Data/Variable.h
-  ../include/lbcpp/Data/Function.h
+  Data/Variable.cpp
   ../include/lbcpp/Data/Stream.h
+  Data/Stream.cpp
   ../include/lbcpp/Data/Container.h
-  ../include/lbcpp/Data/Consumer.h
+  Data/Container.cpp
   ../include/lbcpp/Data/Vector.h
+  Data/Vector.cpp
   ../include/lbcpp/Data/SymmetricMatrix.h
+  Data/SymmetricMatrix.cpp
   ../include/lbcpp/Data/Predicate.h
+  Data/Predicate.cpp
   ../include/lbcpp/Data/ProbabilityDistribution.h
-  ../include/lbcpp/Data/Perception.h
-  ../include/lbcpp/Data/PerceptionMaths.h
-)
+  Data/ProbabilityDistribution.cpp
+  ../include/lbcpp/Data/Consumer.h
+  Data/Consumer.cpp
+  Data/DataClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
+)  
 
 SET(LBCPP_DATA_IMPL_HEADERS
   ../include/lbcpp/Data/impl/VariableValue.hpp
   ../include/lbcpp/Data/impl/Variable.hpp
 )
-
-GENERATE_INTROSPECTION_CODE(Data/Type/TypeClasses.xml TypeClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Function/FunctionClasses.xml FunctionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
-
-SET(LBCPP_DATA_SOURCES
-  Data/Variable.cpp
-  Data/Object.cpp
-  Data/Type.cpp
-  Data/Enumeration.cpp
-  Data/Class.cpp
-  Data/TemplateType.cpp
-  Data/Stream.cpp
-  Data/Container.cpp
-  Data/Vector.cpp
-  Data/SymmetricMatrix.cpp
-  Data/Predicate.cpp
-  Data/ProbabilityDistribution.cpp
-  Data/Consumer.cpp
-  Data/Perception.cpp
-  Data/PerceptionMaths.cpp
-  Data/DataClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
-)  
 
 SET(LBCPP_DATA_TYPE_SOURCES
   Data/Type/TopLevelType.h
@@ -87,27 +88,8 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
 )
 
-SET(LBCPP_DATA_FUNCTION_SOURCES
-  Data/Function/LoadFromFileFunction.h
-  Data/Function/SetFieldFunction.h
-  Data/Function/SelectPairFieldsFunction.h
-  Data/Function/FunctionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
-)
 
-SET(LBCPP_DATA_PERCEPTION_SOURCES
-  Data/Perception/IdentityPerception.h
-  Data/Perception/WindowPerception.h
-  Data/Perception/PreprocessPerception.h
-  Data/Perception/FlattenPerception.h
-  Data/Perception/FunctionBasedPerception.h
-  Data/Perception/PerceptionToFeatures.h
-  Data/Perception/PerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
-)
-
-### old 
-
+### old ------------------->
 SET(LBCPP_OBJECT_HEADERS
   ../include/lbcpp/Object/ErrorHandler.h  
   ../include/lbcpp/Object/ObjectGraph.h
@@ -118,10 +100,6 @@ SET(LBCPP_OBJECT_SOURCES
   ObjectGraph.cpp
   Table.cpp
 )
-
-### ---
-
-##### UTILITIES ####
 
 SET(LBCPP_UTILITIES_HEADERS
   ../include/lbcpp/Utilities/ProgressCallback.h
@@ -136,8 +114,6 @@ SET(LBCPP_UTILITIES_SOURCES
   IterationFunction.cpp
   StoppingCriterion.cpp
 )
-
-##### FEATURE GENERATOR ####
 
 SET(LBCPP_FEATURE_GENERATOR_HEADERS
   ../include/lbcpp/FeatureGenerator/StringDictionary.h
@@ -191,12 +167,7 @@ SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
 )
 
 SET(LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES
-  ContinuousFunction/MiscScalarFunctions.h
-  ContinuousFunction/HingeLossFunction.h
-  ContinuousFunction/LogBinomialLossFunction.h
   ContinuousFunction/BinarySumScalarVectorFunction.h
-  ContinuousFunction/AbsFunction.h
-  ContinuousFunction/SquareFunction.h
   ContinuousFunction/MultiplyByScalarVectorFunction.h
   ContinuousFunction/SumOfSquaresScalarVectorFunction.h
 )
@@ -208,6 +179,55 @@ SET(LBCPP_CORE_OPTIMIZER_SOURCES
   Optimizer/QuasiNewtonMemory.h
   Optimizer/LBFGSOptimizer.h
 )
+### old <-------------------
+
+
+##### FUNCTION ####
+
+SET(LBCPP_FUNCTION_SOURCES
+  ../include/lbcpp/Function/Function.h
+  ../include/lbcpp/Function/ScalarFunction.h
+  Function/ScalarFunction.cpp
+  ../include/lbcpp/Function/Perception.h
+  Function/Perception.cpp
+  ../include/lbcpp/Function/PerceptionMaths.h
+  Function/PerceptionMaths.cpp
+  Function/FunctionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
+  Function/MiscFunctions/LoadFromFileFunction.h
+  Function/MiscFunctions/SetFieldFunction.h
+  Function/MiscFunctions/SelectPairFieldsFunction.h
+  Function/MiscFunctions/MiscFunctionsClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_SCALAR_SOURCES
+  Function/ScalarFunction/ComposeScalarFunction.h
+  Function/ScalarFunction/MultiplyByScalarFunction.h
+  Function/ScalarFunction/HingeLossFunction.h
+  Function/ScalarFunction/LogBinomialLossFunction.h
+  Function/ScalarFunction/AbsFunction.h
+  Function/ScalarFunction/SquareFunction.h
+  Function/ScalarFunction/AddConstantScalarFunction.h
+  Function/ScalarFunction/AngleDifferenceFunction.h
+  Function/ScalarFunction/ScalarFunctionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ScalarFunctionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
+  Function/Perception/IdentityPerception.h
+  Function/Perception/WindowPerception.h
+  Function/Perception/PreprocessPerception.h
+  Function/Perception/FlattenPerception.h
+  Function/Perception/FunctionBasedPerception.h
+  Function/Perception/PerceptionToFeatures.h
+  Function/Perception/PerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
+)
+
 
 ##### INFERENCE ####
 
@@ -224,13 +244,6 @@ SET(LBCPP_INFERENCE_HEADERS
   ../include/lbcpp/Inference/InferenceResultCache.h
   ../include/lbcpp/Inference/Evaluator.h
 )
-
-GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClasses.xml NumericalInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
 
 SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
@@ -321,15 +334,14 @@ SET(LBCPP_CORE_HEADERS
 SET(LBCPP_CORE
   ${LBCPP_CORE_HEADERS}
 
-  ${LBCPP_DATA_HEADERS}
-  ${LBCPP_DATA_IMPL_HEADERS}
+  # Data
   ${LBCPP_DATA_SOURCES}
     ${LBCPP_DATA_TYPE_SOURCES}
-    ${LBCPP_DATA_FUNCTION_SOURCES}
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
-    ${LBCPP_DATA_PERCEPTION_SOURCES}
+    ${LBCPP_DATA_IMPL_HEADERS}
   
+  #Old -->
   ${LBCPP_OBJECT_HEADERS}
   ${LBCPP_OBJECT_SOURCES}
   ${LBCPP_CORE_OBJECT_STREAM_SOURCES}
@@ -343,7 +355,15 @@ SET(LBCPP_CORE
   ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES}
   ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES}
   ${LBCPP_CORE_OPTIMIZER_SOURCES}
+  ## <--
 
+  # Function
+  ${LBCPP_FUNCTION_SOURCES}
+    ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES}
+    ${LBCPP_FUNCTION_SCALAR_SOURCES}
+    ${LBCPP_FUNCTION_PERCEPTION_SOURCES}
+
+  # Inference
   ${LBCPP_INFERENCE_HEADERS}
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
@@ -354,31 +374,39 @@ SET(LBCPP_CORE
     ${LBCPP_INFERENCE_DECISION_TREE_SOURCES}
     ${LBCPP_INFERENCE_REDUCTION_SOURCES}
     ${LBCPP_INFERENCE_META_SOURCES}
-    
-  ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES}
+
   classes.cpp
 )
 
 SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
 
-SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES} ${LBCPP_DATA_HEADERS})
+## Data
+
+SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
-SOURCE_SUB_GROUP(Data Function FILES ${LBCPP_DATA_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
-SOURCE_SUB_GROUP(Data Perception FILES ${LBCPP_DATA_PERCEPTION_SOURCES})
 
+## Old -->
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
-
 SOURCE_GROUP(Utilities FILES ${LBCPP_UTILITIES_HEADERS} ${LBCPP_UTILITIES_SOURCES})
-
 SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_HEADERS} ${LBCPP_FEATURE_GENERATOR_SOURCES})
 SOURCE_SUB_GROUP(FeatureGenerator impl FILES ${LBCPP_FEATURE_GENERATOR_IMPL_HEADERS})
 SOURCE_SUB_GROUP2(FeatureGenerator impl FeatureVisitor FILES ${LBCPP_FEATURE_GENERATOR_IMPL_FEATURE_VISITORS})
 SOURCE_SUB_GROUP(FeatureGenerator FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
 SOURCE_SUB_GROUP(FeatureGenerator ContinuousFunction FILES ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(FeatureGenerator Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
+## <---
+
+## Function
+
+SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
+SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
+SOURCE_SUB_GROUP(Function Perception FILES ${LBCPP_FUNCTION_PERCEPTION_SOURCES})
+
+## Inference
 
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})

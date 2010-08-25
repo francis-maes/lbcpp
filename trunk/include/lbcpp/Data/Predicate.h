@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_PREDICATE_H_
 # define LBCPP_OBJECT_PREDICATE_H_
 
-# include "Function.h"
+# include "../Function/Function.h"
 
 namespace lbcpp
 {

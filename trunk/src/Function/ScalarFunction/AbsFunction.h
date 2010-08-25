@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SCALAR_FUNCTION_ABSOLUTE_H_
-# define LBCPP_SCALAR_FUNCTION_ABSOLUTE_H_
+#ifndef LBCPP_FUNCTION_SCALAR_ABSOLUTE_VALUE_H_
+# define LBCPP_FUNCTION_SCALAR_ABSOLUTE_VALUE_H_
 
-# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
+# include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp
 {
@@ -47,4 +47,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SCALAR_FUNCTION_ABSOLUTE_H_
+#endif // !LBCPP_FUNCTION_SCALAR_ABSOLUTE_VALUE_H_

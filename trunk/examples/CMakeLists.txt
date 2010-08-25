@@ -6,16 +6,9 @@ MACRO(ADD_CPP_EXAMPLE CATEGORY FILENAME)
   TARGET_LINK_LIBRARIES(${NAME} lbcpp-core)
 ENDMACRO(ADD_CPP_EXAMPLE)
 
-MACRO(ADD_LBCPP_EXAMPLE CATEGORY FILENAME)
-  SET(NAME ${CATEGORY}-${FILENAME})
-  ADD_CREXECUTABLE(${NAME} ${CATEGORY}/${FILENAME}.lcpp)
-ENDMACRO(ADD_LBCPP_EXAMPLE)
-
 ADD_CPP_EXAMPLE(Misc UserTypeTraits)
 ADD_CPP_EXAMPLE(Misc MissingValues)
 
 GENERATE_INTROSPECTION_CODE(Misc/SimpleIntrospection.xml SimpleIntrospection.cpp)
 ADD_EXECUTABLE(SimpleIntrospection Misc/SimpleIntrospection.xml ${CMAKE_CURRENT_BINARY_DIR}/SimpleIntrospection.cpp)
 TARGET_LINK_LIBRARIES(SimpleIntrospection lbcpp-core)
-
-ADD_LBCPP_EXAMPLE(FeatureGenerator FeatureAcceptVisitor)

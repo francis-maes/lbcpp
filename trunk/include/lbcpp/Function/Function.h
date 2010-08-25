@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_VARIABLE_FUNCTION_H_
-# define LBCPP_VARIABLE_FUNCTION_H_
+#ifndef LBCPP_FUNCTION_FUNCTION_H_
+# define LBCPP_FUNCTION_FUNCTION_H_
 
-# include "Variable.h"
+# include "../Data/Variable.h"
 # include "../ObjectPredeclarations.h"
 
 namespace lbcpp
@@ -52,4 +52,4 @@ FunctionPtr selectPairFieldsFunction(int index1 = -1, int index2 = -1);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_VARIABLE_FUNCTION_H_
+#endif // !LBCPP_FUNCTION_FUNCTION_H_

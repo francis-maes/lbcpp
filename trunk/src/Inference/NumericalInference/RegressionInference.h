@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_REGRESSION_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
-# include <lbcpp/FeatureGenerator/ContinuousFunction.h>
+# include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp
 {
@@ -52,7 +52,7 @@ public:
   SquareRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return squareLoss(target);}
+    {return squareLossFunction(target);}
 };
 
 class DihedralAngleRegressionInference : public RegressionInference
@@ -65,7 +65,7 @@ public:
   DihedralAngleRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return dihedralAngleSquareLoss(target);}
+    {return dihedralAngleSquareLossFunction(target);}
 };
 
 class AbsoluteRegressionInference : public RegressionInference
@@ -78,7 +78,7 @@ public:
   AbsoluteRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return absoluteLoss(target);}
+    {return absoluteLossFunction(target);}
 };
   
 }; /* namespace lbcpp */

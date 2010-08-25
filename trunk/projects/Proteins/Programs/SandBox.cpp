@@ -77,13 +77,13 @@ protected:
       return gradientDescentInferenceOnlineLearner(
         InferenceOnlineLearner::perEpisode,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+        InferenceOnlineLearner::perStepMiniBatch20, ScalarVectorFunctionPtr() /* sumOfSquaresFunction(0.0)*/,         // regularizer
         InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
     else
       return gradientDescentInferenceOnlineLearner(
         InferenceOnlineLearner::never,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, sumOfSquaresFunction(0.0),         // regularizer
+        InferenceOnlineLearner::perStepMiniBatch20, ScalarVectorFunctionPtr() /* sumOfSquaresFunction(0.0)*/,         // regularizer
         InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
 };

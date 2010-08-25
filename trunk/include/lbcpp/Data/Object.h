@@ -162,12 +162,6 @@ public:
   virtual int compare(ObjectPtr otherObject) const
     {return (int)(this - otherObject.get());}
 
-  virtual ObjectPtr multiplyByScalar(double scalar)
-    {jassert(false); return ObjectPtr(this);}
-  
-  virtual ObjectPtr addWeighted(const Variable& value, double weight)
-    {jassert(false); return ObjectPtr(this);}
-
   /**
   ** Override this function to save the object to an XML tree
   **

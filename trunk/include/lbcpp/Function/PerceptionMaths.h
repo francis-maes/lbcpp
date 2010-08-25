@@ -30,6 +30,9 @@ inline double l2norm(ObjectPtr object)
 inline double l2norm(PerceptionPtr perception, const Variable& input)
   {return sqrt(sumOfSquares(perception, input));}
 
+// Unary operations
+extern void multiplyByScalar(ObjectPtr object, double scalar);
+
 // Binary operations
 extern double dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input);
 
