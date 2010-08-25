@@ -11,6 +11,7 @@ GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsClasses.xml MiscFunctionsClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionClasses.xml ScalarFunctionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml ScalarObjectFunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
@@ -166,11 +167,6 @@ SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
   FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
 )
 
-SET(LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES
-  ContinuousFunction/BinarySumScalarVectorFunction.h
-  ContinuousFunction/MultiplyByScalarVectorFunction.h
-  ContinuousFunction/SumOfSquaresScalarVectorFunction.h
-)
 
 SET(LBCPP_CORE_OPTIMIZER_SOURCES
   Optimizer/RPropOptimizer.h
@@ -187,6 +183,7 @@ SET(LBCPP_CORE_OPTIMIZER_SOURCES
 SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/Function.h
   ../include/lbcpp/Function/ScalarFunction.h
+  ../include/lbcpp/Function/ScalarObjectFunction.h
   Function/ScalarFunction.cpp
   ../include/lbcpp/Function/Perception.h
   Function/Perception.cpp
@@ -215,6 +212,14 @@ SET(LBCPP_FUNCTION_SCALAR_SOURCES
   Function/ScalarFunction/AngleDifferenceFunction.h
   Function/ScalarFunction/ScalarFunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ScalarFunctionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
+  Function/ScalarObjectFunction/BinarySumScalarObjectFunction.h
+  Function/ScalarObjectFunction/MultiplyByScalarObjectFunction.h
+  Function/ScalarObjectFunction/SumOfSquaresScalarObjectFunction.h
+  Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionClasses.cpp
 )
 
 SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
@@ -353,7 +358,6 @@ SET(LBCPP_CORE
   ${LBCPP_FEATURE_GENERATOR_IMPL_FEATURE_VISITORS}
   ${LBCPP_FEATURE_GENERATOR_SOURCES}
   ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES}
-  ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES}
   ${LBCPP_CORE_OPTIMIZER_SOURCES}
   ## <--
 
@@ -361,6 +365,7 @@ SET(LBCPP_CORE
   ${LBCPP_FUNCTION_SOURCES}
     ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_SOURCES}
+    ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
     ${LBCPP_FUNCTION_PERCEPTION_SOURCES}
 
   # Inference
@@ -395,7 +400,6 @@ SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_HEADERS} ${LBCPP_F
 SOURCE_SUB_GROUP(FeatureGenerator impl FILES ${LBCPP_FEATURE_GENERATOR_IMPL_HEADERS})
 SOURCE_SUB_GROUP2(FeatureGenerator impl FeatureVisitor FILES ${LBCPP_FEATURE_GENERATOR_IMPL_FEATURE_VISITORS})
 SOURCE_SUB_GROUP(FeatureGenerator FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
-SOURCE_SUB_GROUP(FeatureGenerator ContinuousFunction FILES ${LBCPP_CORE_CONTINUOUS_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(FeatureGenerator Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 ## <---
 
@@ -404,6 +408,7 @@ SOURCE_SUB_GROUP(FeatureGenerator Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
+SOURCE_SUB_GROUP(Function ScalarObjectFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Function Perception FILES ${LBCPP_FUNCTION_PERCEPTION_SOURCES})
 
 ## Inference

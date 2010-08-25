@@ -29,7 +29,6 @@ void declareRandomVariableStatistics()
 }
 
 // FeatureGenerator
-extern void declareContinuousFunctions();
 extern void declareOptimizers();
 
 void declareFeatureGenerators()
@@ -60,7 +59,6 @@ void declareLBCppCoreClasses()
   declareRandomVariableStatistics();
   declareFeatureGenerators();
   
-  declareContinuousFunctions();
   declareIterationFunctions();
   declareStoppingCriterions();
   declareOptimizers();

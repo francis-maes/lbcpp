@@ -92,7 +92,7 @@ protected:
       return gradientDescentInferenceOnlineLearner(
                                                    InferenceOnlineLearner::perEpisode,                                                 // randomization
                                                    InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
-                                                   InferenceOnlineLearner::perStepMiniBatch20, ScalarVectorFunctionPtr() /*sumOfSquaresFunction(0.0)*/,         // regularizer
+                                                   InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
     else
       return gradientDescentInferenceOnlineLearner(
@@ -100,7 +100,7 @@ protected:
                                                    InferenceOnlineLearner::perStep, invLinearIterationFunction(
                                                                                                                DefaultParameters::learningRate, 
                                                                                                                DefaultParameters::learningRateUpdate), true, // learning steps
-                                                   InferenceOnlineLearner::perStepMiniBatch20, ScalarVectorFunctionPtr() /*sumOfSquaresFunction(DefaultParameters::regularizer)*/,         // regularizer
+                                                   InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(DefaultParameters::regularizer),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
 

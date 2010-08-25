@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Function/ScalarFunction.h>
+#include <lbcpp/Function/ScalarObjectFunction.h>
 using namespace lbcpp;
 
 /*
@@ -41,27 +42,6 @@ ScalarFunctionPtr ScalarFunction::multiplyByScalar(double scalar)
 
 ScalarFunctionPtr ScalarFunction::composeWith(ScalarFunctionPtr postFunction) const
   {return composeScalarFunction(refCountedPointerFromThis(this), postFunction);}
-/*
-ScalarFunctionPtr lbcpp::addConstantScalarFunction(double constant)
-  {return new AddConstantScalarFunction(constant);}
-
-ScalarFunctionPtr lbcpp::squareFunction()
-  {return new SquareFunction();}
-
-ScalarFunctionPtr lbcpp::absFunction()
-  {return new AbsFunction();}
-
-ScalarFunctionPtr lbcpp::sum(ScalarFunctionPtr function, double constant)
-  {return new ScalarFunctionPlusConstant(function, constant);}
-
-ScalarFunctionPtr lbcpp::angleDifferenceScalarFunction(double reference)
-  {return new AngleDifferenceScalarFunction(reference);}
-
-BinaryClassificationLossFunctionPtr lbcpp::hingeLoss(bool isPositive, double margin)
-  {return new HingeLossFunction(isPositive, margin);}
-
-BinaryClassificationLossFunctionPtr lbcpp::logBinomialLoss(bool isPositive)
-  {return new LogBinomialLossFunction(isPositive);}*/
 
 /*
 ** BinaryClassificationLossFunction
@@ -80,23 +60,7 @@ void BinaryClassificationLossFunction::compute(double input, double* output, con
 }
 
 /*
-void declareContinuousFunctions()
-{
-  LBCPP_DECLARE_ABSTRACT_CLASS(ContinuousFunction, Object);
-  LBCPP_DECLARE_ABSTRACT_CLASS(ScalarFunction, ContinuousFunction);
-
-  LBCPP_DECLARE_CLASS(ScalarFunctionComposition, ScalarFunction);
-  LBCPP_DECLARE_CLASS(MultiplyByScalarFunction, ScalarFunction);
-
-  LBCPP_DECLARE_CLASS(AngleDifferenceScalarFunction, ScalarFunction);
-  LBCPP_DECLARE_CLASS(AbsFunction, ScalarFunction);
-  LBCPP_DECLARE_CLASS(SquareFunction, ScalarFunction);
-
-  LBCPP_DECLARE_ABSTRACT_CLASS(BinaryClassificationLossFunction, ScalarFunction);
-  LBCPP_DECLARE_CLASS(HingeLossFunction, BinaryClassificationLossFunction);
-  LBCPP_DECLARE_CLASS(LogBinomialLossFunction, BinaryClassificationLossFunction);
-
-  LBCPP_DECLARE_ABSTRACT_CLASS(ScalarVectorFunction, ContinuousFunction);
-  LBCPP_DECLARE_CLASS(SumOfSquaresScalarVectorFunction, ScalarVectorFunction);
-}
+** ScalarObjectFunction
 */
+ScalarObjectFunctionPtr ScalarObjectFunction::multiplyByScalar(double weight) const
+  {return multiplyByScalarObjectFunction(refCountedPointerFromThis(this), weight);}
