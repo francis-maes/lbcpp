@@ -59,7 +59,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res ? perceptionToFeatures(res) : PerceptionPtr();
+    return res ? (PerceptionPtr)perceptionToFeatures(res) : PerceptionPtr();
   }
   
   virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
