@@ -1,8 +1,8 @@
 
 FeaturePerceptions:
+  * use it in numerical inference !
   * Serialisation des DynamicObject/DynamicClass
     * Utiliser dans les Perceptions
-  * use it in numerical inference !
   * IntegerToFeaturesPerception
 
 Cleaning:
