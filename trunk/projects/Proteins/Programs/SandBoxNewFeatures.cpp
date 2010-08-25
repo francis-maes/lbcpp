@@ -50,11 +50,11 @@ int main(int argc, char** argv)
   std::cout << "Dot Product: " << dotProduct(output, perception, input) << std::endl;
 
 
-  addWeighted(parameters, perception, input, 0.1);
+  addWeighted(parameters.getObject(), perception, input, 0.1);
   std::cout << "Parameters: " << std::endl;
   parameters.printRecursively(std::cout, -1, false);
 
-  addWeighted(parameters, perception, input, -0.1);
+  addWeighted(parameters.getObject(), perception, input, -0.1);
   std::cout << "Parameters: " << std::endl;
   parameters.printRecursively(std::cout, -1, false);
 

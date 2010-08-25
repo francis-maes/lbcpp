@@ -86,8 +86,8 @@ protected:
 class BinaryLinearSVMInference : public BinaryClassificationInference
 {
 public:
-  BinaryLinearSVMInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearInference(name))
+  BinaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
+    : BinaryClassificationInference(name, linearInference(name, perception))
     {decorated->setOnlineLearner(learner);}
   BinaryLinearSVMInference(InferencePtr scoreInference)
     : BinaryClassificationInference(scoreInference->getName(), scoreInference)
@@ -101,8 +101,8 @@ public:
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
 {
 public:
-  BinaryLogisticRegressionInference(InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearInference(name))
+  BinaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
+    : BinaryClassificationInference(name, linearInference(name, perception))
     {decorated->setOnlineLearner(learner);}
   BinaryLogisticRegressionInference() {}
 

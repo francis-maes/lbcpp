@@ -40,21 +40,21 @@ InferencePtr ProteinInferenceFactory::createLabelSequenceInference(const String&
   EnumerationPtr elementsType = targetType->getTemplateArgument(0).dynamicCast<Enumeration>();
   jassert(elementsType);
   PerceptionPtr perception = createPerception(targetName, true, false);
-  InferencePtr classifier = createMultiClassClassifier(targetName, perception->getOutputType(), elementsType);
-  return sharedParallelVectorInference(targetName, proteinLengthFunction(), perception, classifier);
+  InferencePtr classifier = createMultiClassClassifier(targetName, perception, elementsType);
+  return sharedParallelVectorInference(targetName, proteinLengthFunction(), classifier);
 }
 
 InferencePtr ProteinInferenceFactory::createProbabilitySequenceInference(const String& targetName) const
 {
   PerceptionPtr perception = createPerception(targetName, true, false);
-  InferencePtr classifier = createBinaryClassifier(targetName, perception->getOutputType());
-  return sharedParallelVectorInference(targetName, proteinLengthFunction(), perception, classifier);
+  InferencePtr classifier = createBinaryClassifier(targetName, perception);
+  return sharedParallelVectorInference(targetName, proteinLengthFunction(), classifier);
 }
 
 InferencePtr ProteinInferenceFactory::createContactMapInference(const String& targetName) const
 {
   PerceptionPtr perception = createPerception(targetName, false, true);
-  InferencePtr classifier = createBinaryClassifier(targetName, perception->getOutputType());
+  InferencePtr classifier = createBinaryClassifier(targetName, perception);
   return new ContactMapInference(targetName, perception, classifier);
 }
 

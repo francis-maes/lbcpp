@@ -76,7 +76,7 @@ public:
       = new StoppingCriterionInferenceOnlineLearner(learner->cloneAndCast<InferenceOnlineLearner>(), criterionTestFrequency,
                                                     criterion->cloneAndCast<StoppingCriterion>(), restoreBestParametersWhenLearningStops);
     res->learningStopped = learningStopped;
-    res->bestParameters = bestParameters ? bestParameters->cloneAndCast<DenseVector>() : DenseVectorPtr();
+    res->bestParameters = bestParameters ? bestParameters->clone() : ObjectPtr();
     res->bestScore = bestScore;
     res->epoch = epoch;
     return res;
@@ -89,20 +89,20 @@ private:
   bool restoreBestParametersWhenLearningStops;
 
   bool learningStopped;
-  DenseVectorPtr bestParameters;
+  ObjectPtr bestParameters;
   double bestScore;
   size_t epoch;
 
   NumericalInferencePtr getNumericalInference(InferencePtr inference) const
     {return inference.staticCast<NumericalInference>();}
 
-  DenseVectorPtr getParameters(InferencePtr inference) const
+  ObjectPtr getParameters(InferencePtr inference) const
     {return getNumericalInference(inference)->getParameters();}
 
   void testStoppingCriterion(InferencePtr inference)
   {
     double score = -getCurrentLossEstimate();
-    DenseVectorPtr parameters = getParameters(inference);
+    ObjectPtr parameters = getParameters(inference);
     if (parameters && restoreBestParametersWhenLearningStops && score > bestScore)
     {
       bestParameters = parameters->clone();

@@ -88,7 +88,16 @@ struct ComputeL0NormOperation : public DoubleConstUnaryOperation
 };
 
 size_t lbcpp::l0norm(ObjectPtr object)
-  {ComputeL0NormOperation operation; doubleConstUnaryOperation(operation, object); return operation.res;}
+{
+  if (object)
+  {
+    ComputeL0NormOperation operation;
+    doubleConstUnaryOperation(operation, object);
+    return operation.res;
+  }
+  else
+    return 0;
+}
 
 size_t lbcpp::l0norm(PerceptionPtr perception, const Variable& input)
   {ComputeL0NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
@@ -113,7 +122,16 @@ struct ComputeL1NormOperation : public DoubleConstUnaryOperation
 };
 
 double lbcpp::l1norm(ObjectPtr object)
-  {ComputeL1NormOperation operation; doubleConstUnaryOperation(operation, object); return operation.res;}
+{
+  if (object)
+  {
+    ComputeL1NormOperation operation;
+    doubleConstUnaryOperation(operation, object);
+    return operation.res;
+  }
+  else
+    return 0.0;
+}
 
 double lbcpp::l1norm(PerceptionPtr perception, const Variable& input)
   {ComputeL1NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
@@ -138,7 +156,16 @@ struct ComputeSumOfSquaresOperation : public DoubleConstUnaryOperation
 };
 
 double lbcpp::sumOfSquares(ObjectPtr object)
-  {ComputeSumOfSquaresOperation operation; doubleConstUnaryOperation(operation, object); return operation.res;}
+{
+  if (object)
+  {
+    ComputeSumOfSquaresOperation operation;
+    doubleConstUnaryOperation(operation, object);
+    return operation.res;
+  }
+  else
+    return 0.0;
+}
 
 double lbcpp::sumOfSquares(PerceptionPtr perception, const Variable& input)
   {ComputeSumOfSquaresOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
@@ -170,6 +197,8 @@ struct ComputeDotProductCallback : public PerceptionCallback
 
 double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input)
 {
+  if (!object)
+    return 0.0;
   ReferenceCountedObjectPtr<ComputeDotProductCallback> callback(new ComputeDotProductCallback(object));
   perception->computePerception(input, callback);
   return callback->res;
@@ -180,11 +209,14 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
 */
 struct DoubleAssignmentOperation
 {
+  void compute(ObjectPtr& target, ObjectPtr source)
+    {jassert(false);}
+
   void compute(ObjectPtr value, PerceptionPtr perception, const Variable& input)
     {jassert(false);}
 
-  double compute(double value, double otherValue)
-    {jassert(false); return 0.0;}
+  void compute(double& value, double otherValue)
+    {jassert(false);}
 };
 
 template<class OperationType>
@@ -200,8 +232,9 @@ struct DoubleAssignmentCallback : public PerceptionCallback
   {
     jassert(value.isDouble() && !value.isMissingValue());
     Variable targetVariable = object->getVariable(variableNumber);
-    object->setVariable(variableNumber,
-      Variable(operation.compute(targetVariable.getDouble(), value.getDouble()), targetVariable.getType()));
+    double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
+    operation.compute(targetValue, value.getDouble());
+    object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
   }
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
@@ -214,8 +247,39 @@ struct DoubleAssignmentCallback : public PerceptionCallback
     }
     operation.compute(subObject, subPerception, subInput);
   }
-};
+}; 
 
+template<class OperationType>
+void doubleAssignmentOperation(OperationType& operation, ObjectPtr target, ObjectPtr source)
+{
+  size_t n = source->getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable sourceVariable = source->getVariable(i);
+    if (sourceVariable.isMissingValue())
+      continue;
+    Variable targetVariable = target->getVariable(i);
+
+    if (sourceVariable.isObject())
+    {
+      jassert(targetVariable.isObject());
+      ObjectPtr targetObject = targetVariable.getObject();
+      operation.compute(targetObject, sourceVariable.getObject());
+      target->setVariable(i, targetObject);
+    }
+    else
+    {
+      jassert(sourceVariable.isDouble() && targetVariable.isDouble());
+      double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
+      operation.compute(targetValue, sourceVariable.getDouble());
+      target->setVariable(i, Variable(targetValue, targetVariable.getType()));
+    }
+  }
+}
+
+/*
+** AddWeighted
+*/
 struct AddWeightedOperation : public DoubleAssignmentOperation
 {
   AddWeightedOperation(double weight)
@@ -223,20 +287,34 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
 
   double weight;
 
+  void compute(ObjectPtr& target, ObjectPtr source)
+    {lbcpp::addWeighted(target, source, weight);}
+
   void compute(ObjectPtr value, PerceptionPtr perception, const Variable& input)
     {lbcpp::addWeighted(value, perception, input, weight);}
 
-  double compute(double value, double otherValue)
-    {return value + weight * otherValue;}
+  void compute(double& value, double otherValue)
+    {value += weight * otherValue;}
 };
 
-void lbcpp::addWeighted(ObjectPtr object, PerceptionPtr perception, const Variable& input, double weight)
+void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Variable& input, double weight)
 {
-  if (weight)
-  {
-    AddWeightedOperation operation(weight);
-    typedef DoubleAssignmentCallback<AddWeightedOperation> Callback;
-    ReferenceCountedObjectPtr<Callback> callback(new Callback(object, operation));
-    perception->computePerception(input, callback);
-  }
+  if (!weight)
+    return;
+  if (!target)
+    target = Variable::create(perception->getOutputType()).getObject();
+  AddWeightedOperation operation(weight);
+  typedef DoubleAssignmentCallback<AddWeightedOperation> Callback;
+  ReferenceCountedObjectPtr<Callback> callback(new Callback(target, operation));
+  perception->computePerception(input, callback);
+}
+
+void lbcpp::addWeighted(ObjectPtr& target, ObjectPtr source, double weight)
+{
+  if (!weight)
+    return;
+  if (!target)
+    target = Variable::create(source->getClass()).getObject();
+  AddWeightedOperation operation(weight);
+  doubleAssignmentOperation(operation, target, source);
 }

@@ -1,9 +1,8 @@
+'''Use FeaturePerceptions in NumericalInference'''
 
-FeaturePerceptions:
-  * use it in numerical inference !
-  * Serialisation des DynamicObject/DynamicClass
-    * Utiliser dans les Perceptions
-  * IntegerToFeaturesPerception
+* Repair GradientDescentOnlineLearner::applyRegularizer
+* Serialisation des Perceptions
+* NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
 
 Cleaning:
   * Finir d'enlever le code de serialisation binaire

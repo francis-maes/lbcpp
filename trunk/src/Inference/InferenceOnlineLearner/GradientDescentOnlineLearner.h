@@ -35,8 +35,11 @@ protected:
   NumericalInferencePtr getNumericalInference(InferencePtr inference) const
     {return inference.staticCast<NumericalInference>();}
 
-  DenseVectorPtr getParameters(InferencePtr inference) const
+  ObjectPtr getParameters(InferencePtr inference) const
     {return getNumericalInference(inference)->getParameters();}
+
+  PerceptionPtr getPerception(InferencePtr inference) const
+    {return getNumericalInference(inference)->getPerception();}
 
   ScalarVariableMean numberOfActiveFeatures;
   size_t epoch;
@@ -50,14 +53,17 @@ protected:
   ScalarVariableMean lossValue;
   size_t lastApplyRegularizerEpoch;
 
-  FeatureGeneratorPtr getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+//  FeatureGeneratorPtr getExampleGradient(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+
+  void updateParameters(InferencePtr inference, ObjectPtr& target, double weight, const Variable& input, const Variable& supervision, const Variable& prediction);
+
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
   void applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   void applyRegularizer(InferencePtr inference);
   void checkRegularizerAfterStep(InferencePtr inference);
-  void gradientDescentStep(InferencePtr inference, FeatureGeneratorPtr gradient, double weight = 1.0);
+  void gradientDescentStep(InferencePtr inference, ObjectPtr gradient, double weight = 1.0);
   double computeLearningRate() const;
-  void updateNumberOfActiveFeatures(FeatureGeneratorPtr features);
+  void updateNumberOfActiveFeatures(PerceptionPtr perception, const Variable& input);
 };
 
 typedef ReferenceCountedObjectPtr<GradientDescentOnlineLearner> GradientDescentOnlineLearnerPtr;

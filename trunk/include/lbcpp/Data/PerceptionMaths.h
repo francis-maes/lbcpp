@@ -25,14 +25,16 @@ extern double sumOfSquares(ObjectPtr object);
 extern double sumOfSquares(PerceptionPtr perception, const Variable& input);
 
 inline double l2norm(ObjectPtr object)
-  {return sqrt(sumOfSquares(object));}
+  {return object ? sqrt(sumOfSquares(object)) : 0.0;}
 
 inline double l2norm(PerceptionPtr perception, const Variable& input)
   {return sqrt(sumOfSquares(perception, input));}
 
 // Binary operations
 extern double dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input);
-extern void addWeighted(ObjectPtr object, PerceptionPtr perception, const Variable& input, double weight);
+
+extern void addWeighted(ObjectPtr& target, ObjectPtr source, double weight);
+extern void addWeighted(ObjectPtr& object, PerceptionPtr perception, const Variable& input, double weight);
 
 }; /* namespace lbcpp */
 
