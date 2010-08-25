@@ -139,9 +139,11 @@ void Protein::computeMissingVariables()
   
   if (solventAccessibility && !solventAccessibilityAt20p)
     solventAccessibilityAt20p = computeBinarySolventAccessibilityFromSolventAccessibility(solventAccessibility, 0.2);
-
+  
   if (tertiaryStructure)
   {
+    if (!disorderRegions)
+      disorderRegions = computeDisorderRegionsFromTertiaryStructure(tertiaryStructure);
     if (!calphaTrace)
       calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
     if (!distanceMapCa && tertiaryStructure->hasCAlphaAtoms())
@@ -157,6 +159,39 @@ void Protein::computeMissingVariables()
     contactMap8Ca = computeContactMapFromDistanceMap(distanceMapCa, 8);
   if (distanceMapCb && !contactMap8Cb)
     contactMap8Cb = computeContactMapFromDistanceMap(distanceMapCb, 8);
+}
+
+VectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
+{
+  if (!tertiaryStructure)
+  {
+    jassert(false);
+    return VectorPtr();
+  }
+  
+  size_t n = tertiaryStructure->getNumResidues();
+  
+  VectorPtr res = vector(probabilityType(), n);
+  for (size_t i = 0; i < n; ++i)
+    res->setElement(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType()));
+  
+  static const int minimumDisorderLength = 4;
+  for (size_t i = 0; i < n; )
+  {
+    if (res->getElement(i).getDouble() == 1.0)
+    {
+      size_t j = i + 1;
+      while (j < n && res->getElement(j).getDouble() == 1.0) ++j;
+      if ((j - i) < (size_t)minimumDisorderLength)
+        for (size_t ii = i; ii < j; ++ii)
+          res->setElement(ii, Variable(0.0, probabilityType()));
+      i = j;
+    }
+    else
+      ++i;
+  }
+  
+  return res;
 }
 
 VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
