@@ -85,7 +85,7 @@ public:
       return secondaryStructureEvaluator;
     if (targetName == T("dsspSecondaryStructure"))
       return dsspSecondaryStructureEvaluator;
-    if (targetName == T("solventAccessibility"))
+    if (targetName == T("solventAccessibilityAt20p"))
       return solventAccessibility2StateEvaluator;
     if (targetName == T("disorderRegions"))
       return disorderEvaluator;
@@ -101,6 +101,7 @@ public:
       return cbetaContactMapEvaluator;
     if (targetName == T("structuralAlphabetSequence"))
       return structuralAlphabetEvaluator;
+    jassert(false);
     return EvaluatorPtr();
   }
   
