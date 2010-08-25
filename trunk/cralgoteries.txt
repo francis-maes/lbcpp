@@ -1,7 +1,5 @@
 
-
 FeaturePerceptions:
-  * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
   * Serialisation des DynamicObject/DynamicClass
     * Utiliser dans les Perceptions
   * use it in numerical inference !
@@ -14,6 +12,7 @@ Cleaning:
   * Deplacer Evaluator de lbcpp/Inference vers lbcpp/Data
   * Ranger les Utilities et les anciens Objects  
  
+* Types: permettre de déclarer des variables ayant des Types abstraits
 * Types: Rendre visible la variable Type de la classe Object (?)
 
 ====

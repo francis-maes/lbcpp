@@ -15,12 +15,13 @@ SET(LBCPP_DATA_HEADERS
   ../include/lbcpp/Data/Function.h
   ../include/lbcpp/Data/Stream.h
   ../include/lbcpp/Data/Container.h
+  ../include/lbcpp/Data/Consumer.h
   ../include/lbcpp/Data/Vector.h
   ../include/lbcpp/Data/SymmetricMatrix.h
   ../include/lbcpp/Data/Predicate.h
   ../include/lbcpp/Data/ProbabilityDistribution.h
   ../include/lbcpp/Data/Perception.h
-  ../include/lbcpp/Data/Consumer.h
+  ../include/lbcpp/Data/PerceptionMaths.h
 )
 
 SET(LBCPP_DATA_IMPL_HEADERS
@@ -50,6 +51,7 @@ SET(LBCPP_DATA_SOURCES
   Data/ProbabilityDistribution.cpp
   Data/Consumer.cpp
   Data/Perception.cpp
+  Data/PerceptionMaths.cpp
   Data/DataClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
 )  
