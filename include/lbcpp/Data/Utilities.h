@@ -34,6 +34,9 @@
 namespace lbcpp
 {
 
+inline std::ostream& operator <<(std::ostream& ostr, const String& value)
+  {return ostr << (const char* )value;}
+
 template<bool> struct StaticAssert;
 template<> struct StaticAssert<true> {};
 
