@@ -1,13 +1,12 @@
 
 Types:
-  * Rendre visible la variable Type de la classe Object
   * Rendre la classe Vector abstraite
   * Rendre les stream Template
 
 FeaturePerceptions:
+  * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
   * Serialisation des DynamicObject/DynamicClass
     * Utiliser dans les Perceptions
-  * dotProduct(), addWeighted(), add/sub, addWeightedSigns()
   * use it in numerical inference !
   * IntegerToFeaturesPerception
 
@@ -19,6 +18,7 @@ Cleaning:
   * Ranger les Utilities et les anciens Objects  
  
 * Bug: AminoAcid::getVariable renvoie pas le bon type
+* Rendre visible la variable Type de la classe Object (?)
 
 ====
 ContactMap:

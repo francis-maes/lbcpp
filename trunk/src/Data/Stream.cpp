@@ -41,6 +41,18 @@ bool Stream::iterate(size_t maximumCount)
   return true;
 }
 
+namespace lbcpp
+{
+  extern StreamPtr applyFunctionStream(StreamPtr stream, FunctionPtr function);
+};
+
+StreamPtr Stream::apply(FunctionPtr function) const
+{
+  return checkInheritance(getElementsType(), function->getInputType())
+    ? applyFunctionStream(refCountedPointerFromThis(this), function)
+    : StreamPtr();
+}
+
 /*
 ** TextParser
 */
