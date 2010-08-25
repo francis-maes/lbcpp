@@ -10,16 +10,16 @@
   <include file="Data/Protein.h"/>
   
   <namespace name="lbcpp">
-
-    <code>
-      TypePtr sequenceSeparationDistanceType()
-        {static TypeCache cache(T("SequenceSeparationDistance")); return cache();}
-    </code>
-    
+    <type name="AngstromDistance" base="Double">
+      <code>
+      virtual String toString(const VariableValue&amp; value) const
+        {return String(value.getDouble(), 2) + T(" A");}
+      </code>
+    </type>
+    <type name="SequenceSeparationDistance" base="Integer"/>
   </namespace>
 
   <declarationCode>
-    lbcpp::Class::declare(new lbcpp::Type(T("SequenceSeparationDistance"), lbcpp::integerType()));
     lbcpp::Type::finishDeclarations();
   </declarationCode>
   

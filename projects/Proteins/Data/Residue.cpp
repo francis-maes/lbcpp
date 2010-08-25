@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "Residue.h"
+#include "Protein.h"
 using namespace lbcpp;
 
 String Residue::toString() const

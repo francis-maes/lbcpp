@@ -136,7 +136,21 @@ protected:
     String typeName = xml->getStringAttribute(T("name"), T("???"));
     String baseTypeName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Variable")));
     String suffix = xml->getTagName() == T("type") ? T("Type") : T("TemplateType");
-    String implementation = xml->getStringAttribute(T("implementation"), typeName + suffix);
+    String implementation = xml->getStringAttribute(T("implementation"), String::empty);
+
+    if (implementation.isEmpty())
+    {
+      implementation = typeName + suffix;
+      openClass(implementation, T("Type"));
+      
+      writeLine(implementation + T("(const String& name, TypePtr baseType)"));
+      writeLine(T(": Type(name, baseType) {}"), 1);
+      
+      forEachXmlChildElementWithTagName(*xml, elt, T("code"))
+        {generateCode(elt); newLine();}
+
+      closeClass();
+    }
 
     String fullName = getCurrentScopeFullName() + T("::") + implementation + T("(T(") + typeName.quoted() + T(")");
     if (baseTypeName.isNotEmpty())
@@ -301,7 +315,7 @@ protected:
     }
    
     forEachXmlChildElementWithTagName(*xml, elt, T("code"))
-      {newLine(); generateCode(elt);}
+      {generateCode(elt); newLine();}
 
     closeClass();
     currentScopes.pop_back();

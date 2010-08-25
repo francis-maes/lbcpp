@@ -6,18 +6,17 @@
     <type name="Variable" base="" implementation="TopLevelType"/>
 
     <!-- Builtin Types -->
-    <type name="Nil" base="Variable"/>
-    <type name="Boolean" base="Variable"/>
-    <type name="Integer" base="Variable"/>
+    <type name="Nil" base="Variable" implementation="NilType"/>
+    <type name="Boolean" base="Variable" implementation="BooleanType"/>
+    <type name="Integer" base="Variable" implementation="IntegerType"/>
     <type name="EnumValue" base="Integer" implementation="IntegerType"/>
 
-    <type name="Double" base="Variable"/>
-    <type name="Probability" base="Double"/>
-    <type name="AngstromDistance" base="Double"/>
+    <type name="Double" base="Variable" implementation="DoubleType"/>
+    <type name="Probability" base="Double" implementation="ProbabilityType"/>
 
-    <type name="String" base="Variable"/>
-    <type name="File" base="String"/>
-    <templateType name="Pair"/>
+    <type name="String" base="Variable" implementation="StringType"/>
+    <type name="File" base="String" implementation="FileType"/>
+    <templateType name="Pair" implementation="PairTemplateType"/>
 
     
     <!-- Object -->

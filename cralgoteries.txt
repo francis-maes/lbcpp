@@ -1,8 +1,6 @@
-* Bug: Memory Leak sur les Types
 
 Types:
   * Rendre visible la variable Type de la classe Object
-  * Move AngstromDistanceType into the Proteins project
   * Rendre la classe Vector abstraite
   * Enlever les multiplyByScalar et addWeighted de Type et Object
   * Rendre les stream Template
