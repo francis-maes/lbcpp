@@ -28,23 +28,6 @@ void declareRandomVariableStatistics()
   LBCPP_DECLARE_CLASS_LEGACY(ScalarVariableStatistics);
 }
 
-// FeatureGenerator
-extern void declareOptimizers();
-
-void declareFeatureGenerators()
-{
-  /*
-  LBCPP_DECLARE_CLASS_LEGACY(StringDictionary);
-  LBCPP_DECLARE_CLASS_LEGACY(FeatureDictionary);
-
-  LBCPP_DECLARE_ABSTRACT_CLASS(FeatureGenerator, Object);
-
-  LBCPP_DECLARE_CLASS_LEGACY(Label);
-  LBCPP_DECLARE_CLASS_LEGACY(Scalar);
-  LBCPP_DECLARE_CLASS_LEGACY(SparseVector);
-  LBCPP_DECLARE_CLASS_LEGACY(DenseVector);*/
-}
-
 // Inference
 extern void declareInferenceCallbackClasses();
 
@@ -55,16 +38,10 @@ void declareLBCppCoreClasses()
   // old -->
   declarePredicateClasses();
   declareProbabilityDistributionClasses();
-
   declareRandomVariableStatistics();
-  declareFeatureGenerators();
-  
   declareIterationFunctions();
   declareStoppingCriterions();
-  declareOptimizers();
-  
-  //LBCPP_DECLARE_DICTIONARY(BinaryClassificationDictionary);
-  // <--
+  // <--  
   
   declareFunctionClasses(); // generated
   declareInferenceClasses(); // generated

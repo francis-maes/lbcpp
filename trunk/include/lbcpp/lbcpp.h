@@ -44,25 +44,12 @@
 // old
 # include "Object/ObjectGraph.h"
 # include "Object/Table.h"
-// -
-
 # include "Utilities/IterationFunction.h"
 # include "Utilities/RandomGenerator.h"
 # include "Utilities/RandomVariable.h"
 # include "Utilities/ProgressCallback.h"
 # include "Utilities/StoppingCriterion.h"
-/*
-# include "FeatureGenerator/FeatureGenerator.h"
-# include "FeatureGenerator/FeatureVisitor.h"
-# include "FeatureGenerator/EditableFeatureGenerator.h"
-# include "FeatureGenerator/SparseVector.h"
-# include "FeatureGenerator/DenseVector.h"
-# include "FeatureGenerator/ContinuousFunction.h"
-# include "FeatureGenerator/Optimizer.h"
-# include "FeatureGenerator/impl/DoubleVector.hpp"
-# include "FeatureGenerator/impl/FeatureGenerator.hpp"
-# include "FeatureGenerator/impl/FeatureGeneratorDefaultImplementations.hpp"
-*/
+// -
 
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"

@@ -10,7 +10,7 @@
 # define LBCPP_OBJECT_CONTAINER_H_
 
 # include "Variable.h"
-# include "../ObjectPredeclarations.h"
+# include "../Function/Function.h"
 
 namespace lbcpp
 {

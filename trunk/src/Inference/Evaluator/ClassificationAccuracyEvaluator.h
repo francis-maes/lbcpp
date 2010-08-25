@@ -10,7 +10,6 @@
 # define LBCPP_EVALUATOR_CLASSIFICATION_ACCURACY_H_
 
 # include <lbcpp/Inference/Evaluator.h>
-# include <lbcpp/FeatureGenerator/EditableFeatureGenerator.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp

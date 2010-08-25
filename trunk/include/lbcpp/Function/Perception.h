@@ -9,7 +9,6 @@
 #ifndef LBCPP_DATA_PERCEPTION_H_
 # define LBCPP_DATA_PERCEPTION_H_
 
-# include "../ObjectPredeclarations.h"
 # include "../Data/Vector.h"
 # include "Function.h"
 

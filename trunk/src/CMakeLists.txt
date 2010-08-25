@@ -25,6 +25,7 @@ GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLear
 
 SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/ReferenceCountedObject.h
+  ../include/lbcpp/Data/predeclarations.h
   ../include/lbcpp/Data/Object.h
   Data/Object.cpp
   ../include/lbcpp/Data/Type.h
@@ -115,72 +116,13 @@ SET(LBCPP_UTILITIES_SOURCES
   IterationFunction.cpp
   StoppingCriterion.cpp
 )
-
-SET(LBCPP_FEATURE_GENERATOR_HEADERS
-  ../include/lbcpp/FeatureGenerator/StringDictionary.h
-  ../include/lbcpp/FeatureGenerator/FeatureDictionary.h
-  ../include/lbcpp/FeatureGenerator/FeatureGenerator.h
-  ../include/lbcpp/FeatureGenerator/FeatureVisitor.h
-  ../include/lbcpp/FeatureGenerator/EditableFeatureGenerator.h
-  ../include/lbcpp/FeatureGenerator/SparseVector.h
-  ../include/lbcpp/FeatureGenerator/DenseVector.h
-  ../include/lbcpp/FeatureGenerator/ContinuousFunction.h
-  ../include/lbcpp/FeatureGenerator/Optimizer.h
-)
-
-SET(LBCPP_FEATURE_GENERATOR_IMPL ../include/lbcpp/FeatureGenerator/impl)
-
-SET(LBCPP_FEATURE_GENERATOR_IMPL_HEADERS
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitorStatic.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureGeneratorDefaultImplementations.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureGenerator.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/DoubleVector.hpp
-)
-
-SET(LBCPP_FEATURE_GENERATOR_IMPL_FEATURE_VISITORS
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitor/FeatureVisitorDynamicToStatic.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitor/CreateVectorVisitor.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitor/UnaryOperationVisitor.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitor/AssignmentVisitor.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitor/DotProductVisitor.hpp
-  ${LBCPP_FEATURE_GENERATOR_IMPL}/FeatureVisitor/StringDescriptionVisitor.hpp
-)
-
-SET(LBCPP_FEATURE_GENERATOR_SOURCES
-  StringDictionary.cpp
-  FeatureDictionary.cpp
-  FeatureGenerator.cpp
-  FeatureVisitor.cpp
-  SparseVector.cpp
-  DenseVector.cpp
-  DoubleVectorHelpers.hpp
-  ContinuousFunction.cpp
-  Optimizer.cpp
-)
-
-SET(LBCPP_CORE_FEATURE_GENERATOR_SOURCES
-  FeatureGenerator/EmptyFeatureGenerator.h
-  FeatureGenerator/UnitFeatureGenerator.h
-  FeatureGenerator/SubFeatureGenerator.h
-  FeatureGenerator/WeightedFeatureGenerator.h
-  FeatureGenerator/LinearCombinationFeatureGenerator.h
-  FeatureGenerator/ExplicitLinearCombinationFeatureGenerator.h
-)
-
-
-SET(LBCPP_CORE_OPTIMIZER_SOURCES
-  Optimizer/RPropOptimizer.h
-  Optimizer/GradientDescentOptimizer.h
-  Optimizer/BackTrackingLineSearch.h
-  Optimizer/QuasiNewtonMemory.h
-  Optimizer/LBFGSOptimizer.h
-)
 ### old <-------------------
 
 
 ##### FUNCTION ####
 
 SET(LBCPP_FUNCTION_SOURCES
+  ../include/lbcpp/Function/predeclarations.h
   ../include/lbcpp/Function/Function.h
   ../include/lbcpp/Function/ScalarFunction.h
   ../include/lbcpp/Function/ScalarObjectFunction.h
@@ -330,7 +272,6 @@ SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
 
 SET(LBCPP_CORE_HEADERS
   ../include/lbcpp/common.h
-  ../include/lbcpp/ObjectPredeclarations.h
   ../include/lbcpp/Traits.h
   ../include/lbcpp/ContainerTraits.h
   ../include/lbcpp/lbcpp.h
@@ -349,16 +290,8 @@ SET(LBCPP_CORE
   #Old -->
   ${LBCPP_OBJECT_HEADERS}
   ${LBCPP_OBJECT_SOURCES}
-  ${LBCPP_CORE_OBJECT_STREAM_SOURCES}
-
+  ${LBCPP_UTILITIES_HEADERS}
   ${LBCPP_UTILITIES_SOURCES}
-
-  ${LBCPP_FEATURE_GENERATOR_HEADERS}
-  ${LBCPP_FEATURE_GENERATOR_IMPL_HEADERS}
-  ${LBCPP_FEATURE_GENERATOR_IMPL_FEATURE_VISITORS}
-  ${LBCPP_FEATURE_GENERATOR_SOURCES}
-  ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES}
-  ${LBCPP_CORE_OPTIMIZER_SOURCES}
   ## <--
 
   # Function
@@ -396,11 +329,6 @@ SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 ## Old -->
 SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
 SOURCE_GROUP(Utilities FILES ${LBCPP_UTILITIES_HEADERS} ${LBCPP_UTILITIES_SOURCES})
-SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_HEADERS} ${LBCPP_FEATURE_GENERATOR_SOURCES})
-SOURCE_SUB_GROUP(FeatureGenerator impl FILES ${LBCPP_FEATURE_GENERATOR_IMPL_HEADERS})
-SOURCE_SUB_GROUP2(FeatureGenerator impl FeatureVisitor FILES ${LBCPP_FEATURE_GENERATOR_IMPL_FEATURE_VISITORS})
-SOURCE_SUB_GROUP(FeatureGenerator FeatureGenerator FILES ${LBCPP_CORE_FEATURE_GENERATOR_SOURCES})
-SOURCE_SUB_GROUP(FeatureGenerator Optimizer FILES ${LBCPP_CORE_OPTIMIZER_SOURCES})
 ## <---
 
 ## Function
