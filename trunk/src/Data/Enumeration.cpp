@@ -90,17 +90,6 @@ String Enumeration::toString(const VariableValue& value) const
 void Enumeration::saveToXml(XmlElement* xml, const VariableValue& value) const
   {xml->addTextElement(toString(value));}
 
-#include <lbcpp/Data/ProbabilityDistribution.h>
-
-TypePtr Enumeration::multiplyByScalar(VariableValue& value, double scalar)
-{
-  DiscreteProbabilityDistributionPtr distribution = new DiscreteProbabilityDistribution(EnumerationPtr(this));
-  distribution->setVariable((size_t)value.getInteger(), scalar);
-  value.clearBuiltin();
-  value.setObject(distribution);
-  return distribution->getClass();
-}
-
 bool Enumeration::hasOneLetterCodes() const
   {return oneLetterCodes.length() == (int)elements.size();}
 

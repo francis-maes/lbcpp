@@ -55,11 +55,13 @@ public:
     size_t n = state->getNumSubInferences();
     if (!n)
       return Variable();
+    jassert(false); // FIXME
+    /*
     Variable res;
     double weight = 1.0 / (double)n;
     for (size_t i = 0; i < n; ++i)
-      res.addWeighted(state->getSubOutput(i), weight);
-    return res;
+      res.addWeighted(state->getSubOutput(i), weight);*/
+    return Variable();
   }
 
 protected:

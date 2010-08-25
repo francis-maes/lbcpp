@@ -107,12 +107,6 @@ public:
     {return toString(value);}
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
-  virtual TypePtr multiplyByScalar(VariableValue& value, double scalar)
-    {jassert(false); return TypePtr(this);}
-
-  virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight)
-    {jassert(false); return TypePtr(this);}
-
   /*
   ** Static Variables
   */
@@ -224,8 +218,6 @@ public:
   juce::tchar getOneLetterCode(size_t index) const;
   String getOneLetterCodes() const;
 
-  virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
-
   juce_UseDebuggingNewOperator
 
 protected:
@@ -273,9 +265,6 @@ public:
     {return value.getObject()->getShortSummary();}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
-
-  virtual TypePtr multiplyByScalar(VariableValue& value, double scalar);
-  virtual TypePtr addWeighted(VariableValue& target, const Variable& source, double weight);
 
   juce_UseDebuggingNewOperator
 };

@@ -41,34 +41,6 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
   return object1->compare(object2);
 }
 
-TypePtr Class::multiplyByScalar(VariableValue& value, double scalar)
-{
-  ObjectPtr object = value.getObject();
-  if (object && scalar != 1.0)
-  {
-    object = object->multiplyByScalar(scalar);
-    value.clearObject();
-    value.setObject(object);
-    return object->getClass();
-  }
-  else
-    return TypePtr(this);
-}
-
-TypePtr Class::addWeighted(VariableValue& target, const Variable& source, double weight)
-{
-  ObjectPtr object = target.getObject();
-  if (object && weight != 0.0)
-  {
-    object = object->addWeighted(source, weight);
-    target.clearObject();
-    target.setObject(object);
-    return object->getClass();
-  }
-  else
-    return TypePtr(this);
-}
-
 VariableValue Class::createFromString(const String& value, ErrorHandler& callback) const
 {
   VariableValue res = create();

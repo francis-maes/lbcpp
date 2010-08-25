@@ -181,20 +181,6 @@ public:
   ** Non-const operations
   */
   Variable& operator =(const Variable& other);
-  void multiplyByScalar(double scalar);
-  void addWeighted(const Variable& other, double weight);
-
-  Variable& operator *=(double scalar)
-    {multiplyByScalar(scalar); return *this;}
-
-  Variable& operator /=(double scalar)
-    {jassert(scalar); multiplyByScalar(1.0 / scalar); return *this;}
-  
-  Variable& operator +=(const Variable& other)
-    {addWeighted(other, 1.0); return *this;}
-
-  Variable& operator -=(const Variable& other)
-    {addWeighted(other, -1.0); return *this;}
 
   juce_UseDebuggingNewOperator
 

@@ -83,10 +83,12 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
       leafValue = trainingData->getElement(0)[1];
     else
     {
+      jassert(false); // FIXME
+      /*
       jassert(n > 1);
       double weight = 1.0 / (double)n;
       for (size_t i = 0; i < n; ++i)
-        leafValue.addWeighted(trainingData->getElement(i)[1], weight);
+        leafValue.addWeighted(trainingData->getElement(i)[1], weight);*/
     }
     return true;
   }
