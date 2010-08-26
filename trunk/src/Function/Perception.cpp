@@ -105,20 +105,23 @@ void ModifierPerception::computePerception(const Variable& input, PerceptionCall
 
 PerceptionPtr ModifierPerception::getModifiedPerceptionCached(size_t index) const
 {
-  if (index < modifiedPerceptions.size())
-    return modifiedPerceptions[index];
   ModifierPerception* pthis = const_cast<ModifierPerception* >(this);
-  pthis->modifiedPerceptions.resize(index + 1);
-  PerceptionPtr decoratedSubPerception = decorated->getOutputVariableGenerator(index);
-  if (decoratedSubPerception)
+  if (index >= modifiedPerceptions.size())
+    pthis->modifiedPerceptions.resize(index + 1);
+  PerceptionPtr& res = pthis->modifiedPerceptions[index];
+  if (!res)
   {
-    ModifierPerceptionPtr mp = cloneAndCast<ModifierPerception>();
-    mp->decorated = decoratedSubPerception;
-    pthis->modifiedPerceptions[index] = mp;
+    PerceptionPtr decoratedSubPerception = decorated->getOutputVariableGenerator(index);
+    if (decoratedSubPerception)
+    {
+      ModifierPerceptionPtr mp = cloneAndCast<ModifierPerception>();
+      mp->decorated = decoratedSubPerception;
+      res = mp;
+    }
+    else
+      res = getModifiedPerception(index, decorated->getOutputVariableType(index));
   }
-  else
-    pthis->modifiedPerceptions[index] = getModifiedPerception(index, decorated->getOutputVariableType(index));
-  return modifiedPerceptions[index];
+  return res;
 }
 
 /*

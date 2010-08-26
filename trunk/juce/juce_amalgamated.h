@@ -9231,8 +9231,15 @@ public:
 
     void moveChildrenFrom(XmlElement& other) throw()
     {
-      deleteAllChildElements();
-      firstChildElement = other.firstChildElement;
+      if (firstChildElement)
+      {
+        XmlElement* last = firstChildElement;
+        while (last->nextElement)
+          last = last->nextElement;
+        last->nextElement = other.firstChildElement;
+      }
+      else
+        firstChildElement = other.firstChildElement;
       other.firstChildElement = NULL;
     }
     // --

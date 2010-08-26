@@ -46,6 +46,7 @@ public:
   void saveElement(size_t index, const Variable& variable);
 
   void enter(const String& tagName, const String& name = String::empty);
+  void writeType(TypePtr type);
   void leave();
 
   void addTextElement(const String& text)
@@ -129,6 +130,7 @@ public:
 
   void enter(XmlElement* child);
   bool enter(const String& childTagName);
+  TypePtr loadType();
   void leave();
 
   MessageCallback& getCallback()

@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Data/DynamicObject.h>
 using namespace lbcpp;
 
 /*
@@ -103,6 +104,7 @@ void XmlExporter::flushSave()
   std::map<ObjectPtr, int> referencedObjects;
   std::set<String> identifiers;
   resolveChildLinks(root, referencedObjects, identifiers);
+
   jassert(referencedObjects.empty());
   jassert(identifiers.empty());
   savedObjects.clear();
@@ -155,7 +157,12 @@ void XmlExporter::resolveLink(XmlElement* xml, std::map<ObjectPtr, int>& referen
       // shared reference
       if (savedObject.identifier.isEmpty())
         savedObject.identifier = makeUniqueIdentifier(savedObject.object, identifiers);
-      xml->setAttribute(T("reference"), savedObject.identifier);
+      
+      currentStack.push_back(xml);
+      writeType(savedObject.object->getClass());
+      setAttribute(T("reference"), savedObject.identifier);
+      currentStack.pop_back();
+
       jassert(!xml->getNumChildElements());
       referencedObjects[savedObject.object]++;
     }
@@ -173,22 +180,29 @@ void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& r
   forEachXmlChildElement(*xml, elt)
     resolveLink(elt, referencedObjects, identifiers);
 
-  std::map<ObjectPtr, int>::iterator nxt;
-  for (std::map<ObjectPtr, int>::iterator it = referencedObjects.begin(); it != referencedObjects.end(); it = nxt)
+  int count = referencedObjects.size();
+  while (true)
   {
-    nxt = it; ++nxt;
-    SavedObject& savedObject = savedObjects[it->first];
-    if (prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && it->second == savedObject.references.size())
+    std::map<ObjectPtr, int>::iterator nxt;
+    for (std::map<ObjectPtr, int>::iterator it = referencedObjects.begin(); it != referencedObjects.end(); it = nxt)
     {
-      savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
-      identifiers.erase(savedObject.identifier);
-      referencedObjects.erase(it);
-
-      xml->insertChildElement(savedObject.elt, 0);
-      resolveChildLinks(savedObject.elt, referencedObjects, identifiers);
+      nxt = it; ++nxt;
+      SavedObject& savedObject = savedObjects[it->first];
+      if (!savedObject.elt)
+        continue;
+      if ((prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && it->second == savedObject.references.size()))
+      {
+        savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
+        identifiers.erase(savedObject.identifier);
+        referencedObjects.erase(it);
+        xml->insertChildElement(savedObject.elt, 0);
+        resolveChildLinks(savedObject.elt, referencedObjects, identifiers);
+      }
     }
+    if (referencedObjects.size() == count)
+      break;
+    count = referencedObjects.size();
   }
-
   //std::cout << "End: " << xml->getTagName() << " " << xml->getStringAttribute(T("name"), T("unnamed")) << std::endl;
 }
 
@@ -199,16 +213,34 @@ void XmlExporter::writeName(const String& name)
     elt->setAttribute(T("name"), name);
 }
 
+void XmlExporter::writeType(TypePtr type)
+{
+  if (type.dynamicCast<DynamicClass>())
+  {
+    enter(T("type"));
+    writeVariable(type);
+    leave();
+  }
+  else
+    setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
+}
+
 void XmlExporter::writeVariable(const Variable& variable)
 {
   XmlElement* elt = getCurrentElement();
-  elt->setAttribute(T("type"), variable.getTypeName().replaceCharacters(T("<>"), T("[]")));
+  
   if (variable.isMissingValue())
+  {
+    writeType(variable.getType());
     elt->setAttribute(T("missing"), T("true"));
+  }
   else if (variable.isObject() && variable.getType() != typeClass() && !variable.getType()->inheritsFrom(enumerationClass()))
     writeObject(variable.getObject());
   else
+  {
+    writeType(variable.getType());
     variable.saveToXml(*this);
+  }
 }
 
 void XmlExporter::writeObject(ObjectPtr object)
@@ -221,7 +253,7 @@ void XmlExporter::writeObject(ObjectPtr object)
     savedObject.object = object;
     savedObject.elt = new XmlElement(T("shared"));
     currentStack.push_back(savedObject.elt);
-    savedObject.elt->setAttribute(T("type"), currentElement->getStringAttribute(T("type")));
+    writeType(object->getClass());
     object->saveToXml(*this);
     currentStack.pop_back();
   }
@@ -293,20 +325,38 @@ bool XmlImporter::loadSharedObjects()
     }
     sharedObjectsStack.back()[identifier] = variable.getObject();
   }
-  getCurrentElement()->deleteAllChildElementsWithTagName(T("shared"));
+  //getCurrentElement()->deleteAllChildElementsWithTagName(T("shared"));
   return true;
+}
+
+TypePtr XmlImporter::loadType()
+{
+  XmlElement* elt = getCurrentElement();
+  String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
+  if (typeName.isNotEmpty())
+    return Type::get(typeName, callback);
+  else
+  {
+    XmlElement* child = elt->getChildByName(T("type"));
+    if (child)
+    {
+      Variable typeVariable = loadVariable(child);
+      return typeVariable.getObjectAndCast<Type>();
+    }
+    else
+    {
+      errorMessage(T("XmlImporter::loadType"), T("Could not find type"));
+      return TypePtr();
+    }
+  }
 }
 
 Variable XmlImporter::loadVariable()
 {
   const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
-  String typeName = getStringAttribute(T("type")).replaceCharacters(T("[]"), T("<>"));
-  TypePtr type = Type::get(typeName, callback);
+  TypePtr type = loadType();
   if (!type)
-  {
-    errorMessage(T("XmlImporter::loadVariable"), T("Could not find type ") + typeName.quoted());
     return Variable();
-  }
   
   if (getStringAttribute(T("missing")) == T("true"))
     return Variable::missingValue(type);

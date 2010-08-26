@@ -69,7 +69,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/*logicalOr(
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/*logicalOr(
       maxIterationsStoppingCriterion(100),  
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 50)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -186,8 +186,8 @@ int main(int argc, char** argv)
   inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   /*

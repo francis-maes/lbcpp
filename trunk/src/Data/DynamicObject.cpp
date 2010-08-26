@@ -72,10 +72,7 @@ void DynamicClass::saveToXml(XmlExporter& exporter) const
     TypePtr type = variables[i].first;
     exporter.enter(T("variable"));
     exporter.setAttribute(T("name"), variables[i].second);
-    if (type.dynamicCast<DynamicClass>())
-      exporter.saveVariable(T("type"), type);
-    else
-      exporter.setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
+    exporter.writeType(type);
     exporter.leave();
   }
   exporter.leave();
@@ -92,23 +89,21 @@ bool DynamicClass::loadFromXml(XmlImporter& importer)
   if (!baseType)
     return false;
 
+  bool res = true;
   forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("variable"))
   {
-    TypePtr type;
-    String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
-    if (typeName.isNotEmpty())
-      type = Type::get(typeName, importer.getCallback());
-    else
+    importer.enter(elt);
+    TypePtr type = importer.loadType();
+    if (type)
     {
-      Variable typeVariable = importer.loadVariable(elt->getFirstChildElement());
-      type = typeVariable.getObjectAndCast<Type>();
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      variables.push_back(std::make_pair(type, name));
     }
-    if (!type)
-      return false;
-    String name = elt->getStringAttribute(T("name"), T("???"));
-    variables.push_back(std::make_pair(type, name));
+    else
+      res = false;
+    importer.leave();
   }
 
   importer.leave();
-  return true;
+  return res;
 }
