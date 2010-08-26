@@ -40,67 +40,6 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   return perceptionCallback->atLeastOneVariable ? res : Variable::missingValue(outputType);
 }
 
-/////////////////////////////////////
-class DynamicObject : public Object
-{
-public:
-  DynamicObject(TypePtr thisType)
-    : Object(thisType) {}
-  
-  virtual ~DynamicObject()
-  {
-    for (size_t i = 0; i < variableValues.size(); ++i)
-      thisClass->getObjectVariableType(i)->destroy(variableValues[i]);
-  }
-
-  VariableValue& operator[](size_t index)
-  {
-    jassert(index < thisClass->getObjectNumVariables());
-    if (variableValues.size() <= index)
-    {
-      size_t i = variableValues.size();
-      variableValues.resize(index + 1);
-      while (i < variableValues.size())
-      {
-        variableValues[i] = thisClass->getObjectVariableType(i)->getMissingValue();
-        ++i;
-      }
-    }
-    return variableValues[index];
-  }
-
-private:
-  std::vector<VariableValue> variableValues;
-};
-
-typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
-
-class DynamicClass : public DefaultClass
-{
-public:
-  DynamicClass(const String& name, TypePtr baseClass = objectClass())
-    : DefaultClass(name, baseClass) {}
-
-  virtual VariableValue create() const
-    {return new DynamicObject(refCountedPointerFromThis(this));}
-
-  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const
-  {
-    DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
-    jassert(object);
-    return Variable::copyFrom(getObjectVariableType(index), (*object)[index]);
-  }
-
-  virtual void setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-  {
-    jassert(subValue.getType()->inheritsFrom(getObjectVariableType(index)));
-    DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
-    jassert(object);
-    subValue.copyTo((*object)[index]);
-  }
-};
-//////////////////////////////////
-
 void Perception::ensureTypeIsComputed()
 {
   if (outputType)

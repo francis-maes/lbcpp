@@ -46,6 +46,7 @@ class Type : public NameableObject
 public:
   Type(const String& className, TypePtr baseType);
   Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType);
+  Type() {}
 
   static void declare(TypePtr typeInstance);
   static void declare(TemplateTypePtr templateTypeInstance);
@@ -242,6 +243,7 @@ public:
     : Type(name, baseClass) {}
   Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
     : Type(templateType, templateArguments, baseClass) {}
+  Class() {}
 
   virtual String toString() const;
 
@@ -283,6 +285,7 @@ public:
   DefaultClass(const String& name, TypePtr baseClass = objectClass());
   DefaultClass(const String& name, const String& baseClass);
   DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
+  DefaultClass() {}
 
   virtual void deinitialize();
 

@@ -1,19 +1,23 @@
-
-Perception:
- * Serialisation des Perceptions
- * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
+Serialisation des Perceptions:
+ * Nouvelle classe DefaultPerception qui s'occupe de la gestion du type dynamique
+ * Sérialiser le type dynamique dans la sérialisation de la Perception
+ * Partager les PerceptionPtr dans la sérialisation
+     - nouvelle classe: XmlOutput
+     - Surgarger le load/save XML dans PerceptionClass pour insérer en shared object dans XmlOutput
+ * Dans NumericalInference: faire le lien entre le type des parametres et le type de sortie des Perceptions
  
-Execution multi-thread:
- * NativeMultiThreadInferenceContext
- * PoolMultiThreadInferenceContext
-
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 
 Perceptions:
+ * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  * Residue: current position, WindowHistogram
  * ResiduePair: SegmentHistogram
  * Distribution: Entropy 
+
+Execution multi-thread:
+ * NativeMultiThreadInferenceContext
+ * PoolMultiThreadInferenceContext
 
 Inference:
  * ParallelProteinInference

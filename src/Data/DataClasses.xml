@@ -4,11 +4,16 @@
   <import name="Type" pre="yes"/>
   <import name="Stream"/>
   <import name="Container"/>
+  
+  <include file="lbcpp/Data/DynamicObject.h"/>
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/ProbabilityDistribution.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
 
   <namespace name="lbcpp">
+    
+    <!-- Dynamic Object -->
+    <class name="DynamicClass" base="DefaultClass"/>
     
     <!-- Probability Distribution -->
     <class name="ProbabilityDistribution" abstract="yes"/>
