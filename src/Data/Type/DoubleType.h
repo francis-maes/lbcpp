@@ -53,6 +53,12 @@ public:
     return VariableValue(v.getDoubleValue());
   }
 
+  virtual VariableValue createFromXml(XmlImporter& importer) const
+    {return VariableValue(importer.getAllSubText().getDoubleValue());}
+
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
+    {exporter.addTextElement(String(value.getDouble(), 8));}
+
   virtual void destroy(VariableValue& value) const
     {value.clearBuiltin();}
 
@@ -78,6 +84,14 @@ public:
 
   virtual String toString(const VariableValue& value) const
     {return String(value.getDouble() * 100, 2) + T("%");}
+
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  {
+    String str = value.trim();
+    if (str.endsWithChar('%'))
+      str.dropLastCharacters(1);
+    return str.getDoubleValue() / 100.0;
+  }
 };
 
 }; /* namespace lbcpp */
