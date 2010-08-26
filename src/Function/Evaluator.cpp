@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/Evaluator.h>
-
+#include <lbcpp/Function/Evaluator.h>
+using namespace lbcpp;
+/*
 #include "Evaluator/ContainerElementsEvaluator.h"
 #include "Evaluator/ClassificationAccuracyEvaluator.h"
 #include "Evaluator/BinaryClassificationConfusionEvaluator.h"
 #include "Evaluator/RegressionErrorEvaluator.h"
-using namespace lbcpp;
 
 EvaluatorPtr lbcpp::classificationAccuracyEvaluator(const String& name)
   {return new ClassificationAccuracyEvaluator(name);}
@@ -31,7 +31,7 @@ EvaluatorPtr lbcpp::dihedralRegressionErrorEvaluator(const String& name)
 
 EvaluatorPtr lbcpp::containerElementsEvaluator(const String& name, EvaluatorPtr elementEvaluator)
   {return new ContainerElementsEvaluator(name, elementEvaluator);}
-
+*/
 
 /*
 ** RegressionErrorEvaluator

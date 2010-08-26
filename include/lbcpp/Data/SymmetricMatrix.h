@@ -53,7 +53,7 @@ public:
   virtual String toString() const;
   virtual String getShortSummary() const;
   virtual void saveToXml(XmlElement* xml) const;
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 private:
   size_t dimension;

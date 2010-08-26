@@ -41,7 +41,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return getOutputType();}
     
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const;
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const;
 
   PerceptionPtr flatten() const;
   PerceptionPtr addPreprocessor(FunctionPtr preProcessingFunction) const;

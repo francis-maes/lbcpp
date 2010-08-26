@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EVALUATOR_CLASSIFICATION_ACCURACY_H_
-# define LBCPP_EVALUATOR_CLASSIFICATION_ACCURACY_H_
+#ifndef LBCPP_FUNCTION_EVALUATOR_CLASSIFICATION_ACCURACY_H_
+# define LBCPP_FUNCTION_EVALUATOR_CLASSIFICATION_ACCURACY_H_
 
-# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp
@@ -59,4 +59,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EVALUATOR_CLASSIFICATION_ACCURACY_H_
+#endif // !LBCPP_FUNCTION_EVALUATOR_CLASSIFICATION_ACCURACY_H_

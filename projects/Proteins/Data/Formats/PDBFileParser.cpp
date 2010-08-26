@@ -8,7 +8,7 @@
 #include "PDBFileParser.h"
 using namespace lbcpp;
 
-PDBFileParser::PDBFileParser(const File& file, bool beTolerant, ErrorHandler& callback)
+PDBFileParser::PDBFileParser(const File& file, bool beTolerant, MessageCallback& callback)
   : TextParser(file, callback), beTolerant(beTolerant)
   {}
 
@@ -603,7 +603,7 @@ String PDBFileParser::getSubString(const String& line, int firstColumn, int last
   return str;
 }
 
-bool PDBFileParser::getChar(const String& line, int column, char& result, ErrorHandler& callback)
+bool PDBFileParser::getChar(const String& line, int column, char& result, MessageCallback& callback)
 {
   String str = getSubString(line, column, column);
   if (str[0] > 127)
@@ -615,7 +615,7 @@ bool PDBFileParser::getChar(const String& line, int column, char& result, ErrorH
   return true;
 }
 
-bool PDBFileParser::getInteger(const String& line, int firstColumn, int lastColumn, int& result, ErrorHandler& callback)
+bool PDBFileParser::getInteger(const String& line, int firstColumn, int lastColumn, int& result, MessageCallback& callback)
 {
   String str = getSubString(line, firstColumn, lastColumn).trim();
   if (!str.containsOnly(T("-0123456789")))
@@ -627,7 +627,7 @@ bool PDBFileParser::getInteger(const String& line, int firstColumn, int lastColu
   return true;
 }
 
-bool PDBFileParser::getDouble(const String& line, int firstColumn, int lastColumn, double& result, ErrorHandler& callback)
+bool PDBFileParser::getDouble(const String& line, int firstColumn, int lastColumn, double& result, MessageCallback& callback)
 {
   String str = getSubString(line, firstColumn, lastColumn).trim();
   if (!str.containsOnly(T("e.-0123456789")))

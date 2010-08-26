@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Data/Utilities.h>
-#include <lbcpp/Utilities/ProgressCallback.h>
 #include <lbcpp/Function/IterationFunction.h>
 #include <iostream>
 #include <fstream>
@@ -65,16 +64,16 @@ public:
     {std::cout << "===========================================" << std::endl;}
 };
 
-ProgressCallbackPtr lbcpp::consoleProgressCallback()
+ProgressCallback& lbcpp::consoleProgressCallback()
 {
-  static ProgressCallbackPtr consoleProgressCallback = new ConsoleProgressCallback();
-  return consoleProgressCallback;
+  static ConsoleProgressCallback callback;
+  return callback;
 }
 
 /*
-** ErrorHandler
+** MessageCallback
 */
-class DefaultErrorHandler : public ErrorHandler
+class DefaultMessageCallback : public MessageCallback
 {
 public:
   virtual void errorMessage(const String& where, const String& what)
@@ -84,11 +83,11 @@ public:
     {std::cerr << "Warning in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}
 };
 
-static DefaultErrorHandler defaultErrorHandler;
+static DefaultMessageCallback defaultMessageCallback;
 
-ErrorHandler* ErrorHandler::instance = &defaultErrorHandler;
+MessageCallback* MessageCallback::instance = &defaultMessageCallback;
 
-void ErrorHandler::setInstance(ErrorHandler& handler)
+void MessageCallback::setInstance(MessageCallback& handler)
 {
   instance = &handler;
 }

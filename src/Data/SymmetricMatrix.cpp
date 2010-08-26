@@ -45,7 +45,7 @@ String SymmetricMatrix::getShortSummary() const
 void SymmetricMatrix::saveToXml(XmlElement* xml) const
   {xml->setAttribute(T("dimension"), (int)dimension); values.saveToXml(xml);}
 
-bool SymmetricMatrix::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool SymmetricMatrix::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {
   jassert(thisClass);
   if (!xml->hasAttribute(T("dimension")))

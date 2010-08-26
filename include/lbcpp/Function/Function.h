@@ -38,9 +38,9 @@ public:
   **
   ** @return a variable of type getOutputType(inputType)
   */
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const = 0;
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const = 0;
 
-  Variable compute(const Variable& input, ErrorHandler& callback = ErrorHandler::getInstance()) const
+  Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
     {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
 };
 

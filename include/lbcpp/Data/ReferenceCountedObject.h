@@ -27,7 +27,7 @@
 #ifndef LBCPP_REFERENCE_COUNTED_OBJECT_H_
 # define LBCPP_REFERENCE_COUNTED_OBJECT_H_
 
-# include "../common.h"
+# include "Utilities.h"
 
 namespace lbcpp
 {
@@ -294,6 +294,27 @@ private:
 template<class T>
 inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
   {return ReferenceCountedObjectPtr<T>(const_cast<T* >(pthis));}
+
+/** Checks if a cast is valid and throw an error if not.
+**
+** @param where : a description of the caller function
+** that will be used in case of an error.
+** @param object : to object to cast.
+** @return false is the loading fails, true otherwise. If loading fails,
+** load() is responsible for declaring an error to the ErrorManager.
+*/
+template<class T>
+inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCountedObjectPtr<ReferenceCountedObject> object, MessageCallback& callback = MessageCallback::getInstance())
+{
+  ReferenceCountedObjectPtr<T> res;
+  if (object)
+  {
+    res = object.dynamicCast<T>();
+    if (!res)
+      callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
+  }
+  return res;
+}
 
 }; /* namespace lbcpp */
 

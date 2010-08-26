@@ -18,7 +18,7 @@ namespace lbcpp
 class DSSPFileParser : public TextParser
 {
 public:
-  DSSPFileParser(const File& file, ProteinPtr protein, ErrorHandler& callback = ErrorHandler::getInstance())
+  DSSPFileParser(const File& file, ProteinPtr protein, MessageCallback& callback = MessageCallback::getInstance())
     : TextParser(file, callback), protein(protein)
   {
     jassert(protein->getPrimaryStructure());

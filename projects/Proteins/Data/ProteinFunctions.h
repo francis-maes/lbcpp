@@ -27,7 +27,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return sequenceSeparationDistanceType();}
 
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
@@ -47,7 +47,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return pairType(proteinClass(), proteinClass());}
 
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);

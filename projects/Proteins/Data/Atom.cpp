@@ -18,5 +18,5 @@ String Atom::toString() const
 void Atom::saveToXml(XmlElement* xml) const
   {saveVariablesToXmlAttributes(xml);}
 
-bool Atom::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool Atom::loadFromXml(XmlElement* xml, MessageCallback& callback)
   {return loadVariablesFromXmlAttributes(xml, callback);}

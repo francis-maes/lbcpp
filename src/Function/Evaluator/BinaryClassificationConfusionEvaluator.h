@@ -6,11 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
-# define LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
+#ifndef LBCPP_FUNCTION_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
+# define LBCPP_FUNCTION_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 
-# include <lbcpp/Inference/Evaluator.h>
-# include <fstream>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
@@ -130,4 +129,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
+#endif // !LBCPP_FUNCTION_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_

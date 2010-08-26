@@ -59,7 +59,7 @@ public:
     {return values;}
 
   virtual void saveToXml(XmlElement* xml) const;
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 };
 
 typedef ReferenceCountedObjectPtr<CartesianPositionVector> CartesianPositionVectorPtr;

@@ -25,14 +25,14 @@ Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
   return res;
 }
 
-Variable Variable::createFromString(TypePtr type, const String& str, ErrorHandler& callback)
+Variable Variable::createFromString(TypePtr type, const String& str, MessageCallback& callback)
 {
   String failureReason;
   VariableValue value = type->createFromString(str, callback);
   return type->isMissingValue(value) ? Variable() : Variable(type, value);
 }
 
-Variable Variable::createFromXml(XmlElement* xml, ErrorHandler& callback)
+Variable Variable::createFromXml(XmlElement* xml, MessageCallback& callback)
 {
   String typeName = xml->getStringAttribute(T("type")).replaceCharacters(T("[]"), T("<>"));
   TypePtr type = Type::get(typeName, callback);
@@ -47,7 +47,7 @@ Variable Variable::createFromXml(XmlElement* xml, ErrorHandler& callback)
   return Variable(type, type->createFromXml(xml, callback));
 }
 
-Variable Variable::createFromFile(const File& file, ErrorHandler& callback)
+Variable Variable::createFromFile(const File& file, MessageCallback& callback)
 {
   if (file.isDirectory())
   {
@@ -91,7 +91,7 @@ XmlElement* Variable::toXml(const String& tagName, const String& name) const
   return res;
 }
 
-bool Variable::saveToFile(const File& file, ErrorHandler& callback) const
+bool Variable::saveToFile(const File& file, MessageCallback& callback) const
 {
   if (file.exists())
   {

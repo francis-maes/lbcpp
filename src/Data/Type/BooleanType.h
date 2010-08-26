@@ -37,7 +37,7 @@ public:
   BooleanType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
   {
     String v = value.trim().toLowerCase();
     if (v == T("true"))

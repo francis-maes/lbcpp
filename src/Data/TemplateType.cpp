@@ -14,7 +14,7 @@ using namespace lbcpp;
 bool TemplateType::isInstanciatedTypeName(const String& name)
   {return name.indexOfChar('<') >= 0;}
 
-static bool parseTypeList(const String& str, std::vector<TypePtr>& res, ErrorHandler& callback)
+static bool parseTypeList(const String& str, std::vector<TypePtr>& res, MessageCallback& callback)
 {
   int b = 0;
   while (b < str.length())
@@ -59,7 +59,7 @@ static bool parseTypeList(const String& str, std::vector<TypePtr>& res, ErrorHan
   return true;
 }
 
-bool TemplateType::parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, ErrorHandler& callback)
+bool TemplateType::parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, MessageCallback& callback)
 {
   int b = typeName.indexOfChar('<');
   int e = typeName.lastIndexOfChar('>');
@@ -147,7 +147,7 @@ static void tokenizeTypeName(const String& str, const String& separators, String
   }
 }
 
-TypePtr DefaultTemplateType::computeBaseType(const std::vector<TypePtr>& arguments, ErrorHandler& callback) const
+TypePtr DefaultTemplateType::computeBaseType(const std::vector<TypePtr>& arguments, MessageCallback& callback) const
 {
   StringArray tokens;
   //std::cout << "baseTypeExpr: " << baseTypeExpr.quoted() << std::endl;
@@ -171,7 +171,7 @@ TypePtr DefaultTemplateType::computeBaseType(const std::vector<TypePtr>& argumen
   return Type::get(baseTypeName, callback);
 }
 
-TypePtr DefaultTemplateType::instantiate(const std::vector<TypePtr>& arguments, ErrorHandler& callback) const
+TypePtr DefaultTemplateType::instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const
 {
   if (!initialized && !const_cast<DefaultTemplateType* >(this)->initialize(callback))
     return TypePtr();

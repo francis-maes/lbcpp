@@ -1,15 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ContainerElementsEvaluator.h   | Container Evaluator      |
+| Filename: ContainerElementsEvaluator.h   | Container Evaluator             |
 | Author  : Francis Maes                   |                                 |
 | Started : 27/04/2010 16:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EVALUATOR_CONTAINER_ELEMENTS_H_
-# define LBCPP_EVALUATOR_CONTAINER_ELEMENTS_H_
+#ifndef LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_
+# define LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_
 
-# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Data/Container.h>
 
 namespace lbcpp
@@ -20,6 +20,7 @@ class ContainerElementsEvaluator : public Evaluator
 public:
   ContainerElementsEvaluator(const String& name, EvaluatorPtr elementEvaluator)
     : Evaluator(name), elementEvaluator(elementEvaluator) {}
+  ContainerElementsEvaluator() {}
 
   virtual String toString() const
     {return elementEvaluator->toString();}
@@ -44,9 +45,11 @@ public:
   }
 
 protected:
+  friend class ContainerElementsEvaluatorClass;
+
   EvaluatorPtr elementEvaluator;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EVALUATOR_CONTAINER_ELEMENTS_H_
+#endif // !LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_

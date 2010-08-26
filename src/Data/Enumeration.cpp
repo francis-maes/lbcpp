@@ -67,10 +67,10 @@ VariableValue Enumeration::create() const
 VariableValue Enumeration::getMissingValue() const
   {return VariableValue((juce::int64)getNumElements());}
 
-VariableValue Enumeration::createFromXml(XmlElement* xml, ErrorHandler& callback) const
+VariableValue Enumeration::createFromXml(XmlElement* xml, MessageCallback& callback) const
   {return createFromString(xml->getAllSubText(), callback);}
  
-VariableValue Enumeration::createFromString(const String& value, ErrorHandler& callback) const
+VariableValue Enumeration::createFromString(const String& value, MessageCallback& callback) const
 {
   String str = value.trim();
   size_t n = getNumElements();

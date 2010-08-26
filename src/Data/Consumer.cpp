@@ -39,7 +39,7 @@ void Consumer::consumeContainer(ContainerPtr container)
 TextPrinter::TextPrinter(OutputStream* newOutputStream)
   : ostr(newOutputStream) {}
 
-TextPrinter::TextPrinter(const File& file, ErrorHandler& callback)
+TextPrinter::TextPrinter(const File& file, MessageCallback& callback)
   : ostr(NULL)
 {
   if (file == File::nonexistent)

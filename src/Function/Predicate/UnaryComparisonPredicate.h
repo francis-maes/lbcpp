@@ -24,7 +24,7 @@ public:
   virtual String operatorToString() const
     {return T("<");}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
     {return value < operand;}
 };
 
@@ -38,7 +38,7 @@ public:
   virtual String operatorToString() const
     {return T("<=");}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
     {return value <= operand;}
 };
 
@@ -52,7 +52,7 @@ public:
   virtual String operatorToString() const
     {return T("==");}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
     {return value == operand;}
 };
 
@@ -66,7 +66,7 @@ public:
   virtual String operatorToString() const
     {return T("!=");}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
     {return value != operand;}
 };
 
@@ -80,7 +80,7 @@ public:
   virtual String operatorToString() const
     {return T(">=");}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
     {return value >= operand;}
 };
 
@@ -94,7 +94,7 @@ public:
   virtual String operatorToString() const
     {return T(">");}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
     {return value > operand;}
 };
 

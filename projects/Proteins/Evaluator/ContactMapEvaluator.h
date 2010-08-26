@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_EVALUATOR_CONTACT_MAP_H_
 # define LBCPP_PROTEIN_EVALUATOR_CONTACT_MAP_H_
 
-# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp

@@ -143,7 +143,7 @@ void Object::saveToXml(XmlElement* xml) const
     xml->addChildElement(variableToXml(i));
 }
 
-bool Object::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool Object::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {
   ClassPtr thisClass = getClass();
   
@@ -178,7 +178,7 @@ void Object::saveVariablesToXmlAttributes(XmlElement* xml) const
     xml->setAttribute(getVariableName(i), getVariable(i).toString());
 }
 
-bool Object::loadVariablesFromXmlAttributes(XmlElement* xml, ErrorHandler& callback)
+bool Object::loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback)
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
@@ -196,7 +196,7 @@ bool Object::loadVariablesFromXmlAttributes(XmlElement* xml, ErrorHandler& callb
   return true;
 }
 
-bool Object::loadFromString(const String& str, ErrorHandler& callback)
+bool Object::loadFromString(const String& str, MessageCallback& callback)
 {
   callback.errorMessage(T("Object::loadFromString"), T("Not implemented"));
   return false;

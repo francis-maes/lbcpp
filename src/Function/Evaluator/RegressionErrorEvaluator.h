@@ -6,18 +6,19 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EVALUATOR_REGRESSION_ERROR_H_
-# define LBCPP_EVALUATOR_REGRESSION_ERROR_H_
+#ifndef LBCPP_FUNCTION_EVALUATOR_REGRESSION_ERROR_H_
+# define LBCPP_FUNCTION_EVALUATOR_REGRESSION_ERROR_H_
 
-# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
 
-class DihedralAngleRegressionErrorEvaluator : public RegressionErrorEvaluator
+class DihedralRegressionErrorEvaluator : public RegressionErrorEvaluator
 {
 public:
-  DihedralAngleRegressionErrorEvaluator(const String& name) : RegressionErrorEvaluator(name) {}
+  DihedralRegressionErrorEvaluator(const String& name) : RegressionErrorEvaluator(name) {}
+  DihedralRegressionErrorEvaluator() {}
 
   virtual void addDelta(double delta)
     {RegressionErrorEvaluator::addDelta(normalizeAngle(delta));}
@@ -25,4 +26,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EVALUATOR_REGRESSION_ERROR_H_
+#endif // !LBCPP_FUNCTION_EVALUATOR_REGRESSION_ERROR_H_

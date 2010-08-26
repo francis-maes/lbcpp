@@ -74,8 +74,8 @@ public:
   virtual String toString() const;
 
   virtual void saveToXml(XmlElement* xml) const;
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
-  virtual bool loadFromString(const String& str, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
+  virtual bool loadFromString(const String& str, MessageCallback& callback);
 
   virtual ObjectPtr multiplyByScalar(double scalar);
   virtual ObjectPtr addWeighted(const Variable& value, double weight);

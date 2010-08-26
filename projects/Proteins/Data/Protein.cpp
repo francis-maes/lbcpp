@@ -12,7 +12,7 @@
 #include "Formats/FASTAFileGenerator.h"
 using namespace lbcpp;
 
-ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, ErrorHandler& callback)
+ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, MessageCallback& callback)
 {
   ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant, callback));
   if (!parser->next())
@@ -41,19 +41,19 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, ErrorHan
   return res;
 }
 
-ProteinPtr Protein::createFromXml(const File& file, ErrorHandler& callback)
+ProteinPtr Protein::createFromXml(const File& file, MessageCallback& callback)
   {return Variable::createFromFile(file, callback).getObjectAndCast<Protein>();}
 
-ProteinPtr Protein::createFromFASTA(const File& file, ErrorHandler& callback)
+ProteinPtr Protein::createFromFASTA(const File& file, MessageCallback& callback)
   {return StreamPtr(new FASTAFileParser(file, callback))->next().getObjectAndCast<Protein>(callback);}
 
-void Protein::saveToPDBFile(const File& pdbFile, ErrorHandler& callback) const
+void Protein::saveToPDBFile(const File& pdbFile, MessageCallback& callback) const
   {ConsumerPtr(new PDBFileGenerator(pdbFile, callback))->consume(refCountedPointerFromThis(this));}
 
-void Protein::saveToXmlFile(const File& xmlFile, ErrorHandler& callback) const
+void Protein::saveToXmlFile(const File& xmlFile, MessageCallback& callback) const
   {Variable(refCountedPointerFromThis(this)).saveToFile(xmlFile, callback);}
 
-void Protein::saveToFASTAFile(const File& fastaFile, ErrorHandler& callback) const
+void Protein::saveToFASTAFile(const File& fastaFile, MessageCallback& callback) const
   {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(refCountedPointerFromThis(this));}
 
 void Protein::setPrimaryStructure(const String& primaryStructure)

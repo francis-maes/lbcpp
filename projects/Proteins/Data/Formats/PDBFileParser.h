@@ -18,7 +18,7 @@ namespace lbcpp
 class PDBFileParser : public TextParser
 {
 public:
-  PDBFileParser(const File& file, bool beTolerant, ErrorHandler& callback = ErrorHandler::getInstance());
+  PDBFileParser(const File& file, bool beTolerant, MessageCallback& callback = MessageCallback::getInstance());
   
   virtual TypePtr getElementsType() const
     {return proteinClass();}
@@ -64,9 +64,9 @@ protected:
   bool parseHetAtomLine(const String& line);
 
   static String getSubString(const String& line, int firstColumn, int lastColumn);
-  static bool getChar(const String& line, int column, char& result, ErrorHandler& callback);
-  static bool getInteger(const String& line, int firstColumn, int lastColumn, int& result, ErrorHandler& callback);
-  static bool getDouble(const String& line, int firstColumn, int lastColumn, double& result, ErrorHandler& callback);
+  static bool getChar(const String& line, int column, char& result, MessageCallback& callback);
+  static bool getInteger(const String& line, int firstColumn, int lastColumn, int& result, MessageCallback& callback);
+  static bool getDouble(const String& line, int firstColumn, int lastColumn, double& result, MessageCallback& callback);
 
   bool getChainId(const String& line, int column, char& res) const;
   Chain* getChain(const String& line, int column);

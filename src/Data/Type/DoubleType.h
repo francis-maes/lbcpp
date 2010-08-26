@@ -42,7 +42,7 @@ public:
   virtual VariableValue create() const
     {return VariableValue(0.0);}
 
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
   {
     String v = value.trim().toLowerCase();
     if (!v.containsOnly(T("0123456789e.-")))

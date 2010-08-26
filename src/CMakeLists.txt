@@ -18,6 +18,7 @@ GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionClasses.
 GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionClasses.xml StoppingCriterionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateClasses.xml PredicateClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
@@ -29,9 +30,10 @@ GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLear
 ##### Data ####
 
 SET(LBCPP_DATA_SOURCES
+  ../include/lbcpp/Data/Utilities.h  
+  Data/Utilities.cpp
   ../include/lbcpp/Data/ReferenceCountedObject.h
   ../include/lbcpp/Data/predeclarations.h
-  ../include/lbcpp/Data/Utilities.h  
   ../include/lbcpp/Data/Object.h
   Data/Object.cpp
   ../include/lbcpp/Data/Type.h
@@ -97,22 +99,6 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
 )
 
-
-### old ------------------->
-SET(LBCPP_OBJECT_HEADERS
-  ../include/lbcpp/Object/ErrorHandler.h  
-)
-
-SET(LBCPP_UTILITIES_HEADERS
-  ../include/lbcpp/Utilities/ProgressCallback.h
-)
-
-SET(LBCPP_UTILITIES_SOURCES
-  Utilities.cpp
-)
-### old <-------------------
-
-
 ##### FUNCTION ####
 
 SET(LBCPP_FUNCTION_SOURCES
@@ -128,6 +114,8 @@ SET(LBCPP_FUNCTION_SOURCES
   Function/Perception.cpp
   ../include/lbcpp/Function/PerceptionMaths.h
   Function/PerceptionMaths.cpp
+  ../include/lbcpp/Function/Evaluator.h  
+  Function/Evaluator.cpp
   Function/FunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
 )
@@ -195,29 +183,33 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
 )
 
+SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
+  Function/Evaluator/ContainerElementsEvaluator.h
+  Function/Evaluator/BinaryClassificationConfusionEvaluator.h
+  Function/Evaluator/ClassificationAccuracyEvaluator.h
+  Function/Evaluator/RegressionErrorEvaluator.h
+  Function/Evaluator/EvaluatorClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorClasses.cpp
+)
+
 
 ##### INFERENCE ####
 
-SET(LBCPP_INFERENCE_HEADERS
+SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/predeclarations.h
   ../include/lbcpp/Inference/Inference.h
-  ../include/lbcpp/Inference/InferenceStack.h
-  ../include/lbcpp/Inference/InferenceCallback.h
-  ../include/lbcpp/Inference/InferenceContext.h
   ../include/lbcpp/Inference/DecoratorInference.h
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
-  ../include/lbcpp/Inference/InferenceOnlineLearner.h
-  ../include/lbcpp/Inference/InferenceResultCache.h
-  ../include/lbcpp/Inference/Evaluator.h
-)
-
-SET(LBCPP_INFERENCE_SOURCES
   Inference/Inference.cpp
-  Inference/InferenceOnlineLearner.cpp
-  Inference/InferenceCallback.cpp
+  ../include/lbcpp/Inference/InferenceStack.h
+  ../include/lbcpp/Inference/InferenceContext.h
   Inference/InferenceContext.cpp
-  Inference/Evaluator.cpp
+  ../include/lbcpp/Inference/InferenceCallback.h
+  ../include/lbcpp/Inference/InferenceResultCache.h
+  Inference/InferenceCallback.cpp
+  ../include/lbcpp/Inference/InferenceOnlineLearner.h
+  Inference/InferenceOnlineLearner.cpp
   Inference/InferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceClasses.cpp
 )
@@ -279,24 +271,18 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp
 )
 
-SET(LBCPP_INFERENCE_EVALUATOR_SOURCES
-  Inference/Evaluator/ContainerElementsEvaluator.h
-  Inference/Evaluator/BinaryClassificationConfusionEvaluator.h
-  Inference/Evaluator/ClassificationAccuracyEvaluator.h
-  Inference/Evaluator/RegressionErrorEvaluator.h
-)
 
+##### MAIN ####
 
-
-##### CORE ####
-
-SET(LBCPP_CORE_HEADERS
+SET(LBCPP_MAIN_SOURCES
   ../include/lbcpp/common.h
   ../include/lbcpp/lbcpp.h
+  LBCppClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LBCppClasses.cpp
 )
 
 SET(LBCPP_CORE
-  ${LBCPP_CORE_HEADERS}
+  ${LBCPP_MAIN_SOURCES}
 
   # Data
   ${LBCPP_DATA_SOURCES}
@@ -305,12 +291,6 @@ SET(LBCPP_CORE
     ${LBCPP_DATA_CONTAINER_SOURCES}
     ${LBCPP_DATA_IMPL_HEADERS}
   
-  #Old -->
-  ${LBCPP_OBJECT_HEADERS}
-  ${LBCPP_UTILITIES_HEADERS}
-  ${LBCPP_UTILITIES_SOURCES}
-  ## <--
-
   # Function
   ${LBCPP_FUNCTION_SOURCES}
     ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES}
@@ -320,24 +300,20 @@ SET(LBCPP_CORE
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
     ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_PERCEPTION_SOURCES}
+    ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
 
   # Inference
-  ${LBCPP_INFERENCE_HEADERS}
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
-  ${LBCPP_INFERENCE_EVALUATOR_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
     ${LBCPP_INFERENCE_NUMERICAL_SOURCES}
     ${LBCPP_INFERENCE_DECISION_TREE_SOURCES}
     ${LBCPP_INFERENCE_REDUCTION_SOURCES}
     ${LBCPP_INFERENCE_META_SOURCES}
-
-  LBCppClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LBCppClasses.cpp
 )
 
-SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})
+SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 
 ## Data
 
@@ -346,11 +322,6 @@ SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
-
-## Old -->
-SOURCE_GROUP(Object FILES ${LBCPP_OBJECT_HEADERS} ${LBCPP_OBJECT_SOURCES})
-SOURCE_GROUP(Utilities FILES ${LBCPP_UTILITIES_HEADERS} ${LBCPP_UTILITIES_SOURCES})
-## <---
 
 ## Function
 
@@ -362,10 +333,11 @@ SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOU
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Perception FILES ${LBCPP_FUNCTION_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
 ## Inference
 
-SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_HEADERS} ${LBCPP_INFERENCE_SOURCES})
+SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})
 SOURCE_SUB_GROUP(Inference DecisionTreeInference FILES ${LBCPP_INFERENCE_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
@@ -374,7 +346,6 @@ SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Inference BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Inference Evaluator FILES ${LBCPP_INFERENCE_EVALUATOR_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 

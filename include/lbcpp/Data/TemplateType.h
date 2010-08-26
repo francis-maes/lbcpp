@@ -40,7 +40,7 @@ public:
   TemplateType() : initialized(false) {}
 
   static bool isInstanciatedTypeName(const String& name);
-  static bool parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, ErrorHandler& callback);
+  static bool parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, MessageCallback& callback);
   static String makeInstanciatedTypeName(const String& name, const std::vector<TypePtr>& templateArguments);
 
   String makeTypeName(const std::vector<TypePtr>& arguments) const
@@ -52,7 +52,7 @@ public:
   bool isInitialized() const
     {return initialized;}
 
-  virtual bool initialize(ErrorHandler& callback)
+  virtual bool initialize(MessageCallback& callback)
     {return (initialized = true);}
 
   /*
@@ -62,7 +62,7 @@ public:
   virtual String getParameterName(size_t index) const = 0;
   virtual TypePtr getParameterBaseType(size_t index) const = 0;
 
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, ErrorHandler& callback) const = 0;
+  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
 
 protected:
   bool initialized;
@@ -80,11 +80,11 @@ public:
 
   int findParameter(const String& name) const;
 
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const = 0;
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, ErrorHandler& callback) const;
+  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const = 0;
+  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
 
 protected:
-  TypePtr computeBaseType(const std::vector<TypePtr>& arguments, ErrorHandler& callback) const;
+  TypePtr computeBaseType(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
 
   String baseTypeExpr;
   std::vector<std::pair<String, TypePtr> > parameters;

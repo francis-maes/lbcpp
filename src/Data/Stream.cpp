@@ -56,10 +56,10 @@ StreamPtr Stream::apply(FunctionPtr function) const
 /*
 ** TextParser
 */
-TextParser::TextParser(InputStream* newInputStream, ErrorHandler& callback)
+TextParser::TextParser(InputStream* newInputStream, MessageCallback& callback)
   : callback(callback), istr(newInputStream) {}
 
-TextParser::TextParser(const File& file, ErrorHandler& callback)
+TextParser::TextParser(const File& file, MessageCallback& callback)
   : callback(callback), istr(NULL)
 {
   if (file == File::nonexistent)

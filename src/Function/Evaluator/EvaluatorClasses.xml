@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Evaluator" directory="Function/Evaluator">
+  <include file="lbcpp/Function/Evaluator.h"/>
+
+  <namespace name="lbcpp">
+
+    <class name="BinaryClassificationConfusionMatrix"/>
+    <class name="ROCAnalyse"/>
+    
+    <class name="Evaluator" base="NameableObject" abstract="yes"/>
+    <class name="RegressionErrorEvaluator" base="Evaluator">
+      <constructor arguments="const String&amp; name"/>
+    </class>
+
+    <class name="DihedralRegressionErrorEvaluator" base="RegressionErrorEvaluator">
+      <constructor arguments="const String&amp; name"/>
+    </class>
+
+    <class name="BinaryClassificationConfusionEvaluator" base="Evaluator">
+      <constructor arguments="const String&amp; name"/>
+    </class>
+    
+    <class name="ROCAnalysisEvaluator" base="Evaluator">
+      <constructor arguments="const String&amp; name"/>
+    </class>
+
+    <class name="ClassificationAccuracyEvaluator" base="Evaluator">
+      <constructor arguments="const String&amp; name"/>
+    </class>
+
+    <class name="ContainerElementsEvaluator" base="Evaluator">
+      <constructor arguments="const String&amp; name, EvaluatorPtr elementEvaluator"/>
+      <variable type="Evaluator" name="elementEvaluator"/>
+    </class>
+  </namespace> 
+</file>

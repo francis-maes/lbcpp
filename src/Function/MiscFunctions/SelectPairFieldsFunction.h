@@ -31,7 +31,7 @@ public:
       getOutputTypeBase(inputType->getTemplateArgument(1), index2));
   }
 
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     Variable first = input[0];
     if (index1 >= 0)

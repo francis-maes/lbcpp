@@ -151,7 +151,7 @@ ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, do
 void DiscreteProbabilityDistribution::saveToXml(XmlElement* xml) const
   {xml->addTextElement(toString());}
 
-bool DiscreteProbabilityDistribution::loadFromString(const String& str, ErrorHandler& callback)
+bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageCallback& callback)
 {
   EnumerationPtr enumeration = getEnumeration();
   jassert(enumeration);
@@ -201,5 +201,5 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, ErrorHan
   return true;
 }
 
-bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, MessageCallback& callback)
   {return loadFromString(xml->getAllSubText(), callback);}

@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_EVALUATOR_TERTIARY_STRUCTURE_H_
 # define LBCPP_PROTEIN_EVALUATOR_TERTIARY_STRUCTURE_H_
 
-# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp

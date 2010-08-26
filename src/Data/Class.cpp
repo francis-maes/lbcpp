@@ -41,7 +41,7 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
   return object1->compare(object2);
 }
 
-VariableValue Class::createFromString(const String& value, ErrorHandler& callback) const
+VariableValue Class::createFromString(const String& value, MessageCallback& callback) const
 {
   VariableValue res = create();
   if (isMissingValue(res))
@@ -52,7 +52,7 @@ VariableValue Class::createFromString(const String& value, ErrorHandler& callbac
   return res.getObject()->loadFromString(value, callback) ? res : getMissingValue();
 }
 
-VariableValue Class::createFromXml(XmlElement* xml, ErrorHandler& callback) const
+VariableValue Class::createFromXml(XmlElement* xml, MessageCallback& callback) const
 {
   VariableValue res = create();
   if (isMissingValue(res))

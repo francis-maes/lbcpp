@@ -27,9 +27,7 @@
 #ifndef LBCPP_OBJECT_H_
 # define LBCPP_OBJECT_H_
 
-# include "Utilities.h"
 # include "predeclarations.h"
-# include "../Object/ErrorHandler.h"
 
 namespace lbcpp
 {
@@ -119,7 +117,7 @@ public:
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the callback.
   */
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
   /**
   ** Override this function to load the object from a String
@@ -129,7 +127,7 @@ public:
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the callback.
   */
-  virtual bool loadFromString(const String& str, ErrorHandler& callback);
+  virtual bool loadFromString(const String& str, MessageCallback& callback);
 
   /**
   ** Clones and cast the current object.
@@ -145,20 +143,20 @@ public:
   **
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
-  ** @see ErrorHandler (in Utilities.h)
+  ** @see MessageCallback (in Utilities.h)
   */
   static void error(const String& where, const String& what)
-    {ErrorHandler::error(where, what);}
+    {MessageCallback::error(where, what);}
 
   /**
   ** Warning manager.
   **
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
-  ** @see ErrorHandler (in Utilities.h)
+  ** @see MessageCallback (in Utilities.h)
   */
   static void warning(const String& where, const String& what)
-    {ErrorHandler::warning(where, what);}
+    {MessageCallback::warning(where, what);}
 
   // user interface
   virtual juce::Component* createComponent() const
@@ -181,7 +179,7 @@ protected:
   String variablesToString(const String& separator, bool includeTypes = true) const;
   XmlElement* variableToXml(size_t index) const;
   void saveVariablesToXmlAttributes(XmlElement* xml) const;
-  bool loadVariablesFromXmlAttributes(XmlElement* xml, ErrorHandler& callback);
+  bool loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback);
 };
 
 class NameableObject : public Object

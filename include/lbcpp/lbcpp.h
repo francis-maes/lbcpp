@@ -51,6 +51,7 @@
 # include "Function/StoppingCriterion.h"
 # include "Function/Perception.h"
 # include "Function/PerceptionMaths.h"
+# include "Function/Evaluator.h"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceStack.h"
@@ -61,6 +62,5 @@
 # include "Inference/ParallelInference.h"
 # include "Inference/InferenceOnlineLearner.h"
 # include "Inference/InferenceResultCache.h"
-# include "Inference/Evaluator.h"
 
 #endif // !LBCPP_LBCPP_H_

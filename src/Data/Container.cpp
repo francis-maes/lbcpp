@@ -62,7 +62,7 @@ void Container::saveToXml(XmlElement* xml) const
   }
 }
 
-bool Container::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool Container::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {
   if (!Object::loadFromXml(xml, callback))
     return false;

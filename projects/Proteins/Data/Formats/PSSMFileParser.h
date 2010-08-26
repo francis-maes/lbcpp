@@ -18,7 +18,7 @@ namespace lbcpp
 class PSSMFileParser : public TextParser
 {
 public:
-  PSSMFileParser(const File& file, VectorPtr primaryStructure, ErrorHandler& callback = ErrorHandler::getInstance())
+  PSSMFileParser(const File& file, VectorPtr primaryStructure, MessageCallback& callback = MessageCallback::getInstance())
     : TextParser(file, callback), primaryStructure(primaryStructure)
     {}
   

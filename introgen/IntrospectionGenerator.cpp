@@ -229,7 +229,7 @@ protected:
     closeScope();
     newLine();
 
-    openScope(T("virtual bool initialize(ErrorHandler& callback)"));
+    openScope(T("virtual bool initialize(MessageCallback& callback)"));
       forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
       {
         generateVariableDeclarationInConstructor(className, elt);
@@ -399,7 +399,7 @@ protected:
     newLine();
 
     // initialize()
-    openScope(T("virtual bool initialize(ErrorHandler& callback)"));
+    openScope(T("virtual bool initialize(MessageCallback& callback)"));
       std::vector<XmlElement* > parameters;
       forEachXmlChildElementWithTagName(*xml, elt, T("parameter"))
       {
@@ -411,7 +411,7 @@ protected:
     newLine();
 
     // instantiate
-    openScope(T("virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const"));
+    openScope(T("virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const"));
       writeLine(T("return new ") + className + T("Class(refCountedPointerFromThis(this), arguments, baseType);"));
     closeScope();
     newLine();

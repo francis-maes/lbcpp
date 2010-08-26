@@ -29,7 +29,7 @@ public:
   virtual TypePtr getInputType() const
     {return integerType();}
 
-  virtual bool computePredicate(const Variable& value, ErrorHandler& callback) const
+  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
   {
     if (value.isMissingValue())
       return mask->get(mask->getNumElements() - 1);
