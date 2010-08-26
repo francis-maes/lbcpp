@@ -74,7 +74,7 @@ public:
   virtual String toString() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;
-  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
+  virtual bool loadFromXml(XmlImporter& importer);
   virtual bool loadFromString(const String& str, MessageCallback& callback);
 
   virtual int compare(ObjectPtr otherObject) const

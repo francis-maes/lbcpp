@@ -1,3 +1,7 @@
+
+* Variable::createFromXml
+* loadVariablesFromXmlAttributes
+
 Serialisation des Perceptions:
  * Nouvelle classe DefaultPerception qui s'occupe de la gestion du type dynamique
  * Sérialiser le type dynamique dans la sérialisation de la Perception

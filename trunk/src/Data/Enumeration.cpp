@@ -68,8 +68,8 @@ VariableValue Enumeration::create() const
 VariableValue Enumeration::getMissingValue() const
   {return VariableValue((juce::int64)getNumElements());}
 
-VariableValue Enumeration::createFromXml(XmlElement* xml, MessageCallback& callback) const
-  {return createFromString(xml->getAllSubText(), callback);}
+VariableValue Enumeration::createFromXml(XmlImporter& importer) const
+  {return createFromString(importer.getAllSubText(), importer.getCallback());}
  
 VariableValue Enumeration::createFromString(const String& value, MessageCallback& callback) const
 {

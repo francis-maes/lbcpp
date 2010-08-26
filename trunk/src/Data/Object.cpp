@@ -139,19 +139,7 @@ void Object::clone(ObjectPtr target) const
 
 /*
 ** XML Serialisation
-*
-XmlElement* Object::variableToXml(size_t index) const
-{
-  ClassPtr type = getClass();
-  Variable value = getVariable(index);
-  jassert(index < type->getObjectNumVariables());
-  TypePtr staticType = type->getObjectVariableType(index);
-  if (value.isNil())
-    value = Variable::missingValue(staticType);
-  else
-    jassert(checkInheritance(value, staticType));
-  return value.toXml(T("variable"), type->getObjectVariableName(index));
-}*/
+*/
 
 void Object::saveToXml(XmlExporter& exporter) const
 {
@@ -165,31 +153,29 @@ void Object::saveToXml(XmlExporter& exporter) const
   }
 }
 
-bool Object::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool Object::loadFromXml(XmlImporter& importer)
 {
   ClassPtr thisClass = getClass();
   
-  for (XmlElement* child = xml->getFirstChildElement(); child; child = child->getNextElement())
-    if (child->getTagName() == T("variable"))
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("variable"))
+  {
+    String name = child->getStringAttribute(T("name"));
+    if (name.isEmpty())
     {
-      String name = child->getStringAttribute(T("name"));
-      if (name.isEmpty())
-      {
-        callback.errorMessage(T("Object::loadFromXml"), T("Could not find variable name"));
-        return false;
-      }
-      int variableNumber = thisClass->findObjectVariable(name);
-      if (variableNumber < 0)
-      {
-        callback.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
-        continue;
-      }
-      Variable value = Variable::createFromXml(child, callback);
-      if (value && !checkInheritance(value, thisClass->getObjectVariableType(variableNumber)))
-        return false;
-      setVariable((size_t)variableNumber, value);
+      importer.errorMessage(T("Object::loadFromXml"), T("Could not find variable name"));
+      return false;
     }
-
+    int variableNumber = thisClass->findObjectVariable(name);
+    if (variableNumber < 0)
+    {
+      importer.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
+      continue;
+    }
+    Variable value = importer.loadVariable(child);
+    if (value && !checkInheritance(value, thisClass->getObjectVariableType(variableNumber), importer.getCallback()))
+      return false;
+    setVariable((size_t)variableNumber, value);
+  }
   return true;
 }
 
@@ -200,20 +186,21 @@ void Object::saveVariablesToXmlAttributes(XmlExporter& exporter) const
     exporter.setAttribute(getVariableName(i), getVariable(i).toString());
 }
 
-bool Object::loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback)
+bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
 {
+  XmlElement* xml = importer.getCurrentElement();
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
     String name = getVariableName(i);
     if (xml->hasAttribute(name))
     {
-      Variable var = Variable::createFromString(getVariableType(i), xml->getStringAttribute(name), callback);
+      Variable var = Variable::createFromString(getVariableType(i), xml->getStringAttribute(name), importer.getCallback());
       if (!var.isMissingValue())
         setVariable(i, var);
     }
     else
-      callback.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
+      importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
   }
   return true;
 }

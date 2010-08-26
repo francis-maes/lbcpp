@@ -116,7 +116,7 @@ public:
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the callback.
   */
-  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
+  virtual bool loadFromXml(XmlImporter& importer);
 
   /**
   ** Override this function to load the object from a String
@@ -170,7 +170,7 @@ protected:
   // utilities
   String variablesToString(const String& separator, bool includeTypes = true) const;
   void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
-  bool loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback);
+  bool loadVariablesFromXmlAttributes(XmlImporter& importer);
   int compareVariables(ObjectPtr otherObject) const;
 };
 

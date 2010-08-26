@@ -44,8 +44,8 @@ public:
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
     {callback.errorMessage(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
 
-  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const
-    {callback.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}
+  virtual VariableValue createFromXml(XmlImporter& importer) const
+    {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}
 
   virtual void destroy(VariableValue& value) const
     {MessageCallback::error(T("Type::destroy()"), T("Not implemented"));}

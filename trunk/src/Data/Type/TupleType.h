@@ -102,18 +102,19 @@ public:
     jassert(index < size);
     return ((const Variable* )value.getRawData())[index];
   }
-
-  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const
+  
+  virtual VariableValue createFromXml(XmlImporter& importer) const
   {
+    XmlElement* xml = importer.getCurrentElement();
     Variable* data = (Variable* )allocateMemory(size);
     if (xml->getNumChildElements() != (int)size)
     {
-      callback.errorMessage(T("PairType::createFromXml"), T("Invalid number of child elements"));
+      importer.errorMessage(T("PairType::createFromXml"), T("Invalid number of child elements"));
       return getMissingValue();
     }
     size_t i = 0;
-    for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
-      data[i++] = Variable::createFromXml(elt);
+    forEachXmlChildElementWithTagName(*xml, elt, T("element"))
+      data[i++] = importer.loadVariable(elt);
     return VariableValue((char* )data);
   }
 
@@ -133,6 +134,9 @@ class PairType : public TupleType
 public:
   PairType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
     : TupleType(templateType, templateArguments, baseType, 2) {jassert(templateArguments.size() == 2);}
+
+  virtual String getElementName(const VariableValue& value, size_t index) const
+    {return index ? T("second") : T("first");}
 
   virtual VariableValue create() const
     {return allocate(Variable(), Variable());}

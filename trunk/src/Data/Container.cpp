@@ -74,23 +74,23 @@ void Container::saveToXml(XmlExporter& exporter) const
   }
 }
 
-bool Container::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool Container::loadFromXml(XmlImporter& importer)
 {
-  if (!Object::loadFromXml(xml, callback))
+  if (!Object::loadFromXml(importer))
     return false;
 
-  for (XmlElement* child = xml->getFirstChildElement(); child; child = child->getNextElement())
-    if (child->getTagName() == T("element"))
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("element"))
+  {
+    int index = child->getIntAttribute(T("index"), -1);
+    if (index < 0)
     {
-      int index = child->getIntAttribute(T("index"), -1);
-      if (index < 0)
-      {
-        callback.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + String(index));
-        return false;
-      }
-      Variable value = Variable::createFromXml(child, callback);
-      setElement((size_t)index, value);
+      importer.errorMessage(T("Container::loadFromXml"), T("Invalid index for element: ") + String(index));
+      return false;
     }
+    
+    Variable value = importer.loadVariable(child);
+    setElement((size_t)index, value);
+  }
   return true;
 }
 

@@ -37,8 +37,8 @@
         virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
         {return Type::get(value, callback);}
 
-        virtual VariableValue createFromXml(XmlElement* xml, MessageCallback&amp; callback) const
-        {return createFromString(xml->getAllSubText(), callback);}
+        virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+        {return createFromString(importer.getAllSubText(), importer.getCallback());}
       </code>
     </class>
 
@@ -48,8 +48,8 @@
         virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
         {return Type::get(value, callback);}
 
-        virtual VariableValue createFromXml(XmlElement* xml, MessageCallback&amp; callback) const
-        {return createFromString(xml->getAllSubText(), callback);}
+        virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+        {return createFromString(importer.getAllSubText(), importer.getCallback());}
       </code>
     </class>
 

@@ -65,7 +65,7 @@ public:
   */
   virtual String toString() const;
   virtual void saveToXml(XmlExporter& exporter) const;
-  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
+  virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
   friend class AtomClass;

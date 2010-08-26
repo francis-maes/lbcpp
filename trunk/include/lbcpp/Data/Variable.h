@@ -64,9 +64,8 @@ public:
   ** @see Type::declare
   */
   static Variable create(TypePtr type);
-
+  static Variable createFromXml(TypePtr type, XmlImporter& importer);
   static Variable createFromString(TypePtr type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
-  static Variable createFromXml(XmlElement* xml, MessageCallback& callback = MessageCallback::getInstance());
 
   /**
   ** Loads a variable from a file.

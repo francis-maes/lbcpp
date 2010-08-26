@@ -87,6 +87,64 @@ private:
   void writeObject(ObjectPtr object);
 };
 
+class XmlImporter
+{
+public:
+  XmlImporter(const File& file, MessageCallback& callback);
+  ~XmlImporter()
+    {if (root) delete root;}
+
+  bool isOpened() const
+    {return root != NULL;}
+
+  void errorMessage(const String& where, const String& what) const
+    {callback.errorMessage(where, what);}
+
+  void warningMessage(const String& where, const String& what) const
+    {callback.warningMessage(where, what);}
+
+  typedef std::map<String, ObjectPtr> SharedObjectMap;
+
+  Variable load();
+
+  XmlElement* getCurrentElement() const
+    {return stack.back();}
+
+  String getAllSubText() const
+    {return getCurrentElement()->getAllSubText();}
+
+  bool hasAttribute(const String& attributeName) const
+    {return getCurrentElement()->hasAttribute(attributeName);}
+
+  bool getBoolAttribute(const String& attributeName, bool defaultResult = 0) const
+    {return getCurrentElement()->getBoolAttribute(attributeName, defaultResult);}
+
+  int getIntAttribute(const String& attributeName, int defaultResult = 0) const
+    {return getCurrentElement()->getIntAttribute(attributeName, defaultResult);}
+
+  String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
+    {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
+
+  Variable loadVariable(XmlElement* child);
+
+  void enter(XmlElement* child);
+  bool enter(const String& childTagName);
+  void leave();
+
+  MessageCallback& getCallback()
+    {return callback;}
+
+private:
+  MessageCallback& callback;
+  XmlElement* root;
+
+  std::vector<XmlElement* > stack;
+  std::vector<SharedObjectMap> sharedObjectsStack;
+
+  bool loadSharedObjects();
+  Variable loadVariable();
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_XML_SERIALISATION_H_
