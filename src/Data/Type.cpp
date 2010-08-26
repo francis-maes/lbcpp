@@ -91,6 +91,12 @@ public:
   TypePtr getType(const String& name, MessageCallback& callback) const
   {
     String typeName = removeAllSpaces(name);
+    if (typeName.isEmpty())
+    {
+      callback.errorMessage(T("TypeManager::getType"), T("Empty type name"));
+      return TypePtr();
+    }
+
     ScopedLock _(typesLock);
     TypePtr type = findType(typeName);
     if (type)
@@ -267,8 +273,8 @@ VariableValue Type::create() const
 VariableValue Type::createFromString(const String& value, MessageCallback& callback) const
   {jassert(baseType); return baseType->createFromString(value, callback);}
 
-VariableValue Type::createFromXml(XmlElement* xml, MessageCallback& callback) const
-  {jassert(baseType); return baseType->createFromXml(xml, callback);}
+VariableValue Type::createFromXml(XmlImporter& importer) const
+  {jassert(baseType); return baseType->createFromXml(importer);}
 
 String Type::toString(const VariableValue& value) const
   {jassert(baseType); return baseType->toString(value);}

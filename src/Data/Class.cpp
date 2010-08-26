@@ -9,6 +9,7 @@
 #include <lbcpp/Data/Type.h>
 #include <lbcpp/Data/Variable.h>
 #include <lbcpp/Data/Vector.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 #include <map>
 using namespace lbcpp;
 
@@ -52,15 +53,15 @@ VariableValue Class::createFromString(const String& value, MessageCallback& call
   return res.getObject()->loadFromString(value, callback) ? res : getMissingValue();
 }
 
-VariableValue Class::createFromXml(XmlElement* xml, MessageCallback& callback) const
+VariableValue Class::createFromXml(XmlImporter& importer) const
 {
   VariableValue res = create();
   if (isMissingValue(res))
   {
-    callback.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
+    importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
     return getMissingValue();
   }
-  return res.getObject()->loadFromXml(xml, callback) ? res : getMissingValue();
+  return res.getObject()->loadFromXml(importer) ? res : getMissingValue();
 }
 
 void Class::saveToXml(XmlExporter& exporter, const VariableValue& value) const

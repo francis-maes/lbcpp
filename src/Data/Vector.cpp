@@ -54,16 +54,16 @@ String Vector::toString() const
   return Container::toString();
 }
 
-bool Vector::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool Vector::loadFromXml(XmlImporter& importer)
 {
-  int size = xml->getIntAttribute(T("size"), -1);
+  int size = importer.getIntAttribute(T("size"), -1);
   if (size < 0)
   {
-    callback.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
+    importer.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
     return false;
   }
   resize(size);
-  return Container::loadFromXml(xml, callback);
+  return Container::loadFromXml(importer);
 }
 
 /*
@@ -164,36 +164,36 @@ void GenericVector::saveToXml(XmlExporter& exporter) const
     Container::saveToXml(exporter);
 }
 
-bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool GenericVector::loadFromXml(XmlImporter& importer)
 {
   TypePtr type = getElementsType();
   jassert(type);
-  int size = xml->getIntAttribute(T("size"), -1);
+  int size = importer.getIntAttribute(T("size"), -1);
   if (size < 0)
   {
-    callback.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
+    importer.errorMessage(T("Vector::loadFromXml"), T("Invalid size: ") + String(size));
     return false;
   }
   values.resize(size, type->getMissingValue());
 
-  if (xml->getBoolAttribute(T("binary")))
+  if (importer.getBoolAttribute(T("binary")))
   {
     if (!type->inheritsFrom(integerType()) && !type->inheritsFrom(doubleType()) && !type->inheritsFrom(booleanType()))
     {
-      callback.errorMessage(T("Vector::loadFromXml"), T("Unexpected type for binary encoding"));
+      importer.errorMessage(T("Vector::loadFromXml"), T("Unexpected type for binary encoding"));
       return false;
     }
 
     juce::MemoryBlock block;
-    if (!block.fromBase64Encoding(xml->getAllSubText().trim()))
+    if (!block.fromBase64Encoding(importer.getAllSubText().trim()))
     {
-      callback.errorMessage(T("Vector::loadFromXml"), T("Could not decode base 64"));
+      importer.errorMessage(T("Vector::loadFromXml"), T("Could not decode base 64"));
       return false;
     }
 
     if (block.getSize() != (int)(sizeof (VariableValue) * values.size()))
     {
-      callback.errorMessage(T("Vector::loadFromXml"), T("Invalid data size: found ") + String(block.getSize())
+      importer.errorMessage(T("Vector::loadFromXml"), T("Invalid data size: found ") + String(block.getSize())
         + T(" expected ") + String((int)(sizeof (VariableValue) * values.size())));
       return false;
     }
@@ -204,10 +204,10 @@ bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if (enumeration && enumeration->hasOneLetterCodes())
   {
-    String text = xml->getAllSubText().trim();
+    String text = importer.getAllSubText().trim();
     if (text.length() != size)
     {
-      callback.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(text.length()));
+      importer.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(text.length()));
       return false;
     }
     
@@ -220,7 +220,7 @@ bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
       else
       {
         if (text[i] != '_')
-          callback.warningMessage(T("Vector::loadFromXml"), String(T("Could not recognize one letter code '")) + text[i] + T("'"));
+          importer.warningMessage(T("Vector::loadFromXml"), String(T("Could not recognize one letter code '")) + text[i] + T("'"));
         values[i] = enumeration->getMissingValue();
       }
     }
@@ -229,18 +229,18 @@ bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
 
   if (type->inheritsFrom(doubleType()))
   {
-    String text = xml->getAllSubText().trim();
+    String text = importer.getAllSubText().trim();
     StringArray tokens;
     tokens.addTokens(text, T(" \t\r\n"), NULL);
     if (tokens.size() != size)
     {
-      callback.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(tokens.size()));
+      importer.errorMessage(T("Vector::loadFromXml"), T("Size does not match. Expected ") + String(size) + T(", found ") + String(tokens.size()));
       return false;
     }
     for (size_t i = 0; i < values.size(); ++i)
       if (tokens[i] != T("_"))
       {
-        Variable value = Variable::createFromString(doubleType(), tokens[i], callback);
+        Variable value = Variable::createFromString(doubleType(), tokens[i], importer.getCallback());
         if (!value)
           return false;
         values[i] = value.getDouble();
@@ -249,7 +249,7 @@ bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
   }
 
   // default implementation  
-  return Container::loadFromXml(xml, callback);
+  return Container::loadFromXml(importer);
 }
 
 /*

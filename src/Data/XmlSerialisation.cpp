@@ -221,9 +221,144 @@ void XmlExporter::writeObject(ObjectPtr object)
     savedObject.object = object;
     savedObject.elt = new XmlElement(T("shared"));
     currentStack.push_back(savedObject.elt);
+    savedObject.elt->setAttribute(T("type"), currentElement->getStringAttribute(T("type")));
     object->saveToXml(*this);
     currentStack.pop_back();
   }
   unresolvedLinks[currentElement] = &savedObject;
   savedObject.references.insert(currentElement);
 }
+
+/*
+** XmlImporter
+*/
+XmlImporter::XmlImporter(const File& file, MessageCallback& callback)
+  : callback(callback), root(NULL)
+{
+  if (file.isDirectory())
+  {
+    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" is a directory"));
+    return;
+  }
+  
+  if (!file.existsAsFile())
+  {
+    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" does not exists"));
+    return;
+  }
+
+  juce::XmlDocument document(file);
+  
+  root = document.getDocumentElement();
+  String lastParseError = document.getLastParseError();
+  if (!root)
+  {
+    callback.errorMessage(T("Variable::createFromFile"),
+      lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
+    return;
+  }
+  else
+    stack.push_back(root);
+
+  if (lastParseError.isNotEmpty())
+    callback.warningMessage(T("Variable::createFromFile"), lastParseError);
+}
+
+Variable XmlImporter::load()
+{
+  jassert(sharedObjectsStack.empty());
+  if (root->getTagName() == T("lbcpp"))
+    return loadVariable(root->getFirstChildElement());
+  else
+    return loadVariable(root);
+}
+
+bool XmlImporter::loadSharedObjects()
+{
+  forEachXmlChildElementWithTagName(*getCurrentElement(), child, T("shared"))
+  {
+    Variable variable = loadVariable(child);
+    if (!variable)
+      return false;
+    if (!variable.isObject())
+    {
+      errorMessage(T("XmlImporter::loadRecursively"), T("Shared variable is not an object"));
+      return false;
+    }
+    String identifier = child->getStringAttribute(T("identifier"));
+    if (identifier.isEmpty())
+    {
+      errorMessage(T("XmlImporter::loadRecursively"), T("Shared object has no identifier"));
+      return false;
+    }
+    sharedObjectsStack.back()[identifier] = variable.getObject();
+  }
+  getCurrentElement()->deleteAllChildElementsWithTagName(T("shared"));
+  return true;
+}
+
+Variable XmlImporter::loadVariable()
+{
+  const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
+  String typeName = getStringAttribute(T("type")).replaceCharacters(T("[]"), T("<>"));
+  TypePtr type = Type::get(typeName, callback);
+  if (!type)
+  {
+    errorMessage(T("XmlImporter::loadVariable"), T("Could not find type ") + typeName.quoted());
+    return Variable();
+  }
+  
+  if (getStringAttribute(T("missing")) == T("true"))
+    return Variable::missingValue(type);
+
+  if (getStringAttribute(T("reference")).isNotEmpty())
+  {
+    String ref = getStringAttribute(T("reference"));
+    SharedObjectMap::const_iterator it = sharedObjects.find(ref);
+    if (it == sharedObjects.end())
+    {
+      errorMessage(T("XmlImporter::loadVariable"), T("Could not find shared object reference ") + ref.quoted());
+      return Variable();
+    }
+    jassert(it->second);
+    return Variable(it->second);
+  }
+  else
+    return Variable::createFromXml(type, *this);
+}
+
+Variable XmlImporter::loadVariable(XmlElement* elt)
+{
+  enter(elt);
+  Variable res = loadSharedObjects() ? loadVariable() : Variable();
+  leave();
+  return res;
+}
+
+void XmlImporter::enter(XmlElement* child)
+{
+  jassert(child);
+  stack.push_back(child);
+  sharedObjectsStack.push_back(sharedObjectsStack.size() ? sharedObjectsStack.back() : SharedObjectMap());
+}
+
+bool XmlImporter::enter(const String& childTagName)
+{
+  XmlElement* child = getCurrentElement()->getChildByName(childTagName);
+  if (!child)
+  {
+    callback.errorMessage(T("XmlImporter::enter"), T("Could not find child ") + childTagName.quoted());
+    return false;
+  }
+  enter(child);
+  return true;
+}
+
+void XmlImporter::leave()
+{
+  jassert(stack.size());
+  stack.pop_back();
+  jassert(sharedObjectsStack.size());
+  sharedObjectsStack.pop_back();
+}
+

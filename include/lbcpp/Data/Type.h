@@ -100,7 +100,7 @@ public:
 
   virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
-  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
+  virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const;
@@ -196,7 +196,7 @@ public:
 
   virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
-  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
+  virtual VariableValue createFromXml(XmlImporter& importer) const;
 
   virtual VariableValue getMissingValue() const;
 
@@ -253,7 +253,7 @@ public:
     {return VariableValue();}
 
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
-  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
+  virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const

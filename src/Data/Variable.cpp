@@ -32,50 +32,13 @@ Variable Variable::createFromString(TypePtr type, const String& str, MessageCall
   return type->isMissingValue(value) ? Variable() : Variable(type, value);
 }
 
-Variable Variable::createFromXml(XmlElement* xml, MessageCallback& callback)
-{
-  String typeName = xml->getStringAttribute(T("type")).replaceCharacters(T("[]"), T("<>"));
-  TypePtr type = Type::get(typeName, callback);
-  if (!type)
-  {
-    callback.errorMessage(T("Variable::createFromXml"), T("Could not find type ") + typeName.quoted());
-    return Variable();
-  }
-  if (xml->getStringAttribute(T("missing")) == T("true"))
-    return missingValue(type);
-
-  return Variable(type, type->createFromXml(xml, callback));
-}
+Variable Variable::createFromXml(TypePtr type, XmlImporter& importer)
+  {return Variable(type, type->createFromXml(importer));}
 
 Variable Variable::createFromFile(const File& file, MessageCallback& callback)
 {
-  if (file.isDirectory())
-  {
-    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" is a directory"));
-    return Variable();
-  }
-  
-  if (!file.existsAsFile())
-  {
-    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" does not exists"));
-    return Variable();
-  }
-
-  juce::XmlDocument document(file);
-  
-  XmlElement* xml = document.getDocumentElement();
-  String lastParseError = document.getLastParseError();
-  if (!xml)
-  {
-    callback.errorMessage(T("Variable::createFromFile"),
-      lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
-    return Variable();
-  }
-  if (lastParseError.isNotEmpty())
-    callback.warningMessage(T("Variable::createFromFile"), lastParseError);
-  Variable res = createFromXml(xml, callback);
-  delete xml;
-  return res;
+  XmlImporter importer(file, callback);
+  return importer.isOpened() ? importer.load() : Variable();
 }
 
 void Variable::saveToXml(XmlExporter& exporter) const

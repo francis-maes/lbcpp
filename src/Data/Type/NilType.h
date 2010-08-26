@@ -42,7 +42,7 @@ public:
   virtual VariableValue create() const
     {return VariableValue();}
 
-  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const
+  virtual VariableValue createFromXml(XmlImporter& importer) const
     {return VariableValue();}
 
   virtual void destroy(VariableValue& value) const

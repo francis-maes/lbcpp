@@ -59,5 +59,8 @@ int main(int argc, char** argv)
   output.saveToFile(workingDirectory.getChildFile(T("perceptionOutput.xml")));
   Variable(perception).saveToFile(workingDirectory.getChildFile(T("perception.xml")));
   input.saveToFile(workingDirectory.getChildFile(T("input.xml")));
+
+  //Variable input2 = Variable::createFromFile(workingDirectory.getChildFile(T("input.xml")));
+  //input2.printRecursively(std::cout);
   return 0;
 }

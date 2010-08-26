@@ -46,17 +46,17 @@ String SymmetricMatrix::toShortString() const
 void SymmetricMatrix::saveToXml(XmlExporter& exporter) const
   {exporter.setAttribute(T("dimension"), (int)dimension); values.saveToXml(exporter);}
 
-bool SymmetricMatrix::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool SymmetricMatrix::loadFromXml(XmlImporter& importer)
 {
   jassert(thisClass);
-  if (!xml->hasAttribute(T("dimension")))
+  if (!importer.hasAttribute(T("dimension")))
   {
-    callback.errorMessage(T("SymmetricMatrix::loadFromXml"), T("Missing 'dimension' attribute"));
+    importer.errorMessage(T("SymmetricMatrix::loadFromXml"), T("Missing 'dimension' attribute"));
     return false;
   }
-  dimension = (size_t)xml->getIntAttribute(T("dimension"));
+  dimension = (size_t)importer.getIntAttribute(T("dimension"));
   values = GenericVector(getMatrixElementsType(), 0);
-  return values.loadFromXml(xml, callback);
+  return values.loadFromXml(importer);
 }
 
 TypePtr SymmetricMatrix::getElementsType() const

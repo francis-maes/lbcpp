@@ -81,28 +81,34 @@ void DynamicClass::saveToXml(XmlExporter& exporter) const
   exporter.leave();
 }
 
-bool DynamicClass::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool DynamicClass::loadFromXml(XmlImporter& importer)
 {
   ScopedLock _(variablesLock);
   variables.clear();
-  XmlElement* classXml = xml->getChildByName(T("class"));
-  if (!classXml)
-  {
-    callback.errorMessage(T("DynamicClass::loadFromXml"), T("Could not find class element"));
+  if (!importer.enter(T("class")))
     return false;
-  }
-  setName(classXml->getStringAttribute(T("className")));
-  baseType = Type::get(classXml->getStringAttribute(T("classBase"), T("???")));
+  setName(importer.getStringAttribute(T("name")));
+  baseType = Type::get(importer.getStringAttribute(T("base"), T("???")), importer.getCallback());
   if (!baseType)
     return false;
 
-  forEachXmlChildElementWithTagName(*classXml, elt, T("variable"))
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("variable"))
   {
-    TypePtr type = Type::get(elt->getStringAttribute(T("type"), T("???")).replaceCharacters(T("[]"), T("<>")), callback);
+    TypePtr type;
+    String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
+    if (typeName.isNotEmpty())
+      type = Type::get(typeName, importer.getCallback());
+    else
+    {
+      Variable typeVariable = importer.loadVariable(elt->getFirstChildElement());
+      type = typeVariable.getObjectAndCast<Type>();
+    }
     if (!type)
       return false;
     String name = elt->getStringAttribute(T("name"), T("???"));
     variables.push_back(std::make_pair(type, name));
   }
-  return false;
+
+  importer.leave();
+  return true;
 }

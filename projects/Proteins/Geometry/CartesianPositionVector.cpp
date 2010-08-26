@@ -58,17 +58,17 @@ void CartesianPositionVector::saveToXml(XmlExporter& exporter) const
   exporter.setAttribute(T("size"), (int)values.size());
 }
 
-bool CartesianPositionVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
+bool CartesianPositionVector::loadFromXml(XmlImporter& importer)
 {
-  int size = xml->getIntAttribute(T("size"), -1);
+  int size = importer.getIntAttribute(T("size"), -1);
   if (size < 0)
   {
-    callback.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Invalid size: ") + String(size));
+    importer.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Invalid size: ") + String(size));
     return false;
   }
   values.resize(size, impl::Vector3());
 
-  String text = xml->getAllSubText();
+  String text = importer.getAllSubText();
   StringArray tokens;
   tokens.addTokens(text, T("() \t\r\n,"), NULL);
 
@@ -83,7 +83,7 @@ bool CartesianPositionVector::loadFromXml(XmlElement* xml, MessageCallback& call
   {
     if (index >= values.size())
     {
-      callback.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Too much tokens"));
+      importer.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Too much tokens"));
       return false;
     }
     if (trueTokens[i] == T("_"))
@@ -92,7 +92,7 @@ bool CartesianPositionVector::loadFromXml(XmlElement* xml, MessageCallback& call
     {
       if ((i >= trueTokens.size() - 2) || trueTokens[i + 1] == T("_") || trueTokens[i + 2] == T("_"))
       {
-        callback.errorMessage(T("CartesianPositionVector::loadFromXml"),
+        importer.errorMessage(T("CartesianPositionVector::loadFromXml"),
           T("Invalid syntax: ") + trueTokens[i].quoted() + T(" ") + (i + 1 < trueTokens.size() ? trueTokens[i + 1].quoted() : T("N/A"))
                   + T(" ") + (i + 2 < trueTokens.size() ? trueTokens[i + 2].quoted() : T("N/A")));
         return false;
@@ -103,7 +103,7 @@ bool CartesianPositionVector::loadFromXml(XmlElement* xml, MessageCallback& call
   }
   if (index < values.size())
   {
-    callback.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Too few tokens"));
+    importer.errorMessage(T("CartesianPositionVector::loadFromXml"), T("Too few tokens"));
     return false;
   }
   return true;

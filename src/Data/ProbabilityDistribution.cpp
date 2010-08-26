@@ -202,5 +202,5 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
   return true;
 }
 
-bool DiscreteProbabilityDistribution::loadFromXml(XmlElement* xml, MessageCallback& callback)
-  {return loadFromString(xml->getAllSubText(), callback);}
+bool DiscreteProbabilityDistribution::loadFromXml(XmlImporter& importer)
+  {return loadFromString(importer.getAllSubText(), importer.getCallback());}
