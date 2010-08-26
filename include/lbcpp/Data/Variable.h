@@ -130,7 +130,7 @@ public:
   ** Const Operations
   */
   String toString() const;
-  String getShortSummary() const;
+  String toShortString() const;
   XmlElement* toXml(const String& tagName = T("variable"), const String& name = String::empty) const;
 
   /**

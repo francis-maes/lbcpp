@@ -92,7 +92,7 @@ public:
       executableFile.copyFileTo(exe);
     if (!exe.exists())
     {
-      Object::error(T("LocalProcess::start"), T("Could not copy executable"));
+      MessageCallback::error(T("LocalProcess::start"), T("Could not copy executable"));
       return false;
     }
     process = juce::ConsoleProcess::create(exe.getFullPathName(), arguments, workingDirectory.getFullPathName());

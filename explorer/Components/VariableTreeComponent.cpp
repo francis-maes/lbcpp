@@ -16,7 +16,7 @@ public:
     : SimpleTreeViewItem(name, NULL, true), 
       variable(variable), options(options), typeName(variable.getTypeName()), component(NULL)
   {
-    shortSummary = variable.getShortSummary();
+    shortSummary = variable.toShortString();
 
     TypePtr type = variable.getType();
     if (variable && variable.isObject())

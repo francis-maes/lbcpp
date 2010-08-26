@@ -33,7 +33,7 @@ String Container::toString() const
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    res += getElement(i).getShortSummary();
+    res += getElement(i).toShortString();
     if (i < n - 1)
       res += T(",\n  ");
   }

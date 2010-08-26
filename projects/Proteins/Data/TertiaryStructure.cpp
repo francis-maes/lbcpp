@@ -107,7 +107,7 @@ CartesianPositionVectorPtr TertiaryStructure::makeCAlphaTrace() const
     AtomPtr atom = residue->getCAlphaAtom();
 /*    if (!atom)
     {
-      Object::error(T("CartesianCoordinatesSequence::createCAlphaTrace"),
+      MessageCallback::error(T("CartesianCoordinatesSequence::createCAlphaTrace"),
           T("No C-alpha atom in residue ") + residue->getName() + T(" ") + String((int)(i + 1)));
         return CartesianPositionVectorPtr();
     }*/

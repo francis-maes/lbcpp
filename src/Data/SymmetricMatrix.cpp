@@ -36,7 +36,7 @@ String SymmetricMatrix::toString() const
   return res;
 }
 
-String SymmetricMatrix::getShortSummary() const
+String SymmetricMatrix::toShortString() const
 {
   String dim((int)dimension);
   return dim + T(" x ") + dim + T(" symmetric matrix");

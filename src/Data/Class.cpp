@@ -128,12 +128,12 @@ void DefaultClass::addVariable(TypePtr type, const String& name)
 {
   if (!type || name.isEmpty())
   {
-    Object::error(T("Class::addVariable"), T("Invalid type or name"));
+    MessageCallback::error(T("Class::addVariable"), T("Invalid type or name"));
     return;
   }
   ScopedLock _(variablesLock);
   if (findObjectVariable(name) >= 0)
-    Object::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
+    MessageCallback::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
   else
     variables.push_back(std::make_pair(type, name));
 }

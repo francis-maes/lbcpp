@@ -27,13 +27,13 @@ public:
   void declare(TypePtr type)
   {
     if (!type || type->getName().isEmpty())
-      Object::error(T("TypeManager::declare"), T("Empty class name"));
+      MessageCallback::error(T("TypeManager::declare"), T("Empty class name"));
 
     ScopedLock _(typesLock);
     String typeName = type->getName();
     if (doTypeExists(typeName))
     {
-      Object::error(T("TypeManager::declare"), T("Type '") + typeName + T("' has already been declared"));
+      MessageCallback::error(T("TypeManager::declare"), T("Type '") + typeName + T("' has already been declared"));
       return;
     }
     types[typeName] = type;
@@ -42,14 +42,14 @@ public:
   void declare(TemplateTypePtr templateType)
   {
     if (!templateType || templateType->getName().isEmpty())
-      Object::error(T("TypeManager::declare"), T("Empty template class name"));
+      MessageCallback::error(T("TypeManager::declare"), T("Empty template class name"));
 
     ScopedLock _(typesLock);
     String typeName = templateType->getName();
     TemplateTypeMap::const_iterator it = templateTypes.find(typeName);
     if (it != templateTypes.end())
     {
-      Object::error(T("TypeManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
+      MessageCallback::error(T("TypeManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
       return;
     }
     templateTypes[typeName] = templateType;
@@ -340,7 +340,7 @@ TypeCache::TypeCache(const String& typeName)
 {
   type = Type::get(typeName).get();
   if (!type)
-    Object::error(T("TypeCache()"), T("Could not find type ") + typeName.quoted());
+    MessageCallback::error(T("TypeCache()"), T("Could not find type ") + typeName.quoted());
 }
 
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
