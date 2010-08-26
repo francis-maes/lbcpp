@@ -62,7 +62,7 @@ public:
   {
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    res->setBatchLearner(onlineToBatchInferenceLearner());
+    //res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
 
@@ -121,7 +121,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (inferenceName == T("LearningPass"))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       std::cout << std::endl
@@ -173,7 +174,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")))->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -182,12 +183,13 @@ int main(int argc, char** argv)
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
-  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   /*
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));

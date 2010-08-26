@@ -138,6 +138,7 @@ public:
   ReferenceCountedObjectPtr<T> cloneAndCast() const
     {return checkCast<T>(T("Object::cloneAndCast"), clone());}
 
+#if 0
   /**
   ** Error manager.
   **
@@ -157,6 +158,7 @@ public:
   */
   static void warning(const String& where, const String& what)
     {MessageCallback::warning(where, what);}
+#endif // 0
 
   // user interface
   virtual juce::Component* createComponent() const
@@ -180,6 +182,7 @@ protected:
   XmlElement* variableToXml(size_t index) const;
   void saveVariablesToXmlAttributes(XmlElement* xml) const;
   bool loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback);
+  int compareVariables(ObjectPtr otherObject) const;
 };
 
 class NameableObject : public Object

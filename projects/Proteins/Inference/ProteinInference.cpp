@@ -42,7 +42,7 @@ void ProteinInferenceHelper::prepareSupervisionProtein(ProteinPtr protein)
   if (pdbDebugDirectory.exists() && protein->getTertiaryStructure())
     protein->saveToPDBFile(pdbDebugDirectory.getChildFile(protein->getName() + T("_correct.pdb")));
   if (proteinDebugDirectory.exists())
-    protein->saveToXmlFile(proteinDebugDirectory.getChildFile(protein->getName() + T("_correct.xprot")));
+    protein->saveToXmlFile(proteinDebugDirectory.getChildFile(protein->getName() + T("_correct.xml")));
 }
 
 void ProteinInferenceHelper::saveDebugFiles(ProteinPtr protein, size_t stepNumber)
@@ -55,7 +55,7 @@ void ProteinInferenceHelper::saveDebugFiles(ProteinPtr protein, size_t stepNumbe
 
   if (proteinDebugDirectory.exists())
     protein->saveToXmlFile(proteinDebugDirectory.getChildFile
-      (protein->getName() + T("_pred") + idx + T(".protein")));
+      (protein->getName() + T("_pred") + idx + T(".xml")));
 }
 
 /*

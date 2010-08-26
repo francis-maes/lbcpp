@@ -17,15 +17,14 @@ SET(EXPLORER_UTILITIES_SOURCES
 SET(EXPLORER_COMPONENTS_SOURCES
   Components/common.h
   Components/StringComponent.h
-  Components/ObjectContainerNameListComponent.h
-  Components/ObjectComponents.cpp
-
+  Components/ContainerSelectorComponent.h
   Components/VariableProxyComponent.h
   Components/VariableBrowser.h
   Components/VariableBrowser.cpp
   Components/VariableTreeComponent.h
   Components/VariableTreeComponent.cpp
   Components/HexadecimalFileComponent.h
+  Components/VariableComponents.cpp
 )
 
 SET(EXPLORER_PROCESS_MANAGER_SOURCES

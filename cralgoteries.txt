@@ -1,4 +1,4 @@
-* Voir pourquoi le score ne change pas d'une passe à l'autre
+* Selection multiple de protéines dans l'explorer
 
 Perception:
  * Serialisation des Perceptions
