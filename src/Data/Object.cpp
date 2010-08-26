@@ -11,7 +11,7 @@
 #include <fstream>
 using namespace lbcpp;
 
-extern void declareLBCppCoreClasses();
+extern void declareLBCppClasses();
 
 String Object::getClassName() const
 {

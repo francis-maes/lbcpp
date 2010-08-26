@@ -1,10 +1,12 @@
 
- * Normaliser Evaluator et mettre dans Function
- * Faire un sort avec RandomVariable.h
- * Faire un sort avec les Callbacks
+* Normaliser Evaluator et mettre dans Function
+* Faire un sort avec les Callbacks
+
+* Voir pourquoi le score ne change pas d'une passe à l'autre
+
+* Serialisation des Perceptions
 
 ====
-* Serialisation des Perceptions
 * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  
 * Types: permettre de déclarer des variables ayant des Types abstraits

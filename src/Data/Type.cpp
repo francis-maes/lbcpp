@@ -12,7 +12,7 @@
 #include <map>
 using namespace lbcpp;
 
-extern void declareLBCppCoreClasses();
+extern void declareLBCppClasses();
 
 /*
 ** TypeManager
@@ -144,7 +144,7 @@ public:
     if (!standardTypesAreDeclared)
     {
       standardTypesAreDeclared = true;
-      declareLBCppCoreClasses();
+      declareLBCppClasses();
     }
   }
 

@@ -3,6 +3,8 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+GENERATE_INTROSPECTION_CODE(LBCppClasses.xml LBCppClasses.cpp)
+
 GENERATE_INTROSPECTION_CODE(Data/Type/TypeClasses.xml TypeClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
@@ -52,6 +54,7 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
   Data/ProbabilityDistribution.cpp
+  ../include/lbcpp/Data/RandomVariable.h  
   ../include/lbcpp/Data/Consumer.h
   Data/Consumer.cpp
   Data/DataClasses.xml
@@ -102,7 +105,6 @@ SET(LBCPP_OBJECT_HEADERS
 
 SET(LBCPP_UTILITIES_HEADERS
   ../include/lbcpp/Utilities/ProgressCallback.h
-  ../include/lbcpp/Utilities/RandomVariable.h
 )
 
 SET(LBCPP_UTILITIES_SOURCES
@@ -331,7 +333,8 @@ SET(LBCPP_CORE
     ${LBCPP_INFERENCE_REDUCTION_SOURCES}
     ${LBCPP_INFERENCE_META_SOURCES}
 
-  classes.cpp
+  LBCppClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LBCppClasses.cpp
 )
 
 SOURCE_GROUP(includes FILES ${LBCPP_CORE_HEADERS})

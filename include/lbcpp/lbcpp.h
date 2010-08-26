@@ -37,9 +37,9 @@
 # include "Data/SymmetricMatrix.h"
 # include "Data/ProbabilityDistribution.h"
 # include "Data/RandomGenerator.h"
+# include "Data/RandomVariable.h"
 
 // old
-# include "Utilities/RandomVariable.h"
 # include "Utilities/ProgressCallback.h"
 // -
 
