@@ -173,8 +173,8 @@ void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& r
   forEachXmlChildElement(*xml, elt)
     resolveLink(elt, referencedObjects, identifiers);
 
-  std::map<ObjectPtr, int>::const_iterator nxt;
-  for (std::map<ObjectPtr, int>::const_iterator it = referencedObjects.begin(); it != referencedObjects.end(); it = nxt)
+  std::map<ObjectPtr, int>::iterator nxt;
+  for (std::map<ObjectPtr, int>::iterator it = referencedObjects.begin(); it != referencedObjects.end(); it = nxt)
   {
     nxt = it; ++nxt;
     SavedObject& savedObject = savedObjects[it->first];
