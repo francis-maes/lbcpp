@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ObjectContainerNameListComp...h| A list of object' names         |
+| Filename: ContainerSelectorComponent.h   | A selector for containers       |
 | Author  : Francis Maes                   |                                 |
 | Started : 07/05/2010 13:14               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_COMPONENTS_OBJECT_CONTAINER_NAME_LIST_H_
-# define EXPLORER_COMPONENTS_OBJECT_CONTAINER_NAME_LIST_H_
+#ifndef EXPLORER_COMPONENTS_CONTAINER_SELECTOR_H_
+# define EXPLORER_COMPONENTS_CONTAINER_SELECTOR_H_
 
 # include "common.h"
 # include "../Utilities/VariableSelector.h"
@@ -19,14 +19,14 @@ namespace lbcpp
 # pragma warning(disable:4355)
 #endif // JUCE_WIN32
 
-class ObjectContainerNameListComponent : public juce::ListBox, public VariableSelector
+class ContainerSelectorComponent : public juce::ListBox, public VariableSelector
 {
 public:
-  ObjectContainerNameListComponent(ContainerPtr container)
+  ContainerSelectorComponent(ContainerPtr container)
     : juce::ListBox(container->getName(), new Model(this, container)), container(container)
     {setMultipleSelectionEnabled(true);}
   
-  virtual ~ObjectContainerNameListComponent()
+  virtual ~ContainerSelectorComponent()
     {delete getModel();}
 
   void selectedRowsChanged()
@@ -45,7 +45,7 @@ public:
 
   struct Model : public juce::ListBoxModel
   {
-    Model(ObjectContainerNameListComponent* owner, ContainerPtr container)
+    Model(ContainerSelectorComponent* owner, ContainerPtr container)
       : owner(owner), container(container) {}
 
     virtual int getNumRows()
@@ -61,9 +61,8 @@ public:
       f.setHorizontalScale(0.9f);
       g.setFont(f);
 
-      ObjectPtr object = container->getElement(rowNumber).getObject();
-      String name = object ? object->getName() : T("<null>");
-      g.drawText(name, 4, 0, width - 6, height, Justification::centredLeft, true);
+      Variable element = container->getElement(rowNumber);
+      g.drawText(container->getElementName(rowNumber) + T(" = ") + element.getShortSummary(), 4, 0, width - 6, height, Justification::centredLeft, true);
     }
 
     virtual void selectedRowsChanged(int lastRowSelected)
@@ -72,7 +71,7 @@ public:
     juce_UseDebuggingNewOperator
 
   private:
-    ObjectContainerNameListComponent* owner;
+    ContainerSelectorComponent* owner;
     ContainerPtr container;
   };
 
@@ -87,4 +86,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_COMPONENTS_OBJECT_CONTAINER_NAME_LIST_H_
+#endif // !EXPLORER_COMPONENTS_CONTAINER_SELECTOR_H_

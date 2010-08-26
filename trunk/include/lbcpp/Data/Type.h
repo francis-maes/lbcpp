@@ -63,7 +63,7 @@ public:
   virtual void deinitialize();
 
   /*
-  ** Base class
+  ** Base type
   */
   TypePtr getBaseType() const
     {return baseType;}
@@ -73,6 +73,8 @@ public:
 
   bool inheritsFrom(TypePtr baseType) const;
   bool canBeCastedTo(TypePtr targetType) const;
+
+  static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
 
   /*
   ** Template Arguments

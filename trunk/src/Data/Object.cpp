@@ -100,6 +100,23 @@ String Object::variablesToString(const String& separator, bool includeTypes) con
   return res;
 }
 
+int Object::compareVariables(ObjectPtr otherObject) const
+{
+  ClassPtr c1 = getClass();
+  ClassPtr c2 = otherObject->getClass();
+  if (c1 != c2)
+    return c1 < c2;
+  size_t n = getNumVariables();
+  jassert(n == otherObject->getNumVariables());
+  for (size_t i = 0; i < n; ++i)
+  {
+    int cmp = getVariable(i).compare(otherObject->getVariable(i));
+    if (cmp != 0)
+      return cmp;
+  }
+  return 0;
+}
+
 /*
 ** Clone
 */

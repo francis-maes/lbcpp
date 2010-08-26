@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include "ProcessManagerComponent.h"
 #include "NewProcessDialogWindow.h"
-#include "../Components/ObjectContainerNameListComponent.h"
+#include "../Components/ContainerSelectorComponent.h"
 using namespace lbcpp;
 
 class ProcessManagerListTabs : public TabbedComponent
@@ -36,7 +36,7 @@ public:
   {
     for (int i = 0; i < getNumTabs(); ++i)
     {
-      ObjectContainerNameListComponent* c = dynamic_cast<ObjectContainerNameListComponent* >(getTabContentComponent(i));
+      ContainerSelectorComponent* c = dynamic_cast<ContainerSelectorComponent* >(getTabContentComponent(i));
       jassert(c);
       int index = c->getContainer()->findElement(process);
       if (index >= 0)
@@ -54,7 +54,7 @@ private:
 
   void addProcessList(const String& name, ProcessListPtr processes)
   {
-    ObjectContainerNameListComponent* list = new ObjectContainerNameListComponent(processes);
+    ContainerSelectorComponent* list = new ContainerSelectorComponent(processes);
     list->addCallback(selectorCallback);
     addTab(name, Colours::antiquewhite, list, true);
   }

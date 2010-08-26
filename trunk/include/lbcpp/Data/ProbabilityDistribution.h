@@ -77,8 +77,11 @@ public:
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
   virtual bool loadFromString(const String& str, MessageCallback& callback);
 
-  virtual ObjectPtr multiplyByScalar(double scalar);
-  virtual ObjectPtr addWeighted(const Variable& value, double weight);
+  virtual int compare(ObjectPtr otherObject) const
+    {return compareVariables(otherObject);}
+
+  ObjectPtr multiplyByScalar(double scalar);
+  ObjectPtr addWeighted(const Variable& value, double weight);
 
 private:
   friend class DiscreteProbabilityDistributionClass;

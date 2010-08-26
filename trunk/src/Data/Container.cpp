@@ -40,6 +40,9 @@ String Container::toString() const
   return res + T("]");
 }
 
+String Container::getElementName(size_t index) const
+  {return T("[") + String((int)index) + T("]");}
+
 int Container::findElement(const Variable& value) const
 {
   size_t n = getNumElements();
@@ -47,6 +50,21 @@ int Container::findElement(const Variable& value) const
     if (getElement(i) == value)
       return (int)i;
   return -1;
+}
+
+TypePtr Container::computeElementsCommonBaseType() const
+{
+  size_t n = getNumElements();
+  if (n == 0)
+    return variableType();
+  TypePtr type = getElement(0).getType();
+  for (size_t i = 1; i < n; ++i)
+  {
+    type = Type::findCommonBaseType(type, getElement(i).getType());
+    if (type == topLevelType())
+      break;
+  }
+  return type;
 }
 
 void Container::saveToXml(XmlElement* xml) const

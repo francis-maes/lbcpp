@@ -26,14 +26,13 @@ public:
     {return getNumElements() == 0;}
     
   int findElement(const Variable& value) const;
+  TypePtr computeElementsCommonBaseType() const;
 
   virtual TypePtr getElementsType() const
     {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
   virtual size_t getNumElements() const = 0;
-  virtual String getElementName(size_t index) const
-    {return String((int)index);}
-
+  virtual String getElementName(size_t index) const;
   virtual Variable getElement(size_t index) const = 0;
   virtual void setElement(size_t index, const Variable& value) = 0;
 

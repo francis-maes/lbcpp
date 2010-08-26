@@ -317,6 +317,22 @@ size_t Type::getNumTemplateArguments() const
 TypePtr Type::getTemplateArgument(size_t index) const
   {jassert(index < templateArguments.size()); return templateArguments[index];}
 
+TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
+{
+  if (type1->inheritsFrom(type2))
+    return type2;
+  if (type2->inheritsFrom(type1))
+    return type1;
+  if (type1 == topLevelType() || type2 == topLevelType())
+    return topLevelType();
+  TypePtr baseType1 = type1->getBaseType();
+  TypePtr baseType2 = type2->getBaseType();
+  jassert(baseType1 && baseType2);
+  baseType1 = findCommonBaseType(baseType1, type2);
+  baseType2 = findCommonBaseType(type1, baseType2);
+  return baseType1->inheritsFrom(baseType2) ? baseType1 : baseType2;
+}
+
 /*
 ** TypeCache
 */
