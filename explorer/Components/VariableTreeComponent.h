@@ -21,8 +21,8 @@ namespace lbcpp
 
 struct VariableTreeOptions
 {
-  VariableTreeOptions(bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = true)
-    : showTypes(showTypes), showShortSummaries(showShortSummaries) {}
+  VariableTreeOptions(bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false)
+    : showTypes(showTypes), showShortSummaries(showShortSummaries), showMissingVariables(showMissingVariables) {}
 
   bool showTypes;
   bool showShortSummaries;
