@@ -45,7 +45,7 @@ class TextPrinter : public Consumer
 {
 public:
   TextPrinter(OutputStream* newOutputStream);
-  TextPrinter(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
+  TextPrinter(const File& file, MessageCallback& callback = MessageCallback::getInstance());
   
   virtual ~TextPrinter()
     {if (ostr) delete ostr;}

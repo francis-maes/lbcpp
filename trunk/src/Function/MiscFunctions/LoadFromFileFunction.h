@@ -27,7 +27,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return expectedType;}
 
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     File file(input.getString());
     Variable res = Variable::createFromFile(file, callback);

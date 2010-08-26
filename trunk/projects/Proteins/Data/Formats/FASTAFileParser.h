@@ -18,7 +18,7 @@ namespace lbcpp
 class FASTAFileParser : public TextParser
 {
 public:
-  FASTAFileParser(const File& file, ErrorHandler& callback = ErrorHandler::getInstance())
+  FASTAFileParser(const File& file, MessageCallback& callback = MessageCallback::getInstance())
     : TextParser(file, callback) {}
   
   virtual TypePtr getElementsType() const

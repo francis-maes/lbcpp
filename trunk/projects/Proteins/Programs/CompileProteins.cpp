@@ -16,7 +16,7 @@ extern void declareProteinClasses();
 
 using juce::OwnedArray;
 
-File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDirectory, ErrorHandler& callback)
+File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDirectory, MessageCallback& callback)
 {
   OwnedArray<File> res;
   otherDirectory.findChildFiles(res, File::findFiles, false, inputFile.getFileNameWithoutExtension() + T(".*"));
@@ -35,7 +35,7 @@ File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDi
   return *res[0];
 }
 
-bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, ErrorHandler& callback)
+bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, MessageCallback& callback)
 {
   VectorPtr primaryStructure = protein->getPrimaryStructure();
   jassert(primaryStructure);
@@ -46,10 +46,10 @@ bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, ErrorHandler& callba
   return true;
 }
 
-bool loadDSSPFile(ProteinPtr protein, const File& dsspFile, ErrorHandler& callback)
+bool loadDSSPFile(ProteinPtr protein, const File& dsspFile, MessageCallback& callback)
   {StreamPtr(new DSSPFileParser(dsspFile, protein, callback))->next(); return true;}
 
-bool loadProteinRelatedFile(ProteinPtr protein, const File& file, ErrorHandler& callback)
+bool loadProteinRelatedFile(ProteinPtr protein, const File& file, MessageCallback& callback)
 {
   String ext = file.getFileExtension();
   if (ext == T(".pssm"))
@@ -63,7 +63,7 @@ bool loadProteinRelatedFile(ProteinPtr protein, const File& file, ErrorHandler& 
   }
 }
 
-bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile, ErrorHandler& callback)
+bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile, MessageCallback& callback)
 {
   std::cout << "Compile " << outputFile.getFileNameWithoutExtension() << "..." << std::endl;
 
@@ -94,7 +94,7 @@ bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile,
   return true;
 }
 
-bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory, ErrorHandler& callback)
+bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory, MessageCallback& callback)
 {
   std::vector<File> inputFiles;
   inputFiles.push_back(inputFile);
@@ -109,7 +109,7 @@ bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDi
   return compileProtein(inputFiles, outputFile, callback);
 }
 
-void compileProteins(const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory, ErrorHandler& callback)
+void compileProteins(const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory, MessageCallback& callback)
 {
   OwnedArray<File> inputs;
   mainInputDirectory.findChildFiles(inputs, File::findFiles, false, T("*.xml"));
@@ -164,6 +164,6 @@ int main(int argc, char* argv[])
     return 1;
   }
  
-  compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory, ErrorHandler::getInstance());
+  compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory, MessageCallback::getInstance());
   return 0;
 }

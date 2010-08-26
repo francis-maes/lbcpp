@@ -103,7 +103,7 @@ public:
     return ((const Variable* )value.getRawData())[index];
   }
 
-  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const
+  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const
   {
     Variable* data = (Variable* )allocateMemory(size);
     if (xml->getNumChildElements() != (int)size)
@@ -176,14 +176,14 @@ public:
   PairTemplateType(const String& name, const String& baseType)
     : DefaultTemplateType(name, baseType) {}
 
-  virtual bool initialize(ErrorHandler& callback)
+  virtual bool initialize(MessageCallback& callback)
   {
     addParameter(T("firstType"));
     addParameter(T("secondType"));
     return DefaultTemplateType::initialize(callback);
   }
 
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, ErrorHandler& callback) const
+  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const
     {jassert(arguments.size() == 2); return new PairType(refCountedPointerFromThis(this), arguments, baseType);}
 };
 

@@ -16,7 +16,7 @@
 # include "../Data/Protein.h"
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Inference/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Function/ScalarFunction.h>
 namespace lbcpp
 {

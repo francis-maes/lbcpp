@@ -14,7 +14,7 @@ namespace impl {
 /*
 ** Vector3
 */
-Vector3 Vector3::fromString(const String& str, ErrorHandler& callback)
+Vector3 Vector3::fromString(const String& str, MessageCallback& callback)
 {
   StringArray tokens;
   tokens.addTokens(str, T(" "), NULL);

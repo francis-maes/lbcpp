@@ -37,6 +37,9 @@
         DiscreteProbabilityDistributionPtr distribution = value.getObjectAndCast&lt;DiscreteProbabilityDistribution&gt;();
         if (distribution)
         {
+          if (!distribution->values.size())
+            distribution->values.resize(distribution->getEnumeration()->getNumElements() + 1, 0.0);
+
           jassert(subValue.isDouble());
           distribution->sum -= distribution->values[index];
           distribution->values[index] = subValue.getDouble();

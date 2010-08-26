@@ -34,7 +34,7 @@ protected:
 
   size_t fieldIndex;
 
-  virtual Variable computeFunction(const Variable& input, ErrorHandler& callback) const
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     ObjectPtr object = input[0].getObject();
     if (object && input[1])

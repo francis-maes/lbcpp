@@ -74,6 +74,131 @@ inline double log2(double x)
 
 extern String getTypeName(const std::type_info& info);
 
+/**
+** @class ProgressCallback
+** @brief A callback that receives information about
+** the progression of a task.
+**
+** This class is used to display to progression of
+** a task that may eventually take a long time to complete.
+** Such tasks may for example be optimization tasks or
+** learning tasks.
+*/
+class ProgressCallback
+{
+public:
+  /** Destructor. */
+  virtual ~ProgressCallback() {}
+
+  /** This function is called when the task begins.
+  **
+  ** @param description : a string that describes the task which begins.
+  */
+  virtual void progressStart(const String& description)
+    {}
+
+  /** This function is called each time the task progresses.
+  **
+  ** Some tasks have a fixed length, which makes it possible to compute
+  ** a percentage of progression. In this case the parameter
+  ** @a totalIterations indicates the length of the task.
+  ** If the task's length is unknown in advance, the @a
+  ** totalIterations parameter is equal to zero.
+  **
+  ** @param description : a string that describes the task.
+  ** @param iteration : a progression indicator.
+  ** @param totalIterations : the length of the task,
+  ** <i>i.e.</i> the maximum value of @a iteration.
+  **
+  ** @return false to cancel the task or true to continue the task.
+  */
+  virtual bool progressStep(const String& description, double iteration, double totalIterations = 0)
+    {return true;}
+
+  /** This function is called at the end of the task. */
+  virtual void progressEnd()
+    {}
+};
+
+/** Creates a ProgressCallback that displays progression on the standard output.
+**
+** @return a new ProgressCallback.
+*/
+extern ProgressCallback& consoleProgressCallback();
+
+/*!
+** @class MessageCallback
+** @brief Message Callback.
+**
+** The Message Callback is a singleton which receives all the
+** error and warning messages produced by the library. By
+** default, errors and warnings are displayed on the standard
+** output. This behavior can be changed by overriding the MessageCallback
+** class and by changing the singleton.
+**
+*/
+class MessageCallback
+{
+public:
+  /**
+  ** Destructor.
+  */
+  virtual ~MessageCallback() {}
+
+  /**
+  ** Displays an error message.
+  **
+  ** @param where : where the error occurs.
+  ** @param what : what's going wrong.
+  */
+  virtual void errorMessage(const String& where, const String& what) = 0;
+
+  /**
+  ** Displays a warning message.
+  **
+  ** @param where : where the problem occurs.
+  ** @param what : what's going wrong.
+  */
+  virtual void warningMessage(const String& where, const String& what) = 0;
+
+  /**
+  ** MessageCallback instance setter.
+  **
+  ** @param handler : MessageCallback instance.
+  */
+  static void setInstance(MessageCallback& handler);
+
+  /**
+  ** MessageCallback instance getter.
+  **
+  ** @return the MessageCallback instance.
+  */
+  static MessageCallback& getInstance() {jassert(instance); return *instance;}
+
+  /**
+  ** Displays an error message using the ErrorManager singleton.
+  **
+  ** @param where : where the error occurs.
+  ** @param what : what's going wrong.
+  ** @see Object::error
+  */
+  static void error(const String& where, const String& what)
+    {getInstance().errorMessage(where, what);}
+
+  /**
+  ** Displays a warning message using the ErrorManager singleton.
+  **
+  ** @param where : where the problem occurs.
+  ** @param what : what's going wrong.
+  ** @see Object::warning
+  */
+  static void warning(const String& where, const String& what)
+    {getInstance().warningMessage(where, what);}
+
+private:
+  static MessageCallback* instance;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_UTILITIES_H_

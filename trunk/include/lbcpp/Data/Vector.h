@@ -34,7 +34,7 @@ public:
   ** Object
   */
   virtual String toString() const;
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 protected:
   bool checkType(const Variable& value) const;
@@ -71,7 +71,7 @@ public:
   ** Object
   */
   virtual void saveToXml(XmlElement* xml) const;
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 protected:
   std::vector<VariableValue> values;
@@ -225,7 +225,7 @@ public:
 
   virtual void saveToXml(XmlElement* xml) const
     {jassert(false);}
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback)
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback)
     {jassert(false); return false;}
 
   virtual void reserve(size_t size)

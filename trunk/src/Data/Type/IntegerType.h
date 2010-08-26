@@ -42,7 +42,7 @@ public:
   virtual VariableValue create() const
     {return VariableValue(0);}
 
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
   {
     if (!value.trim().containsOnly(T("-+e0123456789")))
     {

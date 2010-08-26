@@ -1,9 +1,7 @@
 
-* Normaliser Evaluator et mettre dans Function
-* Faire un sort avec les Callbacks
-
+-
 * Voir pourquoi le score ne change pas d'une passe à l'autre
-
+-
 * Serialisation des Perceptions
 
 ====

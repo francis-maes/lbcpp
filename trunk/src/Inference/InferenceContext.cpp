@@ -78,7 +78,7 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerP
   return res;
 }
 
-#include <lbcpp/Inference/Evaluator.h>
+#include <lbcpp/Function/Evaluator.h>
 
 class EvaluationInferenceCallback : public InferenceCallback
 {

@@ -49,9 +49,9 @@ public:
 
   static void declare(TypePtr typeInstance);
   static void declare(TemplateTypePtr templateTypeInstance);
-  static void finishDeclarations(ErrorHandler& callback = ErrorHandler::getInstance());
+  static void finishDeclarations(MessageCallback& callback = MessageCallback::getInstance());
   static bool doTypeExists(const String& typeName);
-  static TypePtr get(const String& typeName, ErrorHandler& callback = ErrorHandler::getInstance());
+  static TypePtr get(const String& typeName, MessageCallback& callback = MessageCallback::getInstance());
  
   /*
   ** Initialization
@@ -59,7 +59,7 @@ public:
   bool isInitialized() const
     {return initialized;}
 
-  virtual bool initialize(ErrorHandler& callback);
+  virtual bool initialize(MessageCallback& callback);
   virtual void deinitialize();
 
   /*
@@ -96,8 +96,8 @@ public:
   virtual bool isMissingValue(const VariableValue& value) const;
 
   virtual VariableValue create() const;
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
-  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
+  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const;
@@ -193,8 +193,8 @@ public:
     {return checkCast<Enumeration>(T("Enumeration::get"), Type::get(className));}
 
   virtual VariableValue create() const;
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
-  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
+  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
 
   virtual VariableValue getMissingValue() const;
 
@@ -249,8 +249,8 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual VariableValue createFromString(const String& value, ErrorHandler& callback) const;
-  virtual VariableValue createFromXml(XmlElement* xml, ErrorHandler& callback) const;
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
+  virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
   virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const
@@ -304,7 +304,7 @@ typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 /*
 ** Inheritance check
 */
-inline bool checkInheritance(TypePtr type, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
+inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
 {
   jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))

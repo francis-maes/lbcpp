@@ -65,8 +65,8 @@ public:
   */
   static Variable create(TypePtr type);
 
-  static Variable createFromString(TypePtr type, const String& value, ErrorHandler& callback = ErrorHandler::getInstance());
-  static Variable createFromXml(XmlElement* xml, ErrorHandler& callback = ErrorHandler::getInstance());
+  static Variable createFromString(TypePtr type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
+  static Variable createFromXml(XmlElement* xml, MessageCallback& callback = MessageCallback::getInstance());
 
   /**
   ** Loads a variable from a file.
@@ -76,7 +76,7 @@ public:
   ** @return the loaded Variable or Nil if any error occurs.
   ** @see saveToFile
   */
-  static Variable createFromFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
+  static Variable createFromFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
 
   static Variable missingValue(TypePtr type);
 
@@ -121,7 +121,7 @@ public:
   bool isObject() const;
   ObjectPtr getObject() const;
   template<class O>
-  ReferenceCountedObjectPtr<O> getObjectAndCast(ErrorHandler& callback = ErrorHandler::getInstance()) const;
+  ReferenceCountedObjectPtr<O> getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const;
 
   template<class O>
   ReferenceCountedObjectPtr<O> dynamicCast() const;
@@ -142,7 +142,7 @@ public:
   ** @return false if any error occurs.
   ** @see createFromFile
   */
-  bool saveToFile(const File& file, ErrorHandler& callback = ErrorHandler::getInstance()) const;
+  bool saveToFile(const File& file, MessageCallback& callback = MessageCallback::getInstance()) const;
 
   int compare(const Variable& otherValue) const;
   bool equals(const Variable& otherValue) const;

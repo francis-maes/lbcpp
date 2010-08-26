@@ -53,7 +53,7 @@ String Vector::toString() const
   return Container::toString();
 }
 
-bool Vector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool Vector::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {
   int size = xml->getIntAttribute(T("size"), -1);
   if (size < 0)
@@ -163,7 +163,7 @@ void GenericVector::saveToXml(XmlElement* xml) const
     Container::saveToXml(xml);
 }
 
-bool GenericVector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {
   TypePtr type = getElementsType();
   jassert(type);

@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
 
-class ExplorerErrorHandler : public ErrorHandler
+class ExplorerMessageCallback : public MessageCallback
 {
 public:
   virtual void errorMessage(const String& where, const String& what)
@@ -45,10 +45,10 @@ private:
   }
 };
 
-static ExplorerErrorHandler explorerErrorHandler;
+static ExplorerMessageCallback explorerMessageCallback;
 
 void flushErrorAndWarningMessages(const String& title)
-  {explorerErrorHandler.flushMessages(title);}
+  {explorerMessageCallback.flushMessages(title);}
 
 class ExplorerContentTabs : public TabbedComponent
 {
@@ -241,7 +241,7 @@ public:
 
   virtual void initialise(const String& commandLine)
   {    
-    ErrorHandler::setInstance(explorerErrorHandler);
+    MessageCallback::setInstance(explorerMessageCallback);
     lbcpp::initialize();
     declareProteinClasses();
     declareExplorerClasses();

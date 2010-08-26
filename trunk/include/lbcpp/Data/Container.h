@@ -41,7 +41,7 @@ public:
   VectorPtr toVector() const;
 
   virtual void saveToXml(XmlElement* xml) const;
-  virtual bool loadFromXml(XmlElement* xml, ErrorHandler& callback);
+  virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 public:
   ContainerPtr subset(const std::vector<size_t>& indices) const;

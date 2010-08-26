@@ -57,7 +57,7 @@ void CartesianPositionVector::saveToXml(XmlElement* xml) const
   xml->setAttribute(T("size"), (int)values.size());
 }
 
-bool CartesianPositionVector::loadFromXml(XmlElement* xml, ErrorHandler& callback)
+bool CartesianPositionVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {
   int size = xml->getIntAttribute(T("size"), -1);
   if (size < 0)

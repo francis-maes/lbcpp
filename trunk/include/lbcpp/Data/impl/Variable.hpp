@@ -160,7 +160,7 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 }
 
 template<class O>
-inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(ErrorHandler& callback) const
+inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(MessageCallback& callback) const
 {
   ReferenceCountedObjectPtr<O> res;
   if (isNil())
@@ -237,7 +237,7 @@ inline void copy(ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
 inline void copy(Variable& dest, const Variable& source)
   {dest = source;}
 
-inline bool checkInheritance(const Variable& variable, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
+inline bool checkInheritance(const Variable& variable, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
   {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
 
 }; /* namespace lbcpp */

@@ -31,7 +31,7 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
   bool atLeastOneVariable;
 };
 
-Variable Perception::computeFunction(const Variable& input, ErrorHandler& callback) const
+Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
 {
   TypePtr outputType = getOutputType();
   Variable res = Variable::create(outputType);
@@ -109,7 +109,7 @@ void Perception::ensureTypeIsComputed()
   size_t n = getNumOutputVariables();
   for (size_t i = 0; i < n; ++i)
     outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));
-  outputType->initialize(ErrorHandler::getInstance());
+  outputType->initialize(MessageCallback::getInstance());
   this->outputType = outputType;
 }
 

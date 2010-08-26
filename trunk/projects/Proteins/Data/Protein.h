@@ -34,13 +34,13 @@ public:
   /*
   ** Save/Load operators
   */
-  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true, ErrorHandler& callback = ErrorHandler::getInstance());
-  static ProteinPtr createFromXml(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
-  static ProteinPtr createFromFASTA(const File& file, ErrorHandler& callback = ErrorHandler::getInstance());
+  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true, MessageCallback& callback = MessageCallback::getInstance());
+  static ProteinPtr createFromXml(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  static ProteinPtr createFromFASTA(const File& file, MessageCallback& callback = MessageCallback::getInstance());
 
-  void saveToPDBFile(const File& pdbFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
-  void saveToXmlFile(const File& xmlFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
-  void saveToFASTAFile(const File& fastaFile, ErrorHandler& callback = ErrorHandler::getInstance()) const;
+  void saveToPDBFile(const File& pdbFile, MessageCallback& callback = MessageCallback::getInstance()) const;
+  void saveToXmlFile(const File& xmlFile, MessageCallback& callback = MessageCallback::getInstance()) const;
+  void saveToFASTAFile(const File& fastaFile, MessageCallback& callback = MessageCallback::getInstance()) const;
 
   Variable createEmptyTarget(size_t index) const;
   static String getTargetFriendlyName(size_t index);

@@ -55,7 +55,7 @@ public:
     templateTypes[typeName] = templateType;
   }
 
-  TemplateTypePtr getTemplateType(const String& templateTypeName, ErrorHandler& callback) const
+  TemplateTypePtr getTemplateType(const String& templateTypeName, MessageCallback& callback) const
   {
     ScopedLock _(typesLock);
     TemplateTypeMap::const_iterator it = templateTypes.find(templateTypeName);
@@ -67,7 +67,7 @@ public:
     return it->second;
   }
 
-  void finishDeclarations(ErrorHandler& callback)
+  void finishDeclarations(MessageCallback& callback)
   {
     ScopedLock _(typesLock);
     for (TypeMap::const_iterator it = types.begin(); it != types.end(); ++it)
@@ -87,7 +87,7 @@ public:
     }
   }
 
-  TypePtr getType(const String& name, ErrorHandler& callback) const
+  TypePtr getType(const String& name, MessageCallback& callback) const
   {
     String typeName = removeAllSpaces(name);
     ScopedLock _(typesLock);
@@ -188,10 +188,10 @@ void Type::declare(TypePtr typeInstance)
 void Type::declare(TemplateTypePtr templateTypeInstance)
   {getTypeManagerInstance().declare(templateTypeInstance);}
 
-void Type::finishDeclarations(ErrorHandler& callback)
+void Type::finishDeclarations(MessageCallback& callback)
   {getTypeManagerInstance().finishDeclarations(callback);}
 
-TypePtr Type::get(const String& typeName, ErrorHandler& callback)
+TypePtr Type::get(const String& typeName, MessageCallback& callback)
   {return getTypeManagerInstance().getType(typeName, callback);}
 
 bool Type::doTypeExists(const String& typeName)
@@ -208,7 +208,7 @@ Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArg
       templateType(templateType), templateArguments(templateArguments), baseType(baseType)
  {}
 
-bool Type::initialize(ErrorHandler& callback)
+bool Type::initialize(MessageCallback& callback)
   {return (initialized = true);}
 
 void Type::deinitialize()
@@ -263,10 +263,10 @@ bool Type::isMissingValue(const VariableValue& value) const
 VariableValue Type::create() const
   {jassert(baseType); return baseType->create();}
 
-VariableValue Type::createFromString(const String& value, ErrorHandler& callback) const
+VariableValue Type::createFromString(const String& value, MessageCallback& callback) const
   {jassert(baseType); return baseType->createFromString(value, callback);}
 
-VariableValue Type::createFromXml(XmlElement* xml, ErrorHandler& callback) const
+VariableValue Type::createFromXml(XmlElement* xml, MessageCallback& callback) const
   {jassert(baseType); return baseType->createFromXml(xml, callback);}
 
 String Type::toString(const VariableValue& value) const
