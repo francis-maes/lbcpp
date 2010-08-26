@@ -78,49 +78,17 @@ Variable Variable::createFromFile(const File& file, MessageCallback& callback)
   return res;
 }
 
-XmlElement* Variable::toXml(const String& tagName, const String& name) const
+void Variable::saveToXml(XmlExporter& exporter) const
 {
-  XmlElement* res = new XmlElement(tagName);
-  res->setAttribute(T("type"), getTypeName().replaceCharacters(T("<>"), T("[]")));
-  if (name.isNotEmpty())
-    res->setAttribute(T("name"), name);
-  if (type->isMissingValue(value))
-    res->setAttribute(T("missing"), T("true"));
-  else
-    type->saveToXml(res, value);
-  return res;
+  if (!type->isMissingValue(value))
+    type->saveToXml(exporter, value);
 }
 
 bool Variable::saveToFile(const File& file, MessageCallback& callback) const
 {
-  if (file.exists())
-  {
-    if (file.existsAsFile())
-    {
-      if (!file.deleteFile())
-      {
-        callback.errorMessage(T("Variable::saveToFile"), T("Could not delete file ") + file.getFullPathName());
-        return false;
-      }
-    }
-    else
-    {
-      callback.errorMessage(T("Variable::saveToFile"), file.getFullPathName() + T(" is a directory"));
-      return false;
-    }
-  }
-  
-  XmlElement* xml = toXml();
-  if (!xml)
-  {
-    callback.errorMessage(T("Variable::saveToFile"), T("Could not generate xml for file ") + file.getFullPathName());
-    return false;
-  }
-  bool ok = xml->writeToFile(file, String::empty);
-  if (!ok)
-    callback.errorMessage(T("Variable::saveToFile"), T("Could not write file ") + file.getFullPathName());
-  delete xml;
-  return ok;
+  XmlExporter exporter;
+  exporter.saveVariable(String::empty, *this);
+  return exporter.saveToFile(file, callback);
 }
 
 int Variable::compare(const Variable& otherValue) const

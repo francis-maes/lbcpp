@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/SymmetricMatrix.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 SymmetricMatrix::SymmetricMatrix(TypePtr contentType, size_t dimension) 
@@ -42,8 +43,8 @@ String SymmetricMatrix::toShortString() const
   return dim + T(" x ") + dim + T(" symmetric matrix");
 }
 
-void SymmetricMatrix::saveToXml(XmlElement* xml) const
-  {xml->setAttribute(T("dimension"), (int)dimension); values.saveToXml(xml);}
+void SymmetricMatrix::saveToXml(XmlExporter& exporter) const
+  {exporter.setAttribute(T("dimension"), (int)dimension); values.saveToXml(exporter);}
 
 bool SymmetricMatrix::loadFromXml(XmlElement* xml, MessageCallback& callback)
 {

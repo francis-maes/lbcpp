@@ -27,6 +27,7 @@
 # define LBCPP_OBJECT_TYPE_BUILTIN_H_
 
 # include <lbcpp/Data/Variable.h>
+# include <lbcpp/Data/XmlSerialisation.h>
 
 namespace lbcpp
 {
@@ -42,8 +43,8 @@ public:
   virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const
     {return createFromString(xml->getAllSubText(), callback);}
 
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
-    {xml->addTextElement(toString(value));}
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
+    {exporter.addTextElement(toString(value));}
 
   virtual size_t getNumElements(const VariableValue& value) const
     {return 0;}

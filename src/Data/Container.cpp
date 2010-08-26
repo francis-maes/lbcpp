@@ -7,13 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Data/Container.h>
 #include <lbcpp/Data/RandomGenerator.h>
-
-#include "Container/ApplyFunctionContainer.h"
-#include "Container/SubsetContainer.h"
-#include "Container/DuplicatedContainer.h"
-#include "Container/RangeContainer.h"
-#include "Container/ExcludeRangeContainer.h"
-
+#include <lbcpp/Data/XmlSerialisation.h>
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
 using namespace lbcpp;
@@ -67,16 +61,16 @@ TypePtr Container::computeElementsCommonBaseType() const
   return type;
 }
 
-void Container::saveToXml(XmlElement* xml) const
+void Container::saveToXml(XmlExporter& exporter) const
 {
-  Object::saveToXml(xml);
+  Object::saveToXml(exporter);
   size_t n = getNumElements();
-  xml->setAttribute(T("size"), (int)n);
+  exporter.setAttribute(T("size"), (int)n);
   for (size_t i = 0; i < n; ++i)
   {
-    XmlElement* value = getElement(i).toXml(T("element"));
-    value->setAttribute(T("index"), (int)i);
-    xml->addChildElement(value);
+    Variable element = getElement(i);
+    if (!element.isMissingValue())
+      exporter.saveElement(i, getElement(i));
   }
 }
 

@@ -44,6 +44,8 @@ SET(LBCPP_DATA_SOURCES
   Data/TemplateType.cpp
   ../include/lbcpp/Data/Variable.h
   Data/Variable.cpp
+  ../include/lbcpp/Data/XmlSerialisation.h  
+  Data/XmlSerialisation.cpp
   ../include/lbcpp/Data/DynamicObject.h
   Data/DynamicObject.cpp
   ../include/lbcpp/Data/Stream.h

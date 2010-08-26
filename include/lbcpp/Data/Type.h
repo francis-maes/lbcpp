@@ -101,7 +101,7 @@ public:
   virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
   virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const;
   virtual void copy(VariableValue& dest, const VariableValue& source) const;
@@ -135,8 +135,7 @@ public:
   virtual String toString() const
     {return getName();}
 
-  virtual void saveToXml(XmlElement* xml) const
-    {xml->addTextElement(getName());}
+  virtual void saveToXml(XmlExporter& exporter) const;
 
   juce_UseDebuggingNewOperator
 
@@ -202,7 +201,7 @@ public:
   virtual VariableValue getMissingValue() const;
 
   virtual String toString(const VariableValue& value) const;
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual size_t getNumElements(const VariableValue& value) const
     {return 0;}
@@ -255,7 +254,7 @@ public:
 
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
   virtual VariableValue createFromXml(XmlElement* xml, MessageCallback& callback) const;
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const;
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const
     {value.clearObject();}

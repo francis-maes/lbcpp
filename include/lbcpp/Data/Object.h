@@ -106,7 +106,7 @@ public:
   **
   ** @param xml : the target XML tree
   */
-  virtual void saveToXml(XmlElement* xml) const;
+  virtual void saveToXml(XmlExporter& exporter) const;
 
   /**
   ** Override this function to load the object from an XML tree
@@ -169,8 +169,7 @@ protected:
 
   // utilities
   String variablesToString(const String& separator, bool includeTypes = true) const;
-  XmlElement* variableToXml(size_t index) const;
-  void saveVariablesToXmlAttributes(XmlElement* xml) const;
+  void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
   bool loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback);
   int compareVariables(ObjectPtr otherObject) const;
 };

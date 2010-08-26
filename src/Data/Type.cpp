@@ -9,6 +9,7 @@
 #include <lbcpp/Data/Type.h>
 #include <lbcpp/Data/Variable.h>
 #include <lbcpp/Data/Vector.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 #include <map>
 using namespace lbcpp;
 
@@ -281,8 +282,8 @@ void Type::copy(VariableValue& dest, const VariableValue& source) const
 int Type::compare(const VariableValue& value1, const VariableValue& value2) const
   {jassert(baseType); return baseType->compare(value1, value2);}
 
-void Type::saveToXml(XmlElement* xml, const VariableValue& value) const
-  {jassert(baseType); return baseType->saveToXml(xml, value);}
+void Type::saveToXml(XmlExporter& exporter, const VariableValue& value) const
+  {jassert(baseType); return baseType->saveToXml(exporter, value);}
 
 size_t Type::getObjectNumVariables() const
   {jassert(baseType); return baseType->getObjectNumVariables();}
@@ -332,6 +333,9 @@ TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
   baseType2 = findCommonBaseType(type1, baseType2);
   return baseType1->inheritsFrom(baseType2) ? baseType1 : baseType2;
 }
+
+void Type::saveToXml(XmlExporter& exporter) const
+  {exporter.addTextElement(getName());}
 
 /*
 ** TypeCache

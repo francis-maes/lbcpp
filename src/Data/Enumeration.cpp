@@ -8,6 +8,7 @@
 #include <lbcpp/Data/Type.h>
 #include <lbcpp/Data/Variable.h>
 #include <lbcpp/Data/Vector.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 #include <map>
 using namespace lbcpp;
 
@@ -87,8 +88,8 @@ String Enumeration::toString(const VariableValue& value) const
   return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Nil");
 }
 
-void Enumeration::saveToXml(XmlElement* xml, const VariableValue& value) const
-  {xml->addTextElement(toString(value));}
+void Enumeration::saveToXml(XmlExporter& exporter, const VariableValue& value) const
+  {exporter.addTextElement(toString(value));}
 
 bool Enumeration::hasOneLetterCodes() const
   {return oneLetterCodes.length() == (int)elements.size();}

@@ -52,7 +52,7 @@ public:
   */
   virtual String toString() const;
   virtual String toShortString() const;
-  virtual void saveToXml(XmlElement* xml) const;
+  virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 private:

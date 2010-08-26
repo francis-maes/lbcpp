@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "CartesianPositionVector.h"
+#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 void CartesianPositionVector::movePosition(size_t index, const impl::Vector3& delta)
@@ -38,7 +39,7 @@ impl::Vector3 CartesianPositionVector::getGravityCenter() const
   return count ? sum / (double)count : sum;
 }
 
-void CartesianPositionVector::saveToXml(XmlElement* xml) const
+void CartesianPositionVector::saveToXml(XmlExporter& exporter) const
 {
   String str;
 
@@ -53,8 +54,8 @@ void CartesianPositionVector::saveToXml(XmlElement* xml) const
       str += ' ';
   }
 
-  xml->addTextElement(str);
-  xml->setAttribute(T("size"), (int)values.size());
+  exporter.addTextElement(str);
+  exporter.setAttribute(T("size"), (int)values.size());
 }
 
 bool CartesianPositionVector::loadFromXml(XmlElement* xml, MessageCallback& callback)

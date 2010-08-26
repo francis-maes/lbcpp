@@ -63,11 +63,11 @@ VariableValue Class::createFromXml(XmlElement* xml, MessageCallback& callback) c
   return res.getObject()->loadFromXml(xml, callback) ? res : getMissingValue();
 }
 
-void Class::saveToXml(XmlElement* xml, const VariableValue& value) const
+void Class::saveToXml(XmlExporter& exporter, const VariableValue& value) const
 {
   ObjectPtr object = value.getObject();
   jassert(object);
-  object->saveToXml(xml);
+  object->saveToXml(exporter);
 }
 
 /*

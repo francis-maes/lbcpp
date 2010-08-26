@@ -15,8 +15,8 @@ String Atom::toString() const
     + String(occupancy) + T(" ") + String(temperatureFactor);
 }
 
-void Atom::saveToXml(XmlElement* xml) const
-  {saveVariablesToXmlAttributes(xml);}
+void Atom::saveToXml(XmlExporter& exporter) const
+  {saveVariablesToXmlAttributes(exporter);}
 
 bool Atom::loadFromXml(XmlElement* xml, MessageCallback& callback)
   {return loadVariablesFromXmlAttributes(xml, callback);}

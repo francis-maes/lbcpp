@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/Vector.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 /*
@@ -141,26 +142,26 @@ void GenericVector::remove(size_t index)
   values.erase(values.begin() + index);
 }
 
-void GenericVector::saveToXml(XmlElement* xml) const
+void GenericVector::saveToXml(XmlExporter& exporter) const
 {
   size_t n = getNumElements();
 
   TypePtr type = getElementsType();
-  xml->setAttribute(T("size"), (int)n);
+  exporter.setAttribute(T("size"), (int)n);
 
   if (n > 1000 && (type->inheritsFrom(integerType()) || type->inheritsFrom(doubleType()) || type->inheritsFrom(booleanType())))
   {
     juce::MemoryBlock block(&values[0], sizeof (VariableValue) * values.size());
-    xml->setAttribute(T("binary"), T("true"));
-    xml->addTextElement(block.toBase64Encoding());
+    exporter.setAttribute(T("binary"), T("true"));
+    exporter.addTextElement(block.toBase64Encoding());
     return;
   }
 
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
   if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType()))
-    xml->addTextElement(toString());
+    exporter.addTextElement(toString());
   else
-    Container::saveToXml(xml);
+    Container::saveToXml(exporter);
 }
 
 bool GenericVector::loadFromXml(XmlElement* xml, MessageCallback& callback)
