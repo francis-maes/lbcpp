@@ -117,11 +117,11 @@ public:
     return VariableValue((char* )data);
   }
 
-  virtual void saveToXml(XmlElement* xml, const VariableValue& value) const
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
   {
     Variable* data = (Variable* )value.getRawData();
     for (size_t i = 0; i < size; ++i)
-      xml->addChildElement(data[i].toXml());
+      exporter.saveElement(i, data[i]);
   }
 
 protected:

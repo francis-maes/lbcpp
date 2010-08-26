@@ -33,6 +33,8 @@ namespace lbcpp
 {
 
 class Variable;
+class XmlExporter;
+class XmlImporter;
 
 // tools
 class ScalarVariableStatistics;

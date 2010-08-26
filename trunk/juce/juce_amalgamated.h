@@ -9224,6 +9224,19 @@ public:
 
     juce_UseDebuggingNewOperator
 
+    // francis: I need these function !
+    void writeElementAsText (OutputStream& out,
+                             const int indentationLevel,
+                             const int lineWrapLength) const throw();
+
+    void moveChildrenFrom(XmlElement& other) throw()
+    {
+      deleteAllChildElements();
+      firstChildElement = other.firstChildElement;
+      other.firstChildElement = NULL;
+    }
+    // --
+
 private:
     friend class XmlDocument;
 
@@ -9245,11 +9258,8 @@ private:
     XmlElement (int) throw(); // for internal use
     XmlElement (const tchar* const tagNameText, const int nameLen) throw();
 
-    void copyChildrenAndAttributesFrom (const XmlElement& other) throw();
 
-    void writeElementAsText (OutputStream& out,
-                             const int indentationLevel,
-                             const int lineWrapLength) const throw();
+    void copyChildrenAndAttributesFrom (const XmlElement& other) throw();
 
     XmlElement** getChildElementsAsArray (const int) const throw();
     void reorderChildElements (XmlElement** const, const int) throw();

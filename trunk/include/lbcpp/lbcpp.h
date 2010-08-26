@@ -31,6 +31,7 @@
 # include "Data/Object.h"
 # include "Data/Type.h"
 # include "Data/Variable.h"
+# include "Data/XmlSerialisation.h"
 # include "Data/DynamicObject.h"
 # include "Data/Stream.h"
 # include "Data/Consumer.h"

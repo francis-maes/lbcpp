@@ -58,7 +58,7 @@ public:
   std::vector<impl::Vector3>& getVectorOfPositions()
     {return values;}
 
-  virtual void saveToXml(XmlElement* xml) const;
+  virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 };
 

@@ -39,7 +39,7 @@ public:
   virtual String toString() const;
   VectorPtr toVector() const;
 
-  virtual void saveToXml(XmlElement* xml) const;
+  virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 public:

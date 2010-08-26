@@ -64,7 +64,7 @@ public:
   ** Object
   */
   virtual String toString() const;
-  virtual void saveToXml(XmlElement* xml) const;
+  virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 protected:

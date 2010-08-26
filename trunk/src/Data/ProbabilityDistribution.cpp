@@ -8,6 +8,7 @@
 
 #include <lbcpp/Data/ProbabilityDistribution.h>
 #include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 /*
@@ -148,8 +149,8 @@ ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, do
   return ObjectPtr(this);
 }
 
-void DiscreteProbabilityDistribution::saveToXml(XmlElement* xml) const
-  {xml->addTextElement(toString());}
+void DiscreteProbabilityDistribution::saveToXml(XmlExporter& exporter) const
+  {exporter.addTextElement(toString());}
 
 bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageCallback& callback)
 {

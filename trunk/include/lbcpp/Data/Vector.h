@@ -70,7 +70,7 @@ public:
   /*
   ** Object
   */
-  virtual void saveToXml(XmlElement* xml) const;
+  virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 
 protected:
@@ -223,8 +223,9 @@ public:
   virtual void setElement(size_t index, const Variable& value)
     {values[index] = getImplementation(value);}
 
-  virtual void saveToXml(XmlElement* xml) const
+  virtual void saveToXml(XmlExporter& exporter) const
     {jassert(false);}
+
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback)
     {jassert(false); return false;}
 

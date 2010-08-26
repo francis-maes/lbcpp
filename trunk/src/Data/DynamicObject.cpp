@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Data/DynamicObject.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 /*
@@ -58,20 +59,26 @@ void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, c
   subValue.copyTo((*object)[index]);
 }
 
-void DynamicClass::saveToXml(XmlElement* xml) const
+void DynamicClass::saveToXml(XmlExporter& exporter) const
 {
   ScopedLock _(variablesLock);
-  XmlElement* classXml = new XmlElement(T("class"));
-  classXml->setAttribute(T("name"), getName());
-  classXml->setAttribute(T("base"), getBaseType()->getName().replaceCharacters(T("<>"), T("[]")));
+
+  exporter.enter(T("class"));
+
+  exporter.setAttribute(T("name"), getName());
+  exporter.setAttribute(T("base"), getBaseType()->getName().replaceCharacters(T("<>"), T("[]")));
   for (size_t i = 0; i < variables.size(); ++i)
   {
-    XmlElement* elt = new XmlElement(T("variable"));
-    elt->setAttribute(T("type"), variables[i].first->getName().replaceCharacters(T("<>"), T("[]")));
-    elt->setAttribute(T("name"), variables[i].second);
-    classXml->addChildElement(elt);
+    TypePtr type = variables[i].first;
+    exporter.enter(T("variable"));
+    exporter.setAttribute(T("name"), variables[i].second);
+    if (type.dynamicCast<DynamicClass>())
+      exporter.saveVariable(T("type"), type);
+    else
+      exporter.setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
+    exporter.leave();
   }
-  xml->addChildElement(classXml);
+  exporter.leave();
 }
 
 bool DynamicClass::loadFromXml(XmlElement* xml, MessageCallback& callback)

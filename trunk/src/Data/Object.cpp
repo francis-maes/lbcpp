@@ -8,6 +8,7 @@
 
 #include <lbcpp/Data/Object.h>
 #include <lbcpp/Data/Variable.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 #include <fstream>
 using namespace lbcpp;
 
@@ -138,7 +139,7 @@ void Object::clone(ObjectPtr target) const
 
 /*
 ** XML Serialisation
-*/
+*
 XmlElement* Object::variableToXml(size_t index) const
 {
   ClassPtr type = getClass();
@@ -150,17 +151,17 @@ XmlElement* Object::variableToXml(size_t index) const
   else
     jassert(checkInheritance(value, staticType));
   return value.toXml(T("variable"), type->getObjectVariableName(index));
-}
+}*/
 
-void Object::saveToXml(XmlElement* xml) const
+void Object::saveToXml(XmlExporter& exporter) const
 {
   ClassPtr type = getClass();
   size_t n = type->getObjectNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
     Variable variable = getVariable(i);
-    if (variable)
-      xml->addChildElement(variableToXml(i));
+    if (!variable.isMissingValue())
+      exporter.saveVariable(getVariableName(i), variable);
   }
 }
 
@@ -192,11 +193,11 @@ bool Object::loadFromXml(XmlElement* xml, MessageCallback& callback)
   return true;
 }
 
-void Object::saveVariablesToXmlAttributes(XmlElement* xml) const
+void Object::saveVariablesToXmlAttributes(XmlExporter& exporter) const
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
-    xml->setAttribute(getVariableName(i), getVariable(i).toString());
+    exporter.setAttribute(getVariableName(i), getVariable(i).toString());
 }
 
 bool Object::loadVariablesFromXmlAttributes(XmlElement* xml, MessageCallback& callback)
