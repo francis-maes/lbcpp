@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 # define LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 
-# include <lbcpp/Data/Variable.h>
+# include "Variable.h"
 
 namespace lbcpp
 {
@@ -46,6 +46,8 @@ public:
   virtual double computeEntropy() const;
 
 protected:
+  friend class BernoulliDistributionClass;
+
   double pTrue, pFalse;
 };
 
@@ -87,7 +89,9 @@ private:
 
 typedef ReferenceCountedObjectPtr<DiscreteProbabilityDistribution> DiscreteProbabilityDistributionPtr;
 
-extern ClassPtr discreteProbabilityDistributionClass(EnumerationPtr enumeration);
+extern ClassPtr discreteProbabilityDistributionClass(TypePtr type);
+inline ClassPtr discreteProbabilityDistributionClass(EnumerationPtr enumeration)
+  {return discreteProbabilityDistributionClass((TypePtr)enumeration);}
 
 }; /* namespace lbcpp */
 

@@ -302,55 +302,8 @@ protected:
 typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 
 /*
-** Minimalistic C++ classes Wrapper
+** Inheritance check
 */
-template<class TT>
-class DefaultAbstractClass_ : public Class
-{
-public:
-  DefaultAbstractClass_(TypePtr baseClass)
-    : Class(getTypeName(typeid(TT)), baseClass)
-    {jassert(baseClass);}
-
-  virtual VariableValue create() const
-  {
-    Object::error(T("AbstractClass::create"), T("Cannot instantiate abstract classes"));
-    return VariableValue(0);
-  }
-
-  juce_UseDebuggingNewOperator
-};
-
-template<class TT>
-class DefaultClass_ : public Class
-{
-public:
-  DefaultClass_(TypePtr baseClass)
-    : Class(getTypeName(typeid(TT)), baseClass)
-    {}
-
-  virtual VariableValue create() const
-    {return new TT();}
-
-  virtual ObjectPtr clone() const
-  {
-    ClassPtr res(new DefaultClass_<TT>(baseType));
-    Type::clone(res);
-    return res;
-  }
-
-  juce_UseDebuggingNewOperator
-};
-
-#define LBCPP_DECLARE_ABSTRACT_CLASS(Name, BaseClass) \
-  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultAbstractClass_<Name>(lbcpp::Type::get(#BaseClass))))
-
-#define LBCPP_DECLARE_CLASS(Name, BaseClass) \
-  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(lbcpp::Type::get(#BaseClass))))
-
-#define LBCPP_DECLARE_CLASS_LEGACY(Name) \
-  lbcpp::Type::declare(lbcpp::TypePtr(new lbcpp::DefaultClass_<Name>(objectClass())))
-
 inline bool checkInheritance(TypePtr type, TypePtr baseType, ErrorHandler& callback = ErrorHandler::getInstance())
 {
   jassert(baseType);

@@ -20,7 +20,7 @@
 
 using namespace lbcpp;
 
-extern void declareLBCppCoreClasses();
+extern void declareLBCppClasses();
 extern void declareProteinClasses();
 
 struct DefaultParameters
