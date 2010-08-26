@@ -39,9 +39,8 @@ namespace lbcpp
 **    - Support for reference counting: Object override from ReferenceCountedObject,
 **      so that Objects are reference counted.
 **    - Support for serialization: Objects can be saved and loaded
-**      into C++ streams. Objects can be created dynamically given their class name.
-**    - Support for conversion: Objects provide conversion functions to strings,
-**      to tables and to graphs.
+**      to/from XML files. Objects can be created dynamically given their class name.
+**    - Support for introspection: It is possible to generically access to Object variables.
 */
 class Object : public ReferenceCountedObject
 {
@@ -54,18 +53,6 @@ public:
   ** Destructor.
   */
   virtual ~Object() {}
-
-  /*
-  ** Introspection
-  */
-  virtual ClassPtr getClass() const;
-  String getClassName() const;
-
-  size_t getNumVariables() const;
-  TypePtr getVariableType(size_t index) const;
-  String getVariableName(size_t index) const;
-  Variable getVariable(size_t index) const;
-  void setVariable(size_t index, const Variable& value);
 
   /**
   ** Name getter.
@@ -86,7 +73,7 @@ public:
   ** @return the current object (string form).
   */
   virtual String toString() const;
-  virtual String getShortSummary() const;
+  virtual String toShortString() const;
 
   /**
   ** Clones the current object.
@@ -99,6 +86,18 @@ public:
   virtual ObjectPtr clone() const;
   virtual void clone(ObjectPtr target) const;
 
+  /**
+  ** Clones and cast the current object.
+  **
+  ** @return a casted copy of the current object.
+  */
+  template<class T>
+  ReferenceCountedObjectPtr<T> cloneAndCast() const
+    {return checkCast<T>(T("Object::cloneAndCast"), clone());}
+
+  /*
+  ** Compare
+  */
   virtual int compare(ObjectPtr otherObject) const
     {return (int)(this - otherObject.get());}
 
@@ -129,43 +128,29 @@ public:
   */
   virtual bool loadFromString(const String& str, MessageCallback& callback);
 
-  /**
-  ** Clones and cast the current object.
-  **
-  ** @return a casted copy of the current object.
+  /*
+  ** Introspection: Class
   */
-  template<class T>
-  ReferenceCountedObjectPtr<T> cloneAndCast() const
-    {return checkCast<T>(T("Object::cloneAndCast"), clone());}
-
-#if 0
-  /**
-  ** Error manager.
-  **
-  ** @param where : where the problem occurs.
-  ** @param what : what's going wrong.
-  ** @see MessageCallback (in Utilities.h)
-  */
-  static void error(const String& where, const String& what)
-    {MessageCallback::error(where, what);}
-
-  /**
-  ** Warning manager.
-  **
-  ** @param where : where the problem occurs.
-  ** @param what : what's going wrong.
-  ** @see MessageCallback (in Utilities.h)
-  */
-  static void warning(const String& where, const String& what)
-    {MessageCallback::warning(where, what);}
-#endif // 0
-
-  // user interface
-  virtual juce::Component* createComponent() const
-    {return NULL;}
+  virtual ClassPtr getClass() const;
+  String getClassName() const;
 
   void setThisClass(ClassPtr thisClass)
     {this->thisClass = thisClass;}
+
+  /*
+  ** Introspection: Variables
+  */
+  size_t getNumVariables() const;
+  TypePtr getVariableType(size_t index) const;
+  String getVariableName(size_t index) const;
+  Variable getVariable(size_t index) const;
+  void setVariable(size_t index, const Variable& value);
+
+  /*
+  ** Introspection: User Interface
+  */
+  virtual juce::Component* createComponent() const
+    {return NULL;}
 
   juce_UseDebuggingNewOperator
 
@@ -196,6 +181,9 @@ public:
 
   virtual String toString() const
     {return getClassName() + T(" ") + name;}
+
+  virtual String toShortString() const
+    {return name;}
 
   virtual void setName(const String& name)
     {this->name = name;}

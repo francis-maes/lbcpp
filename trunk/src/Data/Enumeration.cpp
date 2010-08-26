@@ -43,7 +43,7 @@ void Enumeration::addElement(const String& elementName, const String& oneLetterC
 {
   if (findElement(elementName) >= 0)
   {
-    Object::error(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
+    MessageCallback::error(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
     return;
   }
   elements.push_back(elementName);

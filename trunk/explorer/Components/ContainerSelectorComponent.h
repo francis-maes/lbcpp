@@ -62,7 +62,7 @@ public:
       g.setFont(f);
 
       Variable element = container->getElement(rowNumber);
-      g.drawText(container->getElementName(rowNumber) + T(" = ") + element.getShortSummary(), 4, 0, width - 6, height, Justification::centredLeft, true);
+      g.drawText(container->getElementName(rowNumber) + T(" = ") + element.toShortString(), 4, 0, width - 6, height, Justification::centredLeft, true);
     }
 
     virtual void selectedRowsChanged(int lastRowSelected)

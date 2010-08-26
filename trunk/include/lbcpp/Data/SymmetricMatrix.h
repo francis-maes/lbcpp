@@ -51,7 +51,7 @@ public:
   ** Object
   */
   virtual String toString() const;
-  virtual String getShortSummary() const;
+  virtual String toShortString() const;
   virtual void saveToXml(XmlElement* xml) const;
   virtual bool loadFromXml(XmlElement* xml, MessageCallback& callback);
 

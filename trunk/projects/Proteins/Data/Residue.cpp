@@ -56,13 +56,13 @@ AtomPtr Residue::checkAndGetCBetaOrCAlphaAtom() const
 {
   if (isCBetaAtomMissing())
   {
-    Object::error(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
+    MessageCallback::error(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
       T("No C-beta atom in residue ") + getName());
     return AtomPtr();
   }
   if (!hasCAlphaAtom())
   {
-    Object::error(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
+    MessageCallback::error(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
       T("No C-alpha atom in residue ") + getName());
     return AtomPtr();
   }

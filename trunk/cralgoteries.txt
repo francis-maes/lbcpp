@@ -1,4 +1,3 @@
-* Selection multiple de protéines dans l'explorer
 
 Perception:
  * Serialisation des Perceptions

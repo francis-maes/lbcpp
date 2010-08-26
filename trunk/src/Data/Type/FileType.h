@@ -93,7 +93,7 @@ public:
     return index < subFiles.size() ? Variable(subFiles[index]) : Variable::missingValue(fileType());
   }
   
-  virtual String getShortSummary(const VariableValue& value) const
+  virtual String toShortString(const VariableValue& value) const
     {return getFile(value).getFileName();}
 
 private:

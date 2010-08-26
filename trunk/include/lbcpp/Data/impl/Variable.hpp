@@ -179,8 +179,8 @@ inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(MessageCallback& 
 inline String Variable::toString() const
   {return type->isMissingValue(value) ? T("Missing") : type->toString(value);}
 
-inline String Variable::getShortSummary() const
-  {return type->isMissingValue(value) ? T("Missing") : type->getShortSummary(value);}
+inline String Variable::toShortString() const
+  {return type->isMissingValue(value) ? T("Missing") : type->toShortString(value);}
 
 inline bool Variable::equals(const Variable& otherValue) const
 {

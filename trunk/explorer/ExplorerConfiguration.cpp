@@ -42,7 +42,7 @@ File ExplorerConfiguration::getApplicationDataDirectory()
   File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
-    Object::error(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
+    MessageCallback::error(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
     return File::nonexistent;
   }
   return directory;

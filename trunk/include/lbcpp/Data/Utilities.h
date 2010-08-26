@@ -176,21 +176,19 @@ public:
   static MessageCallback& getInstance() {jassert(instance); return *instance;}
 
   /**
-  ** Displays an error message using the ErrorManager singleton.
+  ** Displays an error message using the MessageCallback singleton.
   **
   ** @param where : where the error occurs.
   ** @param what : what's going wrong.
-  ** @see Object::error
   */
   static void error(const String& where, const String& what)
     {getInstance().errorMessage(where, what);}
 
   /**
-  ** Displays a warning message using the ErrorManager singleton.
+  ** Displays a warning message using the MessageCallback singleton.
   **
   ** @param where : where the problem occurs.
   ** @param what : what's going wrong.
-  ** @see Object::warning
   */
   static void warning(const String& where, const String& what)
     {getInstance().warningMessage(where, what);}

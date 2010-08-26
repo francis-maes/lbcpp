@@ -56,7 +56,7 @@ public:
     if (!dynamic_cast<TabbedVariableSelectorComponent* >(selector))
     {
       properties->addProperty(T("Type"), variable.getTypeName());
-      properties->addProperty(T("Desc"), variable.getShortSummary());
+      properties->addProperty(T("Desc"), variable.toShortString());
       if (variable.size())
         properties->addProperty(T("Size"), String((int)variable.size()));
     }
@@ -198,7 +198,7 @@ public:
       rows.erase(rows.begin() + i);
     }
     Variable variable = selector->createMultiSelectionVariable(selectedVariables);
-    Component* component = selector->createComponentForVariable(variable, variable.getShortSummary());
+    Component* component = selector->createComponentForVariable(variable, variable.toShortString());
     if (component)
       appendVariable(variable, component);
 

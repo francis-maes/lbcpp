@@ -160,7 +160,7 @@ public:
     callPreInference(stack, input, supervision, output, returnCode);
     if (returnCode == Inference::errorReturnCode)
     {
-      Object::warning(T("SingleThreadedInferenceContext::runInference"), T("pre-inference failed"));
+      MessageCallback::warning(T("SingleThreadedInferenceContext::runInference"), T("pre-inference failed"));
       jassert(false);
       return Variable();
     }
@@ -191,7 +191,7 @@ public:
         Variable subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
-          Object::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
+          MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
           return Variable(); 
         }
         state->setSubOutput(i, subOutput);
