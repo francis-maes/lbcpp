@@ -39,10 +39,6 @@
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
 
-// old
-# include "Utilities/ProgressCallback.h"
-// -
-
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarObjectFunction.h"
