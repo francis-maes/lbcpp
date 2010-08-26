@@ -109,7 +109,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
   }
 
   if (!res)
-    res = new VariableTreeComponent(variable, explicitName); 
+    res = new VariableTreeComponent(variable, explicitName, VariableTreeOptions(true, true, false)); 
   return res;
 }
 
