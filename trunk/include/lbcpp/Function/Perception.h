@@ -10,6 +10,7 @@
 # define LBCPP_DATA_PERCEPTION_H_
 
 # include "../Data/Vector.h"
+# include "../Data/DynamicObject.h"
 # include "Function.h"
 
 namespace lbcpp
@@ -50,7 +51,9 @@ public:
     {return representation->addPreprocessor(preProcessingFunction);}
 
 private:
-  ClassPtr outputType;
+  friend class PerceptionClass;
+
+  DynamicClassPtr outputType;
 
   void ensureTypeIsComputed();
 };

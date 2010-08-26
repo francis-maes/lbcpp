@@ -5,7 +5,9 @@
 
   <namespace name="lbcpp">
 
-    <class name="Perception" base="Function" abstract="yes"/>
+    <class name="Perception" base="Function" abstract="yes">
+      <variable type="DynamicClass" name="outputType"/>
+    </class>
 
     <class name="DecoratorPerception" base="Perception" abstract="yes">
       <variable type="Perception" name="decorated"/>

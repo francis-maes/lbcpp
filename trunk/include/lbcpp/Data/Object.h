@@ -129,6 +129,11 @@ public:
   virtual bool loadFromString(const String& str, MessageCallback& callback);
 
   /*
+  ** High level serialisation
+  */
+  void saveToFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+
+  /*
   ** Introspection: Class
   */
   virtual ClassPtr getClass() const;

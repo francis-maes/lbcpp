@@ -157,7 +157,11 @@ void Object::saveToXml(XmlElement* xml) const
   ClassPtr type = getClass();
   size_t n = type->getObjectNumVariables();
   for (size_t i = 0; i < n; ++i)
-    xml->addChildElement(variableToXml(i));
+  {
+    Variable variable = getVariable(i);
+    if (variable)
+      xml->addChildElement(variableToXml(i));
+  }
 }
 
 bool Object::loadFromXml(XmlElement* xml, MessageCallback& callback)
@@ -218,3 +222,6 @@ bool Object::loadFromString(const String& str, MessageCallback& callback)
   callback.errorMessage(T("Object::loadFromString"), T("Not implemented"));
   return false;
 }
+
+void Object::saveToFile(const File& file, MessageCallback& callback)
+  {Variable(refCountedPointerFromThis(this)).saveToFile(file, callback);}

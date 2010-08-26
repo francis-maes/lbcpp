@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   
   ProteinInferenceFactory factory;
   PerceptionPtr perception = factory.createResiduePerception(String::empty);
-  perception = perceptionToFeatures(perception);
+ /* perception = perceptionToFeatures(perception);
   Variable input = Variable::pair(protein, 3);
 
   ObjectPtr parameters = Variable::create(perception->getOutputType()).getObject();
@@ -51,10 +51,11 @@ int main(int argc, char** argv)
 
   addWeighted(parameters, perception, input, 0.1);
   std::cout << "Parameters: " << std::endl;
-  Variable(parameters).printRecursively(std::cout, -1, false);
+  //Variable(parameters).printRecursively(std::cout, -1, false);
 
-  addWeighted(parameters, perception, input, -0.1);
-  std::cout << "Parameters: " << std::endl;
-  Variable(parameters).printRecursively(std::cout, -1, false);
+  parameters->saveToFile(workingDirectory.getChildFile(T("params.xml")));*/
+  perception->getOutputType()->saveToFile(workingDirectory.getChildFile(T("perceptionOutput.xml")));
+  perception->saveToFile(workingDirectory.getChildFile(T("perception.xml")));
+
   return 0;
 }

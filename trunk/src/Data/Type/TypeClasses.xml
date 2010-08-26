@@ -54,7 +54,9 @@
     </class>
 
     <class name="Class" base="Type" abstract="yes"/>
-    
+    <class name="DefaultClass" base="Class"/>
+
+
     <!-- Template Type -->
     <class name="TemplateType" base="NameableObject" abstract="yes"/>
     
