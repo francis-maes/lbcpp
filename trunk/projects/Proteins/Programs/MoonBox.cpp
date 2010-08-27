@@ -325,7 +325,7 @@ int main(int argc, char** argv)
   /*
   ** Parameters initialization
   */
-  File proteinsDirectory(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
+  File proteinsDirectory;//(T("/Users/jbecker/Documents/Workspace/CASP9/SmallPDB/test_version"));
   File testingProteinsDirectory;
   int numProteinsToLoad = 0;
   std::vector<String> targets;
