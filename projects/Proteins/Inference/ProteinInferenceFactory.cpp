@@ -55,7 +55,7 @@ InferencePtr ProteinInferenceFactory::createContactMapInference(const String& ta
 {
   PerceptionPtr perception = createPerception(targetName, false, true);
   InferencePtr classifier = createBinaryClassifier(targetName, perception);
-  return new ContactMapInference(targetName, perception, classifier);
+  return new ContactMapInference(targetName, classifier);
 }
 
 size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const
