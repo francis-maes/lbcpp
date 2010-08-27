@@ -24,8 +24,8 @@ namespace lbcpp
 class ContactMapInference : public SharedParallelInference
 {
 public:
-  ContactMapInference(const String& name, PerceptionPtr perception, InferencePtr contactInference)
-    : SharedParallelInference(name, contactInference), perception(perception) {}
+  ContactMapInference(const String& name, InferencePtr contactInference)
+    : SharedParallelInference(name, contactInference) {}
   ContactMapInference() {}
 
   virtual TypePtr getInputType() const
@@ -53,7 +53,7 @@ public:
         Variable elementSupervision;
         if (supervisionMap)
           elementSupervision = supervisionMap->getElement(i, j);
-        res->addSubInference(subInference, perception->compute(Variable::pair(input, Variable::pair(i, j))), elementSupervision);
+        res->addSubInference(subInference, Variable::pair(input, Variable::pair(i, j)), elementSupervision);
       }
     return res;
   }
@@ -79,9 +79,6 @@ public:
 
     return atLeastOnePrediction ? res : Variable::missingValue(res->getClass());
   }
-
-protected:
-  PerceptionPtr perception;
 };
 
 
