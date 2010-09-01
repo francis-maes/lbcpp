@@ -102,6 +102,7 @@ public:
     if (targetName == T("structuralAlphabetSequence"))
       return structuralAlphabetEvaluator;
     jassert(false);
+    std::cerr << "ProteinEvaluator::getEvaluatorForTarget(" + targetName + ")" << std::endl;
     return EvaluatorPtr();
   }
   
