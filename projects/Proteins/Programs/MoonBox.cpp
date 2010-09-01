@@ -266,7 +266,7 @@ private:
 class GnuPlotInferenceCallback : public WrappedInferenceCallback {
 public:
   GnuPlotInferenceCallback(const File& prefixFile)
-  : prefixFile(prefixFile), currentIteration(0), startingTime(0) {}
+  : prefixFile(prefixFile), startingTime(0) {}
   
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
@@ -283,25 +283,30 @@ public:
     
     if (inferenceClassName == T("RunSequentialInferenceStepOnExamples"))
     {
-      File dst = prefixFile.getFullPathName() + T(".") + getTargetName();
-      if (currentIteration == 0 && dst.exists())
-        dst.deleteFile();
+      String targetName = getTargetName();
+      File dst = prefixFile.getFullPathName() + T(".") + targetName;
+      if (!nbIterations[targetName])
+      {
+        nbIterations[targetName] = 0;
+        if (dst.exists())
+          dst.deleteFile();
+      }
 
       OutputStream* o = dst.createOutputStream();
-      *o << String((int)currentIteration) << '\t'
+      *o << (int)nbIterations[targetName] << '\t'
          << getTrainingEvaluator()->getEvaluatorForTarget(getTargetName())->getDefaultScore() << '\t'
          << getTestingEvaluator()->getEvaluatorForTarget(getTargetName())->getDefaultScore() << '\t'
          << String((int)(Time::getMillisecondCounter() - startingTime) / 1000) << '\n';
       delete o;
       
-      ++currentIteration;
+      ++nbIterations[targetName];
     }
   }
 
 private:
   File prefixFile;
-  size_t currentIteration;
   juce::uint32 startingTime;
+  std::map<String, size_t> nbIterations;
 };
 
 /*------------------------------------------------------------------------------
@@ -405,6 +410,12 @@ int main(int argc, char** argv)
   std::cout << trainingData->getNumElements() << " Training Proteins & "
             << testingData->getNumElements()  << " Testing Proteins" << std::endl;
  
+  if (trainingData->isEmpty() || testingData->isEmpty())
+  {
+    std::cout << "The training set or the testing set is empty." << std::endl;
+    return 0;
+  }
+  
   /*
   ** Selection of the Protein Inference Factory
   */
