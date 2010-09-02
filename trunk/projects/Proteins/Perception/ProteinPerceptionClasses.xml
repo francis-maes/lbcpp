@@ -7,6 +7,12 @@
     <class name="ProteinCompositePerception" base="CompositePerception"/>
 
     <!-- Residue Perception -->
+    <class name="ResiduePerception" base="Perception" abstract="yes"/>
+    
+    <class name="PositionResiduePerception" base="ResiduePerception">
+      <constructor/>
+    </class>
+    
     <class name="ResidueCompositePerception" base="CompositePerception"/>
     <class name="ProteinToResiduePerception" base="DecoratorPerception">
       <constructor arguments="PerceptionPtr proteinPerception"/>
