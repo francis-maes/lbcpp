@@ -50,18 +50,39 @@ public:
     {return probabilityType();}
   
   virtual String getOutputVariableName(size_t index) const
-  {return T("Position");}
+    {return T("Position");}
   
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     ProteinPtr protein = input[0].getObjectAndCast<Protein>();
     jassert(protein);
-    callback->sense(0, (double)input[1].getInteger() / protein->getLength());
+    callback->sense(0, Variable((double)input[1].getInteger() / protein->getLength(), probabilityType()));
   }
 };
   
 typedef ReferenceCountedObjectPtr<PositionResiduePerception> PositionResiduePerceptionPtr;
+
 extern ResiduePerceptionPtr positionResiduePerception();
+
+class IndexResiduePerception : public ResiduePerception
+{
+public:
+  virtual size_t getNumOutputVariables() const
+    {return 1;}
+  
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return integerType();}
+  
+  virtual String getOutputVariableName(size_t index) const
+    {return "Index";}
+  
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+    {callback->sense(0, input[1]);}
+};
+
+typedef ReferenceCountedObjectPtr<IndexResiduePerception> IndexResiduePerceptionPtr;
+
+extern ResiduePerceptionPtr indexResiduePerception();
   
 class ResidueCompositePerception : public CompositePerception
 {
