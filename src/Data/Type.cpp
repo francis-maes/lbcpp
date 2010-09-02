@@ -212,7 +212,7 @@ Type::Type(const String& className, TypePtr baseType)
 
 Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
   : NameableObject(templateType->makeTypeName(templateArguments)), initialized(false),
-      templateType(templateType), templateArguments(templateArguments), baseType(baseType)
+      baseType(baseType), templateType(templateType), templateArguments(templateArguments)
  {}
 
 bool Type::initialize(MessageCallback& callback)

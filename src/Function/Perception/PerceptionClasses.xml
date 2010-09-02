@@ -49,6 +49,12 @@
       <variable type="Type" name="elementsType"/>
       <variable type="Integer" name="windowSize"/>
     </class>
+    
+    <class name="FrequencyWindowPerception" base="Perception">
+      <constructor arguments="TypePtr elementsType, size_t windowSize"/>
+      <variable type="Type" name="elementsType"/>
+      <variable type="Integer" name="windowSize"/>
+    </class>
   </namespace>
   
 </file>
