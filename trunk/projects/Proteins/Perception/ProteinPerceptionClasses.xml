@@ -13,6 +13,10 @@
       <constructor/>
     </class>
     
+    <class name="IndexResiduePerception" base="ResiduePerception">
+      <constructor/>
+    </class>
+    
     <class name="ResidueCompositePerception" base="CompositePerception"/>
     <class name="ProteinToResiduePerception" base="DecoratorPerception">
       <constructor arguments="PerceptionPtr proteinPerception"/>
