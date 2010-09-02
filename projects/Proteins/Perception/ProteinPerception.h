@@ -31,6 +31,38 @@ inline PerceptionPtr proteinLengthPerception()
 /*
 ** ResiduePerception
 */
+class ResiduePerception : public Perception
+{
+public:
+  virtual TypePtr getInputType() const
+    {return pairType(proteinClass(), integerType());}
+};
+
+typedef ReferenceCountedObjectPtr<ResiduePerception> ResiduePerceptionPtr;
+  
+class PositionResiduePerception : public ResiduePerception
+{
+public:
+  virtual size_t getNumOutputVariables() const
+    {return 1;}
+  
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {return probabilityType();}
+  
+  virtual String getOutputVariableName(size_t index) const
+  {return T("Position");}
+  
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  {
+    ProteinPtr protein = input[0].getObjectAndCast<Protein>();
+    jassert(protein);
+    callback->sense(0, (double)input[1].getInteger() / protein->getLength());
+  }
+};
+  
+typedef ReferenceCountedObjectPtr<PositionResiduePerception> PositionResiduePerceptionPtr;
+extern ResiduePerceptionPtr positionResiduePerception();
+  
 class ResidueCompositePerception : public CompositePerception
 {
 public:

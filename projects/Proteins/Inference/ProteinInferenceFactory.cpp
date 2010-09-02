@@ -100,6 +100,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("GLOBAL"), createProteinPerception());
+  //res->addPerception(T("POSITION"), positionResiduePerception());
   res->addPerception(T("AA"), createLabelSequencePerception(T("primaryStructure")));
   res->addPerception(T("PSSM"), createPositionSpecificScoringMatrixPerception());
   res->addPerception(T("SS3"), createLabelSequencePerception(T("secondaryStructure")));
