@@ -71,13 +71,18 @@ TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
 PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const String& targetName) const
 {
   TypePtr targetType = getTargetType(targetName);
-  return applyPerceptionOnProteinVariable(targetName,
-    windowPerception(targetType->getTemplateArgument(0), 15));
+  CompositePerceptionPtr res = new ResidueCompositePerception();
+  res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
+  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(targetType->getTemplateArgument(0), 15)));
+  return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const String& targetName) const
 {
-  return applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15));
+  CompositePerceptionPtr res = new ResidueCompositePerception();
+  res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
+  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(probabilityType(), 15)));
+  return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPerception() const
@@ -85,8 +90,13 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
 
   PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
-  return applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
-    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception));
+  
+  CompositePerceptionPtr res = new ResidueCompositePerception();
+  res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
+                                                                   windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
+  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
+                                                                      frequencyWindowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+  return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createProteinPerception() const

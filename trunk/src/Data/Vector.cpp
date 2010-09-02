@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Data/ProbabilityDistribution.h>
 using namespace lbcpp;
 
 /*
@@ -52,6 +53,70 @@ String Vector::toString() const
   }
 
   return Container::toString();
+}
+
+const AccumulatedScoresVectorPtr Vector::getAccumulatedScores() const
+{
+  const_cast<Vector* >(this)->ensureAccumulatorsAreComputed();
+  return accumulators;
+}
+
+void Vector::ensureAccumulatorsAreComputed()
+{
+  if (accumulators)
+    return;
+  
+  TypePtr type = getElementsType();
+  size_t n = getNumElements();
+  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+  if (enumeration)
+  {
+    accumulators = new AccumulatedScoresVector(enumeration->getNumElements() + 1, n);
+    
+    for (size_t i = 0; i < n; ++i)
+    {
+      std::vector<double>& scores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        scores = accumulators->getAccumulatedScores(i - 1);
+      scores[getElement(i).getInteger()] += 1.0;
+    }
+    return;
+  }
+  
+  if (type->inheritsFrom(doubleType()))
+  {
+    accumulators = new AccumulatedScoresVector(1, n);
+    
+    for (size_t i = 0; i < n; ++i)
+    {
+      std::vector<double>& scores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        scores = accumulators->getAccumulatedScores(i - 1);
+      if (getElement(i))
+        scores[0] += getElement(i).getDouble();
+    }
+    return;
+  }
+  
+  if (type->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
+  {
+    EnumerationPtr enumeration = type->getTemplateArgument(0).dynamicCast<Enumeration>();
+    jassert(enumeration);
+    
+    accumulators = new AccumulatedScoresVector(enumeration->getNumElements(), n); // No missing value allowed
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      std::vector<double>& scores = accumulators->getAccumulatedScores(i);
+      if (i > 0)
+        scores = accumulators->getAccumulatedScores(i - 1);
+      for (size_t j = 0; j < enumeration->getNumElements(); ++j)
+        scores[j] += getElement(i).getObjectAndCast<DiscreteProbabilityDistribution>()->compute(Variable(j, enumeration));
+    }
+    return;
+  }
+  
+  jassert(false);
 }
 
 bool Vector::loadFromXml(XmlImporter& importer)

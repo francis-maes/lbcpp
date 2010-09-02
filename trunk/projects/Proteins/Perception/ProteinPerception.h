@@ -83,7 +83,7 @@ public:
 typedef ReferenceCountedObjectPtr<IndexResiduePerception> IndexResiduePerceptionPtr;
 
 extern ResiduePerceptionPtr indexResiduePerception();
-  
+
 class ResidueCompositePerception : public CompositePerception
 {
 public:

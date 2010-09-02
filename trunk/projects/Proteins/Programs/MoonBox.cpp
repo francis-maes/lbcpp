@@ -61,13 +61,13 @@ public:
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
     return res ? (PerceptionPtr)perceptionToFeatures(res) : PerceptionPtr();
   }
-  
+/*  
   virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
   {
     TypePtr targetType = getTargetType(targetName)->getTemplateArgument(0);
     return applyPerceptionOnProteinVariable(targetName, windowPerception(targetType, windowSize));
   }
-
+*/
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
     return binaryLinearSVMInference(perception, createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
@@ -415,6 +415,29 @@ int main(int argc, char** argv)
     std::cout << "The training set or the testing set is empty." << std::endl;
     return 0;
   }
+  
+/*  
+  for (size_t i = 0; i < 1; ++i)
+  {
+    ProteinPtr protein = testingData->getElement(i)[1].getObjectAndCast<Protein>();
+    if (protein)
+    {
+      std::cout << "Protein : " << protein->getName() << std::endl;
+      std::cout << "  Seq AA: " << protein->getPrimaryStructure()->toString() << std::endl;
+      std::cout << "  Sec St: " << protein->getSecondaryStructure()->toString() << std::endl;
+      std::cout << "  Sol Ac: " << protein->getSolventAccessibilityAt20p()->toString() << std::endl;
+      AccumulatedScoresVectorPtr accumulators = protein->getPositionSpecificScoringMatrix()->getAccumulatedScores();
+      for (size_t j = 0; j < accumulators->getNumElements(); ++j)
+      {
+        std::vector<double>& scores = accumulators->getAccumulatedScores(j);
+        for (size_t jj = 0; jj < scores.size(); ++jj)
+          std::cout << scores[jj] << " ";
+        std::cout << std::endl;
+      }
+    }
+  }
+  return 0;
+*/  
   
   /*
   ** Selection of the Protein Inference Factory
