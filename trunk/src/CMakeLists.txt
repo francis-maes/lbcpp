@@ -128,6 +128,8 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
   Function/MiscFunctions/SelectPairFieldsFunction.h
+  Function/MiscFunctions/WindowToIndicesFunction.h
+  Function/MiscFunctions/VariableToIndicesFunction.h
   Function/MiscFunctions/MiscFunctionsClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsClasses.cpp
 )
@@ -179,7 +181,7 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
 SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/IdentityPerception.h
   Function/Perception/WindowPerception.h
-  Function/Perception/FrequencyWindowPerception.h
+  Function/Perception/HistogramPerception.h
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/FunctionBasedPerception.h

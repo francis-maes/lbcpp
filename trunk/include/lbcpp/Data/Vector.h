@@ -13,15 +13,12 @@
 
 namespace lbcpp
 {
-
-class AccumulatedScoresVector;
-typedef ReferenceCountedObjectPtr<AccumulatedScoresVector> AccumulatedScoresVectorPtr;
   
 class Vector : public Container
 {
 public:
-  Vector(ClassPtr thisClass) : Container(thisClass), accumulators(AccumulatedScoresVectorPtr()) {}
-  Vector() : accumulators(AccumulatedScoresVectorPtr()) {}
+  Vector(ClassPtr thisClass) : Container(thisClass) {}
+  Vector() {}
 
   /*
   ** Vector
@@ -32,7 +29,6 @@ public:
   virtual void prepend(const Variable& value) = 0;
   virtual void append(const Variable& value) = 0;
   virtual void remove(size_t index) = 0;
-  virtual const AccumulatedScoresVectorPtr getAccumulatedScores() const;
 
   /*
   ** Object
@@ -41,64 +37,11 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
-  AccumulatedScoresVectorPtr accumulators; // index -> label -> count
-  
   bool checkType(const Variable& value) const;
-  void ensureAccumulatorsAreComputed();
 };
 
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
-  
-class AccumulatedScoresVector : public Vector
-{
-public:
-  AccumulatedScoresVector(size_t numElements, size_t length) : accumulators(length)
-  {
-    if (length > 0)
-      accumulators[0].resize(numElements, 0.0);
-  }
-  
-  std::vector<double>& getAccumulatedScores(size_t index)
-    {jassert(index < accumulators.size()); return accumulators[index];}
-  
-  /*
-  ** Vector
-  */
-  virtual void clear() // TODO
-    {jassert(false);}
-
-  virtual void reserve(size_t size)
-    {jassert(false);}
-
-  virtual void resize(size_t size)
-    {jassert(false);}
-
-  virtual void prepend(const Variable& value)
-    {jassert(false);}
-
-  virtual void append(const Variable& value)
-    {jassert(false);}
-
-  virtual void remove(size_t index)
-    {jassert(false);}
-
-  /*
-  ** Container
-  */
-  virtual size_t getNumElements() const
-    {return accumulators.size();}
-
-  virtual Variable getElement(size_t index) const
-    {jassert(false); return Variable();}
-  
-  virtual void setElement(size_t index, const Variable& variable)
-    {jassert(false);}
-
-private:
-  std::vector<std::vector<double> > accumulators;
-};
-  
 class GenericVector : public Vector
 {
 public:
