@@ -1,11 +1,13 @@
-ContactMap:
- * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
-
 Perceptions:
+ * WindowPerception: ne plus dériver de DecoratorPerception
  * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  * Residue: current position, WindowHistogram
  * ResiduePair: SegmentHistogram
  * Distribution: Entropy 
+
+
+ContactMap:
+ * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 
 Execution multi-thread:
  * NativeMultiThreadInferenceContext
