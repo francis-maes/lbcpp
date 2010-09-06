@@ -190,7 +190,7 @@ void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& r
       SavedObject& savedObject = savedObjects[it->first];
       if (!savedObject.elt)
         continue;
-      if ((prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && it->second == savedObject.references.size()))
+      if ((prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && (size_t)it->second == savedObject.references.size()))
       {
         savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
         identifiers.erase(savedObject.identifier);
@@ -199,7 +199,7 @@ void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& r
         resolveChildLinks(savedObject.elt, referencedObjects, identifiers);
       }
     }
-    if (referencedObjects.size() == count)
+    if (referencedObjects.size() == (size_t)count)
       break;
     count = referencedObjects.size();
   }

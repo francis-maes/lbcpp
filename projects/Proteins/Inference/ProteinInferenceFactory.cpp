@@ -73,7 +73,7 @@ PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const Strin
   TypePtr targetType = getTargetType(targetName);
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
-  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(targetType->getTemplateArgument(0), 15)));
+//  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(targetType->getTemplateArgument(0), 15)));
   return res;
 }
 
@@ -81,7 +81,7 @@ PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
-  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(probabilityType(), 15)));
+//  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(probabilityType(), 15)));
   return res;
 }
 
@@ -94,8 +94,7 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
                                                                    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
-  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
-                                                                      frequencyWindowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+//  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"), frequencyWindowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
   return res;
 }
 
@@ -147,4 +146,15 @@ PerceptionPtr ProteinInferenceFactory::applyPerceptionOnProteinVariable(const St
 {
    FunctionPtr selectVariableFunction = selectPairFieldsFunction(proteinClass->findObjectVariable(variableName));
    return Perception::compose(selectVariableFunction, variablePerception);
+}
+
+PerceptionPtr ProteinInferenceFactory::applyWindowOnPerception(const String& variableName, size_t windowSize, PerceptionPtr perception) const
+{
+  FunctionPtr windowFunction = windowToIndicesFunction(windowSize);
+  return applyPerceptionOnProteinVariable(variableName, Perception::compose(windowFunction, perception));
+}
+
+PerceptionPtr ProteinInferenceFactory::applyPerceptionOnEntireProteinVariable(const String& variableName, PerceptionPtr perception) const
+{
+  return applyPerceptionOnProteinVariable(variableName, Perception::compose(variableToIndicesFunction(), perception));
 }

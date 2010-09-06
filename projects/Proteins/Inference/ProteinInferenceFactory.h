@@ -61,6 +61,8 @@ protected:
   InferencePtr addToProteinInference(InferencePtr targetInference, const String& targetName) const;
 
   PerceptionPtr applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const;
+  PerceptionPtr applyWindowOnPerception(const String& variableName, size_t windowSize, PerceptionPtr perception) const;
+  PerceptionPtr applyPerceptionOnEntireProteinVariable(const String& variableName, PerceptionPtr perception) const;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInferenceFactory> ProteinInferenceFactoryPtr;

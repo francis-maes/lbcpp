@@ -159,7 +159,7 @@ extern ClassPtr compositePerceptionClass();
 
 PerceptionPtr identityPerception(TypePtr type);
 DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
-PerceptionPtr frequencyWindowPerception(TypePtr elementsType, size_t windowSize);
+PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
 PerceptionPtr functionBasedPerception(FunctionPtr function);
 ModifierPerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
