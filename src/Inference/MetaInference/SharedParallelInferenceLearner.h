@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_META_SHARED_PARALLEL_LEARNER_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
+# include <lbcpp/Inference/ParallelInference.h>
 
 namespace lbcpp
 {
