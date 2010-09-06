@@ -179,6 +179,7 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
 SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/IdentityPerception.h
   Function/Perception/WindowPerception.h
+  Function/Perception/FrequencyWindowPerception.h
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/FunctionBasedPerception.h
