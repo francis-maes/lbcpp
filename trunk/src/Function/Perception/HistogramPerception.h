@@ -22,8 +22,9 @@ class HistogramPerception : public Perception
 {
 public:
   HistogramPerception(TypePtr elementsType, bool useCache)
-    : elementsType(elementsType), useCache(useCache), accumulators(AccumulatedScoresPtr()), previousVector(VectorPtr()) {}
-  HistogramPerception() : useCache(false), accumulators(AccumulatedScoresPtr()), previousVector(VectorPtr()) {}
+    : elementsType(elementsType), useCache(useCache), accumulators(NULL) {}
+  HistogramPerception() : useCache(false), accumulators(NULL) {}
+  virtual ~HistogramPerception();
 
   virtual TypePtr getInputType() const
     {return pairType(vectorClass(elementsType), pairType(integerType(), integerType()));}
@@ -64,7 +65,8 @@ protected:
 
   TypePtr elementsType;
   bool useCache;
-  AccumulatedScoresPtr accumulators; // FIXME Not in the XML declaration
+
+  AccumulatedScores* accumulators;
   VectorPtr previousVector;
 };
 

@@ -54,7 +54,6 @@
       <constructor arguments="TypePtr elementsType, bool useCache"/>
       <variable type="Type" name="elementsType"/>
       <variable type="Boolean" name="useCache"/>
-      <variable type="Vector" name="previousVector"/>
     </class>
   </namespace>
   
