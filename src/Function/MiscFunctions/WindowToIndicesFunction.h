@@ -25,7 +25,7 @@ public:
     {return pairType(vectorClass(anyType()), integerType());}
   
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return pairType(vectorClass(inputType->getTemplateArgument(0)), pairType(integerType(), integerType()));}
+    {return pairType(inputType->getTemplateArgument(0), pairType(integerType(), integerType()));}
                      
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {

@@ -113,22 +113,22 @@ class WrappedInferenceCallback : public InferenceCallback
 {
 public:
   void setTargetName(const String& targetName)
-  {this->targetName = targetName;}
+    {this->targetName = targetName;}
   
   void setTrainingEvaluator(ProteinEvaluatorPtr trainingEvaluator)
-  {this->trainingEvaluator = trainingEvaluator;}
+    {this->trainingEvaluator = trainingEvaluator;}
   
   void setTestingEvaluator(ProteinEvaluatorPtr testingEvaluator)
-  {this->testingEvaluator = testingEvaluator;}
+    {this->testingEvaluator = testingEvaluator;}
   
   String getTargetName()
-  {return targetName;}
+    {return targetName;}
   
   ProteinEvaluatorPtr getTrainingEvaluator()
-  {return trainingEvaluator;}
+    {return trainingEvaluator;}
   
   ProteinEvaluatorPtr getTestingEvaluator()
-  {return testingEvaluator;}
+    {return testingEvaluator;}
   
 private:
   String targetName;

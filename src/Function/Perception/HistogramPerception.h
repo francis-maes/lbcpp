@@ -29,34 +29,12 @@ public:
   virtual TypePtr getInputType() const
     {return pairType(vectorClass(elementsType), pairType(integerType(), integerType()));}
 
-  virtual size_t getNumOutputVariables() const
-  {
-    EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
-    if (enumeration)
-      return enumeration->getNumElements() + 1;
-    if (elementsType->inheritsFrom(doubleType()))
-      return 1;
-    if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
-      return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements();
-    jassert(false);
-    return 0;
-  }
+  virtual size_t getNumOutputVariables() const;
 
   virtual TypePtr getOutputVariableType(size_t index) const
     {return doubleType();}
 
-  virtual String getOutputVariableName(size_t index) const
-  {
-    EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
-    if (enumeration)
-      return (index == enumeration->getNumElements()) ? "Missing" : enumeration->getElementName(index);
-    if (elementsType->inheritsFrom(doubleType()))
-      return T("average");
-    if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
-      return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getElementName(index);
-    jassert(false);
-    return T("undefined");
-  }
+  virtual String getOutputVariableName(size_t index) const;
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 

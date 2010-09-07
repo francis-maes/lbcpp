@@ -73,7 +73,7 @@ PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const Strin
   TypePtr targetType = getTargetType(targetName);
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
-//  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(targetType->getTemplateArgument(0), 15)));
+  res->addPerception(T("FREQUENCY"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
   return res;
 }
 
@@ -81,7 +81,7 @@ PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
-//  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(targetName, frequencyWindowPerception(probabilityType(), 15)));
+  res->addPerception(T("FREQUENCY"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
   return res;
 }
 
@@ -94,7 +94,7 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
                                                                    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
-//  res->addPerception(T("FREQUENCY"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"), frequencyWindowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15)));
+  res->addPerception(T("FREQUENCY"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
   return res;
 }
 

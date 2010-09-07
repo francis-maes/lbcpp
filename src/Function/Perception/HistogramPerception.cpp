@@ -94,20 +94,56 @@ HistogramPerception::~HistogramPerception()
     delete accumulators;
 }
 
+size_t HistogramPerception::getNumOutputVariables() const
+{
+  EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
+  if (enumeration)
+    return enumeration->getNumElements() + 1;
+  if (elementsType->inheritsFrom(doubleType()))
+    return 1;
+  if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
+    return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements();
+  jassert(false);
+  return 0;
+}
+
+String HistogramPerception::getOutputVariableName(size_t index) const
+{
+  EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
+  if (enumeration)
+    return (index == enumeration->getNumElements()) ? "Missing" : enumeration->getElementName(index);
+  if (elementsType->inheritsFrom(doubleType()))
+    return T("average");
+  if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
+    return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getElementName(index);
+  jassert(false);
+  return T("undefined");
+}
+
 void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
   VectorPtr vector = input[0].getObjectAndCast<Vector>();
   if (!vector)
+  {
+    //std::cout << "?" << std::endl;
     return;
-
-  if (!useCache || vector != previousVector)
-    const_cast<HistogramPerception* >(this)->accumulators = new AccumulatedScores(vector);
-  const_cast<HistogramPerception* >(this)->previousVector = vector;
-
+  }
   size_t n = vector->getNumElements();
   size_t startPosition = juce::jlimit(0, (int)n, input[1][0].getInteger());
   size_t endPosition = juce::jlimit(0, (int)n, input[1][1].getInteger());
   jassert(endPosition >= startPosition);
+  
+  if (!useCache || vector != previousVector)
+  {
+    const_cast<HistogramPerception* >(this)->accumulators = new AccumulatedScores(vector);
+    //std::cout << "x";
+  } else {
+    //std::cout << "=";
+  }
+  //std::cout << "[" << input[1][0].getInteger() << "," << input[1][1].getInteger() << "]" << std::endl;
+
+  const_cast<HistogramPerception* >(this)->previousVector = vector;
+
   const std::vector<double>& startScores = accumulators->getAccumulatedScores(startPosition);
   const std::vector<double>& endScores = accumulators->getAccumulatedScores(endPosition - 1);
 
