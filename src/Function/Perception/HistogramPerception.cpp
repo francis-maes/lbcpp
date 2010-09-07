@@ -88,6 +88,12 @@ private:
 
 }; /* namespace lbcpp */
 
+HistogramPerception::~HistogramPerception()
+{
+  if (accumulators)
+    delete accumulators;
+}
+
 void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
   VectorPtr vector = input[0].getObjectAndCast<Vector>();
@@ -95,8 +101,8 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
     return;
 
   if (!useCache || vector != previousVector)
-    accumulators = new AccumulatedScores(vector);
-  previousVector = vector;
+    const_cast<HistogramPerception* >(this)->accumulators = new AccumulatedScores(vector);
+  const_cast<HistogramPerception* >(this)->previousVector = vector;
 
   size_t n = vector->getNumElements();
   size_t startPosition = juce::jlimit(0, (int)n, input[1][0].getInteger());
