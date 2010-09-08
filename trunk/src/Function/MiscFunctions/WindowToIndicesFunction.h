@@ -10,6 +10,7 @@
 # define LBCPP_DATA_FUNCTION_WINDOW_TO_INDICES_H_
 
 # include <lbcpp/Function/Function.h>
+# include <lbcpp/Data/Vector.h>
 
 namespace lbcpp
 {
