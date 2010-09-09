@@ -134,7 +134,7 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   if (!useCache || vector != previousVector)
   {
     if (accumulators)
-      delete const_cast<HistogramPerception* >(this);
+      delete const_cast<HistogramPerception* >(this)->accumulators;
     const_cast<HistogramPerception* >(this)->accumulators = new AccumulatedScores(vector);
   }
 
