@@ -124,10 +124,8 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
 {
   VectorPtr vector = input[0].getObjectAndCast<Vector>();
   if (!vector)
-  {
-    //std::cout << "?" << std::endl;
     return;
-  }
+
   size_t n = vector->getNumElements();
   size_t startPosition = juce::jlimit(0, (int)n, input[1][0].getInteger());
   size_t endPosition = juce::jlimit(0, (int)n, input[1][1].getInteger());
@@ -135,12 +133,10 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   
   if (!useCache || vector != previousVector)
   {
+    if (accumulators)
+      delete const_cast<HistogramPerception* >(this);
     const_cast<HistogramPerception* >(this)->accumulators = new AccumulatedScores(vector);
-    //std::cout << "x";
-  } else {
-    //std::cout << "=";
   }
-  //std::cout << "[" << input[1][0].getInteger() << "," << input[1][1].getInteger() << "]" << std::endl;
 
   const_cast<HistogramPerception* >(this)->previousVector = vector;
 

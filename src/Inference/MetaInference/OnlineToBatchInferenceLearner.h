@@ -52,7 +52,7 @@ public:
     InferencePtr learningPassInference = callbackBasedDecoratorInference(T("LearningPass"),
         runOnSupervisedExamplesInference(targetInference), state->callback);
 
-    state->setSubInference(learningPassInference, trainingData->randomize(), Variable());
+    state->setSubInference(learningPassInference, trainingData/*->randomize()*/, Variable());
     return true;
   }
 };

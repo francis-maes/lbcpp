@@ -38,7 +38,7 @@ void ExplorerRecentFiles::addRecentFile(const File& file)
 */
 File ExplorerConfiguration::getApplicationDataDirectory()
 {
- // return File(T("C:\\temp"));
+  //return File(T("C:\\temp"));
   File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
