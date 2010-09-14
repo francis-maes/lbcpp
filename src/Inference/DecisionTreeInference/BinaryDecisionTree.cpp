@@ -44,8 +44,8 @@ private:
 
 PredicatePtr BinaryDecisionTree::getSplitPredicate(const Variable& argument)
 {
-  if (argument.isDouble())
-    return lessThanOrEqualToPredicate(argument.getDouble());
+  if (argument.isDouble() || argument.isInteger())
+    return lessThanOrEqualToPredicate(argument);
 
   jassert(argument.isObject());
 
@@ -64,8 +64,8 @@ PredicatePtr BinaryDecisionTree::getSplitPredicate(const Variable& argument)
 bool BinaryDecisionTree::Node::test(const Variable& variable) const
 {
   jassert(isInternalNode());
-  jassert(splitVariable >= 0 && splitVariable < (int)variable.size());
-  return getSplitPredicate(argument)->computePredicate(variable[splitVariable]);
+  jassert(splitVariable >= 0 && splitVariable < (int)variable.getObject()->getNumVariables());
+  return getSplitPredicate(argument)->computePredicate(variable.getObject()->getVariable(splitVariable));
 }
 
 String BinaryDecisionTree::toString() const

@@ -24,6 +24,9 @@ public:
       precompute(decorated, String::empty);
   }
 
+  virtual String getPreferedOutputClassName() const
+    {return T("flat ") + decorated->getPreferedOutputClassName();}
+
   virtual TypePtr getOutputType() const
     {return Perception::getOutputType();}
 

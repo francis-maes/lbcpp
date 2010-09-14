@@ -97,9 +97,9 @@ extern InferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, I
 /*
 ** Decision Tree Inference
 */
-extern InferencePtr regressionExtraTreeInference(const String& name, TypePtr inputType, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern InferencePtr binaryClassificationExtraTreeInference(const String& name, TypePtr inputType, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern InferencePtr classificationExtraTreeInference(const String& name, TypePtr inputType, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr regressionExtraTreeInference(const String& name, PerceptionPtr perception, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr binaryClassificationExtraTreeInference(const String& name, PerceptionPtr perception, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+extern InferencePtr classificationExtraTreeInference(const String& name, PerceptionPtr perception, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
 
 /*
 ** Reduction

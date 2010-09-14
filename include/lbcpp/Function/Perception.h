@@ -29,6 +29,8 @@ class Perception : public Function
 {
 public:
   virtual TypePtr getOutputType() const;
+  virtual String getPreferedOutputClassName() const
+    {return T("(") + getClassName() + T(" output");}
 
   virtual size_t getNumOutputVariables() const = 0;
   virtual TypePtr getOutputVariableType(size_t index) const = 0;

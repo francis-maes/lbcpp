@@ -34,17 +34,26 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   TypePtr inputType = trainingDataType->getTemplateArgument(0);
   TypePtr outputType = trainingDataType->getTemplateArgument(1);
 
-  jassert(inputType->getObjectNumVariables());
+  PerceptionPtr perception = inference->getPerception();
+  VectorPtr newTrainingData = vector(pairType(perception->getOutputType(), outputType), trainingData->getNumElements());
+  for (size_t i = 0; i < newTrainingData->getNumElements(); ++i)
+  {
+    Variable example = trainingData->getElement(i);
+    newTrainingData->setElement(i, Variable::pair(perception->compute(example[0]), example[1]));
+  }
 
-  BinaryDecisionTreePtr tree = sampleTree(inputType, outputType, trainingData);
+  BinaryDecisionTreePtr tree = sampleTree(perception->getOutputType(), outputType, newTrainingData);
   if (tree)
   {
-    std::cout << "Tree: numAttributes = " << inputType->getObjectNumVariables() << " numExamples = " << trainingData->getNumElements() << " numNodes = " << tree->getNumNodes() << std::endl;
+    std::cout << "Tree: numAttributes = " << perception->getNumOutputVariables() << " numExamples = " << trainingData->getNumElements() << " numNodes = " << tree->getNumNodes() << std::endl;
     inference->setTree(tree);
     //std::cout << tree->toString() << std::endl;
   }
   return Variable();
 }
+
+static Variable getInputVariableFromExample(const Variable& example, size_t variableIndex)
+  {return example[0].getObject()->getVariable(variableIndex);}
 
 static bool isVariableConstant(ContainerPtr container, size_t index1, int index2, Variable& value)
 {
@@ -53,12 +62,12 @@ static bool isVariableConstant(ContainerPtr container, size_t index1, int index2
     return true;
   value = container->getElement(0)[index1];
   if (index2 >= 0)
-    value = value[(size_t)index2];
+    value = value.getObject()->getVariable((size_t)index2);
   for (size_t i = 1; i < n; ++i)
   {
     Variable otherValue = container->getElement(i)[index1];
     if (index2 >= 0)
-      otherValue = otherValue[(size_t)index2];
+      otherValue = otherValue.getObject()->getVariable((size_t)index2);
 
     if (value != otherValue)
       return false;
@@ -95,14 +104,33 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
   return isOutputConstant(trainingData, leafValue);
 }
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
+Variable sampleNumericalIntegerSplit(RandomGeneratorPtr random, ContainerPtr trainingData, size_t variableIndex)
+{
+  int minValue = 0x7FFFFFFF;
+  int maxValue = -minValue;
+  size_t n = trainingData->getNumElements();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable variable = getInputVariableFromExample(trainingData->getElement(i), variableIndex);
+    if (!variable)
+      continue;
+    int value = variable.getInteger();
+    if (value < minValue)
+      minValue = value;
+    if (value > maxValue)
+      maxValue = value;
+  }
+  jassert(minValue != 0x7FFFFFFF && maxValue != -0x7FFFFFFF);
+  return random->sampleInt(minValue, maxValue);
+}
+
 Variable sampleNumericalSplit(RandomGeneratorPtr random, ContainerPtr trainingData, size_t variableIndex)
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
   size_t n = trainingData->getNumElements();
-  //std::cout << "NumericalSplit: ";
   for (size_t i = 0; i < n; ++i)
   {
-    Variable variable = trainingData->getElement(i)[0][variableIndex];
+    Variable variable = getInputVariableFromExample(trainingData->getElement(i), variableIndex);
     if (variable.isNil())
       continue;
     double value = variable.getDouble();
@@ -110,13 +138,11 @@ Variable sampleNumericalSplit(RandomGeneratorPtr random, ContainerPtr trainingDa
       minValue = value;
     if (value > maxValue)
       maxValue = value;
-    //std::cout << variable << " ";
   }
   jassert(minValue != DBL_MAX && maxValue != -DBL_MAX);
-  double res = RandomGenerator::getInstance()->sampleDouble(minValue, maxValue);
+  double res = random->sampleDouble(minValue, maxValue);
   jassert(res >= minValue && res < maxValue);
-  //std::cout << " => " << res << std::endl;
-  return res;
+  return Variable(res);
 }
 
 Variable sampleEnumerationSplit(RandomGeneratorPtr random, EnumerationPtr enumeration, ContainerPtr trainingData, size_t variableIndex)
@@ -127,7 +153,7 @@ Variable sampleEnumerationSplit(RandomGeneratorPtr random, EnumerationPtr enumer
   std::set<size_t> possibleValues;
   for (size_t i = 0; i < trainingData->getNumElements(); ++i)
   {
-    Variable value = trainingData->getElement(i)[0][variableIndex];
+    Variable value = getInputVariableFromExample(trainingData->getElement(i), variableIndex);
     possibleValues.insert((size_t)value.getInteger());
   }
   jassert(possibleValues.size() >= 2);
@@ -160,9 +186,9 @@ PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, T
 {
   TypePtr variableType = inputType->getObjectVariableType(variableIndex);
   if (variableType->inheritsFrom(doubleType()))
-  {
     splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
-  }
+  else if (variableType->inheritsFrom(integerType()))
+    splitArgument = sampleNumericalIntegerSplit(random, trainingData, variableIndex);
   else if (variableType->inheritsFrom(enumValueType()))
   {
     EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
@@ -185,7 +211,7 @@ PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, T
   for (size_t i = 0; i < trainingData->getNumElements(); ++i)
   {
     Variable inputOutputPair = trainingData->getElement(i);
-    if (predicate->computePredicate(inputOutputPair[0][variableIndex]))
+    if (predicate->computePredicate(getInputVariableFromExample(inputOutputPair, variableIndex)))
       ++numPos;
     else
       ++numNeg;
@@ -200,6 +226,7 @@ PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, T
   return predicate;
 }
 ///////////////////////////////////// Split Scoring  /////////////////////
+
 
 DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPtr examples)
 {
@@ -243,7 +270,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   for (size_t i = 0; i < examples->getNumElements(); ++i)
   {
     Variable inputOutputPair = examples->getElement(i);
-    if (predicate->computePredicate(inputOutputPair[0][variableIndex]))
+    if (predicate->computePredicate(getInputVariableFromExample(inputOutputPair, variableIndex)))
       pos->append(inputOutputPair);
     else
       neg->append(inputOutputPair);

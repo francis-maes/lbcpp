@@ -40,6 +40,7 @@ public:
   TemplateType() : initialized(false) {}
 
   static bool isInstanciatedTypeName(const String& name);
+  static bool parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<String>& arguments, MessageCallback& callback);
   static bool parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, MessageCallback& callback);
   static String makeInstanciatedTypeName(const String& name, const std::vector<TypePtr>& templateArguments);
 
@@ -84,7 +85,10 @@ public:
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
 
 protected:
-  TypePtr computeBaseType(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
+  TypePtr getType(const std::vector<TypePtr>& arguments, const String& typeExpr, MessageCallback& callback) const;
+
+  TypePtr computeBaseType(const std::vector<TypePtr>& arguments, MessageCallback& callback) const
+    {return getType(arguments, baseTypeExpr, callback);}
 
   String baseTypeExpr;
   std::vector<std::pair<String, TypePtr> > parameters;

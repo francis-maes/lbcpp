@@ -44,7 +44,7 @@ void Perception::ensureTypeIsComputed()
 {
   if (outputType)
     return;
-  DefaultClassPtr outputType = new DynamicClass(getClassName() + T("Class"));
+  DefaultClassPtr outputType = new DynamicClass(getPreferedOutputClassName());
   size_t n = getNumOutputVariables();
   for (size_t i = 0; i < n; ++i)
     outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));

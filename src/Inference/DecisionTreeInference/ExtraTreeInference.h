@@ -12,6 +12,7 @@
 # include "BinaryDecisionTree.h"
 # include "../ReductionInference/ParallelVoteInference.h"
 # include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/Function/Perception.h>
 
 namespace lbcpp 
 {
@@ -19,13 +20,13 @@ namespace lbcpp
 class BinaryDecisionTreeInference : public Inference
 {
 public:
-  BinaryDecisionTreeInference(const String& name, TypePtr inputType)
-    : Inference(name), inputType(inputType) {}
+  BinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
+    : Inference(name), perception(perception) {}
   BinaryDecisionTreeInference()
     {}
 
   virtual TypePtr getInputType() const
-    {return inputType;}
+    {return perception->getInputType();}
 
   BinaryDecisionTreePtr getTree() const
     {return tree;}
@@ -33,23 +34,25 @@ public:
   void setTree(BinaryDecisionTreePtr tree)
     {this->tree = tree;}
 
+  PerceptionPtr getPerception() const
+    {return perception;}
+
   virtual void clone(ObjectPtr target) const
   {
     Inference::clone(target);
     ReferenceCountedObjectPtr<BinaryDecisionTreeInference> res = target.staticCast<BinaryDecisionTreeInference>();
-    res->inputType = inputType;
     if (tree)
-      res->tree = tree->clone();
+      res->tree = tree->cloneAndCast<BinaryDecisionTree>();
   }
 
 protected:
   friend class BinaryDecisionTreeInferenceClass;
 
+  PerceptionPtr perception;
   BinaryDecisionTreePtr tree;
-  TypePtr inputType;
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return tree && tree->getNumNodes() ? tree->makePrediction(input) : Variable();}
+    {return tree && tree->getNumNodes() ? tree->makePrediction(perception->compute(input)) : Variable::missingValue(getOutputType(input.getType()));}
 };
 
 typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTreeInferencePtr;
@@ -57,8 +60,8 @@ typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTre
 class RegressionBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  RegressionBinaryDecisionTreeInference(const String& name, TypePtr inputType)
-    : BinaryDecisionTreeInference(name, inputType) {}
+  RegressionBinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
+    : BinaryDecisionTreeInference(name, perception) {}
   RegressionBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
@@ -71,8 +74,8 @@ public:
 class BinaryClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  BinaryClassificationBinaryDecisionTreeInference(const String& name, TypePtr inputType)
-    : BinaryDecisionTreeInference(name, inputType) {}
+  BinaryClassificationBinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
+    : BinaryDecisionTreeInference(name, perception) {}
   BinaryClassificationBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
@@ -85,24 +88,29 @@ public:
 class ClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  ClassificationBinaryDecisionTreeInference(const String& name, TypePtr inputType, EnumerationPtr classes)
-    : BinaryDecisionTreeInference(name, inputType), classes(classes) {}
+  ClassificationBinaryDecisionTreeInference(const String& name, PerceptionPtr perception, EnumerationPtr classes)
+    : BinaryDecisionTreeInference(name, perception), classes(classes) {}
   ClassificationBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
     {return classes;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return discreteProbabilityDistributionClass(classes);}
+    {return classes;}//(classes);}
 
 protected:
+  friend class ClassificationBinaryDecisionTreeInferenceClass;
   EnumerationPtr classes;
 };
 
 class ExtraTreeInference : public ParallelVoteInference
 {
 public:
-  ExtraTreeInference(const String& name, BinaryDecisionTreeInferencePtr decisionTreeModel, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
+  ExtraTreeInference(const String& name,
+                      BinaryDecisionTreeInferencePtr decisionTreeModel,
+                      size_t numTrees = 100,
+                      size_t numAttributeSamplesPerSplit = 10,
+                      size_t minimumSizeForSplitting = 0);
   ExtraTreeInference() {}
 };
 
