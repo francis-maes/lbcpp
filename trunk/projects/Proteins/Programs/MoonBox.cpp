@@ -337,7 +337,7 @@ int main(int argc, char** argv)
   String output(T("result"));
   bool generateIntermediate = false;
   
-  size_t windowSize = 15;
+  size_t windowSize = 15; // TODO
   
   bool isTestVersion = false;
   String multiTaskFeatures;

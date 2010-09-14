@@ -36,6 +36,33 @@ public:
 };
 
 /*
+** ProteinToVariableFunction
+*/
+class ProteinToVariableFunction : public Function
+{
+public:
+  ProteinToVariableFunction(int index = -1) : index(index) {}
+  
+  virtual TypePtr getInputType() const
+    {return proteinClass();}
+  
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return inputType->getObjectVariableType((size_t)index);}
+  
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  {
+    jassert(index >= 0 && index < (int)input.getObject()->getNumVariables());
+    VectorPtr vector = input.getObject()->getVariable(index).getObjectAndCast<Vector>();
+    return vector;
+  }
+
+private:
+  friend class ProteinToVariableFunctionClass;
+  
+  int index;
+};
+
+/*
 ** ProteinToInputOutputPairFunction
 */
 class ProteinToInputOutputPairFunction : public Function

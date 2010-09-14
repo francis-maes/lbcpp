@@ -153,6 +153,11 @@
     </class>
     
     <!-- Protein Functions -->
+    <class name="ProteinToVariableFunction" base="Function">
+      <constructor arguments="int index"/>
+      <variable type="Integer" name="index"/>
+    </class>
+    
     <class name="ProteinLengthFunction" base="Function">
       <constructor/>
     </class>

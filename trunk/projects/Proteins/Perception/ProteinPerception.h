@@ -30,6 +30,8 @@ public:
 inline PerceptionPtr proteinLengthPerception()
   {return functionBasedPerception(proteinLengthFunction());}
 
+extern FunctionPtr proteinToVariableFunction(int);
+
 /*
 ** ResiduePerception
 */
