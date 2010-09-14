@@ -184,7 +184,7 @@ int main(int argc, char** argv)
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
-  //ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
+//  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));

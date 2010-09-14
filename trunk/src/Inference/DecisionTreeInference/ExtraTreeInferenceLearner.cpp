@@ -55,21 +55,22 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
 static Variable getInputVariableFromExample(const Variable& example, size_t variableIndex)
   {return example[0].getObject()->getVariable(variableIndex);}
 
-static bool isVariableConstant(ContainerPtr container, size_t index1, int index2, Variable& value)
+static bool isVariableConstant(ContainerPtr container, size_t index1, int index2, Variable& constantValue)
 {
   size_t n = container->getNumElements();
   if (n <= 1)
     return true;
-  value = container->getElement(0)[index1];
-  if (index2 >= 0)
-    value = value.getObject()->getVariable((size_t)index2);
+  constantValue = Variable();
   for (size_t i = 1; i < n; ++i)
   {
-    Variable otherValue = container->getElement(i)[index1];
+    Variable value = container->getElement(i)[index1];
     if (index2 >= 0)
-      otherValue = otherValue.getObject()->getVariable((size_t)index2);
-
-    if (value != otherValue)
+      value = value.getObject()->getVariable((size_t)index2);
+    if (!value)
+      continue;
+    if (!constantValue)
+      constantValue = value;
+    else if (constantValue != value)
       return false;
   }
   return true;
@@ -92,7 +93,9 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
       leafValue = trainingData->getElement(0)[1];
     else
     {
-      jassert(false); // FIXME
+      // FIXME: create distribution instead of first output 
+      leafValue = trainingData->getElement(0)[1];
+      //jassert(false); 
       /*
       jassert(n > 1);
       double weight = 1.0 / (double)n;
@@ -106,6 +109,8 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
 Variable sampleNumericalIntegerSplit(RandomGeneratorPtr random, ContainerPtr trainingData, size_t variableIndex)
 {
+  Variable dbg;
+  jassert(!isInputVariableConstant(trainingData, variableIndex, dbg));
   int minValue = 0x7FFFFFFF;
   int maxValue = -minValue;
   size_t n = trainingData->getNumElements();
@@ -121,6 +126,7 @@ Variable sampleNumericalIntegerSplit(RandomGeneratorPtr random, ContainerPtr tra
       maxValue = value;
   }
   jassert(minValue != 0x7FFFFFFF && maxValue != -0x7FFFFFFF);
+  jassert(maxValue > minValue);
   return random->sampleInt(minValue, maxValue);
 }
 
