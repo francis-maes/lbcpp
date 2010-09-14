@@ -19,17 +19,17 @@ class VariableToIndicesFunction : public Function
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(vectorClass(anyType()), integerType());}
+    {return vectorClass(anyType());}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return pairType(inputType->getTemplateArgument(0), pairType(integerType(), integerType()));}
+    {return pairType(inputType, pairType(integerType(), integerType()));}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
-    VectorPtr vector = input[0].getObjectAndCast<Vector>();
+    VectorPtr vector = input.getObjectAndCast<Vector>();
     size_t n = vector ? vector->getNumElements() : 0;
       
-    return Variable::pair(input[0], Variable::pair(0, n));
+    return Variable::pair(input, Variable::pair(0, n));
   }
 
 private:

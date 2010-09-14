@@ -73,7 +73,7 @@ PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const Strin
   TypePtr targetType = getTargetType(targetName);
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
-  res->addPerception(T("FREQUENCY"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
+  res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
   return res;
 }
 
@@ -81,7 +81,7 @@ PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
-  res->addPerception(T("FREQUENCY"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
+  res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
   return res;
 }
 
@@ -94,7 +94,7 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
                                                                    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
-  res->addPerception(T("FREQUENCY"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
+  res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
   return res;
 }
 
@@ -102,6 +102,10 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
 {
   CompositePerceptionPtr res = new ProteinCompositePerception();
   res->addPerception(T("LEN"), proteinLengthPerception());
+  CompositePerceptionPtr freq = new ProteinCompositePerception();
+  freq->addPerception(T("AA"), applyPerceptionOnEntireProteinVariable(T("primaryStructure"), histogramPerception(aminoAcidTypeEnumeration())));
+  freq->addPerception(T("PSSM"), applyPerceptionOnEntireProteinVariable(T("positionSpecificScoringMatrix"), histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
+  res->addPerception(T("HISTOGRAM"), freq);
   return res;
 }
 
@@ -156,5 +160,6 @@ PerceptionPtr ProteinInferenceFactory::applyWindowOnPerception(const String& var
 
 PerceptionPtr ProteinInferenceFactory::applyPerceptionOnEntireProteinVariable(const String& variableName, PerceptionPtr perception) const
 {
-  return applyPerceptionOnProteinVariable(variableName, Perception::compose(variableToIndicesFunction(), perception));
+  FunctionPtr variableFunction = proteinToVariableFunction(proteinClass->findObjectVariable(variableName));
+  return Perception::compose(variableFunction, Perception::compose(variableToIndicesFunction(), perception));
 }
