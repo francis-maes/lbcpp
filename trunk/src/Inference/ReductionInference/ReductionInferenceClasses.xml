@@ -11,7 +11,11 @@
 
     <class name="ParallelVoteInference" base="VectorParallelInference">
       <constructor arguments="const String&amp; name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner"/>
+      <variable type="Inference" name="voteInferenceModel"/>
     </class>
+
+    <class name="MeanScalarParallelVoteInference" base="ParallelVoteInference"/>
+    <class name="MajorityClassParallelVoteInference" base="ParallelVoteInference"/>
 
     <class name="SharedParallelVectorInference" base="SharedParallelInference">
       <constructor arguments="const String&amp; name, FunctionPtr sizeFunction, InferencePtr elementInference"/>

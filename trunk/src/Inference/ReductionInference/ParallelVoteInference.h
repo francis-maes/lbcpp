@@ -10,6 +10,8 @@
 # define LBCPP_INFERENCE_REDUCTION_PARALLEL_VOTE_H_
 
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
 {
@@ -65,10 +67,64 @@ public:
   }
 
 protected:
+  friend class ParallelVoteInferenceClass;
+
   InferencePtr voteInferenceModel;
 };
 
 typedef ReferenceCountedObjectPtr<ParallelVoteInference> ParallelVoteInferencePtr;
+
+class MeanScalarParallelVoteInference : public ParallelVoteInference
+{
+public:
+  MeanScalarParallelVoteInference(const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
+    : ParallelVoteInference(name, numVotes, voteInferenceModel, voterLearner)
+    {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType()));}
+  MeanScalarParallelVoteInference() {}
+
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    size_t n = state->getNumSubInferences();
+    double sum = 0.0;
+    size_t count = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable vote = state->getSubOutput(i);
+      jassert(vote.isDouble());
+      if (vote)
+      {
+        ++count;
+        sum += vote.getDouble();
+      }
+    }
+    TypePtr type = getOutputType(getInputType());
+    return count ? Variable(sum / (double)count, type) : Variable::missingValue(type);
+  }
+};
+
+class MajorityClassParallelVoteInference : public ParallelVoteInference
+{
+public:
+  MajorityClassParallelVoteInference(const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
+    : ParallelVoteInference(name, numVotes, voteInferenceModel, voterLearner)
+    {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType()).dynamicCast<Enumeration>());}
+  MajorityClassParallelVoteInference() {}
+
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    TypePtr enumType = getOutputType(getInputType());
+    size_t n = state->getNumSubInferences();
+    DiscreteProbabilityDistributionPtr distribution = new DiscreteProbabilityDistribution(enumType); 
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable vote = state->getSubOutput(i);
+      jassert(vote.getType()->inheritsFrom(enumType));
+      if (vote)
+        distribution->increment(vote);
+    }
+    return distribution->sample(RandomGenerator::getInstance()); // FIXME: replace by a sampling of argmaxs 
+  }
+};
 
 }; /* namespace lbcpp */
 

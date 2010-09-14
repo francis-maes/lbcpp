@@ -72,6 +72,9 @@ public:
     : ModifierPerception(decorated) {}
   PerceptionToFeatures() {}
 
+  virtual String getPreferedOutputClassName() const
+    {return T("features ") + decorated->getPreferedOutputClassName();}
+
   virtual PerceptionPtr getModifiedPerception(size_t index, TypePtr valueType) const
   {
     if (valueType->inheritsFrom(doubleType()))

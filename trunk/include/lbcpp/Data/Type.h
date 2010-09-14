@@ -53,7 +53,8 @@ public:
   static void finishDeclarations(MessageCallback& callback = MessageCallback::getInstance());
   static bool doTypeExists(const String& typeName);
   static TypePtr get(const String& typeName, MessageCallback& callback = MessageCallback::getInstance());
- 
+  static TypePtr get(const String& name, const std::vector<TypePtr>& arguments, MessageCallback& callback = MessageCallback::getInstance());
+
   /*
   ** Initialization
   */

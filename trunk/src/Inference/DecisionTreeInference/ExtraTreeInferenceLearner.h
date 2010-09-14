@@ -23,8 +23,11 @@ class SingleExtraTreeInferenceLearner : public Inference
 {
 public:
   SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting);
+  SingleExtraTreeInferenceLearner() : numAttributeSamplesPerSplit(0), minimumSizeForSplitting(0) {}
 
 protected:
+  friend class SingleExtraTreeInferenceLearnerClass;
+
   RandomGeneratorPtr random;
 
   size_t numAttributeSamplesPerSplit;

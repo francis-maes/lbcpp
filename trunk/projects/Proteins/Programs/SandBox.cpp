@@ -26,10 +26,10 @@ public:
   }
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(targetName, perception->getOutputType(), 2, 3);}
+    {return binaryClassificationExtraTreeInference(targetName, perception, 2, 3);}
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception->getOutputType(), classes, 2, 3);}
+    {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
@@ -178,22 +178,22 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
-  //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
-  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
+  ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
+  //ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   /*

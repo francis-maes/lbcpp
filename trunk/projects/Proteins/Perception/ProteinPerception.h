@@ -23,6 +23,8 @@ class ProteinCompositePerception : public CompositePerception
 public:
   virtual TypePtr getInputType() const
     {return proteinClass();}
+  virtual String getPreferedOutputClassName() const
+    {return T("(ProteinPerception)");}
 };
 
 inline PerceptionPtr proteinLengthPerception()
@@ -90,6 +92,9 @@ public:
   virtual TypePtr getInputType() const
     {return pairType(proteinClass(), integerType());}
 
+  virtual String getPreferedOutputClassName() const
+    {return T("(ResiduePerception)");}
+
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };
 
@@ -112,6 +117,8 @@ class ResiduePairCompositePerception : public CompositePerception
 public:
   virtual TypePtr getInputType() const
     {return pairType(proteinClass(), pairType(integerType(), integerType()));}
+  virtual String getPreferedOutputClassName() const
+    {return T("(ResiduePairPerception)");}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };

@@ -53,19 +53,7 @@ public:
       MessageCallback::error(T("TypeManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
       return;
     }
-    templateTypes[typeName] = templateType;
-  }
-
-  TemplateTypePtr getTemplateType(const String& templateTypeName, MessageCallback& callback) const
-  {
-    ScopedLock _(typesLock);
-    TemplateTypeMap::const_iterator it = templateTypes.find(templateTypeName);
-    if (it == templateTypes.end())
-    {
-      callback.errorMessage(T("TypeManager::getTemplateType()"), T("Could not find template type ") + templateTypeName);
-      return TemplateTypePtr();
-    }
-    return it->second;
+    templateTypes[typeName].definition = templateType;
   }
 
   void finishDeclarations(MessageCallback& callback)
@@ -82,10 +70,33 @@ public:
     for (TemplateTypeMap::const_iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
     {
       String name = it->first;
-      TemplateTypePtr templateType = it->second;
+      TemplateTypePtr templateType = it->second.definition;
       if (!templateType->isInitialized() && !templateType->initialize(callback))
         callback.errorMessage(T("TypeManager::finishDeclarations()"), T("Could not initialize template type ") + templateType->getName());
     }
+  }
+
+  TypePtr getType(const String& name, const std::vector<TypePtr>& arguments, MessageCallback& callback) const
+  {
+    jassert(arguments.size());
+
+    String typeName = removeAllSpaces(name);
+    if (typeName.isEmpty())
+    {
+      callback.errorMessage(T("TypeManager::getType"), T("Empty type name"));
+      return TypePtr();
+    }
+    jassert(!TemplateType::isInstanciatedTypeName(typeName));
+
+    TemplateTypeCache* templateType = getTemplateType(typeName, callback);
+    if (!templateType)
+      return TypePtr();
+
+    TemplateTypeCache::InstanceMap::iterator it = templateType->instances.find(arguments);
+    if (it != templateType->instances.end())
+      return it->second;
+    else
+      return templateType->instantiate(arguments, callback);
   }
 
   TypePtr getType(const String& name, MessageCallback& callback) const
@@ -102,29 +113,17 @@ public:
     if (type)
       return type;
 
-    if (TemplateType::isInstanciatedTypeName(typeName))
+    if (!TemplateType::isInstanciatedTypeName(typeName))
     {
-      String templateName;
-      std::vector<TypePtr> templateArguments;
-      if (!TemplateType::parseInstanciatedTypeName(typeName, templateName, templateArguments, callback))
-        return TypePtr();
-
-      TemplateTypePtr templateType = getTemplateType(templateName, callback);
-      if (!templateType)
-        return TypePtr();
-      
-      type = templateType->instantiate(templateArguments, callback);
-      if (type)
-      {
-        if (!type->initialize(callback))
-          return TypePtr();
-        const_cast<TypeManager* >(this)->types[typeName] = type;
-      }
-    }
-    else
       callback.errorMessage(T("TypeManager::getType()"), T("Could not find type ") + typeName);
+      return TypePtr();
+    }
 
-    return type;
+    String templateName;
+    std::vector<TypePtr> templateArguments;
+    if (!TemplateType::parseInstanciatedTypeName(typeName, templateName, templateArguments, callback))
+      return TypePtr();
+    return getType(templateName, templateArguments, callback);
   }
 
   static String removeAllSpaces(const String& str)
@@ -166,13 +165,42 @@ public:
 
 private:
   typedef std::map<String, TypePtr> TypeMap;
-  typedef std::map<String, TemplateTypePtr> TemplateTypeMap;
+
+  struct TemplateTypeCache
+  {
+    TemplateTypePtr definition;
+    typedef std::map< std::vector<TypePtr>, TypePtr > InstanceMap;
+    InstanceMap instances;
+
+    TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback)
+    {
+      TypePtr res = definition->instantiate(arguments, callback);
+      if (!res || !res->initialize(callback))
+        return TypePtr();
+      instances[arguments] = res;
+      return res;
+    }
+  };
+
+  typedef std::map<String, TemplateTypeCache> TemplateTypeMap;
 
   CriticalSection typesLock;
   TypeMap types;
   TemplateTypeMap templateTypes;
  
   bool standardTypesAreDeclared;
+
+  TemplateTypeCache* getTemplateType(const String& templateTypeName, MessageCallback& callback) const
+  {
+    ScopedLock _(typesLock);
+    TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(templateTypeName);
+    if (it == templateTypes.end())
+    {
+      callback.errorMessage(T("TypeManager::getTemplateType()"), T("Could not find template type ") + templateTypeName);
+      return NULL;
+    }
+    return &it->second;
+  }
 };
 
 }; /* namespace lbcpp */
@@ -200,6 +228,9 @@ void Type::finishDeclarations(MessageCallback& callback)
 
 TypePtr Type::get(const String& typeName, MessageCallback& callback)
   {return getTypeManagerInstance().getType(typeName, callback);}
+
+TypePtr Type::get(const String& name, const std::vector<TypePtr>& arguments, MessageCallback& callback)
+  {return getTypeManagerInstance().getType(name, arguments, callback);}
 
 bool Type::doTypeExists(const String& typeName)
   {return getTypeManagerInstance().doTypeExists(typeName);}
@@ -359,7 +390,7 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
   std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
   if (it == m.end())
   {
-    TypePtr res = Type::get(typeName + T("<") + argument->getName() + T(">"));
+    TypePtr res = getTypeManagerInstance().getType(typeName, std::vector<TypePtr>(1, argument), MessageCallback::getInstance());
     m[argument.get()] = res.get();
     return res;
   }
@@ -374,8 +405,12 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
   std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
   if (it == m.end())
   {
-    TypePtr res = Type::get(typeName + T("<") + argument1->getName() + T(", ") + argument2->getName() + T(">"));
-    m[key] = res.get();
+    std::vector<TypePtr> arguments(2);
+    arguments[0] = argument1;
+    arguments[1] = argument2;
+
+    TypePtr res = getTypeManagerInstance().getType(typeName, arguments, MessageCallback::getInstance());
+    m[std::make_pair(argument1.get(), argument2.get())] = res.get();
     return res;
   }
   else
