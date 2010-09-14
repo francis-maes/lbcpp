@@ -335,6 +335,7 @@ int main(int argc, char** argv)
   int numProteinsToLoad = 0;
   std::vector<String> targets;
   String output(T("result"));
+  bool generateIntermediate = false;
   
   size_t windowSize = 15;
   
@@ -349,6 +350,7 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("NumProteinsToLoad"), numProteinsToLoad));
   arguments.insert(new TargetExpressionArgument(T("Targets"), targets), true);
   arguments.insert(new StringArgument(T("Output"), output));
+  arguments.insert(new BooleanArgument(T("GenerateIntermediate"), generateIntermediate));
   /* Learning Parameters */
   arguments.insert(new BooleanArgument(T("useExtraTrees"), DefaultParameters::useExtraTrees));
   arguments.insert(new DoubleArgument(T("LearningRate"), DefaultParameters::learningRate));
@@ -452,6 +454,9 @@ int main(int argc, char** argv)
   ** Creation of the inference
   */
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  if (generateIntermediate)
+    inference->setProteinDebugDirectory(File::getCurrentWorkingDirectory().getChildFile(output));
+
   for (size_t i = 0; i < targets.size(); ++i)
   {
     if (targets[i].contains(T("SS3")))
