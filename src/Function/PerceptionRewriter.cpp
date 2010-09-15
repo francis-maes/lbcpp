@@ -36,6 +36,10 @@ PerceptionPtr TypeAndStackBasedPerceptionRewriteRule::compute(TypePtr type, cons
 /*
 ** PerceptionRewriter
 */
+PerceptionRewriter::PerceptionRewriter() : rules(vector(perceptionRewriteRuleClass()))
+{
+}
+
 PerceptionPtr PerceptionRewriter::applyRules(TypePtr type, const std::vector<String>& stack) const
 {
   for (size_t i = 0; i < rules->getNumElements(); ++i)
