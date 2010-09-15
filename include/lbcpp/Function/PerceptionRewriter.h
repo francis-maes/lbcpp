@@ -32,7 +32,7 @@ public:
   TypeBasedPerceptionRewriteRule() {}
 
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const
-    {return type == this->type ? target : PerceptionPtr();}
+    {return type->inheritsFrom(this->type) ? target : PerceptionPtr();}
 
 protected:
   friend class TypeBasedPerceptionRewriteRuleClass;
