@@ -135,6 +135,7 @@ extern ClassPtr compositePerceptionClass();
 
 PerceptionPtr nullPerception();
 PerceptionPtr identityPerception(TypePtr type);
+PerceptionPtr identityPerception();
 DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
 PerceptionPtr functionBasedPerception(FunctionPtr function);

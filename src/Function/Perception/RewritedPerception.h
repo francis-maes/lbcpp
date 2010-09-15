@@ -81,20 +81,19 @@ protected:
       PerceptionPtr variablePerception = decorated->getOutputVariableGenerator(i);
 
       stack.push_back(variableName);
-      bool isIdentity = false;
+
       PerceptionPtr newPerception;
       if (variablePerception)
         newPerception = rules->rewriteRecursively(variablePerception, stack);
       else
-      {
         newPerception = rules->applyRules(variableType, stack);
-        // applyRules may return PerceptionPtr() to denote identity
-        if (!newPerception)
-          isIdentity = true;
-      }
 
-      if (isIdentity || newPerception->getNumOutputVariables() > 0)
-        addOutputVariable(variableType, variableName, newPerception, i);
+      if (newPerception)
+      {
+         if (newPerception == identityPerception())
+           newPerception = PerceptionPtr();
+        addOutputVariable(variableType, variableName, PerceptionPtr(), i);
+      }
 
       stack.pop_back();
     }
