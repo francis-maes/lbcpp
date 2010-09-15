@@ -88,13 +88,8 @@ protected:
       else
         newPerception = rules->applyRules(variableType, stack);
 
-      if (newPerception)
-      {
-         if (newPerception == identityPerception())
-           newPerception = PerceptionPtr();
-        addOutputVariable(variableType, variableName, PerceptionPtr(), i);
-      }
-
+      if (newPerception && newPerception->getNumOutputVariables() > 0)
+        addOutputVariable(variableType, variableName, newPerception, i);
       stack.pop_back();
     }
   }
@@ -106,7 +101,7 @@ protected:
     v.name = name;
     v.subPerception = subPerception;
     if (variablesMap.size() <= sourceIndex)
-      variablesMap.resize(sourceIndex, -1);
+      variablesMap.resize(sourceIndex + 1, -1);
     variablesMap[sourceIndex] = outputVariables.size();
     outputVariables.push_back(v);
   }
@@ -119,34 +114,35 @@ protected:
 
     virtual void sense(size_t variableNumber, const Variable& value)
     {
-      jassert(variableNumber < owner->variablesMap.size());
-      variableNumber = owner->variablesMap[variableNumber];
-      if (variableNumber >= 0)
+      PerceptionPtr targetPerception = getTargetPerception(variableNumber);
+      if (targetPerception)
       {
-        jassert(variableNumber < owner->outputVariables.size());
-        const OutputVariable& outputVariable = owner->outputVariables[variableNumber];
-        if (outputVariable.subPerception)
-          targetCallback->sense(variableNumber, outputVariable.subPerception, value);
-        else
+        if (targetPerception == identityPerception())
           targetCallback->sense(variableNumber, value);
+        else
+          targetCallback->sense(variableNumber, targetPerception, value);
       }
     }
 
     virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
     {
-      jassert(variableNumber < owner->variablesMap.size());
-      variableNumber = owner->variablesMap[variableNumber];
-      if (variableNumber >= 0)
-      {
-        jassert(variableNumber >= 0 && variableNumber < owner->outputVariables.size());
-        const OutputVariable& outputVariable = owner->outputVariables[variableNumber];
-        targetCallback->sense(variableNumber, outputVariable.subPerception ? outputVariable.subPerception : subPerception, input);
-      }
+      PerceptionPtr targetPerception = getTargetPerception(variableNumber);
+      if (targetPerception)
+        targetCallback->sense(variableNumber, targetPerception, input);
     }
 
   private:
     PerceptionCallbackPtr targetCallback;
     const RewritedPerception* owner;
+  
+    PerceptionPtr getTargetPerception(size_t variableNumber) const
+    {
+      variableNumber = variableNumber < owner->variablesMap.size() ? owner->variablesMap[variableNumber] : -1;
+      if (variableNumber < 0)
+        return PerceptionPtr();
+      jassert(variableNumber < owner->outputVariables.size());
+      return owner->outputVariables[variableNumber].subPerception;
+    }
   };
 };
 

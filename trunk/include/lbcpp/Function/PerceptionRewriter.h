@@ -22,6 +22,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriteRule> PerceptionRewriteRulePtr;
 
+extern ClassPtr perceptionRewriteRuleClass();
+
 class TypeBasedPerceptionRewriteRule : public PerceptionRewriteRule
 {
 public:
@@ -61,6 +63,8 @@ public:
 class PerceptionRewriter : public Object
 {
 public:
+  PerceptionRewriter();
+
   void addRule(PerceptionRewriteRulePtr rule);
   void addRule(TypePtr type, PerceptionPtr target);
   void addRule(TypePtr type, const String& stack, PerceptionPtr target);
