@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="PerceptionFeatures" directory="Function/Perception/Features">
+  <include file="lbcpp/Function/Perception.h"/>
+
+  <namespace name="lbcpp">
+    
+    <class name="EnumValueFeatures" base="Perception">
+      <constructor arguments="EnumerationPtr enumeration"/>
+      <variable type="Enumeration" name="enumeration"/>
+    </class>
+    
+  </namespace>
+</file>
