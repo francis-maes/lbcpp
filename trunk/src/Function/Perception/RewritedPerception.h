@@ -65,7 +65,7 @@ protected:
   };
 
   std::vector<OutputVariable> outputVariables;
-  std::vector<int> variablesMap; // decorated perception variable index -> this perception variable index, or -1 if non existent in this perception
+  std::vector< std::pair<size_t, PerceptionPtr> > variablesMap; // decorated perception variable index -> perception
   
   void computeOutputVariables(std::vector<String>& stack)
   {
@@ -88,22 +88,33 @@ protected:
       else
         newPerception = rules->applyRules(variableType, stack);
 
-      if (newPerception && newPerception->getNumOutputVariables() > 0)
-        addOutputVariable(variableType, variableName, newPerception, i);
+      if (newPerception)
+      {
+        TypePtr newVariableType;
+        if (newPerception == identityPerception())
+          newVariableType = variableType;
+        else if (newPerception->getNumOutputVariables() > 0)
+          newVariableType = newPerception->getOutputType();
+        if (newVariableType)
+          addOutputVariable(newVariableType, variableName, newPerception, i);
+      }
       stack.pop_back();
     }
   }
 
   void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception, size_t sourceIndex)
   {
+    size_t index = outputVariables.size();
+
     OutputVariable v;
     v.type = type;
     v.name = name;
     v.subPerception = subPerception;
-    if (variablesMap.size() <= sourceIndex)
-      variablesMap.resize(sourceIndex + 1, -1);
-    variablesMap[sourceIndex] = outputVariables.size();
     outputVariables.push_back(v);
+
+    if (variablesMap.size() <= sourceIndex)
+      variablesMap.resize(sourceIndex + 1, std::make_pair(0, PerceptionPtr()));
+    variablesMap[sourceIndex] = std::make_pair(index, subPerception);
   }
 
   struct Callback : public PerceptionCallback
@@ -135,13 +146,15 @@ protected:
     PerceptionCallbackPtr targetCallback;
     const RewritedPerception* owner;
   
-    PerceptionPtr getTargetPerception(size_t variableNumber) const
+    PerceptionPtr getTargetPerception(size_t& variableNumber) const
     {
-      variableNumber = variableNumber < owner->variablesMap.size() ? owner->variablesMap[variableNumber] : -1;
-      if (variableNumber < 0)
+      if (variableNumber >= owner->variablesMap.size())
         return PerceptionPtr();
-      jassert(variableNumber < owner->outputVariables.size());
-      return owner->outputVariables[variableNumber].subPerception;
+      std::pair<size_t, PerceptionPtr> info = owner->variablesMap[variableNumber];
+      if (!info.second)
+        return PerceptionPtr();
+      variableNumber = info.first;
+      return info.second;
     }
   };
 };

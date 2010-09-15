@@ -190,7 +190,6 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/FunctionBasedPerception.h
-  Function/Perception/PerceptionToFeatures.h
   Function/Perception/PerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
 )
