@@ -18,6 +18,7 @@ GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionClasses.
 GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionClasses.xml StoppingCriterionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateClasses.xml PredicateClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Perception/Features/PerceptionFeaturesClasses.xml PerceptionFeaturesClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
@@ -118,6 +119,8 @@ SET(LBCPP_FUNCTION_SOURCES
   Function/Perception.cpp
   ../include/lbcpp/Function/PerceptionMaths.h
   Function/PerceptionMaths.cpp
+  ../include/lbcpp/Function/PerceptionRewriter.h
+  Function/PerceptionRewriter.cpp
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
   Function/FunctionClasses.xml
@@ -179,6 +182,7 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
 )
 
 SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
+  Function/Perception/NullPerception.h
   Function/Perception/IdentityPerception.h
   Function/Perception/WindowPerception.h
   Function/Perception/HistogramPerception.h
@@ -189,6 +193,14 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/PerceptionToFeatures.h
   Function/Perception/PerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
+)
+
+SET(LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES
+  Function/Perception/Features/EnumValueFeatures.h
+  Function/Perception/Features/HardDiscretizedNumberFeatures.h
+  Function/Perception/Features/SoftDiscretizedNumberFeatures.h
+  Function/Perception/Features/PerceptionFeaturesClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionFeaturesClasses.cpp
 )
 
 SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
@@ -308,6 +320,7 @@ SET(LBCPP_CORE
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
     ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_PERCEPTION_SOURCES}
+      ${LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES}
     ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
 
   # Inference
@@ -341,6 +354,7 @@ SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOU
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Perception FILES ${LBCPP_FUNCTION_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP2(Function Perception Features FILES ${LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
 ## Inference

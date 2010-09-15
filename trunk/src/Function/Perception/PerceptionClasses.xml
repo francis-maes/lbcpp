@@ -2,9 +2,11 @@
 
 <file name="Perception" directory="Function/Perception">
   <include file="lbcpp/Function/Perception.h"/>
+  <import name="PerceptionFeatures"/>
 
   <namespace name="lbcpp">
 
+    <!-- Base Classes -->
     <class name="Perception" base="Function" abstract="yes">
       <variable type="DynamicClass" name="outputType"/>
     </class>
@@ -13,8 +15,16 @@
       <variable type="Perception" name="decorated"/>
     </class>
 
-    <class name="ModifierPerception" base="DecoratorPerception" abstract="yes"/>
-    
+    <class name="CompositePerception" base="Perception" abstract="yes">
+      <variable type="GenericVector[Pair[String, Perception]]" name="subPerceptions"/>
+    </class>
+
+
+    <!-- Simple Perceptions -->
+    <class name="NullPerception" base="Perception">
+      <constructor/>
+    </class>
+
     <class name="IdentityPerception" base="Perception">
       <constructor arguments="TypePtr type"/>
       <variable type="Type" name="type"/>
@@ -25,25 +35,12 @@
       <variable type="Function" name="function"/>
     </class>
     
-    <class name="CompositePerception" base="Perception" abstract="yes">
-      <variable type="GenericVector[Pair[String, Perception]]" name="subPerceptions"/>
-    </class>
-
     <class name="PreprocessPerception" base="DecoratorPerception">
       <constructor arguments="FunctionPtr preProcessingFunction, PerceptionPtr perception"/>
       <variable type="Function" name="preProcessingFunction"/>
     </class>
 
-    <class name="FlattenPerception" base="DecoratorPerception">
-      <constructor arguments="PerceptionPtr perception"/>
-    </class>
-
-    <class name="EnumValueToFeaturesPerception" base="Perception"/>
-    <class name="IntegerToFeaturesPerception" base="Perception"/>
-    <class name="PerceptionToFeatures" base="ModifierPerception">
-      <constructor arguments="PerceptionPtr target"/>
-    </class>
-    
+    <!-- Structured Perceptions -->
     <class name="WindowPerception" base="DecoratorPerception">
       <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
       <variable type="Type" name="elementsType"/>
@@ -55,6 +52,27 @@
       <variable type="Type" name="elementsType"/>
       <variable type="Boolean" name="useCache"/>
     </class>
+
+    <!-- Flatten Perception -->
+    <class name="FlattenPerception" base="DecoratorPerception">
+      <constructor arguments="PerceptionPtr perception"/>
+    </class>
+
+    <!-- Rewrite Perception -->
+    <class name="PerceptionRewriteRule" abstract="yes"/>
+    <class name="TypeBasedPerceptionRewriteRule" base="PerceptionRewriteRule">
+      <variable type="Perception" name="target"/>
+      <variable type="Type" name="type"/>
+    </class>
+    <class name="TypeAndStackBasedPerceptionRewriteRule" base="TypeBasedPerceptionRewriteRule">
+      <variable type="Vector[String]" name="stack"/>
+    </class>
+    <class name="EnumValueFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule"/>
+    <class name="PerceptionRewriter">
+      <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
+    </class>
+    <class name="RewritedPerception" base="DecoratorPerception" abstract="yes"/>
+
   </namespace>
   
 </file>

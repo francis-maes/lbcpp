@@ -49,6 +49,7 @@
 # include "Function/StoppingCriterion.h"
 # include "Function/Perception.h"
 # include "Function/PerceptionMaths.h"
+# include "Function/PerceptionRewriter.h"
 # include "Function/Evaluator.h"
 
 # include "Inference/Inference.h"

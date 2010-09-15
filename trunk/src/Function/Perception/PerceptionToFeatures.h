@@ -13,58 +13,7 @@
 
 namespace lbcpp
 {
-
-class EnumValueToFeaturesPerception : public Perception
-{
-public:
-  EnumValueToFeaturesPerception(EnumerationPtr enumeration)
-    : enumeration(enumeration) {}
-  EnumValueToFeaturesPerception() {}
-
-  virtual TypePtr getInputType() const
-    {return enumeration;}
-
-  virtual size_t getNumOutputVariables() const
-    {return enumeration->getNumElements() + 1;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return doubleType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return Variable(index, enumeration).toString();}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-  {
-    jassert(input.getType()->inheritsFrom(enumeration));
-    callback->sense((size_t)input.getInteger(), 1.0);
-  }
-  
-private:
-  EnumerationPtr enumeration;
-};
-
-class IntegerToFeaturesPerception : public Perception
-{
-public:
-  virtual TypePtr getInputType() const
-    {return integerType();}
-
-  virtual size_t getNumOutputVariables() const
-    {return 0;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return doubleType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return String::empty;}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-  {
-    //jassert(input.getType()->inheritsFrom(enumeration));
-    //callback->sense((size_t)input.getInteger(), 1.0);
-  }
-};
-
+/*
 class PerceptionToFeatures : public ModifierPerception
 {
 public:
@@ -73,25 +22,29 @@ public:
   PerceptionToFeatures() {}
 
   virtual String getPreferedOutputClassName() const
-    {return T("features ") + decorated->getPreferedOutputClassName();}
+    {return decorated->getPreferedOutputClassName() + T(" as features");}
 
   virtual PerceptionPtr getModifiedPerception(size_t index, TypePtr valueType) const
   {
+    PerceptionPtr decoratedSubPerception = decorated->getOutputVariableGenerator(index);
+    if (decoratedSubPerception)
+      return PerceptionPtr(new PerceptionToFeatures(decoratedSubPerception));
+
     if (valueType->inheritsFrom(doubleType()))
-      return PerceptionPtr();
+      return PerceptionPtr(); // identity
     if (valueType->inheritsFrom(enumValueType()))
-      return PerceptionPtr(new EnumValueToFeaturesPerception(valueType));
+      return enumValueFeatures(valueType);
     if (valueType->inheritsFrom(integerType()))
-      return PerceptionPtr(new IntegerToFeaturesPerception());
+      return nullPerception();
 
     // to be continued
-    return PerceptionPtr();
+    return PerceptionPtr(); // identity
   }
 
   virtual ObjectPtr clone() const
     {return new PerceptionToFeatures(decorated);}
 };
-
+*/
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PERCEPTION_TO_FEATURES_H_
