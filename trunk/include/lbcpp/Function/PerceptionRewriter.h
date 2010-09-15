@@ -17,9 +17,6 @@ namespace lbcpp
 class PerceptionRewriteRule : public Object
 {
 public:
-  PerceptionRewriteRule(PerceptionPtr target) : target(target) {}
-  PerceptionRewriteRule() {}
-
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const = 0;
 };
 
@@ -35,8 +32,8 @@ public:
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const
     {return type == this->type ? target : PerceptionPtr();}
 
-private:
-  friend class TypeBasedPerceptionRewriteRule;
+protected:
+  friend class TypeBasedPerceptionRewriteRuleClass;
   PerceptionPtr target;
   TypePtr type;
 };
@@ -50,7 +47,7 @@ public:
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const;
 
 private:
-  friend class TypeAndStackBasedPerceptionRewriteRule;
+  friend class TypeAndStackBasedPerceptionRewriteRuleClass;
   VectorPtr stack;
 };
 
@@ -65,9 +62,10 @@ class PerceptionRewriter : public Object
 {
 public:
   void addRule(PerceptionRewriteRulePtr rule);
-  void addEnumValueFeaturesRule();
   void addRule(TypePtr type, PerceptionPtr target);
   void addRule(TypePtr type, const String& stack, PerceptionPtr target);
+
+  void addEnumValueFeaturesRule();
 
   PerceptionPtr rewrite(PerceptionPtr perception) const;
   PerceptionPtr rewriteRecursively(PerceptionPtr perception, std::vector<String>& stack) const;

@@ -83,3 +83,9 @@ void CompositePerception::computePerception(const Variable& input, PerceptionCal
   for (size_t i = 0; i < getNumPerceptions(); ++i)
     callback->sense(i, getPerception(i), input);
 }
+
+PerceptionPtr lbcpp::identityPerception()
+{
+  static PerceptionPtr identity = identityPerception(anyType());
+  return identity;
+}

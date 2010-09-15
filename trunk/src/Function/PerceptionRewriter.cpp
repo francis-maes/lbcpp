@@ -58,14 +58,18 @@ void PerceptionRewriter::addRule(PerceptionRewriteRulePtr rule)
   {rules->append(rule);}
 
 void PerceptionRewriter::addRule(TypePtr type, PerceptionPtr target)
-  {rules->append(new PerceptionRewriteRule(type, target));}
+  {rules->append(new TypeBasedPerceptionRewriteRule(type, target));}
 
 void PerceptionRewriter::addRule(TypePtr type, const String& stack, PerceptionPtr target)
-  {rules->append(new PerceptionRewriteRule(type, stack, target));}
+  {rules->append(new TypeAndStackBasedPerceptionRewriteRule(type, stack, target));}
+
+void PerceptionRewriter::addEnumValueFeaturesRule()
+  {rules->append(new EnumValueFeaturesPerceptionRewriteRule());}
 
 PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter();
-  //rewriter->addRule(
+  rewriter->addEnumValueFeaturesRule();
+  rewriter->addRule(doubleType(), identityPerception());
   return rewriter->rewrite(perception);
 }
