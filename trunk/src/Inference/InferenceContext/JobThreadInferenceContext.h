@@ -18,10 +18,16 @@ namespace lbcpp
 class JobThreadInferenceContext : public InferenceContext
 {
 public:
-  JobThreadInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack)
-    : thread(thread), pool(pool), stack(stack ? stack->cloneAndCast<InferenceStack>() : InferenceStackPtr(new InferenceStack()))
+  JobThreadInferenceContext(InferenceContextPtr parentContext, Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack)
+    : parentContext(parentContext), thread(thread), pool(pool), stack(stack ? stack->cloneAndCast<InferenceStack>() : InferenceStackPtr(new InferenceStack()))
     {}
   JobThreadInferenceContext() : thread(NULL) {}
+
+  virtual void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+    {parentContext->callPreInference(stack, input, supervision, output, returnCode);}
+
+  virtual void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    {parentContext->callPostInference(stack, input, supervision, output, returnCode);}
 
   virtual InferenceStackPtr getCurrentStack() const
     {return stack;}
@@ -54,7 +60,7 @@ public:
       size_t end = begin + step;
       if (end > n)
         end = n;
-      ThreadPoolJob* job = new RunParallelInferencesJob(pool, stack, inference, state, begin, end, thread);
+      ThreadPoolJob* job = new RunParallelInferencesJob(parentContext, pool, stack, inference, state, begin, end, thread);
       pool->addJob(job, stack->getDepth());
       begin = end;
     }
@@ -66,6 +72,7 @@ public:
 protected:
   friend class JobThreadInferenceContextClass;
 
+  InferenceContextPtr parentContext;
   Thread* thread;
   ThreadPoolPtr pool;
   InferenceStackPtr stack;

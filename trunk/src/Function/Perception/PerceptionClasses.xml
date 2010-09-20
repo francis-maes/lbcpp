@@ -71,7 +71,10 @@
     <class name="PerceptionRewriter">
       <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
     </class>
-    <class name="RewritedPerception" base="DecoratorPerception" abstract="yes"/>
+    
+    <class name="RewritedPerception" base="DecoratorPerception">
+      <variable type="PerceptionRewriter" name="rewriter"/>
+    </class>
 
   </namespace>
   

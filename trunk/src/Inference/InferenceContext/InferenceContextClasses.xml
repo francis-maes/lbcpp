@@ -15,7 +15,8 @@
     </class>
 
     <class name="JobThreadInferenceContext" base="InferenceContext">
-      <constructor arguments="Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack"/>
+      <constructor arguments="InferenceContextPtr parentContext, Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack"/>
+      <variable type="InferenceContext" name="parentContext"/>
       <variable type="ThreadPool" name="pool"/>
       <variable type="InferenceStack" name="stack"/>
     </class>

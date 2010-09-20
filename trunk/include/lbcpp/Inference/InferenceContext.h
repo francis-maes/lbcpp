@@ -35,6 +35,9 @@ public:
   void removeCallback(InferenceCallbackPtr callback);
   void clearCallbacks();
 
+  virtual void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
+  virtual void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
+
 protected:
   virtual InferenceStackPtr getCurrentStack() const = 0;
 
@@ -47,8 +50,6 @@ protected:
   virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
   
   Variable callRunInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
-  void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
     
 private:
   std::vector<InferenceCallbackPtr> callbacks;

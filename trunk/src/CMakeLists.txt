@@ -185,6 +185,7 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
 SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/NullPerception.h
   Function/Perception/IdentityPerception.h
+  Function/Perception/RewritedPerception.h
   Function/Perception/WindowPerception.h
   Function/Perception/HistogramPerception.h
   Function/Perception/HistogramPerception.cpp

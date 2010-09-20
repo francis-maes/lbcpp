@@ -94,6 +94,20 @@ protected:
 
 ///////////////////////////////////////// 
 
+class StdOutPrinter
+{
+public:
+  void print(const String& line)
+  {
+    ScopedLock _(lock);
+    std::cout << line << std::endl;
+  }
+
+private:
+  CriticalSection lock;
+};
+static StdOutPrinter stdOutPrinter;
+
 class MyInferenceCallback : public InferenceCallback
 {
 public:
@@ -115,7 +129,7 @@ public:
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
       String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
-      std::cout << "=== Learning " << input[0].getObject()->getName() << " with " << input[1].size() << " " << inputTypeName << "(s) ===" << std::endl;
+      stdOutPrinter.print(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
       //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
       //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
@@ -129,10 +143,10 @@ public:
     //if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
-      std::cout << std::endl
-                << "=====================================================" << std::endl
-                << "================ EVALUATION =========================  " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl
-                << "=====================================================" << std::endl;
+      stdOutPrinter.print(String::empty);
+      stdOutPrinter.print(T("====================================================="));
+      stdOutPrinter.print(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
+      stdOutPrinter.print(T("====================================================="));
       
       InferenceContextPtr validationContext = singleThreadedInferenceContext();
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
@@ -143,11 +157,11 @@ public:
       validationContext->evaluate(inference, testingData, evaluator);
       processResults(evaluator, false);
 
-      std::cout << "=====================================================" << std::endl << std::endl;
+      stdOutPrinter.print(T("====================================================="));
     }
     else if (stack->getDepth() == 1)
     {
-      std::cout << "Bye." << std::endl;
+      stdOutPrinter.print(T("Bye."));
     }
   }
 
