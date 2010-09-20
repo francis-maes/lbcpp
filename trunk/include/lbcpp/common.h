@@ -8,6 +8,8 @@
 #ifndef LBCPP_COMMON_H_
 # define LBCPP_COMMON_H_
 
+# define LBCPP_MULTI_THREAD
+
 /*
 ** Standard library
 */
@@ -50,9 +52,8 @@ class ScopedLock
 public:
   ScopedLock(const CriticalSection& cs) {}
 };
-}; /* namespace lbcpp */
-
 #endif // LBCPP_MULTI_THREAD
+}; /* namespace lbcpp */
 
 #endif // !LBCPP_COMMON_H_
 

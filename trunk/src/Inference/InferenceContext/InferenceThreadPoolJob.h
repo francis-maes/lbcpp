@@ -69,7 +69,7 @@ public:
   virtual JobStatus runJob()
   {
     InferenceContextPtr context = createContext();
-    for (size_t i = beginIndex; i <= endIndex; ++i)
+    for (size_t i = beginIndex; i < endIndex; ++i)
     {
       if (shouldExit())
         return jobHasFinished;
