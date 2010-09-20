@@ -22,7 +22,7 @@ class InferenceContext : public Object
 public:
   typedef Inference::ReturnCode ReturnCode;
 
-  virtual Variable runInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   ReturnCode train(InferencePtr inference, ContainerPtr examples);
   ReturnCode evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator);
@@ -34,7 +34,9 @@ public:
   void removeCallback(InferenceCallbackPtr callback);
   void clearCallbacks();
 
-protected:  
+protected:
+  virtual InferenceStackPtr getCurrentStack() const = 0;
+
   friend class DecoratorInference;
   friend class SequentialInference;
   friend class ParallelInference;
@@ -52,6 +54,43 @@ private:
 };
 
 extern InferenceContextPtr singleThreadedInferenceContext();
+
+struct ThreadJobQueue;
+class ThreadPool : public Object
+{
+public:
+  ThreadPool(size_t numCpus);
+  virtual ~ThreadPool();
+
+  void update();
+
+  size_t getNumCpus() const
+    {return numCpus;}
+
+  size_t getNumWaitingThreads() const;
+  size_t getNumRunningThreads() const;
+  size_t getNumThreads() const;
+
+  void addJob(juce::ThreadPoolJob* job, size_t priority = 0);
+  void addJobAndWaitExecution(juce::ThreadPoolJob* job, size_t priority = 0);
+
+  void waitThread(juce::Thread* thread);
+
+private:
+  ThreadJobQueue* queue;
+  size_t numCpus;
+
+  size_t volatile numWaitingThreads;
+
+  CriticalSection threadsLock;
+  std::vector<juce::Thread* > threads;
+
+  void startThreadForJob(juce::ThreadPoolJob* job);
+  juce::Thread* createThreadForJobIfAvailableCpu(juce::ThreadPoolJob* job);
+};
+
+typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;
+
 
 }; /* namespace lbcpp */
 

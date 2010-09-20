@@ -160,6 +160,358 @@ private:
   size_t iterationNumber;
   juce::uint32 startingTime;
 };
+
+
+#include <list>
+namespace lbcpp
+{
+
+  using juce::Thread;
+  using juce::ThreadPoolJob;
+
+  
+//////////////////////////////////////
+////// Thread Pool ///////////////////
+//////////////////////////////////////
+
+class RunJobThread : public juce::Thread
+{
+public:
+  RunJobThread(ThreadPoolJob* job)
+    : Thread(job->getJobName()), job(job) {}
+
+  virtual ~RunJobThread()
+    {delete job;}
+
+  void signalShouldExit()
+  {
+    job->signalJobShouldExit();
+    signalThreadShouldExit();
+  }
+
+  virtual void run()
+    {job->runJob();}
+
+  juce_UseDebuggingNewOperator
+
+private:
+  ThreadPoolJob* job;
+};
+
+struct ThreadJobQueue
+{
+  void addJob(ThreadPoolJob* job, size_t priority = 0)
+  {
+    ScopedLock _(waitingJobsLock); 
+    if (waitingJobs.size() <= priority)
+      waitingJobs.resize(priority + 1);
+    waitingJobs[priority].push_back(job);
+  }
+
+  ThreadPoolJob* popJob()
+  {
+    ScopedLock _(waitingJobsLock);
+    for (int i = waitingJobs.size() - 1; i >= 0; --i)
+    {
+      std::list<ThreadPoolJob* >& jobs = waitingJobs[i];
+      if (jobs.size())
+      {
+        ThreadPoolJob* res = jobs.front();
+        jobs.pop_front();
+        return res;
+      }
+    }
+    return NULL;
+  }
+  
+
+private:
+  CriticalSection waitingJobsLock;
+  std::vector< std::list< ThreadPoolJob* > > waitingJobs;
+};
+
+/*
+** ThreadPool
+*/
+ThreadPool::ThreadPool(size_t numCpus)
+  : numCpus(numCpus), queue(new ThreadJobQueue()) {}
+
+ThreadPool::~ThreadPool()
+{
+  for (size_t i = 0; i < threads.size(); ++i)
+    ((RunJobThread* )threads[i])->signalShouldExit();
+  for (size_t i = 0; i < threads.size(); ++i)
+    delete threads[i];
+  delete queue;
+}
+
+size_t ThreadPool::getNumWaitingThreads() const
+  {return numWaitingThreads;}
+
+size_t ThreadPool::getNumRunningThreads() const
+  {return getNumThreads() - numWaitingThreads;}
+
+size_t ThreadPool::getNumThreads() const
+  {ScopedLock _(threadsLock); return threads.size();}
+
+void ThreadPool::update()
+{
+  ScopedLock _(threadsLock); 
+  for (size_t i = 0; i < threads.size(); )
+  {
+    if (!threads[i]->isThreadRunning())
+      delete threads[i];
+    else
+      ++i;
+  }
+  while (getNumRunningThreads() < numCpus)
+  {
+    ThreadPoolJob* job = queue->popJob();
+    if (job)
+      startThreadForJob(job);
+    else
+      break;
+  }
+}
+
+void ThreadPool::addJob(juce::ThreadPoolJob* job, size_t priority)
+  {queue->addJob(job, priority); update();}
+
+void ThreadPool::waitThread(juce::Thread* thread)
+{
+  ++numWaitingThreads;
+  thread->wait(-1);
+  --numWaitingThreads;
+}
+
+class SignalThreadPoolJob : public ThreadPoolJob
+{
+public:
+  SignalThreadPoolJob(ThreadPoolJob* job, juce::WaitableEvent& event)
+    : ThreadPoolJob(job->getJobName()), job(job), event(event) {}
+  virtual ~SignalThreadPoolJob()
+    {delete job;}
+
+  virtual JobStatus runJob()
+  {
+    JobStatus res = job->runJob();
+    event.signal();
+    return res;
+  }
+
+protected:
+  ThreadPoolJob* job;
+  juce::WaitableEvent& event;
+};
+
+void ThreadPool::addJobAndWaitExecution(juce::ThreadPoolJob* job, size_t priority)
+{
+  ScopedLock _(threadsLock); 
+  juce::WaitableEvent event;
+  ThreadPoolJob* signalingJob = new SignalThreadPoolJob(job, event);
+  queue->addJob(job, priority);
+  while (!event.wait(5))
+    update();
+}
+
+void ThreadPool::startThreadForJob(juce::ThreadPoolJob* job)
+{
+  ScopedLock _(threadsLock); 
+  Thread* res = new RunJobThread(job);
+  threads.push_back(res);
+  res->startThread();
+}
+
+//////////////////////////////////////
+//////////// InferenceJob  ///////////
+//////////////////////////////////////
+extern InferenceContextPtr threadInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack);
+
+class InferenceJob : public ThreadPoolJob
+{
+public:
+  InferenceJob(ThreadPoolPtr pool, InferenceStackPtr stack, const String& name)
+    : ThreadPoolJob(name), pool(pool), stack(stack) {}
+
+protected:
+  InferenceContextPtr createContext() const
+    {Thread* thread = Thread::getCurrentThread(); jassert(thread); return threadInferenceContext(thread, pool, stack);}
+
+  ThreadPoolPtr pool;
+  InferenceStackPtr stack;
+};
+
+class RunInferenceJob : public InferenceJob
+{
+public:
+  RunInferenceJob(ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
+    : InferenceJob(pool, stack, inference->toString()), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode) {}
+
+  virtual JobStatus runJob()
+  {
+    output = createContext()->run(inference, input, supervision, returnCode);
+    return jobHasFinished;
+  }
+
+private:
+  InferencePtr inference;
+  Variable input;
+  Variable supervision;
+  Variable& output;
+  Inference::ReturnCode& returnCode;
+};
+
+class RunParallelInferencesJob : public InferenceJob
+{
+public:
+  RunParallelInferencesJob(ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, Thread* originatingThread)
+    : InferenceJob(pool, stack, String::empty), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), originatingThread(originatingThread)
+  {
+    String interval((int)beginIndex);
+    if (endIndex != beginIndex + 1)
+      interval += T(":") + String((int)(endIndex - 1));
+    setJobName(inference->toString() + T("[") + interval + T("]"));
+  }
+
+  virtual JobStatus runJob()
+  {
+    InferenceContextPtr context = createContext();
+    for (size_t i = beginIndex; i <= endIndex; ++i)
+    {
+      if (shouldExit())
+        return jobHasFinished;
+      Variable subOutput;
+      InferencePtr subInference = state->getSubInference(i);
+      if (subInference)
+      {
+        returnCode = Inference::finishedReturnCode;
+        subOutput = context->run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        if (returnCode == Inference::errorReturnCode)
+        {
+          MessageCallback::error("ParallelMultiThreadedInferenceJob::execute", "Could not finish sub inference");
+          return jobHasFinished; 
+        }
+      }
+      state->setSubOutput(i, subOutput);
+    }
+
+    if (state->haveAllOutputsBeenSet())
+      originatingThread->notify();
+
+    return jobHasFinished;
+  }
+
+  Inference::ReturnCode getReturnCode() const
+    {return returnCode;}
+
+private:
+  ParallelInferencePtr inference;
+  ParallelInferenceStatePtr state;
+  size_t beginIndex;
+  size_t endIndex;
+  Inference::ReturnCode returnCode;
+  Thread* originatingThread;
+};
+
+
+//////////////////////////////////////
+//////////// ThreadInferenceContext //
+//////////////////////////////////////
+
+class ThreadInferenceContext : public InferenceContext
+{
+public:
+  ThreadInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack)
+    : thread(thread), pool(pool), stack(stack ? stack->cloneAndCast<InferenceStack>() : InferenceStackPtr(new InferenceStack()))
+  {
+  }
+
+  virtual InferenceStackPtr getCurrentStack() const
+    {return stack;}
+
+  virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    if (thread->threadShouldExit())
+    {
+      returnCode = Inference::canceledReturnCode;
+      return Variable();
+    }
+    return InferenceContext::run(inference, input, supervision, returnCode);
+  }
+
+  virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    ParallelInferenceStatePtr state = inference->prepareInference(InferenceContextPtr(this), input, supervision, returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return Variable();
+    
+    size_t step = state->getNumSubInferences() / pool->getNumCpus();
+    if (!step)
+      step = 1;
+
+    size_t n = state->getNumSubInferences();
+    for (size_t begin = 0; begin < n; )
+    {
+      size_t end = begin + step;
+      if (end > n)
+        end = n;
+      ThreadPoolJob* job = new RunParallelInferencesJob(pool, stack, inference, state, begin, end, thread);
+      pool->addJob(job, stack->getDepth());
+      begin = end;
+    }
+    pool->waitThread(thread);
+    return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
+  }
+
+protected:
+  Thread* thread;
+  ThreadPoolPtr pool;
+  InferenceStackPtr stack;
+};
+
+InferenceContextPtr threadInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack)
+  {return new ThreadInferenceContext(thread, pool, stack);}
+
+//////////////////////////////////////
+//////MultiThreadedInferenceContext //
+//////////////////////////////////////
+
+class MultiThreadedInferenceContext : public InferenceContext
+{
+public:
+  MultiThreadedInferenceContext(size_t numCpus)
+    : pool(new ThreadPool(numCpus))
+    {}
+
+  virtual InferenceStackPtr getCurrentStack() const
+    {jassert(false); return InferenceStackPtr();}
+
+  virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    Variable output;
+    ThreadPoolJob* job = new RunInferenceJob(pool, InferenceStackPtr(), inference, input, supervision, output, returnCode);
+    pool->addJobAndWaitExecution(job);
+    return output;
+  }
+
+protected:
+  ThreadPoolPtr pool;
+
+  virtual Variable runDecoratorInference(DecoratorInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {jassert(false); return Variable();}
+
+  virtual Variable runSequentialInference(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {jassert(false); return Variable();}
+
+  virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {jassert(false); return Variable();}
+};
+
+InferenceContextPtr multiThreadedInferenceContext(size_t numCpus)
+  {return new MultiThreadedInferenceContext(numCpus);}
+
+}; /* namespace lbcpp */
+
 ///////////////////////////////////////// 
 
 VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
@@ -178,7 +530,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/Users/francis/tmp"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -210,7 +562,8 @@ int main(int argc, char** argv)
 
   Variable(inference).printRecursively(std::cout, 2);
 
-  InferenceContextPtr context = singleThreadedInferenceContext();
+  InferenceContextPtr context = multiThreadedInferenceContext(7);
+    //singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
 

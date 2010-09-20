@@ -70,6 +70,9 @@ public:
   InferencePtr getInference(int index) const
     {return index >= 0 && index < (int)stack.size() ? stack[index] : InferencePtr();}
 
+  virtual void clone(ObjectPtr target) const
+    {((InferenceStackPtr)target)->stack = stack;}
+
 private:
   std::vector<InferencePtr> stack;
 };
