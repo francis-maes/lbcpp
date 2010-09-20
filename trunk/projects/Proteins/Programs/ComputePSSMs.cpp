@@ -127,7 +127,7 @@ void computePSSMsAndDSSPs(const File& inputDirectory, const File& pssmOutputDire
   OwnedArray<File> inputFiles;
   inputDirectory.findChildFiles(inputFiles, File::findFiles, false, T("*.xml"));
   
-  ThreadPool threadPool(numCpus);
+  juce::ThreadPool threadPool(numCpus);
   for (int i = 0; i < inputFiles.size(); ++i)
   {
     File inputFile = *inputFiles[i];

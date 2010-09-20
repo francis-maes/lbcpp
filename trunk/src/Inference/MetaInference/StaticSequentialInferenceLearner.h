@@ -66,7 +66,7 @@ public:
     ContainerPtr subTrainingData = state->getSubInput()[1].getObjectAndCast<Container>();
      // evaluate sub-inference and update currentObjects
     InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(targetInference, state->targetStates);
-    context->runInference(evaluateStepOnSubTrainingData, subTrainingData, ObjectPtr(), returnCode);
+    context->run(evaluateStepOnSubTrainingData, subTrainingData, ObjectPtr(), returnCode);
     
     int index = state->getStepNumber(); 
     jassert(index >= 0);

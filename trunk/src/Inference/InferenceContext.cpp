@@ -16,6 +16,35 @@ using namespace lbcpp;
 /*
 ** InferenceContext
 */
+Variable InferenceContext::run(InferencePtr inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
+{
+  InferenceStackPtr stack = getCurrentStack();
+  jassert(stack);
+  stack->push(inference);
+
+  Variable input(in);
+  Variable supervision(sup);
+  Variable output;
+  returnCode = Inference::finishedReturnCode;
+  callPreInference(stack, input, supervision, output, returnCode);
+  if (returnCode == Inference::errorReturnCode)
+  {
+    MessageCallback::warning(T("InferenceContext::run"), T("pre-inference failed"));
+    jassert(false);
+    return Variable();
+  }
+  
+  if (returnCode == Inference::canceledReturnCode)
+    {jassert(output);}
+  else if (!output)
+    output = callRunInference(inference, input, supervision, returnCode);  
+
+  callPostInference(stack, input, supervision, output, returnCode);
+
+  stack->pop();
+  return output;
+}
+
 Variable InferenceContext::callRunInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {return inference->run(InferenceContextPtr(this), input, supervision, returnCode);}
 
@@ -31,7 +60,7 @@ Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference
   InferencePtr subInference = state->getSubInference();
   if (subInference)
   {
-    Variable subOutput = runInference(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
+    Variable subOutput = run(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
     state->setSubOutput(subOutput);
@@ -49,7 +78,7 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
     return ObjectPtr();
   while (true)
   {
-    Variable subOutput = runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
+    Variable subOutput = run(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return state->getInput();
 
@@ -74,7 +103,7 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerP
   jassert(learner);
   if (!learner)
     return Inference::errorReturnCode;
-  runInference(learner, Variable::pair(inference, examples), Variable(), res);
+  run(learner, Variable::pair(inference, examples), Variable(), res);
   return res;
 }
 
@@ -101,7 +130,7 @@ Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, Contain
   ReturnCode res = Inference::finishedReturnCode;
   InferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(evaluator);
   appendCallback(evaluationCallback);
-  runInference(runOnSupervisedExamplesInference(inference), examples, Variable(), res);
+  run(runOnSupervisedExamplesInference(inference), examples, Variable(), res);
   removeCallback(evaluationCallback);
   return res;
 }
@@ -134,46 +163,20 @@ void InferenceContext::removeCallback(InferenceCallbackPtr callback)
 void InferenceContext::clearCallbacks()
   {callbacks.clear();}
 
-class DefaultInferenceContext : public InferenceContext
-{
-public:
-  virtual String getName() const
-    {return getClassName();}
-};
-
 /*
 ** SingleThreadedInferenceContext
 */
-class SingleThreadedInferenceContext : public DefaultInferenceContext
+class SingleThreadedInferenceContext : public InferenceContext
 {
 public:
   SingleThreadedInferenceContext()
     : stack(new InferenceStack()) {}
+  
+  virtual String getName() const
+    {return T("SingleThreadedInferenceContext");}
 
-  virtual Variable runInference(InferencePtr inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
-  {
-    stack->push(inference);
-    Variable input(in);
-    Variable supervision(sup);
-    Variable output;
-    returnCode = Inference::finishedReturnCode;
-    callPreInference(stack, input, supervision, output, returnCode);
-    if (returnCode == Inference::errorReturnCode)
-    {
-      MessageCallback::warning(T("SingleThreadedInferenceContext::runInference"), T("pre-inference failed"));
-      jassert(false);
-      return Variable();
-    }
-    
-    if (returnCode == Inference::canceledReturnCode)
-      {jassert(output);}
-    else if (!output)
-      output = callRunInference(inference, input, supervision, returnCode);  
-
-    callPostInference(stack, input, supervision, output, returnCode);
-    stack->pop();
-    return output;
-  }
+  virtual InferenceStackPtr getCurrentStack() const
+    {return stack;}
 
   virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -184,18 +187,19 @@ public:
     size_t n = state->getNumSubInferences();
     for (size_t i = 0; i < n; ++i)
     {
+      Variable subOutput;
       InferencePtr subInference = state->getSubInference(i);
       if (subInference)
       {
         returnCode = Inference::finishedReturnCode;
-        Variable subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
           MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
           return Variable(); 
         }
-        state->setSubOutput(i, subOutput);
       }
+      state->setSubOutput(i, subOutput);
     }
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
   }
