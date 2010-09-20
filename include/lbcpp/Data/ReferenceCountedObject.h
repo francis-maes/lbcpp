@@ -81,7 +81,7 @@ protected:
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
   friend struct VariableValue;
 
-  size_t refCount;              /*!< The object's reference count */
+  int refCount;              /*!< The object's reference count */
 
 #ifdef JUCE_WIN32 // msvc compiler bug: the template friend class ReferenceCountedObjectPtr does not work
 public:
@@ -89,14 +89,13 @@ public:
 
   /** Increments the object's reference count.  */
   inline void incrementReferenceCounter()
-    {++refCount;}
+    {juce::atomicIncrement(refCount);}
 
   /** Decrements the object's reference count.  */
   inline void decrementReferenceCounter()
   {
     jassert(refCount > 0);
-    --refCount;
-    if (refCount == 0)
+    if (juce::atomicDecrementAndReturn(refCount) == 0)
       delete this;
   }
 };

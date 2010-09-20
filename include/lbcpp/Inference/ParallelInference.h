@@ -21,7 +21,7 @@ class ParallelInferenceState : public InferenceState
 {
 public:
   ParallelInferenceState(const Variable& input, const Variable& supervision)
-    : InferenceState(input, supervision), numberOutputsSet(0) {}
+    : InferenceState(input, supervision), numOutputsSet(0) {}
 
   void reserve(size_t size)
     {subInferences.reserve(size);}
@@ -45,10 +45,11 @@ public:
     {jassert(index < subInferences.size()); return subInferences[index].output;}
 
   void setSubOutput(size_t index, const Variable& subOutput)
-    {jassert(index < subInferences.size()); subInferences[index].output = subOutput; ++numberOutputsSet;}
+    {jassert(index < subInferences.size()); subInferences[index].output = subOutput; ++numOutputsSet;}
 
   bool haveAllOutputsBeenSet() const
-    {jassert(numberOutputsSet <= subInferences.size()); return numberOutputsSet == subInferences.size();}
+  {juce::DBG("haveAllOutputsBeenSet: " + String((int)numOutputsSet) + T(" / ") + String((int)subInferences.size()));
+    jassert(numOutputsSet <= subInferences.size()); return numOutputsSet == subInferences.size();}
 
 private:
   struct SubInference
@@ -63,7 +64,7 @@ private:
   };
 
   std::vector<SubInference> subInferences;
-  size_t numberOutputsSet;
+  size_t volatile numOutputsSet;
 };
 
 typedef ReferenceCountedObjectPtr<ParallelInferenceState> ParallelInferenceStatePtr;
