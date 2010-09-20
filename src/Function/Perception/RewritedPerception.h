@@ -17,8 +17,8 @@ namespace lbcpp
 class RewritedPerception : public DecoratorPerception
 {
 public:
-  RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rules, std::vector<String>& stack)
-    : DecoratorPerception(decorated), rules(rules) {computeOutputVariables(stack);}
+  RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, std::vector<String>& stack)
+    : DecoratorPerception(decorated), rewriter(rewriter) {computeOutputVariables(stack);}
   RewritedPerception() {}
 
   virtual TypePtr getOutputType() const
@@ -55,7 +55,7 @@ protected:
   friend class PerceptionRewriteRules;
   friend class RewritedPerceptionClass;
 
-  PerceptionRewriterPtr rules;
+  PerceptionRewriterPtr rewriter;
 
   struct OutputVariable
   {
@@ -69,7 +69,7 @@ protected:
   
   void computeOutputVariables(std::vector<String>& stack)
   {
-    jassert(rules);
+    jassert(rewriter);
     outputVariables.clear();
     variablesMap.clear();
 
@@ -84,9 +84,9 @@ protected:
 
       PerceptionPtr newPerception;
       if (variablePerception)
-        newPerception = rules->rewriteRecursively(variablePerception, stack);
+        newPerception = rewriter->rewriteRecursively(variablePerception, stack);
       else
-        newPerception = rules->applyRules(variableType, stack);
+        newPerception = rewriter->applyRules(variableType, stack);
 
       if (newPerception)
       {

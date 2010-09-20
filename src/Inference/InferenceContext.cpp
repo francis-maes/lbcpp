@@ -306,7 +306,7 @@ void ThreadPool::addJobAndWaitExecution(juce::ThreadPoolJob* job, size_t priorit
   ScopedLock _(threadsLock); 
   juce::WaitableEvent event;
   ThreadPoolJob* signalingJob = new SignalThreadPoolJob(job, event);
-  addJob(job, priority);
+  addJob(signalingJob, priority);
   while (!event.wait(5))
     update();
 }

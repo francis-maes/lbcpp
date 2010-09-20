@@ -28,7 +28,7 @@ public:
   virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     Variable output;
-    ThreadPoolJob* job = new RunInferenceJob(pool, InferenceStackPtr(), inference, input, supervision, output, returnCode);
+    ThreadPoolJob* job = new RunInferenceJob(refCountedPointerFromThis(this), pool, InferenceStackPtr(), inference, input, supervision, output, returnCode);
     pool->addJobAndWaitExecution(job);
     return output;
   }

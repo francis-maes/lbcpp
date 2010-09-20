@@ -18,18 +18,19 @@ namespace lbcpp
 using juce::ThreadPoolJob;
 using juce::Thread;
 
-extern InferenceContextPtr jobThreadInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack);
+extern InferenceContextPtr jobThreadInferenceContext(InferenceContextPtr parentContext, Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack);
 
 class InferenceJob : public ThreadPoolJob
 {
 public:
-  InferenceJob(ThreadPoolPtr pool, InferenceStackPtr stack, const String& name)
-    : ThreadPoolJob(name), pool(pool), stack(stack) {}
+  InferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, const String& name)
+    : ThreadPoolJob(name), parentContext(parentContext), pool(pool), stack(stack) {}
 
 protected:
   InferenceContextPtr createContext() const
-    {Thread* thread = Thread::getCurrentThread(); jassert(thread); return jobThreadInferenceContext(thread, pool, stack);}
+    {Thread* thread = Thread::getCurrentThread(); jassert(thread); return jobThreadInferenceContext(parentContext, thread, pool, stack);}
 
+  InferenceContextPtr parentContext;
   ThreadPoolPtr pool;
   InferenceStackPtr stack;
 };
@@ -37,8 +38,8 @@ protected:
 class RunInferenceJob : public InferenceJob
 {
 public:
-  RunInferenceJob(ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
-    : InferenceJob(pool, stack, inference->toString()), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode) {}
+  RunInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
+    : InferenceJob(parentContext, pool, stack, inference->toString()), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode) {}
 
   virtual JobStatus runJob()
   {
@@ -57,8 +58,8 @@ private:
 class RunParallelInferencesJob : public InferenceJob
 {
 public:
-  RunParallelInferencesJob(ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, Thread* originatingThread)
-    : InferenceJob(pool, stack, String::empty), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), originatingThread(originatingThread)
+  RunParallelInferencesJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, Thread* originatingThread)
+    : InferenceJob(parentContext, pool, stack, String::empty), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), originatingThread(originatingThread)
   {
     String interval((int)beginIndex);
     if (endIndex != beginIndex + 1)
