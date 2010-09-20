@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="InferenceContext" directory="Inference/InferenceContext">
+
+  <namespace name="lbcpp">
+
+    <class name="ThreadPool"/>
+    <class name="InferenceStack"/>
+
+    <class name="InferenceContext" abstract="yes"/>
+
+    <class name="SingleThreadedInferenceContext" base="InferenceContext">
+      <constructor/>
+      <variable type="InferenceStack" name="stack"/>
+    </class>
+
+    <class name="JobThreadInferenceContext" base="InferenceContext">
+      <constructor arguments="Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack"/>
+      <variable type="ThreadPool" name="pool"/>
+      <variable type="InferenceStack" name="stack"/>
+    </class>
+    
+    <class name="MultiThreadedInferenceContext" base="InferenceContext">
+      <constructor arguments="size_t numCpus"/>
+      <variable type="ThreadPool" name="pool"/>
+    </class>
+
+  </namespace>
+  
+</file>

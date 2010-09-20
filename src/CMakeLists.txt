@@ -22,6 +22,7 @@ GENERATE_INTROSPECTION_CODE(Function/Perception/Features/PerceptionFeaturesClass
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/InferenceContext/InferenceContextClasses.xml InferenceContextClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClasses.xml NumericalInferenceClasses.cpp)
@@ -233,6 +234,15 @@ SET(LBCPP_INFERENCE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceClasses.cpp
 )
 
+SET(LBCPP_INFERENCE_CONTEXT_SOURCES
+  Inference/InferenceContext/SingleThreadedInferenceContext.h
+  Inference/InferenceContext/InferenceThreadPoolJob.h
+  Inference/InferenceContext/JobThreadInferenceContext.h
+  Inference/InferenceContext/MultiThreadedInferenceContext.h
+  Inference/InferenceContext/InferenceContextClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceContextClasses.cpp
+)
+
 SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
   Inference/NumericalInference/NumericalInference.h
   Inference/NumericalInference/LinearInference.h
@@ -324,6 +334,7 @@ SET(LBCPP_CORE
 
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
+  ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
@@ -359,14 +370,15 @@ SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 ## Inference
 
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
+SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
+SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
+
 SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})
 SOURCE_SUB_GROUP(Inference DecisionTreeInference FILES ${LBCPP_INFERENCE_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
 SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 
-SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
-SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Inference BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 
