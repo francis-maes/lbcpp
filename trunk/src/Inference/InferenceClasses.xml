@@ -7,6 +7,7 @@
   <include file="lbcpp/Inference/ParallelInference.h"/>
   <include file="lbcpp/Inference/InferenceOnlineLearner.h"/>
 
+  <import name="InferenceContext"/>
   <import name="InferenceOnlineLearner"/>
   <import name="ReductionInference"/>
   <import name="DecisionTreeInference"/>

@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_H_
 
 # include "Inference.h"
+# include <list>
 
 namespace lbcpp
 {
@@ -54,12 +55,12 @@ private:
 };
 
 extern InferenceContextPtr singleThreadedInferenceContext();
+extern InferenceContextPtr multiThreadedInferenceContext(size_t numCpus);
 
-struct ThreadJobQueue;
 class ThreadPool : public Object
 {
 public:
-  ThreadPool(size_t numCpus);
+  ThreadPool(size_t numCpus = 1);
   virtual ~ThreadPool();
 
   void update();
@@ -77,14 +78,16 @@ public:
   void waitThread(juce::Thread* thread);
 
 private:
-  ThreadJobQueue* queue;
   size_t numCpus;
-
   size_t volatile numWaitingThreads;
 
   CriticalSection threadsLock;
   std::vector<juce::Thread* > threads;
 
+  CriticalSection waitingJobsLock;
+  std::vector< std::list< juce::ThreadPoolJob* > > waitingJobs;
+
+  juce::ThreadPoolJob* popJob();
   void startThreadForJob(juce::ThreadPoolJob* job);
   juce::Thread* createThreadForJobIfAvailableCpu(juce::ThreadPoolJob* job);
 };

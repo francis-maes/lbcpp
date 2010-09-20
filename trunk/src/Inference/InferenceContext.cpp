@@ -163,50 +163,152 @@ void InferenceContext::removeCallback(InferenceCallbackPtr callback)
 void InferenceContext::clearCallbacks()
   {callbacks.clear();}
 
+/////////////////////////////////////////////////////////////
+///////////////// Thread Pool ///////////////////////////////
+/////////////////////////////////////////////////////////////
+
 /*
-** SingleThreadedInferenceContext
+** RunJobThread
 */
-class SingleThreadedInferenceContext : public InferenceContext
+using juce::Thread;
+using juce::ThreadPoolJob;
+ 
+class RunJobThread : public juce::Thread
 {
 public:
-  SingleThreadedInferenceContext()
-    : stack(new InferenceStack()) {}
-  
-  virtual String getName() const
-    {return T("SingleThreadedInferenceContext");}
+  RunJobThread(ThreadPoolJob* job)
+    : Thread(job->getJobName()), job(job) {}
 
-  virtual InferenceStackPtr getCurrentStack() const
-    {return stack;}
+  virtual ~RunJobThread()
+    {delete job;}
 
-  virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  void signalShouldExit()
   {
-    ParallelInferenceStatePtr state = inference->prepareInference(InferenceContextPtr(this), input, supervision, returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return Variable();
-    
-    size_t n = state->getNumSubInferences();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable subOutput;
-      InferencePtr subInference = state->getSubInference(i);
-      if (subInference)
-      {
-        returnCode = Inference::finishedReturnCode;
-        subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
-        if (returnCode == Inference::errorReturnCode)
-        {
-          MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
-          return Variable(); 
-        }
-      }
-      state->setSubOutput(i, subOutput);
-    }
-    return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
+    job->signalJobShouldExit();
+    signalThreadShouldExit();
   }
 
+  virtual void run()
+    {job->runJob();}
+
+  juce_UseDebuggingNewOperator
+
 private:
-  InferenceStackPtr stack;
+  ThreadPoolJob* job;
 };
 
-InferenceContextPtr lbcpp::singleThreadedInferenceContext()
-  {return new SingleThreadedInferenceContext();}
+/*
+** ThreadPool
+*/
+ThreadPool::ThreadPool(size_t numCpus)
+  : numCpus(numCpus), numWaitingThreads(0) {}
+
+ThreadPool::~ThreadPool()
+{
+  for (size_t i = 0; i < threads.size(); ++i)
+    ((RunJobThread* )threads[i])->signalShouldExit();
+  for (size_t i = 0; i < threads.size(); ++i)
+    delete threads[i];
+}
+
+void ThreadPool::addJob(ThreadPoolJob* job, size_t priority)
+{
+  {
+    ScopedLock _(waitingJobsLock); 
+    if (waitingJobs.size() <= priority)
+      waitingJobs.resize(priority + 1);
+    waitingJobs[priority].push_back(job);
+  }
+  update();
+}
+
+ThreadPoolJob* ThreadPool::popJob()
+{
+  ScopedLock _(waitingJobsLock);
+  for (int i = waitingJobs.size() - 1; i >= 0; --i)
+  {
+    std::list<ThreadPoolJob* >& jobs = waitingJobs[i];
+    if (jobs.size())
+    {
+      ThreadPoolJob* res = jobs.front();
+      jobs.pop_front();
+      return res;
+    }
+  }
+  return NULL;
+}
+
+
+size_t ThreadPool::getNumWaitingThreads() const
+  {return numWaitingThreads;}
+
+size_t ThreadPool::getNumRunningThreads() const
+  {return getNumThreads() - numWaitingThreads;}
+
+size_t ThreadPool::getNumThreads() const
+  {ScopedLock _(threadsLock); return threads.size();}
+
+void ThreadPool::update()
+{
+  ScopedLock _(threadsLock); 
+  for (size_t i = 0; i < threads.size(); )
+  {
+    if (!threads[i]->isThreadRunning())
+      delete threads[i];
+    else
+      ++i;
+  }
+  while (getNumRunningThreads() < numCpus)
+  {
+    ThreadPoolJob* job = popJob();
+    if (job)
+      startThreadForJob(job);
+    else
+      break;
+  }
+}
+
+void ThreadPool::waitThread(juce::Thread* thread)
+{
+  ++numWaitingThreads;
+  thread->wait(-1);
+  --numWaitingThreads;
+}
+
+class SignalThreadPoolJob : public ThreadPoolJob
+{
+public:
+  SignalThreadPoolJob(ThreadPoolJob* job, juce::WaitableEvent& event)
+    : ThreadPoolJob(job->getJobName()), job(job), event(event) {}
+  virtual ~SignalThreadPoolJob()
+    {delete job;}
+
+  virtual JobStatus runJob()
+  {
+    JobStatus res = job->runJob();
+    event.signal();
+    return res;
+  }
+
+protected:
+  ThreadPoolJob* job;
+  juce::WaitableEvent& event;
+};
+
+void ThreadPool::addJobAndWaitExecution(juce::ThreadPoolJob* job, size_t priority)
+{
+  ScopedLock _(threadsLock); 
+  juce::WaitableEvent event;
+  ThreadPoolJob* signalingJob = new SignalThreadPoolJob(job, event);
+  addJob(job, priority);
+  while (!event.wait(5))
+    update();
+}
+
+void ThreadPool::startThreadForJob(juce::ThreadPoolJob* job)
+{
+  ScopedLock _(threadsLock); 
+  Thread* res = new RunJobThread(job);
+  res->startThread();
+  threads.push_back(res);
+}
