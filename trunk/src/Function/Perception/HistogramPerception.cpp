@@ -28,7 +28,8 @@ public:
 
 private:
   void computeAccumulatedScores(const VectorPtr vector)
-  {    
+  {
+    jassert(vector);
     TypePtr type = vector->getElementsType();
     size_t n = vector->getNumElements();
     EnumerationPtr enumeration = type.dynamicCast<Enumeration>();

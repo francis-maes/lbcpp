@@ -22,7 +22,7 @@ public:
     {return vectorClass(anyType());}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return pairType(inputType, pairType(integerType(), integerType()));}
+    {jassert(inputType != nilType()); return pairType(inputType, pairType(integerType(), integerType()));}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {

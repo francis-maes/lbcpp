@@ -143,7 +143,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     return false;
   if (numResidues <= 0)
   {
-    callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + String(serialNumber));
+    callback.errorMessage(T("PDBFileParser::parseSeqResLine"), T("Invalid number of residues: ") + String(numResidues));
     return false;
   }
   if (numResidues < 10)
