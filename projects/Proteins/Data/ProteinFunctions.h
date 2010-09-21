@@ -48,11 +48,14 @@ public:
   
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inputType->getObjectVariableType((size_t)index);}
-  
+
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     jassert(index >= 0 && index < (int)input.getObject()->getNumVariables());
     VectorPtr vector = input.getObject()->getVariable(index).getObjectAndCast<Vector>();
+
+    if (!vector)
+      return Variable::missingValue(proteinClass()->getObjectVariableType((size_t)index));
     return vector;
   }
 

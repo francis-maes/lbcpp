@@ -342,6 +342,7 @@ int main(int argc, char** argv)
   bool isTestVersion = false;
   String multiTaskFeatures;
   bool isExperimentalMode = false;
+  size_t foldCrossValidation = 0;
   
   ArgumentSet arguments;
   /* Input-Output */
@@ -363,6 +364,7 @@ int main(int argc, char** argv)
   /* Modes */
   arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
   arguments.insert(new BooleanArgument(T("IsExperimentalMode"), isExperimentalMode));
+  arguments.insert(new IntegerArgument(T("FoldCrossValidation"), (int&)foldCrossValidation));
   
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -396,19 +398,22 @@ int main(int argc, char** argv)
                             ->apply(proteinToInputOutputPairFunction())
                             ->randomize();
   ContainerPtr testingData;
-  if (testingProteinsDirectory == File::nonexistent)
+  jassert(foldCrossValidation == 0 || testingProteinsDirectory == File::nonexistent);
+  if (!foldCrossValidation)
   {
-    testingData = trainingData->fold(0, numFolds);
-    trainingData = trainingData->invFold(0, numFolds);
+    if (testingProteinsDirectory == File::nonexistent)
+    {
+      testingData = trainingData->fold(0, numFolds);
+      trainingData = trainingData->invFold(0, numFolds);
+    }
+    else
+    {
+      testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
+                  ->apply(loadFromFileFunction(proteinClass()))
+                  ->load()
+                  ->apply(proteinToInputOutputPairFunction());
+    }
   }
-  else
-  {
-    testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
-                ->apply(loadFromFileFunction(proteinClass()))
-                ->load()
-                ->apply(proteinToInputOutputPairFunction());
-  }
-  
   std::cout << trainingData->getNumElements() << " Training Proteins & "
             << testingData->getNumElements()  << " Testing Proteins" << std::endl;
  
@@ -417,29 +422,6 @@ int main(int argc, char** argv)
     std::cout << "The training set or the testing set is empty." << std::endl;
     return 0;
   }
-  
-/*  
-  for (size_t i = 0; i < 1; ++i)
-  {
-    ProteinPtr protein = testingData->getElement(i)[1].getObjectAndCast<Protein>();
-    if (protein)
-    {
-      std::cout << "Protein : " << protein->getName() << std::endl;
-      std::cout << "  Seq AA: " << protein->getPrimaryStructure()->toString() << std::endl;
-      std::cout << "  Sec St: " << protein->getSecondaryStructure()->toString() << std::endl;
-      std::cout << "  Sol Ac: " << protein->getSolventAccessibilityAt20p()->toString() << std::endl;
-      AccumulatedScoresVectorPtr accumulators = protein->getPositionSpecificScoringMatrix()->getAccumulatedScores();
-      for (size_t j = 0; j < accumulators->getNumElements(); ++j)
-      {
-        std::vector<double>& scores = accumulators->getAccumulatedScores(j);
-        for (size_t jj = 0; jj < scores.size(); ++jj)
-          std::cout << scores[jj] << " ";
-        std::cout << std::endl;
-      }
-    }
-  }
-  return 0;
-*/  
   
   /*
   ** Selection of the Protein Inference Factory
@@ -470,11 +452,7 @@ int main(int argc, char** argv)
     if (targets[i].contains(T("StAl")))
       inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   }
-/*  
-  std::cout << "*--------- Inference ---------" << std::endl;
-  //Variable(inference).printRecursively(std::cout);
-  std::cout << "*-----------------------------" << std::endl;
-*/
+
   /*
   ** Setting Callbacks
   */
@@ -485,19 +463,6 @@ int main(int argc, char** argv)
   callbacks->appendCallback(new GnuPlotInferenceCallback(File::getCurrentWorkingDirectory().getChildFile(output)));
   
   context->appendCallback(callbacks);
-
-/*  EvaluationInferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(proteinInference, trainingData, testingData);
-  
-  learningContext->appendCallback(new StandardOutputInferenceCallback(evaluationCallback));
-  learningContext->appendCallback(new GlobalGnuPlotInferenceCallback(evaluationCallback, output, isExperimentalMode));
-  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("SecondaryStructureSequence"), T("DSSPSecondaryStructureSequence")));
-  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("ResidueResidueContactMatrix8Ca"), T("BackboneBondSequence")));
-  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("StructuralAlphabetSequence"), T("BackboneBondSequence")));
-  learningContext->appendCallback(new GnuPlotInferenceCallback(evaluationCallback, output, T("TertiaryStructure"), T("BackboneBondSequence")));
-  learningContext->appendCallback(evaluationCallback); // must be the last callback
-  if (saveInference)
-    learningContext->appendCallback(new SaveInferenceCallback(proteinInference, output));
-  */
 
   /*
   ** Run

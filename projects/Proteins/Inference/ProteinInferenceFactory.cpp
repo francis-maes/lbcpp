@@ -103,8 +103,13 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
   CompositePerceptionPtr res = new ProteinCompositePerception();
   res->addPerception(T("LEN"), proteinLengthPerception());
   CompositePerceptionPtr freq = new ProteinCompositePerception();
-  freq->addPerception(T("AA"), applyPerceptionOnEntireProteinVariable(T("primaryStructure"), histogramPerception(aminoAcidTypeEnumeration())));
-  freq->addPerception(T("PSSM"), applyPerceptionOnEntireProteinVariable(T("positionSpecificScoringMatrix"), histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
+  freq->addPerception(T("AA"), createHistogramPerception(T("primaryStructure")));
+  freq->addPerception(T("PSSM"), createHistogramPerception(T("positionSpecificScoringMatrix")));
+  freq->addPerception(T("SS3"), createHistogramPerception(T("secondaryStructure")));
+  freq->addPerception(T("SS8"), createHistogramPerception(T("dsspSecondaryStructure")));
+  freq->addPerception(T("SA20"), createHistogramPerception(T("solventAccessibilityAt20p")));
+  freq->addPerception(T("DR"), createHistogramPerception(T("disorderRegions")));
+  freq->addPerception(T("StAl"), createHistogramPerception(T("structuralAlphabetSequence")));
   res->addPerception(T("HISTOGRAM"), freq);
   return res;
 }
@@ -114,7 +119,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("GLOBAL"), createProteinPerception());
   res->addPerception(T("POSITION"), positionResiduePerception());
-  res->addPerception(T("INDEX"), indexResiduePerception());
+//  res->addPerception(T("INDEX"), indexResiduePerception());
   res->addPerception(T("AA"), createLabelSequencePerception(T("primaryStructure")));
   res->addPerception(T("PSSM"), createPositionSpecificScoringMatrixPerception());
   res->addPerception(T("SS3"), createLabelSequencePerception(T("secondaryStructure")));
@@ -162,4 +167,10 @@ PerceptionPtr ProteinInferenceFactory::applyPerceptionOnEntireProteinVariable(co
 {
   FunctionPtr variableFunction = proteinToVariableFunction(proteinClass->findObjectVariable(variableName));
   return Perception::compose(variableFunction, Perception::compose(variableToIndicesFunction(), perception));
+}
+                      
+PerceptionPtr ProteinInferenceFactory::createHistogramPerception(const String& targetName) const
+{
+  TypePtr targetType = getTargetType(targetName);
+  return applyPerceptionOnEntireProteinVariable(targetName, histogramPerception(targetType->getTemplateArgument(0)));
 }

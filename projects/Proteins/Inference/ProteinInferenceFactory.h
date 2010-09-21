@@ -63,6 +63,7 @@ protected:
   PerceptionPtr applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const;
   PerceptionPtr applyWindowOnPerception(const String& variableName, size_t windowSize, PerceptionPtr perception) const;
   PerceptionPtr applyPerceptionOnEntireProteinVariable(const String& variableName, PerceptionPtr perception) const;
+  PerceptionPtr createHistogramPerception(const String& targetName) const;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInferenceFactory> ProteinInferenceFactoryPtr;
