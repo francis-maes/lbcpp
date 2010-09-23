@@ -16,6 +16,12 @@ namespace lbcpp
 {
 
 /*
+** ProteinFunction
+*/
+extern FunctionPtr proteinToVariableFunction(int);
+extern FunctionPtr residueToSelectPairSequencesFunction(int index1, int index2);
+
+/*
 ** ProteinPerception
 */
 class ProteinCompositePerception : public CompositePerception
@@ -29,8 +35,6 @@ public:
 
 inline PerceptionPtr proteinLengthPerception()
   {return functionBasedPerception(proteinLengthFunction());}
-
-extern FunctionPtr proteinToVariableFunction(int);
 
 /*
 ** ResiduePerception
@@ -118,10 +122,10 @@ public:
       callback->sense(0, Variable(0.5, probabilityType()));
   }
 
-private:
-  size_t outOfBoundWindowSize;
-  
+protected:
   friend class TerminusProximityResiduePerceptionClass;
+
+  size_t outOfBoundWindowSize;
 };
 
 typedef ReferenceCountedObjectPtr<TerminusProximityResiduePerception> TerminusProximityResiduePerceptionPtr;

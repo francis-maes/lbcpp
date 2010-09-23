@@ -138,6 +138,8 @@ PerceptionPtr identityPerception(TypePtr type);
 PerceptionPtr identityPerception();
 DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
+DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);
+PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr secondElementType);
 PerceptionPtr functionBasedPerception(FunctionPtr function);
 DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
 DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
