@@ -189,6 +189,8 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/WindowPerception.h
   Function/Perception/HistogramPerception.h
   Function/Perception/HistogramPerception.cpp
+  Function/Perception/BiContainerPerception.h
+  Function/Perception/BiVariablePerception.h
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/FunctionBasedPerception.h

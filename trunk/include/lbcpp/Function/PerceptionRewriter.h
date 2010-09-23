@@ -84,6 +84,7 @@ private:
 typedef ReferenceCountedObjectPtr<PerceptionRewriter> PerceptionRewriterPtr;
 
 extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
+extern PerceptionPtr hardDiscretizedNumberFeature(TypePtr Type, size_t numIntervals);
 
 }; /* namespace lbcpp */
 

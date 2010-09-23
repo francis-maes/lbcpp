@@ -59,10 +59,38 @@ public:
     return vector;
   }
 
-private:
+protected:
   friend class ProteinToVariableFunctionClass;
   
   int index;
+};
+
+/*
+** ResidueToSelectPairSequencesFunction
+*/
+class ResidueToSelectPairSequencesFunction : public Function
+{
+public:
+  ResidueToSelectPairSequencesFunction(int index1, int index2) : pairSequencesFunction(selectPairFieldsFunction(index1, index2)) {}
+  ResidueToSelectPairSequencesFunction() : pairSequencesFunction(selectPairFieldsFunction(-1, -1)) {}
+  
+  virtual TypePtr getInputType() const
+    {return pairType(proteinClass(), integerType());}
+  
+  virtual TypePtr getOutputType(TypePtr input) const
+    {return pairType(pairSequencesFunction->getOutputType(pairType(input->getTemplateArgument(0), input->getTemplateArgument(0))), integerType());}
+  
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  {
+    jassert(input[0].getObjectAndCast<Protein>());
+    Variable sequences = pairSequencesFunction->computeFunction(Variable::pair(input[0], input[0]), callback);
+    return Variable::pair(sequences, input[1]); 
+  }
+
+protected:
+  friend class ResidueToSelectPairSequencesFunctionClass;
+  
+  FunctionPtr pairSequencesFunction;
 };
 
 /*

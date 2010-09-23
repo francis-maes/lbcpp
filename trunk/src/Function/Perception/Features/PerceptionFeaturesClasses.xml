@@ -10,5 +10,11 @@
       <variable type="Enumeration" name="enumeration"/>
     </class>
     
+    <class name="HardDiscretizedNumberFeature" base="Perception">
+      <constructor arguments="TypePtr elementType, size_t numIntervals"/>
+      <variable type="Type" name="elementType"/>
+      <variable type="Integer" name="numIntervals"/>
+    </class>
+    
   </namespace>
 </file>

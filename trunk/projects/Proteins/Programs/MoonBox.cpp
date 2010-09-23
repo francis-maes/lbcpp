@@ -59,8 +59,9 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res ? (PerceptionPtr)perceptionToFeatures(res) : PerceptionPtr();
+    return res ? perceptionRewriter(res) : PerceptionPtr();
   }
+
 /*  
   virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
   {
@@ -102,6 +103,18 @@ protected:
                                                                                                                DefaultParameters::learningRateUpdate), true, // learning steps
                                                    InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(DefaultParameters::regularizer),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+  }
+  
+  PerceptionPtr perceptionRewriter(PerceptionPtr perception) const
+  {
+    PerceptionRewriterPtr rewriter = new PerceptionRewriter();
+    rewriter->addEnumValueFeaturesRule();
+    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeature(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeature(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeature(probabilityType(), 10));
+    //rewriter->addRule(Type::get("BiVariablePerception"), biVariableFeature());
+    rewriter->addRule(doubleType(), identityPerception());
+    return rewriter->rewrite(perception);
   }
 
 private:

@@ -161,6 +161,11 @@
     <class name="ProteinLengthFunction" base="Function">
       <constructor/>
     </class>
+    
+    <class name="ResidueToSelectPairSequencesFunction" base="Function">
+      <constructor arguments="int index1, int index2"/>
+      <variable type="SelectPairFieldsFunction" name="pairSequencesFunction"/>
+    </class>
 
     <class name="ProteinToInputOutputPairFunction" base="Function">
       <constructor/>

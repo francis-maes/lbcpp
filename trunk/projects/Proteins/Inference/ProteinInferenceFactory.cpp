@@ -98,6 +98,35 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   return res;
 }
 
+PerceptionPtr ProteinInferenceFactory::createPairsSequencesPerception() const
+{
+  const size_t nbSequences = 6;
+  const String sequences[nbSequences] = {
+    T("primaryStructure"),
+    T("secondaryStructure"),
+    T("dsspSecondaryStructure"),
+    T("solventAccessibility"),
+    T("disorderRegions"),
+    T("structuralAlphabetSequence")
+  };
+  
+  const String shortNames[nbSequences] = {
+    T("AA"),
+    T("SS3"),
+    T("SS8"),
+    T("SA"),
+    T("DR"),
+    T("StAl")
+  };
+  
+  CompositePerceptionPtr res = new ResidueCompositePerception();
+  
+  for (size_t i = 0; i < nbSequences; ++i)
+    for (size_t j = i + 1; j < nbSequences; ++j)
+      res->addPerception(shortNames[i] + T(" & ") + shortNames[j], createPairSequencesPerception(sequences[i], sequences[j], 5));
+  return res;
+}
+
 PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
 {
   CompositePerceptionPtr res = new ProteinCompositePerception();
@@ -128,6 +157,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
   res->addPerception(T("SA20"), createProbabilitySequencePerception(T("solventAccessibilityAt20p")));
   res->addPerception(T("DR"), createProbabilitySequencePerception(T("disorderRegions")));
   res->addPerception(T("StAl"), createLabelSequencePerception(T("structuralAlphabetSequence")));
+  res->addPerception(T("PairOfSeq"), createPairsSequencesPerception());
   return res;
 }
 
@@ -174,4 +204,19 @@ PerceptionPtr ProteinInferenceFactory::createHistogramPerception(const String& t
 {
   TypePtr targetType = getTargetType(targetName);
   return applyPerceptionOnEntireProteinVariable(targetName, histogramPerception(targetType->getTemplateArgument(0)));
+}
+
+PerceptionPtr ProteinInferenceFactory::createPairSequencesPerception(const String& firstTargetName, const String& secondTargetName, size_t windowSize) const
+{
+  int index1 = proteinClass->findObjectVariable(firstTargetName);
+  int index2 = proteinClass->findObjectVariable(secondTargetName);
+  jassert(index1 != -1 && index2 != -1);
+  jassert(proteinClass->getObjectVariableType(index1)->inheritsFrom(containerClass(anyType())));
+  jassert(proteinClass->getObjectVariableType(index2)->inheritsFrom(containerClass(anyType())));
+
+  return Perception::compose(
+    residueToSelectPairSequencesFunction(index1, index2),
+    biContainerPerception(windowSize, biVariablePerception(proteinClass->getObjectVariableType(index1)->getTemplateArgument(0),
+                                                           proteinClass->getObjectVariableType(index2)->getTemplateArgument(0)))
+  );
 }

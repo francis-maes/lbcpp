@@ -11,7 +11,7 @@
 using namespace lbcpp;
 
 TypeAndStackBasedPerceptionRewriteRule::TypeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target)
-  : stack(vector(stringType()))
+  : TypeBasedPerceptionRewriteRule(type, target), stack(vector(stringType()))
 {
   StringArray tokens;
   tokens.addTokens(stack, T("."), NULL);
@@ -75,5 +75,6 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
   PerceptionRewriterPtr rewriter = new PerceptionRewriter();
   rewriter->addEnumValueFeaturesRule();
   rewriter->addRule(doubleType(), identityPerception());
+
   return rewriter->rewrite(perception);
 }

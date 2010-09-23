@@ -22,7 +22,7 @@ public:
   WindowPerception() : windowSize(0) {}
 
   virtual TypePtr getInputType() const
-    {return pairType(vectorClass(elementsType), integerType());}
+    {return pairType(containerClass(elementsType), integerType());}
 
   virtual TypePtr getOutputType() const
     {return Perception::getOutputType();}
