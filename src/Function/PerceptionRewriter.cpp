@@ -33,6 +33,18 @@ PerceptionPtr TypeAndStackBasedPerceptionRewriteRule::compute(TypePtr type, cons
   return target;
 }
 
+PerceptionPtr BiVariableFeaturesPerceptionRewriteRule::compute(TypePtr type, const std::vector<String>& stack) const
+{
+  if (type->inheritsFrom(Type::get("BiVariablePerception"))) // FIXME
+  {
+    std::cout << "BiVariablePerception" << std::endl;
+    if (type->getNumTemplateArguments() == 1)
+    return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(0), perception);
+    return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(1), perception);
+  }
+  return PerceptionPtr();
+}
+    
 /*
 ** PerceptionRewriter
 */
@@ -73,6 +85,9 @@ void PerceptionRewriter::addEnumValueFeaturesRule()
 PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter();
+  // TODO delete after test
+  rewriter->addRule(new BiVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+
   rewriter->addEnumValueFeaturesRule();
   rewriter->addRule(doubleType(), identityPerception());
 

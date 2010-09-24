@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: HardDiscretizedNumberFeatu...h | A Feature Generator that        |
-| Author  : Francis Maes                   | discretized one feature.        |
-| Started : 15/09/2010 19:41               |                                 |
+| Author  : Julien Becker                  | discretized one feature.        |
+| Started : 23/09/2010 14:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -14,10 +14,10 @@
 namespace lbcpp
 {
   
-class HardDiscretizedNumberFeature : public Perception
+class HardDiscretizedNumberFeatures : public Perception
 {
 public:
-  HardDiscretizedNumberFeature(TypePtr elementType = probabilityType(), size_t numIntervals = 10)
+  HardDiscretizedNumberFeatures(TypePtr elementType = probabilityType(), size_t numIntervals = 10)
     : elementType(elementType), numIntervals(numIntervals) {}
 
   virtual TypePtr getInputType() const
@@ -30,23 +30,25 @@ public:
     {return doubleType();}
 
   virtual String getOutputVariableName(size_t index) const
-    {return T("[") + String((int)index) + T("]");}
+    {return T("Hard[") + String((int)index) + T("]");}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
+    // Currently, only probabilityType is allowed. In future, we will add angleType or more generic doubleType
     jassert(input.getType()->inheritsFrom(probabilityType()));
     double value = input.getDouble();
     jassert(value > -0.001 && value < 1.001);
-    for (size_t i = 0; i < numIntervals; ++i)
-      if (value < (i + 1) * 1.0 / numIntervals)
-      {
-        callback->sense(i, 1.0);
-        break;
-      }
+    value *= (double)numIntervals;
+    size_t first = (size_t)value;
+    
+    if (first == numIntervals)
+      --first;
+    
+    callback->sense(first, 1.0);
   }
   
 private:
-  friend class HardDiscretizedNumberFeatureClass;
+  friend class HardDiscretizedNumberFeaturesClass;
   
   TypePtr elementType;
   size_t numIntervals;

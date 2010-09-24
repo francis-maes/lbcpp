@@ -60,6 +60,22 @@ public:
     {return type->inheritsFrom(enumValueType()) ? enumValueFeatures(type) : PerceptionPtr();}
 };
 
+extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
+
+class BiVariableFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
+{
+public:
+  BiVariableFeaturesPerceptionRewriteRule(PerceptionPtr perception = PerceptionPtr())
+  : perception(perception) {}
+  
+  virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const;
+
+protected:
+  friend class BiVariableFeaturesPerceptionRewriteRuleClass;
+  
+  PerceptionPtr perception;
+};
+  
 class PerceptionRewriter : public Object
 {
 public:
@@ -84,8 +100,9 @@ private:
 typedef ReferenceCountedObjectPtr<PerceptionRewriter> PerceptionRewriterPtr;
 
 extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
-extern PerceptionPtr hardDiscretizedNumberFeature(TypePtr Type, size_t numIntervals);
-
+extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals);
+extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals, bool cycle);
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_REWRITER_H_

@@ -56,6 +56,9 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
+    if (!input[0] || !input[1])
+      return;
+    
     if (firstElementType->inheritsFrom(probabilityType())
         && secondElementType->inheritsFrom(probabilityType()))
     {
@@ -64,7 +67,7 @@ public:
     }
 
     callback->sense(0, input[0]);
-    callback->sense(1, input[1]);    
+    callback->sense(1, input[1]);
   }
 
 protected:
