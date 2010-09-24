@@ -83,6 +83,12 @@
       <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
     </class>
     
+    <class name="BiVariableFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
+      <constructor arguments="PerceptionPtr perception"/>
+      <variable type="Perception" name="perception"/>
+    </class>
+   
+    
     <class name="RewritedPerception" base="DecoratorPerception">
       <variable type="PerceptionRewriter" name="rewriter"/>
     </class>

@@ -108,11 +108,13 @@ protected:
   PerceptionPtr perceptionRewriter(PerceptionPtr perception) const
   {
     PerceptionRewriterPtr rewriter = new PerceptionRewriter();
+    rewriter->addRule(new BiVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+
     rewriter->addEnumValueFeaturesRule();
-    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeature(probabilityType(), 10));
-    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeature(probabilityType(), 10));
-    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeature(probabilityType(), 10));
-    //rewriter->addRule(Type::get("BiVariablePerception"), biVariableFeature());
+
+    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeatures(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeatures(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeatures(probabilityType(), 10));
     rewriter->addRule(doubleType(), identityPerception());
     return rewriter->rewrite(perception);
   }

@@ -44,13 +44,14 @@ public:
     if (!first || !second)
       return;
     
-    int startPosition = input[1].getInteger() - (int)(windowSize / 2);
+    size_t firstPosition = (size_t)input[1].getInteger();
+    int startPosition = (int)firstPosition - (int)(windowSize / 2);
     for (size_t i = 0; i < windowSize; ++i)
     {
       int position = startPosition + (int)i;
       if (position >= 0 && position < (int)second->getNumElements())
       {
-        Variable variable = Variable::pair(first->getElement(startPosition), second->getElement(position));
+        Variable variable = Variable::pair(first->getElement(firstPosition), second->getElement(position));
         callback->sense(i, decorated, variable);
       }
     }
