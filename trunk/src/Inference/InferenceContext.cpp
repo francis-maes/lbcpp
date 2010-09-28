@@ -213,7 +213,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::addJob(ThreadPoolJob* job, size_t priority)
 {
-  juce::DBG("Add Job: " + job->getJobName() + T(" priority: ") + String((int)priority));
+  //juce::DBG("Add Job: " + job->getJobName() + T(" priority: ") + String((int)priority));
   {
     ScopedLock _(waitingJobsLock); 
     if (waitingJobs.size() <= priority)
@@ -266,7 +266,7 @@ void ThreadPool::update()
     ThreadPoolJob* job = popJob();
     if (job)
     {
-      juce::DBG("Start Job: " + job->getJobName());
+      //juce::DBG("Start Job: " + job->getJobName());
       startThreadForJob(job);
     }
     else

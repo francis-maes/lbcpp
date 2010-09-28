@@ -53,7 +53,7 @@ public:
     if (!step)
       step = 1;
 
-    juce::DBG("Run Parallel Inference: " + inference->toString() + T(" num inferences: ") + String((int)n) + T(" step = ") + String((int)step));
+    //juce::DBG("Run Parallel Inference: " + inference->toString() + T(" num inferences: ") + String((int)n) + T(" step = ") + String((int)step));
     
     for (size_t begin = 0; begin < n; )
     {
@@ -65,7 +65,7 @@ public:
       begin = end;
     }
     pool->waitThread(thread);
-    juce::DBG("OK Run Parallel Inference: " + inference->toString());
+    //juce::DBG("OK Run Parallel Inference: " + inference->toString());
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
   }
 

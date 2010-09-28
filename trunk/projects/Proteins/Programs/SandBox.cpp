@@ -190,8 +190,8 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
   
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  //File workingDirectory(T("/Users/francis/tmp"));
+  // File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  File workingDirectory(T("/data/PDB"));
 
   ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
