@@ -48,8 +48,7 @@ public:
     {jassert(index < subInferences.size()); subInferences[index].output = subOutput; ++numOutputsSet;}
 
   bool haveAllOutputsBeenSet() const
-  {juce::DBG("haveAllOutputsBeenSet: " + String((int)numOutputsSet) + T(" / ") + String((int)subInferences.size()));
-    jassert(numOutputsSet <= subInferences.size()); return numOutputsSet == subInferences.size();}
+    {jassert(numOutputsSet <= subInferences.size()); return numOutputsSet == subInferences.size();}
 
 private:
   struct SubInference
