@@ -1,5 +1,7 @@
-
 * Common template base class for InferenceLearners
+
+* ParallelProteinInference
+* MultiThread ParallelProteinInference
 
 Perceptions:
  * WindowPerception: ne plus dŽriver de DecoratorPerception
@@ -8,12 +10,10 @@ Perceptions:
  * ResiduePair: SegmentHistogram
  * Distribution: Entropy 
 
-
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
 
 Inference:
- * ParallelProteinInference
  * Atomic MultiClass machines (MultiLinear, Ranking...)
  * Apprentissage avec couche cachée
 
