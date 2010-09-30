@@ -15,30 +15,16 @@
 namespace lbcpp
 {
 
-class StaticSequentialInferenceLearner : public SequentialInference
+class StaticSequentialInferenceLearner : public InferenceLearner<SequentialInference>
 {
 public:
-  virtual TypePtr getInputType() const
-    {return pairType(staticSequentialInferenceClass(), containerClass(pairType(anyType(), anyType())));}
-
-  virtual TypePtr getSupervisionType() const
-    {return nilType();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
-
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
-  {
-    InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
-    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
-    return T("Sequential Learning of ") + targetInference->getName() + T(" with ") + 
-      String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getTemplateArgument(0)->getName() + T("(s)");
-  }
+  virtual TypePtr getTargetInferenceClass() const
+    {return staticSequentialInferenceClass();}
 
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    StaticSequentialInferencePtr targetInference = input[0].getObjectAndCast<StaticSequentialInference>();
-    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
+    StaticSequentialInferencePtr targetInference = getInferenceAndCast<StaticSequentialInference>(input);
+    ContainerPtr trainingData = getTrainingData(input);
     jassert(targetInference && trainingData);
 
     size_t n = trainingData->getNumElements();
@@ -68,10 +54,10 @@ public:
   {
     StatePtr state = s.staticCast<State>();
     Variable input = state->getInput();
-    StaticSequentialInferencePtr targetInference = input[0].getObjectAndCast<StaticSequentialInference>();
+    StaticSequentialInferencePtr targetInference = getInferenceAndCast<StaticSequentialInference>(input);
     jassert(targetInference);
 
-    ContainerPtr subTrainingData = state->getSubInput()[1].getObjectAndCast<Container>();
+    ContainerPtr subTrainingData = getTrainingData(state->getSubInput());
     
     int index = state->getStepNumber(); 
     jassert(index >= 0);

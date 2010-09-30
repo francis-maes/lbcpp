@@ -240,7 +240,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/data/PDB"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -273,11 +273,11 @@ int main(int argc, char** argv)
   Variable(inference).printRecursively(std::cout, 2);
 
   // MultiThread
-  //ThreadPoolPtr pool(new ThreadPool(7));
-  //InferenceContextPtr context = multiThreadedInferenceContext(pool);
+  ThreadPoolPtr pool(new ThreadPool(7));
+  InferenceContextPtr context = multiThreadedInferenceContext(pool);
   
   // SingleThread
-  InferenceContextPtr context = singleThreadedInferenceContext();
+  //InferenceContextPtr context = singleThreadedInferenceContext();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);

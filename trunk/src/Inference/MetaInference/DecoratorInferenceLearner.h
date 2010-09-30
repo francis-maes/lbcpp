@@ -16,22 +16,16 @@
 namespace lbcpp
 {
 
-class DecoratorInferenceLearner : public DecoratorInference
+class DecoratorInferenceLearner : public InferenceLearner<DecoratorInference>
 {
 public:
-  virtual TypePtr getInputType() const
-    {return pairType(staticDecoratorInferenceClass(), containerClass(pairType(anyType(), anyType())));}
-
-  virtual TypePtr getSupervisionType() const
-    {return nilType();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
+  virtual TypePtr getTargetInferenceClass() const
+    {return staticDecoratorInferenceClass();}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    StaticDecoratorInferencePtr targetInference = input[0].getObjectAndCast<StaticDecoratorInference>();
-    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
+    StaticDecoratorInferencePtr targetInference = getInferenceAndCast<StaticDecoratorInference>(input);
+    ContainerPtr trainingData = getTrainingData(input);
     jassert(targetInference && trainingData);
     
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);

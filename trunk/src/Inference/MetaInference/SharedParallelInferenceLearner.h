@@ -15,25 +15,19 @@
 namespace lbcpp
 {
 
-class SharedParallelInferenceLearner : public DecoratorInference
+class SharedParallelInferenceLearner : public InferenceLearner<DecoratorInference>
 {
 public:
   SharedParallelInferenceLearner(bool filterUnsupervisedExamples = true)
     : filterUnsupervisedExamples(filterUnsupervisedExamples) {}
 
-  virtual TypePtr getInputType() const
-    {return pairType(sharedParallelInferenceClass(), containerClass(pairType(anyType(), anyType())));}
-
-  virtual TypePtr getSupervisionType() const
-    {return nilType();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
+  virtual TypePtr getTargetInferenceClass() const
+    {return sharedParallelInferenceClass();}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    SharedParallelInferencePtr targetInference = input[0].getObjectAndCast<SharedParallelInference>();
-    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
+    SharedParallelInferencePtr targetInference = getInferenceAndCast<SharedParallelInference>(input);
+    ContainerPtr trainingData = getTrainingData(input);
     
     DecoratorInferenceStatePtr res(new DecoratorInferenceState(input, supervision));
     
