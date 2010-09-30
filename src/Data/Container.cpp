@@ -34,6 +34,15 @@ String Container::toString() const
   return res + T("]");
 }
 
+void Container::clone(ObjectPtr target) const
+{
+  Object::clone(target);
+  ContainerPtr targetContainer = target.staticCast<Container>();
+  size_t n = getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    targetContainer->setElement(i, getElement(i));
+}
+
 String Container::getElementName(size_t index) const
   {return T("[") + String((int)index) + T("]");}
 

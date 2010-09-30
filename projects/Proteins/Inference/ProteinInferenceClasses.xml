@@ -14,6 +14,7 @@
     <class name="ContactMapInference" base="SharedParallelInference"/>
     
     <class name="ProteinSequentialInference" base="VectorSequentialInference"/>
+    <class name="ProteinParallelInference" base="VectorParallelInference"/>
     
     <class name="ProteinInferenceStep" base="StaticDecoratorInference">
       <variable type="Integer" name="targetIndex"/>

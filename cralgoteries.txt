@@ -1,7 +1,6 @@
-* MultiPass
-* MultiPassMultiTask
-* ParallelProteinInference
 * MultiThread ParallelProteinInference
+* clone of Container and Vector
+
 
 Perceptions:
  * WindowPerception: ne plus dériver de DecoratorPerception

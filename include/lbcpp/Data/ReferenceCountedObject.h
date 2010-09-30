@@ -99,7 +99,6 @@ public:
   /** Decrements the object's reference count.  */
   inline void decrementReferenceCounter()
   {
-    jassert(refCount > 0);
     if (juce::atomicDecrementAndReturn(refCount) == 0)
       delete this;
   }
