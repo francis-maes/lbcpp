@@ -17,7 +17,7 @@ void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerceptio
 }
 
 TypePtr Perception::getOutputType() const
-  {const_cast<Perception* >(this)->ensureTypeIsComputed(); return outputType;}
+  {return const_cast<Perception* >(this)->ensureTypeIsComputed();}
 
 struct SetInObjectPerceptionCallback : public PerceptionCallback
 {
@@ -40,16 +40,19 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   return perceptionCallback->atLeastOneVariable ? res : Variable::missingValue(outputType);
 }
 
-void Perception::ensureTypeIsComputed()
+TypePtr Perception::ensureTypeIsComputed()
 {
-  if (outputType)
-    return;
-  DefaultClassPtr outputType = new DynamicClass(getPreferedOutputClassName());
-  size_t n = getNumOutputVariables();
-  for (size_t i = 0; i < n; ++i)
-    outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));
-  outputType->initialize(MessageCallback::getInstance());
-  this->outputType = outputType;
+  ScopedLock _(outputTypeLock);
+  if (!outputType)
+  {
+    DefaultClassPtr outputType = new DynamicClass(getPreferedOutputClassName());
+    size_t n = getNumOutputVariables();
+    for (size_t i = 0; i < n; ++i)
+      outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));
+    outputType->initialize(MessageCallback::getInstance());
+    this->outputType = outputType;
+  }
+  return outputType;
 }
 
 PerceptionPtr Perception::addPreprocessor(FunctionPtr preProcessingFunction) const

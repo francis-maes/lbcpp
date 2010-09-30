@@ -32,6 +32,13 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return nilType();}
 
+  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  {
+    ContainerPtr examples = input.getObjectAndCast<Container>();
+    return T("Run ") + inference->getName() + T(" with ") + 
+      String((int)examples->getNumElements()) + T(" ") + examples->getElementsType()->getName() + T("(s)");
+  }
+
 protected:
   InferencePtr inference;
 };

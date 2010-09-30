@@ -88,15 +88,9 @@ public:
     }
     jassert(!TemplateType::isInstanciatedTypeName(typeName));
 
+    ScopedLock _(typesLock);
     TemplateTypeCache* templateType = getTemplateType(typeName, callback);
-    if (!templateType)
-      return TypePtr();
-
-    TemplateTypeCache::InstanceMap::iterator it = templateType->instances.find(arguments);
-    if (it != templateType->instances.end())
-      return it->second;
-    else
-      return templateType->instantiate(arguments, callback);
+    return templateType ? templateType->getInstanceCached(arguments, callback) : TypePtr();
   }
 
   TypePtr getType(const String& name, MessageCallback& callback) const
@@ -168,7 +162,27 @@ private:
 
   struct TemplateTypeCache
   {
+    TemplateTypeCache() {}
+    TemplateTypeCache(const TemplateTypeCache& other) : definition(other.definition)
+    {
+      ScopedLock _(other.instancesLock);
+      instances = other.instances;
+    }
+
     TemplateTypePtr definition;
+
+    TypePtr getInstanceCached(const std::vector<TypePtr>& arguments, MessageCallback& callback)
+    {
+      ScopedLock _(instancesLock);
+      TemplateTypeCache::InstanceMap::iterator it = instances.find(arguments);
+      if (it != instances.end())
+        return it->second;
+      else
+        return instantiate(arguments, callback);
+    }
+
+  private:
+    CriticalSection instancesLock;
     typedef std::map< std::vector<TypePtr>, TypePtr > InstanceMap;
     InstanceMap instances;
 

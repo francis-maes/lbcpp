@@ -24,8 +24,17 @@ public:
   virtual String getName() const
     {return T("SingleThreadedInferenceContext");}
 
-  virtual InferenceStackPtr getCurrentStack() const
-    {return stack;}
+  virtual void preInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    stack->push(inference);
+    callPreInference(stack, input, supervision, output, returnCode);
+  }
+
+  virtual void postInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  {
+    callPostInference(stack, input, supervision, output, returnCode);
+    stack->pop();
+  }
 
   virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {

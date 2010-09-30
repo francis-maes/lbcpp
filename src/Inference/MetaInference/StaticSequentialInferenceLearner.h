@@ -27,7 +27,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return nilType();}
 
-  virtual String getDescription(const InferenceStackPtr stack, const Variable& input, const Variable& supervision) const
+  virtual String getDescription(const Variable& input, const Variable& supervision) const
   {
     InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
     ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
@@ -72,15 +72,16 @@ public:
     jassert(targetInference);
 
     ContainerPtr subTrainingData = state->getSubInput()[1].getObjectAndCast<Container>();
-     // evaluate sub-inference and update currentObjects
-    InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(targetInference, state->targetStates);
-    context->run(evaluateStepOnSubTrainingData, subTrainingData, ObjectPtr(), returnCode);
     
     int index = state->getStepNumber(); 
     jassert(index >= 0);
     ++index;
     if (index < (int)targetInference->getNumSubInferences())
     {
+       // evaluate sub-inference and update currentObjects
+      InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(targetInference, state->targetStates);
+      context->run(evaluateStepOnSubTrainingData, subTrainingData, ObjectPtr(), returnCode);
+
       setSubLearningInference(targetInference, state, index);
       return true;
     }

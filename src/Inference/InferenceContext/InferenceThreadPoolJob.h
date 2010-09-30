@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/InferenceContext.h>
 # include <lbcpp/Inference/ParallelInference.h>
-# include "JobThreadInferenceContext.h"
+# include "ThreadOwnedInferenceContext.h"
 
 namespace lbcpp
 {
@@ -22,13 +22,10 @@ public:
   InferenceRelatedJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, const String& name = T("Unnamed"))
     : Job(name), parentContext(parentContext), pool(pool), stack(stack) {}
 
-  virtual Variable getTopLevelInput() const = 0;
-  virtual Variable getTopLevelSupervision() const = 0;
-
   virtual String getCurrentStatus() const
   {
     ScopedLock _(contextLock);
-    return context ? context->describeCurrentStack(getTopLevelInput(), getTopLevelSupervision()) : T("Not started yet");
+    return context ? context->describeCurrentState() : T("Not started yet");
   }
 
   virtual bool runJob(String& failureReason)
@@ -36,7 +33,7 @@ public:
     ScopedLock _(contextLock);
     Thread* thread = Thread::getCurrentThread();
     jassert(thread);
-    context = new JobThreadInferenceContext(parentContext, thread, pool, stack);
+    context = new ThreadOwnedInferenceContext(parentContext, thread, pool, stack);
     jassert(context);
     return true;
   }
@@ -47,7 +44,7 @@ protected:
   InferenceStackPtr stack;
 
   CriticalSection contextLock;
-  JobThreadInferenceContextPtr context;
+  ThreadOwnedInferenceContextPtr context;
 };
 
 class RunInferenceJob : public InferenceRelatedJob
@@ -56,14 +53,8 @@ public:
   RunInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
     : InferenceRelatedJob(parentContext, pool, stack), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode)
   {
-    setName(inference->getDescription(stack, input, supervision));
+    setName(inference->getDescription(input, supervision));
   }
-
-  virtual Variable getTopLevelInput() const
-    {return input;}
-
-  virtual Variable getTopLevelSupervision() const
-    {return supervision;}
 
   virtual bool runJob(String& failureReason)
   {
@@ -91,18 +82,13 @@ public:
     {
       InferencePtr subInference = state->getSubInference(beginIndex);
       stack->push(subInference);
-      setName(subInference->getDescription(stack, state->getSubInput(beginIndex), state->getSubSupervision(beginIndex)));
+      setName(subInference->getDescription(state->getSubInput(beginIndex), state->getSubSupervision(beginIndex)));
+      stack->pop();
     }
     else
-      setName(inference->getDescription(stack, state->getInput(), state->getSupervision()) +
+      setName(inference->getDescription(state->getInput(), state->getSupervision()) +
         T("[") + String((int)beginIndex) + T(":") + String((int)(endIndex - 1)) + T("]"));
   }
-
-  virtual Variable getTopLevelInput() const
-    {return state->getInput();}
-
-  virtual Variable getTopLevelSupervision() const
-    {return state->getSupervision();}
 
   virtual bool runJob(String& failureReason)
   {
