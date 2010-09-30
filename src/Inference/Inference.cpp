@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
@@ -16,6 +17,9 @@ using namespace lbcpp;
 /*
 ** Inference
 */
+String Inference::getDescription(const InferenceStackPtr stack, const Variable& input, const Variable& supervision) const
+  {return getClassName() + T("(") + input.toShortString() + T(", ") + supervision.toShortString() + T(")");}
+
 void Inference::clone(ObjectPtr target) const
 {
   NameableObject::clone(target);

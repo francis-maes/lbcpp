@@ -49,6 +49,7 @@ using juce::ScopedLock;
 using juce::ReadWriteLock;
 using juce::ScopedReadLock;
 using juce::ScopedWriteLock;
+using juce::Thread;
 #else
 class CriticalSection {};
 class ScopedLock

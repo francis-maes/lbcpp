@@ -31,6 +31,8 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return anyType();}
 
+  virtual String getDescription(const InferenceStackPtr stack, const Variable& input, const Variable& supervision) const;
+
   enum ReturnCode
   {
     finishedReturnCode = 0,

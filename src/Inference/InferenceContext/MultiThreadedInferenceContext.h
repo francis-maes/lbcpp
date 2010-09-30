@@ -18,8 +18,8 @@ namespace lbcpp
 class MultiThreadedInferenceContext : public InferenceContext
 {
 public:
-  MultiThreadedInferenceContext(size_t numCpus)
-    : pool(new ThreadPool(numCpus)) {}
+  MultiThreadedInferenceContext(ThreadPoolPtr pool)
+    : pool(pool) {}
   MultiThreadedInferenceContext() {}
 
   virtual InferenceStackPtr getCurrentStack() const
@@ -28,7 +28,7 @@ public:
   virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     Variable output;
-    ThreadPoolJob* job = new RunInferenceJob(refCountedPointerFromThis(this), pool, InferenceStackPtr(), inference, input, supervision, output, returnCode);
+    JobPtr job(new RunInferenceJob(refCountedPointerFromThis(this), pool, InferenceStackPtr(), inference, input, supervision, output, returnCode));
     pool->addJobAndWaitExecution(job);
     return output;
   }
