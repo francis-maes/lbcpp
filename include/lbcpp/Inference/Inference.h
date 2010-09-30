@@ -83,7 +83,6 @@ protected:
   InferencePtr batchLearner;
 
 private:
-  friend class InferenceContext;
   CriticalSection meanRunTimeLock;
   ScalarVariableMean meanRunTime;
 };
