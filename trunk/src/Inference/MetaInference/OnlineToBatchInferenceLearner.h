@@ -28,6 +28,14 @@ public:
 
   typedef ReferenceCountedObjectPtr<State> StatePtr;
 
+  virtual String getDescription(const InferenceStackPtr stack, const Variable& input, const Variable& supervision) const
+  {
+    InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
+    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
+    return T("Online Learning of ") + targetInference->getName() + T(" with ") + 
+      String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getTemplateArgument(0)->getName() + T("(s)");
+  }
+
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
