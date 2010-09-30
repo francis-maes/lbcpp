@@ -11,7 +11,6 @@
 
 # include <lbcpp/Inference/Inference.h>
 # include <lbcpp/Function/Perception.h>
-# include <lbcpp/Function/PerceptionMaths.h>
 
 namespace lbcpp
 {
@@ -22,8 +21,7 @@ namespace lbcpp
 class NumericalInference : public Inference
 {
 public:
-  NumericalInference(const String& name, PerceptionPtr perception)
-    : Inference(name), perception(perception) {}
+  NumericalInference(const String& name, PerceptionPtr perception);
   NumericalInference() {}
 
   virtual TypePtr getInputType() const
@@ -32,19 +30,15 @@ public:
   TypePtr getPerceptionOutputType() const
     {return perception->getOutputType();}
 
-  virtual void computeAndAddGradient(ObjectPtr& target, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue) = 0;
+  virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
-  ObjectPtr getParameters() const
-    {return parameters;}
- 
-  ObjectPtr& getParameters()
-    {return parameters;}
+  ObjectPtr getParametersCopy() const;
+  void addWeightedToParameters(const ObjectPtr value, double weight);
+  void applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight);
+  void setParameters(ObjectPtr parameters);
 
   PerceptionPtr getPerception() const
     {return perception;}
-
-  void setParameters(ObjectPtr parameters)
-    {this->parameters = parameters; validateParametersChange();}
 
   virtual void validateParametersChange() {}
 
@@ -52,6 +46,7 @@ protected:
   friend class NumericalInferenceClass;
 
   PerceptionPtr perception;
+  juce::ReadWriteLock parametersLock;
   ObjectPtr parameters;
 };
 

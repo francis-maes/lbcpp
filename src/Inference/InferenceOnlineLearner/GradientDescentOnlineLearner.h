@@ -36,8 +36,8 @@ protected:
   NumericalInferencePtr getNumericalInference(InferencePtr inference) const
     {return inference.staticCast<NumericalInference>();}
 
-  ObjectPtr getParameters(InferencePtr inference) const
-    {return getNumericalInference(inference)->getParameters();}
+//  ObjectPtr getParameters(InferencePtr inference) const
+//    {return getNumericalInference(inference)->getParameters();}
 
   PerceptionPtr getPerception(InferencePtr inference) const
     {return getNumericalInference(inference)->getPerception();}
@@ -51,10 +51,11 @@ protected:
 
   UpdateFrequency regularizerUpdateFrequency;
   ScalarObjectFunctionPtr regularizer;
+  CriticalSection lossValueLock;
   ScalarVariableMean lossValue;
   size_t lastApplyRegularizerEpoch;
 
-  void updateParameters(InferencePtr inference, ObjectPtr& target, double weight, const Variable& input, const Variable& supervision, const Variable& prediction);
+  void updateParameters(InferencePtr inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
 
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
   void applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);

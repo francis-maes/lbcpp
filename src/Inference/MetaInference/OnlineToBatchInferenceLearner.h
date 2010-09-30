@@ -50,9 +50,9 @@ public:
     ContainerPtr trainingData = inferenceAndTrainingData[1].getObjectAndCast<Container>();
 
     InferencePtr learningPassInference = callbackBasedDecoratorInference(T("LearningPass"),
-        runOnSupervisedExamplesInference(targetInference), state->callback);
+        runOnSupervisedExamplesInference(targetInference, false), state->callback);
 
-    state->setSubInference(learningPassInference, trainingData/*->randomize()*/, Variable());
+    state->setSubInference(learningPassInference, trainingData, Variable());
     return true;
   }
 };
