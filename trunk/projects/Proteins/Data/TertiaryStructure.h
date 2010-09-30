@@ -64,6 +64,8 @@ public:
   double computeCAlphaAtomsRMSE(TertiaryStructurePtr targetStructure) const;
   void applyAffineTransform(const impl::Matrix4& affineTransform) const;
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class TertiaryStructureClass;
 

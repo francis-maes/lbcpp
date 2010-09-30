@@ -55,6 +55,8 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
+  juce_UseDebuggingNewOperator
+
 private:
   size_t dimension;
   GenericVector values;
@@ -84,6 +86,8 @@ public:
 
   virtual void setElement(size_t index, const Variable& value)
     {matrix->setElement(rowNumber, index, value);}
+
+  juce_UseDebuggingNewOperator
 
 protected:
   SymmetricMatrixPtr matrix;

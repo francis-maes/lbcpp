@@ -45,6 +45,8 @@ public:
   Variable getSubOutput() const
     {return subOutput;}
 
+  juce_UseDebuggingNewOperator
+
 protected:
   Variable subInput;
   Variable subSupervision;
@@ -69,6 +71,8 @@ public:
   */
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runDecoratorInference(DecoratorInferencePtr(this), input, supervision, returnCode);}
+
+  juce_UseDebuggingNewOperator
 };
 
 extern ClassPtr decoratorInferenceClass();

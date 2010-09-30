@@ -50,6 +50,8 @@ public:
   bool haveAllOutputsBeenSet() const
     {jassert(numOutputsSet <= subInferences.size()); return numOutputsSet == subInferences.size();}
 
+  juce_UseDebuggingNewOperator
+
 private:
   struct SubInference
   {
@@ -76,6 +78,8 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
+
+  juce_UseDebuggingNewOperator
 
 protected:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

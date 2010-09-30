@@ -148,6 +148,8 @@ public:
   */
   void computeMissingVariables();
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class ProteinClass;
 

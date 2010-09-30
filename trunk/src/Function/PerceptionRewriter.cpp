@@ -39,7 +39,7 @@ PerceptionPtr BiVariableFeaturesPerceptionRewriteRule::compute(TypePtr type, con
   {
     std::cout << "BiVariablePerception" << std::endl;
     if (type->getNumTemplateArguments() == 1)
-    return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(0), perception);
+      return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(0), perception);
     return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(1), perception);
   }
   return PerceptionPtr();

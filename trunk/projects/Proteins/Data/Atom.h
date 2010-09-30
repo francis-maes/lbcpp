@@ -67,6 +67,8 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class AtomClass;
 

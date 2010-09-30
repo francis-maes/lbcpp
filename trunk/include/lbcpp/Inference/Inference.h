@@ -71,6 +71,8 @@ public:
   bool needsMoreRunTiming() const
     {ScopedLock _(meanRunTimeLock); return meanRunTime.getCount() < 100.0;}
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class InferenceClass;
   friend class InferenceContext;

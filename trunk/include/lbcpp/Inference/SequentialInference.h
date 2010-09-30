@@ -58,6 +58,8 @@ public:
   void incrementStepNumber()
     {++stepNumber;}
 
+  juce_UseDebuggingNewOperator
+
 private:
   int stepNumber;
   InferencePtr subInference;
@@ -83,6 +85,8 @@ public:
 
   virtual Variable finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
     {return finalState->getSubOutput();}
+
+  juce_UseDebuggingNewOperator
 
 protected:
   /*

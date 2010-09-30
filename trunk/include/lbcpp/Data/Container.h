@@ -44,6 +44,8 @@ public:
 
   virtual void clone(ObjectPtr target) const;
 
+  juce_UseDebuggingNewOperator
+
 public:
   ContainerPtr subset(const std::vector<size_t>& indices) const;
 

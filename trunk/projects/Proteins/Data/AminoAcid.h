@@ -87,6 +87,8 @@ public:
   static juce::tchar toOneLetterCode(AminoAcidType type);
   static String toThreeLettersCode(AminoAcidType type);
   
+  juce_UseDebuggingNewOperator
+
 private:
   friend class AminoAcidClass;
 
