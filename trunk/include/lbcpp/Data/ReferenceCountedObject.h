@@ -67,12 +67,15 @@ public:
   virtual ~ReferenceCountedObject()
   {
     // it's dangerous to delete an object that's still referenced by something else!
-    jassert(refCount == 0);
+    jassert(refCount == 0 || refCount == staticAllocationRefCountValue);
   }
 
   /** Returns the object's current reference count. */
   int getReferenceCount() const
     {return refCount;}
+
+  void setStaticAllocationFlag()
+    {refCount = staticAllocationRefCountValue;}
 
 protected:
   template<class T>
@@ -80,6 +83,8 @@ protected:
   template<class T>
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
   friend struct VariableValue;
+
+  enum {staticAllocationRefCountValue = -0x7FFFFFFF};
 
   int refCount;              /*!< The object's reference count */
 
@@ -274,23 +279,6 @@ private:
 };
 
 template<class T>
-struct StaticallyAllocatedReferenceCountedObjectPtr
-{
-  StaticallyAllocatedReferenceCountedObjectPtr(T& ptr) : ptr(ptr)
-    {++(ptr.refCount);}
-  ~StaticallyAllocatedReferenceCountedObjectPtr()
-    {--(ptr.refCount);}
-
-  operator ReferenceCountedObjectPtr<T>() const
-    {return ReferenceCountedObjectPtr<T>(&ptr);}
-  T* operator -> () const
-    {return &ptr;}
-
-private:
-  T& ptr;
-};
-
-template<class T>
 inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
   {return ReferenceCountedObjectPtr<T>(const_cast<T* >(pthis));}
 
@@ -305,6 +293,7 @@ inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
 template<class T>
 inline ReferenceCountedObjectPtr<T> checkCast(const juce::tchar* where, ReferenceCountedObjectPtr<ReferenceCountedObject> object, MessageCallback& callback = MessageCallback::getInstance())
 {
+#ifdef JUCE_DEBUG
   ReferenceCountedObjectPtr<T> res;
   if (object)
   {
@@ -313,6 +302,9 @@ inline ReferenceCountedObjectPtr<T> checkCast(const juce::tchar* where, Referenc
       callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
   }
   return res;
+#else
+  return object.staticCast<T>();
+#endif
 }
 
 }; /* namespace lbcpp */

@@ -58,7 +58,7 @@ extern ClassPtr inferenceOnlineLearnerClass();
 class UpdatableInferenceOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency);
+  UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency = perStep);
 
   virtual void update(InferencePtr inference) = 0;
 
@@ -70,6 +70,8 @@ protected:
   size_t epoch;
   UpdateFrequency updateFrequency;
 };
+
+typedef ReferenceCountedObjectPtr<UpdatableInferenceOnlineLearner> UpdatableInferenceOnlineLearnerPtr;
 
 extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
           // randomization

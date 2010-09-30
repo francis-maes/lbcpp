@@ -300,7 +300,6 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  CriticalSection variablesLock;
   std::vector< std::pair<TypePtr, String> > variables;
 };
 

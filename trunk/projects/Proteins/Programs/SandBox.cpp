@@ -101,7 +101,7 @@ public:
     InferencePtr scoreInference = linearInference(targetName + T(" Classifier"), perception);
     scoreInference->setOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
     if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
-      scoreInference = addBiasInference(targetName, scoreInference);
+      scoreInference = addBiasInference(targetName, scoreInference, 0.0);
     return binaryLinearSVMInference(scoreInference);
   }
 
@@ -196,7 +196,7 @@ public:
       stdOutPrinter.print(T("====================================================="));
       
       //singleThreadedInferenceContext();
-      InferenceContextPtr validationContext = multiThreadedInferenceContext(new ThreadPool(7, false));
+      InferenceContextPtr validationContext =  multiThreadedInferenceContext(new ThreadPool(7, false));
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
@@ -253,22 +253,15 @@ int main(int argc, char** argv)
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
-  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  /*
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
+  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));*/
   
-
   std::cout << "Inference: " << std::endl;
 
   Variable(inference).printRecursively(std::cout, 2);
