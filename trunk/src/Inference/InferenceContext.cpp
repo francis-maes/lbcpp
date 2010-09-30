@@ -33,11 +33,11 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
     jassert(false);
     return Variable();
   }
-  
+
   if (returnCode == Inference::canceledReturnCode)
     {jassert(output);}
   else if (!output)
-    output = callRunInference(inference, input, supervision, returnCode);  
+    output = callRunInference(inference, input, supervision, returnCode);
 
   callPostInference(stack, input, supervision, output, returnCode);
 
@@ -65,7 +65,7 @@ Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference
       return Variable();
     state->setSubOutput(subOutput);
   }
-  
+
   return inference->finalizeInference(pthis, state, returnCode);
 }
 
@@ -175,7 +175,7 @@ void InferenceContext::clearCallbacks()
 ** RunJobThread
 */
 using juce::Thread;
- 
+
 class RunJobThread : public juce::Thread
 {
 public:
@@ -219,9 +219,9 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::addJob(JobPtr job, size_t priority)
 {
-  DBG("Add Job: " + job->getName() + T(" priority: ") + String((int)priority));
+  //juce::DBG("Add Job: " + job->getJobName() + T(" priority: ") + String((int)priority));
   {
-    ScopedLock _(waitingJobsLock); 
+    ScopedLock _(waitingJobsLock);
     if (waitingJobs.size() <= priority)
       waitingJobs.resize(priority + 1);
     waitingJobs[priority].push_back(job);
@@ -259,7 +259,7 @@ size_t ThreadPool::getNumThreads() const
 
 void ThreadPool::update()
 {
-  ScopedLock _(threadsLock); 
+  ScopedLock _(threadsLock);
   for (size_t i = 0; i < threads.size(); )
   {
     if (!threads[i]->isThreadRunning())
@@ -275,7 +275,7 @@ void ThreadPool::update()
     JobPtr job = popJob();
     if (job)
     {
-      DBG("Start Job: " + job->getName());
+//      juce::DBG("Start Job: " + job->getJobName());
       startThreadForJob(job);
     }
     else
@@ -329,7 +329,7 @@ protected:
 
 void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
 {
-  ScopedLock _(threadsLock); 
+  ScopedLock _(threadsLock);
   juce::WaitableEvent event;
   JobPtr signalingJob(new SignalThreadPoolJob(job, event));
   addJob(signalingJob, priority);
@@ -339,7 +339,7 @@ void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
 
 void ThreadPool::startThreadForJob(JobPtr job)
 {
-  ScopedLock _(threadsLock); 
+  ScopedLock _(threadsLock);
   Thread* res = new RunJobThread(job);
   res->startThread();
   threads.push_back(res);

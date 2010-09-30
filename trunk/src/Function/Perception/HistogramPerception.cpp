@@ -19,10 +19,10 @@ public:
   {
     computeAccumulatedScores(vector);
   }
-  
+
   std::vector<double>& getAccumulatedScores(size_t index)
     {jassert(index < accumulators.size()); return accumulators[index];}
-  
+
   size_t getNumElements() const
     {return accumulators.size();}
 
@@ -36,7 +36,7 @@ private:
     if (enumeration)
     {
       accumulators[0].resize(enumeration->getNumElements() + 1, 0.0);
-      
+
       for (size_t i = 0; i < n; ++i)
       {
         std::vector<double>& scores = accumulators[i];
@@ -46,11 +46,11 @@ private:
       }
       return;
     }
-    
+
     if (type->inheritsFrom(doubleType()))
     {
       accumulators[0].resize(1, 0.0);
-      
+
       for (size_t i = 0; i < n; ++i)
       {
         std::vector<double>& scores = accumulators[i];
@@ -61,14 +61,14 @@ private:
       }
       return;
     }
-    
+
     if (type->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
     {
       EnumerationPtr enumeration = type->getTemplateArgument(0).dynamicCast<Enumeration>();
       jassert(enumeration);
-      
+
       accumulators[0].resize(enumeration->getNumElements(), 0.0); // No missing value allowed
-      
+
       for (size_t i = 0; i < n; ++i)
       {
         std::vector<double>& scores = accumulators[i];
@@ -79,10 +79,10 @@ private:
       }
       return;
     }
-    
+
     jassert(false);
   }
-  
+
 private:
   std::vector<std::vector<double> > accumulators; // index -> label -> count
 };
@@ -131,7 +131,7 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   size_t startPosition = juce::jlimit(0, (int)n, input[1][0].getInteger());
   size_t endPosition = juce::jlimit(0, (int)n, input[1][1].getInteger());
   jassert(endPosition >= startPosition);
-  
+
   if (!useCache || vector != previousVector)
   {
     if (accumulators)
@@ -145,6 +145,6 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   const std::vector<double>& endScores = accumulators->getAccumulatedScores(endPosition - 1);
 
   for (size_t i = 0; i < startScores.size(); ++i)
-    callback->sense(i, Variable((endScores[i] - startScores[i]) / (endPosition - startPosition), doubleType()));
+    callback->sense(i, Variable((endScores[i] - startScores[i]) / (endPosition - startPosition - 1), doubleType()));
 }
 
