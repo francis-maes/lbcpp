@@ -61,8 +61,10 @@ void ProteinInferenceHelper::saveDebugFiles(ProteinPtr protein, size_t stepNumbe
 /*
 ** ProteinSequentialInference
 */
-ProteinSequentialInference::ProteinSequentialInference() : VectorSequentialInference(T("Protein"))
-  {}
+ProteinSequentialInference::ProteinSequentialInference()
+  : VectorSequentialInference(T("Protein"))
+{
+}
 
 SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
@@ -74,21 +76,59 @@ SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(Inferen
 void ProteinSequentialInference::prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   // we keep the same input and supervision for sub-inferences
-  state->setSubInference(getSubInference(index), state->getInput(), state->getSupervision());
+  Variable inputProtein;
+  if (index > 0)
+    inputProtein = state->getSubOutput(); // take the last version of the working protein
+  else
+    inputProtein = state->getInput();
+  jassert(inputProtein);
+  state->setSubInference(getSubInference(index), inputProtein, state->getSupervision());
 }
 
 void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   if (state->getSubOutput())
   {
-    ProteinPtr workingProtein = state->getInput().getObjectAndCast<Protein>();
+    ProteinPtr workingProtein = state->getSubOutput().getObjectAndCast<Protein>();
     jassert(workingProtein);
     saveDebugFiles(workingProtein, state->getStepNumber());
   }
 }
 
 Variable ProteinSequentialInference::finalizeInference(InferenceContextPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
-  {return finalState->getInput();} // the working protein
+  {return finalState->getSubOutput();} // latest version of the working protein
+
+/*
+** ProteinParallelInference
+*/
+ProteinParallelInference::ProteinParallelInference()
+  : VectorParallelInference(T("Protein"))
+{
+}
+
+ParallelInferenceStatePtr ProteinParallelInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  if (supervision)
+    prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
+
+  ProteinPtr inputProtein = prepareInputProtein(input);
+  ParallelInferenceStatePtr state(new ParallelInferenceState(inputProtein, supervision));
+  size_t n = getNumSubInferences();
+  state->reserve(n);
+  jassert(n);
+  for (size_t i = 0; i < n; ++i)
+    state->addSubInference(getSubInference(i), inputProtein, supervision);
+  return state;
+}
+
+Variable ProteinParallelInference::finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+{
+  for (size_t i = 0; i < state->getNumSubInferences(); ++i)
+    jassert(state->getSubOutput(i) == state->getSubInput(i)); // ProteinParallelInference only accept sub-inference that do side-effects into the input protein
+  saveDebugFiles(state->getInput().getObjectAndCast<Protein>(), 0);
+  return state->getInput();
+}
+
 
 /*
 ** ProteinInferenceStep

@@ -42,6 +42,8 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
+  virtual void clone(ObjectPtr target) const;
+
 public:
   ContainerPtr subset(const std::vector<size_t>& indices) const;
 

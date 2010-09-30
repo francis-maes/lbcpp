@@ -17,6 +17,11 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+InferenceContextPtr createInferenceContext()
+{
+  return multiThreadedInferenceContext(16);
+}
+
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
@@ -196,7 +201,7 @@ public:
       stdOutPrinter.print(T("====================================================="));
       
       //singleThreadedInferenceContext();
-      InferenceContextPtr validationContext =  multiThreadedInferenceContext(new ThreadPool(7, false));
+      InferenceContextPtr validationContext =  createInferenceContext();
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
@@ -241,7 +246,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
   //File workingDirectory(T("/data/PDB"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -249,29 +254,27 @@ int main(int argc, char** argv)
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
-  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  ProteinSequentialInferencePtr inferencePass = new ProteinSequentialInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
-  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
-  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   
-  std::cout << "Inference: " << std::endl;
+  ProteinSequentialInferencePtr inference = inferencePass/*(new ProteinSequentialInference());
+  inference->appendInference(inferencePass);
+  inference->appendInference(inferencePass->cloneAndCast<Inference>())*/;
 
-  Variable(inference).printRecursively(std::cout, 2);
+/*  std::cout << "Inference: " << std::endl;
+  Variable(inference).printRecursively(std::cout, 2);*/
 
-  // MultiThread
-  ThreadPoolPtr pool(new ThreadPool(7));
-  InferenceContextPtr context = multiThreadedInferenceContext(pool);
-  
-  // SingleThread
-  //InferenceContextPtr context = singleThreadedInferenceContext();
+  InferenceContextPtr context = createInferenceContext();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
@@ -294,5 +297,8 @@ int main(int argc, char** argv)
     context->evaluate(inference, trainProteins, evaluator);
     std::cout << "Check2: " << evaluator->toString() << std::endl;
   }*/
+
+  lbcpp::deinitialize();
+  std::cout << "Tchao." << std::endl;
   return 0;
 }

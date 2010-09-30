@@ -35,6 +35,7 @@ public:
   */
   virtual String toString() const;
   virtual bool loadFromXml(XmlImporter& importer);
+  virtual void clone(ObjectPtr target) const;
 
 protected:
   bool checkType(const Variable& value) const;

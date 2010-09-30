@@ -11,6 +11,7 @@
 
 # include "../Data/Protein.h"
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/DecoratorInference.h>
 
 namespace lbcpp
@@ -56,7 +57,16 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
 
-// todo: ProteinParallelInference
+class ProteinParallelInference : public VectorParallelInference, public ProteinInferenceHelper
+{
+public:
+  ProteinParallelInference();
+
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
+};
+
+typedef ReferenceCountedObjectPtr<ProteinParallelInference> ProteinParallelInferencePtr;
 
 // Transforms a "Protein -> Target (Target)" Inference into a "Protein -> Protein (Protein)" Inference
 class ProteinInferenceStep : public StaticDecoratorInference

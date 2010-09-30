@@ -67,6 +67,13 @@ bool Vector::loadFromXml(XmlImporter& importer)
   return Container::loadFromXml(importer);
 }
 
+void Vector::clone(ObjectPtr target) const
+{
+  VectorPtr targetVector = target.staticCast<Vector>();
+  targetVector->resize(getNumElements());
+  Container::clone(targetVector);
+}
+
 /*
 ** GenericVector
 */
