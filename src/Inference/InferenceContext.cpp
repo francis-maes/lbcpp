@@ -194,8 +194,8 @@ public:
     job->runJob(failureReason);
   }
 
-  String getCurrentStatus() const
-    {return job->getCurrentStatus();}
+  JobPtr getJob() const
+    {return job;}
 
   juce_UseDebuggingNewOperator
 
@@ -363,7 +363,8 @@ void ThreadPool::writeCurrentState(std::ostream& ostr)
   {
     RunJobThread* thread = dynamic_cast<RunJobThread* >(threads[i]);
     jassert(thread);
-    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << thread->getCurrentStatus() << std::endl;
+    JobPtr job = thread->getJob();
+    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << job->getName() << std::endl << "  " << job->getCurrentStatus() << std::endl << std::endl;
   }
   if (numWaitingJobs)
   {
