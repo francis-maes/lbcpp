@@ -50,13 +50,10 @@ public:
   virtual void postInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(stackLock);
-    parentContext->callPostInference(stack, input, supervision, output, returnCode);
     callPostInference(stack, input, supervision, output, returnCode);
+    parentContext->callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();
   }
-
-  size_t divceil(size_t num, size_t denom)
-    {jassert(denom); return (size_t)ceil((double)num / (double)denom);}
 
   virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -65,8 +62,27 @@ public:
       return Variable();
 
     size_t n = state->getNumSubInferences();
-    size_t numFreeCpus = pool->getNumFreeCpus();
-    size_t step = numFreeCpus > 1 ? divceil(n, numFreeCpus) : n;
+    jassert(n);
+    size_t numCpus = pool->getNumCpus();
+    double meanRunTime = inference->getMeanRunTime() / (double)n;
+    size_t step;
+
+    // step = num sub-inferences per sub-job
+
+    // minimum 1 step per sub-jobs
+    // maximum numCpus sub-jobs
+    // ideally 100 ms per sub-job
+
+    if (inference->hasMeanRunTimeEstimate())
+    {
+      if (!meanRunTime)
+        step = n; // very very short inference
+      else
+        step = (size_t)juce::jlimit(ceil((double)n / (double)numCpus), (double)n, 100.0 / meanRunTime);
+    }
+    else
+      step = (size_t)ceil((double)n / (double)numCpus);
+    jassert(step > 0);
 
     if (step == n)
     {

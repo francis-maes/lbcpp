@@ -33,7 +33,17 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
   if (returnCode == Inference::canceledReturnCode)
     {jassert(output);}
   else if (!output)
-    output = callRunInference(inference, input, supervision, returnCode);
+  {
+    if (inference->needsMoreRunTiming())
+    {
+      double startTime = Time::getMillisecondCounterHiRes();
+      output = callRunInference(inference, input, supervision, returnCode);
+      ScopedLock _(inference->meanRunTimeLock);
+      inference->meanRunTime.push(Time::getMillisecondCounterHiRes() - startTime);
+    }
+    else
+      output = callRunInference(inference, input, supervision, returnCode);
+  }
 
   postInference(inference, input, supervision, output, returnCode);
 
@@ -185,6 +195,7 @@ public:
 
   virtual void run()
   {
+    juce::SystemStats::initialiseStats();
     String failureReason;
     job->runJob(failureReason);
   }
@@ -201,8 +212,8 @@ private:
 /*
 ** ThreadPool
 */
-ThreadPool::ThreadPool(size_t numCpus)
-  : numCpus(numCpus) {}
+ThreadPool::ThreadPool(size_t numCpus, bool verbose)
+  : numCpus(numCpus), verbose(verbose) {}
 
 ThreadPool::~ThreadPool()
 {
@@ -214,7 +225,8 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::addJob(JobPtr job, size_t priority)
 {
-  //juce::DBG("Add Job: " + job->getJobName() + T(" priority: ") + String((int)priority));
+  //if (verbose)
+  //  std::cout << "Add Job: " << job->getName() << " priority: " << priority << std::endl;
   {
     ScopedLock _(waitingJobsLock);
     if (waitingJobs.size() <= priority)
@@ -270,21 +282,23 @@ void ThreadPool::update()
     JobPtr job = popJob();
     if (job)
     {
-//      juce::DBG("Start Job: " + job->getJobName());
+      if (verbose)
+        std::cout << "Start Job: " << job->getName() << std::endl;
       startThreadForJob(job);
     }
     else
       break;
   }
 
+  if (verbose)
   {
-   /* static int counter = 0;
-    if (++counter % 100 == 0)
+    static int counter = 0;
+    if (++counter % 1000 == 0)
     {
       std::cout << std::endl << "===============" << std::endl;
       writeCurrentState(std::cout);
       std::cout << std::endl;
-    }*/
+    }
   }
 }
 
