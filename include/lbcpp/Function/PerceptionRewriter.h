@@ -18,6 +18,8 @@ class PerceptionRewriteRule : public Object
 {
 public:
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const = 0;
+
+  juce_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriteRule> PerceptionRewriteRulePtr;
@@ -34,6 +36,8 @@ public:
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const
     {return type->inheritsFrom(this->type) ? target : PerceptionPtr();}
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class TypeBasedPerceptionRewriteRuleClass;
   PerceptionPtr target;
@@ -48,6 +52,8 @@ public:
 
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const;
 
+  juce_UseDebuggingNewOperator
+
 private:
   friend class TypeAndStackBasedPerceptionRewriteRuleClass;
   VectorPtr stack;
@@ -58,6 +64,8 @@ class EnumValueFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
 public:
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const
     {return type->inheritsFrom(enumValueType()) ? enumValueFeatures(type) : PerceptionPtr();}
+
+  juce_UseDebuggingNewOperator
 };
 
 extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
@@ -69,6 +77,8 @@ public:
   : perception(perception) {}
   
   virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const;
+
+  juce_UseDebuggingNewOperator
 
 protected:
   friend class BiVariableFeaturesPerceptionRewriteRuleClass;

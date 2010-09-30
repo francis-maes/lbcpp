@@ -65,6 +65,8 @@ public:
 
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
 
+  juce_UseDebuggingNewOperator
+
 protected:
   bool initialized;
 };
@@ -83,6 +85,8 @@ public:
 
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const = 0;
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
+
+  juce_UseDebuggingNewOperator
 
 protected:
   TypePtr getType(const std::vector<TypePtr>& arguments, const String& typeExpr, MessageCallback& callback) const;

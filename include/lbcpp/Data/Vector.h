@@ -37,6 +37,8 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ObjectPtr target) const;
 
+  juce_UseDebuggingNewOperator
+
 protected:
   bool checkType(const Variable& value) const;
 };

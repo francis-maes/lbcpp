@@ -42,6 +42,8 @@ public:
 
   Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
     {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
+
+  juce_UseDebuggingNewOperator
 };
 
 extern ClassPtr functionClass();

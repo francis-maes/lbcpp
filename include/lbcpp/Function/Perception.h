@@ -52,6 +52,8 @@ public:
   static PerceptionPtr compose(FunctionPtr preProcessingFunction, PerceptionPtr representation)
     {return representation->addPreprocessor(preProcessingFunction);}
 
+  juce_UseDebuggingNewOperator
+
 private:
   friend class PerceptionClass;
 
@@ -91,6 +93,8 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {decorated->computePerception(input, callback);}
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class DecoratorPerceptionClass;
 
@@ -124,6 +128,8 @@ public:
     {return getPerception(index);}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
+
+  juce_UseDebuggingNewOperator
 
 protected:
   friend class CompositePerceptionClass;

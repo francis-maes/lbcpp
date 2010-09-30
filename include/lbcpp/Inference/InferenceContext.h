@@ -38,6 +38,8 @@ public:
   void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
   void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class DecoratorInference;
   friend class SequentialInference;
