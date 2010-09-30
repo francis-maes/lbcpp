@@ -254,7 +254,7 @@ int main(int argc, char** argv)
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
-  ProteinSequentialInferencePtr inferencePass = new ProteinSequentialInference();
+  ProteinParallelInferencePtr inferencePass = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -262,15 +262,14 @@ int main(int argc, char** argv)
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
-  //inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
-  //inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(inferencePass);
-  inferencePass = inferencePass->cloneAndCast<Inference>();
-  inference->appendInference(inferencePass);
+  inference->appendInference(inferencePass->cloneAndCast<Inference>());
 
 /*  std::cout << "Inference: " << std::endl;
   Variable(inference).printRecursively(std::cout, 2);*/
