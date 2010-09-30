@@ -15,31 +15,17 @@
 namespace lbcpp
 {
 
-class StaticParallelInferenceLearner : public ParallelInference
+class StaticParallelInferenceLearner : public InferenceLearner<ParallelInference>
 {
 public:
-  virtual TypePtr getInputType() const
-    {return pairType(staticParallelInferenceClass(), containerClass(pairType(anyType(), anyType())));}
-
-  virtual TypePtr getSupervisionType() const
-    {return nilType();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
-
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
-  {
-    InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
-    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
-    return T("Parallel Learning of ") + targetInference->getName() + T(" with ") + 
-      String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getTemplateArgument(0)->getName() + T("(s)");
-  }
+  virtual TypePtr getTargetInferenceClass() const
+    {return staticParallelInferenceClass();}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    StaticParallelInferencePtr targetInference = input[0].getObjectAndCast<StaticParallelInference>();
+    StaticParallelInferencePtr targetInference = getInferenceAndCast<StaticParallelInference>(input);
     size_t numSubInferences = targetInference->getNumSubInferences();
-    ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
+    ContainerPtr trainingData = getTrainingData(input);
     size_t n = trainingData->getNumElements();
 
     // Compute sub-inferences for each example

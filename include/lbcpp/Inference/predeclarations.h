@@ -71,15 +71,6 @@ typedef ReferenceCountedObjectPtr<InferenceResultCache> InferenceResultCachePtr;
 class InferenceOnlineLearner;
 typedef ReferenceCountedObjectPtr<InferenceOnlineLearner> InferenceOnlineLearnerPtr;
 
-/*
-** InferenceLearner -- old
-*/
-class InferenceLearnerCallback;
-typedef ReferenceCountedObjectPtr<InferenceLearnerCallback> InferenceLearnerCallbackPtr;
-
-class InferenceLearner;
-typedef ReferenceCountedObjectPtr<InferenceLearner> InferenceLearnerPtr;
-
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_PREDECLARATIONS_H_

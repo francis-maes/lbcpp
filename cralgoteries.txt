@@ -1,5 +1,3 @@
-* Common template base class for InferenceLearners
-
 * ParallelProteinInference
 * MultiThread ParallelProteinInference
 

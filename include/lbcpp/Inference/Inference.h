@@ -152,6 +152,41 @@ protected:
 
 typedef ReferenceCountedObjectPtr<InferenceState> InferenceStatePtr;
 
+template<class BaseClass>
+class InferenceLearner : public BaseClass
+{
+public:
+  virtual TypePtr getTargetInferenceClass() const = 0;
+
+  virtual TypePtr getInputType() const
+    {return pairType(getTargetInferenceClass(), containerClass(pairType(anyType(), anyType())));}
+
+  virtual TypePtr getSupervisionType() const
+    {return nilType();}
+
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return nilType();}
+
+  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  {
+    InferencePtr targetInference = getInference(input);
+    ContainerPtr trainingData = getTrainingData(input);
+    return T("Learning ") + targetInference->getName() + T(" with ") + 
+      String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getTemplateArgument(0)->getName() + T("(s)");
+  }
+
+protected:
+  InferencePtr getInference(const Variable& input) const
+    {return input[0].getObjectAndCast<Inference>();}
+
+  template<class T>
+  ReferenceCountedObjectPtr<T> getInferenceAndCast(const Variable& input) const
+    {return input[0].getObjectAndCast<T>();}
+
+  ContainerPtr getTrainingData(const Variable& input) const
+    {return input[1].getObjectAndCast<Container>();}
+};
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_STEP_H_
