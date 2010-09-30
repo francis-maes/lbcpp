@@ -241,7 +241,7 @@ SET(LBCPP_INFERENCE_SOURCES
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
   Inference/InferenceContext/SingleThreadedInferenceContext.h
   Inference/InferenceContext/InferenceThreadPoolJob.h
-  Inference/InferenceContext/JobThreadInferenceContext.h
+  Inference/InferenceContext/ThreadOwnedInferenceContext.h
   Inference/InferenceContext/MultiThreadedInferenceContext.h
   Inference/InferenceContext/InferenceContextClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceContextClasses.cpp

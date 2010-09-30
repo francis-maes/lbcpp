@@ -17,7 +17,7 @@ using namespace lbcpp;
 /*
 ** Inference
 */
-String Inference::getDescription(const InferenceStackPtr stack, const Variable& input, const Variable& supervision) const
+String Inference::getDescription(const Variable& input, const Variable& supervision) const
   {return getClassName() + T("(") + input.toShortString() + T(", ") + supervision.toShortString() + T(")");}
 
 void Inference::clone(ObjectPtr target) const

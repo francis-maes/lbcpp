@@ -44,6 +44,7 @@ protected:
   TypePtr elementsType;
   bool useCache;
 
+  CriticalSection cacheLock;
   AccumulatedScores* accumulators;
   VectorPtr previousVector;
 };

@@ -20,6 +20,9 @@ public:
   RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, std::vector<String>& stack)
     : DecoratorPerception(decorated), rewriter(rewriter) {computeOutputVariables(stack);}
   RewritedPerception() {}
+  
+  virtual String getPreferedOutputClassName() const
+    {return decorated->getClassName() + T(" rewrited output");}
 
   virtual TypePtr getOutputType() const
     {return Perception::getOutputType();}

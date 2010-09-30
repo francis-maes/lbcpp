@@ -1,9 +1,5 @@
 
-Rendre la inferenceStack thread-safe:
- * Enlever le InferenceContext::getCurrentStack
- * Nouvelles fonctions virtuelles: startInference, finishInference
- * Faire les locks dans le JobThreadInferenceContext
-
+* Common template base class for InferenceLearners
 
 Perceptions:
  * WindowPerception: ne plus dériver de DecoratorPerception

@@ -20,12 +20,16 @@ public:
   CallbackBasedDecoratorInference(const String& name, InferencePtr decorated, InferenceCallbackPtr callback)
     : StaticDecoratorInference(name, decorated), callback(callback) {}
   CallbackBasedDecoratorInference() {}
- 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    jassert(callback);
     context->appendCallback(callback);
-    Variable res = DecoratorInference::run(context, input, supervision, returnCode);
+    return StaticDecoratorInference::prepareInference(context, input, supervision, returnCode);
+  }
+
+  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+  {
+    Variable res = StaticDecoratorInference::finalizeInference(context, finalState, returnCode);
     context->removeCallback(callback);
     return res;
   }

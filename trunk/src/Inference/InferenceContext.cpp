@@ -18,15 +18,11 @@ using namespace lbcpp;
 */
 Variable InferenceContext::run(InferencePtr inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
 {
-  InferenceStackPtr stack = getCurrentStack();
-  jassert(stack);
-  stack->push(inference);
-
   Variable input(in);
   Variable supervision(sup);
   Variable output;
   returnCode = Inference::finishedReturnCode;
-  callPreInference(stack, input, supervision, output, returnCode);
+  preInference(inference, input, supervision, output, returnCode);
   if (returnCode == Inference::errorReturnCode)
   {
     MessageCallback::warning(T("InferenceContext::run"), T("pre-inference failed"));
@@ -39,9 +35,8 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
   else if (!output)
     output = callRunInference(inference, input, supervision, returnCode);
 
-  callPostInference(stack, input, supervision, output, returnCode);
+  postInference(inference, input, supervision, output, returnCode);
 
-  stack->pop();
   return output;
 }
 
@@ -283,13 +278,13 @@ void ThreadPool::update()
   }
 
   {
-    static int counter = 0;
+   /* static int counter = 0;
     if (++counter % 100 == 0)
     {
       std::cout << std::endl << "===============" << std::endl;
       writeCurrentState(std::cout);
       std::cout << std::endl;
-    }
+    }*/
   }
 }
 

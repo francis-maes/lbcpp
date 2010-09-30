@@ -132,6 +132,8 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   size_t endPosition = juce::jlimit(0, (int)n, input[1][1].getInteger());
   jassert(endPosition >= startPosition);
 
+  ScopedLock _(cacheLock); // todo: better cache. One cache per thread ?
+
   if (!useCache || vector != previousVector)
   {
     if (accumulators)

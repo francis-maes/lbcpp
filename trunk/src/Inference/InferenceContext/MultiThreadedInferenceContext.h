@@ -22,9 +22,6 @@ public:
     : pool(pool) {}
   MultiThreadedInferenceContext() {}
 
-  virtual InferenceStackPtr getCurrentStack() const
-    {jassert(false); return InferenceStackPtr();}
-
   virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     Variable output;
@@ -37,6 +34,12 @@ protected:
   friend class MultiThreadedInferenceContextClass;
 
   ThreadPoolPtr pool;
+
+  virtual void preInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+    {jassert(false);}
+
+  virtual void postInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+    {jassert(false);}
 
   virtual Variable runDecoratorInference(DecoratorInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {jassert(false); return Variable();}

@@ -27,7 +27,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return nilType();}
 
-  virtual String getDescription(const InferenceStackPtr stack, const Variable& input, const Variable& supervision) const
+  virtual String getDescription(const Variable& input, const Variable& supervision) const
   {
     InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
     ContainerPtr trainingData = input[1].getObjectAndCast<Container>();

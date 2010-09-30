@@ -30,7 +30,7 @@ class Perception : public Function
 public:
   virtual TypePtr getOutputType() const;
   virtual String getPreferedOutputClassName() const
-    {return T("(") + getClassName() + T(" output");}
+    {return getClassName() + T(" output");}
 
   virtual size_t getNumOutputVariables() const = 0;
   virtual TypePtr getOutputVariableType(size_t index) const = 0;
@@ -55,9 +55,10 @@ public:
 private:
   friend class PerceptionClass;
 
+  CriticalSection outputTypeLock;
   DynamicClassPtr outputType;
 
-  void ensureTypeIsComputed();
+  TypePtr ensureTypeIsComputed();
 };
 
 extern ClassPtr perceptionClass();
