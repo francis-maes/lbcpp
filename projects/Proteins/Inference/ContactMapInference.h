@@ -126,19 +126,20 @@ public:
     {this->bias = bias;}
   
 protected:
+  friend class AddBiasInferenceClass;
   double bias;
 };
 
 typedef ReferenceCountedObjectPtr<AddBiasInference> AddBiasInferencePtr;
 
-inline InferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0)
-  {return new AddBiasInference(name, numericalInference, initialBias);}
+extern StaticDecoratorInferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias);
 
 class AddBiasInferenceOnlineLearner : public UpdatableInferenceOnlineLearner
 {
 public:
   AddBiasInferenceOnlineLearner(UpdateFrequency updateFrequency)
     : UpdatableInferenceOnlineLearner(updateFrequency) {}
+  AddBiasInferenceOnlineLearner() {}
 
   virtual void stepFinishedCallback(InferencePtr inf, const Variable& input, const Variable& supervision, const Variable& prediction)
   {

@@ -97,7 +97,6 @@ void DefaultClass::addVariable(const String& typeName, const String& name)
 size_t DefaultClass::getObjectNumVariables() const
 {
   size_t n = baseType->getObjectNumVariables();
-  ScopedLock _(variablesLock);
   return n + variables.size();
 }
 
@@ -108,7 +107,6 @@ TypePtr DefaultClass::getObjectVariableType(size_t index) const
     return baseType->getObjectVariableType(index);
   index -= n;
   
-  ScopedLock _(variablesLock);
   jassert(index < variables.size());
   return variables[index].first;
 }
@@ -120,7 +118,6 @@ String DefaultClass::getObjectVariableName(size_t index) const
     return baseType->getObjectVariableName(index);
   index -= n;
   
-  ScopedLock _(variablesLock);
   jassert(index < variables.size());
   return variables[index].second;
 }
@@ -132,7 +129,6 @@ void DefaultClass::addVariable(TypePtr type, const String& name)
     MessageCallback::error(T("Class::addVariable"), T("Invalid type or name"));
     return;
   }
-  ScopedLock _(variablesLock);
   if (findObjectVariable(name) >= 0)
     MessageCallback::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
   else
@@ -141,14 +137,12 @@ void DefaultClass::addVariable(TypePtr type, const String& name)
 
 void DefaultClass::deinitialize()
 {
-  ScopedLock _(variablesLock);
   variables.clear();
   Class::deinitialize();
 }
 
 int DefaultClass::findObjectVariable(const String& name) const
 {
-  ScopedLock _(variablesLock);
   for (size_t i = 0; i < variables.size(); ++i)
     if (variables[i].second == name)
       return (int)(i + baseType->getObjectNumVariables());

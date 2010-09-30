@@ -258,9 +258,10 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
 {
   if (!object)
     return 0.0;
-  ReferenceCountedObjectPtr<ComputeDotProductCallback> callback(new ComputeDotProductCallback(object));
-  perception->computePerception(input, callback);
-  return callback->res;
+  ComputeDotProductCallback callback(object);
+  callback.setStaticAllocationFlag();
+  perception->computePerception(input, &callback);
+  return callback.res;
 }
 
 /*

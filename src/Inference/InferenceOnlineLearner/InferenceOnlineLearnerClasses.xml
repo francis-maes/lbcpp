@@ -20,5 +20,7 @@
     <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
       <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
     </class>
+
+    <class name="UpdatableInferenceOnlineLearner" base="InferenceOnlineLearner" abstract="yes"/>
   </namespace>
 </file>

@@ -61,8 +61,6 @@ void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, c
 
 void DynamicClass::saveToXml(XmlExporter& exporter) const
 {
-  ScopedLock _(variablesLock);
-
   exporter.enter(T("class"));
 
   exporter.setAttribute(T("name"), getName());
@@ -80,7 +78,6 @@ void DynamicClass::saveToXml(XmlExporter& exporter) const
 
 bool DynamicClass::loadFromXml(XmlImporter& importer)
 {
-  ScopedLock _(variablesLock);
   variables.clear();
   if (!importer.enter(T("class")))
     return false;
