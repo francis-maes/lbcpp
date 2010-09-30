@@ -36,14 +36,13 @@ public:
   virtual String toString() const;
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ObjectPtr target) const;
+  VectorPtr cloneContent() const;
 
   juce_UseDebuggingNewOperator
 
 protected:
   bool checkType(const Variable& value) const;
 };
-
-typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
 class GenericVector : public Vector
 {

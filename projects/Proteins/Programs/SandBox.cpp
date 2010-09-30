@@ -267,9 +267,10 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   
-  ProteinSequentialInferencePtr inference = inferencePass/*(new ProteinSequentialInference());
+  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(inferencePass);
-  inference->appendInference(inferencePass->cloneAndCast<Inference>())*/;
+  inferencePass = inferencePass->cloneAndCast<Inference>();
+  inference->appendInference(inferencePass);
 
 /*  std::cout << "Inference: " << std::endl;
   Variable(inference).printRecursively(std::cout, 2);*/
