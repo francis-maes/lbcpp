@@ -195,7 +195,8 @@ public:
       stdOutPrinter.print(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
       stdOutPrinter.print(T("====================================================="));
       
-      InferenceContextPtr validationContext = singleThreadedInferenceContext();
+      //singleThreadedInferenceContext();
+      InferenceContextPtr validationContext = multiThreadedInferenceContext(new ThreadPool(7, false));
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
@@ -252,10 +253,10 @@ int main(int argc, char** argv)
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   /*

@@ -12,6 +12,7 @@
 # include "predeclarations.h"
 # include "../Data/Variable.h"
 # include "../Data/Container.h"
+# include "../Data/RandomVariable.h"
 
 namespace lbcpp
 {
@@ -61,6 +62,15 @@ public:
 
   virtual void clone(ObjectPtr target) const;
 
+  double getMeanRunTime() const
+    {ScopedLock _(meanRunTimeLock); return meanRunTime.getMean();}
+
+  bool hasMeanRunTimeEstimate() const
+    {ScopedLock _(meanRunTimeLock); return meanRunTime.getCount() > 0;}
+
+  bool needsMoreRunTiming() const
+    {ScopedLock _(meanRunTimeLock); return meanRunTime.getCount() < 100.0;}
+
 protected:
   friend class InferenceClass;
   friend class InferenceContext;
@@ -69,6 +79,11 @@ protected:
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
+
+private:
+  friend class InferenceContext;
+  CriticalSection meanRunTimeLock;
+  ScalarVariableMean meanRunTime;
 };
 
 extern ClassPtr inferenceClass();

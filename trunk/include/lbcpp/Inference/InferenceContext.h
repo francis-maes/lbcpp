@@ -86,7 +86,7 @@ typedef ReferenceCountedObjectPtr<Job> JobPtr;
 class ThreadPool : public Object
 {
 public:
-  ThreadPool(size_t numCpus = 1);
+  ThreadPool(size_t numCpus = 1, bool verbose = false);
   virtual ~ThreadPool();
 
   void update();
@@ -111,6 +111,7 @@ public:
 
 private:
   size_t numCpus;
+  bool verbose;
 
   CriticalSection threadsLock;
   std::vector<juce::Thread* > threads;
