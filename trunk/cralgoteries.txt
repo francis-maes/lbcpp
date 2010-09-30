@@ -1,3 +1,4 @@
+
 Perceptions:
  * WindowPerception: ne plus dériver de DecoratorPerception
  * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
@@ -8,10 +9,6 @@ Perceptions:
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
-
-Execution multi-thread:
- * NativeMultiThreadInferenceContext
- * PoolMultiThreadInferenceContext
 
 Inference:
  * ParallelProteinInference

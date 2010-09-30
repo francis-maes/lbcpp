@@ -30,7 +30,7 @@ public:
   {
     GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
 
-    updateParameters(inference, gradientSum, 1.0, input, supervision, prediction);
+    updateParameters(inference, 1.0, input, supervision, prediction, &gradientSum);
     ++epoch;
     if (learningUpdateFrequency >= perStepMiniBatch)
     {

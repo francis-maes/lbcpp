@@ -36,10 +36,24 @@
       <constructor/>
     </class>
 
-    <class name="RunOnSupervisedExamplesInference" base="ParallelInference">
+    <class name="RunOnSupervisedExamplesSequentialInference" base="SequentialInference">
       <constructor arguments="InferencePtr inference"/>
     </class>
-  
+
+    <class name="RunOnSupervisedExamplesParallelInference" base="ParallelInference">
+      <constructor arguments="InferencePtr inference"/>
+    </class>
+
+    <code>
+      InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel)
+      {
+        if (doInParallel)
+          return runOnSupervisedExamplesParallelInference(inference);
+        else
+         return runOnSupervisedExamplesSequentialInference(inference);
+      }
+    </code>
+    
     <class name="RunSequentialInferenceStepOnExamples" base="ParallelInference" abstract="yes"/>
 
     <class name="CallbackBasedDecoratorInference" base="StaticDecoratorInference">

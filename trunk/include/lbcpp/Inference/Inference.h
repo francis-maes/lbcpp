@@ -125,7 +125,7 @@ extern DecoratorInferencePtr decoratorInferenceLearner();
 extern DecoratorInferencePtr postProcessInferenceLearner();
 
 // Misc
-extern ParallelInferencePtr runOnSupervisedExamplesInference(InferencePtr inference);
+extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
 
 /*

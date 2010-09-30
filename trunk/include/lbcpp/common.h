@@ -39,12 +39,16 @@ using juce::InputStream;
 using juce::OutputStream;
 using juce::Time;
 using juce::XmlElement;
+using juce::Logger;
 
 namespace lbcpp
 {
 #ifdef LBCPP_MULTI_THREAD
 using juce::CriticalSection;
 using juce::ScopedLock;
+using juce::ReadWriteLock;
+using juce::ScopedReadLock;
+using juce::ScopedWriteLock;
 #else
 class CriticalSection {};
 class ScopedLock

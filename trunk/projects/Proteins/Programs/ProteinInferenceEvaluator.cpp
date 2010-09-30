@@ -184,7 +184,7 @@ int main(int argc, char** argv)
     std::cout << "Making predictions..." << std::endl;
 
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    inferenceContext->run(runOnSupervisedExamplesInference(inference), proteins, ObjectPtr(), returnCode);
+    inferenceContext->run(runOnSupervisedExamplesInference(inference, false), proteins, ObjectPtr(), returnCode);
     // FIXME
     //std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
       }
       
       Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      inferenceContext->run(runOnSupervisedExamplesInference(decoratedInference), proteins, ObjectPtr(), returnCode);
+      inferenceContext->run(runOnSupervisedExamplesInference(decoratedInference, false), proteins, ObjectPtr(), returnCode);
       // FIXME
       //std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }

@@ -25,7 +25,7 @@ public:
 
   virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    examples.push_back(Example(input, supervision, prediction));
+    storeExample(input, supervision, prediction);
     if (randomizationFrequency >= perStepMiniBatch)
     {
       int miniBatchSize = randomizationFrequency - perStepMiniBatch;
@@ -38,13 +38,17 @@ public:
   {
     if (randomizationFrequency == perEpisode || randomizationFrequency >= perStepMiniBatch + 1)
       flushExamples(inference);
-    targetLearningCallback->episodeFinishedCallback(inference);
+    if (randomizationFrequency != perPass)
+      targetLearningCallback->episodeFinishedCallback(inference);
   }
 
   virtual void passFinishedCallback(InferencePtr inference)
   {
     if (randomizationFrequency == perPass)
+    {
       flushExamples(inference);
+      targetLearningCallback->episodeFinishedCallback(inference);
+    }
     targetLearningCallback->passFinishedCallback(inference);
   }
   
@@ -68,10 +72,26 @@ private:
     Variable prediction;
   };
 
+  CriticalSection examplesLock;
   std::vector<Example> examples;
  
+  void storeExample(const Variable& input, const Variable& supervision, const Variable& prediction)
+  {
+    ScopedLock _(examplesLock);
+    examples.push_back(Example(input, supervision, prediction));
+  }
+
+  void getExamplesAndClear(std::vector<Example>& examples)
+  {
+    ScopedLock _(examplesLock);
+    this->examples.swap(examples);
+    this->examples.clear();
+  }
+
   void flushExamples(InferencePtr inference)
   {
+    std::vector<Example> examples;
+    getExamplesAndClear(examples);
     if (!examples.size())
       return;
     //std::cout << "*" << std::flush;
@@ -82,7 +102,6 @@ private:
       const Example& example = examples[order[i]];
       targetLearningCallback->stepFinishedCallback(inference, example.input, example.supervision, example.prediction);
     }
-    examples.clear();
   }
 };
 

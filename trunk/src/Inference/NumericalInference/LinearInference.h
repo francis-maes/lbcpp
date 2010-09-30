@@ -52,18 +52,8 @@ public:
       dotProductCache = NULL;
     }*/
   }
-/*
-  virtual FeatureGeneratorPtr getExampleGradient(const Variable& input, const Variable& supervision, const Variable& prediction, double& lossValue)
-  {
-    FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
-    ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
-    jassert(features && lossFunction);
-    double lossDerivative;
-    lossFunction->compute(prediction ? prediction.getDouble() : 0.0, &lossValue, &lossDerivative);
-    return lbcpp::multiplyByScalar(features, lossDerivative);  
-  }*/
 
-  virtual void computeAndAddGradient(ObjectPtr& target, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue)
+  virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
     ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
     jassert(lossFunction);
@@ -71,17 +61,21 @@ public:
     lossFunction->compute(prediction ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
    // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
    //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
-    lbcpp::addWeighted(target, perception, input, lossDerivative * weight);
+
+    if (target)
+      lbcpp::addWeighted(*target, perception, input, lossDerivative * weight);
+    else
+    {
+      ScopedWriteLock _(parametersLock);
+      lbcpp::addWeighted(parameters, perception, input, lossDerivative * weight);
+    }
    // std::cout << " newL2 = " << l2norm(target) << std::endl;
   }
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
+    ScopedReadLock _(parametersLock);
     return lbcpp::dotProduct(parameters, perception, input);
-      /*
-    FeatureGeneratorPtr features = input.dynamicCast<FeatureGenerator>();
-    jassert(features);
-    return Variable(features->dotProduct(parameters, dotProductCache));*/
   }
 
 private:

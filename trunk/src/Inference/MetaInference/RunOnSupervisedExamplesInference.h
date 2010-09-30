@@ -14,27 +14,72 @@
 
 namespace lbcpp
 {
- 
-  
-// Input: (Input, Supervision) Container
-// Supervision: None
-// Output: None
-class RunOnSupervisedExamplesInference : public ParallelInference
+
+template<class BaseClass>
+class RunOnSupervisedExamplesInference : public BaseClass
 {
 public:
   RunOnSupervisedExamplesInference(InferencePtr inference)
-    : ParallelInference(T("RunOnSupervisedExamples")), inference(inference) {}
-
+    : BaseClass(T("RunOnSupervisedExamples")), inference(inference) {}
   RunOnSupervisedExamplesInference() {}
 
   virtual TypePtr getInputType() const
-    {return containerClass(pairType(anyType(), anyType()));}
+    {return containerClass(pairType(inference->getInputType(), inference->getSupervisionType()));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}
 
   virtual TypePtr getOutputType(TypePtr ) const
     {return nilType();}
+
+protected:
+  InferencePtr inference;
+};
+
+class RunOnSupervisedExamplesSequentialInference : public RunOnSupervisedExamplesInference<SequentialInference>
+{
+public:
+  typedef RunOnSupervisedExamplesInference<SequentialInference> BaseClass;
+
+  RunOnSupervisedExamplesSequentialInference(InferencePtr inference)
+    : BaseClass(inference) {}
+  RunOnSupervisedExamplesSequentialInference() {}
+
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    SequentialInferenceStatePtr res(new SequentialInferenceState(input, supervision));
+    updateInference(context, res, returnCode);
+    return res;
+  }
+
+  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+  {
+    ContainerPtr examples = state->getInput().dynamicCast<Container>();
+    jassert(examples);
+
+    int nextIndex = state->getStepNumber() + 1; 
+    if (nextIndex < (int)examples->getNumElements())
+    {
+      Variable example = examples->getElement(nextIndex);
+      state->setSubInference(inference, example[0], example[1]);
+      return true;
+    }
+    else
+      return false;
+  }
+};
+
+// Input: (Input, Supervision) Container
+// Supervision: None
+// Output: None
+class RunOnSupervisedExamplesParallelInference : public RunOnSupervisedExamplesInference<ParallelInference>
+{
+public:
+  typedef RunOnSupervisedExamplesInference<ParallelInference> BaseClass;
+
+  RunOnSupervisedExamplesParallelInference(InferencePtr inference)
+    : BaseClass(inference) {}
+  RunOnSupervisedExamplesParallelInference() {}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -54,9 +99,6 @@ public:
 
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
-
-protected:
-  InferencePtr inference;
 };
 
 class RunSequentialInferenceStepOnExamples : public ParallelInference

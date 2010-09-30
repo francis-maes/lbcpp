@@ -25,7 +25,7 @@ public:
   {
     jassert(callback);
     context->appendCallback(callback);
-    ObjectPtr res = DecoratorInference::run(context, input, supervision, returnCode);
+    Variable res = DecoratorInference::run(context, input, supervision, returnCode);
     context->removeCallback(callback);
     return res;
   }

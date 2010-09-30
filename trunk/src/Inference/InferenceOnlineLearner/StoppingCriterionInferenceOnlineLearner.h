@@ -96,16 +96,15 @@ private:
   NumericalInferencePtr getNumericalInference(InferencePtr inference) const
     {return inference.staticCast<NumericalInference>();}
 
-  ObjectPtr getParameters(InferencePtr inference) const
-    {return getNumericalInference(inference)->getParameters();}
-
-  void testStoppingCriterion(InferencePtr inference)
+  void testStoppingCriterion(InferencePtr inf)
   {
+    NumericalInferencePtr inference = getNumericalInference(inf);
+
     double score = -getCurrentLossEstimate();
-    ObjectPtr parameters = getParameters(inference);
+    ObjectPtr parameters = inference->getParametersCopy();
     if (parameters && restoreBestParametersWhenLearningStops && score > bestScore)
     {
-      bestParameters = parameters->clone();
+      bestParameters = parameters;
       bestScore = score;
     }
     if (criterion->shouldStop(score))
