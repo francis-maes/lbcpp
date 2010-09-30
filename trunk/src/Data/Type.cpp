@@ -394,8 +394,7 @@ void Type::saveToXml(XmlExporter& exporter) const
 TypeCache::TypeCache(const String& typeName)
 {
   type = Type::get(typeName).get();
-  if (!type)
-    MessageCallback::error(T("TypeCache()"), T("Could not find type ") + typeName.quoted());
+  jassert(type);
 }
 
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
@@ -405,6 +404,7 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
   if (it == m.end())
   {
     TypePtr res = getTypeManagerInstance().getType(typeName, std::vector<TypePtr>(1, argument), MessageCallback::getInstance());
+    jassert(res);
     m[argument.get()] = res.get();
     return res;
   }
@@ -424,6 +424,7 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
     arguments[1] = argument2;
 
     TypePtr res = getTypeManagerInstance().getType(typeName, arguments, MessageCallback::getInstance());
+    jassert(res);
     m[std::make_pair(argument1.get(), argument2.get())] = res.get();
     return res;
   }
