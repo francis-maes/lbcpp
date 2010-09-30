@@ -74,6 +74,23 @@ void Vector::clone(ObjectPtr target) const
   Container::clone(targetVector);
 }
 
+VectorPtr Vector::cloneContent() const
+{
+  if (getElementsType()->inheritsFrom(objectClass()))
+  {
+    Variable variable = Variable::create(getClass());
+    jassert(variable);
+    VectorPtr res = variable.getObjectAndCast<Vector>();
+    size_t n = getNumElements();
+    res->resize(n);
+    for (size_t i = 0; i < n; ++i)
+      res->setElement(i, getElement(i).getObject()->clone());
+    return res;
+  }
+  else
+    return cloneAndCast<Vector>();
+}
+
 /*
 ** GenericVector
 */

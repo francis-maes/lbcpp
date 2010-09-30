@@ -122,7 +122,7 @@ public:
   virtual void clone(ObjectPtr target) const
   {
     StaticParallelInference::clone(target);
-    VectorParallelInferencePtr(target)->subInferences = subInferences->cloneAndCast<Vector>();
+    VectorParallelInferencePtr(target)->subInferences = subInferences->cloneContent();
   }
 
 protected:

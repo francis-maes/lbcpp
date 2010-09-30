@@ -142,7 +142,7 @@ public:
   virtual void clone(ObjectPtr target) const
   {
     StaticSequentialInference::clone(target);
-    VectorSequentialInferencePtr(target)->subInferences = subInferences->cloneAndCast<Vector>();
+    VectorSequentialInferencePtr(target)->subInferences = subInferences->cloneContent();
   }
 
 protected:
