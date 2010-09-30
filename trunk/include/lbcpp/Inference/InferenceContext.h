@@ -94,6 +94,9 @@ public:
   size_t getNumCpus() const
     {return numCpus;}
 
+  size_t getNumFreeCpus() const
+    {return juce::jmax(0, (int)getNumCpus() - (int)getNumRunningThreads());}
+
   size_t getNumWaitingThreads() const;
   size_t getNumRunningThreads() const;
   size_t getNumThreads() const;

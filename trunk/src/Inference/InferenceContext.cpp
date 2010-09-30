@@ -323,12 +323,11 @@ protected:
 };
 
 void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
-{
-  ScopedLock _(threadsLock);
+{   
   juce::WaitableEvent event;
   JobPtr signalingJob(new SignalThreadPoolJob(job, event));
   addJob(signalingJob, priority);
-  while (!event.wait(5))
+  while (!event.wait(1))
     update();
 }
 

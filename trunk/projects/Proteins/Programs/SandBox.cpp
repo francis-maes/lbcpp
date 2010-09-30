@@ -8,6 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "Data/Protein.h" 
+#include "Perception/ProteinPerception.h"
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
 #include "Inference/ContactMapInference.h"
@@ -40,7 +41,53 @@ public:
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
     return res ? (PerceptionPtr)perceptionToFeatures(res) : PerceptionPtr();
   }
-  
+
+  virtual PerceptionPtr createProteinPerception() const
+  {
+    CompositePerceptionPtr res = new ProteinCompositePerception();
+    res->addPerception(T("LEN"), proteinLengthPerception());
+   /* CompositePerceptionPtr freq = new ProteinCompositePerception();
+    freq->addPerception(T("AA"), createHistogramPerception(T("primaryStructure")));
+    freq->addPerception(T("PSSM"), createHistogramPerception(T("positionSpecificScoringMatrix")));
+    freq->addPerception(T("SS3"), createHistogramPerception(T("secondaryStructure")));
+    freq->addPerception(T("SS8"), createHistogramPerception(T("dsspSecondaryStructure")));
+    freq->addPerception(T("SA20"), createHistogramPerception(T("solventAccessibilityAt20p")));
+    freq->addPerception(T("DR"), createHistogramPerception(T("disorderRegions")));
+    freq->addPerception(T("StAl"), createHistogramPerception(T("structuralAlphabetSequence")));
+    res->addPerception(T("HISTOGRAM"), freq);*/
+    return res;
+  }
+
+  virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
+  {
+    TypePtr targetType = getTargetType(targetName);
+    CompositePerceptionPtr res = new ResidueCompositePerception();
+    res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
+    //res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
+    return res;
+  }
+
+  virtual PerceptionPtr createProbabilitySequencePerception(const String& targetName) const
+  {
+    CompositePerceptionPtr res = new ResidueCompositePerception();
+    res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
+    //res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
+    return res;
+  }
+
+  virtual PerceptionPtr createPositionSpecificScoringMatrixPerception() const
+  {
+    TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
+
+    PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
+    
+    CompositePerceptionPtr res = new ResidueCompositePerception();
+    res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
+                                                                     windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
+    //res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
+    return res;
+  }
+
 public:
   virtual InferencePtr createContactMapInference(const String& targetName) const
   {
@@ -225,10 +272,13 @@ int main(int argc, char** argv)
 
   Variable(inference).printRecursively(std::cout, 2);
 
+  // MultiThread
   //ThreadPoolPtr pool(new ThreadPool(7));
   //InferenceContextPtr context = multiThreadedInferenceContext(pool);
   
+  // SingleThread
   InferenceContextPtr context = singleThreadedInferenceContext();
+
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
 

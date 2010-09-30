@@ -303,7 +303,7 @@ inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
 ** load() is responsible for declaring an error to the ErrorManager.
 */
 template<class T>
-inline ReferenceCountedObjectPtr<T> checkCast(const String& where, ReferenceCountedObjectPtr<ReferenceCountedObject> object, MessageCallback& callback = MessageCallback::getInstance())
+inline ReferenceCountedObjectPtr<T> checkCast(const juce::tchar* where, ReferenceCountedObjectPtr<ReferenceCountedObject> object, MessageCallback& callback = MessageCallback::getInstance())
 {
   ReferenceCountedObjectPtr<T> res;
   if (object)
