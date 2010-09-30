@@ -175,16 +175,12 @@ void InferenceContext::clearCallbacks()
 ** RunJobThread
 */
 using juce::Thread;
-using juce::ThreadPoolJob;
  
 class RunJobThread : public juce::Thread
 {
 public:
-  RunJobThread(ThreadPoolJob* job)
-    : Thread(job->getJobName()), job(job) {}
-
-  virtual ~RunJobThread()
-    {delete job;}
+  RunJobThread(JobPtr job)
+    : Thread(job->getName()), job(job) {}
 
   void signalShouldExit()
   {
@@ -193,19 +189,25 @@ public:
   }
 
   virtual void run()
-    {job->runJob();}
+  {
+    String failureReason;
+    job->runJob(failureReason);
+  }
+
+  String getCurrentStatus() const
+    {return job->getCurrentStatus();}
 
   juce_UseDebuggingNewOperator
 
 private:
-  ThreadPoolJob* job;
+  JobPtr job;
 };
 
 /*
 ** ThreadPool
 */
 ThreadPool::ThreadPool(size_t numCpus)
-  : numCpus(numCpus), numWaitingThreads(0) {}
+  : numCpus(numCpus) {}
 
 ThreadPool::~ThreadPool()
 {
@@ -215,9 +217,9 @@ ThreadPool::~ThreadPool()
     delete threads[i];
 }
 
-void ThreadPool::addJob(ThreadPoolJob* job, size_t priority)
+void ThreadPool::addJob(JobPtr job, size_t priority)
 {
-  juce::DBG("Add Job: " + job->getJobName() + T(" priority: ") + String((int)priority));
+  DBG("Add Job: " + job->getName() + T(" priority: ") + String((int)priority));
   {
     ScopedLock _(waitingJobsLock); 
     if (waitingJobs.size() <= priority)
@@ -226,15 +228,15 @@ void ThreadPool::addJob(ThreadPoolJob* job, size_t priority)
   }
 }
 
-ThreadPoolJob* ThreadPool::popJob()
+JobPtr ThreadPool::popJob()
 {
   ScopedLock _(waitingJobsLock);
   for (int i = waitingJobs.size() - 1; i >= 0; --i)
   {
-    std::list<ThreadPoolJob* >& jobs = waitingJobs[i];
+    std::list<JobPtr>& jobs = waitingJobs[i];
     if (jobs.size())
     {
-      ThreadPoolJob* res = jobs.front();
+      JobPtr res = jobs.front();
       jobs.pop_front();
       return res;
     }
@@ -244,10 +246,13 @@ ThreadPoolJob* ThreadPool::popJob()
 
 
 size_t ThreadPool::getNumWaitingThreads() const
-  {return numWaitingThreads;}
+{
+  ScopedLock _(waitingThreadsLock);
+  return waitingThreads.size();
+}
 
 size_t ThreadPool::getNumRunningThreads() const
-  {return getNumThreads() - numWaitingThreads;}
+  {return getNumThreads() - getNumWaitingThreads();}
 
 size_t ThreadPool::getNumThreads() const
   {ScopedLock _(threadsLock); return threads.size();}
@@ -267,58 +272,107 @@ void ThreadPool::update()
   }
   while (getNumRunningThreads() < numCpus)
   {
-    ThreadPoolJob* job = popJob();
+    JobPtr job = popJob();
     if (job)
     {
-      juce::DBG("Start Job: " + job->getJobName());
+      DBG("Start Job: " + job->getName());
       startThreadForJob(job);
     }
     else
       break;
   }
+
+  {
+    static int counter = 0;
+    if (++counter % 100 == 0)
+    {
+      std::cout << std::endl << "===============" << std::endl;
+      writeCurrentState(std::cout);
+      std::cout << std::endl;
+    }
+  }
 }
 
 void ThreadPool::waitThread(juce::Thread* thread)
 {
-  ++numWaitingThreads;
+  {ScopedLock _(waitingThreadsLock); waitingThreads.insert(thread);}
   thread->wait(-1);
-  --numWaitingThreads;
+  {ScopedLock _(waitingThreadsLock); waitingThreads.erase(thread);}
 }
 
-class SignalThreadPoolJob : public ThreadPoolJob
+bool ThreadPool::isThreadWaiting(juce::Thread* thread) const
+{
+  ScopedLock _(waitingThreadsLock);
+  return waitingThreads.find(thread) != waitingThreads.end();
+}
+
+class SignalThreadPoolJob : public Job
 {
 public:
-  SignalThreadPoolJob(ThreadPoolJob* job, juce::WaitableEvent& event)
-    : ThreadPoolJob(job->getJobName()), job(job), event(event) {}
-  virtual ~SignalThreadPoolJob()
-    {delete job;}
+  SignalThreadPoolJob(JobPtr job, juce::WaitableEvent& event)
+    : Job(job->getName()), job(job), event(event) {}
 
-  virtual JobStatus runJob()
+  virtual String getCurrentStatus() const
+    {return job->getCurrentStatus();}
+
+  virtual bool runJob(String& failureReason)
   {
-    JobStatus res = job->runJob();
+    bool res = job->runJob(failureReason);
     event.signal();
     return res;
   }
 
 protected:
-  ThreadPoolJob* job;
+  JobPtr job;
   juce::WaitableEvent& event;
 };
 
-void ThreadPool::addJobAndWaitExecution(juce::ThreadPoolJob* job, size_t priority)
+void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
 {
   ScopedLock _(threadsLock); 
   juce::WaitableEvent event;
-  ThreadPoolJob* signalingJob = new SignalThreadPoolJob(job, event);
+  JobPtr signalingJob(new SignalThreadPoolJob(job, event));
   addJob(signalingJob, priority);
   while (!event.wait(5))
     update();
 }
 
-void ThreadPool::startThreadForJob(juce::ThreadPoolJob* job)
+void ThreadPool::startThreadForJob(JobPtr job)
 {
   ScopedLock _(threadsLock); 
   Thread* res = new RunJobThread(job);
   res->startThread();
   threads.push_back(res);
+}
+
+void ThreadPool::writeCurrentState(std::ostream& ostr)
+{
+  ScopedLock _1(threadsLock);
+  ScopedLock _2(waitingThreadsLock);
+  ScopedLock _3(waitingJobsLock);
+
+  size_t numWaitingJobs = 0;
+  for (size_t i = 0; i < waitingJobs.size(); ++i)
+    numWaitingJobs += waitingJobs[i].size();
+
+  ostr << numCpus << " cpus, " << getNumWaitingThreads() << " paused threads, "
+      << getNumRunningThreads() << " running threads, "
+      << numWaitingJobs << " waiting jobs " << std::endl;
+
+  for (size_t i = 0; i < threads.size(); ++i)
+  {
+    RunJobThread* thread = dynamic_cast<RunJobThread* >(threads[i]);
+    jassert(thread);
+    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << thread->getCurrentStatus() << std::endl;
+  }
+  if (numWaitingJobs)
+  {
+    ostr << "- Queue - " << std::endl;
+    for (int i = waitingJobs.size() - 1; i >= 0; --i)
+    {
+      const std::list<JobPtr>& jobs = waitingJobs[i];
+      for (std::list<JobPtr>::const_iterator it = jobs.begin(); it != jobs.end(); ++it)
+        ostr << "[" << i << "] " << (*it)->getName() << std::endl;
+    }
+  }
 }

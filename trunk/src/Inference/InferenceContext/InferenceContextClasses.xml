@@ -4,6 +4,8 @@
 
   <namespace name="lbcpp">
 
+    <class name="Job" base="NameableObject" abstract="yes"/>
+    
     <class name="ThreadPool"/>
     <class name="InferenceStack"/>
 
@@ -22,7 +24,7 @@
     </class>
     
     <class name="MultiThreadedInferenceContext" base="InferenceContext">
-      <constructor arguments="size_t numCpus"/>
+      <constructor arguments="ThreadPoolPtr pool"/>
       <variable type="ThreadPool" name="pool"/>
     </class>
 

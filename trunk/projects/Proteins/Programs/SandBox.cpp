@@ -225,10 +225,12 @@ int main(int argc, char** argv)
 
   Variable(inference).printRecursively(std::cout, 2);
 
-  InferenceContextPtr context = multiThreadedInferenceContext(7);
+  ThreadPoolPtr pool(new ThreadPool(7));
+  InferenceContextPtr context = multiThreadedInferenceContext(pool);
     //singleThreadedInferenceContext();
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
+  std::cout << "HOHOHOHO !!!!" << std::endl;
 
   Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
 

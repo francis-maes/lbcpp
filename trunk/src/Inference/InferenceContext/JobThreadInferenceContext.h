@@ -10,10 +10,13 @@
 # define LBCPP_INFERENCE_CONTEXT_JOB_THREAD_H_
 
 # include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/InferenceContext.h>
 # include <lbcpp/Inference/InferenceStack.h>
 
 namespace lbcpp
 {
+
+extern JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, Thread* originatingThread);
 
 class JobThreadInferenceContext : public InferenceContext
 {
@@ -39,6 +42,11 @@ public:
       returnCode = Inference::canceledReturnCode;
       return Variable();
     }
+    {
+      ScopedLock _(currentStateLock);
+      currentInput = input;
+      currentSupervision = supervision;
+    }
     return InferenceContext::run(inference, input, supervision, returnCode);
   }
 
@@ -60,7 +68,7 @@ public:
       size_t end = begin + step;
       if (end > n)
         end = n;
-      ThreadPoolJob* job = new RunParallelInferencesJob(parentContext, pool, stack, inference, state, begin, end, thread);
+      JobPtr job = parallelInferenceJob(parentContext, pool, stack, inference, state, begin, end, thread);
       pool->addJob(job, stack->getDepth());
       begin = end;
     }
@@ -69,14 +77,29 @@ public:
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
   }
 
+  String describeCurrentStack(const Variable& topLevelInput, const Variable& topLevelSupervision) const
+  {
+    InferencePtr inference = stack->getCurrentInference();
+    ScopedLock _(currentStateLock);
+    bool isTopLevel = currentInput.isNil();
+    return inference->getDescription(stack, isTopLevel ? topLevelInput : currentInput, isTopLevel ? topLevelSupervision : currentSupervision);
+  }
+
 protected:
   friend class JobThreadInferenceContextClass;
 
   InferenceContextPtr parentContext;
   Thread* thread;
   ThreadPoolPtr pool;
+
   InferenceStackPtr stack;
+
+  CriticalSection currentStateLock;
+  Variable currentInput;
+  Variable currentSupervision;
 };
+
+typedef ReferenceCountedObjectPtr<JobThreadInferenceContext> JobThreadInferenceContextPtr;
 
 }; /* namespace lbcpp */
 

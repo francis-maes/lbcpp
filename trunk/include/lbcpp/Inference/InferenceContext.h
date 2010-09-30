@@ -56,7 +56,31 @@ private:
 };
 
 extern InferenceContextPtr singleThreadedInferenceContext();
-extern InferenceContextPtr multiThreadedInferenceContext(size_t numCpus);
+
+class Job : public NameableObject
+{
+public:
+  Job(const String& name)
+    : NameableObject(name), jobShouldExit(false) {}
+  Job() : jobShouldExit(false) {}
+
+  virtual String getCurrentStatus() const = 0;
+
+  virtual bool runJob(String& failureReason) = 0;
+
+  bool shouldExit() const
+    {return jobShouldExit;}
+
+  void signalJobShouldExit()
+    {jobShouldExit = true;}
+
+private:
+  friend class JobClass;
+
+  bool volatile jobShouldExit;
+};
+
+typedef ReferenceCountedObjectPtr<Job> JobPtr;
 
 class ThreadPool : public Object
 {
@@ -73,28 +97,37 @@ public:
   size_t getNumRunningThreads() const;
   size_t getNumThreads() const;
 
-  void addJob(juce::ThreadPoolJob* job, size_t priority = 0);
-  void addJobAndWaitExecution(juce::ThreadPoolJob* job, size_t priority = 0);
+  void addJob(JobPtr job, size_t priority = 0);
+  void addJobAndWaitExecution(JobPtr job, size_t priority = 0);
 
-  void waitThread(juce::Thread* thread);
+  void waitThread(Thread* thread);
+  bool isThreadWaiting(Thread* thread) const;
+
+  void writeCurrentState(std::ostream& ostr);
 
 private:
   size_t numCpus;
-  size_t volatile numWaitingThreads;
 
   CriticalSection threadsLock;
   std::vector<juce::Thread* > threads;
 
-  CriticalSection waitingJobsLock;
-  std::vector< std::list< juce::ThreadPoolJob* > > waitingJobs;
+  CriticalSection waitingThreadsLock;
+  std::set<juce::Thread* > waitingThreads;
 
-  juce::ThreadPoolJob* popJob();
-  void startThreadForJob(juce::ThreadPoolJob* job);
-  juce::Thread* createThreadForJobIfAvailableCpu(juce::ThreadPoolJob* job);
+  CriticalSection waitingJobsLock;
+  std::vector< std::list< JobPtr > > waitingJobs;
+
+  JobPtr popJob();
+  void startThreadForJob(JobPtr job);
+  juce::Thread* createThreadForJobIfAvailableCpu(JobPtr job);
 };
 
 typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;
 
+extern InferenceContextPtr multiThreadedInferenceContext(ThreadPoolPtr threadPool);
+
+inline InferenceContextPtr multiThreadedInferenceContext(size_t numCpus)
+  {return multiThreadedInferenceContext(new ThreadPool(numCpus));}
 
 }; /* namespace lbcpp */
 
