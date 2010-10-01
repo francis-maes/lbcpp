@@ -279,13 +279,16 @@ int main(int argc, char** argv)
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
 
+  std::cout << "Saving inference ..." << std::flush;
   Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  std::cout << "ok." << std::endl;
 
   
   {
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+    std::cout << "Evaluating..." << std::flush;
     context->evaluate(inference, trainProteins, evaluator);
-    std::cout << "Check: " << evaluator->toString() << std::endl;
+    std::cout << " " << evaluator->toString() << std::endl;
   }
 
   /*
@@ -298,6 +301,7 @@ int main(int argc, char** argv)
     std::cout << "Check2: " << evaluator->toString() << std::endl;
   }*/
 
+  std::cout << "Deinitializing..." << std::endl;
   lbcpp::deinitialize();
   std::cout << "Tchao." << std::endl;
   return 0;
