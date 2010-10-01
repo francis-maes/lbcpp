@@ -11,6 +11,7 @@
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Data/Container.h>
+#include <lbcpp/Data/Cache.h>
 using namespace lbcpp;
 
 /*
@@ -33,19 +34,7 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
   if (returnCode == Inference::canceledReturnCode)
     {jassert(output);}
   else if (!output)
-  {
-    if (inference->needsMoreRunTiming())
-    {
-      double startTime = Time::getMillisecondCounterHiRes();
-      output = callRunInference(inference, input, supervision, returnCode);
-      ScopedLock _(inference->meanRunTimeLock);
-      inference->meanRunTime.push(Time::getMillisecondCounterHiRes() - startTime);
-      // if (!inference->needsMoreRunTiming())
-      // std::cout << "INFERENCE MEAN TIME: " << inference->getName() << " -> " << inference->getMeanRunTime() << std::endl;
-    }
-    else
-      output = callRunInference(inference, input, supervision, returnCode);
-  }
+    output = callRunInference(inference, input, supervision, returnCode);
 
   postInference(inference, input, supervision, output, returnCode);
 
@@ -181,9 +170,7 @@ void InferenceContext::clearCallbacks()
 /*
 ** RunJobThread
 */
-using juce::Thread;
-
-class RunJobThread : public juce::Thread
+class RunJobThread : public Thread
 {
 public:
   RunJobThread(JobPtr job)
@@ -211,11 +198,32 @@ private:
   JobPtr job;
 };
 
+class SignalThreadPoolJob : public Job
+{
+public:
+  SignalThreadPoolJob(JobPtr job, juce::WaitableEvent& event)
+    : Job(job->getName()), job(job), event(event) {}
+
+  virtual String getCurrentStatus() const
+    {return job->getCurrentStatus();}
+
+  virtual bool runJob(String& failureReason)
+  {
+    bool res = job->runJob(failureReason);
+    event.signal();
+    return res;
+  }
+
+protected:
+  JobPtr job;
+  juce::WaitableEvent& event;
+};
+
 /*
 ** ThreadPool
 */
 ThreadPool::ThreadPool(size_t numCpus, bool verbose)
-  : numCpus(numCpus), verbose(verbose) {}
+  : numCpus(numCpus), verbose(verbose), timingsCache(new AverageValuesCache()) {}
 
 ThreadPool::~ThreadPool()
 {
@@ -301,6 +309,24 @@ void ThreadPool::update()
   }
 }
 
+void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
+{   
+  juce::WaitableEvent event;
+  JobPtr signalingJob(new SignalThreadPoolJob(job, event));
+  addJob(signalingJob, priority);
+  while (!event.wait(1))
+  {
+    ScopedLock _(threadsLock);
+    update();
+    if (getNumRunningThreads() == 0 && getNumWaitingThreads() > 1)
+    {
+      std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;
+      writeCurrentState(std::cerr);
+      exit(1);
+    }
+  }
+}
+
 void ThreadPool::waitThread(juce::Thread* thread)
 {
   {ScopedLock _(threadsLock); waitingThreads.insert(thread);}
@@ -312,45 +338,6 @@ bool ThreadPool::isThreadWaiting(juce::Thread* thread) const
 {
   ScopedLock _(threadsLock);
   return waitingThreads.find(thread) != waitingThreads.end();
-}
-
-class SignalThreadPoolJob : public Job
-{
-public:
-  SignalThreadPoolJob(JobPtr job, juce::WaitableEvent& event)
-    : Job(job->getName()), job(job), event(event) {}
-
-  virtual String getCurrentStatus() const
-    {return job->getCurrentStatus();}
-
-  virtual bool runJob(String& failureReason)
-  {
-    bool res = job->runJob(failureReason);
-    event.signal();
-    return res;
-  }
-
-protected:
-  JobPtr job;
-  juce::WaitableEvent& event;
-};
-
-void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
-{   
-  juce::WaitableEvent event;
-  JobPtr signalingJob(new SignalThreadPoolJob(job, event));
-  addJob(signalingJob, priority);
-  while (!event.wait(1))
-  {
-    ScopedLock _(threadsLock);
-    update();
-    if (getNumRunningThreads() == 0)
-    {
-      std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;
-      writeCurrentState(std::cerr);
-      exit(1);
-    }
-  }
 }
 
 void ThreadPool::startThreadForJob(JobPtr job)

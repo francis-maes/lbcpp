@@ -9,6 +9,7 @@
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/ProbabilityDistribution.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
+  <include file="lbcpp/Data/Cache.h"/>
 
   <namespace name="lbcpp">
     
@@ -73,6 +74,10 @@
     <!-- Consumer -->
     <class name="Consumer" base="Object" abstract="yes"/>
     <class name="TextPrinter" base="Consumer" abstract="yes"/>
+    
+    <!-- Cache -->
+    <class name="Cache" base="Object" abstract="yes"/>
+    <class name="AverageValuesCache" base="Cache"/>
     
   </namespace>
   

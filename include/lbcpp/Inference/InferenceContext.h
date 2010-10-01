@@ -111,9 +111,15 @@ public:
 
   void writeCurrentState(std::ostream& ostr);
 
+  AverageValuesCachePtr getTimingsCache() const
+    {return timingsCache;}
+
 private:
+  friend class ThreadPoolClass;
+
   size_t numCpus;
   bool verbose;
+  AverageValuesCachePtr timingsCache;
 
   CriticalSection threadsLock;
   std::vector<juce::Thread* > threads;

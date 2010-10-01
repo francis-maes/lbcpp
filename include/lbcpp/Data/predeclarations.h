@@ -44,7 +44,7 @@ typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
 class StoppingCriterion;
 typedef ReferenceCountedObjectPtr<StoppingCriterion> StoppingCriterionPtr;
 
-// new
+
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 class Type;
@@ -63,6 +63,11 @@ class Consumer;
 typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
 class RandomGenerator;
 typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
+
+class Cache;
+typedef ReferenceCountedObjectPtr<Cache> CachePtr;
+class AverageValuesCache;
+typedef ReferenceCountedObjectPtr<AverageValuesCache> AverageValuesCachePtr;
 
 }; /* namespace lbcpp */
 

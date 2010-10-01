@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/InferenceContext.h>
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Data/Cache.h>
 # include "ThreadOwnedInferenceContext.h"
 
 namespace lbcpp
@@ -104,6 +105,8 @@ public:
       InferencePtr subInference = state->getSubInference(i);
       if (subInference)
       {
+        double startingTime = Time::getMillisecondCounterHiRes();
+        
         returnCode = Inference::finishedReturnCode;
         subOutput = context->run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
@@ -111,6 +114,8 @@ public:
           failureReason = T("Could not finish sub inference");
           return false; 
         }
+
+        pool->getTimingsCache()->addValue(inference, Time::getMillisecondCounterHiRes() - startingTime);
       }
       state->setSubOutput(i, subOutput);
     }

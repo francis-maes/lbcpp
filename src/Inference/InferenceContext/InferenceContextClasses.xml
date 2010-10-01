@@ -5,8 +5,12 @@
   <namespace name="lbcpp">
 
     <class name="Job" base="NameableObject" abstract="yes"/>
-    
-    <class name="ThreadPool"/>
+
+    <class name="ThreadPool">
+      <variable type="Integer" name="numCpus"/>
+      <variable type="Boolean" name="verbose"/>
+      <variable type="AverageValuesCache" name="timingsCache"/>
+    </class>
     <class name="InferenceStack"/>
 
     <class name="InferenceContext" abstract="yes"/>

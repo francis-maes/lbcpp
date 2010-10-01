@@ -65,6 +65,8 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/RandomVariable.h  
   ../include/lbcpp/Data/Consumer.h
   Data/Consumer.cpp
+  ../include/lbcpp/Data/Cache.h
+  Data/Cache.cpp
   Data/DataClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
 )  
