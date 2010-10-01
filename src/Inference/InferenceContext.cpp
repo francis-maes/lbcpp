@@ -255,13 +255,10 @@ JobPtr ThreadPool::popJob()
 
 
 size_t ThreadPool::getNumWaitingThreads() const
-{
-  ScopedLock _(waitingThreadsLock);
-  return waitingThreads.size();
-}
+  {ScopedLock _(threadsLock); return waitingThreads.size();}
 
 size_t ThreadPool::getNumRunningThreads() const
-  {return getNumThreads() - getNumWaitingThreads();}
+  {ScopedLock _(threadsLock); return threads.size() - waitingThreads.size();}
 
 size_t ThreadPool::getNumThreads() const
   {ScopedLock _(threadsLock); return threads.size();}
@@ -306,14 +303,14 @@ void ThreadPool::update()
 
 void ThreadPool::waitThread(juce::Thread* thread)
 {
-  {ScopedLock _(waitingThreadsLock); waitingThreads.insert(thread);}
+  {ScopedLock _(threadsLock); waitingThreads.insert(thread);}
   thread->wait(-1);
-  {ScopedLock _(waitingThreadsLock); waitingThreads.erase(thread);}
+  {ScopedLock _(threadsLock); waitingThreads.erase(thread);}
 }
 
 bool ThreadPool::isThreadWaiting(juce::Thread* thread) const
 {
-  ScopedLock _(waitingThreadsLock);
+  ScopedLock _(threadsLock);
   return waitingThreads.find(thread) != waitingThreads.end();
 }
 
@@ -344,7 +341,16 @@ void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
   JobPtr signalingJob(new SignalThreadPoolJob(job, event));
   addJob(signalingJob, priority);
   while (!event.wait(1))
+  {
+    ScopedLock _(threadsLock);
     update();
+    if (getNumRunningThreads() == 0)
+    {
+      std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;
+      writeCurrentState(std::cerr);
+      exit(1);
+    }
+  }
 }
 
 void ThreadPool::startThreadForJob(JobPtr job)
@@ -358,8 +364,7 @@ void ThreadPool::startThreadForJob(JobPtr job)
 void ThreadPool::writeCurrentState(std::ostream& ostr)
 {
   ScopedLock _1(threadsLock);
-  ScopedLock _2(waitingThreadsLock);
-  ScopedLock _3(waitingJobsLock);
+  ScopedLock _2(waitingJobsLock);
 
   size_t numWaitingJobs = 0;
   for (size_t i = 0; i < waitingJobs.size(); ++i)

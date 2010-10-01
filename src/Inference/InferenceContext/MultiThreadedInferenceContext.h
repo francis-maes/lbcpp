@@ -25,6 +25,7 @@ public:
   virtual Variable run(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     Variable output;
+    returnCode = Inference::finishedReturnCode;
     JobPtr job(new RunInferenceJob(refCountedPointerFromThis(this), pool, InferenceStackPtr(), inference, input, supervision, output, returnCode));
     pool->addJobAndWaitExecution(job);
     return output;

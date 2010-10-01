@@ -1,9 +1,12 @@
-* MultiThread ParallelProteinInference
-* clone of Container and Vector
+* Fixer dead lock multi-thraeding
+* Ameliorer le timing des ParallelInferences
+* InferenceContext::crossValidate() function
+* HistrogramPerceptions: new class "Cache", us it for histograms
 
+* WindowPerception: ne plus deriver de DecoratorPerception
+* Perceptions: Trouver un truc pour les conjonctions
 
 Perceptions:
- * WindowPerception: ne plus dériver de DecoratorPerception
  * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  * Residue: current position, WindowHistogram
  * ResiduePair: SegmentHistogram
