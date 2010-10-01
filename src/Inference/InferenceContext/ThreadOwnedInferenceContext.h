@@ -71,14 +71,14 @@ public:
 
     // minimum 1 step per sub-jobs
     // maximum numCpus sub-jobs
-    // ideally 100 ms per sub-job
+    // ideally 5 s per sub-job
 
     if (inference->hasMeanRunTimeEstimate())
     {
       if (!meanRunTime)
         step = n; // very very short inference
       else
-        step = (size_t)juce::jlimit(ceil((double)n / (double)numCpus), (double)n, 100.0 / meanRunTime);
+        step = (size_t)juce::jlimit(ceil((double)n / (double)numCpus), (double)n, 5000.0 / meanRunTime);
     }
     else
       step = (size_t)ceil((double)n / (double)numCpus);

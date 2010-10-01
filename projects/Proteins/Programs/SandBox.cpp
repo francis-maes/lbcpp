@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 
 InferenceContextPtr createInferenceContext()
 {
-  return multiThreadedInferenceContext(16);
+  return multiThreadedInferenceContext(new ThreadPool(24, false));
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
