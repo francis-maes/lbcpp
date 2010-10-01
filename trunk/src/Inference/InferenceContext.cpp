@@ -40,6 +40,8 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
       output = callRunInference(inference, input, supervision, returnCode);
       ScopedLock _(inference->meanRunTimeLock);
       inference->meanRunTime.push(Time::getMillisecondCounterHiRes() - startTime);
+      // if (!inference->needsMoreRunTiming())
+      // std::cout << "INFERENCE MEAN TIME: " << inference->getName() << " -> " << inference->getMeanRunTime() << std::endl;
     }
     else
       output = callRunInference(inference, input, supervision, returnCode);
