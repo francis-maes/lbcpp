@@ -117,8 +117,6 @@ private:
 
   CriticalSection threadsLock;
   std::vector<juce::Thread* > threads;
-
-  CriticalSection waitingThreadsLock;
   std::set<juce::Thread* > waitingThreads;
 
   CriticalSection waitingJobsLock;
