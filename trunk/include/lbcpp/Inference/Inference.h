@@ -62,15 +62,6 @@ public:
 
   virtual void clone(ObjectPtr target) const;
 
-  double getMeanRunTime() const
-    {ScopedLock _(meanRunTimeLock); return meanRunTime.getMean();}
-
-  bool hasMeanRunTimeEstimate() const
-    {ScopedLock _(meanRunTimeLock); return meanRunTime.getCount() > 0;}
-
-  bool needsMoreRunTiming() const
-    {ScopedLock _(meanRunTimeLock); return meanRunTime.getCount() < 100.0;}
-
   juce_UseDebuggingNewOperator
 
 protected:
@@ -81,10 +72,6 @@ protected:
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
-
-private:
-  CriticalSection meanRunTimeLock;
-  ScalarVariableMean meanRunTime;
 };
 
 extern ClassPtr inferenceClass();

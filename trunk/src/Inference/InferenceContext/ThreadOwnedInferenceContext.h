@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ThreadOwnedInferenceContext.h    | Inference Context for an        |
+| Filename: ThreadOwnedInferenceContext.h  | Inference Context for an        |
 | Author  : Francis Maes                   |   Inference job                 |
 | Started : 20/09/2010 19:27               |                                 |
 `------------------------------------------/                                 |
@@ -12,6 +12,7 @@
 # include <lbcpp/Inference/Inference.h>
 # include <lbcpp/Inference/InferenceContext.h>
 # include <lbcpp/Inference/InferenceStack.h>
+# include <lbcpp/Data/Cache.h>
 
 namespace lbcpp
 {
@@ -64,24 +65,19 @@ public:
     size_t n = state->getNumSubInferences();
     jassert(n);
     size_t numCpus = pool->getNumCpus();
-    double meanRunTime = inference->getMeanRunTime() / (double)n;
+    
+    double meanRunTime = pool->getTimingsCache()->getMeanValue(inference);
     size_t step;
 
     // step = num sub-inferences per sub-job
 
     // minimum 1 step per sub-jobs
-    // maximum numCpus sub-jobs
-    // ideally 5 s per sub-job
+    // maximum 5 * numCpus sub-jobs
+    // ideally 1 s per sub-job
 
-    if (inference->hasMeanRunTimeEstimate())
-    {
-      if (!meanRunTime)
-        step = n; // very very short inference
-      else
-        step = (size_t)juce::jlimit(ceil((double)n / (double)numCpus), (double)n, 5000.0 / meanRunTime);
-    }
-    else
-      step = (size_t)ceil((double)n / (double)numCpus);
+    step = (size_t)ceil((double)n / (5.0 * numCpus));
+    if (meanRunTime)
+      step = (size_t)juce::jlimit((int)step, (int)n, (int)(1000.0 / meanRunTime));
     jassert(step > 0);
 
     if (step == n)

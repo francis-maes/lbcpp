@@ -40,6 +40,7 @@
 # include "Data/ProbabilityDistribution.h"
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
+# include "Data/Cache.h"
 
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"
