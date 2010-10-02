@@ -85,6 +85,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<Job> JobPtr;
 
+class MultipleWaitableEvent;
 class ThreadPool : public Object
 {
 public:
@@ -103,10 +104,9 @@ public:
   size_t getNumRunningThreads() const;
   size_t getNumThreads() const;
 
-  void addJob(JobPtr job, size_t priority = 0);
   void addJobAndWaitExecution(JobPtr job, size_t priority = 0);
+  void addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t priority);
 
-  void waitThread(Thread* thread);
   bool isThreadWaiting(Thread* thread) const;
 
   void writeCurrentState(std::ostream& ostr);
@@ -128,9 +128,12 @@ private:
   CriticalSection waitingJobsLock;
   std::vector< std::list< JobPtr > > waitingJobs;
 
+  void addJob(JobPtr job, size_t priority, MultipleWaitableEvent& waitingEvent);
+  void addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEvent& waitingEvent);
   JobPtr popJob();
+
   void startThreadForJob(JobPtr job);
-  juce::Thread* createThreadForJobIfAvailableCpu(JobPtr job);
+  Thread* createThreadForJobIfAvailableCpu(JobPtr job);
 };
 
 typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;

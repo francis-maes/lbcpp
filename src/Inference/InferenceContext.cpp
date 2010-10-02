@@ -167,6 +167,46 @@ void InferenceContext::clearCallbacks()
 ///////////////// Thread Pool ///////////////////////////////
 /////////////////////////////////////////////////////////////
 
+namespace lbcpp
+{
+
+/*
+** MultipleWaitableEvent
+*/
+class MultipleWaitableEvent
+{
+public:
+  MultipleWaitableEvent() : count(0) {}
+
+  bool wait(size_t count, int timeOutMilliseconds = -1)
+  {
+    while (true)
+    {
+      {
+        ScopedLock _(countLock);
+        if (this->count >= count)
+          return true;
+      }
+      if (!event.wait(timeOutMilliseconds))
+        return false;
+    }
+  }
+
+  void signal()
+  {
+    {
+      ScopedLock _(countLock);
+      ++count;
+    }
+    event.signal();
+  }
+
+private:
+  juce::WaitableEvent event;
+  CriticalSection countLock;
+  size_t count;
+};
+
 /*
 ** RunJobThread
 */
@@ -198,10 +238,10 @@ private:
   JobPtr job;
 };
 
-class SignalThreadPoolJob : public Job
+class SignalingJob : public Job
 {
 public:
-  SignalThreadPoolJob(JobPtr job, juce::WaitableEvent& event)
+  SignalingJob(JobPtr job, MultipleWaitableEvent& event)
     : Job(job->getName()), job(job), event(event) {}
 
   virtual String getCurrentStatus() const
@@ -216,8 +256,10 @@ public:
 
 protected:
   JobPtr job;
-  juce::WaitableEvent& event;
+  MultipleWaitableEvent& event;
 };
+
+}; /* namespace lbcpp */
 
 /*
 ** ThreadPool
@@ -233,16 +275,23 @@ ThreadPool::~ThreadPool()
     delete threads[i];
 }
 
-void ThreadPool::addJob(JobPtr job, size_t priority)
+void ThreadPool::addJob(JobPtr job, size_t priority, MultipleWaitableEvent& event)
 {
-  //if (verbose)
-  //  std::cout << "Add Job: " << job->getName() << " priority: " << priority << std::endl;
-  {
-    ScopedLock _(waitingJobsLock);
-    if (waitingJobs.size() <= priority)
-      waitingJobs.resize(priority + 1);
-    waitingJobs[priority].push_back(job);
-  }
+  ScopedLock _(waitingJobsLock);
+  if (waitingJobs.size() <= priority)
+    waitingJobs.resize(priority + 1);
+  waitingJobs[priority].push_back(new SignalingJob(job, event));
+}
+
+void ThreadPool::addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEvent& event)
+{
+  ScopedLock _(waitingJobsLock);
+  if (waitingJobs.size() <= priority)
+    waitingJobs.resize(priority + 1);
+  
+  std::list<JobPtr>& waiting = waitingJobs[priority];
+  for (size_t i = 0; i < jobs.size(); ++i)
+    waiting.push_back(new SignalingJob(jobs[i], event));
 }
 
 JobPtr ThreadPool::popJob()
@@ -311,10 +360,9 @@ void ThreadPool::update()
 
 void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
 {   
-  juce::WaitableEvent event;
-  JobPtr signalingJob(new SignalThreadPoolJob(job, event));
-  addJob(signalingJob, priority);
-  while (!event.wait(1))
+  MultipleWaitableEvent event;
+  addJob(job, priority, event);
+  while (!event.wait(1, 1))
   {
     ScopedLock _(threadsLock);
     update();
@@ -327,11 +375,20 @@ void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
   }
 }
 
-void ThreadPool::waitThread(juce::Thread* thread)
+void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t priority)
 {
-  {ScopedLock _(threadsLock); waitingThreads.insert(thread);}
-  thread->wait(-1);
-  {ScopedLock _(threadsLock); waitingThreads.erase(thread);}
+  Thread* currentThread = Thread::getCurrentThread();
+  MultipleWaitableEvent event;
+  {
+    ScopedLock _(threadsLock);
+    addJobs(jobs, priority, event);
+    waitingThreads.insert(currentThread);
+  }
+  event.wait(jobs.size());
+  {
+    ScopedLock _(threadsLock);
+    waitingThreads.erase(currentThread);
+  }
 }
 
 bool ThreadPool::isThreadWaiting(juce::Thread* thread) const
