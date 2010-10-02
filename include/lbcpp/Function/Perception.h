@@ -53,6 +53,9 @@ public:
 
   juce_UseDebuggingNewOperator
 
+protected:
+  static String classNameToOutputClassName(const String& className);
+
 private:
   friend class PerceptionClass;
 

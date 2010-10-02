@@ -245,8 +245,11 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
   
-  //File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+#ifdef JUCE_WIN32
+  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+#else
   File workingDirectory(T("/data/PDB"));
+#endif 
 
   ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
@@ -271,10 +274,10 @@ int main(int argc, char** argv)
   
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  /*inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));*/
 
   /*
   inference->appendInference(inferencePass);

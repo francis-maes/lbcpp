@@ -17,22 +17,7 @@ namespace lbcpp
 class Cache : public Object
 {
 public:
-  Cache(size_t pruningFrequency = 0);
-
-  void pruneUnreferencedEntries();
-  void prune();
-
-protected:
-  virtual Variable createEntry(ObjectPtr object) const = 0;
-
-  size_t pruningFrequency;
-
-  CriticalSection cacheLock;
-  typedef std::map<ObjectPtr, Variable> CacheMap;
-  CacheMap cache;
-  size_t numInsertions;
-  size_t numDeletions;
-  size_t numAccesses;
+  Cache(size_t pruningFrequency = 0, double pruningDieTime = 0.0);
 
   Variable getEntry(ObjectPtr object) const;
   Variable& getOrCreateEntry(ObjectPtr object);
@@ -47,6 +32,24 @@ protected:
   template<class T>
   ReferenceCountedObjectPtr<T> getOrCreateEntryAndCast(ObjectPtr object)
     {return getOrCreateEntry(object).getObjectAndCast<T>();}
+
+  void pruneUnreferencedEntries();
+  void pruneUnreferencedSinceMoreThan(double timeInSeconds);
+
+  void prune();
+
+protected:
+  virtual Variable createEntry(ObjectPtr object) const = 0;
+
+  size_t pruningFrequency;
+  double pruningDieTime;
+
+  CriticalSection cacheLock;
+  typedef std::map<ObjectPtr, std::pair<Variable, juce::uint32> > CacheMap;
+  CacheMap cache;
+  size_t numInsertions;
+  size_t numDeletions;
+  size_t numAccesses;
 };
 
 class AverageValuesCache : public Cache

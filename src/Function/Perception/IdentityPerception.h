@@ -52,6 +52,8 @@ public:
     }
   }
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class IdentityPerceptionClass;
 

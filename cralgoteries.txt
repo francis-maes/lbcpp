@@ -1,8 +1,10 @@
+NumberPerceptions:
+ * Remove the SequenceSeparationDistance type
+ * New type: PositiveInteger
+ * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
 
 Perceptions:
- * HistrogramPerceptions: use the Cache class to store AccumulatedScores + Review code
  * Perceptions: Trouver un truc pour les conjonctions
- * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  * Residue: current position, WindowHistogram
  * ResiduePair: SegmentHistogram
  * Distribution: Entropy 

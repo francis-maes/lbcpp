@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_REWRITED_H_
 
 # include <lbcpp/Function/PerceptionRewriter.h>
+# include <lbcpp/Data/XmlSerialisation.h>
 
 namespace lbcpp
 {
@@ -18,7 +19,7 @@ class RewritedPerception : public DecoratorPerception
 {
 public:
   RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, std::vector<String>& stack)
-    : DecoratorPerception(decorated), rewriter(rewriter) {computeOutputVariables(stack);}
+    : DecoratorPerception(decorated) {computeOutputVariables(rewriter, stack);}
   RewritedPerception() {}
   
   virtual String getPreferedOutputClassName() const
@@ -45,20 +46,44 @@ public:
     DecoratorPerception::computePerception(input, decoratedVisitor);
   }
 
+  virtual void saveToXml(XmlExporter& exporter)
+  {
+    DecoratorPerception::saveToXml(exporter);
+    
+    exporter.enter(T("outputvar"));
+    exporter.setAttribute(T("count"), (int)outputVariables.size());
+    for (size_t i = 0; i < outputVariables.size(); ++i)
+    {
+      const OutputVariable& var = outputVariables[i];
+      exporter.enter(T("var"));
+      exporter.writeType(var.type);
+      exporter.setAttribute(T("name"), var.name);
+      exporter.saveVariable(T("subPerception"), var.subPerception);
+      exporter.leave();
+    }
+    exporter.leave();
+
+    exporter.enter(T("mapping"));
+    exporter.setAttribute(T("size"), (int)variablesMap.size());
+    for (size_t i = 0; i < variablesMap.size(); ++i)
+      exporter.saveElement(i, Variable::pair(variablesMap[i].first, variablesMap[i].second));
+    exporter.leave();
+  }
+
   virtual bool loadFromXml(XmlImporter& importer)
   {
     if (!DecoratorPerception::loadFromXml(importer))
       return false;
-    std::vector<String> stack;
-    computeOutputVariables(stack);
+
+    jassert(false); // TODO: load outputVariables and variablesMap
     return true;
   }
+
+  juce_UseDebuggingNewOperator
 
 protected:
   friend class PerceptionRewriteRules;
   friend class RewritedPerceptionClass;
-
-  PerceptionRewriterPtr rewriter;
 
   struct OutputVariable
   {
@@ -70,7 +95,7 @@ protected:
   std::vector<OutputVariable> outputVariables;
   std::vector< std::pair<size_t, PerceptionPtr> > variablesMap; // decorated perception variable index -> perception
   
-  void computeOutputVariables(std::vector<String>& stack)
+  void computeOutputVariables(PerceptionRewriterPtr rewriter, std::vector<String>& stack)
   {
     jassert(rewriter);
     outputVariables.clear();

@@ -15,16 +15,14 @@
 namespace lbcpp
 {
 
-class AccumulatedScores;
-typedef ReferenceCountedObjectPtr<AccumulatedScores> AccumulatedScoresPtr;
-
 class HistogramPerception : public Perception
 {
 public:
-  HistogramPerception(TypePtr elementsType, bool useCache)
-    : elementsType(elementsType), useCache(useCache), accumulators(NULL) {}
-  HistogramPerception() : useCache(false), accumulators(NULL) {}
-  virtual ~HistogramPerception();
+  HistogramPerception(TypePtr elementsType, bool useCache);
+  HistogramPerception() {}
+
+  virtual String getPreferedOutputClassName() const
+    {return elementsType->getName() + T(" histogram");}
 
   virtual TypePtr getInputType() const
     {return pairType(vectorClass(elementsType), pairType(integerType(), integerType()));}
@@ -38,15 +36,13 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class HistogramPerceptionClass;
 
   TypePtr elementsType;
-  bool useCache;
-
-  CriticalSection cacheLock;
-  AccumulatedScores* accumulators;
-  VectorPtr previousVector;
+  CachePtr cache;
 };
 
 }; /* namespace lbcpp */

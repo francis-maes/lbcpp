@@ -34,6 +34,8 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {}
+
+  juce_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */
