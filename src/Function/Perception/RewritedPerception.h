@@ -82,14 +82,12 @@ protected:
       TypePtr variableType = decorated->getOutputVariableType(i);
       String variableName = decorated->getOutputVariableName(i);
       PerceptionPtr variablePerception = decorated->getOutputVariableGenerator(i);
+      
+      stack.push_back(variableName);
 
       PerceptionPtr newPerception;
       if (variablePerception)
-      {
-        stack.push_back(variableName);
         newPerception = rewriter->rewriteRecursively(variablePerception, stack);
-        stack.pop_back();
-      }
       else
         newPerception = rewriter->applyRules(variableType, stack);
 
@@ -103,6 +101,8 @@ protected:
         if (newVariableType)
           addOutputVariable(newVariableType, variableName, newPerception, i);
       }
+
+      stack.pop_back();
     }
   }
 

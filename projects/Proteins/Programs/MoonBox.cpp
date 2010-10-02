@@ -57,10 +57,16 @@ public:
   NumericalProteinInferenceFactory(size_t windowSize)
   : windowSize(windowSize) {}
 
-  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
-    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res ? perceptionRewriter(res) : PerceptionPtr();
+    rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+
+    rewriter->addEnumValueFeaturesRule();
+
+    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeatures(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeatures(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeatures(probabilityType(), 10));
+    rewriter->addRule(doubleType(), identityPerception());
   }
 
 /*  
@@ -111,20 +117,6 @@ protected:
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
   
-  PerceptionPtr perceptionRewriter(PerceptionPtr perception) const
-  {
-    PerceptionRewriterPtr rewriter = new PerceptionRewriter();
-    rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
-
-    rewriter->addEnumValueFeaturesRule();
-
-    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeatures(probabilityType(), 10));
-    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeatures(probabilityType(), 10));
-    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeatures(probabilityType(), 10));
-    rewriter->addRule(doubleType(), identityPerception());
-    return rewriter->rewrite(perception);
-  }
-
 private:
   size_t windowSize;
 };

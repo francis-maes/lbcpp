@@ -10,6 +10,7 @@
 # define LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 
 # include <lbcpp/Function/Perception.h>
+# include <lbcpp/Function/PerceptionRewriter.h>
 # include <lbcpp/Inference/Inference.h>
 # include "../Data/Protein.h"   
 
@@ -34,6 +35,9 @@ public:
   /*
   ** Perceptions
   */
+  virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
+    {}
+
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const;
 
   virtual PerceptionPtr createResiduePerception(const String& targetName) const;
@@ -56,6 +60,7 @@ public:
 
 protected:
   ClassPtr proteinClass;
+  PerceptionRewriterPtr perceptionRewriter;
 
   size_t getTargetIndex(const String& targetName) const;
   TypePtr getTargetType(const String& targetName) const;

@@ -67,6 +67,9 @@ void PerceptionRewriter::addRule(TypePtr type, const String& stack, PerceptionPt
 void PerceptionRewriter::addEnumValueFeaturesRule()
   {rules->append(enumValueFeaturesPerceptionRewriteRule());}
 
+size_t PerceptionRewriter::getNumRules() const
+  {return rules->getNumElements();}
+
 PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter();

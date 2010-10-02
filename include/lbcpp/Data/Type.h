@@ -344,6 +344,7 @@ public:
 
 private:
   String typeName;
+  CriticalSection lock;
   std::map<Type*, Type*> m;
 };
 
@@ -357,6 +358,7 @@ public:
 
 private:
   String typeName;
+  CriticalSection lock;
   std::map<std::pair<Type*, Type*>, Type*> m;
 };
 

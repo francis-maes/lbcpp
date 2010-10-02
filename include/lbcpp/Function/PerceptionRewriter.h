@@ -45,8 +45,8 @@ public:
   void addRule(PerceptionRewriteRulePtr rule);
   void addRule(TypePtr type, PerceptionPtr target);
   void addRule(TypePtr type, const String& stack, PerceptionPtr target);
-
   void addEnumValueFeaturesRule();
+  size_t getNumRules() const;
 
   PerceptionPtr rewrite(PerceptionPtr perception) const;
   PerceptionPtr rewriteRecursively(PerceptionPtr perception, std::vector<String>& stack) const;

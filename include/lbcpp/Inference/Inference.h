@@ -113,7 +113,7 @@ extern VectorParallelInferencePtr parallelVoteInference(const String& name, size
 extern SharedParallelInferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, InferencePtr elementInference);
 
 /*
-** Meta Inference
+** Batch Learners
 */
 // Input: (Inference, trainingData) pair; trainingData = container of (input, supervision) pairs
 // Supervision: None
@@ -124,12 +124,12 @@ extern ParallelInferencePtr staticParallelInferenceLearner();
 extern DecoratorInferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
 extern ParallelInferencePtr parallelVoteInferenceLearner();
 extern SequentialInferencePtr onlineToBatchInferenceLearner();
-
 extern DecoratorInferencePtr decoratorInferenceLearner();
 extern DecoratorInferencePtr postProcessInferenceLearner();
 
-// Misc
+// Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
+extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
 
 /*
