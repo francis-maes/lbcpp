@@ -27,7 +27,8 @@ public:
   
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return pairType(inputType->getTemplateArgument(0), pairType(integerType(), integerType()));}
-                     
+
+  // (Container, Position) => (Container, (StartPosition, EndPosition))
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     int startPosition = input[1].getInteger() - (int)(windowSize / 2);

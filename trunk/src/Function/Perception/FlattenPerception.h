@@ -45,6 +45,8 @@ public:
     DecoratorPerception::computePerception(input, decoratedVisitor);
   }
 
+  juce_UseDebuggingNewOperator
+
 private:
   std::vector< std::pair<TypePtr, String> > outputVariables;
   std::map< std::vector<size_t> , size_t> offsets;
@@ -100,7 +102,11 @@ private:
     size_t offset;
 
     void updateOffset()
-      {offset = offsets.find(stack)->second;}
+    {
+      std::map< std::vector<size_t> , size_t>::const_iterator it = offsets.find(stack);
+      jassert(it != offsets.end());
+      offset = it->second;
+    }
   };
 };
 

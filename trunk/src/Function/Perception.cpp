@@ -34,9 +34,8 @@ void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerceptio
 /*
 ** Perception
 */
-String Perception::getPreferedOutputClassName() const
+String Perception::classNameToOutputClassName(const String& className)
 {
-  String className = getClassName();
   String res;
   for (int i = 0; i < className.length(); ++i)
   {
@@ -46,6 +45,9 @@ String Perception::getPreferedOutputClassName() const
   }
   return res;
 }
+
+String Perception::getPreferedOutputClassName() const
+  {return classNameToOutputClassName(getClassName());}
 
 TypePtr Perception::getOutputType() const
   {return const_cast<Perception* >(this)->ensureTypeIsComputed();}

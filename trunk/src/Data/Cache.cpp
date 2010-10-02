@@ -12,13 +12,15 @@ using namespace lbcpp;
 /*
 ** Cache
 */
-Cache::Cache(size_t pruningFrequency)
-  : pruningFrequency(pruningFrequency) {}
+Cache::Cache(size_t pruningFrequency, double pruningDieTime)
+  : pruningFrequency(pruningFrequency), pruningDieTime(pruningDieTime),
+    numInsertions(0), numDeletions(0), numAccesses(0)
+{
+}
 
 void Cache::pruneUnreferencedEntries()
 {
   ScopedLock _(cacheLock);
-  size_t previousSize = cache.size();
   CacheMap::iterator it, nxt;
   for (it = cache.begin(); it != cache.end(); it = nxt)
   {
@@ -31,9 +33,27 @@ void Cache::pruneUnreferencedEntries()
   }
 }
 
+void Cache::pruneUnreferencedSinceMoreThan(double timeInSeconds)
+{
+  juce::uint32 limitTime = Time::getMillisecondCounter() - (juce::uint32)(timeInSeconds * 1000.0);
+  ScopedLock _(cacheLock);
+  CacheMap::iterator it, nxt;
+  for (it = cache.begin(); it != cache.end(); it = nxt)
+  {
+    nxt = it; ++nxt;
+    if (it->second.second < limitTime)
+    {
+      cache.erase(it);
+      ++numDeletions;
+    }
+  }
+}
+
 void Cache::prune()
 {
   pruneUnreferencedEntries();
+  if (pruningDieTime)
+    pruneUnreferencedSinceMoreThan(pruningDieTime);
 }
 
 Variable Cache::getEntry(ObjectPtr object) const
@@ -41,22 +61,26 @@ Variable Cache::getEntry(ObjectPtr object) const
   ScopedLock _(cacheLock);
   ++(const_cast<Cache* >(this)->numAccesses);
   CacheMap::const_iterator it = cache.find(object);
-  return it == cache.end() ? Variable() : it->second;
+  if (it == cache.end())
+    return Variable();
+  const_cast<juce::uint32& >(it->second.second) = juce::Time::getMillisecondCounter();
+  return it->second.first;
 }
 
 Variable& Cache::getOrCreateEntry(ObjectPtr object)
 {
   ScopedLock _(cacheLock);
   ++numAccesses;
-  Variable& entry = cache[object];
-  if (!entry)
+  std::pair<Variable, juce::uint32>& entry = cache[object];
+  entry.second = juce::Time::getMillisecondCounter();
+  if (!entry.first)
   {
     ++numInsertions;
     if (pruningFrequency && (numInsertions % pruningFrequency) == 0)
       prune();
-    entry = createEntry(object);
+    entry.first = createEntry(object);
   }
-  return entry;
+  return entry.first;
 }
 
 /*

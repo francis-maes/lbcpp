@@ -19,16 +19,16 @@ class VariableToIndicesFunction : public Function
 {
 public:
   virtual TypePtr getInputType() const
-    {return vectorClass(anyType());}
+    {return containerClass(anyType());}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {jassert(inputType != nilType()); return pairType(inputType, pairType(integerType(), integerType()));}
 
+  // Container => (Container, (StartPosition, EndPosition))
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
-    VectorPtr vector = input.getObjectAndCast<Vector>();
-    size_t n = vector ? vector->getNumElements() : 0;
-      
+    ContainerPtr container = input.getObjectAndCast<Container>();
+    size_t n = container ? container->getNumElements() : 0;
     return Variable::pair(input, Variable::pair(0, n));
   }
 

@@ -52,6 +52,8 @@ public:
   PerceptionPtr rewriteRecursively(PerceptionPtr perception, std::vector<String>& stack) const;
   PerceptionPtr applyRules(TypePtr type, const std::vector<String>& stack) const;
 
+  juce_UseDebuggingNewOperator
+
 private:
   friend class PerceptionRewriterClass;
 
