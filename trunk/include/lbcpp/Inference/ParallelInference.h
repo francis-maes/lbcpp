@@ -151,11 +151,6 @@ public:
     {jassert(index == 0); return subInference;}
 
   /*
-  ** Inference
-  */
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-
-  /*
   ** Object
   */
   virtual String toString() const;
@@ -169,6 +164,8 @@ public:
 
 protected:
   friend class SharedParallelInferenceClass;
+
+  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   InferencePtr subInference;
 };

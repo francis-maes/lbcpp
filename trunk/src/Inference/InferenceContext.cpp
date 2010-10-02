@@ -113,7 +113,8 @@ Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, Contain
 Inference::ReturnCode InferenceContext::crossValidate(InferencePtr inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds)
 {
   ReturnCode res = Inference::finishedReturnCode;
-  // FIXME
+  InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, inferenceModel, numFolds));
+  run(cvInference, examples, Variable(), res);
   return res;
 }
 

@@ -174,12 +174,21 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
 
 PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
 {
+  PerceptionPtr res;
   if (is1DTarget)
-    return createResiduePerception(targetName);
+    res = createResiduePerception(targetName);
   else if (is2DTarget)
-    return createResiduePairPerception(targetName);
-  jassert(false);
-  return PerceptionPtr();
+    res = createResiduePairPerception(targetName);
+  else
+    {jassert(false); return PerceptionPtr();}
+
+  if (!perceptionRewriter)
+  {
+    PerceptionRewriterPtr& rewriter = const_cast<ProteinInferenceFactory* >(this)->perceptionRewriter;
+    rewriter = new PerceptionRewriter();
+    getPerceptionRewriteRules(rewriter);
+  }
+  return perceptionRewriter->getNumRules() ? perceptionRewriter->rewrite(res) : res;
 }
 
 PerceptionPtr ProteinInferenceFactory::applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const

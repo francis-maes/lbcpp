@@ -400,6 +400,8 @@ TypeCache::TypeCache(const String& typeName)
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 {
   jassert(argument);
+
+  ScopedLock _(lock);
   std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
   if (it == m.end())
   {
@@ -416,6 +418,8 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
 {
   jassert(argument1 && argument2);
   std::pair<Type*, Type*> key(argument1.get(), argument2.get());
+
+  ScopedLock _(lock);
   std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
   if (it == m.end())
   {

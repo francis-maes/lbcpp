@@ -1,8 +1,4 @@
 
-
-* Integrer le PerceptionRewriterPtr rewriter dans la ProteinInferenceFactory
-* InferenceContext::crossValidate() function
-
 Perceptions:
  * HistrogramPerceptions: use the Cache class to store AccumulatedScores + Review code
  * Perceptions: Trouver un truc pour les conjonctions
