@@ -9,42 +9,18 @@
 #include <lbcpp/Function/PerceptionRewriter.h>
 #include "Perception/RewritedPerception.h"
 using namespace lbcpp;
-
-TypeAndStackBasedPerceptionRewriteRule::TypeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target)
-  : TypeBasedPerceptionRewriteRule(type, target), stack(vector(stringType()))
+ 
+/*
+** PerceptionRewriteRule
+*/
+PerceptionPtr PerceptionRewriteRule::compute(TypePtr type) const
 {
-  StringArray tokens;
-  tokens.addTokens(stack, T("."), NULL);
-  for (int i = 0; i < tokens.size(); ++i)
-    this->stack->append(tokens[i]);
+  PerceptionPtr& res = const_cast<PerceptionRewriteRule* >(this)->cache[type];
+  if (!res)
+    res = computeRule(type);
+  return res;
 }
 
-
-PerceptionPtr TypeAndStackBasedPerceptionRewriteRule::compute(TypePtr type, const std::vector<String>& stack) const
-{
-  if (!type->inheritsFrom(this->type))
-    return PerceptionPtr();
-  size_t n = this->stack->getNumElements();
-  if (stack.size() < n)
-    return PerceptionPtr();
-  for (size_t i = 0; i < n; ++i)
-    if (this->stack->getElement(i).getString() != stack[i])
-      return PerceptionPtr();
-  return target;
-}
-
-PerceptionPtr BiVariableFeaturesPerceptionRewriteRule::compute(TypePtr type, const std::vector<String>& stack) const
-{
-  if (type->inheritsFrom(Type::get("BiVariablePerception"))) // FIXME
-  {
-    std::cout << "BiVariablePerception" << std::endl;
-    if (type->getNumTemplateArguments() == 1)
-      return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(0), perception);
-    return biVariableFeatures(type->getTemplateArgument(0), type->getTemplateArgument(1), perception);
-  }
-  return PerceptionPtr();
-}
-    
 /*
 ** PerceptionRewriter
 */
@@ -57,15 +33,24 @@ PerceptionPtr PerceptionRewriter::applyRules(TypePtr type, const std::vector<Str
   for (size_t i = 0; i < rules->getNumElements(); ++i)
   {
     PerceptionRewriteRulePtr rule = rules->getAndCast<PerceptionRewriteRule>(i);
-    PerceptionPtr res = rule->compute(type, stack);
-    if (res)
-      return res;
+    if (rule->match(type, stack))
+      return rule->compute(type);
   }
   return PerceptionPtr();
 }
 
 PerceptionPtr PerceptionRewriter::rewriteRecursively(PerceptionPtr perception, std::vector<String>& stack) const
-  {return new RewritedPerception(perception, refCountedPointerFromThis(this), stack);}
+{
+  RewritedPerceptionsMap::const_iterator it = rewritedPerceptions.find(perception);
+  if (it == rewritedPerceptions.end())
+  {
+    PerceptionPtr res(new RewritedPerception(perception, refCountedPointerFromThis(this), stack));
+    const_cast<PerceptionRewriter* >(this)->rewritedPerceptions[perception] = res;
+    return res;
+  }
+  else
+    return it->second;
+}
 
 PerceptionPtr PerceptionRewriter::rewrite(PerceptionPtr perception) const
   {std::vector<String> stack; return rewriteRecursively(perception, stack);}
@@ -74,19 +59,19 @@ void PerceptionRewriter::addRule(PerceptionRewriteRulePtr rule)
   {rules->append(rule);}
 
 void PerceptionRewriter::addRule(TypePtr type, PerceptionPtr target)
-  {rules->append(new TypeBasedPerceptionRewriteRule(type, target));}
+  {rules->append(typeBasedPerceptionRewriteRule(type, target));}
 
 void PerceptionRewriter::addRule(TypePtr type, const String& stack, PerceptionPtr target)
-  {rules->append(new TypeAndStackBasedPerceptionRewriteRule(type, stack, target));}
+  {rules->append(typeAndStackBasedPerceptionRewriteRule(type, stack, target));}
 
 void PerceptionRewriter::addEnumValueFeaturesRule()
-  {rules->append(new EnumValueFeaturesPerceptionRewriteRule());}
+  {rules->append(enumValueFeaturesPerceptionRewriteRule());}
 
 PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter();
   // TODO delete after test
-  rewriter->addRule(new BiVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+  rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
 
   rewriter->addEnumValueFeaturesRule();
   rewriter->addRule(doubleType(), identityPerception());

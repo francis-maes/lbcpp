@@ -19,6 +19,7 @@ using namespace lbcpp;
 */
 Variable InferenceContext::run(InferencePtr inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
 {
+  jassert(inference);
   Variable input(in);
   Variable supervision(sup);
   Variable output;
@@ -71,8 +72,8 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
 
   SequentialInferenceStatePtr state = inference->prepareInference(pthis, input, supervision, returnCode);
   if (!state)
-    return ObjectPtr();
-  while (true)
+    return Variable();
+  while (!state->isFinal())
   {
     Variable subOutput = run(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
@@ -82,12 +83,8 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
     bool res = inference->updateInference(pthis, state, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return state->getInput();
-
     if (!res)
-    {
       state->setFinalState();
-      break;
-    }
   }
   return inference->finalizeInference(pthis, state, returnCode);
 }
@@ -103,35 +100,20 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerP
   return res;
 }
 
-#include <lbcpp/Function/Evaluator.h>
-
-class EvaluationInferenceCallback : public InferenceCallback
-{
-public:
-  EvaluationInferenceCallback(EvaluatorPtr evaluator)
-    : evaluator(evaluator) {}
-
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
-  {
-    if (stack->getDepth() == 2 && output && supervision)
-    {
-      ScopedLock _(evaluatorLock);
-      evaluator->addPrediction(output, supervision);
-    }
-  }
-
-private:
-  CriticalSection evaluatorLock;
-  EvaluatorPtr evaluator;
-};
-
 Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator)
 {
   ReturnCode res = Inference::finishedReturnCode;
-  InferenceCallbackPtr evaluationCallback = new EvaluationInferenceCallback(evaluator);
+  InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(evaluator);
   appendCallback(evaluationCallback);
   run(runOnSupervisedExamplesInference(inference, true), examples, Variable(), res);
   removeCallback(evaluationCallback);
+  return res;
+}
+
+Inference::ReturnCode InferenceContext::crossValidate(InferencePtr inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds)
+{
+  ReturnCode res = Inference::finishedReturnCode;
+  // FIXME
   return res;
 }
 

@@ -114,7 +114,7 @@ protected:
   PerceptionPtr perceptionRewriter(PerceptionPtr perception) const
   {
     PerceptionRewriterPtr rewriter = new PerceptionRewriter();
-    rewriter->addRule(new BiVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+    rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
 
     rewriter->addEnumValueFeaturesRule();
 

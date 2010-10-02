@@ -41,10 +41,11 @@
     </class>
 
     <!-- Structured Perceptions -->
-    <class name="WindowPerception" base="DecoratorPerception">
+    <class name="WindowPerception" base="Perception">
       <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
       <variable type="Type" name="elementsType"/>
       <variable type="Integer" name="windowSize"/>
+      <variable type="Perception" name="subPerception"/>
     </class>
     
     <class name="HistogramPerception" base="Perception">
@@ -71,23 +72,32 @@
 
     <!-- Rewrite Perception -->
     <class name="PerceptionRewriteRule" abstract="yes"/>
+    
     <class name="TypeBasedPerceptionRewriteRule" base="PerceptionRewriteRule">
-      <variable type="Perception" name="target"/>
+      <constructor arguments="TypePtr type, PerceptionPtr target"/>
       <variable type="Type" name="type"/>
-    </class>
-    <class name="TypeAndStackBasedPerceptionRewriteRule" base="TypeBasedPerceptionRewriteRule">
-      <variable type="Vector[String]" name="stack"/>
-    </class>
-    <class name="EnumValueFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule"/>
-    <class name="PerceptionRewriter">
-      <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
+      <variable type="Perception" name="target"/>
     </class>
     
+    <class name="TypeAndStackBasedPerceptionRewriteRule" base="PerceptionRewriteRule">
+      <constructor arguments="TypePtr type, const String&amp; stack, PerceptionPtr target"/>
+      <variable type="Type" name="type"/>
+      <variable type="Vector[String]" name="stack"/>
+      <variable type="Perception" name="target"/>
+    </class>
+
+    <class name="EnumValueFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
+      <constructor/>
+    </class>
+
     <class name="BiVariableFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
       <constructor arguments="PerceptionPtr perception"/>
       <variable type="Perception" name="perception"/>
     </class>
-   
+    
+    <class name="PerceptionRewriter" base="NameableObject">
+      <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
+    </class>   
     
     <class name="RewritedPerception" base="DecoratorPerception">
       <variable type="PerceptionRewriter" name="rewriter"/>

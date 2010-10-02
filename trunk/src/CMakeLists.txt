@@ -22,6 +22,7 @@ GENERATE_INTROSPECTION_CODE(Function/Perception/Features/PerceptionFeaturesClass
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceContext/InferenceContextClasses.xml InferenceContextClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
@@ -196,6 +197,7 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/FunctionBasedPerception.h
+  Function/Perception/PerceptionRewriterRules.h
   Function/Perception/PerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
 )
@@ -238,6 +240,15 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceClasses.cpp
+)
+
+SET(LBCPP_INFERENCE_CALLBACK_SOURCES
+  Inference/InferenceCallback/CancelAfterStepCallback.h
+  Inference/InferenceCallback/CacheInferenceCallback.h
+  Inference/InferenceCallback/OnlineLearningInferenceCallback.h
+  Inference/InferenceCallback/EvaluationInferenceCallback.h
+  Inference/InferenceCallback/InferenceCallbackClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceCallbackClasses.cpp  
 )
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
@@ -290,12 +301,6 @@ SET(LBCPP_INFERENCE_META_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceClasses.cpp
 )
 
-SET(LBCPP_INFERENCE_CALLBACK_SOURCES
-  Inference/InferenceCallback/CancelAfterStepCallback.h
-  Inference/InferenceCallback/CacheInferenceCallback.h
-  Inference/InferenceCallback/OnlineLearningInferenceCallback.h
-)
-
 SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.cpp
@@ -341,8 +346,8 @@ SET(LBCPP_CORE
 
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
-  ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
+  ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
     ${LBCPP_INFERENCE_NUMERICAL_SOURCES}
@@ -377,8 +382,8 @@ SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 ## Inference
 
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
-SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
+SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
 
 SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})

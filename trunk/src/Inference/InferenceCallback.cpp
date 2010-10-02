@@ -8,16 +8,7 @@
 
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 #include <lbcpp/Inference/InferenceResultCache.h>
-#include "InferenceCallback/CancelAfterStepCallback.h"
-#include "InferenceCallback/CacheInferenceCallback.h"
-#include "InferenceCallback/OnlineLearningInferenceCallback.h"
 using namespace lbcpp;
-
-InferenceCallbackPtr lbcpp::cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
-  {return new CacheInferenceCallback(cache, parentStep);}
-
-InferenceCallbackPtr lbcpp::cancelAfterStepCallback(InferencePtr lastStepBeforeBreak)
-  {return new CancelAfterStepCallback(lastStepBeforeBreak);}
 
 /*
 ** InferenceStepResultCache
@@ -58,15 +49,4 @@ void InferenceResultCache::add(InferencePtr inference, ObjectPtr input, ObjectPt
   if (!stepCache)
     stepCache = cache[inference] = new InferenceStepResultCache(inference);
   stepCache->add(input, output);
-}
-
-/*
-** InferenceOnlineLearnerCallback
-*/
-void InferenceOnlineLearnerCallback::postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
-{
-  if (inference == stack->getCurrentInference() && supervision && output)
-    learner->stepFinishedCallback(inference, input, supervision, output);
-  else if (stack->getDepth() == 1)
-    learner->episodeFinishedCallback(inference);
 }

@@ -27,12 +27,21 @@ void Inference::clone(ObjectPtr target) const
     InferencePtr(target)->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
 }
 
+void Inference::setBatchLearner(InferencePtr batchLearner)
+{
+  if (batchLearner->getName() == T("Unnamed"))
+    batchLearner->setName(getName() + T(" learner"));
+  this->batchLearner = batchLearner;
+}
+
 /*
 ** DecoratorInference
 */
 DecoratorInference::DecoratorInference(const String& name)
   : Inference(name)
-  {setBatchLearner(decoratorInferenceLearner());}
+{
+  setBatchLearner(decoratorInferenceLearner());
+}
 
 String StaticDecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}

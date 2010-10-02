@@ -21,6 +21,7 @@ class CacheInferenceCallback : public InferenceCallback
 public:
   CacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
     : cache(cache), parentStep(parentStep) {}
+  CacheInferenceCallback() {}
 
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {

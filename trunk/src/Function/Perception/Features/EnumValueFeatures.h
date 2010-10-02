@@ -21,6 +21,9 @@ public:
     : enumeration(enumeration) {}
   EnumValueFeatures() {}
 
+  virtual String getPreferedOutputClassName() const
+    {return enumeration->getName() + T(" as features");}
+
   virtual TypePtr getInputType() const
     {return enumeration;}
 

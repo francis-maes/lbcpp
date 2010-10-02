@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="InferenceCallback" directory="Inference/InferenceCallback">
+
+  <namespace name="lbcpp">
+
+    <class name="InferenceCallback" abstract="yes"/>
+
+    <class name="CacheInferenceCallback" base="InferenceCallback">
+      <constructor arguments="InferenceResultCachePtr cache, InferencePtr parentStep"/>
+    </class>
+
+    <class name="CancelAfterStepCallback" base="InferenceCallback">
+      <constructor arguments="InferencePtr lastStepBeforeBreak"/>
+    </class>
+
+    <class name="EvaluationInferenceCallback" base="InferenceCallback">
+      <constructor arguments="EvaluatorPtr evaluator"/>
+      <variable type="Evaluator" name="evaluator"/>
+    </class>
+
+  </namespace>
+  
+</file>

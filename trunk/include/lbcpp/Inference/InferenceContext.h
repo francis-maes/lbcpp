@@ -27,6 +27,7 @@ public:
 
   ReturnCode train(InferencePtr inference, ContainerPtr examples);
   ReturnCode evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator);
+  ReturnCode crossValidate(InferencePtr inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds);
 
   /*
   ** Inference Callbacks

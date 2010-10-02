@@ -29,8 +29,7 @@ class Perception : public Function
 {
 public:
   virtual TypePtr getOutputType() const;
-  virtual String getPreferedOutputClassName() const
-    {return getClassName() + T(" output");}
+  virtual String getPreferedOutputClassName() const;
 
   virtual size_t getNumOutputVariables() const = 0;
   virtual TypePtr getOutputVariableType(size_t index) const = 0;
@@ -71,6 +70,9 @@ class DecoratorPerception : public Perception
 public:
   DecoratorPerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated) {}
+
+  virtual String getPreferedOutputClassName() const
+    {return decorated->getPreferedOutputClassName();}
 
   virtual TypePtr getOutputType() const
     {return decorated->getOutputType();}
@@ -140,19 +142,23 @@ typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 
 extern ClassPtr compositePerceptionClass();
 
-PerceptionPtr nullPerception();
-PerceptionPtr identityPerception(TypePtr type);
-PerceptionPtr identityPerception();
-DecoratorPerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
-PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
-DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);
-PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr secondElementType);
-PerceptionPtr functionBasedPerception(FunctionPtr function);
-DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
-DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
+extern PerceptionPtr nullPerception();
+extern PerceptionPtr identityPerception(TypePtr type);
+extern PerceptionPtr identityPerception();
+extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
+extern PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
+extern DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);
+extern PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr secondElementType);
+extern PerceptionPtr functionBasedPerception(FunctionPtr function);
+extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
+extern DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
 
 // features
-PerceptionPtr enumValueFeatures(EnumerationPtr enumeration);
+extern PerceptionPtr enumValueFeatures(EnumerationPtr enumeration);
+extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
+extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
+extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals);
+extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals, bool cycle);
 
 }; /* namespace lbcpp */
 

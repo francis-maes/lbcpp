@@ -57,8 +57,7 @@ public:
   InferencePtr getBatchLearner() const
     {return batchLearner;}
     
-  void setBatchLearner(InferencePtr batchLearner)
-    {this->batchLearner = batchLearner;}
+  void setBatchLearner(InferencePtr batchLearner);
 
   virtual void clone(ObjectPtr target) const;
 
