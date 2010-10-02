@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_EVALUATION_H_
 
 # include <lbcpp/Inference/InferenceCallback.h>
+# include <lbcpp/Inference/InferenceStack.h>
 # include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp

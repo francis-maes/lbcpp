@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 
 InferenceContextPtr createInferenceContext()
 {
-  return multiThreadedInferenceContext(new ThreadPool(24, false));
+  return multiThreadedInferenceContext(new ThreadPool(14, false));
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
@@ -245,10 +245,10 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
   
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  //File workingDirectory(T("/data/PDB"));
+  //File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  File workingDirectory(T("/data/PDB"));
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 7)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
