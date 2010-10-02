@@ -9,16 +9,9 @@
 #include <lbcpp/Function/Perception.h>
 using namespace lbcpp;
 
-void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
-{
-  Variable variable = subPerception->compute(input);
-  if (variable)
-    sense(variableNumber, variable);
-}
-
-TypePtr Perception::getOutputType() const
-  {return const_cast<Perception* >(this)->ensureTypeIsComputed();}
-
+/*
+** PerceptionCallback
+*/
 struct SetInObjectPerceptionCallback : public PerceptionCallback
 {
   SetInObjectPerceptionCallback(ObjectPtr target)
@@ -30,6 +23,32 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
   ObjectPtr target;
   bool atLeastOneVariable;
 };
+
+void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+{
+  Variable variable = subPerception->compute(input);
+  if (variable)
+    sense(variableNumber, variable);
+}
+
+/*
+** Perception
+*/
+String Perception::getPreferedOutputClassName() const
+{
+  String className = getClassName();
+  String res;
+  for (int i = 0; i < className.length(); ++i)
+  {
+    if (i > 0 && juce::CharacterFunctions::isLowerCase(className[i-1]) && juce::CharacterFunctions::isUpperCase(className[i]))
+      res += ' ';
+    res += juce::CharacterFunctions::toLowerCase(className[i]);
+  }
+  return res;
+}
+
+TypePtr Perception::getOutputType() const
+  {return const_cast<Perception* >(this)->ensureTypeIsComputed();}
 
 Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
 {

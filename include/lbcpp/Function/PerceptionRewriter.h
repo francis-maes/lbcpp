@@ -17,76 +17,27 @@ namespace lbcpp
 class PerceptionRewriteRule : public Object
 {
 public:
-  virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const = 0;
+  virtual bool match(TypePtr type, const std::vector<String>& stack) const = 0;
+  PerceptionPtr compute(TypePtr type) const;
 
   juce_UseDebuggingNewOperator
+
+protected:
+  virtual PerceptionPtr computeRule(TypePtr type) const = 0;
+
+  std::map<TypePtr, PerceptionPtr> cache;
 };
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriteRule> PerceptionRewriteRulePtr;
 
 extern ClassPtr perceptionRewriteRuleClass();
 
-class TypeBasedPerceptionRewriteRule : public PerceptionRewriteRule
-{
-public:
-  TypeBasedPerceptionRewriteRule(TypePtr type, PerceptionPtr target)
-    : target(target), type(type) {}
-  TypeBasedPerceptionRewriteRule() {}
+extern PerceptionRewriteRulePtr typeBasedPerceptionRewriteRule(TypePtr type, PerceptionPtr target);
+extern PerceptionRewriteRulePtr typeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target);
+extern PerceptionRewriteRulePtr enumValueFeaturesPerceptionRewriteRule();
+extern PerceptionRewriteRulePtr biVariableFeaturesPerceptionRewriteRule(PerceptionPtr perception);
 
-  virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const
-    {return type->inheritsFrom(this->type) ? target : PerceptionPtr();}
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  friend class TypeBasedPerceptionRewriteRuleClass;
-  PerceptionPtr target;
-  TypePtr type;
-};
-
-class TypeAndStackBasedPerceptionRewriteRule : public TypeBasedPerceptionRewriteRule
-{
-public:
-  TypeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target);
-  TypeAndStackBasedPerceptionRewriteRule() {}
-
-  virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const;
-
-  juce_UseDebuggingNewOperator
-
-private:
-  friend class TypeAndStackBasedPerceptionRewriteRuleClass;
-  VectorPtr stack;
-};
-
-class EnumValueFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
-{
-public:
-  virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const
-    {return type->inheritsFrom(enumValueType()) ? enumValueFeatures(type) : PerceptionPtr();}
-
-  juce_UseDebuggingNewOperator
-};
-
-extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
-
-class BiVariableFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
-{
-public:
-  BiVariableFeaturesPerceptionRewriteRule(PerceptionPtr perception = PerceptionPtr())
-  : perception(perception) {}
-  
-  virtual PerceptionPtr compute(TypePtr type, const std::vector<String>& stack) const;
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  friend class BiVariableFeaturesPerceptionRewriteRuleClass;
-  
-  PerceptionPtr perception;
-};
-  
-class PerceptionRewriter : public Object
+class PerceptionRewriter : public NameableObject
 {
 public:
   PerceptionRewriter();
@@ -105,14 +56,12 @@ private:
   friend class PerceptionRewriterClass;
 
   ObjectVectorPtr rules;
+  typedef std::map<PerceptionPtr, PerceptionPtr> RewritedPerceptionsMap;
+  RewritedPerceptionsMap rewritedPerceptions;
 };
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriter> PerceptionRewriterPtr;
 
-extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
-extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals);
-extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals, bool cycle);
-  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_REWRITER_H_

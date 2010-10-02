@@ -45,7 +45,7 @@ public:
   }
 
   void push(InferencePtr inference)
-    {stack.push_back(inference);}
+    {jassert(inference); stack.push_back(inference);}
 
   void pop()
     {jassert(stack.size()); stack.pop_back();}

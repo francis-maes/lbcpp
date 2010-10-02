@@ -22,7 +22,7 @@ public:
   RewritedPerception() {}
   
   virtual String getPreferedOutputClassName() const
-    {return decorated->getClassName() + T(" rewrited output");}
+    {return decorated->getPreferedOutputClassName() + T(" rewrited");}
 
   virtual TypePtr getOutputType() const
     {return Perception::getOutputType();}
@@ -83,11 +83,13 @@ protected:
       String variableName = decorated->getOutputVariableName(i);
       PerceptionPtr variablePerception = decorated->getOutputVariableGenerator(i);
 
-      stack.push_back(variableName);
-
       PerceptionPtr newPerception;
       if (variablePerception)
+      {
+        stack.push_back(variableName);
         newPerception = rewriter->rewriteRecursively(variablePerception, stack);
+        stack.pop_back();
+      }
       else
         newPerception = rewriter->applyRules(variableType, stack);
 
@@ -101,7 +103,6 @@ protected:
         if (newVariableType)
           addOutputVariable(newVariableType, variableName, newPerception, i);
       }
-      stack.pop_back();
     }
   }
 

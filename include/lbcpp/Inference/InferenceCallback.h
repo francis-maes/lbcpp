@@ -31,19 +31,7 @@ public:
 
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
-
-class InferenceOnlineLearnerCallback : public InferenceCallback
-{
-public:
-  InferenceOnlineLearnerCallback(InferencePtr inference, InferenceOnlineLearnerPtr learner)
-    : inference(inference), learner(learner) {}
-
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
-
-private:
-  InferencePtr inference;
-  InferenceOnlineLearnerPtr learner;
-};
+extern InferenceCallbackPtr evaluationInferenceCallback(EvaluatorPtr evaluator);
 
 }; /* namespace lbcpp */
 

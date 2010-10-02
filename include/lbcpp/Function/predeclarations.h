@@ -26,6 +26,9 @@ typedef ReferenceCountedObjectPtr<ScalarObjectFunction> ScalarObjectFunctionPtr;
 class Perception;
 typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 
+class Evaluator;
+typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_PREDECLARATIONS_H_

@@ -14,30 +14,30 @@
 namespace lbcpp
 {
 
-class WindowPerception : public DecoratorPerception
+class WindowPerception : public Perception
 {
 public:
   WindowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception)
-    : DecoratorPerception(subPerception), elementsType(elementsType), windowSize(windowSize) {}
+    : elementsType(elementsType), windowSize(windowSize), subPerception(subPerception) {}
   WindowPerception() : windowSize(0) {}
+
+  virtual String getPreferedOutputClassName() const
+    {return T("window of ") + String((int)windowSize) + T(" ") + elementsType->getName() + T("s");}
 
   virtual TypePtr getInputType() const
     {return pairType(containerClass(elementsType), integerType());}
-
-  virtual TypePtr getOutputType() const
-    {return Perception::getOutputType();}
 
   virtual size_t getNumOutputVariables() const
     {return windowSize;}
 
   virtual TypePtr getOutputVariableType(size_t index) const
-    {return decorated ? decorated->getOutputType() : elementsType;}
+    {return subPerception ? subPerception->getOutputType() : elementsType;}
 
   virtual String getOutputVariableName(size_t index) const
     {return T("[") + String((int)index - (int)(windowSize / 2)) + T("]");}
 
   virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
-    {return decorated;}
+    {return subPerception;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
@@ -52,8 +52,8 @@ public:
         if (position >= 0 && position < (int)container->getNumElements())
         {
           Variable variable = container->getElement(position);
-          if (decorated)
-            callback->sense(i, decorated, variable);
+          if (subPerception)
+            callback->sense(i, subPerception, variable);
           else if (variable)
             callback->sense(i, variable);
         }
@@ -66,6 +66,7 @@ protected:
 
   TypePtr elementsType;
   size_t windowSize;
+  PerceptionPtr subPerception;
 };
 
 }; /* namespace lbcpp */

@@ -105,8 +105,9 @@ public:
   {
     InferencePtr scoreInference = linearInference(targetName + T(" Classifier"), perception);
     scoreInference->setOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
-    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
-      scoreInference = addBiasInference(targetName, scoreInference, 0.0);
+    // FIXME !
+    //if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+    //  scoreInference = addBiasInference(targetName, scoreInference, 0.0);
     return binaryLinearSVMInference(scoreInference);
   }
 
@@ -268,8 +269,15 @@ int main(int argc, char** argv)
   inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+
+  /*
   inference->appendInference(inferencePass);
-  inference->appendInference(inferencePass->cloneAndCast<Inference>());
+  inference->appendInference(inferencePass->cloneAndCast<Inference>());*/
 
 /*  std::cout << "Inference: " << std::endl;
   Variable(inference).printRecursively(std::cout, 2);*/

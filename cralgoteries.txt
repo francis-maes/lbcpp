@@ -1,11 +1,10 @@
-* Fixer dead lock multi-thraeding
-   -> probablement avoir avec le SharedParallelVectorInference
 
+
+* Integrer le PerceptionRewriterPtr rewriter dans la ProteinInferenceFactory
 * InferenceContext::crossValidate() function
 
 Perceptions:
  * HistrogramPerceptions: use the Cache class to store AccumulatedScores + Review code
- * WindowPerception: ne plus deriver de DecoratorPerception
  * Perceptions: Trouver un truc pour les conjonctions
  * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
  * Residue: current position, WindowHistogram
