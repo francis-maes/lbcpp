@@ -76,8 +76,8 @@ private:
 class RunParallelInferencesJob : public InferenceRelatedJob
 {
 public:
-  RunParallelInferencesJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, Thread* originatingThread)
-    : InferenceRelatedJob(parentContext, pool, stack), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), originatingThread(originatingThread)
+  RunParallelInferencesJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex)
+    : InferenceRelatedJob(parentContext, pool, stack), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode)
   {
     if (endIndex == beginIndex + 1)
     {
@@ -91,7 +91,7 @@ public:
         T("[") + String((int)beginIndex) + T(":") + String((int)(endIndex - 1)) + T("]"));
   }
 
-  virtual bool runJob(String& failureReason)
+  bool runJob(String& failureReason)
   {
     if (!InferenceRelatedJob::runJob(failureReason))
       return false;
@@ -119,10 +119,6 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
-
-    if (state->haveAllOutputsBeenSet())
-      originatingThread->notify();
-
     return true;
   }
 
@@ -135,11 +131,10 @@ private:
   size_t beginIndex;
   size_t endIndex;
   Inference::ReturnCode returnCode;
-  Thread* originatingThread;
 };
 
-JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, Thread* originatingThread)
-  {return JobPtr(new RunParallelInferencesJob(parentContext, pool, stack, inference, state, beginIndex, endIndex, originatingThread));}
+JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex)
+  {return JobPtr(new RunParallelInferencesJob(parentContext, pool, stack, inference, state, beginIndex, endIndex));}
 
 }; /* namespace lbcpp */
 
