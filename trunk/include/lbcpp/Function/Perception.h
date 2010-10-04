@@ -162,7 +162,7 @@ extern PerceptionPtr enumValueFeatures(EnumerationPtr enumeration);
 extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
 extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures);
-extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals, bool cycle);
+extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior);
 
 }; /* namespace lbcpp */
 

@@ -14,21 +14,21 @@
       <variable type="Enumeration" name="enumeration"/>
     </class>
 
-    <class name="HardDiscretizedNumberFeatures" base="Perception">
-      <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures"/>
-
+    <class name="DiscretizedNumberFeatures" base="Perception" abstract="yes">
       <variable type="Type" name="inputType"/>
       <variable type="Double" name="minimumValue"/>
       <variable type="Double" name="maximumValue"/>
       <variable type="Integer" name="numIntervals"/>
       <variable type="Boolean" name="doOutOfBoundsFeatures"/>
     </class>
+
+    <class name="HardDiscretizedNumberFeatures" base="DiscretizedNumberFeatures">
+      <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="Perception"/>
+    </class>
     
-    <class name="SoftDiscretizedNumberFeatures" base="Perception">
-      <constructor arguments="TypePtr elementType, size_t numIntervals, bool cycle"/>
-      <variable type="Type" name="elementType"/>
-      <variable type="Integer" name="numIntervals"/>
-      <variable type="Boolean" name="cycle"/>
+    <class name="SoftDiscretizedNumberFeatures" base="DiscretizedNumberFeatures">
+      <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior" returnType="Perception"/>
+      <variable type="Boolean" name="cyclicBehavior"/>
     </class>
     
     <class name="BiVariableFeatures" base="DecoratorPerception">
