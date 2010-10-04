@@ -190,6 +190,7 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/IdentityPerception.h
   Function/Perception/RewritedPerception.h
   Function/Perception/ProductPerception.h
+  Function/Perception/ProductPerception.cpp
   Function/Perception/WindowPerception.h
   Function/Perception/HistogramPerception.h
   Function/Perception/HistogramPerception.cpp

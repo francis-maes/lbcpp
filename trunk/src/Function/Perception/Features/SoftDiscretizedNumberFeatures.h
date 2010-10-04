@@ -109,8 +109,7 @@ protected:
   virtual double getValue(const Variable& input) const
   {
     double res = SoftDiscretizedNumberFeatures::getValue(input);
-    jassert(res > 0.0);
-    return log10(res);
+    return res > 0.0 ? log10(res) : -DBL_MAX;
   }
 
   virtual String getBoundaryName(size_t index) const

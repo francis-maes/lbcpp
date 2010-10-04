@@ -152,10 +152,15 @@ public:
   virtual void copy(VariableValue& dest, const VariableValue& source) const
   {
     Variable* sourceData = (Variable* )source.getRawData();
-    Variable* destData = (Variable* )allocateMemory(size);
-    destData[0] = sourceData[0];
-    destData[1] = sourceData[1];
-    dest.setRawData((char* )destData);
+    if (sourceData)
+    {
+      Variable* destData = (Variable* )allocateMemory(size);
+      destData[0] = sourceData[0];
+      destData[1] = sourceData[1];
+      dest.setRawData((char* )destData);
+    }
+    else
+      jassert(dest.getRawData() == NULL);
   }
   
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
