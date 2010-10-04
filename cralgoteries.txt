@@ -1,6 +1,8 @@
 
 NumberPerceptions:
- * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
+ * log number features
+ * Type::getLowerLimit(), getUpperLimit()
+ * Rewrite rules for NumberFeatures
 
 Perceptions:
  * Perceptions: Trouver un truc pour les conjonctions
