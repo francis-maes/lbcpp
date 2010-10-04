@@ -43,14 +43,17 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     jassert(input);
-    double value = input.getDouble();
+    double value = input.isDouble() ? input.getDouble() : (double)input.getInteger();
     const double epsilon = 1e-15;
     if (fabs(value) < epsilon)
       callback->sense(0, 1.0);
     else if (value < 0)
-      callback->sense(1, getPerception(0), -value);
+    {
+      Variable opposite(input.isInteger() ? Variable(-(int)value, input.getType()) : Variable(-value, input.getType()));
+      callback->sense(1, getPerception(0), opposite);
+    }
     else
-      callback->sense(2, getPerception(1), value);
+      callback->sense(2, getPerception(1), input);
   }
 };
 

@@ -69,9 +69,10 @@ public:
       if (cyclicBehavior && variable2 == numIntervals)
         variable2 = 0;
 
-      if (k != 1.0)
+      static const double epsilon = 1e-09;
+      if (k < 1.0 - epsilon)
         callback->sense((doOutOfBoundsFeatures ? 2 : 0) + variable1, 1.0 - k);
-      if (k != 0.0)
+      if (k > epsilon)
         callback->sense((doOutOfBoundsFeatures ? 2 : 0) + variable2, k);
     }
     else if (value <= maximumValue + halfWidth)

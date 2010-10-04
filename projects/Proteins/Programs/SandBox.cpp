@@ -44,54 +44,14 @@ public:
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     //rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+
+    rewriter->addRule(booleanType(), booleanFeatures());
+    //rewriter->addRule(probabilityType(), T("PSSM"), identityFeatures());
+    //rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
+    rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
+
     rewriter->addEnumValueFeaturesRule();
     rewriter->addRule(doubleType(), identityPerception());
-  }
-
-  virtual PerceptionPtr createProteinPerception() const
-  {
-    CompositePerceptionPtr res = new ProteinCompositePerception();
-    res->addPerception(T("LEN"), proteinLengthPerception());
-   /* CompositePerceptionPtr freq = new ProteinCompositePerception();
-    freq->addPerception(T("AA"), createHistogramPerception(T("primaryStructure")));
-    freq->addPerception(T("PSSM"), createHistogramPerception(T("positionSpecificScoringMatrix")));
-    freq->addPerception(T("SS3"), createHistogramPerception(T("secondaryStructure")));
-    freq->addPerception(T("SS8"), createHistogramPerception(T("dsspSecondaryStructure")));
-    freq->addPerception(T("SA20"), createHistogramPerception(T("solventAccessibilityAt20p")));
-    freq->addPerception(T("DR"), createHistogramPerception(T("disorderRegions")));
-    freq->addPerception(T("StAl"), createHistogramPerception(T("structuralAlphabetSequence")));
-    res->addPerception(T("HISTOGRAM"), freq);*/
-    return res;
-  }
-
-  virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const
-  {
-    TypePtr targetType = getTargetType(targetName);
-    CompositePerceptionPtr res = new ResidueCompositePerception();
-    res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
-    //res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
-    return res;
-  }
-
-  virtual PerceptionPtr createProbabilitySequencePerception(const String& targetName) const
-  {
-    CompositePerceptionPtr res = new ResidueCompositePerception();
-    res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
-    //res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
-    return res;
-  }
-
-  virtual PerceptionPtr createPositionSpecificScoringMatrixPerception() const
-  {
-    TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
-
-    PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
-    
-    CompositePerceptionPtr res = new ResidueCompositePerception();
-    res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
-                                                                     windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
-    //res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
-    return res;
   }
 
 public:
@@ -251,7 +211,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB"));
 #endif 
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")))->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -273,6 +233,8 @@ int main(int argc, char** argv)
   inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   /*inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));

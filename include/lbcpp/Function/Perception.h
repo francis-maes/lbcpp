@@ -172,6 +172,11 @@ extern PerceptionPtr softDiscretizedLogNumberFeatures(TypePtr inputType, double 
 
 extern CompositePerceptionPtr signedNumberFeatures(PerceptionPtr positiveNumberPerception);
 
+extern PerceptionPtr defaultPositiveIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
+extern PerceptionPtr defaultIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
+extern PerceptionPtr defaultProbabilityFeatures(size_t numIntervals = 5);
+extern PerceptionPtr defaultDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
+
 // bi variables
 extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
 
