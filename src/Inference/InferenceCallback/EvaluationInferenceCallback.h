@@ -19,12 +19,13 @@ namespace lbcpp
 class EvaluationInferenceCallback : public InferenceCallback
 {
 public:
-  EvaluationInferenceCallback(EvaluatorPtr evaluator = EvaluatorPtr())
-    : evaluator(evaluator) {}
+  EvaluationInferenceCallback(InferencePtr inference, EvaluatorPtr evaluator)
+    : inference(inference), evaluator(evaluator) {}
+  EvaluationInferenceCallback() {}
 
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    if (stack->getDepth() == 2 && output && supervision)
+    if (stack->getCurrentInference() == inference && output && supervision)
     {
       ScopedLock _(evaluatorLock);
       evaluator->addPrediction(output, supervision);
@@ -34,6 +35,7 @@ public:
 private:
   friend class EvaluationInferenceCallbackClass;
 
+  InferencePtr inference;
   CriticalSection evaluatorLock;
   EvaluatorPtr evaluator;
 };

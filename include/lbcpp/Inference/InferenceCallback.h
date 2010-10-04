@@ -31,7 +31,7 @@ public:
 
 extern InferenceCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
 extern InferenceCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
-extern InferenceCallbackPtr evaluationInferenceCallback(EvaluatorPtr evaluator);
+extern InferenceCallbackPtr evaluationInferenceCallback(InferencePtr inference, EvaluatorPtr evaluator);
 
 }; /* namespace lbcpp */
 
