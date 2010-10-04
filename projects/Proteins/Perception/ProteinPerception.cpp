@@ -17,10 +17,7 @@ void ResidueCompositePerception::addPerception(const String& name, PerceptionPtr
   if (inputType == proteinClass())
     CompositePerception::addPerception(name, proteinToResiduePerception(subPerception));
   else
-  {
-    checkInheritance(getInputType(), inputType);
     CompositePerception::addPerception(name, subPerception);
-  }
 }
 
 /*
@@ -34,8 +31,5 @@ void ResiduePairCompositePerception::addPerception(const String& name, Perceptio
   else if (inputType == pairType(proteinClass(), integerType()))
     CompositePerception::addPerception(name, residueToResiduePairPerception(subPerception));
   else
-  {
-    checkInheritance(getInputType(), inputType);
     CompositePerception::addPerception(name, subPerception);
-  }
 }

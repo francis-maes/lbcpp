@@ -102,7 +102,7 @@ PerceptionPtr CompositePerception::getPerception(size_t index) const
 
 void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
 {
-  if (checkInheritance(subPerception->getInputType(), getInputType()))
+  if (checkInheritance(getInputType(), subPerception->getInputType()))
     subPerceptions->append(Variable::pair(name, subPerception));
 }
 

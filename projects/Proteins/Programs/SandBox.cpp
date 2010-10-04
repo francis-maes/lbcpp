@@ -206,14 +206,14 @@ int main(int argc, char** argv)
   declareProteinClasses();
 
 #ifdef JUCE_WIN32
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
+  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\PDB30Small"));
 #else
-  File workingDirectory(T("/data/PDB"));
+  File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Medium/xml")))->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->invFold(0, 7);
-  ContainerPtr testProteins = proteins->fold(0, 7);
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->invFold(0, 2);
+  ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
