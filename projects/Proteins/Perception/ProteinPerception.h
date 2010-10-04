@@ -27,11 +27,7 @@ extern FunctionPtr residueToSelectPairSequencesFunction(int index1, int index2);
 class ProteinCompositePerception : public CompositePerception
 {
 public:
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-
-  virtual String getPreferedOutputClassName() const
-    {return T("protein");}
+  ProteinCompositePerception() : CompositePerception(proteinClass(), T("protein")) {}
 };
 
 inline PerceptionPtr proteinLengthPerception()
@@ -136,11 +132,8 @@ extern ResiduePerceptionPtr terminusProximityResiduePerception(size_t outOfBound
 class ResidueCompositePerception : public CompositePerception
 {
 public:
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), integerType());}
-
-  virtual String getPreferedOutputClassName() const
-    {return T("residue");}
+  ResidueCompositePerception()
+    : CompositePerception(pairType(proteinClass(), integerType()), T("residue")) {}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };
@@ -162,10 +155,8 @@ typedef ReferenceCountedObjectPtr<ResiduePairPerception> ResiduePairPerceptionPt
 class ResiduePairCompositePerception : public CompositePerception
 {
 public:
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), pairType(integerType(), integerType()));}
-  virtual String getPreferedOutputClassName() const
-    {return T("(ResiduePairPerception)");}
+  ResiduePairCompositePerception()
+    : CompositePerception(pairType(proteinClass(), pairType(integerType(), integerType())), T("residue pair")) {}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };

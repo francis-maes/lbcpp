@@ -148,7 +148,14 @@ extern ClassPtr decoratorPerceptionClass();
 class CompositePerception : public Perception
 {
 public:
-  CompositePerception();
+  CompositePerception(TypePtr inputType, const String& preferedOutputClassName);
+  CompositePerception() {}
+
+  virtual TypePtr getInputType() const
+    {return inputType;}
+
+  virtual String getPreferedOutputClassName() const
+    {return preferedOutputClassName;}
 
   size_t getNumPerceptions() const;
   String getPerceptionName(size_t index) const;
@@ -174,10 +181,15 @@ public:
 
 protected:
   friend class CompositePerceptionClass;
+  TypePtr inputType;
+  String preferedOutputClassName;
   VectorPtr subPerceptions;
 };
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
+
+inline CompositePerceptionPtr compositePerception(TypePtr inputType, const String& preferedOutputClassName)
+  {return new CompositePerception(inputType, preferedOutputClassName);}
 
 extern ClassPtr compositePerceptionClass();
 
@@ -196,6 +208,12 @@ extern PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr seco
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
 extern DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
+
+// product perceptions
+extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, bool symmetricFunction, PerceptionPtr perception1, PerceptionPtr perception2);
+extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2);
+extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2);
+extern PerceptionPtr conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2);
 
 // boolean / enumeration features
 extern PerceptionPtr booleanFeatures();

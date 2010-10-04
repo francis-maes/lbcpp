@@ -85,8 +85,9 @@ PerceptionPtr Perception::flatten() const
 /*
 ** CompositePerception
 */
-CompositePerception::CompositePerception()
-  : subPerceptions(vector(pairType(stringType(), perceptionClass())))
+CompositePerception::CompositePerception(TypePtr inputType, const String& preferedOutputClassName)
+  : inputType(inputType), preferedOutputClassName(preferedOutputClassName),
+    subPerceptions(vector(pairType(stringType(), perceptionClass())))
 {
 }
 
@@ -100,13 +101,25 @@ PerceptionPtr CompositePerception::getPerception(size_t index) const
   {return subPerceptions->getElement(index)[1].getObjectAndCast<Perception>();}
 
 void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
-  {subPerceptions->append(Variable::pair(name, subPerception));}
+{
+  if (checkInheritance(subPerception->getInputType(), getInputType()))
+    subPerceptions->append(Variable::pair(name, subPerception));
+}
 
 void CompositePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
   for (size_t i = 0; i < getNumPerceptions(); ++i)
     callback->sense(i, getPerception(i), input);
 }
+
+/*
+** Constructor functions
+*/
+namespace lbcpp
+{
+  extern FunctionPtr multiplyDoubleFunction();
+  extern PerceptionPtr productWithVariablePerception(FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables);
+};
 
 PerceptionPtr lbcpp::identityPerception()
 {
@@ -125,3 +138,12 @@ PerceptionPtr lbcpp::defaultProbabilityFeatures(size_t numIntervals)
 
 PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
   {return signedNumberFeatures(softDiscretizedLogNumberFeatures(doubleType(), minPowerOfTen, maxPowerOfTen, numIntervals, true));}
+
+PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2)
+  {return productPerception(multiplyDoubleFunction(), true, perception1, perception2);}
+
+PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2)
+  {return productWithVariablePerception(multiplyFunction, perception1, type2, false);}
+
+PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2)
+  {return productWithVariablePerception(multiplyFunction, perception2, type1, true);}

@@ -1,6 +1,5 @@
 
 Perceptions:
- * Perceptions: Trouver un truc pour les conjonctions
  * Residue: current position, WindowHistogram
  * ResiduePair: SegmentHistogram
  * Distribution: Entropy 

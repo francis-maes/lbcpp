@@ -18,6 +18,8 @@
     </class>
 
     <class name="CompositePerception" base="Perception" abstract="yes">
+      <variable type="Type" name="inputType"/>
+      <variable type="String" name="preferedOutputClassName"/>
       <variable type="GenericVector[Pair[String, Perception]]" name="subPerceptions"/>
     </class>
 
@@ -72,6 +74,27 @@
       <constructor arguments="PerceptionPtr perception"/>
     </class>
 
+    <!-- Product Perception -->
+    <class name="MultiplyDoubleFunction" base="Function">
+      <constructor/>
+    </class>
+    <class name="ProductPerception" base="VariableVectorPerception">
+      <constructor arguments="FunctionPtr multiplyFunction, bool symmetricFunction, PerceptionPtr perception1, PerceptionPtr perception2" returnType="Perception"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="Boolean" name="symmetricFunction"/>
+      <variable type="Boolean" name="swapVariables"/>
+      <variable type="Perception" name="perception1"/>
+      <variable type="Perception" name="perception2"/>
+    </class>
+
+    <class name="ProductWithVariablePerception" base="VariableVectorPerception">
+      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables" returnType="Perception"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="Perception" name="perception"/>
+      <variable type="Type" name="variableType"/>
+      <variable type="Boolean" name="swapVariables"/>
+    </class>
+    
     <!-- Rewrite Perception -->
     <class name="PerceptionRewriteRule" abstract="yes"/>
 

@@ -48,15 +48,19 @@ Variable DynamicClass::getObjectVariable(const VariableValue& value, size_t inde
 {
   DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
   jassert(object);
-  return Variable::copyFrom(getObjectVariableType(index), (*object)[index]);
+  VariableValue& objectVariableValue = (*object)[index];
+  TypePtr type = getObjectVariableType(index);
+  return Variable::copyFrom(type, objectVariableValue);
 }
 
 void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
 {
-  jassert(subValue.getType()->inheritsFrom(getObjectVariableType(index)));
-  DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
-  jassert(object);
-  subValue.copyTo((*object)[index]);
+  if (checkInheritance(subValue.getType(), getObjectVariableType(index)))
+  {
+    DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
+    jassert(object);
+    subValue.copyTo((*object)[index]);
+  }
 }
 
 void DynamicClass::saveToXml(XmlExporter& exporter) const
