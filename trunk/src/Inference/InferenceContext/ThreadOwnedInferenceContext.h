@@ -63,68 +63,69 @@ public:
       return Variable();
 
     size_t n = state->getNumSubInferences();
-    jassert(n);
-    size_t numCpus = pool->getNumCpus();
-    
-    double meanRunTime = pool->getTimingsCache()->getMeanValue(inference);
-    size_t step;
-
-    // step = num sub-inferences per sub-job
-
-    // minimum 1 step per sub-jobs
-    // maximum 5 * numCpus sub-jobs
-    // ideally 1 s per sub-job
-
-    step = (size_t)ceil((double)n / (5.0 * numCpus));
-    if (meanRunTime)
-      step = (size_t)juce::jlimit((int)step, (int)n, (int)(1000.0 / meanRunTime));
-    jassert(step > 0);
-
-    if (step == n)
+    if (n)
     {
-      //std::cout << "Unsplitted PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
-      for (size_t i = 0; i < n; ++i)
+      size_t numCpus = pool->getNumCpus();
+      
+      double meanRunTime = pool->getTimingsCache()->getMeanValue(inference);
+      size_t step;
+
+      // step = num sub-inferences per sub-job
+
+      // minimum 1 step per sub-jobs
+      // maximum 5 * numCpus sub-jobs
+      // ideally 1 s per sub-job
+
+      step = (size_t)ceil((double)n / (5.0 * numCpus));
+      if (meanRunTime)
+        step = (size_t)juce::jlimit((int)step, (int)n, (int)(1000.0 / meanRunTime));
+      jassert(step > 0);
+
+      if (step == n)
       {
-        Variable subOutput;
-        InferencePtr subInference = state->getSubInference(i);
-        if (subInference)
+        //std::cout << "Unsplitted PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
+        for (size_t i = 0; i < n; ++i)
         {
-          returnCode = Inference::finishedReturnCode;
-          subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
-          if (returnCode == Inference::errorReturnCode)
+          Variable subOutput;
+          InferencePtr subInference = state->getSubInference(i);
+          if (subInference)
           {
-            MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
-            return Variable(); 
+            returnCode = Inference::finishedReturnCode;
+            subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+            if (returnCode == Inference::errorReturnCode)
+            {
+              MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
+              return Variable(); 
+            }
           }
+          state->setSubOutput(i, subOutput);
         }
-        state->setSubOutput(i, subOutput);
       }
-    }
-    else
-    {
-      //std::cout << "PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
-  //    juce::DBG("Run Parallel Inference: " + inference->toString() + T(" num inferences: ") + String((int)n) + T(" step = ") + String((int)step));
-
-      stackLock.enter();
-      InferenceStackPtr stack = this->stack->cloneAndCast<InferenceStack>();
-      stackLock.exit();
-
-      std::vector<JobPtr> jobs;
-      jobs.reserve(1 + n / step);
-
-      for (size_t begin = 0; begin < n; )
+      else
       {
-        size_t end = begin + step;
-        if (end > n)
-          end = n;
-        jobs.push_back(parallelInferenceJob(parentContext, pool, stack->cloneAndCast<InferenceStack>(), inference, state, begin, end));
-        begin = end;
+        //std::cout << "PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
+    //    juce::DBG("Run Parallel Inference: " + inference->toString() + T(" num inferences: ") + String((int)n) + T(" step = ") + String((int)step));
+
+        stackLock.enter();
+        InferenceStackPtr stack = this->stack->cloneAndCast<InferenceStack>();
+        stackLock.exit();
+
+        std::vector<JobPtr> jobs;
+        jobs.reserve(1 + n / step);
+
+        for (size_t begin = 0; begin < n; )
+        {
+          size_t end = begin + step;
+          if (end > n)
+            end = n;
+          jobs.push_back(parallelInferenceJob(parentContext, pool, stack->cloneAndCast<InferenceStack>(), inference, state, begin, end));
+          begin = end;
+        }
+
+        pool->addJobsAndWaitExecution(jobs, stack->getDepth());
+    //   juce::DBG("OK Run Parallel Inference: " + inference->toString());
       }
-
-      pool->addJobsAndWaitExecution(jobs, stack->getDepth());
-  //   juce::DBG("OK Run Parallel Inference: " + inference->toString());
     }
-
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
   }
 
