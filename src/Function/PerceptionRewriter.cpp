@@ -73,8 +73,11 @@ size_t PerceptionRewriter::getNumRules() const
 PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter();
+
+  rewriter->addRule(booleanType(), booleanFeatures());
+
   // TODO delete after test
-  rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+  rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false)));
 
   rewriter->addEnumValueFeaturesRule();
   rewriter->addRule(doubleType(), identityPerception());

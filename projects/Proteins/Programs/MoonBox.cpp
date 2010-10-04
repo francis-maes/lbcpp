@@ -59,13 +59,13 @@ public:
 
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
-    rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
+    rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false)));
 
     rewriter->addEnumValueFeaturesRule();
 
-    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeatures(probabilityType(), 10));
-    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeatures(probabilityType(), 10));
-    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeatures(probabilityType(), 10));
+    rewriter->addRule(probabilityType(), T("POSITION"), hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false));
+    rewriter->addRule(probabilityType(), T("TERMINUS"), hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false));
+    rewriter->addRule(probabilityType(), T("HISTOGRAM"), hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false));
     rewriter->addRule(doubleType(), identityPerception());
   }
 

@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: HardDiscretizedNumberFeatu...h | A Feature Generator that        |
-| Author  : Julien Becker                  | discretized one feature.        |
+| Filename: HardDiscretizedNumberFeatu...h | Discretize a continuous number  |
+| Author  : Julien Becker                  | into intervals                  |
 | Started : 23/09/2010 14:41               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -17,41 +17,76 @@ namespace lbcpp
 class HardDiscretizedNumberFeatures : public Perception
 {
 public:
-  HardDiscretizedNumberFeatures(TypePtr elementType = probabilityType(), size_t numIntervals = 10)
-    : elementType(elementType), numIntervals(numIntervals) {}
+  HardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures)
+    : inputType(inputType), minimumValue(minimumValue), maximumValue(maximumValue), numIntervals(numIntervals), doOutOfBoundsFeatures(doOutOfBoundsFeatures)
+    {jassert(maximumValue > minimumValue);}
+
+  HardDiscretizedNumberFeatures() : numIntervals(0) {}
 
   virtual TypePtr getInputType() const
-    {return elementType;}
+    {return inputType;}
 
   virtual size_t getNumOutputVariables() const
-    {return numIntervals;}
+    {return (doOutOfBoundsFeatures ? 2 : 0) + numIntervals;}
 
   virtual TypePtr getOutputVariableType(size_t index) const
     {return doubleType();}
 
   virtual String getOutputVariableName(size_t index) const
-    {return T("Hard[") + String((int)index) + T("]");}
+  {
+    if (doOutOfBoundsFeatures)
+    {
+      if (index == 0)
+        return T("less than ") + String(minimumValue);
+      else if (index == 1)
+        return T("more than ") + String(maximumValue);
+      else
+        index -= 2;
+    }
+
+    String res(T("in ["));
+    res += String(getBoundary(index)) + T(", ") + String(getBoundary(index + 1));
+    res += index == numIntervals - 1 ? T("]") : T("[");
+    return res;
+  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    // Currently, only probabilityType is allowed. In future, we will add angleType or more generic doubleType
-    jassert(input.getType()->inheritsFrom(probabilityType()));
-    double value = input.getDouble();
-    jassert(value > -0.001 && value < 1.001);
-    value *= (double)numIntervals;
-    size_t first = (size_t)value;
-    
-    if (first == numIntervals)
-      --first;
-    
-    callback->sense(first, 1.0);
+    jassert(input);
+    double value = input.isDouble() ? input.getDouble() : (double)input.getInteger();
+    if (value < minimumValue)
+    {
+      if (doOutOfBoundsFeatures)
+        callback->sense(0, 1.0);
+    }
+    else if (value <= maximumValue)
+    {
+      size_t discretizedValue = (size_t)(numIntervals * (value - minimumValue) / (maximumValue - minimumValue));
+      if (discretizedValue == numIntervals)
+        --discretizedValue;
+      callback->sense((doOutOfBoundsFeatures ? 2 : 0) + discretizedValue, 1.0);
+    }
+    else
+    {
+      if (doOutOfBoundsFeatures)
+        callback->sense(1, 1.0);
+    }
   }
   
 private:
   friend class HardDiscretizedNumberFeaturesClass;
   
-  TypePtr elementType;
+  TypePtr inputType;
+  double minimumValue;
+  double maximumValue;
   size_t numIntervals;
+  bool doOutOfBoundsFeatures;
+
+  double getBoundary(size_t index) const
+  {
+    jassert(index <= numIntervals);
+    return minimumValue + (maximumValue - minimumValue) * (double)index / numIntervals;
+  }
 };
   
 }; /* namespace lbcpp */

@@ -16,7 +16,6 @@
         {return String(value.getDouble(), 2) + T(" A");}
       </code>
     </type>
-    <type name="SequenceSeparationDistance" base="Integer"/>
   </namespace>
 
   <declarationCode>

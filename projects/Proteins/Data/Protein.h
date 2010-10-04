@@ -193,7 +193,6 @@ protected:
 extern ClassPtr proteinClass();
 
 extern TypePtr angstromDistanceType();
-extern TypePtr sequenceSeparationDistanceType();
 
 extern FunctionPtr proteinLengthFunction();
 extern FunctionPtr proteinToInputOutputPairFunction();

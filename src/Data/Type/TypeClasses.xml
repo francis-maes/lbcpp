@@ -9,13 +9,16 @@
     <type name="Nil" base="Variable" implementation="NilType"/>
     <type name="Boolean" base="Variable" implementation="BooleanType"/>
     <type name="Integer" base="Variable" implementation="IntegerType"/>
+      <type name="PositiveInteger" base="Integer"/>
+
     <type name="EnumValue" base="Integer" implementation="IntegerType"/>
 
     <type name="Double" base="Variable" implementation="DoubleType"/>
-    <type name="Probability" base="Double" implementation="ProbabilityType"/>
+      <type name="Probability" base="Double" implementation="ProbabilityType"/>
 
     <type name="String" base="Variable" implementation="StringType"/>
-    <type name="File" base="String" implementation="FileType"/>
+      <type name="File" base="String" implementation="FileType"/>
+    
     <templateType name="Pair" implementation="PairTemplateType"/>
 
     

@@ -1,6 +1,5 @@
+
 NumberPerceptions:
- * Remove the SequenceSeparationDistance type
- * New type: PositiveInteger
  * NumberFeaturesPerception, IntegerFeaturesPerception, BooleanFeaturesPerception
 
 Perceptions:
