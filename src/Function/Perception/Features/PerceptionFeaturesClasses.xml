@@ -8,7 +8,7 @@
     <class name="BooleanFeatures" base="Perception">
       <constructor/>
     </class>
-    
+
     <class name="EnumValueFeatures" base="Perception">
       <constructor arguments="EnumerationPtr enumeration"/>
       <variable type="Enumeration" name="enumeration"/>
@@ -25,7 +25,7 @@
     <class name="HardDiscretizedNumberFeatures" base="DiscretizedNumberFeatures">
       <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="Perception"/>
     </class>
-    
+
     <class name="SoftDiscretizedNumberFeatures" base="DiscretizedNumberFeatures">
       <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior" returnType="Perception"/>
       <variable type="Boolean" name="cyclicBehavior"/>
@@ -35,10 +35,11 @@
       <constructor arguments="TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="Perception"/>
     </class>
 
-    <class name="SignedNumberFeatures" base="CompositePerception">
+    <class name="SignedNumberFeatures" base="Perception">
       <constructor arguments="PerceptionPtr positiveNumberPerception"/>
+      <variable type="Perception" name="positiveNumberPerception"/>
     </class>
-    
+
     <class name="BiVariableFeatures" base="DecoratorPerception">
       <constructor arguments="TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception"/>
       <variable type="Type" name="firstElementType"/>

@@ -38,11 +38,11 @@ public:
     {return PerceptionPtr();}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
-  
+
   // Function
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return getOutputType();}
-    
+
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const;
 
   PerceptionPtr flatten() const;
@@ -68,6 +68,42 @@ private:
 extern ClassPtr perceptionClass();
 typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 
+class VariableVectorPerception : public Perception
+{
+public:
+  virtual size_t getNumOutputVariables() const
+    {return outputVariables.size();}
+
+  virtual TypePtr getOutputVariableType(size_t index) const
+    {jassert(index < outputVariables.size()); return outputVariables[index].type;}
+
+  virtual String getOutputVariableName(size_t index) const
+    {jassert(index < outputVariables.size()); return outputVariables[index].name;}
+
+  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+    {jassert(index < outputVariables.size()); return outputVariables[index].subPerception;}
+
+protected:
+  struct OutputVariable
+  {
+    TypePtr type;
+    String name;
+    PerceptionPtr subPerception;
+  };
+  std::vector<OutputVariable> outputVariables;
+
+  void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception)
+  {
+    OutputVariable v;
+    v.type = type;
+    v.name = name;
+    v.subPerception = subPerception;
+    outputVariables.push_back(v);
+  }
+};
+
+typedef ReferenceCountedObjectPtr<VariableVectorPerception> VariableVectorPerceptionPtr;
+
 class DecoratorPerception : public Perception
 {
 public:
@@ -91,7 +127,7 @@ public:
 
   virtual String getOutputVariableName(size_t index) const
     {return decorated->getOutputVariableName(index);}
-  
+
   virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
     {return decorated->getOutputVariableGenerator(index);}
 
@@ -170,7 +206,7 @@ extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr inputType, double min
 extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior);
 extern PerceptionPtr softDiscretizedLogNumberFeatures(TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures);
 
-extern CompositePerceptionPtr signedNumberFeatures(PerceptionPtr positiveNumberPerception);
+extern PerceptionPtr signedNumberFeatures(PerceptionPtr positiveNumberPerception);
 
 extern PerceptionPtr defaultPositiveIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
 extern PerceptionPtr defaultIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
@@ -178,7 +214,7 @@ extern PerceptionPtr defaultProbabilityFeatures(size_t numIntervals = 5);
 extern PerceptionPtr defaultDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
 
 // bi variables
-extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
+extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);
 
 }; /* namespace lbcpp */
 

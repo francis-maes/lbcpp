@@ -15,41 +15,29 @@
 namespace lbcpp
 {
 
-class RewritedPerception : public DecoratorPerception
+class RewritedPerception : public VariableVectorPerception
 {
 public:
   RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, std::vector<String>& stack)
-    : DecoratorPerception(decorated) {computeOutputVariables(rewriter, stack);}
+    : decorated(decorated) {computeOutputVariables(rewriter, stack);}
   RewritedPerception() {}
-  
+
   virtual String getPreferedOutputClassName() const
     {return decorated->getPreferedOutputClassName() + T(" rewrited");}
 
-  virtual TypePtr getOutputType() const
-    {return Perception::getOutputType();}
-
-  virtual size_t getNumOutputVariables() const
-    {return outputVariables.size();}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].type;}
-
-  virtual String getOutputVariableName(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].name;}
-  
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].subPerception;}
+  virtual TypePtr getInputType() const
+    {return decorated->getInputType();}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     PerceptionCallbackPtr decoratedVisitor(new Callback(decorated, callback, this));
-    DecoratorPerception::computePerception(input, decoratedVisitor);
+    decorated->computePerception(input, decoratedVisitor);
   }
 
   virtual void saveToXml(XmlExporter& exporter)
   {
-    DecoratorPerception::saveToXml(exporter);
-    
+    Perception::saveToXml(exporter);
+
     exporter.enter(T("outputvar"));
     exporter.setAttribute(T("count"), (int)outputVariables.size());
     for (size_t i = 0; i < outputVariables.size(); ++i)
@@ -72,7 +60,7 @@ public:
 
   virtual bool loadFromXml(XmlImporter& importer)
   {
-    if (!DecoratorPerception::loadFromXml(importer))
+    if (!Perception::loadFromXml(importer))
       return false;
 
     jassert(false); // TODO: load outputVariables and variablesMap
@@ -85,16 +73,9 @@ protected:
   friend class PerceptionRewriteRules;
   friend class RewritedPerceptionClass;
 
-  struct OutputVariable
-  {
-    TypePtr type;
-    String name;
-    PerceptionPtr subPerception;
-  };
-
-  std::vector<OutputVariable> outputVariables;
+  PerceptionPtr decorated;
   std::vector< std::pair<size_t, PerceptionPtr> > variablesMap; // decorated perception variable index -> perception
-  
+
   void computeOutputVariables(PerceptionRewriterPtr rewriter, std::vector<String>& stack)
   {
     jassert(rewriter);
@@ -107,7 +88,7 @@ protected:
       TypePtr variableType = decorated->getOutputVariableType(i);
       String variableName = decorated->getOutputVariableName(i);
       PerceptionPtr variablePerception = decorated->getOutputVariableGenerator(i);
-      
+
       stack.push_back(variableName);
 
       PerceptionPtr newPerception;
@@ -134,13 +115,7 @@ protected:
   void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception, size_t sourceIndex)
   {
     size_t index = outputVariables.size();
-
-    OutputVariable v;
-    v.type = type;
-    v.name = name;
-    v.subPerception = subPerception;
-    outputVariables.push_back(v);
-
+    VariableVectorPerception::addOutputVariable(type, name, subPerception);
     if (variablesMap.size() <= sourceIndex)
       variablesMap.resize(sourceIndex + 1, std::make_pair(0, PerceptionPtr()));
     variablesMap[sourceIndex] = std::make_pair(index, subPerception);
@@ -174,7 +149,7 @@ protected:
   private:
     PerceptionCallbackPtr targetCallback;
     const RewritedPerception* owner;
-  
+
     PerceptionPtr getTargetPerception(size_t& variableNumber) const
     {
       if (variableNumber >= owner->variablesMap.size())

@@ -30,7 +30,7 @@ public:
   virtual size_t getNumOutputVariables() const;
 
   virtual TypePtr getOutputVariableType(size_t index) const
-    {return doubleType();}
+    {return probabilityType();}
 
   virtual String getOutputVariableName(size_t index) const;
 

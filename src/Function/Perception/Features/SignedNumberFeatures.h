@@ -13,32 +13,31 @@
 
 namespace lbcpp
 {
-  
-class SignedNumberFeatures : public CompositePerception
+
+class SignedNumberFeatures : public Perception
 {
 public:
   SignedNumberFeatures(PerceptionPtr positiveNumberPerception)
+    : positiveNumberPerception(positiveNumberPerception)
   {
-    addPerception(T("negative"), positiveNumberPerception);
-    addPerception(T("positive"), positiveNumberPerception);
   }
 
   SignedNumberFeatures() {}
-  
+
   virtual TypePtr getInputType() const
-    {return getPerception(0)->getInputType();}
+    {return positiveNumberPerception->getInputType();}
 
   virtual size_t getNumOutputVariables() const
-    {return 1 + CompositePerception::getNumOutputVariables();}
+    {return 3;}
 
   virtual TypePtr getOutputVariableType(size_t index) const
-    {return index == 0 ? doubleType() : CompositePerception::getOutputVariableType(index - 1);}
+    {return index == 0 ? doubleType() : positiveNumberPerception->getOutputType();}
 
   virtual String getOutputVariableName(size_t index) const
-    {return index == 0 ? T("zero") : CompositePerception::getOutputVariableName(index - 1);}
+    {return index == 0 ? T("zero") : (index == 1 ? T("positive") : T("negative"));}
 
   virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
-    {return index == 0 ? PerceptionPtr() : CompositePerception::getOutputVariableGenerator(index - 1);}
+    {return index == 0 ? PerceptionPtr() : positiveNumberPerception;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
@@ -50,11 +49,16 @@ public:
     else if (value < 0)
     {
       Variable opposite(input.isInteger() ? Variable(-(int)value, input.getType()) : Variable(-value, input.getType()));
-      callback->sense(1, getPerception(0), opposite);
+      callback->sense(1, positiveNumberPerception, opposite);
     }
     else
-      callback->sense(2, getPerception(1), input);
+      callback->sense(2, positiveNumberPerception, input);
   }
+
+protected:
+  friend class SignedNumberFeaturesClass;
+
+  PerceptionPtr positiveNumberPerception;
 };
 
 }; /* namespace lbcpp */
