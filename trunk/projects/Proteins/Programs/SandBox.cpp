@@ -234,8 +234,8 @@ int main(int argc, char** argv)
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   /*inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
