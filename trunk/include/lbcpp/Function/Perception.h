@@ -145,24 +145,35 @@ typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 
 extern ClassPtr compositePerceptionClass();
 
+// special perceptions
 extern PerceptionPtr nullPerception();
-extern PerceptionPtr identityPerception(TypePtr type);
 extern PerceptionPtr identityPerception();
+extern PerceptionPtr identityPerception(TypePtr type);
+
+// container perceptions
 extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
 extern PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
 extern DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);
 extern PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr secondElementType);
+
+// modifier perceptions
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
 extern DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
 
-// features
+// boolean / enumeration features
 extern PerceptionPtr booleanFeatures();
 extern PerceptionPtr enumValueFeatures(EnumerationPtr enumeration);
-extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
-extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
+
+// number features
 extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures);
 extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior);
+extern PerceptionPtr softDiscretizedLogNumberFeatures(TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures);
+
+extern CompositePerceptionPtr signedNumberFeatures(PerceptionPtr positiveNumberPerception);
+
+// bi variables
+extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
 
 }; /* namespace lbcpp */
 

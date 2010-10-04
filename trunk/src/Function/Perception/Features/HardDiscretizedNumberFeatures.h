@@ -9,62 +9,10 @@
 #ifndef LBCPP_FUNCTION_PERCEPTION_FEATURES_HARD_DISCRETIZED_NUMBER_H_
 # define LBCPP_FUNCTION_PERCEPTION_FEATURES_HARD_DISCRETIZED_NUMBER_H_
 
-# include <lbcpp/Function/Perception.h>
+# include "DiscretizedNumberFeatures.h"
 
 namespace lbcpp
 {
-  
-class DiscretizedNumberFeatures : public Perception
-{
-public:
-  DiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures)
-    : inputType(inputType), minimumValue(minimumValue), maximumValue(maximumValue), numIntervals(numIntervals), doOutOfBoundsFeatures(doOutOfBoundsFeatures)
-  {
-    jassert(maximumValue > minimumValue);
-    jassert(numIntervals > 1);
-  }
-
-  DiscretizedNumberFeatures()
-    : minimumValue(0.0), maximumValue(0.0), numIntervals(0), doOutOfBoundsFeatures(false) {}
-
-  virtual TypePtr getInputType() const
-    {return inputType;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return doubleType();}
-
-protected:
-  friend class DiscretizedNumberFeaturesClass;
-
-  TypePtr inputType;
-  double minimumValue;
-  double maximumValue;
-  size_t numIntervals;
-  bool doOutOfBoundsFeatures;
-
-  double getValue(const Variable& input) const
-    {jassert(input); return input.isDouble() ? input.getDouble() : (double)input.getInteger();}
-
-  double getBoundary(int index) const
-  {
-    jassert(index >= -1 && index <= (int)numIntervals + 1);
-    return minimumValue + (maximumValue - minimumValue) * (double)index / numIntervals;
-  }
-
-  String getOutOfBoundsFeatureName(size_t& index) const
-  {
-    if (doOutOfBoundsFeatures)
-    {
-      if (index == 0)
-        return T("less than ") + String(minimumValue);
-      else if (index == 1)
-        return T("more than ") + String(maximumValue);
-      else
-        index -= 2;
-    }
-    return String::empty;
-  }
-};
 
 class HardDiscretizedNumberFeatures : public DiscretizedNumberFeatures
 {
@@ -82,7 +30,7 @@ public:
     String res = getOutOfBoundsFeatureName(index);
     if (res.isEmpty())
     {
-      res = T("in [") + String(getBoundary(index)) + T(", ") + String(getBoundary(index + 1));
+      res = T("in [") + getBoundaryName(index) + T(", ") + getBoundaryName(index + 1);
       res += index == numIntervals - 1 ? T("]") : T("[");
     }
     return res;

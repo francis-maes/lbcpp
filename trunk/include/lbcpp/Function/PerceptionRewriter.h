@@ -64,6 +64,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriter> PerceptionRewriterPtr;
 
+extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_REWRITER_H_

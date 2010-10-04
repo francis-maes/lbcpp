@@ -205,8 +205,10 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
 SET(LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES
   Function/Perception/Features/BooleanFeatures.h
   Function/Perception/Features/EnumValueFeatures.h
+  Function/Perception/Features/DiscretizedNumberFeatures.h
   Function/Perception/Features/HardDiscretizedNumberFeatures.h
   Function/Perception/Features/SoftDiscretizedNumberFeatures.h
+  Function/Perception/Features/SignedNumberFeatures.h
   Function/Perception/Features/BiVariableFeatures.h
   Function/Perception/Features/PerceptionFeaturesClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionFeaturesClasses.cpp
