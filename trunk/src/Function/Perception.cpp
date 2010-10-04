@@ -113,3 +113,15 @@ PerceptionPtr lbcpp::identityPerception()
   static PerceptionPtr identity = identityPerception(anyType());
   return identity;
 }
+
+PerceptionPtr lbcpp::defaultPositiveIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
+  {return softDiscretizedLogNumberFeatures(positiveIntegerType(), 0.0, maxPowerOfTen, numIntervals, true);}
+
+PerceptionPtr lbcpp::defaultIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
+  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(integerType(), 0.0, maxPowerOfTen, numIntervals, true));}
+
+PerceptionPtr lbcpp::defaultProbabilityFeatures(size_t numIntervals)
+  {return softDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, numIntervals, false, false);}
+
+PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
+  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(doubleType(), minPowerOfTen, maxPowerOfTen, numIntervals, true));}
