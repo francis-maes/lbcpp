@@ -175,6 +175,6 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   const std::vector<double>& endScores = scores->getAccumulatedScores(endPosition - 1);
 
   for (size_t i = 0; i < startScores.size(); ++i)
-    callback->sense(i, Variable((endScores[i] - startScores[i]) / (endPosition - startPosition - 1), doubleType()));
+    callback->sense(i, Variable((endScores[i] - startScores[i]) / (endPosition - startPosition - 1), probabilityType()));
 }
 

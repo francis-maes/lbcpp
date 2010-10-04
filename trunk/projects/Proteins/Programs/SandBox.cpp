@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 
 InferenceContextPtr createInferenceContext()
 {
-  return multiThreadedInferenceContext(new ThreadPool(9, false));
+  return multiThreadedInferenceContext(new ThreadPool(20, false));
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
@@ -45,12 +45,12 @@ public:
   {
     //rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
 
-    rewriter->addRule(booleanType(), booleanFeatures());
+    //rewriter->addRule(booleanType(), booleanFeatures());
     //rewriter->addRule(probabilityType(), T("PSSM"), identityFeatures());
-    //rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
+    rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
     rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
 
-    rewriter->addEnumValueFeaturesRule();
+    //rewriter->addEnumValueFeaturesRule();
     rewriter->addRule(doubleType(), identityPerception());
   }
 
@@ -83,7 +83,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -211,9 +211,9 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
-  ContainerPtr trainProteins = proteins->invFold(0, 2);
-  ContainerPtr testProteins = proteins->fold(0, 2);
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Medium/xml")))->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr trainProteins = proteins->invFold(0, 7);
+  ContainerPtr testProteins = proteins->fold(0, 7);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
@@ -252,7 +252,7 @@ int main(int argc, char** argv)
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
-  //context->train(inference, trainProteins);
+  context->train(inference, trainProteins);
 /*
   std::cout << "Saving inference ..." << std::flush;
   Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
@@ -261,11 +261,11 @@ int main(int argc, char** argv)
 */
   {
 
-   // std::cout << "Evaluating..." << std::flush;
-   // context->evaluate(inference, trainProteins, evaluator);
+    std::cout << "Evaluating..." << std::flush;
+    context->evaluate(inference, trainProteins, evaluator);
   }
 
-  context->crossValidate(inference, proteins, evaluator, 2);
+//  context->crossValidate(inference, proteins, evaluator, 2);
 
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
