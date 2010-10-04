@@ -1,6 +1,5 @@
 
 NumberPerceptions:
- * log number features
  * Type::getLowerLimit(), getUpperLimit()
  * Rewrite rules for NumberFeatures
 

@@ -9,12 +9,11 @@
 #ifndef LBCPP_FUNCTION_PERCEPTION_FEATURES_SOFT_DISCRETIZED_NUMBER_H_
 # define LBCPP_FUNCTION_PERCEPTION_FEATURES_SOFT_DISCRETIZED_NUMBER_H_
 
-# include <lbcpp/Function/Perception.h>
-# include "HardDiscretizedNumberFeatures.h"
+# include "DiscretizedNumberFeatures.h"
 
 namespace lbcpp
 {
-  
+
 class SoftDiscretizedNumberFeatures : public DiscretizedNumberFeatures
 {
 public:
@@ -23,6 +22,7 @@ public:
   {
     jassert(!cyclicBehavior || !doOutOfBoundsFeatures); // out-of-bounds features are never active when using the cyclicBehavior
   }
+
   SoftDiscretizedNumberFeatures() : cyclicBehavior(false) {}
   
   virtual size_t getNumOutputVariables() const
@@ -33,7 +33,7 @@ public:
     String res = getOutOfBoundsFeatureName(index);
     if (res.isNotEmpty())
       return res;
-    return T("close to ") + String(getBoundary(index));
+    return T("close to ") + getBoundaryName(index);
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
@@ -95,7 +95,35 @@ private:
   
   bool cyclicBehavior;
 };
-  
+ 
+class SoftDiscretizedLogNumberFeatures : public SoftDiscretizedNumberFeatures
+{
+public:
+  SoftDiscretizedLogNumberFeatures(TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures)
+    : SoftDiscretizedNumberFeatures(inputType, minimumLogValue, maximumLogValue, numIntervals, doOutOfBoundsFeatures, false) {}
+
+  SoftDiscretizedLogNumberFeatures() {}
+
+protected:
+  virtual double getValue(const Variable& input) const
+  {
+    double res = SoftDiscretizedNumberFeatures::getValue(input);
+    jassert(res > 0.0);
+    return log10(res);
+  }
+
+  virtual String getBoundaryName(size_t index) const
+  {
+    double boundary = pow(10.0, getBoundary(index));
+    if (boundary < 1e-04 || boundary > 1e07)
+      return String(boundary);
+    if (boundary > 100)
+      return String((int)boundary); // no decimals for simplicity
+    int numberOfDecimals = boundary > 10 ? 1 : (boundary > 1 ? 2 : (boundary > 0.01 ? 3 : 6));
+    return String(boundary, numberOfDecimals);
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_FEATURES_SOFT_DISCRETIZED_NUMBER_H_

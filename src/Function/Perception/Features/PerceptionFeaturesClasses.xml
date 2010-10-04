@@ -30,6 +30,14 @@
       <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior" returnType="Perception"/>
       <variable type="Boolean" name="cyclicBehavior"/>
     </class>
+
+    <class name="SoftDiscretizedLogNumberFeatures" base="SoftDiscretizedNumberFeatures">
+      <constructor arguments="TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="Perception"/>
+    </class>
+
+    <class name="SignedNumberFeatures" base="CompositePerception">
+      <constructor arguments="PerceptionPtr positiveNumberPerception"/>
+    </class>
     
     <class name="BiVariableFeatures" base="DecoratorPerception">
       <constructor arguments="TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception"/>
