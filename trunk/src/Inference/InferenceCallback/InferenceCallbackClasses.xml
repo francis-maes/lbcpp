@@ -15,10 +15,11 @@
     </class>
 
     <class name="EvaluationInferenceCallback" base="InferenceCallback">
-      <constructor arguments="EvaluatorPtr evaluator"/>
+      <constructor arguments="InferencePtr inference, EvaluatorPtr evaluator"/>
+      <variable type="Inference" name="inference"/>
       <variable type="Evaluator" name="evaluator"/>
     </class>
 
   </namespace>
-  
+
 </file>

@@ -103,7 +103,7 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerP
 Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator)
 {
   ReturnCode res = Inference::finishedReturnCode;
-  InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(evaluator);
+  InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
   appendCallback(evaluationCallback);
   run(runOnSupervisedExamplesInference(inference, true), examples, Variable(), res);
   removeCallback(evaluationCallback);
@@ -271,7 +271,7 @@ void ThreadPool::addJobs(const std::vector<JobPtr>& jobs, size_t priority, Multi
   ScopedLock _(waitingJobsLock);
   if (waitingJobs.size() <= priority)
     waitingJobs.resize(priority + 1);
-  
+
   std::list<JobPtr>& waiting = waitingJobs[priority];
   for (size_t i = 0; i < jobs.size(); ++i)
     waiting.push_back(new SignalingJob(jobs[i], event));
@@ -342,7 +342,7 @@ void ThreadPool::update()
 }
 
 void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
-{   
+{
   MultipleWaitableEvent event;
   addJob(job, priority, event);
   while (!event.wait(1, 1))

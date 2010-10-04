@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "Data/Protein.h" 
+#include "Data/Protein.h"
 #include "Perception/ProteinPerception.h"
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 
 InferenceContextPtr createInferenceContext()
 {
-  return multiThreadedInferenceContext(new ThreadPool(14, false));
+  return multiThreadedInferenceContext(new ThreadPool(9, false));
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
@@ -84,11 +84,11 @@ protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
       StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/* logicalOr(
-                                                     maxIterationsStoppingCriterion(5),  
+                                                     maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
 //    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/*logicalOr(
-      /*maxIterationsStoppingCriterion(100),  
+      /*maxIterationsStoppingCriterion(100),
       maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
     if (targetName.startsWith(T("contactMap")))
@@ -106,7 +106,7 @@ protected:
   }
 };
 
-///////////////////////////////////////// 
+/////////////////////////////////////////
 
 class StdOutPrinter
 {
@@ -148,7 +148,7 @@ public:
       //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
   }
-  
+
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceName = stack->getCurrentInference()->getName();
@@ -161,13 +161,13 @@ public:
       stdOutPrinter.print(T("====================================================="));
       stdOutPrinter.print(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
       stdOutPrinter.print(T("====================================================="));
-      
+
       //singleThreadedInferenceContext();
       InferenceContextPtr validationContext =  createInferenceContext();
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
-      
+
       evaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, testingData, evaluator);
       processResults(evaluator, false);
@@ -190,7 +190,7 @@ private:
   juce::uint32 startingTime;
 };
 
-///////////////////////////////////////// 
+/////////////////////////////////////////
 
 VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
 {
@@ -204,14 +204,14 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
-  
+
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
 #else
   File workingDirectory(T("/data/PDB"));
-#endif 
+#endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")))->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("PDB30Small/xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -231,11 +231,11 @@ int main(int argc, char** argv)
   inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
-  
+
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   /*inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
@@ -252,21 +252,21 @@ int main(int argc, char** argv)
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
- /* context->train(inference, trainProteins);
-
+  //context->train(inference, trainProteins);
+/*
   std::cout << "Saving inference ..." << std::flush;
   Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
-  
+*/
   {
-    
-    std::cout << "Evaluating..." << std::flush;
-    context->evaluate(inference, trainProteins, evaluator);
-    std::cout << " " << evaluator->toString() << std::endl;
-  }*/
 
-  context->crossValidate(inference, proteins, evaluator, 7); 
+   // std::cout << "Evaluating..." << std::flush;
+   // context->evaluate(inference, trainProteins, evaluator);
+  }
+
+  context->crossValidate(inference, proteins, evaluator, 2);
+
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
 
