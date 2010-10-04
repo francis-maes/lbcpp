@@ -21,7 +21,7 @@ public:
     {return 1;}
 
   virtual TypePtr getOutputVariableType(size_t index) const
-    {return sequenceSeparationDistanceType();}
+    {return positiveIntegerType();}
 
   virtual String getOutputVariableName(size_t index) const
     {return T("separationDistance");}
@@ -29,7 +29,7 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     Variable positionPair = input[1];
-    callback->sense(0, Variable(positionPair[1].getInteger() - positionPair[0].getInteger(), sequenceSeparationDistanceType()));
+    callback->sense(0, Variable(positionPair[1].getInteger() - positionPair[0].getInteger(), positiveIntegerType()));
   }
 
 protected:

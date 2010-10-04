@@ -25,13 +25,13 @@ public:
     {return proteinClass();}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return sequenceSeparationDistanceType();}
+    {return positiveIntegerType();}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
-    return Variable(protein->getLength(), sequenceSeparationDistanceType());
+    return Variable(protein->getLength(), positiveIntegerType());
   }
 };
 

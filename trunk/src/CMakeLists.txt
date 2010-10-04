@@ -203,6 +203,7 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
 )
 
 SET(LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES
+  Function/Perception/Features/BooleanFeatures.h
   Function/Perception/Features/EnumValueFeatures.h
   Function/Perception/Features/HardDiscretizedNumberFeatures.h
   Function/Perception/Features/SoftDiscretizedNumberFeatures.h

@@ -7,60 +7,32 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "Data/Protein.h" 
-#include "Inference/ProteinInferenceFactory.h"
-#include "Inference/ProteinInference.h"
-#include "Inference/ContactMapInference.h"
-#include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+void testPerception(const String& name, PerceptionPtr perception, const Variable& input)
+{
+  std::cout << "=========== " << name << " ==============" << std::endl;
+  Variable output = perception->compute(input);
+  output.printRecursively(std::cout);
+  std::cout << std::endl;
+}
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  Variable myProb(0.1664, probabilityType());
+  Variable myBoolean(true);
+
+  // int => softDiscretizedLogNumberFeatures
+  // positive int => softDiscretizedLogPositiveNumberFeatures
+  // double => softDiscretizedLogNumberFeatures
+  // positive double => softDiscretizedLogPositiveNumberFeatures
+  // probability => softDiscretizedNumberFeatures
   
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp"));
-  Variable protein = Variable::createFromFile(workingDirectory.getChildFile(T("PDB30Small/xml/1A7M.xml")));
-  if (!protein)
-    return 1;
+  testPerception(T("hardDiscretizedNumberFeatures"), hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false), myProb);
+  testPerception(T("boolean"), booleanFeatures(), myBoolean);
 
-  
-  ProteinInferenceFactory factory;
-  PerceptionPtr perception = factory.createResiduePerception(String::empty);
- // perception = perceptionToFeatures(perception);
-  Variable input = Variable::pair(protein, 3);
-
-  /*ObjectPtr parameters = Variable::create(perception->getOutputType()).getObject();
-  std::cout << "Parameters: " << std::endl;
-  Variable(parameters).printRecursively(std::cout, -1, false);
-*/
-  Variable output = perception->compute(input);
-  if (!output)
-    return 1;
-  //std::cout << "Features: " << std::endl;
-  //output.printRecursively(std::cout, -1, false);
-/*
-  std::cout << "L0: " << l0norm(perception, input) << " " << l0norm(output) << std::endl;
-  std::cout << "L1: " << l1norm(perception, input) << " " << l1norm(output) << std::endl;
-  std::cout << "L2: " << l2norm(perception, input) << " " << l2norm(output) << std::endl;
-  std::cout << "Dot Product: " << dotProduct(output, perception, input) << std::endl;
-
-
-  addWeighted(parameters, perception, input, 0.1);
-  std::cout << "Parameters: " << std::endl;
-  //Variable(parameters).printRecursively(std::cout, -1, false);
-*/
-
-  //parameters->saveToFile(workingDirectory.getChildFile(T("params.xml")));*/
-  //perception->saveToFile(workingDirectory.getChildFile(T("perception.xml")));
-  
-  output.saveToFile(workingDirectory.getChildFile(T("perceptionOutput.xml")));
-  Variable(perception).saveToFile(workingDirectory.getChildFile(T("perception.xml")));
-  input.saveToFile(workingDirectory.getChildFile(T("input.xml")));
-
-  //Variable input2 = Variable::createFromFile(workingDirectory.getChildFile(T("input.xml")));
-  //input2.printRecursively(std::cout);
   return 0;
 }

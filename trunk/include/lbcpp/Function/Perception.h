@@ -157,10 +157,11 @@ extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunc
 extern DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
 
 // features
+extern PerceptionPtr booleanFeatures();
 extern PerceptionPtr enumValueFeatures(EnumerationPtr enumeration);
 extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);  
 extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
-extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals);
+extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures);
 extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr Type, size_t numIntervals, bool cycle);
 
 }; /* namespace lbcpp */

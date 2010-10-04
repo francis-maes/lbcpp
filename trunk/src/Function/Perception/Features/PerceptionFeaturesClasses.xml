@@ -4,16 +4,24 @@
   <include file="lbcpp/Function/Perception.h"/>
 
   <namespace name="lbcpp">
+
+    <class name="BooleanFeatures" base="Perception">
+      <constructor/>
+    </class>
     
     <class name="EnumValueFeatures" base="Perception">
       <constructor arguments="EnumerationPtr enumeration"/>
       <variable type="Enumeration" name="enumeration"/>
     </class>
-    
+
     <class name="HardDiscretizedNumberFeatures" base="Perception">
-      <constructor arguments="TypePtr elementType, size_t numIntervals"/>
-      <variable type="Type" name="elementType"/>
+      <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures"/>
+
+      <variable type="Type" name="inputType"/>
+      <variable type="Double" name="minimumValue"/>
+      <variable type="Double" name="maximumValue"/>
       <variable type="Integer" name="numIntervals"/>
+      <variable type="Boolean" name="doOutOfBoundsFeatures"/>
     </class>
     
     <class name="SoftDiscretizedNumberFeatures" base="Perception">
