@@ -87,7 +87,7 @@ protected:
     {
       TypePtr variableType = decorated->getOutputVariableType(i);
       String variableName = decorated->getOutputVariableName(i);
-      PerceptionPtr variablePerception = decorated->getOutputVariableGenerator(i);
+      PerceptionPtr variablePerception = decorated->getOutputVariableSubPerception(i);
 
       stack.push_back(variableName);
 

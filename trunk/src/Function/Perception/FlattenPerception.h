@@ -67,7 +67,7 @@ private:
 
       newStack.back() = i;
 
-      PerceptionPtr subPerception = perception->getOutputVariableGenerator(i);
+      PerceptionPtr subPerception = perception->getOutputVariableSubPerception(i);
       if (subPerception)
         precompute(subPerception, name, newStack);
       else
