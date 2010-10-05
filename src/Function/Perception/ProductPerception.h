@@ -34,7 +34,7 @@ typedef ReferenceCountedObjectPtr<ProductPerception> ProductPerceptionPtr;
 class ProductPerception : public VariableVectorPerception
 {
 public:
-  ProductPerception(FunctionPtr multiplyFunction, bool symmetricFunction, PerceptionPtr perception1, PerceptionPtr perception2);
+  ProductPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions);
   ProductPerception() {}
 
   virtual TypePtr getInputType() const;
@@ -61,9 +61,9 @@ protected:
 
   FunctionPtr multiplyFunction;
   bool symmetricFunction;
-  bool swapVariables;
   PerceptionPtr perception1;
   PerceptionPtr perception2;
+  bool singleInputForBothPerceptions;
 
   void computeOutputVariables();
   void addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2);

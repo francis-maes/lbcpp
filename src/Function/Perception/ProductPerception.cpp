@@ -50,7 +50,7 @@ private:
     jassert(index < owner->getNumOutputVariables());
 
     Variable p = Variable::pair(variable1, variable2);
-    PerceptionPtr subPerception = owner->getOutputVariableGenerator(index);
+    PerceptionPtr subPerception = owner->getOutputVariableSubPerception(index);
     if (subPerception)
       targetCallback->sense(index, subPerception, p);
     else
@@ -83,29 +83,32 @@ struct FillVariableListCallback : public PerceptionCallback
   std::list<PerceptionVariable>& variables;
 };
 
-ProductPerception::ProductPerception(FunctionPtr multiplyFunction, bool symmetricFunction,
-                                     PerceptionPtr perception1, PerceptionPtr perception2)
-  : multiplyFunction(multiplyFunction), symmetricFunction(symmetricFunction), swapVariables(false),
-    perception1(perception1), perception2(perception2)
+ProductPerception::ProductPerception(FunctionPtr multiplyFunction,
+                                     PerceptionPtr perception1, PerceptionPtr perception2,
+                                     bool symmetricFunction, bool singleInputForBothPerceptions)
+  : multiplyFunction(multiplyFunction), symmetricFunction(symmetricFunction), 
+    perception1(perception1), perception2(perception2), singleInputForBothPerceptions(singleInputForBothPerceptions)
 {
   jassert(perception1 && perception2);
-  if (symmetricFunction && perception1->getNumOutputVariables() > perception2->getNumOutputVariables())
-  {
-    juce::swapVariables(perception1, perception2);
-    this->swapVariables = true;
-  }
   computeOutputVariables();
 }
 
 TypePtr ProductPerception::getInputType() const
 {
-  return pairType(perception1->getInputType(), perception2->getInputType());
+  if (singleInputForBothPerceptions)
+    return Type::findCommonBaseType(perception1->getInputType(), perception2->getInputType());
+  else
+    return pairType(perception1->getInputType(), perception2->getInputType());
 }
 
 void ProductPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
-  Variable input1 = input[swapVariables ? 1 : 0];
-  Variable input2 = input[swapVariables ? 0 : 1];
+  // retrieve inputs
+  Variable input1, input2;
+  if (singleInputForBothPerceptions)
+    input1 = input2 = input;
+  else
+    input1 = input[0], input2 = input[1];
 
   // compute Perception2
   std::list<PerceptionVariable> variables;
@@ -127,7 +130,7 @@ void ProductPerception::addOutputVariable(const String& name, TypePtr type1, Per
   {
     ProductPerceptionPtr product;
     if (sub1 && sub2)
-      product = productPerception(multiplyFunction, symmetricFunction, sub1, sub2);
+      product = productPerception(multiplyFunction, sub1, sub2, symmetricFunction);
     else if (sub1)
       product = productPerception(multiplyFunction, sub1, type2);
     else if (sub2)
@@ -146,11 +149,11 @@ void ProductPerception::computeOutputVariables()
   for (size_t i = 0; i < n1; ++i)
     for (size_t j = 0; j < n2; ++j)
     {
-      PerceptionPtr sub1 = perception1->getOutputVariableGenerator(i);
+      PerceptionPtr sub1 = perception1->getOutputVariableSubPerception(i);
       TypePtr type1 = perception1->getOutputVariableType(i);
       String name1 = perception1->getOutputVariableName(i);
 
-      PerceptionPtr sub2 = perception2->getOutputVariableGenerator(j);
+      PerceptionPtr sub2 = perception2->getOutputVariableSubPerception(j);
       TypePtr type2 = perception2->getOutputVariableType(j);
       String name2 = perception2->getOutputVariableName(j);
 
@@ -172,7 +175,7 @@ struct ComputePerceptionWithVariableProductCallback : public PerceptionCallback
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
   {
-    PerceptionPtr newSubPerception = owner->getOutputVariableGenerator(variableNumber);
+    PerceptionPtr newSubPerception = owner->getOutputVariableSubPerception(variableNumber);
     jassert(newSubPerception);
     return targetCallback->sense(variableNumber, newSubPerception, makePairWith(input));
   }
@@ -234,7 +237,7 @@ void ProductWithVariablePerception::computeOutputVariables()
   outputVariables.reserve(n);
   for (size_t i = 0; i < n; ++i)
   {
-    PerceptionPtr subPerception = perception->getOutputVariableGenerator(i);
+    PerceptionPtr subPerception = perception->getOutputVariableSubPerception(i);
     if (subPerception)
     {
       subPerception = new ProductWithVariablePerception(multiplyFunction, subPerception, variableType, swapVariables);

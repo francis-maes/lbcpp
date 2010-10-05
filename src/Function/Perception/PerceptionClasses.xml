@@ -90,12 +90,12 @@
       <constructor/>
     </class>
     <class name="ProductPerception" base="VariableVectorPerception">
-      <constructor arguments="FunctionPtr multiplyFunction, bool symmetricFunction, PerceptionPtr perception1, PerceptionPtr perception2" returnType="Perception"/>
+      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions" returnType="Perception"/>
       <variable type="Function" name="multiplyFunction"/>
       <variable type="Boolean" name="symmetricFunction"/>
-      <variable type="Boolean" name="swapVariables"/>
       <variable type="Perception" name="perception1"/>
       <variable type="Perception" name="perception2"/>
+      <variable type="Boolean" name="singleInputForBothPerceptions"/>
     </class>
 
     <class name="ProductWithVariablePerception" base="VariableVectorPerception">

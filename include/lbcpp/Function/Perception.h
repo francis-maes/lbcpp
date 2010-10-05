@@ -34,7 +34,7 @@ public:
   virtual size_t getNumOutputVariables() const = 0;
   virtual TypePtr getOutputVariableType(size_t index) const = 0;
   virtual String getOutputVariableName(size_t index) const = 0;
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {return PerceptionPtr();}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
@@ -80,7 +80,7 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {jassert(index < outputVariables.size()); return outputVariables[index].name;}
 
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {jassert(index < outputVariables.size()); return outputVariables[index].subPerception;}
 
 protected:
@@ -128,8 +128,8 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {return decorated->getOutputVariableName(index);}
 
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
-    {return decorated->getOutputVariableGenerator(index);}
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
+    {return decorated->getOutputVariableSubPerception(index);}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {decorated->computePerception(input, callback);}
@@ -172,7 +172,7 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {return getPerceptionName(index);}
 
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {return getPerception(index);}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
@@ -215,9 +215,10 @@ extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr en
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
 extern DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
+extern CompositePerceptionPtr flattenSubPerceptions(PerceptionPtr perception);
 
 // product perceptions
-extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, bool symmetricFunction, PerceptionPtr perception1, PerceptionPtr perception2);
+extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions = false);
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2);
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2);
 extern PerceptionPtr conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2);

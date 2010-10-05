@@ -36,7 +36,7 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {return index == 0 ? T("zero") : (index == 1 ? T("positive") : T("negative"));}
 
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {return index == 0 ? PerceptionPtr() : positiveNumberPerception;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

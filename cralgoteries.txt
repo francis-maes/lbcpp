@@ -1,5 +1,6 @@
+lbcpp::flattenSubPerceptions
+
 * Test/Add conjunctions to the features
-* NearlyFlattenPerception
 -
 * Forward Feature Group Selection
 

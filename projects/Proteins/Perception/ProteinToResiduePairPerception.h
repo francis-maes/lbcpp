@@ -55,7 +55,7 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {return index ? T("residue2") : T("residue1");}
 
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {return residuePerception;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

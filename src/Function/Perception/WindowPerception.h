@@ -36,7 +36,7 @@ public:
   virtual String getOutputVariableName(size_t index) const
     {return T("[") + String((int)index - (int)(windowSize / 2)) + T("]");}
 
-  virtual PerceptionPtr getOutputVariableGenerator(size_t index) const
+  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {return subPerception;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

@@ -50,7 +50,10 @@ protected:
     if (tabName == T("Attributes"))
       return perception->flatten();
     else if (tabName == T("Features"))
-      return perceptionToFeatures(perception);
+    {
+      PerceptionPtr featureGenerator = perceptionToFeatures(perception);
+      return featureGenerator;
+    }
     else
       return perception;
   }

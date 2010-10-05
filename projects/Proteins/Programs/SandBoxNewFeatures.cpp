@@ -76,7 +76,7 @@ int main(int argc, char** argv)
   
   //testPerception(T("pair F,F"), conjunctionFeatures(defaultPositiveIntegerFeatures(), defaultPositiveIntegerFeatures()), Variable::pair(myInteger1, myInteger2));
   //testPerception(T("pair C,F"), productPerception(makePairFunction, false, composite, defaultPositiveIntegerFeatures()), Variable::pair(myInteger1, myInteger2));
-  testPerception(T("pair F,C"), productPerception(makePairFunction, false, defaultPositiveIntegerFeatures(), composite), Variable::pair(myInteger1, myInteger2));
+  testPerception(T("pair F,C"), productPerception(makePairFunction, defaultPositiveIntegerFeatures(), composite, false), Variable::pair(myInteger1, myInteger2));
   //testPerception(T("pair C,C"), conjunctionFeatures(composite, composite), Variable::pair(myInteger1, myInteger2));
 
 //  testPerception(T("doubleFeatures"), doubleFeatures(), -0.000000000005);
