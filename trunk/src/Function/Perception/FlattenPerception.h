@@ -14,41 +14,32 @@
 namespace lbcpp
 {
 
-class FlattenPerception : public DecoratorPerception
+class FlattenPerception : public VariableVectorPerception
 {
 public:
   FlattenPerception(PerceptionPtr decorated = PerceptionPtr())
-    : DecoratorPerception(decorated)
-  {
-    if (decorated)
-      precompute(decorated, String::empty);
-  }
+    : decorated(decorated)
+    {precompute(decorated, String::empty);}
+
+  virtual TypePtr getInputType() const
+    {return decorated->getInputType();}
 
   virtual String getPreferedOutputClassName() const
-    {return T("flat ") + decorated->getPreferedOutputClassName();}
+    {return decorated->getPreferedOutputClassName() + T(" flattened");}
 
-  virtual TypePtr getOutputType() const
-    {return Perception::getOutputType();}
-
-  virtual size_t getNumOutputVariables() const
-    {return outputVariables.size();}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].first;}
-
-  virtual String getOutputVariableName(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].second;}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    PerceptionCallbackPtr decoratedVisitor(new FlattenCallback(decorated, callback, offsets));
-    DecoratorPerception::computePerception(input, decoratedVisitor);
+    FlattenCallback callback(decorated, targetCallback, offsets);
+    callback.setStaticAllocationFlag();
+    decorated->computePerception(input, &callback);
   }
 
   juce_UseDebuggingNewOperator
 
 private:
-  std::vector< std::pair<TypePtr, String> > outputVariables;
+  friend class FlattenPerceptionClass;
+
+  PerceptionPtr decorated;
   std::map< std::vector<size_t> , size_t> offsets;
 
   void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
@@ -71,7 +62,7 @@ private:
       if (subPerception)
         precompute(subPerception, name, newStack);
       else
-        outputVariables.push_back(std::make_pair(perception->getOutputVariableType(i), name));
+        addOutputVariable(perception->getOutputVariableType(i), name, PerceptionPtr());
     }
   }
 

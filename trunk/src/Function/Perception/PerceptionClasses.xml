@@ -81,10 +81,16 @@
       <variable type="Function" name="preProcessingFunction"/>
     </class>
 
-    <class name="FlattenPerception" base="DecoratorPerception">
-      <constructor arguments="PerceptionPtr perception"/>
+    <class name="FlattenPerception" base="VariableVectorPerception">
+      <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
+      <variable type="Perception" name="decorated"/>
     </class>
-
+    
+    <class name="CollapsePerception" base="VariableVectorPerception">
+      <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
+      <variable type="Perception" name="decorated"/>
+    </class>
+    
     <!-- Product Perception -->
     <class name="MultiplyDoubleFunction" base="Function">
       <constructor/>

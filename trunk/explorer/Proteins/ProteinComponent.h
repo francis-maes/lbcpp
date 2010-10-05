@@ -52,7 +52,7 @@ protected:
     else if (tabName == T("Features"))
     {
       PerceptionPtr featureGenerator = perceptionToFeatures(perception);
-      return featureGenerator;
+      return collapsePerception(featureGenerator);
     }
     else
       return perception;

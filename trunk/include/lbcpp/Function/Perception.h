@@ -214,8 +214,9 @@ extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr en
 // modifier perceptions
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
-extern DecoratorPerceptionPtr flattenPerception(PerceptionPtr perception);
-extern CompositePerceptionPtr flattenSubPerceptions(PerceptionPtr perception);
+extern PerceptionPtr flattenPerception(PerceptionPtr perception);
+extern PerceptionPtr collapsePerception(PerceptionPtr perception);
+
 
 // product perceptions
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions = false);

@@ -164,24 +164,3 @@ PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, PerceptionP
 
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2)
   {return productWithVariablePerception(multiplyFunction, perception2, type1, true);}
-
-CompositePerceptionPtr lbcpp::flattenSubPerceptions(PerceptionPtr perception)
-{
-  CompositePerceptionPtr res = new CompositePerception(perception->getInputType(), perception->getPreferedOutputClassName() + T(" flattened"));
-  size_t n = perception->getNumOutputVariables();
-  for (size_t i = 0; i < n; ++i)
-  {
-    PerceptionPtr subPerception = perception->getOutputVariableSubPerception(i);
-    jassert(subPerception);
-    bool isSubPerceptionFlat = true;
-    for (size_t j = 0; j < subPerception->getNumOutputVariables(); ++j)
-      if (subPerception->getOutputVariableSubPerception(j))
-      {
-        isSubPerceptionFlat = false;
-        break;
-      }
-
-    res->addPerception(perception->getOutputVariableName(i), isSubPerceptionFlat ? subPerception : flattenPerception(subPerception));
-  }
-  return res;
-}
