@@ -58,7 +58,7 @@ public:
     else if (value <= maximumValue)
     {
       int discretizedValue = (int)(numIntervals * (value - minimumValue) / (maximumValue - minimumValue));
-      if (discretizedValue == numIntervals)
+      if (discretizedValue == (int)numIntervals)
         --discretizedValue;
       jassert(discretizedValue >= 0 && discretizedValue < (int)numIntervals);
 
