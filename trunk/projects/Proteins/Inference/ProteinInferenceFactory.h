@@ -66,10 +66,7 @@ protected:
   TypePtr getTargetType(const String& targetName) const;
   InferencePtr addToProteinInference(InferencePtr targetInference, const String& targetName) const;
 
-  PerceptionPtr applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const;
-  PerceptionPtr applyWindowOnPerception(const String& variableName, size_t windowSize, PerceptionPtr perception) const;
-  PerceptionPtr applyPerceptionOnEntireProteinVariable(const String& variableName, PerceptionPtr perception) const;
-  PerceptionPtr createHistogramPerception(const String& targetName) const;
+  void addPerception(CompositePerceptionPtr composite, const String& name, const String& targetName, PerceptionPtr perception) const;
   PerceptionPtr createPairSequencesPerception(const String& firstTargetName, const String& secondTargetName, size_t windowSize) const;
 };
 

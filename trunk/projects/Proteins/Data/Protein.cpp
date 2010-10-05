@@ -97,7 +97,6 @@ void Protein::setDistanceMap(SymmetricMatrixPtr distanceMap, bool betweenCBetaAt
 String Protein::getTargetFriendlyName(size_t index)
 {
   // FIXME: use info from class
-
   // skip base class variables
   size_t baseClassVariables = nameableObjectClass()->getObjectNumVariables();
   if (index < baseClassVariables)
@@ -125,7 +124,36 @@ String Protein::getTargetFriendlyName(size_t index)
     return String::empty;
   }
 }
+String Protein::getTargetShortName(size_t index)
+{
+  // FIXME: use info from class
+  // skip base class variables
+  size_t baseClassVariables = nameableObjectClass()->getObjectNumVariables();
+  if (index < baseClassVariables)
+    return String::empty;
+  index -= baseClassVariables;
 
+  switch (index)
+  {
+  case 0: return T("aa");
+  case 1: return T("pssm");
+  case 2: return T("ss3");
+  case 3: return T("ss8");
+  case 4: return T("stal");
+  case 5: return T("sa");
+  case 6: return T("sa20"); 
+  case 7: return T("dr");
+  case 8: return T("cma8");
+  case 9: return T("cmb8");
+  case 10: return T("dma");
+  case 11: return T("dmb");
+  case 12: return T("cat");
+  case 13: return T("ts");
+  default:
+    jassert(false); 
+    return String::empty;
+  }
+}
 
 
 /*

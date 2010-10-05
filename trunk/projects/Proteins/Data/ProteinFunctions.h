@@ -52,11 +52,10 @@ public:
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     jassert(index >= 0 && index < (int)input.getObject()->getNumVariables());
-    VectorPtr vector = input.getObject()->getVariable(index).getObjectAndCast<Vector>();
-
-    if (!vector)
+    ContainerPtr container = input.getObject()->getVariable(index).getObjectAndCast<Container>();
+    if (!container)
       return Variable::missingValue(proteinClass()->getObjectVariableType((size_t)index));
-    return vector;
+    return container;
   }
 
 protected:

@@ -23,7 +23,7 @@ public:
   {}
   
   virtual TypePtr getInputType() const
-    {return pairType(vectorClass(anyType()), integerType());}
+    {return pairType(containerClass(anyType()), integerType());}
   
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return pairType(inputType->getTemplateArgument(0), pairType(integerType(), integerType()));}

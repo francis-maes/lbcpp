@@ -1,5 +1,4 @@
 
-* Review ResiduePair SegmentHistogram Perception
 * DistributionPerception: Entropy
 -
 * Test/Add conjunctions to the features

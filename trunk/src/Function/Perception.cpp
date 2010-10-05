@@ -127,6 +127,20 @@ PerceptionPtr lbcpp::identityPerception()
   return identity;
 }
 
+PerceptionPtr lbcpp::windowHistogramPerception(TypePtr elementsType, size_t windowSize, bool useCache)
+{
+  return Perception::compose(
+    windowToIndicesFunction(windowSize),
+    histogramPerception(elementsType, useCache));
+}
+
+PerceptionPtr lbcpp::containerHistogramPerception(TypePtr elementsType, bool useCache)
+{
+  return Perception::compose(
+    variableToIndicesFunction(),
+    histogramPerception(elementsType, useCache));
+}
+
 PerceptionPtr lbcpp::defaultPositiveIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
   {return softDiscretizedLogNumberFeatures(positiveIntegerType(), 0.0, maxPowerOfTen, numIntervals, true);}
 
