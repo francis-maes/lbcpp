@@ -60,7 +60,7 @@ typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialI
 class ProteinParallelInference : public VectorParallelInference, public ProteinInferenceHelper
 {
 public:
-  ProteinParallelInference();
+  ProteinParallelInference(const String& name = T("Protein"));
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
