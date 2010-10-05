@@ -17,7 +17,7 @@
       <constructor/>
     </class>
     
-    <class name="TerminusProximityResiduePerception" base="ResiduePerception">
+    <class name="BoundsProximityResiduePerception" base="ResiduePerception">
       <constructor arguments="size_t outOfBoundWindowSize"/>
       <variable type="Integer" name="outOfBoundWindowSize"/>
     </class>

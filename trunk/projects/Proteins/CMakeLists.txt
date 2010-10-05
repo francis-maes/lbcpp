@@ -62,6 +62,9 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
 SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   Perception/ProteinPerception.h
   Perception/ProteinPerception.cpp
+  Perception/PositionResiduePerception.h
+  Perception/IndexResiduePerception.h
+  Perception/BoundsProximityResiduePerception.h
   Perception/ProteinToResiduePerception.h
   Perception/ProteinToResiduePairPerception.h
   Perception/SeparationDistanceResiduePairPerception.h
