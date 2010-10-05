@@ -52,8 +52,13 @@ struct DoubleConstUnaryOperationCallback : public PerceptionCallback
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
-    jassert(value.isDouble() && !value.isMissingValue());
-    operation.sense(value.getDouble());
+    if (value.isObject())
+      operation.sense(value.getObject());
+    else
+    {
+      jassert(value.isDouble() && !value.isMissingValue());
+      operation.sense(value.getDouble());
+    }
   }
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
@@ -242,8 +247,19 @@ struct ComputeDotProductCallback : public PerceptionCallback
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
-    jassert(value.isDouble() && !value.isMissingValue());
-    res += object->getVariable(variableNumber).getDouble() * value.getDouble();
+    if (value)
+    {
+      Variable objectValue = object->getVariable(variableNumber);
+      if (objectValue)
+      {
+        if (value.isObject())
+          res += dotProduct(objectValue.getObject(), value.getObject());
+        else if (value.isDouble())
+          res += objectValue.getDouble() * value.getDouble();
+        else
+          jassert(false);
+      }
+    }
   }
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
@@ -263,6 +279,31 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
   perception->computePerception(input, &callback);
   return callback.res;
 }
+
+double lbcpp::dotProduct(ObjectPtr object1, ObjectPtr object2)
+{
+  jassert(object1->getClass() == object2->getClass());
+  
+  double res = 0.0;
+  size_t n = object1->getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable v1 = object1->getVariable(i);
+    Variable v2 = object2->getVariable(i);
+    if (v1 && v2)
+    {
+      if (v1.isObject())
+        res += dotProduct(v1.getObject(), v2.getObject());
+      else
+      {
+        jassert(v1.isDouble());
+        res += v1.getDouble() * v2.getDouble();
+      }
+    }
+  }
+  return res;
+}
+
 
 /*
 ** DoubleAssignmentOperation
@@ -290,11 +331,20 @@ struct DoubleAssignmentCallback : public PerceptionCallback
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
-    jassert(value.isDouble() && !value.isMissingValue());
-    Variable targetVariable = object->getVariable(variableNumber);
-    double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
-    operation.compute(targetValue, value.getDouble());
-    object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
+    if (value.isObject())
+    {
+      ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
+      operation.compute(targetObject, value.getObject());
+      object->setVariable(variableNumber, targetObject);
+    }
+    else
+    {
+      jassert(value.isDouble() && !value.isMissingValue());
+      Variable targetVariable = object->getVariable(variableNumber);
+      double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
+      operation.compute(targetValue, value.getDouble());
+      object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
+    }
   }
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)

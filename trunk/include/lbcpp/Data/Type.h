@@ -313,12 +313,14 @@ typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 */
 inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
 {
+#ifdef JUCE_DEBUG
   jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))
   {
     callback.errorMessage(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
     return false;
   }
+#endif // JUCE_DEBUG
   return true;
 }
 

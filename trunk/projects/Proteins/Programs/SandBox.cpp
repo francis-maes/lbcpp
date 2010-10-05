@@ -43,15 +43,47 @@ class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 public:
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
-    //rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 10)));
-
-    //rewriter->addRule(booleanType(), booleanFeatures());
-    //rewriter->addRule(probabilityType(), T("PSSM"), identityFeatures());
+    rewriter->addRule(booleanType(), booleanFeatures());
+    rewriter->addEnumValueFeaturesRule();
+    rewriter->addRule(negativeLogProbabilityType(), defaultPositiveDoubleFeatures(30, -3, 3));
     rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
     rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
+    rewriter->addRule(integerType(), defaultIntegerFeatures());
 
-    //rewriter->addEnumValueFeaturesRule();
+    // all other features
     rewriter->addRule(doubleType(), identityPerception());
+  }
+
+  VectorPtr makeUnaryConjunction(size_t index) const
+  {
+    VectorPtr res = vector(positiveIntegerType(), 1);
+    res->setElement(0, index);
+    return res;
+  }
+
+  VectorPtr makeBinaryConjunction(size_t index1, size_t index2) const
+  {
+    VectorPtr res = vector(positiveIntegerType(), 2);
+    res->setElement(0, index1);
+    res->setElement(1, index2);
+    return res;
+  }
+
+  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  {
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+
+    PerceptionPtr collapsedFeatures = collapsePerception(res);
+
+    VectorPtr selectedConjunctions = vector(containerClass(positiveIntegerType()));
+    for (size_t i = 0; i < collapsedFeatures->getNumOutputVariables(); ++i)
+      selectedConjunctions->append(makeUnaryConjunction(i));
+
+    /*selectedConjunctions->append(makeBinaryConjunction(0, 1));
+    selectedConjunctions->append(makeBinaryConjunction(5, 10));
+    selectedConjunctions->append(makeBinaryConjunction(10, 15));*/
+    PerceptionPtr featuresPostProcess = selectAndMakeConjunctionFeatures(collapsedFeatures->getOutputType(), selectedConjunctions);
+    return Perception::compose(collapsedFeatures, featuresPostProcess);
   }
 
 public:
@@ -211,7 +243,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 10)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -234,8 +266,8 @@ int main(int argc, char** argv)
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   /*inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
@@ -280,8 +312,6 @@ int main(int argc, char** argv)
     std::cout << "Check2: " << evaluator->toString() << std::endl;
   }*/
 
-  std::cout << "Deinitializing..." << std::endl;
-  lbcpp::deinitialize();
   std::cout << "Tchao." << std::endl;
   return 0;
 }

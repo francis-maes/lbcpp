@@ -17,24 +17,20 @@ namespace lbcpp
 class DynamicObject : public Object
 {
 public:
-  DynamicObject(TypePtr thisType);
-  virtual ~DynamicObject();
+  DynamicObject(TypePtr thisType)
+    : Object(thisType) {}
 
-  VariableValue& operator[](size_t index);
-
-private:
-  std::vector<VariableValue> variableValues;
+  virtual Variable getVariableImpl(size_t index) const = 0;
+  virtual void setVariableImpl(size_t index, const Variable& value) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
 
-extern ClassPtr dynamicClassClass();
-
 class DynamicClass : public DefaultClass
 {
 public:
-  DynamicClass(const String& name, TypePtr baseClass = objectClass())
-    : DefaultClass(name, baseClass) {}
+  DynamicClass(const String& name, TypePtr baseClass = objectClass(), bool isSparse = false)
+    : DefaultClass(name, baseClass), isSparse(isSparse) {}
   DynamicClass() {}
 
   /*
@@ -52,6 +48,11 @@ public:
 
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
+
+private:
+  friend class DynamicClassClass;
+
+  bool isSparse;
 };
 
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
