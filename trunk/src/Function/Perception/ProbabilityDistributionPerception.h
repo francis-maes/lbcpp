@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_PROBABILITY_DISTRIBUTION_H_
 
 # include <lbcpp/Function/Perception.h>
+# include <lbcpp/Data/ProbabilityDistribution.h>
 
 namespace lbcpp
 {
