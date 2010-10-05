@@ -40,7 +40,7 @@ double BernoulliDistribution::computeEntropy() const
 ** DiscreteProbabilityDistribution
 */
 DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr enumeration)
-  : ProbabilityDistribution(discreteProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), sum(0.0) {}
+  : ProbabilityDistribution(discreteProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0) {}
 
 String DiscreteProbabilityDistribution::toString() const
 {
@@ -66,7 +66,7 @@ String DiscreteProbabilityDistribution::toString() const
 Variable DiscreteProbabilityDistribution::sample(RandomGeneratorPtr random) const
 {
   EnumerationPtr enumeration = getEnumeration();
-  int res = random->sampleWithProbabilities(values, sum);
+  int res = random->sampleWithProbabilities(values);
   if (res >= 0 && res < (int)enumeration->getNumElements())
     return Variable(res, enumeration);
   else
@@ -76,77 +76,40 @@ Variable DiscreteProbabilityDistribution::sample(RandomGeneratorPtr random) cons
 double DiscreteProbabilityDistribution::compute(const Variable& value) const
 {
   if (value.isNil())
-    return sum ? values.back() / sum : 0.0;
+    return values.back();
   EnumerationPtr enumeration = getEnumeration();
   if (!checkInheritance(value, enumeration))
     return 0.0;
   int index = value.getInteger();
   jassert(index >= 0 && index < (int)values.size());
-  return sum ? values[index] / sum : 0.0;
+  return values[index];
 }
 
 double DiscreteProbabilityDistribution::computeEntropy() const
 {
-  if (!sum)
-    return 0.0;
+  if (cachedEntropy)
+    return cachedEntropy.getDouble();
   double res = 0.0;
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i])
     {
-      double p = values[i] / sum;
+      double p = values[i];
       res -= p * log2(p);
     }
+  const_cast<DiscreteProbabilityDistribution* >(this)->cachedEntropy = Variable(res);
   return res;
 }
 
 void DiscreteProbabilityDistribution::increment(const Variable& value)
 {
+  size_t index;
   if (value.isNil())
-  {
-    ++values.back();
-    ++sum;
-  }
+    index = values.size() - 1;
   else if (checkInheritance(value, getEnumeration()))
-  {
-    ++(values[value.getInteger()]);
-    ++sum;
-  }
-}
-
-ObjectPtr DiscreteProbabilityDistribution::multiplyByScalar(double scalar)
-{
-  sum = 0.0;
-  for (size_t i = 0; i < values.size(); ++i)
-  {
-    values[i] *= scalar;
-    sum += values[i];
-  }
-  return ObjectPtr(this);
-}
-
-ObjectPtr DiscreteProbabilityDistribution::addWeighted(const Variable& value, double weight)
-{
-  if (value.isNil())
-  {
-    values.back() += weight;
-    sum += weight;
-  }
-  if (value.getType() == getEnumeration())
-  {
-    values[(size_t)value.getInteger()] += weight;
-    sum += weight;
-  }
-  else if (value.getType() == getClass())
-  {
-    DiscreteProbabilityDistributionPtr other = value.getObjectAndCast<DiscreteProbabilityDistribution>();
-    jassert(values.size() == other->values.size());
-    for (size_t i = 0; i < values.size(); ++i)
-      values[i] += other->values[i] * weight;
-    sum += other->sum * weight;
-  }
+    index = (size_t)value.getInteger();
   else
-    jassert(false);
-  return ObjectPtr(this);
+    return;
+  setProbability(index, getProbability(index) + 1.0);
 }
 
 void DiscreteProbabilityDistribution::saveToXml(XmlExporter& exporter) const
@@ -157,7 +120,6 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
   EnumerationPtr enumeration = getEnumeration();
   jassert(enumeration);
   values.resize(enumeration->getNumElements() + 1, 0.0);
-  sum = 0.0;
   
   StringArray tokens;
   tokens.addTokens(str, true);
@@ -195,12 +157,17 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
         return false;
       }
     }
-    jassert(index >= 0 && index < (int)values.size());
-    values[index] = value;
-    sum += value;
+    setProbability((size_t)index, value);
   }
   return true;
 }
 
 bool DiscreteProbabilityDistribution::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getAllSubText(), importer.getCallback());}
+
+void DiscreteProbabilityDistribution::setProbability(size_t index, double probability)
+{
+  jassert(index < values.size());
+  values[index] = probability;
+  cachedEntropy.clear();
+}

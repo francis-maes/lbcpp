@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_PERCEPTION_IDENTITY_H_
-# define LBCPP_DATA_PERCEPTION_IDENTITY_H_
+#ifndef LBCPP_FUNCTION_PERCEPTION_IDENTITY_H_
+# define LBCPP_FUNCTION_PERCEPTION_IDENTITY_H_
 
 # include <lbcpp/Function/Perception.h>
 
@@ -62,4 +62,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_PERCEPTION_IDENTITY_H_
+#endif // !LBCPP_FUNCTION_PERCEPTION_IDENTITY_H_

@@ -57,7 +57,7 @@ class DiscreteProbabilityDistribution : public ProbabilityDistribution
 {
 public:
   DiscreteProbabilityDistribution(EnumerationPtr enumeration);
-  DiscreteProbabilityDistribution() : sum(0.0) {}
+  DiscreteProbabilityDistribution() {}
 
   // DiscreteProbabilityDistribution
   EnumerationPtr getEnumeration() const
@@ -80,14 +80,18 @@ public:
   virtual int compare(ObjectPtr otherObject) const
     {return compareVariables(otherObject);}
 
-  ObjectPtr multiplyByScalar(double scalar);
-  ObjectPtr addWeighted(const Variable& value, double weight);
+  void setProbability(size_t index, double probability);
+  void setMissingProbability(double probability)
+    {setProbability(values.size() - 1, probability);}
+
+  double getProbability(size_t index) const
+    {jassert(index < values.size()); return values[index];}
 
 private:
   friend class DiscreteProbabilityDistributionClass;
 
   std::vector<double> values;
-  double sum;
+  Variable cachedEntropy;
 };
 
 typedef ReferenceCountedObjectPtr<DiscreteProbabilityDistribution> DiscreteProbabilityDistributionPtr;

@@ -1,12 +1,13 @@
-
-* DistributionPerception: Entropy
--
 * Test/Add conjunctions to the features
 * NearlyFlattenPerception
 -
 * Forward Feature Group Selection
 
 * Bug Julien: crossValidation does not work for multi-pass SS3
+
+Perception:
+ * Serialisation des Perceptions
+ * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch

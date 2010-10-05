@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_PERCEPTION_HISTOGRAM_H_
-# define LBCPP_DATA_PERCEPTION_HISTOGRAM_H_
+#ifndef LBCPP_FUNCTION_PERCEPTION_HISTOGRAM_H_
+# define LBCPP_FUNCTION_PERCEPTION_HISTOGRAM_H_
 
 # include <lbcpp/Function/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
@@ -29,9 +29,7 @@ public:
 
   virtual size_t getNumOutputVariables() const;
 
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return probabilityType();}
-
+  virtual TypePtr getOutputVariableType(size_t index) const;
   virtual String getOutputVariableName(size_t index) const;
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
@@ -47,4 +45,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_PERCEPTION_HISTOGRAM_H_
+#endif // !LBCPP_FUNCTION_PERCEPTION_HISTOGRAM_H_

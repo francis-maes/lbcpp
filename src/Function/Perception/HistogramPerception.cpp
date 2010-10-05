@@ -128,26 +128,38 @@ size_t HistogramPerception::getNumOutputVariables() const
 {
   EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
   if (enumeration)
-    return enumeration->getNumElements() + 1;
+    return enumeration->getNumElements() + 2;
   if (elementsType->inheritsFrom(doubleType()))
-    return 2;
+    return 3;
   if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
-    return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements() + 1;
+    return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements() + 2;
   jassert(false);
   return 0;
 }
 
+TypePtr HistogramPerception::getOutputVariableType(size_t index) const
+{
+  if (index == 0 && elementsType->inheritsFrom(doubleType()))
+    return elementsType;
+  return index == getNumOutputVariables() - 1 ? negativeLogProbabilityType() : probabilityType();
+}
+
 String HistogramPerception::getOutputVariableName(size_t index) const
 {
+  if (index == getNumOutputVariables() - 1)
+    return T("entropy");
+  else if (index == getNumOutputVariables() - 2)
+    return T("p[missing]");
+
   EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
   if (enumeration)
-    return index == enumeration->getNumElements() ? "Missing" : enumeration->getElementName(index);
+    return T("p[") + enumeration->getElementName(index) + T("]");
   if (elementsType->inheritsFrom(doubleType()))
-    return index == 0 ? T("average") : T("Missing");
+    return T("average");
   if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
   {
     enumeration = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>();
-    return index == enumeration->getNumElements() ? "Missing" : enumeration->getElementName(index);
+    return T("p[") + enumeration->getElementName(index) + T("]");
   }
   jassert(false);
   return String::empty;
@@ -174,7 +186,15 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   const std::vector<double>& startScores = scores->getAccumulatedScores(startPosition);
   const std::vector<double>& endScores = scores->getAccumulatedScores(endPosition - 1);
 
+  // FIXME! This Perception should output a DiscreteProbabilityDistribution directly
+  double invK = 1.0 / (endPosition - startPosition - 1.0);
+  double entropy = 0.0;
   for (size_t i = 0; i < startScores.size(); ++i)
-    callback->sense(i, Variable((endScores[i] - startScores[i]) / (endPosition - startPosition - 1), probabilityType()));
+  {
+    double p = (endScores[i] - startScores[i]) * invK;
+    callback->sense(i, Variable(p, getOutputVariableType(i)));
+    if (p)
+      entropy -= p * log2(p);
+  }
+  callback->sense(startScores.size(), Variable(entropy, negativeLogProbabilityType()));
 }
-

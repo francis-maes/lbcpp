@@ -47,9 +47,8 @@
             distribution->values.resize(distribution->getEnumeration()->getNumElements() + 1, 0.0);
 
           jassert(subValue.isDouble());
-          distribution->sum -= distribution->values[index];
+          jassert(index &lt; distribution->values.size());
           distribution->values[index] = subValue.getDouble();
-          distribution->sum += distribution->values[index];
         }
       }
 

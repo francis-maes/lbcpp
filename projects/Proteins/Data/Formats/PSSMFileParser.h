@@ -93,13 +93,11 @@ public:
         callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
         return false;
       }
-      scores->setVariable(index, normalize(scoreI));
+      scores->setProbability(index, normalize(scoreI));
     }
 
     String gapScore = line.substring(153, 157).trim();
-    scores->setVariable(20, gapScore.getDoubleValue());
-    //scores->setElement(21, scores->computeEntropy() / 10.0); // FIXME: this must be computed by a Perception
-
+    scores->setMissingProbability(gapScore.getDoubleValue());
     pssm->setElement(currentPosition, scores);
 
     ++currentPosition;

@@ -56,6 +56,12 @@
     <class name="BoundsProximityPerception" base="Perception">
       <constructor/>
     </class>
+    
+    <!-- Probability Distribution Perception -->
+    <class name="DiscreteProbabilityDistributionPerception" base="Perception">
+      <constructor arguments="EnumerationPtr enumeration"/>
+      <variable type="Enumeration" name="enumeration"/>
+    </class>
 
     <!-- BiContainer / BiVariable -->
     <class name="BiContainerPerception" base="DecoratorPerception">

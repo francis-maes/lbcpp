@@ -191,6 +191,9 @@ private:
   VariableValue value;
 };
 
+inline Variable probability(double p)
+  {return Variable(p, probabilityType());}
+
 }; /* namespace lbcpp */
 
 # include "impl/Variable.hpp"
