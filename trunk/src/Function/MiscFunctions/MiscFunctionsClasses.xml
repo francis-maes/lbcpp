@@ -13,7 +13,12 @@
       <variable type="Integer" name="fieldIndex"/>
     </class>
 
-    <class name="SelectPairFieldsFunction" base="Function">
+    <class name="SelectVariableFunction" base="Function">
+      <constructor arguments="int index"/>
+      <variable type="Integer" name="index"/>
+    </class>
+    
+    <class name="SelectPairVariablesFunction" base="Function">
       <constructor arguments="int index1, int index2"/>
       <variable type="Integer" name="index1"/>
       <variable type="Integer" name="index2"/>

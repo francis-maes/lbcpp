@@ -1,12 +1,12 @@
-lbcpp::flattenSubPerceptions
 
-* Test/Add conjunctions to the features
--
 * Forward Feature Group Selection
-
 * Bug Julien: crossValidation does not work for multi-pass SS3
 
 Perception:
+ * Fusionner Perception::toString() et Perception::getPreferedOutputClassName() 
+ * Fusionner VariableVectorPerception dans Perception ?
+ * Deplacer Function/Perception vers Perception
+ * Nouveaux sous-repertoire: ModifierPerception, ContainerPerception, SimplePerception
  * Serialisation des Perceptions
  * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
 

@@ -48,8 +48,8 @@ public:
   PerceptionPtr flatten() const;
   PerceptionPtr addPreprocessor(FunctionPtr preProcessingFunction) const;
 
-  static PerceptionPtr compose(FunctionPtr preProcessingFunction, PerceptionPtr representation)
-    {return representation->addPreprocessor(preProcessingFunction);}
+  static PerceptionPtr compose(FunctionPtr preProcessingFunction, PerceptionPtr perception)
+    {return perception->addPreprocessor(preProcessingFunction);}
 
   juce_UseDebuggingNewOperator
 
@@ -197,6 +197,8 @@ extern ClassPtr compositePerceptionClass();
 extern PerceptionPtr nullPerception();
 extern PerceptionPtr identityPerception();
 extern PerceptionPtr identityPerception(TypePtr type);
+extern CompositePerceptionPtr selectAndMakeProductsPerception(TypePtr inputType, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions);
+extern CompositePerceptionPtr selectAndMakeConjunctionFeatures(TypePtr inputType, ContainerPtr selectedConjunctions);
 
 // container perceptions
 extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
@@ -216,7 +218,6 @@ extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
 extern PerceptionPtr flattenPerception(PerceptionPtr perception);
 extern PerceptionPtr collapsePerception(PerceptionPtr perception);
-
 
 // product perceptions
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions = false);

@@ -153,18 +153,13 @@
     </class>
     
     <!-- Protein Functions -->
-    <class name="ProteinToVariableFunction" base="Function">
-      <constructor arguments="int index"/>
-      <variable type="Integer" name="index"/>
-    </class>
-    
     <class name="ProteinLengthFunction" base="Function">
       <constructor/>
     </class>
     
     <class name="ResidueToSelectPairSequencesFunction" base="Function">
       <constructor arguments="int index1, int index2"/>
-      <variable type="SelectPairFieldsFunction" name="pairSequencesFunction"/>
+      <variable type="SelectPairVariablesFunction" name="pairSequencesFunction"/>
     </class>
 
     <class name="ProteinToInputOutputPairFunction" base="Function">

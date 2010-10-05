@@ -90,7 +90,13 @@
       <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
       <variable type="Perception" name="decorated"/>
     </class>
-    
+
+    <class name="SelectAndMakeProductsPerception" base="CompositePerception">
+      <constructor arguments="TypePtr inputType, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="GenericVector[PositiveInteger]" name="selectedConjunctions"/>
+    </class>
+
     <!-- Product Perception -->
     <class name="MultiplyDoubleFunction" base="Function">
       <constructor/>

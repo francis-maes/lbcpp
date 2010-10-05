@@ -36,42 +36,13 @@ public:
 };
 
 /*
-** ProteinToVariableFunction
-*/
-class ProteinToVariableFunction : public Function
-{
-public:
-  ProteinToVariableFunction(int index = -1) : index(index) {}
-  
-  virtual TypePtr getInputType() const
-    {return proteinClass();}
-  
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return inputType->getObjectVariableType((size_t)index);}
-
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-  {
-    jassert(index >= 0 && index < (int)input.getObject()->getNumVariables());
-    ContainerPtr container = input.getObject()->getVariable(index).getObjectAndCast<Container>();
-    if (!container)
-      return Variable::missingValue(proteinClass()->getObjectVariableType((size_t)index));
-    return container;
-  }
-
-protected:
-  friend class ProteinToVariableFunctionClass;
-  
-  int index;
-};
-
-/*
 ** ResidueToSelectPairSequencesFunction
 */
 class ResidueToSelectPairSequencesFunction : public Function
 {
 public:
-  ResidueToSelectPairSequencesFunction(int index1, int index2) : pairSequencesFunction(selectPairFieldsFunction(index1, index2)) {}
-  ResidueToSelectPairSequencesFunction() : pairSequencesFunction(selectPairFieldsFunction(-1, -1)) {}
+  ResidueToSelectPairSequencesFunction(int index1, int index2) : pairSequencesFunction(selectPairVariablesFunction(index1, index2)) {}
+  ResidueToSelectPairSequencesFunction() : pairSequencesFunction(selectPairVariablesFunction(-1, -1)) {}
   
   virtual TypePtr getInputType() const
     {return pairType(proteinClass(), integerType());}

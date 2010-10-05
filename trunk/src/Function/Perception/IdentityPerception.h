@@ -24,6 +24,9 @@ public:
   virtual TypePtr getInputType() const
     {return type;}
 
+  virtual String getPreferedOutputClassName() const
+    {return classNameToOutputClassName(type->getName());}
+
   virtual TypePtr getOutputType() const
     {return type;}
 

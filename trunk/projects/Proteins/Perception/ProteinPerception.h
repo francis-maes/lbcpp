@@ -18,7 +18,6 @@ namespace lbcpp
 /*
 ** ProteinFunction
 */
-extern FunctionPtr proteinToVariableFunction(int variableNumber);
 extern FunctionPtr residueToSelectPairSequencesFunction(int index1, int index2);
 
 /*
