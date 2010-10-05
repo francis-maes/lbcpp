@@ -151,6 +151,10 @@ public:
   Variable getVariable(size_t index) const;
   void setVariable(size_t index, const Variable& value);
 
+  StreamPtr createDefaultVariablesStream() const;
+  virtual StreamPtr getVariablesStream() const
+    {return StreamPtr();}
+
   /*
   ** Introspection: User Interface
   */

@@ -29,9 +29,12 @@ typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
 class DynamicClass : public DefaultClass
 {
 public:
-  DynamicClass(const String& name, TypePtr baseClass = objectClass(), bool isSparse = false)
-    : DefaultClass(name, baseClass), isSparse(isSparse) {}
+  DynamicClass(const String& name, TypePtr baseClass = objectClass())
+    : DefaultClass(name, baseClass) {}
   DynamicClass() {}
+
+  ObjectPtr createDenseObject() const;
+  ObjectPtr createSparseObject() const;
 
   /*
   ** Class
@@ -48,11 +51,6 @@ public:
 
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
-
-private:
-  friend class DynamicClassClass;
-
-  bool isSparse;
 };
 
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;

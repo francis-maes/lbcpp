@@ -56,10 +56,25 @@ TypePtr Perception::getOutputType() const
 Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
 {
   TypePtr outputType = getOutputType();
-  Variable res = Variable::create(outputType);
-  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(res.getObject()));
+  
+  // create empty sparse or dense object
+  ObjectPtr res;
+  if (isSparse())
+  {
+    DynamicClassPtr dynamicClassOutputType = outputType.dynamicCast<DynamicClass>();
+    if (dynamicClassOutputType)
+      res = dynamicClassOutputType->createSparseObject();
+  }
+  if (!res)
+  {
+    res = Variable::create(outputType).getObject();
+    jassert(res);
+  }
+
+  // compute perception
+  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(res));
   computePerception(input, perceptionCallback);
-  return perceptionCallback->atLeastOneVariable ? res : Variable::missingValue(outputType);
+  return perceptionCallback->atLeastOneVariable ? Variable(res) : Variable::missingValue(outputType);
 }
 
 TypePtr Perception::ensureTypeIsComputed()
@@ -67,7 +82,7 @@ TypePtr Perception::ensureTypeIsComputed()
   ScopedLock _(outputTypeLock);
   if (!outputType)
   {
-    DefaultClassPtr outputType = new DynamicClass(getPreferedOutputClassName());
+    DynamicClassPtr outputType = new DynamicClass(getPreferedOutputClassName(), objectClass());
     size_t n = getNumOutputVariables();
     for (size_t i = 0; i < n; ++i)
       outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));

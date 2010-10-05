@@ -27,6 +27,9 @@ public:
   virtual TypePtr getInputType() const
     {return positiveNumberPerception->getInputType();}
 
+  virtual bool isSparse() const
+    {return true;}
+
   virtual size_t getNumOutputVariables() const
     {return 3;}
 

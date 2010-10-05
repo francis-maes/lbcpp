@@ -10,6 +10,7 @@
 # define LBCPP_DATA_OBJECT_SPARSE_GENERIC_H_
 
 # include <lbcpp/Data/DynamicObject.h>
+# include <lbcpp/Data/Stream.h>
 
 namespace lbcpp
 {
@@ -58,10 +59,14 @@ public:
     }
   }
 
+  virtual StreamPtr getVariablesStream() const;
+
   size_t getNumElements() const
     {return numElements;}
 
 private:
+  friend class SparseGenericObjectVariablesStream;
+
   struct Node
   {
     Node(size_t index, const Variable& value, Node* next = NULL)
@@ -121,6 +126,42 @@ private:
     return res;
   }
 };
+
+typedef ReferenceCountedObjectPtr<SparseGenericObject> SparseGenericObjectPtr;
+
+class SparseGenericObjectVariablesStream : public Stream
+{
+public:
+  SparseGenericObjectVariablesStream(SparseGenericObjectPtr object)
+    : object(object), current(object->first)
+    {}
+
+  virtual TypePtr getElementsType() const
+    {return pairType(variableIndexType(), anyType());}
+
+  virtual bool rewind()
+    {current = object->first; return true;}
+
+  virtual bool isExhausted() const
+    {return !current;}
+
+  virtual Variable next()
+  {
+    if (!current)
+      return Variable();
+    TypePtr type = object->thisClass->getObjectVariableType(current->index);
+    Variable res = Variable::pair(Variable(current->index, variableIndexType()), Variable::copyFrom(type, current->value));
+    current = current->next;
+    return res;
+  }
+
+private:
+  SparseGenericObjectPtr object;
+  SparseGenericObject::Node* current;
+};
+
+inline StreamPtr SparseGenericObject::getVariablesStream() const
+  {return new SparseGenericObjectVariablesStream(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */
 

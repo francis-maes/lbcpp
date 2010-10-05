@@ -10,6 +10,7 @@
     <type name="Boolean" base="Variable" implementation="BooleanType"/>
     <type name="Integer" base="Variable" implementation="IntegerType"/>
       <type name="PositiveInteger" base="Integer"/>
+        <type name="VariableIndex" base="PositiveInteger"/>
 
     <type name="EnumValue" base="Integer" implementation="IntegerType"/>
 
