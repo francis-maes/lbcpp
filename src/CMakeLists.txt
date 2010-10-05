@@ -200,6 +200,7 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/BiVariablePerception.h
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
+  Function/Perception/CollapsePerception.h
   Function/Perception/FunctionBasedPerception.h
   Function/Perception/PerceptionRewriterRules.h
   Function/Perception/PerceptionClasses.xml
