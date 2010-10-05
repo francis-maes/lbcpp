@@ -362,6 +362,7 @@ int main(int argc, char** argv)
   String multiTaskFeatures;
   bool isExperimentalMode = false;
   size_t foldCrossValidation = 0;
+  size_t numThreads = 1;
 
   ArgumentSet arguments;
   /* Input-Output */
@@ -385,6 +386,7 @@ int main(int argc, char** argv)
   arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
   arguments.insert(new BooleanArgument(T("IsExperimentalMode"), isExperimentalMode));
   arguments.insert(new IntegerArgument(T("FoldCrossValidation"), (int&)foldCrossValidation));
+  arguments.insert(new IntegerArgument(T("NumThreads"), (int&)numThreads));
 
   if (!arguments.parse(argv, 1, argc-1))
   {
@@ -419,31 +421,33 @@ int main(int argc, char** argv)
                             ->apply(proteinToInputOutputPairFunction())
                             ->randomize();
   ContainerPtr testingData;
-  jassert(foldCrossValidation == 0 || testingProteinsDirectory == File::nonexistent);
+  
+  if (testingProteinsDirectory != File::nonexistent)
+  {
+    testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
+                ->apply(loadFromFileFunction(proteinClass()))
+                ->load()
+                ->apply(proteinToInputOutputPairFunction());
+  }
+  
+  if (foldCrossValidation && testingProteinsDirectory != File::nonexistent)
+  {
+    std::cout << "Warning - You are in Cross Validation Mode,"
+              << "the testing set isn't taken into account !" << std::endl;
+  }
+  
+  if (!foldCrossValidation && testingProteinsDirectory == File::nonexistent)
+  {
+    testingData = trainingData->fold(0, numFolds);
+    trainingData = trainingData->invFold(0, numFolds);
+  }
+
   if (!foldCrossValidation)
-  {
-    if (testingProteinsDirectory == File::nonexistent)
-    {
-      testingData = trainingData->fold(0, numFolds);
-      trainingData = trainingData->invFold(0, numFolds);
-    }
-    else
-    {
-      testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
-                  ->apply(loadFromFileFunction(proteinClass()))
-                  ->load()
-                  ->apply(proteinToInputOutputPairFunction());
-    }
-  }
-
-  std::cout << trainingData->getNumElements() << " Training Proteins & "
-            << testingData->getNumElements()  << " Testing Proteins" << std::endl;
-
-  if (trainingData->isEmpty() || testingData->isEmpty())
-  {
-    std::cout << "The training set or the testing set is empty." << std::endl;
-    return 0;
-  }
+    std::cout << trainingData->getNumElements() << " Training Proteins & "
+              << testingData->getNumElements()  << " Testing Proteins" << std::endl;
+  else
+    std::cout << foldCrossValidation << "-Fold Cross Validation & "
+              << trainingData->getNumElements() << " Proteins" << std::endl;
 
   /*
   ** Selection of the Protein Inference Factory
@@ -457,7 +461,7 @@ int main(int argc, char** argv)
   /*
   ** Creation of the inference
   */
-  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  ProteinParallelInferencePtr inference = new ProteinParallelInference();
   if (generateIntermediate)
     inference->setProteinDebugDirectory(File::getCurrentWorkingDirectory().getChildFile(output));
 
@@ -478,8 +482,10 @@ int main(int argc, char** argv)
   /*
   ** Setting Callbacks
   */
-  InferenceContextPtr context = singleThreadedInferenceContext();
+  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(numThreads, false)); // = singleThreadedInferenceContext();
 
+
+  /*
   const String classNameToEvaluate = DefaultParameters::saveIterations ? T("RunOnSupervisedExamplesInference") : T("RunSequentialInferenceStepOnExamples");
   const String classNameWhichContainTargetName = DefaultParameters::saveIterations ? T("OneAgainstAllClassificationInference") : T("ProteinInferenceStep");
 
@@ -488,10 +494,25 @@ int main(int argc, char** argv)
   callbacks->appendCallback(new GnuPlotInferenceCallback(File::getCurrentWorkingDirectory().getChildFile(output), classNameToEvaluate));
 
   context->appendCallback(callbacks);
-
+  */
   /*
   ** Run
   */
-  context->train(inference, trainingData);
+  ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+  if (foldCrossValidation)
+  {
+    context->crossValidate(inference, trainingData, evaluator, foldCrossValidation);
+  }
+  else
+  {
+    context->train(inference, trainingData);
+    std::cout << "Evaluating..." << std::flush;
+    context->evaluate(inference, testingData, evaluator);
+  }
+  std::cout << evaluator->toString() << std::endl << std::endl;
+
+  lbcpp::deinitialize();
+  std::cout << "Tchao." << std::endl;
+
   return 0;
 }
