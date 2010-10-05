@@ -131,11 +131,11 @@ private:
   }
 };
 
-class ContactMapComponent : public Component, public ComponentWithPreferedSize
+class ContactMapComponent : public Component, public ComponentWithPreferedSize, public VariableSelector
 {
 public:
   ContactMapComponent(SymmetricMatrixPtr map1, SymmetricMatrixPtr map2)
-    : map1(map1), map2(map2), n(0)
+    : map1(map1), map2(map2), n(0), selectedX(-1), selectedY(-1)
   {
     jassert(!map1 || !map2 || map1->getDimension() == map2->getDimension());
     if (map1)
@@ -161,12 +161,11 @@ public:
     int pixelsPerEntry = computePixelsPerEntry(availableWidth, availableHeight);
     return juce::jmax(pixelsPerEntry * n, availableHeight);
   }
-  
+
   virtual void paint(Graphics& g)
   {
-    int pixelsPerEntry = computePixelsPerEntry(getWidth(), getHeight());
-    int x1 = (getWidth() - pixelsPerEntry * n) / 2;
-    int y1 = (getHeight() - pixelsPerEntry * n) / 2;
+    int pixelsPerEntry, x1, y1;
+    getPaintCoordinates(pixelsPerEntry, x1, y1);
   
     for (size_t i = 0; i < n; ++i)
       for (size_t j = i; j < n; ++j)
@@ -175,16 +174,55 @@ public:
         paintEntry(g, x1 + j * pixelsPerEntry, y1 + i * pixelsPerEntry, pixelsPerEntry, map2, i, j);
       }
       
+    if (selectedX >= 0 && selectedY >= 0)
+    {
+      g.setColour(Colours::lightblue.withAlpha(0.7f));
+      g.fillRect(x1 + (selectedX - 4) * pixelsPerEntry, y1 + selectedY * pixelsPerEntry, 9 * pixelsPerEntry - 1, pixelsPerEntry - 1);
+      g.fillRect(x1 + selectedX * pixelsPerEntry, y1 + (selectedY - 4) * pixelsPerEntry, pixelsPerEntry - 1, 9 * pixelsPerEntry - 1);
+    }
+
     g.setColour(Colours::black);
     g.drawRect(x1, y1, n * pixelsPerEntry, n * pixelsPerEntry);
     g.drawLine((float)x1, (float)y1, (float)(x1 + n * pixelsPerEntry), (float)(y1 + n * pixelsPerEntry));
+  }
+
+  virtual void mouseUp(const MouseEvent& e)
+  {
+    int pixelsPerEntry, x1, y1;
+    getPaintCoordinates(pixelsPerEntry, x1, y1);
+    jassert(pixelsPerEntry);
+    int x = (e.getMouseDownX() - x1) / pixelsPerEntry;
+    int y = (e.getMouseDownY() - y1) / pixelsPerEntry;
+    if (x >= 0 && y >= 0 && x < (int)n && y < (int)n)
+    {
+      SymmetricMatrixPtr map = x <= y ? map1 : map2;
+      if (map)
+      {
+        selectedX = x, selectedY = y;
+        sendSelectionChanged(Variable::pair(map, Variable::pair((size_t)x, (size_t)y)));
+        repaint();
+        return;
+      }
+    }
+
+    selectedX = -1, selectedY = -1;
+    sendSelectionChanged(std::vector<Variable>());
+    repaint();
   }
   
 private:
   SymmetricMatrixPtr map1;
   SymmetricMatrixPtr map2;
   size_t n;
-  
+  int selectedX, selectedY;
+    
+  void getPaintCoordinates(int& pixelsPerEntry, int& x1, int& y1) const
+  {
+    pixelsPerEntry = computePixelsPerEntry(getWidth(), getHeight());
+    x1 = (getWidth() - pixelsPerEntry * n) / 2;
+    y1 = (getHeight() - pixelsPerEntry * n) / 2;
+  }
+
   static Colour selectColour(SymmetricMatrixPtr map, size_t i, size_t j)
   {
     if (map->getElement(i, j))
@@ -217,7 +255,7 @@ private:
   }
 };
 
-class MultiProtein2DComponent : public Component, public juce::ChangeListener, public ComponentWithPreferedSize
+class MultiProtein2DComponent : public Component, public juce::ChangeListener, public ComponentWithPreferedSize, public VariableSelector, public VariableSelectorCallback
 {
 public:
   MultiProtein2DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
@@ -236,7 +274,9 @@ public:
   {
     SymmetricMatrixPtr map1 = getMap(configuration->getProtein1());
     SymmetricMatrixPtr map2 = getMap(configuration->getProtein2());
-    viewport->setViewedComponent(new ContactMapComponent(map1, map2));
+    ContactMapComponent* contactMapComponent = new ContactMapComponent(map1, map2);
+    contactMapComponent->addCallback(*this);
+    viewport->setViewedComponent(contactMapComponent);
     viewport->resized();
   }
   
@@ -249,6 +289,15 @@ public:
  
   virtual int getDefaultWidth() const
     {return 900;}
+
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
+  {
+    std::vector<Variable> selection;
+    selection.resize(selectedVariables.size());
+    for (size_t i = 0; i < selection.size(); ++i)
+      selection[i] = makeSelection(selectedVariables[i]);
+    sendSelectionChanged(selection);
+  }
 
 protected:
   MultiProtein2DConfigurationComponent* configurationComponent;
@@ -263,7 +312,18 @@ protected:
     return currentMap < 0 || proteinNumber < 0
       ? SymmetricMatrixPtr()
       : proteins[proteinNumber]->getVariable(configuration->getMapIndex(currentMap)).getObjectAndCast<SymmetricMatrix>();
-  }  
+  }
+
+  Variable makeSelection(const Variable& input) const
+  {
+    SymmetricMatrixPtr contactMap = input[0].getObjectAndCast<SymmetricMatrix>();
+
+    for (size_t i = 0; i < proteins.size(); ++i)
+      if (contactMap == getMap(i))
+        return Variable::pair(proteins[i], input[1]);
+    jassert(false);
+    return Variable();
+  }
 };
 
 }; /* namespace lbcpp */

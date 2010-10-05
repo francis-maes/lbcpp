@@ -37,11 +37,14 @@ public:
 /*
 ** ResidueToResiduePairPerception
 */
-class ResidueToResiduePairPerception : public ResiduePairPerception
+class ResidueToResiduePairPerception : public Perception
 {
 public:
   ResidueToResiduePairPerception(PerceptionPtr residuePerception = PerceptionPtr())
     : residuePerception(residuePerception) {}
+
+  virtual TypePtr getInputType() const
+    {return pairType(proteinClass(), pairType(positiveIntegerType(), positiveIntegerType()));}
 
   virtual size_t getNumOutputVariables() const
     {return 2;}

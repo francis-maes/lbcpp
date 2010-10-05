@@ -7,21 +7,6 @@
     <class name="ProteinCompositePerception" base="CompositePerception"/>
 
     <!-- Residue Perception -->
-    <class name="ResiduePerception" base="Perception" abstract="yes"/>
-    
-    <class name="PositionResiduePerception" base="ResiduePerception">
-      <constructor/>
-    </class>
-    
-    <class name="IndexResiduePerception" base="ResiduePerception">
-      <constructor/>
-    </class>
-    
-    <class name="BoundsProximityResiduePerception" base="ResiduePerception">
-      <constructor arguments="size_t outOfBoundWindowSize"/>
-      <variable type="Integer" name="outOfBoundWindowSize"/>
-    </class>
-    
     <class name="ResidueCompositePerception" base="CompositePerception"/>
 
     <class name="ProteinToResiduePerception" base="DecoratorPerception">
@@ -29,18 +14,16 @@
     </class>
 
     <!-- Residue Pair Perception -->
-    <class name="ResiduePairPerception" base="Perception" abstract="yes"/>
-
     <class name="ProteinToResiduePairPerception" base="DecoratorPerception">
       <constructor arguments="PerceptionPtr proteinPerception"/>
     </class>
     
-    <class name="ResidueToResiduePairPerception" base="ResiduePairPerception">
+    <class name="ResidueToResiduePairPerception" base="Perception">
       <constructor arguments="PerceptionPtr residuePerception"/>
       <variable type="Perception" name="residuePerception"/>
     </class>
 
-    <class name="SeparationDistanceResiduePairPerception" base="ResiduePairPerception">
+    <class name="SeparationDistanceResiduePairPerception" base="Perception">
       <constructor/>
     </class>
 

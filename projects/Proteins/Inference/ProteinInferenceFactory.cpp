@@ -72,16 +72,16 @@ PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const Strin
 {
   TypePtr targetType = getTargetType(targetName);
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
-  res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
+  res->addPerception(T("window"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
+  res->addPerception(T("histogram"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
   return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
-  res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
+  res->addPerception(T("window"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
+  res->addPerception(T("histogram"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
   return res;
 }
 
@@ -92,9 +92,9 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
   
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("WINDOW"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
+  res->addPerception(T("window"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
                                                                    windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
-  res->addPerception(T("HISTOGRAM"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
+  res->addPerception(T("histogram"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
   return res;
 }
 
@@ -130,34 +130,34 @@ PerceptionPtr ProteinInferenceFactory::createPairsSequencesPerception() const
 PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
 {
   CompositePerceptionPtr res = new ProteinCompositePerception();
-  res->addPerception(T("LEN"), proteinLengthPerception());
+  res->addPerception(T("length"), proteinLengthPerception());
   CompositePerceptionPtr freq = new ProteinCompositePerception();
-  freq->addPerception(T("AA"), createHistogramPerception(T("primaryStructure")));
-  freq->addPerception(T("PSSM"), createHistogramPerception(T("positionSpecificScoringMatrix")));
-  freq->addPerception(T("SS3"), createHistogramPerception(T("secondaryStructure")));
-  freq->addPerception(T("SS8"), createHistogramPerception(T("dsspSecondaryStructure")));
-  freq->addPerception(T("SA20"), createHistogramPerception(T("solventAccessibilityAt20p")));
-  freq->addPerception(T("DR"), createHistogramPerception(T("disorderRegions")));
-  freq->addPerception(T("StAl"), createHistogramPerception(T("structuralAlphabetSequence")));
-  res->addPerception(T("HISTOGRAM"), freq);
+  freq->addPerception(T("aa"), createHistogramPerception(T("primaryStructure")));
+  freq->addPerception(T("pssm"), createHistogramPerception(T("positionSpecificScoringMatrix")));
+  freq->addPerception(T("ss3"), createHistogramPerception(T("secondaryStructure")));
+  freq->addPerception(T("ss8"), createHistogramPerception(T("dsspSecondaryStructure")));
+  freq->addPerception(T("sa20"), createHistogramPerception(T("solventAccessibilityAt20p")));
+  freq->addPerception(T("dr"), createHistogramPerception(T("disorderRegions")));
+  freq->addPerception(T("stal"), createHistogramPerception(T("structuralAlphabetSequence")));
+  res->addPerception(T("histograms"), freq);
   return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("GLOBAL"), createProteinPerception());
-  res->addPerception(T("POSITION"), positionResiduePerception());
+  res->addPerception(T("protein"), createProteinPerception());
+  res->addPerception(T("position"), applyPerceptionOnProteinVariable(T("primaryStructure"), boundsProximityPerception()));
 //  res->addPerception(T("INDEX"), indexResiduePerception());
-  res->addPerception(T("TERMINUS"), boundsProximityResiduePerception(15));
-  res->addPerception(T("AA"), createLabelSequencePerception(T("primaryStructure")));
-  res->addPerception(T("PSSM"), createPositionSpecificScoringMatrixPerception());
-  res->addPerception(T("SS3"), createLabelSequencePerception(T("secondaryStructure")));
-  res->addPerception(T("SS8"), createLabelSequencePerception(T("dsspSecondaryStructure")));
-  res->addPerception(T("SA20"), createProbabilitySequencePerception(T("solventAccessibilityAt20p")));
-  res->addPerception(T("DR"), createProbabilitySequencePerception(T("disorderRegions")));
-  res->addPerception(T("StAl"), createLabelSequencePerception(T("structuralAlphabetSequence")));
-  res->addPerception(T("PairOfSeq"), createPairsSequencesPerception());
+  //res->addPerception(T("TERMINUS"), boundsProximityResiduePerception(15));
+  res->addPerception(T("aa"), createLabelSequencePerception(T("primaryStructure")));
+  res->addPerception(T("pssm"), createPositionSpecificScoringMatrixPerception());
+  res->addPerception(T("ss3"), createLabelSequencePerception(T("secondaryStructure")));
+  res->addPerception(T("ss8"), createLabelSequencePerception(T("dsspSecondaryStructure")));
+  res->addPerception(T("sa20"), createProbabilitySequencePerception(T("solventAccessibilityAt20p")));
+  res->addPerception(T("dr"), createProbabilitySequencePerception(T("disorderRegions")));
+  res->addPerception(T("stal"), createLabelSequencePerception(T("structuralAlphabetSequence")));
+  //res->addPerception(T("PairOfSeq"), createPairsSequencesPerception());
   return res;
 }
 
@@ -166,9 +166,9 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   PerceptionPtr residuePerception = createResiduePerception(targetName);
 
   CompositePerceptionPtr res = new ResiduePairCompositePerception();
-  res->addPerception(T("GLOBAL"), createProteinPerception());
-  res->addPerception(T("PT"), residuePerception);
-  res->addPerception(T("SEP"), separationDistanceResiduePairPerception());
+  res->addPerception(T("protein"), createProteinPerception());
+  res->addPerception(T("residues"), residuePerception);
+  res->addPerception(T("separationDistance"), separationDistanceResiduePairPerception());
   return res;
 }
 

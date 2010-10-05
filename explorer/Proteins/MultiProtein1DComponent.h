@@ -226,7 +226,7 @@ protected:
     if (position < 0)
       return protein;
     else
-      return Variable::pair(protein, position);
+      return Variable::pair(protein, (size_t)position);
   }
  
   ProteinPtr findProteinWithName(const String& proteinName) const
