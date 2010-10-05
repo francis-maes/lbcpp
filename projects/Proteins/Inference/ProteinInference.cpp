@@ -101,8 +101,8 @@ Variable ProteinSequentialInference::finalizeInference(InferenceContextPtr conte
 /*
 ** ProteinParallelInference
 */
-ProteinParallelInference::ProteinParallelInference()
-  : VectorParallelInference(T("Protein"))
+ProteinParallelInference::ProteinParallelInference(const String& name)
+  : VectorParallelInference(name)
 {
 }
 
