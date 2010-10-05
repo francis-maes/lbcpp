@@ -13,13 +13,13 @@
 using namespace lbcpp;
 
 VariableValue DynamicClass::create() const
-{
-  TypePtr pthis = refCountedPointerFromThis(this);
-  if (true) // TEST !! (isSparse)
-    return new SparseGenericObject(pthis);
-  else
-    return new DenseGenericObject(pthis);
-}
+  {return createDenseObject();}
+
+ObjectPtr DynamicClass::createDenseObject() const
+  {return new DenseGenericObject(refCountedPointerFromThis(this));}
+
+ObjectPtr DynamicClass::createSparseObject() const
+  {return new SparseGenericObject(refCountedPointerFromThis(this));}
 
 Variable DynamicClass::getObjectVariable(const VariableValue& value, size_t index) const
 {

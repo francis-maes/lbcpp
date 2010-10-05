@@ -3,7 +3,9 @@
 * Bug Julien: crossValidation does not work for multi-pass SS3
 
 Perception:
- * Fusionner Perception::toString() et Perception::getPreferedOutputClassName() 
+ * Utiliser un PreprocessPerception pour ProteinToResiduePerception et ProteinToResiduePairPerception 
+   * Renommer PreprocessPerception en ComposePerception (?)
+ * Fusionner Perception::toString() et Perception::getPreferedOutputClassName()  (?)
  * Fusionner VariableVectorPerception dans Perception ?
  * Deplacer Function/Perception vers Perception
  * Nouveaux sous-repertoire: ModifierPerception, ContainerPerception, SimplePerception

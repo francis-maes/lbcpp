@@ -45,6 +45,9 @@ public:
   virtual String getPreferedOutputClassName() const
     {return perception1->getPreferedOutputClassName() + T(" x ") + perception2->getPreferedOutputClassName();}
 
+  virtual bool isSparse() const
+    {return perception1->isSparse() || perception2->isSparse();}
+
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
   PerceptionPtr getPerception1() const

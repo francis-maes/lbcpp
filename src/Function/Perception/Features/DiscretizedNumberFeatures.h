@@ -33,6 +33,9 @@ public:
   virtual TypePtr getOutputVariableType(size_t index) const
     {return doubleType();}
 
+  virtual bool isSparse() const
+    {return true;}
+
 protected:
   friend class DiscretizedNumberFeaturesClass;
 

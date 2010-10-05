@@ -9,6 +9,7 @@
 #ifndef LBCPP_FUNCTION_PERCEPTION_IDENTITY_H_
 # define LBCPP_FUNCTION_PERCEPTION_IDENTITY_H_
 
+# include <lbcpp/Data/Stream.h>
 # include <lbcpp/Function/Perception.h>
 
 namespace lbcpp
@@ -45,12 +46,25 @@ public:
     ObjectPtr inputObject = input.getObject();
     if (inputObject)
     {
-      size_t n = type->getObjectNumVariables();
-      for (size_t i = 0; i < n; ++i)
+      StreamPtr variablesStream = inputObject->getVariablesStream();
+      if (variablesStream)
       {
-        Variable variable = inputObject->getVariable(i);
-        if (variable)
+        while (!variablesStream->isExhausted())
+        {
+          Variable indexAndValue = variablesStream->next();
+          callback->sense((size_t)indexAndValue[0].getInteger(), indexAndValue[1]);
+        }
+      }
+      else
+      {
+        size_t n = type->getObjectNumVariables();
+        for (size_t i = 0; i < n; ++i)
+        {
+          Variable variable = inputObject->getVariable(i);
+          if (!variable)
+            continue;
           callback->sense(i, variable);
+        }
       }
     }
   }

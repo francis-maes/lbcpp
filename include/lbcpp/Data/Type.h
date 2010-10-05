@@ -163,6 +163,7 @@ extern TypePtr nilType();
 extern TypePtr booleanType();
 extern TypePtr integerType();
   extern TypePtr positiveIntegerType();
+    extern TypePtr variableIndexType();
   extern TypePtr enumValueType();
 
 extern TypePtr doubleType();

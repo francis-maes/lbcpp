@@ -31,6 +31,9 @@ public:
   virtual TypePtr getOutputType() const;
   virtual String getPreferedOutputClassName() const;
 
+  virtual bool isSparse() const
+    {return false;}
+
   virtual size_t getNumOutputVariables() const = 0;
   virtual TypePtr getOutputVariableType(size_t index) const = 0;
   virtual String getOutputVariableName(size_t index) const = 0;
@@ -115,6 +118,9 @@ public:
 
   virtual TypePtr getOutputType() const
     {return decorated->getOutputType();}
+  
+  virtual bool isSparse() const
+    {return decorated->isSparse();}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}

@@ -10,6 +10,49 @@
 #include <lbcpp/Data/Vector.h>
 using namespace lbcpp;
 
+// todo: ranger ...
+class ObjectDefaultVariablesStream : public Stream
+{
+public:
+  ObjectDefaultVariablesStream(ObjectPtr object, size_t index = 0)
+    : object(object), index(index), n(object->getNumVariables())
+    {moveIndexToNextExistentVariable();}
+
+  virtual TypePtr getElementsType() const
+    {return pairType(variableIndexType(), anyType());}
+
+  virtual bool rewind()
+    {index = 0; moveIndexToNextExistentVariable(); return true;}
+
+  virtual bool isExhausted() const
+    {return index >= n;}
+
+  virtual Variable next()
+  {
+    if (isExhausted())
+      return Variable();
+    
+    Variable res = Variable::pair(Variable(index, variableIndexType()), object->getVariable(index));
+    ++index;
+    moveIndexToNextExistentVariable();
+    return res;
+  }
+
+private:
+  ObjectPtr object;
+  size_t index;
+  size_t n;
+
+  void moveIndexToNextExistentVariable()
+  {
+    while (index < n && !object->getVariable(index))
+      ++index;
+  }
+};
+
+StreamPtr Object::createDefaultVariablesStream() const
+  {return new ObjectDefaultVariablesStream(refCountedPointerFromThis(this));}
+
 /*
 ** Stream
 */

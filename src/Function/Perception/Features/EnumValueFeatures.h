@@ -24,6 +24,9 @@ public:
   virtual String getPreferedOutputClassName() const
     {return enumeration->getName() + T(" as features");}
 
+  virtual bool isSparse() const
+    {return true;}
+
   virtual TypePtr getInputType() const
     {return enumeration;}
 
