@@ -77,6 +77,7 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
   rewriter->addRule(booleanType(), booleanFeatures());
   rewriter->addEnumValueFeaturesRule();
 
+  rewriter->addRule(negativeLogProbabilityType(), defaultPositiveDoubleFeatures(30, -3, 3));
   rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
   rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
   rewriter->addRule(integerType(), defaultIntegerFeatures());

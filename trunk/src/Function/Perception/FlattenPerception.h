@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_PERCEPTION_FLATTEN_H_
-# define LBCPP_DATA_PERCEPTION_FLATTEN_H_
+#ifndef LBCPP_FUNCTION_PERCEPTION_FLATTEN_H_
+# define LBCPP_FUNCTION_PERCEPTION_FLATTEN_H_
 
 # include <lbcpp/Function/Perception.h>
 
@@ -112,4 +112,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_PERCEPTION_FLATTEN_H_
+#endif // !LBCPP_FUNCTION_PERCEPTION_FLATTEN_H_

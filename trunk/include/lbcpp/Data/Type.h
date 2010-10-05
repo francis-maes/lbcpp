@@ -166,6 +166,8 @@ extern TypePtr integerType();
   extern TypePtr enumValueType();
 
 extern TypePtr doubleType();
+  extern TypePtr positiveDoubleType();
+    extern TypePtr negativeLogProbabilityType();
   extern TypePtr probabilityType();
 
 extern TypePtr stringType();

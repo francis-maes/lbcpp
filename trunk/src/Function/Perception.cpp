@@ -150,8 +150,11 @@ PerceptionPtr lbcpp::defaultIntegerFeatures(size_t numIntervals, double maxPower
 PerceptionPtr lbcpp::defaultProbabilityFeatures(size_t numIntervals)
   {return softDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, numIntervals, false, false);}
 
+PerceptionPtr lbcpp::defaultPositiveDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
+  {return softDiscretizedLogNumberFeatures(doubleType(), minPowerOfTen, maxPowerOfTen, numIntervals, true);}
+
 PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
-  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(doubleType(), minPowerOfTen, maxPowerOfTen, numIntervals, true));}
+  {return signedNumberFeatures(defaultPositiveDoubleFeatures(numIntervals, minPowerOfTen, maxPowerOfTen));}
 
 PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2)
   {return productPerception(multiplyDoubleFunction(), true, perception1, perception2);}

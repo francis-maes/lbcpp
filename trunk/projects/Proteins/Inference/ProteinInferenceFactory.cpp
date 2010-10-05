@@ -87,8 +87,7 @@ PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const
 
 PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPerception() const
 {
-  TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
-  PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
+  PerceptionPtr pssmRowPerception = discreteProbabilityDistributionPerception(aminoAcidTypeEnumeration());
   ClassPtr aaDistributionClass = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
 
   String targetName(T("positionSpecificScoringMatrix"));

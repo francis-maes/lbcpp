@@ -208,6 +208,9 @@ extern PerceptionPtr boundsProximityPerception();
 extern DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);
 extern PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr secondElementType);
 
+// probability distribution perceptions
+extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr enumeration);
+
 // modifier perceptions
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
@@ -232,8 +235,9 @@ extern PerceptionPtr signedNumberFeatures(PerceptionPtr positiveNumberPerception
 
 extern PerceptionPtr defaultPositiveIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
 extern PerceptionPtr defaultIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
-extern PerceptionPtr defaultProbabilityFeatures(size_t numIntervals = 5);
 extern PerceptionPtr defaultDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
+extern PerceptionPtr defaultPositiveDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
+extern PerceptionPtr defaultProbabilityFeatures(size_t numIntervals = 5);
 
 // bi variables
 extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);
