@@ -200,7 +200,9 @@ extern PerceptionPtr identityPerception(TypePtr type);
 
 // container perceptions
 extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
-extern PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true);
+extern PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true); // (Container, IndexPair) input
+extern PerceptionPtr windowHistogramPerception(TypePtr elementsType, size_t windowSize, bool useCache = true); // (Container, CentralIndex) input
+extern PerceptionPtr containerHistogramPerception(TypePtr elementsType, bool useCache = true); // Container input
 extern PerceptionPtr boundsProximityPerception();
 
 extern DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);

@@ -44,6 +44,7 @@ public:
 
   Variable createEmptyTarget(size_t index) const;
   static String getTargetFriendlyName(size_t index);
+  static String getTargetShortName(size_t index);
   VectorPtr createEmptyProbabilitySequence() const;
   
   size_t getLength() const

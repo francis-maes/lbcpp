@@ -70,31 +70,31 @@ TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
 
 PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const String& targetName) const
 {
-  TypePtr targetType = getTargetType(targetName);
+  TypePtr elementsType = getTargetType(targetName)->getTemplateArgument(0);
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("window"), applyPerceptionOnProteinVariable(targetName, windowPerception(targetType->getTemplateArgument(0), 15)));
-  res->addPerception(T("histogram"), applyWindowOnPerception(targetName, 15, histogramPerception(targetType->getTemplateArgument(0))));
+  addPerception(res, T("window"), targetName, windowPerception(elementsType, 15));
+  addPerception(res, T("histogram"), targetName, windowHistogramPerception(elementsType, 15));
   return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("window"), applyPerceptionOnProteinVariable(targetName, windowPerception(probabilityType(), 15)));
-  res->addPerception(T("histogram"), applyWindowOnPerception(targetName, 15, histogramPerception(probabilityType())));
+  addPerception(res, T("window"), targetName, windowPerception(probabilityType(), 15));
+  addPerception(res, T("histogram"), targetName, windowHistogramPerception(probabilityType(), 15));
   return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPerception() const
 {
   TypePtr pssmRowType = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
-
   PerceptionPtr pssmRowPerception = identityPerception(pssmRowType);
-  
+  ClassPtr aaDistributionClass = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
+
+  String targetName(T("positionSpecificScoringMatrix"));
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("window"), applyPerceptionOnProteinVariable(T("positionSpecificScoringMatrix"),
-                                                                   windowPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), 15, pssmRowPerception)));
-  res->addPerception(T("histogram"), applyWindowOnPerception(T("positionSpecificScoringMatrix"), 15, histogramPerception(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()))));
+  addPerception(res, T("window"), targetName, windowPerception(aaDistributionClass, 15, pssmRowPerception));
+  addPerception(res, T("histogram"), targetName, windowHistogramPerception(aaDistributionClass, 15));
   return res;
 }
 
@@ -131,14 +131,20 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
 {
   CompositePerceptionPtr res = new ProteinCompositePerception();
   res->addPerception(T("length"), proteinLengthPerception());
+
   CompositePerceptionPtr freq = new ProteinCompositePerception();
-  freq->addPerception(T("aa"), createHistogramPerception(T("primaryStructure")));
-  freq->addPerception(T("pssm"), createHistogramPerception(T("positionSpecificScoringMatrix")));
-  freq->addPerception(T("ss3"), createHistogramPerception(T("secondaryStructure")));
-  freq->addPerception(T("ss8"), createHistogramPerception(T("dsspSecondaryStructure")));
-  freq->addPerception(T("sa20"), createHistogramPerception(T("solventAccessibilityAt20p")));
-  freq->addPerception(T("dr"), createHistogramPerception(T("disorderRegions")));
-  freq->addPerception(T("stal"), createHistogramPerception(T("structuralAlphabetSequence")));
+  static const juce::tchar* histogramTargets[] = {
+    T("primaryStructure"), T("positionSpecificScoringMatrix"), T("secondaryStructure"),
+    T("dsspSecondaryStructure"), T("solventAccessibilityAt20p"), T("disorderRegions"),
+    T("structuralAlphabetSequence")
+  };
+  for (size_t i = 0; i < sizeof (histogramTargets) / sizeof (const juce::tchar* ); ++i)
+  {
+    int index = getTargetIndex(histogramTargets[i]); jassert(index >= 0);
+    String name = Protein::getTargetShortName((size_t)index);
+    TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
+    addPerception(freq, name, histogramTargets[i], containerHistogramPerception(elementsType));
+  }
   res->addPerception(T("histograms"), freq);
   return res;
 }
@@ -147,9 +153,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
   res->addPerception(T("protein"), createProteinPerception());
-  res->addPerception(T("position"), applyPerceptionOnProteinVariable(T("primaryStructure"), boundsProximityPerception()));
-//  res->addPerception(T("INDEX"), indexResiduePerception());
-  //res->addPerception(T("TERMINUS"), boundsProximityResiduePerception(15));
+  addPerception(res, T("position"), T("primaryStructure"), boundsProximityPerception());
   res->addPerception(T("aa"), createLabelSequencePerception(T("primaryStructure")));
   res->addPerception(T("pssm"), createPositionSpecificScoringMatrixPerception());
   res->addPerception(T("ss3"), createLabelSequencePerception(T("secondaryStructure")));
@@ -169,6 +173,22 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   res->addPerception(T("protein"), createProteinPerception());
   res->addPerception(T("residues"), residuePerception);
   res->addPerception(T("separationDistance"), separationDistanceResiduePairPerception());
+
+  CompositePerceptionPtr freq = new ResiduePairCompositePerception();
+  static const juce::tchar* histogramTargets[] = {
+    T("primaryStructure"), T("positionSpecificScoringMatrix"), T("secondaryStructure"),
+    T("dsspSecondaryStructure"), T("solventAccessibilityAt20p"), T("disorderRegions"),
+    T("structuralAlphabetSequence")
+  };
+  for (size_t i = 0; i < sizeof (histogramTargets) / sizeof (const juce::tchar* ); ++i)
+  {
+    int index = getTargetIndex(histogramTargets[i]); jassert(index >= 0);
+    String name = Protein::getTargetShortName((size_t)index);
+    TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
+    addPerception(freq, name, histogramTargets[i], histogramPerception(elementsType));
+  }
+  res->addPerception(T("centralHistograms"), freq);
+
   return res;
 }
 
@@ -191,30 +211,6 @@ PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName
   return perceptionRewriter->getNumRules() ? perceptionRewriter->rewrite(res) : res;
 }
 
-PerceptionPtr ProteinInferenceFactory::applyPerceptionOnProteinVariable(const String& variableName, PerceptionPtr variablePerception) const
-{
-   FunctionPtr selectVariableFunction = selectPairFieldsFunction(proteinClass->findObjectVariable(variableName));
-   return Perception::compose(selectVariableFunction, variablePerception);
-}
-
-PerceptionPtr ProteinInferenceFactory::applyWindowOnPerception(const String& variableName, size_t windowSize, PerceptionPtr perception) const
-{
-  FunctionPtr windowFunction = windowToIndicesFunction(windowSize);
-  return applyPerceptionOnProteinVariable(variableName, Perception::compose(windowFunction, perception));
-}
-
-PerceptionPtr ProteinInferenceFactory::applyPerceptionOnEntireProteinVariable(const String& variableName, PerceptionPtr perception) const
-{
-  FunctionPtr variableFunction = proteinToVariableFunction(proteinClass->findObjectVariable(variableName));
-  return Perception::compose(variableFunction, Perception::compose(variableToIndicesFunction(), perception));
-}
-                      
-PerceptionPtr ProteinInferenceFactory::createHistogramPerception(const String& targetName) const
-{
-  TypePtr targetType = getTargetType(targetName);
-  return applyPerceptionOnEntireProteinVariable(targetName, histogramPerception(targetType->getTemplateArgument(0)));
-}
-
 PerceptionPtr ProteinInferenceFactory::createPairSequencesPerception(const String& firstTargetName, const String& secondTargetName, size_t windowSize) const
 {
   int index1 = proteinClass->findObjectVariable(firstTargetName);
@@ -228,4 +224,17 @@ PerceptionPtr ProteinInferenceFactory::createPairSequencesPerception(const Strin
     biContainerPerception(windowSize, biVariablePerception(proteinClass->getObjectVariableType(index1)->getTemplateArgument(0),
                                                            proteinClass->getObjectVariableType(index2)->getTemplateArgument(0)))
   );
+}
+
+void ProteinInferenceFactory::addPerception(CompositePerceptionPtr composite, const String& name, const String& targetName, PerceptionPtr perception) const
+{
+  FunctionPtr selectVariableFunction;
+  int index = proteinClass->findObjectVariable(targetName);
+
+  if (perception->getInputType()->inheritsFrom(pairType(anyType(), anyType())))
+    selectVariableFunction = selectPairFieldsFunction(index);
+  else
+    selectVariableFunction = proteinToVariableFunction(index);
+
+  composite->addPerception(name, Perception::compose(selectVariableFunction, perception));
 }
