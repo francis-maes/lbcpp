@@ -83,7 +83,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 2)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
