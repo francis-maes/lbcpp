@@ -30,61 +30,35 @@ public:
   ProteinCompositePerception() : CompositePerception(proteinClass(), T("protein")) {}
 };
 
-inline PerceptionPtr proteinLengthPerception()
-  {return functionBasedPerception(proteinLengthFunction());}
-
-/*
-** ResiduePerception
-*/
-class ResiduePerception : public Perception
-{
-public:
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), integerType());}
-};
-
-typedef ReferenceCountedObjectPtr<ResiduePerception> ResiduePerceptionPtr;
-
-extern ResiduePerceptionPtr positionResiduePerception();
-extern ResiduePerceptionPtr indexResiduePerception();
-extern ResiduePerceptionPtr boundsProximityResiduePerception(size_t outOfBoundWindowSize);
-  
 class ResidueCompositePerception : public CompositePerception
 {
 public:
   ResidueCompositePerception()
-    : CompositePerception(pairType(proteinClass(), integerType()), T("residue")) {}
+    : CompositePerception(pairType(proteinClass(), positiveIntegerType()), T("residue")) {}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };
-
-extern DecoratorPerceptionPtr proteinToResiduePerception(PerceptionPtr proteinPerception);
-
-/*
-** ResiduePairPerception
-*/
-class ResiduePairPerception : public Perception
-{
-public:
-  virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), pairType(integerType(), integerType()));}
-};
-
-typedef ReferenceCountedObjectPtr<ResiduePairPerception> ResiduePairPerceptionPtr;
 
 class ResiduePairCompositePerception : public CompositePerception
 {
 public:
   ResiduePairCompositePerception()
-    : CompositePerception(pairType(proteinClass(), pairType(integerType(), integerType())), T("residue pair")) {}
+    : CompositePerception(pairType(proteinClass(), pairType(positiveIntegerType(), positiveIntegerType())), T("residue pair")) {}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };
 
-extern DecoratorPerceptionPtr proteinToResiduePairPerception(PerceptionPtr proteinPerception);
-extern ResiduePairPerceptionPtr residueToResiduePairPerception(PerceptionPtr residuePerception);
+// Protein Perception
+inline PerceptionPtr proteinLengthPerception()
+  {return functionBasedPerception(proteinLengthFunction());}
 
-extern ResiduePairPerceptionPtr separationDistanceResiduePairPerception();
+// Residue Perception
+extern DecoratorPerceptionPtr proteinToResiduePerception(PerceptionPtr proteinPerception);
+
+// Residue Pair Perception
+extern DecoratorPerceptionPtr proteinToResiduePairPerception(PerceptionPtr proteinPerception);
+extern PerceptionPtr residueToResiduePairPerception(PerceptionPtr residuePerception);
+extern PerceptionPtr separationDistanceResiduePairPerception();
 
 }; /* namespace lbcpp */
 

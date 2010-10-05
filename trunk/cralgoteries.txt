@@ -1,7 +1,4 @@
-* Split ProteinPerception en .h
-* Review TerminusProximityResiduePerception
--
-* Add ResiduePair perceptions in the explorer
+
 * Review ResiduePair SegmentHistogram Perception
 * DistributionPerception: Entropy
 -
@@ -10,6 +7,7 @@
 -
 * Forward Feature Group Selection
 
+* Bug Julien: crossValidation does not work for multi-pass SS3
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch

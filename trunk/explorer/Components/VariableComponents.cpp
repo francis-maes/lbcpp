@@ -99,8 +99,11 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     };
   }
 
-  if (variable.getType() == pairType(proteinClass(), integerType()))
+  if (variable.getType() == pairType(proteinClass(), positiveIntegerType()))
     return new ResiduePerceptionComponent(variable);
+
+  if (variable.getType() == pairType(proteinClass(), pairType(positiveIntegerType(), positiveIntegerType())))
+    return new ResiduePairPerceptionComponent(variable); 
 
   if (variable.isObject())
   {

@@ -39,12 +39,7 @@
       <variable type="Function" name="function"/>
     </class>
 
-    <class name="PreprocessPerception" base="DecoratorPerception">
-      <constructor arguments="FunctionPtr preProcessingFunction, PerceptionPtr perception"/>
-      <variable type="Function" name="preProcessingFunction"/>
-    </class>
-
-    <!-- Structured Perceptions -->
+    <!-- Container Perceptions -->
     <class name="WindowPerception" base="Perception">
       <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
       <variable type="Type" name="elementsType"/>
@@ -58,6 +53,11 @@
       <variable type="Type" name="elementsType"/>
     </class>
 
+    <class name="BoundsProximityPerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <!-- BiContainer / BiVariable -->
     <class name="BiContainerPerception" base="DecoratorPerception">
       <constructor arguments="size_t windowSize, PerceptionPtr subPerception"/>
       <variable type="Integer" name="windowSize"/>
@@ -69,7 +69,12 @@
       <variable type="Type" name="secondElementType"/>
     </class>
 
-    <!-- Flatten Perception -->
+    <!-- Perception Decorators -->
+    <class name="PreprocessPerception" base="DecoratorPerception">
+      <constructor arguments="FunctionPtr preProcessingFunction, PerceptionPtr perception"/>
+      <variable type="Function" name="preProcessingFunction"/>
+    </class>
+
     <class name="FlattenPerception" base="DecoratorPerception">
       <constructor arguments="PerceptionPtr perception"/>
     </class>
@@ -95,7 +100,7 @@
       <variable type="Boolean" name="swapVariables"/>
     </class>
     
-    <!-- Rewrite Perception -->
+    <!-- Perception Rewriter -->
     <class name="PerceptionRewriteRule" abstract="yes"/>
 
     <class name="TypeBasedPerceptionRewriteRule" base="PerceptionRewriteRule">

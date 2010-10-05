@@ -194,6 +194,7 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/WindowPerception.h
   Function/Perception/HistogramPerception.h
   Function/Perception/HistogramPerception.cpp
+  Function/Perception/BoundsProximityPerception.h
   Function/Perception/BiContainerPerception.h
   Function/Perception/BiVariablePerception.h
   Function/Perception/PreprocessPerception.h

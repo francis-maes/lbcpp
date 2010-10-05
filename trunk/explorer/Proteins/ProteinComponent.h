@@ -67,6 +67,17 @@ public:
   }
 };
 
+class ResiduePairPerceptionComponent : public PerceptionComponent
+{
+public:
+  ResiduePairPerceptionComponent(const Variable& proteinAndPositions)
+    : PerceptionComponent(proteinAndPositions)
+  {
+    ProteinInferenceFactory factory;
+    perception = factory.createResiduePairPerception(String::empty);
+  }
+};
+
 class ProteinPerceptionComponent : public PerceptionComponent
 {
 public:
