@@ -17,11 +17,9 @@ namespace lbcpp
 class PreprocessPerception : public DecoratorPerception
 {
 public:
-  PreprocessPerception() {}
-
   PreprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception)
-    : DecoratorPerception(perception), preProcessingFunction(preProcessingFunction)
-    {}
+    : DecoratorPerception(perception), preProcessingFunction(preProcessingFunction) {}
+  PreprocessPerception() {}
 
   virtual TypePtr getInputType() const
     {return preProcessingFunction->getInputType();}

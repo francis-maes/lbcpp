@@ -8,49 +8,24 @@
 
 #include <lbcpp/Data/DynamicObject.h>
 #include <lbcpp/Data/XmlSerialisation.h>
+#include "Object/SparseGenericObject.h"
+#include "Object/DenseGenericObject.h"
 using namespace lbcpp;
 
-/*
-** DynamicObject
-*/
-DynamicObject::DynamicObject(TypePtr thisType)
-  : Object(thisType) {}
-
-DynamicObject::~DynamicObject()
-{
-  for (size_t i = 0; i < variableValues.size(); ++i)
-    thisClass->getObjectVariableType(i)->destroy(variableValues[i]);
-}
-
-VariableValue& DynamicObject::operator[](size_t index)
-{
-  jassert(index < thisClass->getObjectNumVariables());
-  if (variableValues.size() <= index)
-  {
-    size_t i = variableValues.size();
-    variableValues.resize(index + 1);
-    while (i < variableValues.size())
-    {
-      variableValues[i] = thisClass->getObjectVariableType(i)->getMissingValue();
-      ++i;
-    }
-  }
-  return variableValues[index];
-}
-
-/*
-** DynamicClass
-*/
 VariableValue DynamicClass::create() const
-  {return new DynamicObject(refCountedPointerFromThis(this));}
+{
+  TypePtr pthis = refCountedPointerFromThis(this);
+  if (true) // TEST !! (isSparse)
+    return new SparseGenericObject(pthis);
+  else
+    return new DenseGenericObject(pthis);
+}
 
 Variable DynamicClass::getObjectVariable(const VariableValue& value, size_t index) const
 {
   DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
   jassert(object);
-  VariableValue& objectVariableValue = (*object)[index];
-  TypePtr type = getObjectVariableType(index);
-  return Variable::copyFrom(type, objectVariableValue);
+  return object->getVariableImpl(index);
 }
 
 void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
@@ -59,7 +34,7 @@ void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, c
   {
     DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
     jassert(object);
-    subValue.copyTo((*object)[index]);
+    object->setVariableImpl(index, subValue);
   }
 }
 
@@ -108,3 +83,61 @@ bool DynamicClass::loadFromXml(XmlImporter& importer)
   importer.leave();
   return res;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+class SparseDynamicObject : public Object
+{
+public:
+  SparseDynamicObject(TypePtr thisType)
+    : Object(thisType), first(NULL), last(NULL), numElements(0)  {}
+  
+  ~SparseDynamicObject()
+  {
+    Node* nextNode;
+    for (Node* node = first; node; node = nextNode)
+    {
+      nextNode = node->next;
+      thisClass->getObjectVariableType(node->index)->destroy(node->value);
+      delete node;
+    }
+    first = NULL;
+    last = NULL;
+  }
+
+  size_t getNumElements() const
+    {return numElements;}
+
+  void append(size_t index, const Variable& value)
+  {
+    jassert(!last || last->index < index);
+    if (checkInheritance(value, thisClass->getObjectVariableType(index)))
+    {
+      Node* node = new Node(index, value);
+      if (last)
+        last->next = node;
+      else
+        first = node;
+      last = node;
+      ++numElements;
+    }
+  }
+
+private:
+  struct Node
+  {
+    Node(size_t index, const Variable& value, Node* next = NULL)
+      : index(index), next(next) {value.copyTo(this->value);}
+
+    size_t index;
+    VariableValue value;
+    Node* next;
+  };
+
+  TypePtr elementsType;
+  Node* first;
+  Node* last;
+  size_t numElements;
+};
+
+typedef ReferenceCountedObjectPtr<SparseDynamicObject> SparseDynamicObjectPtr;

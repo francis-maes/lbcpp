@@ -35,6 +35,7 @@ extern void multiplyByScalar(ObjectPtr object, double scalar);
 
 // Binary operations
 extern double dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input);
+extern double dotProduct(ObjectPtr object1, ObjectPtr object2);
 
 extern void addWeighted(ObjectPtr& target, ObjectPtr source, double weight);
 extern void addWeighted(ObjectPtr& object, PerceptionPtr perception, const Variable& input, double weight);

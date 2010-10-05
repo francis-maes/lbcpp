@@ -14,7 +14,10 @@
   <namespace name="lbcpp">
     
     <!-- Dynamic Object -->
-    <class name="DynamicClass" base="DefaultClass"/>
+    <class name="DynamicClass" base="DefaultClass">
+      <variable type="Boolean" name="isSparse"/>
+    </class>
+           
     
     <!-- Probability Distribution -->
     <class name="ProbabilityDistribution" abstract="yes"/>
