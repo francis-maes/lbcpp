@@ -134,7 +134,7 @@ SET(LBCPP_FUNCTION_SOURCES
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
-  Function/MiscFunctions/SelectPairFieldsFunction.h
+  Function/MiscFunctions/SelectVariableFunctions.h
   Function/MiscFunctions/WindowToIndicesFunction.h
   Function/MiscFunctions/VariableToIndicesFunction.h
   Function/MiscFunctions/MiscFunctionsClasses.xml
@@ -201,6 +201,7 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/CollapsePerception.h
+  Function/Perception/SelectAndMakeProductsPerception.h
   Function/Perception/FunctionBasedPerception.h
   Function/Perception/PerceptionRewriterRules.h
   Function/Perception/PerceptionClasses.xml

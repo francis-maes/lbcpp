@@ -26,6 +26,7 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
 
 void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
 {
+  jassert(subPerception);
   Variable variable = subPerception->compute(input);
   if (variable)
     sense(variableNumber, variable);
@@ -157,10 +158,13 @@ PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerO
   {return signedNumberFeatures(defaultPositiveDoubleFeatures(numIntervals, minPowerOfTen, maxPowerOfTen));}
 
 PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2)
-  {return productPerception(multiplyDoubleFunction(), perception1, perception2, true, true);}
+  {jassert(perception1 && perception2); return productPerception(multiplyDoubleFunction(), perception1, perception2, true, true);}
 
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2)
   {return productWithVariablePerception(multiplyFunction, perception1, type2, false);}
 
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2)
   {return productWithVariablePerception(multiplyFunction, perception2, type1, true);}
+
+CompositePerceptionPtr lbcpp::selectAndMakeConjunctionFeatures(TypePtr inputType, ContainerPtr selectedConjunctions)
+  {return selectAndMakeProductsPerception(inputType, multiplyDoubleFunction(), selectedConjunctions);}

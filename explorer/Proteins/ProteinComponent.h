@@ -45,14 +45,39 @@ protected:
   Variable input;
   PerceptionPtr perception;
 
+  VectorPtr makeUnaryConjunction(size_t index) const
+  {
+    VectorPtr res = vector(positiveIntegerType(), 1);
+    res->setElement(0, index);
+    return res;
+  }
+
+  VectorPtr makeBinaryConjunction(size_t index1, size_t index2) const
+  {
+    VectorPtr res = vector(positiveIntegerType(), 2);
+    res->setElement(0, index1);
+    res->setElement(1, index2);
+    return res;
+  }
+
   PerceptionPtr getPerception(const String& tabName) const
   {
     if (tabName == T("Attributes"))
       return perception->flatten();
     else if (tabName == T("Features"))
     {
-      PerceptionPtr featureGenerator = perceptionToFeatures(perception);
-      return collapsePerception(featureGenerator);
+      PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));
+
+      VectorPtr selectedConjunctions = vector(containerClass(positiveIntegerType()));
+      for (size_t i = 0; i < collapsedFeatures->getNumOutputVariables(); ++i)
+        selectedConjunctions->append(makeUnaryConjunction(i));
+
+      /*selectedConjunctions->append(makeBinaryConjunction(0, 1));
+      selectedConjunctions->append(makeBinaryConjunction(5, 10));
+      selectedConjunctions->append(makeBinaryConjunction(10, 15));*/
+      PerceptionPtr featuresPostProcess = selectAndMakeConjunctionFeatures(collapsedFeatures->getOutputType(), selectedConjunctions);
+
+      return Perception::compose(collapsedFeatures, featuresPostProcess);
     }
     else
       return perception;

@@ -227,13 +227,12 @@ PerceptionPtr ProteinInferenceFactory::createPairSequencesPerception(const Strin
 
 void ProteinInferenceFactory::addPerception(CompositePerceptionPtr composite, const String& name, const String& targetName, PerceptionPtr perception) const
 {
-  FunctionPtr selectVariableFunction;
+  FunctionPtr selectFunction;
   int index = proteinClass->findObjectVariable(targetName);
-
   if (perception->getInputType()->inheritsFrom(pairType(anyType(), anyType())))
-    selectVariableFunction = selectPairFieldsFunction(index);
+    selectFunction = selectPairVariablesFunction(index);
   else
-    selectVariableFunction = proteinToVariableFunction(index);
+    selectFunction = selectVariableFunction(index);
 
-  composite->addPerception(name, Perception::compose(selectVariableFunction, perception));
+  composite->addPerception(name, Perception::compose(selectFunction, perception));
 }

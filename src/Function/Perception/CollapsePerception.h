@@ -57,7 +57,7 @@ private:
 
   Variable getVariableRecursively(const Variable& variable, const std::vector<size_t>& path, size_t currentIndex = 0) const
   {
-    if (currentIndex >= path.size() || !variable)
+    if (currentIndex >= path.size() || !variable)    
       return variable;
     jassert(variable.isObject());
     ObjectPtr object = variable.getObject();

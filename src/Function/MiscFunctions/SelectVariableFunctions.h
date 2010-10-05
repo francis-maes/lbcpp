@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SelectPairFieldsFunction.h     | Select Pair Fields Function     |
+| Filename: SelectPairVariablesFunction.h     | Select Pair Fields Function     |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/08/2010 13:09               |                                 |
 `------------------------------------------/                                 |
@@ -14,10 +14,42 @@
 namespace lbcpp
 {
 
-class SelectPairFieldsFunction : public Function
+// a => a.x
+class SelectVariableFunction : public Function
 {
 public:
-  SelectPairFieldsFunction(int index1 = -1, int index2 = -1)
+  SelectVariableFunction(int index = -1)
+    : index(index) {}
+
+  virtual TypePtr getInputType() const
+    {return objectClass();}
+  
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return index >= 0 ? inputType->getObjectVariableType((size_t)index) : inputType;}
+
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  {
+    Variable res = input;
+    if (index >= 0)
+    {
+      res = res.getObject()->getVariable(index);
+      if (!res)
+        res = Variable::missingValue(input.getType()->getObjectVariableType((size_t)index));
+    }
+    return res;
+  }
+
+private:
+  friend class SelectVariableFunctionClass;
+
+  int index;
+};
+
+// pair(a, b) => pair(a.x, b.y)
+class SelectPairVariablesFunction : public Function
+{
+public:
+  SelectPairVariablesFunction(int index1 = -1, int index2 = -1)
     : index1(index1), index2(index2)
     {}
 
@@ -43,7 +75,7 @@ public:
   }
 
 private:
-  friend class SelectPairFieldsFunctionClass;
+  friend class SelectPairVariablesFunctionClass;
 
   int index1, index2;
 
@@ -51,10 +83,8 @@ private:
   {
     if (index >= 0)
     {
-      if ((size_t)index < inputType->getObjectNumVariables())
-        return inputType->getObjectVariableType((size_t)index);
-      else
-        return anyType();
+      jassert((size_t)index < inputType->getObjectNumVariables());
+      return inputType->getObjectVariableType((size_t)index);
     }
     else
       return inputType;
