@@ -23,9 +23,6 @@ public:
   virtual TypePtr getOutputType() const
     {return nilType();}
 
-  virtual void computeOutputVariables()
-    {}
-
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {}
 

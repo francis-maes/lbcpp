@@ -48,7 +48,7 @@ public:
   Variable(Object* object);
 
   template<class T>
-  Variable(ReferenceCountedObjectPtr<T> object);
+  Variable(ReferenceCountedObjectPtr<T> object, TypePtr expectedType = nilType);
   Variable(const Variable& other);
   Variable();
   

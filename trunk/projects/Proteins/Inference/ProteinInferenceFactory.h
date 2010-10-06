@@ -21,6 +21,7 @@ class ProteinInferenceFactory : public Object
 {
 public:
   ProteinInferenceFactory();
+  virtual ~ProteinInferenceFactory();
 
   /*
   ** High level inferences

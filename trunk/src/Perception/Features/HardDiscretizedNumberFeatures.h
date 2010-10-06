@@ -19,11 +19,11 @@ class HardDiscretizedNumberFeatures : public DiscretizedNumberFeatures
 public:
   HardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures)
     : DiscretizedNumberFeatures(inputType, minimumValue, maximumValue, numIntervals, doOutOfBoundsFeatures)
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   HardDiscretizedNumberFeatures() {}
 
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     reserveOutputVariables((doOutOfBoundsFeatures ? 2 : 0) + numIntervals);
     if (doOutOfBoundsFeatures)
@@ -37,6 +37,7 @@ public:
       name += i == numIntervals - 1 ? T("]") : T("[");
       addOutputVariable(name, doubleType());
     }
+    Perception::computeOutputType();
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

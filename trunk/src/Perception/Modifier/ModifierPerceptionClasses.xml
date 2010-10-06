@@ -7,6 +7,7 @@
     <class name="ComposePerception" base="Perception">
       <constructor arguments="FunctionPtr function, PerceptionPtr perception"/>
       <variable type="Function" name="function"/>
+      <variable type="Perception" name="perception"/>
     </class>
 
     <class name="FlattenPerception" base="Perception">
@@ -48,7 +49,12 @@
     </class>
 
     <!-- Perception Rewriter -->
-    <class name="RewritedPerception" base="Perception"/>
+    <class name="RewritedPerception" base="Perception">
+      <constructor arguments="PerceptionPtr decorated, PerceptionRewriterPtr rewriter, const std::vector<String>&amp; stack"/>
+      <variable type="Perception" name="decorated"/>
+      <variable type="PerceptionRewriter" name="rewriter"/>
+      <variable type="GenericVector[String]" name="stack"/>
+    </class>
 
   </namespace>
 </file>

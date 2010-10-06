@@ -35,7 +35,9 @@ class Perception : public Function
 public:
   // Perception
   virtual TypePtr getOutputType() const;
+
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
+
   virtual bool isSparse() const
     {return false;}
 
@@ -75,12 +77,12 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual void computeOutputVariables() = 0;
+  virtual void computeOutputType();
 
   std::vector<OutputVariable> outputVariables;
 
   void reserveOutputVariables(size_t count)
-    {outputVariables.reserve(count);}
+    {jassert(outputVariables.empty()); outputVariables.reserve(count);}
 
   void addOutputVariable(const String& name, PerceptionPtr subPerception)
     {addOutputVariable(subPerception->getOutputType(), name, subPerception);}
@@ -101,11 +103,7 @@ protected:
 
 private:
   friend class PerceptionClass;
-
-  CriticalSection outputTypeLock;
   DynamicClassPtr outputType;
-
-  TypePtr ensureTypeIsComputed();
 };
 
 extern ClassPtr perceptionClass();
@@ -134,12 +132,13 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual void computeOutputVariables();
+  virtual void computeOutputType();
 
   friend class CompositePerceptionClass;
 
   TypePtr inputType;
   String stringDescription;
+  VectorPtr subPerceptions;
 };
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;

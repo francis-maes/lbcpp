@@ -269,7 +269,7 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": __res__ = ");
+            String code = T("case ") + String((int)i) + T(": lbcpp::nativeToVariable(__res__, ");
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)
             {
@@ -279,12 +279,13 @@ protected:
             else
               code += T("__this__->") + name;
 
-            code += T("; break;");
+            code += T(", expectedType); break;");
             writeLine(code, -1);
           }
           writeLine(T("default: jassert(false); return Variable();"), -1);
         closeScope();
-        writeLine(T("return __res__.isNil() ? Variable::missingValue(expectedType) : __res__;"));
+        writeLine(T("jassert(!__res__.isNil());"));
+        writeLine(T("return __res__;"));
       closeScope();
       newLine();
 
@@ -302,7 +303,7 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": lbcpp::copy(");
+            String code = T("case ") + String((int)i) + T(": lbcpp::variableToNative(");
 
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)

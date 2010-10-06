@@ -18,7 +18,7 @@ class EnumValueFeatures : public Perception
 {
 public:
   EnumValueFeatures(EnumerationPtr enumeration)
-    : enumeration(enumeration) {computeOutputVariables();}
+    : enumeration(enumeration) {computeOutputType();}
   EnumValueFeatures() {}
 
   virtual String toString() const
@@ -30,12 +30,13 @@ public:
   virtual TypePtr getInputType() const
     {return enumeration;}
   
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     size_t n = enumeration->getNumElements();
     reserveOutputVariables(n + 1);
     for (size_t i = 0; i < n; ++i)
       addOutputVariable(enumeration->getElementName(i), doubleType());
+    Perception::computeOutputType();
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

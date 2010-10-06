@@ -18,7 +18,7 @@ class BooleanFeatures : public Perception
 {
 public:
   BooleanFeatures()
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   virtual String toString() const
     {return T("boolean as feature");}
@@ -26,8 +26,11 @@ public:
   virtual TypePtr getInputType() const
     {return booleanType();}
 
-  virtual void computeOutputVariables()
-    {addOutputVariable(T("value"), doubleType());}
+  virtual void computeOutputType()
+  {
+    addOutputVariable(T("value"), doubleType());
+    Perception::computeOutputType();
+  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {

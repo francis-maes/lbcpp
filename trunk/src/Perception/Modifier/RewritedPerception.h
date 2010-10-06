@@ -18,8 +18,9 @@ namespace lbcpp
 class RewritedPerception : public Perception
 {
 public:
-  RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, std::vector<String>& stack)
-    : decorated(decorated) {computeOutputVariables(rewriter, stack);}
+  RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, const std::vector<String>& stack)
+    : decorated(decorated), rewriter(rewriter), stack(stack)
+    {computeOutputType();}
   RewritedPerception() {}
 
   virtual String toString() const
@@ -34,39 +35,6 @@ public:
     decorated->computePerception(input, decoratedVisitor);
   }
 
-  virtual void saveToXml(XmlExporter& exporter)
-  {
-    Perception::saveToXml(exporter);
-
-    exporter.enter(T("outputvar"));
-    exporter.setAttribute(T("count"), (int)outputVariables.size());
-    for (size_t i = 0; i < outputVariables.size(); ++i)
-    {
-      const OutputVariable& var = outputVariables[i];
-      exporter.enter(T("var"));
-      exporter.writeType(var.type);
-      exporter.setAttribute(T("name"), var.name);
-      exporter.saveVariable(T("subPerception"), var.subPerception);
-      exporter.leave();
-    }
-    exporter.leave();
-
-    exporter.enter(T("mapping"));
-    exporter.setAttribute(T("size"), (int)variablesMap.size());
-    for (size_t i = 0; i < variablesMap.size(); ++i)
-      exporter.saveElement(i, Variable::pair(variablesMap[i].first, variablesMap[i].second));
-    exporter.leave();
-  }
-
-  virtual bool loadFromXml(XmlImporter& importer)
-  {
-    if (!Perception::loadFromXml(importer))
-      return false;
-
-    jassert(false); // TODO: load outputVariables and variablesMap
-    return true;
-  }
-
   juce_UseDebuggingNewOperator
 
 protected:
@@ -74,14 +42,20 @@ protected:
   friend class RewritedPerceptionClass;
 
   PerceptionPtr decorated;
+  PerceptionRewriterPtr rewriter;
+  std::vector<String> stack;
+
   std::vector< std::pair<size_t, PerceptionPtr> > variablesMap; // decorated perception variable index -> perception
 
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
-    jassert(false); // FIXME: rewriter should be stored insted this Perception which causes a cycle in shared pointers
+    jassert(outputVariables.size() == 0);
+    std::vector<String> stack = this->stack;
+    computeOutputVariablesRecursively(rewriter, stack);
+    Perception::computeOutputType();
   }
 
-  void computeOutputVariables(PerceptionRewriterPtr rewriter, std::vector<String>& stack)
+  void computeOutputVariablesRecursively(PerceptionRewriterPtr rewriter, std::vector<String>& stack)
   {
     jassert(rewriter);
     outputVariables.clear();
@@ -104,26 +78,18 @@ protected:
 
       if (newPerception)
       {
-        TypePtr newVariableType;
-        if (newPerception == identityPerception())
-          newVariableType = variableType;
-        else if (newPerception->getNumOutputVariables() > 0)
-          newVariableType = newPerception->getOutputType();
-        if (newVariableType)
-          addOutputVariable(newVariableType, variableName, newPerception, i);
+        if (newPerception->getNumOutputVariables() > 0)
+        {
+          size_t variableIndex = outputVariables.size();
+          addOutputVariable(newPerception->getOutputType(variableType), variableName, newPerception);
+          if (variablesMap.size() <= i)
+            variablesMap.resize(i + 1, std::make_pair(0, PerceptionPtr()));
+          variablesMap[i] = std::make_pair(variableIndex, newPerception);
+        }
       }
 
       stack.pop_back();
     }
-  }
-
-  void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception, size_t sourceIndex)
-  {
-    size_t index = outputVariables.size();
-    Perception::addOutputVariable(type, name, subPerception);
-    if (variablesMap.size() <= sourceIndex)
-      variablesMap.resize(sourceIndex + 1, std::make_pair(0, PerceptionPtr()));
-    variablesMap[sourceIndex] = std::make_pair(index, subPerception);
   }
 
   struct Callback : public PerceptionCallback

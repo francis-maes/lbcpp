@@ -13,6 +13,8 @@
     </class>
 
     <class name="AccumulatedScores" abstract="yes"/>
+    <class name="AccumulatedScoresCache" base="Cache"/>
+    
     <class name="HistogramPerception" base="Perception" abstract="yes">
       <variable type="Type" name="elementsType"/>
       <variable type="Cache" name="cache"/>

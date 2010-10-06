@@ -19,7 +19,7 @@ class SelectAndMakeProductsPerception : public Perception
 public:
   SelectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions)
     : decorated(decorated), multiplyFunction(multiplyFunction), selectedConjunctions(selectedConjunctions)
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   SelectAndMakeProductsPerception() {}
 
@@ -95,7 +95,7 @@ protected:
   ContainerPtr selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
   std::vector< std::vector<size_t> > selectedConjunctionsStdVector;
 
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     size_t n = selectedConjunctions->getNumElements();
     selectedConjunctionsStdVector.resize(n);
@@ -106,6 +106,7 @@ protected:
       jassert(conjunction);
       createSubPerception(conjunction, selectedConjunctionsStdVector[i]);
     }
+    Perception::computeOutputType();
   }
 
   void createSubPerception(ContainerPtr conjunction, std::vector<size_t>& stdVectorCopy)

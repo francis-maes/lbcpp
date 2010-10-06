@@ -51,7 +51,14 @@ String Perception::toString() const
   {return classNameToOutputClassName(getClassName());}
 
 TypePtr Perception::getOutputType() const
-  {return const_cast<Perception* >(this)->ensureTypeIsComputed();}
+{
+  if (!outputType)
+  {
+    const_cast<Perception* >(this)->computeOutputType();
+    jassert(outputType);
+  }
+  return outputType;
+}
 
 Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
 {
@@ -77,26 +84,32 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   return perceptionCallback->atLeastOneVariable ? Variable(res) : Variable::missingValue(outputType);
 }
 
-TypePtr Perception::ensureTypeIsComputed()
+void Perception::computeOutputType()
 {
-  ScopedLock _(outputTypeLock);
   if (!outputType)
+    outputType = new DynamicClass();
+  if (!outputType->getBaseType())
   {
-    DynamicClassPtr outputType = new DynamicClass(toString(), objectClass());
-    size_t n = getNumOutputVariables();
+    outputType->setName(toString());
+    outputType->setBaseType(objectClass());
+    size_t n = outputVariables.size();
     for (size_t i = 0; i < n; ++i)
-      outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));
+    {
+      const OutputVariable& v = outputVariables[i];
+      outputType->addVariable(v.type, v.name);
+    }
     outputType->initialize(MessageCallback::getInstance());
-    this->outputType = outputType;
   }
-  return outputType;
 }
 
 bool Perception::loadFromXml(XmlImporter& importer)
 {
-  if (!Object::loadFromXml(importer))
+  if (!Function::loadFromXml(importer))
     return false;
-  computeOutputVariables();
+  outputVariables.clear();
+  computeOutputType();
+  //DBG("Perception::loadFromXml: " + toString() + T(", num outputs = ") + String(outputVariables.size()));
+  jassert(!outputVariables.size() || getOutputType()->getObjectNumVariables());
   return true;
 }
 
@@ -104,7 +117,8 @@ bool Perception::loadFromXml(XmlImporter& importer)
 ** CompositePerception
 */
 CompositePerception::CompositePerception(TypePtr inputType, const String& stringDescription)
-  : inputType(inputType), stringDescription(stringDescription)
+  : inputType(inputType), stringDescription(stringDescription),
+    subPerceptions(vector(pairClass(stringType(), perceptionClass())))
 {
 }
 
@@ -120,7 +134,10 @@ PerceptionPtr CompositePerception::getPerception(size_t index) const
 void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
 {
   if (checkInheritance(getInputType(), subPerception->getInputType()))
+  {
     addOutputVariable(name, subPerception);
+    subPerceptions->append(Variable::pair(name, subPerception));
+  }
 }
 
 void CompositePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
@@ -129,10 +146,18 @@ void CompositePerception::computePerception(const Variable& input, PerceptionCal
     callback->sense(i, outputVariables[i].subPerception, input);
 }
 
-void CompositePerception::computeOutputVariables()
+void CompositePerception::computeOutputType()
 {
-  // not implemented
-  jassert(false);
+  outputVariables.resize(subPerceptions->getNumElements());
+  for (size_t i = 0; i < outputVariables.size(); ++i)
+  {
+    Variable nameAndSubPerception = subPerceptions->getElement(i);
+    OutputVariable& v = outputVariables[i];
+    v.name = nameAndSubPerception[0].getString();
+    v.subPerception = nameAndSubPerception[1].getObjectAndCast<Perception>();
+    v.type = v.subPerception->getOutputType();
+  }
+  Perception::computeOutputType();
 }
 
 /*

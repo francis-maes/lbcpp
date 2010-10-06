@@ -273,6 +273,38 @@ extern VectorPtr booleanVector(size_t initialSize);
 extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr variableVector(size_t initialSize);
 
+template<class TT>
+inline void variableToNative(std::vector<TT>& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  VectorPtr sourceVector = source.getObjectAndCast<Vector>();
+  if (sourceVector)
+  {
+    dest.resize(sourceVector->getNumElements());
+    for (size_t i = 0; i < dest.size(); ++i)
+      lbcpp::variableToNative(dest[i], sourceVector->getElement(i));
+  }
+  else
+    dest.clear();
+}
+
+template<class TT>
+inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)
+{
+  dest = Variable::create(expectedType);
+  VectorPtr destVector = dest.getObjectAndCast<Vector>();
+  jassert(destVector);
+  destVector->resize(source.size());
+  TypePtr elementsType = destVector->getElementsType();
+  for (size_t i = 0; i < source.size(); ++i)
+  {
+    Variable variable;
+    nativeToVariable(variable, source[i], elementsType);
+    if (variable)
+      destVector->setElement(i, variable);
+  }
+}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_VECTOR_H_

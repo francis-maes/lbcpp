@@ -40,7 +40,9 @@ void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, c
 
 void DynamicClass::saveToXml(XmlExporter& exporter) const
 {
-  exporter.enter(T("class"));
+  exporter.setAttribute(T("className"), getName());
+
+  /*exporter.enter(T("class"));
 
   exporter.setAttribute(T("name"), getName());
   exporter.setAttribute(T("base"), getBaseType()->getName().replaceCharacters(T("<>"), T("[]")));
@@ -52,12 +54,15 @@ void DynamicClass::saveToXml(XmlExporter& exporter) const
     exporter.writeType(type);
     exporter.leave();
   }
-  exporter.leave();
+  exporter.leave();*/
 }
 
 bool DynamicClass::loadFromXml(XmlImporter& importer)
-{
-  variables.clear();
+{ 
+  setName(importer.getStringAttribute(T("className")));
+  return true;
+ 
+  /*variables.clear();
   if (!importer.enter(T("class")))
     return false;
   setName(importer.getStringAttribute(T("name")));
@@ -81,5 +86,6 @@ bool DynamicClass::loadFromXml(XmlImporter& importer)
   }
 
   importer.leave();
-  return res;
+  return res;*/
+  return true;
 }

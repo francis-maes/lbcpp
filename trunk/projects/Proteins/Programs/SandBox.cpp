@@ -38,6 +38,8 @@ public:
     {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
 };
 
+PerceptionPtr testPerception;
+
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
@@ -72,6 +74,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+    testPerception = res;
     return res;
     
     PerceptionPtr collapsedFeatures = collapsePerception(res);
@@ -286,32 +289,32 @@ int main(int argc, char** argv)
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
-/*
+
   std::cout << "Saving inference ..." << std::flush;
-  Variable(inference).saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  testPerception->saveToFile(workingDirectory.getChildFile(T("NewStylePerception.xml")));
+  inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
-*/
-  {
-
-    std::cout << "Evaluating..." << std::flush;
-    context->evaluate(inference, trainProteins, evaluator);
-  }
-
+  std::cout << "Evaluating..." << std::endl;
+  context->evaluate(inference, trainProteins, evaluator);
 //  context->crossValidate(inference, proteins, evaluator, 2);
-
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
 
-  /*
+  std::cout << "Loading..." << std::flush;
   Variable v = Variable::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  std::cout << "ok." << std::endl;
+  std::cout << "Re-saving..." << std::flush;
   v.saveToFile(workingDirectory.getChildFile(T("NewStyleInference2.xml")));
-  {
-    inference = v.getObjectAndCast<Inference>();
-    ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    context->evaluate(inference, trainProteins, evaluator);
-    std::cout << "Check2: " << evaluator->toString() << std::endl;
-  }*/
+  std::cout << "ok." << std::endl;
+
+  std::cout << "Re-evaluating..." << std::endl;
+  inference = v.getObjectAndCast<Inference>();
+  evaluator = new ProteinEvaluator();
+  context->evaluate(inference, trainProteins, evaluator);
+  std::cout << "ok." << std::endl;
+  std::cout << "============================" << std::endl << std::endl;
+  std::cout << evaluator->toString() << std::endl << std::endl;
 
   std::cout << "Tchao." << std::endl;
   return 0;

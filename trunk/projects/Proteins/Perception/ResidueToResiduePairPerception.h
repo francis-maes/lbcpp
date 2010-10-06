@@ -18,15 +18,16 @@ class ResidueToResiduePairPerception : public Perception
 {
 public:
   ResidueToResiduePairPerception(PerceptionPtr residuePerception = PerceptionPtr())
-    : residuePerception(residuePerception) {computeOutputVariables();}
+    : residuePerception(residuePerception) {computeOutputType();}
 
   virtual TypePtr getInputType() const
     {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
   
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     addOutputVariable(T("residue1"), residuePerception);
     addOutputVariable(T("residue2"), residuePerception);
+    Perception::computeOutputType();
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

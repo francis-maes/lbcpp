@@ -9,8 +9,7 @@
 #include "HistogramPerception.h"
 using namespace lbcpp;
 
-namespace lbcpp
-{
+namespace lbcpp {
 
 class AccumulatedScores : public Object
 {
@@ -98,32 +97,31 @@ private:
 
 typedef ReferenceCountedObjectPtr<AccumulatedScores> AccumulatedScoresPtr;
 
-class AccumulatedScoresCache : public Cache
-{
-public:
-  // Every 30 insertions, prune scores that have not been accessed during the last minute
-  AccumulatedScoresCache() : Cache(30, 60.0) {}
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  virtual Variable createEntry(ObjectPtr object) const
-  {
-    return new AccumulatedScores();
-  }
-};
-
 }; /* namespace lbcpp */
 
+/*
+** AccumulatedScoresCache
+*/
+
+// Every 30 insertions, prune scores that have not been accessed during the last minute
+AccumulatedScoresCache::AccumulatedScoresCache()
+  : Cache(30, 60.0) {}
+
+Variable AccumulatedScoresCache::createEntry(ObjectPtr object) const
+  {return new AccumulatedScores();}
+
+/*
+** HistogramPerception
+*/
 HistogramPerception::HistogramPerception(TypePtr elementsType, bool useCache)
   : elementsType(elementsType)
 {
   if (useCache)
     cache = new AccumulatedScoresCache();
-  computeOutputVariables();
+  computeOutputType();
 }
 
-void HistogramPerception::computeOutputVariables()
+void HistogramPerception::computeOutputType()
 {
   EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
   if (enumeration)
@@ -147,6 +145,7 @@ void HistogramPerception::computeOutputVariables()
 
   addOutputVariable(T("p[missing]"), probabilityType());
   addOutputVariable(T("entropy"), negativeLogProbabilityType());
+  Perception::computeOutputType();
 }
 
 void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const

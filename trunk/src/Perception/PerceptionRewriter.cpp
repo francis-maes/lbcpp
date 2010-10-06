@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Perception/PerceptionRewriter.h>
-#include "Modifier/RewritedPerception.h"
 using namespace lbcpp;
  
 /*
@@ -24,7 +23,8 @@ PerceptionPtr PerceptionRewriteRule::compute(TypePtr type) const
 /*
 ** PerceptionRewriter
 */
-PerceptionRewriter::PerceptionRewriter() : rules(vector(perceptionRewriteRuleClass()))
+PerceptionRewriter::PerceptionRewriter(bool useCache)
+  : rules(vector(perceptionRewriteRuleClass())), useCache(useCache)
 {
 }
 
@@ -39,17 +39,27 @@ PerceptionPtr PerceptionRewriter::applyRules(TypePtr type, const std::vector<Str
   return PerceptionPtr();
 }
 
-PerceptionPtr PerceptionRewriter::rewriteRecursively(PerceptionPtr perception, std::vector<String>& stack) const
+namespace lbcpp
 {
-  RewritedPerceptionsMap::const_iterator it = rewritedPerceptions.find(perception);
-  if (it == rewritedPerceptions.end())
+  extern PerceptionPtr rewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, const std::vector<String>& stack);
+};
+
+PerceptionPtr PerceptionRewriter::rewriteRecursively(PerceptionPtr perception, const std::vector<String>& stack) const
+{
+  if (useCache)
   {
-    PerceptionPtr res(new RewritedPerception(perception, refCountedPointerFromThis(this), stack));
-    const_cast<PerceptionRewriter* >(this)->rewritedPerceptions[perception] = res;
-    return res;
+    RewritedPerceptionsMap::const_iterator it = rewritedPerceptions.find(perception);
+    if (it == rewritedPerceptions.end())
+    {
+      PerceptionPtr res = rewritedPerception(perception, refCountedPointerFromThis(this), stack);
+      const_cast<PerceptionRewriter* >(this)->rewritedPerceptions[perception] = res;
+      return res;
+    }
+    else
+      return it->second;
   }
   else
-    return it->second;
+    return rewritedPerception(perception, refCountedPointerFromThis(this), stack);
 }
 
 PerceptionPtr PerceptionRewriter::rewrite(PerceptionPtr perception) const
@@ -72,7 +82,7 @@ size_t PerceptionRewriter::getNumRules() const
 
 PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
-  PerceptionRewriterPtr rewriter = new PerceptionRewriter();
+  PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
 
   rewriter->addRule(booleanType(), booleanFeatures());
   rewriter->addEnumValueFeaturesRule();

@@ -18,13 +18,16 @@ class SeparationDistanceResiduePairPerception : public Perception
 {
 public:
   SeparationDistanceResiduePairPerception()
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   virtual TypePtr getInputType() const
     {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
 
-  virtual void computeOutputVariables()
-    {addOutputVariable(T("separationDistance"), positiveIntegerType());}
+  virtual void computeOutputType()
+  {
+    addOutputVariable(T("separationDistance"), positiveIntegerType());
+    Perception::computeOutputType();
+  }
   
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
