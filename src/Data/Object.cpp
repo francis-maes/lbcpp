@@ -172,7 +172,7 @@ bool Object::loadFromXml(XmlImporter& importer)
       continue;
     }
     Variable value = importer.loadVariable(child);
-    if (value && !checkInheritance(value, thisClass->getObjectVariableType(variableNumber), importer.getCallback()))
+    if (value && !checkInheritance(value, thisClass->getObjectVariableType(variableNumber)))
       return false;
     setVariable((size_t)variableNumber, value);
   }

@@ -22,6 +22,7 @@ public:
   {
     jassert(maximumValue > minimumValue);
     jassert(numIntervals > 1);
+    isDouble = inputType->inheritsFrom(doubleType());
   }
 
   DiscretizedNumberFeatures()
@@ -36,6 +37,14 @@ public:
   virtual bool isSparse() const
     {return true;}
 
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    if (!Perception::loadFromXml(importer))
+      return false;
+    isDouble = inputType->inheritsFrom(doubleType());
+    return true;
+  }
+
 protected:
   friend class DiscretizedNumberFeaturesClass;
 
@@ -45,8 +54,10 @@ protected:
   size_t numIntervals;
   bool doOutOfBoundsFeatures;
 
+  bool isDouble;
+
   virtual double getValue(const Variable& input) const
-    {jassert(input); return input.isDouble() ? input.getDouble() : (double)input.getInteger();}
+    {jassert(input); return isDouble ? input.getDouble() : (double)input.getInteger();}
 
   virtual String getBoundaryName(size_t index) const
     {return String(getBoundary(index));}

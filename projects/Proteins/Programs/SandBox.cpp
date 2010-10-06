@@ -72,7 +72,8 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-
+    return res;
+    
     PerceptionPtr collapsedFeatures = collapsePerception(res);
 
     VectorPtr selectedConjunctions = vector(containerClass(positiveIntegerType()));
@@ -168,8 +169,7 @@ public:
       iterationNumber = 0;
     }
 
-    String inferenceClassName = stack->getCurrentInference()->getClassName();
-    if (inferenceClassName.contains(T("Learner")) && input.size() == 2)
+    if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass()))
     {
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
@@ -242,7 +242,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 10)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
