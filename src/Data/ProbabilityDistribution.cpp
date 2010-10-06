@@ -77,8 +77,7 @@ double DiscreteProbabilityDistribution::compute(const Variable& value) const
 {
   if (value.isNil())
     return values.back();
-  EnumerationPtr enumeration = getEnumeration();
-  if (!checkInheritance(value, enumeration))
+  if (!checkInheritance(value, getEnumeration()))
     return 0.0;
   int index = value.getInteger();
   jassert(index >= 0 && index < (int)values.size());

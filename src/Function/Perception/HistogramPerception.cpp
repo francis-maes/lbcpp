@@ -16,7 +16,7 @@ namespace lbcpp
 class AccumulatedScores : public Object
 {
 public:
-  AccumulatedScores(ContainerPtr container)
+  void compute(ContainerPtr container)
   {
     jassert(container);
 
@@ -107,9 +107,7 @@ public:
 protected:
   virtual Variable createEntry(ObjectPtr object) const
   {
-    ContainerPtr container = object.dynamicCast<Container>();
-    jassert(container);
-    return new AccumulatedScores(container);
+    return new AccumulatedScores();
   }
 };
 
@@ -179,9 +177,16 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
 
   AccumulatedScoresPtr scores;
   if (cache)
+  {
     scores = cache->getOrCreateEntryAndCast<AccumulatedScores>(container);
+    if (!scores->getNumElements())
+      scores->compute(container);
+  }
   else
-    scores = new AccumulatedScores(container);
+  {
+    scores = new AccumulatedScores();
+    scores->compute(container);
+  }
 
   const std::vector<double>& startScores = scores->getAccumulatedScores(startPosition);
   const std::vector<double>& endScores = scores->getAccumulatedScores(endPosition - 1);

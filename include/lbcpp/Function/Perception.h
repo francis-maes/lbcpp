@@ -20,6 +20,11 @@ class PerceptionCallback : public Object
 {
 public:
   virtual void sense(size_t variableNumber, const Variable& value) = 0;
+  virtual void sense(size_t variableNumber, double value)
+    {sense(variableNumber, Variable(value));}
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+    {sense(variableNumber, Variable(value));}
+
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input);
 };
 
@@ -190,6 +195,7 @@ protected:
   TypePtr inputType;
   String preferedOutputClassName;
   VectorPtr subPerceptions;
+  std::vector<std::pair<String, PerceptionPtr> > subPerceptionsCopy;
 };
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
