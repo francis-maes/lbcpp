@@ -49,7 +49,7 @@ void Variable::saveToXml(XmlExporter& exporter) const
 bool Variable::saveToFile(const File& file, MessageCallback& callback) const
 {
   XmlExporter exporter;
-  exporter.saveVariable(String::empty, *this);
+  exporter.saveVariable(String::empty, *this, TypePtr());
   return exporter.saveToFile(file, callback);
 }
 

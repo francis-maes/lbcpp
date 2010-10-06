@@ -63,18 +63,18 @@ void XmlExporter::enter(const String& tagName, const String& name)
   writeName(name);
 }
 
-void XmlExporter::saveVariable(const String& name, const Variable& variable)
+void XmlExporter::saveVariable(const String& name, const Variable& variable, TypePtr expectedType)
 {
   enter(T("variable"), name);
-  writeVariable(variable);
+  writeVariable(variable, expectedType);
   leave();
 }
 
-void XmlExporter::saveElement(size_t index, const Variable& variable)
+void XmlExporter::saveElement(size_t index, const Variable& variable, TypePtr expectedType)
 {
   enter(T("element"));
   setAttribute(T("index"), String((int)index));
-  writeVariable(variable);
+  writeVariable(variable, expectedType);
   leave();
 }
 
@@ -192,6 +192,7 @@ void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& r
         continue;
       if ((prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && (size_t)it->second == savedObject.references.size()))
       {
+        savedObject.elt->setAttribute(T("type"), savedObject.object->getClassName().replaceCharacters(T("<>"), T("[]")));
         savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
         identifiers.erase(savedObject.identifier);
         referencedObjects.erase(it);
@@ -218,14 +219,14 @@ void XmlExporter::writeType(TypePtr type)
   if (type.dynamicCast<DynamicClass>())
   {
     enter(T("type"));
-    writeVariable(type);
+    writeVariable(type, TypePtr());
     leave();
   }
   else
     setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
 }
 
-void XmlExporter::writeVariable(const Variable& variable)
+void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
 {
   XmlElement* elt = getCurrentElement();
   
@@ -235,15 +236,16 @@ void XmlExporter::writeVariable(const Variable& variable)
     elt->setAttribute(T("missing"), T("true"));
   }
   else if (variable.isObject() && variable.getType() != typeClass() && !variable.getType()->inheritsFrom(enumerationClass()))
-    writeObject(variable.getObject());
+    writeObject(variable.getObject(), expectedType);
   else
   {
-    writeType(variable.getType());
+    if (variable.getType() != expectedType)
+      writeType(variable.getType());
     variable.saveToXml(*this);
   }
 }
 
-void XmlExporter::writeObject(ObjectPtr object)
+void XmlExporter::writeObject(ObjectPtr object, TypePtr expectedType)
 {
   XmlElement* currentElement = getCurrentElement();
 
@@ -253,7 +255,8 @@ void XmlExporter::writeObject(ObjectPtr object)
     savedObject.object = object;
     savedObject.elt = new XmlElement(T("shared"));
     currentStack.push_back(savedObject.elt);
-    writeType(object->getClass());
+    if (object->getClass() != expectedType)
+      writeType(object->getClass());
     object->saveToXml(*this);
     currentStack.pop_back();
   }
@@ -300,16 +303,16 @@ Variable XmlImporter::load()
 {
   jassert(sharedObjectsStack.empty());
   if (root->getTagName() == T("lbcpp"))
-    return loadVariable(root->getFirstChildElement());
+    return loadVariable(root->getFirstChildElement(), TypePtr());
   else
-    return loadVariable(root);
+    return loadVariable(root, TypePtr());
 }
 
 bool XmlImporter::loadSharedObjects()
 {
   forEachXmlChildElementWithTagName(*getCurrentElement(), child, T("shared"))
   {
-    Variable variable = loadVariable(child);
+    Variable variable = loadVariable(child, TypePtr());
     if (!variable)
       return false;
     if (!variable.isObject())
@@ -329,7 +332,7 @@ bool XmlImporter::loadSharedObjects()
   return true;
 }
 
-TypePtr XmlImporter::loadType()
+TypePtr XmlImporter::loadType(TypePtr expectedType)
 {
   XmlElement* elt = getCurrentElement();
   String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
@@ -340,21 +343,22 @@ TypePtr XmlImporter::loadType()
     XmlElement* child = elt->getChildByName(T("type"));
     if (child)
     {
-      Variable typeVariable = loadVariable(child);
+      Variable typeVariable = loadVariable(child, TypePtr());
       return typeVariable.getObjectAndCast<Type>();
     }
     else
     {
-      errorMessage(T("XmlImporter::loadType"), T("Could not find type"));
-      return TypePtr();
+      if (!expectedType)
+        errorMessage(T("XmlImporter::loadType"), T("Could not find type"));
+      return expectedType;
     }
   }
 }
 
-Variable XmlImporter::loadVariable()
+Variable XmlImporter::loadVariable(TypePtr expectedType)
 {
   const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
-  TypePtr type = loadType();
+  TypePtr type = loadType(expectedType);
   if (!type)
     return Variable();
   
@@ -377,10 +381,10 @@ Variable XmlImporter::loadVariable()
     return Variable::createFromXml(type, *this);
 }
 
-Variable XmlImporter::loadVariable(XmlElement* elt)
+Variable XmlImporter::loadVariable(XmlElement* elt, TypePtr expectedType)
 {
   enter(elt);
-  Variable res = loadSharedObjects() ? loadVariable() : Variable();
+  Variable res = loadSharedObjects() ? loadVariable(expectedType) : Variable();
   leave();
   return res;
 }

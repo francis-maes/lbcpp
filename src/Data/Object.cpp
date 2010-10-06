@@ -149,7 +149,7 @@ void Object::saveToXml(XmlExporter& exporter) const
   {
     Variable variable = getVariable(i);
     if (!variable.isMissingValue())
-      exporter.saveVariable(getVariableName(i), variable);
+      exporter.saveVariable(getVariableName(i), variable, getVariableType(i));
   }
 }
 
@@ -171,8 +171,10 @@ bool Object::loadFromXml(XmlImporter& importer)
       importer.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
       continue;
     }
-    Variable value = importer.loadVariable(child);
-    if (value && !checkInheritance(value, thisClass->getObjectVariableType(variableNumber)))
+    TypePtr expectedType = thisClass->getObjectVariableType(variableNumber);
+    jassert(expectedType);
+    Variable value = importer.loadVariable(child, expectedType);
+    if (value && !checkInheritance(value, expectedType))
       return false;
     setVariable((size_t)variableNumber, value);
   }

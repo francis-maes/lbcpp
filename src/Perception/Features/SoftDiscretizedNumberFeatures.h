@@ -17,11 +17,12 @@ namespace lbcpp
 class SoftDiscretizedNumberFeatures : public DiscretizedNumberFeatures
 {
 public:
-  SoftDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior)
+  SoftDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior, bool doComputeOutputType = true)
     : DiscretizedNumberFeatures(inputType, minimumValue, maximumValue, numIntervals, doOutOfBoundsFeatures), cyclicBehavior(cyclicBehavior)
   {
     jassert(!cyclicBehavior || !doOutOfBoundsFeatures); // out-of-bounds features are never active when using the cyclicBehavior
-    computeOutputType();
+    if (doComputeOutputType)
+      computeOutputType();
   }
 
   SoftDiscretizedNumberFeatures() : cyclicBehavior(false) {}
@@ -106,7 +107,8 @@ class SoftDiscretizedLogNumberFeatures : public SoftDiscretizedNumberFeatures
 {
 public:
   SoftDiscretizedLogNumberFeatures(TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures)
-    : SoftDiscretizedNumberFeatures(inputType, minimumLogValue, maximumLogValue, numIntervals, doOutOfBoundsFeatures, false) {}
+    : SoftDiscretizedNumberFeatures(inputType, minimumLogValue, maximumLogValue, numIntervals, doOutOfBoundsFeatures, false, false)
+    {computeOutputType();}
 
   SoftDiscretizedLogNumberFeatures() {}
 
