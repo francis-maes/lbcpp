@@ -161,6 +161,7 @@ public:
     virtual void next() = 0;
   };
 
+  // optional specialized variable iterator
   virtual VariableIterator* createVariablesIterator() const
     {return NULL;}
 
