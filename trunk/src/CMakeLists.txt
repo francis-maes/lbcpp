@@ -201,8 +201,6 @@ SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
   Function/Perception/HistogramPerception.cpp
   Function/Perception/BoundsProximityPerception.h
   Function/Perception/ProbabilityDistributionPerception.h
-  Function/Perception/BiContainerPerception.h
-  Function/Perception/BiVariablePerception.h
   Function/Perception/PreprocessPerception.h
   Function/Perception/FlattenPerception.h
   Function/Perception/CollapsePerception.h
@@ -220,7 +218,6 @@ SET(LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES
   Function/Perception/Features/HardDiscretizedNumberFeatures.h
   Function/Perception/Features/SoftDiscretizedNumberFeatures.h
   Function/Perception/Features/SignedNumberFeatures.h
-  Function/Perception/Features/BiVariableFeatures.h
   Function/Perception/Features/PerceptionFeaturesClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionFeaturesClasses.cpp
 )

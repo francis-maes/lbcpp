@@ -47,7 +47,6 @@ public:
   virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const;
   virtual PerceptionPtr createProbabilitySequencePerception(const String& targetName) const;
   virtual PerceptionPtr createPositionSpecificScoringMatrixPerception() const;
-  virtual PerceptionPtr createPairsSequencesPerception() const;
 
   /*
   ** Low level inferences
@@ -67,7 +66,6 @@ protected:
   InferencePtr addToProteinInference(InferencePtr targetInference, const String& targetName) const;
 
   void addPerception(CompositePerceptionPtr composite, const String& name, const String& targetName, PerceptionPtr perception) const;
-  PerceptionPtr createPairSequencesPerception(const String& firstTargetName, const String& secondTargetName, size_t windowSize) const;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinInferenceFactory> ProteinInferenceFactoryPtr;

@@ -35,7 +35,6 @@ extern ClassPtr perceptionRewriteRuleClass();
 extern PerceptionRewriteRulePtr typeBasedPerceptionRewriteRule(TypePtr type, PerceptionPtr target);
 extern PerceptionRewriteRulePtr typeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target);
 extern PerceptionRewriteRulePtr enumValueFeaturesPerceptionRewriteRule();
-extern PerceptionRewriteRulePtr biVariableFeaturesPerceptionRewriteRule(PerceptionPtr perception);
 
 class PerceptionRewriter : public NameableObject
 {

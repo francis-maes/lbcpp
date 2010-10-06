@@ -219,9 +219,6 @@ extern PerceptionPtr windowHistogramPerception(TypePtr elementsType, size_t wind
 extern PerceptionPtr containerHistogramPerception(TypePtr elementsType, bool useCache = true); // Container input
 extern PerceptionPtr boundsProximityPerception();
 
-extern DecoratorPerceptionPtr biContainerPerception(size_t windowSize, PerceptionPtr subPerception);
-extern PerceptionPtr biVariablePerception(TypePtr firstElementType, TypePtr secondElementType);
-
 // probability distribution perceptions
 extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr enumeration);
 

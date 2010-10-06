@@ -63,18 +63,6 @@
       <variable type="Enumeration" name="enumeration"/>
     </class>
 
-    <!-- BiContainer / BiVariable -->
-    <class name="BiContainerPerception" base="DecoratorPerception">
-      <constructor arguments="size_t windowSize, PerceptionPtr subPerception"/>
-      <variable type="Integer" name="windowSize"/>
-    </class>
-
-    <class name="BiVariablePerception" base="Perception">
-      <constructor arguments="TypePtr firstElementType, TypePtr secondElementType"/>
-      <variable type="Type" name="firstElementType"/>
-      <variable type="Type" name="secondElementType"/>
-    </class>
-
     <!-- Perception Decorators -->
     <class name="PreprocessPerception" base="DecoratorPerception">
       <constructor arguments="FunctionPtr preProcessingFunction, PerceptionPtr perception"/>
@@ -137,11 +125,6 @@
 
     <class name="EnumValueFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
       <constructor/>
-    </class>
-
-    <class name="BiVariableFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
-      <constructor arguments="PerceptionPtr perception"/>
-      <variable type="Perception" name="perception"/>
     </class>
 
     <class name="PerceptionRewriter" base="NameableObject">
