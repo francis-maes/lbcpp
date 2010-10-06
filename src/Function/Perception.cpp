@@ -181,5 +181,5 @@ PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, PerceptionP
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2)
   {return productWithVariablePerception(multiplyFunction, perception2, type1, true);}
 
-CompositePerceptionPtr lbcpp::selectAndMakeConjunctionFeatures(TypePtr inputType, ContainerPtr selectedConjunctions)
-  {return selectAndMakeProductsPerception(inputType, multiplyDoubleFunction(), selectedConjunctions);}
+PerceptionPtr lbcpp::selectAndMakeConjunctionFeatures(PerceptionPtr decorated, ContainerPtr selectedConjunctions)
+  {return selectAndMakeProductsPerception(decorated, multiplyDoubleFunction(), selectedConjunctions);}

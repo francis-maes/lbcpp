@@ -23,18 +23,18 @@ ObjectPtr DynamicClass::createSparseObject() const
 
 Variable DynamicClass::getObjectVariable(const VariableValue& value, size_t index) const
 {
-  DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
+  ObjectPtr object = value.getObject();
   jassert(object);
-  return object->getVariableImpl(index);
+  return object->getVariable(index);
 }
 
 void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
 {
   if (checkInheritance(subValue.getType(), getObjectVariableType(index)))
   {
-    DynamicObjectPtr object = value.getObjectAndCast<DynamicObject>();
+    ObjectPtr object = value.getObject();
     jassert(object);
-    object->setVariableImpl(index, subValue);
+    object->setVariable(index, subValue);
   }
 }
 

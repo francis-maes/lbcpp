@@ -75,9 +75,8 @@ protected:
       /*selectedConjunctions->append(makeBinaryConjunction(0, 1));
       selectedConjunctions->append(makeBinaryConjunction(5, 10));
       selectedConjunctions->append(makeBinaryConjunction(10, 15));*/
-      PerceptionPtr featuresPostProcess = selectAndMakeConjunctionFeatures(collapsedFeatures->getOutputType(), selectedConjunctions);
 
-      return Perception::compose(collapsedFeatures, featuresPostProcess);
+      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);
     }
     else
       return perception;

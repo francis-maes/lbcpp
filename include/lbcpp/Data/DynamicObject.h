@@ -14,18 +14,6 @@
 namespace lbcpp
 {
 
-class DynamicObject : public Object
-{
-public:
-  DynamicObject(TypePtr thisType)
-    : Object(thisType) {}
-
-  virtual Variable getVariableImpl(size_t index) const = 0;
-  virtual void setVariableImpl(size_t index, const Variable& value) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<DynamicObject> DynamicObjectPtr;
-
 class DynamicClass : public DefaultClass
 {
 public:
