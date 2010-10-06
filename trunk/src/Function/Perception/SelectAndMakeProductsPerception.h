@@ -53,16 +53,16 @@ public:
     callback.setStaticAllocationFlag();
     decorated->computePerception(input, &callback);
   
-    // sense 
+    // sense
     size_t n = getNumOutputVariables();
     for (size_t i = 0; i < n; ++i)
     {
       PerceptionPtr subPerception = getOutputVariableSubPerception(i);
-      ContainerPtr conjunction = selectedConjunctions->getElement(i).getObjectAndCast<Container>();
-      size_t arity = conjunction->getNumElements();
+      const std::vector<size_t>& conjunction = selectedConjunctionsStdVector[i];
+      size_t arity = conjunction.size();
       if (arity == 1)
       {
-        std::pair<PerceptionPtr, Variable> v = variables[conjunction->getElement(0).getInteger()];
+        std::pair<PerceptionPtr, Variable> v = variables[conjunction[0]];
         if (v.second)
         {
           jassert(subPerception == v.first);
@@ -74,8 +74,8 @@ public:
       }
       else if (arity == 2)
       {
-        std::pair<PerceptionPtr, Variable> v1 = variables[conjunction->getElement(0).getInteger()];
-        std::pair<PerceptionPtr, Variable> v2 = variables[conjunction->getElement(1).getInteger()];
+        std::pair<PerceptionPtr, Variable> v1 = variables[conjunction[0]];
+        std::pair<PerceptionPtr, Variable> v2 = variables[conjunction[1]];
         if (v1.second && v2.second)
         {
           jassert(v1.first && v2.first);
@@ -93,26 +93,30 @@ protected:
   PerceptionPtr decorated;
   FunctionPtr multiplyFunction;
   ContainerPtr selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
+  std::vector< std::vector<size_t> > selectedConjunctionsStdVector;
 
   void createSubPerceptions()
   {
     size_t n = selectedConjunctions->getNumElements();
+    selectedConjunctionsStdVector.resize(n);
     outputVariables.reserve(n);
     for (size_t i = 0; i < n; ++i)
     {
       ContainerPtr conjunction = selectedConjunctions->getElement(i).getObjectAndCast<Container>();
       jassert(conjunction);
-      createSubPerception(conjunction);
+      createSubPerception(conjunction, selectedConjunctionsStdVector[i]);
     }
   }
 
-  void createSubPerception(ContainerPtr conjunction)
+  void createSubPerception(ContainerPtr conjunction, std::vector<size_t>& stdVectorCopy)
   {
     size_t arity = conjunction->getNumElements();
     jassert(arity);
+    stdVectorCopy.resize(arity);
     if (arity == 1)
     {
       int variableNumber = conjunction->getElement(0).getInteger();
+      stdVectorCopy[0] = (size_t)variableNumber;
       jassert(variableNumber >= 0 && variableNumber < (int)decorated->getNumOutputVariables());
       String name = decorated->getOutputVariableName(variableNumber);
       
@@ -124,6 +128,8 @@ protected:
     {
       int index1 = conjunction->getElement(0).getInteger();
       int index2 = conjunction->getElement(1).getInteger();
+      stdVectorCopy[0] = (size_t)index1;
+      stdVectorCopy[1] = (size_t)index2;
       jassert(index1 >= 0 && index1 <= (int)decorated->getNumOutputVariables());
       jassert(index2 >= 0 && index2 <= (int)decorated->getNumOutputVariables());
       String name = decorated->getOutputVariableName(index1) + T("&&") + decorated->getOutputVariableName(index2);
