@@ -14,18 +14,21 @@
 namespace lbcpp
 {
 
-class CollapsePerception : public VariableVectorPerception
+class CollapsePerception : public Perception
 {
 public:
   CollapsePerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated)
-    {precompute(decorated, String::empty, rootNode);}
+    {computeOutputVariables();}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 
   virtual String toString() const
     {return decorated->toString() + T(" collapsed");}
+  
+  virtual void computeOutputVariables()
+    {precompute(decorated, String::empty, rootNode);}
 
   struct Node
   {
@@ -90,7 +93,7 @@ private:
     if (isLeafPerception(perception))
     {
       currentNode.variableNumber = (int)outputVariables.size();
-      addOutputVariable(perception->getOutputType(), fullName, perception);
+      addOutputVariable(fullName, perception);
     }
     else
     {

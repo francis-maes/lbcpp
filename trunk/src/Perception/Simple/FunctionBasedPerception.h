@@ -19,7 +19,7 @@ class FunctionBasedPerception : public Perception
 {
 public:
   FunctionBasedPerception(FunctionPtr function = FunctionPtr())
-    : function(function) {}
+    : function(function) {computeOutputVariables();}
 
   virtual String toString() const
     {return classNameToOutputClassName(function->getClassName());}
@@ -27,14 +27,8 @@ public:
   virtual TypePtr getInputType() const
     {return function->getInputType();}
 
-  virtual size_t getNumOutputVariables() const
-    {return 1;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return function->getOutputType(getInputType());}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return T("value");}
+  virtual void computeOutputVariables()
+    {addOutputVariable(T("value"), function->getOutputType(getInputType()));}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {callback->sense(0, function->compute(input));}

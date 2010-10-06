@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class FlattenPerception : public VariableVectorPerception
+class FlattenPerception : public Perception
 {
 public:
   FlattenPerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated)
-    {precompute(decorated, String::empty);}
+    {computeOutputVariables();}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
@@ -42,6 +42,9 @@ private:
   PerceptionPtr decorated;
   std::map< std::vector<size_t> , size_t> offsets;
 
+  virtual void computeOutputVariables()
+    {precompute(decorated, String::empty);}
+
   void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
   {
     offsets[stack] = outputVariables.size();
@@ -62,7 +65,7 @@ private:
       if (subPerception)
         precompute(subPerception, name, newStack);
       else
-        addOutputVariable(perception->getOutputVariableType(i), name, PerceptionPtr());
+        addOutputVariable(name, perception->getOutputVariableType(i));
     }
   }
 

@@ -14,12 +14,12 @@
 namespace lbcpp
 {
 
-class SelectAndMakeProductsPerception : public VariableVectorPerception
+class SelectAndMakeProductsPerception : public Perception
 {
 public:
   SelectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions)
     : decorated(decorated), multiplyFunction(multiplyFunction), selectedConjunctions(selectedConjunctions)
-    {createSubPerceptions();}
+    {computeOutputVariables();}
 
   SelectAndMakeProductsPerception() {}
 
@@ -95,11 +95,11 @@ protected:
   ContainerPtr selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
   std::vector< std::vector<size_t> > selectedConjunctionsStdVector;
 
-  void createSubPerceptions()
+  virtual void computeOutputVariables()
   {
     size_t n = selectedConjunctions->getNumElements();
     selectedConjunctionsStdVector.resize(n);
-    outputVariables.reserve(n);
+    reserveOutputVariables(n);
     for (size_t i = 0; i < n; ++i)
     {
       ContainerPtr conjunction = selectedConjunctions->getElement(i).getObjectAndCast<Container>();

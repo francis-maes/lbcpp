@@ -17,27 +17,14 @@ namespace lbcpp
 class BoundsProximityPerception : public Perception
 {
 public:
+  BoundsProximityPerception()
+    {computeOutputVariables();}
+
   virtual String toString() const
     {return T("bounds proximity");}
 
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(anyType()), integerType());}
-
-  virtual size_t getNumOutputVariables() const
-    {return 3;}
-  
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return index < 2 ? positiveIntegerType() : probabilityType();}
-  
-  virtual String getOutputVariableName(size_t index) const
-  {
-    if (index == 0)
-      return T("distanceToBegin");
-    else if (index == 1)
-      return T("distanceToEnd");
-    else
-      return T("relativePosition");
-  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
@@ -52,6 +39,14 @@ public:
       callback->sense(1, Variable(n - index, positiveIntegerType()));
       callback->sense(2, Variable(index / (double)(n - 1), probabilityType()));
     }
+  }
+
+  virtual void computeOutputVariables()
+  {
+    reserveOutputVariables(3);
+    addOutputVariable(T("distanceToBegin"), positiveIntegerType());
+    addOutputVariable(T("distanceToEnd"), positiveIntegerType());
+    addOutputVariable(T("relativePosition"), probabilityType());
   }
 };
 

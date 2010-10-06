@@ -125,7 +125,7 @@ void ProductPerception::computePerception(const Variable& input, PerceptionCallb
 void ProductPerception::addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2)
 {
   if (!sub1 && !sub2)
-    VariableVectorPerception::addOutputVariable(multiplyFunction->getOutputType(pairClass(type1, type2)), name, PerceptionPtr());
+    Perception::addOutputVariable(multiplyFunction->getOutputType(pairClass(type1, type2)), name, PerceptionPtr());
   else
   {
     ProductPerceptionPtr product;
@@ -137,7 +137,7 @@ void ProductPerception::addOutputVariable(const String& name, TypePtr type1, Per
       product = productPerception(multiplyFunction, type1, sub2);
     else
       jassert(false);
-    VariableVectorPerception::addOutputVariable(product->getOutputType(), name, product);
+    Perception::addOutputVariable(product->getOutputType(), name, product);
   }
 }
 
@@ -145,7 +145,7 @@ void ProductPerception::computeOutputVariables()
 {
   size_t n1 = perception1->getNumOutputVariables();
   size_t n2 = perception2->getNumOutputVariables();
-  outputVariables.reserve(n1 * n2);
+  reserveOutputVariables(n1 * n2);
   for (size_t i = 0; i < n1; ++i)
     for (size_t j = 0; j < n2; ++j)
     {
@@ -234,7 +234,7 @@ void ProductWithVariablePerception::computePerception(const Variable& input, Per
 void ProductWithVariablePerception::computeOutputVariables()
 {
   size_t n = perception->getNumOutputVariables();
-  outputVariables.reserve(n);
+  reserveOutputVariables(n);
   for (size_t i = 0; i < n; ++i)
   {
     PerceptionPtr subPerception = perception->getOutputVariableSubPerception(i);

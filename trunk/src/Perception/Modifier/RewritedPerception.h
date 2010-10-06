@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class RewritedPerception : public VariableVectorPerception
+class RewritedPerception : public Perception
 {
 public:
   RewritedPerception(PerceptionPtr decorated, PerceptionRewriterPtr rewriter, std::vector<String>& stack)
@@ -76,6 +76,11 @@ protected:
   PerceptionPtr decorated;
   std::vector< std::pair<size_t, PerceptionPtr> > variablesMap; // decorated perception variable index -> perception
 
+  virtual void computeOutputVariables()
+  {
+    jassert(false); // FIXME: rewriter should be stored insted this Perception which causes a cycle in shared pointers
+  }
+
   void computeOutputVariables(PerceptionRewriterPtr rewriter, std::vector<String>& stack)
   {
     jassert(rewriter);
@@ -115,7 +120,7 @@ protected:
   void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception, size_t sourceIndex)
   {
     size_t index = outputVariables.size();
-    VariableVectorPerception::addOutputVariable(type, name, subPerception);
+    Perception::addOutputVariable(type, name, subPerception);
     if (variablesMap.size() <= sourceIndex)
       variablesMap.resize(sourceIndex + 1, std::make_pair(0, PerceptionPtr()));
     variablesMap[sourceIndex] = std::make_pair(index, subPerception);

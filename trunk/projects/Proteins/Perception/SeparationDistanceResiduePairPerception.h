@@ -17,18 +17,15 @@ namespace lbcpp
 class SeparationDistanceResiduePairPerception : public Perception
 {
 public:
+  SeparationDistanceResiduePairPerception()
+    {computeOutputVariables();}
+
   virtual TypePtr getInputType() const
     {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
 
-  virtual size_t getNumOutputVariables() const
-    {return 1;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return positiveIntegerType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return T("separationDistance");}
-
+  virtual void computeOutputVariables()
+    {addOutputVariable(T("separationDistance"), positiveIntegerType());}
+  
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     Variable positionPair = input[1];

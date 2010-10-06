@@ -31,9 +31,6 @@ public:
   virtual TypePtr getInputType() const
     {return inputType;}
 
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return doubleType();}
-
   virtual bool isSparse() const
     {return true;}
 
@@ -66,20 +63,6 @@ protected:
   {
     jassert(index <= numIntervals);
     return minimumValue + (maximumValue - minimumValue) * (double)index / numIntervals;
-  }
-
-  String getOutOfBoundsFeatureName(size_t& index) const
-  {
-    if (doOutOfBoundsFeatures)
-    {
-      if (index == 0)
-        return T("after ") + getBoundaryName(0);
-      else if (index == 1)
-        return T("after ") + getBoundaryName(numIntervals);
-      else
-        index -= 2;
-    }
-    return String::empty;
   }
 };
 

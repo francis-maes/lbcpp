@@ -17,20 +17,17 @@ namespace lbcpp
 class BooleanFeatures : public Perception
 {
 public:
+  BooleanFeatures()
+    {computeOutputVariables();}
+
   virtual String toString() const
     {return T("boolean as feature");}
 
   virtual TypePtr getInputType() const
     {return booleanType();}
 
-  virtual size_t getNumOutputVariables() const
-    {return 1;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return doubleType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return T("value");}
+  virtual void computeOutputVariables()
+    {addOutputVariable(T("value"), doubleType());}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {

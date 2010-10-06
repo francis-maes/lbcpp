@@ -19,7 +19,7 @@ class IdentityPerception : public Perception
 {
 public:
   IdentityPerception(TypePtr type)
-    : type(type) {}
+    : type(type) {computeOutputVariables();}
   IdentityPerception() {}
 
   virtual TypePtr getInputType() const
@@ -31,14 +31,13 @@ public:
   virtual TypePtr getOutputType() const
     {return type;}
 
-  virtual size_t getNumOutputVariables() const
-    {return type->getObjectNumVariables();}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return type->getObjectVariableType(index);}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return type->getObjectVariableName(index);}
+  virtual void computeOutputVariables()
+  {
+    size_t n = type->getObjectNumVariables();
+    reserveOutputVariables(n);
+    for (size_t i = 0; i < n; ++i)
+      addOutputVariable(type->getObjectVariableName(i), type->getObjectVariableType(i));
+  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
