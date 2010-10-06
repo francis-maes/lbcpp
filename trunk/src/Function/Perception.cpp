@@ -29,7 +29,7 @@ void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerceptio
   jassert(subPerception);
   Variable variable = subPerception->compute(input);
   if (variable)
-    sense(variableNumber, variable);
+    sense(variableNumber, variable.getObject());
 }
 
 /*
@@ -108,23 +108,27 @@ CompositePerception::CompositePerception(TypePtr inputType, const String& prefer
 }
 
 size_t CompositePerception::getNumPerceptions() const
-  {return subPerceptions->getNumElements();}
+  {return subPerceptionsCopy.size();}
 
 String CompositePerception::getPerceptionName(size_t index) const
-  {return subPerceptions->getElement(index)[0].getString();}
+  {return subPerceptionsCopy[index].first;}
 
 PerceptionPtr CompositePerception::getPerception(size_t index) const
-  {return subPerceptions->getElement(index)[1].getObjectAndCast<Perception>();}
+  {return subPerceptionsCopy[index].second;}
 
 void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
 {
   if (checkInheritance(getInputType(), subPerception->getInputType()))
+  {
     subPerceptions->append(Variable::pair(name, subPerception));
+    subPerceptionsCopy.push_back(std::make_pair(name, subPerception));
+  }
 }
 
 void CompositePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
-  for (size_t i = 0; i < getNumPerceptions(); ++i)
+  jassert(subPerceptionsCopy.size() == getNumOutputVariables());
+  for (size_t i = 0; i < subPerceptionsCopy.size(); ++i)
     callback->sense(i, getPerception(i), input);
 }
 

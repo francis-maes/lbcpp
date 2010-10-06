@@ -50,6 +50,12 @@ struct DoubleConstUnaryOperationCallback : public PerceptionCallback
 
   OperationType& operation;
 
+  virtual void sense(size_t variableNumber, double value)
+    {operation.sense(value);}
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+    {operation.sense(value);}
+
   virtual void sense(size_t variableNumber, const Variable& value)
   {
     if (value.isObject())
@@ -69,8 +75,9 @@ template<class OperationType>
 void doubleConstUnaryOperation(OperationType& operation, PerceptionPtr perception, const Variable& input)
 {
   typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
-  ReferenceCountedObjectPtr<Callback> callback(new Callback(operation));
-  perception->computePerception(input, callback);
+  Callback callback(operation);
+  callback.setStaticAllocationFlag();
+  perception->computePerception(input, &callback);
 }
 
 /*
@@ -245,20 +252,31 @@ struct ComputeDotProductCallback : public PerceptionCallback
   ObjectPtr object;
   double res;
 
-  virtual void sense(size_t variableNumber, const Variable& value)
+  virtual void sense(size_t variableNumber, double value)
   {
     if (value)
     {
       Variable objectValue = object->getVariable(variableNumber);
       if (objectValue)
-      {
-        if (value.isObject())
-          res += dotProduct(objectValue.getObject(), value.getObject());
-        else if (value.isDouble())
-          res += objectValue.getDouble() * value.getDouble();
-        else
-          jassert(false);
-      }
+        res += objectValue.getDouble() * value;
+    }
+  }
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+  {
+    Variable objectValue = object->getVariable(variableNumber);
+    if (objectValue)
+      res += dotProduct(objectValue.getObject(), value);
+  }
+
+  virtual void sense(size_t variableNumber, const Variable& value)
+  {
+    if (value)
+    {
+      if (value.isObject())
+        sense(variableNumber, value.getObject());
+      else
+        sense(variableNumber, value.getDouble());
     }
   }
 
@@ -329,22 +347,27 @@ struct DoubleAssignmentCallback : public PerceptionCallback
   ObjectPtr object;
   OperationType& operation;
 
+  virtual void sense(size_t variableNumber, double value)
+  {
+    Variable targetVariable = object->getVariable(variableNumber);
+    double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
+    operation.compute(targetValue, value);
+    object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
+  }
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+  {
+    ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
+    operation.compute(targetObject, value);
+    object->setVariable(variableNumber, targetObject);
+  }
+
   virtual void sense(size_t variableNumber, const Variable& value)
   {
     if (value.isObject())
-    {
-      ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
-      operation.compute(targetObject, value.getObject());
-      object->setVariable(variableNumber, targetObject);
-    }
+      sense(variableNumber, value.getObject());
     else
-    {
-      jassert(value.isDouble() && !value.isMissingValue());
-      Variable targetVariable = object->getVariable(variableNumber);
-      double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
-      operation.compute(targetValue, value.getDouble());
-      object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
-    }
+      sense(variableNumber, value.getDouble());
   }
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
@@ -415,8 +438,9 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
     target = Variable::create(perception->getOutputType()).getObject();
   AddWeightedOperation operation(weight);
   typedef DoubleAssignmentCallback<AddWeightedOperation> Callback;
-  ReferenceCountedObjectPtr<Callback> callback(new Callback(target, operation));
-  perception->computePerception(input, callback);
+  Callback callback(target, operation);
+  callback.setStaticAllocationFlag();
+  perception->computePerception(input, &callback);
 }
 
 void lbcpp::addWeighted(ObjectPtr& target, ObjectPtr source, double weight)

@@ -75,6 +75,9 @@ private:
     virtual void sense(size_t variableNumber, const Variable& value)
       {targetCallback->sense(variableNumber + offset, value);}
 
+    virtual void sense(size_t variableNumber, double value)
+      {targetCallback->sense(variableNumber + offset, value);}
+
     virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
     {
       stack.push_back(variableNumber);
