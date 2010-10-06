@@ -8,7 +8,7 @@
 
 #include "GradientDescentOnlineLearner.h"
 #include <lbcpp/Function/ScalarFunction.h>
-#include <lbcpp/Function/PerceptionMaths.h>
+#include <lbcpp/Perception/PerceptionMaths.h>
 using namespace lbcpp;
 
 GradientDescentOnlineLearner::GradientDescentOnlineLearner(

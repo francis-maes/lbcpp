@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Function/PerceptionRewriter.h>
+#include <lbcpp/Perception/PerceptionRewriter.h>
 #include "Perception/RewritedPerception.h"
 using namespace lbcpp;
  

@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_SCALAR_OBJECT_SUM_OF_SQUARES_H_
 
 # include <lbcpp/Function/ScalarObjectFunction.h>
-# include <lbcpp/Function/PerceptionMaths.h>
+# include <lbcpp/Perception/PerceptionMaths.h>
 
 namespace lbcpp
 {

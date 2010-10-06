@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
-# include <lbcpp/Function/Perception.h>
+# include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 

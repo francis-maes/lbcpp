@@ -49,10 +49,11 @@
 # include "Function/Predicate.h"
 # include "Function/IterationFunction.h"
 # include "Function/StoppingCriterion.h"
-# include "Function/Perception.h"
-# include "Function/PerceptionMaths.h"
-# include "Function/PerceptionRewriter.h"
 # include "Function/Evaluator.h"
+
+# include "Perception/Perception.h"
+# include "Perception/PerceptionMaths.h"
+# include "Perception/PerceptionRewriter.h"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceStack.h"

@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Function/Perception.h>
+#include <lbcpp/Perception/Perception.h>
 using namespace lbcpp;
 
 /*
