@@ -25,7 +25,7 @@ public:
     {return T("window of ") + String((int)windowSize) + T(" ") + elementsType->getName() + T("s");}
 
   virtual TypePtr getInputType() const
-    {return pairType(containerClass(elementsType), integerType());}
+    {return pairClass(containerClass(elementsType), integerType());}
 
   virtual size_t getNumOutputVariables() const
     {return windowSize;}

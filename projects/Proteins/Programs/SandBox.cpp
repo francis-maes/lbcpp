@@ -223,10 +223,12 @@ private:
 
 /////////////////////////////////////////
 
-VectorPtr loadProteins(const File& directory, size_t maxCount = 0)
+VectorPtr loadProteins(const File& directory)
 {
 #ifdef JUCE_DEBUG
-  if (!maxCount) maxCount = 7;
+  size_t maxCount = 2;
+#else
+  size_t maxCount = 100;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->apply(loadFromFileFunction(proteinClass()))->load(maxCount);
 }
@@ -242,7 +244,7 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), 100)->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")))->apply(proteinToInputOutputPairFunction())->randomize();
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;

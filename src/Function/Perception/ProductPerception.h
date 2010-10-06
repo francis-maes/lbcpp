@@ -19,7 +19,7 @@ class MultiplyDoubleFunction : public Function
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(doubleType(), doubleType());}
+    {return pairClass(doubleType(), doubleType());}
 
   virtual TypePtr getOutputType(TypePtr ) const
     {return doubleType();}

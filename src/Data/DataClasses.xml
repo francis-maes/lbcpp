@@ -4,7 +4,8 @@
   <import name="Type" pre="yes"/>
   <import name="Stream"/>
   <import name="Container"/>
-  
+
+  <include file="lbcpp/Data/Pair.h"/>
   <include file="lbcpp/Data/DynamicObject.h"/>
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/ProbabilityDistribution.h"/>
@@ -12,6 +13,26 @@
   <include file="lbcpp/Data/Cache.h"/>
 
   <namespace name="lbcpp">
+    
+    <!-- Pair -->
+    <template name="Pair" base="Object">
+      <parameter name="firstType" type="Variable"/>
+      <parameter name="secondType" type="Variable"/>
+
+      <variable type="firstType" name="first"/>
+      <variable type="secondType" name="second"/>
+
+      <code>
+        virtual size_t getNumElements(const VariableValue&amp; value) const
+          {return 2;}
+        virtual Variable getElement(const VariableValue&amp; value, size_t index) const
+        {
+          PairPtr pair = value.getObjectAndCast&lt;Pair&gt;();
+          return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
+        }
+      </code>
+  
+    </template>
     
     <!-- Dynamic Object -->
     <class name="DynamicClass" base="DefaultClass"/>

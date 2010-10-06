@@ -35,7 +35,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   TypePtr outputType = trainingDataType->getTemplateArgument(1);
 
   PerceptionPtr perception = inference->getPerception();
-  VectorPtr newTrainingData = vector(pairType(perception->getOutputType(), outputType), trainingData->getNumElements());
+  VectorPtr newTrainingData = vector(pairClass(perception->getOutputType(), outputType), trainingData->getNumElements());
   for (size_t i = 0; i < newTrainingData->getNumElements(); ++i)
   {
     Variable example = trainingData->getElement(i);

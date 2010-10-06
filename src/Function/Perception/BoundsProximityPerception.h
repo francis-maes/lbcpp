@@ -21,7 +21,7 @@ public:
     {return T("bounds proximity");}
 
   virtual TypePtr getInputType() const
-    {return pairType(containerClass(anyType()), integerType());}
+    {return pairClass(containerClass(anyType()), integerType());}
 
   virtual size_t getNumOutputVariables() const
     {return 3;}

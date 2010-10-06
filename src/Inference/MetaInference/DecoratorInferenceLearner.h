@@ -19,7 +19,7 @@ namespace lbcpp
 class DecoratorInferenceLearner : public InferenceLearner<DecoratorInference>
 {
 public:
-  virtual TypePtr getTargetInferenceClass() const
+  virtual ClassPtr getTargetInferenceClass() const
     {return staticDecoratorInferenceClass();}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
@@ -60,7 +60,7 @@ protected:
 
     InferencePtr targetSubInference = targetInference->getSubInference();
 
-    VectorPtr res = vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
+    VectorPtr res = vector(pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
     for (size_t i = 0; i < n; ++i)
       res->setElement(i, subTrainingData[i]);
     return res;

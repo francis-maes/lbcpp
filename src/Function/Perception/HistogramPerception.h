@@ -72,7 +72,7 @@ public:
   WindowHistogramPerception() {}
 
   virtual TypePtr getInputType() const
-    {return pairType(containerClass(elementsType), positiveIntegerType());}
+    {return pairClass(containerClass(elementsType), positiveIntegerType());}
   
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
@@ -95,7 +95,7 @@ public:
   SegmentHistogramPerception() {}
 
   virtual TypePtr getInputType() const
-    {return pairType(containerClass(elementsType), pairType(positiveIntegerType(), positiveIntegerType()));}
+    {return pairClass(containerClass(elementsType), pairClass(positiveIntegerType(), positiveIntegerType()));}
   
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {

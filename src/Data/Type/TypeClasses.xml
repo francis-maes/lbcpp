@@ -22,9 +22,6 @@
     <type name="String" base="Variable" implementation="StringType"/>
       <type name="File" base="String" implementation="FileType"/>
     
-    <templateType name="Pair" implementation="PairTemplateType"/>
-
-    
     <!-- Object -->
     <class name="Object" base="Variable" abstract="yes">
       <!-- <variable type="Class" name="thisClass"/> -->

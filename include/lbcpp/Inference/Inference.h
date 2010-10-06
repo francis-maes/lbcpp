@@ -158,10 +158,10 @@ template<class BaseClass>
 class InferenceLearner : public BaseClass
 {
 public:
-  virtual TypePtr getTargetInferenceClass() const = 0;
+  virtual ClassPtr getTargetInferenceClass() const = 0;
 
   virtual TypePtr getInputType() const
-    {return pairType(getTargetInferenceClass(), containerClass(pairType(anyType(), anyType())));}
+    {return pairClass(getTargetInferenceClass(), containerClass(pairClass(anyType(), anyType())));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}

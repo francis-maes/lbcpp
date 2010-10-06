@@ -14,19 +14,12 @@
 namespace lbcpp
 {
 
-class DummyInferenceLearner : public Inference
+class DummyInferenceLearner : public InferenceLearner<Inference>
 {
-public:
-  virtual TypePtr getInputType() const
-    {return pairType(inferenceClass(), containerClass(pairType(anyType(), anyType())));}
-
-  virtual TypePtr getSupervisionType() const
-    {return nilType();}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
-
 protected:
+  virtual ClassPtr getTargetInferenceClass() const
+    {return inferenceClass();}
+
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return Variable();}
 };

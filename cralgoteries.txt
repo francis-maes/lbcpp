@@ -3,7 +3,6 @@
 * Bug Julien: crossValidation does not work for multi-pass SS3
 
 Netoyer le bazar:
- * TupleType.h => VariableAllocator
  * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
  
 Type:

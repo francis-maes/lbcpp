@@ -439,13 +439,9 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
     return it->second;
 }
 
-#include "Type/TupleType.h"
 #include "Type/FileType.h"
 
 DirectoriesCache FileType::cache;
-
-TypePtr lbcpp::pairType(TypePtr type1, TypePtr type2)
-  {static BinaryTemplateTypeCache cache(T("Pair")); return cache(type1, type2);}
 
 TypePtr lbcpp::sumType(TypePtr type1, TypePtr type2)
 {

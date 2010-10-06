@@ -163,7 +163,7 @@ static void tokenizeTypeName(const String& str, const String& separators, String
   }
 }
 
-TypePtr DefaultTemplateType::getType(const std::vector<TypePtr>& arguments, const String& typeExpr, MessageCallback& callback) const
+TypePtr DefaultTemplateType::instantiateTypeName(const String& typeExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const
 {
   if (isInstanciatedTypeName(typeExpr))
   {
@@ -175,7 +175,7 @@ TypePtr DefaultTemplateType::getType(const std::vector<TypePtr>& arguments, cons
     std::vector<TypePtr> templateArgumentTypes(templateArguments.size());
     for (size_t i = 0; i < templateArgumentTypes.size(); ++i)
     {
-      templateArgumentTypes[i] = getType(arguments, templateArguments[i], callback);
+      templateArgumentTypes[i] = instantiateTypeName(templateArguments[i], arguments, callback);
       if (!templateArgumentTypes[i])
         return false;
     }
@@ -194,6 +194,6 @@ TypePtr DefaultTemplateType::instantiate(const std::vector<TypePtr>& arguments, 
 {
   if (!initialized && !const_cast<DefaultTemplateType* >(this)->initialize(callback))
     return TypePtr();
-  TypePtr baseType = computeBaseType(arguments, callback);
+  TypePtr baseType = instantiateTypeName(baseTypeExpr, arguments, callback);
   return baseType ? instantiate(arguments, baseType, callback) : TypePtr();
 }

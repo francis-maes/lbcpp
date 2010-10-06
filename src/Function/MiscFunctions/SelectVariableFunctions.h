@@ -54,11 +54,11 @@ public:
     {}
 
   virtual TypePtr getInputType() const
-    {return pairType(anyType(), anyType());}
+    {return pairClass(anyType(), anyType());}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
   {
-    return pairType(
+    return pairClass(
       getOutputTypeBase(inputType->getTemplateArgument(0), index1),
       getOutputTypeBase(inputType->getTemplateArgument(1), index2));
   }

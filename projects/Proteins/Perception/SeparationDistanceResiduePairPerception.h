@@ -18,7 +18,7 @@ class SeparationDistanceResiduePairPerception : public Perception
 {
 public:
   virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), pairType(positiveIntegerType(), positiveIntegerType()));}
+    {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
 
   virtual size_t getNumOutputVariables() const
     {return 1;}

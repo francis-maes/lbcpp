@@ -21,7 +21,7 @@ public:
   SharedParallelInferenceLearner(bool filterUnsupervisedExamples = true)
     : filterUnsupervisedExamples(filterUnsupervisedExamples) {}
 
-  virtual TypePtr getTargetInferenceClass() const
+  virtual ClassPtr getTargetInferenceClass() const
     {return sharedParallelInferenceClass();}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
@@ -49,7 +49,7 @@ private:
   ContainerPtr computeSubTrainingData(InferenceContextPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     InferencePtr targetSubInference = targetInference->getSubInference();
-    VectorPtr res = vector(pairType(targetSubInference->getInputType(), targetSubInference->getSupervisionType()));
+    VectorPtr res = vector(pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType()));
     
     size_t n = trainingData->getNumElements();
     for (size_t i = 0; i < n; ++i)

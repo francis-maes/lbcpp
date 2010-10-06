@@ -18,7 +18,7 @@ namespace lbcpp
 class StaticSequentialInferenceLearner : public InferenceLearner<SequentialInference>
 {
 public:
-  virtual TypePtr getTargetInferenceClass() const
+  virtual ClassPtr getTargetInferenceClass() const
     {return staticSequentialInferenceClass();}
 
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
@@ -91,10 +91,10 @@ private:
       : subInference(subInference), targetStates(targetStates) {}
 
     virtual ClassPtr getClass() const
-      {return containerClass(pairType(anyType(), anyType()));}
+      {return containerClass(pairClass(anyType(), anyType()));}
 
     virtual TypePtr getElementsType() const
-      {return pairType(subInference->getInputType(), subInference->getSupervisionType());}
+      {return pairClass(subInference->getInputType(), subInference->getSupervisionType());}
 
     virtual size_t getNumElements() const
       {return targetStates.size();}
