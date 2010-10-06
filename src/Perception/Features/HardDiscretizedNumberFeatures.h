@@ -18,22 +18,25 @@ class HardDiscretizedNumberFeatures : public DiscretizedNumberFeatures
 {
 public:
   HardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures)
-    : DiscretizedNumberFeatures(inputType, minimumValue, maximumValue, numIntervals, doOutOfBoundsFeatures) {}
+    : DiscretizedNumberFeatures(inputType, minimumValue, maximumValue, numIntervals, doOutOfBoundsFeatures)
+    {computeOutputVariables();}
 
   HardDiscretizedNumberFeatures() {}
 
-  virtual size_t getNumOutputVariables() const
-    {return (doOutOfBoundsFeatures ? 2 : 0) + numIntervals;}
-
-  virtual String getOutputVariableName(size_t index) const
+  virtual void computeOutputVariables()
   {
-    String res = getOutOfBoundsFeatureName(index);
-    if (res.isEmpty())
+    reserveOutputVariables((doOutOfBoundsFeatures ? 2 : 0) + numIntervals);
+    if (doOutOfBoundsFeatures)
     {
-      res = T("in [") + getBoundaryName(index) + T(", ") + getBoundaryName(index + 1);
-      res += index == numIntervals - 1 ? T("]") : T("[");
+      addOutputVariable(T("after ") + getBoundaryName(0), doubleType());
+      addOutputVariable(T("after ") + getBoundaryName(numIntervals), doubleType());
     }
-    return res;
+    for (size_t i = 0; i < numIntervals; ++i)
+    {
+      String name = T("in [") + getBoundaryName(i) + T(", ") + getBoundaryName(i + 1);
+      name += i == numIntervals - 1 ? T("]") : T("[");
+      addOutputVariable(name, doubleType());
+    }
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

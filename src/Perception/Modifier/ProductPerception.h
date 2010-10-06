@@ -31,7 +31,7 @@ public:
 class ProductPerception;
 typedef ReferenceCountedObjectPtr<ProductPerception> ProductPerceptionPtr;
 
-class ProductPerception : public VariableVectorPerception
+class ProductPerception : public Perception
 {
 public:
   ProductPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions);
@@ -65,11 +65,11 @@ protected:
   PerceptionPtr perception2;
   bool singleInputForBothPerceptions;
 
-  void computeOutputVariables();
+  virtual void computeOutputVariables();
   void addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2);
 };
 
-class ProductWithVariablePerception : public VariableVectorPerception
+class ProductWithVariablePerception : public Perception
 {
 public:
   ProductWithVariablePerception(FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables);
@@ -92,14 +92,14 @@ public:
     {return swapVariables;}
 
 protected:
+  virtual void computeOutputVariables();
+
   friend class ProductWithVariablePerceptionClass;
 
   FunctionPtr multiplyFunction;
   PerceptionPtr perception;
   TypePtr variableType;
   bool swapVariables;
-
-  void computeOutputVariables();
 };
 
 }; /* namespace lbcpp */

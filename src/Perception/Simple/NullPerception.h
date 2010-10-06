@@ -23,14 +23,8 @@ public:
   virtual TypePtr getOutputType() const
     {return nilType();}
 
-  virtual size_t getNumOutputVariables() const
-    {return 0;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {jassert(false); return TypePtr();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {jassert(false); return String::empty;}
+  virtual void computeOutputVariables()
+    {}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {}

@@ -19,32 +19,13 @@ class DiscreteProbabilityDistributionPerception : public Perception
 {
 public:
   DiscreteProbabilityDistributionPerception(EnumerationPtr enumeration)
-    : enumeration(enumeration) {}
+    : enumeration(enumeration)
+    {computeOutputVariables();}
+
   DiscreteProbabilityDistributionPerception() {}
 
   virtual TypePtr getInputType() const
     {return discreteProbabilityDistributionClass(enumeration);}
-
-  virtual size_t getNumOutputVariables() const
-    {return enumeration->getNumElements() + 2;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-  {
-    if (index <= enumeration->getNumElements())
-      return probabilityType();
-    else
-      return negativeLogProbabilityType();
-  }
-
-  virtual String getOutputVariableName(size_t index) const
-  {
-    if (index < enumeration->getNumElements())
-      return T("p[") + enumeration->getElementName(index) + T("]");
-    else if (index == enumeration->getNumElements())
-      return T("p[missing]");
-    else
-      return T("entropy");
-  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
@@ -66,6 +47,15 @@ protected:
   friend class DiscreteProbabilityDistributionPerceptionClass;
 
   EnumerationPtr enumeration;
+
+  virtual void computeOutputVariables()
+  {
+    reserveOutputVariables(enumeration->getNumElements() + 2);
+    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType());
+    addOutputVariable(T("p[missing]"), probabilityType());
+    addOutputVariable(T("entropy"), negativeLogProbabilityType());
+  }
 };
 
 }; /* namespace lbcpp */

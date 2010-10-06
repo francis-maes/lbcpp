@@ -113,8 +113,6 @@ protected:
   }
 };
 
-
-
 }; /* namespace lbcpp */
 
 HistogramPerception::HistogramPerception(TypePtr elementsType, bool useCache)
@@ -122,47 +120,33 @@ HistogramPerception::HistogramPerception(TypePtr elementsType, bool useCache)
 {
   if (useCache)
     cache = new AccumulatedScoresCache();
+  computeOutputVariables();
 }
 
-size_t HistogramPerception::getNumOutputVariables() const
+void HistogramPerception::computeOutputVariables()
 {
   EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
   if (enumeration)
-    return enumeration->getNumElements() + 2;
-  if (elementsType->inheritsFrom(doubleType()))
-    return 3;
-  if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
-    return elementsType->getTemplateArgument(0).dynamicCast<Enumeration>()->getNumElements() + 2;
-  jassert(false);
-  return 0;
-}
-
-TypePtr HistogramPerception::getOutputVariableType(size_t index) const
-{
-  if (index == 0 && elementsType->inheritsFrom(doubleType()))
-    return elementsType;
-  return index == getNumOutputVariables() - 1 ? negativeLogProbabilityType() : probabilityType();
-}
-
-String HistogramPerception::getOutputVariableName(size_t index) const
-{
-  if (index == getNumOutputVariables() - 1)
-    return T("entropy");
-  else if (index == getNumOutputVariables() - 2)
-    return T("p[missing]");
-
-  EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
-  if (enumeration)
-    return T("p[") + enumeration->getElementName(index) + T("]");
-  if (elementsType->inheritsFrom(doubleType()))
-    return T("average");
-  if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
+  {
+    reserveOutputVariables(enumeration->getNumElements() + 2);
+    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType());
+  }
+  else if (elementsType->inheritsFrom(doubleType()))
+  {
+    reserveOutputVariables(3);
+    addOutputVariable(T("average"), elementsType);
+  }
+  else if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
   {
     enumeration = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>();
-    return T("p[") + enumeration->getElementName(index) + T("]");
+    reserveOutputVariables(enumeration->getNumElements() + 2);
+    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType());
   }
-  jassert(false);
-  return String::empty;
+
+  addOutputVariable(T("p[missing]"), probabilityType());
+  addOutputVariable(T("entropy"), negativeLogProbabilityType());
 }
 
 void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const

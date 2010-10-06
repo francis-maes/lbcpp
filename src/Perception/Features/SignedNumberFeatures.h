@@ -19,8 +19,7 @@ class SignedNumberFeatures : public Perception
 public:
   SignedNumberFeatures(PerceptionPtr positiveNumberPerception)
     : positiveNumberPerception(positiveNumberPerception)
-  {
-  }
+    {computeOutputVariables();}
 
   SignedNumberFeatures() {}
 
@@ -30,17 +29,13 @@ public:
   virtual bool isSparse() const
     {return true;}
 
-  virtual size_t getNumOutputVariables() const
-    {return 3;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return index == 0 ? doubleType() : positiveNumberPerception->getOutputType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return index == 0 ? T("zero") : (index == 1 ? T("positive") : T("negative"));}
-
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {return index == 0 ? PerceptionPtr() : positiveNumberPerception;}
+  virtual void computeOutputVariables()
+  {
+    reserveOutputVariables(3);
+    addOutputVariable(T("zero"), doubleType());
+    addOutputVariable(T("positive"), positiveNumberPerception);
+    addOutputVariable(T("negative"), positiveNumberPerception);
+  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {

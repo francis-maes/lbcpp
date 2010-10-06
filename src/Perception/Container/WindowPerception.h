@@ -18,7 +18,11 @@ class WindowPerception : public Perception
 {
 public:
   WindowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception)
-    : elementsType(elementsType), windowSize(windowSize), subPerception(subPerception) {}
+    : elementsType(elementsType), windowSize(windowSize), subPerception(subPerception)
+  {
+    computeOutputVariables();
+  }
+
   WindowPerception() : windowSize(0) {}
 
   virtual String toString() const
@@ -26,18 +30,6 @@ public:
 
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), integerType());}
-
-  virtual size_t getNumOutputVariables() const
-    {return windowSize;}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return subPerception ? subPerception->getOutputType() : elementsType;}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return T("[") + String((int)index - (int)(windowSize / 2)) + T("]");}
-
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {return subPerception;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
@@ -58,6 +50,19 @@ public:
             callback->sense(i, variable);
         }
       }
+    }
+  }
+
+  virtual void computeOutputVariables()
+  {
+    reserveOutputVariables(windowSize);
+    for (size_t i = 0; i < windowSize; ++i)
+    {
+      String name = T("[") + String((int)i - (int)(windowSize / 2)) + T("]");
+      if (subPerception)
+        addOutputVariable(name, subPerception);
+      else
+        addOutputVariable(name, elementsType);
     }
   }
 

@@ -1,8 +1,4 @@
-
-* Clarifier les classes de bases
-   * Fusionner VariableVectorPerception dans Perception ?
-   * Rendre les infos sur le variables de sorties non virtuelles
-   
+ 
 Perception:
  * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
  * Implementer le PerceptionCallback::sense(double) dans ProductPerception

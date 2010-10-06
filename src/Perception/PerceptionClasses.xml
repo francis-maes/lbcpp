@@ -16,12 +16,9 @@
       <variable type="DynamicClass" name="outputType"/>
     </class>
 
-    <class name="VariableVectorPerception" base="Perception" abstract="yes"/>
-
     <class name="CompositePerception" base="Perception" abstract="yes">
       <variable type="Type" name="inputType"/>
-      <variable type="String" name="preferedOutputClassName"/>
-      <variable type="GenericVector[Pair[String, Perception]]" name="subPerceptions"/>
+      <variable type="String" name="stringDescription"/>
     </class>
 
     <!-- Perception Rewriter -->

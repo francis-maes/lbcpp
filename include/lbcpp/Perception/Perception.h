@@ -33,19 +33,11 @@ typedef ReferenceCountedObjectPtr<PerceptionCallback> PerceptionCallbackPtr;
 class Perception : public Function
 {
 public:
+  // Perception
   virtual TypePtr getOutputType() const;
-  virtual String toString() const;
-
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
   virtual bool isSparse() const
     {return false;}
-
-  virtual size_t getNumOutputVariables() const = 0;
-  virtual TypePtr getOutputVariableType(size_t index) const = 0;
-  virtual String getOutputVariableName(size_t index) const = 0;
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {return PerceptionPtr();}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
 
   // Function
   virtual TypePtr getOutputType(TypePtr inputType) const
@@ -53,9 +45,58 @@ public:
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const;
 
+  // Object
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual String toString() const;
+
+  // output variables
+  struct OutputVariable
+  {
+    TypePtr type;
+    String name;
+    PerceptionPtr subPerception;
+  };
+
+  const std::vector<OutputVariable>& getOutputVariables() const
+    {return outputVariables;}
+
+  size_t getNumOutputVariables() const
+    {return outputVariables.size();}
+
+  TypePtr getOutputVariableType(size_t index) const
+    {jassert(index < outputVariables.size()); return outputVariables[index].type;}
+
+  String getOutputVariableName(size_t index) const
+    {jassert(index < outputVariables.size()); return outputVariables[index].name;}
+
+  PerceptionPtr getOutputVariableSubPerception(size_t index) const
+    {jassert(index < outputVariables.size()); return outputVariables[index].subPerception;}
+
   juce_UseDebuggingNewOperator
 
 protected:
+  virtual void computeOutputVariables() = 0;
+
+  std::vector<OutputVariable> outputVariables;
+
+  void reserveOutputVariables(size_t count)
+    {outputVariables.reserve(count);}
+
+  void addOutputVariable(const String& name, PerceptionPtr subPerception)
+    {addOutputVariable(subPerception->getOutputType(), name, subPerception);}
+
+  void addOutputVariable(const String& name, TypePtr type)
+    {addOutputVariable(type, name, PerceptionPtr());}
+
+  void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception)
+  {
+    OutputVariable v;
+    v.type = type;
+    v.name = name;
+    v.subPerception = subPerception;
+    outputVariables.push_back(v);
+  }
+
   static String classNameToOutputClassName(const String& className);
 
 private:
@@ -70,53 +111,17 @@ private:
 extern ClassPtr perceptionClass();
 typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 
-class VariableVectorPerception : public Perception
-{
-public:
-  virtual size_t getNumOutputVariables() const
-    {return outputVariables.size();}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].type;}
-
-  virtual String getOutputVariableName(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].name;}
-
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {jassert(index < outputVariables.size()); return outputVariables[index].subPerception;}
-
-protected:
-  struct OutputVariable
-  {
-    TypePtr type;
-    String name;
-    PerceptionPtr subPerception;
-  };
-  std::vector<OutputVariable> outputVariables;
-
-  void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception)
-  {
-    OutputVariable v;
-    v.type = type;
-    v.name = name;
-    v.subPerception = subPerception;
-    outputVariables.push_back(v);
-  }
-};
-
-typedef ReferenceCountedObjectPtr<VariableVectorPerception> VariableVectorPerceptionPtr;
-
 class CompositePerception : public Perception
 {
 public:
-  CompositePerception(TypePtr inputType, const String& preferedOutputClassName);
+  CompositePerception(TypePtr inputType, const String& stringDescription);
   CompositePerception() {}
 
   virtual TypePtr getInputType() const
     {return inputType;}
 
   virtual String toString() const
-    {return preferedOutputClassName;}
+    {return stringDescription;}
 
   size_t getNumPerceptions() const;
   String getPerceptionName(size_t index) const;
@@ -124,34 +129,23 @@ public:
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 
   // Perception
-  virtual size_t getNumOutputVariables() const
-    {return getNumPerceptions();}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return getPerception(index)->getOutputType();}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return getPerceptionName(index);}
-
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {return getPerception(index);}
-
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
   juce_UseDebuggingNewOperator
 
 protected:
+  virtual void computeOutputVariables();
+
   friend class CompositePerceptionClass;
+
   TypePtr inputType;
-  String preferedOutputClassName;
-  VectorPtr subPerceptions;
-  std::vector<std::pair<String, PerceptionPtr> > subPerceptionsCopy;
+  String stringDescription;
 };
 
 typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 
-inline CompositePerceptionPtr compositePerception(TypePtr inputType, const String& preferedOutputClassName)
-  {return new CompositePerception(inputType, preferedOutputClassName);}
+inline CompositePerceptionPtr compositePerception(TypePtr inputType, const String& stringDescription)
+  {return new CompositePerception(inputType, stringDescription);}
 
 extern ClassPtr compositePerceptionClass();
 

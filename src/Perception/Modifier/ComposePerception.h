@@ -18,7 +18,7 @@ class ComposePerception : public Perception
 {
 public:
   ComposePerception(FunctionPtr function, PerceptionPtr perception)
-    : function(function), perception(perception) {}
+    : function(function), perception(perception) {computeOutputVariables();}
   ComposePerception() {}
 
   virtual String toString() const
@@ -27,20 +27,14 @@ public:
   virtual TypePtr getInputType() const
     {return function->getInputType();}
 
+  virtual TypePtr getOutputType() const
+    {return perception->getOutputType();}
+
   virtual bool isSparse() const
     {return perception->isSparse();}
- 
-  virtual size_t getNumOutputVariables() const
-    {return perception->getNumOutputVariables();}
 
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return perception->getOutputVariableType(index);}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return perception->getOutputVariableName(index);}
-
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {return perception->getOutputVariableSubPerception(index);}
+  virtual void computeOutputVariables()
+    {outputVariables = perception->getOutputVariables();}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {

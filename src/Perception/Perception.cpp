@@ -92,38 +92,47 @@ TypePtr Perception::ensureTypeIsComputed()
   return outputType;
 }
 
+bool Perception::loadFromXml(XmlImporter& importer)
+{
+  if (!Object::loadFromXml(importer))
+    return false;
+  computeOutputVariables();
+  return true;
+}
+
 /*
 ** CompositePerception
 */
-CompositePerception::CompositePerception(TypePtr inputType, const String& preferedOutputClassName)
-  : inputType(inputType), preferedOutputClassName(preferedOutputClassName),
-    subPerceptions(vector(pairClass(stringType(), perceptionClass())))
+CompositePerception::CompositePerception(TypePtr inputType, const String& stringDescription)
+  : inputType(inputType), stringDescription(stringDescription)
 {
 }
 
 size_t CompositePerception::getNumPerceptions() const
-  {return subPerceptionsCopy.size();}
+  {return outputVariables.size();}
 
 String CompositePerception::getPerceptionName(size_t index) const
-  {return subPerceptionsCopy[index].first;}
+  {return outputVariables[index].name;}
 
 PerceptionPtr CompositePerception::getPerception(size_t index) const
-  {return subPerceptionsCopy[index].second;}
+  {return outputVariables[index].subPerception;}
 
 void CompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
 {
   if (checkInheritance(getInputType(), subPerception->getInputType()))
-  {
-    subPerceptions->append(Variable::pair(name, subPerception));
-    subPerceptionsCopy.push_back(std::make_pair(name, subPerception));
-  }
+    addOutputVariable(name, subPerception);
 }
 
 void CompositePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
-  jassert(subPerceptionsCopy.size() == getNumOutputVariables());
-  for (size_t i = 0; i < subPerceptionsCopy.size(); ++i)
-    callback->sense(i, getPerception(i), input);
+  for (size_t i = 0; i < outputVariables.size(); ++i)
+    callback->sense(i, outputVariables[i].subPerception, input);
+}
+
+void CompositePerception::computeOutputVariables()
+{
+  // not implemented
+  jassert(false);
 }
 
 /*

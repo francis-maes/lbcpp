@@ -27,16 +27,13 @@ public:
   virtual String toString() const
     {return elementsType->getName() + T(" histogram");}
 
-  virtual size_t getNumOutputVariables() const;
-
-  virtual TypePtr getOutputVariableType(size_t index) const;
-  virtual String getOutputVariableName(size_t index) const;
-
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
   juce_UseDebuggingNewOperator
 
 protected:
+  virtual void computeOutputVariables();
+
   friend class HistogramPerceptionClass;
 
   TypePtr elementsType;
