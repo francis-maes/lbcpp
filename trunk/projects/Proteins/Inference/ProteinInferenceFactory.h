@@ -9,8 +9,8 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 # define LBCPP_PROTEIN_INFERENCE_FACTORY_H_
 
-# include <lbcpp/Function/Perception.h>
-# include <lbcpp/Function/PerceptionRewriter.h>
+# include <lbcpp/Perception/Perception.h>
+# include <lbcpp/Perception/PerceptionRewriter.h>
 # include <lbcpp/Inference/Inference.h>
 # include "../Data/Protein.h"   
 

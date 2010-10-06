@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_INFERENCE_CONTACT_MAP_H_
 # define LBCPP_PROTEIN_INFERENCE_CONTACT_MAP_H_
 
-# include <lbcpp/Function/Perception.h>
+# include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/DecoratorInference.h>

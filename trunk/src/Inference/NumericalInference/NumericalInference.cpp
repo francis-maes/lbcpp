@@ -8,7 +8,7 @@
 
 #include "NumericalInference.h"
 #include <lbcpp/Function/ScalarObjectFunction.h>
-#include <lbcpp/Function/PerceptionMaths.h>
+#include <lbcpp/Perception/PerceptionMaths.h>
 using namespace lbcpp;
 
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)

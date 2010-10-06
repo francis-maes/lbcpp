@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEIN_PERCEPTION_TO_RESIDUE_H_
 # define LBCPP_PROTEIN_PERCEPTION_TO_RESIDUE_H_
 
-# include <lbcpp/Function/Perception.h>
+# include <lbcpp/Perception/Perception.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp

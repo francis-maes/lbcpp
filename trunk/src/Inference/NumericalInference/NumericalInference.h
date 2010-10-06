@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_NUMERICAL_H_
 
 # include <lbcpp/Inference/Inference.h>
-# include <lbcpp/Function/Perception.h>
+# include <lbcpp/Perception/Perception.h>
 
 namespace lbcpp
 {

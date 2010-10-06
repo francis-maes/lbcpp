@@ -17,9 +17,10 @@ GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionCl
 GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionClasses.xml IterationFunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionClasses.xml StoppingCriterionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateClasses.xml PredicateClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Perception/PerceptionClasses.xml PerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Perception/Features/PerceptionFeaturesClasses.xml PerceptionFeaturesClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
+
+GENERATE_INTROSPECTION_CODE(Perception/PerceptionClasses.xml PerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Features/PerceptionFeaturesClasses.xml PerceptionFeaturesClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
@@ -30,7 +31,7 @@ GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClass
 GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
 
-##### Data ####
+#### Data ####
 
 SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/Utilities.h  
@@ -113,7 +114,7 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
 )
 
-##### FUNCTION ####
+#### Function ####
 
 SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/predeclarations.h
@@ -124,12 +125,6 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/IterationFunction.h
   ../include/lbcpp/Function/StoppingCriterion.h
   ../include/lbcpp/Function/Predicate.h
-  ../include/lbcpp/Function/Perception.h
-  Function/Perception.cpp
-  ../include/lbcpp/Function/PerceptionMaths.h
-  Function/PerceptionMaths.cpp
-  ../include/lbcpp/Function/PerceptionRewriter.h
-  Function/PerceptionRewriter.cpp
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
   Function/FunctionClasses.xml
@@ -188,38 +183,6 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/PredicateClasses.cpp
 )
 
-SET(LBCPP_FUNCTION_PERCEPTION_SOURCES
-  Function/Perception/NullPerception.h
-  Function/Perception/IdentityPerception.h
-  Function/Perception/RewritedPerception.h
-  Function/Perception/ProductPerception.h
-  Function/Perception/ProductPerception.cpp
-  Function/Perception/WindowPerception.h
-  Function/Perception/HistogramPerception.h
-  Function/Perception/HistogramPerception.cpp
-  Function/Perception/BoundsProximityPerception.h
-  Function/Perception/ProbabilityDistributionPerception.h
-  Function/Perception/PreprocessPerception.h
-  Function/Perception/FlattenPerception.h
-  Function/Perception/CollapsePerception.h
-  Function/Perception/SelectAndMakeProductsPerception.h
-  Function/Perception/FunctionBasedPerception.h
-  Function/Perception/PerceptionRewriterRules.h
-  Function/Perception/PerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
-)
-
-SET(LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES
-  Function/Perception/Features/BooleanFeatures.h
-  Function/Perception/Features/EnumValueFeatures.h
-  Function/Perception/Features/DiscretizedNumberFeatures.h
-  Function/Perception/Features/HardDiscretizedNumberFeatures.h
-  Function/Perception/Features/SoftDiscretizedNumberFeatures.h
-  Function/Perception/Features/SignedNumberFeatures.h
-  Function/Perception/Features/PerceptionFeaturesClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionFeaturesClasses.cpp
-)
-
 SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/ContainerElementsEvaluator.h
   Function/Evaluator/BinaryClassificationConfusionEvaluator.h
@@ -229,8 +192,49 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorClasses.cpp
 )
 
+#### Perception ####
 
-##### INFERENCE ####
+SET(LBCPP_PERCEPTION_SOURCES
+  ../include/lbcpp/Perception/Perception.h
+  Perception/Perception.cpp
+  ../include/lbcpp/Perception/PerceptionMaths.h
+  Perception/PerceptionMaths.cpp
+  ../include/lbcpp/Perception/PerceptionRewriter.h
+  Perception/PerceptionRewriter.cpp
+
+  Perception/NullPerception.h
+  Perception/IdentityPerception.h
+  Perception/RewritedPerception.h
+  Perception/ProductPerception.h
+  Perception/ProductPerception.cpp
+  Perception/WindowPerception.h
+  Perception/HistogramPerception.h
+  Perception/HistogramPerception.cpp
+  Perception/BoundsProximityPerception.h
+  Perception/ProbabilityDistributionPerception.h
+  Perception/PreprocessPerception.h
+  Perception/FlattenPerception.h
+  Perception/CollapsePerception.h
+  Perception/SelectAndMakeProductsPerception.h
+  Perception/FunctionBasedPerception.h
+  Perception/PerceptionRewriterRules.h
+  Perception/PerceptionClasses.xml
+  
+  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
+)
+
+SET(LBCPP_PERCEPTION_FEATURES_SOURCES
+  Perception/Features/BooleanFeatures.h
+  Perception/Features/EnumValueFeatures.h
+  Perception/Features/DiscretizedNumberFeatures.h
+  Perception/Features/HardDiscretizedNumberFeatures.h
+  Perception/Features/SoftDiscretizedNumberFeatures.h
+  Perception/Features/SignedNumberFeatures.h
+  Perception/Features/PerceptionFeaturesClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionFeaturesClasses.cpp
+)
+
+#### Inference ####
 
 SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/predeclarations.h
@@ -352,9 +356,11 @@ SET(LBCPP_CORE
     ${LBCPP_FUNCTION_ITERATION_SOURCES}
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
     ${LBCPP_FUNCTION_PREDICATE_SOURCES}
-    ${LBCPP_FUNCTION_PERCEPTION_SOURCES}
-      ${LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES}
     ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
+
+  # Perception
+  ${LBCPP_PERCEPTION_SOURCES}
+    ${LBCPP_PERCEPTION_FEATURES_SOURCES}
 
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
@@ -371,7 +377,6 @@ SET(LBCPP_CORE
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 
 ## Data
-
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
@@ -380,7 +385,6 @@ SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 
 ## Function
-
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
@@ -388,23 +392,21 @@ SOURCE_SUB_GROUP(Function ScalarObjectFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJ
 SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
-SOURCE_SUB_GROUP(Function Perception FILES ${LBCPP_FUNCTION_PERCEPTION_SOURCES})
-SOURCE_SUB_GROUP2(Function Perception Features FILES ${LBCPP_FUNCTION_PERCEPTION_FEATURES_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
-## Inference
+## Perception
+SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP(Perception Features FILES ${LBCPP_PERCEPTION_FEATURES_SOURCES})
 
+## Inference
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
-
 SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})
 SOURCE_SUB_GROUP(Inference DecisionTreeInference FILES ${LBCPP_INFERENCE_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
 SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 
-
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
-
 TARGET_LINK_LIBRARIES(lbcpp-core juce)

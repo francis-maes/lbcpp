@@ -11,7 +11,6 @@
   <import name="IterationFunction"/>
   <import name="StoppingCriterion"/>
   <import name="Predicate"/>
-  <import name="Perception"/>
   <import name="Evaluator"/>
   
 </file>

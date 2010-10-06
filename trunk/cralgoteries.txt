@@ -1,23 +1,17 @@
+ * Nouveaux sous-repertoire: ModifierPerception, ContainerPerception, SimplePerception
+ * Fusionner Perception::toString() et Perception::getPreferedOutputClassName()  (?)
 
-* Forward Feature Group Selection
-* Bug Julien: crossValidation does not work for multi-pass SS3
-
-Netoyer le bazar:
- * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
- 
-Type:
- * classe Pair pour refcounter les TupleType
 
 Perception:
- * Implementer le PerceptionCallback::sense(double) dans ProductPerception
  * Utiliser un PreprocessPerception pour ProteinToResiduePerception et ProteinToResiduePairPerception 
-   * Renommer PreprocessPerception en ComposePerception (?)
- * Fusionner Perception::toString() et Perception::getPreferedOutputClassName()  (?)
+   * Renommer PreprocessPerception en ComposePerception
+ * Implementer le PerceptionCallback::sense(double) dans ProductPerception
  * Fusionner VariableVectorPerception dans Perception ?
- * Deplacer Function/Perception vers Perception
- * Nouveaux sous-repertoire: ModifierPerception, ContainerPerception, SimplePerception
+ * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
  * Serialisation des Perceptions
  * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
+
+* Bug Julien: crossValidation does not work for multi-pass SS3
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch

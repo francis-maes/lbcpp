@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="PerceptionFeatures" directory="Perception/Features">
+  <include file="lbcpp/Perception/Perception.h"/>
+
+  <namespace name="lbcpp">
+
+    <class name="BooleanFeatures" base="Perception">
+      <constructor/>
+    </class>
+
+    <class name="EnumValueFeatures" base="Perception">
+      <constructor arguments="EnumerationPtr enumeration"/>
+      <variable type="Enumeration" name="enumeration"/>
+    </class>
+
+    <class name="DiscretizedNumberFeatures" base="Perception" abstract="yes">
+      <variable type="Type" name="inputType"/>
+      <variable type="Double" name="minimumValue"/>
+      <variable type="Double" name="maximumValue"/>
+      <variable type="Integer" name="numIntervals"/>
+      <variable type="Boolean" name="doOutOfBoundsFeatures"/>
+    </class>
+
+    <class name="HardDiscretizedNumberFeatures" base="DiscretizedNumberFeatures">
+      <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="Perception"/>
+    </class>
+
+    <class name="SoftDiscretizedNumberFeatures" base="DiscretizedNumberFeatures">
+      <constructor arguments="TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior" returnType="Perception"/>
+      <variable type="Boolean" name="cyclicBehavior"/>
+    </class>
+
+    <class name="SoftDiscretizedLogNumberFeatures" base="SoftDiscretizedNumberFeatures">
+      <constructor arguments="TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="Perception"/>
+    </class>
+
+    <class name="SignedNumberFeatures" base="Perception">
+      <constructor arguments="PerceptionPtr positiveNumberPerception"/>
+      <variable type="Perception" name="positiveNumberPerception"/>
+    </class>
+
+  </namespace>
+</file>
