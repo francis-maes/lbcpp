@@ -87,30 +87,6 @@ public:
   juce_UseDebuggingNewOperator
 };
 
-class BiVariableFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
-{
-public:
-  BiVariableFeaturesPerceptionRewriteRule(PerceptionPtr perception = PerceptionPtr())
-  : perception(perception) {}
-  
-  virtual bool match(TypePtr type, const std::vector<String>& stack) const
-    {return type->inheritsFrom(Type::get("BiVariablePerception"));} // FIXME
-
-  virtual PerceptionPtr computeRule(TypePtr type) const
-  {
-    TypePtr arg1 = type->getTemplateArgument(0);
-    TypePtr arg2 = type->getNumTemplateArguments() > 1 ? type->getTemplateArgument(1) : arg1;
-    return biVariableFeatures(arg1, arg2, perception);
-  }
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  friend class BiVariableFeaturesPerceptionRewriteRuleClass;
-  
-  PerceptionPtr perception;
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_REWRITER_RULES_H_

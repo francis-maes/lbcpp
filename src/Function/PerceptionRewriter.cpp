@@ -82,9 +82,6 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
   rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
   rewriter->addRule(integerType(), defaultIntegerFeatures());
 
-  // TODO delete after test
-  rewriter->addRule(biVariableFeaturesPerceptionRewriteRule(hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false)));
-
   rewriter->addRule(doubleType(), identityPerception());
   return rewriter->rewrite(perception);
 }

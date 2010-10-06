@@ -40,12 +40,5 @@
       <variable type="Perception" name="positiveNumberPerception"/>
     </class>
 
-    <class name="BiVariableFeatures" base="DecoratorPerception">
-      <constructor arguments="TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception"/>
-      <variable type="Type" name="firstElementType"/>
-      <variable type="Type" name="secondElementType"/>
-      <variable type="Boolean" name="hasBeenSwaped"/>
-    </class>
-
   </namespace>
 </file>
