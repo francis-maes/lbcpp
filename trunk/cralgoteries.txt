@@ -1,10 +1,9 @@
- * Nouveaux sous-repertoire: ModifierPerception, ContainerPerception, SimplePerception
+
  * Fusionner Perception::toString() et Perception::getPreferedOutputClassName()  (?)
 
 
 Perception:
- * Utiliser un PreprocessPerception pour ProteinToResiduePerception et ProteinToResiduePairPerception 
-   * Renommer PreprocessPerception en ComposePerception
+ * Utiliser un ComposePerception pour ProteinToResiduePerception et ProteinToResiduePairPerception 
  * Implementer le PerceptionCallback::sense(double) dans ProductPerception
  * Fusionner VariableVectorPerception dans Perception ?
  * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector

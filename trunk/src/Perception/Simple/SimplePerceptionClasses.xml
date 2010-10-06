@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="SimplePerception" directory="Perception/Simple">
+
+  <namespace name="lbcpp">
+    <class name="NullPerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <class name="IdentityPerception" base="Perception">
+      <constructor arguments="TypePtr type"/>
+      <variable type="Type" name="type"/>
+    </class>
+
+    <class name="FunctionBasedPerception" base="Perception">
+      <constructor arguments="FunctionPtr function"/>
+      <variable type="Function" name="function"/>
+    </class>
+  </namespace>
+
+</file>

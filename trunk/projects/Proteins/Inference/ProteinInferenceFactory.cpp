@@ -190,5 +190,5 @@ void ProteinInferenceFactory::addPerception(CompositePerceptionPtr composite, co
   else
     selectFunction = selectVariableFunction(index);
 
-  composite->addPerception(name, Perception::compose(selectFunction, perception));
+  composite->addPerception(name, composePerception(selectFunction, perception));
 }

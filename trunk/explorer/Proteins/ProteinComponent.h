@@ -63,7 +63,7 @@ protected:
   PerceptionPtr getPerception(const String& tabName) const
   {
     if (tabName == T("Attributes"))
-      return perception->flatten();
+      return flattenPerception(perception);
     else if (tabName == T("Features"))
     {
       PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));

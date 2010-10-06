@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ModifierPerception" directory="Perception/Modifier">
+  <namespace name="lbcpp">
+
+    <!-- perception Modifiers -->
+    <class name="ComposePerception" base="DecoratorPerception">
+      <constructor arguments="FunctionPtr function, PerceptionPtr perception"/>
+      <variable type="Function" name="function"/>
+    </class>
+
+    <class name="FlattenPerception" base="VariableVectorPerception">
+      <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
+      <variable type="Perception" name="decorated"/>
+    </class>
+
+    <class name="CollapsePerception" base="VariableVectorPerception">
+      <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
+      <variable type="Perception" name="decorated"/>
+    </class>
+
+    <class name="SelectAndMakeProductsPerception" base="VariableVectorPerception">
+      <constructor arguments="PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions" returnType="Perception"/>
+      <variable type="Perception" name="decorated"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="GenericVector[PositiveInteger]" name="selectedConjunctions"/>
+    </class>
+
+    <!-- Product Perception -->
+    <class name="MultiplyDoubleFunction" base="Function">
+      <constructor/>
+    </class>
+    <class name="ProductPerception" base="VariableVectorPerception">
+      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions" returnType="Perception"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="Boolean" name="symmetricFunction"/>
+      <variable type="Perception" name="perception1"/>
+      <variable type="Perception" name="perception2"/>
+      <variable type="Boolean" name="singleInputForBothPerceptions"/>
+    </class>
+
+    <class name="ProductWithVariablePerception" base="VariableVectorPerception">
+      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables" returnType="Perception"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="Perception" name="perception"/>
+      <variable type="Type" name="variableType"/>
+      <variable type="Boolean" name="swapVariables"/>
+    </class>
+
+    <!-- Perception Rewriter -->
+    <class name="RewritedPerception" base="VariableVectorPerception"/>
+
+  </namespace>
+</file>

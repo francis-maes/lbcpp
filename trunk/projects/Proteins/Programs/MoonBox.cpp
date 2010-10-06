@@ -47,7 +47,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res ? res->flatten() : PerceptionPtr();
+    return res ? flattenPerception(res) : PerceptionPtr();
   }
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const

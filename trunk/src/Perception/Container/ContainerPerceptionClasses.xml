@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ContainerPerception" directory="Perception/Container">
+
+  <namespace name="lbcpp">
+
+    <!-- Container Perceptions -->
+    <class name="WindowPerception" base="Perception">
+      <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
+      <variable type="Type" name="elementsType"/>
+      <variable type="Integer" name="windowSize"/>
+      <variable type="Perception" name="subPerception"/>
+    </class>
+
+    <class name="AccumulatedScores" abstract="yes"/>
+    <class name="HistogramPerception" base="Perception" abstract="yes">
+      <variable type="Type" name="elementsType"/>
+      <variable type="Cache" name="cache"/>
+    </class>
+
+    <class name="ContainerHistogramPerception" base="HistogramPerception">
+      <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
+    </class>
+    <class name="WindowHistogramPerception" base="HistogramPerception">
+      <constructor arguments="TypePtr elementsType, size_t windowSize, bool useCache" returnType="Perception"/>
+    </class>
+    <class name="SegmentHistogramPerception" base="HistogramPerception">
+      <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
+    </class>
+
+    <class name="BoundsProximityPerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <!-- Probability Distribution Perception -->
+    <class name="DiscreteProbabilityDistributionPerception" base="Perception">
+      <constructor arguments="EnumerationPtr enumeration"/>
+      <variable type="Enumeration" name="enumeration"/>
+    </class>
+    
+  </namespace>
+
+</file>

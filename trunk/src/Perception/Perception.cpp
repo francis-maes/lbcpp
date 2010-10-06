@@ -92,12 +92,6 @@ TypePtr Perception::ensureTypeIsComputed()
   return outputType;
 }
 
-PerceptionPtr Perception::addPreprocessor(FunctionPtr preProcessingFunction) const
-  {return preprocessPerception(preProcessingFunction, refCountedPointerFromThis(this));}
-
-PerceptionPtr Perception::flatten() const
-  {return flattenPerception(refCountedPointerFromThis(this));}
-
 /*
 ** CompositePerception
 */
