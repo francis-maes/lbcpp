@@ -47,6 +47,7 @@ SET(LBCPP_DATA_SOURCES
   Data/TemplateType.cpp
   ../include/lbcpp/Data/Variable.h
   Data/Variable.cpp
+  ../include/lbcpp/Data/Pair.h
   ../include/lbcpp/Data/XmlSerialisation.h  
   Data/XmlSerialisation.cpp
   ../include/lbcpp/Data/DynamicObject.h
@@ -86,7 +87,6 @@ SET(LBCPP_DATA_TYPE_SOURCES
   Data/Type/DoubleType.h
   Data/Type/StringType.h
   Data/Type/FileType.h
-  Data/Type/TupleType.h
   Data/Type/TypeClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/TypeClasses.cpp
 )
@@ -302,6 +302,7 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/CallbackBasedDecoratorInference.h
   Inference/MetaInference/RunOnSupervisedExamplesInference.h
   Inference/MetaInference/CrossValidationInference.h
+  Inference/MetaInference/DummyInferenceLearner.h
   Inference/MetaInference/StaticSequentialInferenceLearner.h
   Inference/MetaInference/StaticParallelInferenceLearner.h
   Inference/MetaInference/SharedParallelInferenceLearner.h

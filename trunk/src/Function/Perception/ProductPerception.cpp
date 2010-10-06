@@ -98,7 +98,7 @@ TypePtr ProductPerception::getInputType() const
   if (singleInputForBothPerceptions)
     return Type::findCommonBaseType(perception1->getInputType(), perception2->getInputType());
   else
-    return pairType(perception1->getInputType(), perception2->getInputType());
+    return pairClass(perception1->getInputType(), perception2->getInputType());
 }
 
 void ProductPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
@@ -125,7 +125,7 @@ void ProductPerception::computePerception(const Variable& input, PerceptionCallb
 void ProductPerception::addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2)
 {
   if (!sub1 && !sub2)
-    VariableVectorPerception::addOutputVariable(multiplyFunction->getOutputType(pairType(type1, type2)), name, PerceptionPtr());
+    VariableVectorPerception::addOutputVariable(multiplyFunction->getOutputType(pairClass(type1, type2)), name, PerceptionPtr());
   else
   {
     ProductPerceptionPtr product;
@@ -206,9 +206,9 @@ ProductWithVariablePerception::ProductWithVariablePerception(FunctionPtr multipl
 TypePtr ProductWithVariablePerception::getInputType() const
 {
   if (swapVariables)
-    return pairType(variableType, perception->getInputType());
+    return pairClass(variableType, perception->getInputType());
   else
-    return pairType(perception->getInputType(), variableType);
+    return pairClass(perception->getInputType(), variableType);
 }
 
 String ProductWithVariablePerception::getPreferedOutputClassName() const
@@ -249,7 +249,7 @@ void ProductWithVariablePerception::computeOutputVariables()
       TypePtr type2 = variableType;
       if (this->swapVariables)
         juce::swapVariables(type1, type2);
-      TypePtr outputType = multiplyFunction->getOutputType(pairType(type1, type2));
+      TypePtr outputType = multiplyFunction->getOutputType(pairClass(type1, type2));
       addOutputVariable(outputType, perception->getOutputVariableName(i), PerceptionPtr());
     }
   }

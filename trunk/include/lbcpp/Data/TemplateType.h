@@ -64,6 +64,7 @@ public:
   virtual TypePtr getParameterBaseType(size_t index) const = 0;
 
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
+  virtual TypePtr instantiateTypeName(const String& typeNameExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
 
   juce_UseDebuggingNewOperator
 
@@ -86,13 +87,11 @@ public:
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const = 0;
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
 
+  virtual TypePtr instantiateTypeName(const String& typeNameExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
+
   juce_UseDebuggingNewOperator
 
 protected:
-  TypePtr getType(const std::vector<TypePtr>& arguments, const String& typeExpr, MessageCallback& callback) const;
-
-  TypePtr computeBaseType(const std::vector<TypePtr>& arguments, MessageCallback& callback) const
-    {return getType(arguments, baseTypeExpr, callback);}
 
   String baseTypeExpr;
   std::vector<std::pair<String, TypePtr> > parameters;

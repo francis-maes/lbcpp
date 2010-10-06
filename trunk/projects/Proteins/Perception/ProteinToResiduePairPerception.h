@@ -27,7 +27,7 @@ public:
     {return decorated->getOutputType();}
 
   virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), pairType(integerType(), integerType()));}
+    {return pairClass(proteinClass(), pairClass(integerType(), integerType()));}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {decorated->computePerception(input[0], callback);}
@@ -44,7 +44,7 @@ public:
     : residuePerception(residuePerception) {}
 
   virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), pairType(positiveIntegerType(), positiveIntegerType()));}
+    {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
 
   virtual size_t getNumOutputVariables() const
     {return 2;}

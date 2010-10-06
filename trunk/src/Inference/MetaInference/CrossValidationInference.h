@@ -23,7 +23,7 @@ public:
   CrossValidateStepInference() {}
 
   virtual TypePtr getInputType() const
-    {return containerClass(pairType(inferenceModel->getInputType(), inferenceModel->getSupervisionType()));}
+    {return containerClass(pairClass(inferenceModel->getInputType(), inferenceModel->getSupervisionType()));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}

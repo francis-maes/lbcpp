@@ -24,7 +24,7 @@ public:
   RunOnSupervisedExamplesInference() {}
 
   virtual TypePtr getInputType() const
-    {return containerClass(pairType(inference->getInputType(), inference->getSupervisionType()));}
+    {return containerClass(pairClass(inference->getInputType(), inference->getSupervisionType()));}
 
   virtual TypePtr getSupervisionType() const
     {return nilType();}

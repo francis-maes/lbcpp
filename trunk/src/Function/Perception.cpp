@@ -103,7 +103,7 @@ PerceptionPtr Perception::flatten() const
 */
 CompositePerception::CompositePerception(TypePtr inputType, const String& preferedOutputClassName)
   : inputType(inputType), preferedOutputClassName(preferedOutputClassName),
-    subPerceptions(vector(pairType(stringType(), perceptionClass())))
+    subPerceptions(vector(pairClass(stringType(), perceptionClass())))
 {
 }
 

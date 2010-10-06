@@ -185,7 +185,7 @@ void ProteinInferenceFactory::addPerception(CompositePerceptionPtr composite, co
 {
   FunctionPtr selectFunction;
   int index = proteinClass->findObjectVariable(targetName);
-  if (perception->getInputType()->inheritsFrom(pairType(anyType(), anyType())))
+  if (perception->getInputType()->inheritsFrom(pairClass(anyType(), anyType())))
     selectFunction = selectPairVariablesFunction(index);
   else
     selectFunction = selectVariableFunction(index);

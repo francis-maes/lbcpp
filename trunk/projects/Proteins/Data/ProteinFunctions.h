@@ -45,10 +45,10 @@ public:
   ResidueToSelectPairSequencesFunction() : pairSequencesFunction(selectPairVariablesFunction(-1, -1)) {}
   
   virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), integerType());}
+    {return pairClass(proteinClass(), integerType());}
   
   virtual TypePtr getOutputType(TypePtr input) const
-    {return pairType(pairSequencesFunction->getOutputType(pairType(input->getTemplateArgument(0), input->getTemplateArgument(0))), integerType());}
+    {return pairClass(pairSequencesFunction->getOutputType(pairClass(input->getTemplateArgument(0), input->getTemplateArgument(0))), integerType());}
   
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -73,7 +73,7 @@ public:
     {return proteinClass();}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return pairType(proteinClass(), proteinClass());}
+    {return pairClass(proteinClass(), proteinClass());}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {

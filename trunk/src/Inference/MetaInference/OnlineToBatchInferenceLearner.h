@@ -28,7 +28,7 @@ public:
 
   typedef ReferenceCountedObjectPtr<State> StatePtr;
 
-  virtual TypePtr getTargetInferenceClass() const
+  virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass();}
 
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

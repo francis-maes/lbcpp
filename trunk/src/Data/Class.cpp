@@ -89,7 +89,11 @@ DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypeP
 
 void DefaultClass::addVariable(const String& typeName, const String& name)
 {
-  TypePtr type = Type::get(typeName);
+  TypePtr type;
+  if (templateType)
+    type = templateType->instantiateTypeName(typeName, templateArguments, MessageCallback::getInstance());
+  else
+    type = Type::get(typeName);
   if (type)
     addVariable(type, name);
 }

@@ -28,7 +28,7 @@ public:
     {return decorated->getOutputType();}
 
   virtual TypePtr getInputType() const
-    {return pairType(proteinClass(), integerType());}
+    {return pairClass(proteinClass(), integerType());}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {decorated->computePerception(input[0], callback);}

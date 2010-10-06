@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   composite->addPerception(T("base20"), defaultPositiveIntegerFeatures(20));
   composite->addPerception(T("base2"), defaultPositiveIntegerFeatures(2));
 
-  FunctionPtr makePairFunction = new IdentityFunction(pairType(anyType(), anyType()));
+  FunctionPtr makePairFunction = new IdentityFunction(pairClass(anyType(), anyType()));
 
 
   testPerception(T("F"), defaultPositiveIntegerFeatures(), myInteger1);

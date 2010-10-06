@@ -32,7 +32,7 @@ public:
     {return vectorClass(subInference->getSupervisionType());}
 
   TypePtr getOutputElementsType(TypePtr inputType) const
-    {return subInference->getOutputType(pairType(inputType, positiveIntegerType()));}
+    {return subInference->getOutputType(pairClass(inputType, positiveIntegerType()));}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return vectorClass(getOutputElementsType(inputType));}

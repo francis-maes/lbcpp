@@ -34,7 +34,7 @@ public:
   virtual Component* createComponentForVariable(const Variable& variable, const String& name)
   {
     ClassPtr proteinClass = lbcpp::proteinClass();
-    jassert(variable.getType()->canBeCastedTo(pairType(anyType(), stringType())));
+    jassert(variable.getType()->canBeCastedTo(pairClass(anyType(), stringType())));
     String tabName = variable[1].getString();
     VariableTreeOptions options;
     options.showMissingVariables = false;
@@ -138,7 +138,7 @@ public:
   {
     ClassPtr proteinClass = lbcpp::proteinClass();
 
-    jassert(variable.getType()->canBeCastedTo(pairType(anyType(), stringType())));
+    jassert(variable.getType()->canBeCastedTo(pairClass(anyType(), stringType())));
     String tabName = variable[1].getString();
     if (tabName == T("Data"))
       return new VariableTreeComponent(proteins[0], names[0]);

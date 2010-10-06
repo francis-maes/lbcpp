@@ -174,8 +174,6 @@ extern TypePtr doubleType();
 extern TypePtr stringType();
   extern TypePtr fileType();
 
-extern TypePtr pairType(TypePtr firstClass, TypePtr secondClass);
-
 extern TypePtr sumType(TypePtr type1, TypePtr type2);
 extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3);
 extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3, TypePtr type4);
@@ -282,6 +280,7 @@ typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 extern ClassPtr objectClass();
 extern ClassPtr typeClass();
 extern ClassPtr enumerationClass();
+extern ClassPtr pairClass(TypePtr firstClass, TypePtr secondClass);
 
 class DefaultClass : public Class
 {

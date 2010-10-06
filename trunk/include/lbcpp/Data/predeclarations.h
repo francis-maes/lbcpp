@@ -51,6 +51,8 @@ class Type;
 typedef ReferenceCountedObjectPtr<Type> TypePtr;
 class Class;
 typedef ReferenceCountedObjectPtr<Class> ClassPtr;
+class Pair;
+typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 class Stream;
 typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
 class Container;

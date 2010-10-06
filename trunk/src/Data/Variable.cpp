@@ -6,16 +6,14 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/Variable.h>
-#include "Type/TupleType.h"
+#include <lbcpp/Data/Pair.h>
+#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 TypePtr Variable::nilType;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
-{
-  PairTypePtr type = pairType(variable1.getType(), variable2.getType()).staticCast<PairType>();
-  return Variable(type, type->create(variable1, variable2));
-}
+  {return new Pair(variable1, variable2);}
 
 Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
 {
