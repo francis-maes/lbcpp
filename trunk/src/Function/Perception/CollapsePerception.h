@@ -40,7 +40,7 @@ public:
       currentStack.push_back(variableNumber);
       std::map<std::vector<size_t>, size_t>::const_iterator it = owner->pathsToOutputNumber.find(currentStack);
       if (it != owner->pathsToOutputNumber.end())
-        targetCallback->sense(it->second, subPerception->compute(input));
+        targetCallback->sense(it->second, subPerception, input);
       else
         subPerception->computePerception(input, PerceptionCallbackPtr(this));
       currentStack.pop_back();     
@@ -80,7 +80,7 @@ private:
     if (isLeafPerception(perception))
     {
       pathsToOutputNumber[stack] = outputVariables.size();
-      addOutputVariable(perception->getOutputType(), fullName, PerceptionPtr());
+      addOutputVariable(perception->getOutputType(), fullName, perception);
     }
     else
     {

@@ -203,8 +203,8 @@ extern ClassPtr compositePerceptionClass();
 extern PerceptionPtr nullPerception();
 extern PerceptionPtr identityPerception();
 extern PerceptionPtr identityPerception(TypePtr type);
-extern CompositePerceptionPtr selectAndMakeProductsPerception(TypePtr inputType, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions);
-extern CompositePerceptionPtr selectAndMakeConjunctionFeatures(TypePtr inputType, ContainerPtr selectedConjunctions);
+extern PerceptionPtr selectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions);
+extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, ContainerPtr selectedConjunctions);
 
 // container perceptions
 extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());

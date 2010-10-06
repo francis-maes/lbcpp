@@ -14,11 +14,11 @@
 namespace lbcpp
 {
 
-class DenseGenericObject : public DynamicObject
+class DenseGenericObject : public Object
 {
 public:
   DenseGenericObject(TypePtr thisType)
-    : DynamicObject(thisType) {}
+    : Object(thisType) {}
   virtual ~DenseGenericObject()
   {
     for (size_t i = 0; i < variableValues.size(); ++i)
@@ -41,7 +41,7 @@ public:
     return variableValues[index];
   }
 
-  virtual Variable getVariableImpl(size_t index) const
+  virtual Variable getVariable(size_t index) const
   {
     TypePtr type = thisClass->getObjectVariableType(index);
     if (index < variableValues.size())
@@ -50,7 +50,7 @@ public:
       return Variable::missingValue(type);
   }
 
-  virtual void setVariableImpl(size_t index, const Variable& value)
+  virtual void setVariable(size_t index, const Variable& value)
     {value.copyTo(getVariableValueReference(index));}
 
   virtual VariableIterator* createVariablesIterator() const;

@@ -14,64 +14,129 @@
 namespace lbcpp
 {
 
-class SelectAndMakeProductsPerception : public CompositePerception
+class SelectAndMakeProductsPerception : public VariableVectorPerception
 {
 public:
-  SelectAndMakeProductsPerception(TypePtr inputType, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions)
-    : CompositePerception(inputType, inputType->getClassName() + T(" selected")),
-      multiplyFunction(multiplyFunction), selectedConjunctions(selectedConjunctions)
+  SelectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions)
+    : decorated(decorated), multiplyFunction(multiplyFunction), selectedConjunctions(selectedConjunctions)
     {createSubPerceptions();}
 
   SelectAndMakeProductsPerception() {}
 
+  virtual TypePtr getInputType() const
+    {return decorated->getInputType();}
+  
+  virtual String getPreferedOutputClassName() const
+    {return decorated->getPreferedOutputClassName() + T(" selected");}
+
+  typedef std::vector< std::pair<PerceptionPtr, Variable> > PerceptionVariableVector;
+
+  struct Callback : public PerceptionCallback
+  {
+    Callback(PerceptionVariableVector& variables)
+      : variables(variables) {}
+
+    PerceptionVariableVector& variables;
+
+    virtual void sense(size_t variableNumber, const Variable& value)
+      {variables[variableNumber].second = value;}
+
+    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+      {variables[variableNumber].first = subPerception; variables[variableNumber].second = input;}
+  };
+
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
+  {
+    // surface compute decorated perception
+    PerceptionVariableVector variables(decorated->getNumOutputVariables());
+    Callback callback(variables);
+    callback.setStaticAllocationFlag();
+    decorated->computePerception(input, &callback);
+  
+    // sense 
+    size_t n = getNumOutputVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      PerceptionPtr subPerception = getOutputVariableSubPerception(i);
+      ContainerPtr conjunction = selectedConjunctions->getElement(i).getObjectAndCast<Container>();
+      size_t arity = conjunction->getNumElements();
+      if (arity == 1)
+      {
+        std::pair<PerceptionPtr, Variable> v = variables[conjunction->getElement(0).getInteger()];
+        if (v.second)
+        {
+          jassert(subPerception == v.first);
+          if (v.first)
+            targetCallback->sense(i, v.first, v.second);
+          else
+            targetCallback->sense(i, v.second);
+        }
+      }
+      else if (arity == 2)
+      {
+        std::pair<PerceptionPtr, Variable> v1 = variables[conjunction->getElement(0).getInteger()];
+        std::pair<PerceptionPtr, Variable> v2 = variables[conjunction->getElement(1).getInteger()];
+        if (v1.second && v2.second)
+        {
+          jassert(v1.first && v2.first);
+          targetCallback->sense(i, subPerception, Variable::pair(v1.second, v2.second));
+        }
+      }
+      else
+        jassert(false); // not supported yet
+    }
+  }
+
 protected:
   friend class SelectAndMakeProductsPerceptionClass;
 
+  PerceptionPtr decorated;
   FunctionPtr multiplyFunction;
   ContainerPtr selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
 
   void createSubPerceptions()
   {
-    std::vector<PerceptionPtr> inputPerceptions(inputType->getObjectNumVariables());
-    for (size_t i = 0; i < inputPerceptions.size(); ++i)
-      inputPerceptions[i] = Perception::compose(selectVariableFunction(i), identityPerception(inputType->getObjectVariableType(i)));
-
     size_t n = selectedConjunctions->getNumElements();
-    subPerceptions->reserve(n);
+    outputVariables.reserve(n);
     for (size_t i = 0; i < n; ++i)
     {
       ContainerPtr conjunction = selectedConjunctions->getElement(i).getObjectAndCast<Container>();
-      String name;
-      PerceptionPtr subPerception = computeSubPerception(conjunction, name, inputPerceptions);
-      addPerception(name, subPerception);
+      jassert(conjunction);
+      createSubPerception(conjunction);
     }
   }
 
-  PerceptionPtr computeSubPerception(ContainerPtr conjunction, String& name, const std::vector<PerceptionPtr>& inputPerceptions) const
+  void createSubPerception(ContainerPtr conjunction)
   {
     size_t arity = conjunction->getNumElements();
     jassert(arity);
     if (arity == 1)
     {
       int variableNumber = conjunction->getElement(0).getInteger();
-      jassert(variableNumber >= 0 && variableNumber < (int)inputPerceptions.size());
-      name = inputType->getObjectVariableName(variableNumber);
-      return inputPerceptions[variableNumber];
+      jassert(variableNumber >= 0 && variableNumber < (int)decorated->getNumOutputVariables());
+      String name = decorated->getOutputVariableName(variableNumber);
+      
+      PerceptionPtr subPerception = decorated->getOutputVariableSubPerception(variableNumber);
+      addOutputVariable(decorated->getOutputVariableType(variableNumber), name, subPerception);
     }
+
     else if (arity == 2)
     {
       int index1 = conjunction->getElement(0).getInteger();
       int index2 = conjunction->getElement(1).getInteger();
-      jassert(index1 >= 0 && index1 <= (int)inputPerceptions.size());
-      jassert(index2 >= 0 && index2 <= (int)inputPerceptions.size());
-      name = inputType->getObjectVariableName(index1) + T("&&") + inputType->getObjectVariableName(index2);
-      return productPerception(multiplyFunction, inputPerceptions[index1], inputPerceptions[index2], true, true);
+      jassert(index1 >= 0 && index1 <= (int)decorated->getNumOutputVariables());
+      jassert(index2 >= 0 && index2 <= (int)decorated->getNumOutputVariables());
+      String name = decorated->getOutputVariableName(index1) + T("&&") + decorated->getOutputVariableName(index2);
+      PerceptionPtr subPerception1 = decorated->getOutputVariableSubPerception(index1);
+      PerceptionPtr subPerception2 = decorated->getOutputVariableSubPerception(index2);
+      jassert(subPerception1 && subPerception2);
+      PerceptionPtr subPerception = productPerception(multiplyFunction, subPerception1, subPerception2, true, false);
+      addOutputVariable(subPerception->getOutputType(), name, subPerception);
     }
     else
     {
        // not supported yet
       jassert(false);
-      return PerceptionPtr();
     }
   }
 };

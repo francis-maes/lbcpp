@@ -148,8 +148,8 @@ public:
   size_t getNumVariables() const;
   TypePtr getVariableType(size_t index) const;
   String getVariableName(size_t index) const;
-  Variable getVariable(size_t index) const;
-  void setVariable(size_t index, const Variable& value);
+  virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(size_t index, const Variable& value);
 
   class VariableIterator
   {

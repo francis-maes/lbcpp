@@ -15,11 +15,11 @@
 namespace lbcpp
 {
 
-class SparseGenericObject : public DynamicObject
+class SparseGenericObject : public Object
 {
 public:
   SparseGenericObject(TypePtr thisType)
-    : DynamicObject(thisType), first(NULL), last(NULL), numElements(0)  {}
+    : Object(thisType), first(NULL), last(NULL), numElements(0)  {}
   virtual ~SparseGenericObject()
   {
     Node* nextNode;
@@ -33,7 +33,7 @@ public:
     last = NULL;
   }
   
-  virtual Variable getVariableImpl(size_t index) const
+  virtual Variable getVariable(size_t index) const
   {
     const Node* node = const_cast<SparseGenericObject* >(this)->findLastNodeBefore(index);
     TypePtr type = thisClass->getObjectVariableType(index);
@@ -43,7 +43,7 @@ public:
       return Variable::missingValue(type);
   }
 
-  virtual void setVariableImpl(size_t index, const Variable& value)
+  virtual void setVariable(size_t index, const Variable& value)
   {
     if (!last || last->index < index)
       appendNode(index, value);
