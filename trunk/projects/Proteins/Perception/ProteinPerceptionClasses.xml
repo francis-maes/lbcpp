@@ -9,15 +9,7 @@
     <!-- Residue Perception -->
     <class name="ResidueCompositePerception" base="CompositePerception"/>
 
-    <class name="ProteinToResiduePerception" base="DecoratorPerception">
-      <constructor arguments="PerceptionPtr proteinPerception"/>
-    </class>
-
     <!-- Residue Pair Perception -->
-    <class name="ProteinToResiduePairPerception" base="DecoratorPerception">
-      <constructor arguments="PerceptionPtr proteinPerception"/>
-    </class>
-    
     <class name="ResidueToResiduePairPerception" base="Perception">
       <constructor arguments="PerceptionPtr residuePerception"/>
       <variable type="Perception" name="residuePerception"/>

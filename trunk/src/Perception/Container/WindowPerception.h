@@ -21,7 +21,7 @@ public:
     : elementsType(elementsType), windowSize(windowSize), subPerception(subPerception) {}
   WindowPerception() : windowSize(0) {}
 
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return T("window of ") + String((int)windowSize) + T(" ") + elementsType->getName() + T("s");}
 
   virtual TypePtr getInputType() const

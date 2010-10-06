@@ -17,7 +17,7 @@ namespace lbcpp
 class BooleanFeatures : public Perception
 {
 public:
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return T("boolean as feature");}
 
   virtual TypePtr getInputType() const

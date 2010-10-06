@@ -21,7 +21,7 @@ public:
     : enumeration(enumeration) {}
   EnumValueFeatures() {}
 
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return enumeration->getName() + T(" as features");}
 
   virtual bool isSparse() const

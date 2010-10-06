@@ -26,8 +26,8 @@ public:
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
   
-  virtual String getPreferedOutputClassName() const
-    {return decorated->getPreferedOutputClassName() + T(" selected");}
+  virtual String toString() const
+    {return decorated->toString() + T(" selected");}
 
   typedef std::vector< std::pair<PerceptionPtr, Variable> > PerceptionVariableVector;
 

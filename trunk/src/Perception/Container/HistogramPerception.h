@@ -24,7 +24,7 @@ public:
 
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const = 0;
   
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return elementsType->getName() + T(" histogram");}
 
   virtual size_t getNumOutputVariables() const;

@@ -36,34 +36,6 @@ public:
 };
 
 /*
-** ResidueToSelectPairSequencesFunction
-*/
-class ResidueToSelectPairSequencesFunction : public Function
-{
-public:
-  ResidueToSelectPairSequencesFunction(int index1, int index2) : pairSequencesFunction(selectPairVariablesFunction(index1, index2)) {}
-  ResidueToSelectPairSequencesFunction() : pairSequencesFunction(selectPairVariablesFunction(-1, -1)) {}
-  
-  virtual TypePtr getInputType() const
-    {return pairClass(proteinClass(), integerType());}
-  
-  virtual TypePtr getOutputType(TypePtr input) const
-    {return pairClass(pairSequencesFunction->getOutputType(pairClass(input->getTemplateArgument(0), input->getTemplateArgument(0))), integerType());}
-  
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-  {
-    jassert(input[0].getObjectAndCast<Protein>());
-    Variable sequences = pairSequencesFunction->computeFunction(Variable::pair(input[0], input[0]), callback);
-    return Variable::pair(sequences, input[1]); 
-  }
-
-protected:
-  friend class ResidueToSelectPairSequencesFunctionClass;
-  
-  FunctionPtr pairSequencesFunction;
-};
-
-/*
 ** ProteinToInputOutputPairFunction
 */
 class ProteinToInputOutputPairFunction : public Function

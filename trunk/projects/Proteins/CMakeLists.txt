@@ -62,8 +62,7 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
 SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   Perception/ProteinPerception.h
   Perception/ProteinPerception.cpp
-  Perception/ProteinToResiduePerception.h
-  Perception/ProteinToResiduePairPerception.h
+  Perception/ResidueToResiduePairPerception.h
   Perception/SeparationDistanceResiduePairPerception.h
   Perception/ProteinPerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionClasses.cpp

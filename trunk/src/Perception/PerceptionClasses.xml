@@ -18,10 +18,6 @@
 
     <class name="VariableVectorPerception" base="Perception" abstract="yes"/>
 
-    <class name="DecoratorPerception" base="Perception" abstract="yes">
-      <variable type="Perception" name="decorated"/>
-    </class>
-
     <class name="CompositePerception" base="Perception" abstract="yes">
       <variable type="Type" name="inputType"/>
       <variable type="String" name="preferedOutputClassName"/>

@@ -211,9 +211,9 @@ TypePtr ProductWithVariablePerception::getInputType() const
     return pairClass(perception->getInputType(), variableType);
 }
 
-String ProductWithVariablePerception::getPreferedOutputClassName() const
+String ProductWithVariablePerception::toString() const
 {
-  String a = perception->getPreferedOutputClassName();
+  String a = perception->toString();
   String b = variableType->getName();
   return (swapVariables ? b : a) + T(" x ") + (swapVariables ? a : b);
 }

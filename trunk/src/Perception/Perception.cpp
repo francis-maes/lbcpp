@@ -47,7 +47,7 @@ String Perception::classNameToOutputClassName(const String& className)
   return res;
 }
 
-String Perception::getPreferedOutputClassName() const
+String Perception::toString() const
   {return classNameToOutputClassName(getClassName());}
 
 TypePtr Perception::getOutputType() const
@@ -82,7 +82,7 @@ TypePtr Perception::ensureTypeIsComputed()
   ScopedLock _(outputTypeLock);
   if (!outputType)
   {
-    DynamicClassPtr outputType = new DynamicClass(getPreferedOutputClassName(), objectClass());
+    DynamicClassPtr outputType = new DynamicClass(toString(), objectClass());
     size_t n = getNumOutputVariables();
     for (size_t i = 0; i < n; ++i)
       outputType->addVariable(getOutputVariableType(i), getOutputVariableName(i));

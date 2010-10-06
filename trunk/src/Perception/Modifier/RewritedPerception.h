@@ -22,8 +22,8 @@ public:
     : decorated(decorated) {computeOutputVariables(rewriter, stack);}
   RewritedPerception() {}
 
-  virtual String getPreferedOutputClassName() const
-    {return decorated->getPreferedOutputClassName() + T(" rewrited");}
+  virtual String toString() const
+    {return decorated->toString() + T(" rewrited");}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}

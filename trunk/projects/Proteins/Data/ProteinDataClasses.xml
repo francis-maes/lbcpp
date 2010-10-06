@@ -157,11 +157,6 @@
       <constructor/>
     </class>
     
-    <class name="ResidueToSelectPairSequencesFunction" base="Function">
-      <constructor arguments="int index1, int index2"/>
-      <variable type="SelectPairVariablesFunction" name="pairSequencesFunction"/>
-    </class>
-
     <class name="ProteinToInputOutputPairFunction" base="Function">
       <constructor/>
     </class>

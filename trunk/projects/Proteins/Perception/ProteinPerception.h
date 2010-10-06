@@ -16,11 +16,6 @@ namespace lbcpp
 {
 
 /*
-** ProteinFunction
-*/
-extern FunctionPtr residueToSelectPairSequencesFunction(int index1, int index2);
-
-/*
 ** ProteinPerception
 */
 class ProteinCompositePerception : public CompositePerception
@@ -51,11 +46,7 @@ public:
 inline PerceptionPtr proteinLengthPerception()
   {return functionBasedPerception(proteinLengthFunction());}
 
-// Residue Perception
-extern DecoratorPerceptionPtr proteinToResiduePerception(PerceptionPtr proteinPerception);
-
 // Residue Pair Perception
-extern DecoratorPerceptionPtr proteinToResiduePairPerception(PerceptionPtr proteinPerception);
 extern PerceptionPtr residueToResiduePairPerception(PerceptionPtr residuePerception);
 extern PerceptionPtr separationDistanceResiduePairPerception();
 

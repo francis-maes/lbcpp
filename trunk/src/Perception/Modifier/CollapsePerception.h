@@ -24,8 +24,8 @@ public:
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 
-  virtual String getPreferedOutputClassName() const
-    {return decorated->getPreferedOutputClassName() + T(" collapsed");}
+  virtual String toString() const
+    {return decorated->toString() + T(" collapsed");}
 
   struct Node
   {
