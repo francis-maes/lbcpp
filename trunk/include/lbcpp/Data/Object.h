@@ -151,9 +151,18 @@ public:
   Variable getVariable(size_t index) const;
   void setVariable(size_t index, const Variable& value);
 
-  StreamPtr createDefaultVariablesStream() const;
-  virtual StreamPtr getVariablesStream() const
-    {return StreamPtr();}
+  class VariableIterator
+  {
+  public:
+    virtual ~VariableIterator() {}
+
+    virtual bool exists() const = 0;
+    virtual Variable getCurrentVariable(size_t& index) const = 0;
+    virtual void next() = 0;
+  };
+
+  virtual VariableIterator* createVariablesIterator() const
+    {return NULL;}
 
   /*
   ** Introspection: User Interface

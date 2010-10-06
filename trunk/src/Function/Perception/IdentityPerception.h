@@ -46,14 +46,16 @@ public:
     ObjectPtr inputObject = input.getObject();
     if (inputObject)
     {
-      StreamPtr variablesStream = inputObject->getVariablesStream();
-      if (variablesStream)
+      VariableIterator* iterator = inputObject->createVariablesIterator();
+      if (iterator)
       {
-        while (!variablesStream->isExhausted())
+        for ( ; iterator->exists(); iterator->next())
         {
-          Variable indexAndValue = variablesStream->next();
-          callback->sense((size_t)indexAndValue[0].getInteger(), indexAndValue[1]);
+          size_t index;
+          Variable value = iterator->getCurrentVariable(index);
+          callback->sense(index, value);
         }
+        delete iterator;
       }
       else
       {
@@ -61,9 +63,8 @@ public:
         for (size_t i = 0; i < n; ++i)
         {
           Variable variable = inputObject->getVariable(i);
-          if (!variable)
-            continue;
-          callback->sense(i, variable);
+          if (variable)
+            callback->sense(i, variable);
         }
       }
     }

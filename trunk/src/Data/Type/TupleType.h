@@ -32,34 +32,105 @@
 namespace lbcpp
 {
 
-class TupleType : public RawDataBuiltinType
+class VariableAllocator
 {
 public:
-  TupleType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType, size_t size)
-    : RawDataBuiltinType(templateType, templateArguments, baseType), size(size) {}
-
-  static char* allocateMemory(size_t size)
+  VariableAllocator(size_t chunkSize, size_t groupSize)
+    : chunkSize(chunkSize), groupSize(groupSize)
   {
-    char* res = new char[sizeof (Variable) * size];
-    memset(res, 0, sizeof (Variable) * size);
-    return res;
   }
+
+  ~VariableAllocator()
+  {
+   // for (size_t i = 0; i < chunks.size(); ++i)
+   //   delete [] chunks[i];
+  }
+
+  juce::int64 allocateVariables()
+  {
+    return (juce::int64)(new Variable[groupSize]());
+/*
+    ScopedLock _(lock);
+    if (freePositions.empty())
+    {
+      // grow
+      size_t newChunkIndex = chunks.size();
+      chunks.push_back(new Variable[chunkSize]());
+      freePositions.reserve(freePositions.size() + chunkSize / groupSize);
+      for (size_t i = 0; i < chunkSize; i += groupSize)
+        freePositions.push_back(makeIndex(newChunkIndex, i)); 
+    }
+      
+    juce::int64 res = freePositions.back();
+    freePositions.pop_back();
+    return res;*/
+  }
+
+  void freeVariables(juce::int64 index)
+  {
+    jassert(index >= 0);
+    delete [] (Variable* )index;
+    /*ScopedLock _(lock);
+    freePositions.push_back(index);
+    Variable* data = getData(index);
+    for (size_t i = 0; i < groupSize; ++i)
+      data[i] = Variable();*/
+  }
+
+  const Variable* getData(juce::int64 index) const
+  {
+    jassert(index >= 0);
+    return (const Variable* )index;
+    /*
+    juce::int64 chunkIndex = index >> 32;
+    juce::int64 variableIndex = index & 0xFFFFFFFF;
+    jassert(chunkIndex < (juce::int64)chunks.size());
+    return chunks[(size_t)chunkIndex] + variableIndex;*/
+  }
+
+  Variable* getData(juce::int64 index)
+  {
+    jassert(index >= 0);
+    return (Variable* )index;
+    /*
+    juce::int64 chunkIndex = index >> 32;
+    juce::int64 variableIndex = index & 0xFFFFFFFF;
+    jassert(chunkIndex < (juce::int64)chunks.size());
+    return chunks[(size_t)chunkIndex] + variableIndex;*/
+  }
+
+private:
+  size_t chunkSize, groupSize;
+/*
+  CriticalSection lock;
+  std::vector<Variable* > chunks;
+  std::vector<juce::int64> freePositions;
+
+  inline juce::int64 makeIndex(size_t chunkIndex, size_t variableIndex) const
+    {return ((juce::int64)chunkIndex << 32) | variableIndex;}*/
+};
+
+class TupleType : public BuiltinType
+{
+public:
+  TupleType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType, size_t size, VariableAllocator& allocator)
+    : BuiltinType(templateType, templateArguments, baseType), size(size), allocator(allocator) {}
   
+  virtual VariableValue getMissingValue() const
+    {return VariableValue(-1);}
+
   virtual void destroy(VariableValue& value) const
   {
-    Variable* data = (Variable* )value.getRawData();
-    if (data)
-    {
-      for (size_t i = 0; i < size; ++i)
-        data[i] = Variable();
-      RawDataBuiltinType::destroy(value);
-    }
+    juce::int64 index = value.getInteger();
+    if (index >= 0)
+      const_cast<TupleType* >(this)->allocator.freeVariables(index);
+    value.setInteger(-1);
   }
 
   virtual String toString(const VariableValue& value) const
   {
     jassert(!isMissingValue(value));
-    const Variable* data = (const Variable* )value.getRawData();
+    const Variable* data = getVariables(value);
     String res;
     for (size_t i = 0; i < size; ++i)
     {
@@ -74,17 +145,16 @@ public:
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
   {
-    const Variable* sourceData = (const Variable* )source.getRawData();
-    Variable* destData = (Variable* )allocateMemory(size);
+    Variable* destData = allocateAndGetVariables(dest);
+    const Variable* sourceData = getVariables(source);
     for (size_t i = 0; i < size; ++i)
       destData[i] = sourceData[i];
-    dest.setRawData((char* )destData);
   }
   
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
   {
-    const Variable* data1 = (const Variable* )value1.getRawData();
-    const Variable* data2 = (const Variable* )value2.getRawData();
+    const Variable* data1 = getVariables(value1);
+    const Variable* data2 = getVariables(value2);
     for (size_t i = 0; i < size; ++i)
     {
       int res = data1[i].compare(data2[i]);
@@ -100,13 +170,17 @@ public:
   virtual Variable getElement(const VariableValue& value, size_t index) const
   {
     jassert(index < size);
-    return ((const Variable* )value.getRawData())[index];
+    return getVariables(value)[index];
   }
   
+  virtual VariableValue create() const
+    {return VariableValue(const_cast<TupleType* >(this)->allocator.allocateVariables());}
+
   virtual VariableValue createFromXml(XmlImporter& importer) const
   {
     XmlElement* xml = importer.getCurrentElement();
-    Variable* data = (Variable* )allocateMemory(size);
+    VariableValue res;
+    Variable* data = allocateAndGetVariables(res);
     if (xml->getNumChildElements() != (int)size)
     {
       importer.errorMessage(T("PairType::createFromXml"), T("Invalid number of child elements"));
@@ -115,75 +189,84 @@ public:
     size_t i = 0;
     forEachXmlChildElementWithTagName(*xml, elt, T("element"))
       data[i++] = importer.loadVariable(elt);
-    return VariableValue((char* )data);
+    return res;
   }
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
   {
-    Variable* data = (Variable* )value.getRawData();
+    Variable* data = getVariables(value);
     for (size_t i = 0; i < size; ++i)
       exporter.saveElement(i, data[i]);
   }
 
 protected:
   size_t size;
+  VariableAllocator& allocator;
+
+  Variable* getVariables(const VariableValue& value) const
+  {
+    juce::int64 index = value.getInteger();
+    return index >= 0 ? const_cast<Variable* >(allocator.getData(index)) : NULL;
+  }
+
+  Variable* allocateAndGetVariables(VariableValue& value) const
+  {
+    juce::int64 index = const_cast<TupleType* >(this)->allocator.allocateVariables();
+    value.setInteger(index);
+    return const_cast<TupleType* >(this)->allocator.getData(index);
+  }
 };
 
 class PairType : public TupleType
 {
 public:
-  PairType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
-    : TupleType(templateType, templateArguments, baseType, 2) {jassert(templateArguments.size() == 2);}
+  PairType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType, VariableAllocator& allocator)
+    : TupleType(templateType, templateArguments, baseType, 2, allocator) {jassert(templateArguments.size() == 2);}
 
   virtual String getElementName(const VariableValue& value, size_t index) const
     {return index ? T("second") : T("first");}
 
-  virtual VariableValue create() const
-    {return allocate(Variable(), Variable());}
-
-  static VariableValue allocate(const Variable& variable1, const Variable& variable2)
+  VariableValue create(const Variable& v1, const Variable& v2) const
   {
-    char* data = allocateMemory(2);
-    ((Variable* )data)[0] = variable1;
-    ((Variable* )data)[1] = variable2;
-    return data;
+    VariableValue res;
+    Variable* dest = allocateAndGetVariables(res);
+    dest[0] = v1;
+    dest[1] = v2;
+    return res;
   }
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
   {
-    Variable* sourceData = (Variable* )source.getRawData();
-    if (sourceData)
-    {
-      Variable* destData = (Variable* )allocateMemory(size);
-      destData[0] = sourceData[0];
-      destData[1] = sourceData[1];
-      dest.setRawData((char* )destData);
-    }
-    else
-      jassert(dest.getRawData() == NULL);
+    Variable* destData = allocateAndGetVariables(dest);
+    Variable* sourceData = getVariables(source);
+    destData[0] = sourceData[0];
+    destData[1] = sourceData[1];
   }
   
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
   {
-    Variable* data1 = (Variable* )value1.getRawData();
-    Variable* data2 = (Variable* )value2.getRawData();
+    Variable* data1 = getVariables(value1);
+    Variable* data2 = getVariables(value2);
     int res = data1[0].compare(data2[0]);
     return res ? res : data1[1].compare(data2[1]);
   }
 
   virtual ObjectPtr clone() const
   {
-    TypePtr res(new PairType(templateType, templateArguments, baseType));
+    jassert(false);
+    TypePtr res(new PairType(templateType, templateArguments, baseType, allocator));
     Type::clone(res);
     return res;
   }
 };
 
+typedef ReferenceCountedObjectPtr<PairType> PairTypePtr;
+
 class PairTemplateType : public DefaultTemplateType
 {
 public:
   PairTemplateType(const String& name, const String& baseType)
-    : DefaultTemplateType(name, baseType) {}
+    : DefaultTemplateType(name, baseType), allocator(10000, 2) {}
 
   virtual bool initialize(MessageCallback& callback)
   {
@@ -193,7 +276,10 @@ public:
   }
 
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const
-    {jassert(arguments.size() == 2); return new PairType(refCountedPointerFromThis(this), arguments, baseType);}
+    {jassert(arguments.size() == 2); return new PairType(refCountedPointerFromThis(this), arguments, baseType, const_cast<VariableAllocator& >(allocator));}
+
+private:
+  VariableAllocator allocator;
 };
 
 }; /* namespace lbcpp */

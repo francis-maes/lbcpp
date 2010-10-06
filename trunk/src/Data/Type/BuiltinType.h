@@ -52,21 +52,6 @@ public:
   juce_UseDebuggingNewOperator
 };
 
-class RawDataBuiltinType : public BuiltinType
-{
-public:
-  RawDataBuiltinType(const String& name)
-    : BuiltinType(name) {}
-  RawDataBuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
-    : BuiltinType(templateType, templateArguments, baseType) {}
-
-  virtual VariableValue getMissingValue() const
-    {return VariableValue();}
-
-  virtual void destroy(VariableValue& value) const
-    {value.clearRawData();}
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_TYPE_BUILTIN_H_

@@ -53,9 +53,58 @@ public:
   virtual void setVariableImpl(size_t index, const Variable& value)
     {value.copyTo(getVariableValueReference(index));}
 
+  virtual VariableIterator* createVariablesIterator() const;
+
 private:
+  friend class DenseGenericObjectVariableIterator;
+
   std::vector<VariableValue> variableValues;
 };
+
+typedef ReferenceCountedObjectPtr<DenseGenericObject> DenseGenericObjectPtr;
+
+class DenseGenericObjectVariableIterator : public Object::VariableIterator
+{
+public:
+  DenseGenericObjectVariableIterator(DenseGenericObjectPtr object)
+    : object(object), current(0), n(object->variableValues.size()) {moveToNextActiveVariable();}
+
+  virtual bool exists() const
+    {return current < n;}
+  
+  virtual Variable getCurrentVariable(size_t& index) const
+    {jassert(current < n); index = current; return currentValue;}
+
+  virtual void next()
+  {
+    jassert(current < n);
+    ++current;
+    moveToNextActiveVariable();
+  }
+
+private:
+  DenseGenericObjectPtr object;
+  size_t current;
+  Variable currentValue;
+  size_t n;
+
+  void moveToNextActiveVariable()
+  {
+    while (current < n)
+    {
+      TypePtr type = object->thisClass->getObjectVariableType(current);
+      if (!type->isMissingValue(object->variableValues[current]))
+      {
+        currentValue = Variable::copyFrom(type, object->variableValues[current]);
+        break;
+      }
+      ++current;
+    }
+  }
+};
+
+inline Object::VariableIterator* DenseGenericObject::createVariablesIterator() const
+  {return new DenseGenericObjectVariableIterator(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */
 
