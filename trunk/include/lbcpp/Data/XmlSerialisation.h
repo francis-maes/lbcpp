@@ -42,8 +42,8 @@ public:
 
   XmlElement* getCurrentElement();
 
-  void saveVariable(const String& name, const Variable& variable);
-  void saveElement(size_t index, const Variable& variable);
+  void saveVariable(const String& name, const Variable& variable, TypePtr expectedType);
+  void saveElement(size_t index, const Variable& variable, TypePtr expectedType);
 
   void enter(const String& tagName, const String& name = String::empty);
   void writeType(TypePtr type);
@@ -84,8 +84,8 @@ private:
   void resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& referencedObjects, std::set<String>& identifiers);
 
   void writeName(const String& name);
-  void writeVariable(const Variable& variable);
-  void writeObject(ObjectPtr object);
+  void writeVariable(const Variable& variable, TypePtr expectedType);
+  void writeObject(ObjectPtr object, TypePtr expectedType);
 };
 
 class XmlImporter
@@ -126,11 +126,11 @@ public:
   String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
     {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
 
-  Variable loadVariable(XmlElement* child);
+  Variable loadVariable(XmlElement* child, TypePtr expectedType);
 
   void enter(XmlElement* child);
   bool enter(const String& childTagName);
-  TypePtr loadType();
+  TypePtr loadType(TypePtr expectedType);
   void leave();
 
   MessageCallback& getCallback()
@@ -144,7 +144,7 @@ private:
   std::vector<SharedObjectMap> sharedObjectsStack;
 
   bool loadSharedObjects();
-  Variable loadVariable();
+  Variable loadVariable(TypePtr expectedType);
 };
 
 }; /* namespace lbcpp */
