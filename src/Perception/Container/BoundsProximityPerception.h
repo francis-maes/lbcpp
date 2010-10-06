@@ -17,7 +17,7 @@ namespace lbcpp
 class BoundsProximityPerception : public Perception
 {
 public:
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return T("bounds proximity");}
 
   virtual TypePtr getInputType() const

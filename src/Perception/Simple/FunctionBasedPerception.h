@@ -21,7 +21,7 @@ public:
   FunctionBasedPerception(FunctionPtr function = FunctionPtr())
     : function(function) {}
 
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return classNameToOutputClassName(function->getClassName());}
 
   virtual TypePtr getInputType() const

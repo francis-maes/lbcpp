@@ -42,9 +42,6 @@ public:
   virtual String toString() const
     {return perception1->toString() + T(" x ") + perception2->toString();}
 
-  virtual String getPreferedOutputClassName() const
-    {return perception1->getPreferedOutputClassName() + T(" x ") + perception2->getPreferedOutputClassName();}
-
   virtual bool isSparse() const
     {return perception1->isSparse() || perception2->isSparse();}
 
@@ -79,7 +76,7 @@ public:
   ProductWithVariablePerception() {}
 
   virtual TypePtr getInputType() const;
-  virtual String getPreferedOutputClassName() const;
+  virtual String toString() const;
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
   FunctionPtr getMultiplyFunction() const

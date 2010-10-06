@@ -34,7 +34,7 @@ class Perception : public Function
 {
 public:
   virtual TypePtr getOutputType() const;
-  virtual String getPreferedOutputClassName() const;
+  virtual String toString() const;
 
   virtual bool isSparse() const
     {return false;}
@@ -106,50 +106,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<VariableVectorPerception> VariableVectorPerceptionPtr;
 
-class DecoratorPerception : public Perception
-{
-public:
-  DecoratorPerception(PerceptionPtr decorated = PerceptionPtr())
-    : decorated(decorated) {}
-
-  virtual String getPreferedOutputClassName() const
-    {return decorated->getPreferedOutputClassName();}
-
-  virtual TypePtr getOutputType() const
-    {return decorated->getOutputType();}
-  
-  virtual bool isSparse() const
-    {return decorated->isSparse();}
-
-  virtual TypePtr getInputType() const
-    {return decorated->getInputType();}
-
-  virtual size_t getNumOutputVariables() const
-    {return decorated->getNumOutputVariables();}
-
-  virtual TypePtr getOutputVariableType(size_t index) const
-    {return decorated->getOutputVariableType(index);}
-
-  virtual String getOutputVariableName(size_t index) const
-    {return decorated->getOutputVariableName(index);}
-
-  virtual PerceptionPtr getOutputVariableSubPerception(size_t index) const
-    {return decorated->getOutputVariableSubPerception(index);}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-    {decorated->computePerception(input, callback);}
-
-  juce_UseDebuggingNewOperator
-
-protected:
-  friend class DecoratorPerceptionClass;
-
-  PerceptionPtr decorated;
-};
-
-typedef ReferenceCountedObjectPtr<DecoratorPerception> DecoratorPerceptionPtr;
-extern ClassPtr decoratorPerceptionClass();
-
 class CompositePerception : public Perception
 {
 public:
@@ -159,7 +115,7 @@ public:
   virtual TypePtr getInputType() const
     {return inputType;}
 
-  virtual String getPreferedOutputClassName() const
+  virtual String toString() const
     {return preferedOutputClassName;}
 
   size_t getNumPerceptions() const;
@@ -218,7 +174,7 @@ extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr en
 
 // modifier perceptions
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
-extern DecoratorPerceptionPtr composePerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
+extern PerceptionPtr composePerception(FunctionPtr function, PerceptionPtr perception);
 extern PerceptionPtr flattenPerception(PerceptionPtr perception);
 extern PerceptionPtr collapsePerception(PerceptionPtr perception);
 
@@ -244,9 +200,6 @@ extern PerceptionPtr defaultIntegerFeatures(size_t numIntervals = 20, double max
 extern PerceptionPtr defaultDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
 extern PerceptionPtr defaultPositiveDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
 extern PerceptionPtr defaultProbabilityFeatures(size_t numIntervals = 5);
-
-// bi variables
-extern DecoratorPerceptionPtr biVariableFeatures(TypePtr firstElementType, TypePtr secondElementType, PerceptionPtr subPerception);
 
 }; /* namespace lbcpp */
 

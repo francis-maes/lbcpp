@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProteinToResiduePairPerception.h| Protein -> Residue Pair        |
+| Filename: ResidueToResiduePairPerception.h| Residue -> Residue Pair        |
 | Author  : Francis Maes                   |  Perception                     |
 | Started : 19/08/2010 11:23               |                                 |
 `------------------------------------------/                                 |
@@ -14,29 +14,6 @@
 namespace lbcpp
 {
 
-/*
-** ProteinToResiduePairPerception
-*/
-class ProteinToResiduePairPerception : public DecoratorPerception
-{
-public:
-  ProteinToResiduePairPerception(PerceptionPtr proteinPerception = PerceptionPtr())
-    : DecoratorPerception(proteinPerception) {}
-
-  virtual TypePtr getOutputType() const
-    {return decorated->getOutputType();}
-
-  virtual TypePtr getInputType() const
-    {return pairClass(proteinClass(), pairClass(integerType(), integerType()));}
-
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-    {decorated->computePerception(input[0], callback);}
-};
-
-
-/*
-** ResidueToResiduePairPerception
-*/
 class ResidueToResiduePairPerception : public Perception
 {
 public:

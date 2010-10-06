@@ -4,7 +4,7 @@
   <namespace name="lbcpp">
 
     <!-- perception Modifiers -->
-    <class name="ComposePerception" base="DecoratorPerception">
+    <class name="ComposePerception" base="Perception">
       <constructor arguments="FunctionPtr function, PerceptionPtr perception"/>
       <variable type="Function" name="function"/>
     </class>

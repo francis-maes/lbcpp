@@ -24,8 +24,8 @@ public:
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 
-  virtual String getPreferedOutputClassName() const
-    {return decorated->getPreferedOutputClassName() + T(" flattened");}
+  virtual String toString() const
+    {return decorated->toString() + T(" flattened");}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {

@@ -1,15 +1,15 @@
 
- * Fusionner Perception::toString() et Perception::getPreferedOutputClassName()  (?)
-
-
+* Clarifier les classes de bases
+   * Fusionner VariableVectorPerception dans Perception ?
+   * Rendre les infos sur le variables de sorties non virtuelles
+   
 Perception:
- * Utiliser un ComposePerception pour ProteinToResiduePerception et ProteinToResiduePairPerception 
- * Implementer le PerceptionCallback::sense(double) dans ProductPerception
- * Fusionner VariableVectorPerception dans Perception ?
  * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
+ * Implementer le PerceptionCallback::sense(double) dans ProductPerception
  * Serialisation des Perceptions
- * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
+   * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
 
+- 
 * Bug Julien: crossValidation does not work for multi-pass SS3
 
 ContactMap:
