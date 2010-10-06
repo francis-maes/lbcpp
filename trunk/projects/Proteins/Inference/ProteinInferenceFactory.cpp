@@ -155,7 +155,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
     int index = getTargetIndex(histogramTargets[i]); jassert(index >= 0);
     String name = Protein::getTargetShortName((size_t)index);
     TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
-    addPerception(freq, name, histogramTargets[i], histogramPerception(elementsType));
+    addPerception(freq, name, histogramTargets[i], segmentHistogramPerception(elementsType));
   }
   res->addPerception(T("centralHistograms"), freq);
 

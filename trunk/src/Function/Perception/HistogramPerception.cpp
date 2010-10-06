@@ -7,7 +7,6 @@
                                `--------------------------------------------*/
 
 #include "HistogramPerception.h"
-#include <lbcpp/Data/Cache.h>
 using namespace lbcpp;
 
 namespace lbcpp
@@ -168,14 +167,15 @@ String HistogramPerception::getOutputVariableName(size_t index) const
 
 void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
-  ContainerPtr container = input[0].getObjectAndCast<Container>();
-  Variable indicesPair = input[1];
+  ContainerPtr container;
+  int startPosition, endPosition;
+  getInput(input, container, startPosition, endPosition);
   if (!container)
     return;
 
   size_t n = container->getNumElements();
-  size_t startPosition = juce::jlimit(0, (int)n, indicesPair[0].getInteger());
-  size_t endPosition = juce::jlimit(0, (int)n, indicesPair[1].getInteger());
+  startPosition = juce::jlimit(0, (int)n, startPosition);
+  endPosition = juce::jlimit(0, (int)n, endPosition);
   jassert(endPosition >= startPosition);
 
   AccumulatedScoresPtr scores;
