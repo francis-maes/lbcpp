@@ -145,7 +145,7 @@ void GenericVector::prepend(const Variable& value)
 {
   if (checkType(value))
   {
-    values.insert(values.begin(), VariableValue());
+    values.insert(values.begin(), getElementsType()->getMissingValue());
     value.copyTo(values.front());
   }
 }
@@ -154,7 +154,7 @@ void GenericVector::append(const Variable& value)
 {
   if (checkType(value))
   {
-    values.push_back(VariableValue());
+    values.push_back(getElementsType()->getMissingValue());
     value.copyTo(values.back());
   }
 }

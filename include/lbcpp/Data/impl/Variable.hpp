@@ -199,8 +199,9 @@ inline Variable Variable::operator [](size_t index) const
 
 inline Variable& Variable::operator =(const Variable& otherVariant)
 {
-  if (type) // type may be NULL when allocated from TupleType (which bypass the constructor of Variable)
-    clear();
+  jassert(type);
+//  if (type) // type may be NULL when allocated from TupleType (which bypass the constructor of Variable)
+  clear();
   type = otherVariant.type;
   type->copy(value, otherVariant.value);
   return *this;

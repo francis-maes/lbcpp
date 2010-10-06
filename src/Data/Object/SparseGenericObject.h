@@ -59,13 +59,13 @@ public:
     }
   }
 
-  virtual StreamPtr getVariablesStream() const;
+  VariableIterator* createVariablesIterator() const;
 
   size_t getNumElements() const
     {return numElements;}
 
 private:
-  friend class SparseGenericObjectVariablesStream;
+  friend class SparseGenericObjectVariableIterator;
 
   struct Node
   {
@@ -129,30 +129,27 @@ private:
 
 typedef ReferenceCountedObjectPtr<SparseGenericObject> SparseGenericObjectPtr;
 
-class SparseGenericObjectVariablesStream : public Stream
+class SparseGenericObjectVariableIterator : public Object::VariableIterator
 {
 public:
-  SparseGenericObjectVariablesStream(SparseGenericObjectPtr object)
+  SparseGenericObjectVariableIterator(SparseGenericObjectPtr object)
     : object(object), current(object->first)
     {}
 
-  virtual TypePtr getElementsType() const
-    {return pairType(variableIndexType(), anyType());}
-
-  virtual bool rewind()
-    {current = object->first; return true;}
-
-  virtual bool isExhausted() const
-    {return !current;}
-
-  virtual Variable next()
+  virtual bool exists() const
+    {return current != NULL;}
+  
+  virtual Variable getCurrentVariable(size_t& index) const
   {
-    if (!current)
-      return Variable();
-    TypePtr type = object->thisClass->getObjectVariableType(current->index);
-    Variable res = Variable::pair(Variable(current->index, variableIndexType()), Variable::copyFrom(type, current->value));
+    jassert(current);
+    index = current->index;
+    return Variable::copyFrom(object->getVariableType(current->index), current->value);
+  }
+
+  virtual void next()
+  {
+    jassert(current);
     current = current->next;
-    return res;
   }
 
 private:
@@ -160,8 +157,8 @@ private:
   SparseGenericObject::Node* current;
 };
 
-inline StreamPtr SparseGenericObject::getVariablesStream() const
-  {return new SparseGenericObjectVariablesStream(refCountedPointerFromThis(this));}
+inline Object::VariableIterator* SparseGenericObject::createVariablesIterator() const
+  {return new SparseGenericObjectVariableIterator(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */
 

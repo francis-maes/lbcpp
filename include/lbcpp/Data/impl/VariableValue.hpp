@@ -107,7 +107,7 @@ struct VariableValue
     {return u.objectValue ? u.objectValue : NULL;}
 
   void setObject(Object* pointer)
-    {jassert(!u.objectValue); u.objectValue = pointer; if (pointer) pointer->incrementReferenceCounter();}
+    {u.objectValue = pointer; if (pointer) pointer->incrementReferenceCounter();}
   
   void setObject(ObjectPtr pointer)
     {setObject(pointer.get());}

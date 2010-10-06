@@ -265,7 +265,7 @@ public:
     {value.clearObject();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.clearObject(); dest.setObject(source.getObjectPointer());}
+    {dest.setObject(source.getObjectPointer());}
 
   virtual String toString(const VariableValue& value) const
     {return value.getObject()->toString();}

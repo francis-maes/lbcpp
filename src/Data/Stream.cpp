@@ -10,7 +10,7 @@
 #include <lbcpp/Data/Vector.h>
 using namespace lbcpp;
 
-// todo: ranger ...
+/* todo: ranger ...
 class ObjectDefaultVariablesStream : public Stream
 {
 public:
@@ -52,6 +52,7 @@ private:
 
 StreamPtr Object::createDefaultVariablesStream() const
   {return new ObjectDefaultVariablesStream(refCountedPointerFromThis(this));}
+*/
 
 /*
 ** Stream

@@ -27,7 +27,10 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     if (checkInheritance(preProcessingFunction->getOutputType(input.getType()), decorated->getInputType()))
-      DecoratorPerception::computePerception(preProcessingFunction->compute(input), callback);
+    {
+      Variable intermediate = preProcessingFunction->compute(input);
+      decorated->computePerception(intermediate, callback);
+    }
   }
 
 protected:
