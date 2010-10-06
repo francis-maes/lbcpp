@@ -238,8 +238,26 @@ inline void copy(ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
 inline void copy(Variable& dest, const Variable& source)
   {dest = source;}
 
+/*
+** Inheritance check
+*/
+#ifdef JUCE_DEBUG
+inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
+{
+  jassert(baseType);
+  if (!type || !type->inheritsFrom(baseType))
+  {
+    callback.errorMessage(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
+    return false;
+  }
+  return true;
+}
 inline bool checkInheritance(const Variable& variable, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
   {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
+
+#else
+#define checkInheritance(type, baseType) true
+#endif // JUCE_DEBUG
 
 }; /* namespace lbcpp */
 

@@ -41,7 +41,7 @@ public:
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const = 0;
 
   Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
-    {return checkInheritance(input, getInputType(), callback) ? computeFunction(input, callback) : Variable();}
+    {return checkInheritance(input, getInputType()) ? computeFunction(input, callback) : Variable();}
 
   juce_UseDebuggingNewOperator
 };
