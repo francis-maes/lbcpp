@@ -19,7 +19,7 @@ class CollapsePerception : public VariableVectorPerception
 public:
   CollapsePerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated)
-    {precompute(decorated, String::empty);}
+    {precompute(decorated, String::empty, rootNode);}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
@@ -27,28 +27,38 @@ public:
   virtual String getPreferedOutputClassName() const
     {return decorated->getPreferedOutputClassName() + T(" collapsed");}
 
+  struct Node
+  {
+    Node() : variableNumber(-1), parent(NULL) {}
+
+    int variableNumber;
+    std::vector<Node> childrens;
+    Node* parent;
+  };
+
   struct Callback : public PerceptionCallback
   {
     Callback(const CollapsePerception* owner, PerceptionCallbackPtr targetCallback)
-      : owner(owner), targetCallback(targetCallback) {}
+      : owner(owner), targetCallback(targetCallback), currentNode(&owner->rootNode) {}
 
     virtual void sense(size_t variableNumber, const Variable& value)
       {}
 
     virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
     {
-      currentStack.push_back(variableNumber);
-      std::map<std::vector<size_t>, size_t>::const_iterator it = owner->pathsToOutputNumber.find(currentStack);
-      if (it != owner->pathsToOutputNumber.end())
-        targetCallback->sense(it->second, subPerception, input);
+      currentNode = &(currentNode->childrens[variableNumber]);
+      jassert(currentNode);
+      if (currentNode->variableNumber >= 0)
+        targetCallback->sense(currentNode->variableNumber, subPerception, input);
       else
         subPerception->computePerception(input, PerceptionCallbackPtr(this));
-      currentStack.pop_back();     
+      currentNode = currentNode->parent;
+      jassert(currentNode);
     }
 
     const CollapsePerception* owner;
     PerceptionCallbackPtr targetCallback;
-    std::vector<size_t> currentStack;
+    const Node* currentNode;
   };
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
@@ -64,7 +74,7 @@ private:
   friend class CollapsePerceptionClass;
 
   PerceptionPtr decorated;
-  std::map<std::vector<size_t>, size_t> pathsToOutputNumber;
+  Node rootNode;
 
   bool isLeafPerception(PerceptionPtr perception) const
   {
@@ -75,18 +85,18 @@ private:
     return true;
   }
 
-  void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
+  void precompute(PerceptionPtr perception, const String& fullName, Node& currentNode)
   {
     if (isLeafPerception(perception))
     {
-      pathsToOutputNumber[stack] = outputVariables.size();
+      currentNode.variableNumber = (int)outputVariables.size();
       addOutputVariable(perception->getOutputType(), fullName, perception);
     }
     else
     {
       size_t n = perception->getNumOutputVariables();
-      std::vector<size_t> newStack(stack);
-      newStack.push_back(0);
+      currentNode.childrens.resize(n);
+      
       for (size_t i = 0; i < n; ++i)
       {
         PerceptionPtr subPerception = perception->getOutputVariableSubPerception(i);
@@ -97,9 +107,9 @@ private:
             newFullName += '.';
           newFullName += perception->getOutputVariableName(i);
 
-          newStack.back() = i;
-
-          precompute(subPerception, newFullName, newStack);
+          Node& childNode = currentNode.childrens[i];
+          precompute(subPerception, newFullName, childNode);
+          childNode.parent = &currentNode;
         }
       }
     }
