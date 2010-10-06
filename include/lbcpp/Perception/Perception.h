@@ -53,12 +53,6 @@ public:
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const;
 
-  PerceptionPtr flatten() const;
-  PerceptionPtr addPreprocessor(FunctionPtr preProcessingFunction) const;
-
-  static PerceptionPtr compose(FunctionPtr preProcessingFunction, PerceptionPtr perception)
-    {return perception->addPreprocessor(preProcessingFunction);}
-
   juce_UseDebuggingNewOperator
 
 protected:
@@ -224,7 +218,7 @@ extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr en
 
 // modifier perceptions
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);
-extern DecoratorPerceptionPtr preprocessPerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
+extern DecoratorPerceptionPtr composePerception(FunctionPtr preProcessingFunction, PerceptionPtr perception);
 extern PerceptionPtr flattenPerception(PerceptionPtr perception);
 extern PerceptionPtr collapsePerception(PerceptionPtr perception);
 

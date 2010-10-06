@@ -2,11 +2,16 @@
 
 <file name="Perception" directory="Perception">
   <include file="lbcpp/Perception/Perception.h"/>
-  <import name="PerceptionFeatures"/>
-
+  <include file="lbcpp/Perception/PerceptionRewriter.h"/>
+           
+  <import name="SimplePerception"/>
+  <import name="ModifierPerception"/>
+  <import name="ContainerPerception"/>
+  <import name="FeaturesPerception"/>
+  
   <namespace name="lbcpp">
-
-    <!-- Base Classes -->
+    
+    <!-- Perception Base Classes -->
     <class name="Perception" base="Function" abstract="yes">
       <variable type="DynamicClass" name="outputType"/>
     </class>
@@ -23,100 +28,6 @@
       <variable type="GenericVector[Pair[String, Perception]]" name="subPerceptions"/>
     </class>
 
-
-    <!-- Simple Perceptions -->
-    <class name="NullPerception" base="Perception">
-      <constructor/>
-    </class>
-
-    <class name="IdentityPerception" base="Perception">
-      <constructor arguments="TypePtr type"/>
-      <variable type="Type" name="type"/>
-    </class>
-
-    <class name="FunctionBasedPerception" base="Perception">
-      <constructor arguments="FunctionPtr function"/>
-      <variable type="Function" name="function"/>
-    </class>
-
-    <!-- Container Perceptions -->
-    <class name="WindowPerception" base="Perception">
-      <constructor arguments="TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception"/>
-      <variable type="Type" name="elementsType"/>
-      <variable type="Integer" name="windowSize"/>
-      <variable type="Perception" name="subPerception"/>
-    </class>
-
-    <class name="AccumulatedScores" abstract="yes"/>
-    <class name="HistogramPerception" base="Perception" abstract="yes">
-      <variable type="Type" name="elementsType"/>
-      <variable type="Cache" name="cache"/>
-    </class>
-
-    <class name="ContainerHistogramPerception" base="HistogramPerception">
-      <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
-    </class>
-    <class name="WindowHistogramPerception" base="HistogramPerception">
-      <constructor arguments="TypePtr elementsType, size_t windowSize, bool useCache" returnType="Perception"/>
-    </class>
-    <class name="SegmentHistogramPerception" base="HistogramPerception">
-      <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
-    </class>
-    
-    <class name="BoundsProximityPerception" base="Perception">
-      <constructor/>
-    </class>
-    
-    <!-- Probability Distribution Perception -->
-    <class name="DiscreteProbabilityDistributionPerception" base="Perception">
-      <constructor arguments="EnumerationPtr enumeration"/>
-      <variable type="Enumeration" name="enumeration"/>
-    </class>
-
-    <!-- Perception Decorators -->
-    <class name="PreprocessPerception" base="DecoratorPerception">
-      <constructor arguments="FunctionPtr preProcessingFunction, PerceptionPtr perception"/>
-      <variable type="Function" name="preProcessingFunction"/>
-    </class>
-
-    <class name="FlattenPerception" base="VariableVectorPerception">
-      <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
-      <variable type="Perception" name="decorated"/>
-    </class>
-    
-    <class name="CollapsePerception" base="VariableVectorPerception">
-      <constructor arguments="PerceptionPtr perception" returnType="Perception"/>
-      <variable type="Perception" name="decorated"/>
-    </class>
-
-    <class name="SelectAndMakeProductsPerception" base="VariableVectorPerception">
-      <constructor arguments="PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions" returnType="Perception"/>
-      <variable type="Perception" name="decorated"/>
-      <variable type="Function" name="multiplyFunction"/>
-      <variable type="GenericVector[PositiveInteger]" name="selectedConjunctions"/>
-    </class>
-
-    <!-- Product Perception -->
-    <class name="MultiplyDoubleFunction" base="Function">
-      <constructor/>
-    </class>
-    <class name="ProductPerception" base="VariableVectorPerception">
-      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions" returnType="Perception"/>
-      <variable type="Function" name="multiplyFunction"/>
-      <variable type="Boolean" name="symmetricFunction"/>
-      <variable type="Perception" name="perception1"/>
-      <variable type="Perception" name="perception2"/>
-      <variable type="Boolean" name="singleInputForBothPerceptions"/>
-    </class>
-
-    <class name="ProductWithVariablePerception" base="VariableVectorPerception">
-      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables" returnType="Perception"/>
-      <variable type="Function" name="multiplyFunction"/>
-      <variable type="Perception" name="perception"/>
-      <variable type="Type" name="variableType"/>
-      <variable type="Boolean" name="swapVariables"/>
-    </class>
-    
     <!-- Perception Rewriter -->
     <class name="PerceptionRewriteRule" abstract="yes"/>
 
@@ -141,8 +52,5 @@
       <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
     </class>
 
-    <class name="RewritedPerception" base="VariableVectorPerception"/>
-
   </namespace>
-
 </file>

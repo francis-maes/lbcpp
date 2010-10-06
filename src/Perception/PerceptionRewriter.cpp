@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Perception/PerceptionRewriter.h>
-#include "Perception/RewritedPerception.h"
+#include "Modifier/RewritedPerception.h"
 using namespace lbcpp;
  
 /*

@@ -20,7 +20,10 @@ GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateClasses.xml PredicateCla
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionClasses.xml PerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/Features/PerceptionFeaturesClasses.xml PerceptionFeaturesClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionClasses.xml SimplePerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionClasses.xml ModifierPerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionClasses.xml ContainerPerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Features/FeaturesPerceptionClasses.xml FeaturesPerceptionClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
@@ -201,26 +204,39 @@ SET(LBCPP_PERCEPTION_SOURCES
   Perception/PerceptionMaths.cpp
   ../include/lbcpp/Perception/PerceptionRewriter.h
   Perception/PerceptionRewriter.cpp
-
-  Perception/NullPerception.h
-  Perception/IdentityPerception.h
-  Perception/RewritedPerception.h
-  Perception/ProductPerception.h
-  Perception/ProductPerception.cpp
-  Perception/WindowPerception.h
-  Perception/HistogramPerception.h
-  Perception/HistogramPerception.cpp
-  Perception/BoundsProximityPerception.h
-  Perception/ProbabilityDistributionPerception.h
-  Perception/PreprocessPerception.h
-  Perception/FlattenPerception.h
-  Perception/CollapsePerception.h
-  Perception/SelectAndMakeProductsPerception.h
-  Perception/FunctionBasedPerception.h
   Perception/PerceptionRewriterRules.h
   Perception/PerceptionClasses.xml
-  
   ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
+)
+
+SET(LBCPP_PERCEPTION_SIMPLE_SOURCES
+  Perception/Simple/NullPerception.h
+  Perception/Simple/IdentityPerception.h
+  Perception/Simple/FunctionBasedPerception.h
+  Perception/Simple/SimplePerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SimplePerceptionClasses.cpp
+)
+
+SET(LBCPP_PERCEPTION_MODIFIER_SOURCES
+  Perception/Modifier/RewritedPerception.h
+  Perception/Modifier/ProductPerception.h
+  Perception/Modifier/ProductPerception.cpp
+  Perception/Modifier/ComposePerception.h
+  Perception/Modifier/FlattenPerception.h
+  Perception/Modifier/CollapsePerception.h
+  Perception/Modifier/SelectAndMakeProductsPerception.h
+  Perception/Modifier/ModifierPerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ModifierPerceptionClasses.cpp
+)
+
+SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
+  Perception/Container/WindowPerception.h
+  Perception/Container/HistogramPerception.h
+  Perception/Container/HistogramPerception.cpp
+  Perception/Container/BoundsProximityPerception.h
+  Perception/Container/ProbabilityDistributionPerception.h
+  Perception/Container/ContainerPerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionClasses.cpp
 )
 
 SET(LBCPP_PERCEPTION_FEATURES_SOURCES
@@ -230,8 +246,8 @@ SET(LBCPP_PERCEPTION_FEATURES_SOURCES
   Perception/Features/HardDiscretizedNumberFeatures.h
   Perception/Features/SoftDiscretizedNumberFeatures.h
   Perception/Features/SignedNumberFeatures.h
-  Perception/Features/PerceptionFeaturesClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionFeaturesClasses.cpp
+  Perception/Features/FeaturesPerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FeaturesPerceptionClasses.cpp
 )
 
 #### Inference ####
@@ -360,6 +376,9 @@ SET(LBCPP_CORE
 
   # Perception
   ${LBCPP_PERCEPTION_SOURCES}
+    ${LBCPP_PERCEPTION_SIMPLE_SOURCES}
+    ${LBCPP_PERCEPTION_MODIFIER_SOURCES}
+    ${LBCPP_PERCEPTION_CONTAINER_SOURCES}
     ${LBCPP_PERCEPTION_FEATURES_SOURCES}
 
   # Inference
@@ -396,6 +415,9 @@ SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
 ## Perception
 SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP(Perception Simple FILES ${LBCPP_PERCEPTION_SIMPLE_SOURCES})
+SOURCE_SUB_GROUP(Perception Modifier FILES ${LBCPP_PERCEPTION_MODIFIER_SOURCES})
+SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES})
 SOURCE_SUB_GROUP(Perception Features FILES ${LBCPP_PERCEPTION_FEATURES_SOURCES})
 
 ## Inference
