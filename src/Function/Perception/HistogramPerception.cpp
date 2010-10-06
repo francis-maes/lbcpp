@@ -18,6 +18,7 @@ class AccumulatedScores : public Object
 public:
   void compute(ContainerPtr container)
   {
+    ScopedLock _(lock);
     jassert(container);
 
     TypePtr type = container->getElementsType();
@@ -38,6 +39,8 @@ public:
     else
       jassert(false);
   }
+
+  CriticalSection lock;
 
   std::vector<double>& getAccumulatedScores(size_t index)
     {jassert(index < accumulators.size()); return accumulators[index];}
@@ -177,29 +180,28 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
 
   AccumulatedScoresPtr scores;
   if (cache)
-  {
     scores = cache->getOrCreateEntryAndCast<AccumulatedScores>(container);
-    if (!scores->getNumElements())
-      scores->compute(container);
-  }
   else
-  {
     scores = new AccumulatedScores();
-    scores->compute(container);
-  }
 
+  scores->lock.enter();
+  if (!scores->getNumElements())
+    scores->compute(container);
   const std::vector<double>& startScores = scores->getAccumulatedScores(startPosition);
   const std::vector<double>& endScores = scores->getAccumulatedScores(endPosition - 1);
+  size_t numScores = startScores.size();
 
   // FIXME! This Perception should output a DiscreteProbabilityDistribution directly
   double invK = 1.0 / (endPosition - startPosition - 1.0);
   double entropy = 0.0;
-  for (size_t i = 0; i < startScores.size(); ++i)
+  for (size_t i = 0; i < numScores; ++i)
   {
     double p = (endScores[i] - startScores[i]) * invK;
     callback->sense(i, Variable(p, getOutputVariableType(i)));
     if (p)
       entropy -= p * log2(p);
   }
-  callback->sense(startScores.size(), Variable(entropy, negativeLogProbabilityType()));
+  scores->lock.exit();
+
+  callback->sense(numScores, Variable(entropy, negativeLogProbabilityType()));
 }
