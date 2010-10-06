@@ -27,15 +27,35 @@ public:
   virtual String getPreferedOutputClassName() const
     {return decorated->getPreferedOutputClassName() + T(" collapsed");}
 
+  struct Callback : public PerceptionCallback
+  {
+    Callback(const CollapsePerception* owner, PerceptionCallbackPtr targetCallback)
+      : owner(owner), targetCallback(targetCallback) {}
+
+    virtual void sense(size_t variableNumber, const Variable& value)
+      {}
+
+    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    {
+      currentStack.push_back(variableNumber);
+      std::map<std::vector<size_t>, size_t>::const_iterator it = owner->pathsToOutputNumber.find(currentStack);
+      if (it != owner->pathsToOutputNumber.end())
+        targetCallback->sense(it->second, subPerception->compute(input));
+      else
+        subPerception->computePerception(input, PerceptionCallbackPtr(this));
+      currentStack.pop_back();     
+    }
+
+    const CollapsePerception* owner;
+    PerceptionCallbackPtr targetCallback;
+    std::vector<size_t> currentStack;
+  };
+
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    Variable perceived = decorated->compute(input);
-    for (size_t i = 0; i < paths.size(); ++i)
-    {
-      Variable variable = getVariableRecursively(perceived, paths[i]);
-      if (variable && checkInheritance(variable, getOutputVariableType(i)))
-        targetCallback->sense(i, variable);
-    }
+    Callback callback(this, targetCallback);
+    callback.setStaticAllocationFlag();
+    decorated->computePerception(input, &callback);
   }
 
   juce_UseDebuggingNewOperator
@@ -44,7 +64,7 @@ private:
   friend class CollapsePerceptionClass;
 
   PerceptionPtr decorated;
-  std::vector< std::vector<size_t> > paths;
+  std::map<std::vector<size_t>, size_t> pathsToOutputNumber;
 
   bool isLeafPerception(PerceptionPtr perception) const
   {
@@ -55,21 +75,12 @@ private:
     return true;
   }
 
-  Variable getVariableRecursively(const Variable& variable, const std::vector<size_t>& path, size_t currentIndex = 0) const
-  {
-    if (currentIndex >= path.size() || !variable)    
-      return variable;
-    jassert(variable.isObject());
-    ObjectPtr object = variable.getObject();
-    return getVariableRecursively(object->getVariable(path[currentIndex]), path, currentIndex + 1);
-  }
-
   void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
   {
     if (isLeafPerception(perception))
     {
+      pathsToOutputNumber[stack] = outputVariables.size();
       addOutputVariable(perception->getOutputType(), fullName, PerceptionPtr());
-      paths.push_back(stack);
     }
     else
     {
