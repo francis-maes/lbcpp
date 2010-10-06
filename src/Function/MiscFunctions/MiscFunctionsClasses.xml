@@ -23,15 +23,6 @@
       <variable type="Integer" name="index1"/>
       <variable type="Integer" name="index2"/>
     </class>
-    
-    <class name="WindowToIndicesFunction" base="Function">
-      <constructor arguments="size_t windowSize"/>
-      <variable type="Integer" name="windowSize"/>
-    </class>
-    
-    <class name="VariableToIndicesFunction" base="Function">
-      <constructor/>
-    </class>
   </namespace>
   
 </file>

@@ -140,8 +140,6 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
   Function/MiscFunctions/SelectVariableFunctions.h
-  Function/MiscFunctions/WindowToIndicesFunction.h
-  Function/MiscFunctions/VariableToIndicesFunction.h
   Function/MiscFunctions/MiscFunctionsClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsClasses.cpp
 )

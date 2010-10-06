@@ -214,9 +214,9 @@ extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, C
 
 // container perceptions
 extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
-extern PerceptionPtr histogramPerception(TypePtr elementsType, bool useCache = true); // (Container, IndexPair) input
-extern PerceptionPtr windowHistogramPerception(TypePtr elementsType, size_t windowSize, bool useCache = true); // (Container, CentralIndex) input
 extern PerceptionPtr containerHistogramPerception(TypePtr elementsType, bool useCache = true); // Container input
+extern PerceptionPtr windowHistogramPerception(TypePtr elementsType, size_t windowSize, bool useCache = true); // (Container, CentralIndex) input
+extern PerceptionPtr segmentHistogramPerception(TypePtr elementsType, bool useCache = true); // (Container, IndexPair) input
 extern PerceptionPtr boundsProximityPerception();
 
 // probability distribution perceptions

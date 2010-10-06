@@ -52,8 +52,6 @@ extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass()); /
 extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1);
-extern FunctionPtr variableToIndicesFunction();
-extern FunctionPtr windowToIndicesFunction(size_t windowSize);
 
 }; /* namespace lbcpp */
 

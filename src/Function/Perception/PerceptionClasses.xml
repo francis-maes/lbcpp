@@ -48,11 +48,21 @@
     </class>
 
     <class name="AccumulatedScores" abstract="yes"/>
-    <class name="HistogramPerception" base="Perception">
-      <constructor arguments="TypePtr elementsType, bool useCache"/>
+    <class name="HistogramPerception" base="Perception" abstract="yes">
       <variable type="Type" name="elementsType"/>
+      <variable type="Cache" name="cache"/>
     </class>
 
+    <class name="ContainerHistogramPerception" base="HistogramPerception">
+      <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
+    </class>
+    <class name="WindowHistogramPerception" base="HistogramPerception">
+      <constructor arguments="TypePtr elementsType, size_t windowSize, bool useCache" returnType="Perception"/>
+    </class>
+    <class name="SegmentHistogramPerception" base="HistogramPerception">
+      <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
+    </class>
+    
     <class name="BoundsProximityPerception" base="Perception">
       <constructor/>
     </class>
