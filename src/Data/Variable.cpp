@@ -9,6 +9,8 @@
 #include "Type/TupleType.h"
 using namespace lbcpp;
 
+TypePtr Variable::nilType;
+
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
 {
   PairTypePtr type = pairType(variable1.getType(), variable2.getType()).staticCast<PairType>();

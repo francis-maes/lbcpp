@@ -226,7 +226,10 @@ inline TypeManager& getTypeManagerInstance()
 }
 
 void lbcpp::initialize()
-  {getTypeManagerInstance().ensureStandardClassesAreLoaded();}
+{
+  getTypeManagerInstance().ensureStandardClassesAreLoaded();
+  Variable::nilType = nilType();
+}
 
 void lbcpp::deinitialize()
   {getTypeManagerInstance().clear();}

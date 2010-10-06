@@ -6,6 +6,9 @@ Netoyer le bazar:
  * TupleType.h => VariableAllocator
  * Stream.cpp => ObjectVariablesStream
 
+Type:
+ * classe Pair pour refcounter les TupleType
+
 Perception:
  * Utiliser un PreprocessPerception pour ProteinToResiduePerception et ProteinToResiduePairPerception 
    * Renommer PreprocessPerception en ComposePerception (?)

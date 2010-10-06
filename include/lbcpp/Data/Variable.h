@@ -184,6 +184,8 @@ public:
 
   juce_UseDebuggingNewOperator
 
+  static TypePtr nilType;
+
 private:
   Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}
 

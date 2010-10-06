@@ -54,14 +54,14 @@ inline Variable::Variable(const File& fileValue, TypePtr type)
   : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
 
 inline Variable::Variable(ObjectPtr object)
-  : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
-  : type(object ? (TypePtr)object->getClass() : nilType()), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 template<class T>
 inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? (TypePtr)object->getClass() : nilType()), value(object)
+  : type(object ? (TypePtr)object->getClass() : nilType), value(object)
   {jassert(type || !object);} // this object's class has not been declared
 
 inline Variable::Variable(const Variable& otherVariant)
@@ -69,13 +69,13 @@ inline Variable::Variable(const Variable& otherVariant)
   {type->copy(value, otherVariant.value);}
 
 inline Variable::Variable()
-  : type(nilType()), value() {}
+  : type(nilType), value() {}
 
 inline Variable::~Variable()
   {type->destroy(value);}
 
 inline void Variable::clear()
-  {type->destroy(value); type = nilType();}
+  {type->destroy(value); type = nilType;}
 
 inline Variable Variable::create(TypePtr type)
   {jassert(type && type->isInitialized()); return Variable(type, type->create());}
@@ -99,10 +99,10 @@ inline Variable::operator ObjectPtr() const
   {return isNil() ? ObjectPtr() : getObject();}
 
 inline bool Variable::isMissingValue() const
-  {return type != nilType() && type->isMissingValue(value);}
+  {return !isNil() && type->isMissingValue(value);}
 
 inline bool Variable::isNil() const
-  {return type == nilType();}
+  {return type == nilType;}
 
 inline bool Variable::isBoolean() const
   {return type->inheritsFrom(booleanType());}
