@@ -32,7 +32,7 @@ int main(int argc, char** argv)
   Variable myObject(new A());
   Variable myMissingObject = Variable::missingValue(Class::get(T("A")));
   Variable myPair = Variable::pair(myBoolean, myObject);
-  Variable myMissingPair = Variable::missingValue(pairType(booleanType(), Class::get(T("A"))));
+  Variable myMissingPair = Variable::missingValue(pairClass(booleanType(), Class::get(T("A"))));
   
   std::cout << myBoolean << " " << myMissingBoolean << std::endl
             << myInt << " " << myMissingInt << std::endl
