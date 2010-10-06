@@ -90,7 +90,7 @@ ProductPerception::ProductPerception(FunctionPtr multiplyFunction,
     perception1(perception1), perception2(perception2), singleInputForBothPerceptions(singleInputForBothPerceptions)
 {
   jassert(perception1 && perception2);
-  computeOutputVariables();
+  computeOutputType();
 }
 
 TypePtr ProductPerception::getInputType() const
@@ -141,7 +141,7 @@ void ProductPerception::addOutputVariable(const String& name, TypePtr type1, Per
   }
 }
 
-void ProductPerception::computeOutputVariables()
+void ProductPerception::computeOutputType()
 {
   size_t n1 = perception1->getNumOutputVariables();
   size_t n2 = perception2->getNumOutputVariables();
@@ -160,6 +160,7 @@ void ProductPerception::computeOutputVariables()
       String name = name1 + T(" x ") + name2;
       addOutputVariable(name, type1, sub1, type2, sub2);
     }
+  Perception::computeOutputType();
 }
 
 /*
@@ -200,7 +201,7 @@ protected:
 ProductWithVariablePerception::ProductWithVariablePerception(FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables)
   : multiplyFunction(multiplyFunction), perception(perception), variableType(variableType), swapVariables(swapVariables)
 {
-  computeOutputVariables();
+  computeOutputType();
 }
 
 TypePtr ProductWithVariablePerception::getInputType() const
@@ -231,7 +232,7 @@ void ProductWithVariablePerception::computePerception(const Variable& input, Per
   perception->computePerception(input1, &computeProductCallback);
 }
 
-void ProductWithVariablePerception::computeOutputVariables()
+void ProductWithVariablePerception::computeOutputType()
 {
   size_t n = perception->getNumOutputVariables();
   reserveOutputVariables(n);
@@ -253,4 +254,5 @@ void ProductWithVariablePerception::computeOutputVariables()
       addOutputVariable(outputType, perception->getOutputVariableName(i), PerceptionPtr());
     }
   }
+  Perception::computeOutputType();
 }

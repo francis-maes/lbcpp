@@ -21,12 +21,12 @@ public:
     : DiscretizedNumberFeatures(inputType, minimumValue, maximumValue, numIntervals, doOutOfBoundsFeatures), cyclicBehavior(cyclicBehavior)
   {
     jassert(!cyclicBehavior || !doOutOfBoundsFeatures); // out-of-bounds features are never active when using the cyclicBehavior
-    computeOutputVariables();
+    computeOutputType();
   }
 
   SoftDiscretizedNumberFeatures() : cyclicBehavior(false) {}
    
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     reserveOutputVariables((doOutOfBoundsFeatures ? 2 : 0) + numIntervals + (cyclicBehavior ? 0 : 1));
     if (doOutOfBoundsFeatures)
@@ -38,6 +38,7 @@ public:
       addOutputVariable(T("close to ") + getBoundaryName(i), doubleType());
     if (!cyclicBehavior)
       addOutputVariable(T("close to ") + getBoundaryName(numIntervals), doubleType());
+    DiscretizedNumberFeatures::computeOutputType();
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const

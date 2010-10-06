@@ -19,7 +19,7 @@ class CollapsePerception : public Perception
 public:
   CollapsePerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated)
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
@@ -27,8 +27,11 @@ public:
   virtual String toString() const
     {return decorated->toString() + T(" collapsed");}
   
-  virtual void computeOutputVariables()
-    {precompute(decorated, String::empty, rootNode);}
+  virtual void computeOutputType()
+  {
+    precompute(decorated, String::empty, rootNode);
+    Perception::computeOutputType();
+  }
 
   struct Node
   {

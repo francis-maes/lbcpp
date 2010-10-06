@@ -18,7 +18,7 @@ class BoundsProximityPerception : public Perception
 {
 public:
   BoundsProximityPerception()
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   virtual String toString() const
     {return T("bounds proximity");}
@@ -41,12 +41,13 @@ public:
     }
   }
 
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     reserveOutputVariables(3);
     addOutputVariable(T("distanceToBegin"), positiveIntegerType());
     addOutputVariable(T("distanceToEnd"), positiveIntegerType());
     addOutputVariable(T("relativePosition"), probabilityType());
+    Perception::computeOutputType();
   }
 };
 

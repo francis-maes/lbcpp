@@ -16,6 +16,17 @@
 namespace lbcpp
 {
 
+class AccumulatedScoresCache : public Cache
+{
+public:
+  AccumulatedScoresCache();
+
+  juce_UseDebuggingNewOperator
+
+protected:
+  virtual Variable createEntry(ObjectPtr object) const;
+};
+
 class HistogramPerception : public Perception
 {
 public:
@@ -32,7 +43,7 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual void computeOutputVariables();
+  virtual void computeOutputType();
 
   friend class HistogramPerceptionClass;
 

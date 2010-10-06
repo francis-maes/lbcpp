@@ -39,7 +39,8 @@ extern PerceptionRewriteRulePtr enumValueFeaturesPerceptionRewriteRule();
 class PerceptionRewriter : public NameableObject
 {
 public:
-  PerceptionRewriter();
+  PerceptionRewriter(bool useCache);
+  PerceptionRewriter() : useCache(false) {}
 
   void addRule(PerceptionRewriteRulePtr rule);
   void addRule(TypePtr type, PerceptionPtr target);
@@ -48,8 +49,11 @@ public:
   size_t getNumRules() const;
 
   PerceptionPtr rewrite(PerceptionPtr perception) const;
-  PerceptionPtr rewriteRecursively(PerceptionPtr perception, std::vector<String>& stack) const;
+  PerceptionPtr rewriteRecursively(PerceptionPtr perception, const std::vector<String>& stack) const;
   PerceptionPtr applyRules(TypePtr type, const std::vector<String>& stack) const;
+
+  void clearCache()
+    {rewritedPerceptions.clear();}
 
   juce_UseDebuggingNewOperator
 
@@ -57,6 +61,7 @@ private:
   friend class PerceptionRewriterClass;
 
   ObjectVectorPtr rules;
+  bool useCache;
   typedef std::map<PerceptionPtr, PerceptionPtr> RewritedPerceptionsMap;
   RewritedPerceptionsMap rewritedPerceptions;
 };

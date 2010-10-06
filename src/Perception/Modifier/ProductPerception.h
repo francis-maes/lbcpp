@@ -65,7 +65,7 @@ protected:
   PerceptionPtr perception2;
   bool singleInputForBothPerceptions;
 
-  virtual void computeOutputVariables();
+  virtual void computeOutputType();
   void addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2);
 };
 
@@ -92,7 +92,7 @@ public:
     {return swapVariables;}
 
 protected:
-  virtual void computeOutputVariables();
+  virtual void computeOutputType();
 
   friend class ProductWithVariablePerceptionClass;
 

@@ -19,7 +19,7 @@ class FlattenPerception : public Perception
 public:
   FlattenPerception(PerceptionPtr decorated = PerceptionPtr())
     : decorated(decorated)
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
@@ -42,8 +42,11 @@ private:
   PerceptionPtr decorated;
   std::map< std::vector<size_t> , size_t> offsets;
 
-  virtual void computeOutputVariables()
-    {precompute(decorated, String::empty);}
+  virtual void computeOutputType()
+  {
+    precompute(decorated, String::empty);
+    Perception::computeOutputType();
+  }
 
   void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
   {

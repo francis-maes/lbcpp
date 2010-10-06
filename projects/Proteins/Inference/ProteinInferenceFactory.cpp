@@ -18,6 +18,9 @@ ProteinInferenceFactory::ProteinInferenceFactory()
   : proteinClass(lbcpp::proteinClass())
   {}
 
+ProteinInferenceFactory::~ProteinInferenceFactory()
+  {perceptionRewriter->clearCache();}
+
 InferencePtr ProteinInferenceFactory::createInferenceStep(const String& targetName) const
   {return new ProteinInferenceStep(targetName, createTargetInference(targetName));}
 
@@ -175,7 +178,7 @@ PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName
   if (!perceptionRewriter)
   {
     PerceptionRewriterPtr& rewriter = const_cast<ProteinInferenceFactory* >(this)->perceptionRewriter;
-    rewriter = new PerceptionRewriter();
+    rewriter = new PerceptionRewriter(true);
     getPerceptionRewriteRules(rewriter);
   }
   return perceptionRewriter->getNumRules() ? perceptionRewriter->rewrite(res) : res;

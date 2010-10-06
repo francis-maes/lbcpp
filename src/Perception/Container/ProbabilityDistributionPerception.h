@@ -20,7 +20,7 @@ class DiscreteProbabilityDistributionPerception : public Perception
 public:
   DiscreteProbabilityDistributionPerception(EnumerationPtr enumeration)
     : enumeration(enumeration)
-    {computeOutputVariables();}
+    {computeOutputType();}
 
   DiscreteProbabilityDistributionPerception() {}
 
@@ -48,13 +48,14 @@ protected:
 
   EnumerationPtr enumeration;
 
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     reserveOutputVariables(enumeration->getNumElements() + 2);
     for (size_t i = 0; i < enumeration->getNumElements(); ++i)
       addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType());
     addOutputVariable(T("p[missing]"), probabilityType());
     addOutputVariable(T("entropy"), negativeLogProbabilityType());
+    Perception::computeOutputType();
   }
 };
 

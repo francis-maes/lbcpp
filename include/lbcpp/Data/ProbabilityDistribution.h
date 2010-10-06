@@ -91,6 +91,7 @@ private:
   friend class DiscreteProbabilityDistributionClass;
 
   std::vector<double> values;
+  CriticalSection cachedEntropyLock;
   Variable cachedEntropy;
 };
 

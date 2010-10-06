@@ -60,9 +60,10 @@ inline Variable::Variable(Object* object)
   : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 template<class T>
-inline Variable::Variable(ReferenceCountedObjectPtr<T> object)
-  : type(object ? (TypePtr)object->getClass() : nilType), value(object)
+inline Variable::Variable(ReferenceCountedObjectPtr<T> object, TypePtr expectedType)
+  : type(object ? (TypePtr)object->getClass() : expectedType), value(object)
   {jassert(type || !object);} // this object's class has not been declared
+
 
 inline Variable::Variable(const Variable& otherVariant)
   : type(otherVariant.getType())
@@ -207,36 +208,53 @@ inline Variable& Variable::operator =(const Variable& otherVariant)
   return *this;
 }
 
-inline void copy(bool& dest, const Variable& source)
+/*
+** Variable => C++ Native
+*/
+inline void variableToNative(bool& dest, const Variable& source)
   {jassert(source.isBoolean()); dest = source.getBoolean();}
 
-inline void copy(int& dest, const Variable& source)
+inline void variableToNative(int& dest, const Variable& source)
   {jassert(source.isInteger()); dest = source.getInteger();}
 
-inline void copy(juce::int64& dest, const Variable& source)
+inline void variableToNative(juce::int64& dest, const Variable& source)
   {jassert(source.isInteger()); dest = source.getInteger();}
 
-inline void copy(size_t& dest, const Variable& source)
+inline void variableToNative(size_t& dest, const Variable& source)
   {jassert(source.isInteger() && source.getInteger() >= 0); dest = (size_t)source.getInteger();}
 
-inline void copy(double& dest, const Variable& source)
+inline void variableToNative(double& dest, const Variable& source)
   {jassert(source.isDouble()); dest = source.getDouble();}
 
-inline void copy(String& dest, const Variable& source)
+inline void variableToNative(String& dest, const Variable& source)
   {jassert(source.isString()); dest = source.getString();}
 
-inline void copy(File& dest, const Variable& source)
+inline void variableToNative(File& dest, const Variable& source)
   {jassert(source.isString()); dest = File(source.getString());}
 
-inline void copy(ObjectPtr& dest, const Variable& source)
+inline void variableToNative(ObjectPtr& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObject();}
 
 template<class TT>
-inline void copy(ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
+inline void variableToNative(ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObjectAndCast<TT>();}
 
-inline void copy(Variable& dest, const Variable& source)
+inline void variableToNative(Variable& dest, const Variable& source)
   {dest = source;}
+
+/*
+** C++ Native => Variable
+*/
+inline void nativeToVariable(Variable& dest, const Variable& source, TypePtr )
+  {dest = source;}
+
+template<class TT>
+inline void nativeToVariable(Variable& dest, const ReferenceCountedObjectPtr<TT>& source, TypePtr expectedType)
+  {dest = Variable(source, expectedType);}
+
+template<class TT>
+inline void nativeToVariable(Variable& dest, const TT& source, TypePtr expectedType)
+  {dest = Variable(source, expectedType);}
 
 /*
 ** Inheritance check

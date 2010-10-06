@@ -20,7 +20,7 @@ public:
   WindowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception)
     : elementsType(elementsType), windowSize(windowSize), subPerception(subPerception)
   {
-    computeOutputVariables();
+    computeOutputType();
   }
 
   WindowPerception() : windowSize(0) {}
@@ -53,7 +53,7 @@ public:
     }
   }
 
-  virtual void computeOutputVariables()
+  virtual void computeOutputType()
   {
     reserveOutputVariables(windowSize);
     for (size_t i = 0; i < windowSize; ++i)
@@ -64,6 +64,7 @@ public:
       else
         addOutputVariable(name, elementsType);
     }
+    Perception::computeOutputType();
   }
 
 protected:

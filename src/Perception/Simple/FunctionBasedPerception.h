@@ -18,8 +18,9 @@ namespace lbcpp
 class FunctionBasedPerception : public Perception
 {
 public:
-  FunctionBasedPerception(FunctionPtr function = FunctionPtr())
-    : function(function) {computeOutputVariables();}
+  FunctionBasedPerception(FunctionPtr function) : function(function)
+    {computeOutputType();}
+  FunctionBasedPerception() {}
 
   virtual String toString() const
     {return classNameToOutputClassName(function->getClassName());}
@@ -27,8 +28,11 @@ public:
   virtual TypePtr getInputType() const
     {return function->getInputType();}
 
-  virtual void computeOutputVariables()
-    {addOutputVariable(T("value"), function->getOutputType(getInputType()));}
+  virtual void computeOutputType()
+  {
+    addOutputVariable(T("value"), function->getOutputType(getInputType()));
+    Perception::computeOutputType();
+  }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {callback->sense(0, function->compute(input));}

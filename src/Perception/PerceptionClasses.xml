@@ -19,6 +19,7 @@
     <class name="CompositePerception" base="Perception" abstract="yes">
       <variable type="Type" name="inputType"/>
       <variable type="String" name="stringDescription"/>
+      <variable type="ObjectVector[Pair[String,Perception]]" name="subPerceptions"/>
     </class>
 
     <!-- Perception Rewriter -->
@@ -43,6 +44,7 @@
 
     <class name="PerceptionRewriter" base="NameableObject">
       <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
+      <variable type="Boolean" name="useCache"/>
     </class>
 
   </namespace>
