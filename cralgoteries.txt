@@ -4,7 +4,6 @@
 
 Netoyer le bazar:
  * TupleType.h => VariableAllocator
- * Stream.cpp => ObjectVariablesStream
  * CompositePerception et SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
  
 Type:
