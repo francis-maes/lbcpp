@@ -29,9 +29,9 @@ public:
     return variable.isNil() ? ReferenceCountedObjectPtr<T>() : variable.getObjectAndCast<T>();
   }
   
-  template<class T>
-  ReferenceCountedObjectPtr<T> getOrCreateEntryAndCast(ObjectPtr object)
-    {return getOrCreateEntry(object).getObjectAndCast<T>();}
+  template<class Type>
+  ReferenceCountedObjectPtr<Type> getOrCreateEntryAndCast(ObjectPtr object)
+    {Variable entry = getOrCreateEntry(object); return entry.getObjectAndCast<Type>();}
 
   void pruneUnreferencedEntries();
   void pruneUnreferencedSinceMoreThan(double timeInSeconds);
