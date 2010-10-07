@@ -353,7 +353,9 @@ void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
     {
       std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;
       writeCurrentState(std::cerr);
-      exit(1);
+      static int counter = 0;
+      if (++counter == 100)
+        exit(1);
     }
   }
 }
