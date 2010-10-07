@@ -27,6 +27,8 @@ public:
 class VariableSelector
 {
 public:
+  virtual ~VariableSelector() {}
+  
   void addCallback(VariableSelectorCallback& callback)
     {callbacks.push_back(&callback);}
 
