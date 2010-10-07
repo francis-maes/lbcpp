@@ -1,15 +1,8 @@
- 
- * Support for native std::vector<T> Variables
- * RewritePerception: store std::vector<String> stack and pointer to PerceptionRewriter
- * PerceptionRewriter: useCache option, clearCache() function to avoid cycles in shared ptrs
- 
- 
- * Serialisation des Perceptions
-   * SelectAndMakeProductsPerception: trouver un pattern pour les doublon std::vector/Vector
-   * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
-
-- 
+* Bug: Serialisation marche pas à 100%
+* Tester l'ouverture de Perception et de Modèles appris dans l'explorer
 * Bug Julien: crossValidation does not work for multi-pass SS3
+* SelectAndMakeProductsPerception: regler le doublon std::vector/Vector
+* Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
