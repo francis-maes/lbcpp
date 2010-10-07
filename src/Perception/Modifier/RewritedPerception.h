@@ -29,10 +29,11 @@ public:
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    PerceptionCallbackPtr decoratedVisitor(new Callback(decorated, callback, this));
-    decorated->computePerception(input, decoratedVisitor);
+    Callback callback(decorated, targetCallback, this);
+    callback.setStaticAllocationFlag();
+    decorated->computePerception(input, &callback);
   }
 
   juce_UseDebuggingNewOperator
