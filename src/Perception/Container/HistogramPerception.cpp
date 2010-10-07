@@ -170,8 +170,10 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   scores->lock.enter();
   if (!scores->getNumElements())
     scores->compute(container);
-  const std::vector<double>& startScores = scores->getAccumulatedScores(startPosition);
-  const std::vector<double>& endScores = scores->getAccumulatedScores(endPosition - 1);
+  std::vector<double> startScores = scores->getAccumulatedScores(startPosition);
+  std::vector<double> endScores = scores->getAccumulatedScores(endPosition - 1);
+  scores->lock.exit();
+  
   size_t numScores = startScores.size();
 
   // FIXME! This Perception should output a DiscreteProbabilityDistribution directly
@@ -184,7 +186,6 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
     if (p)
       entropy -= p * log2(p);
   }
-  scores->lock.exit();
 
   callback->sense(numScores, Variable(entropy, negativeLogProbabilityType()));
 }
