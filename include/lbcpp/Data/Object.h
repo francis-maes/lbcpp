@@ -132,6 +132,7 @@ public:
   ** High level serialisation
   */
   void saveToFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  static ObjectPtr createFromFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
 
   /*
   ** Introspection: Class

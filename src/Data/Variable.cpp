@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Data/Variable.h>
 #include <lbcpp/Data/Pair.h>
+#include <lbcpp/Data/Container.h>
 #include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
@@ -119,3 +120,88 @@ void Variable::printRecursively(std::ostream& ostr, int maxDepth, bool displayMi
   printVariableLine(*this, ostr, (size_t)-1, String::empty, 0, displayTypes);
   printVariablesRecursively(*this, ostr, maxDepth, 1, displayMissingValues, displayTypes);
 }
+
+static bool printDifferencesRecursively(std::ostream& ostr, const Variable& variable1, const Variable& variable2, const String& name)
+{
+  static bool countTypeDifferences = false;
+
+  if (variable1.isNil() || variable2.isNil() || variable1.isMissingValue() || variable2.isMissingValue() || !variable1.isObject() || !variable2.isObject())
+  {
+    if (!countTypeDifferences && variable1.isMissingValue() && variable2.isMissingValue())
+      return true;
+
+    if (variable1 == variable2)
+      return true;
+    else
+    {
+      ostr << name << " variable1 = " << variable1.toShortString()
+                   << " variable2 = " << variable2.toShortString() << std::endl;
+      return false;
+    }
+  }
+
+  if (countTypeDifferences && variable1.getType() != variable2.getType())
+  {
+    ostr << name << " type1 = " << variable1.getType()->getName()
+                 << " type2 = " << variable2.getType()->getName() << std::endl;
+  }
+
+  bool res = true;
+  ObjectPtr object1 = variable1.getObject();
+  ObjectPtr object2 = variable2.getObject();
+  jassert(object1 && object2);
+
+  if (object1->getNumVariables() != object2->getNumVariables())
+  {
+    ostr << name << " numVariables1 = " << object1->getNumVariables() << " numVariable2 = " << object2->getNumVariables() << std::endl;
+    return false;
+  }
+
+  if (object1.dynamicCast<Type>())
+  {
+    if (!countTypeDifferences || object1->getClassName() == T("DynamicClass"))
+      return true; // ignore this
+    if (object1 == object2)
+      return true;
+    else
+    {
+      ostr << name << " typeValue1 = " << variable1.toShortString()
+                   << " typeValue2 = " << variable2.toShortString() << std::endl;
+      return false;
+    }
+  }
+
+  size_t n = object1->getNumVariables();
+  jassert(object2->getNumVariables() == n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    if (object1->getVariableName(i) != object2->getVariableName(i))
+    {
+      ostr << name << " varName1 = " << object1->getVariableName(i)
+                   << " varName2 = " << object2->getVariableName(i) << std::endl;
+    }
+    String newName = object1->getVariableName(i);
+    if (name.isNotEmpty())
+      newName = name + T(".") + newName;
+    res &= printDifferencesRecursively(ostr, object1->getVariable(i), object2->getVariable(i), newName);
+  }
+  
+  ContainerPtr container1 = object1.dynamicCast<Container>();
+  ContainerPtr container2 = object2.dynamicCast<Container>();
+  if (container1 && container2)
+  {
+    n = container1->getNumElements();
+    if (n != container2->getNumElements())
+    {
+      ostr << name << " container1 size = " << n
+                   << " container2 size " << container2->getNumElements() << std::endl;
+      return false;
+    }
+    for (size_t i = 0; i < n; ++i)
+      res &= printDifferencesRecursively(ostr, container1->getElement(i), container2->getElement(i), name + T("[") + String((int)i) + T("]"));
+  }
+  return res;
+}
+
+bool Variable::printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName) const
+  {return ::printDifferencesRecursively(ostr, *this, otherVariable, theseVariablesName);}

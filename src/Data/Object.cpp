@@ -215,3 +215,6 @@ bool Object::loadFromString(const String& str, MessageCallback& callback)
 
 void Object::saveToFile(const File& file, MessageCallback& callback)
   {Variable(refCountedPointerFromThis(this)).saveToFile(file, callback);}
+
+ObjectPtr Object::createFromFile(const File& file, MessageCallback& callback)
+  {return Variable::createFromFile(file, callback).getObject();}

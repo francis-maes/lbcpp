@@ -77,13 +77,14 @@ class WindowHistogramPerception : public HistogramPerception
 public:
   WindowHistogramPerception(TypePtr elementsType, size_t windowSize, bool useCache)
     : HistogramPerception(elementsType, useCache), windowSize(windowSize) {}
-  WindowHistogramPerception() {}
+  WindowHistogramPerception() : windowSize(0) {}
 
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), positiveIntegerType());}
   
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
+    jassert(windowSize);
     container = input[0].getObjectAndCast<Container>();
     beginIndex = input[1].getInteger() - (int)(windowSize / 2);
     endIndex = beginIndex + windowSize;
