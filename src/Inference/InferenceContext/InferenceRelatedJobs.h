@@ -125,7 +125,8 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
-    MessageCallback::info(T("Mean Execution Time: ") + inference->getName() + " ==> " + String(pool->getTimingsCache()->getMeanValue(inference)));
+    MessageCallback::info(T("[") + String((int)beginIndex) + T(", ") + String((int)endIndex - 1) + 
+      T("] Mean Execution Time: ") + inference->getName() + " ==> " + String(pool->getTimingsCache()->getMeanValue(inference)));
     return true;
   }
 
