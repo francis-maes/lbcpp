@@ -403,7 +403,7 @@ template<class OperationType>
 struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<OperationType>
 {
   DefaultDoubleAssignmentCallback(ObjectPtr object, OperationType& operation)
-    : DoubleAssignmentCallback(operation), object(object) {}
+    : DoubleAssignmentCallback<OperationType>(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
   {
@@ -438,7 +438,7 @@ template<class OperationType>
 struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<OperationType>
 {
   DenseDoubleAssignmentCallback(DenseDoubleObjectPtr object, OperationType& operation)
-    : DoubleAssignmentCallback(operation), object(object) {}
+    : DoubleAssignmentCallback<OperationType>(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
   {
