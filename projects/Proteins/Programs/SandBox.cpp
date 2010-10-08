@@ -225,6 +225,64 @@ VectorPtr loadProteins(const File& directory)
   return directoryFileStream(directory)->apply(loadFromFileFunction(proteinClass()))->load(maxCount);
 }
 
+
+bool printDifferencesRecursively(const Variable& variable1, const Variable& variable2, const String& name)
+{
+  if (variable1.isNil() || variable2.isNil() || variable1.isMissingValue() || variable2.isMissingValue() || !variable1.isObject() || !variable2.isObject())
+  {
+    if (variable1 == variable2)
+      return true;
+    else
+    {
+      std::cout << name << " variable1 = " << variable1.toShortString() << " variable2 = " << variable2.toShortString() << std::endl;
+      return false;
+    }
+  }
+
+  if (variable1.getType() != variable2.getType())
+  {
+    std::cout << name << " type1 = " << variable1.getType()->getName() << " type2 = " << variable2.getType()->getName() << std::endl;
+    return false;
+  }
+
+  bool res = true;
+  ObjectPtr object1 = variable1.getObject();
+  ObjectPtr object2 = variable2.getObject();
+  jassert(object1 && object2);
+  if (object1.dynamicCast<Type>())
+  {
+    if (object1->getClassName() == T("DynamicClass"))
+      return true; // ignore this
+    if (object1 == object2)
+      return true;
+    else
+    {
+      std::cout << name << " typeValue1 = " << variable1.toShortString() << " typeValue2 = " << variable2.toShortString() << std::endl;
+      return false;
+    }
+  }
+
+  size_t n = object1->getNumVariables();
+  jassert(object2->getNumVariables() == n);
+  for (size_t i = 0; i < n; ++i)
+    res &= printDifferencesRecursively(object1->getVariable(i), object2->getVariable(i), name + T(".") + object1->getVariableName(i));
+  
+  ContainerPtr container1 = object1.dynamicCast<Container>();
+  ContainerPtr container2 = object2.dynamicCast<Container>();
+  if (container1)
+  {
+    n = container1->getNumElements();
+    if (n != container2->getNumElements())
+    {
+      std::cout << name << " container1 size = " << n << " container2 size " << container2->getNumElements() << std::endl;
+      return false;
+    }
+    for (size_t i = 0; i < n; ++i)
+      res &= printDifferencesRecursively(container1->getElement(i), container2->getElement(i), name + T("[") + String((int)i) + T("]"));
+  }
+  return res;
+}
+  
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
@@ -284,7 +342,7 @@ int main(int argc, char** argv)
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
-  std::cout << "Evaluating..." << std::endl;
+  std::cout << "Check Evaluating..." << std::endl;
   context->evaluate(inference, trainProteins, evaluator);
 //  context->crossValidate(inference, proteins, evaluator, 2);
   std::cout << "============================" << std::endl << std::endl;
@@ -293,6 +351,9 @@ int main(int argc, char** argv)
   std::cout << "Loading..." << std::flush;
   Variable v = Variable::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
+
+  printDifferencesRecursively(v, inference, T("inference"));
+
   std::cout << "Re-saving..." << std::flush;
   v.saveToFile(workingDirectory.getChildFile(T("NewStyleInference2.xml")));
   std::cout << "ok." << std::endl;
