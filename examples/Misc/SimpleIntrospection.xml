@@ -41,7 +41,7 @@
     {
       lbcpp::initialize();
 
-      Class::declare(new AClass());
+      Class::declare(ClassPtr(new AClass()));
 
       APtr a = new A(true);
       APtr emptyA = new A();
