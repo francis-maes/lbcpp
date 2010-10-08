@@ -266,17 +266,17 @@ int main(int argc, char** argv)
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
-  context->train(inference, trainProteins);
+  /*context->train(inference, trainProteins);
 
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
-  std::cout << "ok." << std::endl;
-  
-  /*std::cout << "Loading..." << std::flush;
-  inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;*/
+  
+  std::cout << "Loading..." << std::flush;
+  inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  std::cout << "ok." << std::endl;
 
-  for (size_t i = 1; i <= 10; i += 9)
+  for (size_t i = 10; i <= 10; i += 9)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
