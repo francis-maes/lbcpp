@@ -1,8 +1,15 @@
+
 * Bug: Serialisation marche pas à 100%
 * Tester l'ouverture de Perception et de Modèles appris dans l'explorer
-* Bug Julien: crossValidation does not work for multi-pass SS3
+
 * SelectAndMakeProductsPerception: regler le doublon std::vector/Vector
 * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
+
+* Bug Julien: crossValidation does not work for multi-pass SS3
+
+* Bug du multithread
+* MultiThread: Couper les split recursif de jobs dans l'evaluation
+* Optimiser le multi-thread sous linux
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
