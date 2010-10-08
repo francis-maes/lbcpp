@@ -71,6 +71,9 @@ typedef ReferenceCountedObjectPtr<Cache> CachePtr;
 class AverageValuesCache;
 typedef ReferenceCountedObjectPtr<AverageValuesCache> AverageValuesCachePtr;
 
+class ThreadPool;
+typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_PREDECLARATIONS_H_

@@ -135,7 +135,7 @@ public:
           begin = end;
         }
 
-        pool->addJobsAndWaitExecution(jobs, stack->getDepth());
+        pool->addJobsAndWaitExecution(jobs, stack->getDepth(), false);
       }
     }
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);

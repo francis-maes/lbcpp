@@ -131,6 +131,8 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/Predicate.h
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
+  ../include/lbcpp/Function/ThreadPool.h
+  Function/ThreadPool.cpp
   Function/FunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
 )
