@@ -19,7 +19,7 @@ public:
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  Type::declare(new DefaultClass(T("A")));  
+  Type::declare(ClassPtr(new DefaultClass(T("A"))));
 
   Variable myBoolean(true);
   Variable myMissingBoolean = Variable::missingValue(booleanType);
