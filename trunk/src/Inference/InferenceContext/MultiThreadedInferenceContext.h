@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_MULTI_THREADED_H_
 
 # include <lbcpp/Inference/Inference.h>
-# include "InferenceThreadPoolJob.h"
+# include "InferenceRelatedJobs.h"
 
 namespace lbcpp
 {

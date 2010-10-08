@@ -282,7 +282,7 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
 
 SET(LBCPP_INFERENCE_CONTEXT_SOURCES
   Inference/InferenceContext/SingleThreadedInferenceContext.h
-  Inference/InferenceContext/InferenceThreadPoolJob.h
+  Inference/InferenceContext/InferenceRelatedJobs.h
   Inference/InferenceContext/ThreadOwnedInferenceContext.h
   Inference/InferenceContext/MultiThreadedInferenceContext.h
   Inference/InferenceContext/InferenceContextClasses.xml
