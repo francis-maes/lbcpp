@@ -19,7 +19,7 @@ ProteinInferenceFactory::ProteinInferenceFactory()
   {}
 
 ProteinInferenceFactory::~ProteinInferenceFactory()
-  {perceptionRewriter->clearCache();}
+  {if (perceptionRewriter) perceptionRewriter->clearCache();}
 
 InferencePtr ProteinInferenceFactory::createInferenceStep(const String& targetName) const
   {return new ProteinInferenceStep(targetName, createTargetInference(targetName));}

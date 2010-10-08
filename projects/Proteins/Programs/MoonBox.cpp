@@ -218,7 +218,7 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     InferencePtr currentInference = stack->getCurrentInference();
-    if (currentInference->getName() == T("Pass learner"))
+    while (currentInference->getName() == T("Pass learner"))
     {
       InferenceContextPtr validationContext = createInferenceContext();
 

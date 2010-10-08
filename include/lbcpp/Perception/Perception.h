@@ -36,6 +36,7 @@ public:
   // Perception
   virtual TypePtr getOutputType() const;
 
+  virtual void computeOutputType();
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
 
   virtual bool isSparse() const
@@ -77,8 +78,6 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual void computeOutputType();
-
   std::vector<OutputVariable> outputVariables;
 
   void reserveOutputVariables(size_t count)
