@@ -10,6 +10,7 @@
 #include <lbcpp/Data/XmlSerialisation.h>
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
+#include <lbcpp/Function/ThreadPool.h>
 using namespace lbcpp;
 
 VectorPtr Container::toVector() const
@@ -127,6 +128,36 @@ ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
       res->setElement(i, function->compute(getElement(i)));
     return res;
   }
+}
+
+class ApplyFunctionInContainerJob : public Job
+{
+public:
+  ApplyFunctionInContainerJob(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
+    : Job(T("apply ") + function->toString() + T(" ") + String((int)index)), source(source), function(function), target(target), index(index) {}
+
+  virtual String getCurrentStatus() const
+    {return String::empty;}
+
+  virtual bool runJob(String& failureReason)
+    {target->setElement(index, function->compute(source->getElement(index))); return true;}
+
+protected:
+  ContainerPtr source;
+  FunctionPtr function;
+  ContainerPtr target;
+  size_t index;
+};
+
+ContainerPtr Container::apply(FunctionPtr function, ThreadPoolPtr pool) const
+{
+  size_t n = getNumElements();
+  VectorPtr res = vector(function->getOutputType(getElementsType()), n);
+  std::vector<JobPtr> jobs(n);
+  for (size_t i = 0; i < n; ++i)
+    jobs[i] = new ApplyFunctionInContainerJob(refCountedPointerFromThis(this), function, res, i);
+  pool->addJobsAndWaitExecution(jobs, 10);
+  return res;
 }
 
 ContainerPtr Container::subset(const std::vector<size_t>& indices) const

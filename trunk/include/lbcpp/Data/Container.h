@@ -62,6 +62,8 @@ public:
   */
   ContainerPtr apply(FunctionPtr function, bool lazyCompute = true) const;
 
+  ContainerPtr apply(FunctionPtr function, ThreadPoolPtr pool) const;
+
   /**
   ** Creates a randomized version of a dataset.
   **

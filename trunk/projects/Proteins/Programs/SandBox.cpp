@@ -201,14 +201,15 @@ private:
 
 /////////////////////////////////////////
 
-VectorPtr loadProteins(const File& directory)
+VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
   size_t maxCount = 10;
 #else
   size_t maxCount = 100;
 #endif // JUCE_DEBUG
-  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass()));
+  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass()), pool)
+    ->apply(proteinToInputOutputPairFunction())->randomize();
 }
   
 int main(int argc, char** argv)
@@ -216,13 +217,15 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
 
+  ThreadPoolPtr pool = new ThreadPool(7);
+
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\PDB30Small"));
 #else
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")))->apply(proteinToInputOutputPairFunction())->randomize();
+  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), pool);
   ContainerPtr trainProteins = proteins->invFold(0, 2);
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
@@ -260,7 +263,7 @@ int main(int argc, char** argv)
 /*  std::cout << "Inference: " << std::endl;
   Variable(inference).printRecursively(std::cout, 2);*/
 
-  InferenceContextPtr context = createInferenceContext();
+  InferenceContextPtr context = multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
