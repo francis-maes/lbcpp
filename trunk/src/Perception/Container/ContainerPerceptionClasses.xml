@@ -25,6 +25,7 @@
     </class>
     <class name="WindowHistogramPerception" base="HistogramPerception">
       <constructor arguments="TypePtr elementsType, size_t windowSize, bool useCache" returnType="Perception"/>
+      <variable type="PositiveInteger" name="windowSize"/>
     </class>
     <class name="SegmentHistogramPerception" base="HistogramPerception">
       <constructor arguments="TypePtr elementsType, bool useCache" returnType="Perception"/>
