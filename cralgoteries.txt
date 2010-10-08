@@ -1,4 +1,10 @@
+o SelectAndMakeProductsPerception: regler le doublon std::vector/Vector
 
+-
+* Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
+
+
+-
 * Bug du multithread
 * Flag "AtomicJob" pour couper les splits recursifs lors de l'evaluation
 * Optimiser le multi-thread sous linux
@@ -7,13 +13,12 @@
 * Bug: Serialisation marche pas à 100%
 * Tester l'ouverture de Perception et de Modèles appris dans l'explorer
 -
-* SelectAndMakeProductsPerception: regler le doublon std::vector/Vector
-* Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
--
 * Bug Julien: crossValidation does not work for multi-pass SS3
+* MoonBox: voir comment faire l'evaluation avec le meme InferenceContext que le reste
 -
 * explorer bug: les viewports verticales sont trop hautes => la derniere ligne des arbres est caché (si il y a un scroll bar horizontale)
 
+* Finaliser le ParallelProteinInference
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch

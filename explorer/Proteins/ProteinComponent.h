@@ -45,20 +45,8 @@ protected:
   Variable input;
   PerceptionPtr perception;
 
-  VectorPtr makeUnaryConjunction(size_t index) const
-  {
-    VectorPtr res = vector(positiveIntegerType(), 1);
-    res->setElement(0, index);
-    return res;
-  }
-
-  VectorPtr makeBinaryConjunction(size_t index1, size_t index2) const
-  {
-    VectorPtr res = vector(positiveIntegerType(), 2);
-    res->setElement(0, index1);
-    res->setElement(1, index2);
-    return res;
-  }
+  std::vector<size_t> makeBinaryConjunction(size_t index1, size_t index2) const
+    {std::vector<size_t> res(2); res[0] = index1; res[1] = index2; return res;}
 
   PerceptionPtr getPerception(const String& tabName) const
   {
@@ -66,19 +54,19 @@ protected:
       return flattenPerception(perception);
     else if (tabName == T("Features"))
     {
-      return perceptionToFeatures(perception);
+      //return perceptionToFeatures(perception);
       
-      /*PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));
+      PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));
 
-      VectorPtr selectedConjunctions = vector(containerClass(positiveIntegerType()));
+      std::vector< std::vector<size_t> > selectedConjunctions;
       for (size_t i = 0; i < collapsedFeatures->getNumOutputVariables(); ++i)
-        selectedConjunctions->append(makeUnaryConjunction(i));
+        selectedConjunctions.push_back(std::vector<size_t>(1, i));
 
-      selectedConjunctions->append(makeBinaryConjunction(0, 1));
-      selectedConjunctions->append(makeBinaryConjunction(5, 10));
-      selectedConjunctions->append(makeBinaryConjunction(10, 15));
+      selectedConjunctions.push_back(makeBinaryConjunction(0, 1));
+      selectedConjunctions.push_back(makeBinaryConjunction(5, 10));
+      selectedConjunctions.push_back(makeBinaryConjunction(10, 15));
 
-      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);*/
+      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);
     }
     else
       return perception;
