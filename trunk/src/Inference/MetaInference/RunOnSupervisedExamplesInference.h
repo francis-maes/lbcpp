@@ -65,7 +65,7 @@ public:
     jassert(examples);
 
     int nextIndex = state->getStepNumber() + 1; 
-    if (nextIndex < (int)examples->getNumElements())
+    if (nextIndex < 3) // (int)examples->getNumElements()) // TMP ! DEBUG
     {
       Variable example = examples->getElement(nextIndex);
       state->setSubInference(inference, example[0], example[1]);
