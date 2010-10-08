@@ -129,6 +129,21 @@ private:
 };
 
 /////////////////////////////////////////
+class StdOutPrinter
+{
+public:
+  void print(const String& line)
+  {
+    ScopedLock _(lock);
+    std::cout << line << std::endl;
+  }
+
+private:
+  CriticalSection lock;
+};
+static StdOutPrinter stdOutPrinter;
+
+
 class StackPrinterCallback : public InferenceCallback
 {
 public:
@@ -138,9 +153,11 @@ public:
     InferencePtr currentInference = stack->getCurrentInference();
     if (stack->getDepth() > 6)
       return;
+    String line;
     for (size_t i = 0; i < stack->getDepth(); ++i)
-      std::cout << "    ";
-    std::cout << currentInference->getClassName() << " -> " << currentInference->getName() << std::endl;
+      line += T("    ");
+    line += currentInference->getClassName() + T(" -> ") + currentInference->getName();
+    stdOutPrinter.print(line);
   }
   
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
@@ -149,10 +166,10 @@ public:
     InferencePtr currentInference = stack->getCurrentInference();
     if (stack->getDepth() > 6)
       return;
-    std::cout << "END ";
+    String line = T("END ");
     for (size_t i = 0; i < stack->getDepth() - 1; ++i)
-      std::cout << "    ";
-    std::cout << currentInference->getClassName() << " -> " << currentInference->getName() << std::endl;
+      line += T("    ");
+    line += currentInference->getClassName() + T(" -> ") + currentInference->getName() + T("\n");
   }
 
 private:
@@ -249,7 +266,7 @@ public:
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
       String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
-      std::cout << "=== Learning " << input[0].getObject()->getName() << " with " << input[1].size() << " " << inputTypeName << "(s) ===" << std::endl;
+      stdOutPrinter.print(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
     }
   }
 
@@ -259,10 +276,9 @@ public:
     if (currentInference->getName() == T("Pass learner"))
     {
       // end of learning pass
-      std::cout << std::endl
-      << "====================================================" << std::endl
-      << "===================  EVALUATION  ===================  " << (Time::getMillisecondCounter() - startingTime) / 1000 << " s" << std::endl
-      << "====================================================" << std::endl;
+      stdOutPrinter.print(String("\n====================================================") + 
+        T("===================  EVALUATION  ===================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s\n") +
+        T("====================================================\n"));
 
       ProteinEvaluatorPtr evaluator = getTrainingEvaluator();
       processResults(evaluator, true);
@@ -270,16 +286,16 @@ public:
       evaluator = getTestingEvaluator();
       processResults(evaluator, false);
 
-      std::cout << "=====================================================" << std::endl << std::endl;
+      stdOutPrinter.print(T("=====================================================\n"));
     }
     else if (stack->getDepth() == 1)
     {
-      std::cout << "Bye." << std::endl;
+      stdOutPrinter.print(T("Bye."));
     }
   }
 
   void processResults(ProteinEvaluatorPtr evaluator, bool isTrainingData)
-    {std::cout << " == " << (isTrainingData ? "Training" : "Testing") << " Scores == " << std::endl << evaluator->toString() << std::endl;}
+    {stdOutPrinter.print(String(T(" == ")) + (isTrainingData ? T("Training") : T("Testing")) + T(" Scores = \n") + evaluator->toString());}
 
 private:
   InferencePtr inference;
@@ -315,6 +331,7 @@ public:
     InferencePtr currentInference = stack->getCurrentInference();
     if (currentInference->getName() == T("Pass learner"))
     {
+      ScopedLock _(fileLock);
       for (size_t i = 0; i < targets.size(); ++i)
       {
         OutputStream* o = files[i].createOutputStream();
@@ -330,6 +347,7 @@ public:
   }
 
 private:
+  CriticalSection fileLock;
   File prefixFile;
   juce::uint32 startingTime;
   size_t nbPass;
