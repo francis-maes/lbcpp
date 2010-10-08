@@ -23,9 +23,9 @@ void ReferenceCountedObject::incrementReferenceCounter()
   static double sum = 0.0;
   sum += deltaTime;
   ++counter;
-  if (counter == 1000)
+  if (counter == 10000)
   {
-    std::cout << "incrementReferenceCounter: " << counter << "ms" << std::endl;
+    std::cout << "incrementReferenceCounter: " << sum << "ms" << std::endl;
     sum = 0.0;
     counter = 0;
   }
@@ -43,9 +43,9 @@ void ReferenceCountedObject::decrementReferenceCounter()
   static double sum = 0.0;
   sum += deltaTime;
   ++counter;
-  if (counter == 1000)
+  if (counter == 10000)
   {
-    std::cout << "decrementReferenceCounter: " << counter << "ms" << std::endl;
+    std::cout << "decrementReferenceCounter: " << sum << "ms" << std::endl;
     sum = 0.0;
     counter = 0;
   }
