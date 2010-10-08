@@ -92,12 +92,6 @@ public:
       setName(inference->getDescription(state->getInput(), state->getSupervision()) +
         T("[") + String((int)beginIndex) + T(":") + String((int)(endIndex - 1)) + T("]"));
     }
-
-   /* //this->inference = inference->cloneAndCast<Inference>();    
-    this->state = new ParallelInferenceState(state->getInput().clone(), state->getSupervision().clone());
-    this->state->reserve(state->getNumSubInferences());
-    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
-      this->state->addSubInference(state->getSubInference(i)->cloneAndCast<Inference>(), state->getSubInput(i).clone(), state->getSubSupervision(i).clone());*/
   }
 
   bool runJob(String& failureReason)
@@ -115,6 +109,7 @@ public:
       if (subInference)
       {
         double startingTime = Time::getMillisecondCounterHiRes();
+        juce::uint32 checkDebug = Time::getMillisecondCounter();
         
         returnCode = Inference::finishedReturnCode;
         subOutput = context->run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
@@ -125,12 +120,12 @@ public:
         }
 
         double deltaTime = Time::getMillisecondCounterHiRes() - startingTime;
-        std::cout << "Delta Time: " << deltaTime << std::endl;
+        //std::cout << "Delta Time: " << deltaTime << " check: " << Time::getMillisecondCounter() - checkDebug << std::endl;
         pool->getTimingsCache()->addValue(inference, deltaTime);
       }
       state->setSubOutput(i, subOutput);
     }
-    std::cout << "Mean Execution Time: " << inference->getName() << " ==> " << pool->getTimingsCache()->getMeanValue(inference) << std::endl;
+    MessageCallback::info(T("Mean Execution Time: ") + inference->getName() + " ==> " + String(pool->getTimingsCache()->getMeanValue(inference)));
     return true;
   }
 

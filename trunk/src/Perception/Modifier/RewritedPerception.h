@@ -99,6 +99,25 @@ protected:
       : targetCallback(targetCallback), owner(owner)
       {}
 
+    template<class Type>
+    void senseBuiltinType(size_t variableNumber, const Type& value)
+    {
+      PerceptionPtr targetPerception = getTargetPerception(variableNumber);
+      if (targetPerception)
+      {
+        if (targetPerception == identityPerception())
+          targetCallback->sense(variableNumber, value);
+        else
+          targetCallback->sense(variableNumber, targetPerception, Variable(value, targetPerception->getInputType()));
+      }
+    }
+
+    virtual void sense(size_t variableNumber, double value)
+      {senseBuiltinType(variableNumber, value);}
+      
+    virtual void sense(size_t variableNumber, ObjectPtr value)
+      {senseBuiltinType(variableNumber, value);}
+
     virtual void sense(size_t variableNumber, const Variable& value)
     {
       PerceptionPtr targetPerception = getTargetPerception(variableNumber);

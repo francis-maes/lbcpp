@@ -106,13 +106,13 @@ inline bool Variable::isNil() const
   {return type == nilType;}
 
 inline bool Variable::isBoolean() const
-  {return type->inheritsFrom(booleanType());}
+  {return type->inheritsFrom(booleanType);}
 
 inline bool Variable::getBoolean() const
   {jassert(isBoolean()); return value.getBoolean();}
 
 inline bool Variable::isInteger() const
-  {return type->inheritsFrom(integerType());}
+  {return type->inheritsFrom(integerType);}
 
 inline int Variable::getInteger() const
   {jassert(isInteger()); return (int)value.getInteger();}
@@ -121,25 +121,25 @@ inline bool Variable::isEnumeration() const
   {return type.dynamicCast<Enumeration>();}
 
 inline bool Variable::isDouble() const
-  {return type->inheritsFrom(doubleType());}
+  {return type->inheritsFrom(doubleType);}
 
 inline double Variable::getDouble() const
   {jassert(isDouble()); return value.getDouble();}
 
 inline bool Variable::isString() const
-  {return type->inheritsFrom(stringType());}
+  {return type->inheritsFrom(stringType);}
 
 inline String Variable::getString() const
   {jassert(isString()); return value.getString();}
 
 inline bool Variable::isFile() const
-  {return type->inheritsFrom(fileType());}
+  {return type->inheritsFrom(fileType);}
 
 inline File Variable::getFile() const
   {jassert(isFile()); return File(value.getString());}
 
 inline bool Variable::isObject() const
-  {return type->inheritsFrom(objectClass());}
+  {return type->inheritsFrom(objectClass);}
 
 inline ObjectPtr Variable::getObject() const
   {jassert(isObject()); return value.getObject();}

@@ -38,6 +38,12 @@ public:
 
     PerceptionVariableVector& variables;
 
+    virtual void sense(size_t variableNumber, double value)
+      {variables[variableNumber].second = value;}
+
+    virtual void sense(size_t variableNumber, ObjectPtr value)
+      {variables[variableNumber].second = value;}
+
     virtual void sense(size_t variableNumber, const Variable& value)
       {variables[variableNumber].second = value;}
 

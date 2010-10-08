@@ -36,9 +36,9 @@ public:
     {
       double p = distribution->getProbability(i);
       if (p)
-        callback->sense(i, probability(p));
+        callback->sense(i, p);
     }
-    callback->sense(n + 1, Variable(distribution->computeEntropy(), negativeLogProbabilityType()));
+    callback->sense(n + 1, distribution->computeEntropy());
   }
 
   juce_UseDebuggingNewOperator
