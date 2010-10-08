@@ -44,10 +44,10 @@ protected:
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  Variable myProb(0.5, probabilityType());
+  Variable myProb(0.5, probabilityType);
   Variable myBoolean(true);
-  Variable myInteger1(51, positiveIntegerType());
-  Variable myInteger2(2, positiveIntegerType());
+  Variable myInteger1(51, positiveIntegerType);
+  Variable myInteger2(2, positiveIntegerType);
 
   // int => softDiscretizedLogNumberFeatures
   // positive int => softDiscretizedLogPositiveNumberFeatures
@@ -55,22 +55,22 @@ int main(int argc, char** argv)
   // positive double => softDiscretizedLogPositiveNumberFeatures
   // probability => softDiscretizedNumberFeatures
   
-  /*testPerception(T("hardDiscretizedNumberFeatures"), hardDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false), myProb);
-  testPerception(T("softDiscretizedNumberFeatures"), softDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false, false), myProb);
-  testPerception(T("softDiscretizedNumberFeatures cyclic"), softDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, false, true), myProb);
-  testPerception(T("softDiscretizedNumberFeatures oob"), softDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, 10, true, false), myProb);*/
+  /*testPerception(T("hardDiscretizedNumberFeatures"), hardDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, 10, false), myProb);
+  testPerception(T("softDiscretizedNumberFeatures"), softDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, 10, false, false), myProb);
+  testPerception(T("softDiscretizedNumberFeatures cyclic"), softDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, 10, false, true), myProb);
+  testPerception(T("softDiscretizedNumberFeatures oob"), softDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, 10, true, false), myProb);*/
 
-  CompositePerceptionPtr composite = compositePerception(positiveIntegerType(), T("combo"));
+  CompositePerceptionPtr composite = compositePerception(positiveIntegerType, T("combo"));
   composite->addPerception(T("base20"), defaultPositiveIntegerFeatures(20));
   composite->addPerception(T("base2"), defaultPositiveIntegerFeatures(2));
 
-  FunctionPtr makePairFunction = new IdentityFunction(pairClass(anyType(), anyType()));
+  FunctionPtr makePairFunction = new IdentityFunction(pairClass(anyType, anyType));
 
 
   testPerception(T("F"), defaultPositiveIntegerFeatures(), myInteger1);
   testPerception(T("C"), composite, myInteger2);
-  //testPerception(T("int 51 x 10.0"), productPerception(makePairFunction, composite, doubleType()), Variable::pair(myInteger1, 10.0));
-  //testPerception(T("10.0 x int 51"), productPerception(makePairFunction, doubleType(), composite), Variable::pair(10.0, myInteger1));
+  //testPerception(T("int 51 x 10.0"), productPerception(makePairFunction, composite, doubleType), Variable::pair(myInteger1, 10.0));
+  //testPerception(T("10.0 x int 51"), productPerception(makePairFunction, doubleType, composite), Variable::pair(10.0, myInteger1));
 
   //testPerception(T("int 1664"), defaultPositiveIntegerFeatures(), myInteger2);
   

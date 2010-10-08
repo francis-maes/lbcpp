@@ -158,7 +158,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
   {
     jassert(serialNumber == 1);
     chain.protein = protein = new Protein(proteinName);
-    primaryStructure = vector(aminoAcidTypeEnumeration());
+    primaryStructure = vector(aminoAcidTypeEnumeration);
     protein->setPrimaryStructure(primaryStructure);
     currentSeqResSerialNumber = serialNumber;
   }
@@ -415,7 +415,7 @@ static String tertiaryStructureBlockToAminoAcidString(const std::vector<ResidueP
 {
   String res;
   for (size_t i = 0; i < residues.size(); ++i)
-    res += aminoAcidTypeEnumeration()->getOneLetterCode((size_t)residues[i]->getAminoAcidType());
+    res += aminoAcidTypeEnumeration->getOneLetterCode((size_t)residues[i]->getAminoAcidType());
   jassert((size_t) res.length() == residues.size());
   return res;
 }
@@ -526,7 +526,7 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
   // an element is in disorder if the associated residue is not defined
   VectorPtr res = protein->createEmptyProbabilitySequence();
   for (size_t i = 0; i < n; ++i)
-    res->setElement(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType()));
+    res->setElement(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType));
 
   // remove disorder segments whose length is less than 4
   static const int minimumDisorderLength = 4;
@@ -538,7 +538,7 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
       while (j < n && res->getElement(j).getDouble() == 1.0) ++j;
       if ((j - i) < (size_t)minimumDisorderLength)
         for (size_t ii = i; ii < j; ++ii)
-          res->setElement(ii, Variable(0.0, probabilityType()));
+          res->setElement(ii, Variable(0.0, probabilityType));
       i = j;
     }
     else

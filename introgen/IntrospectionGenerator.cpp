@@ -152,7 +152,8 @@ protected:
       closeClass();
     }
 
-    String fullName = getCurrentScopeFullName() + T("::") + implementation + T("(T(") + typeName.quoted() + T(")");
+    String currentScope = getCurrentScopeFullName();
+    String fullName = currentScope + T("::") + implementation + T("(T(") + typeName.quoted() + T(")");
     if (baseTypeName.isNotEmpty())
     {
       fullName += T(", ");
@@ -162,12 +163,16 @@ protected:
         fullName += T("T(") + baseTypeName.quoted() + T(")");
     }
     fullName += T(")");
-    types.push_back(fullName);
+
+    String singletonVariableName = replaceFirstLettersByLowerCase(typeName) + T("Type");
+
+    types.push_back(std::make_pair(currentScope + T("::") + singletonVariableName, fullName));
 
     // Type declarator
     if (xml->getTagName() == T("type"))
-      writeShortFunction(T("TypePtr ") + replaceFirstLettersByLowerCase(typeName) + T("Type()"),
-          T("static TypeCache cache(T(") + typeName.quoted() + T(")); return cache();"));
+      writeLine(T("TypePtr ") + singletonVariableName + T(";"));
+      //writeShortFunction(T("TypePtr ") + replaceFirstLettersByLowerCase(typeName) + T("Type()"),
+      //    T("static TypeCache cache(T(") + typeName.quoted() + T(")); return cache();"));
   }
 
   /*
@@ -184,13 +189,20 @@ protected:
   void generateEnumerationDeclaration(XmlElement* xml)
   {
     String enumName = xml->getStringAttribute(T("name"), T("???"));
+    String declaratorName = replaceFirstLettersByLowerCase(enumName) + T("Enumeration");
+    String className = enumName + T("Enumeration");
+
+    String currentScope = getCurrentScopeFullName();
+    if (currentScope.isNotEmpty())
+      currentScope += T("::");
 
     currentScopes.push_back(enumName);
-    types.push_back(getCurrentScopeFullName() + T("Enumeration()"));
-    openClass(enumName + T("Enumeration"), T("Enumeration"));
+    
+    types.push_back(std::make_pair(currentScope + declaratorName, currentScope + className));
+    openClass(className, T("Enumeration"));
 
     // constructor
-    openScope(enumName + T("Enumeration() : Enumeration(T(") + enumName.quoted() + T("))"));
+    openScope(className + T("() : Enumeration(T(") + enumName.quoted() + T("))"));
     forEachXmlChildElementWithTagName(*xml, elt, T("value"))
       generateEnumValueInConstructor(elt);
     closeScope();
@@ -199,9 +211,9 @@ protected:
     currentScopes.pop_back();
 
     // enum declarator
-    String declaratorName = replaceFirstLettersByLowerCase(enumName) + T("Enumeration");
-    writeShortFunction(T("EnumerationPtr ") + declaratorName + T("()"),
-      T("static TypeCache cache(T(") + enumName.quoted() + T(")); return (EnumerationPtr)cache();"));
+    writeLine(T("EnumerationPtr ") + declaratorName + T(";"));
+    //writeShortFunction(T("EnumerationPtr ") + declaratorName + T("()"),
+    //  T("static TypeCache cache(T(") + enumName.quoted() + T(")); return (EnumerationPtr)cache();"));
   }
 
   /*
@@ -212,10 +224,15 @@ protected:
     String className = xml->getStringAttribute(T("name"), T("???"));
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
+    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
+
+    String currentScope = getCurrentScopeFullName();
+    if (currentScope.isNotEmpty())
+      currentScope += T("::");
 
     currentScopes.push_back(className);
     if (!isTemplate)
-      types.push_back(getCurrentScopeFullName() + T("Class()"));
+      types.push_back(std::make_pair(currentScope + classNameWithFirstLowerCase + T("Class"), currentScope + className + T("Class()")));
 
     openClass(className + T("Class"), T("DefaultClass"));
 
@@ -274,7 +291,7 @@ protected:
             if (isEnumeration)
             {
               code += T("Variable((int)__this__->") + name + T(", ")
-                + replaceFirstLettersByLowerCase(variables[i]->getStringAttribute(T("type"))) + T("Enumeration())");
+                + replaceFirstLettersByLowerCase(variables[i]->getStringAttribute(T("type"))) + T("Enumeration)");
             }
             else
               code += T("__this__->") + name;
@@ -324,13 +341,12 @@ protected:
     closeClass();
     currentScopes.pop_back();
 
-    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
-
     // class declarator
     if (!isTemplate)
     {
-      writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
-        T("static TypeCache cache(T(") + className.quoted() + T(")); return cache();"));
+      writeLine(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class;"));
+      //writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
+      //  T("static TypeCache cache(T(") + className.quoted() + T(")); return cache();"));
 
       // class constructors
       forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
@@ -375,7 +391,10 @@ protected:
     String returnTypePtr = typeToRefCountedPointerType(returnType);
     openScope(returnTypePtr + T(" ") + classNameWithFirstLowerCase + T("(") + arguments + T(")"));
       writeLine(returnTypePtr + T(" res = new ") + className + T("(") + argNames + T(");"));
-      writeLine(T("res->setThisClass(") + classNameWithFirstLowerCase + T("Class(") + parameters + T("));"));
+      String code = T("res->setThisClass(") + classNameWithFirstLowerCase + T("Class");
+      if (parameters.isNotEmpty())
+        code += T("(") + parameters + T(")");
+      writeLine(code + T(");"));
       writeLine(T("return res;"));
     closeScope();
     newLine();
@@ -390,7 +409,7 @@ protected:
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     
     currentScopes.push_back(className);
-    types.push_back(getCurrentScopeFullName() + T("TemplateClass()"));
+    types.push_back(std::make_pair(String::empty, getCurrentScopeFullName() + T("TemplateClass()")));
 
     openClass(className + T("TemplateClass"), T("DefaultTemplateType"));
 
@@ -516,7 +535,15 @@ protected:
     }
 
     for (size_t i = 0; i < types.size(); ++i)
-      writeLine(T("lbcpp::Type::declare(new ") + types[i] + T(");"));
+    {
+      String classVariableName = types[i].first;
+      String typeName = types[i].second;
+      String code = T("lbcpp::Type::declare(");
+      if (classVariableName.isNotEmpty())
+        code += classVariableName + T(" = ");
+      code += T("new ") + typeName + T(");");
+      writeLine(code);
+    }
 
     if (hasImports)
     {
@@ -546,7 +573,7 @@ private:
   
   std::vector<String> currentScopes;
 
-  std::vector<String> types;
+  std::vector<std::pair<String, String> > types;
   
   String getCurrentScopeFullName() const
   {

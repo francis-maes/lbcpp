@@ -24,11 +24,11 @@ public:
     {return T("boolean as feature");}
 
   virtual TypePtr getInputType() const
-    {return booleanType();}
+    {return booleanType;}
 
   virtual void computeOutputType()
   {
-    addOutputVariable(T("value"), doubleType());
+    addOutputVariable(T("value"), doubleType);
     Perception::computeOutputType();
   }
 

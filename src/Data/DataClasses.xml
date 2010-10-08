@@ -59,7 +59,7 @@
       virtual Variable getObjectVariable(const VariableValue&amp; value, size_t index) const
       {
         DiscreteProbabilityDistributionPtr distribution = value.getObjectAndCast&lt;DiscreteProbabilityDistribution&gt;();
-        return distribution ? Variable(distribution->values[index], probabilityType()) : Variable::missingValue(probabilityType());
+        return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
       }
 
       virtual void setObjectVariable(const VariableValue&amp; value, size_t index, const Variable&amp; subValue) const
@@ -77,7 +77,7 @@
       }
 
       virtual TypePtr getObjectVariableType(size_t index) const
-        {return probabilityType();}
+        {return probabilityType;}
 
       virtual String getObjectVariableName(size_t index) const
         {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}

@@ -113,7 +113,7 @@ public:
   ** Disorder regions
   */
   void setDisorderRegions(VectorPtr disorderRegions)
-  {jassert(disorderRegions->getElementsType() == probabilityType()); this->disorderRegions = disorderRegions;}
+  {jassert(disorderRegions->getElementsType() == probabilityType); this->disorderRegions = disorderRegions;}
 
   VectorPtr getDisorderRegions() const
     {return disorderRegions;}
@@ -191,9 +191,9 @@ protected:
     {return betweenCBetaAtoms ? tertiaryStructure->makeCBetaDistanceMatrix() : tertiaryStructure->makeCAlphaDistanceMatrix();}
 };
 
-extern ClassPtr proteinClass();
+extern ClassPtr proteinClass;
 
-extern TypePtr angstromDistanceType();
+extern TypePtr angstromDistanceType;
 
 extern FunctionPtr proteinLengthFunction();
 extern FunctionPtr proteinToInputOutputPairFunction();

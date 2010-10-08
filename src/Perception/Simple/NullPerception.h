@@ -18,10 +18,10 @@ class NullPerception : public Perception
 {
 public:
   virtual TypePtr getInputType() const
-    {return anyType();}
+    {return anyType;}
 
   virtual TypePtr getOutputType() const
-    {return nilType();}
+    {return nilType;}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {}

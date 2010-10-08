@@ -32,13 +32,13 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
   if (container)
   {
     TypePtr elementsType = container->computeElementsCommonBaseType();
-    if (elementsType->inheritsFrom(fileType()))
+    if (elementsType->inheritsFrom(fileType))
     {
-      ContainerPtr loadedContainer = container->apply(loadFromFileFunction(objectClass()));
+      ContainerPtr loadedContainer = container->apply(loadFromFileFunction(objectClass));
       return createComponentForObject(loadedContainer, explicitName);
     }
 
-    if (elementsType->inheritsFrom(proteinClass()))
+    if (elementsType->inheritsFrom(proteinClass))
     {
       std::vector<ProteinPtr> proteins;
       std::vector<String> names;
@@ -99,10 +99,10 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     };
   }
 
-  if (variable.getType() == pairClass(proteinClass(), positiveIntegerType()))
+  if (variable.getType() == pairClass(proteinClass, positiveIntegerType))
     return new ResiduePerceptionComponent(variable);
 
-  if (variable.getType() == pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType())))
+  if (variable.getType() == pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType)))
     return new ResiduePairPerceptionComponent(variable); 
 
   if (variable.isObject())

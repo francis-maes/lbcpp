@@ -136,16 +136,16 @@ Variable ProteinParallelInference::finalizeInference(InferenceContextPtr context
 ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePtr targetInference)
   : StaticDecoratorInference(targetName, targetInference)
 {
-  int index = proteinClass()->findObjectVariable(targetName);
+  int index = proteinClass->findObjectVariable(targetName);
   jassert(index >= 0);
   targetIndex = (size_t)index;
-  checkInheritance((TypePtr)proteinClass(), targetInference->getInputType());
+  checkInheritance((TypePtr)proteinClass, targetInference->getInputType());
   checkInheritance(getTargetType(), targetInference->getSupervisionType());
   // FIXME: we need the ability to declare variables with abstract types
   // here, getTargetType() is the concrete GenericVector<Probability> class, whil
   // the inference target is the generic Vector<Probability> class.
   // getTargetType() should have been typed with the generic type !
-  //checkInheritance(targetInference->getOutputType(proteinClass()), getTargetType());
+  //checkInheritance(targetInference->getOutputType(proteinClass), getTargetType());
 }
 
 DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

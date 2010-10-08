@@ -13,7 +13,7 @@
 using namespace lbcpp;
 
 Enumeration::Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
-  : Type(name, enumValueType()), oneLetterCodes(oneLetterCodes)
+  : Type(name, enumValueType), oneLetterCodes(oneLetterCodes)
 {
   jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
   for (size_t index = 0; elements[index]; ++index)
@@ -21,7 +21,7 @@ Enumeration::Enumeration(const String& name, const juce::tchar** elements, const
 }
 
 Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
-  : Type(name, enumValueType()), oneLetterCodes(oneLetterCodes)
+  : Type(name, enumValueType), oneLetterCodes(oneLetterCodes)
 {
   jassert(!oneLetterCodes.containsChar('_'));
   for (int i = 0; i < oneLetterCodes.length(); ++i)
@@ -33,12 +33,12 @@ Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
 }
 
 Enumeration::Enumeration(const String& name)
-  : Type(name, enumValueType())
+  : Type(name, enumValueType)
 {
 }
 
 ClassPtr Enumeration::getClass() const
-  {return enumerationClass();}
+  {return enumerationClass;}
 
 void Enumeration::addElement(const String& elementName, const String& oneLetterCode, const String& threeLettersCode)
 {

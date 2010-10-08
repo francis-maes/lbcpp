@@ -29,13 +29,13 @@ public:
   ContactMapInference() {}
 
   virtual TypePtr getInputType() const
-    {return proteinClass();}
+    {return proteinClass;}
 
   virtual TypePtr getSupervisionType() const
-    {return symmetricMatrixClass(probabilityType());}
+    {return symmetricMatrixClass(probabilityType);}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return symmetricMatrixClass(probabilityType());}
+    {return symmetricMatrixClass(probabilityType);}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -63,7 +63,7 @@ public:
     ProteinPtr inputProtein = state->getInput().getObjectAndCast<Protein>();    
     size_t n = inputProtein->getLength();
 
-    SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType(), n);
+    SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
     bool atLeastOnePrediction = false;
     size_t index = 0;
     for (size_t i = 0; i < n; ++i)

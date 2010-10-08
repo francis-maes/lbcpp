@@ -24,7 +24,7 @@ public:
   RegressionInference() {}
   
   virtual TypePtr getSupervisionType() const
-    {return doubleType();}
+    {return doubleType;}
 
   virtual ScalarFunctionPtr getLoss(double target) const = 0;
   

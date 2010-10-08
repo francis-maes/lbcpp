@@ -21,11 +21,20 @@ class PerceptionCallback : public Object
 public:
   virtual void sense(size_t variableNumber, const Variable& value) = 0;
 
+  virtual void sense(size_t variableNumber, size_t value)
+    {sense(variableNumber, Variable(value));}
+
+  virtual void sense(size_t variableNumber, int value)
+    {sense(variableNumber, Variable(value));}
+
   virtual void sense(size_t variableNumber, double value)
-    {sense(variableNumber, value);}
+    {sense(variableNumber, Variable(value));}
+
+  virtual void sense(size_t variableNumber, const String& value)
+    {sense(variableNumber, Variable(value));}
 
   virtual void sense(size_t variableNumber, ObjectPtr value)
-    {sense(variableNumber, value);}
+    {sense(variableNumber, Variable(value));}
 
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input);
 };
@@ -107,7 +116,7 @@ private:
   DynamicClassPtr outputType;
 };
 
-extern ClassPtr perceptionClass();
+extern ClassPtr perceptionClass;
 typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 
 class CompositePerception : public Perception
@@ -147,7 +156,7 @@ typedef ReferenceCountedObjectPtr<CompositePerception> CompositePerceptionPtr;
 inline CompositePerceptionPtr compositePerception(TypePtr inputType, const String& stringDescription)
   {return new CompositePerception(inputType, stringDescription);}
 
-extern ClassPtr compositePerceptionClass();
+extern ClassPtr compositePerceptionClass;
 
 // special perceptions
 extern PerceptionPtr nullPerception();

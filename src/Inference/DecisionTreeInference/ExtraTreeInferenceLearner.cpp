@@ -192,16 +192,16 @@ Variable sampleEnumerationSplit(RandomGeneratorPtr random, EnumerationPtr enumer
 PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, TypePtr inputType, size_t variableIndex, Variable& splitArgument)
 {
   TypePtr variableType = inputType->getObjectVariableType(variableIndex);
-  if (variableType->inheritsFrom(doubleType()))
+  if (variableType->inheritsFrom(doubleType))
     splitArgument = sampleNumericalSplit(random, trainingData, variableIndex);
-  else if (variableType->inheritsFrom(integerType()))
+  else if (variableType->inheritsFrom(integerType))
     splitArgument = sampleNumericalIntegerSplit(random, trainingData, variableIndex);
-  else if (variableType->inheritsFrom(enumValueType()))
+  else if (variableType->inheritsFrom(enumValueType))
   {
     EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
     splitArgument = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
   }
-  else if (variableType->inheritsFrom(discreteProbabilityDistributionClass(topLevelType())))
+  else if (variableType->inheritsFrom(discreteProbabilityDistributionClass(topLevelType)))
   {
     jassert(false);
   }
@@ -287,7 +287,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   positiveExamples = pos;
 
   TypePtr outputType = examples->getElementsType()->getTemplateArgument(1);
-  if (outputType->inheritsFrom(enumValueType()))
+  if (outputType->inheritsFrom(enumValueType))
     return computeClassificationSplitScore(examples, negativeExamples, positiveExamples);
 
   jassert(false);

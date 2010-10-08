@@ -46,7 +46,7 @@ enum AminoAcidType
   totalNumAminoAcids,
 };
 
-extern EnumerationPtr aminoAcidTypeEnumeration();
+extern EnumerationPtr aminoAcidTypeEnumeration;
 
 enum AminoAcidCategory1
 {
@@ -56,7 +56,7 @@ enum AminoAcidCategory1
   basicCategory,
 };
 
-extern EnumerationPtr aminoAcidCategory1Enumeration();
+extern EnumerationPtr aminoAcidCategory1Enumeration;
 
 class AminoAcid : public Object
 {
@@ -105,7 +105,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<AminoAcid> AminoAcidPtr;
 
-extern ClassPtr aminoAcidClass();
+extern ClassPtr aminoAcidClass;
 
 }; /* namespace lbcpp */
 

@@ -80,6 +80,7 @@ public:
   static Variable missingValue(TypePtr type);
 
   static Variable pair(const Variable& variable1, const Variable& variable2);
+  static Variable pair(const Variable& variable1, const Variable& variable2, TypePtr pairType);
   static Variable copyFrom(TypePtr type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;
     
@@ -187,16 +188,6 @@ public:
 
   juce_UseDebuggingNewOperator
 
-  static TypePtr nilType;
-  static TypePtr booleanType;
-  static TypePtr integerType;
-  static TypePtr positiveIntegerType;
-  static TypePtr doubleType;
-  static TypePtr probabilityType;
-  static TypePtr stringType;
-  static TypePtr fileType;
-  static TypePtr objectClass; 
-
 private:
   Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}
 
@@ -205,7 +196,7 @@ private:
 };
 
 inline Variable probability(double p)
-  {return Variable(p, probabilityType());}
+  {return Variable(p, probabilityType);}
 
 }; /* namespace lbcpp */
 

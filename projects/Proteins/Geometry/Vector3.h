@@ -203,7 +203,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<Vector3> Vector3Ptr;
 
-extern ClassPtr vector3Class();
+extern ClassPtr vector3Class;
 
 class Vector3KDTree : public Object
 {

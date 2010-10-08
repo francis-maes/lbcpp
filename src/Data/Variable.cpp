@@ -11,18 +11,11 @@
 #include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
-TypePtr Variable::nilType;
-TypePtr Variable::booleanType;
-TypePtr Variable::integerType;
-TypePtr Variable::positiveIntegerType;
-TypePtr Variable::doubleType;
-TypePtr Variable::probabilityType;
-TypePtr Variable::stringType;
-TypePtr Variable::fileType;
-TypePtr Variable::objectClass; 
-
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
   {return new Pair(variable1, variable2);}
+
+Variable Variable::pair(const Variable& variable1, const Variable& variable2, TypePtr pairType)
+  {return new Pair(pairType, variable1, variable2);}
 
 Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
 {
@@ -109,7 +102,7 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
   if (maxDepth >= 0 && currentDepth >= maxDepth)
     return;
   TypePtr type = variable.getType();
-  if (type->inheritsFrom(objectClass()))
+  if (type->inheritsFrom(objectClass))
   {
     ObjectPtr object = variable.getObject();
     if (object)

@@ -59,7 +59,6 @@ public:
     {jassert(false); return InferencePtr();}
 
 protected:
-  ClassPtr proteinClass;
   PerceptionRewriterPtr perceptionRewriter;
 
   size_t getTargetIndex(const String& targetName) const;

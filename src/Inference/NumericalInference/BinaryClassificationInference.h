@@ -27,10 +27,10 @@ public:
   virtual ScalarFunctionPtr getLoss(bool isPositive) const = 0;
 
   virtual TypePtr getSupervisionType() const
-    {return sumType(booleanType(), probabilityType());}
+    {return sumType(booleanType, probabilityType);}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return probabilityType();}
+    {return probabilityType;}
 
   virtual void setName(const String& name)
   {
@@ -47,7 +47,7 @@ public:
       double supervisionValue = 0.0;
       if (supervision.isBoolean())
         supervisionValue = supervision.getBoolean() ? 1.0 : -1.0;
-      else if (supervision.inheritsFrom(probabilityType()))
+      else if (supervision.inheritsFrom(probabilityType))
         supervisionValue = supervision.getDouble() * 2.0 - 1.0;
       else
         jassert(false);
@@ -75,7 +75,7 @@ public:
     if (!subInferenceOutput)
       return Variable();
     double score = subInferenceOutput.getDouble();
-    return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType());
+    return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType);
   }
 
 protected:

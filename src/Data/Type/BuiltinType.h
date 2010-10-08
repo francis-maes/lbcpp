@@ -35,7 +35,7 @@ namespace lbcpp
 class BuiltinType : public Type
 {
 public:
-  BuiltinType(const String& name, TypePtr baseType = topLevelType())
+  BuiltinType(const String& name, TypePtr baseType = topLevelType)
     : Type(name, baseType) {}
   BuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
     : Type(templateType, templateArguments, baseType) {}

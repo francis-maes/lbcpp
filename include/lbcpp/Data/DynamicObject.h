@@ -17,7 +17,7 @@ namespace lbcpp
 class DynamicClass : public DefaultClass
 {
 public:
-  DynamicClass(const String& name, TypePtr baseClass = objectClass())
+  DynamicClass(const String& name, TypePtr baseClass = objectClass)
     : DefaultClass(name, baseClass) {}
   DynamicClass() {}
 

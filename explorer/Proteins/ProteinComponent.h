@@ -33,8 +33,8 @@ public:
 
   virtual Component* createComponentForVariable(const Variable& variable, const String& name)
   {
-    ClassPtr proteinClass = lbcpp::proteinClass();
-    jassert(variable.getType()->canBeCastedTo(pairClass(anyType(), stringType())));
+    ClassPtr proteinClass = lbcpp::proteinClass;
+    jassert(variable.getType()->canBeCastedTo(pairClass(anyType, stringType)));
     String tabName = variable[1].getString();
     VariableTreeOptions options;
     options.showMissingVariables = false;
@@ -126,9 +126,9 @@ public:
   
   virtual Component* createComponentForVariable(const Variable& variable, const String& name)
   {
-    ClassPtr proteinClass = lbcpp::proteinClass();
+    ClassPtr proteinClass = lbcpp::proteinClass;
 
-    jassert(variable.getType()->canBeCastedTo(pairClass(anyType(), stringType())));
+    jassert(variable.getType()->canBeCastedTo(pairClass(anyType, stringType)));
     String tabName = variable[1].getString();
     if (tabName == T("Data"))
       return new VariableTreeComponent(proteins[0], names[0]);
@@ -141,8 +141,8 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         TypePtr type = proteinClass->getObjectVariableType(i);
-        if (type->inheritsFrom(genericVectorClass(anyType()))
-         || type->inheritsFrom(objectVectorClass(discreteProbabilityDistributionClass(anyType()))))
+        if (type->inheritsFrom(genericVectorClass(anyType))
+         || type->inheritsFrom(objectVectorClass(discreteProbabilityDistributionClass(anyType))))
         {
           String friendlyName = Protein::getTargetFriendlyName(i);
           addObjectNameIfExists(friendlyName, i, sequenceIndex);

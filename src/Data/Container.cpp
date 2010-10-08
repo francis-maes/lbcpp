@@ -60,12 +60,12 @@ TypePtr Container::computeElementsCommonBaseType() const
 {
   size_t n = getNumElements();
   if (n == 0)
-    return variableType();
+    return topLevelType;
   TypePtr type = getElement(0).getType();
   for (size_t i = 1; i < n; ++i)
   {
     type = Type::findCommonBaseType(type, getElement(i).getType());
-    if (type == topLevelType())
+    if (type == topLevelType)
       break;
   }
   return type;

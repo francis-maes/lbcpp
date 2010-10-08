@@ -45,15 +45,15 @@ class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 public:
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
-    rewriter->addRule(booleanType(), booleanFeatures());
+    rewriter->addRule(booleanType, booleanFeatures());
     rewriter->addEnumValueFeaturesRule();
-    rewriter->addRule(negativeLogProbabilityType(), defaultPositiveDoubleFeatures(30, -3, 3));
-    rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
-    rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
-    rewriter->addRule(integerType(), defaultIntegerFeatures());
+    rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
+    rewriter->addRule(probabilityType, defaultProbabilityFeatures());
+    rewriter->addRule(positiveIntegerType, defaultPositiveIntegerFeatures());
+    rewriter->addRule(integerType, defaultIntegerFeatures());
 
     // all other features
-    rewriter->addRule(doubleType(), identityPerception());
+    rewriter->addRule(doubleType, identityPerception());
   }
 
   std::vector<size_t> makeBinaryConjunction(size_t index1, size_t index2) const
@@ -147,7 +147,7 @@ public:
       iterationNumber = 0;
     }
 
-    if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass()))
+    if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
@@ -208,7 +208,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #else
   size_t maxCount = 100;
 #endif // JUCE_DEBUG
-  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass()), pool)
+  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 }
   
@@ -271,12 +271,12 @@ int main(int argc, char** argv)
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
-  /*
-  std::cout << "Loading..." << std::flush;
+  
+  /*std::cout << "Loading..." << std::flush;
   inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;*/
 
-  for (size_t i = 10; i <= 10; ++i)
+  for (size_t i = 10; i <= 10; i += 9)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();

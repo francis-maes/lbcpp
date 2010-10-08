@@ -85,7 +85,7 @@ StaticSequentialInference::StaticSequentialInference(const String& name)
 }
 
 VectorSequentialInference::VectorSequentialInference(const String& name)
-  : StaticSequentialInference(name), subInferences(vector(inferenceClass())) {}
+  : StaticSequentialInference(name), subInferences(vector(inferenceClass)) {}
 
 SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {

@@ -22,7 +22,7 @@ public:
     : filterUnsupervisedExamples(filterUnsupervisedExamples) {}
 
   virtual ClassPtr getTargetInferenceClass() const
-    {return sharedParallelInferenceClass();}
+    {return sharedParallelInferenceClass;}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -49,7 +49,8 @@ private:
   ContainerPtr computeSubTrainingData(InferenceContextPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     InferencePtr targetSubInference = targetInference->getSubInference();
-    VectorPtr res = vector(pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType()));
+    TypePtr pairType = pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType());
+    VectorPtr res = vector(pairType);
     
     size_t n = trainingData->getNumElements();
     for (size_t i = 0; i < n; ++i)
@@ -63,7 +64,7 @@ private:
         jassert(state->getSubInference(j) == targetSubInference);
         Variable subSupervision = state->getSubSupervision(j);
         if (!filterUnsupervisedExamples || subSupervision)
-          res->append(Variable::pair(state->getSubInput(j), subSupervision));
+          res->append(Variable::pair(state->getSubInput(j), subSupervision, pairType));
       }
     }
     return res;

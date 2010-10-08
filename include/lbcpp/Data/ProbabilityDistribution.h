@@ -27,7 +27,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProbabilityDistribution> ProbabilityDistributionPtr;
 
-extern ClassPtr probabilityDistributionClass();
+extern ClassPtr probabilityDistributionClass;
 
 class BernoulliDistribution : public ProbabilityDistribution
 {

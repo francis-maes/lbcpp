@@ -23,13 +23,13 @@ public:
     {}
   
   virtual TypePtr getElementsType() const
-    {return vectorClass(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())));}
+    {return vectorClass(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration)));}
 
   virtual void parseBegin()
   {
     currentPosition = -3;
 
-    pssm = vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration()), primaryStructure->getNumElements());
+    pssm = vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(const String& line)
@@ -76,7 +76,7 @@ public:
       return false;
     }
 
-    DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration());
+    DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + i * 3;
@@ -87,7 +87,7 @@ public:
         return false;
       }
       int scoreI = score.getIntValue();
-      int index = aminoAcidTypeEnumeration()->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
+      int index = aminoAcidTypeEnumeration->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
       if (index < 0)
       {
         callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));

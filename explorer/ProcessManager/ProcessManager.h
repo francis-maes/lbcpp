@@ -132,7 +132,7 @@ typedef ReferenceCountedObjectPtr<ProcessList> ProcessListPtr;
 class ProcessList : public GenericVector
 {
 public:
-  ProcessList() : GenericVector(objectClass(), 0) {}
+  ProcessList() : GenericVector(objectClass, 0) {}
 
   size_t getNumProcesses() const
     {return getNumElements();}

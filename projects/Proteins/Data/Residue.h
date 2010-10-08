@@ -24,11 +24,11 @@ class Residue : public Object
 {
 public:
   Residue(AminoAcidType aminoAcidType)
-    : aminoAcidType(aminoAcidType), atoms(vector(atomClass())) {}
+    : aminoAcidType(aminoAcidType), atoms(vector(atomClass)) {}
   Residue() {}
 
   virtual String getName() const
-    {return Variable(aminoAcidType, aminoAcidTypeEnumeration()).toString();}
+    {return Variable(aminoAcidType, aminoAcidTypeEnumeration).toString();}
   
   virtual String getThreeLettersCodeName() const
     {return AminoAcid::toThreeLettersCode(aminoAcidType);}
@@ -100,7 +100,7 @@ protected:
   ObjectVectorPtr atoms;
 };
 
-extern ClassPtr residueClass();
+extern ClassPtr residueClass;
 
 }; /* namespace lbcpp */
 

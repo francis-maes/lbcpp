@@ -57,7 +57,7 @@ public:
       {
         Variable predictedElement = predicted->getElement(i, j);
         Variable correctElement = correct->getElement(i, j);
-        jassert(predictedElement.getType() == probabilityType() && correctElement.getType() == probabilityType());
+        jassert(predictedElement.getType() == probabilityType && correctElement.getType() == probabilityType);
         if (predictedElement.isMissingValue() || correctElement.isMissingValue())
           continue;
 

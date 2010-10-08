@@ -15,7 +15,6 @@
 using namespace lbcpp;
 
 ProteinInferenceFactory::ProteinInferenceFactory()
-  : proteinClass(lbcpp::proteinClass())
   {}
 
 ProteinInferenceFactory::~ProteinInferenceFactory()
@@ -83,15 +82,15 @@ PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const Strin
 PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  addPerception(res, T("window"), targetName, windowPerception(probabilityType(), 15));
-  addPerception(res, T("histogram"), targetName, windowHistogramPerception(probabilityType(), 15));
+  addPerception(res, T("window"), targetName, windowPerception(probabilityType, 15));
+  addPerception(res, T("histogram"), targetName, windowHistogramPerception(probabilityType, 15));
   return res;
 }
 
 PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPerception() const
 {
-  PerceptionPtr pssmRowPerception = discreteProbabilityDistributionPerception(aminoAcidTypeEnumeration());
-  ClassPtr aaDistributionClass = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration());
+  PerceptionPtr pssmRowPerception = discreteProbabilityDistributionPerception(aminoAcidTypeEnumeration);
+  ClassPtr aaDistributionClass = discreteProbabilityDistributionClass(aminoAcidTypeEnumeration);
 
   String targetName(T("positionSpecificScoringMatrix"));
   CompositePerceptionPtr res = new ResidueCompositePerception();
@@ -188,8 +187,8 @@ void ProteinInferenceFactory::addPerception(CompositePerceptionPtr composite, co
 {
   FunctionPtr selectFunction;
   int index = proteinClass->findObjectVariable(targetName);
-  if (perception->getInputType()->inheritsFrom(pairClass(anyType(), anyType())))
-    selectFunction = selectPairVariablesFunction(index, -1, pairClass(proteinClass, positiveIntegerType()));
+  if (perception->getInputType()->inheritsFrom(pairClass(anyType, anyType)))
+    selectFunction = selectPairVariablesFunction(index, -1, pairClass(proteinClass, positiveIntegerType));
   else
     selectFunction = selectVariableFunction(index);
 

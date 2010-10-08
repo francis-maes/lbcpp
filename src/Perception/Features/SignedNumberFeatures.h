@@ -32,7 +32,7 @@ public:
   virtual void computeOutputType()
   {
     reserveOutputVariables(3);
-    addOutputVariable(T("zero"), doubleType());
+    addOutputVariable(T("zero"), doubleType);
     addOutputVariable(T("positive"), positiveNumberPerception);
     addOutputVariable(T("negative"), positiveNumberPerception);
     Perception::computeOutputType();

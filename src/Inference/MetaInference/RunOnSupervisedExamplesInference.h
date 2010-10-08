@@ -27,10 +27,10 @@ public:
     {return containerClass(pairClass(inference->getInputType(), inference->getSupervisionType()));}
 
   virtual TypePtr getSupervisionType() const
-    {return nilType();}
+    {return nilType;}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
+    {return nilType;}
 
   virtual String getDescription(const Variable& input, const Variable& supervision) const
   {

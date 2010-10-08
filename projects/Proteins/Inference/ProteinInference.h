@@ -77,10 +77,10 @@ public:
 
   // Accessors
   String getTargetName() const
-    {return proteinClass()->getObjectVariableName(targetIndex);}
+    {return proteinClass->getObjectVariableName(targetIndex);}
 
   TypePtr getTargetType() const
-    {return proteinClass()->getObjectVariableType(targetIndex);}
+    {return proteinClass->getObjectVariableType(targetIndex);}
 
   InferencePtr getTargetInference() const
     {return decorated;}
@@ -91,11 +91,11 @@ public:
 
   // Inference
   virtual TypePtr getInputType() const
-    {return proteinClass();}
+    {return proteinClass;}
   virtual TypePtr getSupervisionType() const
-    {return proteinClass();}
+    {return proteinClass;}
   virtual TypePtr getOutputType(TypePtr ) const
-    {return proteinClass();}
+    {return proteinClass;}
 
 protected:
   friend class ProteinInferenceStepClass;

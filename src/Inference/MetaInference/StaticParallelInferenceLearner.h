@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -19,7 +20,7 @@ class StaticParallelInferenceLearner : public InferenceLearner<ParallelInference
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const
-    {return staticParallelInferenceClass();}
+    {return staticParallelInferenceClass;}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -49,9 +50,10 @@ public:
       InferencePtr subInferenceLearner = subInference->getBatchLearner();
       if (subInferenceLearner)
       {
-        VectorPtr subTrainingData = vector(pairClass(subInference->getInputType(), subInference->getSupervisionType()), n);
+        TypePtr pairType = pairClass(subInference->getInputType(), subInference->getSupervisionType());
+        VectorPtr subTrainingData = vector(pairType, n);
         for (size_t j = 0; j < n; ++j)
-          subTrainingData->setElement(j, Variable::pair(currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i)));
+          subTrainingData->setElement(j, Variable::pair(currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i), pairType));
         res->addSubInference(subInferenceLearner, Variable::pair(subInference, subTrainingData), Variable());
       }
     }

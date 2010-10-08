@@ -217,7 +217,7 @@ protected:
 
   Variable makeSelection(const Variable& sequenceVariable) const
   {
-    jassert(sequenceVariable.getType() == pairClass(pairClass(stringType(), stringType()), integerType()));
+    jassert(sequenceVariable.getType() == pairClass(pairClass(stringType, stringType), integerType));
     Variable names = sequenceVariable[0];
     //String sequenceName = names[0].getString();
     ProteinPtr protein = findProteinWithName(names[1].getString());

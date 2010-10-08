@@ -24,7 +24,7 @@ public:
   DirectoryFileStream() : nextFilePosition(0) {}
 
   virtual TypePtr getElementsType() const
-    {return fileType();}
+    {return fileType;}
 
   virtual bool rewind()
     {nextFilePosition = 0; return true;}
@@ -39,7 +39,7 @@ public:
     jassert(nextFilePosition < files.size());
     File file = *files[nextFilePosition];
     ++nextFilePosition;
-    return Variable(file.getFullPathName(), fileType());
+    return Variable(file.getFullPathName(), fileType);
   }
 
 private:

@@ -22,7 +22,7 @@ public:
   {
     jassert(maximumValue > minimumValue);
     jassert(numIntervals > 1);
-    isDouble = inputType->inheritsFrom(doubleType());
+    isDouble = inputType->inheritsFrom(doubleType);
   }
 
   DiscretizedNumberFeatures()
@@ -38,7 +38,7 @@ public:
   {
     if (!Perception::loadFromXml(importer))
       return false;
-    isDouble = inputType->inheritsFrom(doubleType());
+    isDouble = inputType->inheritsFrom(doubleType);
     return true;
   }
 

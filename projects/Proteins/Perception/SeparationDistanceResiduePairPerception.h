@@ -21,18 +21,18 @@ public:
     {computeOutputType();}
 
   virtual TypePtr getInputType() const
-    {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
+    {return pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType));}
 
   virtual void computeOutputType()
   {
-    addOutputVariable(T("separationDistance"), positiveIntegerType());
+    addOutputVariable(T("separationDistance"), positiveIntegerType);
     Perception::computeOutputType();
   }
   
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     Variable positionPair = input[1];
-    callback->sense(0, Variable(abs(positionPair[1].getInteger() - positionPair[0].getInteger()), positiveIntegerType()));
+    callback->sense(0, abs(positionPair[1].getInteger() - positionPair[0].getInteger()));
   }
 
 protected:

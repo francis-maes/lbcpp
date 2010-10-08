@@ -33,7 +33,7 @@ Variable AminoAcid::getVariable(size_t index) const
 {
   switch (index)
   {
-  case 0: return Variable((int)type, aminoAcidTypeEnumeration());
+  case 0: return Variable((int)type, aminoAcidTypeEnumeration);
   case 1: return toString();
   case 2: return getThreeLettersCode();
   case 3: return Variable((int)getCategory1(), aminoAcidCategory1Enumeration());
@@ -44,16 +44,16 @@ Variable AminoAcid::getVariable(size_t index) const
 Variable AminoAcid::fromOneLetterCode(juce::tchar code)
 {
   int index = oneLetterCodes.indexOfChar(code);
-  return index >= 0 ? Variable(index, aminoAcidTypeEnumeration()) 
-    : Variable::missingValue(aminoAcidTypeEnumeration());
+  return index >= 0 ? Variable(index, aminoAcidTypeEnumeration) 
+    : Variable::missingValue(aminoAcidTypeEnumeration);
 }
 
 Variable AminoAcid::fromThreeLettersCode(const String& code)
 {
   for (size_t i = 0; i < 23; ++i)
     if (code.toUpperCase() == String(threeLettersCodes[i]).toUpperCase())
-      return Variable(i, aminoAcidTypeEnumeration());
-  return Variable::missingValue(aminoAcidTypeEnumeration());
+      return Variable(i, aminoAcidTypeEnumeration);
+  return Variable::missingValue(aminoAcidTypeEnumeration);
 }
 
 juce::tchar AminoAcid::getOneLetterCode() const

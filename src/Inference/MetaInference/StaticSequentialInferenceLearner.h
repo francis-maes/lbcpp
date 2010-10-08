@@ -19,7 +19,7 @@ class StaticSequentialInferenceLearner : public InferenceLearner<SequentialInfer
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const
-    {return staticSequentialInferenceClass();}
+    {return staticSequentialInferenceClass;}
 
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -88,13 +88,13 @@ private:
   struct SubTrainingData : public Container
   {
     SubTrainingData(InferencePtr subInference, std::vector<SequentialInferenceStatePtr>& targetStates)
-      : subInference(subInference), targetStates(targetStates) {}
+      : subInference(subInference), targetStates(targetStates), pairType(pairClass(subInference->getInputType(), subInference->getSupervisionType())) {}
 
     virtual ClassPtr getClass() const
-      {return containerClass(pairClass(anyType(), anyType()));}
+      {return containerClass(pairClass(anyType, anyType));}
 
     virtual TypePtr getElementsType() const
-      {return pairClass(subInference->getInputType(), subInference->getSupervisionType());}
+      {return pairType;}
 
     virtual size_t getNumElements() const
       {return targetStates.size();}
@@ -103,7 +103,7 @@ private:
     {
       jassert(index < targetStates.size());
       SequentialInferenceStatePtr targetState = targetStates[index];
-      return Variable::pair(targetState->getSubInput(), targetState->getSubSupervision());
+      return Variable::pair(targetState->getSubInput(), targetState->getSubSupervision(), pairType);
     }
 
     virtual void setElement(size_t index, const Variable& value)
@@ -112,6 +112,7 @@ private:
   private:
     InferencePtr subInference;
     std::vector<SequentialInferenceStatePtr>& targetStates;
+    TypePtr pairType;
   };
 
   void setSubLearningInference(StaticSequentialInferencePtr targetInference, StatePtr state, size_t index)

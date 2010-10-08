@@ -39,8 +39,8 @@ Variable Residue::getDistanceBetweenAtoms(const String& name1, const String& nam
   AtomPtr a1 = findAtomByName(name1);
   AtomPtr a2 = findAtomByName(name2);
   return a1 && a2
-    ? Variable((a1->getPosition()->getValue() - a2->getPosition()->getValue()).l2norm(), angstromDistanceType())
-    : Variable::missingValue(angstromDistanceType());
+    ? Variable((a1->getPosition()->getValue() - a2->getPosition()->getValue()).l2norm(), angstromDistanceType)
+    : Variable::missingValue(angstromDistanceType);
 }
 
 Variable Residue::getDistanceBetweenAtoms(const String& name1, ResiduePtr residue2, const String& name2) const
@@ -48,8 +48,8 @@ Variable Residue::getDistanceBetweenAtoms(const String& name1, ResiduePtr residu
   AtomPtr a1 = findAtomByName(name1);
   AtomPtr a2 = residue2->findAtomByName(name2);
   return a1 && a2
-    ? Variable((a1->getPosition()->getValue() - a2->getPosition()->getValue()).l2norm(), angstromDistanceType())
-    : Variable::missingValue(angstromDistanceType());
+    ? Variable((a1->getPosition()->getValue() - a2->getPosition()->getValue()).l2norm(), angstromDistanceType)
+    : Variable::missingValue(angstromDistanceType);
 }
 
 AtomPtr Residue::checkAndGetCBetaOrCAlphaAtom() const

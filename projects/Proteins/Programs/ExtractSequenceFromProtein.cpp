@@ -131,9 +131,9 @@ static void generateFeatures(ProteinPtr protein, int position, OutputStream* o)
 {
   VectorPtr primaryStructure = protein->getPrimaryStructure();
   if (position < 0)
-    *o << Variable::missingValue(aminoAcidTypeEnumeration()).getInteger();
+    *o << Variable::missingValue(aminoAcidTypeEnumeration).getInteger();
   else if (position >= (int)protein->getLength())
-    *o << Variable::missingValue(aminoAcidTypeEnumeration()).getInteger() + 1;
+    *o << Variable::missingValue(aminoAcidTypeEnumeration).getInteger() + 1;
   else
     *o << primaryStructure->getElement(position).getInteger();
   *o << " ";

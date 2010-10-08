@@ -213,7 +213,7 @@ protected:
   String name;
 };
 
-extern ClassPtr nameableObjectClass();
+extern ClassPtr nameableObjectClass;
 
 typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
 

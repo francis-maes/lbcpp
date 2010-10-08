@@ -22,16 +22,16 @@ class ProteinLengthFunction : public Function
 {
 public:
   virtual TypePtr getInputType() const
-    {return proteinClass();}
+    {return proteinClass;}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return positiveIntegerType();}
+    {return positiveIntegerType;}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
-    return Variable(protein->getLength(), positiveIntegerType());
+    return Variable(protein->getLength(), positiveIntegerType);
   }
 };
 
@@ -41,11 +41,14 @@ public:
 class ProteinToInputOutputPairFunction : public Function
 {
 public:
+  ProteinToInputOutputPairFunction()
+    : outputType(pairClass(proteinClass, proteinClass)) {}
+
   virtual TypePtr getInputType() const
-    {return proteinClass();}
+    {return proteinClass;}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return pairClass(proteinClass(), proteinClass());}
+    {return outputType;}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -55,8 +58,11 @@ public:
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
-    return Variable::pair(inputProtein, protein);
+    return Variable::pair(inputProtein, protein, outputType);
   }
+
+protected:
+  TypePtr outputType;
 };
 
 }; /* namespace lbcpp */

@@ -80,7 +80,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<Atom> AtomPtr;
 
-extern ClassPtr atomClass();
+extern ClassPtr atomClass;
 
 }; /* namespace lbcpp */
 

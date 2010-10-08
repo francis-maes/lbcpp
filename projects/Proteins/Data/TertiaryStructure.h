@@ -72,7 +72,7 @@ protected:
   ObjectVectorPtr residues;
 };
 
-extern ClassPtr tertiaryStructureClass();
+extern ClassPtr tertiaryStructureClass;
 
 }; /* namespace lbcpp */
 

@@ -26,10 +26,10 @@ public:
     {return containerClass(pairClass(inferenceModel->getInputType(), inferenceModel->getSupervisionType()));}
 
   virtual TypePtr getSupervisionType() const
-    {return nilType();}
+    {return nilType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return nilType();}
+    {return nilType;}
 
 protected:
   friend class CrossValidateStepInferenceClass;
@@ -62,10 +62,10 @@ public:
     {return subInference->getInputType();}
 
   virtual TypePtr getSupervisionType() const
-    {return nilType();}
+    {return nilType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return nilType();}
+    {return nilType;}
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {

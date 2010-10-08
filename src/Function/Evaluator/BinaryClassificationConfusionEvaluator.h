@@ -28,7 +28,7 @@ public:
 
     if (variable.isBoolean())
       res = variable.getBoolean();
-    else if (variable.inheritsFrom(probabilityType()))
+    else if (variable.inheritsFrom(probabilityType))
       res = variable.getDouble() > 0.5;
     else
     {

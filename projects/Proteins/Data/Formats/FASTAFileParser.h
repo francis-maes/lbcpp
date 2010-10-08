@@ -22,7 +22,7 @@ public:
     : TextParser(file, callback) {}
   
   virtual TypePtr getElementsType() const
-    {return proteinClass();}
+    {return proteinClass;}
   
   virtual void parseBegin()
     {}
