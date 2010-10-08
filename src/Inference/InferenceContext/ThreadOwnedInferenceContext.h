@@ -75,6 +75,7 @@ public:
 
       // step = num sub-inferences per sub-job
 
+      bool areSubJobsAtomic = true;
       if (isAtomicJob)
         step = n; // atomic job: do not split
       else
@@ -83,10 +84,14 @@ public:
         // maximum 5 * numCpus sub-jobs
         // ideally 1 s per sub-job
 
-        step = (size_t)ceil((double)n / numCpus);
+        step = n / numCpus;
+        if (!step)
+          step = 1;
         if (meanRunTime)
           step = (size_t)juce::jlimit((int)step, (int)n, (int)(1000.0 / meanRunTime));
         jassert(step > 0);
+        if (n / step < numCpus)
+          areSubJobsAtomic = false;
       }
 
       if (step == n)
@@ -126,7 +131,7 @@ public:
           size_t end = begin + step;
           if (end > n)
             end = n;
-          jobs.push_back(parallelInferenceJob(parentContext, pool, stack->cloneAndCast<InferenceStack>(), inference, state, begin, end, step > 1));
+          jobs.push_back(parallelInferenceJob(parentContext, pool, stack->cloneAndCast<InferenceStack>(), inference, state, begin, end, areSubJobsAtomic));
           begin = end;
         }
 

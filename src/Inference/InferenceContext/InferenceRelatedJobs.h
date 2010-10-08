@@ -88,8 +88,16 @@ public:
       stack->pop();
     }
     else
+    {
       setName(inference->getDescription(state->getInput(), state->getSupervision()) +
         T("[") + String((int)beginIndex) + T(":") + String((int)(endIndex - 1)) + T("]"));
+    }
+
+   /* //this->inference = inference->cloneAndCast<Inference>();    
+    this->state = new ParallelInferenceState(state->getInput().clone(), state->getSupervision().clone());
+    this->state->reserve(state->getNumSubInferences());
+    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
+      this->state->addSubInference(state->getSubInference(i)->cloneAndCast<Inference>(), state->getSubInput(i).clone(), state->getSubSupervision(i).clone());*/
   }
 
   bool runJob(String& failureReason)
@@ -116,10 +124,13 @@ public:
           return false; 
         }
 
-        pool->getTimingsCache()->addValue(inference, Time::getMillisecondCounterHiRes() - startingTime);
+        double deltaTime = Time::getMillisecondCounterHiRes() - startingTime;
+        std::cout << "Delta Time: " << deltaTime << std::endl;
+        pool->getTimingsCache()->addValue(inference, deltaTime);
       }
       state->setSubOutput(i, subOutput);
     }
+    std::cout << "Mean Execution Time: " << inference->getName() << " ==> " << pool->getTimingsCache()->getMeanValue(inference) << std::endl;
     return true;
   }
 

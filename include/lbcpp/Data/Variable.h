@@ -130,6 +130,7 @@ public:
   */
   String toString() const;
   String toShortString() const;
+  Variable clone() const;
 
   void saveToXml(XmlExporter& exporter) const;
 
