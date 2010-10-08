@@ -19,7 +19,7 @@ extern void declareProteinClasses();
 
 InferenceContextPtr createInferenceContext()
 {
-  return singleThreadedInferenceContext();// multiThreadedInferenceContext(new ThreadPool(10, false));
+  return multiThreadedInferenceContext(new ThreadPool(7, false));
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
@@ -204,7 +204,7 @@ private:
 VectorPtr loadProteins(const File& directory)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 2;
+  size_t maxCount = 10;
 #else
   size_t maxCount = 100;
 #endif // JUCE_DEBUG
@@ -269,8 +269,6 @@ int main(int argc, char** argv)
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
-  //for (int i = 1; i <= 2; ++i)
-  {
   std::cout << "Check Evaluating..." << std::endl;
   evaluator = new ProteinEvaluator();
   context->evaluate(inference, trainProteins, evaluator);
@@ -278,6 +276,7 @@ int main(int argc, char** argv)
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
 
+//#if 0
   std::cout << "Loading..." << std::flush;
   InferencePtr loadedInference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
@@ -294,8 +293,7 @@ int main(int argc, char** argv)
   std::cout << "ok." << std::endl;
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
-  }
-
+//#endif // 0
 
   std::cout << "Tchao." << std::endl;
   return 0;

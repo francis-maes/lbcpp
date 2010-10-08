@@ -1,15 +1,16 @@
 
 Perception:
- * Bug: Serialisation marche pas à 100%
- * DynamicObjects: si c'est que des doubles, implémentation spéciale + sérialisation XML compactée
  * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
 
+* Essayer un peu l'introspection sur les types
 
 Experiments/MoonBox:
 * Bug Julien: crossValidation does not work for multi-pass SS3
 * MoonBox: voir comment faire l'evaluation avec le meme InferenceContext que le reste
 * Finaliser le ParallelProteinInference
 * Optimiser le multi-thread sous linux
+
+----
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch

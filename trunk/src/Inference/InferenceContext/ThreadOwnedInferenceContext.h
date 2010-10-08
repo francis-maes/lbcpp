@@ -111,8 +111,8 @@ public:
       }
       else
       {
-        //std::cout << "PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
-        //DBG("Run Parallel Inference: " + inference->toString() + T(" num inferences: ") + String((int)n) + T(" step = ") + String((int)step));
+        MessageCallback::info(T("Parallelisation: ") + inference->getDescription(input, supervision) + T("\n\t=> ") +
+          String((int)n) + T(" sub inferences, ") + String((int)step) + T(" inferences per thread"));
 
         stackLock.enter();
         InferenceStackPtr stack = this->stack->cloneAndCast<InferenceStack>();
@@ -131,7 +131,6 @@ public:
         }
 
         pool->addJobsAndWaitExecution(jobs, stack->getDepth());
-       //juce::DBG("OK Run Parallel Inference: " + inference->toString());
       }
     }
     return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
