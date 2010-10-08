@@ -66,17 +66,19 @@ protected:
       return flattenPerception(perception);
     else if (tabName == T("Features"))
     {
-      PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));
+      return perceptionToFeatures(perception);
+      
+      /*PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));
 
       VectorPtr selectedConjunctions = vector(containerClass(positiveIntegerType()));
       for (size_t i = 0; i < collapsedFeatures->getNumOutputVariables(); ++i)
         selectedConjunctions->append(makeUnaryConjunction(i));
 
-      /*selectedConjunctions->append(makeBinaryConjunction(0, 1));
+      selectedConjunctions->append(makeBinaryConjunction(0, 1));
       selectedConjunctions->append(makeBinaryConjunction(5, 10));
-      selectedConjunctions->append(makeBinaryConjunction(10, 15));*/
+      selectedConjunctions->append(makeBinaryConjunction(10, 15));
 
-      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);
+      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);*/
     }
     else
       return perception;

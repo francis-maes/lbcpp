@@ -4,6 +4,10 @@
 
 * SelectAndMakeProductsPerception: regler le doublon std::vector/Vector
 * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
+* Flag "AtomicJob" pour couper les splits recursifs lors de l'evaluation
+
+Explorer:
+ * bug: les viewports verticales sont trop hautes => la derniere ligne des arbres est caché (si il y a un scroll bar horizontale)
 
 * Bug Julien: crossValidation does not work for multi-pass SS3
 
