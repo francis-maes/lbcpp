@@ -14,44 +14,6 @@ using namespace lbcpp;
 
 extern void declareLBCppClasses();
 
-void ReferenceCountedObject::incrementReferenceCounter()
-{
-  double startTime = Time::getMillisecondCounterHiRes();
-  juce::atomicIncrement(refCount);
-  double deltaTime = Time::getMillisecondCounterHiRes() - startTime;
-  static int counter = 0;
-  static double sum = 0.0;
-  sum += deltaTime;
-  ++counter;
-  if (counter == 10000)
-  {
-    std::cout << "incrementReferenceCounter: " << sum << "ms" << std::endl;
-    sum = 0.0;
-    counter = 0;
-  }
-}
-
-/** Decrements the object's reference count.  */
-void ReferenceCountedObject::decrementReferenceCounter()
-{
-  double startTime = Time::getMillisecondCounterHiRes();
-  
-  if (juce::atomicDecrementAndReturn(refCount) == 0)
-    delete this;
-  double deltaTime = Time::getMillisecondCounterHiRes() - startTime;
-  static int counter = 0;
-  static double sum = 0.0;
-  sum += deltaTime;
-  ++counter;
-  if (counter == 10000)
-  {
-    std::cout << "decrementReferenceCounter: " << sum << "ms" << std::endl;
-    sum = 0.0;
-    counter = 0;
-  }
-}
-
-
 String Object::getClassName() const
 {
   if (thisClass)

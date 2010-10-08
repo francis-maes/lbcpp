@@ -93,10 +93,15 @@ public:
 #endif
 
   /** Increments the object's reference count.  */
-  void incrementReferenceCounter();
+  inline void incrementReferenceCounter()
+    {juce::atomicIncrement(refCount);}
 
   /** Decrements the object's reference count.  */
-  void decrementReferenceCounter();
+  inline void decrementReferenceCounter()
+  {
+    if (juce::atomicDecrementAndReturn(refCount) == 0)
+      delete this;
+  }
 };
 
 /**
