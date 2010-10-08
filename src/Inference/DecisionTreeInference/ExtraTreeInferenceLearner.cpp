@@ -45,9 +45,10 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const
   BinaryDecisionTreePtr tree = sampleTree(perception->getOutputType(), outputType, newTrainingData);
   if (tree)
   {
-    std::cout << "Tree: numAttributes = " << perception->getNumOutputVariables() << " numExamples = " << trainingData->getNumElements() << " numNodes = " << tree->getNumNodes() << std::endl;
+    MessageCallback::info(T("Tree: numAttributes = ") + String((int)perception->getNumOutputVariables()) +
+          T(" numExamples = ") + String((int)trainingData->getNumElements()) +
+          T(" numNodes = ") + String((int)tree->getNumNodes()));
     inference->setTree(tree);
-    //std::cout << tree->toString() << std::endl;
   }
   return Variable();
 }

@@ -1,13 +1,19 @@
-* Bug: Serialisation marche pas à 100%
-* Tester l'ouverture de Perception et de Modèles appris dans l'explorer
-* DynamicObjects: si c'est que des doubles, implémentation spéciale + sérialisation XML compactée
+A enlever:
+ - RunOnSupervisedExamplesSequentialInference::updateInference
+ - ThreadOwnedInferenceContext::runParallelInference, step = 1
+ - MoonBox: while au lieu du if
 
--
-* Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
--
+
+
 * Bug du multithread
 * Flag "AtomicJob" pour couper les splits recursifs lors de l'evaluation
 * Optimiser le multi-thread sous linux
+-
+* Bug: Serialisation marche pas à 100%
+* Tester l'ouverture de Perception et de Modèles appris dans l'explorer
+* DynamicObjects: si c'est que des doubles, implémentation spéciale + sérialisation XML compactée
+-
+* Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
 -
 * Bug Julien: crossValidation does not work for multi-pass SS3
 * MoonBox: voir comment faire l'evaluation avec le meme InferenceContext que le reste

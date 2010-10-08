@@ -23,6 +23,9 @@ public:
   virtual void warningMessage(const String& where, const String& what)
     {addMessage(T("Warning in ") + where + T(": ") + what);}
 
+  virtual void infoMessage(const String& where, const String& what)
+    {}
+
   void flushMessages(const String& title)
   {
     if (text.isNotEmpty())

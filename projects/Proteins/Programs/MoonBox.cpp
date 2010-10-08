@@ -129,20 +129,6 @@ private:
 };
 
 /////////////////////////////////////////
-class StdOutPrinter
-{
-public:
-  void print(const String& line)
-  {
-    ScopedLock _(lock);
-    std::cout << line << std::endl;
-  }
-
-private:
-  CriticalSection lock;
-};
-static StdOutPrinter stdOutPrinter;
-
 
 class StackPrinterCallback : public InferenceCallback
 {
@@ -157,7 +143,7 @@ public:
     for (size_t i = 0; i < stack->getDepth(); ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName();
-    stdOutPrinter.print(line);
+    MessageCallback::info(line);
   }
   
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
@@ -266,7 +252,7 @@ public:
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
       String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
-      stdOutPrinter.print(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
+      MessageCallback::info(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
     }
   }
 
@@ -276,7 +262,7 @@ public:
     if (currentInference->getName() == T("Pass learner"))
     {
       // end of learning pass
-      stdOutPrinter.print(String("\n====================================================") + 
+      MessageCallback::info(String("\n====================================================") + 
         T("===================  EVALUATION  ===================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s\n") +
         T("====================================================\n"));
 
@@ -286,16 +272,16 @@ public:
       evaluator = getTestingEvaluator();
       processResults(evaluator, false);
 
-      stdOutPrinter.print(T("=====================================================\n"));
+      MessageCallback::info(T("=====================================================\n"));
     }
     else if (stack->getDepth() == 1)
     {
-      stdOutPrinter.print(T("Bye."));
+      MessageCallback::info(T("Bye."));
     }
   }
 
   void processResults(ProteinEvaluatorPtr evaluator, bool isTrainingData)
-    {stdOutPrinter.print(String(T(" == ")) + (isTrainingData ? T("Training") : T("Testing")) + T(" Scores = \n") + evaluator->toString());}
+    {MessageCallback::info(String(T(" == ")) + (isTrainingData ? T("Training") : T("Testing")) + T(" Scores = \n") + evaluator->toString());}
 
 private:
   InferencePtr inference;
