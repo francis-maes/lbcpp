@@ -30,6 +30,8 @@
           PairPtr pair = value.getObjectAndCast&lt;Pair&gt;();
           return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
         }
+        virtual String getElementName(const VariableValue&amp; value, size_t index) const
+          {return index ? T("second") : T("first");}
       </code>
   
     </template>
