@@ -402,7 +402,7 @@ TypeCache::TypeCache(const String& typeName)
 }
 
 TypePtr TypeCache::operator ()()
-  {return ScopedLock _(lock); TypePtr(type);}
+  {ScopedLock _(lock); return TypePtr(type);}
 
 UnaryTemplateTypeCache::UnaryTemplateTypeCache(const String& typeName)
 {

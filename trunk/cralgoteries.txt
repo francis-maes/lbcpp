@@ -1,8 +1,7 @@
+
 * Bug du multithread
 * Flag "AtomicJob" pour couper les splits recursifs lors de l'evaluation
 * Optimiser le multi-thread sous linux
-* Bug de la detection abusive de lock
-
 
 -
 * Bug: Serialisation marche pas à 100%
