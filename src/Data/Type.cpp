@@ -396,8 +396,18 @@ void Type::saveToXml(XmlExporter& exporter) const
 */
 TypeCache::TypeCache(const String& typeName)
 {
+  ScopedLock _(lock);
   type = Type::get(typeName).get();
   jassert(type);
+}
+
+TypePtr TypeCache::operator ()()
+  {return ScopedLock _(lock); TypePtr(type);}
+
+UnaryTemplateTypeCache::UnaryTemplateTypeCache(const String& typeName)
+{
+  ScopedLock _(lock);
+  this->typeName = typeName;
 }
 
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
@@ -415,6 +425,12 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
   }
   else
     return it->second;
+}
+
+BinaryTemplateTypeCache::BinaryTemplateTypeCache(const String& typeName)
+{
+  ScopedLock _(lock);
+  this->typeName = typeName;
 }
 
 TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
