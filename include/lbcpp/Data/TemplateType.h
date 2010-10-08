@@ -32,6 +32,8 @@
 namespace lbcpp
 {
 
+extern ClassPtr templateTypeClass();
+
 class TemplateType : public NameableObject
 {
 public:
@@ -65,6 +67,12 @@ public:
 
   virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
   virtual TypePtr instantiateTypeName(const String& typeNameExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
+
+  /*
+  ** Object
+  */
+  virtual ClassPtr getClass() const
+    {return templateTypeClass();}
 
   juce_UseDebuggingNewOperator
 
