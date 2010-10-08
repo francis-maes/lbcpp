@@ -346,18 +346,7 @@ void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
   MultipleWaitableEvent event;
   addJob(job, priority, event);
   while (!event.wait(1, 1))
-  {
-    ScopedLock _(threadsLock);
     update();
-    if (getNumRunningThreads() == 0 && getNumWaitingThreads() > 1)
-    {
-      std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;
-      writeCurrentState(std::cerr);
-      static int counter = 0;
-      if (++counter == 100)
-        exit(1);
-    }
-  }
 }
 
 void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t priority)
@@ -373,6 +362,15 @@ void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t
   {
     ScopedLock _(threadsLock);
     waitingThreads.erase(currentThread);
+    update();
+    if (getNumRunningThreads() == 0 && getNumWaitingThreads() > 1)
+    {
+      std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;
+      writeCurrentState(std::cerr);
+      static int counter = 0;
+      if (++counter == 100)
+        exit(1);
+    }
   }
 }
 

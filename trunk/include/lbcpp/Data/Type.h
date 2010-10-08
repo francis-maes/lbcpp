@@ -316,32 +316,30 @@ class TypeCache
 public:
   TypeCache(const String& typeName);
 
-  TypePtr operator ()()
-    {return TypePtr(type);}
+  TypePtr operator ()();
 
 protected:
+  CriticalSection lock;
   Type* type;
 };
 
 class UnaryTemplateTypeCache
 {
 public:
-  UnaryTemplateTypeCache(const String& typeName)
-    : typeName(typeName) {}
+  UnaryTemplateTypeCache(const String& typeName);
 
   TypePtr operator ()(TypePtr argument);
 
 private:
-  String typeName;
   CriticalSection lock;
+  String typeName;
   std::map<Type*, Type*> m;
 };
 
 class BinaryTemplateTypeCache
 {
 public:
-  BinaryTemplateTypeCache(const String& typeName)
-    : typeName(typeName) {}
+  BinaryTemplateTypeCache(const String& typeName);
 
   TypePtr operator ()(TypePtr argument1, TypePtr argument2);
 

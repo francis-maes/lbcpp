@@ -1,19 +1,20 @@
+* Bug du multithread
+* Flag "AtomicJob" pour couper les splits recursifs lors de l'evaluation
+* Optimiser le multi-thread sous linux
+* Bug de la detection abusive de lock
 
+
+-
 * Bug: Serialisation marche pas à 100%
 * Tester l'ouverture de Perception et de Modèles appris dans l'explorer
-
+-
 * SelectAndMakeProductsPerception: regler le doublon std::vector/Vector
 * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
-* Flag "AtomicJob" pour couper les splits recursifs lors de l'evaluation
-
-Explorer:
- * bug: les viewports verticales sont trop hautes => la derniere ligne des arbres est caché (si il y a un scroll bar horizontale)
-
+-
 * Bug Julien: crossValidation does not work for multi-pass SS3
+-
+* explorer bug: les viewports verticales sont trop hautes => la derniere ligne des arbres est caché (si il y a un scroll bar horizontale)
 
-* Bug du multithread
-* MultiThread: Couper les split recursif de jobs dans l'evaluation
-* Optimiser le multi-thread sous linux
 
 ContactMap:
  * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
