@@ -84,8 +84,8 @@ protected:
           size_t variableIndex = outputVariables.size();
           addOutputVariable(newPerception->getOutputType(variableType), variableName, newPerception);
           if (variablesMap.size() <= i)
-            variablesMap.resize(i + 1, std::make_pair(0, PerceptionPtr()));
-          variablesMap[i] = std::make_pair(variableIndex, newPerception);
+            variablesMap.resize(i + 1, std::make_pair((size_t)-1, PerceptionPtr()));
+          variablesMap[i] = std::make_pair(variableIndex, newPerception == identityPerception() ? PerceptionPtr() : newPerception);
         }
       }
 
@@ -102,13 +102,13 @@ protected:
     template<class Type>
     void senseBuiltinType(size_t variableNumber, const Type& value)
     {
-      PerceptionPtr targetPerception = getTargetPerception(variableNumber);
-      if (targetPerception)
+      PerceptionPtr targetPerception;
+      if (getTargetPerception(variableNumber, targetPerception))
       {
-        if (targetPerception == identityPerception())
-          targetCallback->sense(variableNumber, value);
-        else
+        if (targetPerception)
           targetCallback->sense(variableNumber, targetPerception, Variable(value, targetPerception->getInputType()));
+        else
+          targetCallback->sense(variableNumber, value);          
       }
     }
 
@@ -129,20 +129,20 @@ protected:
 
     virtual void sense(size_t variableNumber, const Variable& value)
     {
-      PerceptionPtr targetPerception = getTargetPerception(variableNumber);
-      if (targetPerception)
+      PerceptionPtr targetPerception;
+      if (getTargetPerception(variableNumber, targetPerception))
       {
-        if (targetPerception == identityPerception())
-          targetCallback->sense(variableNumber, value);
-        else
+        if (targetPerception)
           targetCallback->sense(variableNumber, targetPerception, value);
+        else
+          targetCallback->sense(variableNumber, value);
       }
     }
 
     virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
     {
-      PerceptionPtr targetPerception = getTargetPerception(variableNumber);
-      if (targetPerception)
+      PerceptionPtr targetPerception;
+      if (getTargetPerception(variableNumber, targetPerception) && targetPerception)
         targetCallback->sense(variableNumber, targetPerception, input);
     }
 
@@ -150,15 +150,16 @@ protected:
     PerceptionCallbackPtr targetCallback;
     const RewritedPerception* owner;
 
-    PerceptionPtr getTargetPerception(size_t& variableNumber) const
+    bool getTargetPerception(size_t& variableNumber, PerceptionPtr& res) const
     {
       if (variableNumber >= owner->variablesMap.size())
-        return PerceptionPtr();
+        return false;
       std::pair<size_t, PerceptionPtr> info = owner->variablesMap[variableNumber];
-      if (!info.second)
-        return PerceptionPtr();
+      if (info.first == (size_t)-1)
+        return false;
       variableNumber = info.first;
-      return info.second;
+      res = info.second;
+      return true;
     }
   };
 };

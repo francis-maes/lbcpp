@@ -266,7 +266,7 @@ int main(int argc, char** argv)
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
-  /*context->train(inference, trainProteins);
+/*  context->train(inference, trainProteins);
 
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
