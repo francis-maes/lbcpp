@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: InferenceThreadPoolJob.h       | Inference ThreadPoolJobs        |
+| Filename: InferenceRelatedJobs.h         | Inference Related Jobs          |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/09/2010 19:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_CONTEXT_THREAD_POOL_JOB_H_
-# define LBCPP_INFERENCE_CONTEXT_THREAD_POOL_JOB_H_
+#ifndef LBCPP_INFERENCE_CONTEXT_RELATED_JOBS_H_
+# define LBCPP_INFERENCE_CONTEXT_RELATED_JOBS_H_
 
 # include <lbcpp/Inference/InferenceContext.h>
 # include <lbcpp/Inference/ParallelInference.h>
@@ -20,8 +20,8 @@ namespace lbcpp
 class InferenceRelatedJob : public Job
 {
 public:
-  InferenceRelatedJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, const String& name = T("Unnamed"))
-    : Job(name), parentContext(parentContext), pool(pool), stack(stack) {}
+  InferenceRelatedJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, const String& name = T("Unnamed"), bool areSubJobsAtomic = false)
+    : Job(name), parentContext(parentContext), pool(pool), stack(stack), areSubJobsAtomic(areSubJobsAtomic) {}
 
   virtual String getCurrentStatus() const
   {
@@ -34,7 +34,7 @@ public:
     ScopedLock _(contextLock);
     Thread* thread = Thread::getCurrentThread();
     jassert(thread);
-    context = new ThreadOwnedInferenceContext(parentContext, thread, pool, stack);
+    context = new ThreadOwnedInferenceContext(parentContext, thread, pool, stack, areSubJobsAtomic);
     jassert(context);
     return true;
   }
@@ -43,6 +43,7 @@ protected:
   InferenceContextPtr parentContext;
   ThreadPoolPtr pool;
   InferenceStackPtr stack;
+  bool areSubJobsAtomic;
 
   CriticalSection contextLock;
   ThreadOwnedInferenceContextPtr context;
@@ -76,8 +77,8 @@ private:
 class RunParallelInferencesJob : public InferenceRelatedJob
 {
 public:
-  RunParallelInferencesJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex)
-    : InferenceRelatedJob(parentContext, pool, stack), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode)
+  RunParallelInferencesJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
+    : InferenceRelatedJob(parentContext, pool, stack, String::empty, areSubJobsAtomic), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), areSubJobsAtomic(areSubJobsAtomic)
   {
     if (endIndex == beginIndex + 1)
     {
@@ -131,11 +132,12 @@ private:
   size_t beginIndex;
   size_t endIndex;
   Inference::ReturnCode returnCode;
+  bool areSubJobsAtomic;
 };
 
-JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex)
-  {return JobPtr(new RunParallelInferencesJob(parentContext, pool, stack, inference, state, beginIndex, endIndex));}
+JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
+  {return JobPtr(new RunParallelInferencesJob(parentContext, pool, stack, inference, state, beginIndex, endIndex, areSubJobsAtomic));}
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_CONTEXT_THREAD_POOL_JOB_H_
+#endif // !LBCPP_INFERENCE_CONTEXT_RELATED_JOBS_H_
