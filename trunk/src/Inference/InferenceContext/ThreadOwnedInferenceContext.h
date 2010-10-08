@@ -80,7 +80,6 @@ public:
       if (meanRunTime)
         step = (size_t)juce::jlimit((int)step, (int)n, (int)(1000.0 / meanRunTime));
       jassert(step > 0);
-      step = 1; // TMP !!! DEBUG
 
       if (step == n)
       {
