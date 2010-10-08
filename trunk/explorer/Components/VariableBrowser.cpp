@@ -181,7 +181,8 @@ public:
       c->setBounds(x, 0, w, getHeight());
       x += w;
     }
-    setSize(getPreferedWidth(), getHeight());
+    getParentComponent()->resized();
+    //setSize(getPreferedWidth(), getHeight());
   }
 
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
@@ -202,10 +203,13 @@ public:
     if (component)
       appendVariable(variable, component);
 
-    setSize(getPreferedWidth(), getHeight());
+    //setSize(getPreferedWidth(), getHeight());
     Viewport* viewport = findParentComponentOfClass<Viewport>();
     if (viewport)
+    {
       viewport->setViewPositionProportionately(1.0, 0.0);
+      viewport->resized();
+    }
 
     flushErrorAndWarningMessages(T("Changed Selection"));
   }
@@ -234,7 +238,11 @@ VariableBrowser::VariableBrowser(const Variable& variable, Component* selector)
 void VariableBrowser::resized()
 {
   VariableBrowserContent* content = getContent();
-  content->setSize(juce::jmax(content->getWidth(), getWidth()), getHeight());
+
+  if (content->getWidth() > getWidth())
+    content->setSize(content->getWidth(), getHeight() - getScrollBarThickness());
+  else
+    content->setSize(getWidth(), getHeight());
 }
 
 VariableBrowserContent* VariableBrowser::getContent() const
