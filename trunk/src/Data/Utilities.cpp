@@ -77,10 +77,29 @@ class DefaultMessageCallback : public MessageCallback
 {
 public:
   virtual void errorMessage(const String& where, const String& what)
-    {std::cerr << "Error in '" << (const char* )where << "': " << (const char* )what << "." << std::endl; jassert(false);}
+  {
+    ScopedLock _(lock);
+    std::cerr << "Error in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;
+    jassert(false);
+  }
     
   virtual void warningMessage(const String& where, const String& what)
-    {std::cerr << "Warning in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;}
+  {
+    ScopedLock _(lock);
+    std::cerr << "Warning in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;
+  }
+
+  virtual void infoMessage(const String& where, const String& what)
+  {
+    ScopedLock _(lock);
+    if (where.isNotEmpty())
+      std::cout << where << ": " << what << std::endl;
+    else
+      std::cout << what << std::endl;
+  }
+
+private:
+  CriticalSection lock;
 };
 
 static DefaultMessageCallback defaultMessageCallback;

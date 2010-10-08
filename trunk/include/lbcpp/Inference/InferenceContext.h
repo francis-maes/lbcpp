@@ -87,6 +87,8 @@ private:
 typedef ReferenceCountedObjectPtr<Job> JobPtr;
 
 class MultipleWaitableEvent;
+typedef ReferenceCountedObjectPtr<MultipleWaitableEvent> MultipleWaitableEventPtr;
+
 class ThreadPool : public Object
 {
 public:
@@ -129,8 +131,8 @@ private:
   CriticalSection waitingJobsLock;
   std::vector< std::list< JobPtr > > waitingJobs;
 
-  void addJob(JobPtr job, size_t priority, MultipleWaitableEvent& waitingEvent);
-  void addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEvent& waitingEvent);
+  void addJob(JobPtr job, size_t priority, MultipleWaitableEventPtr waitingEvent);
+  void addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEventPtr waitingEvent);
   JobPtr popJob();
 
   void startThreadForJob(JobPtr job);

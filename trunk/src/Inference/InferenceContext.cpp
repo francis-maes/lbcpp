@@ -156,7 +156,7 @@ namespace lbcpp
 /*
 ** MultipleWaitableEvent
 */
-class MultipleWaitableEvent
+class MultipleWaitableEvent : public Object
 {
 public:
   MultipleWaitableEvent() : count(0) {}
@@ -224,7 +224,7 @@ private:
 class SignalingJob : public Job
 {
 public:
-  SignalingJob(JobPtr job, MultipleWaitableEvent& event)
+  SignalingJob(JobPtr job, MultipleWaitableEventPtr event)
     : Job(job->getName()), job(job), event(event) {}
 
   virtual String getCurrentStatus() const
@@ -233,13 +233,13 @@ public:
   virtual bool runJob(String& failureReason)
   {
     bool res = job->runJob(failureReason);
-    event.signal();
+    event->signal();
     return res;
   }
 
 protected:
   JobPtr job;
-  MultipleWaitableEvent& event;
+  MultipleWaitableEventPtr event;
 };
 
 }; /* namespace lbcpp */
@@ -258,7 +258,7 @@ ThreadPool::~ThreadPool()
     delete threads[i];
 }
 
-void ThreadPool::addJob(JobPtr job, size_t priority, MultipleWaitableEvent& event)
+void ThreadPool::addJob(JobPtr job, size_t priority, MultipleWaitableEventPtr event)
 {
   ScopedLock _(waitingJobsLock);
   if (waitingJobs.size() <= priority)
@@ -266,7 +266,7 @@ void ThreadPool::addJob(JobPtr job, size_t priority, MultipleWaitableEvent& even
   waitingJobs[priority].push_back(new SignalingJob(job, event));
 }
 
-void ThreadPool::addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEvent& event)
+void ThreadPool::addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEventPtr event)
 {
   ScopedLock _(waitingJobsLock);
   if (waitingJobs.size() <= priority)
@@ -322,7 +322,7 @@ void ThreadPool::update()
     if (job)
     {
       if (verbose)
-        std::cout << "Start Job: " << job->getName() << std::endl;
+        MessageCallback::info(T("Start Job: ") + job->getName());
       startThreadForJob(job);
     }
     else
@@ -334,31 +334,31 @@ void ThreadPool::update()
     static int counter = 0;
     if (++counter % 1000 == 0)
     {
-      std::cout << std::endl << "===============" << std::endl;
+      MessageCallback::info(T("\n==============="));
       writeCurrentState(std::cout);
-      std::cout << std::endl;
+      MessageCallback::info(String::empty);
     }
   }
 }
 
 void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority)
 {
-  MultipleWaitableEvent event;
+  MultipleWaitableEventPtr event = new MultipleWaitableEvent();
   addJob(job, priority, event);
-  while (!event.wait(1, 1))
+  while (!event->wait(1, 1))
     update();
 }
 
 void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t priority)
 {
   Thread* currentThread = Thread::getCurrentThread();
-  MultipleWaitableEvent event;
+  MultipleWaitableEventPtr event = new MultipleWaitableEvent();
   {
     ScopedLock _(threadsLock);
     addJobs(jobs, priority, event);
     waitingThreads.insert(currentThread);
   }
-  event.wait(jobs.size());
+  event->wait(jobs.size());
   {
     ScopedLock _(threadsLock);
     waitingThreads.erase(currentThread);

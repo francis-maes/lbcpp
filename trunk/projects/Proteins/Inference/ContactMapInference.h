@@ -171,9 +171,8 @@ public:
     if (roc.getSampleCount())
     {
       double bestF1Score, precision, recall;
-      std::cout << "Looking for best threshold..." << std::flush;
       double threshold = roc.findThresholdMaximisingF1(bestF1Score, precision, recall);
-      std::cout << " " << threshold << " (F1: " << bestF1Score * 100.0 << "%)" << std::endl;
+      MessageCallback::info(T("Best threshold: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%)"));
       inference->setBias(-threshold);
       roc.clear();
     }

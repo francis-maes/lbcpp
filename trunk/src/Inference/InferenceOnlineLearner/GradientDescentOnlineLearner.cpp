@@ -40,15 +40,14 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
   ObjectPtr parameters = getNumericalInference(inference)->getParametersCopy();
   size_t l0norm = lbcpp::l0norm(parameters);
   double l2norm = lbcpp::l2norm(parameters);
-  std::cout << inference->getName() << " Epoch " << epoch << ", " << l0norm << " parameters, L2 = " << String(l2norm, 3) << std::endl;
+  MessageCallback::info(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));
   if (lossValue.getCount())
   {
     double mean = lossValue.getMean();
-    std::cout << lossValue.toString() << std::endl;
+    MessageCallback::info(lossValue.toString() + T("\n"));
     lossValue.clear();
     lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
-  std::cout << std::endl;
 }
 
 void GradientDescentOnlineLearner::updateParameters(InferencePtr inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
@@ -86,7 +85,6 @@ void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inf, ObjectP
 
 void GradientDescentOnlineLearner::applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
-  //std::cout << "e" << std::flush;
   ++epoch;
   updateParameters(inference, 1.0, input, supervision, prediction);
   checkRegularizerAfterStep(inference);

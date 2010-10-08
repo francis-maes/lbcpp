@@ -162,6 +162,14 @@ public:
   virtual void warningMessage(const String& where, const String& what) = 0;
 
   /**
+  ** Displays an information message.
+  **
+  ** @param where : where the information comes from.
+  ** @param what : the information.
+  */
+  virtual void infoMessage(const String& where, const String& what) = 0;
+
+  /**
   ** MessageCallback instance setter.
   **
   ** @param handler : MessageCallback instance.
@@ -192,6 +200,12 @@ public:
   */
   static void warning(const String& where, const String& what)
     {getInstance().warningMessage(where, what);}
+
+  static void info(const String& where, const String& what)
+    {getInstance().infoMessage(where, what);}
+
+  static void info(const String& what)
+    {getInstance().infoMessage(String::empty, what);}
 
 private:
   static MessageCallback* instance;
