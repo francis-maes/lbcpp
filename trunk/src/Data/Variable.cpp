@@ -69,6 +69,17 @@ int Variable::compare(const Variable& otherValue) const
   return type->compare(value, otherValue.value);
 }
 
+Variable Variable::clone() const
+{
+  if (isObject())
+  {
+    ObjectPtr object = getObject();
+    return Variable(object ? object->clone() : ObjectPtr(), type);
+  }
+  else
+    return *this;
+}
+
 static void printVariableLine(const Variable& value, std::ostream& ostr, size_t variableNumber, const String& name, int currentDepth, bool displayType)
 {
   for (int i = 0; i < currentDepth; ++i)
