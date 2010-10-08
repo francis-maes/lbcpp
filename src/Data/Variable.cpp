@@ -12,6 +12,14 @@
 using namespace lbcpp;
 
 TypePtr Variable::nilType;
+TypePtr Variable::booleanType;
+TypePtr Variable::integerType;
+TypePtr Variable::positiveIntegerType;
+TypePtr Variable::doubleType;
+TypePtr Variable::probabilityType;
+TypePtr Variable::stringType;
+TypePtr Variable::fileType;
+TypePtr Variable::objectClass; 
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
   {return new Pair(variable1, variable2);}

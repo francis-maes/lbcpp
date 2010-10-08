@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SelectPairVariablesFunction.h     | Select Pair Fields Function     |
+| Filename: SelectPairVariablesFunction.h  | Select Pair Fields Function     |
 | Author  : Francis Maes                   |                                 |
 | Started : 19/08/2010 13:09               |                                 |
 `------------------------------------------/                                 |
@@ -10,6 +10,7 @@
 # define LBCPP_DATA_FUNCTION_SELECT_PAIR_FIELDS_H_
 
 # include <lbcpp/Function/Function.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -49,19 +50,20 @@ private:
 class SelectPairVariablesFunction : public Function
 {
 public:
-  SelectPairVariablesFunction(int index1 = -1, int index2 = -1)
-    : index1(index1), index2(index2)
-    {}
+  SelectPairVariablesFunction(int index1, int index2, TypePtr inputPairClass)
+    : index1(index1), index2(index2), inputPairClass(inputPairClass)
+  {
+    outputType = getOutputType(inputPairClass);
+  }
+  SelectPairVariablesFunction() : index1(-1), index2(-1) {}
 
   virtual TypePtr getInputType() const
-    {return pairClass(anyType(), anyType());}
+    {return inputPairClass;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-  {
-    return pairClass(
+    {return pairClass(
       getOutputTypeBase(inputType->getTemplateArgument(0), index1),
-      getOutputTypeBase(inputType->getTemplateArgument(1), index2));
-  }
+      getOutputTypeBase(inputType->getTemplateArgument(1), index2));}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -71,13 +73,24 @@ public:
     Variable second = input[1];
     if (index2 >= 0)
       second = second.getObject()->getVariable(index2);
-    return Variable::pair(first, second);
+    return new Pair(outputType, first, second);
+  }
+
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    if (!Function::loadFromXml(importer))
+      return false;
+    outputType = getOutputType(inputPairClass);
+    return true;
   }
 
 private:
   friend class SelectPairVariablesFunctionClass;
 
   int index1, index2;
+  TypePtr inputPairClass;
+
+  TypePtr outputType;
 
   static TypePtr getOutputTypeBase(TypePtr inputType, int index)
   {

@@ -229,6 +229,14 @@ void lbcpp::initialize()
 {
   getTypeManagerInstance().ensureStandardClassesAreLoaded();
   Variable::nilType = nilType();
+  Variable::booleanType = booleanType();
+  Variable::integerType = integerType();
+  Variable::positiveIntegerType = positiveIntegerType();
+  Variable::doubleType = doubleType();
+  Variable::probabilityType = probabilityType();
+  Variable::stringType = stringType();
+  Variable::fileType = fileType();
+  Variable::objectClass = objectClass();
 }
 
 void lbcpp::deinitialize()

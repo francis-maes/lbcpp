@@ -47,6 +47,12 @@ public:
     Callback(const CollapsePerception* owner, PerceptionCallbackPtr targetCallback)
       : owner(owner), targetCallback(targetCallback), currentNode(&owner->rootNode) {}
 
+    virtual void sense(size_t variableNumber, double value)
+      {}
+
+    virtual void sense(size_t variableNumber, ObjectPtr value)
+      {}
+
     virtual void sense(size_t variableNumber, const Variable& value)
       {}
 

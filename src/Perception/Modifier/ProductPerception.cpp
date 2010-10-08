@@ -63,6 +63,12 @@ struct FillVariableListCallback : public PerceptionCallback
   FillVariableListCallback(std::list<PerceptionVariable>& variables)
     : variables(variables) {}
 
+  virtual void sense(size_t variableNumber, double value)
+    {sense(variableNumber, Variable(value));}
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+    {sense(variableNumber, Variable(value));}
+
   virtual void sense(size_t variableNumber, const Variable& value)
   {
     PerceptionVariable v;

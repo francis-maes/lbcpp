@@ -37,13 +37,13 @@ namespace lbcpp
 class Variable
 {
 public:
-  Variable(bool boolValue, TypePtr type = booleanType());
-  Variable(int intValue, TypePtr type = integerType());
-  Variable(juce::int64 intValue, TypePtr type = integerType());
-  Variable(size_t intValue, TypePtr type = positiveIntegerType());
-  Variable(double doubleValue, TypePtr type = doubleType());
-  Variable(const String& stringValue, TypePtr type = stringType());
-  Variable(const File& fileValue, TypePtr type = fileType());
+  Variable(bool boolValue, TypePtr type = booleanType);
+  Variable(int intValue, TypePtr type = integerType);
+  Variable(juce::int64 intValue, TypePtr type = integerType);
+  Variable(size_t intValue, TypePtr type = positiveIntegerType);
+  Variable(double doubleValue, TypePtr type = doubleType);
+  Variable(const String& stringValue, TypePtr type = stringType);
+  Variable(const File& fileValue, TypePtr type = fileType);
   Variable(ObjectPtr object);
   Variable(Object* object);
 
@@ -188,6 +188,14 @@ public:
   juce_UseDebuggingNewOperator
 
   static TypePtr nilType;
+  static TypePtr booleanType;
+  static TypePtr integerType;
+  static TypePtr positiveIntegerType;
+  static TypePtr doubleType;
+  static TypePtr probabilityType;
+  static TypePtr stringType;
+  static TypePtr fileType;
+  static TypePtr objectClass; 
 
 private:
   Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}

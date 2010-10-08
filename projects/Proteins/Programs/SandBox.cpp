@@ -209,7 +209,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
   size_t maxCount = 100;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass()), pool)
-    ->apply(proteinToInputOutputPairFunction())->randomize();
+    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 }
   
 int main(int argc, char** argv)
@@ -217,7 +217,7 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
 
-  ThreadPoolPtr pool = new ThreadPool(7);
+  ThreadPoolPtr pool = new ThreadPool(10);
 
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\PDB30Small"));
@@ -230,7 +230,6 @@ int main(int argc, char** argv)
   ContainerPtr testProteins = proteins->fold(0, 2);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
-#if 0
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
@@ -272,13 +271,12 @@ int main(int argc, char** argv)
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
-#endif // 0
-  
+  /*
   std::cout << "Loading..." << std::flush;
-  InferencePtr inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
-  std::cout << "ok." << std::endl;
+  inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  std::cout << "ok." << std::endl;*/
 
-  for (size_t i = 50; i < 51; ++i)
+  for (size_t i = 10; i <= 10; ++i)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
