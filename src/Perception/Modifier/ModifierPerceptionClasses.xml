@@ -21,10 +21,10 @@
     </class>
 
     <class name="SelectAndMakeProductsPerception" base="Perception">
-      <constructor arguments="PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions"/>
+      <constructor arguments="PerceptionPtr decorated, FunctionPtr multiplyFunction, const std::vector&lt; std::vector&lt;size_t&gt; &gt; &amp; selectedConjunctions"/>
       <variable type="Perception" name="decorated"/>
       <variable type="Function" name="multiplyFunction"/>
-      <variable type="GenericVector[PositiveInteger]" name="selectedConjunctions"/>
+      <variable type="ObjectVector[GenericVector[PositiveInteger]]" name="selectedConjunctions"/>
     </class>
 
     <!-- Product Perception -->

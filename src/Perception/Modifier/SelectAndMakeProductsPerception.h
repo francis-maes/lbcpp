@@ -17,7 +17,7 @@ namespace lbcpp
 class SelectAndMakeProductsPerception : public Perception
 {
 public:
-  SelectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions)
+  SelectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, const std::vector< std::vector<size_t> >& selectedConjunctions)
     : decorated(decorated), multiplyFunction(multiplyFunction), selectedConjunctions(selectedConjunctions)
     {computeOutputType();}
 
@@ -58,7 +58,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       PerceptionPtr subPerception = getOutputVariableSubPerception(i);
-      const std::vector<size_t>& conjunction = selectedConjunctionsStdVector[i];
+      const std::vector<size_t>& conjunction = selectedConjunctions[i];
       size_t arity = conjunction.size();
       if (arity == 1)
       {
@@ -92,33 +92,29 @@ protected:
 
   PerceptionPtr decorated;
   FunctionPtr multiplyFunction;
-  ContainerPtr selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
-  std::vector< std::vector<size_t> > selectedConjunctionsStdVector;
+  std::vector< std::vector<size_t> > selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
 
   virtual void computeOutputType()
   {
-    size_t n = selectedConjunctions->getNumElements();
-    selectedConjunctionsStdVector.resize(n);
+    size_t n = selectedConjunctions.size();
     reserveOutputVariables(n);
     for (size_t i = 0; i < n; ++i)
     {
-      ContainerPtr conjunction = selectedConjunctions->getElement(i).getObjectAndCast<Container>();
+      std::vector<size_t>& conjunction = selectedConjunctions[i];
       jassert(conjunction);
-      createSubPerception(conjunction, selectedConjunctionsStdVector[i]);
+      createSubPerception(conjunction);
     }
     Perception::computeOutputType();
   }
 
-  void createSubPerception(ContainerPtr conjunction, std::vector<size_t>& stdVectorCopy)
+  void createSubPerception(const std::vector<size_t>& conjunction)
   {
-    size_t arity = conjunction->getNumElements();
+    size_t arity = conjunction.size();
     jassert(arity);
-    stdVectorCopy.resize(arity);
     if (arity == 1)
     {
-      int variableNumber = conjunction->getElement(0).getInteger();
-      stdVectorCopy[0] = (size_t)variableNumber;
-      jassert(variableNumber >= 0 && variableNumber < (int)decorated->getNumOutputVariables());
+      size_t variableNumber = conjunction[0];
+      jassert(variableNumber < decorated->getNumOutputVariables());
       String name = decorated->getOutputVariableName(variableNumber);
       
       PerceptionPtr subPerception = decorated->getOutputVariableSubPerception(variableNumber);
@@ -127,12 +123,11 @@ protected:
 
     else if (arity == 2)
     {
-      int index1 = conjunction->getElement(0).getInteger();
-      int index2 = conjunction->getElement(1).getInteger();
-      stdVectorCopy[0] = (size_t)index1;
-      stdVectorCopy[1] = (size_t)index2;
-      jassert(index1 >= 0 && index1 <= (int)decorated->getNumOutputVariables());
-      jassert(index2 >= 0 && index2 <= (int)decorated->getNumOutputVariables());
+      size_t index1 = conjunction[0];
+      size_t index2 = conjunction[1];
+      jassert(index1 <= (size_t)decorated->getNumOutputVariables());
+      jassert(index2 <= (size_t)decorated->getNumOutputVariables());
+
       String name = decorated->getOutputVariableName(index1) + T("&&") + decorated->getOutputVariableName(index2);
       PerceptionPtr subPerception1 = decorated->getOutputVariableSubPerception(index1);
       PerceptionPtr subPerception2 = decorated->getOutputVariableSubPerception(index2);

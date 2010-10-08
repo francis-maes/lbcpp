@@ -151,8 +151,6 @@ extern ClassPtr compositePerceptionClass();
 extern PerceptionPtr nullPerception();
 extern PerceptionPtr identityPerception();
 extern PerceptionPtr identityPerception(TypePtr type);
-extern PerceptionPtr selectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, ContainerPtr selectedConjunctions);
-extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, ContainerPtr selectedConjunctions);
 
 // container perceptions
 extern PerceptionPtr windowPerception(TypePtr elementsType, size_t windowSize, PerceptionPtr subPerception = PerceptionPtr());
@@ -169,6 +167,8 @@ extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern PerceptionPtr composePerception(FunctionPtr function, PerceptionPtr perception);
 extern PerceptionPtr flattenPerception(PerceptionPtr perception);
 extern PerceptionPtr collapsePerception(PerceptionPtr perception);
+extern PerceptionPtr selectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, const std::vector< std::vector<size_t> >& selectedConjunctions);
+extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const std::vector< std::vector<size_t> >& selectedConjunctions);
 
 // product perceptions
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions = false);
