@@ -23,10 +23,10 @@ public:
   ** Function
   */
   virtual TypePtr getInputType() const
-    {return topLevelType();}
+    {return topLevelType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return booleanType();}
+    {return booleanType;}
 
 protected:
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const

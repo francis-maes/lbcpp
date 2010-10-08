@@ -10,9 +10,9 @@
 using namespace lbcpp;
 
 TertiaryStructure::TertiaryStructure(size_t numResidues)
-  : residues(vector(residueClass(), numResidues))
+  : residues(vector(residueClass, numResidues))
 {
-  thisClass = tertiaryStructureClass();
+  thisClass = tertiaryStructureClass;
 }
 
 TertiaryStructurePtr TertiaryStructure::createFromCAlphaTrace(VectorPtr primaryStructure, CartesianPositionVectorPtr trace)
@@ -89,7 +89,7 @@ VectorPtr TertiaryStructure::makePrimaryStructure() const
 {
   size_t n = getNumResidues();
   jassert(n);
-  VectorPtr res = vector(aminoAcidTypeEnumeration(), n);
+  VectorPtr res = vector(aminoAcidTypeEnumeration, n);
   for (size_t i = 0; i < n; ++i)
     res->setElement(i, getResidue(i)->getAminoAcidType());
   return res;
@@ -177,10 +177,10 @@ inline SymmetricMatrixPtr makeDistanceMatrix(const std::vector<impl::Vector3>& p
 {
   size_t n = positions.size();
 
-  SymmetricMatrixPtr res = new SymmetricMatrix(angstromDistanceType(), n);
+  SymmetricMatrixPtr res = new SymmetricMatrix(angstromDistanceType, n);
   for (size_t i = 0; i < n; ++i)
   {
-    res->setElement(i, i, Variable(0.0, angstromDistanceType()));
+    res->setElement(i, i, Variable(0.0, angstromDistanceType));
     impl::Vector3 position1 = positions[i];
     if (!position1.exists())
       continue;
@@ -188,7 +188,7 @@ inline SymmetricMatrixPtr makeDistanceMatrix(const std::vector<impl::Vector3>& p
     {
       impl::Vector3 position2 = positions[j];
       if (position2.exists())
-        res->setElement(i, j, Variable((position1 - position2).l2norm(), angstromDistanceType()));
+        res->setElement(i, j, Variable((position1 - position2).l2norm(), angstromDistanceType));
     }
   }
   return res;

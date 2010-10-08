@@ -22,17 +22,17 @@ int main(int argc, char** argv)
   Type::declare(new DefaultClass(T("A")));  
 
   Variable myBoolean(true);
-  Variable myMissingBoolean = Variable::missingValue(booleanType());
+  Variable myMissingBoolean = Variable::missingValue(booleanType);
   Variable myInt(51);
-  Variable myMissingInt = Variable::missingValue(integerType());
+  Variable myMissingInt = Variable::missingValue(integerType);
   Variable myDouble(8.6);
-  Variable myMissingDouble = Variable::missingValue(doubleType());
+  Variable myMissingDouble = Variable::missingValue(doubleType);
   Variable myString(T("Hello"));
-  Variable myMissingString = Variable::missingValue(stringType());
+  Variable myMissingString = Variable::missingValue(stringType);
   Variable myObject(new A());
   Variable myMissingObject = Variable::missingValue(Class::get(T("A")));
   Variable myPair = Variable::pair(myBoolean, myObject);
-  Variable myMissingPair = Variable::missingValue(pairClass(booleanType(), Class::get(T("A"))));
+  Variable myMissingPair = Variable::missingValue(pairClass(booleanType, Class::get(T("A"))));
   
   std::cout << myBoolean << " " << myMissingBoolean << std::endl
             << myInt << " " << myMissingInt << std::endl

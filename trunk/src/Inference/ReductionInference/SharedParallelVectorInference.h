@@ -14,6 +14,7 @@
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -26,13 +27,13 @@ public:
   SharedParallelVectorInference() {}
 
   virtual TypePtr getInputType() const
-    {return anyType();}
+    {return anyType;}
 
   virtual TypePtr getSupervisionType() const
     {return vectorClass(subInference->getSupervisionType());}
 
   TypePtr getOutputElementsType(TypePtr inputType) const
-    {return subInference->getOutputType(pairClass(inputType, positiveIntegerType()));}
+    {return subInference->getOutputType(pairClass(inputType, positiveIntegerType));}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return vectorClass(getOutputElementsType(inputType));}
@@ -44,13 +45,14 @@ public:
     VectorPtr supervisionVector = supervision ? supervision.getObjectAndCast<Vector>() : VectorPtr();
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    TypePtr subInputType = pairClass(input.getType(), positiveIntegerType);
     res->reserve(n);
     for (size_t i = 0; i < n; ++i)
     {
       Variable elementSupervision;
       if (supervisionVector)
         elementSupervision = supervisionVector->getElement(i);
-      res->addSubInference(subInference, Variable::pair(input, i), elementSupervision);
+      res->addSubInference(subInference, Variable::pair(input, i, subInputType), elementSupervision);
     }
     return res;
   }

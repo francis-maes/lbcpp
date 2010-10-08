@@ -24,7 +24,7 @@ PerceptionPtr PerceptionRewriteRule::compute(TypePtr type) const
 ** PerceptionRewriter
 */
 PerceptionRewriter::PerceptionRewriter(bool useCache)
-  : rules(vector(perceptionRewriteRuleClass())), useCache(useCache)
+  : rules(vector(perceptionRewriteRuleClass)), useCache(useCache)
 {
 }
 
@@ -84,14 +84,14 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
 
-  rewriter->addRule(booleanType(), booleanFeatures());
+  rewriter->addRule(booleanType, booleanFeatures());
   rewriter->addEnumValueFeaturesRule();
 
-  rewriter->addRule(negativeLogProbabilityType(), defaultPositiveDoubleFeatures(30, -3, 3));
-  rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
-  rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
-  rewriter->addRule(integerType(), defaultIntegerFeatures());
+  rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
+  rewriter->addRule(probabilityType, defaultProbabilityFeatures());
+  rewriter->addRule(positiveIntegerType, defaultPositiveIntegerFeatures());
+  rewriter->addRule(integerType, defaultIntegerFeatures());
 
-  rewriter->addRule(doubleType(), identityPerception());
+  rewriter->addRule(doubleType, identityPerception());
   return rewriter->rewrite(perception);
 }

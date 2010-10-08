@@ -82,7 +82,7 @@ protected:
     {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
 };
 
-extern ClassPtr parallelInferenceClass();
+extern ClassPtr parallelInferenceClass;
 
 class StaticParallelInference : public ParallelInference
 {
@@ -94,13 +94,13 @@ public:
   virtual InferencePtr getSubInference(size_t index) const = 0;
 };
 
-extern ClassPtr staticParallelInferenceClass();
+extern ClassPtr staticParallelInferenceClass;
 
 class VectorParallelInference : public StaticParallelInference
 {
 public:
   VectorParallelInference(const String& name)
-    : StaticParallelInference(name), subInferences(vector(inferenceClass())) {}
+    : StaticParallelInference(name), subInferences(vector(inferenceClass)) {}
   VectorParallelInference() {}
 
   virtual size_t getNumSubInferences() const
@@ -127,7 +127,7 @@ protected:
   VectorPtr subInferences;
 };
 
-extern ClassPtr vectorParallelInferenceClass();
+extern ClassPtr vectorParallelInferenceClass;
 
 class SharedParallelInference : public StaticParallelInference
 {
@@ -170,7 +170,7 @@ protected:
   InferencePtr subInference;
 };
 
-extern ClassPtr sharedParallelInferenceClass();
+extern ClassPtr sharedParallelInferenceClass;
 
 }; /* namespace lbcpp */
 

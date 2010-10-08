@@ -36,7 +36,7 @@ String Vector::toString() const
     return value;
   }
 
-  if (type->inheritsFrom(doubleType()))
+  if (type->inheritsFrom(doubleType))
   {
     String value;
     for (size_t i = 0; i < n; ++i)
@@ -76,7 +76,7 @@ void Vector::clone(ObjectPtr target) const
 
 VectorPtr Vector::cloneContent() const
 {
-  if (getElementsType()->inheritsFrom(objectClass()))
+  if (getElementsType()->inheritsFrom(objectClass))
   {
     Variable variable = Variable::create(getClass());
     jassert(variable);
@@ -97,7 +97,7 @@ VectorPtr Vector::cloneContent() const
 GenericVector::GenericVector(TypePtr elementsType, size_t initialSize)
   : Vector(genericVectorClass(elementsType))
 {
-  jassert(elementsType != topLevelType());
+  jassert(elementsType != topLevelType);
   if (initialSize)
     values.resize(initialSize, elementsType->getMissingValue());
 }
@@ -174,7 +174,7 @@ void GenericVector::saveToXml(XmlExporter& exporter) const
   TypePtr type = getElementsType();
   exporter.setAttribute(T("size"), (int)n);
 
-  if (n > 1000 && (type->inheritsFrom(integerType()) || type->inheritsFrom(doubleType()) || type->inheritsFrom(booleanType())))
+  if (n > 1000 && (type->inheritsFrom(integerType) || type->inheritsFrom(doubleType) || type->inheritsFrom(booleanType)))
   {
     juce::MemoryBlock block(&values[0], sizeof (VariableValue) * values.size());
     exporter.setAttribute(T("binary"), T("true"));
@@ -183,7 +183,7 @@ void GenericVector::saveToXml(XmlExporter& exporter) const
   }
 
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-  if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType()))
+  if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType))
     exporter.addTextElement(toString());
   else
     Container::saveToXml(exporter);
@@ -203,7 +203,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
 
   if (importer.getBoolAttribute(T("binary")))
   {
-    if (!type->inheritsFrom(integerType()) && !type->inheritsFrom(doubleType()) && !type->inheritsFrom(booleanType()))
+    if (!type->inheritsFrom(integerType) && !type->inheritsFrom(doubleType) && !type->inheritsFrom(booleanType))
     {
       importer.errorMessage(T("Vector::loadFromXml"), T("Unexpected type for binary encoding"));
       return false;
@@ -252,7 +252,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
     return true;
   }
 
-  if (type->inheritsFrom(doubleType()))
+  if (type->inheritsFrom(doubleType))
   {
     String text = importer.getAllSubText().trim();
     StringArray tokens;
@@ -265,7 +265,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
     for (size_t i = 0; i < values.size(); ++i)
       if (tokens[i] != T("_"))
       {
-        Variable value = Variable::createFromString(doubleType(), tokens[i], importer.getCallback());
+        Variable value = Variable::createFromString(doubleType, tokens[i], importer.getCallback());
         if (!value)
           return false;
         values[i] = value.getDouble();
@@ -281,7 +281,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
 ** BooleanVector
 */
 BooleanVector::BooleanVector(size_t initialSize)
-  : Vector(booleanVectorClass())
+  : Vector(booleanVectorClass)
 {
   if (initialSize)
     v.resize(initialSize, false);
@@ -304,7 +304,7 @@ Variable BooleanVector::getElement(size_t index) const
 
 void BooleanVector::setElement(size_t index, const Variable& value)
 {
-  if (checkInheritance(value, booleanType()))
+  if (checkInheritance(value, booleanType))
     v[index] = value.getBoolean();
 }
 
@@ -370,7 +370,7 @@ void ObjectVector::setElement(size_t index, const Variable& value)
 ** VariableVector
 */
 VariableVector::VariableVector(size_t initialSize)
-  : Vector(variableVectorClass()), variables(initialSize)
+  : Vector(variableVectorClass), variables(initialSize)
 {
 }
 
@@ -393,7 +393,7 @@ void VariableVector::remove(size_t index)
   {variables.erase(variables.begin() + index);}
 
 TypePtr VariableVector::getElementsType() const
-  {return variableType();}
+  {return anyType;}
 
 size_t VariableVector::getNumElements() const
   {return variables.size();}
@@ -409,11 +409,11 @@ void VariableVector::setElement(size_t index, const Variable& value)
 */
 VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
 {
-  if (elementsType->inheritsFrom(booleanType()))
+  if (elementsType->inheritsFrom(booleanType))
     return booleanVector(initialSize);
-  else if (elementsType->inheritsFrom(objectClass()))
+  else if (elementsType->inheritsFrom(objectClass))
     return objectVector(elementsType, initialSize);
-  else if (elementsType == variableType())
+  else if (elementsType == anyType)
     return variableVector(initialSize);
   else
     return genericVector(elementsType, initialSize);

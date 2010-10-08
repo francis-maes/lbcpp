@@ -29,7 +29,7 @@ public:
     {return T("window of ") + String((int)windowSize) + T(" ") + elementsType->getName() + T("s");}
 
   virtual TypePtr getInputType() const
-    {return pairClass(containerClass(elementsType), integerType());}
+    {return pairClass(containerClass(elementsType), integerType);}
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {

@@ -246,11 +246,29 @@ void lbcpp::multiplyByScalar(ObjectPtr object, double scalar)
 */
 struct ComputeDotProductCallback : public PerceptionCallback
 {
-  ComputeDotProductCallback(ObjectPtr object)
-    : object(object), res(0.0) {}
+  ComputeDotProductCallback()
+    : res(0.0) {}
+
+  double res;
+
+  virtual void sense(size_t variableNumber, const Variable& value)
+  {
+    if (value)
+    {
+      if (value.isObject())
+        sense(variableNumber, value.getObject());
+      else
+        sense(variableNumber, value.getDouble());
+    }
+  }
+};
+
+struct ComputeDotProductWithObjectCallback : public ComputeDotProductCallback
+{
+  ComputeDotProductWithObjectCallback(ObjectPtr object)
+    : object(object) {}
 
   ObjectPtr object;
-  double res;
 
   virtual void sense(size_t variableNumber, double value)
   {
@@ -269,17 +287,6 @@ struct ComputeDotProductCallback : public PerceptionCallback
       res += dotProduct(objectValue.getObject(), value);
   }
 
-  virtual void sense(size_t variableNumber, const Variable& value)
-  {
-    if (value)
-    {
-      if (value.isObject())
-        sense(variableNumber, value.getObject());
-      else
-        sense(variableNumber, value.getDouble());
-    }
-  }
-
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
   {
     ObjectPtr subObject = object->getVariable(variableNumber).getObject();
@@ -288,14 +295,51 @@ struct ComputeDotProductCallback : public PerceptionCallback
   }
 };
 
+#include "../Data/Object/DenseDoubleObject.h"
+struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductCallback
+{
+  ComputeDotProductWithDenseDoubleCallback(DenseDoubleObjectPtr object)
+    : object(object) {}
+
+  DenseDoubleObjectPtr object;
+
+  virtual void sense(size_t variableNumber, double value)
+  {
+    if (value)
+    {
+      double& objectValue = object->getValueReference(variableNumber);
+      if (!object->isMissing(value))
+        res += objectValue * value;
+    }
+  }
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+    {jassert(false);}
+
+  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+    {jassert(false);}
+};
+
 double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input)
 {
   if (!object)
     return 0.0;
-  ComputeDotProductCallback callback(object);
-  callback.setStaticAllocationFlag();
-  perception->computePerception(input, &callback);
-  return callback.res;
+
+  DenseDoubleObjectPtr denseDoubleObject = object.dynamicCast<DenseDoubleObject>();
+  if (denseDoubleObject)
+  {
+    ComputeDotProductWithDenseDoubleCallback callback(denseDoubleObject);
+    callback.setStaticAllocationFlag();
+    perception->computePerception(input, &callback);
+    return callback.res;
+  }
+  else
+  {
+    ComputeDotProductWithObjectCallback callback(object);
+    callback.setStaticAllocationFlag();
+    perception->computePerception(input, &callback);
+    return callback.res;
+  }
 }
 
 double lbcpp::dotProduct(ObjectPtr object1, ObjectPtr object2)

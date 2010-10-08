@@ -65,15 +65,15 @@ public:
 
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
-    rewriter->addRule(booleanType(), booleanFeatures());
+    rewriter->addRule(booleanType, booleanFeatures());
     rewriter->addEnumValueFeaturesRule();
-    rewriter->addRule(negativeLogProbabilityType(), defaultPositiveDoubleFeatures(30, -3, 3));
-    rewriter->addRule(probabilityType(), defaultProbabilityFeatures());
-    rewriter->addRule(positiveIntegerType(), defaultPositiveIntegerFeatures());
-    rewriter->addRule(integerType(), defaultIntegerFeatures());
+    rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
+    rewriter->addRule(probabilityType, defaultProbabilityFeatures());
+    rewriter->addRule(positiveIntegerType, defaultPositiveIntegerFeatures());
+    rewriter->addRule(integerType, defaultIntegerFeatures());
     
     // all other features
-    rewriter->addRule(doubleType(), identityPerception());
+    rewriter->addRule(doubleType, identityPerception());
   }
 
 /*  
@@ -430,7 +430,7 @@ int main(int argc, char** argv)
   ** Loading proteins
   */
   ContainerPtr trainingData = directoryFileStream(proteinsDirectory, T("*.xml"))
-                            ->apply(loadFromFileFunction(proteinClass()))
+                            ->apply(loadFromFileFunction(proteinClass))
                             ->load(numProteinsToLoad)
                             ->apply(proteinToInputOutputPairFunction())
                             ->randomize();
@@ -439,7 +439,7 @@ int main(int argc, char** argv)
   if (testingProteinsDirectory != File::nonexistent)
   {
     testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
-                ->apply(loadFromFileFunction(proteinClass()))
+                ->apply(loadFromFileFunction(proteinClass))
                 ->load()
                 ->apply(proteinToInputOutputPairFunction());
   }

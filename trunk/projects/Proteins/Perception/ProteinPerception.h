@@ -21,14 +21,14 @@ namespace lbcpp
 class ProteinCompositePerception : public CompositePerception
 {
 public:
-  ProteinCompositePerception() : CompositePerception(proteinClass(), T("protein")) {}
+  ProteinCompositePerception() : CompositePerception(proteinClass, T("protein")) {}
 };
 
 class ResidueCompositePerception : public CompositePerception
 {
 public:
   ResidueCompositePerception()
-    : CompositePerception(pairClass(proteinClass(), positiveIntegerType()), T("residue")) {}
+    : CompositePerception(pairClass(proteinClass, positiveIntegerType), T("residue")) {}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };
@@ -37,7 +37,7 @@ class ResiduePairCompositePerception : public CompositePerception
 {
 public:
   ResiduePairCompositePerception()
-    : CompositePerception(pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType())), T("residue pair")) {}
+    : CompositePerception(pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType)), T("residue pair")) {}
 
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 };

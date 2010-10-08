@@ -91,7 +91,7 @@ void Perception::computeOutputType()
   if (!outputType->getBaseType())
   {
     outputType->setName(toString());
-    outputType->setBaseType(objectClass());
+    outputType->setBaseType(objectClass);
     size_t n = outputVariables.size();
     for (size_t i = 0; i < n; ++i)
     {
@@ -118,7 +118,7 @@ bool Perception::loadFromXml(XmlImporter& importer)
 */
 CompositePerception::CompositePerception(TypePtr inputType, const String& stringDescription)
   : inputType(inputType), stringDescription(stringDescription),
-    subPerceptions(vector(pairClass(stringType(), perceptionClass())))
+    subPerceptions(vector(pairClass(stringType, perceptionClass)))
 {
 }
 
@@ -171,21 +171,21 @@ namespace lbcpp
 
 PerceptionPtr lbcpp::identityPerception()
 {
-  static PerceptionPtr identity = identityPerception(anyType());
+  static PerceptionPtr identity = identityPerception(anyType);
   return identity;
 }
 
 PerceptionPtr lbcpp::defaultPositiveIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
-  {return softDiscretizedLogNumberFeatures(positiveIntegerType(), 0.0, maxPowerOfTen, numIntervals, true);}
+  {return softDiscretizedLogNumberFeatures(positiveIntegerType, 0.0, maxPowerOfTen, numIntervals, true);}
 
 PerceptionPtr lbcpp::defaultIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
-  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(integerType(), 0.0, maxPowerOfTen, numIntervals, true));}
+  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(integerType, 0.0, maxPowerOfTen, numIntervals, true));}
 
 PerceptionPtr lbcpp::defaultProbabilityFeatures(size_t numIntervals)
-  {return softDiscretizedNumberFeatures(probabilityType(), 0.0, 1.0, numIntervals, false, false);}
+  {return softDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, numIntervals, false, false);}
 
 PerceptionPtr lbcpp::defaultPositiveDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
-  {return softDiscretizedLogNumberFeatures(doubleType(), minPowerOfTen, maxPowerOfTen, numIntervals, true);}
+  {return softDiscretizedLogNumberFeatures(doubleType, minPowerOfTen, maxPowerOfTen, numIntervals, true);}
 
 PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
   {return signedNumberFeatures(defaultPositiveDoubleFeatures(numIntervals, minPowerOfTen, maxPowerOfTen));}

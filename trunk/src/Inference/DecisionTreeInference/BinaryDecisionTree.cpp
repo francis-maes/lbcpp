@@ -27,7 +27,7 @@ public:
     {return T("BelongsToMask(") + mask->toString() + T(")");}
 
   virtual TypePtr getInputType() const
-    {return integerType();}
+    {return integerType;}
 
   virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
   {

@@ -26,9 +26,9 @@ public:
     EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
     if (enumeration)
       computeForEnumeration(enumeration, container);
-    else if (type->inheritsFrom(doubleType()))
+    else if (type->inheritsFrom(doubleType))
       computeForDouble(container);
-    else if (type->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
+    else if (type->inheritsFrom(discreteProbabilityDistributionClass(anyType)))
     {
       EnumerationPtr enumeration = type->getTemplateArgument(0).dynamicCast<Enumeration>();
       jassert(enumeration);
@@ -128,23 +128,23 @@ void HistogramPerception::computeOutputType()
   {
     reserveOutputVariables(enumeration->getNumElements() + 2);
     for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType());
+      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType);
   }
-  else if (elementsType->inheritsFrom(doubleType()))
+  else if (elementsType->inheritsFrom(doubleType))
   {
     reserveOutputVariables(3);
     addOutputVariable(T("average"), elementsType);
   }
-  else if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType())))
+  else if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType)))
   {
     enumeration = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>();
     reserveOutputVariables(enumeration->getNumElements() + 2);
     for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType());
+      addOutputVariable(T("p[") + enumeration->getElementName(i) + T("]"), probabilityType);
   }
 
-  addOutputVariable(T("p[missing]"), probabilityType());
-  addOutputVariable(T("entropy"), negativeLogProbabilityType());
+  addOutputVariable(T("p[missing]"), probabilityType);
+  addOutputVariable(T("entropy"), negativeLogProbabilityType);
   Perception::computeOutputType();
 }
 
@@ -182,10 +182,10 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   for (size_t i = 0; i < numScores; ++i)
   {
     double p = (endScores[i] - startScores[i]) * invK;
-    callback->sense(i, Variable(p, getOutputVariableType(i)));
+    callback->sense(i, p);
     if (p)
       entropy -= p * log2(p);
   }
 
-  callback->sense(numScores, Variable(entropy, negativeLogProbabilityType()));
+  callback->sense(numScores, entropy);
 }

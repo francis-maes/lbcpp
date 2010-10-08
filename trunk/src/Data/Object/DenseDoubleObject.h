@@ -10,6 +10,7 @@
 # define LBCPP_DATA_OBJECT_DENSE_DOUBLE_H_
 
 # include <lbcpp/Data/DynamicObject.h>
+# include <lbcpp/Data/XmlSerialisation.h>
 
 namespace lbcpp
 {
@@ -20,7 +21,7 @@ public:
   DenseDoubleObject(TypePtr thisType)
     : Object(thisType)
   {
-    missingValue = doubleType()->getMissingValue().getDouble();
+    missingValue = doubleType->getMissingValue().getDouble();
   }
 
   double& getValueReference(size_t index)
@@ -33,6 +34,9 @@ public:
     }
     return values[index];
   }
+
+  bool isMissing(double value) const
+    {return value == missingValue;}
 
   virtual Variable getVariable(size_t index) const
   {

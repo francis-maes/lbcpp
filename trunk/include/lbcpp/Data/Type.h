@@ -38,6 +38,8 @@ extern void deinitialize();
 
 class TemplateType;
 typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
+class Enumeration;
+typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
@@ -49,7 +51,12 @@ public:
   Type() {}
 
   static void declare(TypePtr typeInstance);
+  static void declare(ClassPtr classInstance)
+    {declare((TypePtr)classInstance);}
+  static void declare(EnumerationPtr enumerationInstance)
+    {declare((TypePtr)enumerationInstance);}
   static void declare(TemplateTypePtr templateTypeInstance);
+
   static void finishDeclarations(MessageCallback& callback = MessageCallback::getInstance());
   static bool doTypeExists(const String& typeName);
   static TypePtr get(const String& typeName, MessageCallback& callback = MessageCallback::getInstance());
@@ -150,29 +157,27 @@ protected:
   std::vector<TypePtr> templateArguments;
 };
 
-extern TypePtr variableType();
+extern TypePtr variableType;
 
-// synonims:
-inline TypePtr topLevelType()
-  {return variableType();}
-inline TypePtr anyType()
-  {return variableType();}
+// synonims of variableType
+extern TypePtr topLevelType;
+extern TypePtr anyType;
 
-extern TypePtr nilType();
+extern TypePtr nilType;
 
-extern TypePtr booleanType();
-extern TypePtr integerType();
-  extern TypePtr positiveIntegerType();
-    extern TypePtr variableIndexType();
-  extern TypePtr enumValueType();
+extern TypePtr booleanType;
+extern TypePtr integerType;
+  extern TypePtr positiveIntegerType;
+    extern TypePtr variableIndexType;
+  extern TypePtr enumValueType;
 
-extern TypePtr doubleType();
-  extern TypePtr positiveDoubleType();
-    extern TypePtr negativeLogProbabilityType();
-  extern TypePtr probabilityType();
+extern TypePtr doubleType;
+  extern TypePtr positiveDoubleType;
+    extern TypePtr negativeLogProbabilityType;
+  extern TypePtr probabilityType;
 
-extern TypePtr stringType();
-  extern TypePtr fileType();
+extern TypePtr stringType;
+  extern TypePtr fileType;
 
 extern TypePtr sumType(TypePtr type1, TypePtr type2);
 extern TypePtr sumType(TypePtr type1, TypePtr type2, TypePtr type3);
@@ -277,15 +282,15 @@ public:
 
 typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 
-extern ClassPtr objectClass();
-extern ClassPtr typeClass();
-extern ClassPtr enumerationClass();
+extern ClassPtr objectClass;
+extern ClassPtr typeClass;
+extern ClassPtr enumerationClass;
 extern ClassPtr pairClass(TypePtr firstClass, TypePtr secondClass);
 
 class DefaultClass : public Class
 {
 public:
-  DefaultClass(const String& name, TypePtr baseClass = objectClass());
+  DefaultClass(const String& name, TypePtr baseClass = objectClass);
   DefaultClass(const String& name, const String& baseClass);
   DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
   DefaultClass() {}
@@ -307,21 +312,6 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
-
-/*
-** TypeCache
-*/
-class TypeCache
-{
-public:
-  TypeCache(const String& typeName);
-
-  TypePtr operator ()();
-
-protected:
-  CriticalSection lock;
-  Type* type;
-};
 
 class UnaryTemplateTypeCache
 {

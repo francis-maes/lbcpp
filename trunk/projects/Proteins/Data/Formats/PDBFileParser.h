@@ -21,7 +21,7 @@ public:
   PDBFileParser(const File& file, bool beTolerant, MessageCallback& callback = MessageCallback::getInstance());
   
   virtual TypePtr getElementsType() const
-    {return proteinClass();}
+    {return proteinClass;}
 
   virtual void parseBegin();
   virtual bool parseLine(const String& line);

@@ -27,7 +27,7 @@ public:
   }
   
   virtual TypePtr getElementsType() const
-    {return proteinClass();}
+    {return proteinClass;}
 
   virtual void parseBegin()
     {serialNumber = 0;}
@@ -94,7 +94,7 @@ public:
     String secondaryStructureCode = line.substring(16, 17);
     if (secondaryStructureCode == T(" "))
       secondaryStructureCode = T("C");
-    EnumerationPtr dsspEnum = dsspSecondaryStructureElementEnumeration();
+    EnumerationPtr dsspEnum = dsspSecondaryStructureElementEnumeration;
     int secondaryStructureIndex = dsspEnum->getOneLetterCodes().indexOf(secondaryStructureCode);
     if (secondaryStructureIndex < 0)
     {
@@ -129,7 +129,7 @@ public:
       std::cout << "Solvent Accessibility Exeeded: " << aminoAcidCode << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidType] << std::endl;
       normalizedSolventAccessibility = 1.0;
     }
-    solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType()));
+    solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType));
     return true;
   }
 

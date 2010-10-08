@@ -20,7 +20,7 @@ ObjectPtr DynamicClass::createDenseObject() const
 {
   bool hasOnlyDoubles = true;
   for (size_t i = 0; i < variables.size(); ++i)
-    if (!variables[i].first->inheritsFrom(doubleType()))
+    if (!variables[i].first->inheritsFrom(doubleType))
     {
       hasOnlyDoubles = false;
       break;

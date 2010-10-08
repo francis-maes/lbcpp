@@ -32,7 +32,7 @@
 namespace lbcpp
 {
 
-extern ClassPtr templateTypeClass();
+extern ClassPtr templateTypeClass;
 
 class TemplateType : public NameableObject
 {
@@ -72,7 +72,7 @@ public:
   ** Object
   */
   virtual ClassPtr getClass() const
-    {return templateTypeClass();}
+    {return templateTypeClass;}
 
   juce_UseDebuggingNewOperator
 
@@ -104,7 +104,7 @@ protected:
   String baseTypeExpr;
   std::vector<std::pair<String, TypePtr> > parameters;
 
-  void addParameter(const String& name, TypePtr baseType = anyType());
+  void addParameter(const String& name, TypePtr baseType = anyType);
   void addParameter(const String& name, const String& type);
 };
 

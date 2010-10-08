@@ -33,7 +33,7 @@ public:
     {return Class::get(T("ScalarFunction"));}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return doubleType();}
+    {return doubleType;}
 
   virtual void beginRunSession()
     {clearDotProductCache(); /*if (parameters) dotProductCache = new FeatureGenerator::DotProductCache();*/}

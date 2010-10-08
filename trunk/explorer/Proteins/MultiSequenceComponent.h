@@ -230,7 +230,7 @@ private:
     TypePtr type = sequence->getElementsType();
     Variable value = sequence->getElement(index);
 
-    if (type->inheritsFrom(enumValueType()))
+    if (type->inheritsFrom(enumValueType))
     {
       g.setFont(12.f);
       String res = T("?");
@@ -240,7 +240,7 @@ private:
       return;
     }
 
-    if (type->canBeCastedTo(probabilityType()))
+    if (type->canBeCastedTo(probabilityType))
     {
       String str = T("?");
       if (sequence->getElement(index))
@@ -257,7 +257,7 @@ private:
       return;
     }
 
-    if (type->canBeCastedTo(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration())))
+    if (type->canBeCastedTo(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration)))
     {
       DiscreteProbabilityDistributionPtr probs = sequence->getElement(index).getObjectAndCast<DiscreteProbabilityDistribution>();
       size_t numVariables = probs->getEnumeration()->getNumElements();

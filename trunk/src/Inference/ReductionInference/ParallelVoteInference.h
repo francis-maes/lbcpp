@@ -79,7 +79,7 @@ class MeanScalarParallelVoteInference : public ParallelVoteInference
 public:
   MeanScalarParallelVoteInference(const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
     : ParallelVoteInference(name, numVotes, voteInferenceModel, voterLearner)
-    {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType()));}
+    {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType));}
   MeanScalarParallelVoteInference() {}
 
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)

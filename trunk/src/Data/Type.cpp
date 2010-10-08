@@ -225,18 +225,13 @@ inline TypeManager& getTypeManagerInstance()
   return instance;
 }
 
+TypePtr lbcpp::topLevelType;
+TypePtr lbcpp::anyType;
+
 void lbcpp::initialize()
 {
   getTypeManagerInstance().ensureStandardClassesAreLoaded();
-  Variable::nilType = nilType();
-  Variable::booleanType = booleanType();
-  Variable::integerType = integerType();
-  Variable::positiveIntegerType = positiveIntegerType();
-  Variable::doubleType = doubleType();
-  Variable::probabilityType = probabilityType();
-  Variable::stringType = stringType();
-  Variable::fileType = fileType();
-  Variable::objectClass = objectClass();
+  topLevelType = anyType = variableType;
 }
 
 void lbcpp::deinitialize()
@@ -283,7 +278,7 @@ void Type::deinitialize()
 }
 
 ClassPtr Type::getClass() const
-  {return typeClass();}
+  {return typeClass;}
 
 bool Type::inheritsFrom(TypePtr baseType) const
 {
@@ -386,8 +381,8 @@ TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
     return type2;
   if (type2->inheritsFrom(type1))
     return type1;
-  if (type1 == topLevelType() || type2 == topLevelType())
-    return topLevelType();
+  if (type1 == topLevelType || type2 == topLevelType)
+    return topLevelType;
   TypePtr baseType1 = type1->getBaseType();
   TypePtr baseType2 = type2->getBaseType();
   jassert(baseType1 && baseType2);
@@ -402,16 +397,6 @@ void Type::saveToXml(XmlExporter& exporter) const
 /*
 ** TypeCache
 */
-TypeCache::TypeCache(const String& typeName)
-{
-  ScopedLock _(lock);
-  type = Type::get(typeName).get();
-  jassert(type);
-}
-
-TypePtr TypeCache::operator ()()
-  {ScopedLock _(lock); return TypePtr(type);}
-
 UnaryTemplateTypeCache::UnaryTemplateTypeCache(const String& typeName)
 {
   ScopedLock _(lock);
@@ -422,17 +407,20 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 {
   jassert(argument);
 
-  ScopedLock _(lock);
-  std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
-  if (it == m.end())
+  TypePtr res;
   {
-    TypePtr res = getTypeManagerInstance().getType(typeName, std::vector<TypePtr>(1, argument), MessageCallback::getInstance());
-    jassert(res);
-    m[argument.get()] = res.get();
-    return res;
+    ScopedLock _(lock);
+    std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
+    if (it == m.end())
+    {
+      res = getTypeManagerInstance().getType(typeName, std::vector<TypePtr>(1, argument), MessageCallback::getInstance());
+      jassert(res);
+      m[argument.get()] = res.get();
+    }
+    else
+      res = it->second;
   }
-  else
-    return it->second;
+  return res;
 }
 
 BinaryTemplateTypeCache::BinaryTemplateTypeCache(const String& typeName)
@@ -446,21 +434,40 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
   jassert(argument1 && argument2);
   std::pair<Type*, Type*> key(argument1.get(), argument2.get());
 
-  ScopedLock _(lock);
-  std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
-  if (it == m.end())
+  TypePtr res;
+  //double timeBegin = Time::getMillisecondCounterHiRes();
   {
-    std::vector<TypePtr> arguments(2);
-    arguments[0] = argument1;
-    arguments[1] = argument2;
+    ScopedLock _(lock);
+    std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
+    if (it == m.end())
+    {
+      std::vector<TypePtr> arguments(2);
+      arguments[0] = argument1;
+      arguments[1] = argument2;
 
-    TypePtr res = getTypeManagerInstance().getType(typeName, arguments, MessageCallback::getInstance());
-    jassert(res);
-    m[std::make_pair(argument1.get(), argument2.get())] = res.get();
-    return res;
+      res = getTypeManagerInstance().getType(typeName, arguments, MessageCallback::getInstance());
+      jassert(res);
+      m[std::make_pair(argument1.get(), argument2.get())] = res.get();
+    }
+    else
+      res = it->second;
   }
-  else
-    return it->second;
+/*
+  double deltaTime = Time::getMillisecondCounterHiRes() - timeBegin;
+  {
+    static double sum = 0.0;
+    static int count = 0;
+    sum += deltaTime;
+    ++count;
+    if (count == 20)
+    {
+      MessageCallback::info(T("UnaryTemplateTypeCache length: ") + String(sum / count));
+      sum = 0.0;
+      count = 0;
+    }
+  }*/
+
+  return res;
 }
 
 #include "Type/FileType.h"
@@ -497,5 +504,5 @@ TypePtr lbcpp::sumType(TypePtr type1, TypePtr type2, TypePtr type3, TypePtr type
 TypePtr lbcpp::sumType(const std::vector<TypePtr>& types)
 {
   // TODO !
-  return topLevelType();
+  return topLevelType;
 }

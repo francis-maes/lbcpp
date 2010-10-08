@@ -24,13 +24,13 @@ public:
     : NameableObject(name) {}
 
   virtual TypePtr getInputType() const
-    {return anyType();}
+    {return anyType;}
 
   virtual TypePtr getSupervisionType() const
-    {return anyType();}
+    {return anyType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return anyType();}
+    {return anyType;}
 
   virtual String getDescription(const Variable& input, const Variable& supervision) const;
 
@@ -73,7 +73,7 @@ protected:
   InferencePtr batchLearner;
 };
 
-extern ClassPtr inferenceClass();
+extern ClassPtr inferenceClass;
 
 /*
 ** Decorator inference
@@ -161,13 +161,13 @@ public:
   virtual ClassPtr getTargetInferenceClass() const = 0;
 
   virtual TypePtr getInputType() const
-    {return pairClass(getTargetInferenceClass(), containerClass(pairClass(anyType(), anyType())));}
+    {return pairClass(getTargetInferenceClass(), containerClass(pairClass(anyType, anyType)));}
 
   virtual TypePtr getSupervisionType() const
-    {return nilType();}
+    {return nilType;}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType();}
+    {return nilType;}
 
   virtual String getDescription(const Variable& input, const Variable& supervision) const
   {

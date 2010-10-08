@@ -16,7 +16,7 @@ using namespace lbcpp;
 */
 double BernoulliDistribution::compute(const Variable& value) const
 {
-  if (!value.isNil() && checkInheritance(value, booleanType()))
+  if (!value.isNil() && checkInheritance(value, booleanType))
     return value.getBoolean() ? getProbabilityOfTrue() : getProbabilityOfFalse();
   return 0.0;
 }

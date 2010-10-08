@@ -90,7 +90,7 @@ public:
   virtual Variable getElement(const VariableValue& value, size_t index) const
   {
     const std::vector<File>& subFiles = getSubFiles(value);
-    return index < subFiles.size() ? Variable(subFiles[index]) : Variable::missingValue(fileType());
+    return index < subFiles.size() ? Variable(subFiles[index]) : Variable::missingValue(fileType);
   }
   
   virtual String toShortString(const VariableValue& value) const

@@ -112,9 +112,18 @@ protected:
       }
     }
 
+    virtual void sense(size_t variableNumber, size_t value)
+      {senseBuiltinType(variableNumber, value);}
+
+    virtual void sense(size_t variableNumber, int value)
+      {senseBuiltinType(variableNumber, value);}
+
     virtual void sense(size_t variableNumber, double value)
       {senseBuiltinType(variableNumber, value);}
       
+    virtual void sense(size_t variableNumber, const String& value)
+      {senseBuiltinType(variableNumber, value);}
+
     virtual void sense(size_t variableNumber, ObjectPtr value)
       {senseBuiltinType(variableNumber, value);}
 

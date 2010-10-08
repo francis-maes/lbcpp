@@ -96,7 +96,7 @@ protected:
     {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
 };
 
-extern ClassPtr sequentialInferenceClass();
+extern ClassPtr sequentialInferenceClass;
 
 class StaticSequentialInference : public SequentialInference
 {
@@ -110,7 +110,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<StaticSequentialInference> StaticSequentialInferencePtr;
 
-extern ClassPtr staticSequentialInferenceClass();
+extern ClassPtr staticSequentialInferenceClass;
 
 class VectorSequentialInference : public StaticSequentialInference
 {

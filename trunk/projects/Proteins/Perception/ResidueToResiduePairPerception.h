@@ -21,7 +21,7 @@ public:
     : residuePerception(residuePerception) {computeOutputType();}
 
   virtual TypePtr getInputType() const
-    {return pairClass(proteinClass(), pairClass(positiveIntegerType(), positiveIntegerType()));}
+    {return pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType));}
   
   virtual void computeOutputType()
   {

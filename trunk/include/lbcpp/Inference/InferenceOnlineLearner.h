@@ -53,7 +53,7 @@ public:
   InferenceOnlineLearnerPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
 };
 
-extern ClassPtr inferenceOnlineLearnerClass();
+extern ClassPtr inferenceOnlineLearnerClass;
 
 class UpdatableInferenceOnlineLearner : public InferenceOnlineLearner
 {

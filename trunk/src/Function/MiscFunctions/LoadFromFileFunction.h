@@ -18,11 +18,11 @@ namespace lbcpp
 class LoadFromFileFunction : public Function
 {
 public:
-  LoadFromFileFunction(TypePtr expectedType = objectClass())
+  LoadFromFileFunction(TypePtr expectedType = objectClass)
     : expectedType(expectedType) {}
 
   virtual TypePtr getInputType() const
-    {return fileType();}
+    {return fileType;}
 
   virtual TypePtr getOutputType(TypePtr ) const
     {return expectedType;}

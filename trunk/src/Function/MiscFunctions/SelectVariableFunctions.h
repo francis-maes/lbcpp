@@ -23,7 +23,7 @@ public:
     : index(index) {}
 
   virtual TypePtr getInputType() const
-    {return objectClass();}
+    {return objectClass;}
   
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return index >= 0 ? inputType->getObjectVariableType((size_t)index) : inputType;}

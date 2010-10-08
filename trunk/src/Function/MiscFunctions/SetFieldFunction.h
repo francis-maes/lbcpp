@@ -24,7 +24,7 @@ public:
     : fieldIndex(fieldIndex) {}
 
   virtual TypePtr getInputType() const
-    {return pairClass(objectClass(), anyType());}
+    {return pairClass(objectClass, anyType);}
   
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inputType->getTemplateArgument(0);}

@@ -14,7 +14,7 @@ using namespace lbcpp;
 void ResidueCompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
 {
   TypePtr inputType = subPerception->getInputType();
-  if (inputType == proteinClass())
+  if (inputType == proteinClass)
     CompositePerception::addPerception(name, composePerception(selectVariableFunction(0), subPerception));
   else
     CompositePerception::addPerception(name, subPerception);
@@ -26,9 +26,9 @@ void ResidueCompositePerception::addPerception(const String& name, PerceptionPtr
 void ResiduePairCompositePerception::addPerception(const String& name, PerceptionPtr subPerception)
 {
   TypePtr inputType = subPerception->getInputType();
-  if (inputType == proteinClass())
+  if (inputType == proteinClass)
     CompositePerception::addPerception(name, composePerception(selectVariableFunction(0), subPerception));
-  else if (inputType == pairClass(proteinClass(), positiveIntegerType()))
+  else if (inputType == pairClass(proteinClass, positiveIntegerType))
     CompositePerception::addPerception(name, residueToResiduePairPerception(subPerception));
   else
     CompositePerception::addPerception(name, subPerception);

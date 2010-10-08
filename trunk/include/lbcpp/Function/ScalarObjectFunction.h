@@ -47,10 +47,10 @@ public:
   ** Function
   */
   virtual TypePtr getInputType() const
-    {return objectClass();}
+    {return objectClass;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return doubleType();}
+    {return doubleType;}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
     {return compute(input.getObject());}

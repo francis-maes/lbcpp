@@ -32,13 +32,13 @@ public:
     reserveOutputVariables((doOutOfBoundsFeatures ? 2 : 0) + numIntervals + (cyclicBehavior ? 0 : 1));
     if (doOutOfBoundsFeatures)
     {
-      addOutputVariable(T("after ") + getBoundaryName(0), doubleType());
-      addOutputVariable(T("after ") + getBoundaryName(numIntervals), doubleType());
+      addOutputVariable(T("after ") + getBoundaryName(0), doubleType);
+      addOutputVariable(T("after ") + getBoundaryName(numIntervals), doubleType);
     }
     for (size_t i = 0; i < numIntervals; ++i)
-      addOutputVariable(T("close to ") + getBoundaryName(i), doubleType());
+      addOutputVariable(T("close to ") + getBoundaryName(i), doubleType);
     if (!cyclicBehavior)
-      addOutputVariable(T("close to ") + getBoundaryName(numIntervals), doubleType());
+      addOutputVariable(T("close to ") + getBoundaryName(numIntervals), doubleType);
     DiscretizedNumberFeatures::computeOutputType();
   }
 

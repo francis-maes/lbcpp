@@ -46,12 +46,12 @@ public:
   juce_UseDebuggingNewOperator
 };
 
-extern ClassPtr functionClass();
+extern ClassPtr functionClass;
 
-extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass()); // File -> Object
+extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // File -> Object
 extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 extern FunctionPtr selectVariableFunction(int index);
-extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType(), anyType()));
+extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
 
 }; /* namespace lbcpp */
 

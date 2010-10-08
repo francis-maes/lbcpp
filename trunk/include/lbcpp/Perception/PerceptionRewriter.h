@@ -30,7 +30,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriteRule> PerceptionRewriteRulePtr;
 
-extern ClassPtr perceptionRewriteRuleClass();
+extern ClassPtr perceptionRewriteRuleClass;
 
 extern PerceptionRewriteRulePtr typeBasedPerceptionRewriteRule(TypePtr type, PerceptionPtr target);
 extern PerceptionRewriteRulePtr typeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target);

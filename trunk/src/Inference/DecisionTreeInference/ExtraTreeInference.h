@@ -65,10 +65,10 @@ public:
   RegressionBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
-    {return doubleType();}
+    {return doubleType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return doubleType();}
+    {return doubleType;}
 };
 
 class BinaryClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
@@ -79,10 +79,10 @@ public:
   BinaryClassificationBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
-    {return booleanType();}
+    {return booleanType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return booleanType();}
+    {return booleanType;}
 };
 
 class ClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference

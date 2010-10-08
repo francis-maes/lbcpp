@@ -75,7 +75,7 @@ public:
   juce_UseDebuggingNewOperator
 };
 
-extern ClassPtr decoratorInferenceClass();
+extern ClassPtr decoratorInferenceClass;
 
 class StaticDecoratorInference : public DecoratorInference
 {
@@ -129,7 +129,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
 
-extern ClassPtr staticDecoratorInferenceClass();
+extern ClassPtr staticDecoratorInferenceClass;
 
 }; /* namespace lbcpp */
 

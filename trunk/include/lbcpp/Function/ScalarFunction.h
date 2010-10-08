@@ -44,10 +44,10 @@ public:
   ** Function
   */
   virtual TypePtr getInputType() const
-    {return doubleType();}
+    {return doubleType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return doubleType();}
+    {return doubleType;}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
     {return compute(input.getDouble());}

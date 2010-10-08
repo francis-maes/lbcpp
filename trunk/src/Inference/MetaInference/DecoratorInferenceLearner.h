@@ -20,7 +20,7 @@ class DecoratorInferenceLearner : public InferenceLearner<DecoratorInference>
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const
-    {return staticDecoratorInferenceClass();}
+    {return staticDecoratorInferenceClass;}
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -46,7 +46,10 @@ protected:
   virtual ContainerPtr createSubTrainingData(InferenceContextPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     size_t n = trainingData->getNumElements();
-    std::vector<Variable> subTrainingData;
+    InferencePtr targetSubInference = targetInference->getSubInference();
+    TypePtr pairType = pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType());
+    VectorPtr res = vector(pairType, n);
+
     for (size_t i = 0; i < n; ++i)
     {
       Variable inputAndSupervision = trainingData->getElement(i);
@@ -54,15 +57,8 @@ protected:
       DecoratorInferenceStatePtr state = targetInference->prepareInference(context, inputAndSupervision[0], inputAndSupervision[1], returnCode);
       if (returnCode != Inference::finishedReturnCode)
         return ContainerPtr();
-      
-      subTrainingData.push_back(Variable::pair(state->getSubInput(), state->getSubSupervision()));
+      res->setElement(i, Variable::pair(state->getSubInput(), state->getSubSupervision(), pairType));
     }
-
-    InferencePtr targetSubInference = targetInference->getSubInference();
-
-    VectorPtr res = vector(pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType()), n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, subTrainingData[i]);
     return res;
   }
 };

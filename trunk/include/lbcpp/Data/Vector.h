@@ -106,7 +106,7 @@ public:
   ** Container
   */
   virtual TypePtr getElementsType() const
-    {return booleanType();}
+    {return booleanType;}
 
   virtual size_t getNumElements() const;
   virtual Variable getElement(size_t index) const;
@@ -264,8 +264,8 @@ protected:
 extern ClassPtr vectorClass(TypePtr elementsType);
 extern ClassPtr genericVectorClass(TypePtr elementsType);
 extern ClassPtr objectVectorClass(TypePtr elementsType);
-extern ClassPtr booleanVectorClass();
-extern ClassPtr variableVectorClass();
+extern ClassPtr booleanVectorClass;
+extern ClassPtr variableVectorClass;
 
 extern VectorPtr vector(TypePtr elementsType, size_t initialSize = 0);
 extern VectorPtr genericVector(TypePtr elementsType, size_t initialSize);

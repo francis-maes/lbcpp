@@ -235,7 +235,7 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
     writeType(variable.getType());
     elt->setAttribute(T("missing"), T("true"));
   }
-  else if (variable.isObject() && variable.getType() != typeClass() && !variable.getType()->inheritsFrom(enumerationClass()))
+  else if (variable.isObject() && variable.getType() != typeClass && !variable.getType()->inheritsFrom(enumerationClass))
     writeObject(variable.getObject(), expectedType);
   else
   {

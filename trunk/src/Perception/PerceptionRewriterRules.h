@@ -39,7 +39,7 @@ class TypeAndStackBasedPerceptionRewriteRule : public PerceptionRewriteRule
 {
 public:
   TypeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target)
-    : type(type), stack(vector(stringType())), target(target)
+    : type(type), stack(vector(stringType)), target(target)
   {
     StringArray tokens;
     tokens.addTokens(stack, T("."), NULL);
@@ -79,7 +79,7 @@ class EnumValueFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
 {
 public:
   virtual bool match(TypePtr type, const std::vector<String>& stack) const
-    {return type->inheritsFrom(enumValueType());}
+    {return type->inheritsFrom(enumValueType);}
 
   virtual PerceptionPtr computeRule(TypePtr type) const
     {return enumValueFeatures(type);}

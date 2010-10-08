@@ -18,7 +18,7 @@ class DummyInferenceLearner : public InferenceLearner<Inference>
 {
 protected:
   virtual ClassPtr getTargetInferenceClass() const
-    {return inferenceClass();}
+    {return inferenceClass;}
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return Variable();}
