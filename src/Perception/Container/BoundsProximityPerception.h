@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_BOUNDS_PROXIMITY_H_
 
 # include <lbcpp/Perception/Perception.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -28,10 +29,11 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    ContainerPtr container = input[0].getObjectAndCast<Container>();
+    PairPtr pair = input.getObjectAndCast<Pair>();
+    ContainerPtr container = pair->getFirst().getObjectAndCast<Container>();
     jassert(container);
     int n = (int)container->getNumElements();
-    int index = input[1].getInteger();
+    int index = pair->getSecond().getInteger();
     
     if (index >= 0 && index < n)
     {

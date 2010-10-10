@@ -41,9 +41,11 @@ protected:
   TypePtr type;
 };
 
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
+
   Variable myProb(0.5, probabilityType);
   Variable myBoolean(true);
   Variable myInteger1(51, positiveIntegerType);
