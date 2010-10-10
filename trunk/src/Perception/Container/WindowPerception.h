@@ -33,10 +33,11 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    ContainerPtr container = input[0].getObjectAndCast<Container>();
+    PairPtr pair = input.getObjectAndCast<Pair>();
+    ContainerPtr container = pair->getFirst().getObjectAndCast<Container>();
     if (container)
     {
-      int startPosition = input[1].getInteger() - (int)(windowSize / 2);
+      int startPosition = pair->getSecond().getInteger() - (int)(windowSize / 2);
       
       for (size_t i = 0; i < windowSize; ++i)
       {

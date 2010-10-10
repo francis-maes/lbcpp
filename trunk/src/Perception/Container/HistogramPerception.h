@@ -12,6 +12,7 @@
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 # include <lbcpp/Data/Cache.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -85,8 +86,9 @@ public:
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
     jassert(windowSize);
-    container = input[0].getObjectAndCast<Container>();
-    beginIndex = input[1].getInteger() - (int)(windowSize / 2);
+    PairPtr pair = input.getObjectAndCast<Pair>();
+    container = pair->getFirst().getObjectAndCast<Container>();
+    beginIndex = pair->getSecond().getInteger() - (int)(windowSize / 2);
     endIndex = beginIndex + windowSize;
   }
 
@@ -108,10 +110,11 @@ public:
   
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
-    container = input[0].getObjectAndCast<Container>();
-    Variable indexPair = input[1];
-    beginIndex = indexPair[0].getInteger();
-    endIndex = indexPair[1].getInteger();
+    PairPtr pair = input.getObjectAndCast<Pair>();
+    container = pair->getFirst().getObjectAndCast<Container>();
+    PairPtr indexPair = pair->getSecond().getObjectAndCast<Pair>();
+    beginIndex = indexPair->getFirst().getInteger();
+    endIndex = indexPair->getSecond().getInteger(); 
   }
 };
 

@@ -67,10 +67,12 @@ public:
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
-    Variable first = input[0];
+    PairPtr pair = input.getObjectAndCast<Pair>();
+    jassert(pair);
+    Variable first = pair->getFirst();
     if (index1 >= 0)
       first = first.getObject()->getVariable(index1);
-    Variable second = input[1];
+    Variable second = pair->getSecond();
     if (index2 >= 0)
       second = second.getObject()->getVariable(index2);
     return new Pair(outputType, first, second);
