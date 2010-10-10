@@ -94,7 +94,7 @@ public:
           areSubJobsAtomic = false;
       }
 
-      if (step == n)
+      if (isAtomicJob)//step == n) // TMP!
       {
         //std::cout << "Unsplitted PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
         for (size_t i = 0; i < n; ++i)
