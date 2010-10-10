@@ -10,6 +10,7 @@
 #include <lbcpp/Data/XmlSerialisation.h>
 #include "Object/SparseGenericObject.h"
 #include "Object/DenseGenericObject.h"
+#include "Object/DenseObjectObject.h"
 #include "Object/DenseDoubleObject.h"
 using namespace lbcpp;
 
@@ -19,14 +20,18 @@ VariableValue DynamicClass::create() const
 ObjectPtr DynamicClass::createDenseObject() const
 {
   bool hasOnlyDoubles = true;
+  bool hasOnlyObjects = true;
   for (size_t i = 0; i < variables.size(); ++i)
+  {
     if (!variables[i].first->inheritsFrom(doubleType))
-    {
       hasOnlyDoubles = false;
-      break;
-    }
+    if (!variables[i].first->inheritsFrom(objectClass))
+      hasOnlyObjects = false;
+  }
   if (hasOnlyDoubles)
     return new DenseDoubleObject(refCountedPointerFromThis(this));
+  else if (hasOnlyObjects)
+    return new DenseObjectObject(refCountedPointerFromThis(this));
   else
     return new DenseGenericObject(refCountedPointerFromThis(this));
 }

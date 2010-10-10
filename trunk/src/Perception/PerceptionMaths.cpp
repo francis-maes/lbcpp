@@ -8,6 +8,7 @@
 
 #include <lbcpp/Perception/PerceptionMaths.h>
 #include "../Data/Object/DenseDoubleObject.h"
+#include "../Data/Object/DenseObjectObject.h"
 using namespace lbcpp;
 
 /*
@@ -296,6 +297,31 @@ struct DefaultComputeDotProductCallback : public ComputeDotProductCallback
   }
 };
 
+struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductCallback
+{
+  ComputeDotProductWithDenseObjectCallback(DenseObjectObjectPtr object)
+    : object(object) {}
+
+  DenseObjectObjectPtr object;
+
+  virtual void sense(size_t variableNumber, double value)
+    {jassert(false);}
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+  {
+    ObjectPtr objectValue = object->getObject(variableNumber);
+    if (objectValue)
+      res += dotProduct(objectValue, value);
+  }
+
+  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  {
+    ObjectPtr subObject = object->getObject(variableNumber);
+    if (subObject)
+      res += dotProduct(subObject, subPerception, subInput);
+  }
+};
+
 struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductCallback
 {
   ComputeDotProductWithDenseDoubleCallback(DenseDoubleObjectPtr object)
@@ -333,7 +359,16 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
     perception->computePerception(input, &callback);
     return callback.res;
   }
-  else
+
+  DenseObjectObjectPtr denseObjectObject = object.dynamicCast<DenseObjectObject>();
+  if (denseObjectObject)
+  {
+    ComputeDotProductWithDenseObjectCallback callback(denseObjectObject);
+    callback.setStaticAllocationFlag();
+    perception->computePerception(input, &callback);
+    return callback.res;
+  }
+
   {
     DefaultComputeDotProductCallback callback(object);
     callback.setStaticAllocationFlag();
@@ -375,7 +410,7 @@ struct DoubleAssignmentOperation
   void compute(ObjectPtr& target, ObjectPtr source)
     {jassert(false);}
 
-  void compute(ObjectPtr value, PerceptionPtr perception, const Variable& input)
+  void compute(ObjectPtr& value, PerceptionPtr perception, const Variable& input)
     {jassert(false);}
 
   void compute(double& value, double otherValue)
@@ -434,6 +469,32 @@ struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<Operati
   }
 
   ObjectPtr object;
+};
+
+template<class OperationType>
+struct DenseObjectAssignmentCallback : public DoubleAssignmentCallback<OperationType>
+{
+  typedef DoubleAssignmentCallback<OperationType> BaseClass;
+
+  DenseObjectAssignmentCallback(DenseObjectObjectPtr object, OperationType& operation)
+    : BaseClass(operation), object(object) {}
+
+  virtual void sense(size_t variableNumber, double value)
+    {jassert(false);}
+
+  virtual void sense(size_t variableNumber, ObjectPtr value)
+  {
+    ObjectPtr& targetObject = object->getObjectReference(variableNumber);
+    BaseClass::operation.compute(targetObject, value);
+  }
+
+  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  {
+    ObjectPtr& targetObject = object->getObjectReference(variableNumber);
+    BaseClass::operation.compute(targetObject, subPerception, subInput);
+  }
+
+  DenseObjectObjectPtr object;
 };
 
 template<class OperationType>
@@ -502,7 +563,7 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
   void compute(ObjectPtr& target, ObjectPtr source)
     {lbcpp::addWeighted(target, source, weight);}
 
-  void compute(ObjectPtr value, PerceptionPtr perception, const Variable& input)
+  void compute(ObjectPtr& value, PerceptionPtr perception, const Variable& input)
     {lbcpp::addWeighted(value, perception, input, weight);}
 
   void compute(double& value, double otherValue)
@@ -524,8 +585,19 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
     Callback callback(target, operation);
     callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
+    return;
   }
-  else
+
+  DenseObjectObjectPtr denseObjectTarget = target.dynamicCast<DenseObjectObject>();
+  if (denseObjectTarget)
+  {
+    typedef DenseObjectAssignmentCallback<AddWeightedOperation> Callback;
+    Callback callback(target, operation);
+    callback.setStaticAllocationFlag();
+    perception->computePerception(input, &callback);
+    return;
+  }
+
   {
     typedef DefaultDoubleAssignmentCallback<AddWeightedOperation> Callback;
     Callback callback(target, operation);

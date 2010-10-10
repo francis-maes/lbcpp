@@ -106,7 +106,7 @@ protected:
       if (getTargetPerception(variableNumber, targetPerception))
       {
         if (targetPerception)
-          targetCallback->sense(variableNumber, targetPerception, Variable(value, targetPerception->getInputType()));
+          targetCallback->sense(variableNumber, targetPerception, Variable(value));//, targetPerception->getInputType()));
         else
           targetCallback->sense(variableNumber, value);          
       }
@@ -154,7 +154,7 @@ protected:
     {
       if (variableNumber >= owner->variablesMap.size())
         return false;
-      std::pair<size_t, PerceptionPtr> info = owner->variablesMap[variableNumber];
+      const std::pair<size_t, PerceptionPtr>& info = owner->variablesMap[variableNumber];
       if (info.first == (size_t)-1)
         return false;
       variableNumber = info.first;
