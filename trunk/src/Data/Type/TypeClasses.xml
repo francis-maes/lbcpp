@@ -68,7 +68,21 @@
       </code>
     </class>
 
-    <class name="Class" base="Type" abstract="yes"/>
+    <class name="Class" base="Type" abstract="yes">
+      <code>
+      virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
+        {return Type::createFromString(value, callback);}
+
+      virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+        {return Type::createFromXml(importer);}
+
+      virtual void destroy(VariableValue&amp; value) const
+        {Type::destroy(value);}
+
+      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+        {Type::copy(dest, source);}
+      </code>
+    </class>
     <class name="DefaultClass" base="Class"/>
 
 
