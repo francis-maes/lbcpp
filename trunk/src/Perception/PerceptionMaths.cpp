@@ -78,7 +78,6 @@ void doubleConstUnaryOperation(OperationType& operation, PerceptionPtr perceptio
 {
   typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
   Callback callback(operation);
-  callback.setStaticAllocationFlag();
   perception->computePerception(input, &callback);
 }
 
@@ -355,7 +354,6 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
   if (denseDoubleObject)
   {
     ComputeDotProductWithDenseDoubleCallback callback(denseDoubleObject);
-    callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
     return callback.res;
   }
@@ -364,14 +362,12 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
   if (denseObjectObject)
   {
     ComputeDotProductWithDenseObjectCallback callback(denseObjectObject);
-    callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
     return callback.res;
   }
 
   {
     DefaultComputeDotProductCallback callback(object);
-    callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
     return callback.res;
   }
@@ -583,7 +579,6 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
   {
     typedef DenseDoubleAssignmentCallback<AddWeightedOperation> Callback;
     Callback callback(target, operation);
-    callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
     return;
   }
@@ -593,7 +588,6 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
   {
     typedef DenseObjectAssignmentCallback<AddWeightedOperation> Callback;
     Callback callback(target, operation);
-    callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
     return;
   }
@@ -601,7 +595,6 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
   {
     typedef DefaultDoubleAssignmentCallback<AddWeightedOperation> Callback;
     Callback callback(target, operation);
-    callback.setStaticAllocationFlag();
     perception->computePerception(input, &callback);
   }
 }

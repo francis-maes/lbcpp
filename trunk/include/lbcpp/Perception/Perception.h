@@ -16,9 +16,11 @@
 namespace lbcpp
 {
 
-class PerceptionCallback : public Object
+class PerceptionCallback
 {
 public:
+  virtual ~PerceptionCallback() {}
+
   virtual void sense(size_t variableNumber, const Variable& value) = 0;
 
   virtual void sense(size_t variableNumber, size_t value)
@@ -39,7 +41,7 @@ public:
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input);
 };
 
-typedef ReferenceCountedObjectPtr<PerceptionCallback> PerceptionCallbackPtr;
+typedef PerceptionCallback* PerceptionCallbackPtr; // no ref-counting for PerceptionCallbacks
 
 class Perception : public Function
 {

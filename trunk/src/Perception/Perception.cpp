@@ -79,9 +79,9 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   }
 
   // compute perception
-  ReferenceCountedObjectPtr<SetInObjectPerceptionCallback> perceptionCallback(new SetInObjectPerceptionCallback(res));
-  computePerception(input, perceptionCallback);
-  return perceptionCallback->atLeastOneVariable ? Variable(res) : Variable::missingValue(outputType);
+  SetInObjectPerceptionCallback perceptionCallback(res);
+  computePerception(input, &perceptionCallback);
+  return perceptionCallback.atLeastOneVariable ? Variable(res) : Variable::missingValue(outputType);
 }
 
 void Perception::computeOutputType()

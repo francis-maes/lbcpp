@@ -119,12 +119,10 @@ void ProductPerception::computePerception(const Variable& input, PerceptionCallb
   // compute Perception2
   std::list<PerceptionVariable> variables;
   FillVariableListCallback fillVariableListCallback(variables);
-  fillVariableListCallback.setStaticAllocationFlag();
   perception2->computePerception(input2, &fillVariableListCallback);
 
   // iterate over Perception1
   ComputePerceptionProductCallback computePerceptionProductCallback(this, variables, callback);
-  computePerceptionProductCallback.setStaticAllocationFlag();
   perception1->computePerception(input1, &computePerceptionProductCallback);
 }
 
@@ -234,7 +232,6 @@ void ProductWithVariablePerception::computePerception(const Variable& input, Per
   jassert(input2.getType()->inheritsFrom(variableType));
 
   ComputePerceptionWithVariableProductCallback computeProductCallback(this, input2, callback);
-  computeProductCallback.setStaticAllocationFlag();
   perception->computePerception(input1, &computeProductCallback);
 }
 

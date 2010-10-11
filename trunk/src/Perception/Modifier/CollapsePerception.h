@@ -76,7 +76,6 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
     Callback callback(this, targetCallback);
-    callback.setStaticAllocationFlag();
     decorated->computePerception(input, &callback);
   }
 

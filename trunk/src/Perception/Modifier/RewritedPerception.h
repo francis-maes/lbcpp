@@ -32,7 +32,6 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
     Callback callback(decorated, targetCallback, this);
-    callback.setStaticAllocationFlag();
     decorated->computePerception(input, &callback);
   }
 

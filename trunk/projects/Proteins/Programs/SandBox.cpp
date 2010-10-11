@@ -217,7 +217,7 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
 
-  ThreadPoolPtr pool = new ThreadPool(10);
+  ThreadPoolPtr pool = new ThreadPool(7);
 
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\PDB30Small"));

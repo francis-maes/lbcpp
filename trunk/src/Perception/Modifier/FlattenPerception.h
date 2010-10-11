@@ -30,7 +30,6 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
     FlattenCallback callback(decorated, targetCallback, offsets);
-    callback.setStaticAllocationFlag();
     decorated->computePerception(input, &callback);
   }
 
