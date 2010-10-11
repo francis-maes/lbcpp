@@ -123,7 +123,7 @@ protected:
     virtual void sense(size_t variableNumber, const String& value)
       {senseBuiltinType(variableNumber, value);}
 
-    virtual void sense(size_t variableNumber, ObjectPtr value)
+    virtual void sense(size_t variableNumber, const ObjectPtr& value)
       {senseBuiltinType(variableNumber, value);}
 
     virtual void sense(size_t variableNumber, const Variable& value)
@@ -138,7 +138,7 @@ protected:
       }
     }
 
-    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
     {
       PerceptionPtr targetPerception;
       if (getTargetPerception(variableNumber, targetPerception) && targetPerception)

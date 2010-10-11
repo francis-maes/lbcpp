@@ -83,10 +83,10 @@ private:
     virtual void sense(size_t variableNumber, double value)
       {targetCallback->sense(variableNumber + offset, value);}
 
-    virtual void sense(size_t variableNumber, ObjectPtr value)
+    virtual void sense(size_t variableNumber, const ObjectPtr& value)
       {targetCallback->sense(variableNumber + offset, value);}
 
-    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
     {
       stack.push_back(variableNumber);
       updateOffset();

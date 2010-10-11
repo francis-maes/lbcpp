@@ -30,7 +30,7 @@ struct ComputePerceptionProductCallback : public PerceptionCallback
       forwardSense(variableNumber, value, it->number, it->input);
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
   {
     for (std::list<PerceptionVariable>::const_iterator it = variables.begin(); it != variables.end(); ++it)
       forwardSense(variableNumber, input, it->number, it->input);
@@ -66,7 +66,7 @@ struct FillVariableListCallback : public PerceptionCallback
   virtual void sense(size_t variableNumber, double value)
     {sense(variableNumber, Variable(value));}
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
     {sense(variableNumber, Variable(value));}
 
   virtual void sense(size_t variableNumber, const Variable& value)
@@ -77,7 +77,7 @@ struct FillVariableListCallback : public PerceptionCallback
     variables.push_back(v);
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
   {
     PerceptionVariable v;
     v.number = variableNumber;
@@ -178,7 +178,7 @@ struct ComputePerceptionWithVariableProductCallback : public PerceptionCallback
   virtual void sense(size_t variableNumber, const Variable& value)
     {targetCallback->sense(variableNumber, productWith(value));}
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
   {
     PerceptionPtr newSubPerception = owner->getOutputVariableSubPerception(variableNumber);
     jassert(newSubPerception);

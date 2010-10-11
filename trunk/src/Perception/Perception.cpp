@@ -24,7 +24,7 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
   bool atLeastOneVariable;
 };
 
-void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+void PerceptionCallback::sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
 {
   jassert(subPerception);
   Variable variable = subPerception->compute(input);
