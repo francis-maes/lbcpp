@@ -41,7 +41,7 @@ public:
   {
     ProteinPtr inputProtein = input.getObjectAndCast<Protein>();
     SymmetricMatrixPtr supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>();
-    jassert(inputProtein && (!supervision || supervisionMap));
+    jassert(inputProtein && (!supervision.exists() || supervisionMap));
 
     size_t n = inputProtein->getLength();
 
@@ -70,7 +70,7 @@ public:
       for (size_t j = i + 6; j < n; ++j)
       {
         Variable result = state->getSubOutput(index++);
-        if (result)
+        if (result.exists())
         {
           atLeastOnePrediction = true;
           res->setElement(i, j, result);
@@ -116,7 +116,7 @@ public:
   virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
   {
     Variable subOutput = finalState->getSubOutput();
-    return subOutput ? Variable((subOutput.getDouble() + bias) / 1000.0) : subOutput;
+    return subOutput.exists() ? Variable((subOutput.getDouble() + bias) / 1000.0) : subOutput;
   }
 
   double getBias() const
@@ -145,7 +145,7 @@ public:
   {
     AddBiasInferencePtr inference = inf.staticCast<AddBiasInference>();
 
-    if (prediction)
+    if (prediction.exists())
     {
       ScalarFunctionPtr loss = supervision.getObjectAndCast<ScalarFunction>();
       bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);

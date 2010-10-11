@@ -44,7 +44,7 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    if (!correctObject || !predictedObject)
+    if (!correctObject.exists() || !predictedObject.exists())
       return;
 
     SymmetricMatrixPtr predicted = predictedObject.getObjectAndCast<SymmetricMatrix>();

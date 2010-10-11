@@ -300,7 +300,7 @@ inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, Type
   {
     Variable variable;
     nativeToVariable(variable, source[i], elementsType);
-    if (variable)
+    if (variable.exists())
       destVector->setElement(i, variable);
   }
 }

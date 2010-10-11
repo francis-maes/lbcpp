@@ -216,7 +216,7 @@ public:
     ExplorerRecentFiles::getInstance()->addRecentFile(file);
     ExplorerConfiguration::save();
     Variable variable = createVariableFromFile(file);
-    if (variable)
+    if (variable.exists())
       contentTabs->addVariable(variable, file.getFileNameWithoutExtension());
   }
 

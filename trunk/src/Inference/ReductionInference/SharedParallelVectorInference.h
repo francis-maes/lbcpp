@@ -42,7 +42,7 @@ public:
   {
     size_t n = (size_t)sizeFunction->compute(input).getInteger();
     
-    VectorPtr supervisionVector = supervision ? supervision.getObjectAndCast<Vector>() : VectorPtr();
+    VectorPtr supervisionVector = supervision.exists() ? supervision.getObjectAndCast<Vector>() : VectorPtr();
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     TypePtr subInputType = pairClass(input.getType(), positiveIntegerType);
@@ -65,7 +65,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       Variable result = state->getSubOutput(i);
-      if (result)
+      if (result.exists())
       {
         if (result.isObject())
         {

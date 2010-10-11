@@ -43,7 +43,7 @@ public:
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(subInferences->getNumElements());
-    int correctClass = supervision ? supervision.getInteger() : -1;
+    int correctClass = supervision.exists() ? supervision.getInteger() : -1;
     for (size_t i = 0; i < subInferences->getNumElements(); ++i)
       res->addSubInference(getSubInference(i), input, correctClass >= 0 ? Variable(i == (size_t)correctClass) : Variable());
     return res;
@@ -56,7 +56,7 @@ public:
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
       Variable prediction = state->getSubOutput(i);
-      if (!prediction)
+      if (!prediction.exists())
         continue;
 
       double score = prediction.getDouble();

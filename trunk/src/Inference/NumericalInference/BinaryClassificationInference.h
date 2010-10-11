@@ -42,7 +42,7 @@ public:
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     ScalarFunctionPtr lossFunction;
-    if (supervision)
+    if (supervision.exists())
     {
       double supervisionValue = 0.0;
       if (supervision.isBoolean())
@@ -72,7 +72,7 @@ public:
   {
     static const double temperature = 1.0;
     Variable subInferenceOutput = finalState->getSubOutput();
-    if (!subInferenceOutput)
+    if (!subInferenceOutput.exists())
       return Variable();
     double score = subInferenceOutput.getDouble();
     return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType);

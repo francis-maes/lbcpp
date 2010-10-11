@@ -255,7 +255,7 @@ struct ComputeDotProductCallback : public PerceptionCallback
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
-    if (value)
+    if (value.exists())
     {
       if (value.isObject())
         sense(variableNumber, value.getObject());
@@ -277,7 +277,7 @@ struct DefaultComputeDotProductCallback : public ComputeDotProductCallback
     if (value)
     {
       Variable objectValue = object->getVariable(variableNumber);
-      if (objectValue)
+      if (objectValue.exists())
         res += objectValue.getDouble() * value;
     }
   }
@@ -285,7 +285,7 @@ struct DefaultComputeDotProductCallback : public ComputeDotProductCallback
   virtual void sense(size_t variableNumber, ObjectPtr value)
   {
     Variable objectValue = object->getVariable(variableNumber);
-    if (objectValue)
+    if (objectValue.exists())
       res += dotProduct(objectValue.getObject(), value);
   }
 
@@ -387,7 +387,7 @@ double lbcpp::dotProduct(ObjectPtr object1, ObjectPtr object2)
   {
     Variable v1 = object1->getVariable(i);
     Variable v2 = object2->getVariable(i);
-    if (v1 && v2)
+    if (v1.exists() && v2.exists())
     {
       if (v1.isObject())
         res += dotProduct(v1.getObject(), v2.getObject());

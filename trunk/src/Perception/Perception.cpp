@@ -18,7 +18,7 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
     : target(target), atLeastOneVariable(false) {}
 
   virtual void sense(size_t variableNumber, const Variable& value)
-    {jassert(value); target->setVariable(variableNumber, value); atLeastOneVariable = true;}
+    {jassert(value.exists()); target->setVariable(variableNumber, value); atLeastOneVariable = true;}
 
   ObjectPtr target;
   bool atLeastOneVariable;
@@ -28,7 +28,7 @@ void PerceptionCallback::sense(size_t variableNumber, PerceptionPtr subPerceptio
 {
   jassert(subPerception);
   Variable variable = subPerception->compute(input);
-  if (variable)
+  if (variable.exists())
     sense(variableNumber, variable.getObject());
 }
 

@@ -205,7 +205,7 @@ private:
       Variable variable1 = i > 0 ? sequence->getElement(i - 1) : Variable();
       Variable variable2 = sequence->getElement(i);
       
-      if (variable1 && variable2 && variable1 == variable2)
+      if (variable1.exists() && variable2.exists() && variable1 == variable2)
       {
         g.setColour(Colours::lightgrey);
         g.drawLine((float)x, (float)(info.y1 + 1), (float)x, (float)y2);
@@ -234,7 +234,7 @@ private:
     {
       g.setFont(12.f);
       String res = T("?");
-      if (value)
+      if (value.exists())
         res[0] = type.dynamicCast<Enumeration>()->getOneLetterCode(value.getInteger());
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
@@ -243,7 +243,7 @@ private:
     if (type->canBeCastedTo(probabilityType))
     {
       String str = T("?");
-      if (sequence->getElement(index))
+      if (sequence->getElement(index).exists())
       {
         g.setColour(Colours::red);
         double realValue = sequence->getElement(index).getDouble();
@@ -281,7 +281,7 @@ private:
     {
       Variable v1 = sequence1->getElement(i);
       Variable v2 = sequence2->getElement(i);
-      if (v1 && v2)
+      if (v1.exists() && v2.exists())
       {
         float x = (float)(x1 + (i - begin) * elementWidth + elementWidth / 2);
         if (v1 == v2)

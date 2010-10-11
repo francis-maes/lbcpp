@@ -19,7 +19,7 @@ public:
     shortSummary = variable.toShortString();
 
     TypePtr type = variable.getType();
-    if (variable && variable.isObject())
+    if (variable.exists() && variable.isObject())
     {
       ObjectPtr object = variable.getObject();
       subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
@@ -104,7 +104,7 @@ protected:
 
   void addSubVariable(const String& name, const Variable& variable)
   {
-    if (variable || options.showMissingVariables)
+    if (variable.exists() || options.showMissingVariables)
       subVariables.push_back(std::make_pair(name, variable));
   }
 };
@@ -167,7 +167,7 @@ void VariableTreeComponent::timerCallback()
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
       VariableTreeViewItem* item = dynamic_cast<VariableTreeViewItem* >(getSelectedItem(i));
-      if (item && item->getVariable() && item != root)
+      if (item && item->getVariable().exists() && item != root)
         selectedVariables.push_back(item->getVariable());
     }
     sendSelectionChanged(selectedVariables);

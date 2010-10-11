@@ -109,7 +109,7 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
       for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
       {
         Variable subVariable = object->getVariable(i);
-        if (displayMissingValues || subVariable)
+        if (displayMissingValues || subVariable.exists())
         {
           printVariableLine(subVariable, ostr, i, type->getObjectVariableName(i), currentDepth, displayTypes);
           printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
@@ -119,7 +119,7 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
   for (size_t i = 0; i < variable.size(); ++i)
   {
     Variable subVariable = variable[i];
-    if (displayMissingValues || subVariable)
+    if (displayMissingValues || subVariable.exists())
     {
       printVariableLine(subVariable, ostr, (size_t)-1, variable.getName(i), currentDepth, displayTypes);
       printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);

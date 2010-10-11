@@ -73,7 +73,7 @@ Variable& Cache::getOrCreateEntry(ObjectPtr object)
   ++numAccesses;
   std::pair<Variable, juce::uint32>& entry = cache[object];
   entry.second = juce::Time::getMillisecondCounter();
-  if (!entry.first)
+  if (!entry.first.exists())
   {
     ++numInsertions;
     if (pruningFrequency && (numInsertions % pruningFrequency) == 0)

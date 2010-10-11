@@ -220,7 +220,7 @@ int main(int argc, char** argv)
   ThreadPoolPtr pool = new ThreadPool(10);
 
 #ifdef JUCE_WIN32
-  File workingDirectory(T("C:\\Projets\\LBC++\\projects\\temp\\PDB30Small"));
+  File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\PDB30Small"));
 #else
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif

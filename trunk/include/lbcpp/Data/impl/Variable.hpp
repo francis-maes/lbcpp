@@ -64,10 +64,9 @@ inline Variable::Variable(ReferenceCountedObjectPtr<T> object, TypePtr expectedT
   : type(object ? (TypePtr)object->getClass() : expectedType), value(object)
   {jassert(type || !object);} // this object's class has not been declared
 
-
-inline Variable::Variable(const Variable& otherVariant)
-  : type(otherVariant.getType())
-  {type->copy(value, otherVariant.value);}
+inline Variable::Variable(const Variable& otherVariable)
+  : type(otherVariable.getType())
+  {type->copy(value, otherVariable.value);}
 
 inline Variable::Variable()
   : type(nilType), value() {}
@@ -93,8 +92,11 @@ inline TypePtr Variable::getType() const
 inline String Variable::getTypeName() const
   {return type->getName();}
 
-inline Variable::operator bool() const
+inline bool Variable::exists() const
   {return !isNil() && !isMissingValue();}
+
+//inline Variable::operator bool() const
+//  {return !isNil() && !isMissingValue();}
 
 inline Variable::operator ObjectPtr() const
   {return isNil() ? ObjectPtr() : getObject();}

@@ -35,7 +35,7 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     jassert(input.isBoolean());
-    if (input && input.getBoolean())
+    if (input.exists() && input.getBoolean())
       callback->sense(0, 1.0);
   }
 };

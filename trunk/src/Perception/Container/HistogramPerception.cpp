@@ -72,7 +72,7 @@ private:
       if (i > 0)
         scores = accumulators[i - 1];
       Variable element = container->getElement(i);
-      if (element)
+      if (element.exists())
         scores[0] += element.getDouble();
       else
         scores[1] += 1.0;

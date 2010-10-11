@@ -23,7 +23,7 @@ public:
 
   static bool convertToBoolean(const Variable& variable, bool& res)
   {
-    if (!variable)
+    if (!variable.exists())
       return false;
 
     if (variable.isBoolean())
@@ -95,7 +95,7 @@ public:
 
   virtual void addPrediction(const Variable& predicted, const Variable& correct)
   {
-    if (!predicted || !correct)
+    if (!predicted.exists() || !correct.exists())
       return;
     jassert(predicted.isDouble() && correct.isBoolean());
     roc.addPrediction(predicted.getDouble(), correct.getBoolean());

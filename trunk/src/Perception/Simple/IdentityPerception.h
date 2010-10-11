@@ -66,7 +66,7 @@ public:
         for (size_t i = 0; i < n; ++i)
         {
           Variable variable = inputObject->getVariable(i);
-          if (variable)
+          if (variable.exists())
             callback->sense(i, variable);
         }
       }

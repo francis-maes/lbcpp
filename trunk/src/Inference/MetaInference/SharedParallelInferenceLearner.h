@@ -63,7 +63,7 @@ private:
       {
         jassert(state->getSubInference(j) == targetSubInference);
         Variable subSupervision = state->getSubSupervision(j);
-        if (!filterUnsupervisedExamples || subSupervision)
+        if (!filterUnsupervisedExamples || subSupervision.exists())
           res->append(Variable::pair(state->getSubInput(j), subSupervision, pairType));
       }
     }

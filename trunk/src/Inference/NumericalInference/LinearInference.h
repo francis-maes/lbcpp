@@ -58,7 +58,7 @@ public:
     ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
     jassert(lossFunction);
     double lossDerivative;
-    lossFunction->compute(prediction ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
+    lossFunction->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
    // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
    //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
 

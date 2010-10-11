@@ -54,7 +54,7 @@ protected:
   bool isDouble;
 
   virtual double getValue(const Variable& input) const
-    {jassert(input); return isDouble ? input.getDouble() : (double)input.getInteger();}
+    {jassert(input.exists()); return isDouble ? input.getDouble() : (double)input.getInteger();}
 
   virtual String getBoundaryName(size_t index) const
     {return String(getBoundary(index));}

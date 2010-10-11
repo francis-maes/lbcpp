@@ -55,7 +55,7 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    if (!correctObject || !predictedObject)
+    if (!correctObject.exists() || !predictedObject.exists())
       return;
 
     ProteinPtr predicted = predictedObject.getObjectAndCast<Protein>();

@@ -124,7 +124,7 @@ int Object::compareVariables(ObjectPtr otherObject) const
 ObjectPtr Object::clone() const
 {
   Variable variable = Variable::create(getClass());
-  jassert(variable);
+  jassert(variable.exists());
   ObjectPtr res = variable.getObject();
   clone(res);
   return res;
@@ -174,7 +174,7 @@ bool Object::loadFromXml(XmlImporter& importer)
     TypePtr expectedType = thisClass->getObjectVariableType(variableNumber);
     jassert(expectedType);
     Variable value = importer.loadVariable(child, expectedType);
-    if (value && !checkInheritance(value, expectedType))
+    if (value.exists() && !checkInheritance(value, expectedType))
       return false;
     setVariable((size_t)variableNumber, value);
   }

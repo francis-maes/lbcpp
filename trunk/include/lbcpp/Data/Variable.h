@@ -37,7 +37,7 @@ namespace lbcpp
 class Variable
 {
 public:
-  Variable(bool boolValue, TypePtr type = booleanType);
+  explicit Variable(bool boolValue, TypePtr type = booleanType);
   Variable(int intValue, TypePtr type = integerType);
   Variable(juce::int64 intValue, TypePtr type = integerType);
   Variable(size_t intValue, TypePtr type = positiveIntegerType);
@@ -51,7 +51,57 @@ public:
   Variable(ReferenceCountedObjectPtr<T> object, TypePtr expectedType = nilType);
   Variable(const Variable& other);
   Variable();
-  
+/*
+  struct Temporary
+  {
+    Temporary(TypePtr type, const VariableValue& value)
+      : type(type), value(value) {}
+    Temporary() : type(nilType) {}
+
+    TypePtr type;
+    VariableValue value;
+  };
+
+  Variable(Variable& other) : type(nilType)
+  {
+    std::swap(type, other.type);
+    std::swap(value, other.value);
+  }
+
+  Variable(Temporary& other) : type(nilType)
+  {
+    std::swap(type, other.type);
+    std::swap(value, other.value);
+  }
+
+  Variable& operator =(Variable& other) throw ()
+  {
+    clear();
+    std::swap(type, other.type);
+    std::swap(value, other.value);
+    return *this;
+  }
+
+  Variable& operator =(Temporary& other) throw ()
+  {
+    clear();
+    std::swap(type, other.type);
+    std::swap(value, other.value);
+    return *this;
+  }
+
+  operator Temporary() throw ()
+  {
+    Temporary res;
+    std::swap(type, res.type);
+    std::swap(value, res.value);
+    return res;
+  }
+
+  Variable copy() const
+    {Variable res; res.type = type; type->copy(res.value, value); return res;}
+*/
+
   /** Creates dynamically an object of type @a type.
   **
   ** The type @a type must be declared with Type::declare()
@@ -94,7 +144,8 @@ public:
   bool inheritsFrom(TypePtr baseType) const
     {return getType()->inheritsFrom(baseType);}
 
-  operator bool() const;
+  bool exists() const;
+  //operator bool() const;
   operator ObjectPtr() const;
 
   bool isMissingValue() const;

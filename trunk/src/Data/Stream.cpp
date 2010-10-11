@@ -33,7 +33,7 @@ bool Stream::iterate(size_t maximumCount)
   while (maximumCount == 0 || count < maximumCount)
   {
     Variable variable = next();
-    if (variable)
+    if (variable.exists())
       ++count;
     else
       break;
@@ -112,7 +112,7 @@ Variable TextParser::next()
 {
   if (!istr)
     return Variable();
-  if (!currentResult)
+  if (!currentResult.exists())
   {
     //parsingBreaked = false;
     parseBegin();
@@ -129,7 +129,7 @@ Variable TextParser::next()
       istr = NULL;
       return Variable();
     }
-    if (currentResult)
+    if (currentResult.exists())
       return currentResult;
   }
   

@@ -313,7 +313,7 @@ bool XmlImporter::loadSharedObjects()
   forEachXmlChildElementWithTagName(*getCurrentElement(), child, T("shared"))
   {
     Variable variable = loadVariable(child, TypePtr());
-    if (!variable)
+    if (!variable.exists())
       return false;
     if (!variable.isObject())
     {

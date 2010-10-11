@@ -69,7 +69,7 @@ public:
       if (arity == 1)
       {
         std::pair<PerceptionPtr, Variable> v = variables[conjunction[0]];
-        if (v.second)
+        if (v.second.exists())
         {
           jassert(subPerception == v.first);
           if (v.first)
@@ -82,7 +82,7 @@ public:
       {
         std::pair<PerceptionPtr, Variable> v1 = variables[conjunction[0]];
         std::pair<PerceptionPtr, Variable> v2 = variables[conjunction[1]];
-        if (v1.second && v2.second)
+        if (v1.second.exists() && v2.second.exists())
         {
           jassert(v1.first && v2.first);
           targetCallback->sense(i, subPerception, Variable::pair(v1.second, v2.second));

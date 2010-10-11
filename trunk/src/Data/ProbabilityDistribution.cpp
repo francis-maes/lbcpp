@@ -87,7 +87,7 @@ double DiscreteProbabilityDistribution::compute(const Variable& value) const
 double DiscreteProbabilityDistribution::computeEntropy() const
 {
   ScopedLock _(cachedEntropyLock);
-  if (cachedEntropy)
+  if (cachedEntropy.exists())
     return cachedEntropy.getDouble();
   double res = 0.0;
   for (size_t i = 0; i < values.size(); ++i)
