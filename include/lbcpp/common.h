@@ -9,6 +9,7 @@
 # define LBCPP_COMMON_H_
 
 # define LBCPP_MULTI_THREAD
+# define LBCPP_ENABLE_CPP0X_RVALUES
 
 /*
 ** Standard library
