@@ -83,7 +83,7 @@ public:
   bool inheritsFrom(const TypePtr& baseType) const;
   bool canBeCastedTo(const TypePtr& targetType) const;
 
-  static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
+  static TypePtr findCommonBaseType(const TypePtr& type1, const TypePtr& type2);
 
   /*
   ** Template Arguments
@@ -94,12 +94,12 @@ public:
   const std::vector<TypePtr>& getTemplateArguments() const
     {return templateArguments;}
 
-  TypePtr getTemplateArgument(size_t index) const;
-  size_t getNumTemplateArguments() const;
-
-  void setTemplate(TemplateTypePtr type, const std::vector<TypePtr>& arguments)
-    {templateType = type; templateArguments = arguments;}
-
+  size_t getNumTemplateArguments() const
+    {return templateArguments.size();}
+  
+  const TypePtr& getTemplateArgument(size_t index) const
+    {jassert(index < templateArguments.size()); return templateArguments[index];}
+  
   /*
   ** Operations
   */

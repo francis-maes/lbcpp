@@ -369,13 +369,7 @@ Variable Type::getElement(const VariableValue& value, size_t index) const
 String Type::getElementName(const VariableValue& value, size_t index) const
   {jassert(baseType); return baseType->getElementName(value, index);}
 
-size_t Type::getNumTemplateArguments() const
-  {return templateArguments.size();}
-
-TypePtr Type::getTemplateArgument(size_t index) const
-  {jassert(index < templateArguments.size()); return templateArguments[index];}
-
-TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
+TypePtr Type::findCommonBaseType(const TypePtr& type1, const TypePtr& type2)
 {
   if (type1->inheritsFrom(type2))
     return type2;
