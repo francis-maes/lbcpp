@@ -9,8 +9,9 @@
 #ifndef LBCPP_INFERENCE_META_CROSS_VALIDATION_H_
 # define LBCPP_INFERENCE_META_CROSS_VALIDATION_H_
 
-# include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Data/Pair.h>
 # include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Inference/ParallelInference.h>
 
 namespace lbcpp
 {
@@ -39,8 +40,9 @@ protected:
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const ContainerPtr& trainingData = input[0].getObjectAndCast<Container>();
-    const ContainerPtr& evaluationData = input[1].getObjectAndCast<Container>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const ContainerPtr& trainingData = pair->getFirst().getObjectAndCast<Container>();
+    const ContainerPtr& evaluationData = pair->getSecond().getObjectAndCast<Container>();
     InferencePtr inference = inferenceModel->cloneAndCast<Inference>();
     jassert(trainingData && evaluationData && inference);
     returnCode = context->train(inference, trainingData);

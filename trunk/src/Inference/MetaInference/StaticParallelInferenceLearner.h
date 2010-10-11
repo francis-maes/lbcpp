@@ -69,9 +69,10 @@ class ParallelVoteInferenceLearner : public StaticParallelInferenceLearner
 public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const StaticParallelInferencePtr& targetInference = input[0].getObjectAndCast<StaticParallelInference>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const StaticParallelInferencePtr& targetInference = pair->getFirst().getObjectAndCast<StaticParallelInference>();
     size_t numSubInferences = targetInference->getNumSubInferences();
-    const ContainerPtr& trainingData = input[1].getObjectAndCast<Container>();
+    const ContainerPtr& trainingData = pair->getSecond().getObjectAndCast<Container>();
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(numSubInferences);

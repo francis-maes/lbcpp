@@ -219,7 +219,7 @@ void XmlExporter::writeType(TypePtr type)
   if (type.dynamicCast<DynamicClass>())
   {
     enter(T("type"));
-    writeVariable(type, TypePtr());
+    writeVariable(type.get(), TypePtr());
     leave();
   }
   else

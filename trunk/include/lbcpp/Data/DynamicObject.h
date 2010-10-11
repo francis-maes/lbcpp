@@ -20,6 +20,7 @@ public:
   DynamicClass(const String& name, TypePtr baseClass = objectClass)
     : DefaultClass(name, baseClass) {}
   DynamicClass() {}
+  virtual ~DynamicClass();
 
   ObjectPtr createDenseObject() const;
   ObjectPtr createSparseObject() const;

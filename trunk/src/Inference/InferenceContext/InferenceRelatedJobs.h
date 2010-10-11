@@ -125,8 +125,10 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
+#ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
     MessageCallback::info(T("[") + String((int)beginIndex) + T(", ") + String((int)endIndex - 1) + 
       T("] Mean Execution Time: ") + inference->getName() + " ==> " + String(pool->getTimingsCache()->getMeanValue(inference)));
+#endif
     return true;
   }
 

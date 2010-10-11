@@ -87,7 +87,7 @@ private:
       std::vector<double>& scores = accumulators[i];
       if (i > 0)
         scores = accumulators[i - 1];
-      const DiscreteProbabilityDistributionPtr& distribution = container->getElement(i).getObjectAndCast<DiscreteProbabilityDistribution>();
+      DiscreteProbabilityDistributionPtr distribution = container->getElement(i).getObjectAndCast<DiscreteProbabilityDistribution>();
       jassert(distribution);
       for (size_t j = 0; j <= enumeration->getNumElements(); ++j)
         scores[j] += distribution->compute(Variable(j, enumeration));

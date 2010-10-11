@@ -277,7 +277,7 @@ template<class TT>
 inline void variableToNative(std::vector<TT>& dest, const Variable& source)
 {
   jassert(source.isObject());
-  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>();
+  VectorPtr sourceVector = source.getObjectAndCast<Vector>();
   if (sourceVector)
   {
     dest.resize(sourceVector->getNumElements());
@@ -292,7 +292,7 @@ template<class TT>
 inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)
 {
   dest = Variable::create(expectedType);
-  const VectorPtr& destVector = dest.getObjectAndCast<Vector>();
+  VectorPtr destVector = dest.getObjectAndCast<Vector>();
   jassert(destVector);
   destVector->resize(source.size());
   TypePtr elementsType = destVector->getElementsType();

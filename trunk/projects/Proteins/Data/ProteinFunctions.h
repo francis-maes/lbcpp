@@ -52,7 +52,7 @@ public:
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
-    const ProteinPtr& protein = input.getObjectAndCast<Protein>();
+    ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
     protein->computeMissingVariables();
     ProteinPtr inputProtein = new Protein(protein->getName());
