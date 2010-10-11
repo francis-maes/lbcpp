@@ -93,8 +93,11 @@ public:
         if (n / step < numCpus)
           areSubJobsAtomic = false;
       }
-
-      if (isAtomicJob)//step == n) // TMP!
+#ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
+      if (isAtomicJob)
+#else
+      if (step == n)
+#endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
       {
         //std::cout << "Unsplitted PARALLEL " << inference->getDescription(input, supervision) << ": " << n << " sub inferences, " << step << " inferences per job" << std::endl;
         for (size_t i = 0; i < n; ++i)

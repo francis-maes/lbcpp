@@ -69,13 +69,10 @@ public:
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>();
     jassert(pair);
-    Variable first = pair->getFirst();
-    if (index1 >= 0)
-      first = first.getObject()->getVariable(index1);
-    Variable second = pair->getSecond();
-    if (index2 >= 0)
-      second = second.getObject()->getVariable(index2);
-    return new Pair(outputType, first, second);
+    const Variable& first = pair->getFirst();
+    const Variable& second = pair->getSecond();
+    return new Pair(outputType, index1 >= 0 ? first.getObject()->getVariable(index1) : first,
+                                index2 >= 0 ? second.getObject()->getVariable(index2) : second);
   }
 
   virtual bool loadFromXml(XmlImporter& importer)

@@ -94,10 +94,21 @@ protected:
 public:
 #endif
 
+#ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
   /** Increments the object's reference count.  */
   void incrementReferenceCounter();
   /** Decrements the object's reference count.  */
   void decrementReferenceCounter();
+#else
+  void incrementReferenceCounter()
+    {juce::atomicIncrement(refCount);}
+
+  void decrementReferenceCounter()
+  {
+    if (juce::atomicDecrementAndReturn(refCount) == 0)
+      delete this;
+  }
+#endif
 };
 
 /**

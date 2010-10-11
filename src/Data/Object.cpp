@@ -13,6 +13,7 @@
 using namespace lbcpp;
 
 int ReferenceCountedObject::numAccesses = 0;
+#ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 void ReferenceCountedObject::incrementReferenceCounter()
 {
   juce::atomicIncrement(refCount);
@@ -26,6 +27,7 @@ void ReferenceCountedObject::decrementReferenceCounter()
   if (juce::atomicDecrementAndReturn(refCount) == 0)
     delete this;
 }
+#endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
 extern void declareLBCppClasses();
 

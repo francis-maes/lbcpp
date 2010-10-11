@@ -86,7 +86,7 @@ public:
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
     jassert(windowSize);
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    PairPtr pair = input.getObjectAndCast<Pair>();
     container = pair->getFirst().getObjectAndCast<Container>();
     beginIndex = pair->getSecond().getInteger() - (int)(windowSize / 2);
     endIndex = beginIndex + windowSize;

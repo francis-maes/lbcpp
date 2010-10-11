@@ -107,7 +107,13 @@ struct VariableValue
     {jassert(!u.stringValue); u.stringValue = new String(str);}
 
   const ObjectPtr& getObject() const
-    {return *reinterpret_cast<const ObjectPtr* >(this);}
+  {
+#ifdef JUCE_DEBUG
+    ObjectPtr object(u.objectValue);
+    jassert(memcmp(&object, this, sizeof (ObjectPtr)) == 0);
+#endif // JUCE_DEBUG
+    return *(const ObjectPtr* )this;
+  }
 
   template<class O>
   const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const

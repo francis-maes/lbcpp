@@ -34,7 +34,7 @@ public:
 
   virtual String getDescription(const Variable& input, const Variable& supervision) const
   {
-    const ContainerPtr& examples = input.getObjectAndCast<Container>();
+    ContainerPtr examples = input.getObjectAndCast<Container>();
     return T("Run ") + inference->getName() + T(" with ") + 
       String((int)examples->getNumElements()) + T(" ") + examples->getElementsType()->getName() + T("(s)");
   }

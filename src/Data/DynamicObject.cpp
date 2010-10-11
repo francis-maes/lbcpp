@@ -14,6 +14,10 @@
 #include "Object/DenseDoubleObject.h"
 using namespace lbcpp;
 
+DynamicClass::~DynamicClass()
+{
+}
+
 VariableValue DynamicClass::create() const
   {return createDenseObject();}
 
