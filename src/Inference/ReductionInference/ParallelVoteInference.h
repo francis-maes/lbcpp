@@ -91,7 +91,7 @@ public:
     {
       Variable vote = state->getSubOutput(i);
       jassert(vote.isDouble());
-      if (vote)
+      if (vote.exists())
       {
         ++count;
         sum += vote.getDouble();
@@ -119,7 +119,7 @@ public:
     {
       Variable vote = state->getSubOutput(i);
       jassert(vote.getType()->inheritsFrom(enumType));
-      if (vote)
+      if (vote.exists())
         distribution->increment(vote);
     }
     return distribution->sample(RandomGenerator::getInstance()); // FIXME: replace by a sampling of argmaxs 

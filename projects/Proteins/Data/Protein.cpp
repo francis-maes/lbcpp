@@ -15,7 +15,7 @@ using namespace lbcpp;
 ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, MessageCallback& callback)
 {
   ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant, callback));
-  if (!parser->next())
+  if (!parser->next().exists())
     return ProteinPtr();
   
   std::vector<ProteinPtr> proteins = parser->getAllChains();
@@ -229,7 +229,7 @@ VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr
   for (size_t i = 0; i < n; ++i)
   {
     Variable var = dsspSecondaryStructure->getElement(i);
-    if (var)
+    if (var.exists())
       res->setElement(i, Variable(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), res->getElementsType()));
   }
   return res;
@@ -242,7 +242,7 @@ VectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(Vec
   for (size_t i = 0; i < n; ++i)
   {
     Variable sa = solventAccessibility->getElement(i);
-    if (sa)
+    if (sa.exists())
       res->setElement(i, Variable(sa.getDouble() > threshold ? 1.0 : 0.0, probabilityType));
   }
   return res;
@@ -256,7 +256,7 @@ SymmetricMatrixPtr Protein::computeContactMapFromDistanceMap(SymmetricMatrixPtr 
     for (size_t j = i; j < n; ++j)
     {
       Variable distance = distanceMap->getElement(i, j);
-      if (distance)
+      if (distance.exists())
       {
         jassert(distance.isDouble());
         res->setElement(i, j, Variable(distance.getDouble() <= threshold ? 1.0 : 0.0, probabilityType));

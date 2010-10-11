@@ -67,9 +67,9 @@ static bool isVariableConstant(ContainerPtr container, size_t index1, int index2
     Variable value = container->getElement(i)[index1];
     if (index2 >= 0)
       value = value.getObject()->getVariable((size_t)index2);
-    if (!value)
+    if (!value.exists())
       continue;
-    if (!constantValue)
+    if (!constantValue.exists())
       constantValue = value;
     else if (constantValue != value)
       return false;
@@ -118,7 +118,7 @@ Variable sampleNumericalIntegerSplit(RandomGeneratorPtr random, ContainerPtr tra
   for (size_t i = 0; i < n; ++i)
   {
     Variable variable = getInputVariableFromExample(trainingData->getElement(i), variableIndex);
-    if (!variable)
+    if (!variable.exists())
       continue;
     int value = variable.getInteger();
     if (value < minValue)
@@ -244,7 +244,7 @@ DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPt
   for (size_t i = 0; i < n; ++i)
   {
     Variable output = examples->getElement(i)[1];
-    jassert(output);
+    jassert(output.exists());
     res->increment(output);
   }
   return res;
@@ -349,7 +349,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     }
   }
 
-  jassert(bestSplitArgument && bestNegativeExamples && bestPositiveExamples);
+  jassert(bestSplitArgument.exists() && bestNegativeExamples && bestPositiveExamples);
 
   // allocate child nodes
   size_t leftChildIndex = tree->allocateNodes(2);

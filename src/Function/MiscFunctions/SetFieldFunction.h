@@ -37,7 +37,7 @@ protected:
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     ObjectPtr object = input[0].getObject();
-    if (object && input[1])
+    if (object && input[1].exists())
       object->setVariable(fieldIndex, input[1]);
     else if (!object)
       callback.warningMessage(T("SetFieldFunction::computeFunction"), T("Null object"));

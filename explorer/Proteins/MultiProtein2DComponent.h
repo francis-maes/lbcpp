@@ -225,7 +225,7 @@ private:
 
   static Colour selectColour(SymmetricMatrixPtr map, size_t i, size_t j)
   {
-    if (map->getElement(i, j))
+    if (map->getElement(i, j).exists())
     {
       double probability = map->getElement(i, j).getDouble();
       if (probability > 0.5)

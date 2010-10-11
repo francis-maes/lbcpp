@@ -37,7 +37,7 @@ public:
     {
       int rowNumber = getSelectedRow(i);
       Variable variable = container->getElement(rowNumber);
-      if (variable)
+      if (variable.exists())
         selectedVariables.push_back(variable);
     }
     sendSelectionChanged(selectedVariables);

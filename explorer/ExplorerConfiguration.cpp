@@ -15,7 +15,7 @@ using namespace lbcpp;
 ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance()
 {
   Variable& res = ExplorerConfiguration::getConfiguration(T("ExplorerRecentFiles"));
-  if (!res)
+  if (!res.exists())
     res = Variable(new ExplorerRecentFiles());
   return res.getObjectAndCast<ExplorerRecentFiles>();
 }

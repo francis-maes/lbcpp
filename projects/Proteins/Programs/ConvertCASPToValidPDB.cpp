@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   while (true)
   {
     Variable variable = fastaParser.next();
-    if (!variable)
+    if (!variable.exists())
       break;
 
     ProteinPtr protein = variable.getObjectAndCast<Protein>();

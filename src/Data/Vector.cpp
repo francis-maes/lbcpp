@@ -79,7 +79,7 @@ VectorPtr Vector::cloneContent() const
   if (getElementsType()->inheritsFrom(objectClass))
   {
     Variable variable = Variable::create(getClass());
-    jassert(variable);
+    jassert(variable.exists());
     VectorPtr res = variable.getObjectAndCast<Vector>();
     size_t n = getNumElements();
     res->resize(n);
@@ -266,7 +266,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
       if (tokens[i] != T("_"))
       {
         Variable value = Variable::createFromString(doubleType, tokens[i], importer.getCallback());
-        if (!value)
+        if (!value.exists())
           return false;
         values[i] = value.getDouble();
       }

@@ -34,7 +34,7 @@ public:
     if (index >= 0)
     {
       res = res.getObject()->getVariable(index);
-      if (!res)
+      if (!res.exists())
         res = Variable::missingValue(input.getType()->getObjectVariableType((size_t)index));
     }
     return res;

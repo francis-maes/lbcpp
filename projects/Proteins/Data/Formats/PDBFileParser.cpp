@@ -184,7 +184,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     
     
     Variable aminoAcid = AminoAcid::fromThreeLettersCode(aminoAcidCode);
-    if (!aminoAcid)
+    if (!aminoAcid.exists())
     {
       static const juce::tchar* hetResidueCodes[] = {T("NH2")};
       bool isHetResidue = false;
@@ -288,7 +288,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
 
   // check amino acid code
   Variable aminoAcid = AminoAcid::fromThreeLettersCode(residueName);
-  if (!aminoAcid || aminoAcid.getInteger() >= (int)AminoAcid::numStandardAminoAcid)
+  if (!aminoAcid.exists() || aminoAcid.getInteger() >= (int)AminoAcid::numStandardAminoAcid)
   {
     callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Invalid residue name: ") + residueName);
     return false;

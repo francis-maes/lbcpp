@@ -24,7 +24,7 @@ public:
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
-    if (supervision)
+    if (supervision.exists())
     {
       ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
       jassert(loss);
@@ -37,7 +37,7 @@ public:
 
   virtual std::pair<Variable, Variable> prepareSubInference(const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    if (supervision)
+    if (supervision.exists())
     {
       ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
       jassert(loss);
@@ -49,7 +49,7 @@ public:
   virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
   {
     Variable subOutput = finalState->getSubOutput();
-    return subOutput ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();
+    return subOutput.exists() ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();
   }
   
 protected:

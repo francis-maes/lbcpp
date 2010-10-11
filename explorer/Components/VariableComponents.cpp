@@ -92,7 +92,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     case lbcppXmlFile:
       {
         Variable v = Variable::createFromFile(file);
-        return v ? createComponentForVariableImpl(v, file.getFileName()) : NULL;
+        return v.exists() ? createComponentForVariableImpl(v, file.getFileName()) : NULL;
       }
     case directory: return new VariableTreeComponent(variable, explicitName, VariableTreeOptions(false, false));
     default: return NULL;
@@ -118,7 +118,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
 
 Component* lbcpp::createComponentForVariable(const Variable& variable, const String& explicitName, bool topLevelComponent)
 {
-  if (!variable)
+  if (!variable.exists())
     return NULL;
   Component* res = createComponentForVariableImpl(variable, explicitName);
   if (topLevelComponent && dynamic_cast<VariableSelector* >(res))

@@ -47,7 +47,7 @@ public:
           Variable variable = container->getElement(position);
           if (subPerception)
             callback->sense(i, subPerception, variable);
-          else if (variable)
+          else if (variable.exists())
             callback->sense(i, variable);
         }
       }

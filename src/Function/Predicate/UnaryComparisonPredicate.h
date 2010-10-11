@@ -32,7 +32,7 @@ class LessThanOrEqualToPredicate : public UnaryComparisonPredicate
 {
 public:
   LessThanOrEqualToPredicate(const Variable& operand)
-    : UnaryComparisonPredicate(operand) {jassert(operand);}
+    : UnaryComparisonPredicate(operand) {jassert(operand.exists());}
   LessThanOrEqualToPredicate() {}
 
   virtual String operatorToString() const

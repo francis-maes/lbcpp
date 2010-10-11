@@ -29,8 +29,8 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
   }
 
   if (returnCode == Inference::canceledReturnCode)
-    {jassert(output);}
-  else if (!output)
+    {jassert(output.exists());}
+  else if (!output.exists())
     output = callRunInference(inference, input, supervision, returnCode);
 
   postInference(inference, input, supervision, output, returnCode);

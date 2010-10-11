@@ -68,7 +68,7 @@ ProteinSequentialInference::ProteinSequentialInference()
 
 SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  if (supervision)
+  if (supervision.exists())
     prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
   return VectorSequentialInference::prepareInference(context, prepareInputProtein(input), supervision, returnCode);
 }
@@ -81,13 +81,13 @@ void ProteinSequentialInference::prepareSubInference(InferenceContextPtr context
     inputProtein = state->getSubOutput(); // take the last version of the working protein
   else
     inputProtein = state->getInput();
-  jassert(inputProtein);
+  jassert(inputProtein.exists());
   state->setSubInference(getSubInference(index), inputProtein, state->getSupervision());
 }
 
 void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
-  if (state->getSubOutput())
+  if (state->getSubOutput().exists())
   {
     ProteinPtr workingProtein = state->getSubOutput().getObjectAndCast<Protein>();
     jassert(workingProtein);
@@ -108,7 +108,7 @@ ProteinParallelInference::ProteinParallelInference(const String& name)
 
 ParallelInferenceStatePtr ProteinParallelInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  if (supervision)
+  if (supervision.exists())
     prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
 
   ProteinPtr inputProtein = prepareInputProtein(input);
@@ -160,7 +160,7 @@ Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, De
 {
   ProteinPtr protein = finalState->getInput().getObjectAndCast<Protein>();
   Variable prediction = finalState->getSubOutput();
-  if (prediction)
+  if (prediction.exists())
     protein->setVariable(targetIndex, prediction);
   return protein;
 }

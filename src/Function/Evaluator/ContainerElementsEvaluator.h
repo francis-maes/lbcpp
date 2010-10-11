@@ -33,7 +33,7 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    if (!predictedObject || !correctObject)
+    if (!predictedObject.exists() || !correctObject.exists())
       return;
 
     ContainerPtr predicted = predictedObject.dynamicCast<Container>();

@@ -23,7 +23,7 @@ public:
 
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    if (!predictedObject || !correctObject)
+    if (!predictedObject.exists() || !correctObject.exists())
       return;
     jassert(correctObject.isEnumeration());
     if (predictedObject.isEnumeration())

@@ -40,7 +40,7 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    jassert(input);
+    jassert(input.exists());
     double value = input.isDouble() ? input.getDouble() : (double)input.getInteger();
     const double epsilon = 1e-15;
     if (fabs(value) < epsilon)

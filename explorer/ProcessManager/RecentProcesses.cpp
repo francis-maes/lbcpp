@@ -11,7 +11,7 @@ using namespace lbcpp;
 RecentProcessesPtr RecentProcesses::getInstance()
 {
   Variable& res = ExplorerConfiguration::getConfiguration(T("RecentProcesses"));
-  if (!res)
+  if (!res.exists())
     res = Variable(new RecentProcesses());
   return res.getObjectAndCast<RecentProcesses>();
 }

@@ -37,7 +37,7 @@ public:
  
   virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
   {
-    if (!correctObject || !predictedObject)
+    if (!correctObject.exists() || !predictedObject.exists())
       return;
 
     TertiaryStructurePtr predicted = predictedObject.getObjectAndCast<TertiaryStructure>();

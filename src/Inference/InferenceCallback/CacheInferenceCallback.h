@@ -25,7 +25,7 @@ public:
 
   virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    if (!output && stack->getParentInference() == parentStep)
+    if (!output.exists() && stack->getParentInference() == parentStep)
       output = Variable(cache->get(stack->getCurrentInference(), input.getObject()));
   }
 

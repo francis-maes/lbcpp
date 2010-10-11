@@ -43,7 +43,7 @@ RegressionErrorEvaluator::RegressionErrorEvaluator(const String& name)
   
 void RegressionErrorEvaluator::addPrediction(const Variable& predicted, const Variable& correct)
 {
-  if (predicted && correct)
+  if (predicted.exists() && correct.exists())
     addDelta(predicted.getDouble() - correct.getDouble());
 }
 
