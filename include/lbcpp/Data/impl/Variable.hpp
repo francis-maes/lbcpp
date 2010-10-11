@@ -53,14 +53,14 @@ inline Variable::Variable(const String& stringValue, const TypePtr& type)
 inline Variable::Variable(const File& fileValue, const TypePtr& type)
   : type(type.get()), value(fileValue.getFullPathName()) {jassert(isString());}
 
-inline Variable::Variable(ObjectPtr object)
+inline Variable::Variable(const ObjectPtr& object)
   : type(object ? object->getClass().get() : nilType.get()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
   : type(object ? object->getClass().get() : nilType.get()), value(object) {jassert(type || !object);}
 
 template<class T>
-inline Variable::Variable(ReferenceCountedObjectPtr<T> object, const TypePtr& expectedType)
+inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, const TypePtr& expectedType)
   : type(object ? object->getClass().get() : expectedType.get()), value(object)
   {jassert(type || !object);} // this object's class has not been declared
 
