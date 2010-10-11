@@ -32,55 +32,55 @@
 namespace lbcpp
 {
 
-inline Variable::Variable(bool boolValue, TypePtr type)
-  : type(type), value(boolValue) {jassert(isBoolean());}
+inline Variable::Variable(bool boolValue, const TypePtr& type)
+  : type(type.get()), value(boolValue) {jassert(isBoolean());}
 
-inline Variable::Variable(juce::int64 intValue, TypePtr type)
-  : type(type), value((int)intValue) {jassert(isInteger());}
+inline Variable::Variable(juce::int64 intValue, const TypePtr& type)
+  : type(type.get()), value((int)intValue) {jassert(isInteger());}
 
-inline Variable::Variable(int intValue, TypePtr type)
-  : type(type), value(intValue) {jassert(isInteger());} 
+inline Variable::Variable(int intValue, const TypePtr& type)
+  : type(type.get()), value(intValue) {jassert(isInteger());} 
 
-inline Variable::Variable(size_t intValue, TypePtr type)
-  : type(type), value((int)intValue) {jassert(isInteger());} 
+inline Variable::Variable(size_t intValue, const TypePtr& type)
+  : type(type.get()), value((int)intValue) {jassert(isInteger());} 
 
-inline Variable::Variable(double doubleValue, TypePtr type)
-  : type(type), value(doubleValue) {jassert(isDouble());}
+inline Variable::Variable(double doubleValue, const TypePtr& type)
+  : type(type.get()), value(doubleValue) {jassert(isDouble());}
 
-inline Variable::Variable(const String& stringValue, TypePtr type)
-  : type(type), value(stringValue) {jassert(isString());}
+inline Variable::Variable(const String& stringValue, const TypePtr& type)
+  : type(type.get()), value(stringValue) {jassert(isString());}
 
-inline Variable::Variable(const File& fileValue, TypePtr type)
-  : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
+inline Variable::Variable(const File& fileValue, const TypePtr& type)
+  : type(type.get()), value(fileValue.getFullPathName()) {jassert(isString());}
 
 inline Variable::Variable(ObjectPtr object)
-  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass().get() : nilType.get()), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
-  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
+  : type(object ? object->getClass().get() : nilType.get()), value(object) {jassert(type || !object);}
 
 template<class T>
-inline Variable::Variable(ReferenceCountedObjectPtr<T> object, TypePtr expectedType)
-  : type(object ? (TypePtr)object->getClass() : expectedType), value(object)
+inline Variable::Variable(ReferenceCountedObjectPtr<T> object, const TypePtr& expectedType)
+  : type(object ? object->getClass().get() : expectedType.get()), value(object)
   {jassert(type || !object);} // this object's class has not been declared
 
 inline Variable::Variable(const Variable& otherVariable)
-  : type(otherVariable.getType())
+  : type(otherVariable.type)
   {type->copy(value, otherVariable.value);}
 
 inline Variable::Variable()
-  : type(nilType), value() {}
+  : type(nilType.get()), value() {}
 
 inline Variable::~Variable()
   {type->destroy(value);}
 
 inline void Variable::clear()
-  {type->destroy(value); type = nilType;}
+  {type->destroy(value); type = nilType.get();}
 
-inline Variable Variable::create(TypePtr type)
+inline Variable Variable::create(const TypePtr& type)
   {jassert(type && type->isInitialized()); return Variable(type, type->create());}
 
-inline Variable Variable::missingValue(TypePtr type)
+inline Variable Variable::missingValue(const TypePtr& type)
   {jassert(type); return Variable(type, type->getMissingValue());}
 
 inline void Variable::copyTo(VariableValue& dest) const
@@ -95,17 +95,11 @@ inline String Variable::getTypeName() const
 inline bool Variable::exists() const
   {return !isNil() && !isMissingValue();}
 
-//inline Variable::operator bool() const
-//  {return !isNil() && !isMissingValue();}
-
-inline Variable::operator ObjectPtr() const
-  {return isNil() ? ObjectPtr() : getObject();}
-
 inline bool Variable::isMissingValue() const
   {return !isNil() && type->isMissingValue(value);}
 
 inline bool Variable::isNil() const
-  {return type == nilType;}
+  {return type == nilType.get();}
 
 inline bool Variable::isBoolean() const
   {return type->inheritsFrom(booleanType);}
@@ -120,7 +114,7 @@ inline int Variable::getInteger() const
   {jassert(isInteger()); return (int)value.getInteger();}
 
 inline bool Variable::isEnumeration() const
-  {return type.dynamicCast<Enumeration>();}
+  {return dynamic_cast<Enumeration* >(type) != NULL;}
 
 inline bool Variable::isDouble() const
   {return type->inheritsFrom(doubleType);}
@@ -187,7 +181,7 @@ inline String Variable::toShortString() const
 
 inline bool Variable::equals(const Variable& otherValue) const
 {
-  TypePtr type2 = otherValue.getType();
+  Type* type2 = otherValue.type;
   return type == type2 && type->compare(value, otherValue.value) == 0;
 }
 

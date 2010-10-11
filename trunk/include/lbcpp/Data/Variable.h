@@ -37,18 +37,18 @@ namespace lbcpp
 class Variable
 {
 public:
-  explicit Variable(bool boolValue, TypePtr type = booleanType);
-  Variable(int intValue, TypePtr type = integerType);
-  Variable(juce::int64 intValue, TypePtr type = integerType);
-  Variable(size_t intValue, TypePtr type = positiveIntegerType);
-  Variable(double doubleValue, TypePtr type = doubleType);
-  Variable(const String& stringValue, TypePtr type = stringType);
-  Variable(const File& fileValue, TypePtr type = fileType);
+  Variable(bool boolValue, const TypePtr& type = booleanType);
+  Variable(int intValue, const TypePtr& type = integerType);
+  Variable(juce::int64 intValue, const TypePtr& type = integerType);
+  Variable(size_t intValue, const TypePtr& type = positiveIntegerType);
+  Variable(double doubleValue, const TypePtr& type = doubleType);
+  Variable(const String& stringValue, const TypePtr& type = stringType);
+  Variable(const File& fileValue, const TypePtr& type = fileType);
   Variable(ObjectPtr object);
   Variable(Object* object);
 
   template<class T>
-  Variable(ReferenceCountedObjectPtr<T> object, TypePtr expectedType = nilType);
+  Variable(ReferenceCountedObjectPtr<T> object, const TypePtr& expectedType = nilType);
   Variable(const Variable& other);
   Variable();
 /*
@@ -113,9 +113,9 @@ public:
   ** @return an instance of @a type Variable.
   ** @see Type::declare
   */
-  static Variable create(TypePtr type);
-  static Variable createFromXml(TypePtr type, XmlImporter& importer);
-  static Variable createFromString(TypePtr type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
+  static Variable create(const TypePtr& type);
+  static Variable createFromXml(const TypePtr& type, XmlImporter& importer);
+  static Variable createFromString(const TypePtr& type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
 
   /**
   ** Loads a variable from a file.
@@ -127,11 +127,11 @@ public:
   */
   static Variable createFromFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
 
-  static Variable missingValue(TypePtr type);
+  static Variable missingValue(const TypePtr& type);
 
   static Variable pair(const Variable& variable1, const Variable& variable2);
   static Variable pair(const Variable& variable1, const Variable& variable2, TypePtr pairType);
-  static Variable copyFrom(TypePtr type, const VariableValue& value);
+  static Variable copyFrom(const TypePtr& type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;
     
   ~Variable();
@@ -142,11 +142,9 @@ public:
   String getTypeName() const;
   
   bool inheritsFrom(TypePtr baseType) const
-    {return getType()->inheritsFrom(baseType);}
+    {return type->inheritsFrom(baseType);}
 
   bool exists() const;
-  //operator bool() const;
-  operator ObjectPtr() const;
 
   bool isMissingValue() const;
 
@@ -240,9 +238,10 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  Variable(TypePtr type, const VariableValue& value) : type(type), value(value) {}
+  Variable(const TypePtr& type, const VariableValue& value)
+    : type(type.get()), value(value) {}
 
-  TypePtr type;
+  Type* type;
   VariableValue value;
 };
 

@@ -17,23 +17,23 @@ Variable Variable::pair(const Variable& variable1, const Variable& variable2)
 Variable Variable::pair(const Variable& variable1, const Variable& variable2, TypePtr pairType)
   {return new Pair(pairType, variable1, variable2);}
 
-Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
+Variable Variable::copyFrom(const TypePtr& type, const VariableValue& value)
 {
   Variable res;
-  res.type = type;
+  res.type = type.get();
   if (type)
     type->copy(res.value, value);
   return res;
 }
 
-Variable Variable::createFromString(TypePtr type, const String& str, MessageCallback& callback)
+Variable Variable::createFromString(const TypePtr& type, const String& str, MessageCallback& callback)
 {
   String failureReason;
   VariableValue value = type->createFromString(str, callback);
   return type->isMissingValue(value) ? Variable() : Variable(type, value);
 }
 
-Variable Variable::createFromXml(TypePtr type, XmlImporter& importer)
+Variable Variable::createFromXml(const TypePtr& type, XmlImporter& importer)
   {return Variable(type, type->createFromXml(importer));}
 
 Variable Variable::createFromFile(const File& file, MessageCallback& callback)
@@ -57,7 +57,7 @@ bool Variable::saveToFile(const File& file, MessageCallback& callback) const
 
 int Variable::compare(const Variable& otherValue) const
 {
-  TypePtr type2 = otherValue.getType();
+  Type* type2 = otherValue.type;
   if (type != type2)
   {
     if (type->inheritsFrom(type2))
