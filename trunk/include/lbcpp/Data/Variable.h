@@ -106,6 +106,20 @@ public:
     {Variable res; res.type = type; type->copy(res.value, value); return res;}
 */
 
+  /*  Variable(Variable&& other) : type(nilType)
+  {
+    std::swap(type, other.type);
+    std::swap(value, other.value);
+  }
+
+  Variable& operator =(Variable&& other)
+    {
+      clear();
+      std::swap(type, other.type);
+      std::swap(value, other.value);
+      return *this;
+      }*/
+
   /** Creates dynamically an object of type @a type.
   **
   ** The type @a type must be declared with Type::declare()

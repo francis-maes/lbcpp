@@ -77,6 +77,8 @@ public:
   void setStaticAllocationFlag()
     {refCount = staticAllocationRefCountValue;}
 
+  static int numAccesses;
+
 protected:
   template<class T>
   friend class ReferenceCountedObjectPtr; /*!< */
@@ -94,11 +96,15 @@ public:
 
   /** Increments the object's reference count.  */
   inline void incrementReferenceCounter()
-    {juce::atomicIncrement(refCount);}
+  {
+    juce::atomicIncrement(refCount);
+    juce::atomicIncrement(numAccesses);
+  }
 
   /** Decrements the object's reference count.  */
   inline void decrementReferenceCounter()
   {
+    juce::atomicIncrement(numAccesses);
     if (juce::atomicDecrementAndReturn(refCount) == 0)
       delete this;
   }
@@ -139,6 +145,43 @@ public:
   */
   ReferenceCountedObjectPtr(T* ptr) : ptr(ptr)
     {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
+  
+  ReferenceCountedObjectPtr(ReferenceCountedObjectPtr<T>&& other)
+  {
+    ptr = other.ptr;
+    other.ptr = NULL;
+  }
+
+  template<class O>
+  ReferenceCountedObjectPtr(ReferenceCountedObjectPtr<O>&& other)
+  {
+    ReferenceCountedObjectPtr<T>
+    ptr = (T* )other.get();
+    other.setPointerToNull();
+  }
+
+  // internal
+  void setPointerToNull()
+  {ptr = NULL;}
+
+  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<T>&& other)
+  {
+    if (ptr)
+      cast(ptr).decrementReferenceCounter();
+    ptr = other.ptr;
+    other.ptr = NULL;
+    return *this;
+  }
+
+  template<class O>
+  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<O>&& other)
+  {
+    if (ptr)
+      cast(ptr).decrementReferenceCounter();
+    ptr = (T* )other.get();
+    other.setPointerToNull();
+    return *this;
+  }
 
   /** Creates a pointer to a null object. */
   ReferenceCountedObjectPtr() : ptr(NULL)
