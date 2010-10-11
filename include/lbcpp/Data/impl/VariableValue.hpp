@@ -110,7 +110,7 @@ struct VariableValue
     {return *reinterpret_cast<const ObjectPtr* >(this);}
 
   template<class O>
-  ReferenceCountedObjectPtr<O> getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const
+  const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const
     {return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);}
 
   Object* getObjectPointer() const
