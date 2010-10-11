@@ -271,12 +271,12 @@ protected:
     if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false))
     {
       // getObjectVariable
-      openScope(T("virtual Variable getObjectVariable(const VariableValue& __value__, size_t __index__) const"));
+      openScope(T("virtual Variable getObjectVariable(const Object* __thisbase__, size_t __index__) const"));
         writeLine(T("TypePtr expectedType = getObjectVariableType(__index__);"));
         writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
-        writeLine(T("return baseType->getObjectVariable(__value__, __index__);"), 1);
+        writeLine(T("return baseType->getObjectVariable(__thisbase__, __index__);"), 1);
         writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
-        writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__value__.getObjectPointer());"));
+        writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
         writeLine(T("Variable __res__;"));
         newLine();
         openScope(T("switch (__index__)"));
@@ -307,11 +307,11 @@ protected:
       newLine();
 
       // setObjectVariable
-      openScope(T("virtual void setObjectVariable(const VariableValue& __value__, size_t __index__, const Variable& __subValue__) const"));
+      openScope(T("virtual void setObjectVariable(Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
         writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
-        writeLine(T("{baseType->setObjectVariable(__value__, __index__, __subValue__); return;}"), 1);
+        writeLine(T("{baseType->setObjectVariable(__thisbase__, __index__, __subValue__); return;}"), 1);
         writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
-        writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__value__.getObjectPointer());"));
+        writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__thisbase__);"));
         newLine();
         openScope(T("switch (__index__)"));
           for (size_t i = 0; i < variables.size(); ++i)

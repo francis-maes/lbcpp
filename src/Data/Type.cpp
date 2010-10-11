@@ -354,11 +354,11 @@ String Type::getObjectVariableName(size_t index) const
 int Type::findObjectVariable(const String& name) const
   {jassert(baseType); return baseType->findObjectVariable(name);}
   
-Variable Type::getObjectVariable(const VariableValue& value, size_t index) const
-  {jassert(baseType); return baseType->getObjectVariable(value, index);}
+Variable Type::getObjectVariable(const Object* pthis, size_t index) const
+  {jassert(baseType); return baseType->getObjectVariable(pthis, index);}
 
-void Type::setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
-  {if (baseType) baseType->setObjectVariable(value, index, subValue);}
+void Type::setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const
+  {if (baseType) baseType->setObjectVariable(pthis, index, subValue);}
 
 size_t Type::getNumElements(const VariableValue& value) const
   {jassert(baseType); return baseType->getNumElements(value);}
