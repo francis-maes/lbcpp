@@ -298,10 +298,10 @@ struct DefaultComputeDotProductCallback : public ComputeDotProductCallback
 
 struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductCallback
 {
-  ComputeDotProductWithDenseObjectCallback(DenseObjectObjectPtr object)
+  ComputeDotProductWithDenseObjectCallback(DenseObjectObject* object)
     : object(object) {}
 
-  DenseObjectObjectPtr object;
+  DenseObjectObject* object;
 
   virtual void sense(size_t variableNumber, double value)
     {jassert(false);}
@@ -323,10 +323,10 @@ struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductCallba
 
 struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductCallback
 {
-  ComputeDotProductWithDenseDoubleCallback(DenseDoubleObjectPtr object)
+  ComputeDotProductWithDenseDoubleCallback(DenseDoubleObject* object)
     : object(object) {}
 
-  DenseDoubleObjectPtr object;
+  DenseDoubleObject* object;
 
   virtual void sense(size_t variableNumber, double value)
   {
@@ -350,7 +350,7 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
   if (!object)
     return 0.0;
 
-  DenseDoubleObjectPtr denseDoubleObject = object.dynamicCast<DenseDoubleObject>();
+  DenseDoubleObject* denseDoubleObject = dynamic_cast<DenseDoubleObject* >(object.get());
   if (denseDoubleObject)
   {
     ComputeDotProductWithDenseDoubleCallback callback(denseDoubleObject);
@@ -358,7 +358,7 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
     return callback.res;
   }
 
-  DenseObjectObjectPtr denseObjectObject = object.dynamicCast<DenseObjectObject>();
+  DenseObjectObject* denseObjectObject = dynamic_cast<DenseObjectObject* >(object.get());
   if (denseObjectObject)
   {
     ComputeDotProductWithDenseObjectCallback callback(denseObjectObject);
@@ -472,7 +472,7 @@ struct DenseObjectAssignmentCallback : public DoubleAssignmentCallback<Operation
 {
   typedef DoubleAssignmentCallback<OperationType> BaseClass;
 
-  DenseObjectAssignmentCallback(DenseObjectObjectPtr object, OperationType& operation)
+  DenseObjectAssignmentCallback(DenseObjectObject* object, OperationType& operation)
     : BaseClass(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
@@ -490,7 +490,7 @@ struct DenseObjectAssignmentCallback : public DoubleAssignmentCallback<Operation
     BaseClass::operation.compute(targetObject, subPerception, subInput);
   }
 
-  DenseObjectObjectPtr object;
+  DenseObjectObject* object;
 };
 
 template<class OperationType>
@@ -498,7 +498,7 @@ struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<Operation
 {
   typedef DoubleAssignmentCallback<OperationType> BaseClass;
 
-  DenseDoubleAssignmentCallback(DenseDoubleObjectPtr object, OperationType& operation)
+  DenseDoubleAssignmentCallback(DenseDoubleObject* object, OperationType& operation)
     : BaseClass(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
@@ -515,7 +515,7 @@ struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<Operation
   virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
     {jassert(false);}
 
-  DenseDoubleObjectPtr object;
+  DenseDoubleObject* object;
 };
 
 template<class OperationType>
@@ -574,20 +574,20 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
     target = Variable::create(perception->getOutputType()).getObject();
 
   AddWeightedOperation operation(weight);
-  DenseDoubleObjectPtr denseDoubleTarget = target.dynamicCast<DenseDoubleObject>();
+  DenseDoubleObject* denseDoubleTarget = dynamic_cast<DenseDoubleObject* >(target.get());
   if (denseDoubleTarget)
   {
     typedef DenseDoubleAssignmentCallback<AddWeightedOperation> Callback;
-    Callback callback(target, operation);
+    Callback callback(denseDoubleTarget, operation);
     perception->computePerception(input, &callback);
     return;
   }
 
-  DenseObjectObjectPtr denseObjectTarget = target.dynamicCast<DenseObjectObject>();
+  DenseObjectObject* denseObjectTarget = dynamic_cast<DenseObjectObject* >(target.get());
   if (denseObjectTarget)
   {
     typedef DenseObjectAssignmentCallback<AddWeightedOperation> Callback;
-    Callback callback(target, operation);
+    Callback callback(denseObjectTarget, operation);
     perception->computePerception(input, &callback);
     return;
   }
