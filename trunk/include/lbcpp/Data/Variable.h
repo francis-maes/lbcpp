@@ -152,8 +152,9 @@ public:
 
   bool isObject() const;
   const ObjectPtr& getObject() const;
+  
   template<class O>
-  const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const;
+  ReferenceCountedObjectPtr<O> getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const;
 
   template<class O>
   ReferenceCountedObjectPtr<O> dynamicCast() const;

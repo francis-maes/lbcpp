@@ -277,15 +277,15 @@ public:
      This cast is unchecked, so be sure of what you are doing.
   */
   template<class O>
-  inline const ReferenceCountedObjectPtr<O>& staticCast() const
+  inline ReferenceCountedObjectPtr<O> staticCast() const
   {
     if (ptr)
     {
       jassert(dynamic_cast<O* >(ptr));
-      return *reinterpret_cast<const ReferenceCountedObjectPtr<O>* >(this);
+      return (O* )ptr;
     }
-    static ReferenceCountedObjectPtr<O> empty;
-    return empty;
+    else
+      return ReferenceCountedObjectPtr<O>();
   }
 
   /** Returns true if the object that this pointer references is an instance of the given class. */
@@ -328,20 +328,18 @@ inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
 ** load() is responsible for declaring an error to the ErrorManager.
 */
 template<class T>
-inline const ReferenceCountedObjectPtr<T>& checkCast(const juce::tchar* where, const ReferenceCountedObjectPtr<ReferenceCountedObject>& object, MessageCallback& callback = MessageCallback::getInstance())
+inline ReferenceCountedObjectPtr<T> checkCast(const juce::tchar* where, const ReferenceCountedObjectPtr<ReferenceCountedObject>& object, MessageCallback& callback = MessageCallback::getInstance())
 {
 #ifdef JUCE_DEBUG
-  static ReferenceCountedObjectPtr<T> empty;
   if (!object)
-    return empty;
+    return ReferenceCountedObjectPtr<T>();
   if (!object.dynamicCast<T>())
   {
     callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
-    return empty;
+    return ReferenceCountedObjectPtr<T>();
   }
-#else
-  return object.staticCast<T>();
 #endif
+  return object.staticCast<T>();
 }
 
 }; /* namespace lbcpp */
