@@ -146,6 +146,7 @@ public:
   ReferenceCountedObjectPtr(T* ptr) : ptr(ptr)
     {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
   
+#ifdef LBCPP_ENABLE_CPP0X_RVALUES
   ReferenceCountedObjectPtr(ReferenceCountedObjectPtr<T>&& other)
   {
     ptr = other.ptr;
@@ -155,33 +156,10 @@ public:
   template<class O>
   ReferenceCountedObjectPtr(ReferenceCountedObjectPtr<O>&& other)
   {
-    ReferenceCountedObjectPtr<T>
     ptr = (T* )other.get();
     other.setPointerToNull();
   }
-
-  // internal
-  void setPointerToNull()
-  {ptr = NULL;}
-
-  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<T>&& other)
-  {
-    if (ptr)
-      cast(ptr).decrementReferenceCounter();
-    ptr = other.ptr;
-    other.ptr = NULL;
-    return *this;
-  }
-
-  template<class O>
-  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<O>&& other)
-  {
-    if (ptr)
-      cast(ptr).decrementReferenceCounter();
-    ptr = (T* )other.get();
-    other.setPointerToNull();
-    return *this;
-  }
+#endif // LBCPP_ENABLE_CPP0X_RVALUES
 
   /** Creates a pointer to a null object. */
   ReferenceCountedObjectPtr() : ptr(NULL)
@@ -211,6 +189,27 @@ public:
   template<class O>
   ReferenceCountedObjectPtr<T>& operator =(const ReferenceCountedObjectPtr<O>& other)
     {changePtr(static_cast<T* >(other.get())); return *this;}
+
+#ifdef LBCPP_ENABLE_CPP0X_RVALUES
+  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<T>&& other)
+  {
+    if (ptr)
+      cast(ptr).decrementReferenceCounter();
+    ptr = other.ptr;
+    other.ptr = NULL;
+    return *this;
+  }
+
+  template<class O>
+  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<O>&& other)
+  {
+    if (ptr)
+      cast(ptr).decrementReferenceCounter();
+    ptr = (T* )other.get();
+    other.setPointerToNull();
+    return *this;
+  }
+#endif // LBCPP_ENABLE_CPP0X_RVALUES
 
   /** Changes this pointer to point at a different object.
 
@@ -301,6 +300,10 @@ public:
   template<class O>
   inline bool isInstanceOf() const
     {return dynamic_cast<O* >(ptr) != NULL;}
+
+  // internal
+  void setPointerToNull()
+	{ptr = NULL;}
 
 private:
   T* ptr;                       /*!< */
