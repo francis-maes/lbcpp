@@ -86,8 +86,8 @@ inline Variable Variable::missingValue(const TypePtr& type)
 inline void Variable::copyTo(VariableValue& dest) const
   {type->destroy(dest); type->copy(dest, value);}
 
-inline TypePtr Variable::getType() const
-  {return type;}
+inline const TypePtr& Variable::getType() const
+  {return *(const TypePtr* )&type;}
 
 inline String Variable::getTypeName() const
   {return type->getName();}
@@ -141,19 +141,21 @@ inline const ObjectPtr& Variable::getObject() const
   {jassert(isObject()); return value.getObject();}
 
 template<class O>
-inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
+inline const ReferenceCountedObjectPtr<O>& Variable::dynamicCast() const
 {
+  static ReferenceCountedObjectPtr<O> empty;
   if (isNil())
-    return ReferenceCountedObjectPtr<O>();
+    return empty;
   jassert(isObject());
   Object* ptr = value.getObjectPointer();
   if (ptr)
   {
     O* res = dynamic_cast<O* >(ptr);
+    jassert(res == ptr);
     if (res)
-      return ReferenceCountedObjectPtr<O>(res);
+      return *(const ReferenceCountedObjectPtr<O>* )this;
   }
-  return ReferenceCountedObjectPtr<O>();
+  return empty;
 }
 
 template<class O>
@@ -243,22 +245,22 @@ inline void variableToNative(Variable& dest, const Variable& source)
 /*
 ** C++ Native => Variable
 */
-inline void nativeToVariable(Variable& dest, const Variable& source, TypePtr )
+inline void nativeToVariable(Variable& dest, const Variable& source, const TypePtr& )
   {dest = source;}
 
 template<class TT>
-inline void nativeToVariable(Variable& dest, const ReferenceCountedObjectPtr<TT>& source, TypePtr expectedType)
+inline void nativeToVariable(Variable& dest, const ReferenceCountedObjectPtr<TT>& source, const TypePtr& expectedType)
   {dest = Variable(source, expectedType);}
 
 template<class TT>
-inline void nativeToVariable(Variable& dest, const TT& source, TypePtr expectedType)
+inline void nativeToVariable(Variable& dest, const TT& source, const TypePtr& expectedType)
   {dest = Variable(source, expectedType);}
 
 /*
 ** Inheritance check
 */
 #ifdef JUCE_DEBUG
-inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
+inline bool checkInheritance(const TypePtr& type, const TypePtr& baseType, MessageCallback& callback = MessageCallback::getInstance())
 {
   jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))
@@ -268,7 +270,7 @@ inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& ca
   }
   return true;
 }
-inline bool checkInheritance(const Variable& variable, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
+inline bool checkInheritance(const Variable& variable, const TypePtr& baseType, MessageCallback& callback = MessageCallback::getInstance())
   {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
 
 #else

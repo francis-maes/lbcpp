@@ -121,10 +121,10 @@ public:
     
   void clear();
 
-  TypePtr getType() const;
+  const TypePtr& getType() const;
   String getTypeName() const;
   
-  bool inheritsFrom(TypePtr baseType) const
+  bool inheritsFrom(const TypePtr& baseType) const
     {return type->inheritsFrom(baseType);}
 
   bool exists() const;
@@ -156,7 +156,7 @@ public:
   const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const;
 
   template<class O>
-  ReferenceCountedObjectPtr<O> dynamicCast() const;
+  const ReferenceCountedObjectPtr<O>& dynamicCast() const;
 
   /*
   ** Const Operations
