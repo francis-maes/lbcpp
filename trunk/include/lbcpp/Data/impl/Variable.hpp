@@ -141,21 +141,20 @@ inline const ObjectPtr& Variable::getObject() const
   {jassert(isObject()); return value.getObject();}
 
 template<class O>
-inline const ReferenceCountedObjectPtr<O>& Variable::dynamicCast() const
+inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 {
-  static ReferenceCountedObjectPtr<O> empty;
-  if (isNil())
-    return empty;
-  jassert(isObject());
-  Object* ptr = value.getObjectPointer();
-  if (ptr)
+  if (!isNil())
   {
-    O* res = dynamic_cast<O* >(ptr);
-    jassert(res == ptr);
-    if (res)
-      return *(const ReferenceCountedObjectPtr<O>* )this;
+    jassert(isObject());
+    Object* ptr = value.getObjectPointer();
+    if (ptr)
+    {
+      O* res = dynamic_cast<O* >(ptr);
+      if (res)
+        return res;
+    }
   }
-  return empty;
+  return ReferenceCountedObjectPtr<O>();
 }
 
 template<class O>
