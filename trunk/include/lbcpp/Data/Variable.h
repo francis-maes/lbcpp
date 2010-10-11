@@ -51,6 +51,10 @@ public:
   Variable(ReferenceCountedObjectPtr<T> object, const TypePtr& expectedType = nilType);
   Variable(const Variable& other);
   Variable();
+  
+  ~Variable();
+  Variable& operator =(const Variable& other);
+
 /*
   struct Temporary
   {
@@ -134,8 +138,6 @@ public:
   static Variable copyFrom(const TypePtr& type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;
     
-  ~Variable();
-
   void clear();
 
   TypePtr getType() const;
@@ -228,12 +230,6 @@ public:
 
   void printRecursively(std::ostream& ostr, int maxDepth = -1, bool displayMissingValues = true, bool displayTypes = true);
   bool printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName = T("variable")) const; // returns true if there is at least one difference
-
-
-  /*
-  ** Non-const operations
-  */
-  Variable& operator =(const Variable& other);
 
   juce_UseDebuggingNewOperator
 
