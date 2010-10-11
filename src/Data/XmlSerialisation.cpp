@@ -344,7 +344,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
     if (child)
     {
       Variable typeVariable = loadVariable(child, TypePtr());
-      return typeVariable.getObjectAndCast<Type>();
+      return typeVariable.getObjectAndCast<Type>().get();
     }
     else
     {

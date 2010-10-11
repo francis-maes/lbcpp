@@ -342,6 +342,133 @@ inline ReferenceCountedObjectPtr<T> checkCast(const juce::tchar* where, const Re
   return object.staticCast<T>();
 }
 
+
+template<class T>
+class NativePtr
+{
+public:
+  template<class O>
+  NativePtr(const NativePtr<O>& other) : ptr(static_cast<T* >(other.get())) {}
+  NativePtr(const NativePtr<T>& other) : ptr(other.ptr) {}
+  NativePtr(T* ptr) : ptr(ptr) {if (ptr->getReferenceCount() == 0) ptr->setStaticAllocationFlag();}
+  NativePtr() : ptr(NULL) {}
+
+  template<class O>
+  inline NativePtr<T>& operator =(const NativePtr<O>& other)
+    {ptr = static_cast<T* >(other.get()); return *this;}
+
+  inline NativePtr<T>& operator =(const NativePtr<T>& other)
+    {ptr = other.ptr; return *this;}
+
+  inline NativePtr<T>& operator =(T* ptr)
+    {this->ptr = ptr; if (ptr->getReferenceCount() == 0) ptr->setStaticAllocationFlag(); return *this;}
+
+  void clear()
+    {ptr = NULL;}
+
+  /** Returns true if this pointer is non-null. */
+  bool exists() const
+    {return ptr != NULL;}
+
+  /** Returns true if this pointer is non-null. */
+  operator bool () const
+    {return ptr != NULL;}
+
+  /** Returns true if this pointer refers to the given object. */
+  bool operator ==(const NativePtr<T>& other) const
+    {return ptr == other.ptr;}
+
+  /** Returns true if this pointer doesn't refer to the given object. */
+  bool operator !=(const NativePtr<T>& other) const
+    {return ptr != other.ptr;}
+
+  /** Returns true if this pointer is smaller to the pointer of the given object. */
+  bool operator <(const NativePtr<T>& other) const
+    {return ptr < other.ptr;}
+
+ /** Returns the object that this pointer references.
+
+      The pointer returned may be zero, of course.
+  */
+  T* get() const
+    {return ptr;}
+
+  /** Returns the object that this pointer references.
+
+      The pointer returned may be zero, of course.
+  */
+  T* operator -> () const
+    {return ptr;}
+
+  /** Returns a reference to the object that this pointer references. */
+  T& operator * () const
+    {jassert(ptr); return *ptr;}
+
+  operator T* () const
+    {return ptr;}
+
+  /** Dynamic cast the object that this pointer references.
+
+    If the cast is invalid, this function returns a null pointer.
+  */
+  template<class O>
+  inline NativePtr<O> dynamicCast() const
+  {
+    if (ptr)
+    {
+      O* res = dynamic_cast<O* >(ptr);
+      jassert(!res || res == ptr);
+      if (res)
+        return res;
+    }
+    return NativePtr<O>();
+  }
+
+  /** Static cast the object that this pointer references.
+
+     This cast is unchecked, so be sure of what you are doing.
+  */
+  template<class O>
+  inline NativePtr<O> staticCast() const
+  {
+    if (ptr)
+    {
+      jassert(dynamic_cast<O* >(ptr));
+      return (O* )ptr;
+    }
+    else
+      return NativePtr<O>();
+  }
+
+  /** Returns true if the object that this pointer references is an instance of the given class. */
+  template<class O>
+  inline bool isInstanceOf() const
+    {return dynamic_cast<O* >(ptr) != NULL;}
+
+private:
+  T* ptr;
+};
+
+template<class T>
+inline NativePtr<T> checkCast(const juce::tchar* where, const NativePtr<ReferenceCountedObject>& object, MessageCallback& callback = MessageCallback::getInstance())
+{
+#ifdef JUCE_DEBUG
+  if (!object)
+    return NativePtr<T>();
+  if (!object.dynamicCast<T>())
+  {
+    callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
+    return NativePtr<T>();
+  }
+#endif
+  return object.staticCast<T>();
+}
+
+template<class T>
+inline NativePtr<T> nativePointerFromThis(const T* pthis)
+  {return NativePtr<T>(const_cast<T* >(pthis));}
+
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_REFERENCE_COUNTED_OBJECT_H_

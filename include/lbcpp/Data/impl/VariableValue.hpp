@@ -62,8 +62,8 @@ struct VariableValue
   }
 #endif // LBCPP_ENABLE_CPP0X_RVALUES
 
-  VariableValue(Object* objectValue)
-    {u.objectValue = objectValue; if (objectValue) objectValue->incrementReferenceCounter();}
+  VariableValue(Object* objectValue, bool incrementRefCount = true)
+    {u.objectValue = objectValue; if (incrementRefCount && objectValue) objectValue->incrementReferenceCounter();}
   
   VariableValue(char* rawData)
     {u.rawDataValue = rawData;}
@@ -75,7 +75,7 @@ struct VariableValue
     {jassert(sizeof (*this) == sizeof (u.intValue));  u.intValue = 0;}
 
   void clearBuiltin();
-  void clearObject();
+  void clearObject(bool decrementRefCount = true);
   void clearString();
   void clearRawData();
 
@@ -114,10 +114,10 @@ struct VariableValue
     {return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);}
 
   Object* getObjectPointer() const
-    {return u.objectValue ? u.objectValue : NULL;}
+    {return u.objectValue;}
 
-  void setObject(Object* pointer)
-    {u.objectValue = pointer; if (pointer) pointer->incrementReferenceCounter();}
+  void setObject(Object* pointer, bool incrementRefCount = true)
+    {u.objectValue = pointer; if (incrementRefCount && pointer) pointer->incrementReferenceCounter();}
   
   void setObject(ObjectPtr pointer)
     {setObject(pointer.get());}
@@ -154,11 +154,12 @@ inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<T>& objectVa
 inline void VariableValue::clearBuiltin()
   {memset(this, 0, sizeof (*this));}
 
-inline void VariableValue::clearObject()
+inline void VariableValue::clearObject(bool decrementRefCount)
 {
   if (u.objectValue)
   {
-    u.objectValue->decrementReferenceCounter();
+    if (decrementRefCount)
+      u.objectValue->decrementReferenceCounter();
     u.objectValue = NULL;
   }
 }

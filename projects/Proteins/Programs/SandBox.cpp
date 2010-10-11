@@ -38,8 +38,6 @@ public:
     {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
 };
 
-PerceptionPtr testPerception;
-
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
@@ -62,7 +60,6 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    testPerception = res;
     return res;
     
     PerceptionPtr collapsedFeatures = collapsePerception(res);
@@ -276,7 +273,7 @@ int main(int argc, char** argv)
   inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
-  for (size_t i = 7; i <= 7; i += 0)
+  for (size_t i = 1; i <= 7; i += 6)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();

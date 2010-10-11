@@ -38,10 +38,16 @@
       <!-- <variable type="ObjectVector[Type]" name="templateArguments"/> -->
       <code>
         virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
-        {return Type::get(value, callback);}
+          {return VariableValue((Object* )Type::get(value, callback), false);}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
-        {return createFromString(importer.getAllSubText(), importer.getCallback());}
+          {return createFromString(importer.getAllSubText(), importer.getCallback());}
+          
+        virtual void destroy(VariableValue&amp; value) const
+          {value.clearObject(false);}
+
+        virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+          {dest.setObject(source.getObjectPointer(), false);}
       </code>
     </class>
 
@@ -49,10 +55,16 @@
       <variable type="String" name="oneLetterCodes"/>
       <code>
         virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
-        {return Type::get(value, callback);}
+          {return Type::createFromString(value, callback);}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
-        {return createFromString(importer.getAllSubText(), importer.getCallback());}
+          {return Type::createFromXml(importer);}
+
+        virtual void destroy(VariableValue&amp; value) const
+          {Type::destroy(value);}
+
+        virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+          {Type::copy(dest, source);}
       </code>
     </class>
 
