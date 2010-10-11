@@ -80,8 +80,8 @@ public:
   void setBaseType(TypePtr baseType)
     {this->baseType = baseType;}
 
-  bool inheritsFrom(TypePtr baseType) const;
-  bool canBeCastedTo(TypePtr targetType) const;
+  bool inheritsFrom(const TypePtr& baseType) const;
+  bool canBeCastedTo(const TypePtr& targetType) const;
 
   static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
 
