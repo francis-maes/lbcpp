@@ -158,19 +158,18 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 }
 
 template<class O>
-inline const ReferenceCountedObjectPtr<O>& Variable::getObjectAndCast(MessageCallback& callback) const
+inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(MessageCallback& callback) const
 {
 #ifdef JUCE_DEBUG
-  static ReferenceCountedObjectPtr<O> empty;
   if (isNil())
   {
     callback.errorMessage(T("Variable::getObjectAndCast"), T("Variable is nil"));
-    return empty;
+    return ReferenceCountedObjectPtr<O>();
   }
   if (!isObject())
   {
     callback.errorMessage(T("Variable::getObjectAndCast"), T("This variable is not an object"));
-    return empty;
+    return ReferenceCountedObjectPtr<O>();
   }
 #endif
   return value.getObjectAndCast<O>(callback);
