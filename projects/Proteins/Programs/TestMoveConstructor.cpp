@@ -90,6 +90,13 @@ public:
     if (ptr != 0) cast(ptr).incrementReferenceCounter();
   }
 
+  ReferenceCountedObjectPtr(ReferenceCountedObjectPtr<T>&& other)
+  {
+    std::cout << "ReferenceCountedObjectPtr::move-ctor()" << std::endl;
+    ptr = other.ptr;
+    other.ptr = NULL;
+  }
+
   /** Creates a pointer to an object.
 
       This will increment the object's reference-count if it is non-null.
@@ -111,7 +118,7 @@ public:
   */
   ~ReferenceCountedObjectPtr()
   {
-    std::cout << "ReferenceCountedObjectPtr::dtor()" << std::endl;
+    if (ptr) std::cout << "ReferenceCountedObjectPtr::dtor()" << std::endl;
     if (ptr) cast(ptr).decrementReferenceCounter();
   }
 
@@ -124,6 +131,15 @@ public:
   {
     std::cout << "ReferenceCountedObjectPtr::assign()" << std::endl;
     changePtr(other.get()); return *this;
+  }
+  
+  ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<T>&& other)
+  {
+    std::cout << "ReferenceCountedObjectPtr::move-assign()" << std::endl;
+    if (ptr) cast(ptr).decrementReferenceCounter();
+    ptr = other.ptr;
+    other.ptr = NULL;
+    return *this;
   }
 
   /** Changes this pointer to point at a different object.

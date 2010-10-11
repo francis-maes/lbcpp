@@ -308,5 +308,6 @@ int main(int argc, char** argv)
 #endif // 0
 
   std::cout << "Tchao." << std::endl;
+  std::cout << ReferenceCountedObject::numAccesses << std::endl;
   return 0;
 }

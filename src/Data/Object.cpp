@@ -12,6 +12,8 @@
 #include <fstream>
 using namespace lbcpp;
 
+int ReferenceCountedObject::numAccesses = 0;
+
 extern void declareLBCppClasses();
 
 String Object::getClassName() const
