@@ -13,6 +13,19 @@
 using namespace lbcpp;
 
 int ReferenceCountedObject::numAccesses = 0;
+void ReferenceCountedObject::incrementReferenceCounter()
+{
+  juce::atomicIncrement(refCount);
+  juce::atomicIncrement(numAccesses);
+}
+
+/** Decrements the object's reference count.  */
+void ReferenceCountedObject::decrementReferenceCounter()
+{
+  juce::atomicIncrement(numAccesses);
+  if (juce::atomicDecrementAndReturn(refCount) == 0)
+    delete this;
+}
 
 extern void declareLBCppClasses();
 

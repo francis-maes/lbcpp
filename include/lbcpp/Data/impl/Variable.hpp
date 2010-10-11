@@ -137,7 +137,7 @@ inline File Variable::getFile() const
 inline bool Variable::isObject() const
   {return type->inheritsFrom(objectClass);}
 
-inline ObjectPtr Variable::getObject() const
+inline const ObjectPtr& Variable::getObject() const
   {jassert(isObject()); return value.getObject();}
 
 template<class O>
@@ -157,18 +157,19 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 }
 
 template<class O>
-inline ReferenceCountedObjectPtr<O> Variable::getObjectAndCast(MessageCallback& callback) const
+inline const ReferenceCountedObjectPtr<O>& Variable::getObjectAndCast(MessageCallback& callback) const
 {
 #ifdef JUCE_DEBUG
+  static ReferenceCountedObjectPtr<O> empty;
   if (isNil())
   {
     callback.errorMessage(T("Variable::getObjectAndCast"), T("Variable is nil"));
-    return ReferenceCountedObjectPtr<O>();
+    return empty;
   }
   if (!isObject())
   {
     callback.errorMessage(T("Variable::getObjectAndCast"), T("This variable is not an object"));
-    return ReferenceCountedObjectPtr<O>();
+    return empty;
   }
 #endif
   return value.getObjectAndCast<O>(callback);

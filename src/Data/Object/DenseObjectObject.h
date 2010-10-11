@@ -34,8 +34,11 @@ public:
     return values[index];
   }
 
-  ObjectPtr getObject(size_t index) const
-    {return index < values.size() ? values[index] : ObjectPtr();}
+  const ObjectPtr& getObject(size_t index) const
+  {
+    static ObjectPtr empty;
+    return index < values.size() ? values[index] : empty;
+  }
 
   virtual Variable getVariable(size_t index) const
   {
