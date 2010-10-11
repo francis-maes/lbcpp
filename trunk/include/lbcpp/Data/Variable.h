@@ -44,11 +44,9 @@ public:
   Variable(double doubleValue, const TypePtr& type = doubleType);
   Variable(const String& stringValue, const TypePtr& type = stringType);
   Variable(const File& fileValue, const TypePtr& type = fileType);
-  Variable(ObjectPtr object);
+  Variable(const ObjectPtr& object);
+  template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, const TypePtr& expectedType = nilType);
   Variable(Object* object);
-
-  template<class T>
-  Variable(ReferenceCountedObjectPtr<T> object, const TypePtr& expectedType = nilType);
   Variable(const Variable& other);
   Variable();
   
