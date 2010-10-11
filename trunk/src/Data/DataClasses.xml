@@ -58,13 +58,13 @@
 
       virtual Variable getObjectVariable(const Object* pthis, size_t index) const
       {
-        const DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;const DiscreteProbabilityDistribution* &gt;>(pthis);
+        const DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;const DiscreteProbabilityDistribution* &gt;(pthis);
         return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
       }
 
       virtual void setObjectVariable(Object* pthis, size_t index, const Variable&amp; subValue) const
       {
-        DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;DiscreteProbabilityDistribution* &gt;>(pthis);
+        DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;DiscreteProbabilityDistribution* &gt;(pthis);
         if (distribution)
         {
           if (!distribution->values.size())
