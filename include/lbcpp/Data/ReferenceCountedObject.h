@@ -260,16 +260,16 @@ public:
     If the cast is invalid, this function returns a null pointer.
   */
   template<class O>
-  inline const ReferenceCountedObjectPtr<O>& dynamicCast() const
+  inline ReferenceCountedObjectPtr<O> dynamicCast() const
   {
     if (ptr)
     {
       O* res = dynamic_cast<O* >(ptr);
+      jassert(!res || res == ptr);
       if (res)
-        return *reinterpret_cast<const ReferenceCountedObjectPtr<O>* >(this);
+        return res;
     }
-    static ReferenceCountedObjectPtr<O> empty;
-    return empty;
+    return ReferenceCountedObjectPtr<O>();
   }
 
   /** Static cast the object that this pointer references.
@@ -295,7 +295,7 @@ public:
 
   // internal
   void setPointerToNull()
-	{ptr = NULL;}
+	  {ptr = NULL;}
 
 private:
   T* ptr;                       /*!< */
@@ -334,13 +334,11 @@ inline const ReferenceCountedObjectPtr<T>& checkCast(const juce::tchar* where, c
   static ReferenceCountedObjectPtr<T> empty;
   if (!object)
     return empty;
-  const ReferenceCountedObjectPtr<T>& res = object.dynamicCast<T>();
-  if (!res)
+  if (!object.dynamicCast<T>())
   {
     callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
     return empty;
   }
-  return res;
 #else
   return object.staticCast<T>();
 #endif

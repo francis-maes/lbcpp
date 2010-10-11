@@ -156,7 +156,7 @@ public:
   const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const;
 
   template<class O>
-  const ReferenceCountedObjectPtr<O>& dynamicCast() const;
+  ReferenceCountedObjectPtr<O> dynamicCast() const;
 
   /*
   ** Const Operations

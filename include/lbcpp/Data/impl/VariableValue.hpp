@@ -147,8 +147,8 @@ template<class T>
 inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<T>& objectValue)
 {
   u.objectValue = objectValue.get();
-  if (objectValue)
-    objectValue->incrementReferenceCounter();
+  if (u.objectValue)
+    u.objectValue->incrementReferenceCounter();
 }
 
 inline void VariableValue::clearBuiltin()
