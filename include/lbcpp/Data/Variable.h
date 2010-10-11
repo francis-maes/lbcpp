@@ -65,8 +65,9 @@ public:
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T>&& other)
-    : type(other ? other->getClass() : nilType), value(other)
+    : type(other ? (TypePtr)other->getClass() : nilType), value(other)
   {
+    other.setPointerToNull();
   }
 
   Variable& operator =(Variable&& other)
@@ -75,6 +76,7 @@ public:
     type = other.type;
     other.type = nilType;
     value = other.value;
+    other.value.clearBuiltin();
     return *this;
   }
 
@@ -84,6 +86,7 @@ public:
     clear();
     type = other ? other->getClass() : nilType;
     value = other;
+    other.setPointerToNull();
     return *this;
   }
 #endif // LBCPP_ENABLE_CPP0X_RVALUES
