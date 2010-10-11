@@ -56,7 +56,6 @@ public:
     // surface compute decorated perception
     PerceptionVariableVector variables(decorated->getNumOutputVariables());
     Callback callback(variables);
-    callback.setStaticAllocationFlag();
     decorated->computePerception(input, &callback);
   
     // sense
