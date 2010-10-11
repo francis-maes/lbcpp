@@ -31,7 +31,7 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    Callback callback(decorated, targetCallback, this);
+    Callback callback(targetCallback, this);
     decorated->computePerception(input, &callback);
   }
 
@@ -94,7 +94,7 @@ protected:
 
   struct Callback : public PerceptionCallback
   {
-    Callback(PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const RewritedPerception* owner)
+    Callback(PerceptionCallbackPtr targetCallback, const RewritedPerception* owner)
       : targetCallback(targetCallback), owner(owner)
       {}
 
