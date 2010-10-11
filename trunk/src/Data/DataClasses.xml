@@ -27,7 +27,7 @@
           {return 2;}
         virtual Variable getElement(const VariableValue&amp; value, size_t index) const
         {
-          PairPtr pair = value.getObjectAndCast&lt;Pair&gt;();
+          const PairPtr&amp; pair = value.getObjectAndCast&lt;Pair&gt;();
           return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
         }
         virtual String getElementName(const VariableValue&amp; value, size_t index) const

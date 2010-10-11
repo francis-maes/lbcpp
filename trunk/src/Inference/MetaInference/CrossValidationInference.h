@@ -39,8 +39,8 @@ protected:
 
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ContainerPtr trainingData = input[0].getObjectAndCast<Container>();
-    ContainerPtr evaluationData = input[1].getObjectAndCast<Container>();
+    const ContainerPtr& trainingData = input[0].getObjectAndCast<Container>();
+    const ContainerPtr& evaluationData = input[1].getObjectAndCast<Container>();
     InferencePtr inference = inferenceModel->cloneAndCast<Inference>();
     jassert(trainingData && evaluationData && inference);
     returnCode = context->train(inference, trainingData);
@@ -69,7 +69,7 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ContainerPtr trainingData = input.getObjectAndCast<Container>();
+    const ContainerPtr& trainingData = input.getObjectAndCast<Container>();
 
     ParallelInferenceStatePtr state(new ParallelInferenceState(input, supervision));
     state->reserve(numFolds);

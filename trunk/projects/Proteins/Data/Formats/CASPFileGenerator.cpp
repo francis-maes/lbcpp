@@ -18,7 +18,7 @@ CASPFileGenerator::CASPFileGenerator(const File& file, const String& method)
 
 void CASPFileGenerator::consume(const Variable& variable)
 {
-  ProteinPtr protein = variable.getObjectAndCast<Protein>();
+  const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
   jassert(protein);
 
   printRecord(T("PFRMAT"), getFormatSpecificationCode());

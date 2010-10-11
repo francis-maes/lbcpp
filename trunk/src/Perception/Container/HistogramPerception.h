@@ -86,7 +86,7 @@ public:
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
     jassert(windowSize);
-    PairPtr pair = input.getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
     container = pair->getFirst().getObjectAndCast<Container>();
     beginIndex = pair->getSecond().getInteger() - (int)(windowSize / 2);
     endIndex = beginIndex + windowSize;
@@ -110,9 +110,9 @@ public:
   
   virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
   {
-    PairPtr pair = input.getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
     container = pair->getFirst().getObjectAndCast<Container>();
-    PairPtr indexPair = pair->getSecond().getObjectAndCast<Pair>();
+    const PairPtr& indexPair = pair->getSecond().getObjectAndCast<Pair>();
     beginIndex = indexPair->getFirst().getInteger();
     endIndex = indexPair->getSecond().getInteger(); 
   }

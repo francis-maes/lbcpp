@@ -40,8 +40,8 @@ public:
     if (!correctObject.exists() || !predictedObject.exists())
       return;
 
-    TertiaryStructurePtr predicted = predictedObject.getObjectAndCast<TertiaryStructure>();
-    TertiaryStructurePtr correct = correctObject.getObjectAndCast<TertiaryStructure>();
+    const TertiaryStructurePtr& predicted = predictedObject.getObjectAndCast<TertiaryStructure>();
+    const TertiaryStructurePtr& correct = correctObject.getObjectAndCast<TertiaryStructure>();
     jassert(correct->getNumResidues() == predicted->getNumResidues());
     calphaRMSE->push(predicted->computeCAlphaAtomsRMSE(correct));
   }

@@ -11,13 +11,13 @@
       <code>
         virtual size_t getNumElements(const VariableValue&amp; value) const
         {
-          ContainerPtr container = value.getObjectAndCast&lt;Container&gt;();
+          const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
           return container ? container->getNumElements() : 0;
         }
 
         virtual Variable getElement(const VariableValue&amp; value, size_t index) const
         {
-          ContainerPtr container = value.getObjectAndCast&lt;Container&gt;();
+          const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
           jassert(container);
           return container->getElement(index);
         }

@@ -14,7 +14,7 @@ PDBFileGenerator::PDBFileGenerator(const File& file, MessageCallback& callback)
 
 void PDBFileGenerator::consume(const Variable& variable)
 {
-  ProteinPtr protein = variable.getObjectAndCast<Protein>();
+  const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
   jassert(protein);
   size_t n = protein->getLength();
 

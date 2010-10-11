@@ -23,7 +23,7 @@ public:
 
   virtual void consume(const Variable& variable)
   {
-    ProteinPtr protein = variable.getObjectAndCast<Protein>();
+    const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
     jassert(protein);
     print(T(">") + protein->getName(), true);
     VectorPtr primaryStructure = protein->getPrimaryStructure();

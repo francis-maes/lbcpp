@@ -33,7 +33,7 @@ public:
     }
     else
     {
-      DiscreteProbabilityDistributionPtr distribution = predictedObject.getObjectAndCast<DiscreteProbabilityDistribution>();
+      const DiscreteProbabilityDistributionPtr& distribution = predictedObject.getObjectAndCast<DiscreteProbabilityDistribution>();
       jassert(distribution);
       accuracy->push(distribution->compute(correctObject));
     }
