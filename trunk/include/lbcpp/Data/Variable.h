@@ -55,70 +55,24 @@ public:
   ~Variable();
   Variable& operator =(const Variable& other);
 
-/*
-  struct Temporary
+#ifdef LBCPP_ENABLE_CPP0X_RVALUES
+  Variable(Variable&& other)
   {
-    Temporary(TypePtr type, const VariableValue& value)
-      : type(type), value(value) {}
-    Temporary() : type(nilType) {}
-
-    TypePtr type;
-    VariableValue value;
-  };
-
-  Variable(Variable& other) : type(nilType)
-  {
-    std::swap(type, other.type);
-    std::swap(value, other.value);
-  }
-
-  Variable(Temporary& other) : type(nilType)
-  {
-    std::swap(type, other.type);
-    std::swap(value, other.value);
-  }
-
-  Variable& operator =(Variable& other) throw ()
-  {
-    clear();
-    std::swap(type, other.type);
-    std::swap(value, other.value);
-    return *this;
-  }
-
-  Variable& operator =(Temporary& other) throw ()
-  {
-    clear();
-    std::swap(type, other.type);
-    std::swap(value, other.value);
-    return *this;
-  }
-
-  operator Temporary() throw ()
-  {
-    Temporary res;
-    std::swap(type, res.type);
-    std::swap(value, res.value);
-    return res;
-  }
-
-  Variable copy() const
-    {Variable res; res.type = type; type->copy(res.value, value); return res;}
-*/
-
-  /*  Variable(Variable&& other) : type(nilType)
-  {
-    std::swap(type, other.type);
-    std::swap(value, other.value);
+	type = other.type;
+	other.type = nilType.get();
+	value = other.value;
+	other.value.clearBuiltin();
   }
 
   Variable& operator =(Variable&& other)
-    {
-      clear();
-      std::swap(type, other.type);
-      std::swap(value, other.value);
-      return *this;
-      }*/
+  {
+	clear();
+	type = other.type;
+	other.type = nilType.get();
+	value = other.value;
+    return *this;
+  }
+#endif // LBCPP_ENABLE_CPP0X_RVALUES
 
   /** Creates dynamically an object of type @a type.
   **
