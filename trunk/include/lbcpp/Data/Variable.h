@@ -56,18 +56,33 @@ public:
 #ifdef LBCPP_ENABLE_CPP0X_RVALUES
   Variable(Variable&& other)
   {
-	type = other.type;
-	other.type = nilType.get();
-	value = other.value;
-	other.value.clearBuiltin();
+    type = other.type;
+    other.type = nilType.get();
+    value = other.value;
+    other.value.clearBuiltin();
+  }
+
+  template<class T>
+  Variable(ReferenceCountedObjectPtr<T>&& other)
+    : type(other ? other->getClass().get() : nilType.get()), value(other)
+  {
   }
 
   Variable& operator =(Variable&& other)
   {
-	clear();
-	type = other.type;
-	other.type = nilType.get();
-	value = other.value;
+    clear();
+    type = other.type;
+    other.type = nilType.get();
+    value = other.value;
+    return *this;
+  }
+
+  template<class T>
+  Variable& operator =(ReferenceCountedObjectPtr<T>&& other)
+  {
+    clear();
+    type = other ? other->getClass().get() : nilType.get();
+    value = other;
     return *this;
   }
 #endif // LBCPP_ENABLE_CPP0X_RVALUES
