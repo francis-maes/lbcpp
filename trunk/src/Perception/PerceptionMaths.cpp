@@ -74,7 +74,7 @@ struct DoubleConstUnaryOperationCallback : public PerceptionCallback
 };
 
 template<class OperationType>
-void doubleConstUnaryOperation(OperationType& operation, PerceptionPtr perception, const Variable& input)
+void doubleConstUnaryOperation(OperationType& operation, const PerceptionPtr& perception, const Variable& input)
 {
   typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
   Callback callback(operation);
@@ -100,7 +100,7 @@ struct ComputeL0NormOperation : public DoubleConstUnaryOperation
     {res += lbcpp::l0norm(object);}
 };
 
-size_t lbcpp::l0norm(ObjectPtr object)
+size_t lbcpp::l0norm(const ObjectPtr& object)
 {
   if (object)
   {
@@ -112,7 +112,7 @@ size_t lbcpp::l0norm(ObjectPtr object)
     return 0;
 }
 
-size_t lbcpp::l0norm(PerceptionPtr perception, const Variable& input)
+size_t lbcpp::l0norm(const PerceptionPtr& perception, const Variable& input)
   {ComputeL0NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
@@ -134,7 +134,7 @@ struct ComputeL1NormOperation : public DoubleConstUnaryOperation
     {res += lbcpp::l1norm(object);}
 };
 
-double lbcpp::l1norm(ObjectPtr object)
+double lbcpp::l1norm(const ObjectPtr& object)
 {
   if (object)
   {
@@ -146,7 +146,7 @@ double lbcpp::l1norm(ObjectPtr object)
     return 0.0;
 }
 
-double lbcpp::l1norm(PerceptionPtr perception, const Variable& input)
+double lbcpp::l1norm(const PerceptionPtr& perception, const Variable& input)
   {ComputeL1NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
@@ -168,7 +168,7 @@ struct ComputeSumOfSquaresOperation : public DoubleConstUnaryOperation
     {res += lbcpp::sumOfSquares(object);}
 };
 
-double lbcpp::sumOfSquares(ObjectPtr object)
+double lbcpp::sumOfSquares(const ObjectPtr& object)
 {
   if (object)
   {
@@ -180,7 +180,7 @@ double lbcpp::sumOfSquares(ObjectPtr object)
     return 0.0;
 }
 
-double lbcpp::sumOfSquares(PerceptionPtr perception, const Variable& input)
+double lbcpp::sumOfSquares(const PerceptionPtr& perception, const Variable& input)
   {ComputeSumOfSquaresOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
@@ -195,7 +195,7 @@ struct DoubleUnaryOperation
 };
 
 template<class OperationType>
-void doubleUnaryOperation(OperationType& operation, ObjectPtr object)
+void doubleUnaryOperation(OperationType& operation, const ObjectPtr& object)
 {
   size_t n = object->getNumVariables();
   for (size_t i = 0; i < n; ++i)
@@ -233,7 +233,7 @@ struct MultiplyByScalarOperation : public DoubleUnaryOperation
     {multiplyByScalar(object, scalar);}
 };
 
-void lbcpp::multiplyByScalar(ObjectPtr object, double scalar)
+void lbcpp::multiplyByScalar(const ObjectPtr& object, double scalar)
 {
   if (scalar != 1.0 && object)
   {
@@ -266,7 +266,7 @@ struct ComputeDotProductCallback : public PerceptionCallback
 
 struct DefaultComputeDotProductCallback : public ComputeDotProductCallback
 {
-  DefaultComputeDotProductCallback(ObjectPtr object)
+  DefaultComputeDotProductCallback(const ObjectPtr& object)
     : object(object) {}
 
   ObjectPtr object;
@@ -345,7 +345,7 @@ struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductCallba
     {jassert(false);}
 };
 
-double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input)
+double lbcpp::dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
 {
   if (!object)
     return 0.0;
@@ -373,7 +373,7 @@ double lbcpp::dotProduct(ObjectPtr object, PerceptionPtr perception, const Varia
   }
 }
 
-double lbcpp::dotProduct(ObjectPtr object1, ObjectPtr object2)
+double lbcpp::dotProduct(const ObjectPtr& object1, const ObjectPtr& object2)
 {
   jassert(object1->getClass() == object2->getClass());
   
@@ -435,7 +435,7 @@ struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<Operati
 {
   typedef DoubleAssignmentCallback<OperationType> BaseClass;
 
-  DefaultDoubleAssignmentCallback(ObjectPtr object, OperationType& operation)
+  DefaultDoubleAssignmentCallback(const ObjectPtr& object, OperationType& operation)
     : BaseClass(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
@@ -519,7 +519,7 @@ struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<Operation
 };
 
 template<class OperationType>
-void doubleAssignmentOperation(OperationType& operation, ObjectPtr target, ObjectPtr source)
+void doubleAssignmentOperation(OperationType& operation, const ObjectPtr& target, const ObjectPtr& source)
 {
   size_t n = source->getNumVariables();
   for (size_t i = 0; i < n; ++i)
@@ -566,7 +566,7 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
     {value += weight * otherValue;}
 };
 
-void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Variable& input, double weight)
+void lbcpp::addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight)
 {
   if (!weight)
     return;
@@ -599,7 +599,7 @@ void lbcpp::addWeighted(ObjectPtr& target, PerceptionPtr perception, const Varia
   }
 }
 
-void lbcpp::addWeighted(ObjectPtr& target, ObjectPtr source, double weight)
+void lbcpp::addWeighted(ObjectPtr& target, const ObjectPtr& source, double weight)
 {
   if (!weight)
     return;

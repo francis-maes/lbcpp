@@ -15,30 +15,30 @@ namespace lbcpp
 {
 
 // Const-unary operations
-extern size_t l0norm(ObjectPtr object);
-extern size_t l0norm(PerceptionPtr perception, const Variable& input);
+extern size_t l0norm(const ObjectPtr& object);
+extern size_t l0norm(const PerceptionPtr& perception, const Variable& input);
 
-extern double l1norm(ObjectPtr object);
-extern double l1norm(PerceptionPtr perception, const Variable& input);
+extern double l1norm(const ObjectPtr& object);
+extern double l1norm(const PerceptionPtr& perception, const Variable& input);
 
-extern double sumOfSquares(ObjectPtr object);
-extern double sumOfSquares(PerceptionPtr perception, const Variable& input);
+extern double sumOfSquares(const ObjectPtr& object);
+extern double sumOfSquares(const PerceptionPtr& perception, const Variable& input);
 
-inline double l2norm(ObjectPtr object)
+inline double l2norm(const ObjectPtr& object)
   {return object ? sqrt(sumOfSquares(object)) : 0.0;}
 
-inline double l2norm(PerceptionPtr perception, const Variable& input)
+inline double l2norm(const PerceptionPtr& perception, const Variable& input)
   {return sqrt(sumOfSquares(perception, input));}
 
 // Unary operations
-extern void multiplyByScalar(ObjectPtr object, double scalar);
+extern void multiplyByScalar(const ObjectPtr& object, double scalar);
 
 // Binary operations
-extern double dotProduct(ObjectPtr object, PerceptionPtr perception, const Variable& input);
-extern double dotProduct(ObjectPtr object1, ObjectPtr object2);
+extern double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input);
+extern double dotProduct(const ObjectPtr& object1, const ObjectPtr& object2);
 
-extern void addWeighted(ObjectPtr& target, ObjectPtr source, double weight);
-extern void addWeighted(ObjectPtr& object, PerceptionPtr perception, const Variable& input, double weight);
+extern void addWeighted(ObjectPtr& target, const ObjectPtr& source, double weight);
+extern void addWeighted(ObjectPtr& object, const PerceptionPtr& perception, const Variable& input, double weight);
 
 }; /* namespace lbcpp */
 
