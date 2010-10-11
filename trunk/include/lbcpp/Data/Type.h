@@ -38,8 +38,6 @@ extern void deinitialize();
 
 class TemplateType;
 typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
-class Enumeration;
-typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
@@ -80,10 +78,10 @@ public:
   void setBaseType(TypePtr baseType)
     {this->baseType = baseType;}
 
-  bool inheritsFrom(const TypePtr& baseType) const;
-  bool canBeCastedTo(const TypePtr& targetType) const;
+  bool inheritsFrom(TypePtr baseType) const;
+  bool canBeCastedTo(TypePtr targetType) const;
 
-  static TypePtr findCommonBaseType(const TypePtr& type1, const TypePtr& type2);
+  static TypePtr findCommonBaseType(TypePtr type1, TypePtr type2);
 
   /*
   ** Template Arguments
@@ -97,7 +95,7 @@ public:
   size_t getNumTemplateArguments() const
     {return templateArguments.size();}
   
-  const TypePtr& getTemplateArgument(size_t index) const
+  TypePtr getTemplateArgument(size_t index) const
     {jassert(index < templateArguments.size()); return templateArguments[index];}
   
   /*
@@ -187,9 +185,6 @@ extern TypePtr sumType(const std::vector<TypePtr>& types);
 /*
 ** Enumeration
 */
-class Enumeration;
-typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
-
 class Enumeration : public Type
 {
 public:
@@ -280,8 +275,6 @@ public:
   juce_UseDebuggingNewOperator
 };
 
-typedef ReferenceCountedObjectPtr<Class> ClassPtr;
-
 extern ClassPtr objectClass;
 extern ClassPtr typeClass;
 extern ClassPtr enumerationClass;
@@ -323,7 +316,7 @@ public:
 private:
   CriticalSection lock;
   String typeName;
-  std::map<Type*, Type*> m;
+  std::map<TypePtr, TypePtr> m;
 };
 
 class BinaryTemplateTypeCache
@@ -336,7 +329,7 @@ public:
 private:
   String typeName;
   CriticalSection lock;
-  std::map<std::pair<Type*, Type*>, Type*> m;
+  std::map<std::pair<TypePtr, TypePtr>, TypePtr> m;
 };
 
 }; /* namespace lbcpp */

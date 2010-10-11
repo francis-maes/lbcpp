@@ -35,6 +35,15 @@ void PerceptionCallback::sense(size_t variableNumber, const PerceptionPtr& subPe
 /*
 ** Perception
 */
+/*Perception::~Perception()
+{
+  if (outputType)
+  {
+    delete (DynamicClass* )outputType;
+    outputType.clear();
+  }
+}
+*/
 String Perception::classNameToOutputClassName(const String& className)
 {
   String res;
@@ -57,7 +66,7 @@ TypePtr Perception::getOutputType() const
     const_cast<Perception* >(this)->computeOutputType();
     jassert(outputType);
   }
-  return outputType;
+  return outputType.get();
 }
 
 Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
@@ -68,7 +77,7 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   ObjectPtr res;
   if (isSparse())
   {
-    DynamicClassPtr dynamicClassOutputType = outputType.dynamicCast<DynamicClass>();
+    DynamicClassPtr dynamicClassOutputType = (DynamicClass* )outputType.dynamicCast<DynamicClass>();
     if (dynamicClassOutputType)
       res = dynamicClassOutputType->createSparseObject();
   }

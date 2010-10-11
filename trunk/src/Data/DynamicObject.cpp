@@ -29,15 +29,15 @@ ObjectPtr DynamicClass::createDenseObject() const
       hasOnlyObjects = false;
   }
   if (hasOnlyDoubles)
-    return new DenseDoubleObject(refCountedPointerFromThis(this));
+    return new DenseDoubleObject(nativePointerFromThis(this));
   else if (hasOnlyObjects)
-    return new DenseObjectObject(refCountedPointerFromThis(this));
+    return new DenseObjectObject(nativePointerFromThis(this));
   else
-    return new DenseGenericObject(refCountedPointerFromThis(this));
+    return new DenseGenericObject(nativePointerFromThis(this));
 }
 
 ObjectPtr DynamicClass::createSparseObject() const
-  {return new SparseGenericObject(refCountedPointerFromThis(this));}
+  {return new SparseGenericObject(nativePointerFromThis(this));}
 
 Variable DynamicClass::getObjectVariable(const Object* pthis, size_t index) const
   {jassert(pthis); return pthis->getVariable(index);}

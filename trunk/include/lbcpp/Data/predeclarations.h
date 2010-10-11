@@ -48,9 +48,12 @@ typedef ReferenceCountedObjectPtr<StoppingCriterion> StoppingCriterionPtr;
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 class Type;
-typedef ReferenceCountedObjectPtr<Type> TypePtr;
+typedef NativePtr<Type> TypePtr;
 class Class;
-typedef ReferenceCountedObjectPtr<Class> ClassPtr;
+typedef NativePtr<Class> ClassPtr;
+class Enumeration;
+typedef NativePtr<Enumeration> EnumerationPtr;
+
 class Pair;
 typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 class Stream;

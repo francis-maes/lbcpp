@@ -37,16 +37,17 @@ namespace lbcpp
 class Variable
 {
 public:
-  Variable(bool boolValue, const TypePtr& type = booleanType);
-  Variable(int intValue, const TypePtr& type = integerType);
-  Variable(juce::int64 intValue, const TypePtr& type = integerType);
-  Variable(size_t intValue, const TypePtr& type = positiveIntegerType);
-  Variable(double doubleValue, const TypePtr& type = doubleType);
-  Variable(const String& stringValue, const TypePtr& type = stringType);
-  Variable(const File& fileValue, const TypePtr& type = fileType);
+  Variable(bool boolValue, TypePtr type = booleanType);
+  Variable(int intValue, TypePtr type = integerType);
+  Variable(juce::int64 intValue, TypePtr type = integerType);
+  Variable(size_t intValue, TypePtr type = positiveIntegerType);
+  Variable(double doubleValue, TypePtr type = doubleType);
+  Variable(const String& stringValue, TypePtr type = stringType);
+  Variable(const File& fileValue, TypePtr type = fileType);
   Variable(const ObjectPtr& object);
-  template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, const TypePtr& expectedType = nilType);
+  template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr expectedType = nilType);
   Variable(Object* object);
+  template<class T> Variable(NativePtr<T> object, TypePtr expectedType = nilType);
   Variable(const Variable& other);
   Variable();
   
@@ -57,14 +58,14 @@ public:
   Variable(Variable&& other)
   {
     type = other.type;
-    other.type = nilType.get();
+    other.type = nilType;
     value = other.value;
     other.value.clearBuiltin();
   }
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T>&& other)
-    : type(other ? other->getClass().get() : nilType.get()), value(other)
+    : type(other ? other->getClass() : nilType), value(other)
   {
   }
 
@@ -72,7 +73,7 @@ public:
   {
     clear();
     type = other.type;
-    other.type = nilType.get();
+    other.type = nilType;
     value = other.value;
     return *this;
   }
@@ -81,7 +82,7 @@ public:
   Variable& operator =(ReferenceCountedObjectPtr<T>&& other)
   {
     clear();
-    type = other ? other->getClass().get() : nilType.get();
+    type = other ? other->getClass() : nilType;
     value = other;
     return *this;
   }
@@ -98,9 +99,9 @@ public:
   ** @return an instance of @a type Variable.
   ** @see Type::declare
   */
-  static Variable create(const TypePtr& type);
-  static Variable createFromXml(const TypePtr& type, XmlImporter& importer);
-  static Variable createFromString(const TypePtr& type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
+  static Variable create(TypePtr type);
+  static Variable createFromXml(TypePtr type, XmlImporter& importer);
+  static Variable createFromString(TypePtr type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
 
   /**
   ** Loads a variable from a file.
@@ -112,19 +113,19 @@ public:
   */
   static Variable createFromFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
 
-  static Variable missingValue(const TypePtr& type);
+  static Variable missingValue(TypePtr type);
 
   static Variable pair(const Variable& variable1, const Variable& variable2);
   static Variable pair(const Variable& variable1, const Variable& variable2, TypePtr pairType);
-  static Variable copyFrom(const TypePtr& type, const VariableValue& value);
+  static Variable copyFrom(TypePtr type, const VariableValue& value);
   void copyTo(VariableValue& dest) const;
     
   void clear();
 
-  const TypePtr& getType() const;
+  TypePtr getType() const;
   String getTypeName() const;
   
-  bool inheritsFrom(const TypePtr& baseType) const
+  bool inheritsFrom(TypePtr baseType) const
     {return type->inheritsFrom(baseType);}
 
   bool exists() const;
@@ -216,10 +217,10 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  Variable(const TypePtr& type, const VariableValue& value)
-    : type(type.get()), value(value) {}
+  Variable(TypePtr type, const VariableValue& value)
+    : type(type), value(value) {}
 
-  Type* type;
+  TypePtr type;
   VariableValue value;
 };
 

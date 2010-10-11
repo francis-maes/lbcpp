@@ -24,6 +24,8 @@ class TypeManager
 {
 public:
   TypeManager() : standardTypesAreDeclared(false) {}
+  ~TypeManager()
+    {clear();}
 
   void declare(TypePtr type)
   {
@@ -151,10 +153,15 @@ public:
   void clear()
   {
     ScopedLock _(typesLock);
-    for (TypeMap::iterator it = types.begin(); it != types.end(); ++it)
-      it->second->deinitialize();
-    types.clear();
+    for (TemplateTypeMap::iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
+      it->second.clear();
     templateTypes.clear();
+    for (TypeMap::iterator it = types.begin(); it != types.end(); ++it)
+    {
+      it->second->deinitialize();
+      delete it->second;
+    }
+    types.clear();
   }
 
 private:
@@ -168,7 +175,6 @@ private:
       ScopedLock _(other.instancesLock);
       instances = other.instances;
     }
-
     TemplateTypePtr definition;
 
     TypePtr getInstanceCached(const std::vector<TypePtr>& arguments, MessageCallback& callback)
@@ -179,6 +185,14 @@ private:
         return it->second;
       else
         return instantiate(arguments, callback);
+    }
+
+    void clear()
+    {
+      ScopedLock _(instancesLock);
+      for (InstanceMap::iterator it = instances.begin(); it != instances.end(); ++it)
+        delete it->second;
+      instances.clear();
     }
 
   private:
@@ -280,7 +294,7 @@ void Type::deinitialize()
 ClassPtr Type::getClass() const
   {return typeClass;}
 
-bool Type::inheritsFrom(const TypePtr& baseType) const
+bool Type::inheritsFrom(TypePtr baseType) const
 {
   jassert(this && baseType.get());
 
@@ -302,7 +316,7 @@ bool Type::inheritsFrom(const TypePtr& baseType) const
   return this->baseType->inheritsFrom(baseType);
 }
 
-bool Type::canBeCastedTo(const TypePtr& targetType) const
+bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
 
 VariableValue Type::getMissingValue() const
@@ -369,7 +383,7 @@ Variable Type::getElement(const VariableValue& value, size_t index) const
 String Type::getElementName(const VariableValue& value, size_t index) const
   {jassert(baseType); return baseType->getElementName(value, index);}
 
-TypePtr Type::findCommonBaseType(const TypePtr& type1, const TypePtr& type2)
+TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
 {
   if (type1->inheritsFrom(type2))
     return type2;
@@ -404,7 +418,7 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
   TypePtr res;
   {
     ScopedLock _(lock);
-    std::map<Type*, Type*>::const_iterator it = m.find(argument.get());
+    std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument.get());
     if (it == m.end())
     {
       res = getTypeManagerInstance().getType(typeName, std::vector<TypePtr>(1, argument), MessageCallback::getInstance());
@@ -426,13 +440,13 @@ BinaryTemplateTypeCache::BinaryTemplateTypeCache(const String& typeName)
 TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
 {
   jassert(argument1 && argument2);
-  std::pair<Type*, Type*> key(argument1.get(), argument2.get());
+  std::pair<TypePtr, TypePtr> key(argument1.get(), argument2.get());
 
   TypePtr res;
   //double timeBegin = Time::getMillisecondCounterHiRes();
   {
     ScopedLock _(lock);
-    std::map<std::pair<Type*, Type*>, Type*>::const_iterator it = m.find(key);
+    std::map<std::pair<TypePtr, TypePtr>, TypePtr>::const_iterator it = m.find(key);
     if (it == m.end())
     {
       std::vector<TypePtr> arguments(2);
