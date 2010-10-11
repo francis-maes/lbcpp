@@ -60,18 +60,13 @@ String Object::getVariableName(size_t index) const
 Variable Object::getVariable(size_t index) const
 {
   jassert(index < getClass()->getObjectNumVariables());
-  VariableValue pthis(const_cast<Object* >(this));
-  Variable res = getClass()->getObjectVariable(pthis, index);
-  pthis.clearObject();
-  return res;
+  return getClass()->getObjectVariable(this, index);
 }
 
 void Object::setVariable(size_t index, const Variable& value)
 {
   jassert(index < getClass()->getObjectNumVariables());
-  VariableValue pthis(this);
-  getClass()->setObjectVariable(pthis, index, value);
-  pthis.clearObject();
+  getClass()->setObjectVariable(this, index, value);
 }
 
 

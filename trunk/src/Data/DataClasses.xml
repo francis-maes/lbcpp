@@ -56,15 +56,15 @@
       virtual size_t getObjectNumVariables() const
         {return getEnumeration()->getNumElements() + 1;}
 
-      virtual Variable getObjectVariable(const VariableValue&amp; value, size_t index) const
+      virtual Variable getObjectVariable(const Object* pthis, size_t index) const
       {
-        DiscreteProbabilityDistributionPtr distribution = value.getObjectAndCast&lt;DiscreteProbabilityDistribution&gt;();
+        const DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;const DiscreteProbabilityDistribution* &gt;>(pthis);
         return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
       }
 
-      virtual void setObjectVariable(const VariableValue&amp; value, size_t index, const Variable&amp; subValue) const
+      virtual void setObjectVariable(Object* pthis, size_t index, const Variable&amp; subValue) const
       {
-        DiscreteProbabilityDistributionPtr distribution = value.getObjectAndCast&lt;DiscreteProbabilityDistribution&gt;();
+        DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;DiscreteProbabilityDistribution* &gt;>(pthis);
         if (distribution)
         {
           if (!distribution->values.size())

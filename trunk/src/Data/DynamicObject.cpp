@@ -39,20 +39,15 @@ ObjectPtr DynamicClass::createDenseObject() const
 ObjectPtr DynamicClass::createSparseObject() const
   {return new SparseGenericObject(refCountedPointerFromThis(this));}
 
-Variable DynamicClass::getObjectVariable(const VariableValue& value, size_t index) const
-{
-  ObjectPtr object = value.getObject();
-  jassert(object);
-  return object->getVariable(index);
-}
+Variable DynamicClass::getObjectVariable(const Object* pthis, size_t index) const
+  {jassert(pthis); return pthis->getVariable(index);}
 
-void DynamicClass::setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const
+void DynamicClass::setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const
 {
   if (checkInheritance(subValue.getType(), getObjectVariableType(index)))
   {
-    ObjectPtr object = value.getObject();
-    jassert(object);
-    object->setVariable(index, subValue);
+    jassert(pthis);
+    pthis->setVariable(index, subValue);
   }
 }
 

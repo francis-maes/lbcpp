@@ -28,8 +28,8 @@ public:
   ** Class
   */
   virtual VariableValue create() const;
-  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const;
-  virtual void setObjectVariable(const VariableValue& value, size_t index, const Variable& subValue) const;
+  virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
+  virtual void setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Object
