@@ -95,19 +95,9 @@ public:
 #endif
 
   /** Increments the object's reference count.  */
-  inline void incrementReferenceCounter()
-  {
-    juce::atomicIncrement(refCount);
-    juce::atomicIncrement(numAccesses);
-  }
-
+  void incrementReferenceCounter();
   /** Decrements the object's reference count.  */
-  inline void decrementReferenceCounter()
-  {
-    juce::atomicIncrement(numAccesses);
-    if (juce::atomicDecrementAndReturn(refCount) == 0)
-      delete this;
-  }
+  void decrementReferenceCounter();
 };
 
 /**
@@ -270,15 +260,16 @@ public:
     If the cast is invalid, this function returns a null pointer.
   */
   template<class O>
-  inline ReferenceCountedObjectPtr<O> dynamicCast() const
+  inline const ReferenceCountedObjectPtr<O>& dynamicCast() const
   {
     if (ptr)
     {
       O* res = dynamic_cast<O* >(ptr);
       if (res)
-        return ReferenceCountedObjectPtr<O>(res);
+        return *reinterpret_cast<const ReferenceCountedObjectPtr<O>* >(this);
     }
-    return ReferenceCountedObjectPtr<O>();
+    static ReferenceCountedObjectPtr<O> empty;
+    return empty;
   }
 
   /** Static cast the object that this pointer references.
@@ -286,14 +277,15 @@ public:
      This cast is unchecked, so be sure of what you are doing.
   */
   template<class O>
-  inline ReferenceCountedObjectPtr<O> staticCast() const
+  inline const ReferenceCountedObjectPtr<O>& staticCast() const
   {
     if (ptr)
     {
       jassert(dynamic_cast<O* >(ptr));
-      return ReferenceCountedObjectPtr<O>(static_cast<O* >(ptr));
+      return *reinterpret_cast<const ReferenceCountedObjectPtr<O>* >(this);
     }
-    return ReferenceCountedObjectPtr<O>();
+    static ReferenceCountedObjectPtr<O> empty;
+    return empty;
   }
 
   /** Returns true if the object that this pointer references is an instance of the given class. */
@@ -336,15 +328,17 @@ inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
 ** load() is responsible for declaring an error to the ErrorManager.
 */
 template<class T>
-inline ReferenceCountedObjectPtr<T> checkCast(const juce::tchar* where, ReferenceCountedObjectPtr<ReferenceCountedObject> object, MessageCallback& callback = MessageCallback::getInstance())
+inline const ReferenceCountedObjectPtr<T>& checkCast(const juce::tchar* where, const ReferenceCountedObjectPtr<ReferenceCountedObject>& object, MessageCallback& callback = MessageCallback::getInstance())
 {
 #ifdef JUCE_DEBUG
-  ReferenceCountedObjectPtr<T> res;
-  if (object)
+  static ReferenceCountedObjectPtr<T> empty;
+  if (!object)
+    return empty;
+  const ReferenceCountedObjectPtr<T>& res = object.dynamicCast<T>();
+  if (!res)
   {
-    res = object.dynamicCast<T>();
-    if (!res)
-      callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
+    callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
+    return empty;
   }
   return res;
 #else

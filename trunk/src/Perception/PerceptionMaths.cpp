@@ -308,14 +308,14 @@ struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductCallba
 
   virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
-    ObjectPtr objectValue = object->getObject(variableNumber);
+    const ObjectPtr& objectValue = object->getObject(variableNumber);
     if (objectValue)
       res += dotProduct(objectValue, value);
   }
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
-    ObjectPtr subObject = object->getObject(variableNumber);
+    const ObjectPtr& subObject = object->getObject(variableNumber);
     if (subObject)
       res += dotProduct(subObject, subPerception, subInput);
   }

@@ -106,11 +106,11 @@ struct VariableValue
   void setString(const String& str)
     {jassert(!u.stringValue); u.stringValue = new String(str);}
 
-  ObjectPtr getObject() const
-    {return u.objectValue ? ObjectPtr(u.objectValue) : ObjectPtr();}
+  const ObjectPtr& getObject() const
+    {return *reinterpret_cast<const ObjectPtr* >(this);}
 
   template<class O>
-  ReferenceCountedObjectPtr<O> getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const
+  const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const
     {return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);}
 
   Object* getObjectPointer() const
