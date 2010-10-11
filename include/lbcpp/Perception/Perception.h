@@ -35,10 +35,10 @@ public:
   virtual void sense(size_t variableNumber, const String& value)
     {sense(variableNumber, Variable(value));}
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
     {sense(variableNumber, Variable(value));}
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input);
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input);
 };
 
 typedef PerceptionCallback* PerceptionCallbackPtr; // no ref-counting for PerceptionCallbacks

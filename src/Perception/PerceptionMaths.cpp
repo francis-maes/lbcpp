@@ -55,7 +55,7 @@ struct DoubleConstUnaryOperationCallback : public PerceptionCallback
   virtual void sense(size_t variableNumber, double value)
     {operation.sense(value);}
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
     {operation.sense(value);}
 
   virtual void sense(size_t variableNumber, const Variable& value)
@@ -69,7 +69,7 @@ struct DoubleConstUnaryOperationCallback : public PerceptionCallback
     }
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
     {operation.sense(subPerception, input);}
 };
 
@@ -281,14 +281,14 @@ struct DefaultComputeDotProductCallback : public ComputeDotProductCallback
     }
   }
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
     Variable objectValue = object->getVariable(variableNumber);
     if (objectValue.exists())
       res += dotProduct(objectValue.getObject(), value);
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     ObjectPtr subObject = object->getVariable(variableNumber).getObject();
     if (subObject)
@@ -306,14 +306,14 @@ struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductCallba
   virtual void sense(size_t variableNumber, double value)
     {jassert(false);}
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
     ObjectPtr objectValue = object->getObject(variableNumber);
     if (objectValue)
       res += dotProduct(objectValue, value);
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     ObjectPtr subObject = object->getObject(variableNumber);
     if (subObject)
@@ -338,10 +338,10 @@ struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductCallba
     }
   }
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
     {jassert(false);}
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
     {jassert(false);}
 };
 
@@ -446,14 +446,14 @@ struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<Operati
     object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
   }
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
     ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
     BaseClass::operation.compute(targetObject, value);
     object->setVariable(variableNumber, targetObject);
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     ObjectPtr subObject = object->getVariable(variableNumber).getObject();
     if (!subObject)
@@ -478,13 +478,13 @@ struct DenseObjectAssignmentCallback : public DoubleAssignmentCallback<Operation
   virtual void sense(size_t variableNumber, double value)
     {jassert(false);}
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
     ObjectPtr& targetObject = object->getObjectReference(variableNumber);
     BaseClass::operation.compute(targetObject, value);
   }
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     ObjectPtr& targetObject = object->getObjectReference(variableNumber);
     BaseClass::operation.compute(targetObject, subPerception, subInput);
@@ -509,10 +509,10 @@ struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<Operation
     BaseClass::operation.compute(targetValue, value);
   }
 
-  virtual void sense(size_t variableNumber, ObjectPtr value)
+  virtual void sense(size_t variableNumber, const ObjectPtr& value)
     {jassert(false);}
 
-  virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& subInput)
+  virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
     {jassert(false);}
 
   DenseDoubleObject* object;

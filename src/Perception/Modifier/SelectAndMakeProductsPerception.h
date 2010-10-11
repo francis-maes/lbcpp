@@ -41,13 +41,13 @@ public:
     virtual void sense(size_t variableNumber, double value)
       {variables[variableNumber].second = value;}
 
-    virtual void sense(size_t variableNumber, ObjectPtr value)
+    virtual void sense(size_t variableNumber, const ObjectPtr& value)
       {variables[variableNumber].second = value;}
 
     virtual void sense(size_t variableNumber, const Variable& value)
       {variables[variableNumber].second = value;}
 
-    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
       {variables[variableNumber].first = subPerception; variables[variableNumber].second = input;}
   };
 

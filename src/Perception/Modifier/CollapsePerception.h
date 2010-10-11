@@ -50,13 +50,13 @@ public:
     virtual void sense(size_t variableNumber, double value)
       {}
 
-    virtual void sense(size_t variableNumber, ObjectPtr value)
+    virtual void sense(size_t variableNumber, const ObjectPtr& value)
       {}
 
     virtual void sense(size_t variableNumber, const Variable& value)
       {}
 
-    virtual void sense(size_t variableNumber, PerceptionPtr subPerception, const Variable& input)
+    virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
     {
       currentNode = &(currentNode->childrens[variableNumber]);
       jassert(currentNode);
