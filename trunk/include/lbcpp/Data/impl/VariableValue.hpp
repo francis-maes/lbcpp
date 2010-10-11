@@ -63,7 +63,7 @@ struct VariableValue
 #endif // LBCPP_ENABLE_CPP0X_RVALUES
 
   VariableValue(Object* objectValue)
-    {u.objectValue = NULL; setObject(objectValue);}
+    {u.objectValue = objectValue; if (objectValue) objectValue->incrementReferenceCounter();}
   
   VariableValue(char* rawData)
     {u.rawDataValue = rawData;}

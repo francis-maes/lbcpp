@@ -280,7 +280,7 @@ void Type::deinitialize()
 ClassPtr Type::getClass() const
   {return typeClass;}
 
-bool Type::inheritsFrom(TypePtr baseType) const
+bool Type::inheritsFrom(const TypePtr& baseType) const
 {
   jassert(this && baseType.get());
 
@@ -302,7 +302,7 @@ bool Type::inheritsFrom(TypePtr baseType) const
   return this->baseType->inheritsFrom(baseType);
 }
 
-bool Type::canBeCastedTo(TypePtr targetType) const
+bool Type::canBeCastedTo(const TypePtr& targetType) const
   {return inheritsFrom(targetType);}
 
 VariableValue Type::getMissingValue() const
