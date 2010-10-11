@@ -152,7 +152,7 @@ inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<T>& objectVa
 }
 
 inline void VariableValue::clearBuiltin()
-  {memset(this, 0, sizeof (*this));}
+  {u.intValue = 0;}
 
 inline void VariableValue::clearObject(bool decrementRefCount)
 {
