@@ -47,8 +47,8 @@ public:
     if (!correctObject.exists() || !predictedObject.exists())
       return;
 
-    SymmetricMatrixPtr predicted = predictedObject.getObjectAndCast<SymmetricMatrix>();
-    SymmetricMatrixPtr correct = correctObject.getObjectAndCast<SymmetricMatrix>();
+    const SymmetricMatrixPtr& predicted = predictedObject.getObjectAndCast<SymmetricMatrix>();
+    const SymmetricMatrixPtr& correct = correctObject.getObjectAndCast<SymmetricMatrix>();
 
     jassert(predicted->getDimension() == predicted->getDimension());
     size_t n = predicted->getDimension();

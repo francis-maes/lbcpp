@@ -29,8 +29,8 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    PairPtr pair = input.getObjectAndCast<Pair>();
-    ContainerPtr container = pair->getFirst().getObjectAndCast<Container>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
     jassert(container);
     int n = (int)container->getNumElements();
     int index = pair->getSecond().getInteger();

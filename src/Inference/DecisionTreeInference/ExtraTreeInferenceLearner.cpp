@@ -23,8 +23,8 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
 
 Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  BinaryDecisionTreeInferencePtr inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
-  ContainerPtr trainingData = input[1].getObjectAndCast<Container>();
+  const BinaryDecisionTreeInferencePtr& inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
+  const ContainerPtr& trainingData = input[1].getObjectAndCast<Container>();
   jassert(inference && trainingData);
   if (!trainingData->getNumElements())
     return Variable();

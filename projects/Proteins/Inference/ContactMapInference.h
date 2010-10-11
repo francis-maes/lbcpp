@@ -39,8 +39,8 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ProteinPtr inputProtein = input.getObjectAndCast<Protein>();
-    SymmetricMatrixPtr supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>();
+    const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
+    const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>();
     jassert(inputProtein && (!supervision.exists() || supervisionMap));
 
     size_t n = inputProtein->getLength();
@@ -60,7 +60,7 @@ public:
 
   virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    ProteinPtr inputProtein = state->getInput().getObjectAndCast<Protein>();    
+    const ProteinPtr& inputProtein = state->getInput().getObjectAndCast<Protein>();    
     size_t n = inputProtein->getLength();
 
     SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
@@ -147,7 +147,7 @@ public:
 
     if (prediction.exists())
     {
-      ScalarFunctionPtr loss = supervision.getObjectAndCast<ScalarFunction>();
+      const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>();
       bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
       double unbiasedScore = (prediction.getDouble() - inference->getBias()) * 1000;
       roc.addPrediction(unbiasedScore, isPositiveExample);

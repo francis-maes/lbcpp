@@ -28,7 +28,7 @@ void ProteinInferenceHelper::setProteinDebugDirectory(const File& directory)
 
 ProteinPtr ProteinInferenceHelper::prepareInputProtein(const Variable& input)
 {
-  ProteinPtr inputProtein = input.getObjectAndCast<Protein>();
+  const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
   jassert(inputProtein);
   ProteinPtr workingProtein = inputProtein->cloneAndCast<Protein>();
   jassert(workingProtein);
@@ -89,7 +89,7 @@ void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr contex
 {
   if (state->getSubOutput().exists())
   {
-    ProteinPtr workingProtein = state->getSubOutput().getObjectAndCast<Protein>();
+    const ProteinPtr& workingProtein = state->getSubOutput().getObjectAndCast<Protein>();
     jassert(workingProtein);
     saveDebugFiles(workingProtein, state->getStepNumber());
   }
@@ -158,7 +158,7 @@ DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceConte
 
 Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
 {
-  ProteinPtr protein = finalState->getInput().getObjectAndCast<Protein>();
+  const ProteinPtr& protein = finalState->getInput().getObjectAndCast<Protein>();
   Variable prediction = finalState->getSubOutput();
   if (prediction.exists())
     protein->setVariable(targetIndex, prediction);
