@@ -54,10 +54,10 @@ inline Variable::Variable(const File& fileValue, TypePtr type)
   : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
 
 inline Variable::Variable(const ObjectPtr& object)
-  : type(object ? object->getClass() : nilType), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 inline Variable::Variable(Object* object)
-  : type(object ? object->getClass() : nilType), value(object) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 template<class T>
 inline Variable::Variable(NativePtr<T> object, TypePtr expectedType)
