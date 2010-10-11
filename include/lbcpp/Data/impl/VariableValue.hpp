@@ -51,7 +51,17 @@ struct VariableValue
     {u.stringValue = new String(stringValue);}
 
   template<class T>
-  VariableValue(ReferenceCountedObjectPtr<T> objectValue);
+  VariableValue(const ReferenceCountedObjectPtr<T>& objectValue);
+
+#ifdef LBCPP_ENABLE_CPP0X_RVALUES
+  template<class T>
+  VariableValue(ReferenceCountedObjectPtr<T>&& objectValue)
+  {
+    u.objectValue = objectValue.get();
+    objectValue.setPointerToNull();
+  }
+#endif // LBCPP_ENABLE_CPP0X_RVALUES
+
   VariableValue(Object* objectValue)
     {u.objectValue = NULL; setObject(objectValue);}
   
@@ -59,10 +69,10 @@ struct VariableValue
     {u.rawDataValue = rawData;}
 
   VariableValue(const VariableValue& other)
-    {memcpy(this, &other, sizeof (VariableValue));}
+    {jassert(sizeof (*this) == sizeof (u.intValue)); u.intValue = other.u.intValue;}
 
   VariableValue()
-    {memset(this, 0, sizeof (VariableValue));}
+    {jassert(sizeof (*this) == sizeof (u.intValue));  u.intValue = 0;}
 
   void clearBuiltin();
   void clearObject();
@@ -134,7 +144,7 @@ private:
 };
 
 template<class T>
-inline VariableValue::VariableValue(ReferenceCountedObjectPtr<T> objectValue)
+inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<T>& objectValue)
 {
   u.objectValue = objectValue.get();
   if (objectValue)
