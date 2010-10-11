@@ -9,7 +9,16 @@
 # define LBCPP_COMMON_H_
 
 # define LBCPP_MULTI_THREAD
-# define LBCPP_ENABLE_CPP0X_RVALUES
+
+# ifdef JUCE_WIN32
+#  if _MSC_VER>=1600
+#   define LBCPP_ENABLE_CPP0X_RVALUES
+#  endif
+# else 
+#  ifdef __GXX_EXPERIMENTAL_CXX0X__
+#   define LBCPP_ENABLE_CPP0X_RVALUES
+#  endif
+# endif
 
 /*
 ** Standard library
