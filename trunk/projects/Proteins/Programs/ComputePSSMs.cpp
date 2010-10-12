@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ComputePSSMs.cpp               | Compute ProteinObject PSSMs           |
+| Filename: ComputePSSMs.cpp               | Compute ProteinObject PSSMs     |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/04/2010 14:28               |                                 |
 `------------------------------------------/                                 |

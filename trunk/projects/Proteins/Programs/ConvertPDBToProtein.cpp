@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ConvertPDBToProtein.cpp        | Convert PDB to ProteinObject          |
+| Filename: ConvertPDBToProtein.cpp        | Convert PDB to Protein          |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/04/2010 11:20               |                                 |
 `------------------------------------------/                                 |
