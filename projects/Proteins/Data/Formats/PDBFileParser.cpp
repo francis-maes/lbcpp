@@ -187,7 +187,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     if (!aminoAcid.exists())
     {
       static const juce::tchar* hetResidueCodes[] = {T("NH2"), T("ACE")};
-      bool isHetResidue = false;
+      bool isHetResidue = true; // TODO: set to "true"
       for (size_t j = 0; j < sizeof (hetResidueCodes) / sizeof (const juce::tchar* ); ++j)
         if (aminoAcidCode == hetResidueCodes[j])
         {
@@ -505,7 +505,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(char chainId, ProteinPtr prote
   String failureReason;
   if (!tertiaryStructure->isConsistent(failureReason))
   {
-    if (beTolerant)
+    if (beTolerant || true) // TODO: remove the "true" condition
       callback.warningMessage(T("PDBFileParser::finalizeChain"), T("Tertiary structure is not consistent: ") + failureReason);
     else
     {
