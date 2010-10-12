@@ -36,9 +36,16 @@ struct DefaultParameters
   static size_t numThreads;
 };
 
+ThreadPoolPtr createThreadPool()
+{
+  ThreadPoolPtr threadPool = new ThreadPool(DefaultParameters::numThreads, false);
+  return threadPool;
+}
+
 InferenceContextPtr createInferenceContext()
 {
-  return multiThreadedInferenceContext(new ThreadPool(DefaultParameters::numThreads, false));
+  InferenceContextPtr context = multiThreadedInferenceContext(createThreadPool());
+  return context;
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
@@ -156,6 +163,7 @@ public:
     for (size_t i = 0; i < stack->getDepth() - 1; ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName() + T("\n");
+    MessageCallback::info(line);
   }
 
 private:
@@ -165,21 +173,38 @@ private:
 class WrappedInferenceCallback : public InferenceCallback
 {
 public:
+  WrappedInferenceCallback() : newEvaluators(false) {}
+  
   void setTrainingEvaluator(ProteinEvaluatorPtr trainingEvaluator)
-    {this->trainingEvaluator = trainingEvaluator;}
+  {
+    this->trainingEvaluator = trainingEvaluator;
+    newEvaluators = true;
+  }
 
   void setTestingEvaluator(ProteinEvaluatorPtr testingEvaluator)
-    {this->testingEvaluator = testingEvaluator;}
+  {
+    this->testingEvaluator = testingEvaluator;
+    newEvaluators = true;
+  }
 
+protected:
   ProteinEvaluatorPtr getTrainingEvaluator()
     {return trainingEvaluator;}
 
   ProteinEvaluatorPtr getTestingEvaluator()
     {return testingEvaluator;}
+  
+  bool hasNewEvaluators()
+  {
+    bool res = newEvaluators;
+    newEvaluators = false;
+    return res;
+  }
 
 private:
   ProteinEvaluatorPtr trainingEvaluator;
   ProteinEvaluatorPtr testingEvaluator;
+  bool newEvaluators;
 };
 
 typedef ReferenceCountedObjectPtr<WrappedInferenceCallback> WrappedInferenceCallbackPtr;
@@ -187,8 +212,8 @@ typedef ReferenceCountedObjectPtr<WrappedInferenceCallback> WrappedInferenceCall
 class WrapperInferenceCallback : public InferenceCallback
 {
 public:
-  WrapperInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
-  : inference(inference), trainingData(trainingData), testingData(testingData) {}
+  WrapperInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData, const String& inferenceNameToEvaluate)
+  : inference(inference), trainingData(trainingData), testingData(testingData), inferenceNameToEvaluate(inferenceNameToEvaluate) {}
 
   void appendCallback(WrappedInferenceCallbackPtr callback)
   {
@@ -204,7 +229,7 @@ public:
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     InferencePtr currentInference = stack->getCurrentInference();
-    if (currentInference->getName() == T("Pass learner"))
+    if (currentInference->getName() == inferenceNameToEvaluate) // T("Pass learner")
     {
       InferenceContextPtr validationContext = createInferenceContext();
 
@@ -230,6 +255,7 @@ private:
   ContainerPtr trainingData;
   ContainerPtr testingData;
   std::vector<WrappedInferenceCallbackPtr> callbacks;
+  const String inferenceNameToEvaluate;
 };
 
 typedef ReferenceCountedObjectPtr<WrapperInferenceCallback> WrapperInferenceCallbackPtr;
@@ -258,11 +284,10 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    InferencePtr currentInference = stack->getCurrentInference();
-    if (currentInference->getName() == T("Pass learner"))
+    if (hasNewEvaluators())
     {
       // end of learning pass
-      MessageCallback::info(String("\n====================================================") + 
+      MessageCallback::info(String("\n====================================================\n") + 
         T("===================  EVALUATION  ===================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s\n") +
         T("====================================================\n"));
 
@@ -314,8 +339,7 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    InferencePtr currentInference = stack->getCurrentInference();
-    if (currentInference->getName() == T("Pass learner"))
+    if (hasNewEvaluators())
     {
       ScopedLock _(fileLock);
       for (size_t i = 0; i < targets.size(); ++i)
@@ -430,17 +454,17 @@ int main(int argc, char** argv)
   ** Loading proteins
   */
   ContainerPtr trainingData = directoryFileStream(proteinsDirectory, T("*.xml"))
-                            ->apply(loadFromFileFunction(proteinClass))
                             ->load(numProteinsToLoad)
+                            ->apply(loadFromFileFunction(proteinClass), createThreadPool())
                             ->apply(proteinToInputOutputPairFunction())
                             ->randomize();
   ContainerPtr testingData;
-  
+
   if (testingProteinsDirectory != File::nonexistent)
   {
     testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
-                ->apply(loadFromFileFunction(proteinClass))
                 ->load()
+                ->apply(loadFromFileFunction(proteinClass), createThreadPool())
                 ->apply(proteinToInputOutputPairFunction());
   }
   
@@ -502,17 +526,6 @@ int main(int argc, char** argv)
   InferenceContextPtr context = createInferenceContext(); // = singleThreadedInferenceContext();
 
   /*
-  const String classNameToEvaluate = DefaultParameters::saveIterations ? T("RunOnSupervisedExamplesInference") : T("RunSequentialInferenceStepOnExamples");
-  const String classNameWhichContainTargetName = DefaultParameters::saveIterations ? T("OneAgainstAllClassificationInference") : T("ProteinInferenceStep");
-
-  WrapperInferenceCallbackPtr callbacks = new WrapperInferenceCallback(inference, trainingData, testingData, classNameWhichContainTargetName, classNameToEvaluate);
-  callbacks->appendCallback(new StandardOutputInferenceCallback(classNameToEvaluate));
-  callbacks->appendCallback(new GnuPlotInferenceCallback(File::getCurrentWorkingDirectory().getChildFile(output), classNameToEvaluate));
-
-  context->appendCallback(callbacks);
-  */
-  //context->appendCallback(new StackPrinterCallback());
-  /*
   ** Run
   */
   if (foldCrossValidation)
@@ -541,8 +554,9 @@ int main(int argc, char** argv)
     std::vector<String> targetsName;
     for (std::map<String, String>::iterator it = targetsMap.begin(); it != targetsMap.end(); ++it)
       targetsName.push_back(it->second);
-    
-    WrapperInferenceCallbackPtr callbacks = new WrapperInferenceCallback(inference, trainingData, testingData);
+
+    const String inferenceNameToEvaluate = DefaultParameters::saveIterations ? T("LearningPass") : T("Pass learner");
+    WrapperInferenceCallbackPtr callbacks = new WrapperInferenceCallback(inference, trainingData, testingData, inferenceNameToEvaluate);
     callbacks->appendCallback(new StandardOutputInferenceCallback());
     callbacks->appendCallback(new GnuPlotInferenceCallback(File::getCurrentWorkingDirectory().getChildFile(output), targetsName));
     //context->appendCallback(new StackPrinterCallback());

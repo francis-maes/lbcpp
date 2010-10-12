@@ -186,7 +186,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
     Variable aminoAcid = AminoAcid::fromThreeLettersCode(aminoAcidCode);
     if (!aminoAcid.exists())
     {
-      static const juce::tchar* hetResidueCodes[] = {T("NH2")};
+      static const juce::tchar* hetResidueCodes[] = {T("NH2"), T("ACE")};
       bool isHetResidue = false;
       for (size_t j = 0; j < sizeof (hetResidueCodes) / sizeof (const juce::tchar* ); ++j)
         if (aminoAcidCode == hetResidueCodes[j])
@@ -252,7 +252,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   // parse residue sequence number and insertion code
   int residueSequenceNumber;
   char residueInsertionCode;
-  if (!getInteger(line, 23, 26, residueSequenceNumber, callback) || !getChar(line, 27, residueInsertionCode, callback))
+  if (!getInteger(line, 24, 26, residueSequenceNumber, callback) || !getChar(line, 27, residueInsertionCode, callback))
     return false;
 
   // create a tertiary structure block if not done yet
@@ -269,7 +269,11 @@ bool PDBFileParser::parseAtomLine(const String& line)
   {
     if (residueSequenceNumber < currentResidueSerialNumber)
     {
-      callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Residue sequence number are misordered"));
+      callback.errorMessage(T("PDBFileParser::parseAtomLine"), T("Residue sequence number are misordered (previous: ")
+                            + String(residueSequenceNumber)
+                            + T(", current: ")
+                            + String(currentResidueSerialNumber)
+                            + T(")"));
       return false;
     }
 
