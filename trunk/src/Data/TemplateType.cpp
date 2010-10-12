@@ -139,30 +139,6 @@ int DefaultTemplateType::findParameter(const String& name) const
   return -1;
 }
 
-static void tokenizeTypeName(const String& str, const String& separators, StringArray& res)
-{
-  String currentToken;
-  for (int c = 0; c < str.length(); ++c)
-  {
-    if (separators.indexOfChar(str[c]) >= 0)
-    {
-      if (currentToken.isNotEmpty())
-      {
-        res.add(currentToken);
-        currentToken = String::empty;
-      }
-      res.add(str.substring(c, c + 1));
-    }
-    else
-      currentToken += str[c];
-  }
-  if (currentToken.isNotEmpty())
-  {
-    res.add(currentToken);
-    currentToken = String::empty;
-  }
-}
-
 TypePtr DefaultTemplateType::instantiateTypeName(const String& typeExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const
 {
   if (isInstanciatedTypeName(typeExpr))

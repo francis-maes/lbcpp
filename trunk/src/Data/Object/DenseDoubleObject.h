@@ -28,10 +28,7 @@ public:
   {
     jassert(index < thisClass->getObjectNumVariables());
     if (values.size() <= index)
-    {
-      size_t i = values.size();
       values.resize(index + 1, missingValue);
-    }
     return values[index];
   }
 
