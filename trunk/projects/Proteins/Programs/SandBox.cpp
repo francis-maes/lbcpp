@@ -244,11 +244,11 @@ int main(int argc, char** argv)
   inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  /*inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
-  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  /*inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
   inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));*/
 
@@ -273,7 +273,7 @@ int main(int argc, char** argv)
   inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
-  for (size_t i = 1; i <= 20; i += 1)
+  for (size_t i = 7; i <= 7; i += 1)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
