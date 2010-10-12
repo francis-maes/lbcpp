@@ -76,10 +76,10 @@ public:
       File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
 
-      ProteinPtr inputProtein = input.getObjectAndCast<Protein>()->clone();
+      const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>()->clone();
       jassert(inputProtein);
 
-      ProteinPtr outputProtein = output.getObjectAndCast<Protein>();
+      const ProteinPtr& outputProtein = output.getObjectAndCast<Protein>();
       jassert(outputProtein);
       
       for (size_t i = 0; i < outputProtein->getNumVariables(); ++i)

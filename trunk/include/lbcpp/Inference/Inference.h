@@ -178,14 +178,14 @@ public:
   }
 
 protected:
-  InferencePtr getInference(const Variable& input) const
+  const InferencePtr& getInference(const Variable& input) const
     {return input[0].getObjectAndCast<Inference>();}
 
   template<class T>
-  ReferenceCountedObjectPtr<T> getInferenceAndCast(const Variable& input) const
+  const ReferenceCountedObjectPtr<T>& getInferenceAndCast(const Variable& input) const
     {return input[0].getObjectAndCast<T>();}
 
-  ContainerPtr getTrainingData(const Variable& input) const
+  const ContainerPtr& getTrainingData(const Variable& input) const
     {return input[1].getObjectAndCast<Container>();}
 };
 

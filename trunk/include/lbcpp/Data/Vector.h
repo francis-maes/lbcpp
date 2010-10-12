@@ -256,7 +256,7 @@ protected:
 
   static ImplementationType getImplementation(const Variable& value)
   {
-    ReferenceCountedObjectPtr<ObjectType> v = value.getObjectAndCast<ObjectType>();
+    const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>();
     return v ? ImplementationType() : v->getValue();
   }
 };
@@ -277,7 +277,7 @@ template<class TT>
 inline void variableToNative(std::vector<TT>& dest, const Variable& source)
 {
   jassert(source.isObject());
-  VectorPtr sourceVector = source.getObjectAndCast<Vector>();
+  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>();
   if (sourceVector)
   {
     dest.resize(sourceVector->getNumElements());
@@ -292,7 +292,7 @@ template<class TT>
 inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)
 {
   dest = Variable::create(expectedType);
-  VectorPtr destVector = dest.getObjectAndCast<Vector>();
+  const VectorPtr& destVector = dest.getObjectAndCast<Vector>();
   jassert(destVector);
   destVector->resize(source.size());
   TypePtr elementsType = destVector->getElementsType();

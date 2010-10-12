@@ -339,8 +339,8 @@ inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
 ** @return false is the loading fails, true otherwise. If loading fails,
 ** load() is responsible for declaring an error to the ErrorManager.
 */
-template<class T>
-inline const ReferenceCountedObjectPtr<T>& checkCast(const juce::tchar* where, const ReferenceCountedObjectPtr<ReferenceCountedObject>& object, MessageCallback& callback = MessageCallback::getInstance())
+template<class T, class S>
+inline const ReferenceCountedObjectPtr<T>& checkCast(const juce::tchar* where, const ReferenceCountedObjectPtr<S>& object, MessageCallback& callback = MessageCallback::getInstance())
 {
 #ifdef JUCE_DEBUG
   static ReferenceCountedObjectPtr<T> empty;

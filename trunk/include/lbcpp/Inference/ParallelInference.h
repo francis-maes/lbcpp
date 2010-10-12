@@ -32,7 +32,7 @@ public:
   void addSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
     {subInferences.push_back(SubInference(subInference, subInput, subSupervision));}
 
-  InferencePtr getSubInference(size_t index) const
+  const InferencePtr& getSubInference(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index].inference;}
 
   const Variable& getSubInput(size_t index) const

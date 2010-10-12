@@ -58,8 +58,8 @@ public:
     if (!correctObject.exists() || !predictedObject.exists())
       return;
 
-    ProteinPtr predicted = predictedObject.getObjectAndCast<Protein>();
-    ProteinPtr correct = correctObject.getObjectAndCast<Protein>();
+    const ProteinPtr& predicted = predictedObject.getObjectAndCast<Protein>();
+    const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>();
 
     ++numProteins;
     predicted->computeMissingVariables();

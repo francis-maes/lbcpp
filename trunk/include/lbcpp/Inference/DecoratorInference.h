@@ -33,16 +33,16 @@ public:
   InferencePtr getSubInference() const
     {return subInference;}
 
-  Variable getSubInput() const
+  const Variable& getSubInput() const
     {return subInput;}
 
-  Variable getSubSupervision() const
+  const Variable& getSubSupervision() const
     {return subSupervision;}
 
   void setSubOutput(const Variable& subOutput)
     {this->subOutput = subOutput;}
 
-  Variable getSubOutput() const
+  const Variable& getSubOutput() const
     {return subOutput;}
 
   juce_UseDebuggingNewOperator

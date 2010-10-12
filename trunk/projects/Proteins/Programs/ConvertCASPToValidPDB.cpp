@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     if (!variable.exists())
       break;
 
-    ProteinPtr protein = variable.getObjectAndCast<Protein>();
+    const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
     
     String name = protein->getName().substring(0, 5);
     VectorPtr primaryStructure = protein->getPrimaryStructure();
