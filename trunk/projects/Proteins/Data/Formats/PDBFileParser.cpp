@@ -252,7 +252,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   // parse residue sequence number and insertion code
   int residueSequenceNumber;
   char residueInsertionCode;
-  if (!getInteger(line, 24, 26, residueSequenceNumber, callback) || !getChar(line, 27, residueInsertionCode, callback))
+  if (!getInteger(line, 23, 26, residueSequenceNumber, callback) || !getChar(line, 27, residueInsertionCode, callback))
     return false;
 
   // create a tertiary structure block if not done yet
