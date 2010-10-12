@@ -158,7 +158,7 @@ DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceConte
 
 Variable ProteinInferenceStep::finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
 {
-  ProteinPtr protein = finalState->getInput().getObjectAndCast<Protein>();
+  const ProteinPtr& protein = finalState->getInput().getObjectAndCast<Protein>();
   Variable prediction = finalState->getSubOutput();
   if (prediction.exists())
     protein->setVariable(targetIndex, prediction);

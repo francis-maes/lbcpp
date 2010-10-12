@@ -48,7 +48,7 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
       names.reserve(n);
       for (size_t i = 0; i < n; ++i)
       {
-        ProteinPtr protein = container->getElement(i).getObjectAndCast<Protein>();
+        const ProteinPtr& protein = container->getElement(i).getObjectAndCast<Protein>();
         if (protein)
         {
           protein->computeMissingVariables();

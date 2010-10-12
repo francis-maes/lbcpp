@@ -29,7 +29,7 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    DiscreteProbabilityDistributionPtr distribution = input.getObjectAndCast<DiscreteProbabilityDistribution>();
+    const DiscreteProbabilityDistributionPtr& distribution = input.getObjectAndCast<DiscreteProbabilityDistribution>();
     jassert(distribution);
     size_t n = enumeration->getNumElements();
     for (size_t i = 0; i <= n; ++i)
