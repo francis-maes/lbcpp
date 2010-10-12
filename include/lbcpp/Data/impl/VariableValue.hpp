@@ -107,17 +107,21 @@ struct VariableValue
     {jassert(!u.stringValue); u.stringValue = new String(str);}
 
   const ObjectPtr& getObject() const
-  {
-#ifdef JUCE_DEBUG
-    ObjectPtr object(u.objectValue);
-    jassert(memcmp(&object, this, sizeof (ObjectPtr)) == 0);
-#endif // JUCE_DEBUG
-    return *(const ObjectPtr* )this;
-  }
+    {return *(const ObjectPtr* )this;}
 
   template<class O>
   const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const
-    {return checkCast<O>(T("Variable::getObjectAndCast"), getObject(), callback);}
+  {
+#ifdef JUCE_DEBUG
+    if (u.objectValue && !dynamic_cast<O* >(u.objectValue))
+    {
+      static ReferenceCountedObjectPtr<O> empty;
+      callback.errorMessage(T("Variable::getObjectAndCast"), T("Could not cast object from '") + getTypeName(typeid(*u.objectValue)) + T("' to '") + getTypeName(typeid(O)) + T("'"));
+      return empty;
+    }
+#endif
+    return *(const ReferenceCountedObjectPtr<O>* )this;
+  }
 
   Object* getObjectPointer() const
     {return u.objectValue;}
