@@ -75,6 +75,8 @@ public:
   virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ScopedReadLock _(parametersLock);
+    if (!parameters)
+      return Variable::missingValue(doubleType);
     return lbcpp::dotProduct(parameters, perception, input);
   }
 
