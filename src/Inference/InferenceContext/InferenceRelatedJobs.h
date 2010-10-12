@@ -109,7 +109,7 @@ public:
       if (subInference)
       {
         double startingTime = Time::getMillisecondCounterHiRes();
-        juce::uint32 checkDebug = Time::getMillisecondCounter();
+        //juce::uint32 checkDebug = Time::getMillisecondCounter();
         
         returnCode = Inference::finishedReturnCode;
         subOutput = context->run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);

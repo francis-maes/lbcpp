@@ -53,6 +53,33 @@ Variable AminoAcid::fromThreeLettersCode(const String& code)
   for (size_t i = 0; i < 23; ++i)
     if (code.toUpperCase() == String(threeLettersCodes[i]).toUpperCase())
       return Variable(i, aminoAcidTypeEnumeration);
+
+  // ligands
+  if (code == T("MSE") || code == T("MHO"))
+    return Variable((int)methionine, aminoAcidTypeEnumeration);
+  else if (code == T("NEP") || code == T("MHS"))
+    return Variable((int)histidine, aminoAcidTypeEnumeration);
+  else if (code == T("ALY") || code == T("KCX"))
+    return Variable((int)lysine, aminoAcidTypeEnumeration);
+  else if (code == T("AGM"))
+    return Variable((int)arginine, aminoAcidTypeEnumeration);
+  else if (code == T("SMC") || code == T("OCS") || code == T("CSD") || code == T("CME"))
+    return Variable((int)cysteine, aminoAcidTypeEnumeration);
+  else if (code == T("GL3"))
+    return Variable((int)glycine, aminoAcidTypeEnumeration);
+  else if (code == T("GLH"))
+    return Variable((int)glutamicAcid, aminoAcidTypeEnumeration);
+  else if (code == T("PCA"))
+    return Variable((int)glutamine, aminoAcidTypeEnumeration);
+  else if (code == T("DBY"))
+    return Variable((int)tyrosine, aminoAcidTypeEnumeration);
+  else if (code == T("NLN"))
+    return Variable((int)leucine, aminoAcidTypeEnumeration);
+  else if (code == T("MEN"))
+    return Variable((int)asparagine, aminoAcidTypeEnumeration);
+  else if (code == T("HYP"))
+    return Variable((int)proline, aminoAcidTypeEnumeration);
+
   return Variable::missingValue(aminoAcidTypeEnumeration);
 }
 

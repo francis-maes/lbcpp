@@ -91,9 +91,12 @@ public:
   **
   ** @return a casted copy of the current object.
   */
-  template<class T>
-  ReferenceCountedObjectPtr<T> cloneAndCast() const
-    {return clone().checkCast<T>(T("Object::cloneAndCast"));}
+  template<class Type>
+  ReferenceCountedObjectPtr<Type> cloneAndCast() const
+  {
+    ObjectPtr res = clone();
+    return res.checkCast<Type>(T("Object::cloneAndCast"));
+  }
 
   /*
   ** Compare
