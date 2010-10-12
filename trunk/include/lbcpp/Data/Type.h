@@ -195,7 +195,7 @@ public:
   virtual ClassPtr getClass() const;
 
   static EnumerationPtr get(const String& className)
-    {return checkCast<Enumeration>(T("Enumeration::get"), Type::get(className));}
+    {return (EnumerationPtr)Type::get(className);}
 
   virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;

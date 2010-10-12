@@ -300,6 +300,31 @@ public:
       return ReferenceCountedObjectPtr<O>();*/
   }
 
+  /** Checks if a cast is valid and throw an error if not.
+  **
+  ** @param where : a description of the caller function
+  ** that will be used in case of an error.
+  ** @param object : to object to cast.
+  ** @return false is the loading fails, true otherwise. If loading fails,
+  ** load() is responsible for declaring an error to the ErrorManager.
+  */
+  template<class O>
+  inline const ReferenceCountedObjectPtr<O>& checkCast(const juce::tchar* where, MessageCallback& callback = MessageCallback::getInstance())
+  {
+  #ifdef JUCE_DEBUG
+    static ReferenceCountedObjectPtr<O> empty;
+    if (!ptr)
+      return empty;
+    if (!dynamicCast<O>())
+    {
+      callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*ptr)) + T("' to '") + getTypeName(typeid(O)) + T("'"));
+      return empty;
+    }
+  #endif
+    return staticCast<O>();
+  }
+
+
   /** Returns true if the object that this pointer references is an instance of the given class. */
   template<class O>
   inline bool isInstanceOf() const
@@ -331,29 +356,6 @@ template<class T>
 inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
   {return ReferenceCountedObjectPtr<T>(const_cast<T* >(pthis));}
 
-/** Checks if a cast is valid and throw an error if not.
-**
-** @param where : a description of the caller function
-** that will be used in case of an error.
-** @param object : to object to cast.
-** @return false is the loading fails, true otherwise. If loading fails,
-** load() is responsible for declaring an error to the ErrorManager.
-*/
-template<class T, class S>
-inline const ReferenceCountedObjectPtr<T>& checkCast(const juce::tchar* where, const ReferenceCountedObjectPtr<S>& object, MessageCallback& callback = MessageCallback::getInstance())
-{
-#ifdef JUCE_DEBUG
-  static ReferenceCountedObjectPtr<T> empty;
-  if (!object)
-    return empty;
-  if (!object.dynamicCast<T>())
-  {
-    callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
-    return empty;
-  }
-#endif
-  return object.staticCast<T>();
-}
 
 
 template<class T>
@@ -461,21 +463,6 @@ public:
 private:
   T* ptr;
 };
-
-template<class T>
-inline NativePtr<T> checkCast(const juce::tchar* where, const NativePtr<ReferenceCountedObject>& object, MessageCallback& callback = MessageCallback::getInstance())
-{
-#ifdef JUCE_DEBUG
-  if (!object)
-    return NativePtr<T>();
-  if (!object.dynamicCast<T>())
-  {
-    callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*object)) + T("' to '") + getTypeName(typeid(T)) + T("'"));
-    return NativePtr<T>();
-  }
-#endif
-  return object.staticCast<T>();
-}
 
 template<class T>
 inline NativePtr<T> nativePointerFromThis(const T* pthis)

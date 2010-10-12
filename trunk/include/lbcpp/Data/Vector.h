@@ -152,7 +152,7 @@ public:
 
   template<class T>
   ReferenceCountedObjectPtr<T> getAndCast(size_t index) const
-    {return checkCast<T>(T("ObjectVector::getAndCast"), get(index));}
+    {return get(index).checkCast<T>(T("ObjectVector::getAndCast"));}
 
   void set(size_t index, ObjectPtr object)
     {objects[index] = object;}

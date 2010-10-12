@@ -93,7 +93,7 @@ public:
   */
   template<class T>
   ReferenceCountedObjectPtr<T> cloneAndCast() const
-    {return checkCast<T>(T("Object::cloneAndCast"), clone());}
+    {return clone().checkCast<T>(T("Object::cloneAndCast"));}
 
   /*
   ** Compare
