@@ -225,7 +225,7 @@ public:
   virtual bool writeStandardInput(const String& input) const
     {return standardIO.writeStandardInput(input);}  
   
-  virtual bool kill()
+  virtual bool killProcess()
     {jassert(false); return false;} // not implemented yet
 
   virtual bool isRunning(int& returnCode)

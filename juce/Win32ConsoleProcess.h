@@ -244,7 +244,7 @@ public:
     return false;
   }
 
-  virtual bool kill()
+  virtual bool killProcess()
   {
     if (processHandle == INVALID_HANDLE_VALUE)
       return false;

@@ -382,9 +382,10 @@
 
 #if JUCE_LINUX
 
-  #ifdef _DEBUG
+  // francis:
+  #ifndef NDEBUG
     #define JUCE_DEBUG 1
-  #endif
+  #endif 
 
   // Allow override for big-endian Linux platforms
   #ifndef JUCE_BIG_ENDIAN

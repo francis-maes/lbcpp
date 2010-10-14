@@ -60,7 +60,7 @@ void ProcessManager::killAllRunningProcesses()
       runningProcesses->moveToTop(i, finishedProcesses);
     else
     {
-      if (process->kill())
+      if (process->killProcess())
         runningProcesses->moveToTop(i, killedProcesses);
       else
         ++i;
@@ -99,9 +99,9 @@ public:
     return process != NULL;
   }
 
-  virtual bool kill()
+  virtual bool killProcess()
   {
-    if (process->kill())
+    if (process->killProcess())
     {
       jassert(process);
       delete process;
@@ -186,7 +186,7 @@ class SshSgeProcess : public Process
     return false;
   }
   
-  virtual bool kill()
+  virtual bool killProcess()
   {
     return false;
   }
