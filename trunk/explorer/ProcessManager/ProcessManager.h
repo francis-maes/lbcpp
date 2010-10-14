@@ -28,7 +28,7 @@ public:
     {return executableFile.getFullPathName() + T(" ") + arguments;}
 
   virtual bool start() = 0;
-  virtual bool kill() = 0;
+  virtual bool killProcess() = 0;
 
   virtual void update() = 0;
   virtual bool isFinished() const = 0;

@@ -244,10 +244,10 @@ int main(int argc, char** argv)
   inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   /*inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
   inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));*/
@@ -261,6 +261,10 @@ int main(int argc, char** argv)
 
   InferenceContextPtr context = multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
+
+  context->crossValidate(inference, proteins, evaluator, 3);
+  std::cout << evaluator->toString() << std::endl;
+  return 0;
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
