@@ -1,5 +1,3 @@
-Experiments/MoonBox:
-* MoonBox: voir comment faire l'evaluation avec le meme InferenceContext que le reste
 * Finaliser le ParallelProteinInference
 
 Binary Classification (disorder regions and contactmaps):

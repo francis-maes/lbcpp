@@ -104,7 +104,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -159,8 +159,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName == T("LearningPass"))
+    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -202,7 +202,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #ifdef JUCE_DEBUG
   size_t maxCount = 10;
 #else
-  size_t maxCount = 10;
+  size_t maxCount = 100;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
@@ -265,11 +265,12 @@ int main(int argc, char** argv)
   InferenceContextPtr context = multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
+  /*
   ReferenceCountedObject::resetRefCountDebugInfo();
   context->crossValidate(inference, proteins, evaluator, 2);
   std::cout << evaluator->toString() << std::endl;
   ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
-  return 0;
+  return 0;*/
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
