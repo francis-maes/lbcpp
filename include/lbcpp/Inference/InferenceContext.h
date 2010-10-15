@@ -36,8 +36,11 @@ public:
   void removeCallback(InferenceCallbackPtr callback);
   void clearCallbacks();
 
-  void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
-  void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
+  const std::vector<InferenceCallbackPtr>& getCallbacks() const
+    {return callbacks;}
+
+  void setCallbacks(const std::vector<InferenceCallbackPtr>& callbacks)
+    {this->callbacks = callbacks;}
 
   juce_UseDebuggingNewOperator
 
@@ -54,8 +57,13 @@ protected:
   virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
   
   Variable callRunInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-    
+  
+  void callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
+  void callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
+
 private:
+  friend class InferenceContextClass;
+
   std::vector<InferenceCallbackPtr> callbacks;
 };
 

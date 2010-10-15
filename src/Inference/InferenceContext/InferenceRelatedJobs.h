@@ -34,7 +34,8 @@ public:
     ScopedLock _(contextLock);
     Thread* thread = Thread::getCurrentThread();
     jassert(thread);
-    context = new ThreadOwnedInferenceContext(parentContext, thread, pool, stack, areSubJobsAtomic);
+    context = new ThreadOwnedInferenceContext(thread, pool, stack, areSubJobsAtomic);
+    context->setCallbacks(parentContext->getCallbacks());
     jassert(context);
     return true;
   }

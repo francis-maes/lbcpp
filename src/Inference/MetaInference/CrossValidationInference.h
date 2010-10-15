@@ -32,6 +32,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return nilType;}
 
+
 protected:
   friend class CrossValidateStepInferenceClass;
 
@@ -57,7 +58,7 @@ class CrossValidationInference : public SharedParallelInference
 {
 public:
   CrossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds)
-    : SharedParallelInference(name, new CrossValidateStepInference(name + T(" step"), evaluator, inferenceModel)), numFolds(numFolds) {}
+    : SharedParallelInference(name, new CrossValidateStepInference(name + T(" step"), evaluator, inferenceModel)), inferenceModel(inferenceModel), numFolds(numFolds) {}
   CrossValidationInference() {}
 
   virtual TypePtr getInputType() const
@@ -68,6 +69,13 @@ public:
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return nilType;}
+
+  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  {
+    const ContainerPtr& trainingData = input.getObjectAndCast<Container>();
+    return String((int)numFolds) + T("-Cross Validating ") + inferenceModel->getName() + T(" with ") +
+      String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getName() + T("s");
+  }
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -89,6 +97,7 @@ public:
 protected:
   friend class CrossValidationInferenceClass;
 
+  InferencePtr inferenceModel;
   size_t numFolds;
 };
 
