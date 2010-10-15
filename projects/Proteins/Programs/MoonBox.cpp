@@ -107,15 +107,50 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
+    double learningRate = DefaultParameters::learningRate;
+    size_t learningRateUpdate = DefaultParameters::learningRateUpdate;
+    double regularizer = DefaultParameters::regularizer;
+    if (targetName == T("secondaryStructure"))
+    {
+      learningRate = 2;
+      learningRateUpdate = 5e4;
+      regularizer = 1e-5;
+    }
+    else if (targetName == T("dsspSecondaryStructure"))
+    {
+      learningRate = 2.0;
+      learningRateUpdate = 1e5;
+      regularizer = 1e-7;
+    }
+    else if (targetName == T("solventAccessibilityAt20p"))
+    {
+      learningRate = 1.0;
+      learningRateUpdate = 2e5;
+      regularizer = 1e-5;
+    }
+    else if (targetName == T("disorderRegions"))
+    {
+      learningRate = 2.0;
+      learningRateUpdate = 2e7;
+      regularizer = 1e-8;
+    }
+    else if (targetName == T("structuralAlphabetSequence"))
+    {
+      learningRate = 0.1;
+      learningRateUpdate = 1e4;
+      regularizer = 0;
+    }
+
     StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),
-                                                       maxIterationsWithoutImprovementStoppingCriterion(1));
+                                                       maxIterationsWithoutImprovementStoppingCriterion(4));
 
     if (DefaultParameters::forceUse)
       stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
 
     IterationFunctionPtr learningStepFunction = DefaultParameters::useConstantLearning ? constantIterationFunction(DefaultParameters::learningRate)
-                                                                              : invLinearIterationFunction(DefaultParameters::learningRate,
-                                                                                                           DefaultParameters::learningRateUpdate);
+                                                                              : invLinearIterationFunction(learningRate, learningRateUpdate);
+
+
 
     if (targetName.startsWith(T("contactMap")))
       return gradientDescentInferenceOnlineLearner(
@@ -127,7 +162,7 @@ protected:
       return gradientDescentInferenceOnlineLearner(
                                                    InferenceOnlineLearner::never,                                                 // randomization
                                                    InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
-                                                   InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(DefaultParameters::regularizer),         // regularizer
+                                                   InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(regularizer),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
   
@@ -231,7 +266,7 @@ public:
     InferencePtr currentInference = stack->getCurrentInference();
     if (currentInference->getName() == inferenceNameToEvaluate) // T("Pass learner")
     {
-      InferenceContextPtr validationContext = createInferenceContext();
+      InferenceContextPtr validationContext = createInferenceContext();//singleThreadedInferenceContext(); //
 
       ProteinEvaluatorPtr trainingEvaluator = new ProteinEvaluator();
       validationContext->evaluate(inference, trainingData, trainingEvaluator);
@@ -506,7 +541,7 @@ int main(int argc, char** argv)
 
   for (size_t i = 0; i < targets.size(); ++i)
   {
-    ProteinParallelInferencePtr inferencePass = new ProteinParallelInference("Pass");
+    ProteinSequentialInferencePtr inferencePass = new ProteinSequentialInference("Pass"); //new ProteinParallelInference("Pass");
     if (targets[i].contains(T("SS3")))
       inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
     if (targets[i].contains(T("SS8")))

@@ -47,7 +47,7 @@ private:
 class ProteinSequentialInference : public VectorSequentialInference, public ProteinInferenceHelper
 {
 public:
-  ProteinSequentialInference();
+  ProteinSequentialInference(const String& name = T("Protein"));
 
   virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);

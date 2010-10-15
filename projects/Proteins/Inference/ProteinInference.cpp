@@ -61,8 +61,8 @@ void ProteinInferenceHelper::saveDebugFiles(ProteinPtr protein, size_t stepNumbe
 /*
 ** ProteinSequentialInference
 */
-ProteinSequentialInference::ProteinSequentialInference()
-  : VectorSequentialInference(T("Protein"))
+ProteinSequentialInference::ProteinSequentialInference(const String& name)
+  : VectorSequentialInference(name)
 {
 }
 
