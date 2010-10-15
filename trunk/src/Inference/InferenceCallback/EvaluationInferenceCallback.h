@@ -25,10 +25,13 @@ public:
 
   virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    if (stack->getCurrentInference() == inference && output.exists() && supervision.exists())
+    if (stack->getCurrentInference() == inference)
     {
-      ScopedLock _(evaluatorLock);
-      evaluator->addPrediction(output, supervision);
+      if (output.exists() && supervision.exists())
+      {
+        ScopedLock _(evaluatorLock);
+        evaluator->addPrediction(output, supervision);
+      }
     }
   }
 

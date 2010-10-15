@@ -22,8 +22,8 @@ extern JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPool
 class ThreadOwnedInferenceContext : public InferenceContext
 {
 public:
-  ThreadOwnedInferenceContext(InferenceContextPtr parentContext, Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack, bool isAtomicJob = false)
-    : parentContext(parentContext), thread(thread), pool(pool),
+  ThreadOwnedInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack, bool isAtomicJob = false)
+    : thread(thread), pool(pool),
       stack(stack ? stack->cloneAndCast<InferenceStack>() : InferenceStackPtr(new InferenceStack())), isAtomicJob(isAtomicJob)
   {
   }
@@ -46,7 +46,6 @@ public:
     {
       ScopedLock _(stackLock);
       stack->push(inference);
-      parentContext->callPreInference(stack, input, supervision, output, returnCode);
       callPreInference(stack, input, supervision, output, returnCode);
     }
   }
@@ -55,7 +54,6 @@ public:
   {
     ScopedLock _(stackLock);
     callPostInference(stack, input, supervision, output, returnCode);
-    parentContext->callPostInference(stack, input, supervision, output, returnCode);
     stack->pop();
   }
 
@@ -134,7 +132,8 @@ public:
           size_t end = begin + step;
           if (end > n)
             end = n;
-          jobs.push_back(parallelInferenceJob(parentContext, pool, stack->cloneAndCast<InferenceStack>(), inference, state, begin, end, areSubJobsAtomic));
+          jobs.push_back(parallelInferenceJob(refCountedPointerFromThis(this), pool,
+            stack->cloneAndCast<InferenceStack>(), inference, state, begin, end, areSubJobsAtomic));
           begin = end;
         }
 
@@ -156,7 +155,6 @@ public:
 protected:
   friend class ThreadOwnedInferenceContextClass;
 
-  InferenceContextPtr parentContext;
   Thread* thread;
   ThreadPoolPtr pool;
 

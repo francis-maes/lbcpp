@@ -13,7 +13,9 @@
     </class>
     <class name="InferenceStack"/>
 
-    <class name="InferenceContext" abstract="yes"/>
+    <class name="InferenceContext" abstract="yes">
+      <variable type="ObjectVector[InferenceCallback]" name="callbacks"/>
+    </class>
 
     <class name="SingleThreadedInferenceContext" base="InferenceContext">
       <constructor/>
@@ -21,8 +23,7 @@
     </class>
 
     <class name="ThreadOwnedInferenceContext" base="InferenceContext">
-      <constructor arguments="InferenceContextPtr parentContext, Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack"/>
-      <variable type="InferenceContext" name="parentContext"/>
+      <constructor arguments="Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack"/>
       <variable type="ThreadPool" name="pool"/>
       <variable type="InferenceStack" name="stack"/>
     </class>
