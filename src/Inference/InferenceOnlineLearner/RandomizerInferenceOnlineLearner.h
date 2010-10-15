@@ -23,7 +23,7 @@ public:
   RandomizerInferenceOnlineLearner()
     : randomizationFrequency(never) {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     storeExample(input, supervision, prediction);
     if (randomizationFrequency >= perStepMiniBatch)
@@ -34,7 +34,7 @@ public:
     }
   }
  
-  virtual void episodeFinishedCallback(InferencePtr inference)
+  virtual void episodeFinishedCallback(const InferencePtr& inference)
   {
     if (randomizationFrequency == perEpisode || randomizationFrequency >= perStepMiniBatch + 1)
       flushExamples(inference);
@@ -42,7 +42,7 @@ public:
       targetLearningCallback->episodeFinishedCallback(inference);
   }
 
-  virtual void passFinishedCallback(InferencePtr inference)
+  virtual void passFinishedCallback(const InferencePtr& inference)
   {
     if (randomizationFrequency == perPass)
     {

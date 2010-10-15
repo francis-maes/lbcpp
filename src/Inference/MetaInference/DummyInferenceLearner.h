@@ -20,7 +20,7 @@ protected:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return Variable();}
 };
 

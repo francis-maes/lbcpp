@@ -72,7 +72,7 @@ public:
    // std::cout << " newL2 = " << l2norm(target) << std::endl;
   }
 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ScopedReadLock _(parametersLock);
     if (!parameters)

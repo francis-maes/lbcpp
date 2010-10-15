@@ -314,7 +314,7 @@ bool PDBFileParser::parseAtomLine(const String& line)
   else
   {
     if (tertiaryStructureBlock.size() && !checkResidueConsistency(tertiaryStructureBlock.back()))
-      ; //return false; // TODO: remove this line and repace it by "return false
+      {} //return false; // TODO: remove this line and repace it by "return false
     residue = new Residue((AminoAcidType)aminoAcid.getInteger());
     tertiaryStructureBlock.push_back(residue);
   }

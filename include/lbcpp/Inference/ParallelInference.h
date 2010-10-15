@@ -29,7 +29,7 @@ public:
   size_t getNumSubInferences() const
     {return subInferences.size();}
 
-  void addSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
+  void addSubInference(const InferencePtr& subInference, const Variable& subInput, const Variable& subSupervision)
     {subInferences.push_back(SubInference(subInference, subInput, subSupervision));}
 
   const InferencePtr& getSubInference(size_t index) const
@@ -52,7 +52,7 @@ public:
 private:
   struct SubInference
   {
-    SubInference(InferencePtr inference, const Variable& input, const Variable& supervision)
+    SubInference(const InferencePtr& inference, const Variable& input, const Variable& supervision)
       : inference(inference), input(input), supervision(supervision) {}
 
     InferencePtr inference;
@@ -78,8 +78,8 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context->runParallelInference(ParallelInferencePtr(this), input, supervision, returnCode);}
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return context->runParallelInference(this, input, supervision, returnCode);}
 };
 
 extern ClassPtr parallelInferenceClass;
@@ -165,7 +165,7 @@ public:
 protected:
   friend class SharedParallelInferenceClass;
 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   InferencePtr subInference;
 };

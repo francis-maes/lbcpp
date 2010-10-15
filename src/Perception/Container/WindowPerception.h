@@ -44,7 +44,7 @@ public:
         int position = startPosition + (int)i;
         if (position >= 0 && position < (int)container->getNumElements())
         {
-          Variable variable = container->getElement(position);
+          const Variable& variable = container->getElement(position);
           if (subPerception)
             callback->sense(i, subPerception, variable);
           else if (variable.exists())

@@ -11,7 +11,10 @@
       <variable type="Boolean" name="verbose"/>
       <variable type="AverageValuesCache" name="timingsCache"/>
     </class>
-    <class name="InferenceStack"/>
+    
+    <class name="InferenceStack">
+      <variable type="ObjectVector[Inference]" name="stack"/>
+    </class>
 
     <class name="InferenceContext" abstract="yes">
       <variable type="ObjectVector[InferenceCallback]" name="callbacks"/>

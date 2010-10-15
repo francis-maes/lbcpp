@@ -25,7 +25,7 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual Variable createEntry(ObjectPtr object) const;
+  virtual Variable createEntry(const ObjectPtr& object) const;
 };
 
 class HistogramPerception : public Perception
@@ -34,7 +34,7 @@ public:
   HistogramPerception(TypePtr elementsType, bool useCache);
   HistogramPerception() {}
 
-  virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const = 0;
+  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const = 0;
   
   virtual String toString() const
     {return elementsType->getName() + T(" histogram");}
@@ -62,14 +62,15 @@ public:
   virtual TypePtr getInputType() const
     {return containerClass(elementsType);}
   
-  virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
+  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
   {
-    container = input.getObjectAndCast<Container>();
+    const ContainerPtr& container = input.getObjectAndCast<Container>();
     if (container)
     {
       beginIndex = 0;
       endIndex = (int)container->getNumElements();
     }
+    return container;
   }
 };
 
@@ -83,13 +84,14 @@ public:
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), positiveIntegerType);}
   
-  virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
+  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
   {
     jassert(windowSize);
     const PairPtr& pair = input.getObjectAndCast<Pair>();
-    container = pair->getFirst().getObjectAndCast<Container>();
+    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
     beginIndex = pair->getSecond().getInteger() - (int)(windowSize / 2);
     endIndex = beginIndex + windowSize;
+    return container;
   }
 
 protected:
@@ -108,13 +110,14 @@ public:
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), pairClass(positiveIntegerType, positiveIntegerType));}
   
-  virtual void getInput(const Variable& input, ContainerPtr& container, int& beginIndex, int& endIndex) const
+  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>();
-    container = pair->getFirst().getObjectAndCast<Container>();
+    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
     const PairPtr& indexPair = pair->getSecond().getObjectAndCast<Pair>();
     beginIndex = indexPair->getFirst().getInteger();
     endIndex = indexPair->getSecond().getInteger(); 
+    return container;
   }
 };
 

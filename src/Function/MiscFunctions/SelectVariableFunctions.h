@@ -30,14 +30,15 @@ public:
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
-    Variable res = input;
     if (index >= 0)
     {
-      res = res.getObject()->getVariable(index);
+      Variable res = input.getObject()->getVariable(index);
       if (!res.exists())
         res = Variable::missingValue(input.getType()->getObjectVariableType((size_t)index));
+      return res;
     }
-    return res;
+    else
+      return input;
   }
 
 private:

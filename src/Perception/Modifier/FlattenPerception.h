@@ -90,9 +90,7 @@ private:
     {
       stack.push_back(variableNumber);
       updateOffset();
-
-      subPerception->computePerception(input, PerceptionCallbackPtr(this));
-
+      subPerception->computePerception(input, this);
       stack.pop_back();
       updateOffset();
     }

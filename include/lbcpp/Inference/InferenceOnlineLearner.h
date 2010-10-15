@@ -38,9 +38,9 @@ public:
     perStepMiniBatch1000 = perStepMiniBatch + 1000,
   };
 
-  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
-  virtual void episodeFinishedCallback(InferencePtr inference) = 0;
-  virtual void passFinishedCallback(InferencePtr inference) = 0;
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
+  virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
+  virtual void passFinishedCallback(const InferencePtr& inference) = 0;
 
   virtual double getCurrentLossEstimate() const = 0;
 
@@ -62,9 +62,9 @@ public:
 
   virtual void update(InferencePtr inference) = 0;
 
-  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferencePtr inference);
-  virtual void passFinishedCallback(InferencePtr inference);
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(const InferencePtr& inference);
+  virtual void passFinishedCallback(const InferencePtr& inference);
 
 protected:
   size_t epoch;

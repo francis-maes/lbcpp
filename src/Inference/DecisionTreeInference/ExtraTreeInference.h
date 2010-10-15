@@ -51,7 +51,7 @@ protected:
   PerceptionPtr perception;
   BinaryDecisionTreePtr tree;
 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return tree && tree->getNumNodes() ? tree->makePrediction(perception->compute(input)) : Variable::missingValue(getOutputType(input.getType()));}
 };
 

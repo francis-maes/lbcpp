@@ -63,7 +63,7 @@ public:
       if (currentNode->variableNumber >= 0)
         targetCallback->sense(currentNode->variableNumber, subPerception, input);
       else
-        subPerception->computePerception(input, PerceptionCallbackPtr(this));
+        subPerception->computePerception(input, this);
       currentNode = currentNode->parent;
       jassert(currentNode);
     }

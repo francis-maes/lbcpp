@@ -107,7 +107,7 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFre
 UpdatableInferenceOnlineLearner::UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency)
   : epoch(0), updateFrequency(updateFrequency) {}
 
-void UpdatableInferenceOnlineLearner::stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void UpdatableInferenceOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   ++epoch;
   if (updateFrequency == perStep)
@@ -120,13 +120,13 @@ void UpdatableInferenceOnlineLearner::stepFinishedCallback(InferencePtr inferenc
   }
 }
 
-void UpdatableInferenceOnlineLearner::episodeFinishedCallback(InferencePtr inference)
+void UpdatableInferenceOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
 {
   if (updateFrequency == perEpisode)
     update(inference);
 }
 
-void UpdatableInferenceOnlineLearner::passFinishedCallback(InferencePtr inference)
+void UpdatableInferenceOnlineLearner::passFinishedCallback(const InferencePtr& inference)
 {
   if (updateFrequency == perPass)
     update(inference);

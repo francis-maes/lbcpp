@@ -20,7 +20,7 @@ ObjectPtr NumericalInference::getParametersCopy() const
   return parameters ? parameters->clone() : ObjectPtr();
 }
 
-void NumericalInference::addWeightedToParameters(const ObjectPtr value, double weight)
+void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
 {
   {
     ScopedWriteLock _(parametersLock);

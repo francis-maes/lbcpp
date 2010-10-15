@@ -415,15 +415,26 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 {
   jassert(argument);
 
+  // make sure that the constructor has finished its work
+  while (true)
+  {
+    {
+      ScopedLock _(lock);
+      if (this && typeName.isNotEmpty())
+        break;
+    }
+    Thread::sleep(1);
+  }
+
   TypePtr res;
   {
     ScopedLock _(lock);
-    std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument.get());
+    std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument);
     if (it == m.end())
     {
       res = getTypeManagerInstance().getType(typeName, std::vector<TypePtr>(1, argument), MessageCallback::getInstance());
       jassert(res);
-      m[argument.get()] = res.get();
+      m[argument] = res.get();
     }
     else
       res = it->second;
@@ -440,7 +451,18 @@ BinaryTemplateTypeCache::BinaryTemplateTypeCache(const String& typeName)
 TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
 {
   jassert(argument1 && argument2);
-  std::pair<TypePtr, TypePtr> key(argument1.get(), argument2.get());
+  std::pair<TypePtr, TypePtr> key(argument1, argument2);
+
+  // make sure that the constructor has finished its work
+  while (true)
+  {
+    {
+      ScopedLock _(lock);
+      if (this && typeName.isNotEmpty())
+        break;
+    }
+    Thread::sleep(1);
+  }
 
   TypePtr res;
   //double timeBegin = Time::getMillisecondCounterHiRes();
@@ -455,7 +477,7 @@ TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument
 
       res = getTypeManagerInstance().getType(typeName, arguments, MessageCallback::getInstance());
       jassert(res);
-      m[std::make_pair(argument1.get(), argument2.get())] = res.get();
+      m[std::make_pair(argument1, argument2)] = res.get();
     }
     else
       res = it->second;

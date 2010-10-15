@@ -21,7 +21,7 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting) {}
 
-Variable SingleExtraTreeInferenceLearner::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SingleExtraTreeInferenceLearner::run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   const BinaryDecisionTreeInferencePtr& inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
   const ContainerPtr& trainingData = input[1].getObjectAndCast<Container>();

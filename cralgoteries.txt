@@ -1,5 +1,4 @@
 Experiments/MoonBox:
-* Bug Julien: crossValidation does not work for multi-pass SS3
 * MoonBox: voir comment faire l'evaluation avec le meme InferenceContext que le reste
 * Finaliser le ParallelProteinInference
 

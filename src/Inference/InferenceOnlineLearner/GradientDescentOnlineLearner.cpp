@@ -21,18 +21,18 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
 {
 }
 
-void GradientDescentOnlineLearner::stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   updateNumberOfActiveFeatures(getPerception(inference), input);
 }
   
-void GradientDescentOnlineLearner::episodeFinishedCallback(InferencePtr inference)
+void GradientDescentOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perEpisode)
     applyRegularizer(inference);
 }
 
-void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
+void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(inference);
@@ -50,7 +50,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferencePtr inference)
   }
 }
 
-void GradientDescentOnlineLearner::updateParameters(InferencePtr inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
+void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
   getNumericalInference(inference)->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, prediction, exampleLossValue, target);
@@ -71,26 +71,26 @@ bool GradientDescentOnlineLearner::shouldApplyRegularizerAfterStep(size_t epoch)
   return false;
 }
 
-void GradientDescentOnlineLearner::checkRegularizerAfterStep(InferencePtr inference)
+void GradientDescentOnlineLearner::checkRegularizerAfterStep(const InferencePtr& inference)
 {
   if (shouldApplyRegularizerAfterStep(epoch))
     applyRegularizer(inference);
 }
 
-void GradientDescentOnlineLearner::gradientDescentStep(InferencePtr inf, ObjectPtr gradient, double weight)
+void GradientDescentOnlineLearner::gradientDescentStep(const InferencePtr& inf, const ObjectPtr& gradient, double weight)
 {
   NumericalInferencePtr inference = getNumericalInference(inf);
   inference->addWeightedToParameters(gradient, -computeLearningRate() * weight);
 }
 
-void GradientDescentOnlineLearner::applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GradientDescentOnlineLearner::applyExample(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   ++epoch;
   updateParameters(inference, 1.0, input, supervision, prediction);
   checkRegularizerAfterStep(inference);
 }
 
-void GradientDescentOnlineLearner::applyRegularizer(InferencePtr inference)
+void GradientDescentOnlineLearner::applyRegularizer(const InferencePtr& inference)
 {
   if (regularizer)
   {
@@ -110,7 +110,7 @@ double GradientDescentOnlineLearner::computeLearningRate() const
   return res;
 }
 
-void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(PerceptionPtr perception, const Variable& input)
+void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input)
 {
   size_t numSamples = (size_t)numberOfActiveFeatures.getCount();
   // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity

@@ -358,9 +358,9 @@ size_t ObjectVector::getNumElements() const
 Variable ObjectVector::getElement(size_t index) const
 {
   jassert(index < objects.size());
-  ObjectPtr res = objects[index];
+  const ObjectPtr& res = objects[index];
   TypePtr elementsType = getElementsType();
-  return res ? Variable(res, elementsType) : Variable::missingValue(elementsType);
+  return Variable(res, elementsType);
 }
 
 void ObjectVector::setElement(size_t index, const Variable& value)

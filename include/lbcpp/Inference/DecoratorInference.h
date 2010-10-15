@@ -23,14 +23,14 @@ public:
   DecoratorInferenceState(const Variable& input, const Variable& supervision)
     : InferenceState(input, supervision) {}
 
-  void setSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
+  void setSubInference(const InferencePtr& subInference, const Variable& subInput, const Variable& subSupervision)
   {
     this->subInference = subInference;
     this->subInput = subInput;
     this->subSupervision = subSupervision;
   }
 
-  InferencePtr getSubInference() const
+  const InferencePtr& getSubInference() const
     {return subInference;}
 
   const Variable& getSubInput() const
@@ -69,8 +69,8 @@ public:
   /*
   ** Inference
   */
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context->runDecoratorInference(DecoratorInferencePtr(this), input, supervision, returnCode);}
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return context->runDecoratorInference(this, input, supervision, returnCode);}
 
   juce_UseDebuggingNewOperator
 };

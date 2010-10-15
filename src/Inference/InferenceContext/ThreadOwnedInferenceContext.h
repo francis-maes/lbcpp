@@ -30,7 +30,7 @@ public:
 
   ThreadOwnedInferenceContext() : thread(NULL) {}
 
-  virtual void preInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (thread->threadShouldExit())
     {
@@ -46,20 +46,21 @@ public:
     {
       ScopedLock _(stackLock);
       stack->push(inference);
-      callPreInference(stack, input, supervision, output, returnCode);
+      callPreInference(this, stack, input, supervision, output, returnCode);
     }
   }
 
-  virtual void postInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(stackLock);
-    callPostInference(stack, input, supervision, output, returnCode);
+    jassert(stack->getCurrentInference() == inference);
+    callPostInference(this, stack, input, supervision, output, returnCode);
     stack->pop();
   }
 
-  virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runParallelInference(ParallelInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ParallelInferenceStatePtr state = inference->prepareInference(InferenceContextPtr(this), input, supervision, returnCode);
+    ParallelInferenceStatePtr state = inference->prepareInference(refCountedPointerFromThis(this), input, supervision, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
 
@@ -101,11 +102,11 @@ public:
         for (size_t i = 0; i < n; ++i)
         {
           Variable subOutput;
-          InferencePtr subInference = state->getSubInference(i);
+          const InferencePtr& subInference = state->getSubInference(i);
           if (subInference)
           {
             returnCode = Inference::finishedReturnCode;
-            subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+            subOutput = run(subInference.get(), state->getSubInput(i), state->getSubSupervision(i), returnCode);
             if (returnCode == Inference::errorReturnCode)
             {
               MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
@@ -140,7 +141,7 @@ public:
         pool->addJobsAndWaitExecution(jobs, stack->getDepth(), false);
       }
     }
-    return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
+    return inference->finalizeInference(refCountedPointerFromThis(this), state, returnCode);
   }
 
   String describeCurrentState() const

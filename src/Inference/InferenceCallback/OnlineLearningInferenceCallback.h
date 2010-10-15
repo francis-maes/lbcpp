@@ -22,12 +22,12 @@ public:
   OnlineLearningInferenceCallback(InferencePtr batchLearner)
     : batchLearner(batchLearner), learningStopped(false) {}
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    InferencePtr inference = stack->getCurrentInference();
+    const InferencePtr& inference = stack->getCurrentInference();
     if (inference->getOnlineLearner() && supervision.exists())
     {
-      InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
+      const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
       {
         learners[inference] = learner;

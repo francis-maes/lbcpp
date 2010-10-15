@@ -24,22 +24,19 @@ public:
                                 UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
   GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never) {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferencePtr inference);
-  virtual void passFinishedCallback(InferencePtr inference);
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(const InferencePtr& inference);
+  virtual void passFinishedCallback(const InferencePtr& inference);
   virtual double getCurrentLossEstimate() const
     {return lossValue.getMean();}
   
   virtual void clone(ObjectPtr target) const;
 
 protected:
-  NumericalInferencePtr getNumericalInference(InferencePtr inference) const
+  const NumericalInferencePtr& getNumericalInference(const InferencePtr& inference) const
     {return inference.staticCast<NumericalInference>();}
 
-//  ObjectPtr getParameters(InferencePtr inference) const
-//    {return getNumericalInference(inference)->getParameters();}
-
-  PerceptionPtr getPerception(InferencePtr inference) const
+  const PerceptionPtr& getPerception(const InferencePtr& inference) const
     {return getNumericalInference(inference)->getPerception();}
 
   ScalarVariableMean numberOfActiveFeatures;
@@ -55,15 +52,15 @@ protected:
   ScalarVariableMean lossValue;
   size_t lastApplyRegularizerEpoch;
 
-  void updateParameters(InferencePtr inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
+  void updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
 
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
-  void applyExample(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  void applyRegularizer(InferencePtr inference);
-  void checkRegularizerAfterStep(InferencePtr inference);
-  void gradientDescentStep(InferencePtr inference, ObjectPtr gradient, double weight = 1.0);
+  void applyExample(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  void applyRegularizer(const InferencePtr& inference);
+  void checkRegularizerAfterStep(const InferencePtr& inference);
+  void gradientDescentStep(const InferencePtr& inference, const ObjectPtr& gradient, double weight = 1.0);
   double computeLearningRate() const;
-  void updateNumberOfActiveFeatures(PerceptionPtr perception, const Variable& input);
+  void updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input);
 };
 
 typedef ReferenceCountedObjectPtr<GradientDescentOnlineLearner> GradientDescentOnlineLearnerPtr;

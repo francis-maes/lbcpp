@@ -33,11 +33,11 @@ public:
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
   ObjectPtr getParametersCopy() const;
-  void addWeightedToParameters(const ObjectPtr value, double weight);
+  void addWeightedToParameters(const ObjectPtr& value, double weight);
   void applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight);
   void setParameters(ObjectPtr parameters);
 
-  PerceptionPtr getPerception() const
+  const PerceptionPtr& getPerception() const
     {return perception;}
 
   virtual void validateParametersChange() {}

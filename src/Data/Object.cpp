@@ -12,21 +12,59 @@
 #include <fstream>
 using namespace lbcpp;
 
-int ReferenceCountedObject::numAccesses = 0;
 #ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
+
+static CriticalSection refCountInfoLock;
+static std::map<String, int> numAccessesPerType;
+static int totalNumAccesses = 0;
+
+void ReferenceCountedObject::resetRefCountDebugInfo()
+{
+  ScopedLock _(refCountInfoLock);
+  numAccessesPerType.clear();
+  totalNumAccesses = 0;
+}
+
+void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
+{
+  ScopedLock _(refCountInfoLock);
+  ostr << "Total num accesses: " << totalNumAccesses << std::endl;
+  std::multimap<int, String> invMap;
+  for (std::map<String, int>::const_iterator it = numAccessesPerType.begin(); it != numAccessesPerType.end(); ++it)
+    invMap.insert(std::make_pair(it->second, it->first));
+  for (std::multimap<int, String>::const_reverse_iterator it = invMap.rbegin(); it != invMap.rend(); ++it)
+    ostr << "  " << it->second << ": " << it->first << std::endl;
+}
+
 void ReferenceCountedObject::incrementReferenceCounter()
 {
   juce::atomicIncrement(refCount);
-  juce::atomicIncrement(numAccesses);
+  ScopedLock _(refCountInfoLock);
+  numAccessesPerType[getTypeName(typeid(*this))]++;
+  if (getTypeName(typeid(*this)) == T("LinearInference"))
+  {
+    std::cout << "" << std::flush;
+  }
+  ++totalNumAccesses;
 }
 
 /** Decrements the object's reference count.  */
 void ReferenceCountedObject::decrementReferenceCounter()
 {
-  juce::atomicIncrement(numAccesses);
+  {
+    ScopedLock _(refCountInfoLock);
+    numAccessesPerType[getTypeName(typeid(*this))]++;
+    ++totalNumAccesses;
+  }
+
   if (juce::atomicDecrementAndReturn(refCount) == 0)
     delete this;
 }
+#else
+void ReferenceCountedObject::resetRefCountDebugInfo()
+  {}
+void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
+  {std::cout << "No RefCount Debug Info." << std::endl;}
 #endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
 extern void declareLBCppClasses();
