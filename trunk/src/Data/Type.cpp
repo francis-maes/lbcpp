@@ -406,29 +406,13 @@ void Type::saveToXml(XmlExporter& exporter) const
 ** TypeCache
 */
 UnaryTemplateTypeCache::UnaryTemplateTypeCache(const String& typeName)
-{
-  ScopedLock _(lock);
-  this->typeName = typeName;
-}
+  : typeName(typeName) {}
 
 TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 {
   jassert(argument);
-
-  // make sure that the constructor has finished its work
-  while (true)
-  {
-    {
-      ScopedLock _(lock);
-      if (this && typeName.isNotEmpty())
-        break;
-    }
-    Thread::sleep(1);
-  }
-
   TypePtr res;
   {
-    ScopedLock _(lock);
     std::map<TypePtr, TypePtr>::const_iterator it = m.find(argument);
     if (it == m.end())
     {
@@ -443,31 +427,16 @@ TypePtr UnaryTemplateTypeCache::operator ()(TypePtr argument)
 }
 
 BinaryTemplateTypeCache::BinaryTemplateTypeCache(const String& typeName)
-{
-  ScopedLock _(lock);
-  this->typeName = typeName;
-}
+  : typeName(typeName) {}
 
 TypePtr BinaryTemplateTypeCache::operator ()(TypePtr argument1, TypePtr argument2)
 {
   jassert(argument1 && argument2);
   std::pair<TypePtr, TypePtr> key(argument1, argument2);
 
-  // make sure that the constructor has finished its work
-  while (true)
-  {
-    {
-      ScopedLock _(lock);
-      if (this && typeName.isNotEmpty())
-        break;
-    }
-    Thread::sleep(1);
-  }
-
   TypePtr res;
   //double timeBegin = Time::getMillisecondCounterHiRes();
   {
-    ScopedLock _(lock);
     std::map<std::pair<TypePtr, TypePtr>, TypePtr>::const_iterator it = m.find(key);
     if (it == m.end())
     {

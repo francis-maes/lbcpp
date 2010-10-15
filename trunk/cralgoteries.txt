@@ -1,5 +1,3 @@
-* Proprifier l'histoire du InferenceContext* et Inference*
-
 Experiments/MoonBox:
 * MoonBox: voir comment faire l'evaluation avec le meme InferenceContext que le reste
 * Finaliser le ParallelProteinInference

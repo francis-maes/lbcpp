@@ -69,7 +69,7 @@ public:
   /*
   ** Inference
   */
-  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runDecoratorInference(this, input, supervision, returnCode);}
 
   juce_UseDebuggingNewOperator

@@ -78,7 +78,7 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
-  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return context->runParallelInference(this, input, supervision, returnCode);}
 };
 
@@ -165,7 +165,7 @@ public:
 protected:
   friend class SharedParallelInferenceClass;
 
-  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   InferencePtr subInference;
 };

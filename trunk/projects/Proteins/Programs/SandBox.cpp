@@ -135,7 +135,7 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -155,7 +155,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
@@ -207,7 +207,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 }
-  
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
@@ -266,10 +266,10 @@ int main(int argc, char** argv)
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   ReferenceCountedObject::resetRefCountDebugInfo();
-  //  context->crossValidate(inference, proteins, evaluator, 2);
-  //std::cout << evaluator->toString() << std::endl;
-  //ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
-  //return 0;
+  context->crossValidate(inference, proteins, evaluator, 2);
+  std::cout << evaluator->toString() << std::endl;
+  ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
+  return 0;
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);

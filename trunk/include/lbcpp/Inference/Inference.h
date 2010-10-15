@@ -67,7 +67,7 @@ protected:
   friend class InferenceClass;
   friend class InferenceContext;
 
-  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;

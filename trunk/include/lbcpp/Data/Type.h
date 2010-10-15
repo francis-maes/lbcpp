@@ -314,7 +314,6 @@ public:
   TypePtr operator ()(TypePtr argument);
 
 private:
-  CriticalSection lock;
   String typeName;
   std::map<TypePtr, TypePtr> m;
 };
@@ -328,7 +327,6 @@ public:
 
 private:
   String typeName;
-  CriticalSection lock;
   std::map<std::pair<TypePtr, TypePtr>, TypePtr> m;
 };
 
