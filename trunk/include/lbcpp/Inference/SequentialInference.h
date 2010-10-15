@@ -23,7 +23,7 @@ public:
   SequentialInferenceState(const Variable& input, const Variable& supervision)
     : InferenceState(input, supervision), stepNumber(-1) {}
 
-  void setSubInference(InferencePtr subInference, const Variable& subInput, const Variable& subSupervision)
+  void setSubInference(const InferencePtr& subInference, const Variable& subInput, const Variable& subSupervision)
   {
     this->subInference = subInference;
     this->subInput = subInput;
@@ -92,8 +92,8 @@ protected:
   /*
   ** Inference
   */
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context->runSequentialInference(SequentialInferencePtr(this), input, supervision, returnCode);}
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return context->runSequentialInference(this, input, supervision, returnCode);}
 };
 
 extern ClassPtr sequentialInferenceClass;

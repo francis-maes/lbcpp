@@ -61,7 +61,7 @@ SharedParallelInference::SharedParallelInference(const String& name, InferencePt
   setBatchLearner(sharedParallelInferenceLearner());
 }
 
-Variable SharedParallelInference::run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SharedParallelInference::run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   subInference->beginRunSession();
   Variable res = ParallelInference::run(context, input, supervision, returnCode);

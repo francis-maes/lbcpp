@@ -26,7 +26,7 @@ public:
 
   BatchGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
 
@@ -41,14 +41,14 @@ public:
     checkRegularizerAfterStep(inference);
   }
 
-  virtual void episodeFinishedCallback(InferencePtr inference)
+  virtual void episodeFinishedCallback(const InferencePtr& inference)
   {
     if (learningUpdateFrequency == perEpisode)
       applyGradientSum(inference);
     GradientDescentOnlineLearner::episodeFinishedCallback(inference);
   }
 
-  virtual void passFinishedCallback(InferencePtr inference)
+  virtual void passFinishedCallback(const InferencePtr& inference)
     {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(inference);}
 
 protected:

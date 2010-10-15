@@ -107,7 +107,7 @@ typedef ReferenceCountedObjectPtr<AccumulatedScores> AccumulatedScoresPtr;
 AccumulatedScoresCache::AccumulatedScoresCache()
   : Cache(30, 60.0) {}
 
-Variable AccumulatedScoresCache::createEntry(ObjectPtr object) const
+Variable AccumulatedScoresCache::createEntry(const ObjectPtr& object) const
   {return new AccumulatedScores();}
 
 /*
@@ -150,9 +150,8 @@ void HistogramPerception::computeOutputType()
 
 void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
 {
-  ContainerPtr container;
   int startPosition, endPosition;
-  getInput(input, container, startPosition, endPosition);
+  const ContainerPtr& container = getInput(input, startPosition, endPosition);
   if (!container)
     return;
 

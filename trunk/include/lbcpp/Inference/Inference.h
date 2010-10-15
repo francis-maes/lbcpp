@@ -48,13 +48,13 @@ public:
   /*
   ** Learners
   */
-  InferenceOnlineLearnerPtr getOnlineLearner() const
+  const InferenceOnlineLearnerPtr& getOnlineLearner() const
     {return onlineLearner;}
 
   void setOnlineLearner(InferenceOnlineLearnerPtr learner)
     {this->onlineLearner = learner;}
 
-  InferencePtr getBatchLearner() const
+  const InferencePtr& getBatchLearner() const
     {return batchLearner;}
     
   void setBatchLearner(InferencePtr batchLearner);
@@ -67,7 +67,7 @@ protected:
   friend class InferenceClass;
   friend class InferenceContext;
 
-  virtual Variable run(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;

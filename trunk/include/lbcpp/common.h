@@ -20,7 +20,7 @@
 #  endif
 # endif
 
-// #define LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
+//#define LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
 /*
 ** Standard library

@@ -140,10 +140,10 @@ private:
 class StackPrinterCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
-    InferencePtr currentInference = stack->getCurrentInference();
+    const InferencePtr& currentInference = stack->getCurrentInference();
     if (stack->getDepth() > 6)
       return;
     String line;
@@ -153,10 +153,10 @@ public:
     MessageCallback::info(line);
   }
   
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
-    InferencePtr currentInference = stack->getCurrentInference();
+    const InferencePtr& currentInference = stack->getCurrentInference();
     if (stack->getDepth() > 6)
       return;
     String line = T("END ");
@@ -220,13 +220,13 @@ public:
     callbacks.push_back(callback);
   }
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i]->preInferenceCallback(stack, input, supervision, output, returnCode);
+      callbacks[i]->preInferenceCallback(context, stack, input, supervision, output, returnCode);
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     InferencePtr currentInference = stack->getCurrentInference();
     if (currentInference->getName() == inferenceNameToEvaluate) // T("Pass learner")
@@ -247,7 +247,7 @@ public:
     }
 
     for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i]->postInferenceCallback(stack, input, supervision, output, returnCode);
+      callbacks[i]->postInferenceCallback(context, stack, input, supervision, output, returnCode);
   }
 
 private:
@@ -263,7 +263,7 @@ typedef ReferenceCountedObjectPtr<WrapperInferenceCallback> WrapperInferenceCall
 class StandardOutputInferenceCallback : public WrappedInferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -282,7 +282,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (hasNewEvaluators())
     {
@@ -328,7 +328,7 @@ public:
     }
   }
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -337,7 +337,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (hasNewEvaluators())
     {

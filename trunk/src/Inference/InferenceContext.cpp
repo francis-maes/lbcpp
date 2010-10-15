@@ -13,7 +13,9 @@
 #include <lbcpp/Data/Container.h>
 using namespace lbcpp;
 
-Variable InferenceContext::run(InferencePtr inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
+InferencePtr InferenceStack::nullInference;
+
+Variable InferenceContext::run(Inference* inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
 {
   jassert(inference);
   Variable input(in);
@@ -38,19 +40,17 @@ Variable InferenceContext::run(InferencePtr inference, const Variable& in, const
   return output;
 }
 
-Variable InferenceContext::callRunInference(InferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {return inference->run(InferenceContextPtr(this), input, supervision, returnCode);}
+Variable InferenceContext::callRunInference(Inference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {return inference->run(this, input, supervision, returnCode);}
 
-Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable InferenceContext::runDecoratorInference(DecoratorInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  InferenceContextPtr pthis(this);
-
-  DecoratorInferenceStatePtr state = inference->prepareInference(pthis, input, supervision, returnCode);
+  DecoratorInferenceStatePtr state = inference->prepareInference(this, input, supervision, returnCode);
   jassert(state);
   if (returnCode != Inference::finishedReturnCode)
     return Variable();
 
-  InferencePtr subInference = state->getSubInference();
+  const InferencePtr& subInference = state->getSubInference();
   if (subInference)
   {
     Variable subOutput = run(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
@@ -59,12 +59,12 @@ Variable InferenceContext::runDecoratorInference(DecoratorInferencePtr inference
     state->setSubOutput(subOutput);
   }
 
-  return inference->finalizeInference(pthis, state, returnCode);
+  return inference->finalizeInference(this, state, returnCode);
 }
 
-Variable InferenceContext::runSequentialInference(SequentialInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable InferenceContext::runSequentialInference(SequentialInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  InferenceContextPtr pthis(this);
+  InferenceContextPtr pthis = refCountedPointerFromThis(this);
 
   SequentialInferenceStatePtr state = inference->prepareInference(pthis, input, supervision, returnCode);
   if (!state)
@@ -88,7 +88,7 @@ Variable InferenceContext::runSequentialInference(SequentialInferencePtr inferen
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr examples)
 {
   ReturnCode res = Inference::finishedReturnCode;
-  InferencePtr learner = inference->getBatchLearner();
+  const InferencePtr& learner = inference->getBatchLearner();
   jassert(learner);
   if (!learner)
     return Inference::errorReturnCode;
@@ -114,16 +114,16 @@ Inference::ReturnCode InferenceContext::crossValidate(InferencePtr inferenceMode
   return res;
 }
 
-void InferenceContext::callPreInference(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+void InferenceContext::callPreInference(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->preInferenceCallback(stack, input, supervision, output, returnCode);
+    callbacks[i]->preInferenceCallback(context, stack, input, supervision, output, returnCode);
 }
 
-void InferenceContext::callPostInference(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+void InferenceContext::callPostInference(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   for (int i = (int)callbacks.size() - 1; i >= 0; --i)
-    callbacks[i]->postInferenceCallback(stack, input, supervision, output, returnCode);
+    callbacks[i]->postInferenceCallback(context, stack, input, supervision, output, returnCode);
 }
 
 void InferenceContext::appendCallback(InferenceCallbackPtr callback)

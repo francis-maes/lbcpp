@@ -83,7 +83,7 @@ public:
   {
     if (endIndex == beginIndex + 1)
     {
-      InferencePtr subInference = state->getSubInference(beginIndex);
+      const InferencePtr& subInference = state->getSubInference(beginIndex);
       stack->push(subInference);
       setName(subInference->getDescription(state->getSubInput(beginIndex), state->getSubSupervision(beginIndex)));
       stack->pop();
@@ -126,10 +126,8 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
-#ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
-    MessageCallback::info(T("[") + String((int)beginIndex) + T(", ") + String((int)endIndex - 1) + 
-      T("] Mean Execution Time: ") + inference->getName() + " ==> " + String(pool->getTimingsCache()->getMeanValue(inference)));
-#endif
+//    MessageCallback::info(T("[") + String((int)beginIndex) + T(", ") + String((int)endIndex - 1) + 
+//      T("] Mean Execution Time: ") + inference->getName() + " ==> " + String(pool->getTimingsCache()->getMeanValue(inference)));
     return true;
   }
 

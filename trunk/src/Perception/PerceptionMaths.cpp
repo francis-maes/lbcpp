@@ -18,9 +18,9 @@ struct DoubleConstUnaryOperation
 {
   void sense(double value)
     {jassert(false);}
-  void sense(PerceptionPtr perception, const Variable& input)
+  void sense(const PerceptionPtr& perception, const Variable& input)
     {jassert(false);}
-  void sense(ObjectPtr object)
+  void sense(const ObjectPtr& object)
     {jassert(false);}
 };
 
@@ -93,10 +93,10 @@ struct ComputeL0NormOperation : public DoubleConstUnaryOperation
   void sense(double value)
     {if (value) ++res;}
 
-  void sense(PerceptionPtr perception, const Variable& input)
+  void sense(const PerceptionPtr& perception, const Variable& input)
     {res += lbcpp::l0norm(perception, input);}
 
-  void sense(ObjectPtr object)
+  void sense(const ObjectPtr& object)
     {res += lbcpp::l0norm(object);}
 };
 
@@ -127,10 +127,10 @@ struct ComputeL1NormOperation : public DoubleConstUnaryOperation
   void sense(double value)
     {res += fabs(value);}
 
-  void sense(PerceptionPtr perception, const Variable& input)
+  void sense(const PerceptionPtr& perception, const Variable& input)
     {res += lbcpp::l1norm(perception, input);}
 
-  void sense(ObjectPtr object)
+  void sense(const ObjectPtr& object)
     {res += lbcpp::l1norm(object);}
 };
 
@@ -161,10 +161,10 @@ struct ComputeSumOfSquaresOperation : public DoubleConstUnaryOperation
   void sense(double value)
     {res += value * value;}
 
-  void sense(PerceptionPtr perception, const Variable& input)
+  void sense(const PerceptionPtr& perception, const Variable& input)
     {res += lbcpp::sumOfSquares(perception, input);}
 
-  void sense(ObjectPtr object)
+  void sense(const ObjectPtr& object)
     {res += lbcpp::sumOfSquares(object);}
 };
 
@@ -190,7 +190,7 @@ struct DoubleUnaryOperation
 {
   void compute(double& value)
     {jassert(false);}
-  void compute(ObjectPtr object)
+  void compute(const ObjectPtr& object)
     {jassert(false);}
 };
 
@@ -229,7 +229,7 @@ struct MultiplyByScalarOperation : public DoubleUnaryOperation
   void compute(double& value)
     {value *= scalar;}
 
-  void compute(ObjectPtr object)
+  void compute(const ObjectPtr& object)
     {multiplyByScalar(object, scalar);}
 };
 
@@ -403,10 +403,10 @@ double lbcpp::dotProduct(const ObjectPtr& object1, const ObjectPtr& object2)
 */
 struct DoubleAssignmentOperation
 {
-  void compute(ObjectPtr& target, ObjectPtr source)
+  void compute(ObjectPtr& target, const ObjectPtr& source)
     {jassert(false);}
 
-  void compute(ObjectPtr& value, PerceptionPtr perception, const Variable& input)
+  void compute(ObjectPtr& value, const PerceptionPtr& perception, const Variable& input)
     {jassert(false);}
 
   void compute(double& value, double otherValue)
@@ -556,10 +556,10 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
 
   double weight;
 
-  void compute(ObjectPtr& target, ObjectPtr source)
+  void compute(ObjectPtr& target, const ObjectPtr& source)
     {lbcpp::addWeighted(target, source, weight);}
 
-  void compute(ObjectPtr& value, PerceptionPtr perception, const Variable& input)
+  void compute(ObjectPtr& value, const PerceptionPtr& perception, const Variable& input)
     {lbcpp::addWeighted(value, perception, input, weight);}
 
   void compute(double& value, double otherValue)

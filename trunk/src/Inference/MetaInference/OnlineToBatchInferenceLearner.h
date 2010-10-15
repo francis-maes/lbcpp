@@ -36,7 +36,7 @@ public:
     InferencePtr targetInference = getInference(input);
     ContainerPtr trainingData = getTrainingData(input);
 
-    SequentialInferenceStatePtr res = new State(InferencePtr(this), input, supervision);
+    SequentialInferenceStatePtr res = new State(refCountedPointerFromThis(this), input, supervision);
     updateInference(context, res, returnCode);
     return res;
   }

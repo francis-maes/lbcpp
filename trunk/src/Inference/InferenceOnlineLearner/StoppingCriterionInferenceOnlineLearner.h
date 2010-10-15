@@ -26,7 +26,7 @@ public:
 
   StoppingCriterionInferenceOnlineLearner() : criterionTestFrequency(never), learningStopped(false), bestScore(-DBL_MAX), epoch(0) {}
 
-  virtual void stepFinishedCallback(InferencePtr inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     if (!learningStopped)
     {
@@ -44,7 +44,7 @@ public:
     }
   }
 
-  virtual void episodeFinishedCallback(InferencePtr inference)
+  virtual void episodeFinishedCallback(const InferencePtr& inference)
   {
     if (!learningStopped)
     {
@@ -54,7 +54,7 @@ public:
     }
   }
 
-  virtual void passFinishedCallback(InferencePtr inference)
+  virtual void passFinishedCallback(const InferencePtr& inference)
   {
     if (!learningStopped) 
     {

@@ -56,7 +56,7 @@ void Cache::prune()
     pruneUnreferencedSinceMoreThan(pruningDieTime);
 }
 
-Variable Cache::getEntry(ObjectPtr object) const
+Variable Cache::getEntry(const ObjectPtr& object) const
 {
   ScopedLock _(cacheLock);
   ++(const_cast<Cache* >(this)->numAccesses);
@@ -67,7 +67,7 @@ Variable Cache::getEntry(ObjectPtr object) const
   return it->second.first;
 }
 
-Variable& Cache::getOrCreateEntry(ObjectPtr object)
+Variable& Cache::getOrCreateEntry(const ObjectPtr& object)
 {
   ScopedLock _(cacheLock);
   ++numAccesses;
@@ -91,14 +91,14 @@ AverageValuesCache::AverageValuesCache(size_t pruningFrequency)
 {
 }
 
-void AverageValuesCache::addValue(ObjectPtr object, double value)
+void AverageValuesCache::addValue(const ObjectPtr& object, double value)
 {
   ScopedLock _(cacheLock);
   ScalarVariableMeanPtr mean = getOrCreateEntryAndCast<ScalarVariableMean>(object);
   mean->push(value);
 }
 
-double AverageValuesCache::getMeanValue(ObjectPtr object, size_t* numSamples) const
+double AverageValuesCache::getMeanValue(const ObjectPtr& object, size_t* numSamples) const
 {
   ScopedLock _(cacheLock);
   ScalarVariableMeanPtr mean = getEntryAndCast<ScalarVariableMean>(object);
@@ -107,5 +107,5 @@ double AverageValuesCache::getMeanValue(ObjectPtr object, size_t* numSamples) co
   return mean ? mean->getMean() : 0.0;
 }
 
-Variable AverageValuesCache::createEntry(ObjectPtr object) const
+Variable AverageValuesCache::createEntry(const ObjectPtr& object) const
   {return new ScalarVariableMean(object->getName());}

@@ -24,21 +24,22 @@ public:
   virtual String getName() const
     {return T("SingleThreadedInferenceContext");}
 
-  virtual void preInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     stack->push(inference);
-    callPreInference(stack, input, supervision, output, returnCode);
+    callPreInference(this, stack, input, supervision, output, returnCode);
   }
 
-  virtual void postInference(InferencePtr inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    callPostInference(stack, input, supervision, output, returnCode);
+    jassert(inference == stack->getCurrentInference());
+    callPostInference(this, stack, input, supervision, output, returnCode);
     stack->pop();
   }
 
-  virtual Variable runParallelInference(ParallelInferencePtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runParallelInference(ParallelInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ParallelInferenceStatePtr state = inference->prepareInference(InferenceContextPtr(this), input, supervision, returnCode);
+    ParallelInferenceStatePtr state = inference->prepareInference(refCountedPointerFromThis(this), input, supervision, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
     
@@ -59,7 +60,7 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
-    return inference->finalizeInference(InferenceContextPtr(this), state, returnCode);
+    return inference->finalizeInference(refCountedPointerFromThis(this), state, returnCode);
   }
 
 private:

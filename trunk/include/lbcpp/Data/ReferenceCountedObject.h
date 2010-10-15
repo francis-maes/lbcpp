@@ -77,7 +77,8 @@ public:
   void setStaticAllocationFlag()
     {refCount = staticAllocationRefCountValue;}
 
-  static int numAccesses;
+  static void resetRefCountDebugInfo();
+  static void displayRefCountDebugInfo(std::ostream& ostr);
 
 protected:
   template<class T>
@@ -356,7 +357,16 @@ template<class T>
 inline ReferenceCountedObjectPtr<T> refCountedPointerFromThis(const T* pthis)
   {return ReferenceCountedObjectPtr<T>(const_cast<T* >(pthis));}
 
-
+/*
+** Visual studio bug: this should work, but does not work
+*
+template<class Type>
+inline const ReferenceCountedObjectPtr<Type>& refCountedPointerFromThis(Type* const& pthis)
+{
+  Type*& ppthis = const_cast<Type*& >(pthis);
+  return *(ReferenceCountedObjectPtr<Type>* )ppthis;
+}
+*/
 
 template<class T>
 class NativePtr

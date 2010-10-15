@@ -153,8 +153,8 @@ private:
   } u;
 };
 
-template<class T>
-inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<T>& objectValue)
+template<class ObjectType>
+inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<ObjectType>& objectValue)
 {
   u.objectValue = objectValue.get();
   if (u.objectValue)

@@ -135,7 +135,7 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(InferenceStackPtr stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -155,7 +155,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceStackPtr stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext* context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
@@ -203,7 +203,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #ifdef JUCE_DEBUG
   size_t maxCount = 10;
 #else
-  size_t maxCount = 100;
+  size_t maxCount = 10;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
@@ -245,8 +245,8 @@ int main(int argc, char** argv)
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -262,11 +262,14 @@ int main(int argc, char** argv)
 /*  std::cout << "Inference: " << std::endl;
   Variable(inference).printRecursively(std::cout, 2);*/
 
+
   InferenceContextPtr context = multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
-  context->crossValidate(inference, proteins, evaluator, 3);
+  ReferenceCountedObject::resetRefCountDebugInfo();
+  context->crossValidate(inference, proteins, evaluator, 2);
   std::cout << evaluator->toString() << std::endl;
+  ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
   return 0;
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
@@ -312,6 +315,5 @@ int main(int argc, char** argv)
 #endif // 0
 
   std::cout << "Tchao." << std::endl;
-  std::cout << ReferenceCountedObject::numAccesses << std::endl;
   return 0;
 }

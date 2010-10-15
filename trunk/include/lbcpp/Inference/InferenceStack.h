@@ -17,34 +17,24 @@ namespace lbcpp
 class InferenceStack : public Object
 {
 public:
-  InferencePtr getTopLevelInference() const
+  const InferencePtr& getTopLevelInference() const
     {jassert(stack.size()); return stack[0];}
 
-  InferencePtr getCurrentInference() const
+  const InferencePtr& getCurrentInference() const
     {jassert(stack.size()); return stack.back();}
 
-  InferencePtr getParentInference() const
-  {
-    if (stack.size() <= 1)
-      return InferencePtr();
-    return stack[stack.size() - 2];
-  }
+  static InferencePtr nullInference;
+
+  const InferencePtr& getParentInference() const
+    {return stack.size() <= 1 ? nullInference : stack[stack.size() - 2];}
 
   InferencePtr getGrandParentInference() const
-  {
-    if (stack.size() <= 2)
-      return InferencePtr();
-    return stack[stack.size() - 3];
-  }
+    {return stack.size() <= 2 ? nullInference : stack[stack.size() - 3];}
 
   InferencePtr getGrandGrandParentInference() const
-  {
-    if (stack.size() <= 3)
-      return InferencePtr();
-    return stack[stack.size() - 4];
-  }
+    {return stack.size() <= 3 ? nullInference : stack[stack.size() - 4];}
 
-  void push(InferencePtr inference)
+  void push(const InferencePtr& inference)
     {jassert(inference); stack.push_back(inference);}
 
   void pop()
@@ -53,7 +43,7 @@ public:
   size_t getDepth() const // 0 = not running, 1 = top level
     {return stack.size();}
 
-  bool isInferenceRunning(InferencePtr inference, int* index = NULL)
+  bool isInferenceRunning(const InferencePtr& inference, int* index = NULL)
   {
     for (size_t i = 0; i < stack.size(); ++i)
       if (stack[i] == inference)
@@ -67,13 +57,12 @@ public:
     return false;
   }
 
-  InferencePtr getInference(int index) const
-    {return index >= 0 && index < (int)stack.size() ? stack[index] : InferencePtr();}
-
-  virtual void clone(ObjectPtr target) const
-    {((InferenceStackPtr)target)->stack = stack;}
+  const InferencePtr& getInference(int index) const
+    {return index >= 0 && index < (int)stack.size() ? stack[index] : nullInference;}
 
 private:
+  friend class InferenceStackClass;
+
   std::vector<InferencePtr> stack;
 };
 
