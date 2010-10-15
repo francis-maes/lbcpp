@@ -37,7 +37,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return symmetricMatrixClass(probabilityType);}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
     const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>();
@@ -58,7 +58,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     const ProteinPtr& inputProtein = state->getInput().getObjectAndCast<Protein>();    
     size_t n = inputProtein->getLength();
@@ -88,7 +88,7 @@ public:
   AddBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0);
   AddBiasInference() {}
 /*
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     if (supervision)
@@ -113,7 +113,7 @@ public:
     return std::make_pair(input, supervision);
   }*/
    
-  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(const InferenceContextPtr& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
     Variable subOutput = finalState->getSubOutput();
     return subOutput.exists() ? Variable((subOutput.getDouble() + bias) / 1000.0) : subOutput;

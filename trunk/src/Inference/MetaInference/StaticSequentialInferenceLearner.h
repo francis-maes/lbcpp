@@ -21,7 +21,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticSequentialInferenceClass;}
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     StaticSequentialInferencePtr targetInference = getInferenceAndCast<StaticSequentialInference>(input);
     ContainerPtr trainingData = getTrainingData(input);

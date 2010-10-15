@@ -52,7 +52,7 @@ public:
     : BaseClass(inference) {}
   RunOnSupervisedExamplesSequentialInference() {}
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     SequentialInferenceStatePtr res(new SequentialInferenceState(input, supervision));
     updateInference(context, res, returnCode);
@@ -88,7 +88,7 @@ public:
     : BaseClass(inference) {}
   RunOnSupervisedExamplesParallelInference() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ContainerPtr examples = input.dynamicCast<Container>();
     jassert(examples);
@@ -104,7 +104,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
 };
 
@@ -114,7 +114,7 @@ public:
   RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
     : ParallelInference(T("RunSequentialInferenceStepOnExamples")), inference(inference), currentStates(currentStates) {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ContainerPtr examples = input.dynamicCast<Container>();
     jassert(examples);
@@ -130,7 +130,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {

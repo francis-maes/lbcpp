@@ -34,7 +34,7 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     res->setSubInference(decorated, input, supervision.exists() ? getLoss(supervision.getDouble()) : ScalarFunctionPtr());
