@@ -30,7 +30,10 @@ public:
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
       {
-        learners[inference] = learner;
+        {
+          ScopedLock _(learnersLock);
+          learners[inference] = learner;
+        }
         learner->stepFinishedCallback(inference, input, supervision, output);
       }
     }
@@ -45,18 +48,21 @@ public:
 
 private:
   typedef std::map<InferencePtr, InferenceOnlineLearnerPtr> LearnersMap;
+  CriticalSection learnersLock;
   LearnersMap learners;
   InferencePtr batchLearner;
   bool learningStopped;
 
   void finishEpisode()
   {
+    ScopedLock _(learnersLock);
     for (LearnersMap::const_iterator it = learners.begin(); it != learners.end(); ++it)
       it->second->episodeFinishedCallback(it->first);
   }
 
   void finishPass()
   {
+    ScopedLock _(learnersLock);
     bool wantsMoreIterations = false;
     for (LearnersMap::const_iterator it = learners.begin(); it != learners.end(); ++it)
     {

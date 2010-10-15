@@ -306,30 +306,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 
-class UnaryTemplateTypeCache
-{
-public:
-  UnaryTemplateTypeCache(const String& typeName);
-
-  TypePtr operator ()(TypePtr argument);
-
-private:
-  String typeName;
-  std::map<TypePtr, TypePtr> m;
-};
-
-class BinaryTemplateTypeCache
-{
-public:
-  BinaryTemplateTypeCache(const String& typeName);
-
-  TypePtr operator ()(TypePtr argument1, TypePtr argument2);
-
-private:
-  String typeName;
-  std::map<std::pair<TypePtr, TypePtr>, TypePtr> m;
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_TYPE_H_

@@ -445,10 +445,12 @@ protected:
       std::cerr << "Error: No parameters in template. Type = " << (const char *)className << std::endl;
     else if (parameters.size() == 1)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type)"),
-          T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
+          T("return lbcpp::Type::get(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
+          //T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
     else if (parameters.size() == 2)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type1, TypePtr type2)"),
-          T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
+        T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return lbcpp::Type::get(T(") + className.quoted() + T("), types);"));
+          //T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
     else
       std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
 		<< (const char* )className << ", NumParams = " << parameters.size() << std::endl;
