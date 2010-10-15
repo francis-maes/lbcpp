@@ -65,7 +65,7 @@
       virtual TypePtr getOutputType(TypePtr inputType) const
         {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
 
-      virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode&amp; returnCode)
+      virtual Variable finalizeInference(const InferenceContextPtr&amp; context, const DecoratorInferenceStatePtr&amp; finalState, ReturnCode&amp; returnCode)
         {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
 
       protected:

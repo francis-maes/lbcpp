@@ -24,7 +24,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return sharedParallelInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     SharedParallelInferencePtr targetInference = getInferenceAndCast<SharedParallelInference>(input);
     ContainerPtr trainingData = getTrainingData(input);

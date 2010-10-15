@@ -87,7 +87,7 @@ StaticSequentialInference::StaticSequentialInference(const String& name)
 VectorSequentialInference::VectorSequentialInference(const String& name)
   : StaticSequentialInference(name), subInferences(vector(inferenceClass)) {}
 
-SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+SequentialInferenceStatePtr VectorSequentialInference::prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
   if (subInferences->getNumElements())

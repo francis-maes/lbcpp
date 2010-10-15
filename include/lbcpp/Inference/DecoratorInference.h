@@ -62,8 +62,8 @@ public:
   DecoratorInference(const String& name);
   DecoratorInference() {}
  
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
-  virtual Variable finalizeInference(InferenceContextPtr context, DecoratorInferenceStatePtr finalState, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable finalizeInference(const InferenceContextPtr& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
     {return finalState->getSubOutput();}
 
   /*
@@ -99,7 +99,7 @@ public:
   virtual void endRunSession()
     {decorated->endRunSession();}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     res->setSubInference(decorated, input, supervision);
