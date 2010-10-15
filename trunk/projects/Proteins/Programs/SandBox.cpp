@@ -68,9 +68,9 @@ public:
     for (size_t i = 0; i < collapsedFeatures->getNumOutputVariables(); ++i)
       selectedConjunctions.push_back(std::vector<size_t>(1, i));
 
-    selectedConjunctions.push_back(makeBinaryConjunction(0, 1));
-    selectedConjunctions.push_back(makeBinaryConjunction(5, 10));
-    selectedConjunctions.push_back(makeBinaryConjunction(10, 15));
+    //    selectedConjunctions.push_back(makeBinaryConjunction(0, 1));
+    //selectedConjunctions.push_back(makeBinaryConjunction(5, 10));
+    //selectedConjunctions.push_back(makeBinaryConjunction(10, 15));
 
     return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);
   }
@@ -97,7 +97,7 @@ public:
   {
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    //res->setBatchLearner(onlineToBatchInferenceLearner());
+    res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
 
@@ -169,13 +169,12 @@ public:
       MessageCallback::info(T("====================================================="));
 
       //singleThreadedInferenceContext();
-      InferenceContextPtr validationContext =  createInferenceContext();
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-      validationContext->evaluate(inference, trainingData, evaluator);
+      context->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
 
       evaluator = new ProteinEvaluator();
-      validationContext->evaluate(inference, testingData, evaluator);
+      context->evaluate(inference, testingData, evaluator);
       processResults(evaluator, false);
 
       MessageCallback::info(T("====================================================="));
@@ -267,10 +266,10 @@ int main(int argc, char** argv)
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   ReferenceCountedObject::resetRefCountDebugInfo();
-  context->crossValidate(inference, proteins, evaluator, 2);
-  std::cout << evaluator->toString() << std::endl;
-  ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
-  return 0;
+  //  context->crossValidate(inference, proteins, evaluator, 2);
+  //std::cout << evaluator->toString() << std::endl;
+  //ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
+  //return 0;
 
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
