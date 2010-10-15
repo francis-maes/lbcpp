@@ -133,7 +133,6 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
   res->addPerception(T("sa20"), createProbabilitySequencePerception(T("solventAccessibilityAt20p")));
   res->addPerception(T("dr"), createProbabilitySequencePerception(T("disorderRegions")));
   res->addPerception(T("stal"), createLabelSequencePerception(T("structuralAlphabetSequence")));
-  //res->addPerception(T("PairOfSeq"), createPairsSequencesPerception());
   return res;
 }
 
