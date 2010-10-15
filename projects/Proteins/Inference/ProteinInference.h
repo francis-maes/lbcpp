@@ -34,7 +34,7 @@ public:
   void setProteinDebugDirectory(const File& directory);
 
 protected:
-  static ProteinPtr prepareInputProtein(const Variable& input);
+  static ProteinPtr cloneInputProtein(const Variable& input);
 
   void prepareSupervisionProtein(ProteinPtr protein);
   void saveDebugFiles(ProteinPtr protein, size_t stepNumber);

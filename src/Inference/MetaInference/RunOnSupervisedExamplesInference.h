@@ -143,6 +143,13 @@ public:
     return Variable();
   }
 
+  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  {
+    const ContainerPtr& examples = input.getObjectAndCast<Container>();
+    return T("Run ") + inference->getName() + T(" step with ") + 
+      String((int)examples->getNumElements()) + T(" ") + examples->getElementsType()->getName() + T("(s)");
+  }
+
 private:
   SequentialInferencePtr inference;
   std::vector<SequentialInferenceStatePtr>& currentStates;

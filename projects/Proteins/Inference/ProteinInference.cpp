@@ -26,7 +26,7 @@ void ProteinInferenceHelper::setProteinDebugDirectory(const File& directory)
     directory.createDirectory();
 }
 
-ProteinPtr ProteinInferenceHelper::prepareInputProtein(const Variable& input)
+ProteinPtr ProteinInferenceHelper::cloneInputProtein(const Variable& input)
 {
   const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
   jassert(inputProtein);
@@ -70,7 +70,7 @@ SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(const I
 {
   if (supervision.exists())
     prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
-  return VectorSequentialInference::prepareInference(context, prepareInputProtein(input), supervision, returnCode);
+  return VectorSequentialInference::prepareInference(context, cloneInputProtein(input), supervision, returnCode);
 }
 
 void ProteinSequentialInference::prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
@@ -111,22 +111,42 @@ ParallelInferenceStatePtr ProteinParallelInference::prepareInference(const Infer
   if (supervision.exists())
     prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
 
-  ProteinPtr inputProtein = prepareInputProtein(input);
+  const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
   ParallelInferenceStatePtr state(new ParallelInferenceState(inputProtein, supervision));
   size_t n = getNumSubInferences();
   state->reserve(n);
   jassert(n);
   for (size_t i = 0; i < n; ++i)
-    state->addSubInference(getSubInference(i), inputProtein, supervision);
+    state->addSubInference(getSubInference(i), inputProtein->clone(), supervision);
   return state;
 }
 
 Variable ProteinParallelInference::finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
 {
+  const ProteinPtr& initialProtein = state->getInput().getObjectAndCast<Protein>();
+  ProteinPtr finalProtein = initialProtein->cloneAndCast<Protein>();
+  size_t numVariables = proteinClass->getObjectNumVariables();
+  std::set<size_t> alreadySet;
   for (size_t i = 0; i < state->getNumSubInferences(); ++i)
-    jassert(state->getSubOutput(i) == state->getSubInput(i)); // ProteinParallelInference only accept sub-inference that do side-effects into the input protein
-  saveDebugFiles(state->getInput().getObjectAndCast<Protein>(), 0);
-  return state->getInput();
+  {
+    ProteinPtr predictedProtein = state->getSubOutput(i).getObjectAndCast<Protein>();
+    for (size_t j = 0; j < numVariables; ++j)
+    {
+      Variable initial = initialProtein->getVariable(j);
+      Variable predicted = predictedProtein->getVariable(j);
+      if (predicted.exists() && predicted != initial)
+      {
+        if (alreadySet.find(j) == alreadySet.end())
+          alreadySet.insert(j);
+        else
+          MessageCallback::warning(T("ProteinParallelInference::finalizeInference"),
+            T("More than one version of Protein::") + proteinClass->getObjectVariableName(j));
+        finalProtein->setVariable(j, predicted);
+      }
+    }
+  }
+  saveDebugFiles(finalProtein, 0);
+  return finalProtein;
 }
 
 
