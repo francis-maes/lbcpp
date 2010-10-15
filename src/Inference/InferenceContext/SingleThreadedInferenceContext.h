@@ -32,7 +32,7 @@ public:
 
   virtual void postInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
-    jassert(inference == stack->getCurrentInference());
+    jassert(inference == stack->getCurrentInference().get());
     callPostInference(this, stack, input, supervision, output, returnCode);
     stack->pop();
   }
