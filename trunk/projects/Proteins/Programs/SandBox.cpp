@@ -97,14 +97,14 @@ public:
   {
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    res->setBatchLearner(onlineToBatchInferenceLearner());
+    //res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
 
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -159,8 +159,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName == T("LearningPass"))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -237,13 +237,15 @@ int main(int argc, char** argv)
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
-  inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(inferencePass);
+  inference->appendInference(inferencePass->cloneAndCast<Inference>());
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
