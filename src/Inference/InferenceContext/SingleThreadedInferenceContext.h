@@ -24,20 +24,20 @@ public:
   virtual String getName() const
     {return T("SingleThreadedInferenceContext");}
 
-  virtual void preInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     stack->push(inference);
     callPreInference(this, stack, input, supervision, output, returnCode);
   }
 
-  virtual void postInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     jassert(inference == stack->getCurrentInference().get());
     callPostInference(this, stack, input, supervision, output, returnCode);
     stack->pop();
   }
 
-  virtual Variable runParallelInference(ParallelInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = inference->prepareInference(refCountedPointerFromThis(this), input, supervision, returnCode);
     if (returnCode != Inference::finishedReturnCode)

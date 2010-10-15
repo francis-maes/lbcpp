@@ -22,7 +22,7 @@ public:
     : pool(pool) {}
   MultiThreadedInferenceContext() {}
 
-  virtual Variable run(Inference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     Variable output;
     returnCode = Inference::finishedReturnCode;
@@ -36,19 +36,19 @@ protected:
 
   ThreadPoolPtr pool;
 
-  virtual void preInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
     {jassert(false);}
 
-  virtual void postInference(Inference* inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
     {jassert(false);}
 
-  virtual Variable runDecoratorInference(DecoratorInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runDecoratorInference(DecoratorInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {jassert(false); return Variable();}
 
-  virtual Variable runSequentialInference(SequentialInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runSequentialInference(SequentialInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {jassert(false); return Variable();}
 
-  virtual Variable runParallelInference(ParallelInference* inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {jassert(false); return Variable();}
 };
 

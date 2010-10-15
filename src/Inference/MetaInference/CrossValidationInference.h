@@ -39,7 +39,7 @@ protected:
   EvaluatorPtr evaluator;
   InferencePtr inferenceModel;
 
-  virtual Variable run(InferenceContext* context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>();
     const ContainerPtr& trainingData = pair->getFirst().getObjectAndCast<Container>();

@@ -25,12 +25,14 @@ typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceS
 
 class SequentialInference;
 typedef ReferenceCountedObjectPtr<SequentialInference> SequentialInferencePtr;
+typedef SequentialInference* SequentialInferenceWeakPtr;
 
 class VectorSequentialInference;
 typedef ReferenceCountedObjectPtr<VectorSequentialInference> VectorSequentialInferencePtr;
 
 class ParallelInference;
 typedef ReferenceCountedObjectPtr<ParallelInference> ParallelInferencePtr;
+typedef ParallelInference* ParallelInferenceWeakPtr;
 
 class StaticParallelInference;
 typedef ReferenceCountedObjectPtr<StaticParallelInference> StaticParallelInferencePtr;
@@ -46,6 +48,7 @@ typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 
 class DecoratorInference;
 typedef ReferenceCountedObjectPtr<DecoratorInference> DecoratorInferencePtr;
+typedef DecoratorInference* DecoratorInferenceWeakPtr;
 
 class StaticDecoratorInference;
 typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
@@ -61,6 +64,7 @@ typedef ReferenceCountedObjectPtr<InferenceStack> InferenceStackPtr;
 
 class InferenceContext;
 typedef ReferenceCountedObjectPtr<InferenceContext> InferenceContextPtr;
+typedef InferenceContext* InferenceContextWeakPtr;
 
 class InferenceResultCache;
 typedef ReferenceCountedObjectPtr<InferenceResultCache> InferenceResultCachePtr;
