@@ -299,8 +299,9 @@ SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
   Inference/NumericalInference/LinearInference.h
   Inference/NumericalInference/MultiLinearInference.h
   Inference/NumericalInference/BinaryClassificationInference.h
-  Inference/NumericalInference/TransferFunctionDecoratorInference.h
   Inference/NumericalInference/RegressionInference.h
+  Inference/NumericalInference/MultiClassInference.h
+  Inference/NumericalInference/TransferFunctionDecoratorInference.h
   Inference/NumericalInference/NumericalInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalInferenceClasses.cpp  
 )

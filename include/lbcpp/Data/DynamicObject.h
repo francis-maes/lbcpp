@@ -50,7 +50,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
-extern ClassPtr enumBasedDoubleVectorClass(TypePtr type);
+extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration);
 extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);
 
 }; /* namespace lbcpp */

@@ -19,8 +19,8 @@ namespace lbcpp
 class OneAgainstAllMultiClassLossFunction : public MultiClassLossFunction
 {
 public:
-  OneAgainstAllMultiClassLossFunction(const BinaryClassificationLossFunctionPtr& binaryLoss, size_t correctClass)
-    : MultiClassLossFunction(correctClass), binaryLoss(binaryLoss) {}
+  OneAgainstAllMultiClassLossFunction(const BinaryClassificationLossFunctionPtr& binaryLoss, EnumerationPtr classes, size_t correctClass)
+    : MultiClassLossFunction(classes, correctClass), binaryLoss(binaryLoss) {}
   OneAgainstAllMultiClassLossFunction() {}
 
   virtual String toString() const
@@ -29,24 +29,25 @@ public:
   virtual bool isDerivable() const
     {return binaryLoss->isDerivable();}
   
-  virtual void compute(const std::vector<double>& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
+  virtual void compute(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
   {
-    size_t n = input.size();
-    jassert(correctClass < n && n > 1);
-    double correctValue = input[correctClass];
+    size_t numClasses = classes->getNumElements();
+    jassert(correctClass < numClasses && numClasses > 1);
+    double correctValue = input ? (*input)[correctClass] : 0.0;
     if (output)
       *output = NULL;
 
-    jassert(!gradientTarget || gradientTarget->size() == n);
-    double invZ = 1.0 / (n - 1.0);
+    jassert(!gradientTarget || gradientTarget->size() == numClasses);
+    double invZ = 1.0 / (numClasses - 1.0);
     gradientWeight *= invZ;
 
     double correctValueDerivative = 0.0;
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < numClasses; ++i)
       if (i != correctClass)
       {
         double derivative;
-        binaryLoss->computePositive(correctValue - input[i], output,  NULL, gradientTarget ? &derivative : NULL);
+        double deltaValue = correctValue - (input ? (*input)[i] : 0.0);
+        binaryLoss->computePositive(deltaValue, output,  NULL, gradientTarget ? &derivative : NULL);
         if (gradientTarget)
         {
           correctValueDerivative += derivative;

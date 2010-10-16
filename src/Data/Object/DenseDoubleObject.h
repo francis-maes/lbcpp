@@ -38,6 +38,9 @@ public:
     return values[index];
   }
 
+  double getValue(size_t index) const
+    {return index < values.size() ? values[index] : 0;}
+
   std::vector<double>& getValues()
   {
     if (values.size() < thisClass->getObjectNumVariables())

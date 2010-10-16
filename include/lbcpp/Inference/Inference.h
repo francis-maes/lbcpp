@@ -99,6 +99,9 @@ extern InferencePtr squareRegressionInference(PerceptionPtr perception, Inferenc
 extern InferencePtr absoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern InferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
+// MultiClass Classification
+extern InferencePtr multiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+
 /*
 ** Decision Tree Inference
 */

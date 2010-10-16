@@ -248,6 +248,7 @@ public:
   Class() {}
 
   virtual String toString() const;
+  virtual ClassPtr getClass() const;
 
   virtual bool isMissingValue(const VariableValue& value) const
     {return !value.getObject();}
@@ -276,9 +277,11 @@ public:
 };
 
 extern ClassPtr objectClass;
+extern ClassPtr pairClass(TypePtr firstClass, TypePtr secondClass);
+
 extern ClassPtr typeClass;
 extern ClassPtr enumerationClass;
-extern ClassPtr pairClass(TypePtr firstClass, TypePtr secondClass);
+extern ClassPtr classClass;
 
 class DefaultClass : public Class
 {
