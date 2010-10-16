@@ -375,7 +375,7 @@ public:
   template<class O>
   NativePtr(const NativePtr<O>& other) : ptr(static_cast<T* >(other.get())) {}
   NativePtr(const NativePtr<T>& other) : ptr(other.ptr) {}
-  NativePtr(T* ptr) : ptr(ptr) {if (ptr->getReferenceCount() == 0) ptr->setStaticAllocationFlag();}
+  NativePtr(T* ptr) : ptr(ptr) {}
   NativePtr() : ptr(NULL) {}
 
   template<class O>
@@ -386,7 +386,7 @@ public:
     {ptr = other.ptr; return *this;}
 
   inline NativePtr<T>& operator =(T* ptr)
-    {this->ptr = ptr; if (ptr->getReferenceCount() == 0) ptr->setStaticAllocationFlag(); return *this;}
+    {this->ptr = ptr; return *this;}
 
   void clear()
     {ptr = NULL;}

@@ -85,7 +85,7 @@ private:
 
   void writeName(const String& name);
   void writeVariable(const Variable& variable, TypePtr expectedType);
-  void writeObject(ObjectPtr object, TypePtr expectedType);
+  void writeObject(const ObjectPtr& object, TypePtr expectedType);
 };
 
 class XmlImporter
@@ -145,6 +145,7 @@ private:
 
   bool loadSharedObjects();
   Variable loadVariable(TypePtr expectedType);
+  ObjectPtr getReferencedObject() const;
 };
 
 }; /* namespace lbcpp */

@@ -37,8 +37,26 @@
     </template>
     
     <!-- Dynamic Object -->
-    <class name="DynamicClass" base="DefaultClass"/>
+    <class name="DynamicClass" base="DefaultClass" abstract="yes">
+      <code>
+      virtual void destroy(VariableValue&amp; value) const
+        {Type::destroy(value);}
+
+      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+        {Type::copy(dest, source);}
+      </code>
+    </class>
     
+    <class name="UnnamedDynamicClass" base="DynamicClass">
+      <code>
+      virtual void destroy(VariableValue&amp; value) const
+        {Type::destroy(value);}
+
+      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+        {Type::copy(dest, source);}
+      </code>
+    </class>
+
     <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
       <parameter name="enumeration" type="EnumValue"/>
       <code>

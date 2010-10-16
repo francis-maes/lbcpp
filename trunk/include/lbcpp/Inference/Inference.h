@@ -101,6 +101,7 @@ extern InferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, I
 
 // MultiClass Classification
 extern InferencePtr multiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern InferencePtr multiClassMaxentInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
 /*
 ** Decision Tree Inference

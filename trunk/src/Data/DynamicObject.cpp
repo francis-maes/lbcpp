@@ -62,14 +62,10 @@ void DynamicClass::setObjectVariable(Object* pthis, size_t index, const Variable
   }
 }
 
-void DynamicClass::saveToXml(XmlExporter& exporter) const
-{
-  exporter.setAttribute(T("className"), getName());
-}
-
 bool DynamicClass::loadFromXml(XmlImporter& importer)
 { 
-  setName(importer.getStringAttribute(T("className")));
+  if (!DefaultClass::loadFromXml(importer))
+    return false;
   createObjectVariables();
   return true;
 }

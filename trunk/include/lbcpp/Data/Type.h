@@ -47,6 +47,7 @@ public:
   Type(const String& className, TypePtr baseType);
   Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType);
   Type() {}
+  virtual ~Type();
 
   static void declare(TypePtr typeInstance);
   static void declare(ClassPtr classInstance)
@@ -68,6 +69,11 @@ public:
 
   virtual bool initialize(MessageCallback& callback);
   virtual void deinitialize();
+
+  /*
+  ** Name
+  */
+  virtual bool isUnnamedType() const;
 
   /*
   ** Base type
@@ -138,10 +144,11 @@ public:
   */
   virtual ClassPtr getClass() const;
 
+  virtual void saveToXml(XmlExporter& exporter) const;
+  static TypePtr loadUnnamedTypeFromXml(XmlImporter& importer);
+
   virtual String toString() const
     {return getName();}
-
-  virtual void saveToXml(XmlExporter& exporter) const;
 
   juce_UseDebuggingNewOperator
 
@@ -204,7 +211,6 @@ public:
   virtual VariableValue getMissingValue() const;
 
   virtual String toString(const VariableValue& value) const;
-  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual size_t getNumElements(const VariableValue& value) const
     {return 0;}
