@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Type" directory="Data/Type">
+  <include file="lbcpp/Data/Vector.h"/>
   <namespace name="lbcpp">
 
     <type name="Variable" base="" implementation="TopLevelType"/>
@@ -35,7 +36,7 @@
     <class name="Type" base="NameableObject" abstract="yes">
       <variable type="Type" name="baseType"/>
       <variable type="TemplateType" name="templateType"/>
-      <!-- <variable type="ObjectVector[Type]" name="templateArguments"/> -->
+      <variable type="ObjectVector[Type]" name="templateArguments"/>
       <code>
         virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
           {return VariableValue((Object* )Type::get(value, callback), false);}
@@ -44,10 +45,10 @@
           {return createFromString(importer.getAllSubText(), importer.getCallback());}
           
         virtual void destroy(VariableValue&amp; value) const
-          {value.clearObject(false);}
+          {value.clearObject(isUnnamedType());}
 
         virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-          {dest.setObject(source.getObjectPointer(), false);}
+          {dest.setObject(source.getObjectPointer(), isUnnamedType());}
       </code>
     </class>
 
@@ -59,7 +60,7 @@
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
           {return Type::createFromXml(importer);}
-
+      
         virtual void destroy(VariableValue&amp; value) const
           {Type::destroy(value);}
 
@@ -75,7 +76,7 @@
 
       virtual VariableValue createFromXml(XmlImporter&amp; importer) const
         {return Type::createFromXml(importer);}
-
+      
       virtual void destroy(VariableValue&amp; value) const
         {Type::destroy(value);}
 
@@ -83,7 +84,15 @@
         {Type::copy(dest, source);}
       </code>
     </class>
-    <class name="DefaultClass" base="Class"/>
+    <class name="DefaultClass" base="Class">
+      <code>
+      virtual void destroy(VariableValue&amp; value) const
+        {Type::destroy(value);}
+
+      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+        {Type::copy(dest, source);}
+      </code>
+    </class>
 
 
     <!-- Template Type -->

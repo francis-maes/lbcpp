@@ -88,9 +88,6 @@ String Enumeration::toString(const VariableValue& value) const
   return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Nil");
 }
 
-void Enumeration::saveToXml(XmlExporter& exporter, const VariableValue& value) const
-  {exporter.addTextElement(toString(value));}
-
 bool Enumeration::hasOneLetterCodes() const
   {return oneLetterCodes.length() == (int)elements.size();}
 

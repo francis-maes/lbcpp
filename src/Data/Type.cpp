@@ -30,7 +30,15 @@ public:
   void declare(TypePtr type)
   {
     if (!type || type->getName().isEmpty())
+    {
       MessageCallback::error(T("TypeManager::declare"), T("Empty class name"));
+      return;
+    }
+    if (type->isUnnamedType())
+    {
+      MessageCallback::error(T("TypeManager::declare"), T("Trying to declare an unnamed type"));
+      return;
+    }
 
     ScopedLock _(typesLock);
     String typeName = type->getName();
@@ -39,6 +47,7 @@ public:
       MessageCallback::error(T("TypeManager::declare"), T("Type '") + typeName + T("' has already been declared"));
       return;
     }
+    type->setStaticAllocationFlag();
     types[typeName] = type;
   }
 
@@ -205,6 +214,7 @@ private:
       TypePtr res = definition->instantiate(arguments, callback);
       if (!res || !res->initialize(callback))
         return TypePtr();
+      res->setStaticAllocationFlag();
       instances[arguments] = res;
       return res;
     }
@@ -280,6 +290,11 @@ Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArg
       baseType(baseType), templateType(templateType), templateArguments(templateArguments)
  {}
 
+Type::~Type()
+{
+  int i = 51;
+}
+
 bool Type::initialize(MessageCallback& callback)
   {return (initialized = true);}
 
@@ -293,6 +308,52 @@ void Type::deinitialize()
 
 ClassPtr Type::getClass() const
   {return typeClass;}
+
+void Type::saveToXml(XmlExporter& exporter) const
+{
+  jassert(isUnnamedType());
+  if (templateType)
+  {
+    exporter.setAttribute(T("templateType"), templateType->getName());
+    for (size_t i = 0; i < templateArguments.size(); ++i)
+    {
+      exporter.enter(T("templateArgument"));
+      exporter.setAttribute(T("index"), (int)i);
+      exporter.writeType(templateArguments[i]);
+      exporter.leave();
+    }
+  }
+  else
+    exporter.setAttribute(T("typeName"), name);
+}
+
+TypePtr Type::loadUnnamedTypeFromXml(XmlImporter& importer)
+{
+  // load unnamed type from xml
+  if (importer.hasAttribute(T("templateType")))
+  {
+    String templateType = importer.getStringAttribute(T("templateType"));
+    std::vector<TypePtr> templateArguments;
+    forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("templateArgument"))
+    {
+      importer.enter(elt);
+      int index = importer.getIntAttribute(T("index"));
+      if (index < 0)
+      {
+        importer.getCallback().errorMessage(T("Type::loadTypeFromXml"), T("Invalid template argument index"));
+        return TypePtr();
+      }
+      templateArguments.resize(index + 1);
+      templateArguments[index] = importer.loadType(TypePtr());
+      if (!templateArguments[index])
+        return TypePtr();
+      importer.leave();
+    }
+    return Type::get(templateType, templateArguments, importer.getCallback());
+  }
+  else
+    return Type::get(importer.getStringAttribute(T("typeName")), importer.getCallback());
+}
 
 bool Type::inheritsFrom(TypePtr baseType) const
 {
@@ -318,6 +379,14 @@ bool Type::inheritsFrom(TypePtr baseType) const
 
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
+
+bool Type::isUnnamedType() const
+{
+  for (size_t i = 0; i < templateArguments.size(); ++i)
+    if (templateArguments[i]->isUnnamedType())
+      return true;
+  return false;
+}
 
 VariableValue Type::getMissingValue() const
 {
@@ -398,9 +467,6 @@ TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
   baseType2 = findCommonBaseType(type1, baseType2);
   return baseType1->inheritsFrom(baseType2) ? baseType1 : baseType2;
 }
-
-void Type::saveToXml(XmlExporter& exporter) const
-  {exporter.addTextElement(getName());}
 
 #include "Type/FileType.h"
 

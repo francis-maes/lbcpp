@@ -38,20 +38,33 @@ public:
   /*
   ** Object
   */
+  virtual bool loadFromXml(XmlImporter& importer);
+
+protected:
+  virtual void createObjectVariables() = 0;
+};
+
+typedef NativePtr<DynamicClass> DynamicClassPtr;
+
+extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration);
+extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);
+
+class UnnamedDynamicClass : public DynamicClass
+{
+public:
+  UnnamedDynamicClass() {}
+
   virtual ClassPtr getClass() const
     {return Object::getClass();}
 
-  virtual void saveToXml(XmlExporter& exporter) const;
-  virtual bool loadFromXml(XmlImporter& importer);
+  virtual bool isUnnamedType() const
+    {return true;}
 
 protected:
   virtual void createObjectVariables() {}
 };
 
-typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
-
-extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration);
-extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);
+typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;
 
 }; /* namespace lbcpp */
 

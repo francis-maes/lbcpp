@@ -95,7 +95,7 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), targetName);
+    return multiClassMaxentInference(perception, classes, createOnlineLearner(targetName, 0.1), targetName);
   /*
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
@@ -106,7 +106,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -202,7 +202,7 @@ private:
 VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 10;
+  size_t maxCount = 2;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -285,10 +285,18 @@ int main(int argc, char** argv)
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
 
+  {
+    std::cout << "Check Evaluating..." << std::endl;
+    EvaluatorPtr evaluator = new ProteinEvaluator();
+    context->evaluate(inference, trainProteins, evaluator);
+    std::cout << "============================" << std::endl << std::endl;
+    std::cout << evaluator->toString() << std::endl << std::endl;
+  }
+
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
-  
+
   std::cout << "Loading..." << std::flush;
   inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;

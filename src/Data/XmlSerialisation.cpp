@@ -216,10 +216,11 @@ void XmlExporter::writeName(const String& name)
 
 void XmlExporter::writeType(TypePtr type)
 {
-  if (type.dynamicCast<DynamicClass>())
+  jassert(type);
+  if (type->isUnnamedType())
   {
     enter(T("type"));
-    writeVariable(type.get(), TypePtr());
+    writeVariable(type, TypePtr());
     leave();
   }
   else
@@ -235,8 +236,15 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
     writeType(variable.getType());
     elt->setAttribute(T("missing"), T("true"));
   }
-  else if (variable.isObject() && variable.getType() != typeClass && !variable.getType()->inheritsFrom(enumerationClass))
-    writeObject(variable.getObject(), expectedType);
+  else if (variable.isObject())
+  {
+    Object* object = variable.getObject().get();
+    TypePtr typeValue = dynamic_cast<Type* >(object);
+    if (typeValue && !typeValue->isUnnamedType())
+      addTextElement(typeValue->getName()); // named type
+    else
+      writeObject(variable.getObject(), expectedType); // traditional object
+  }
   else
   {
     if (variable.getType() != expectedType)
@@ -245,8 +253,9 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
   }
 }
 
-void XmlExporter::writeObject(ObjectPtr object, TypePtr expectedType)
+void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
 {
+  jassert(object->getReferenceCount());
   XmlElement* currentElement = getCurrentElement();
 
   SavedObject& savedObject = savedObjects[object];
@@ -343,8 +352,14 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
     XmlElement* child = elt->getChildByName(T("type"));
     if (child)
     {
-      Variable typeVariable = loadVariable(child, TypePtr());
-      return typeVariable.getObjectAndCast<Type>().get();
+      TypePtr res;
+      enter(child);
+      if (hasAttribute(T("reference")))
+        res = getReferencedObject().checkCast<Type>(T("XmlImporter::loadType"), callback).get();
+      else
+        res = Type::loadUnnamedTypeFromXml(*this);
+      leave();
+      return res;
     }
     else
     {
@@ -355,9 +370,22 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
   }
 }
 
-Variable XmlImporter::loadVariable(TypePtr expectedType)
+ObjectPtr XmlImporter::getReferencedObject() const
 {
   const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
+  String ref = getStringAttribute(T("reference"));
+  SharedObjectMap::const_iterator it = sharedObjects.find(ref);
+  if (it == sharedObjects.end())
+  {
+    errorMessage(T("XmlImporter::getReferencedObject"), T("Could not find shared object reference ") + ref.quoted());
+    return ObjectPtr();
+  }
+  jassert(it->second);
+  return it->second;
+}
+
+Variable XmlImporter::loadVariable(TypePtr expectedType)
+{
   TypePtr type = loadType(expectedType);
   if (!type)
     return Variable();
@@ -365,18 +393,8 @@ Variable XmlImporter::loadVariable(TypePtr expectedType)
   if (getStringAttribute(T("missing")) == T("true"))
     return Variable::missingValue(type);
 
-  if (getStringAttribute(T("reference")).isNotEmpty())
-  {
-    String ref = getStringAttribute(T("reference"));
-    SharedObjectMap::const_iterator it = sharedObjects.find(ref);
-    if (it == sharedObjects.end())
-    {
-      errorMessage(T("XmlImporter::loadVariable"), T("Could not find shared object reference ") + ref.quoted());
-      return Variable();
-    }
-    jassert(it->second);
-    return Variable(it->second);
-  }
+  if (hasAttribute(T("reference")))
+    return getReferencedObject();
   else
     return Variable::createFromXml(type, *this);
 }

@@ -117,6 +117,22 @@ public:
     {return oneAgainstAllMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);}
 };
 
+class MultiClassMaxentInference : public MultiClassInference
+{
+public:
+  MultiClassMaxentInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name)
+    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)))
+  {
+    decorated->setOnlineLearner(learner);
+    createPerClassLossFunctions();
+  }
+
+  MultiClassMaxentInference() {}
+
+  virtual MultiClassLossFunctionPtr createLossFunction(size_t correctClass) const
+    {return logBinomialMultiClassLossFunction(classes, correctClass);}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_NUMERICAL_MULTI_CLASS_H_

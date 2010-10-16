@@ -115,7 +115,7 @@ protected:
 
 private:
   friend class PerceptionClass;
-  DynamicClassPtr outputType;
+  UnnamedDynamicClassPtr outputType;
 };
 
 extern ClassPtr perceptionClass;
