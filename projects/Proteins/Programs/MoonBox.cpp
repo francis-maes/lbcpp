@@ -113,31 +113,31 @@ protected:
     if (targetName == T("secondaryStructure"))
     {
       learningRate = 2;
-      learningRateUpdate = 5e4;
+      learningRateUpdate = (size_t)5e4;
       regularizer = 1e-5;
     }
     else if (targetName == T("dsspSecondaryStructure"))
     {
       learningRate = 2.0;
-      learningRateUpdate = 1e5;
+      learningRateUpdate = (size_t)1e5;
       regularizer = 1e-7;
     }
     else if (targetName == T("solventAccessibilityAt20p"))
     {
       learningRate = 1.0;
-      learningRateUpdate = 2e5;
+      learningRateUpdate = (size_t)2e5;
       regularizer = 1e-5;
     }
     else if (targetName == T("disorderRegions"))
     {
       learningRate = 2.0;
-      learningRateUpdate = 2e7;
+      learningRateUpdate = (size_t)2e7;
       regularizer = 1e-8;
     }
     else if (targetName == T("structuralAlphabetSequence"))
     {
       learningRate = 0.1;
-      learningRateUpdate = 1e4;
+      learningRateUpdate = (size_t)1e4;
       regularizer = 0;
     }
 

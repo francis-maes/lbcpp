@@ -30,6 +30,14 @@ public:
   TypePtr getPerceptionOutputType() const
     {return perception->getOutputType();}
 
+  virtual TypePtr getParametersType() const = 0;
+
+  // if target == NULL, target is this parameters
+  // supervision is the loss function
+  //   ScalarFunction for single output machines
+  //   ObjectScalarFunction for multiple output machines
+  // parameters += weight * gradient(input, supervision=lossFunction, prediction)
+  // exampleLossValue = loss(prediction) (supervision=lossFunction)
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
   ObjectPtr getParametersCopy() const;

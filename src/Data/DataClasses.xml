@@ -38,7 +38,38 @@
     
     <!-- Dynamic Object -->
     <class name="DynamicClass" base="DefaultClass"/>
-           
+    
+    <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
+      <parameter name="enumeration" type="EnumValue"/>
+      <code>
+        virtual void createObjectVariables()
+        {
+          jassert(getNumTemplateArguments() == 1);
+          EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
+          jassert(enumeration);
+          size_t n = enumeration->getNumElements();
+          for (size_t i = 0; i &lt; n; ++i)
+            addVariable(doubleType, enumeration->getElementName(i));
+        }
+      </code>
+    </template>
+
+    <template name="OneSubObjectPerInputVariable" base="Object" autoimpl="yes">
+      <parameter name="inputClass" type="Object"/>
+      <parameter name="outputVariablesType" type="Variable"/>
+      <code>
+        virtual void createObjectVariables()
+        {
+          jassert(getNumTemplateArguments() == 2);
+          ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
+          TypePtr outputVariablesType = getTemplateArgument(1);
+          jassert(inputClass);
+          size_t n = inputClass->getObjectNumVariables();
+          for (size_t i = 0; i &lt; n; ++i)
+            addVariable(outputVariablesType, inputClass->getVariableName(i));
+        }
+      </code>
+    </template>
     
     <!-- Probability Distribution -->
     <class name="ProbabilityDistribution" abstract="yes"/>

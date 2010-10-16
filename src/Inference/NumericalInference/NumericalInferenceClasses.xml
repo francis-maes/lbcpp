@@ -12,7 +12,11 @@
     <class name="LinearInference" base="NumericalInference">
       <constructor arguments="const String&amp; name, PerceptionPtr perception" returnType="Inference"/>
     </class>
-
+    <class name="MultiLinearInference" base="NumericalInference">
+      <constructor arguments="const String&amp; name, PerceptionPtr perception, ClassPtr outputClass" returnType="Inference"/>
+      <variable type="Class" name="outputClass"/>
+    </class>
+    
     <class name="BinaryClassificationInference" base="StaticDecoratorInference" abstract="yes"/>
 
     <class name="BinaryLinearSVMInference" base="BinaryClassificationInference">

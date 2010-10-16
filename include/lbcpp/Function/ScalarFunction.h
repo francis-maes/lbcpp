@@ -69,6 +69,8 @@ public:
   ScalarFunctionPtr composeWith(ScalarFunctionPtr postFunction) const;
 };
 
+extern ClassPtr scalarFunctionClass;
+
 class BinaryClassificationLossFunction : public ScalarFunction
 {
 public:

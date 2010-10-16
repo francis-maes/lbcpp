@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_LINEAR_H_
-# define LBCPP_INFERENCE_LINEAR_H_
+#ifndef LBCPP_INFERENCE_NUMERICAL_LINEAR_H_
+# define LBCPP_INFERENCE_NUMERICAL_LINEAR_H_
 
 # include "NumericalInference.h"
 # include <lbcpp/Perception/PerceptionMaths.h>
@@ -16,47 +16,28 @@
 namespace lbcpp
 {
 
-// Input: Features
+// Input: Perception's input
 // Output: Scalar
 // Supervision: ScalarFunction
 class LinearInference : public NumericalInference
 {
 public:
   LinearInference(const String& name, PerceptionPtr perception)
-    : NumericalInference(name, perception)/*, dotProductCache(NULL)*/ {}
-  LinearInference() /*: dotProductCache(NULL)*/ {}
-
-  virtual ~LinearInference()
-    {clearDotProductCache();}
+    : NumericalInference(name, perception) {}
+  LinearInference() {}
 
   virtual TypePtr getSupervisionType() const
-    {return Class::get(T("ScalarFunction"));}
+    {return scalarFunctionClass;}
 
   virtual TypePtr getOutputType(TypePtr ) const
     {return doubleType;}
 
-  virtual void beginRunSession()
-    {clearDotProductCache(); /*if (parameters) dotProductCache = new FeatureGenerator::DotProductCache();*/}
-
-  virtual void endRunSession()
-    {clearDotProductCache();}
-  
-  virtual void validateParametersChange()
-    {clearDotProductCache();}
-
-  void clearDotProductCache()
-  {
-    /*if (dotProductCache)
-    {
-      delete dotProductCache;
-      dotProductCache = NULL;
-    }*/
-  }
+  virtual TypePtr getParametersType() const
+    {return getPerceptionOutputType();}
 
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
-    ScalarFunctionPtr lossFunction = supervision.dynamicCast<ScalarFunction>();
-    jassert(lossFunction);
+    const ScalarFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarFunction>();
     double lossDerivative;
     lossFunction->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
    // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
@@ -79,13 +60,10 @@ public:
       return Variable::missingValue(doubleType);
     return lbcpp::dotProduct(parameters, perception, input);
   }
-
-private:
-  //FeatureGenerator::DotProductCache* dotProductCache;
 };
 
 typedef ReferenceCountedObjectPtr<LinearInference> LinearInferencePtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_LINEAR_H_
+#endif // !LBCPP_INFERENCE_NUMERICAL_LINEAR_H_
