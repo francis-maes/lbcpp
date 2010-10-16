@@ -6,8 +6,8 @@
                                 |                                             |
                                 `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_REGRESSION_H_
-# define LBCPP_INFERENCE_REGRESSION_H_
+#ifndef LBCPP_INFERENCE_NUMERICAL_REGRESSION_H_
+# define LBCPP_INFERENCE_NUMERICAL_REGRESSION_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Function/ScalarFunction.h>
@@ -83,4 +83,4 @@ public:
   
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_REGRESSION_H_
+#endif // !LBCPP_INFERENCE_NUMERICAL_REGRESSION_H_

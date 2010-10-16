@@ -71,6 +71,9 @@ void Class::saveToXml(XmlExporter& exporter, const VariableValue& value) const
   object->saveToXml(exporter);
 }
 
+ClassPtr Class::getClass() const
+  {return classClass;}
+
 /*
 ** DefaultClass
 */

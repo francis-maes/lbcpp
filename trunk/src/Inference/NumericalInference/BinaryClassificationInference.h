@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_BINARY_CLASSIFICATION_H_
-# define LBCPP_INFERENCE_BINARY_CLASSIFICATION_H_
+#ifndef LBCPP_INFERENCE_NUMERICAL_BINARY_CLASSIFICATION_H_
+# define LBCPP_INFERENCE_NUMERICAL_BINARY_CLASSIFICATION_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
@@ -24,7 +24,7 @@ public:
     {setBatchLearner(onlineToBatchInferenceLearner());}
   BinaryClassificationInference() {}
 
-  virtual ScalarFunctionPtr getLoss(bool isPositive) const = 0;
+  virtual ScalarFunctionPtr createLossFunction(bool isPositive) const = 0;
 
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
@@ -55,7 +55,7 @@ public:
       bool isPositive = supervisionValue > 0.0;
       ScalarFunctionPtr* f = isPositive ? &positiveLoss : &negativeLoss;
       if (!*f)
-        *f = getLoss(isPositive);
+        *f = createLossFunction(isPositive);
       lossFunction = *f;
 
       if (supervisionValue < 0)
@@ -94,8 +94,8 @@ public:
     {}
   BinaryLinearSVMInference() {}
 
-  virtual ScalarFunctionPtr getLoss(bool isPositive) const
-    {return hingeLossFunction(isPositive ? 1 : 0);}
+  virtual ScalarFunctionPtr createLossFunction(bool isPositive) const
+    {return hingeLossFunction(isPositive);}
 };
 
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
@@ -106,10 +106,10 @@ public:
     {decorated->setOnlineLearner(learner);}
   BinaryLogisticRegressionInference() {}
 
-  virtual ScalarFunctionPtr getLoss(bool isPositive) const
-    {return logBinomialLossFunction(isPositive ? 1 : 0);}
+  virtual ScalarFunctionPtr createLossFunction(bool isPositive) const
+    {return logBinomialLossFunction(isPositive);}
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_BINARY_CLASSIFICATION_H_
+#endif // !LBCPP_INFERENCE_NUMERICAL_BINARY_CLASSIFICATION_H_

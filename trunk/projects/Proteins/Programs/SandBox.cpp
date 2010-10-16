@@ -95,10 +95,12 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
+    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), targetName);
+  /*
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     //res->setBatchLearner(onlineToBatchInferenceLearner());
-    return res;
+    return res;*/
   }
 
 protected:
@@ -252,10 +254,10 @@ int main(int argc, char** argv)
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
+  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
 
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   
