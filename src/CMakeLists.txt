@@ -162,6 +162,7 @@ SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
   Function/ScalarObjectFunction/BinarySumScalarObjectFunction.h
   Function/ScalarObjectFunction/MultiplyByScalarObjectFunction.h
   Function/ScalarObjectFunction/SumOfSquaresScalarObjectFunction.h
+  Function/ScalarObjectFunction/OneAgainstAllMultiClassLossFunction.h
   Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionClasses.cpp
 )

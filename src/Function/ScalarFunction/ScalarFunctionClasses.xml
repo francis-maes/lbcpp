@@ -43,7 +43,10 @@
       <variable type="Double" name="constant"/>
     </class>
 
-    <class name="BinaryClassificationLossFunction" base="ScalarFunction" abstract="yes"/>
+    <class name="BinaryClassificationLossFunction" base="ScalarFunction" abstract="yes">
+      <variable type="Boolean" name="isPositive"/>
+    </class>
+    
     <class name="HingeLossFunction" base="BinaryClassificationLossFunction">
       <constructor arguments="bool isPositive, double margin"/>
     </class>

@@ -24,12 +24,25 @@ public:
     missingValue = doubleType->getMissingValue().getDouble();
   }
 
+  DenseDoubleObject(TypePtr thisType, double initialValue)
+    : Object(thisType), values(thisType->getObjectNumVariables(), initialValue)
+  {
+    missingValue = doubleType->getMissingValue().getDouble();
+  }
+
   double& getValueReference(size_t index)
   {
     jassert(index < thisClass->getObjectNumVariables());
     if (values.size() <= index)
       values.resize(index + 1, missingValue);
     return values[index];
+  }
+
+  std::vector<double>& getValues()
+  {
+    if (values.size() < thisClass->getObjectNumVariables())
+      values.resize(thisClass->getObjectNumVariables(), missingValue);
+    return values;
   }
 
   bool isMissing(double value) const

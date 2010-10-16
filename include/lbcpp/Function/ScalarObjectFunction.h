@@ -74,6 +74,26 @@ public:
 
 extern ClassPtr scalarObjectFunctionClass;
 
+class MultiClassLossFunction : public ScalarObjectFunction
+{
+public:
+  MultiClassLossFunction(size_t correctClass = 0);
+
+  virtual String toString() const;
+  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
+
+  virtual void compute(const std::vector<double>& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
+
+protected:
+  friend class MultiClassLossFunctionClass;
+
+  size_t correctClass;
+};
+
+typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunctionPtr;
+
+extern MultiClassLossFunctionPtr oneAgainstAllMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, size_t correctClass);
+
 extern ScalarObjectFunctionPtr binarySumScalarObjectFunction(ScalarObjectFunctionPtr f1, ScalarObjectFunctionPtr f2);
 extern ScalarObjectFunctionPtr multiplyByScalarObjectFunction(ScalarObjectFunctionPtr function, double scalar);
 extern ScalarObjectFunctionPtr sumOfSquaresScalarObjectFunction();
