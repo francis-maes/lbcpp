@@ -195,7 +195,8 @@ void Object::saveToXml(XmlExporter& exporter) const
 {
   ClassPtr type = getClass();
   size_t n = type->getObjectNumVariables();
-  for (size_t i = 0; i < n; ++i)
+  jassert(n && getVariableName(0) == T("thisClass"));
+  for (size_t i = 1; i < n; ++i)
   {
     Variable variable = getVariable(i);
     if (!variable.isMissingValue())
@@ -251,7 +252,7 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
       if (!var.isMissingValue())
         setVariable(i, var);
     }
-    else
+    else if (name != T("thisClass"))
       importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
   }
   return true;

@@ -310,6 +310,8 @@ public:
   juce_UseDebuggingNewOperator
 
 protected:
+  friend class DefaultClassClass;
+
   std::vector< std::pair<TypePtr, String> > variables;
 };
 
