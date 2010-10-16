@@ -19,6 +19,8 @@ class DynamicClass : public DefaultClass
 public:
   DynamicClass(const String& name, TypePtr baseClass = objectClass)
     : DefaultClass(name, baseClass) {}
+  DynamicClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+    : DefaultClass(templateType, templateArguments, baseClass) {}
   DynamicClass() {}
   virtual ~DynamicClass();
 
@@ -28,6 +30,7 @@ public:
   /*
   ** Class
   */
+  virtual bool initialize(MessageCallback& callback);
   virtual VariableValue create() const;
   virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
   virtual void setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const;
@@ -40,9 +43,15 @@ public:
 
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
+
+protected:
+  virtual void createObjectVariables() {}
 };
 
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
+
+extern ClassPtr enumBasedDoubleVectorClass(TypePtr type);
+extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);
 
 }; /* namespace lbcpp */
 

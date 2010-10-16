@@ -104,7 +104,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -202,7 +202,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #ifdef JUCE_DEBUG
   size_t maxCount = 10;
 #else
-  size_t maxCount = 100;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
@@ -216,14 +216,13 @@ int main(int argc, char** argv)
   ThreadPoolPtr pool = new ThreadPool(7);
 
 #ifdef JUCE_WIN32
-  File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\PDB30Small"));
+  File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
 #else
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr proteins = loadProteins(workingDirectory.getChildFile(T("xml")), pool);
-  ContainerPtr trainProteins = proteins->invFold(0, 2);
-  ContainerPtr testProteins = proteins->fold(0, 2);
+  ContainerPtr trainProteins = loadProteins(workingDirectory.getChildFile(T("train")), pool);
+  ContainerPtr testProteins = loadProteins(workingDirectory.getChildFile(T("test")), pool);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
@@ -233,24 +232,31 @@ int main(int argc, char** argv)
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
   inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
   //inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
-  inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  //inferencePass->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(inferencePass);
-  inference->appendInference(inferencePass->cloneAndCast<Inference>());
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(inferencePass);
+  //inference->appendInference(inferencePass->cloneAndCast<Inference>());
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+
   //inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
   
   /*inference->appendInference(factory->createInferenceStep(T("disorderRegions")));

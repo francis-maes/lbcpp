@@ -18,6 +18,13 @@ DynamicClass::~DynamicClass()
 {
 }
 
+bool DynamicClass::initialize(MessageCallback& callback)
+{
+  if (!getObjectNumVariables())
+    createObjectVariables();
+  return DefaultClass::initialize(callback);
+}
+
 VariableValue DynamicClass::create() const
   {return createDenseObject();}
 
@@ -63,5 +70,6 @@ void DynamicClass::saveToXml(XmlExporter& exporter) const
 bool DynamicClass::loadFromXml(XmlImporter& importer)
 { 
   setName(importer.getStringAttribute(T("className")));
+  createObjectVariables();
   return true;
 }

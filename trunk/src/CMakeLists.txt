@@ -296,6 +296,7 @@ SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
   Inference/NumericalInference/NumericalInference.h
   Inference/NumericalInference/NumericalInference.cpp
   Inference/NumericalInference/LinearInference.h
+  Inference/NumericalInference/MultiLinearInference.h
   Inference/NumericalInference/BinaryClassificationInference.h
   Inference/NumericalInference/TransferFunctionDecoratorInference.h
   Inference/NumericalInference/RegressionInference.h

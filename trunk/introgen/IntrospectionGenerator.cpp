@@ -224,7 +224,9 @@ protected:
     String className = xml->getStringAttribute(T("name"), T("???"));
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
+    bool hasAutoImplementation = xml->getBoolAttribute(T("autoimpl"), false);
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
+    String classBaseClass = hasAutoImplementation ? T("DynamicClass") : T("DefaultClass");
 
     String currentScope = getCurrentScopeFullName();
     if (currentScope.isNotEmpty())
@@ -234,15 +236,15 @@ protected:
     if (!isTemplate)
       types.push_back(std::make_pair(currentScope + classNameWithFirstLowerCase + T("Class"), currentScope + className + T("Class()")));
 
-    openClass(className + T("Class"), T("DefaultClass"));
+    openClass(className + T("Class"), classBaseClass);
 
     // constructor
     std::vector<XmlElement* > variables;
     if (isTemplate)
       openScope(className + T("Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
-        + T(" : DefaultClass(templateType, templateArguments, baseClass)"));
+        + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
-      openScope(className + T("Class() : DefaultClass(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+      openScope(className + T("Class() : ") + classBaseClass + T("(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
     closeScope();
     newLine();
 
@@ -252,12 +254,12 @@ protected:
         generateVariableDeclarationInConstructor(className, elt);
         variables.push_back(elt);
       }
-      writeLine(T("return DefaultClass::initialize(callback);"));
+      writeLine(T("return ") + classBaseClass + T("::initialize(callback);"));
     closeScope();
     newLine();
 
     // create() function
-    if (!isAbstract)
+    if (!isAbstract && !hasAutoImplementation)
     {
       openScope(T("virtual VariableValue create() const"));
         writeLine(className + T("* res = new ") + className + T("();"));

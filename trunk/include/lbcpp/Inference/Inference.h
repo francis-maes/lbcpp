@@ -86,6 +86,7 @@ extern DecoratorInferencePtr postProcessInference(InferencePtr inference, Functi
 
 // Atomic
 extern InferencePtr linearInference(const String& name, PerceptionPtr perception);
+extern InferencePtr multiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Binary Classification

@@ -72,6 +72,8 @@ public:
   ScalarObjectFunctionPtr multiplyByScalar(double weight) const;
 };
 
+extern ClassPtr scalarObjectFunctionClass;
+
 extern ScalarObjectFunctionPtr binarySumScalarObjectFunction(ScalarObjectFunctionPtr f1, ScalarObjectFunctionPtr f2);
 extern ScalarObjectFunctionPtr multiplyByScalarObjectFunction(ScalarObjectFunctionPtr function, double scalar);
 extern ScalarObjectFunctionPtr sumOfSquaresScalarObjectFunction();
