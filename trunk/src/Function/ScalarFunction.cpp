@@ -59,8 +59,42 @@ void BinaryClassificationLossFunction::compute(double input, double* output, con
     *derivative = - (*derivative);
 }
 
+////////////////
+# include "../Data/Object/DenseDoubleObject.h"
+
 /*
 ** ScalarObjectFunction
 */
 ScalarObjectFunctionPtr ScalarObjectFunction::multiplyByScalar(double weight) const
   {return multiplyByScalarObjectFunction(refCountedPointerFromThis(this), weight);}
+
+/*
+** MultiClassLossFunction
+*/
+MultiClassLossFunction::MultiClassLossFunction(size_t correctClass)
+  : correctClass(correctClass) {}
+
+String MultiClassLossFunction::toString() const
+  {return getClassName() + T("(") + String((int)correctClass) + T(")");}
+
+void MultiClassLossFunction::compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+{
+  DenseDoubleObjectPtr denseDoubleInput = input.dynamicCast<DenseDoubleObject>();
+  if (denseDoubleInput)
+  {
+    jassert(!gradientTarget || !*gradientTarget || gradientTarget->isInstanceOf<DenseDoubleObject>());
+    std::vector<double>* gradientVectorTarget = NULL;
+    if (gradientTarget)
+    {
+      DenseDoubleObjectPtr denseGradientTarget;
+      if (*gradientTarget)
+        denseGradientTarget = gradientTarget->dynamicCast<DenseDoubleObject>();
+      else
+        denseGradientTarget = new DenseDoubleObject(input->getClass(), 0.0);
+      jassert(denseGradientTarget);
+      gradientVectorTarget = &denseGradientTarget->getValues();
+    }
+
+    compute(denseDoubleInput->getValues(), output, gradientVectorTarget, gradientWeight);
+  }
+}

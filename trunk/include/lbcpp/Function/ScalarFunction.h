@@ -79,10 +79,12 @@ public:
 
   virtual String toString() const;
 
+  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
+
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const;
 
 protected:
-  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
+  friend class BinaryClassificationLossFunctionClass;
 
   bool isPositive;
 };
