@@ -1,13 +1,11 @@
-
-Binary Classification (disorder regions and contactmaps):
- * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
+Learning:
+ * BiasLearner for contact map and disorder regions 
+     * SequentialLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
+ * Grafting
+ * Extra-trees
+ * Neural networks
 
 Types:
- * Essayer un peu l'introspection sur les types
  * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
  * permettre de déclarer des variables ayant des Types abstraits -> c.f. pb dans ProteinInferenceStep::ProteinInferenceStep
- * Rendre visible la variable Type de la classe Object (?)
 
-Inference:
- * Atomic MultiClass machines (MultiLinear, Ranking...)
- * Apprentissage avec couche cachée

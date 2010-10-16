@@ -64,6 +64,12 @@ public:
   const Variable& getSecond() const
     {return second;}
 
+  Variable& getFirst()
+    {return first;}
+
+  Variable& getSecond()
+    {return second;}
+
   juce_UseDebuggingNewOperator
 
 protected:
@@ -72,6 +78,35 @@ protected:
   Variable first;
   Variable second;
 };
+
+
+template<class T1, class T2>
+inline void variableToNative(std::pair<T1, T2>& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  const PairPtr& sourcePair = source.getObjectAndCast<Pair>();
+  if (sourcePair)
+  {
+    lbcpp::variableToNative(dest.first, sourcePair->getFirst());
+    lbcpp::variableToNative(dest.second, sourcePair->getSecond());
+  }
+  else
+  {
+    dest.first = T1();
+    dest.second = T2();
+  }
+}
+
+template<class T1, class T2>
+inline void nativeToVariable(Variable& dest, const std::pair<T1, T2>& source, TypePtr expectedType)
+{
+  jassert(expectedType->getNumTemplateArguments() == 2);
+  dest = Variable::create(expectedType);
+  const PairPtr& destPair = dest.getObjectAndCast<Pair>();
+  jassert(destPair);
+  nativeToVariable(destPair->getFirst(), source.first, expectedType->getTemplateArgument(0));
+  nativeToVariable(destPair->getSecond(), source.second, expectedType->getTemplateArgument(1));
+}
 
 }; /* namespace lbcpp */
 

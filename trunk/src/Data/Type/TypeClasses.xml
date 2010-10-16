@@ -2,6 +2,7 @@
 
 <file name="Type" directory="Data/Type">
   <include file="lbcpp/Data/Vector.h"/>
+  <include file="lbcpp/Data/Pair.h"/>
   <namespace name="lbcpp">
 
     <type name="Variable" base="" implementation="TopLevelType"/>
@@ -25,7 +26,7 @@
     
     <!-- Object -->
     <class name="Object" base="Variable" abstract="yes">
-      <!-- <variable type="Class" name="thisClass"/> -->
+      <!-- <variable type="Class" name="thisClass"/> : bad idea: induces moult complexity on DenseDoubleObjects -->
     </class>
     
     <class name="NameableObject" base="Object" abstract="yes">
@@ -85,6 +86,7 @@
       </code>
     </class>
     <class name="DefaultClass" base="Class">
+      <variable type="ObjectVector[Pair[Type,String]]" name="variables"/>
       <code>
       virtual void destroy(VariableValue&amp; value) const
         {Type::destroy(value);}
