@@ -110,8 +110,8 @@ protected:
 class MultiClassLinearSVMInference : public MultiClassInference
 {
 public:
-  MultiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name)
-    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)))
+  MultiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses, const String& name)
+    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes))), updateOnlyMostViolatedClasses(updateOnlyMostViolatedClasses)
   {
     decorated->setOnlineLearner(learner);
     createPerClassLossFunctions();
@@ -120,7 +120,17 @@ public:
   MultiClassLinearSVMInference() {}
 
   virtual MultiClassLossFunctionPtr createLossFunction(size_t correctClass) const
-    {return oneAgainstAllMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);}
+  {
+    if (updateOnlyMostViolatedClasses)
+      return mostViolatedMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);
+    else
+      return oneAgainstAllMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);
+  }
+
+protected:
+  friend class MultiClassLinearSVMInferenceClass;
+
+  bool updateOnlyMostViolatedClasses;
 };
 
 class MultiClassMaxentInference : public MultiClassInference

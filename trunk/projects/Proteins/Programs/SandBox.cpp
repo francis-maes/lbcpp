@@ -95,7 +95,7 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), targetName);
+    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), true, targetName);
   /*
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
