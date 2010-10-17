@@ -106,7 +106,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -210,6 +210,11 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 }
 
+void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
+{
+  inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
+}
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
@@ -247,10 +252,15 @@ int main(int argc, char** argv)
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
 
-  InferencePtr ss3Step = factory->createInferenceStep(T("secondaryStructure"));
-  inference->appendInference(ss3Step);
+  InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
+  inference->appendInference(lastStep);
   for (int i = 1; i < 5; ++i)
-    inference->appendInference(factory->createInferenceStep(ss3Step));
+  {
+    InferencePtr step = factory->createInferenceStep(T("secondaryStructure"));
+    initializeLearnerByCloning(step, lastStep);
+    inference->appendInference(step);
+    lastStep = step;
+  } 
 
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));

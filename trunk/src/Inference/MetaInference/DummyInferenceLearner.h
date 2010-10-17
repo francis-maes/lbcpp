@@ -48,6 +48,7 @@ public:
   virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     InferencePtr targetInference = getInference(input);
+    std::cout << "Cloning Inference: " << inferenceToClone.get() << " ==> " << targetInference.get() << std::endl;
     inferenceToClone->clone(targetInference);
     return Variable();
   }
