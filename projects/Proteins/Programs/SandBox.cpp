@@ -161,8 +161,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName == T("LearningPass"))
+    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
