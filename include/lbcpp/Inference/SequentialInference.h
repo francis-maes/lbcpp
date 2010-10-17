@@ -125,29 +125,25 @@ public:
     {}
 
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
-    {state->setSubInference(getSubInference(index), index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
+    {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
 
   virtual size_t getNumSubInferences() const
-    {return subInferences->getNumElements();}
+    {return subInferences.size();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return subInferences->getElement(index).getObjectAndCast<Inference>();}
+    {return subInferences[index];}
   
-  void setSubInference(size_t index, InferencePtr inference)
-    {subInferences->setElement(index, inference);}
+  void setSubInference(size_t index, const InferencePtr& inference)
+    {subInferences[index] = inference;}
  
-  void appendInference(InferencePtr inference)
-    {subInferences->append(inference);}
+  void appendInference(const InferencePtr& inference)
+    {subInferences.push_back(inference);}
 
-  virtual void clone(ObjectPtr target) const
-  {
-    StaticSequentialInference::clone(target);
-    VectorSequentialInferencePtr(target)->subInferences = subInferences->cloneContent();
-  }
+  virtual void clone(ObjectPtr t) const;
 
 protected:
   friend class VectorSequentialInferenceClass;
-  VectorPtr subInferences;
+  std::vector<InferencePtr> subInferences;
 };
 
 }; /* namespace lbcpp */

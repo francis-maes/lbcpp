@@ -26,6 +26,7 @@ public:
   /*
   ** High level inferences
   */
+  virtual InferencePtr createInferenceStep(InferencePtr inferenceStepToClone) const;
   virtual InferencePtr createInferenceStep(const String& targetName) const;
   virtual InferencePtr createTargetInference(const String& targetName) const;
   

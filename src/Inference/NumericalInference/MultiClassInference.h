@@ -87,6 +87,12 @@ public:
     return true;
   }
 
+  virtual void clone(ObjectPtr target) const
+  {
+    StaticDecoratorInference::clone(target);
+    target.staticCast<MultiClassInference>()->lossFunctions = lossFunctions;
+  }
+
 protected:
   friend class MultiClassInferenceClass;
 

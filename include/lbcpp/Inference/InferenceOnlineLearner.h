@@ -20,6 +20,19 @@ namespace lbcpp
 class InferenceOnlineLearner : public Object
 {
 public:
+  virtual void startLearningCallback() = 0;
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
+  virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
+  virtual void passFinishedCallback(const InferencePtr& inference) = 0;
+
+  virtual double getCurrentLossEstimate() const = 0;
+
+  virtual bool wantsMoreIterations() const
+    {return !isLearningStopped();}
+
+  virtual bool isLearningStopped() const
+    {return false;}
+
   enum UpdateFrequency
   {
     never,
@@ -38,18 +51,6 @@ public:
     perStepMiniBatch1000 = perStepMiniBatch + 1000,
   };
 
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
-  virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
-  virtual void passFinishedCallback(const InferencePtr& inference) = 0;
-
-  virtual double getCurrentLossEstimate() const = 0;
-
-  virtual bool wantsMoreIterations() const
-    {return !isLearningStopped();}
-
-  virtual bool isLearningStopped() const
-    {return false;}
-
   InferenceOnlineLearnerPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
 };
 
@@ -62,6 +63,8 @@ public:
 
   virtual void update(InferencePtr inference) = 0;
 
+  virtual void startLearningCallback()
+    {epoch = 0;}
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(const InferencePtr& inference);
   virtual void passFinishedCallback(const InferencePtr& inference);

@@ -95,7 +95,7 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    return multiClassMaxentInference(perception, classes, createOnlineLearner(targetName, 0.5), targetName);
+    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), targetName);
   /*
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
@@ -106,7 +106,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(2);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -202,7 +202,7 @@ private:
 VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 2;
+  size_t maxCount = 10;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -233,11 +233,7 @@ int main(int argc, char** argv)
   ProteinParallelInferencePtr inferencePass = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
-  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+
   /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -250,7 +246,11 @@ int main(int argc, char** argv)
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  InferencePtr ss3Step = factory->createInferenceStep(T("secondaryStructure"));
+  inference->appendInference(ss3Step);
+  for (int i = 1; i < 5; ++i)
+    inference->appendInference(factory->createInferenceStep(ss3Step));
+
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 

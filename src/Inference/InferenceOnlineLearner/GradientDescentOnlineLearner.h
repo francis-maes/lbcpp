@@ -24,6 +24,9 @@ public:
                                 UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
   GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never) {}
 
+
+  virtual void startLearningCallback();
+
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(const InferencePtr& inference);
   virtual void passFinishedCallback(const InferencePtr& inference);

@@ -21,6 +21,15 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
 {
 }
 
+void GradientDescentOnlineLearner::startLearningCallback()
+{
+  numberOfActiveFeatures.clear();
+  epoch = 0;
+  ScopedLock _(lossValueLock);
+  lossValue.clear();
+  lastApplyRegularizerEpoch = 0;
+}
+
 void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   updateNumberOfActiveFeatures(getPerception(inference), input);

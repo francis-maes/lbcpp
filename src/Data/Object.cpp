@@ -190,13 +190,11 @@ void Object::clone(ObjectPtr target) const
 /*
 ** XML Serialisation
 */
-
 void Object::saveToXml(XmlExporter& exporter) const
 {
   ClassPtr type = getClass();
   size_t n = type->getObjectNumVariables();
-  jassert(n && getVariableName(0) == T("thisClass"));
-  for (size_t i = 1; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
   {
     Variable variable = getVariable(i);
     if (!variable.isMissingValue())

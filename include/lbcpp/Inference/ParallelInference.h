@@ -100,31 +100,27 @@ class VectorParallelInference : public StaticParallelInference
 {
 public:
   VectorParallelInference(const String& name)
-    : StaticParallelInference(name), subInferences(vector(inferenceClass)) {}
+    : StaticParallelInference(name) {}
   VectorParallelInference() {}
 
   virtual size_t getNumSubInferences() const
-    {return subInferences->getNumElements();}
+    {return subInferences.size();}
 
   virtual InferencePtr getSubInference(size_t index) const
-    {return subInferences->getElement(index).getObjectAndCast<Inference>();}
+    {return subInferences[index];}
  
   void setSubInference(size_t index, InferencePtr inference)
-    {subInferences->setElement(index, inference);}
+    {subInferences[index] = inference;}
  
   void appendInference(InferencePtr inference)
-    {subInferences->append(inference);}
+    {subInferences.push_back(inference);}
   
-  virtual void clone(ObjectPtr target) const
-  {
-    StaticParallelInference::clone(target);
-    VectorParallelInferencePtr(target)->subInferences = subInferences->cloneContent();
-  }
+  virtual void clone(ObjectPtr target) const;
 
 protected:
   friend class VectorParallelInferenceClass;
 
-  VectorPtr subInferences;
+  std::vector<InferencePtr> subInferences;
 };
 
 extern ClassPtr vectorParallelInferenceClass;

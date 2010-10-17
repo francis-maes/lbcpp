@@ -108,6 +108,16 @@ public:
     {return Variable();}
 };
 
+extern ClassPtr runOnSupervisedExamplesSequentialInferenceClass;
+extern ClassPtr runOnSupervisedExamplesParallelInferenceClass;
+
+inline bool isRunOnSupervisedExamplesInference(InferencePtr inference)
+{
+  ClassPtr cl = inference->getClass();
+  return cl->inheritsFrom(runOnSupervisedExamplesSequentialInferenceClass)
+      || cl->inheritsFrom(runOnSupervisedExamplesParallelInferenceClass);
+}
+
 class RunSequentialInferenceStepOnExamples : public ParallelInference
 {
 public:

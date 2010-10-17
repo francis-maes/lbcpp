@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/SequentialInference.h>
 # include "../InferenceCallback/OnlineLearningInferenceCallback.h"
+# include "RunOnSupervisedExamplesInference.h"
 
 namespace lbcpp
 {
@@ -20,8 +21,14 @@ class OnlineToBatchInferenceLearner : public InferenceLearner<SequentialInferenc
 public:
   struct State : public SequentialInferenceState
   {
-    State(InferencePtr owner, const Variable& input, const Variable& supervision)
-      : SequentialInferenceState(input, supervision), callback(new OnlineLearningInferenceCallback(owner)) {}
+    State(InferencePtr targetInference, const Variable& input, const Variable& supervision)
+      : SequentialInferenceState(input, supervision)
+    {
+      std::set<InferencePtr> inferencesThatHaveALearner;
+      targetInference->getInferencesThatHaveAnOnlineLearner(inferencesThatHaveALearner);
+      jassert(inferencesThatHaveALearner.size());
+      callback = new OnlineLearningInferenceCallback(targetInference, inferencesThatHaveALearner);
+    }
 
     OnlineLearningInferenceCallbackPtr callback;
   };
@@ -36,7 +43,7 @@ public:
     InferencePtr targetInference = getInference(input);
     ContainerPtr trainingData = getTrainingData(input);
 
-    SequentialInferenceStatePtr res = new State(refCountedPointerFromThis(this), input, supervision);
+    SequentialInferenceStatePtr res = new State(targetInference, input, supervision);
     updateInference(context, res, returnCode);
     return res;
   }

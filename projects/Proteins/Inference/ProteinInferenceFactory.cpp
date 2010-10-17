@@ -23,6 +23,13 @@ ProteinInferenceFactory::~ProteinInferenceFactory()
 InferencePtr ProteinInferenceFactory::createInferenceStep(const String& targetName) const
   {return new ProteinInferenceStep(targetName, createTargetInference(targetName));}
 
+InferencePtr ProteinInferenceFactory::createInferenceStep(InferencePtr inferenceStepToClone) const
+{
+  InferencePtr res = inferenceStepToClone->cloneAndCast<Inference>();
+  res->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceStepToClone), res->getBatchLearner()));
+  return res;
+}
+
 InferencePtr ProteinInferenceFactory::createTargetInference(const String& targetName) const
 {
   if (targetName == T("secondaryStructure") || targetName == T("dsspSecondaryStructure")

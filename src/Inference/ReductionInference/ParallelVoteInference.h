@@ -23,12 +23,12 @@ public:
     : VectorParallelInference(name), voteInferenceModel(voteInferenceModel)
   {
     jassert(numVoters);
-    subInferences->resize(numVoters);
+    subInferences.resize(numVoters);
     for (size_t i = 0; i < numVoters; ++i)
     {
       InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>();
       voteInference->setBatchLearner(voterLearner);
-      setSubInference(i, voteInference);
+      subInferences[i] = voteInference;
     }
     setBatchLearner(parallelVoteInferenceLearner());
   }
@@ -47,8 +47,9 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
-    for (size_t i = 0; i < subInferences->getNumElements(); ++i)
-      state->addSubInference(getSubInference(i), input, supervision);
+    state->reserve(subInferences.size());
+    for (size_t i = 0; i < subInferences.size(); ++i)
+      state->addSubInference(subInferences[i], input, supervision);
     return state;
   }
 

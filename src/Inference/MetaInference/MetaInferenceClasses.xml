@@ -7,7 +7,26 @@
     <class name="DummyInferenceLearner" base="Inference">
       <constructor/>
     </class>
-    
+
+    <class name="MultiPassInferenceLearner" base="VectorSequentialInference">
+      <constructor/>
+    </class>
+
+    <code>
+      VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner)
+      {
+        VectorSequentialInferencePtr res = multiPassInferenceLearner();
+        res->appendInference(firstLearner);
+        res->appendInference(secondLearner);
+        return res;
+      }
+    </code>
+
+    <class name="InitializeByCloningInferenceLearner" base="Inference">
+      <constructor arguments="InferencePtr inferenceToClone"/>
+      <variable type="Inference" name="inferenceToClone"/>
+    </class>
+
     <class name="StaticSequentialInferenceLearner" base="Inference">
       <constructor/>
     </class>
