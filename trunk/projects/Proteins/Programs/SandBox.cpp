@@ -106,7 +106,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -204,7 +204,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #ifdef JUCE_DEBUG
   size_t maxCount =1;
 #else
-  size_t maxCount = 8;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
@@ -250,7 +250,7 @@ int main(int argc, char** argv)
   InferencePtr ss3Step = factory->createInferenceStep(T("secondaryStructure"));
   inference->appendInference(ss3Step);
   for (int i = 1; i < 2; ++i)
-    inference->appendInference(ss3Step->cloneAndCast<Inference>());
+    inference->appendInference(factory->createInferenceStep(ss3Step));
 
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));

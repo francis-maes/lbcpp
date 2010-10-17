@@ -187,6 +187,17 @@ void Object::clone(ObjectPtr target) const
     target->setVariable(i, getVariable(i));
 }
 
+ObjectPtr Object::deepClone() const
+{
+  ClassPtr thisClass = getClass();
+  ObjectPtr res = clone();
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+    if (thisClass->getObjectVariableType(i)->inheritsFrom(objectClass))
+      res->setVariable(i, res->getVariable(i).getObject()->deepClone());
+  return res;
+}
+
 /*
 ** XML Serialisation
 */

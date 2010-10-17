@@ -85,6 +85,7 @@ public:
   */
   virtual ObjectPtr clone() const;
   virtual void clone(ObjectPtr target) const;
+  ObjectPtr deepClone() const;
 
   /**
   ** Clones and cast the current object.

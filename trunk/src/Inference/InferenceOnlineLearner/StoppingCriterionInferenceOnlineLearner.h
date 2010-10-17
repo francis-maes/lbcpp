@@ -85,7 +85,7 @@ public:
       = new StoppingCriterionInferenceOnlineLearner(learner->cloneAndCast<InferenceOnlineLearner>(), criterionTestFrequency,
                                                     criterion->cloneAndCast<StoppingCriterion>(), restoreBestParametersWhenLearningStops);
     res->learningStopped = learningStopped;
-    res->bestParameters = bestParameters ? bestParameters->clone() : ObjectPtr();
+    res->bestParameters = bestParameters ? bestParameters->deepClone() : ObjectPtr();
     res->bestScore = bestScore;
     res->epoch = epoch;
     return res;
