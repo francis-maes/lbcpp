@@ -122,9 +122,9 @@ protected:
         InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
     else
       return gradientDescentInferenceOnlineLearner(
-        InferenceOnlineLearner::never,                                                 // randomization
-        InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 10000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.01),         // regularizer
+        InferenceOnlineLearner::perPass,                                                 // randomization
+        InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
+        InferenceOnlineLearner::never, l2Regularizer(0.0),         // regularizer
         InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
   }
 };
@@ -249,7 +249,7 @@ int main(int argc, char** argv)
 
   InferencePtr ss3Step = factory->createInferenceStep(T("secondaryStructure"));
   inference->appendInference(ss3Step);
-  for (int i = 1; i < 2; ++i)
+  for (int i = 1; i < 5; ++i)
     inference->appendInference(factory->createInferenceStep(ss3Step));
 
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));

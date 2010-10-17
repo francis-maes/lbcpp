@@ -32,6 +32,8 @@ public:
 
   virtual TypePtr getParametersType() const = 0;
 
+  virtual Variable predict(const Variable& input) const = 0;
+
   // if target == NULL, target is this parameters
   // supervision is the loss function
   //   ScalarFunction for single output machines
@@ -58,6 +60,9 @@ protected:
   PerceptionPtr perception;
   juce::ReadWriteLock parametersLock;
   ObjectPtr parameters;
+
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return predict(input);}
 };
 
 }; /* namespace lbcpp */
