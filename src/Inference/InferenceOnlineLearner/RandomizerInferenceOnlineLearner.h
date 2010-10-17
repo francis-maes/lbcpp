@@ -68,11 +68,11 @@ private:
   struct Example
   {
     Example(const Variable& input, const Variable& supervision, const Variable& prediction)
-      : input(input), supervision(supervision), prediction(prediction) {}
+      : input(input), supervision(supervision)/*, prediction(prediction)*/ {}
 
     Variable input;
     Variable supervision;
-    Variable prediction;
+    //Variable prediction;
   };
 
   CriticalSection examplesLock;
@@ -103,7 +103,7 @@ private:
     for (size_t i = 0; i < order.size(); ++i)
     {
       const Example& example = examples[order[i]];
-      targetLearningCallback->stepFinishedCallback(inference, example.input, example.supervision, example.prediction);
+      targetLearningCallback->stepFinishedCallback(inference, example.input, example.supervision, Variable()/*example.prediction*/);
     }
   }
 };

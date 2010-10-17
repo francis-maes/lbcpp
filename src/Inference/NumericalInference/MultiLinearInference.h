@@ -67,7 +67,8 @@ public:
       parametersLock.exitWrite();
   }
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+
+  virtual Variable predict(const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
     if (!parameters)

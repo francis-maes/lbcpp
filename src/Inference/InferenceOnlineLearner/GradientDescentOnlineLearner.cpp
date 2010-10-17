@@ -62,7 +62,8 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
 void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
-  getNumericalInference(inference)->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, prediction, exampleLossValue, target);
+  Variable pred = prediction.exists() ? prediction : getNumericalInference(inference)->predict(input);
+  getNumericalInference(inference)->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);
   lossValue.push(exampleLossValue);
