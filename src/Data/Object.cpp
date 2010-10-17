@@ -193,8 +193,15 @@ ObjectPtr Object::deepClone() const
   ObjectPtr res = clone();
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
-    if (thisClass->getObjectVariableType(i)->inheritsFrom(objectClass))
-      res->setVariable(i, res->getVariable(i).getObject()->deepClone());
+  {
+    TypePtr variableType = thisClass->getObjectVariableType(i);
+    if (variableType->inheritsFrom(objectClass) && !variableType->inheritsFrom(typeClass))
+    {
+      ObjectPtr object = res->getVariable(i).getObject();
+      if (object)
+        res->setVariable(i, Variable(object->deepClone(), variableType));
+    }
+  }
   return res;
 }
 
