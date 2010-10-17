@@ -1,9 +1,3 @@
-* "Start from previous pass" Learning
-  * MultiPassInferenceLearner
-  * InitializeByCloningInferenceLearner
-  * New callback: OnlineInferenceLearner::startLearningCallback()
-  
-* Use std::vector<Inference> in VectorSequentialInference and VectorParallelInference  
 
 --
 

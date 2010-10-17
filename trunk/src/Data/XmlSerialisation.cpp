@@ -192,7 +192,7 @@ void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& r
         continue;
       if ((prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && (size_t)it->second == savedObject.references.size()))
       {
-        savedObject.elt->setAttribute(T("type"), savedObject.object->getClassName().replaceCharacters(T("<>"), T("[]")));
+        savedObject.elt->setAttribute(T("type"), savedObject.object->getClass()->getName().replaceCharacters(T("<>"), T("[]")));
         savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
         identifiers.erase(savedObject.identifier);
         referencedObjects.erase(it);
