@@ -35,7 +35,7 @@ public:
     jassert(correctClass < numClasses && numClasses > 1);
     double correctValue = input ? (*input)[correctClass] : 0.0;
     if (output)
-      *output = NULL;
+      *output = 0;
 
     jassert(!gradientTarget || gradientTarget->size() == numClasses);
     double invZ = 1.0 / (numClasses - 1.0);

@@ -34,7 +34,12 @@
       <constructor arguments="BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass"/>
       <variable type="BinaryClassificationLossFunction" name="binaryLoss"/>
     </class>
-
+    
+    <class name="MostViolatedMultiClassLossFunction" base="MultiClassLossFunction">
+      <constructor arguments="BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass"/>
+      <variable type="BinaryClassificationLossFunction" name="binaryLoss"/>
+    </class>
+    
     <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction">
       <constructor arguments="EnumerationPtr classes, size_t correctClass"/>
     </class>

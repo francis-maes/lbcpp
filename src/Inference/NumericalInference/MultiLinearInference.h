@@ -58,9 +58,12 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       double w = lossGradient->getVariable(i).getDouble() * weight;
-      ObjectPtr object = parameters->getVariable(i).getObject();
-      lbcpp::addWeighted(object, perception, input, w);
-      parameters->setVariable(i, object);
+      if (w)
+      {
+        ObjectPtr object = parameters->getVariable(i).getObject();
+        lbcpp::addWeighted(object, perception, input, w);
+        parameters->setVariable(i, object);
+      }
     }
 
     if (isLocked)

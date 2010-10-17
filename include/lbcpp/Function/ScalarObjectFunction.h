@@ -95,6 +95,7 @@ protected:
 typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunctionPtr;
 
 extern MultiClassLossFunctionPtr oneAgainstAllMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass);
+extern MultiClassLossFunctionPtr mostViolatedMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass);
 extern MultiClassLossFunctionPtr logBinomialMultiClassLossFunction(EnumerationPtr classes, size_t correctClass);
 
 extern ScalarObjectFunctionPtr binarySumScalarObjectFunction(ScalarObjectFunctionPtr f1, ScalarObjectFunctionPtr f2);
