@@ -40,11 +40,17 @@
       <variable type="ObjectVector[Type]" name="templateArguments"/>
       <code>
         virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
-          {return VariableValue((Object* )Type::get(value, callback), false);}
+          {return VariableValue(Type::get(value, callback), false);}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
-          {return createFromString(importer.getAllSubText(), importer.getCallback());}
-          
+        {
+          String text = importer.getAllSubText().trim();
+          if (text.isNotEmpty())
+            return createFromString(importer.getAllSubText(), importer.getCallback());
+          else
+            return VariableValue(Type::loadUnnamedTypeFromXml(importer), false);
+        }
+
         virtual void destroy(VariableValue&amp; value) const
           {value.clearObject(isUnnamedType());}
 

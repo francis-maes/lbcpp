@@ -84,7 +84,7 @@
           jassert(inputClass);
           size_t n = inputClass->getObjectNumVariables();
           for (size_t i = 0; i &lt; n; ++i)
-            addVariable(outputVariablesType, inputClass->getVariableName(i));
+            addVariable(outputVariablesType, inputClass->getObjectVariableName(i));
         }
       </code>
     </template>
