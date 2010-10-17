@@ -239,6 +239,8 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   Perception/Container/WindowPerception.h
   Perception/Container/HistogramPerception.h
   Perception/Container/HistogramPerception.cpp
+  Perception/Container/SegmentsPerception.h
+  Perception/Container/SegmentsPerception.cpp
   Perception/Container/BoundsProximityPerception.h
   Perception/Container/ProbabilityDistributionPerception.h
   Perception/Container/ContainerPerceptionClasses.xml

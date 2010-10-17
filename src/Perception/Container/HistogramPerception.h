@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_PERCEPTION_HISTOGRAM_H_
-# define LBCPP_FUNCTION_PERCEPTION_HISTOGRAM_H_
+#ifndef LBCPP_FUNCTION_PERCEPTION_CONTAINER_HISTOGRAM_H_
+# define LBCPP_FUNCTION_PERCEPTION_CONTAINER_HISTOGRAM_H_
 
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
@@ -123,4 +123,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_PERCEPTION_HISTOGRAM_H_
+#endif // !LBCPP_FUNCTION_PERCEPTION_CONTAINER_HISTOGRAM_H_

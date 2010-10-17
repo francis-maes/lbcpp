@@ -1,6 +1,3 @@
-* MostViolatedMultiClassLossFunction
-
--
 * Segmental Features
 
 

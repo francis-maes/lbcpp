@@ -58,6 +58,22 @@
       <parameter name="elementsType"/>
       <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
     </template>
+
+    <!-- SegmentedContainer -->
+    <template name="ContainerSegment" base="Object">
+      <parameter name="elementsType"/>
+      <variable type="PositiveInteger" name="beginIndex"/>
+      <variable type="PositiveInteger" name="length"/>
+      <variable type="elementsType" name="value"/>
+    </template>
+
+    <template name="SegmentedContainer" base="Container[elementsType]">
+      <parameter name="elementsType"/>
+      <constructor arguments="ContainerPtr container" parameters="container->getElementsType()"/>
+
+      <variable type="Container[elementsType]" name="sourceContainer"/>
+      <variable type="ObjectVector[ContainerSegment[elementsType]]" name="segments"/>
+    </template>
     
     <!-- Vector -->
     <template name="Vector" base="Container[elementsType]" abstract="yes">
