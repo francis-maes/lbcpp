@@ -100,7 +100,7 @@ private:
   size_t numOutputs;
 };
 
-typedef ReferenceCountedObjectPtr<LinearInference> LinearInferencePtr;
+typedef ReferenceCountedObjectPtr<MultiLinearInference> MultiLinearInferencePtr;
 
 }; /* namespace lbcpp */
 
