@@ -50,6 +50,8 @@ public:
 
   virtual void validateParametersChange() {}
 
+  virtual void clone(ObjectPtr target) const;
+
 protected:
   friend class NumericalInferenceClass;
 

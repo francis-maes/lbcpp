@@ -14,10 +14,19 @@ using namespace lbcpp;
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)
   : Inference(name), perception(perception) {}
 
+void NumericalInference::clone(ObjectPtr t) const
+{
+  const NumericalInferencePtr& target = t.staticCast<NumericalInference>();
+  ScopedReadLock _(parametersLock);
+  Inference::clone(target);
+  if (parameters)
+    target->parameters = parameters->deepClone();
+}
+
 ObjectPtr NumericalInference::getParametersCopy() const
 {
   ScopedReadLock _(parametersLock);
-  return parameters ? parameters->clone() : ObjectPtr();
+  return parameters ? parameters->deepClone() : ObjectPtr();
 }
 
 void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
