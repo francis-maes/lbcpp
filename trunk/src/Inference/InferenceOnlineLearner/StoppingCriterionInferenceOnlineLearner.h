@@ -26,6 +26,15 @@ public:
 
   StoppingCriterionInferenceOnlineLearner() : criterionTestFrequency(never), learningStopped(false), bestScore(-DBL_MAX), epoch(0) {}
 
+  virtual void startLearningCallback()
+  {
+    learningStopped = false;
+    bestParameters = ObjectPtr();
+    bestScore = -DBL_MAX;
+    epoch = 0;
+    learner->startLearningCallback();
+  }
+
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     if (!learningStopped)

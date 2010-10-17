@@ -20,12 +20,12 @@ public:
   OneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
-    subInferences->resize(classes->getNumElements());
-    for (size_t i = 0; i < subInferences->getNumElements(); ++i)
+    subInferences.resize(classes->getNumElements());
+    for (size_t i = 0; i < subInferences.size(); ++i)
     {
       InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>();
       subInference->setName(classes->getElementName(i));
-      setSubInference(i, subInference);
+      subInferences[i] = subInference;
     }
   }
   OneAgainstAllClassificationInference() {}
@@ -42,9 +42,9 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    res->reserve(subInferences->getNumElements());
+    res->reserve(subInferences.size());
     int correctClass = supervision.exists() ? supervision.getInteger() : -1;
-    for (size_t i = 0; i < subInferences->getNumElements(); ++i)
+    for (size_t i = 0; i < subInferences.size(); ++i)
       res->addSubInference(getSubInference(i), input, correctClass >= 0 ? Variable(i == (size_t)correctClass) : Variable());
     return res;
   }

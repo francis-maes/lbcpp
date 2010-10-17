@@ -23,6 +23,9 @@ public:
   RandomizerInferenceOnlineLearner()
     : randomizationFrequency(never) {}
 
+  virtual void startLearningCallback()
+    {targetLearningCallback->startLearningCallback();}
+
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     storeExample(input, supervision, prediction);

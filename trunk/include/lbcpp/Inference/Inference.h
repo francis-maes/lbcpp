@@ -46,7 +46,15 @@ public:
   virtual void endRunSession() {}
 
   /*
-  ** Learners
+  ** Batch Learner
+  */
+  const InferencePtr& getBatchLearner() const
+    {return batchLearner;}
+    
+  void setBatchLearner(InferencePtr batchLearner);
+
+  /*
+  ** Online Learner
   */
   const InferenceOnlineLearnerPtr& getOnlineLearner() const
     {return onlineLearner;}
@@ -54,11 +62,11 @@ public:
   void setOnlineLearner(InferenceOnlineLearnerPtr learner)
     {this->onlineLearner = learner;}
 
-  const InferencePtr& getBatchLearner() const
-    {return batchLearner;}
-    
-  void setBatchLearner(InferencePtr batchLearner);
+  void getInferencesThatHaveAnOnlineLearner(std::set<InferencePtr>& res) const;
 
+  /*
+  ** Object
+  */
   virtual void clone(ObjectPtr target) const;
 
   juce_UseDebuggingNewOperator
@@ -131,6 +139,11 @@ extern ParallelInferencePtr parallelVoteInferenceLearner();
 extern SequentialInferencePtr onlineToBatchInferenceLearner();
 extern DecoratorInferencePtr decoratorInferenceLearner();
 extern DecoratorInferencePtr postProcessInferenceLearner();
+
+extern VectorSequentialInferencePtr multiPassInferenceLearner();
+extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner);
+
+extern InferencePtr initializeByCloningInferenceLearner(InferencePtr inferenceToClone);
 
 // Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);

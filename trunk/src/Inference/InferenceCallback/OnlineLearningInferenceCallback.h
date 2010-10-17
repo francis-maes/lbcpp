@@ -12,6 +12,7 @@
 # include <lbcpp/Inference/InferenceCallback.h>
 # include <lbcpp/Inference/InferenceStack.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include "../MetaInference/RunOnSupervisedExamplesInference.h"
 
 namespace lbcpp
 {
@@ -19,8 +20,17 @@ namespace lbcpp
 class OnlineLearningInferenceCallback : public InferenceCallback
 {
 public:
-  OnlineLearningInferenceCallback(InferencePtr batchLearner)
-    : batchLearner(batchLearner), learningStopped(false) {}
+  OnlineLearningInferenceCallback(InferencePtr targetInference, const std::set<InferencePtr>& learnedInferences)
+    : learnedInferences(learnedInferences), targetInference(targetInference), learningStopped(false)
+  {
+    for (std::set<InferencePtr>::const_iterator it = learnedInferences.begin(); it != learnedInferences.end(); ++it)
+    {
+      const InferenceOnlineLearnerPtr& learner = (*it)->getOnlineLearner();
+      jassert(learner);
+      learner->startLearningCallback();
+      jassert(!learner->isLearningStopped());
+    }
+  }
 
   virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
@@ -28,18 +38,13 @@ public:
     if (inference->getOnlineLearner() && supervision.exists())
     {
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
+      jassert(learnedInferences.find(inference) != learnedInferences.end());
       if (!learner->isLearningStopped())
-      {
-        {
-          ScopedLock _(learnersLock);
-          learners[inference] = learner;
-        }
         learner->stepFinishedCallback(inference, input, supervision, output);
-      }
     }
-    else if (stack->getGrandGrandParentInference() == batchLearner)
+    else if (inference == targetInference)
       finishEpisode();
-    else if (stack->getGrandParentInference() == batchLearner)
+    else if (isRunOnSupervisedExamplesInference(inference))
       finishPass();
   }
 
@@ -47,29 +52,32 @@ public:
     {return learningStopped;}
 
 private:
-  typedef std::map<InferencePtr, InferenceOnlineLearnerPtr> LearnersMap;
-  CriticalSection learnersLock;
-  LearnersMap learners;
-  InferencePtr batchLearner;
+  std::set<InferencePtr> learnedInferences;
+  InferencePtr targetInference;
   bool learningStopped;
 
   void finishEpisode()
   {
-    ScopedLock _(learnersLock);
-    for (LearnersMap::const_iterator it = learners.begin(); it != learners.end(); ++it)
-      it->second->episodeFinishedCallback(it->first);
+    for (std::set<InferencePtr>::const_iterator it = learnedInferences.begin(); it != learnedInferences.end(); ++it)
+    {
+      const InferenceOnlineLearnerPtr& learner = (*it)->getOnlineLearner();
+      if (!learner->isLearningStopped())
+        learner->episodeFinishedCallback(*it);
+    }
   }
 
   void finishPass()
   {
-    ScopedLock _(learnersLock);
     bool wantsMoreIterations = false;
-    for (LearnersMap::const_iterator it = learners.begin(); it != learners.end(); ++it)
+    for (std::set<InferencePtr>::const_iterator it = learnedInferences.begin(); it != learnedInferences.end(); ++it)
     {
-      it->second->passFinishedCallback(it->first);
-      wantsMoreIterations |= it->second->wantsMoreIterations();
+      const InferenceOnlineLearnerPtr& learner = (*it)->getOnlineLearner();
+      if (!learner->isLearningStopped())
+      {
+        learner->passFinishedCallback(*it);
+        wantsMoreIterations |= learner->wantsMoreIterations();
+      }
     }
-    learners.clear();
     learningStopped = !wantsMoreIterations;
   }
 };
