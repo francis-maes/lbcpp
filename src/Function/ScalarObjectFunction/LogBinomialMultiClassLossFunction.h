@@ -39,7 +39,7 @@ public:
       {
         double score = input ? (*input)[i] : 0.0;
         double derivative = exp(score - logZ);
-        assert(isNumberValid(derivative));
+        jassert(isNumberValid(derivative));
         (*gradientTarget)[i] += derivative * gradientWeight;
       }
       (*gradientTarget)[correctClass] -= gradientWeight;
