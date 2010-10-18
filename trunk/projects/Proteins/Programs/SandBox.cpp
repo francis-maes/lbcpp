@@ -17,6 +17,96 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
+///////////////////////////////////////////////
+
+class ComposeOnlineLearner : public InferenceOnlineLearner
+{
+public:
+  ComposeOnlineLearner(const std::vector<InferencePtr>& inferences)
+    : inferences(inferences) {}
+  ComposeOnlineLearner() {}
+
+  virtual void startLearningCallback()
+    {}
+
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+    {}
+
+  virtual void episodeFinishedCallback(const InferencePtr& inference)
+    {}
+
+  virtual void passFinishedCallback(const InferencePtr& inference)
+    {}
+
+  virtual double getCurrentLossEstimate() const
+  {
+    double res = 0.0;
+    for (size_t i = 0; i < inferences.size(); ++i)
+    {
+      const InferenceOnlineLearnerPtr& learner = inferences[i]->getOnlineLearner();
+      jassert(learner);
+      res += learner->getCurrentLossEstimate();
+    }
+    return res;
+  }
+
+  virtual bool wantsMoreIterations() const
+  {
+    for (size_t i = 0; i < inferences.size(); ++i)
+    {
+      const InferenceOnlineLearnerPtr& learner = inferences[i]->getOnlineLearner();
+      jassert(learner);
+      if (learner->wantsMoreIterations())
+        return true;
+    }
+    return false;
+  }
+
+  virtual bool isLearningStopped() const
+  {
+    for (size_t i = 0; i < inferences.size(); ++i)
+    {
+      const InferenceOnlineLearnerPtr& learner = inferences[i]->getOnlineLearner();
+      jassert(learner);
+      if (!learner->isLearningStopped())
+        return false;
+    }
+    return true;
+  }
+
+protected:
+  friend class ComposeOnlineLearnerClass;
+
+  std::vector<InferencePtr> inferences;
+};
+
+class GraftingOnlineLearner : public ComposeOnlineLearner
+{
+public:
+  GraftingOnlineLearner(PerceptionPtr perception, const std::vector<InferencePtr>& inferences)
+    : ComposeOnlineLearner(inferences), perception(perception) {}
+  GraftingOnlineLearner() {}
+
+  virtual void startLearningCallback() {}
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) {}
+  virtual void episodeFinishedCallback(const InferencePtr& inference) {}
+  virtual void passFinishedCallback(const InferencePtr& inference)
+  {
+    
+  }
+
+protected:
+  friend class GraftingOnlineLearnerClass;
+
+  PerceptionPtr candidatesPerception;
+  PerceptionPtr perception;
+};
+
+InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, InferencePtr inference)
+  {return new GraftingOnlineLearner(perception, std::vector<InferencePtr>(1, inference));}
+
+///////////////////////////////////////////////
+
 InferenceContextPtr createInferenceContext()
 {
   return multiThreadedInferenceContext(new ThreadPool(7, false));
@@ -41,6 +131,13 @@ public:
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  virtual InferencePtr createTargetInference(const String& targetName) const
+  {
+    InferencePtr res = ProteinInferenceFactory::createTargetInference(targetName);
+    //res->setBatchLearner(onlineToBatchInferenceLearner());
+    return res;
+  }
+  
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     rewriter->addRule(booleanType, booleanFeatures());
@@ -95,7 +192,15 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), true, targetName);
+    /*StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);
+    InferenceOnlineLearnerPtr multiLinearLearner = createOnlineLearner(targetName, 0.5);
+    StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, multiLinearLearner, true, targetName);
+    res->setOnlineLearner(stoppingCriterionOnlineLearner(graftingOnlineLearner(perception, res->getSubInference()),
+      InferenceOnlineLearner::perPass, stoppingCriterion, true));
+    return res;*/
+
+    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
+
   /*
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
@@ -106,7 +211,7 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);/* logicalOr(
+      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/* logicalOr(
                                                      maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
@@ -161,8 +266,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName == T("LearningPass"))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -206,11 +311,11 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
-//  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
-//    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
+  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
+    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 
-  return directoryPairFileStream(directory, directory)->load(maxCount)
-      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
+//  return directoryPairFileStream(directory, directory)->load(maxCount)
+//      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
 }
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)

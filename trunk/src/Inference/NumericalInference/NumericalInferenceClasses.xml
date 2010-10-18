@@ -51,12 +51,12 @@
     </class>
 
     <class name="MultiClassLinearSVMInference" base="MultiClassInference">
-      <constructor arguments="PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses, const String&amp; name" returnType="StaticDecoratorInference"/>
       <variable type="Boolean" name="updateOnlyMostViolatedClasses"/>
     </class>
 
     <class name="MultiClassMaxentInference" base="MultiClassInference">
-      <constructor arguments="PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
     </class>
 
     <!-- Misc -->

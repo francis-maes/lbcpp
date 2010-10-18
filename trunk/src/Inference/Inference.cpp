@@ -11,6 +11,7 @@
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
+#include <lbcpp/Inference/ParameterizedInference.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
@@ -127,6 +128,36 @@ void VectorSequentialInference::clone(ObjectPtr t) const
   jassert(target->subInferences.size() == subInferences.size());
   for (size_t i = 0; i < subInferences.size(); ++i)
     target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>();
+}
+
+/*
+** ParameterizedInference
+*/
+void ParameterizedInference::clone(ObjectPtr t) const
+{
+  const ParameterizedInferencePtr& target = t.staticCast<ParameterizedInference>();
+  ScopedReadLock _(parametersLock);
+  Inference::clone(target);
+  if (parameters)
+  {
+    target->parameters = parameters->deepClone();
+    target->parametersChangedCallback();
+  }
+}
+
+ObjectPtr ParameterizedInference::getParameters() const
+{
+  ScopedReadLock _(parametersLock);
+  return parameters ? parameters->deepClone() : ObjectPtr();
+}
+
+void ParameterizedInference::setParameters(ObjectPtr parameters)
+{
+  {
+    ScopedWriteLock _(parametersLock);
+    this->parameters = parameters;
+  }
+  parametersChangedCallback();
 }
 
 /*

@@ -46,7 +46,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(inference);
   
-  ObjectPtr parameters = getNumericalInference(inference)->getParametersCopy();
+  ObjectPtr parameters = getNumericalInference(inference)->getParameters();
   size_t l0norm = lbcpp::l0norm(parameters);
   double l2norm = lbcpp::l2norm(parameters);
   MessageCallback::info(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));
@@ -62,8 +62,9 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
 void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
-  Variable pred = prediction.exists() ? prediction : getNumericalInference(inference)->predict(input);
-  getNumericalInference(inference)->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
+  const NumericalInferencePtr& numericalInference = getNumericalInference(inference);
+  Variable pred = prediction.exists() ? prediction : numericalInference->predict(input);
+  numericalInference->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);
   lossValue.push(exampleLossValue);

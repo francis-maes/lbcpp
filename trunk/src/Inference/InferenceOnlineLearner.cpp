@@ -9,7 +9,6 @@
 #include "InferenceOnlineLearner/StochasticGradientDescentOnlineLearner.h"
 #include "InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h"
 #include "InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h"
-#include "InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h"
 using namespace lbcpp;
 
 namespace lbcpp
@@ -17,10 +16,6 @@ namespace lbcpp
   extern InferenceOnlineLearnerPtr randomizerInferenceOnlineLearner(
     InferenceOnlineLearner::UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback);
  
-  extern InferenceOnlineLearnerPtr stoppingCriterionInferenceOnlineLearner(
-      InferenceOnlineLearnerPtr learner, InferenceOnlineLearner::UpdateFrequency criterionTestFrequency,
-      StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
-
   extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
     InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
@@ -97,17 +92,17 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
 
 InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops) const
 {
-  return stoppingCriterionInferenceOnlineLearner(refCountedPointerFromThis(this),
+  return stoppingCriterionOnlineLearner(refCountedPointerFromThis(this),
     criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
 }
 
 /*
-** UpdatableInferenceOnlineLearner
+** UpdatableOnlineLearner
 */
-UpdatableInferenceOnlineLearner::UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency)
+UpdatableOnlineLearner::UpdatableOnlineLearner(UpdateFrequency updateFrequency)
   : epoch(0), updateFrequency(updateFrequency) {}
 
-void UpdatableInferenceOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void UpdatableOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   ++epoch;
   if (updateFrequency == perStep)
@@ -120,13 +115,13 @@ void UpdatableInferenceOnlineLearner::stepFinishedCallback(const InferencePtr& i
   }
 }
 
-void UpdatableInferenceOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
+void UpdatableOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
 {
   if (updateFrequency == perEpisode)
     update(inference);
 }
 
-void UpdatableInferenceOnlineLearner::passFinishedCallback(const InferencePtr& inference)
+void UpdatableOnlineLearner::passFinishedCallback(const InferencePtr& inference)
 {
   if (updateFrequency == perPass)
     update(inference);

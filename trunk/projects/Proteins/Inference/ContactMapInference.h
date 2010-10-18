@@ -134,11 +134,11 @@ typedef ReferenceCountedObjectPtr<AddBiasInference> AddBiasInferencePtr;
 
 extern StaticDecoratorInferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias);
 
-class AddBiasInferenceOnlineLearner : public UpdatableInferenceOnlineLearner
+class AddBiasInferenceOnlineLearner : public UpdatableOnlineLearner
 {
 public:
   AddBiasInferenceOnlineLearner(UpdateFrequency updateFrequency)
-    : UpdatableInferenceOnlineLearner(updateFrequency) {}
+    : UpdatableOnlineLearner(updateFrequency) {}
   AddBiasInferenceOnlineLearner() {}
 
   virtual void stepFinishedCallback(InferencePtr inf, const Variable& input, const Variable& supervision, const Variable& prediction)
@@ -152,7 +152,7 @@ public:
       double unbiasedScore = (prediction.getDouble() - inference->getBias()) * 1000;
       roc.addPrediction(unbiasedScore, isPositiveExample);
     }
-    UpdatableInferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+    UpdatableOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
   }
 
   virtual bool isLearningStopped() const
@@ -164,7 +164,7 @@ public:
   virtual double getCurrentLossEstimate() const
     {return 0.0;}
 
-  virtual void update(InferencePtr inf)
+  virtual void update(const InferencePtr& inf)
   {
     AddBiasInferencePtr inference = inf.staticCast<AddBiasInference>();
     

@@ -7,7 +7,7 @@
       <constructor arguments="const String&amp; name, InferencePtr numericalInference, double initialBias = 0.0"/>
       <variable type="Double" name="bias"/>
     </class>
-    <class name="AddBiasInferenceOnlineLearner" base="UpdatableInferenceOnlineLearner">
+    <class name="AddBiasInferenceOnlineLearner" base="UpdatableOnlineLearner">
       <constructor arguments="InferenceOnlineLearner::UpdateFrequency updateFrequency"/>
     </class>
     

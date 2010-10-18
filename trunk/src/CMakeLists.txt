@@ -267,6 +267,7 @@ SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/DecoratorInference.h
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
+  ../include/lbcpp/Inference/ParameterizedInference.h
   Inference/Inference.cpp
   ../include/lbcpp/Inference/InferenceStack.h
   ../include/lbcpp/Inference/InferenceContext.h
@@ -349,7 +350,7 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/InferenceOnlineLearner/StochasticGradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h
   Inference/InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h
-  Inference/InferenceOnlineLearner/StoppingCriterionInferenceOnlineLearner.h
+  Inference/InferenceOnlineLearner/StoppingCriterionOnlineLearner.h
   Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp
 )

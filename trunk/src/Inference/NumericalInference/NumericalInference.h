@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_NUMERICAL_H_
 # define LBCPP_INFERENCE_NUMERICAL_H_
 
-# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/ParameterizedInference.h>
 # include <lbcpp/Perception/Perception.h>
 
 namespace lbcpp
@@ -18,7 +18,7 @@ namespace lbcpp
 /*
 ** NumericalInference
 */
-class NumericalInference : public Inference
+class NumericalInference : public ParameterizedInference
 {
 public:
   NumericalInference(const String& name, PerceptionPtr perception);
@@ -30,8 +30,6 @@ public:
   TypePtr getPerceptionOutputType() const
     {return perception->getOutputType();}
 
-  virtual TypePtr getParametersType() const = 0;
-
   virtual Variable predict(const Variable& input) const = 0;
 
   // if target == NULL, target is this parameters
@@ -42,28 +40,22 @@ public:
   // exampleLossValue = loss(prediction) (supervision=lossFunction)
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
-  ObjectPtr getParametersCopy() const;
   void addWeightedToParameters(const ObjectPtr& value, double weight);
   void applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight);
-  void setParameters(ObjectPtr parameters);
 
   const PerceptionPtr& getPerception() const
     {return perception;}
-
-  virtual void validateParametersChange() {}
-
-  virtual void clone(ObjectPtr target) const;
 
 protected:
   friend class NumericalInferenceClass;
 
   PerceptionPtr perception;
-  juce::ReadWriteLock parametersLock;
-  ObjectPtr parameters;
 
   virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return predict(input);}
 };
+
+typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 
 }; /* namespace lbcpp */
 

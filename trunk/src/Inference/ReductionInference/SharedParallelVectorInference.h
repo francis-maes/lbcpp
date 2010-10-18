@@ -27,7 +27,7 @@ public:
   SharedParallelVectorInference() {}
 
   virtual TypePtr getInputType() const
-    {return anyType;}
+    {return getSubInference()->getInputType()->getTemplateArgument(0);}
 
   virtual TypePtr getSupervisionType() const
     {return vectorClass(subInference->getSupervisionType());}

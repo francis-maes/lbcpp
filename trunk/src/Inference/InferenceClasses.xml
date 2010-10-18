@@ -17,8 +17,6 @@
 
   <namespace name="lbcpp">
 
-    <class name="InferenceOnlineLearner" abstract="yes"/>
-
     <class name="Inference" base="NameableObject" abstract="yes">
       <variable type="InferenceOnlineLearner" name="onlineLearner"/>
       <variable type="Inference" name="batchLearner"/>
