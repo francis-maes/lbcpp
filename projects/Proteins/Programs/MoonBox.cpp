@@ -97,15 +97,17 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-    InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    //InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
+    //InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    
+    InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), true, targetName);
     if (DefaultParameters::saveIterations)
       res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
 
 protected:
-  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
+  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName) const
   {
     double learningRate = DefaultParameters::learningRate;
     size_t learningRateUpdate = DefaultParameters::learningRateUpdate;
@@ -155,12 +157,12 @@ protected:
     if (targetName.startsWith(T("contactMap")))
       return gradientDescentInferenceOnlineLearner(
                                                    InferenceOnlineLearner::perEpisode,                                                 // randomization
-                                                   InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
+                                                   InferenceOnlineLearner::perStep, invLinearIterationFunction(DefaultParameters::learningRate, 100000), true, // learning steps
                                                    InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
     else
       return gradientDescentInferenceOnlineLearner(
-                                                   InferenceOnlineLearner::never,                                                 // randomization
+                                                   InferenceOnlineLearner::perPass,                                                 // randomization
                                                    InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
                                                    InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(regularizer),         // regularizer
                                                    InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
@@ -266,13 +268,11 @@ public:
     InferencePtr currentInference = stack->getCurrentInference();
     if (currentInference->getName() == inferenceNameToEvaluate) // T("Pass learner")
     {
-      InferenceContextPtr validationContext = createInferenceContext();//singleThreadedInferenceContext(); //
-
       ProteinEvaluatorPtr trainingEvaluator = new ProteinEvaluator();
-      validationContext->evaluate(inference, trainingData, trainingEvaluator);
+      context->evaluate(inference, trainingData, trainingEvaluator);
 
       ProteinEvaluatorPtr testingEvaluator = new ProteinEvaluator();
-      validationContext->evaluate(inference, testingData, testingEvaluator);
+      context->evaluate(inference, testingData, testingEvaluator);
 
       for (size_t i = 0; i < callbacks.size(); ++i)
       {
