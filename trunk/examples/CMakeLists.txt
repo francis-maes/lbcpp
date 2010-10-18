@@ -7,6 +7,7 @@ MACRO(ADD_CPP_EXAMPLE CATEGORY FILENAME)
 ENDMACRO(ADD_CPP_EXAMPLE)
 
 ADD_CPP_EXAMPLE(Misc MissingValues)
+ADD_CPP_EXAMPLE(Misc XorRegression)
 
 GENERATE_INTROSPECTION_CODE(Misc/SimpleIntrospection.xml SimpleIntrospection.cpp)
 ADD_EXECUTABLE(SimpleIntrospection Misc/SimpleIntrospection.xml ${CMAKE_CURRENT_BINARY_DIR}/SimpleIntrospection.cpp)
