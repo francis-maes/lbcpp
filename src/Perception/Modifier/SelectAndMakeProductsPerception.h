@@ -144,6 +144,8 @@ protected:
   }
 };
 
+typedef ReferenceCountedObjectPtr<SelectAndMakeProductsPerception> SelectAndMakeProductsPerceptionPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_SELECT_AND_MAKE_PRODUCTS_H_

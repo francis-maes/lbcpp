@@ -56,12 +56,12 @@ public:
 
 extern ClassPtr inferenceOnlineLearnerClass;
 
-class UpdatableInferenceOnlineLearner : public InferenceOnlineLearner
+class UpdatableOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  UpdatableInferenceOnlineLearner(UpdateFrequency updateFrequency = perStep);
+  UpdatableOnlineLearner(UpdateFrequency updateFrequency = never);
 
-  virtual void update(InferencePtr inference) = 0;
+  virtual void update(const InferencePtr& inference) = 0;
 
   virtual void startLearningCallback()
     {epoch = 0;}
@@ -70,11 +70,16 @@ public:
   virtual void passFinishedCallback(const InferencePtr& inference);
 
 protected:
+  friend class UpdatableOnlineLearnerClass;
+
   size_t epoch;
   UpdateFrequency updateFrequency;
 };
 
-typedef ReferenceCountedObjectPtr<UpdatableInferenceOnlineLearner> UpdatableInferenceOnlineLearnerPtr;
+typedef ReferenceCountedObjectPtr<UpdatableOnlineLearner> UpdatableOnlineLearnerPtr;
+
+extern InferenceOnlineLearnerPtr stoppingCriterionOnlineLearner(InferenceOnlineLearnerPtr learner,
+                    InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
 
 extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
           // randomization

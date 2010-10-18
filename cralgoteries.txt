@@ -1,5 +1,5 @@
-* Segmental Features
 
+* Segmental Features
 
 Learning:
  * BiasLearner for contact map and disorder regions 

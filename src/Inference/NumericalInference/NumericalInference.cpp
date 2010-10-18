@@ -12,22 +12,7 @@
 using namespace lbcpp;
 
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)
-  : Inference(name), perception(perception) {}
-
-void NumericalInference::clone(ObjectPtr t) const
-{
-  const NumericalInferencePtr& target = t.staticCast<NumericalInference>();
-  ScopedReadLock _(parametersLock);
-  Inference::clone(target);
-  if (parameters)
-    target->parameters = parameters->deepClone();
-}
-
-ObjectPtr NumericalInference::getParametersCopy() const
-{
-  ScopedReadLock _(parametersLock);
-  return parameters ? parameters->deepClone() : ObjectPtr();
-}
+  : ParameterizedInference(name), perception(perception) {}
 
 void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
 {
@@ -35,7 +20,7 @@ void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double 
     ScopedWriteLock _(parametersLock);
     lbcpp::addWeighted(parameters, value, weight);
   }
-  validateParametersChange();
+  parametersChangedCallback();
 }
 
 void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight)
@@ -45,14 +30,5 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
     if (parameters)
       regularizer->compute(parameters, NULL, &parameters, weight);
   }
-  validateParametersChange();
-}
-
-void NumericalInference::setParameters(ObjectPtr parameters)
-{
-  {
-    ScopedWriteLock _(parametersLock);
-    this->parameters = parameters;
-  }
-  validateParametersChange();
+  parametersChangedCallback();
 }

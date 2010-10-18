@@ -20,6 +20,7 @@ namespace lbcpp
 class Inference;
 typedef ReferenceCountedObjectPtr<Inference> InferencePtr;
 
+// sequential inference
 class SequentialInferenceState;
 typedef ReferenceCountedObjectPtr<SequentialInferenceState> SequentialInferenceStatePtr;
 
@@ -30,6 +31,7 @@ typedef SequentialInference* SequentialInferenceWeakPtr;
 class VectorSequentialInference;
 typedef ReferenceCountedObjectPtr<VectorSequentialInference> VectorSequentialInferencePtr;
 
+// parallel inference
 class ParallelInference;
 typedef ReferenceCountedObjectPtr<ParallelInference> ParallelInferencePtr;
 typedef ParallelInference* ParallelInferenceWeakPtr;
@@ -43,15 +45,17 @@ typedef ReferenceCountedObjectPtr<VectorParallelInference> VectorParallelInferen
 class SharedParallelInference;
 typedef ReferenceCountedObjectPtr<SharedParallelInference> SharedParallelInferencePtr;
 
-class NumericalInference;
-typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
-
+// decorator inference
 class DecoratorInference;
 typedef ReferenceCountedObjectPtr<DecoratorInference> DecoratorInferencePtr;
 typedef DecoratorInference* DecoratorInferenceWeakPtr;
 
 class StaticDecoratorInference;
 typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
+
+// parameterized inference
+class ParameterizedInference;
+typedef ReferenceCountedObjectPtr<ParameterizedInference> ParameterizedInferencePtr;
 
 /*
 ** InferenceContext
