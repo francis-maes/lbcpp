@@ -61,6 +61,12 @@ public:
   virtual bool isLearningStopped() const
     {return learningStopped;}
 
+  virtual void clone(ObjectPtr target) const
+  {
+    UpdatableOnlineLearner::clone(target);
+    target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>();
+  }
+
 private:
   friend class StoppingCriterionOnlineLearnerClass;
 
@@ -86,6 +92,7 @@ private:
     }
     if (criterion->shouldStop(score))
     {
+      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String((double)bestScore));
       learningStopped = true;
       if (bestParameters && bestScore > score)
       {
