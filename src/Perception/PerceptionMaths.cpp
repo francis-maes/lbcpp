@@ -332,8 +332,8 @@ struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductCallba
   {
     if (value)
     {
-      double& objectValue = object->getValueReference(variableNumber);
-      if (!object->isMissing(value))
+      double objectValue = object->getValue(variableNumber);
+      if (!object->isMissing(objectValue))
         res += objectValue * value;
     }
   }

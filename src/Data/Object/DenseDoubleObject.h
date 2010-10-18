@@ -39,7 +39,7 @@ public:
   }
 
   double getValue(size_t index) const
-    {return index < values.size() ? values[index] : 0;}
+    {return index < values.size() ? values[index] : missingValue;}
 
   std::vector<double>& getValues()
   {

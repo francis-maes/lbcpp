@@ -39,7 +39,7 @@ public:
     jassert(nextFilePosition < files.size());
     File file = *files[nextFilePosition];
     ++nextFilePosition;
-    return Variable(file.getFullPathName(), fileType);
+    return file;
   }
 
 private:
