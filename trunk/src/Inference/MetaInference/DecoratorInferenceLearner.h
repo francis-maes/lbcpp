@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_META_DECORATOR_LEARNER_H_
 
 # include <lbcpp/Data/Vector.h>
-# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/DecoratorInference.h>
 # include "../InferenceCallback/OnlineLearningInferenceCallback.h"
 
 namespace lbcpp
