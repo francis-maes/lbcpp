@@ -38,7 +38,7 @@ extern double dotProduct(const ObjectPtr& object, const PerceptionPtr& perceptio
 extern double dotProduct(const ObjectPtr& object1, const ObjectPtr& object2);
 
 extern void addWeighted(ObjectPtr& target, const ObjectPtr& source, double weight);
-extern void addWeighted(ObjectPtr& object, const PerceptionPtr& perception, const Variable& input, double weight);
+extern void addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight);
 
 }; /* namespace lbcpp */
 
