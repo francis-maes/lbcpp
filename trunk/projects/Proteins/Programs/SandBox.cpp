@@ -19,12 +19,12 @@ extern void declareProteinClasses();
 
 ///////////////////////////////////////////////
 
-class ComposeOnlineLearner : public InferenceOnlineLearner
+class ProxyOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  ComposeOnlineLearner(const std::vector<InferencePtr>& inferences)
+  ProxyOnlineLearner(const std::vector<InferencePtr>& inferences)
     : inferences(inferences) {}
-  ComposeOnlineLearner() {}
+  ProxyOnlineLearner() {}
 
   virtual void startLearningCallback()
     {}
@@ -80,26 +80,50 @@ protected:
   std::vector<InferencePtr> inferences;
 };
 
-class GraftingOnlineLearner : public ComposeOnlineLearner
+#include "../../../src/Perception/Modifier/SelectAndMakeProductsPerception.h"
+
+class GraftingOnlineLearner : public ProxyOnlineLearner
 {
 public:
   GraftingOnlineLearner(PerceptionPtr perception, const std::vector<InferencePtr>& inferences)
-    : ComposeOnlineLearner(inferences), perception(perception) {}
+    : ProxyOnlineLearner(inferences), perception(perception.checkCast<SelectAndMakeProductsPerception>(T("GraftingOnlineLearner")))
+  {
+    candidatesPerception = selectAndMakeProductsPerception(this->perception->getDecoratedPerception(),
+        this->perception->getMultiplyFunction(), std::vector<std::vector<size_t> >());
+  }
   GraftingOnlineLearner() {}
 
-  virtual void startLearningCallback() {}
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) {}
-  virtual void episodeFinishedCallback(const InferencePtr& inference) {}
+  void generateCandidates()
+  {
+    candidatesPerception->clearConjunctions();
+    size_t n = perception->getDecoratedPerception()->getNumOutputVariables();
+    for (size_t i = 0; i < n; ++i)
+      candidatesPerception->addConjunction(std::vector<size_t>(1, i));
+  }
+
+  virtual void startLearningCallback()
+  {
+    generateCandidates();
+
+  }
+
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+    {}
+
+  virtual void episodeFinishedCallback(const InferencePtr& inference)
+    {}
+
   virtual void passFinishedCallback(const InferencePtr& inference)
   {
-    
+   // here !
   }
 
 protected:
   friend class GraftingOnlineLearnerClass;
 
-  PerceptionPtr candidatesPerception;
-  PerceptionPtr perception;
+  SelectAndMakeProductsPerceptionPtr perception;
+  SelectAndMakeProductsPerceptionPtr candidatesPerception;
+  ObjectPtr candidateScores;
 };
 
 InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, InferencePtr inference)
@@ -157,7 +181,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return res;
+    //return res;
     
     PerceptionPtr collapsedFeatures = collapsePerception(res);
 
@@ -192,14 +216,14 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    /*StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);
     InferenceOnlineLearnerPtr multiLinearLearner = createOnlineLearner(targetName, 0.5);
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, multiLinearLearner, true, targetName);
     res->setOnlineLearner(stoppingCriterionOnlineLearner(graftingOnlineLearner(perception, res->getSubInference()),
       InferenceOnlineLearner::perPass, stoppingCriterion, true));
-    return res;*/
+    return res;
 
-    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
+   // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
 
   /*
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);

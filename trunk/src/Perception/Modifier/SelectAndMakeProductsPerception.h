@@ -92,6 +92,21 @@ public:
     }
   }
 
+  PerceptionPtr getDecoratedPerception() const
+    {return decorated;}
+
+  FunctionPtr getMultiplyFunction() const
+    {return multiplyFunction;}
+
+  void clearConjunctions()
+    {selectedConjunctions.clear();}// FIXME: outputType = UnnamedDynamicClassPtr();}
+
+  void addConjunction(const std::vector<size_t>& conjunction)
+  {
+    selectedConjunctions.push_back(conjunction);
+    // FIXME: update output variables and output Type
+  }
+
 protected:
   friend class SelectAndMakeProductsPerceptionClass;
 
