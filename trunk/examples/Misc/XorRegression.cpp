@@ -1,5 +1,10 @@
-// OnlineFQI
-
+/*-----------------------------------------.---------------------------------.
+| Filename: XorRegression.cpp              | Illustrates a simple regression |
+| Author  : Francis Maes                   |                                 |
+| Started : 18/10/2010 19:16               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
@@ -35,7 +40,6 @@ public:
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareGlopClasses();
 
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
@@ -43,8 +47,8 @@ int main(int argc, char* argv[])
           InferenceOnlineLearner::never, // randomization
           InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, // learning steps
           InferenceOnlineLearner::never, ScalarObjectFunctionPtr(), // regularizer
-          InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(100), true);
-  InferencePtr regressor = squareRegressionInference(perception, learner, T("toto"));
+          InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(100), true); // stopping criterion
+  InferencePtr regressor = squareRegressionInference(perception, learner, T("XOR-Regressor"));
  
   // make training set
   TypePtr inputType = perception->getInputType();

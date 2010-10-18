@@ -33,8 +33,8 @@ public:
   virtual void computeOutputType()
   {
     size_t n = enumeration->getNumElements();
-    reserveOutputVariables(n + 1);
-    for (size_t i = 0; i <= n; ++i)
+    reserveOutputVariables(n);
+    for (size_t i = 0; i < n; ++i)
       addOutputVariable(enumeration->getElementName(i), doubleType);
     Perception::computeOutputType();
   }
@@ -42,7 +42,8 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
     jassert(input.getType()->inheritsFrom(enumeration));
-    callback->sense((size_t)input.getInteger(), 1.0);
+    if (input.exists())
+      callback->sense((size_t)input.getInteger(), 1.0);
   }
   
 private:

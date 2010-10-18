@@ -90,11 +90,11 @@ private:
     {
       bestParameters = parameters;
       bestScore = score;
-      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String((double)bestScore));
+      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String((double)bestScore));
     }
     if (criterion->shouldStop(score))
     {
-      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String((double)bestScore));
+      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String((double)bestScore));
       learningStopped = true;
       if (bestParameters && bestScore > score)
       {
