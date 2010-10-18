@@ -100,7 +100,7 @@ public:
     //InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     //InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     
-    InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), true, targetName);
+    InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
     if (DefaultParameters::saveIterations)
       res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
@@ -112,7 +112,11 @@ protected:
     double learningRate = DefaultParameters::learningRate;
     size_t learningRateUpdate = DefaultParameters::learningRateUpdate;
     double regularizer = DefaultParameters::regularizer;
-    if (targetName == T("secondaryStructure"))
+    if (DefaultParameters::forceUse)
+    {
+      // skip
+    }
+    else if(targetName == T("secondaryStructure"))
     {
       learningRate = 2;
       learningRateUpdate = (size_t)5e4;
@@ -146,8 +150,8 @@ protected:
     StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),
                                                        maxIterationsWithoutImprovementStoppingCriterion(4));
 
-    if (DefaultParameters::forceUse)
-      stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
+//    if (DefaultParameters::forceUse)
+//      stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
 
     IterationFunctionPtr learningStepFunction = DefaultParameters::useConstantLearning ? constantIterationFunction(DefaultParameters::learningRate)
                                                                               : invLinearIterationFunction(learningRate, learningRateUpdate);
@@ -419,7 +423,7 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
 
-  enum {numFolds = 5};
+  enum {numFolds = 7};
   /*
   ** Parameters initialization
   */
@@ -452,6 +456,7 @@ int main(int argc, char** argv)
   arguments.insert(new IntegerArgument(T("LearningStep"), (int&)DefaultParameters::learningRateUpdate));
   arguments.insert(new DoubleArgument(T("Regularizer"), DefaultParameters::regularizer));
   arguments.insert(new IntegerArgument(T("StoppingIteration"), (int&)DefaultParameters::stoppingIteration));
+  arguments.insert(new BooleanArgument(T("ForceUse"), DefaultParameters::forceUse));
   /* Perception Parameters */
   arguments.insert(new IntegerArgument(T("WindowSize"), (int&)windowSize));
   // ...
