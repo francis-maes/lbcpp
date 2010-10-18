@@ -206,8 +206,11 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
-  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
-    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
+//  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
+//    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
+
+  return directoryPairFileStream(directory, directory)->load(maxCount)
+      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
 }
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)

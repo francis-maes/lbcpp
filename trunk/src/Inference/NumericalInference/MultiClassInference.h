@@ -67,6 +67,8 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         double score = scores->getValue(i);
+        if (scores->isMissing(score))
+          score = 0.0;
         if (score > bestScore)
           bestScore = score, res = i;
       }
