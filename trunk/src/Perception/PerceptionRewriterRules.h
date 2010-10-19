@@ -75,18 +75,6 @@ private:
   PerceptionPtr target;
 };
 
-class EnumValueFeaturesPerceptionRewriteRule : public PerceptionRewriteRule
-{
-public:
-  virtual bool match(TypePtr type, const std::vector<String>& stack) const
-    {return type->inheritsFrom(enumValueType);}
-
-  virtual PerceptionPtr computeRule(TypePtr type) const
-    {return enumValueFeatures(type);}
-
-  juce_UseDebuggingNewOperator
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_PERCEPTION_REWRITER_RULES_H_

@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_SCALAR_OBJECT_MOST_VIOLATED_MULTI_CLASS_LOSS_H_
 
 # include <lbcpp/Function/ScalarObjectFunction.h>
-# include <lbcpp/Perception/PerceptionMaths.h>
+# include <lbcpp/NumericalLearning/NumericalLearning.h>
 
 namespace lbcpp
 {

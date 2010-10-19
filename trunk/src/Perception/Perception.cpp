@@ -185,7 +185,6 @@ void CompositePerception::computeOutputType()
 */
 namespace lbcpp
 {
-  extern FunctionPtr multiplyDoubleFunction();
   extern PerceptionPtr productWithVariablePerception(FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables);
 };
 
@@ -195,29 +194,9 @@ PerceptionPtr lbcpp::identityPerception()
   return identity;
 }
 
-PerceptionPtr lbcpp::defaultPositiveIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
-  {return softDiscretizedLogNumberFeatures(positiveIntegerType, 0.0, maxPowerOfTen, numIntervals, true);}
-
-PerceptionPtr lbcpp::defaultIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
-  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(integerType, 0.0, maxPowerOfTen, numIntervals, true));}
-
-PerceptionPtr lbcpp::defaultProbabilityFeatures(size_t numIntervals)
-  {return softDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, numIntervals, false, false);}
-
-PerceptionPtr lbcpp::defaultPositiveDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
-  {return softDiscretizedLogNumberFeatures(doubleType, minPowerOfTen, maxPowerOfTen, numIntervals, true);}
-
-PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
-  {return signedNumberFeatures(defaultPositiveDoubleFeatures(numIntervals, minPowerOfTen, maxPowerOfTen));}
-
-PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2)
-  {jassert(perception1 && perception2); return productPerception(multiplyDoubleFunction(), perception1, perception2, true, true);}
-
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2)
   {return productWithVariablePerception(multiplyFunction, perception1, type2, false);}
 
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2)
   {return productWithVariablePerception(multiplyFunction, perception2, type1, true);}
 
-PerceptionPtr lbcpp::selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const std::vector< std::vector<size_t> >& selectedConjunctions)
-  {return selectAndMakeProductsPerception(decorated, multiplyDoubleFunction(), selectedConjunctions);}

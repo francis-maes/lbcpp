@@ -4,6 +4,7 @@
 
   <namespace name="lbcpp">
 
+    <!-- Discrete Value Features -->
     <class name="BooleanFeatures" base="Perception">
       <constructor/>
     </class>
@@ -13,6 +14,7 @@
       <variable type="Enumeration" name="enumeration"/>
     </class>
 
+    <!-- Number Features -->
     <class name="DiscretizedNumberFeatures" base="Perception" abstract="yes">
       <variable type="Type" name="inputType"/>
       <variable type="Double" name="minimumValue"/>
@@ -37,6 +39,11 @@
     <class name="SignedNumberFeatures" base="Perception">
       <constructor arguments="PerceptionPtr positiveNumberPerception"/>
       <variable type="Perception" name="positiveNumberPerception"/>
+    </class>
+
+    <!-- Rewrite Rules -->
+    <class name="EnumValueFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
+      <constructor/>
     </class>
 
   </namespace>

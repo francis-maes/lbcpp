@@ -74,24 +74,5 @@ void PerceptionRewriter::addRule(TypePtr type, PerceptionPtr target)
 void PerceptionRewriter::addRule(TypePtr type, const String& stack, PerceptionPtr target)
   {rules->append(typeAndStackBasedPerceptionRewriteRule(type, stack, target));}
 
-void PerceptionRewriter::addEnumValueFeaturesRule()
-  {rules->append(enumValueFeaturesPerceptionRewriteRule());}
-
 size_t PerceptionRewriter::getNumRules() const
   {return rules->getNumElements();}
-
-PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
-{
-  PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
-
-  rewriter->addRule(booleanType, booleanFeatures());
-  rewriter->addEnumValueFeaturesRule();
-
-  rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
-  rewriter->addRule(probabilityType, defaultProbabilityFeatures());
-  rewriter->addRule(positiveIntegerType, defaultPositiveIntegerFeatures());
-  rewriter->addRule(integerType, defaultIntegerFeatures());
-
-  rewriter->addRule(doubleType, identityPerception());
-  return rewriter->rewrite(perception);
-}

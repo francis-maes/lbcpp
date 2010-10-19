@@ -52,7 +52,6 @@
 # include "Function/Evaluator.h"
 
 # include "Perception/Perception.h"
-# include "Perception/PerceptionMaths.h"
 # include "Perception/PerceptionRewriter.h"
 
 # include "Inference/Inference.h"
@@ -66,6 +65,7 @@
 # include "Inference/InferenceResultCache.h"
 
 # include "NumericalLearning/NumericalLearning.h"
+
 # include "DecisionTree/DecisionTree.h"
 
 #endif // !LBCPP_LBCPP_H_

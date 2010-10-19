@@ -10,7 +10,6 @@
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_LINEAR_H_
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
-# include <lbcpp/Perception/PerceptionMaths.h>
 # include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp
