@@ -94,7 +94,7 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   }
   if (!res)
   {
-    res = Variable::create(outputType).getObject();
+    res = Object::create(outputType);
     jassert(res);
   }
 

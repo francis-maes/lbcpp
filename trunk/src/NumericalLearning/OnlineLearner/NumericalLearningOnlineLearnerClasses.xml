@@ -17,12 +17,12 @@
 
     <!-- Grafting -->
     <class name="GraftingOnlineLearner" base="InferenceOnlineLearner">
-      <constructor arguments="PerceptionPtr perception, const std::vector&lt;InferencePtr&gt;&amp; inferences"/>
+      <constructor arguments="PerceptionPtr perception, const std::vector&lt;NumericalInferencePtr&gt;&amp; inferences"/>
     </class>
 
     <code>
       InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference)
-        {return graftingOnlineLearner(perception, std::vector&lt;InferencePtr&gt;(1, targetInference));}
+        {return graftingOnlineLearner(perception, std::vector&lt;NumericalInferencePtr&gt;(1, targetInference));}
     </code>
     
   </namespace>

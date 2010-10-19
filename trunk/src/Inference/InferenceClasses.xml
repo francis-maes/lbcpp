@@ -5,6 +5,7 @@
   <include file="lbcpp/Inference/DecoratorInference.h"/>
   <include file="lbcpp/Inference/SequentialInference.h"/>
   <include file="lbcpp/Inference/ParallelInference.h"/>
+  <include file="lbcpp/Inference/ParameterizedInference.h"/>
   <include file="lbcpp/Inference/InferenceOnlineLearner.h"/>
 
   <import name="InferenceCallback"/>
@@ -44,6 +45,11 @@
     
     <class name="VectorSequentialInference" base="StaticSequentialInference">
       <variable type="ObjectVector[Inference]" name="subInferences"/>
+    </class>
+
+    <!-- Parameterized Inference -->
+    <class name="ParameterizedInference" base="Inference" abstract="yes">
+      <variable type="Object" name="parameters"/>
     </class>
 
     <code> <!-- FIXME: ranger -->

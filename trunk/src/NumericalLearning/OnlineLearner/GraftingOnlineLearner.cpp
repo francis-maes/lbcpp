@@ -8,8 +8,8 @@
 #include "GraftingOnlineLearner.h"
 using namespace lbcpp;
 
-GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std::vector<InferencePtr>& inferences)
-  : ProxyOnlineLearner(inferences), learningStopped(false), perception(perception.checkCast<SelectAndMakeProductsPerception>(T("GraftingOnlineLearner")))
+GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& inferences)
+  : learningStopped(false), inferences(inferences), perception(perception.checkCast<SelectAndMakeProductsPerception>(T("GraftingOnlineLearner")))
 {
   // create empty perception for candidates
   candidatesPerception = selectAndMakeProductsPerception(
@@ -49,7 +49,7 @@ void GraftingOnlineLearner::subStepFinishedCallback(const InferencePtr& inferenc
 void GraftingOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   jassert(supervision.exists());
-  std::map<InferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
+  std::map<NumericalInferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
   if (it != scoresMapping.end())
     updateCandidateScores(inference, it->second, input, supervision, prediction);
 }
@@ -139,6 +139,8 @@ void GraftingOnlineLearner::acceptCandidates()
 
 void GraftingOnlineLearner::pruneParameters()
 {
+  //std::vector<InferencePtr> inferences;
+
   // todo
 }
 

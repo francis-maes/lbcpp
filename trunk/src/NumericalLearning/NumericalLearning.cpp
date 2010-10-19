@@ -67,14 +67,46 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 ** Inference
 */
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)
-  : ParameterizedInference(name), perception(perception) {}
+  : ParameterizedInference(name)
+{
+}
+
+const NumericalInferenceParametersPtr& NumericalInference::getParameters() const
+{
+  ScopedReadLock _(parametersLock);
+  return parameters.staticCast<NumericalInferenceParameters>();
+}
+
+const PerceptionPtr& NumericalInference::getPerception() const
+{
+  ScopedReadLock _(parametersLock);
+  return getParameters()->getPerception();
+}
+
+ObjectPtr NumericalInference::getWeightsCopy() const
+{
+  ScopedReadLock _(parametersLock);
+  ObjectPtr weights = getParameters()->getWeights();
+  return weights ? weights->deepClone() : ObjectPtr();
+}
 
 void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
 {
   if (weight)
   {
     parametersLock.enterWrite();
-    lbcpp::addWeighted(parameters, value, weight);
+    lbcpp::addWeighted(getParameters()->getWeights(), value, weight);
+    parametersLock.exitWrite();
+    parametersChangedCallback();
+  }
+}
+
+void NumericalInference::addWeightedToParameters(const PerceptionPtr& perception, const Variable& input, double weight)
+{
+  if (weight)
+  {
+    parametersLock.enterWrite();
+    lbcpp::addWeighted(getParameters()->getWeights(), perception, input, weight);
     parametersLock.exitWrite();
     parametersChangedCallback();
   }
@@ -86,8 +118,9 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
   {
     parametersLock.enterWrite();
     bool changed = true;
-    if (parameters)
-      regularizer->compute(parameters, NULL, &parameters, weight);
+    ObjectPtr weights = getParameters()->getWeights();
+    if (weights)
+      regularizer->compute(weights, NULL, &weights, weight);
     else
       changed = false;
     parametersLock.exitWrite();

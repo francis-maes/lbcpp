@@ -74,7 +74,7 @@ struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<Operati
     ObjectPtr subObject = object->getVariable(variableNumber).getObject();
     if (!subObject)
     {
-      subObject = Variable::create(subPerception->getOutputType()).getObject();
+      subObject = Object::create(subPerception->getOutputType());
       object->setVariable(variableNumber, subObject);
     }
     BaseClass::operation.compute(subObject, subPerception, subInput);
@@ -187,7 +187,7 @@ void addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Varia
   if (!weight)
     return;
   if (!target)
-    target = Variable::create(perception->getOutputType()).getObject();
+    target = Object::create(perception->getOutputType());
 
   AddWeightedOperation operation(weight);
   DenseDoubleObject* denseDoubleTarget = dynamic_cast<DenseDoubleObject* >(target.get());
@@ -220,7 +220,7 @@ void addWeighted(ObjectPtr& target, const ObjectPtr& source, double weight)
   if (!weight)
     return;
   if (!target)
-    target = Variable::create(source->getClass()).getObject();
+    target = Object::create(source->getClass());
   if (target == source)
     lbcpp::multiplyByScalar(target, 1 + weight);
   else

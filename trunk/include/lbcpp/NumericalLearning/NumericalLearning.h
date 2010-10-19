@@ -79,6 +79,33 @@ extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 /*
 ** Inferences
 */
+extern ClassPtr numericalInferenceParametersClass(TypePtr weightsType);
+
+class NumericalInferenceParameters : public Object
+{
+public:
+  NumericalInferenceParameters(const PerceptionPtr& perception, TypePtr weightsType)
+    : Object(numericalInferenceParametersClass(weightsType)), perception(perception) {}
+  NumericalInferenceParameters() {}
+
+  const PerceptionPtr& getPerception() const
+    {return perception;}
+
+  const ObjectPtr& getWeights() const
+    {return weights;}
+
+  ObjectPtr& getWeights()
+    {return weights;}
+
+private:
+  friend class NumericalInferenceParametersClass;
+
+  PerceptionPtr perception;
+  ObjectPtr weights;
+};
+
+typedef ReferenceCountedObjectPtr<NumericalInferenceParameters> NumericalInferenceParametersPtr;
+
 class NumericalInference : public ParameterizedInference
 {
 public:
@@ -86,10 +113,16 @@ public:
   NumericalInference() {}
 
   virtual TypePtr getInputType() const
-    {return perception->getInputType();}
+    {return getPerception()->getInputType();}
 
-  TypePtr getPerceptionOutputType() const
-    {return perception->getOutputType();}
+  virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const = 0;
+
+  virtual TypePtr getParametersType() const
+    {return parameters ? parameters->getClass() : numericalInferenceParametersClass(getWeightsType(getPerception()->getOutputType()));}
+
+  const NumericalInferenceParametersPtr& getParameters() const;
+  ObjectPtr getWeightsCopy() const;
+  const PerceptionPtr& getPerception() const;
 
   virtual Variable predict(const Variable& input) const = 0;
 
@@ -102,16 +135,10 @@ public:
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
   void addWeightedToParameters(const ObjectPtr& value, double weight);
+  void addWeightedToParameters(const PerceptionPtr& perception, const Variable& input, double weight);
   void applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight);
 
-  const PerceptionPtr& getPerception() const
-    {return perception;}
-
 protected:
-  friend class NumericalInferenceClass;
-
-  PerceptionPtr perception;
-
   virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return predict(input);}
 };
