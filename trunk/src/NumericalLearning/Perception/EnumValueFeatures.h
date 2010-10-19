@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_PERCEPTION_FEATURES_ENUM_VALUE_H_
-# define LBCPP_FUNCTION_PERCEPTION_FEATURES_ENUM_VALUE_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_PERCEPTION_ENUM_VALUE_H_
+# define LBCPP_NUMERICAL_LEARNING_PERCEPTION_ENUM_VALUE_H_
 
 # include <lbcpp/Perception/Perception.h>
 
@@ -54,4 +54,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_PERCEPTION_FEATURES_ENUM_VALUE_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_PERCEPTION_ENUM_VALUE_H_

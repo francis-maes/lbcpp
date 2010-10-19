@@ -81,9 +81,8 @@ protected:
 };
 
 #include "../../../src/Perception/Modifier/SelectAndMakeProductsPerception.h"
-#include "../../../src/Inference/NumericalInference/NumericalInference.h"
-#include "../../../src/Inference/NumericalInference/LinearInference.h"
-#include "../../../src/Inference/NumericalInference/MultiLinearInference.h"
+#include "../../../src/NumericalLearning/Inference/LinearInference.h"
+#include "../../../src/NumericalLearning/Inference/MultiLinearInference.h"
 
 class GraftingOnlineLearner : public ProxyOnlineLearner
 {
@@ -544,9 +543,9 @@ private:
 VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount =1;
+  size_t maxCount = 1;
 #else
-  size_t maxCount = 20;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();

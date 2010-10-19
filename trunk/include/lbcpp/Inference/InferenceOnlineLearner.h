@@ -83,22 +83,6 @@ typedef ReferenceCountedObjectPtr<UpdatableOnlineLearner> UpdatableOnlineLearner
 extern InferenceOnlineLearnerPtr stoppingCriterionOnlineLearner(InferenceOnlineLearnerPtr learner,
                     InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
 
-extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
-          // randomization
-          InferenceOnlineLearner::UpdateFrequency randomizationFrequency = InferenceOnlineLearner::never,
-          // learning steps
-          InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency = InferenceOnlineLearner::perEpisode,
-          IterationFunctionPtr learningRate = constantIterationFunction(1.0),
-          bool normalizeLearningRate = true,
-          // regularizer
-          InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency = InferenceOnlineLearner::perEpisode,
-          ScalarObjectFunctionPtr regularizer = ScalarObjectFunctionPtr(),
-          // stopping criterion
-          InferenceOnlineLearner::UpdateFrequency criterionTestFrequency = InferenceOnlineLearner::never,
-          StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
-          bool restoreBestParametersWhenLearningStops = false
-    );
-
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_ONLINE_LEARNER_H_

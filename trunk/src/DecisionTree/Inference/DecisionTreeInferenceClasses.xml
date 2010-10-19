@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="DecisionTreeInference" directory="Inference/DecisionTreeInference">
+<file name="DecisionTreeInference" directory="DecisionTree/Inference">
 
   <namespace name="lbcpp">
 

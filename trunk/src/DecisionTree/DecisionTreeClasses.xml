@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="DecisionTree" directory="lbcpp/DecisionTree">
+  <include file="lbcpp/DecisionTree/DecisionTree.h"/>
+
+  <import name="Inference"/>
+
+  <namespace name="lbcpp">
+  </namespace>
+</file>

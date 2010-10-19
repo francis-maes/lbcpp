@@ -65,4 +65,7 @@
 # include "Inference/InferenceOnlineLearner.h"
 # include "Inference/InferenceResultCache.h"
 
+# include "NumericalLearning/NumericalLearning.h"
+# include "DecisionTree/DecisionTree.h"
+
 #endif // !LBCPP_LBCPP_H_

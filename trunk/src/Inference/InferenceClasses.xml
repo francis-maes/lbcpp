@@ -11,8 +11,6 @@
   <import name="InferenceContext"/>
   <import name="InferenceOnlineLearner"/>
   <import name="ReductionInference"/>
-  <import name="DecisionTreeInference"/>
-  <import name="NumericalInference"/>
   <import name="MetaInference"/>
 
   <namespace name="lbcpp">
