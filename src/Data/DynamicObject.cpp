@@ -30,6 +30,7 @@ VariableValue DynamicClass::create() const
 
 ObjectPtr DynamicClass::createDenseObject() const
 {
+  jassert(variables.size());
   bool hasOnlyDoubles = true;
   bool hasOnlyObjects = true;
   for (size_t i = 0; i < variables.size(); ++i)

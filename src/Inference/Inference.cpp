@@ -201,20 +201,20 @@ protected:
 class GetInferencesThatHaveAnOnlineLearnerVisitor : public InferenceVisitor
 {
 public:
-  GetInferencesThatHaveAnOnlineLearnerVisitor(std::set<InferencePtr>& res)
+  GetInferencesThatHaveAnOnlineLearnerVisitor(std::vector<InferencePtr>& res)
     : res(res) {}
 
-  std::set<InferencePtr>& res;
+  std::vector<InferencePtr>& res;
 
   virtual void visit(InferencePtr inference)
   {
     if (inference->getOnlineLearner())
-      res.insert(inference);
+      res.push_back(inference);
     accept(inference);
   }
 };
 
-void Inference::getInferencesThatHaveAnOnlineLearner(std::set<InferencePtr>& res) const
+void Inference::getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& res) const
 {
   GetInferencesThatHaveAnOnlineLearnerVisitor visitor(res);
   visitor.visit(refCountedPointerFromThis(this));

@@ -20,12 +20,12 @@ namespace lbcpp
 class OnlineLearningInferenceCallback : public InferenceCallback
 {
 public:
-  OnlineLearningInferenceCallback(InferencePtr targetInference, const std::set<InferencePtr>& learnedInferences)
+  OnlineLearningInferenceCallback(InferencePtr targetInference, const std::vector<InferencePtr>& learnedInferences)
     : learnedInferences(learnedInferences), targetInference(targetInference), learningStopped(false)
   {
-    for (std::set<InferencePtr>::const_iterator it = learnedInferences.begin(); it != learnedInferences.end(); ++it)
+    for (size_t i = 0; i < learnedInferences.size(); ++i)
     {
-      const InferenceOnlineLearnerPtr& learner = (*it)->getOnlineLearner();
+      const InferenceOnlineLearnerPtr& learner = learnedInferences[i]->getOnlineLearner();
       jassert(learner);
       learner->startLearningCallback();
       jassert(!learner->isLearningStopped());
@@ -37,10 +37,21 @@ public:
     const InferencePtr& inference = stack->getCurrentInference();
     if (inference->getOnlineLearner() && supervision.exists())
     {
+      // call stepFinishedCallback
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
-      jassert(learnedInferences.find(inference) != learnedInferences.end());
       if (!learner->isLearningStopped())
         learner->stepFinishedCallback(inference, input, supervision, output);
+
+      // call subStepFinishedCallback
+      for (int i = stack->getDepth() - 1; i >= 0; --i)
+      {
+        const InferencePtr& parent = stack->getInference(i);
+        const InferenceOnlineLearnerPtr& learner = parent->getOnlineLearner();
+        if (learner && !learner->isLearningStopped())
+          learner->subStepFinishedCallback(inference, input, supervision, output);
+        if (parent == targetInference)
+          break;
+      }
     }
     else if (inference == targetInference)
       finishEpisode();
@@ -52,29 +63,31 @@ public:
     {return learningStopped;}
 
 private:
-  std::set<InferencePtr> learnedInferences;
+  std::vector<InferencePtr> learnedInferences;
   InferencePtr targetInference;
   bool learningStopped;
 
   void finishEpisode()
   {
-    for (std::set<InferencePtr>::const_iterator it = learnedInferences.begin(); it != learnedInferences.end(); ++it)
+    for (int i = (int)learnedInferences.size() - 1; i >= 0; --i)
     {
-      const InferenceOnlineLearnerPtr& learner = (*it)->getOnlineLearner();
+      const InferencePtr& inference = learnedInferences[i];
+      const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
-        learner->episodeFinishedCallback(*it);
+        learner->episodeFinishedCallback(inference);
     }
   }
 
   void finishPass()
   {
     bool wantsMoreIterations = false;
-    for (std::set<InferencePtr>::const_iterator it = learnedInferences.begin(); it != learnedInferences.end(); ++it)
+    for (int i = (int)learnedInferences.size() - 1; i >= 0; --i)
     {
-      const InferenceOnlineLearnerPtr& learner = (*it)->getOnlineLearner();
+      const InferencePtr& inference = learnedInferences[i];
+      const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
       {
-        learner->passFinishedCallback(*it);
+        learner->passFinishedCallback(inference);
         wantsMoreIterations |= learner->wantsMoreIterations();
       }
     }

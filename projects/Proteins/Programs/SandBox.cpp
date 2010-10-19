@@ -89,12 +89,14 @@ class GraftingOnlineLearner : public ProxyOnlineLearner
 {
 public:
   GraftingOnlineLearner(PerceptionPtr perception, const std::vector<InferencePtr>& inferences)
-    : ProxyOnlineLearner(inferences), perception(perception.checkCast<SelectAndMakeProductsPerception>(T("GraftingOnlineLearner")))
+    : ProxyOnlineLearner(inferences), learningStopped(false), perception(perception.checkCast<SelectAndMakeProductsPerception>(T("GraftingOnlineLearner")))
   {
+    // create empty perception for candidates
     candidatesPerception = selectAndMakeProductsPerception(
                                   this->perception->getDecoratedPerception(),
                                   this->perception->getMultiplyFunction());
 
+    // initialize scores mapping (inference -> first output index)
     size_t c = 0;
     for (size_t i = 0; i < inferences.size(); ++i)
     {
@@ -107,6 +109,8 @@ public:
       }
     }
     jassert(c);
+
+    // initialize candidate scores
     candidateScores.resize(c);
   }
   GraftingOnlineLearner() {}
@@ -115,18 +119,17 @@ public:
 
   virtual void startLearningCallback()
   {
+    learningStopped = false;
     generateCandidates();
     resetCandidateScores();
   }
 
-  void numericalInferenceFinishedCallback(const NumericalInferencePtr& numericalInference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    if (supervision.exists())
-    {
-      std::map<InferencePtr, size_t>::const_iterator it = scoresMapping.find(numericalInference);
-      if (it != scoresMapping.end())
-        updateCandidateScores(numericalInference, it->second, input, supervision, prediction);
-    }
+    jassert(supervision.exists());
+    std::map<InferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
+    if (it != scoresMapping.end())
+      updateCandidateScores(inference, it->second, input, supervision, prediction);
   }
 
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
@@ -141,7 +144,16 @@ public:
     pruneParameters();
     generateCandidates();
     resetCandidateScores();
+    MessageCallback::info(String::empty);
+    MessageCallback::info(T("Grafting"), T("=== ") + String((int)perception->getNumConjunctions()) + T(" active, ")
+      + String((int)candidatesPerception->getNumConjunctions()) + T(" candidates ==="));
   }
+
+  virtual bool isLearningStopped() const
+    {return ProxyOnlineLearner::isLearningStopped() && learningStopped;}
+
+  virtual bool wantsMoreIterations() const
+    {return ProxyOnlineLearner::wantsMoreIterations() || !learningStopped;}
 
 protected:
   void generateCandidates()
@@ -155,7 +167,7 @@ protected:
     size_t n = perception->getDecoratedPerception()->getNumOutputVariables();
     for (size_t i = 0; i < n; ++i)
     {
-      Conjunction conjunction(1, n);
+      Conjunction conjunction(1, i);
       if (conjunctions.find(conjunction) == conjunctions.end())
         candidatesPerception->addConjunction(conjunction);
     }
@@ -183,19 +195,28 @@ protected:
     double bestCandidateScore;
     computeCandidateScores(scores, bestCandidate, bestCandidateScore);
 
-    // generate top-ten
+    // generate top-five
     std::multimap<double, String> sortedScores;
     for (size_t i = 0; i < scores.size(); ++i)
       sortedScores.insert(std::make_pair(scores[i], conjunctionToString(candidatesPerception->getConjunction(i))));
     size_t i = 0;
-    for (std::multimap<double, String>::reverse_iterator it = sortedScores.rbegin(); i < 10 && it != sortedScores.rend(); ++i, ++it)
-      MessageCallback::info(T("Top ") + String((int)i + 1) + T(": ") + it->second + T(" (") + String(it->first) + T(")"));
+    for (std::multimap<double, String>::reverse_iterator it = sortedScores.rbegin(); i < 5 && it != sortedScores.rend(); ++i, ++it)
+    {
+      if (!it->first)
+        break;
+      MessageCallback::info(T("Grafting"), T("Top ") + String((int)i + 1) + T(": ") + it->second + T(" (") + String(it->first) + T(")"));
+    }
 
     // select top candidate
     if (bestCandidateScore > regularizerWeight)
     {
-      MessageCallback::info(T("GraftingOnlineLearner::acceptCandidates"), T("Incorporating ") + conjunctionToString(bestCandidate));
+      MessageCallback::info(T("Grafting"), T("Incorporating ") + conjunctionToString(bestCandidate));
       perception->addConjunction(bestCandidate);
+    }
+    else
+    {
+      MessageCallback::info(T("Grafting"), T("Finished!"));
+      learningStopped = true;
     }
   }
 
@@ -206,6 +227,8 @@ protected:
 
 protected:
   friend class GraftingOnlineLearnerClass;
+
+  bool learningStopped;
 
   SelectAndMakeProductsPerceptionPtr perception;
   SelectAndMakeProductsPerceptionPtr candidatesPerception;
@@ -287,12 +310,12 @@ protected:
 
   void updateCandidateScores(const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    const PerceptionPtr& perception = numericalInference->getPerception();
+    jassert(perception == numericalInference->getPerception());
     if (numericalInference.dynamicCast<LinearInference>())
     {
       const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>();
       double derivative = loss->computeDerivative(prediction.getDouble());
-      lbcpp::addWeighted(candidateScores[firstScoreIndex].first, perception, input, derivative);
+      lbcpp::addWeighted(candidateScores[firstScoreIndex].first, candidatesPerception, input, derivative);
       ++candidateScores[firstScoreIndex].second;
     }
     else if (numericalInference.dynamicCast<MultiLinearInference>())
@@ -306,7 +329,7 @@ protected:
       for (size_t i = 0; i < n; ++i)
       {
         double derivative = gradient->getVariable(i).getDouble();
-        lbcpp::addWeighted(candidateScores[firstScoreIndex + i].first, perception, input, derivative);
+        lbcpp::addWeighted(candidateScores[firstScoreIndex + i].first, candidatesPerception, input, derivative);
         ++candidateScores[firstScoreIndex + i].second;
       }
     }
@@ -405,11 +428,12 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);
-    InferenceOnlineLearnerPtr multiLinearLearner = createOnlineLearner(targetName, 0.5);
+    //StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(50);
+    InferenceOnlineLearnerPtr multiLinearLearner = createOnlineLearner(targetName, 0.1);
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, multiLinearLearner, true, targetName);
-    res->setOnlineLearner(stoppingCriterionOnlineLearner(graftingOnlineLearner(perception, res->getSubInference()),
-      InferenceOnlineLearner::perPass, stoppingCriterion, true));
+//    res->setOnlineLearner(stoppingCriterionOnlineLearner(graftingOnlineLearner(perception, res->getSubInference()),
+//      InferenceOnlineLearner::perPass, stoppingCriterion, true));
+    res->setOnlineLearner(graftingOnlineLearner(perception, res->getSubInference()));
     return res;
 
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
@@ -424,8 +448,8 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/* logicalOr(
-                                                     maxIterationsStoppingCriterion(5),
+      StoppingCriterionPtr stoppingCriterion;// = maxIterationsStoppingCriterion(5);/* logicalOr(
+/*                                                     maxIterationsStoppingCriterion(5),
                                                      maxIterationsWithoutImprovementStoppingCriterion(1));*/
 
 //    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/*logicalOr(
@@ -443,7 +467,7 @@ protected:
         InferenceOnlineLearner::perPass,                                                 // randomization
         InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
         InferenceOnlineLearner::never, l2Regularizer(0.0),         // regularizer
-        InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+        InferenceOnlineLearner::perPass, stoppingCriterion, false);                     // stopping criterion
   }
 };
 
@@ -479,8 +503,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName == T("LearningPass"))
+    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -522,7 +546,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #ifdef JUCE_DEBUG
   size_t maxCount =1;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 20;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();

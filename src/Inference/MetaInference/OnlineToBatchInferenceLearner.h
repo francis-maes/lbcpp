@@ -24,7 +24,7 @@ public:
     State(InferencePtr targetInference, const Variable& input, const Variable& supervision)
       : SequentialInferenceState(input, supervision)
     {
-      std::set<InferencePtr> inferencesThatHaveALearner;
+      std::vector<InferencePtr> inferencesThatHaveALearner;
       targetInference->getInferencesThatHaveAnOnlineLearner(inferencesThatHaveALearner);
       jassert(inferencesThatHaveALearner.size());
       callback = new OnlineLearningInferenceCallback(targetInference, inferencesThatHaveALearner);

@@ -42,7 +42,7 @@ protected:
   const PerceptionPtr& getPerception(const InferencePtr& inference) const
     {return getNumericalInference(inference)->getPerception();}
 
-  ScalarVariableMean numberOfActiveFeatures;
+  ScalarVariableRecentMean numberOfActiveFeatures;
   size_t epoch;
 
   UpdateFrequency learningUpdateFrequency;

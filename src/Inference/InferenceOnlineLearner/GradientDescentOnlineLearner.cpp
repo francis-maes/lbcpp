@@ -14,7 +14,7 @@ using namespace lbcpp;
 GradientDescentOnlineLearner::GradientDescentOnlineLearner(
                       UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                       UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
-    : epoch(0),
+    : numberOfActiveFeatures(T("NumActiveFeatures"), 10), epoch(0),
       learningUpdateFrequency(learningUpdateFrequency), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate),
       regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer),
       lossValue(T("Loss")), lastApplyRegularizerEpoch(0)
@@ -53,7 +53,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
   if (lossValue.getCount())
   {
     double mean = lossValue.getMean();
-    MessageCallback::info(lossValue.toString() + T("\n"));
+    MessageCallback::info(lossValue.toString() + T(" meanFeaturesL1 = ") + String(numberOfActiveFeatures.getMean()) + T("\n"));
     lossValue.clear();
     lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
@@ -123,12 +123,16 @@ double GradientDescentOnlineLearner::computeLearningRate() const
 
 void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input)
 {
-  size_t numSamples = (size_t)numberOfActiveFeatures.getCount();
-  // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
-  if (numSamples < 10 ||                        // every time until having 10 samples
-    (numSamples < 100 && (epoch % 10 == 0)) ||  // every 10 epochs until having 100 samples
-    (epoch % 100 == 0))                         // every 100 epochs after that
-    numberOfActiveFeatures.push(lbcpp::l1norm(perception, input));
+  if (normalizeLearningRate)
+  {
+    // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
+    if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))
+    {
+      double norm = lbcpp::l1norm(perception, input);
+      if (norm)
+        numberOfActiveFeatures.push(norm);
+    }
+  }
 }
 
 void GradientDescentOnlineLearner::clone(ObjectPtr target) const

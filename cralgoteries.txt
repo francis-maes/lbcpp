@@ -1,4 +1,5 @@
 * GraftingOnlineLearner
+
 * StoppingCriterion: faire un reset() dans le clone()
 * StoppingCriterionOnlineLearner: ne pas cloner le StoppingCriterion manuellement
 
