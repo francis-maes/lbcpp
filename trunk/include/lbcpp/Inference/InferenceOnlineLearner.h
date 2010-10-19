@@ -21,6 +21,8 @@ class InferenceOnlineLearner : public Object
 {
 public:
   virtual void startLearningCallback() = 0;
+  
+  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) {}
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
   virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
   virtual void passFinishedCallback(const InferencePtr& inference) = 0;

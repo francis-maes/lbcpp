@@ -40,8 +40,8 @@ public:
     const ScalarObjectFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarObjectFunction>();
     ObjectPtr lossGradient;
     lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
-    if (!lossGradient)
-      return;
+    if (!lossGradient || !perception->getNumOutputVariables())
+      return; // when learning the perception, its number of output variables may be null at beginning
 
     bool isLocked = false;
     if (!target)

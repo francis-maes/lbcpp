@@ -36,23 +36,39 @@ public:
     double correctValue = input ? (*input)[correctClass] : 0.0;
 
     double wrongValue = -DBL_MAX;
-    size_t wrongClass = 0;
+    std::set<size_t> wrongClasses;
     for (size_t i = 0; i < numClasses; ++i)
       if (i != correctClass)
       {
         double value = input ? (*input)[i] : 0.0;
-        if (value > wrongValue)
-          wrongValue = value, wrongClass = i;
+        if (value >= wrongValue)
+        {
+          if (value > wrongValue)
+            wrongClasses.clear();
+          wrongClasses.insert(i);
+          wrongValue = value;
+        }
       }
-    jassert(wrongValue > -DBL_MAX);
+    jassert(wrongValue > -DBL_MAX && wrongClasses.size());
 
-    double derivative;
-    binaryLoss->computePositive(correctValue - wrongValue, output, NULL, gradientTarget ? &derivative : NULL);
-    if (gradientTarget)
+    // if more than one class are equally wrong, average losses
+    // this is especially usefull when initializing learning with null parameters
+    double invZ = 1.0 / (double)wrongClasses.size();
+    if (output)
+      *output = 0;
+    for (std::set<size_t>::const_iterator it = wrongClasses.begin(); it != wrongClasses.end(); ++it)
     {
-      derivative *= gradientWeight;
-      (*gradientTarget)[correctClass] += derivative;
-      (*gradientTarget)[wrongClass] -= derivative;
+      double derivative;
+      double lossOutput;
+      binaryLoss->computePositive(correctValue - wrongValue, output ? &lossOutput : NULL, NULL, gradientTarget ? &derivative : NULL);
+      if (output)
+        *output += lossOutput * invZ;
+      if (gradientTarget)
+      {
+        derivative *= gradientWeight * invZ;
+        (*gradientTarget)[correctClass] += derivative;
+        (*gradientTarget)[*it] -= derivative;
+      }
     }
   }
 

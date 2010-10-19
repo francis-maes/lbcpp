@@ -29,6 +29,7 @@
 
 # include "../Data/predeclarations.h"
 # include <cfloat>
+# include <deque>
 
 namespace lbcpp
 {
@@ -137,6 +138,54 @@ public:
 private:
   double min;
   double max;
+};
+
+class ScalarVariableRecentMean : public NameableObject
+{
+public:
+  ScalarVariableRecentMean(const String& name = T("Unnamed"), size_t memorySize = 0)
+    : NameableObject(name), memorySize(memorySize), currentSum(0.0), epoch(0) {}
+
+  void clear()
+    {values.clear(); currentSum = 0.0; epoch = 0;}
+
+  void push(double value)
+  {
+    currentSum += value;
+    values.push_back(value);
+    if (values.size() > memorySize)
+    {
+      currentSum -= values.front();
+      values.pop_front();
+    }
+    if (++epoch % 1000)
+      recomputeCurrentSum(); // to avoid numerical errors accumulation
+  }
+
+  double getMean() const
+    {return values.size() ? currentSum / (double)values.size() : 0.0;}
+
+  size_t getNumSamples() const
+    {return values.size();}
+
+  size_t getMemorySize() const
+    {return memorySize;}
+
+  bool isMemoryFull() const
+    {return values.size() == memorySize;}
+
+protected:
+  size_t memorySize;
+  std::deque<double> values;
+  double currentSum;
+  size_t epoch;
+
+  void recomputeCurrentSum()
+  {
+    currentSum = 0.0;
+    for (std::deque<double>::const_iterator it = values.begin(); it != values.end(); ++it)
+      currentSum += *it;
+  }
 };
 
 }; /* namespace lbcpp */
